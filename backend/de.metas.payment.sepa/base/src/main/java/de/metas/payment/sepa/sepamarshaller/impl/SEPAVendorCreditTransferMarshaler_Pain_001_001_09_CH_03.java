@@ -76,6 +76,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -329,9 +330,14 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		}
 		catch (final RuntimeException e)
 		{
-			// the record is kept as a parameter (e.g. for AD_Issue), but not appended to the message, which the user sees
-			throw AdempiereException.wrapIfNeeded(e)
-					.setParameter("sepaDocument", sepaDocument);
+			// AD_Issue stores the exception's record (AD_Table_ID/Record_ID); a line error already names its SEPA_Export_Line, so only errors without a record get the export.
+			// The record is not appended to the message, which the user sees.
+			final AdempiereException exception = AdempiereException.wrapIfNeeded(e);
+			if (exception.getRecord() == null)
+			{
+				exception.setRecord(TableRecordReference.of(sepaDocument));
+			}
+			throw exception;
 		}
 	}
 
@@ -583,11 +589,13 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			// the amount is passed as text, so that the message shows it exactly (no rounding or grouping by the message format)
 			if (amount == null || amount.signum() <= 0)
 			{
-				throw new SepaMarshallerException(MSG_InvalidAmount, SepaUtils.createInfo(line), amount != null ? amount.toPlainString() : "");
+				throw new SepaMarshallerException(MSG_InvalidAmount, SepaUtils.createInfo(line), amount != null ? amount.toPlainString() : "")
+						.setRecord(TableRecordReference.of(line));
 			}
 			if (amount.scale() > currency.getPrecision().toInt())
 			{
-				throw new SepaMarshallerException(MSG_AmountTooManyDecimals, SepaUtils.createInfo(line), amount.toPlainString(), currencyIsoCode.toThreeLetterCode(), String.valueOf(currency.getPrecision().toInt()));
+				throw new SepaMarshallerException(MSG_AmountTooManyDecimals, SepaUtils.createInfo(line), amount.toPlainString(), currencyIsoCode.toThreeLetterCode(), String.valueOf(currency.getPrecision().toInt()))
+						.setRecord(TableRecordReference.of(line));
 			}
 
 			final ActiveOrHistoricCurrencyAndAmount instdAmt = objectFactory.createActiveOrHistoricCurrencyAndAmount();
@@ -693,7 +701,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		final PostalAddress24 bankAddress = bank != null && bank.getLocationId() != null ? createPstlAdr(null, locationDAO.getById(bank.getLocationId())) : null;
 		if (bankName == null || bankAddress == null || !isCompleteAddress(bankAddress))
 		{
-			throw new SepaMarshallerException(MSG_CreditorBankUnidentified, SepaUtils.createInfo(line));
+			throw new SepaMarshallerException(MSG_CreditorBankUnidentified, SepaUtils.createInfo(line))
+					.setRecord(TableRecordReference.of(line));
 		}
 
 		final FinancialInstitutionIdentification18 finInstnId = objectFactory.createFinancialInstitutionIdentification18();
@@ -848,7 +857,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		final ITranslatableString reference = structuredReference != null
 				? TranslatableStrings.anyLanguage(structuredReference)
 				: msgBL.getTranslatableMsgText(MSG_NoStructuredReference);
-		return new AdempiereException(SepaUtils.ERR_SEPA_Export_InvalidReference, msgBL.getTranslatableMsgText(reason, SepaUtils.createInfo(line), reference));
+		return new AdempiereException(SepaUtils.ERR_SEPA_Export_InvalidReference, msgBL.getTranslatableMsgText(reason, SepaUtils.createInfo(line), reference))
+				.setRecord(TableRecordReference.of(line));
 	}
 
 	/**
@@ -950,7 +960,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		if (cdtr.getNm() == null)
 		{
 			// IG 4.3 Cdtr/Nm: "Must be supplied" (mandatory in the XSD, too)
-			throw new SepaMarshallerException(MSG_CreditorNameMissing, SepaUtils.createInfo(line));
+			throw new SepaMarshallerException(MSG_CreditorNameMissing, SepaUtils.createInfo(line))
+					.setRecord(TableRecordReference.of(line));
 		}
 
 		// Bank account is authoritative: when it carries any address data we use it
@@ -990,17 +1001,22 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		}
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID());
-		final ITranslatableString addressSource = msgBL.getTranslatableMsgText(addressSourceMessage, Strings.nullToEmpty(addressSourceName));
 		if (PAYMENT_TYPE_6.equals(paymentType))
 		{
 			// X: the export fails, so that the address is completed before a foreign payment is sent.
-			throw new AdempiereException(MSG_CreditorAddressIncomplete, getBPartnerValueAndName(bpartnerId), addressSource, msgBL.getTranslatableMsgText(missingAddressParts))
-					.setParameter("SEPA_Export_Line", line);
+			// The process runs the error message through parseTranslation, so the names are escaped (the warning below is escaped when the summary is built).
+			throw new AdempiereException(
+					MSG_CreditorAddressIncomplete,
+					SepaUtils.escapeAtSignsForParseTranslation(getBPartnerValueAndName(bpartnerId)),
+					msgBL.getTranslatableMsgText(addressSourceMessage, SepaUtils.escapeAtSignsForParseTranslation(Strings.nullToEmpty(addressSourceName))),
+					msgBL.getTranslatableMsgText(missingAddressParts))
+					.setRecord(TableRecordReference.of(line));
 		}
 
 		// D and S: Cdtr/PstlAdr is optional (IG 4.3), so we leave out the incomplete address instead of sending an invalid one and warn the user.
 		if (omittedAddressWarnings.add(ArrayKey.of(bpartnerId, addressSourceMessage, addressSourceName, missingAddressParts)))
 		{
+			final ITranslatableString addressSource = msgBL.getTranslatableMsgText(addressSourceMessage, Strings.nullToEmpty(addressSourceName));
 			addWarning(msgBL.getTranslatableMsgText(MSG_CreditorAddressOmitted, getBPartnerValueAndName(bpartnerId), addressSource, msgBL.getTranslatableMsgText(missingAddressParts)));
 		}
 		return cdtr;
@@ -1207,7 +1223,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 				// IG 3.16: "The QR-IBAN and the QR reference are intended for billing in CHF" (EUR until November 2027)
 				if (qrIbanPayment && !domesticCurrency)
 				{
-					throw new SepaMarshallerException(MSG_QrIbanCurrencyNotSupported, SepaUtils.createInfo(line), currencyCode.toThreeLetterCode());
+					throw new SepaMarshallerException(MSG_QrIbanCurrencyNotSupported, SepaUtils.createInfo(line), currencyCode.toThreeLetterCode())
+							.setRecord(TableRecordReference.of(line));
 				}
 
 				// "domestic" IBAN; it contains the IID and we will use it. IG 3.15: in a currency other than CHF/EUR it is "X" (V1, foreign currency domestic)
@@ -1227,7 +1244,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		if (PAYMENT_TYPE_1.equals(paymentType))
 		{
 			// IG 3.15: the payment types are D, S, X and C; there is no ISR payment type anymore
-			throw new SepaMarshallerException(MSG_IsrNotSupported, SepaUtils.createInfo(line));
+			throw new SepaMarshallerException(MSG_IsrNotSupported, SepaUtils.createInfo(line))
+					.setRecord(TableRecordReference.of(line));
 		}
 		return paymentType;
 	}

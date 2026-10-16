@@ -1,6 +1,11 @@
 package de.metas.payment.sepa.api;
 
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
+import de.metas.i18n.Msg;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,6 +90,32 @@ class SepaUtilsTest
 		assertThat(SepaUtils.isSepaSchemeCountryIban("D")).isFalse();
 		assertThat(SepaUtils.isSepaSchemeCountryIban(" ")).isFalse();
 		assertThat(SepaUtils.isSepaSchemeCountryIban(null)).isFalse();
+	}
+
+	@Test
+	void getBankAccountInfo()
+	{
+		// the ID is always there; the number only if the account has one, so that the message never shows an empty gap
+		assertThat(SepaUtils.getBankAccountInfo(bankAccount().build())).isEqualTo("ID 7");
+		assertThat(SepaUtils.getBankAccountInfo(bankAccount().IBAN(" DE62007620110623852957 ").QR_IBAN("CH4431999123000889012").build())).isEqualTo("DE62007620110623852957 (ID 7)");
+		assertThat(SepaUtils.getBankAccountInfo(bankAccount().QR_IBAN("CH4431999123000889012").accountNo("123").build())).isEqualTo("CH4431999123000889012 (ID 7)");
+		assertThat(SepaUtils.getBankAccountInfo(bankAccount().IBAN(" ").accountNo("123").build())).isEqualTo("123 (ID 7)");
+	}
+
+	@Test
+	void escapeAtSignsForParseTranslation()
+	{
+		assertThat(SepaUtils.escapeAtSignsForParseTranslation("info@muster.ch / buchhaltung@muster.ch")).isEqualTo("info@@muster.ch / buchhaltung@@muster.ch");
+		assertThat(SepaUtils.escapeAtSignsForParseTranslation("no at sign")).isEqualTo("no at sign");
+		assertThat(Msg.parseTranslation("de_CH", SepaUtils.escapeAtSignsForParseTranslation("a@b@c@"))).isEqualTo("a@b@c@");
+	}
+
+	private static BankAccount.BankAccountBuilder bankAccount()
+	{
+		return BankAccount.builder()
+				.id(BankAccountId.ofRepoId(7))
+				.orgId(OrgId.ANY)
+				.currencyId(CurrencyId.ofRepoId(102));
 	}
 
 	@Test

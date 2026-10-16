@@ -20,8 +20,10 @@ import de.metas.util.Loggables;
 import de.metas.util.PlainStringLoggable;
 import de.metas.util.Services;
 import lombok.NonNull;
+import de.metas.i18n.Msg;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.SpringContextHolder;
@@ -441,7 +443,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 
 		assertThatThrownBy(() -> exportXml(sepaExport))
 				.hasMessageContaining(MSG_INVALID_AMOUNT)
-				.hasMessageContaining("Test Vendor GmbH");
+				.hasMessageContaining("Test Vendor GmbH")
+				.isInstanceOfSatisfying(AdempiereException.class, e -> assertThat(e.getRecord()).isEqualTo(TableRecordReference.of(line)));
 	}
 
 	@Test
@@ -1129,12 +1132,12 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		save(sepaExport);
 		createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
 
-		// the user sees the translated message only; the record stays available as an exception parameter (e.g. for AD_Issue)
+		// the user sees the translated message only; the export is the exception's record, which AD_Issue stores as AD_Table_ID/Record_ID
 		assertThatThrownBy(() -> exportXml(sepaExport))
 				.hasMessageContaining(MSG_DEBTOR_NAME_MISSING)
 				.hasMessageNotContaining("Additional parameters")
 				.hasMessageNotContaining("POJOWrapper")
-				.isInstanceOfSatisfying(AdempiereException.class, e -> assertThat(e.getParameter("sepaDocument")).isNotNull());
+				.isInstanceOfSatisfying(AdempiereException.class, e -> assertThat(e.getRecord()).isEqualTo(TableRecordReference.of(sepaExport)));
 	}
 
 	@Test
@@ -1149,7 +1152,24 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 				.hasMessageContaining(MSG_ADDRESS_INCOMPLETE)
 				.hasMessageNotContaining("Additional parameters")
 				.hasMessageNotContaining("POJOWrapper")
-				.isInstanceOfSatisfying(AdempiereException.class, e -> assertThat(e.getParameter("SEPA_Export_Line")).isNotNull());
+				.isInstanceOfSatisfying(AdempiereException.class, e -> assertThat(e.getRecord()).isEqualTo(TableRecordReference.of(line)));
+	}
+
+	@Test
+	public void export_foreign_locationNameWithAtSigns_keptInError()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_TR, CREDITOR_BIC_TR, new BigDecimal("100"), eur, null);
+		clearAddress(bankAccountOf(line));
+		final I_C_BPartner_Location bpLocation = setBillToLocation(line, "Teststrasse 1", "8000", "", "TR");
+		bpLocation.setName("info@muster.ch / buchhaltung@muster.ch");
+		save(bpLocation);
+
+		// the process runs the error message through parseTranslation, which takes text between two "@" for an AD_Message/AD_Element; "@@" stands for a plain "@"
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_ADDRESS_INCOMPLETE)
+				.hasMessageContaining("info@@muster.ch / buchhaltung@@muster.ch")
+				.satisfies(e -> assertThat(Msg.parseTranslation("de_CH", e.getMessage())).contains("info@muster.ch / buchhaltung@muster.ch"));
 	}
 
 	@Test
@@ -1361,7 +1381,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		save(bankAccount);
 	}
 
-	private static void setBillToLocation(
+	private static I_C_BPartner_Location setBillToLocation(
 			@NonNull final I_SEPA_Export_Line line,
 			@NonNull final String address1,
 			@NonNull final String postal,
@@ -1390,6 +1410,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		bpLocation.setIsBillToDefault(true);
 		bpLocation.setIsActive(true);
 		save(bpLocation);
+		return bpLocation;
 	}
 
 	private static I_C_BPartner setBPartner(@NonNull final I_SEPA_Export_Line line, @NonNull final String name)

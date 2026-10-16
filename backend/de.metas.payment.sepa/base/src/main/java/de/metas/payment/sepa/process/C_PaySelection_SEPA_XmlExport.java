@@ -11,6 +11,7 @@ import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
+import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -121,19 +122,16 @@ public class C_PaySelection_SEPA_XmlExport
 	}
 
 	/**
-	 * The WebUI shows the summary as one paragraph (line breaks are collapsed), so several warnings are numbered and separated by a middle dot.
-	 * <p>
-	 * {@link JavaProcess} runs the summary through {@code IMsgBL.parseTranslation}, which takes text between two "@" for an AD_Message or AD_Element;
-	 * the warnings contain partner, location and bank account names, so every "@" is escaped as "@@", which parseTranslation turns back into "@".
-	 *
-	 * @return the export's warnings, translated to the given language; {@link #MSG_OK} if there are none
+	 * @return {@link #MSG_OK} if the export has no warnings; otherwise its warnings translated to the given language, on one line: a single warning as it is,
+	 * several numbered as {@code 1) … · 2) …}; every "@" is escaped as "@@", i.e. the text is meant to be passed through {@code IMsgBL.parseTranslation}
 	 */
 	@VisibleForTesting
 	static String createSummary(@NonNull final SEPACreditTransferXML xml, @NonNull final String adLanguage)
 	{
+		// one line, because the WebUI collapses line breaks in the notification; escaped, because the warnings contain partner, location and bank account names
 		final List<String> warnings = xml.getWarnings()
 				.stream()
-				.map(warning -> warning.translate(adLanguage).replace("@", "@@"))
+				.map(warning -> SepaUtils.escapeAtSignsForParseTranslation(warning.translate(adLanguage)))
 				.collect(ImmutableList.toImmutableList());
 		if (warnings.isEmpty())
 		{

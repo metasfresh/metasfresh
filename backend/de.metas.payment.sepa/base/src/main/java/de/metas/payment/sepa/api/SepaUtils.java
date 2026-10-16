@@ -22,6 +22,7 @@
 
 package de.metas.payment.sepa.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccount;
 import de.metas.bpartner.BPartnerId;
@@ -58,7 +59,7 @@ public class SepaUtils
 	public static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
 
 	/**
-	 * Bank account with an address but without a valid country; parameters: IBAN (or QR-IBAN or account number), C_BP_BankAccount_ID and, for the invalid one, the country.
+	 * Bank account with an address but without a valid country; parameters: the bank account ({@link #getBankAccountInfo}) and, for the invalid one, the country.
 	 */
 	private static final AdMessageKey MSG_BankAccountCountryMissing = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_BankAccountCountryMissing");
 	private static final AdMessageKey MSG_BankAccountCountryInvalid = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_BankAccountCountryInvalid");
@@ -186,24 +187,34 @@ public class SepaUtils
 		final String country = bankAccount.getAccountCountry();
 		if (Check.isBlank(country))
 		{
-			throw new SepaMarshallerException(MSG_BankAccountCountryMissing, getBankAccountNumber(bankAccount), String.valueOf(bankAccount.getId().getRepoId()));
+			throw new SepaMarshallerException(MSG_BankAccountCountryMissing, getBankAccountInfo(bankAccount));
 		}
 		if (!ISO_3166_ALPHA2.matcher(country).matches())
 		{
-			throw new SepaMarshallerException(MSG_BankAccountCountryInvalid, getBankAccountNumber(bankAccount), String.valueOf(bankAccount.getId().getRepoId()), country);
+			throw new SepaMarshallerException(MSG_BankAccountCountryInvalid, getBankAccountInfo(bankAccount), country);
 		}
 	}
 
 	/**
-	 * @return the IBAN, QR-IBAN or account number of the given bank account, whichever is set first; empty if none is
+	 * @return "number (ID id)" with the first of IBAN, QR-IBAN and account number that is set, or just "ID id" if none is
 	 */
-	private static String getBankAccountNumber(@NonNull final BankAccount bankAccount)
+	@VisibleForTesting
+	static String getBankAccountInfo(@NonNull final BankAccount bankAccount)
 	{
+		final String idInfo = "ID " + bankAccount.getId().getRepoId();
 		final String number = CoalesceUtil.coalesce(
 				StringUtils.trimBlankToNull(bankAccount.getIBAN()),
 				StringUtils.trimBlankToNull(bankAccount.getQR_IBAN()),
 				StringUtils.trimBlankToNull(bankAccount.getAccountNo()));
-		return number != null ? number : "";
+		return number != null ? number + " (" + idInfo + ")" : idInfo;
+	}
+
+	/**
+	 * @return the given text with every "@" doubled; {@code IMsgBL.parseTranslation} turns "@@" back into "@" instead of taking the text between two "@" for an AD_Message or AD_Element
+	 */
+	public static String escapeAtSignsForParseTranslation(@NonNull final String text)
+	{
+		return text.replace("@", "@@");
 	}
 
 	/**
