@@ -421,6 +421,14 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_dw11            | rs_dw11                         | receipt_dw11          |
 
+    # The picked quantity on the SO line's shipment schedule reflects the receipt (10 CU).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_dw11    | sol_dw11_1                | N             |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | OPT.QtyPickList |
+      | ss_dw11               | 10              |
+
     # Drain the event queue so any TransactionCreatedEvent processing has a chance to run.
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
