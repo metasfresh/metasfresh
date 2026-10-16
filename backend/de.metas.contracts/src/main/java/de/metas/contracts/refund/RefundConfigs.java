@@ -199,7 +199,13 @@ public class RefundConfigs
 	 */
 	public void assertInvoiceDistanceDividesTheYear(@NonNull final RefundConfig refundConfig)
 	{
-		assertInvoiceDistanceDividesTheYear(refundConfig.getInvoiceSchedule());
+		final InvoiceSchedule invoiceSchedule = refundConfig.getInvoiceSchedule();
+		if (invoiceSchedule == null)
+		{
+			// a config deducted at payment has no invoice schedule, so there is no distance to check
+			return;
+		}
+		assertInvoiceDistanceDividesTheYear(invoiceSchedule);
 	}
 
 	/**
