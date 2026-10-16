@@ -25,6 +25,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.ad.dao.IQueryBL;
@@ -33,13 +34,10 @@ import org.compiere.SpringContextHolder;
 import org.compiere.acct.PostingStatus;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.DB;
-import org.adempiere.ad.trx.api.ITrx;
 import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.PPOrderId;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctBalanceValidator;
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctValidator;
@@ -206,6 +204,34 @@ public class Fact_Acct_StepDef
 					.as("P_Asset_Acct balance of %s up to %s", row.getAsString(I_Fact_Acct.COLUMNNAME_M_Product_ID), dateAcct)
 					.isEqualByComparingTo(expectedBalance);
 		});
+	}
+
+	/**
+	 * Forces the accounting to post the documents again (as a user does with "Re-Post"): their Fact_Acct rows are deleted and recreated with new IDs.
+	 */
+	@And("^the documents (.*) are reposted$")
+	public void repostDocuments(@NonNull final String commaSeparatedIdentifiers) throws InterruptedException
+	{
+		final TableRecordReferenceSet recordRefs = identifiersResolver.getTableRecordReferenceSetOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
+		AccountingCucumberHelper.repost(recordRefs);
+		AccountingCucumberHelper.waitUtilPosted(recordRefs);
+	}
+
+	/**
+	 * Makes the documents' Net postings look like postings made before Fact_Acct.VATCodeAmountType existed: the VAT code stays, the amount type is empty
+	 * (the one-shot backfill leaves such rows empty when it cannot derive the type).
+	 */
+	@And("^the Net VAT code amount type is removed from the Fact_Acct records of documents (.*), as on postings made before the amount type existed$")
+	public void removeNetVATCodeAmountType(@NonNull final String commaSeparatedIdentifiers)
+	{
+		for (final TableRecordReference recordRef : identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers))
+		{
+			final int updated = DB.executeUpdateAndThrowExceptionOnFail(
+					"UPDATE Fact_Acct SET VATCodeAmountType=NULL WHERE AD_Table_ID=? AND Record_ID=? AND VATCodeAmountType='N'",
+					new Object[] { recordRef.getAD_Table_ID(), recordRef.getRecord_ID() },
+					ITrx.TRXNAME_None);
+			assertThat(updated).as("Net Fact_Acct records of %s", recordRef).isPositive();
+		}
 	}
 
 	/**
