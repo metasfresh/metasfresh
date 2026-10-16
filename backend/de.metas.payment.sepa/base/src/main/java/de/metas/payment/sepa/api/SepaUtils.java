@@ -22,6 +22,7 @@
 
 package de.metas.payment.sepa.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccount;
 import de.metas.bpartner.BPartnerId;
@@ -29,6 +30,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.payment.esr.api.impl.ESRCheckDigitBuilder;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
@@ -45,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
@@ -55,6 +58,17 @@ public class SepaUtils
 	 * Message for a structured reference that is not a valid QR reference although the payment needs one.
 	 */
 	public static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
+
+	/**
+	 * Bank account with an address but without a valid country; parameters: the bank account ({@link #getBankAccountInfo}) and, for the invalid one, the country.
+	 */
+	private static final AdMessageKey MSG_BankAccountCountryMissing = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_BankAccountCountryMissing");
+	private static final AdMessageKey MSG_BankAccountCountryInvalid = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_BankAccountCountryInvalid");
+
+	/**
+	 * CH/LI IBAN too short to contain the IID; parameters: the IBAN, the record it belongs to
+	 */
+	private static final AdMessageKey MSG_IbanTooShort = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_IbanTooShort");
 
 	/**
 	 * Swiss QR reference: 26 digits plus one check digit.
@@ -171,23 +185,37 @@ public class SepaUtils
 	 */
 	public static void assertValidAccountCountry(@NonNull final BankAccount bankAccount)
 	{
-		final int bankAccountId = bankAccount.getId().getRepoId();
 		final String country = bankAccount.getAccountCountry();
 		if (Check.isBlank(country))
 		{
-			throw new SepaMarshallerException(String.format(
-					"C_BP_BankAccount has an address but no country set; A_Country is required"
-							+ " (C_BP_BankAccount_ID=%d)",
-					bankAccountId));
+			throw new SepaMarshallerException(MSG_BankAccountCountryMissing, getBankAccountInfo(bankAccount));
 		}
 		if (!ISO_3166_ALPHA2.matcher(country).matches())
 		{
-			throw new SepaMarshallerException(String.format(
-					"C_BP_BankAccount.A_Country '%s' is not a valid ISO-3166 alpha-2 country code;"
-							+ " expected two uppercase letters"
-							+ " (C_BP_BankAccount_ID=%d)",
-					country, bankAccountId));
+			throw new SepaMarshallerException(MSG_BankAccountCountryInvalid, getBankAccountInfo(bankAccount), country);
 		}
+	}
+
+	/**
+	 * @return "number (ID id)" with the first of IBAN, QR-IBAN and account number that is set, or just "ID id" if none is
+	 */
+	@VisibleForTesting
+	static String getBankAccountInfo(@NonNull final BankAccount bankAccount)
+	{
+		final String idInfo = "ID " + bankAccount.getId().getRepoId();
+		final String number = CoalesceUtil.coalesce(
+				StringUtils.trimBlankToNull(bankAccount.getIBAN()),
+				StringUtils.trimBlankToNull(bankAccount.getQR_IBAN()),
+				StringUtils.trimBlankToNull(bankAccount.getAccountNo()));
+		return number != null ? number + " (" + idInfo + ")" : idInfo;
+	}
+
+	/**
+	 * @return the given text with every "@" doubled; {@code IMsgBL.parseTranslation} turns "@@" back into "@" instead of taking the text between two "@" for an AD_Message or AD_Element
+	 */
+	public static String escapeAtSignsForParseTranslation(@NonNull final String text)
+	{
+		return text.replace("@", "@@");
 	}
 
 	/**
@@ -219,12 +247,12 @@ public class SepaUtils
 	/**
 	 * For IBANs that start with "CH" or "LI", extracts the Swiss institution identification (IID, formerly "BC" for "bank code").
 	 *
-	 * @param ibanOwnerInfo describes where the IBAN comes from; only used in the error message if the IBAN is too short
+	 * @param ibanOwnerInfo the (translated) record the IBAN comes from; only used in the error message if the IBAN is too short
 	 * @return {@code null} if the given {@code iban} is {@code null}, empty or not "CH"/"LI".
 	 * @see <a href="http://www.swissiban.com/de.htm">http://www.swissiban.com/de.htm</a>
 	 */
 	@Nullable
-	public static String extractIIDFromSwissIbanOrNull(@Nullable final String iban, @NonNull final Supplier<String> ibanOwnerInfo)
+	public static String extractIIDFromSwissIbanOrNull(@Nullable final String iban, @NonNull final Supplier<ITranslatableString> ibanOwnerInfo)
 	{
 		if (!isSwissIBAN(iban))
 		{
@@ -234,7 +262,7 @@ public class SepaUtils
 		final String ibanToUse = iban.replaceAll(" ", "");
 		if (ibanToUse.length() < IBAN_IID_END_IDX)
 		{
-			throw new SepaMarshallerException("Given IBAN " + iban + " for " + ibanOwnerInfo.get() + " is to short. Please verify that it's actually an IBAN at all");
+			throw new SepaMarshallerException(MSG_IbanTooShort, iban, ibanOwnerInfo.get());
 		}
 		return ibanToUse.substring(IBAN_IID_START_IDX, IBAN_IID_END_IDX);
 	}
@@ -279,22 +307,26 @@ public class SepaUtils
 	}
 
 	/**
-	 * @return the business partner and bank account of the given line, as user-readable (translated) text for error messages
+	 * @return the business partner and bank account of the given line, as user-readable (translated) text for error messages;
+	 * every "@" in it is escaped as "@@" (see {@link #escapeAtSignsForParseTranslation(String)}), i.e. the text is meant for a message that is passed through {@code IMsgBL.parseTranslation}
 	 */
 	public static String createInfo(@NonNull final I_SEPA_Export_Line line)
 	{
+		// only the column labels are translated; the names are taken as they are, so that an "@" in them is not mistaken for a translation token
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
 		final StringBuilder sb = new StringBuilder();
 		if (line.getC_BPartner_ID() > 0)
 		{
-			sb.append("@C_BPartner_ID@ ");
+			sb.append(msgBL.translate(ctx, I_SEPA_Export_Line.COLUMNNAME_C_BPartner_ID)).append(" ");
 			sb.append(getBPartnerNameById(line.getC_BPartner_ID()));
 		}
 		if (line.getC_BP_BankAccount_ID() > 0)
 		{
-			sb.append(" @C_BP_BankAccount_ID@ ");
+			sb.append(" ").append(msgBL.translate(ctx, I_SEPA_Export_Line.COLUMNNAME_C_BP_BankAccount_ID)).append(" ");
 			sb.append(line.getC_BP_BankAccount().getDescription());
 		}
-		return Services.get(IMsgBL.class).parseTranslation(InterfaceWrapperHelper.getCtx(line), sb.toString());
+		return escapeAtSignsForParseTranslation(sb.toString());
 	}
 
 	public static String getBPartnerNameById(final int bpartnerRepoId)
