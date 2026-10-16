@@ -37,6 +37,7 @@ import java.time.ZoneId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -285,6 +286,90 @@ public class RefundInvoiceCandidateInvalidatorTest
 		{
 			SystemTime.resetTimeSource();
 		}
+	}
+
+	/**
+	 * Completing a contract deducted at payment: it has no refund invoice candidates (its bonus is booked at the payment allocation and is never invoiced),
+	 * and it has no invoice schedule, so the current-period query (which needs one) must never be built for it.
+	 */
+	@Test
+	public void invalidateCandidatesOfContractAfterCommit_deductedAtPayment_isSkipped()
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Mockito.mock(IInvoiceCandDAO.class);
+		Services.registerService(IInvoiceCandDAO.class, invoiceCandDAO);
+		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository, candidateAssignmentService);
+
+		final I_C_Flatrate_Term deductedTerm = createDeductedRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
+
+		SystemTime.setFixedTimeSource(LocalDate.of(2026, 7, 15).atStartOfDay(ZoneId.systemDefault()));
+		try
+		{
+			// no transaction, so the after-commit listener (if any) runs right away; building the query would throw for a null schedule
+			assertThatCode(() -> invalidator.invalidateCandidatesOfContractAfterCommit(refundContractRepository.ofRecord(deductedTerm))).doesNotThrowAnyException();
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+
+		Mockito.verify(invoiceCandDAO, Mockito.never()).invalidateCandsFor(any(IQuery.class));
+	}
+
+	/**
+	 * Editing a config of a completed contract deducted at payment: the contract has no refund invoice candidates, so it is skipped entirely,
+	 * neither reassigning sales nor building the current-period query (which it has no schedule for).
+	 */
+	@Test
+	public void invalidateCandidatesOfConditionsAfterCommit_deductedAtPaymentContract_isSkipped()
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Mockito.mock(IInvoiceCandDAO.class);
+		Services.registerService(IInvoiceCandDAO.class, invoiceCandDAO);
+		invalidator = new RefundInvoiceCandidateInvalidator(refundInvoiceCandidateRepository, refundContractRepository, candidateAssignmentService);
+
+		final I_C_Flatrate_Term deductedTerm = createDeductedRefundTerm(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 12, 31));
+
+		SystemTime.setFixedTimeSource(LocalDate.of(2026, 7, 15).atStartOfDay(ZoneId.systemDefault()));
+		try
+		{
+			assertThatCode(() -> invalidator.invalidateCandidatesOfConditionsAfterCommit(ConditionsId.ofRepoId(deductedTerm.getC_Flatrate_Conditions_ID()))).doesNotThrowAnyException();
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
+
+		Mockito.verify(invoiceCandDAO, Mockito.never()).invalidateCandsFor(any(IQuery.class));
+		Mockito.verify(candidateAssignmentService, Mockito.never()).reassignSalesOfOpenRefundCandidates(any());
+		Mockito.verify(refundContractRepository).resetCaches(); // the caches are still reset
+	}
+
+	private I_C_Flatrate_Term createDeductedRefundTerm(@NonNull final LocalDate startDate, @NonNull final LocalDate endDate)
+	{
+		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
+		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
+		saveRecord(conditions);
+
+		final I_C_Flatrate_RefundConfig config = newInstance(I_C_Flatrate_RefundConfig.class);
+		config.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+		// deliberately no C_InvoiceSchedule: a config deducted at payment has none
+		config.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice);
+		config.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
+		config.setRefundPercent(BigDecimal.TEN);
+		config.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
+		config.setMinQty(BigDecimal.ZERO);
+		config.setBonus_Product_ID(41);
+		config.setIsDeductedAtPayment(true);
+		saveRecord(config);
+
+		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
+		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
+		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		term.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+		term.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
+		term.setStartDate(TimeUtil.asTimestamp(startDate));
+		term.setEndDate(TimeUtil.asTimestamp(endDate));
+		saveRecord(term);
+		return term;
 	}
 
 	private I_C_Flatrate_Term createRefundTerm(@NonNull final LocalDate startDate, @NonNull final LocalDate endDate)

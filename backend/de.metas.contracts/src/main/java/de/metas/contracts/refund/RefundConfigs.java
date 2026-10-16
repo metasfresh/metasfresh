@@ -62,6 +62,7 @@ public class RefundConfigs
 	public static final AdMessageKey MSG_REFUND_CONFIG_DEDUCTED_AT_PAYMENT_NOT_CHANGEABLE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_DeductedAtPaymentNotChangeable");
 	public static final AdMessageKey MSG_REFUND_CONFIG_CALENDAR_INVOICE_DISTANCE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_CalendarInvoiceDistance");
 	public static final AdMessageKey MSG_REFUND_CONFIG_BONUS_PRODUCT_REQUIRED = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_BonusProductRequired");
+	public static final AdMessageKey MSG_REFUND_CONFIG_INVOICE_SCHEDULE_REQUIRED = AdMessageKey.of("de.metas.contracts.refund.C_Flatrate_RefundConfig_InvoiceScheduleRequired");
 
 	public ImmutableList<RefundConfig> sortByMinQtyAsc(@NonNull final List<RefundConfig> refundConfigs)
 	{
@@ -278,7 +279,11 @@ public class RefundConfigs
 
 		if (RefundMode.APPLY_TO_ALL_QTIES.equals(extractRefundMode(refundConfigs)))
 		{
-			// we have one IC with different configs, so those configs need to have the consistent settings
+			// we have one IC with different configs, so those configs need to have the consistent settings.
+			// hasDifferentValues filters out null schedules, but a mix of one scheduled and one null-schedule config cannot occur here:
+			// the IsDeductedAtPayment check above forces all configs of the group to agree, a non-deducted config always has a schedule
+			// (enforced when it is saved, see C_Flatrate_RefundConfig#assertValid), and a deducted group is a single line (assertDeductedAtPaymentIsSingleLine).
+			// So within one group the schedules are either all present (non-deducted) or the single null (deducted) — filtering nulls is safe.
 			if (hasDifferentValues(refundConfigs, RefundConfig::getInvoiceSchedule))
 			{
 				Loggables.addLog(

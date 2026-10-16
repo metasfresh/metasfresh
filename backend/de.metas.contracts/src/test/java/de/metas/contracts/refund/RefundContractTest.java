@@ -27,6 +27,7 @@ import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 
 /*
@@ -103,6 +104,46 @@ public class RefundContractTest
 
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
+	}
+
+	/**
+	 * A contract deducted at payment has no invoice schedule: its bonus is booked at the payment allocation and is never invoiced by the refund engine.
+	 * The period computation must never be reached for it; if it is, it fails fast with an explicit message instead of the cryptic "exactly 1 item but has 0".
+	 */
+	@Test
+	public void computeNextInvoiceDate_deductedAtPayment_failsFast()
+	{
+		final RefundContract deducted = deductedAtPaymentContract();
+
+		assertThatThrownBy(() -> deducted.computeNextInvoiceDate(NOW))
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("deducted at payment");
+		assertThatThrownBy(() -> deducted.computeCurrentPeriodStart(NOW))
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("deducted at payment");
+	}
+
+	private RefundContract deductedAtPaymentContract()
+	{
+		final RefundConfig deductedConfig = RefundConfig.builder()
+				.conditionsId(ConditionsId.ofRepoId(20))
+				.refundInvoiceType(RefundInvoiceType.INVOICE)
+				.refundBase(RefundBase.PERCENTAGE)
+				.refundMode(RefundMode.APPLY_TO_ALL_QTIES)
+				.minQty(ZERO)
+				.percent(Percent.of(20))
+				.bonusProductId(ProductId.ofRepoId(41))
+				.deductedAtPayment(true)
+				// no invoice schedule: a config deducted at payment has none
+				.build();
+
+		return RefundContract.builder()
+				.id(FlatrateTermId.ofRepoId(102))
+				.bPartnerId(BPartnerId.ofRepoId(200))
+				.startDate(NOW)
+				.endDate(NOW.plusYears(1))
+				.refundConfig(deductedConfig)
+				.build();
 	}
 
 	@Test
