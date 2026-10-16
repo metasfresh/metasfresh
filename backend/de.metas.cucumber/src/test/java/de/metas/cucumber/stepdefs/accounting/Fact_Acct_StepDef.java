@@ -210,17 +210,6 @@ public class Fact_Acct_StepDef
 	}
 
 	/**
-	 * Forces the accounting to post the documents again (as a user does with "Re-Post"): their Fact_Acct rows are deleted and recreated with new IDs.
-	 */
-	@And("^the documents (.*) are reposted$")
-	public void repostDocuments(@NonNull final String commaSeparatedIdentifiers) throws InterruptedException
-	{
-		final TableRecordReferenceSet recordRefs = identifiersResolver.getTableRecordReferenceSetOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
-		AccountingCucumberHelper.repost(recordRefs);
-		AccountingCucumberHelper.waitUtilPosted(recordRefs);
-	}
-
-	/**
 	 * Makes the documents' Net postings look like postings made before Fact_Acct.VATCodeAmountType existed: the VAT code stays, the amount type is empty
 	 * (the one-shot backfill leaves such rows empty when it cannot derive the type).
 	 */
