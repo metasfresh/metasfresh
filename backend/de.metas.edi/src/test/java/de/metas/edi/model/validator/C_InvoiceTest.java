@@ -109,6 +109,21 @@ class C_InvoiceTest
 	}
 
 	@Test
+	void invalidInvoiceBecomesValid_clearsValidationMsg()
+	{
+		final I_C_Invoice invoice = newSalesInvoice(locationWithoutGLN, EDIExportStatus.Pending, null, EDIExportStatus.Invalid);
+		assertThat(invoice.getEDIErrorMsg()).contains(I_C_BPartner_Location.COLUMNNAME_GLN);
+
+		locationWithoutGLN.setGLN("4000000000004");
+		saveRecord(locationWithoutGLN);
+		invoice.setDescription("re-validate after the GLN was added");
+		saveRecord(invoice);
+
+		assertThat(invoice.getEDI_ExportStatus()).isEqualTo(EDIExportStatus.Pending.getCode());
+		assertThat(invoice.getEDIErrorMsg()).isNull();
+	}
+
+	@Test
 	void statusChangedToError_keepsNewErrorMsg()
 	{
 		final I_C_Invoice invoice = newSalesInvoice(validLocation, EDIExportStatus.SendingStarted, null);
@@ -157,6 +172,17 @@ class C_InvoiceTest
 			final EDIExportStatus ediExportStatus,
 			@Nullable final String ediErrorMsg)
 	{
+		final I_C_Invoice invoice = newSalesInvoice(location, ediExportStatus, ediErrorMsg, ediExportStatus);
+		assertThat(invoice.getEDIErrorMsg()).isEqualTo(ediErrorMsg);
+		return invoice;
+	}
+
+	private I_C_Invoice newSalesInvoice(
+			final I_C_BPartner_Location location,
+			final EDIExportStatus ediExportStatus,
+			@Nullable final String ediErrorMsg,
+			final EDIExportStatus expectedEdiExportStatusAfterSave)
+	{
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner_ID(location.getC_BPartner_ID());
 		invoice.setC_BPartner_Location_ID(location.getC_BPartner_Location_ID());
@@ -168,8 +194,7 @@ class C_InvoiceTest
 		invoice.setEDIErrorMsg(ediErrorMsg);
 		saveRecord(invoice);
 
-		assertThat(invoice.getEDI_ExportStatus()).isEqualTo(ediExportStatus.getCode());
-		assertThat(invoice.getEDIErrorMsg()).isEqualTo(ediErrorMsg);
+		assertThat(invoice.getEDI_ExportStatus()).isEqualTo(expectedEdiExportStatusAfterSave.getCode());
 		return invoice;
 	}
 }

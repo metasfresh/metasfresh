@@ -56,25 +56,27 @@ public class C_Invoice
 	public void updateEdiStatus(final I_C_Invoice invoice)
 	{
 		final EDIExportStatus ediExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
+		if (ediExportStatus == null || !(ediExportStatus.isInProgressOrSend() || ediExportStatus.isError()))
+		{
+			ediDocumentBL.updateEdiExportStatus(invoice);
+		}
+
+		clearErrorMsgIfChangedToSentOrPending(invoice);
+	}
+
+	/**
+	 * The error message of an earlier failed send or validation is outdated once the status changed to sent or pending.
+	 * Checked after the validation, which might have set the status to invalid together with a fresh message.
+	 */
+	private static void clearErrorMsgIfChangedToSentOrPending(@NonNull final I_C_Invoice invoice)
+	{
+		final EDIExportStatus ediExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
 		if (ediExportStatus != null
 				&& (ediExportStatus.isSent() || ediExportStatus.isPending())
 				&& InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_EDI_ExportStatus))
 		{
-			// the error message of an earlier (failed) send is outdated now; a fresh validation-message might be set further down
 			invoice.setEDIErrorMsg(null);
 		}
-
-		if(ediExportStatus != null && ediExportStatus.isInProgressOrSend())
-		{
-			return;
-		}
-
-		if(ediExportStatus != null && ediExportStatus.isError())
-		{
-			return;
-		}
-
-		ediDocumentBL.updateEdiExportStatus(invoice);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }, //
