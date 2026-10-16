@@ -55,7 +55,9 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -94,6 +96,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
@@ -139,6 +142,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final ProjectRepository projectsRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
 
@@ -894,6 +898,63 @@ public class C_OrderLine_StepDef
 		final I_C_OrderLine firstLine = lines.get(0);
 		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID);
 		orderLineTable.putOrReplace(lineIdentifier, firstLine);
+	}
+
+	/**
+	 * Loads the purchase order line that is allocated to a sales order line (via {@code C_PO_OrderLine_Alloc},
+	 * e.g. created by the drop-ship purchase order generation) and registers it under the given identifier.
+	 * Fails unless exactly one active allocation exists for the sales order line.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code C_SO_OrderLine_ID} — required, references a previously registered sales order line</li>
+	 *     <li>{@code C_PO_OrderLine_ID} — required, identifier under which the allocated purchase order line is registered</li>
+	 *     <li>{@code C_Order_ID} — optional, references the purchase order the loaded line must belong to</li>
+	 *   </ul>
+	 * @cucumber.depends StepDefData: C_OrderLine_StepDefData, C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And load C_OrderLines allocated to sales order lines:
+	 *   | C_SO_OrderLine_ID | C_PO_OrderLine_ID | OPT.C_Order_ID |
+	 *   | sol_1             | pol_1             | po_1           |
+	 * </pre>
+	 */
+	@And("load C_OrderLines allocated to sales order lines:")
+	public void loadC_OrderLinesAllocatedToSalesOrderLines(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID)
+				.forEach(this::loadPurchaseOrderLineAllocatedToSalesOrderLine);
+	}
+
+	private void loadPurchaseOrderLineAllocatedToSalesOrderLine(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier salesOrderLineIdentifier = row.getAsIdentifier(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_SO_OrderLine_ID);
+		final I_C_OrderLine salesOrderLine = salesOrderLineIdentifier.lookupNotNullIn(orderLineTable);
+
+		final List<I_C_PO_OrderLine_Alloc> allocs = queryBL.createQueryBuilderOutOfTrx(I_C_PO_OrderLine_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_SO_OrderLine_ID, salesOrderLine.getC_OrderLine_ID())
+				.create()
+				.list(I_C_PO_OrderLine_Alloc.class);
+		assertThat(allocs)
+				.as("Expected exactly one active C_PO_OrderLine_Alloc for sales order line %s (C_OrderLine_ID=%s) but found %s",
+						salesOrderLineIdentifier.getAsString(), salesOrderLine.getC_OrderLine_ID(), allocs.size())
+				.hasSize(1);
+
+		final I_C_OrderLine purchaseOrderLine = orderDAO.getOrderLineById(OrderLineId.ofRepoId(allocs.get(0).getC_PO_OrderLine_ID()));
+
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.ifPresent(purchaseOrderIdentifier -> {
+					final I_C_Order purchaseOrder = purchaseOrderIdentifier.lookupNotNullIn(orderTable);
+					assertThat(purchaseOrderLine.getC_Order_ID())
+							.as("C_Order_ID of the purchase order line allocated to sales order line %s", salesOrderLineIdentifier.getAsString())
+							.isEqualTo(purchaseOrder.getC_Order_ID());
+				});
+
+		orderLineTable.putOrReplace(row.getAsIdentifier(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID), purchaseOrderLine);
 	}
 
 	@Given("metasfresh contains C_OrderLine expecting error:")
