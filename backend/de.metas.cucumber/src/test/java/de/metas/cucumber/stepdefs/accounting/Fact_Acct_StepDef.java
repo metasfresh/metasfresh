@@ -6,6 +6,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -25,7 +26,6 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,10 +34,13 @@ import org.compiere.SpringContextHolder;
 import org.compiere.acct.PostingStatus;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.DB;
+import org.adempiere.ad.trx.api.ITrx;
 import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.PPOrderId;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctBalanceValidator;
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctValidator;
@@ -226,10 +229,14 @@ public class Fact_Acct_StepDef
 	{
 		for (final TableRecordReference recordRef : identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers))
 		{
-			final int updated = DB.executeUpdateAndThrowExceptionOnFail(
-					"UPDATE Fact_Acct SET VATCodeAmountType=NULL WHERE AD_Table_ID=? AND Record_ID=? AND VATCodeAmountType='N'",
-					new Object[] { recordRef.getAD_Table_ID(), recordRef.getRecord_ID() },
-					ITrx.TRXNAME_None);
+			final int updated = queryBL.createQueryBuilder(I_Fact_Acct.class)
+					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_VATCodeAmountType, VATCodeAmountType.Net)
+					.create()
+					.updateDirectly()
+					.addSetColumnValue(I_Fact_Acct.COLUMNNAME_VATCodeAmountType, null)
+					.execute();
 			assertThat(updated).as("Net Fact_Acct records of %s", recordRef).isPositive();
 		}
 	}

@@ -62,7 +62,6 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -98,8 +97,8 @@ import java.util.Set;
  * <ul>
  *     <li>HEADER: {@code print_date, org_name, org_tax_id, org_vat_id, acctschema_name, period_from, period_to,
  *         documentno (of the declaration), docstatus, is_correction ('Y'/'N'), original_documentno, currency}</li>
- *     <li>SUMMARY: {@code vatcode, description (C_VAT_Code.Description), net_amt (whole euros, cut off toward zero,
- *         NULL when the code has no Net line), tax_amt (NULL when the code has no Tax line)}, both with the display sign applied;
+ *     <li>SUMMARY: {@code vatcode, description (C_VAT_Code.Description), net_amt (with cents,
+ *         0 when the code has no Net line), tax_amt (NULL when the code has no Tax line)}, both with the display sign applied;
  *         a code's lines without amount type get an own row with {@code amount_type = 'U'} ("type unknown"), amount in net_amt</li>
  *     <li>BALANCE: {@code balance_amt = - sum of the declared Tax amounts (debit - credit)}</li>
  *     <li>DETAIL: {@code vatcode, amount_type ('N'/'T', 'U' when the posting has no amount type), description (C_TaxDeclarationAcct.Description), amount (display sign
@@ -169,7 +168,7 @@ public class TaxDeclarationUStVAReport_StepDef
 	 * Then the UStVA report for tax declaration "td" returns:
 	 *   | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
 	 *   | SUMMARY      | v81N          | 20      | 3.80    |             |
-	 *   | SUMMARY      | v66T          | -       | 16.44   |             |
+	 *   | SUMMARY      | v66T          | 0       | 16.44   |             |
 	 *   | BALANCE      |               |         |         | -12.64      |
 	 * </pre>
 	 */
@@ -408,7 +407,7 @@ public class TaxDeclarationUStVAReport_StepDef
 		return !taxRows.isEmpty() && taxRows.stream().allMatch(row -> "Y".equals(row.getIsSOTrx()));
 	}
 
-	/** Detail rows of a code add up to the summary: Net rows to the cut-off net, Tax rows to the tax. */
+	/** Detail rows of a code add up to the summary: Net rows to the net, Tax rows to the tax. */
 	private void assertDetailSumsEqualSummary(
 			final SoftAssertions softly, final String ctx, final List<UStVAReportRow> actualRows,
 			final Set<String> scopeVatCodes, final String dump)
@@ -430,20 +429,10 @@ public class TaxDeclarationUStVAReport_StepDef
 			final boolean typeUnknown = AMOUNT_TYPE_UNKNOWN.equals(summary.getAmountType());
 			final BigDecimal netSum = detailSums.get(summary.getVatCode() + "|" + (typeUnknown ? AMOUNT_TYPE_UNKNOWN : "N"));
 			final BigDecimal taxSum = typeUnknown ? null : detailSums.get(summary.getVatCode() + "|T");
-			if (summary.getNetAmt() == null)
-			{
-				softly.assertThat(netSum).as("%s: code %s has no net summary, so no Net detail rows\n%s", ctx, summary.getVatCode(), dump).isNull();
-			}
-			else
-			{
-				softly.assertThat(netSum).as("%s: code %s Net detail rows\n%s", ctx, summary.getVatCode(), dump).isNotNull();
-				if (netSum != null)
-				{
-					softly.assertThat(netSum.setScale(0, RoundingMode.DOWN))
-							.as("%s: code %s sum of Net detail rows cut off to whole euros = summary net\n%s", ctx, summary.getVatCode(), dump)
-							.isEqualByComparingTo(summary.getNetAmt());
-				}
-			}
+			// a code without Net detail rows has net 0 in the summary
+			softly.assertThat(netSum != null ? netSum : BigDecimal.ZERO)
+					.as("%s: code %s sum of Net detail rows = summary net\n%s", ctx, summary.getVatCode(), dump)
+					.isEqualByComparingTo(summary.getNetAmt());
 			if (summary.getTaxAmt() == null)
 			{
 				softly.assertThat(taxSum).as("%s: code %s has no tax summary, so no Tax detail rows\n%s", ctx, summary.getVatCode(), dump).isNull();
