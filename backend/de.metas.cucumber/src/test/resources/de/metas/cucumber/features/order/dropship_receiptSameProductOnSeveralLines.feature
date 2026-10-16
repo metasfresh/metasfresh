@@ -126,6 +126,13 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
       | C_SO_OrderLine_ID | C_PO_OrderLine_ID | OPT.C_Order_ID |
       | sol_e1            | pol_e1            | po_1           |
 
+    # the goods arrive after the sales order's shipment schedules exist and are up to date
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_e1      | sol_e1                    | N             |
+      | ss_e2      | sol_e2                    | N             |
+      | ss_g       | sol_g                     | N             |
+
     # Receipt schedules are created asynchronously per PO line. They are loaded without a quantity filter:
     # `M_ReceiptSchedule are found` needs the QtyOrdered, which differs when lines are merged.
     And after not more than 60s, load M_ReceiptSchedule for C_OrderLine:
@@ -260,6 +267,13 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
       | pol_3b         | 671        |
       | pol_3c         | 561        |
 
+    # the goods arrive after the sales order's shipment schedules exist and are up to date
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_3a      | sol_3a                    | N             |
+      | ss_3b      | sol_3b                    | N             |
+      | ss_3c      | sol_3c                    | N             |
+
     # one receipt schedule per purchase-order line, each with the quantity of its own sales-order line
     # the receipt schedules are in the organisation's drop-ship warehouse
     And load M_Warehouse:
@@ -372,6 +386,12 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
       | C_OrderLine_ID | QtyOrdered | attribute:attr_brand |
       | pol_10a        | 110        | 02                   |
       | pol_10b        | 66         | 03                   |
+
+    # the goods arrive after the sales order's shipment schedules exist and are up to date
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_10a     | sol_10a                   | N             |
+      | ss_10b     | sol_10b                   | N             |
 
     And after not more than 60s, load M_ReceiptSchedule for C_OrderLine:
       | C_OrderLine_ID | M_ReceiptSchedule_ID |
