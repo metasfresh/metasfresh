@@ -47,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
@@ -306,22 +307,26 @@ public class SepaUtils
 	}
 
 	/**
-	 * @return the business partner and bank account of the given line, as user-readable (translated) text for error messages
+	 * @return the business partner and bank account of the given line, as user-readable (translated) text for error messages;
+	 * every "@" in it is escaped as "@@" (see {@link #escapeAtSignsForParseTranslation(String)}), i.e. the text is meant for a message that is passed through {@code IMsgBL.parseTranslation}
 	 */
 	public static String createInfo(@NonNull final I_SEPA_Export_Line line)
 	{
+		// only the column labels are translated; the names are taken as they are, so that an "@" in them is not mistaken for a translation token
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
 		final StringBuilder sb = new StringBuilder();
 		if (line.getC_BPartner_ID() > 0)
 		{
-			sb.append("@C_BPartner_ID@ ");
+			sb.append(msgBL.translate(ctx, I_SEPA_Export_Line.COLUMNNAME_C_BPartner_ID)).append(" ");
 			sb.append(getBPartnerNameById(line.getC_BPartner_ID()));
 		}
 		if (line.getC_BP_BankAccount_ID() > 0)
 		{
-			sb.append(" @C_BP_BankAccount_ID@ ");
+			sb.append(" ").append(msgBL.translate(ctx, I_SEPA_Export_Line.COLUMNNAME_C_BP_BankAccount_ID)).append(" ");
 			sb.append(line.getC_BP_BankAccount().getDescription());
 		}
-		return Services.get(IMsgBL.class).parseTranslation(InterfaceWrapperHelper.getCtx(line), sb.toString());
+		return escapeAtSignsForParseTranslation(sb.toString());
 	}
 
 	public static String getBPartnerNameById(final int bpartnerRepoId)

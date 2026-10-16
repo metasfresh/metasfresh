@@ -448,6 +448,20 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	}
 
 	@Test
+	public void export_lineError_partnerNameWithAtSigns_keptInError()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, BigDecimal.ZERO, eur, null);
+		setBPartner(line, "Vendor info@muster.ch / buchhaltung@muster.ch");
+
+		// the process runs the error message through parseTranslation, which takes text between two "@" for an AD_Message/AD_Element; "@@" stands for a plain "@"
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_INVALID_AMOUNT)
+				.hasMessageContaining("Vendor info@@muster.ch / buchhaltung@@muster.ch")
+				.satisfies(e -> assertThat(Msg.parseTranslation("de_CH", e.getMessage())).contains("Vendor info@muster.ch / buchhaltung@muster.ch"));
+	}
+
+	@Test
 	public void export_amountWithTooManyDecimals_fails()
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport();
