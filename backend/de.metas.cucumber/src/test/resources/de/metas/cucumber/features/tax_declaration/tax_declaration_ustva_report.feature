@@ -99,7 +99,7 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 
 # ############################################################################################################################################
 # Summary: one row per code present, ordered by code; sales codes print positive, input tax prints positive;
-# no tax line -> empty tax; balance = - sum of declared tax; refund prints negative; codes are not a fixed list
+# no tax line -> empty tax; no net line -> net 0; balance = - sum of declared tax; refund prints negative; codes are not a fixed list
 # ############################################################################################################################################
   @Id:S32216_UStVA_020
   @from:cucumber
@@ -153,25 +153,25 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | td         | acctSchema      | 2024-01-15 |
     And the tax declaration "td" is built
 
-    # Net: sales and input base printed positive, whole euros cut off (86.55 -> 86); a code without a tax line has an empty tax.
-    # Tax: input tax printed positive, with cents; a code without a net line has an empty net.
+    # Net: sales and input base printed positive, with cents (86.55); a code without a tax line has an empty tax.
+    # Tax: input tax printed positive, with cents; a code without a net line has net 0.
     # Balance = - (16.44 + 32.00): negative = refund.
     Then the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | description      | net_amt | tax_amt | balance_amt |
       | SUMMARY      | v81N          | Lieferungen 19 % | 100     | -       |             |
       | SUMMARY      | v41N          | -                | 1000    | -       |             |
-      | SUMMARY      | v66T          | -                | -       | 16.44   |             |
-      | SUMMARY      | v66aN         | -                | 86      | -       |             |
-      | SUMMARY      | v61T          | -                | -       | 32.00   |             |
+      | SUMMARY      | v66T          | -                | 0       | 16.44   |             |
+      | SUMMARY      | v66aN         | -                | 86.55   | -       |             |
+      | SUMMARY      | v61T          | -                | 0       | 32.00   |             |
       | BALANCE      |               |                  |         |         | -48.44      |
 
 
 # ############################################################################################################################################
-# Credit notes reduce the code; cut-off toward zero for positive and negative bases; zero lines are dropped
+# Credit notes reduce the code; bases keep their cents, positive and negative; zero lines are dropped
 # ############################################################################################################################################
   @Id:S32216_UStVA_030
   @from:cucumber
-  Scenario: credit notes reduce the net, cents are cut off toward zero and zero-amount lines are not printed
+  Scenario: credit notes reduce the net, the bases keep their cents and zero-amount lines are not printed
 
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
@@ -222,11 +222,11 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | td         | acctSchema      | 2024-01-15 |
     And the tax declaration "td" is built
 
-    # vA: 100.00 - 20.99 = 79.01 -> 79.   vB: credit note only = -20.99 -> -20.   vC: 50.00 - 50.00 = 0 -> no row.
+    # vA: 100.00 - 20.99 = 79.01.   vB: credit note only = -20.99.   vC: 50.00 - 50.00 = 0 -> no row.
     Then the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | net_amt | tax_amt |
-      | SUMMARY      | vA            | 79      | -       |
-      | SUMMARY      | vB            | -20     | -       |
+      | SUMMARY      | vA            | 79.01   | -       |
+      | SUMMARY      | vB            | -20.99  | -       |
     And the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | AmountType | Record_ID | amount |
       | DETAIL       | vA            | N          | invA      | 100    |
@@ -235,11 +235,11 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 
 
 # ############################################################################################################################################
-# Detail list: per code every snapshot row with its source document; detail sums equal the summary before the cut-off
+# Detail list: per code every snapshot row with its source document; detail sums equal the summary
 # ############################################################################################################################################
   @Id:S32216_UStVA_040
   @from:cucumber
-  Scenario: detail rows per code add up to the declared amounts before the cut-off and show the source document
+  Scenario: detail rows per code add up to the declared amounts and show the source document
 
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
@@ -380,7 +380,7 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     # sales invoice tax = credit 190.00; the code is not sales-only, so no sign flip: -190.00; balance = +190.00
     Then the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
-      | SUMMARY      | vMixSales     | -       | -190.00 |             |
+      | SUMMARY      | vMixSales     | 0       | -190.00 |             |
       | BALANCE      |               |         |         | 190.00      |
 
   @Id:S32216_UStVA_065
@@ -417,7 +417,7 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     # the row without IsSOTrx is not a sales row, so the code is not sales-only: no sign flip, -190.00; balance = +190.00
     Then the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
-      | SUMMARY      | vSalesOnly    | -       | -190.00 |             |
+      | SUMMARY      | vSalesOnly    | 0       | -190.00 |             |
       | BALANCE      |               |         |         | 190.00      |
 
 
@@ -654,7 +654,7 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     Then the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
       | SUMMARY      | v81N          | 20      | 3.80    |             |
-      | SUMMARY      | v66T          | -       | 16.44   |             |
+      | SUMMARY      | v66T          | 0       | 16.44   |             |
       | BALANCE      |               |         |         | -12.64      |
 
 
@@ -741,7 +741,7 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     # tax line: debit 19.00; v66T is not a sales-only code, so no sign flip: tax 19.00; balance = -19.00 (refund)
     Then the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
-      | SUMMARY      | v66T          | -       | 19.00   |             |
+      | SUMMARY      | v66T          | 0       | 19.00   |             |
       | BALANCE      |               |         |         | -19.00      |
     # posting date = DateAcct, document date = DateDoc of the journal; the partner comes from the journal line
     And the UStVA report for tax declaration "td" returns:
@@ -782,7 +782,7 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
     # only the generated tax line carries the VAT code (the base line has no SAP_DetermineTaxBase): tax 19.00, balance -19.00
     Then the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | net_amt | tax_amt | balance_amt |
-      | SUMMARY      | v66Tg         | -       | 19.00   |             |
+      | SUMMARY      | v66Tg         | 0       | 19.00   |             |
       | BALANCE      |               |         |         | -19.00      |
     # the generated tax line has no partner of its own; the report takes the one of its base line
     And the UStVA report for tax declaration "td" returns:
@@ -823,10 +823,10 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | td         | acctSchema      | 2024-01-15 |
     And the tax declaration "td" is built
 
-    # net 100.00 has no amount type: own summary row (AmountType U) with the amount in the net column; the tax 19.00 stays on the code's regular row
+    # net 100.00 has no amount type: own summary row (AmountType U) with the amount in the net column; the tax 19.00 stays on the code's regular row, whose net is 0
     Then the UStVA report for tax declaration "td" returns:
       | report_level | C_VAT_Code_ID | AmountType | net_amt | tax_amt | balance_amt |
-      | SUMMARY      | v67N          |            | -       | 19.00   |             |
+      | SUMMARY      | v67N          |            | 0       | 19.00   |             |
       | SUMMARY      | v67N          | U          | 100     | -       |             |
       | BALANCE      |               |            |         |         | -19.00      |
     And the UStVA report for tax declaration "td" returns:
