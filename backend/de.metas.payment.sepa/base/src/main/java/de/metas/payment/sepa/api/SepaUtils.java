@@ -22,19 +22,50 @@
 
 package de.metas.payment.sepa.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccount;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.payment.esr.api.impl.ESRCheckDigitBuilder;
+import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.jetbrains.annotations.Nullable;
 
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 @UtilityClass
 public class SepaUtils
 {
+	/**
+	 * Message for a structured reference that is not a valid QR reference although the payment needs one.
+	 */
+	public static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
+
+	/**
+	 * Swiss QR reference: 26 digits plus one check digit.
+	 */
+	public static final int QR_REFERENCE_LENGTH = 27;
+
+	/**
+	 * Position of the Swiss institution identification (IID, formerly "BC") within a CH/LI IBAN (without spaces).
+	 */
+	private static final int IBAN_IID_START_IDX = 4;
+	private static final int IBAN_IID_END_IDX = 9;
 
 	/**
 	 * coming from the SEPA specifications https://www.sepaforcorporates.com/sepa-implementation/valid-xml-characters-sepa-payments/
@@ -50,6 +81,15 @@ public class SepaUtils
 	 * ({@code "CH"}), which would otherwise produce schema-invalid SEPA XML.
 	 */
 	private static final Pattern ISO_3166_ALPHA2 = Pattern.compile("^[A-Z]{2}$");
+
+	/**
+	 * The IBAN country codes of the countries and territories in the geographical scope of the SEPA payment schemes,
+	 * taken from the column "IBAN" of chapter 5 of "EPC List of Countries in the SEPA Schemes' Geographical Scope", EPC409-09 version 8.0 of 24 December 2025 (European Payments Council).
+	 * Territories without IBAN country code of their own use the one of their country, e.g. FR for Guadeloupe and GB for Jersey.
+	 */
+	private static final ImmutableSet<String> SEPA_SCHEME_IBAN_COUNTRY_CODES = ImmutableSet.of(
+			"AD", "AL", "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GB", "GI", "GR", "HR", "HU", "IE", "IS",
+			"IT", "LI", "LT", "LU", "LV", "MC", "MD", "ME", "MK", "MT", "NL", "NO", "PL", "PT", "RO", "RS", "SE", "SI", "SK", "SM", "VA");
 
 	private final static Map<String, String> SEPA_REPLACEMENT_MAP = new HashMap<>();
 
@@ -148,5 +188,137 @@ public class SepaUtils
 							+ " (C_BP_BankAccount_ID=%d)",
 					country, bankAccountId));
 		}
+	}
+
+	/**
+	 * @return {@code true} if the given IBAN (stripped from spaces) starts with "CH" or "LI", i.e. contains a Swiss institution identification (IID).
+	 */
+	public static boolean isSwissIBAN(@Nullable final String iban)
+	{
+		if (Check.isBlank(iban))
+		{
+			return false;
+		}
+		final String ibanToUse = iban.replaceAll(" ", "");
+		return ibanToUse.startsWith("CH") || ibanToUse.startsWith("LI");
+	}
+
+	/**
+	 * @return {@code true} if the given IBAN's country code (its first two characters, case-insensitive) is one of {@link #SEPA_SCHEME_IBAN_COUNTRY_CODES}
+	 */
+	public static boolean isSepaSchemeCountryIban(@Nullable final String iban)
+	{
+		final String ibanNorm = StringUtils.trimBlankToNull(iban);
+		if (ibanNorm == null || ibanNorm.length() < 2)
+		{
+			return false;
+		}
+		return SEPA_SCHEME_IBAN_COUNTRY_CODES.contains(ibanNorm.substring(0, 2).toUpperCase());
+	}
+
+	/**
+	 * For IBANs that start with "CH" or "LI", extracts the Swiss institution identification (IID, formerly "BC" for "bank code").
+	 *
+	 * @param ibanOwnerInfo describes where the IBAN comes from; only used in the error message if the IBAN is too short
+	 * @return {@code null} if the given {@code iban} is {@code null}, empty or not "CH"/"LI".
+	 * @see <a href="http://www.swissiban.com/de.htm">http://www.swissiban.com/de.htm</a>
+	 */
+	@Nullable
+	public static String extractIIDFromSwissIbanOrNull(@Nullable final String iban, @NonNull final Supplier<String> ibanOwnerInfo)
+	{
+		if (!isSwissIBAN(iban))
+		{
+			return null;
+		}
+
+		final String ibanToUse = iban.replaceAll(" ", "");
+		if (ibanToUse.length() < IBAN_IID_END_IDX)
+		{
+			throw new SepaMarshallerException("Given IBAN " + iban + " for " + ibanOwnerInfo.get() + " is to short. Please verify that it's actually an IBAN at all");
+		}
+		return ibanToUse.substring(IBAN_IID_START_IDX, IBAN_IID_END_IDX);
+	}
+
+	/**
+	 * Swiss QR reference: 26 digits plus one check digit (modulo 10, recursive; the same algorithm as the ESR reference number, see {@link ESRCheckDigitBuilder}).
+	 * <p>
+	 * The check digit is computed with {@link ESRCheckDigitBuilder} directly rather than through {@code IESRImportBL.calculateESRCheckDigit}, which only delegates to it:
+	 * the builder is a stateless pure function, while the {@code ESRImportBL} implementation needs Spring beans and services, which would make this check depend on them.
+	 *
+	 * @return {@code false} if the given reference is not {@link #isQrReferenceShaped(String) shaped like a QR reference}, or has a wrong check digit
+	 */
+	public static boolean isValidQrReference(@Nullable final String reference)
+	{
+		if (!isQrReferenceShaped(reference))
+		{
+			return false;
+		}
+
+		final int expectedCheckDigit = new ESRCheckDigitBuilder().calculateESRCheckDigit(reference.substring(0, QR_REFERENCE_LENGTH - 1));
+		return reference.charAt(QR_REFERENCE_LENGTH - 1) - '0' == expectedCheckDigit;
+	}
+
+	/**
+	 * @return {@code true} if the given text has the format of a QR reference, i.e. exactly 27 ASCII digits {@code 0-9}, regardless of its check digit
+	 */
+	public static boolean isQrReferenceShaped(@Nullable final String reference)
+	{
+		if (reference == null || reference.length() != QR_REFERENCE_LENGTH)
+		{
+			return false;
+		}
+		for (int i = 0; i < QR_REFERENCE_LENGTH; i++)
+		{
+			final char c = reference.charAt(i);
+			if (c < '0' || c > '9')
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * @return the business partner and bank account of the given line, as user-readable (translated) text for error messages
+	 */
+	public static String createInfo(@NonNull final I_SEPA_Export_Line line)
+	{
+		final StringBuilder sb = new StringBuilder();
+		if (line.getC_BPartner_ID() > 0)
+		{
+			sb.append("@C_BPartner_ID@ ");
+			sb.append(getBPartnerNameById(line.getC_BPartner_ID()));
+		}
+		if (line.getC_BP_BankAccount_ID() > 0)
+		{
+			sb.append(" @C_BP_BankAccount_ID@ ");
+			sb.append(line.getC_BP_BankAccount().getDescription());
+		}
+		return Services.get(IMsgBL.class).parseTranslation(InterfaceWrapperHelper.getCtx(line), sb.toString());
+	}
+
+	public static String getBPartnerNameById(final int bpartnerRepoId)
+	{
+		return Services.get(IBPartnerBL.class).getBPartnerName(BPartnerId.ofRepoIdOrNull(bpartnerRepoId));
+	}
+
+	/**
+	 * @return the first of the given values that is not blank, trimmed; {@code null} if all are blank
+	 */
+	@SafeVarargs
+	@Nullable
+	public static String getFirstNonEmpty(@NonNull final Supplier<String>... values)
+	{
+		final String result = CoalesceUtil.firstValidValue(Check::isNotBlank, values);
+		return result != null ? result.trim() : null;
+	}
+
+	/**
+	 * @return the date part (yyyy-MM-dd, in the JVM's default timezone) of the given date, as an XML date without time and timezone
+	 */
+	public static XMLGregorianCalendar toXMLGregorianCalendarDate(@NonNull final DatatypeFactory datatypeFactory, @NonNull final Date date)
+	{
+		final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		return datatypeFactory.newXMLGregorianCalendar(df.format(date));
 	}
 }

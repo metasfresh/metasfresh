@@ -36,6 +36,7 @@ import de.metas.banking.camt53.wrapper.IStatementLineWrapper;
 import de.metas.banking.camt53.wrapper.ITransactionDtlsWrapper;
 import de.metas.banking.camt53.wrapper.v02.BatchBankToCustomerStatementV02Wrapper;
 import de.metas.banking.camt53.wrapper.v04.BatchBankToCustomerStatementV04Wrapper;
+import de.metas.banking.camt53.wrapper.v08.BatchBankToCustomerStatementV08Wrapper;
 import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.banking.importfile.log.BankStatementImportFileLogRepository;
 import de.metas.banking.importfile.log.BankStatementImportFileLoggable;
@@ -591,6 +592,7 @@ public class BankStatementCamt53Service
 			{
 				case V02 -> getAccountStatementsV02(xmlStreamReader);
 				case V04 -> getAccountStatementsV04(xmlStreamReader);
+				case V08 -> getAccountStatementsV08(xmlStreamReader);
 			};
 		}
 		catch (final Exception e)
@@ -700,6 +702,27 @@ public class BankStatementCamt53Service
 
 			return BatchBankToCustomerStatementV04Wrapper
 					.of(docV04.getValue().getBkToCstmrStmt())
+					.getAccountStatementWrappers(bankAccountService, currencyRepository, msgBL);
+		}
+		catch (final JAXBException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	@NonNull
+	private ImmutableList<IAccountStatementWrapper> getAccountStatementsV08(@NonNull final XMLStreamReader xmlStreamReader)
+	{
+		try
+		{
+			final JAXBContext context = JAXBContext.newInstance(de.metas.banking.camt53.jaxb.camt053_001_08.ObjectFactory.class);
+			final Unmarshaller unmarshaller = context.createUnmarshaller();
+
+			@SuppressWarnings("unchecked") final JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_08.Document> docV08 =
+					(JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_08.Document>)unmarshaller.unmarshal(xmlStreamReader);
+
+			return BatchBankToCustomerStatementV08Wrapper
+					.of(docV08.getValue().getBkToCstmrStmt())
 					.getAccountStatementWrappers(bankAccountService, currencyRepository, msgBL);
 		}
 		catch (final JAXBException e)

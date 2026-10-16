@@ -38,6 +38,7 @@ import org.adempiere.banking.model.I_C_BankStatement_Import_File;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 import static org.assertj.core.api.Assertions.*;
@@ -65,7 +66,7 @@ public class C_BankStatement_Camt53_ImportAttachment_StepDef
 		final ImportBankStatementRequest importBankStatementRequest = ImportBankStatementRequest
 				.builder()
 				.camt53File(AttachmentEntryDataResource.builder()
-									.source(fileContent.getBytes())
+									.source(fileContent.getBytes(StandardCharsets.UTF_8)) // the docstring XML declares UTF-8; the platform charset (cp1252 on Windows) corrupts umlauts
 									.filename("does_not_matter.xml")
 									.build())
 				.isMatchAmounts(true)
