@@ -98,8 +98,8 @@ import java.util.Set;
  * <ul>
  *     <li>HEADER: {@code print_date, org_name, org_tax_id, org_vat_id, acctschema_name, period_from, period_to,
  *         documentno (of the declaration), docstatus, is_correction ('Y'/'N'), original_documentno, currency}</li>
- *     <li>SUMMARY: {@code vatcode, description (C_VAT_Code.Description), net_amt (whole euros, cut off toward zero,
- *         NULL when the code has no Net line), tax_amt (NULL when the code has no Tax line)}, both with the display sign applied;
+ *     <li>SUMMARY: {@code vatcode, description (C_VAT_Code.Description), net_amt (with cents,
+ *         0 when the code has no Net line), tax_amt (NULL when the code has no Tax line)}, both with the display sign applied;
  *         a code's lines without amount type get an own row with {@code amount_type = 'U'} ("type unknown"), amount in net_amt</li>
  *     <li>BALANCE: {@code balance_amt = - sum of the declared Tax amounts (debit - credit)}</li>
  *     <li>DETAIL: {@code vatcode, amount_type ('N'/'T', 'U' when the posting has no amount type), description (C_TaxDeclarationAcct.Description), amount (display sign
