@@ -1,5 +1,6 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.frontend_testing.JsonTestId;
@@ -123,16 +124,22 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final boolean isMainFinishedGood = line.getCoProductBOMLineId() == null;
 		final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(isMainFinishedGood);
 
+		// retrieveTUs is pinned to HU_UnitType='TU', so the virtual ('V') packing instruction never comes back from
+		// it; add it here, as WEBUI_ProcessHelper#retrieveHUPIItemProductRecords(includeVirtualItem) does for the
+		// WebUI. It carries a tuPIItemProductId and has no LU parent items, so it belongs to the TU list - hence
+		// switching TU receiving off hides it too.
+		final boolean offerVirtualTUTarget = lineConfig.isAllowReceiveToTU() && lineConfig.isAllowReceiveWithoutPackingItem();
+
 		// A structure excluded by configuration comes out as an empty list WITHOUT an emptyReason: that reason is the
 		// operator-facing no-receiving-Gebinde guidance and must only ever accompany "no target at all".
 		final JsonNewTUTargetList tuTargetList = lineConfig.isAllowReceiveToTU()
-				? getNewTUTargets(tuPIItemProducts, line.getProductId(), adLanguage)
+				? getNewTUTargets(tuPIItemProducts, offerVirtualTUTarget, line.getProductId(), adLanguage)
 				: JsonNewTUTargetList.ofList(ImmutableList.of());
 
 		final JsonNewLUTargetsList newLUTargets;
 		if (lineConfig.isAllowReceiveToLU())
 		{
-			newLUTargets = getNewLUTargets(tuPIItemProducts, line.getProductId(), customerId, adLanguage);
+			newLUTargets = getNewLUTargets(tuPIItemProducts, offerVirtualTUTarget, line.getProductId(), customerId, adLanguage);
 		}
 		else if (lineConfig.isAllowReceiveToTU())
 		{
@@ -208,15 +215,21 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	}
 
 	@NonNull
-	private JsonNewLUTargetsList getNewLUTargets(
+	@VisibleForTesting
+	JsonNewLUTargetsList getNewLUTargets(
 			@NonNull final List<I_M_HU_PI_Item_Product> tuPIItemProducts,
+			final boolean offerVirtualTUTarget,
 			@NonNull final ProductId productId,
 			@Nullable final BPartnerId customerId,
 			@NonNull final String adLanguage)
 	{
 		if (tuPIItemProducts.isEmpty())
 		{
-			return JsonNewLUTargetsList.emptyBecause(noReceivingGebindeReason(productId, adLanguage));
+			// The virtual packing instruction has no LU parent items, so it is never an LU target - but a target
+			// does exist (in the TU list), so the guidance would contradict the screen the operator sees.
+			return offerVirtualTUTarget
+					? JsonNewLUTargetsList.emptyWithoutReason()
+					: JsonNewLUTargetsList.emptyBecause(noReceivingGebindeReason(productId, adLanguage));
 		}
 
 		final ArrayList<JsonNewLUTarget> targets = new ArrayList<>();
@@ -273,19 +286,29 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	}
 
 	@NonNull
-	private JsonNewTUTargetList getNewTUTargets(
+	@VisibleForTesting
+	JsonNewTUTargetList getNewTUTargets(
 			@NonNull final List<I_M_HU_PI_Item_Product> tuPIItemProducts,
+			final boolean offerVirtualTUTarget,
 			@NonNull final ProductId productId,
 			@NonNull final String adLanguage)
 	{
-		if (tuPIItemProducts.isEmpty())
+		if (tuPIItemProducts.isEmpty() && !offerVirtualTUTarget)
 		{
 			return JsonNewTUTargetList.emptyBecause(noReceivingGebindeReason(productId, adLanguage));
 		}
 
-		return JsonNewTUTargetList.ofList(tuPIItemProducts.stream()
+		final ImmutableList.Builder<JsonNewTUTarget> targets = ImmutableList.builder();
+		tuPIItemProducts.stream()
 				.map(MaterialReceiptActivityHandler::toJsonNewTUTarget)
-				.collect(ImmutableList.toImmutableList()));
+				.forEach(targets::add);
+
+		if (offerVirtualTUTarget)
+		{
+			targets.add(toJsonNewTUTarget(huPIItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx())));
+		}
+
+		return JsonNewTUTargetList.ofList(targets.build());
 	}
 
 	/** Localized, actionable guidance shown when no receiving Gebinde can be offered for the product. */

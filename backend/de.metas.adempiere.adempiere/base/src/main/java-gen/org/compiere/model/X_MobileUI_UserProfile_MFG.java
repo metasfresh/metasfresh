@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements I_MobileUI_UserProfile_MFG, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -977602888L;
+	private static final long serialVersionUID = -1875495120L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_MFG (final Properties ctx, final int MobileUI_UserProfile_MFG_ID, @Nullable final String trxName)
@@ -110,6 +110,27 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	public java.lang.String getIsAllowIssuingAnyHU() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsAllowIssuingAnyHU);
+	}
+
+	/** 
+	 * IsAllowReceiveWithoutPackingItem AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISALLOWRECEIVEWITHOUTPACKINGITEM_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISALLOWRECEIVEWITHOUTPACKINGITEM_Yes = "Y";
+	/** No = N */
+	public static final String ISALLOWRECEIVEWITHOUTPACKINGITEM_No = "N";
+	@Override
+	public void setIsAllowReceiveWithoutPackingItem (final @Nullable java.lang.String IsAllowReceiveWithoutPackingItem)
+	{
+		set_Value (COLUMNNAME_IsAllowReceiveWithoutPackingItem, IsAllowReceiveWithoutPackingItem);
+	}
+
+	@Override
+	public java.lang.String getIsAllowReceiveWithoutPackingItem() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsAllowReceiveWithoutPackingItem);
 	}
 
 	/** 
