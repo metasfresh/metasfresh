@@ -146,6 +146,12 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
     And create material receipt
       | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_e1 | pol_e1         | receipt_e1            |
+    # the next goods arrive after the previous receipt's picked quantity is on the shipment schedules
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_e1      | sol_e1                    | N             |
+      | ss_e2      | sol_e2                    | N             |
+      | ss_g       | sol_g                     | N             |
 
     And load C_OrderLines allocated to sales order lines:
       | C_SO_OrderLine_ID | C_PO_OrderLine_ID | OPT.C_Order_ID |
@@ -162,6 +168,14 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
     And create material receipt
       | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_e2 | pol_e2         | receipt_e2            |
+    # the next goods arrive after the previous receipt's picked quantity is on the shipment schedules
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_e1      | sol_e1                    | N             |
+      | ss_e2      | sol_e2                    | N             |
+      | ss_g       | sol_g                     | N             |
+    And create material receipt
+      | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_g  | pol_g          | receipt_g             |
 
     # the drop-ship PO mirrors the sales order line by line
@@ -293,7 +307,23 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
     And create material receipt
       | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_3a | pol_3a         | receipt_3a            |
+    # the next goods arrive after the previous receipt's picked quantity is on the shipment schedules
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_3a      | sol_3a                    | N             |
+      | ss_3b      | sol_3b                    | N             |
+      | ss_3c      | sol_3c                    | N             |
+    And create material receipt
+      | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_3b | pol_3b         | receipt_3b            |
+    # the next goods arrive after the previous receipt's picked quantity is on the shipment schedules
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_3a      | sol_3a                    | N             |
+      | ss_3b      | sol_3b                    | N             |
+      | ss_3c      | sol_3c                    | N             |
+    And create material receipt
+      | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_3c | pol_3c         | receipt_3c            |
     And validate C_OrderLine:
       | C_OrderLine_ID | QtyOrdered | qtydelivered |
@@ -405,6 +435,13 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
     And create material receipt
       | HUList  | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_10a | pol_10a        | receipt_10a           |
+    # the next goods arrive after the previous receipt's picked quantity is on the shipment schedules
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_10a     | sol_10a                   | N             |
+      | ss_10b     | sol_10b                   | N             |
+    And create material receipt
+      | HUList  | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_10b | pol_10b        | receipt_10b           |
     And validate C_OrderLine:
       | C_OrderLine_ID | QtyOrdered | qtydelivered |
