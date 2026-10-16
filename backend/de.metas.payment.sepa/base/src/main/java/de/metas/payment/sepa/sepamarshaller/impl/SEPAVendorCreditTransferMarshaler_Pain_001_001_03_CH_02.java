@@ -14,6 +14,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
@@ -534,7 +535,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final FinancialInstitutionIdentification7CH finInstnId = objectFactory.createFinancialInstitutionIdentification7CH();
 			cdtrAgt.setFinInstnId(finInstnId);
 
-			final String bcFromIBAN = SepaUtils.extractIIDFromSwissIbanOrNull(line.getIBAN(), () -> "line " + SepaUtils.createInfo(line));
+			final String bcFromIBAN = SepaUtils.extractIIDFromSwissIbanOrNull(line.getIBAN(), () -> TranslatableStrings.anyLanguage(SepaUtils.createInfo(line)));
 			if (Check.isNotBlank(bcFromIBAN))
 			{
 				// this is our best bet. Even data in adempiere might be wrong/outdated

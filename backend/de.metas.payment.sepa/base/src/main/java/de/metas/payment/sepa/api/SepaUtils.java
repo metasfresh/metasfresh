@@ -29,6 +29,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.payment.esr.api.impl.ESRCheckDigitBuilder;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
@@ -55,6 +56,17 @@ public class SepaUtils
 	 * Message for a structured reference that is not a valid QR reference although the payment needs one.
 	 */
 	public static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
+
+	/**
+	 * Bank account with an address but without a valid country; parameters: IBAN (or QR-IBAN or account number), C_BP_BankAccount_ID and, for the invalid one, the country.
+	 */
+	private static final AdMessageKey MSG_BankAccountCountryMissing = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_BankAccountCountryMissing");
+	private static final AdMessageKey MSG_BankAccountCountryInvalid = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_BankAccountCountryInvalid");
+
+	/**
+	 * CH/LI IBAN too short to contain the IID; parameters: the IBAN, the record it belongs to
+	 */
+	private static final AdMessageKey MSG_IbanTooShort = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_IbanTooShort");
 
 	/**
 	 * Swiss QR reference: 26 digits plus one check digit.
@@ -171,23 +183,27 @@ public class SepaUtils
 	 */
 	public static void assertValidAccountCountry(@NonNull final BankAccount bankAccount)
 	{
-		final int bankAccountId = bankAccount.getId().getRepoId();
 		final String country = bankAccount.getAccountCountry();
 		if (Check.isBlank(country))
 		{
-			throw new SepaMarshallerException(String.format(
-					"C_BP_BankAccount has an address but no country set; A_Country is required"
-							+ " (C_BP_BankAccount_ID=%d)",
-					bankAccountId));
+			throw new SepaMarshallerException(MSG_BankAccountCountryMissing, getBankAccountNumber(bankAccount), String.valueOf(bankAccount.getId().getRepoId()));
 		}
 		if (!ISO_3166_ALPHA2.matcher(country).matches())
 		{
-			throw new SepaMarshallerException(String.format(
-					"C_BP_BankAccount.A_Country '%s' is not a valid ISO-3166 alpha-2 country code;"
-							+ " expected two uppercase letters"
-							+ " (C_BP_BankAccount_ID=%d)",
-					country, bankAccountId));
+			throw new SepaMarshallerException(MSG_BankAccountCountryInvalid, getBankAccountNumber(bankAccount), String.valueOf(bankAccount.getId().getRepoId()), country);
 		}
+	}
+
+	/**
+	 * @return the IBAN, QR-IBAN or account number of the given bank account, whichever is set first; empty if none is
+	 */
+	private static String getBankAccountNumber(@NonNull final BankAccount bankAccount)
+	{
+		final String number = CoalesceUtil.coalesce(
+				StringUtils.trimBlankToNull(bankAccount.getIBAN()),
+				StringUtils.trimBlankToNull(bankAccount.getQR_IBAN()),
+				StringUtils.trimBlankToNull(bankAccount.getAccountNo()));
+		return number != null ? number : "";
 	}
 
 	/**
@@ -219,12 +235,12 @@ public class SepaUtils
 	/**
 	 * For IBANs that start with "CH" or "LI", extracts the Swiss institution identification (IID, formerly "BC" for "bank code").
 	 *
-	 * @param ibanOwnerInfo describes where the IBAN comes from; only used in the error message if the IBAN is too short
+	 * @param ibanOwnerInfo the (translated) record the IBAN comes from; only used in the error message if the IBAN is too short
 	 * @return {@code null} if the given {@code iban} is {@code null}, empty or not "CH"/"LI".
 	 * @see <a href="http://www.swissiban.com/de.htm">http://www.swissiban.com/de.htm</a>
 	 */
 	@Nullable
-	public static String extractIIDFromSwissIbanOrNull(@Nullable final String iban, @NonNull final Supplier<String> ibanOwnerInfo)
+	public static String extractIIDFromSwissIbanOrNull(@Nullable final String iban, @NonNull final Supplier<ITranslatableString> ibanOwnerInfo)
 	{
 		if (!isSwissIBAN(iban))
 		{
@@ -234,7 +250,7 @@ public class SepaUtils
 		final String ibanToUse = iban.replaceAll(" ", "");
 		if (ibanToUse.length() < IBAN_IID_END_IDX)
 		{
-			throw new SepaMarshallerException("Given IBAN " + iban + " for " + ibanOwnerInfo.get() + " is to short. Please verify that it's actually an IBAN at all");
+			throw new SepaMarshallerException(MSG_IbanTooShort, iban, ibanOwnerInfo.get());
 		}
 		return ibanToUse.substring(IBAN_IID_START_IDX, IBAN_IID_END_IDX);
 	}

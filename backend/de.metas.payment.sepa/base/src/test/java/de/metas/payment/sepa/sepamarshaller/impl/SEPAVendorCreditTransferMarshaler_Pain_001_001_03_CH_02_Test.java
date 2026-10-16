@@ -46,6 +46,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {
+	/**
+	 * In unit tests, a message is rendered as its AD_Message value followed by its parameters (see PlainMsgBL).
+	 */
+	private static final String MSG_BANK_ACCOUNT_COUNTRY_MISSING = "de.metas.payment.sepa.SEPA_Export_BankAccountCountryMissing";
+
 	private BankRepository bankRepository;
 	private BankAccountService bankAccountService;
 	private SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 xmlGenerator;
@@ -559,7 +564,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		assertThatThrownBy(() -> xmlGenerator.createStructuredPstlAdr(bankAccount, partnerLocation))
 				.isInstanceOf(SepaMarshallerException.class)
-				.hasMessageContaining("A_Country is required");
+				.hasMessageContaining(MSG_BANK_ACCOUNT_COUNTRY_MISSING);
 	}
 
 	@Test
@@ -571,7 +576,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		assertThatThrownBy(() -> xmlGenerator.createStructuredPstlAdr(bankAccount, partnerLocation))
 				.isInstanceOf(SepaMarshallerException.class)
-				.hasMessageContaining("'Switzerland' is not a valid ISO-3166 alpha-2 country code");
+				.hasMessageContaining("de.metas.payment.sepa.SEPA_Export_BankAccountCountryInvalid")
+				.hasMessageContaining("Switzerland");
 	}
 
 	@Test
@@ -651,7 +657,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		assertThatThrownBy(() -> xmlGenerator.createUnstructuredPstlAdr(bankAccount, partnerLocation))
 				.isInstanceOf(SepaMarshallerException.class)
-				.hasMessageContaining("A_Country is required");
+				.hasMessageContaining(MSG_BANK_ACCOUNT_COUNTRY_MISSING);
 	}
 
 	@Test

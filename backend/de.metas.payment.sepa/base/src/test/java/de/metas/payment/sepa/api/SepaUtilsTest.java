@@ -1,5 +1,8 @@
 package de.metas.payment.sepa.api;
 
+import de.metas.i18n.TranslatableStrings;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,6 +13,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class SepaUtilsTest
 {
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+	}
+
 	@Test
 	void isSwissIBAN()
 	{
@@ -23,13 +32,16 @@ class SepaUtilsTest
 	@Test
 	void extractIIDFromSwissIbanOrNull()
 	{
-		assertThat(SepaUtils.extractIIDFromSwissIbanOrNull("CH50 2197 7000 0043 3134 6", () -> "line 1")).isEqualTo("21977");
-		assertThat(SepaUtils.extractIIDFromSwissIbanOrNull("NL31INGB0000000044", () -> "line 1")).isNull();
-		assertThat(SepaUtils.extractIIDFromSwissIbanOrNull(null, () -> "line 1")).isNull();
+		assertThat(SepaUtils.extractIIDFromSwissIbanOrNull("CH50 2197 7000 0043 3134 6", () -> TranslatableStrings.constant("line 1"))).isEqualTo("21977");
+		assertThat(SepaUtils.extractIIDFromSwissIbanOrNull("NL31INGB0000000044", () -> TranslatableStrings.constant("line 1"))).isNull();
+		assertThat(SepaUtils.extractIIDFromSwissIbanOrNull(null, () -> TranslatableStrings.constant("line 1"))).isNull();
 
-		assertThatThrownBy(() -> SepaUtils.extractIIDFromSwissIbanOrNull("CH50 21", () -> "line 1"))
+		// in unit tests, a message is rendered as its AD_Message value followed by its parameters (see PlainMsgBL)
+		assertThatThrownBy(() -> SepaUtils.extractIIDFromSwissIbanOrNull("CH50 21", () -> TranslatableStrings.constant("line 1")))
 				.isInstanceOf(SepaMarshallerException.class)
-				.hasMessageContaining("Given IBAN CH50 21 for line 1 is to short");
+				.hasMessageContaining("de.metas.payment.sepa.SEPA_Export_IbanTooShort")
+				.hasMessageContaining("CH50 21")
+				.hasMessageContaining("line 1");
 	}
 
 	@Test
