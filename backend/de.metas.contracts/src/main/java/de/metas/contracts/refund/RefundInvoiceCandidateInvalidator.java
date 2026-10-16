@@ -64,6 +64,13 @@ public class RefundInvoiceCandidateInvalidator
 	/** For a contract that was just completed: flags the sales of its partner in the current open period, after the commit. */
 	public void invalidateCandidatesOfContractAfterCommit(@NonNull final RefundContract refundContract)
 	{
+		if (refundContract.isDeductedAtPayment())
+		{
+			// a contract deducted at payment produces no refund invoice candidates: its bonus is booked at the payment allocation, never invoiced.
+			// It also has no invoice schedule, so the current-period query must not be built for it.
+			return;
+		}
+
 		final IQuery<I_C_Invoice_Candidate> query = refundInvoiceCandidateRepository.createInvoiceCandidatesOfCurrentPeriodQuery(refundContract, SystemTime.asLocalDate());
 
 		trxManager
@@ -94,6 +101,13 @@ public class RefundInvoiceCandidateInvalidator
 		for (final FlatrateTermId contractId : refundContractRepository.getCompletedIdsByConditions(conditionsId))
 		{
 			final RefundContract refundContract = loadOrNull(contractId);
+			if (refundContract != null && refundContract.isDeductedAtPayment())
+			{
+				// a contract deducted at payment has no refund invoice candidates (its bonus is booked at the payment allocation) and no invoice schedule:
+				// skip it entirely, so no current-period query (which needs a schedule) is built and no sales are reassigned
+				continue;
+			}
+
 			if (refundContract != null)
 			{
 				// every period whose refund is not invoiced yet, also of an ended contract: e.g. after a currency correction, its refund candidates are in the new currency
