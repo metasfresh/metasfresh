@@ -1,13 +1,13 @@
 package de.metas.cucumber.stepdefs.accounting;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_VAT_Code_StepDefData;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
-import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.money.MoneyService;
 import de.metas.tax.api.ITaxDAO;
