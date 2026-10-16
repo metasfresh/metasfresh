@@ -1,10 +1,12 @@
 package de.metas.acct.vatcode.impl;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingResponse;
 import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -181,6 +183,45 @@ public class VATCodeDAOTest
 		assertThat(actualVATCode)
 				.as("When AmountType is null, some matching code must be returned")
 				.isIn(codeNet, codeTax);
+	}
+
+	@Test
+	public void test_findIsSOTrxByCode_NetAndTaxRowsOfTheSameCode()
+	{
+		// one sales code with a Net and a Tax row for the same tax, as set up for the tax declaration
+		newVATCodeBuilder().setC_Tax(tax1).setIsSOTrx(true).setValidFrom(date_1970_01_01).setAmountType(VATCodeAmountType.Net).setVATCode(VATCode.of("81", 31)).build();
+		newVATCodeBuilder().setC_Tax(tax1).setIsSOTrx(true).setValidFrom(date_1970_01_01).setAmountType(VATCodeAmountType.Tax).setVATCode(VATCode.of("81", 32)).build();
+
+		assertThat(vatCodeDAO.findIsSOTrxByCode("81", AcctSchemaId.ofRepoId(acctSchemaId), TaxId.ofRepoId(tax1.getC_Tax_ID())))
+				.contains(true);
+	}
+
+	@Test
+	public void test_findIsSOTrxByCode_RowsOfTheSameCodeDisagree()
+	{
+		newVATCodeBuilder().setC_Tax(tax1).setIsSOTrx(true).setValidFrom(date_1970_01_01).setAmountType(VATCodeAmountType.Net).setVATCode(VATCode.of("99", 41)).build();
+		newVATCodeBuilder().setC_Tax(tax1).setIsSOTrx(false).setValidFrom(date_1970_01_01).setAmountType(VATCodeAmountType.Tax).setVATCode(VATCode.of("99", 42)).build();
+
+		assertThat(vatCodeDAO.findIsSOTrxByCode("99", AcctSchemaId.ofRepoId(acctSchemaId), TaxId.ofRepoId(tax1.getC_Tax_ID())))
+				.isEmpty();
+	}
+
+	@Test
+	public void test_findIsSOTrxByCode_SinglePurchaseRow()
+	{
+		newVATCodeBuilder().setC_Tax(tax1).setIsSOTrx(false).setValidFrom(date_1970_01_01).setAmountType(VATCodeAmountType.Tax).setVATCode(VATCode.of("66", 51)).build();
+
+		assertThat(vatCodeDAO.findIsSOTrxByCode("66", AcctSchemaId.ofRepoId(acctSchemaId), TaxId.ofRepoId(tax1.getC_Tax_ID())))
+				.contains(false);
+	}
+
+	@Test
+	public void test_findIsSOTrxByCode_BlankIsSOTrx()
+	{
+		newVATCodeBuilder().setC_Tax(tax1).setIsSOTrx(null).setValidFrom(date_1970_01_01).setAmountType(VATCodeAmountType.Tax).setVATCode(VATCode.of("77", 61)).build();
+
+		assertThat(vatCodeDAO.findIsSOTrxByCode("77", AcctSchemaId.ofRepoId(acctSchemaId), TaxId.ofRepoId(tax1.getC_Tax_ID())))
+				.isEmpty();
 	}
 
 	private void assertVATCode(final VATCode expectedVATCode, final VATCodeMatchingRequest request)
