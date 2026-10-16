@@ -27,11 +27,11 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.effective.BPartnerAddressEffective;
 import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
@@ -68,6 +68,7 @@ import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationService;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
@@ -76,10 +77,10 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
-import de.metas.promotioncode.PromotionCodeId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
@@ -168,6 +169,7 @@ class OLCandOrderFactory
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepository = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
+	private final CompensationGroupCalibrationService calibrationService = SpringContextHolder.instance.getBean(CompensationGroupCalibrationService.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 	private final CustomColumnService customColumnService = SpringContextHolder.instance.getBean(CustomColumnService.class);
 
@@ -801,9 +803,11 @@ class OLCandOrderFactory
 		// deliberately NOT used for generated lines (see below).
 		final ConditionsId flatrateConditionsId = ConditionsId.ofRepoIdOrNull(candidate.getFlatrateConditionsId());
 
+		final GroupTemplate groupTemplate = groupTemplateRepository.getById(groupTemplateId);
 		final Group group = orderGroupsRepository.prepareNewGroup()
-				.groupTemplate(groupTemplateRepository.getById(groupTemplateId))
+				.groupTemplate(groupTemplate)
 				.qty(orderedQty)
+				.calibrations(calibrationService.computeCalibrations(order, groupTemplate))
 				.createGroup(orderId, flatrateConditionsId);
 
 		// Track the created compensation-group header so onCompensationGroupFailure can delete it during rollback.

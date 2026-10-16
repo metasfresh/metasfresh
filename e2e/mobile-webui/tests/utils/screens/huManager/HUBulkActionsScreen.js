@@ -30,19 +30,35 @@ export const HUBulkActionsScreen = {
         // The keyboard-scanner hook's window listener attaches asynchronously (useEffect after
         // the React commit), so a single instantaneous scan can be dropped; re-scan until the
         // screen navigates away — mirroring an operator who scans again when nothing happens.
-        for (let attempt = 1; attempt <= SCAN_TARGET_MAX_ATTEMPTS; attempt++) {
-            await BarcodeScannerComponent.type(targetLocator);
-
-            // Scan accepted → screen navigates away; verify with a bounded wait.
-            try {
-                await containerElement().waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT });
-                break;
-            } catch (e) {
-                if (attempt === SCAN_TARGET_MAX_ATTEMPTS) {
-                    throw e;
-                }
-                // still on the bulk-actions screen — the scan was dropped; scan again
+        // Re-scan only while no move request was sent: once a scan was accepted, a slow move
+        // must not be answered with a second scan (it would fire a second move).
+        let moveRequested = false;
+        const onRequest = (request) => {
+            if (request.method() === 'POST' && request.url().includes('/bulk/move')) {
+                moveRequested = true;
             }
+        };
+        page.on('request', onRequest);
+        try {
+            for (let attempt = 1; attempt <= SCAN_TARGET_MAX_ATTEMPTS; attempt++) {
+                await BarcodeScannerComponent.type(targetLocator);
+
+                // Scan accepted → screen navigates away; verify with a bounded wait.
+                try {
+                    await containerElement().waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT });
+                    break;
+                } catch (e) {
+                    if (moveRequested) {
+                        break; // scan accepted, move still in flight — the home-screen wait below covers it
+                    }
+                    if (attempt === SCAN_TARGET_MAX_ATTEMPTS) {
+                        throw e;
+                    }
+                    // still on the bulk-actions screen and no move sent — the scan was dropped; scan again
+                }
+            }
+        } finally {
+            page.off('request', onRequest);
         }
 
         // The bulk move commits via an async REST round-trip (api.moveBulkHUs -> POST /bulk/move);

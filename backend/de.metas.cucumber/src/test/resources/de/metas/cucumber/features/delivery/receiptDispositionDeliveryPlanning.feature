@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0360_Transport_Extralogistik
 @allure.label.feature:F29050_Delivery_Planning
-@ghActions:run_on_executor5
+@ghActions:run_on_executor10
 Feature: The receipt-disposition delivery-planning window lists what is arriving, planned or not
 
   A procurement dispatcher planning inbound receipts has to read two lists today: the delivery plannings

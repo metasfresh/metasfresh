@@ -18,6 +18,7 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -195,6 +196,7 @@ public interface IProductDAO extends ISingletonService
 	 * @return product category or null if the productId is null
 	 */
 	@Nullable
+	@Contract("!null -> !null")
 	ProductCategoryId retrieveProductCategoryByProductId(@Nullable ProductId productId);
 
 	@Nullable

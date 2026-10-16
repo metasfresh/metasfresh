@@ -66,6 +66,7 @@ public class C_Flatrate_Transition_StepDef
 	 *     <li>{@code TermDurationUnit} (required) — {@code day}/{@code week}/{@code month}/{@code year}</li>
 	 *     <li>{@code OPT.TermOfNotice}, {@code OPT.TermOfNoticeUnit} (optional) — the notice period</li>
 	 *     <li>{@code OPT.ExtensionType} (optional) — {@code EA} (extend all) / {@code EO} (extend one)</li>
+	 *     <li>{@code OPT.IsAutoCompleteNewTerm} (optional, default {@code N}) — whether the contract extension completes the follow-up term</li>
 	 *     <li>{@code OPT.EnsurePeriodsForYears} (optional, comma-separated) — calendar years (e.g. {@code 2022,2023})
 	 *         for which a {@code C_Year} + its 12 standard {@code C_Period} rows are created on the transition's
 	 *         calendar, if not already there — needed for a term whose end date/notice date falls into a year that
@@ -93,6 +94,7 @@ public class C_Flatrate_Transition_StepDef
 			row.getAsOptionalInt(I_C_Flatrate_Transition.COLUMNNAME_TermOfNotice).ifPresent(record::setTermOfNotice);
 			row.getAsOptionalString(I_C_Flatrate_Transition.COLUMNNAME_TermOfNoticeUnit).ifPresent(record::setTermOfNoticeUnit);
 			row.getAsOptionalString(I_C_Flatrate_Transition.COLUMNNAME_ExtensionType).ifPresent(record::setExtensionType);
+			record.setIsAutoCompleteNewTerm(row.getAsOptionalBoolean(I_C_Flatrate_Transition.COLUMNNAME_IsAutoCompleteNewTerm).orElseFalse());
 
 			saveRecord(record);
 

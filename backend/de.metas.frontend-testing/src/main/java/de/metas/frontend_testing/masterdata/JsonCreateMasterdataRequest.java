@@ -2,8 +2,10 @@ package de.metas.frontend_testing.masterdata;
 
 import de.metas.frontend_testing.masterdata.adprocess.JsonSetAdProcessFlagsRequest;
 import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeRequest;
+import de.metas.frontend_testing.masterdata.bpartner.JsonBPGroupRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCalibrationRuleRequest;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.JsonCustomQRCodeFormatRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
@@ -75,12 +77,22 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateRoleRequest> roles;
 
 	@Nullable Map<String, JsonMailboxRequest> mailboxes;
+	/**
+	 * Per-run {@code C_BP_Group}s; created BEFORE {@code bpartners}, which join one via {@code bpGroup}.
+	 */
+	@Nullable Map<String, JsonBPGroupRequest> bpGroups;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;
 	@Nullable Map<String, JsonWarehouseRequest> warehouses;
 	@Nullable Map<String, JsonUOMRequest> uoms;
 	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest> vatIdChecks;
 	@Nullable Map<String, JsonCompensationGroupSchemaRequest> compensationGroupSchemas;
+
+	/**
+	 * {@code C_CompensationGroup_CalibrationRule}s. Created AFTER {@code bpartners}, {@code bpGroups},
+	 * {@code productCategories}, {@code products} and {@code compensationGroupSchemas}, whose identifiers they reference.
+	 */
+	@Nullable Map<String, JsonCalibrationRuleRequest> calibrationRules;
 
 	/**
 	 * Creates a per-run {@code M_Product_Category} and (optionally) an {@code M_AttributeSet} as its attribute set.

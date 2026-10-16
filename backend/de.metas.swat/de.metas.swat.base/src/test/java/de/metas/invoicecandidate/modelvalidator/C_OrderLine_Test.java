@@ -25,6 +25,8 @@ package de.metas.invoicecandidate.modelvalidator;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
+import org.adempiere.ad.dao.IQueryBL;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -166,6 +168,29 @@ class C_OrderLine_Test
 		interceptor.syncInvoiceCandidateGroupReference(orderLine);
 
 		assertThat(soleInvoiceCandidateFor(orderLine).getC_Order_CompensationGroup_ID()).isLessThanOrEqualTo(0);
+	}
+
+	/**
+	 * A regrouped candidate is recomputed by the invoice candidate update process, so that whatever depends on its group
+	 * (e.g. whether it is the discount line of a contract-created group, which is no refund base) follows the new group.
+	 */
+	@Test
+	void regrouping_invalidatesTheMovedCandidate()
+	{
+		final I_C_OrderLine orderLine = newOrderLineWithInvoiceCandidate();
+		final I_C_Invoice_Candidate ic = soleInvoiceCandidateFor(orderLine);
+		ic.setIsGroupCompensationLine(true); // a fixed-amount discount line: the group handler invalidates nothing for it
+		saveRecord(ic);
+		final I_C_Order_CompensationGroup contractGroup = newGroupHeader(orderLine, 1000099);
+
+		orderLine.setC_Order_CompensationGroup_ID(contractGroup.getC_Order_CompensationGroup_ID());
+		saveRecord(orderLine);
+		interceptor.syncInvoiceCandidateGroupReference(orderLine);
+
+		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
+				.create()
+				.listDistinct(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, Integer.class))
+				.contains(ic.getC_Invoice_Candidate_ID());
 	}
 
 	private static void closeInvoiceCandidate(final I_C_OrderLine orderLine)

@@ -21,7 +21,6 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -272,7 +271,7 @@ public class C_OrderLine_Handler_GroupCompensationTest extends AbstractICTestSup
 	@Test
 	public void groupCompensationLine_calculatePriceAndTax_zeroesStaleDiscount()
 	{
-		SpringContextHolder.registerJUnitBean(new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory()));
+		SpringContextHolder.registerJUnitBean(InvoiceCandidateGroupRepository.newInstanceForUnitTesting());
 		// not under test here: give the percent branch's NetAmtInvoiced subtraction a neutral value
 		Mockito.when(mockInvoiceCandBL.computeNetAmtInvoiced(ArgumentMatchers.any())).thenReturn(BigDecimal.ZERO);
 

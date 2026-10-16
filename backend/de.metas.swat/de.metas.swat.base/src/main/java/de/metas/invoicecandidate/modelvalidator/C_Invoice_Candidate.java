@@ -26,7 +26,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.InvoiceRule;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -89,7 +88,7 @@ public class C_Invoice_Candidate
 	{
 		return new C_Invoice_Candidate(
 				new InvoiceCandidateRecordService(),
-				new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory()),
+				InvoiceCandidateGroupRepository.newInstanceForUnitTesting(),
 				AttachmentEntryService.createInstanceForUnitTesting(),
 				DocumentLocationBL.newInstanceForUnitTesting());
 	}

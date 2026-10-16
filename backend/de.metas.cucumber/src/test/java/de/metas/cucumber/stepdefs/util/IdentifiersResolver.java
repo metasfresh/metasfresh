@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.inventory.M_Inventory_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_MFGWarehouse_Report_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
@@ -54,6 +55,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_InOut;
@@ -78,6 +80,7 @@ public class IdentifiersResolver
 	@NonNull private final M_InOut_StepDefData inOutTable;
 	@NonNull private final M_Inventory_StepDefData inventoryTable;
 	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 	@NonNull private final C_DunningDoc_StepDefData dunningDocTable;
 	@NonNull private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
 	@NonNull private final M_CostRevaluation_StepDefData costRevaluationTable;
@@ -135,6 +138,9 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		orderTable.getIdOptional(identifier)
 				.map(OrderId::toRecordRef)
+				.ifPresent(result::add);
+		orderLineTable.getOptional(identifier)
+				.map(orderLine -> TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
 				.ifPresent(result::add);
 		dunningDocTable.getIdOptional(identifier)
 				.map(DunningDocId::toRecordRef)

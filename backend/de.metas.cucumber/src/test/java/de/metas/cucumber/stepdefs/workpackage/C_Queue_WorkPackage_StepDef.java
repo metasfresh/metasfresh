@@ -38,9 +38,11 @@ import de.metas.cucumber.stepdefs.olcand.C_OLCand_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -52,11 +54,16 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
+import org.slf4j.Logger;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,6 +71,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** Step definitions for {@code C_Queue_WorkPackage} — locating, validating, and asserting the state of async workpackages. */
 public class C_Queue_WorkPackage_StepDef
 {
+	private static final Logger logger = LogManager.getLogger(C_Queue_WorkPackage_StepDef.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
@@ -71,12 +80,26 @@ public class C_Queue_WorkPackage_StepDef
 
 	private static final String MAIL_WP_PROCESSOR_INTERNAL_NAME = "MailWorkpackageProcessor";
 
+	/** How long {@link #process_next_workpackage(String)} waits for a run the background queue processor already started. */
+	private static final int QUEUE_PROCESSOR_RUN_TIMEOUT_SEC = 60;
+
+	/**
+	 * {@code LockedAt} value of a claim held by {@link #process_next_workpackage(String)}. Deliberately NOT the current
+	 * {@code SystemTime}: the {@code QueueProcessorPlanner} stamps its claims with {@code SystemTime} and then reads its
+	 * claimed rows back by {@code LockedAt = <that stamp>}; under the frozen cucumber clock a {@code SystemTime} stamp
+	 * here would be read back by the planner as its own claim, and it would run the workpackage anyway.
+	 */
+	private static final Timestamp STEP_CLAIM_LOCKED_AT = Timestamp.from(Instant.EPOCH);
+
 	@NonNull private final C_Queue_Processor_StepDefData processorTable;
 	@NonNull private final C_Queue_WorkPackage_StepDefData workPackageTable;
 	@NonNull private final C_Queue_Element_StepDefData queueElementTable;
 	@NonNull private final C_OLCand_StepDefData candidateTable;
 	@NonNull private final IdentifiersResolver identifiersResolver;
 	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
+
+	/** Workpackages {@link #process_next_workpackage(String)} claimed and has not processed yet. */
+	private final Set<QueueWorkPackageId> claimedWorkPackageIds = new LinkedHashSet<>();
 
 	public C_Queue_WorkPackage_StepDef(
 			@NonNull final C_Queue_Processor_StepDefData processorTable,
@@ -358,19 +381,27 @@ public class C_Queue_WorkPackage_StepDef
 	}
 
 	/**
-	 * Directly instantiates (via the same {@link IWorkpackageProcessorFactory} the async framework itself uses to
-	 * turn a {@code C_Queue_PackageProcessor.Classname} into a runnable instance) and invokes the workpackage
-	 * processor identified by its short name (e.g. {@code CreateMissingShipmentSchedules} for
-	 * {@code CreateMissingShipmentSchedulesWorkpackageProcessor}), processing the OLDEST pending
-	 * {@code C_Queue_WorkPackage} for that processor and marking it {@code Processed=Y} on success — the essential
-	 * effect of {@code WorkpackageProcessorTask} for a single run. (It deliberately does not replicate that task's
-	 * lock/error bookkeeping or lifecycle-event firing; this processor uses no queue-element locks, so for the
-	 * batching assertion only the created records and the {@code Processed} flag matter.)
+	 * Processes the OLDEST pending {@code C_Queue_WorkPackage} of the workpackage processor identified by its short
+	 * name (e.g. {@code CreateMissingShipmentSchedules} for {@code CreateMissingShipmentSchedulesWorkpackageProcessor}),
+	 * exactly once — so a scenario can assert the outcome of one run at a time.
 	 * <p>
-	 * In production, the background {@code QueueProcessorPlanner} thread polls for and runs due workpackages on
-	 * its own schedule; this step calls the processor directly, one workpackage at a time, so a scenario can
-	 * assert the outcome of exactly one run deterministically — waiting for the background poller would make the
-	 * "how many workpackages ran so far" boundary flaky and race-prone.
+	 * In production, the background {@code QueueProcessorPlanner} polls for due workpackages and claims each one by
+	 * setting {@code C_Queue_WorkPackage.LockedAt} (it only polls rows with {@code LockedAt IS NULL}) before handing
+	 * it to the processor; that claim is what keeps two runs off the same workpackage. The planner keeps polling
+	 * while a scenario runs, so this step uses the same claim:
+	 * <ul>
+	 *   <li>it claims the workpackage with a conditional {@code LockedAt} update, then invokes the processor directly
+	 *       (instantiated via the same {@link IWorkpackageProcessorFactory} the async framework uses) and marks the
+	 *       workpackage {@code Processed=Y} and unclaimed — the essential effect of {@code WorkpackageProcessorTask}
+	 *       for a single run;</li>
+	 *   <li>if the planner claimed it first, its run IS the next run: the step waits for that run to finish instead of
+	 *       running the same workpackage a second time (if the planner releases its claim unprocessed, the step claims
+	 *       and runs it itself);</li>
+	 *   <li>afterwards it claims the processor's remaining pending workpackages (e.g. a re-enqueued follow-up), so the
+	 *       planner does not run them between steps; the next invocation of this step processes them. A follow-up the
+	 *       planner already took before this claim is covered by the previous bullet. Claimed workpackages that are
+	 *       still unprocessed when the scenario ends are released by {@link #releaseClaimedWorkPackages()}.</li>
+	 * </ul>
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -379,23 +410,149 @@ public class C_Queue_WorkPackage_StepDef
 	 * </pre>
 	 */
 	@And("^the next (.*) workpackage is processed$")
-	public void process_next_workpackage(@NonNull final String processorShortName)
+	public void process_next_workpackage(@NonNull final String processorShortName) throws InterruptedException
 	{
 		final I_C_Queue_WorkPackage workPackage = retrieveOldestPendingWorkPackage(processorShortName)
 				.orElseThrow(() -> new AdempiereException("No pending C_Queue_WorkPackage found for processor")
 						.appendParametersToMessage()
 						.setParameter("processorShortName", processorShortName));
+		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID());
+
+		if (claimedWorkPackageIds.contains(workPackageId) || tryClaim(workPackageId))
+		{
+			processClaimedWorkPackage(workPackageId, processorShortName);
+		}
+		else
+		{
+			awaitQueueProcessorRunOrProcess(workPackageId, processorShortName);
+		}
+
+		claimPendingWorkPackages(processorShortName);
+	}
+
+	/**
+	 * Unclaims the workpackages {@link #process_next_workpackage(String)} claimed but did not process, so the
+	 * background queue processor can run them after the scenario.
+	 */
+	@After
+	public void releaseClaimedWorkPackages()
+	{
+		if (claimedWorkPackageIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
+				.addInArrayFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, claimedWorkPackageIds)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, false)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, null)
+				.execute();
+		claimedWorkPackageIds.clear();
+	}
+
+	/**
+	 * Claims the workpackage the way the {@code QueueProcessorPlanner} does: sets {@code LockedAt} only if it is still
+	 * {@code NULL}. The conditional update is atomic, so exactly one of this step and the planner wins. See
+	 * {@link #STEP_CLAIM_LOCKED_AT} for the value.
+	 *
+	 * @return {@code true} if this step now holds the claim
+	 */
+	private boolean tryClaim(@NonNull final QueueWorkPackageId workPackageId)
+	{
+		final int claimedCount = queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, workPackageId.getRepoId())
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, null)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, STEP_CLAIM_LOCKED_AT)
+				.execute();
+		if (claimedCount <= 0)
+		{
+			return false;
+		}
+
+		claimedWorkPackageIds.add(workPackageId);
+		return true;
+	}
+
+	private void claimPendingWorkPackages(@NonNull final String processorShortName)
+	{
+		workPackageQueueUtil.pendingWorkPackagesQuery(workPackageQueueUtil.resolvePackageProcessorIds(processorShortName))
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, null)
+				.create()
+				.listIds(QueueWorkPackageId::ofRepoId)
+				.forEach(this::tryClaim);
+	}
+
+	private void processClaimedWorkPackage(@NonNull final QueueWorkPackageId workPackageId, @NonNull final String processorShortName)
+	{
+		final I_C_Queue_WorkPackage workPackage = retrieveWorkPackage(workPackageId);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
 		final IWorkpackageProcessor processor = workpackageProcessorFactory.getWorkpackageProcessor(ctx, workPackage.getC_Queue_PackageProcessor_ID());
 
 		final IWorkpackageProcessor.Result result = processor.processWorkPackage(workPackage, ITrx.TRXNAME_None);
 		assertThat(result)
-				.as("Result of processing C_Queue_WorkPackage_ID=%s with processor %s", workPackage.getC_Queue_WorkPackage_ID(), processorShortName)
+				.as("Result of processing C_Queue_WorkPackage_ID=%s with processor %s", workPackageId.getRepoId(), processorShortName)
 				.isEqualTo(IWorkpackageProcessor.Result.SUCCESS);
 
 		workPackage.setProcessed(true);
+		workPackage.setLockedAt(null);
 		queueDAO.save(workPackage);
+		claimedWorkPackageIds.remove(workPackageId);
+	}
+
+	/**
+	 * Waits until the background queue processor's run of the given workpackage has finished. If the planner releases
+	 * its claim without processing (e.g. no free queue processor, or a retry), this step claims and processes the
+	 * workpackage itself.
+	 */
+	private void awaitQueueProcessorRunOrProcess(@NonNull final QueueWorkPackageId workPackageId, @NonNull final String processorShortName) throws InterruptedException
+	{
+		final AtomicBoolean claimedByStep = new AtomicBoolean(false);
+		StepDefUtil.tryAndWait(QUEUE_PROCESSOR_RUN_TIMEOUT_SEC, 100, () -> {
+			final I_C_Queue_WorkPackage workPackage = retrieveWorkPackage(workPackageId);
+			if (workPackage.isProcessed() || workPackage.isError())
+			{
+				return true;
+			}
+			if (workPackage.getLockedAt() == null && tryClaim(workPackageId))
+			{
+				claimedByStep.set(true);
+				return true;
+			}
+			return false;
+		}, () -> logWorkPackageState(workPackageId, processorShortName));
+
+		if (claimedByStep.get())
+		{
+			processClaimedWorkPackage(workPackageId, processorShortName);
+			return;
+		}
+
+		final I_C_Queue_WorkPackage workPackage = retrieveWorkPackage(workPackageId);
+		assertThat(workPackage.isProcessed())
+				.as("C_Queue_WorkPackage_ID=%s of processor %s was run by the background queue processor; Processed (IsError=%s, ErrorMsg=%s)",
+						workPackageId.getRepoId(), processorShortName, workPackage.isError(), workPackage.getErrorMsg())
+				.isTrue();
+	}
+
+	private void logWorkPackageState(@NonNull final QueueWorkPackageId workPackageId, @NonNull final String processorShortName)
+	{
+		final I_C_Queue_WorkPackage workPackage = retrieveWorkPackage(workPackageId);
+		logger.info("Waiting for the background queue processor's run of C_Queue_WorkPackage_ID={} of processor {}: Processed={}, IsError={}, LockedAt={}, ErrorMsg={}",
+				workPackageId.getRepoId(), processorShortName, workPackage.isProcessed(), workPackage.isError(), workPackage.getLockedAt(), workPackage.getErrorMsg());
+	}
+
+	@NonNull
+	private I_C_Queue_WorkPackage retrieveWorkPackage(@NonNull final QueueWorkPackageId workPackageId)
+	{
+		return queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, workPackageId.getRepoId())
+				.create()
+				.firstOnlyNotNull(I_C_Queue_WorkPackage.class);
 	}
 
 	/**

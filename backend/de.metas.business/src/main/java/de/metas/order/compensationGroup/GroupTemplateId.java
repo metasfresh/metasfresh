@@ -7,6 +7,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -65,5 +66,10 @@ public class GroupTemplateId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(@Nullable final GroupTemplateId id1, @Nullable final GroupTemplateId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

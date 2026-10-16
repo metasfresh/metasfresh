@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0226_Costing
 @allure.label.feature:F1500_Costing
-@ghActions:run_on_executor6
+@ghActions:run_on_executor9
 Feature: Co-product valuation via cost-distribution percent
 ## F1500: Costing
 

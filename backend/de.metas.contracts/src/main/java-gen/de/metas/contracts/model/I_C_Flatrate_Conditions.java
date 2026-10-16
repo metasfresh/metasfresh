@@ -326,6 +326,7 @@ public interface I_C_Flatrate_Conditions
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -335,6 +336,7 @@ public interface I_C_Flatrate_Conditions
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -347,7 +349,7 @@ public interface I_C_Flatrate_Conditions
 
 	/**
 	 * Set Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -357,7 +359,7 @@ public interface I_C_Flatrate_Conditions
 
 	/**
 	 * Get Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -727,6 +729,7 @@ public interface I_C_Flatrate_Conditions
 
 	/**
 	 * Set Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -736,6 +739,7 @@ public interface I_C_Flatrate_Conditions
 
 	/**
 	 * Get Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -766,6 +770,39 @@ public interface I_C_Flatrate_Conditions
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_OnFlatrateTermExtend = new ModelColumn<>(I_C_Flatrate_Conditions.class, "OnFlatrateTermExtend", null);
 	String COLUMNNAME_OnFlatrateTermExtend = "OnFlatrateTermExtend";
+
+	/**
+	 * Set Pass on service fee of.
+	 * Applies to purchase orders with drop shipment only. It has no effect on sales orders.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setPassOn_InvoiceProcessingServiceCompany_ID (int PassOn_InvoiceProcessingServiceCompany_ID);
+
+	/**
+	 * Get Pass on service fee of.
+	 * Applies to purchase orders with drop shipment only. It has no effect on sales orders.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getPassOn_InvoiceProcessingServiceCompany_ID();
+
+	@Deprecated
+	@Nullable org.compiere.model.I_InvoiceProcessingServiceCompany getPassOn_InvoiceProcessingServiceCompany();
+
+	@Deprecated
+	void setPassOn_InvoiceProcessingServiceCompany(@Nullable org.compiere.model.I_InvoiceProcessingServiceCompany PassOn_InvoiceProcessingServiceCompany);
+
+	ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_InvoiceProcessingServiceCompany> COLUMN_PassOn_InvoiceProcessingServiceCompany_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "PassOn_InvoiceProcessingServiceCompany_ID", org.compiere.model.I_InvoiceProcessingServiceCompany.class);
+	String COLUMNNAME_PassOn_InvoiceProcessingServiceCompany_ID = "PassOn_InvoiceProcessingServiceCompany_ID";
 
 	/**
 	 * Set Print Name.

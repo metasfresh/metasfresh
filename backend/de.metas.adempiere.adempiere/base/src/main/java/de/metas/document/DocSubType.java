@@ -66,6 +66,7 @@ public enum DocSubType implements ReferenceListAwareEnum
 	CreditorPostCharge(X_C_DocType.DOCSUBTYPE_KreditorenNachbelastung),
 	LICENSE_COMMISSION (X_C_DocType.DOCSUBTYPE_LS),
 	PaymentServiceProviderInvoice(X_C_DocType.DOCSUBTYPE_PaymentServiceProviderInvoice),
+	PaymentBonusCreditMemo(X_C_DocType.DOCSUBTYPE_PaymentBonusCreditMemo),
 	CallOrder(X_C_DocType.DOCSUBTYPE_CallOrder),
 	OrderOnCommission(X_C_DocType.DOCSUBTYPE_OrderOnCommission),
 	DeliveryInstruction(X_C_DocType.DOCSUBTYPE_DeliveryInstruction),

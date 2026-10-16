@@ -29,6 +29,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
@@ -115,6 +116,8 @@ public class InvoiceDocumentReportAdvisor implements DocumentReportAdvisor
 				.docTypeId(docTypeId)
 				.language(language)
 				.poReference(invoice.getPOReference())
+				// a payment-bonus credit memo only settles the bonus the customer already deducted at payment; it is archived, but not auto-printed
+				.suppressAutoPrint(PaymentBonusCreditMemoService.isPaymentBonusCreditMemo(docType))
 				.build();
 	}
 

@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.bpartner;
 
+import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.order.InvoiceRule;
 import lombok.Builder;
@@ -17,6 +18,12 @@ public class JsonCreateBPartnerRequest
 	// Allow custom bpartner code and name (if null, use timestamp-based generation)
 	@Nullable String bpartnerCode;
 	@Nullable String name;
+
+	/**
+	 * The {@code C_BP_Group} (map key of the {@code bpGroups} section) this partner belongs to.
+	 * If null, the "Standard" group is used.
+	 */
+	@Nullable Identifier bpGroup;
 
 	@Nullable String gln;
 	@Nullable Map<String, Location> locations;

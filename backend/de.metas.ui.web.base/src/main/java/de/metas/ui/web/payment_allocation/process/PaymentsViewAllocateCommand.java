@@ -24,7 +24,6 @@ package de.metas.ui.web.payment_allocation.process;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.WriteOffType;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
@@ -33,14 +32,18 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuild
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingContext;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfig;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -48,23 +51,31 @@ import de.metas.money.MoneyService;
 import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
+import org.adempiere.exceptions.UserMessagePresentation;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PaymentsViewAllocateCommand
 {
+	private static final AdMessageKey MSG_NO_CONFIG_FOR_INVOICE_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner");
+	private static final AdMessageKey MSG_NO_CONFIG_FOR_PAYMENT_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForPaymentPartner");
+	@VisibleForTesting
+	static final AdMessageKey MSG_PAYMENT_BONUS_ABOVE_WHAT_THE_CUSTOMER_PAYS = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusAboveOpenAmt");
+	@VisibleForTesting
+	static final AdMessageKey MSG_PAYMENT_BONUS_NOTHING_TO_DEDUCT = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentBonusNothingToDeduct");
+
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
+	private final PaymentBonusCreditMemoService paymentBonusCreditMemoService;
 
 	private final ImmutableList<PaymentRow> paymentRows;
 	private final ImmutableList<InvoiceRow> invoiceRows;
@@ -76,6 +87,7 @@ public class PaymentsViewAllocateCommand
 	private PaymentsViewAllocateCommand(
 			@NonNull final MoneyService moneyService,
 			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService,
+			@NonNull final PaymentBonusCreditMemoService paymentBonusCreditMemoService,
 			//
 			@NonNull @Singular final ImmutableList<PaymentRow> paymentRows,
 			@NonNull @Singular final ImmutableList<InvoiceRow> invoiceRows,
@@ -85,6 +97,7 @@ public class PaymentsViewAllocateCommand
 	{
 		this.moneyService = moneyService;
 		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
+		this.paymentBonusCreditMemoService = paymentBonusCreditMemoService;
 
 		this.paymentRows = paymentRows;
 		this.invoiceRows = invoiceRows;
@@ -137,6 +150,7 @@ public class PaymentsViewAllocateCommand
 
 		return PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				.paymentBonusCreditMemoService(paymentBonusCreditMemoService)
 				//
 				.defaultDateTrx(defaultDateTrx)
 				.paymentDocuments(paymentDocuments)
@@ -178,7 +192,14 @@ public class PaymentsViewAllocateCommand
 									.feeAmountIncludingTax(serviceFeeAmt)
 									.serviceCompanyBPartnerId(invoiceProcessingContext.getServiceCompanyId())
 									.build())
-					.orElseThrow(() -> new AdempiereException("Cannot find Invoice Processing Service Company for the selected Payment"));
+					.orElseThrow(() -> new AdempiereException(
+							MSG_NO_CONFIG_FOR_PAYMENT_PARTNER,
+							row.getDocumentNo(),
+							paymentDocuments.stream().map(PaymentDocument::getDocumentNo).collect(Collectors.joining(", ")),
+							Services.get(IBPartnerBL.class).getBPartnerName(invoiceProcessingContext.getServiceCompanyId()))
+							.markAsUserValidationError()
+							.setParameter("C_Invoice_ID", InvoiceId.toRepoId(row.getInvoiceId()))
+							.setParameter("C_BPartner_ID", BPartnerId.toRepoId(invoiceProcessingContext.getServiceCompanyId())));
 		}
 		else
 		{
@@ -196,7 +217,19 @@ public class PaymentsViewAllocateCommand
 				: Money.zero(currencyId);
 		final WriteOffType writeOffType = bankFeeAmt.signum() != 0 ? WriteOffType.BankFee : WriteOffType.WriteOff;
 
-		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt);
+		// Bonus that the customer deducted when paying: the amount in the row wins over the computed one
+		@Nullable final PaymentBonusDeduction paymentBonusDeduction = extractPaymentBonusDeduction(row, moneyService);
+		final Money paymentBonus = paymentBonusDeduction != null
+				? paymentBonusDeduction.getGrossAmount()
+				: Money.zero(currencyId);
+		// the customer cannot deduct more than it pays: the open amount minus the discount and the fees
+		final Money maxPaymentBonus = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt);
+		if (paymentBonusDeduction != null && paymentBonus.isGreaterThan(maxPaymentBonus))
+		{
+			throw new PaymentBonusAboveWhatTheCustomerPaysException(MSG_PAYMENT_BONUS_ABOVE_WHAT_THE_CUSTOMER_PAYS, moneyService.toAmount(paymentBonus), moneyService.toAmount(maxPaymentBonus), row.getDocumentNo());
+		}
+
+		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt).subtract(paymentBonus);
 
 		final SOTrx soTrx = row.getDocBaseType().getSoTrx();
 
@@ -212,9 +245,11 @@ public class PaymentsViewAllocateCommand
 										   .discountAmt(discountAmt)
 										   .writeOffAmt(bankFeeAmt)
 										   .invoiceProcessingFee(invoiceProcessingFee)
+										   .paymentBonus(paymentBonus)
 										   .build()
 										   .convertToRealAmounts(row.getInvoiceAmtMultiplier()))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+				.paymentBonusDeduction(paymentBonusDeduction)
 				.date(row.getDateInvoiced())
 				.dateAcct(row.getDateAcct())
 				.clientAndOrgId(row.getClientAndOrgId())
@@ -223,14 +258,24 @@ public class PaymentsViewAllocateCommand
 				.build();
 	}
 
-	@Value
-	@Builder
-	private static class InvoiceProcessingContext
+	@Nullable
+	private static PaymentBonusDeduction extractPaymentBonusDeduction(@NonNull final InvoiceRow row, @NonNull final MoneyService moneyService)
 	{
-		@NonNull
-		BPartnerId serviceCompanyId;
-		@NonNull
-		ZonedDateTime paymentDate;
+		@Nullable final Amount paymentBonusAmt = row.getPaymentBonusAmt();
+		if (paymentBonusAmt == null || paymentBonusAmt.isZero())
+		{
+			return null;
+		}
+
+		final PaymentBonusDeduction computedDeduction = row.getPaymentBonusDeduction();
+		if (computedDeduction == null)
+		{
+			throw new AdempiereException(MSG_PAYMENT_BONUS_NOTHING_TO_DEDUCT, row.getDocumentNo())
+					.markAsUserValidationError()
+					.setUserMessagePresentation(UserMessagePresentation.ACKNOWLEDGE_DIALOG) // a message to the user, not a "Server error" toast
+					.setParameter("C_Invoice_ID", InvoiceId.toRepoId(row.getInvoiceId()));
+		}
+		return computedDeduction.withGrossAmount(moneyService.toMoney(paymentBonusAmt));
 	}
 
 	private static InvoiceProcessingContext extractInvoiceProcessingContext(
@@ -238,41 +283,17 @@ public class PaymentsViewAllocateCommand
 			@NonNull final List<PaymentDocument> paymentDocuments,
 			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService)
 	{
-		if (paymentDocuments.isEmpty())
-		{
-			final @NonNull ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
-			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(row.getBPartnerId(), evaluationDate)
-					.orElseThrow(() -> new AdempiereException("Invoice with Service Fees: no config found for invoice-C_BPartner_ID=" + BPartnerId.toRepoId(row.getBPartnerId()))
-							.appendParametersToMessage()
-							.setParameter("C_Invoice_ID", InvoiceId.toRepoId(row.getInvoiceId()))
-							.setParameter("C_Invoice.DocumentNo", row.getDocumentNo())
+		final ImmutableList<InvoiceProcessingContext> paymentContexts = paymentDocuments.stream()
+				.map(PaymentDocument::toInvoiceProcessingContext)
+				.collect(ImmutableList.toImmutableList());
 
-					);
-
-			return InvoiceProcessingContext.builder()
-					.serviceCompanyId(config.getServiceCompanyBPartnerId())
-					.paymentDate(evaluationDate)
-					.build();
-		}
-		else
-		{
-			final ImmutableSet<InvoiceProcessingContext> contexts = paymentDocuments.stream()
-					.map(PaymentsViewAllocateCommand::extractInvoiceProcessingContext)
-					.collect(ImmutableSet.toImmutableSet());
-			if (contexts.size() != 1)
-			{
-				throw new AdempiereException("Invoice with Service Fees: Please select exactly 1 Payment at a time for Allocation.");
-			}
-			return contexts.iterator().next();
-		}
-	}
-
-	private static InvoiceProcessingContext extractInvoiceProcessingContext(@NonNull final PaymentDocument paymentDocument)
-	{
-		return InvoiceProcessingContext.builder()
-				.serviceCompanyId(paymentDocument.getBpartnerId())
-				.paymentDate(TimeUtil.asZonedDateTime(paymentDocument.getDateTrx()))
-				.build();
+		return invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
+				row.getBPartnerId(),
+				paymentContexts,
+				() -> new AdempiereException(MSG_NO_CONFIG_FOR_INVOICE_PARTNER, row.getDocumentNo(), row.getBPartnerDisplayName())
+						.markAsUserValidationError()
+						.setParameter("C_Invoice_ID", InvoiceId.toRepoId(row.getInvoiceId()))
+						.setParameter("C_BPartner_ID", BPartnerId.toRepoId(row.getBPartnerId())));
 	}
 
 	private PaymentDocument toPaymentDocument(@NonNull final PaymentRow row)

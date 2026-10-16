@@ -62,4 +62,12 @@ public interface IInvoiceCandidateListener
 	{
 		// nothing
 	}
+
+	/**
+	 * Method called after the invoice candidate update run has recomputed and saved an invoice candidate (processed or not), also if nothing changed.
+	 */
+	default void onAfterUpdated(final I_C_Invoice_Candidate candidate)
+	{
+		// nothing
+	}
 }

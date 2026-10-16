@@ -16,6 +16,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_OrderLine;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /*
@@ -54,14 +55,12 @@ public class GroupCompensationLineCreateRequestFactory
 		final I_M_Product product = productBL.getById(productId);
 		final I_C_UOM uom = productBL.getStockUOM(product);
 
-		final GroupCompensationType type = templateLine.getCompensationType() != null
-				? templateLine.getCompensationType()
-				: extractGroupCompensationType(product);
+		final GroupCompensationType type = resolveGroupCompensationType(templateLine.getCompensationType(), product);
 
 		final GroupCompensationAmtType amtType = extractGroupCompensationAmtType(product);
 
 		final Percent percentage;
-		if (GroupCompensationType.Discount.equals(type) && GroupCompensationAmtType.Percent.equals(amtType))
+		if (isPercentDiscount(type, amtType))
 		{
 			percentage = calculateDefaultDiscountPercentage(templateLine, group);
 		}
@@ -80,17 +79,39 @@ public class GroupCompensationLineCreateRequestFactory
 				.price(BigDecimal.ZERO)
 				.groupTemplateLineId(templateLine.getId())
 				.appliesToProductCategoryId(templateLine.getAppliesToProductCategoryId())
+				.packingMaterialProductCategoryId(templateLine.getPackingMaterialProductCategoryId())
+				.isOwnBase(templateLine.isOwnBase())
+				.description(templateLine.getDescription())
 				.build();
 	}
 
-	private static GroupCompensationType extractGroupCompensationType(final I_M_Product product)
+	/** @return whether the product's own compensation type and amount type make it a percentage discount */
+	public boolean isPercentDiscountProduct(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productBL.getById(productId);
+		return isPercentDiscount(extractGroupCompensationType(product), extractGroupCompensationAmtType(product));
+	}
+
+	public static boolean isPercentDiscount(@NonNull final GroupCompensationType type, @NonNull final GroupCompensationAmtType amtType)
+	{
+		return type == GroupCompensationType.Discount && amtType == GroupCompensationAmtType.Percent;
+	}
+
+	private static GroupCompensationType resolveGroupCompensationType(
+			@Nullable final GroupCompensationType templateType,
+			@NonNull final I_M_Product product)
+	{
+		return templateType != null ? templateType : extractGroupCompensationType(product);
+	}
+
+	private static GroupCompensationType extractGroupCompensationType(@NonNull final I_M_Product product)
 	{
 		return GroupCompensationType.ofAD_Ref_List_Value(
 				StringUtils.trimBlankToOptional(product.getGroupCompensationType())
 						.orElse(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
 	}
 
-	private static GroupCompensationAmtType extractGroupCompensationAmtType(final I_M_Product product)
+	private static GroupCompensationAmtType extractGroupCompensationAmtType(@NonNull final I_M_Product product)
 	{
 		return GroupCompensationAmtType.ofAD_Ref_List_Value(
 				StringUtils.trimBlankToOptional(product.getGroupCompensationAmtType())

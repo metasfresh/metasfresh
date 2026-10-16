@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0105_Picking
 @allure.label.feature:F00200_Automatic_Picking
-@ghActions:run_on_executor5
+@ghActions:run_on_executor10
 Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservations
 ## Validates that when a single order with multiple lines for the same product
 ## creates multiple shipment schedules processed in one workpackage,

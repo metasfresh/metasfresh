@@ -2,7 +2,7 @@
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00350_EDI
 @F00350
-@ghActions:run_on_executor5
+@ghActions:run_on_executor1
 Feature: desadv and invoic
 ## F00350: EDI
 

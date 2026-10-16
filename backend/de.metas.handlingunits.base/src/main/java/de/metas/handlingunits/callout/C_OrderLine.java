@@ -49,8 +49,7 @@ public class C_OrderLine
 
 	private void setQtuCUFromQtyTU(final IHUPackingAware packingAware)
 	{
-		final int qtyPacks = packingAware.getQtyTU().intValue();
-		packingAwareBL.setQtyCUFromQtyTU(packingAware, qtyPacks);
+		packingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyLU })

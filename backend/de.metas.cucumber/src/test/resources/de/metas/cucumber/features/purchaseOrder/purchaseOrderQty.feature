@@ -2,7 +2,7 @@
 @allure.label.epic:E0140_Purchasing
 @allure.label.feature:F00600_Purchase_Order
 @F00600
-@ghActions:run_on_executor7
+@ghActions:run_on_executor9
 Feature: Purchase order
 ## F00600: Purchase Order
 
