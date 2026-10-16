@@ -153,6 +153,47 @@ public class InvoiceProcessingServiceCompanyService
 				.build());
 	}
 
+	/**
+	 * Asserts that a sales invoice paid by an invoice processing service company belongs to one of that service company's own customers.
+	 * Mirrors the refusal in {@link #createFeeCalculationForPayment(InvoiceProcessingFeeWithPrecalculatedAmountRequest)}, but is meant for the
+	 * no-service-fee path, so it takes the invoice's documentNo from the caller rather than looking it up (the caller's invoice may not be persisted).
+	 * <p>
+	 * Does nothing when the paying partner is not a service company, or when the service company pays its own invoice.
+	 *
+	 * @throws AdempiereException (user validation error) if the invoice's customer is not assigned to the paying service company
+	 */
+	public void assertSalesInvoiceCustomerAssignedToPayingServiceCompany(
+			@NonNull final BPartnerId invoiceCustomerId,
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final String invoiceDocumentNo,
+			@NonNull final BPartnerId payingServiceCompanyBPartnerId,
+			@NonNull final ZonedDateTime paymentDate)
+	{
+		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByPaymentBPartnerAndValidFromDate(payingServiceCompanyBPartnerId, paymentDate).orElse(null);
+		if (config == null)
+		{
+			return; // the paying partner is not an invoice processing service company
+		}
+
+		if (BPartnerId.equals(invoiceCustomerId, payingServiceCompanyBPartnerId))
+		{
+			return; // the service company pays its own invoice
+		}
+
+		if (!config.isBPartnerDetailsActive(invoiceCustomerId))
+		{
+			throw new AdempiereException(
+					MSG_CUSTOMER_NOT_ASSIGNED_TO_SERVICE_COMPANY,
+					invoiceDocumentNo,
+					bpartnerBL.getBPartnerName(payingServiceCompanyBPartnerId),
+					bpartnerBL.getBPartnerName(invoiceCustomerId))
+					.markAsUserValidationError()
+					.setParameter("C_Invoice_ID", invoiceId.getRepoId())
+					.setParameter("C_BPartner_ID", payingServiceCompanyBPartnerId.getRepoId()) // like the sibling service fee errors: the service company
+					.setParameter("Customer_BPartner_ID", invoiceCustomerId.getRepoId());
+		}
+	}
+
 	private String getDocumentNo(@NonNull final InvoiceId invoiceId)
 	{
 		return invoiceDAO.getDocumentNosByInvoiceIds(ImmutableSet.of(invoiceId)).get(invoiceId);

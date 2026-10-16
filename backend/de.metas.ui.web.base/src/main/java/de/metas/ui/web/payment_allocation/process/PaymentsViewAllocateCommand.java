@@ -204,6 +204,19 @@ public class PaymentsViewAllocateCommand
 		else
 		{
 			invoiceProcessingFeeCalculation = null;
+
+			// #28900: a payment of an invoice processing service company may only be allocated to a SALES invoice of the service
+			// company's own customers, also when NO service fee is entered. The with-fee path (above) already refuses this; mirror it here.
+			if (row.getDocBaseType().getSoTrx().isSales() && !paymentDocuments.isEmpty())
+			{
+				final InvoiceProcessingContext invoiceProcessingContext = extractInvoiceProcessingContext(row, paymentDocuments, invoiceProcessingServiceCompanyService);
+				invoiceProcessingServiceCompanyService.assertSalesInvoiceCustomerAssignedToPayingServiceCompany(
+						row.getBPartnerId(),
+						row.getInvoiceId(),
+						row.getDocumentNo(),
+						invoiceProcessingContext.getServiceCompanyId(),
+						invoiceProcessingContext.getPaymentDate());
+			}
 		}
 
 		final Money invoiceProcessingFee = invoiceProcessingFeeCalculation != null

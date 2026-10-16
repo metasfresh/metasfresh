@@ -40,7 +40,6 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
-import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceAmtMultiplier;
@@ -98,6 +97,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -254,8 +254,11 @@ public class PaymentsViewAllocateCommandTest
 			@Nullable final String serviceFeeAmt,
 			@Nullable final String paymentBonusAmt,
 			@Nullable final PaymentBonusDeduction paymentBonusDeduction,
-			@Nullable final String dateInvoiced)
+			@Nullable final String dateInvoiced,
+			@Nullable final BPartnerId bpartnerId)
 	{
+		final BPartnerId bpartnerIdEffective = bpartnerId != null ? bpartnerId : this.bpartnerId;
+
 		final InvoiceAmtMultiplier invoiceAmtMultiplier = InvoiceAmtMultiplier.builder()
 				.soTrx(docBaseType.getSoTrx())
 				.isCreditMemo(docBaseType.isCreditMemo())
@@ -291,7 +294,7 @@ public class PaymentsViewAllocateCommandTest
 				.documentNo("invoiceNo_" + invoiceId.getRepoId())
 				.dateInvoiced(dateInvoicedEffective)
 				.dateAcct(dateInvoicedEffective)
-				.bpartner(IntegerLookupValue.of(bpartnerId.getRepoId(), "BPartner"))
+				.bpartner(IntegerLookupValue.of(bpartnerIdEffective.getRepoId(), "BPartner"))
 				.docBaseType(docBaseType)
 				.invoiceAmtMultiplier(invoiceAmtMultiplier)
 				.grandTotal(openAmt)
@@ -753,6 +756,162 @@ public class PaymentsViewAllocateCommandTest
 								.dateAcct(invoiceRow.getDateAcct())
 								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
 								.build());
+			}
+		}
+	
+		/**
+		 * A payment of an invoice processing service company may only be allocated to invoices of the service company's own customers,
+		 * also when no service fee is entered in the invoice row.
+		 */
+		@Nested
+		public class ServiceCompanyPaymentWithoutServiceFee
+		{
+			private BPartnerId serviceCompanyId;
+			private BPartnerId notAssignedCustomerId;
+
+			@BeforeEach
+			public void beforeEach()
+			{
+				serviceInvoiceDocTypeId = DocTypeId.ofRepoId(222);
+				serviceFeeProductId = ProductId.ofRepoId(333);
+				serviceCompanyId = createNamedBPartner("Service Company");
+				notAssignedCustomerId = createNamedBPartner("Customer Not Assigned");
+
+				processingServiceCompanyConfig()
+						.customerId(bpartnerId)
+						.validFrom(LocalDate.parse("2020-02-11").atStartOfDay(ZoneId.of("UTC+5")))
+						.feePercentageOfGrandTotal("1")
+						.serviceCompanyBPartnerId(serviceCompanyId)
+						.build();
+			}
+
+			private BPartnerId createNamedBPartner(@NonNull final String name)
+			{
+				final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+				bpartnerRecord.setName(name);
+				saveRecord(bpartnerRecord);
+				return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
+			}
+
+			private PayableDocument toPayableDocument(@NonNull final InvoiceRow invoiceRow, @NonNull final PaymentRow paymentRow)
+			{
+				return PaymentsViewAllocateCommand.toPayableDocument(
+						invoiceRow,
+						ImmutableList.of(PaymentsViewAllocateCommand.toPaymentDocument(paymentRow, moneyService)),
+						moneyService,
+						invoiceProcessingServiceCompanyService);
+			}
+
+			private void assertRefusedAsNotAssigned(@NonNull final Throwable ex, @NonNull final InvoiceRow invoiceRow)
+			{
+				assertThat(ex).isInstanceOf(AdempiereException.class);
+				final AdempiereException adempiereException = (AdempiereException)ex;
+				assertThat(adempiereException.isUserValidationError()).isTrue();
+				assertThat(adempiereException.getErrorCode()).isEqualTo(AdMessageKey.of("InvoiceProcessingServiceCompany_CustomerNotAssignedToServiceCompany").toAD_Message());
+				assertThat(adempiereException.getMessage())
+						.contains(invoiceRow.getDocumentNo())
+						.contains("Service Company")
+						.contains("Customer Not Assigned");
+			}
+
+			@ParameterizedTest
+			@ValueSource(strings = { "2020-01-01", "2020-08-01" }) // before and after the config's ValidFrom: like with a service fee, the service company's config counts
+			public void salesInvoiceOfCustomerNotAssigned_isRefused(final String paymentDateStr)
+			{
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).bpartnerId(notAssignedCustomerId).build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerId(serviceCompanyId).paymentDateTrx(paymentDateStr).build();
+
+				assertThatThrownBy(() -> toPayableDocument(invoiceRow, paymentRow))
+						.satisfies(ex -> assertRefusedAsNotAssigned(ex, invoiceRow));
+			}
+
+			@Test
+			public void salesCreditMemoOfCustomerNotAssigned_isRefused()
+			{
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerCreditMemo).openAmt(euro(-100)).bpartnerId(notAssignedCustomerId).build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.OUTBOUND).payAmt(euro(100)).bpartnerId(serviceCompanyId).paymentDateTrx("2020-08-01").build();
+
+				assertThatThrownBy(() -> toPayableDocument(invoiceRow, paymentRow))
+						.satisfies(ex -> assertRefusedAsNotAssigned(ex, invoiceRow));
+			}
+
+			@Test
+			public void salesInvoiceOfAssignedCustomer_isAllocatedWithoutFee()
+			{
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerId(serviceCompanyId).paymentDateTrx("2020-08-01").build();
+
+				final PayableDocument payableDocument = toPayableDocument(invoiceRow, paymentRow);
+
+				assertThat(payableDocument.getInvoiceProcessingFeeCalculation()).isNull();
+				assertThat(payableDocument.getAmountsToAllocate())
+						.usingRecursiveComparison()
+						.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
+			}
+
+			@Test
+			public void salesInvoiceOfTheServiceCompanyItself_isNotRefused()
+			{
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).bpartnerId(serviceCompanyId).build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerId(serviceCompanyId).paymentDateTrx("2020-08-01").build();
+
+				final PayableDocument payableDocument = toPayableDocument(invoiceRow, paymentRow);
+
+				assertThat(payableDocument.getAmountsToAllocate())
+						.usingRecursiveComparison()
+						.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
+			}
+
+			@Test
+			public void salesInvoiceOfCustomerNotAssigned_paymentOfAnotherPartner_isNotRefused()
+			{
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).bpartnerId(notAssignedCustomerId).build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerId(notAssignedCustomerId).paymentDateTrx("2020-08-01").build();
+
+				final PayableDocument payableDocument = toPayableDocument(invoiceRow, paymentRow);
+
+				assertThat(payableDocument.getAmountsToAllocate())
+						.usingRecursiveComparison()
+						.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
+			}
+
+			@Test
+			public void vendorInvoiceOfPartnerNotAssigned_paymentToTheServiceCompany_isNotRefused()
+			{
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.VendorInvoice).openAmt(euro(100)).bpartnerId(notAssignedCustomerId).build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.OUTBOUND).payAmt(euro(100)).bpartnerId(serviceCompanyId).paymentDateTrx("2020-08-01").build();
+
+				final PayableDocument payableDocument = toPayableDocument(invoiceRow, paymentRow);
+
+				assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.PURCHASE);
+				assertThat(payableDocument.getAmountsToAllocate())
+						.usingRecursiveComparison()
+						.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(-100, euroCurrencyId)));
+			}
+
+			/** Several invoices in one allocation: one of them is of a customer not assigned to the service company → the action is not offered, the user sees why. */
+			@Test
+			public void allocatePreconditions_severalInvoicesOneOfACustomerNotAssigned_rejectedWithTheReason()
+			{
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(189)).bpartnerId(serviceCompanyId).paymentDateTrx("2020-08-01").build();
+				final InvoiceRow invoiceOfAssignedCustomer = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).serviceFeeAmt("1").build();
+				final InvoiceRow invoiceOfCustomerNotAssigned = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(90)).bpartnerId(notAssignedCustomerId).build();
+				final PaymentsViewAllocateCommand command = PaymentsViewAllocateCommand.builder()
+						.moneyService(moneyService)
+						.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+						.paymentBonusCreditMemoService(new PaymentBonusCreditMemoService())
+						.paymentRow(paymentRow)
+						.invoiceRow(invoiceOfAssignedCustomer)
+						.invoiceRow(invoiceOfCustomerNotAssigned)
+						.allowPurchaseSalesInvoiceCompensation(false)
+						.build();
+
+				final ProcessPreconditionsResolution resolution = PaymentsView_Allocate.checkPreconditions(command);
+
+				assertThat(resolution.isRejected()).isTrue();
+				assertThat(resolution.isInternal()).isFalse();
+				assertThat(resolution.getRejectReason().getDefaultValue())
+						.contains(AdMessageKey.of("InvoiceProcessingServiceCompany_CustomerNotAssignedToServiceCompany").toAD_Message());
 			}
 		}
 	}
