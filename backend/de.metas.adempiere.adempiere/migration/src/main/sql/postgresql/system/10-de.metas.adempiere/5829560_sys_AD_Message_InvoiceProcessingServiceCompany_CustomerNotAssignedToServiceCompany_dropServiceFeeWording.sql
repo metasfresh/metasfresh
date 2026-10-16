@@ -1,6 +1,6 @@
--- #28900 follow-up "Markant service fee": the refusal "customer not assigned to the invoice processing service company"
--- now also fires when NO service fee is entered, so the "mit Servicegebühr" / "with service fee" qualifier in the message
--- text is wrong. Drop that qualifier, keeping the {0}/{1}/{2} parameters and meaning.
+-- The refusal "customer not assigned to the invoice processing service company" now also fires when NO service fee is
+-- entered, so the "mit Servicegebühr" / "with service fee" qualifier in the message text is wrong. Drop that qualifier,
+-- keeping the {0}/{1}/{2} parameters and meaning.
 -- IDs allocated from idserver.metas.de on 2026-10-16:
 --   AD_MigrationScript 5829560
 -- {0} = invoice DocumentNo, {1} = service company (payment business partner), {2} = invoice customer

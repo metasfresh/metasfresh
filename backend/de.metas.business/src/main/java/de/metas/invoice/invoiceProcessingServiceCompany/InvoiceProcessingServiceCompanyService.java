@@ -127,15 +127,8 @@ public class InvoiceProcessingServiceCompanyService
 		final BPartnerId customerId = request.getCustomerId();
 		if (!config.isBPartnerDetailsActive(customerId))
 		{
-			throw new AdempiereException(
-					MSG_CUSTOMER_NOT_ASSIGNED_TO_SERVICE_COMPANY,
-					getDocumentNo(invoiceId),
-					bpartnerBL.getBPartnerName(serviceCompanyBPartnerId),
-					bpartnerBL.getBPartnerName(customerId))
-					.markAsUserValidationError()
-					.setParameter("C_Invoice_ID", invoiceId.getRepoId())
-					.setParameter("C_BPartner_ID", serviceCompanyBPartnerId.getRepoId()) // like the sibling service fee errors: the service company
-					.setParameter("Customer_BPartner_ID", customerId.getRepoId());
+			// the invoice may not be persisted here either, but the with-fee path has an id to look up its documentNo
+			throwCustomerNotAssigned(getDocumentNo(invoiceId), serviceCompanyBPartnerId, customerId, invoiceId);
 		}
 
 		return Optional.of(InvoiceProcessingFeeCalculation.builder()
@@ -182,16 +175,30 @@ public class InvoiceProcessingServiceCompanyService
 
 		if (!config.isBPartnerDetailsActive(invoiceCustomerId))
 		{
-			throw new AdempiereException(
-					MSG_CUSTOMER_NOT_ASSIGNED_TO_SERVICE_COMPANY,
-					invoiceDocumentNo,
-					bpartnerBL.getBPartnerName(payingServiceCompanyBPartnerId),
-					bpartnerBL.getBPartnerName(invoiceCustomerId))
-					.markAsUserValidationError()
-					.setParameter("C_Invoice_ID", invoiceId.getRepoId())
-					.setParameter("C_BPartner_ID", payingServiceCompanyBPartnerId.getRepoId()) // like the sibling service fee errors: the service company
-					.setParameter("Customer_BPartner_ID", invoiceCustomerId.getRepoId());
+			throwCustomerNotAssigned(invoiceDocumentNo, payingServiceCompanyBPartnerId, invoiceCustomerId, invoiceId);
 		}
+	}
+
+	/**
+	 * Throws the user-validation error that the invoice's customer is not assigned to the paying service company.
+	 * Shared by the with-fee ({@link #createFeeCalculationForPayment}) and no-fee ({@link #assertSalesInvoiceCustomerAssignedToPayingServiceCompany}) paths,
+	 * so both raise the identical message, error code and parameters. The caller supplies the invoice documentNo (the invoice may not be persisted).
+	 */
+	private void throwCustomerNotAssigned(
+			@NonNull final String invoiceDocumentNo,
+			@NonNull final BPartnerId serviceCompanyBPartnerId,
+			@NonNull final BPartnerId customerId,
+			@NonNull final InvoiceId invoiceId)
+	{
+		throw new AdempiereException(
+				MSG_CUSTOMER_NOT_ASSIGNED_TO_SERVICE_COMPANY,
+				invoiceDocumentNo,
+				bpartnerBL.getBPartnerName(serviceCompanyBPartnerId),
+				bpartnerBL.getBPartnerName(customerId))
+				.markAsUserValidationError()
+				.setParameter("C_Invoice_ID", invoiceId.getRepoId())
+				.setParameter("C_BPartner_ID", serviceCompanyBPartnerId.getRepoId()) // like the sibling service fee errors: the service company
+				.setParameter("Customer_BPartner_ID", customerId.getRepoId());
 	}
 
 	private String getDocumentNo(@NonNull final InvoiceId invoiceId)

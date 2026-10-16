@@ -613,6 +613,59 @@ public class PaymentsViewAllocateCommandTest
 					});
 		}
 
+		/**
+		 * An ordinary sales allocation with two payments of DIFFERENT dates (no service company anywhere) must not be refused.
+		 * RED before the fix: the no-fee guard used the single-common-context extraction, which threw
+		 * {@code InvoiceProcessingServiceCompany_PaymentsOfDifferentServiceCompanyOrDate} for payments of different dates.
+		 */
+		@Test
+		public void customerInvoice_noServiceCompany_twoPaymentsOfDifferentDates_isNotRefused()
+		{
+			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).build();
+			final PaymentRow payment1 = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(40)).paymentDateTrx("2020-04-10").build();
+			final PaymentRow payment2 = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(60)).paymentDateTrx("2020-04-20").build();
+
+			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(
+					invoiceRow,
+					ImmutableList.of(
+							PaymentsViewAllocateCommand.toPaymentDocument(payment1, moneyService),
+							PaymentsViewAllocateCommand.toPaymentDocument(payment2, moneyService)),
+					moneyService,
+					invoiceProcessingServiceCompanyService);
+
+			assertThat(payableDocument.getInvoiceProcessingFeeCalculation()).isNull();
+			assertThat(payableDocument.getAmountsToAllocate())
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
+		}
+
+		/**
+		 * An ordinary sales allocation with two payments of DIFFERENT (non-service-company) partners must not be refused.
+		 * RED before the fix: the single-common-context extraction threw because the payment partners differ.
+		 */
+		@Test
+		public void customerInvoice_noServiceCompany_twoPaymentsOfDifferentPartners_isNotRefused()
+		{
+			final BPartnerId payer1 = createBPartnerId();
+			final BPartnerId payer2 = createBPartnerId();
+			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).build();
+			final PaymentRow payment1 = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(40)).bpartnerId(payer1).paymentDateTrx("2020-04-10").build();
+			final PaymentRow payment2 = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(60)).bpartnerId(payer2).paymentDateTrx("2020-04-10").build();
+
+			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(
+					invoiceRow,
+					ImmutableList.of(
+							PaymentsViewAllocateCommand.toPaymentDocument(payment1, moneyService),
+							PaymentsViewAllocateCommand.toPaymentDocument(payment2, moneyService)),
+					moneyService,
+					invoiceProcessingServiceCompanyService);
+
+			assertThat(payableDocument.getInvoiceProcessingFeeCalculation()).isNull();
+			assertThat(payableDocument.getAmountsToAllocate())
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
+		}
+
 		@Nested
 		public class WithServiceFee
 		{

@@ -112,9 +112,10 @@ public class InvoiceRows implements IEditableRowsData<InvoiceRow>
 			return newRow;
 		}
 
-		// Keep the user's in-memory-only edits (prepared flag + the editable amounts): they are not yet persisted,
-		// so rebuilding the row from the repository would blank a value the user has just typed into the view.
-		return newRow.withEditsFrom(oldRow);
+		// Carry only the prepared-for-allocation flag: a genuine invalidate (the C_Invoice record changed) must refresh
+		// all repository-computed amounts (openAmt, discount, service fee, payment bonus) from the fresh row, not keep stale values.
+		// The user's typed-but-not-yet-persisted amounts are preserved by not rebuilding on marking (see InvoicesView), not here.
+		return newRow.withPreparedForAllocation(oldRow.isPreparedForAllocation());
 	}
 
 	public void addInvoice(@NonNull final InvoiceId invoiceId)

@@ -205,17 +205,22 @@ public class PaymentsViewAllocateCommand
 		{
 			invoiceProcessingFeeCalculation = null;
 
-			// #28900: a payment of an invoice processing service company may only be allocated to a SALES invoice of the service
+			// A payment of an invoice processing service company may only be allocated to a SALES invoice of the service
 			// company's own customers, also when NO service fee is entered. The with-fee path (above) already refuses this; mirror it here.
-			if (row.getDocBaseType().getSoTrx().isSales() && !paymentDocuments.isEmpty())
+			// Assert once per payment (not via the single-common-context extraction): an ordinary multi-payment allocation
+			// -- payments of different dates or of different partners, none of them a service company -- must not be refused.
+			if (row.getDocBaseType().getSoTrx().isSales())
 			{
-				final InvoiceProcessingContext invoiceProcessingContext = extractInvoiceProcessingContext(row, paymentDocuments, invoiceProcessingServiceCompanyService);
-				invoiceProcessingServiceCompanyService.assertSalesInvoiceCustomerAssignedToPayingServiceCompany(
-						row.getBPartnerId(),
-						row.getInvoiceId(),
-						row.getDocumentNo(),
-						invoiceProcessingContext.getServiceCompanyId(),
-						invoiceProcessingContext.getPaymentDate());
+				for (final PaymentDocument paymentDocument : paymentDocuments)
+				{
+					final InvoiceProcessingContext paymentContext = paymentDocument.toInvoiceProcessingContext();
+					invoiceProcessingServiceCompanyService.assertSalesInvoiceCustomerAssignedToPayingServiceCompany(
+							row.getBPartnerId(),
+							row.getInvoiceId(),
+							row.getDocumentNo(),
+							paymentContext.getServiceCompanyId(),
+							paymentContext.getPaymentDate());
+				}
 			}
 		}
 
