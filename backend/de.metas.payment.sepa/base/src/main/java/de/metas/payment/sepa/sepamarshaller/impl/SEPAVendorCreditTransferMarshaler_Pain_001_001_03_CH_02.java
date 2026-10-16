@@ -661,11 +661,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					|| PAYMENT_TYPE_3.equals(paymentType)
 					|| PAYMENT_TYPE_5.equals(paymentType))
 			{
-				if (Objects.equals(paymentType, PAYMENT_TYPE_1))
-				{
-					throw newLineError("SEPA_ExportLine {} has to have StructuredRemittanceInfo", SepaUtils.createInfo(line));
-				}
-
+				// payment type 1 cannot get here: extractPaymentType returns it only for a line with a StructuredRemittanceInfo
 				if (bankAccount != null && !Check.isBlank(bankAccount.getQR_IBAN()))
 				{
 					final String QRReference = StringUtils.cleanWhitespace(line.getStructuredRemittanceInfo());
