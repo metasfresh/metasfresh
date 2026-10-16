@@ -571,9 +571,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				if (hasNoBIC)
 				{
 					final String bankName = getBankNameIfAny(line);
-					Check.errorIf(Check.isBlank(bankName), SepaMarshallerException.class,
-								  "Zahlart={}, but line {} has no information about the bank name",
-								  paymentType, SepaUtils.createInfo(line));
+					if (Check.isBlank(bankName))
+					{
+						throw newLineError("Zahlart={}, but line {} has no information about the bank name", paymentType, SepaUtils.createInfo(line));
+					}
 
 					finInstnId.setNm(bankName);
 					finInstnId.setBIC(null); // if we use Nm, then there should be no BIC element
@@ -660,8 +661,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					|| PAYMENT_TYPE_3.equals(paymentType)
 					|| PAYMENT_TYPE_5.equals(paymentType))
 			{
-				Check.errorIf(Objects.equals(paymentType, PAYMENT_TYPE_1), SepaMarshallerException.class,
-							  "SEPA_ExportLine {} has to have StructuredRemittanceInfo", SepaUtils.createInfo(line));
+				if (Objects.equals(paymentType, PAYMENT_TYPE_1))
+				{
+					throw newLineError("SEPA_ExportLine {} has to have StructuredRemittanceInfo", SepaUtils.createInfo(line));
+				}
 
 				if (bankAccount != null && !Check.isBlank(bankAccount.getQR_IBAN()))
 				{
@@ -863,6 +866,15 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		return pstlAdr;
 	}
 
+	/**
+	 * @return an exception with the given message, formatted like {@link Check#errorIf} does, but taken as it is, i.e. not parsed for "@...@" translation tokens;
+	 * so the parameters from {@link SepaUtils#createInfo}, which are escaped for the parseTranslation of the process, keep their "@"
+	 */
+	private static SepaMarshallerException newLineError(@NonNull final String messageFormat, final Object... params)
+	{
+		return new SepaMarshallerException(TranslatableStrings.constant("Error: " + StringUtils.formatMessage(messageFormat, params)));
+	}
+
 	protected String getBankNameIfAny(final I_SEPA_Export_Line line)
 	{
 		final I_C_BP_BankAccount bpartnerBankAccount = line.getC_BP_BankAccount();
@@ -927,10 +939,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			if (swizzIban || bPBankAccount.isEsrAccount())
 			{
 				// "domestic" IBAN. it contains the bank code (BC) and we will use it.
-				Check.errorIf(!currencyCode.isEuro() && !currencyCode.isCHF(),
-							  SepaMarshallerException.class,
-							  "line {} has a swizz IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
-							  SepaUtils.createInfo(line), currencyCode);
+				if (!currencyCode.isEuro() && !currencyCode.isCHF())
+				{
+					throw newLineError("line {} has a swizz IBAN, but the currency is {} instead of 'CHF' or 'EUR'", SepaUtils.createInfo(line), currencyCode);
+				}
 
 				paymentMode = PAYMENT_TYPE_3; // we can go with zahlart 2.2
 			}
