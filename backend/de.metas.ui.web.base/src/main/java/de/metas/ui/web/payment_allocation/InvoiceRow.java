@@ -321,4 +321,22 @@ public class InvoiceRow implements IViewRow
 				: this;
 	}
 
+	/**
+	 * Carries over the in-memory-only state of {@code sourceRow}: the prepared-for-allocation flag and the
+	 * user-editable amounts (discount, service fee, payment bonus, bank fee). These are not persisted until the
+	 * allocation runs, so a view rebuild from the repository would otherwise drop a value the user has just typed.
+	 */
+	public InvoiceRow withEditsFrom(@NonNull final InvoiceRow sourceRow)
+	{
+		return toBuilder()
+				.isPreparedForAllocation(sourceRow.isPreparedForAllocation)
+				.discountAmt(sourceRow.discountAmt)
+				.serviceFeeAmt(sourceRow.serviceFeeAmt)
+				.bankFeeAmt(sourceRow.bankFeeAmt)
+				.paymentBonusAmt(sourceRow.paymentBonusAmt)
+				.paymentBonusEnteredAmt(sourceRow.paymentBonusEnteredAmt)
+				.paymentBonusNote(sourceRow.paymentBonusNote)
+				.build();
+	}
+
 }

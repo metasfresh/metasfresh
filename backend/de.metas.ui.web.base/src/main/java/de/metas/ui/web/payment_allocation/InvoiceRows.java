@@ -112,7 +112,9 @@ public class InvoiceRows implements IEditableRowsData<InvoiceRow>
 			return newRow;
 		}
 
-		return newRow.withPreparedForAllocation(oldRow.isPreparedForAllocation());
+		// Keep the user's in-memory-only edits (prepared flag + the editable amounts): they are not yet persisted,
+		// so rebuilding the row from the repository would blank a value the user has just typed into the view.
+		return newRow.withEditsFrom(oldRow);
 	}
 
 	public void addInvoice(@NonNull final InvoiceId invoiceId)
