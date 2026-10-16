@@ -329,8 +329,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		}
 		catch (final RuntimeException e)
 		{
+			// the record is kept as a parameter (e.g. for AD_Issue), but not appended to the message, which the user sees
 			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
 					.setParameter("sepaDocument", sepaDocument);
 		}
 	}
@@ -995,7 +995,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		{
 			// X: the export fails, so that the address is completed before a foreign payment is sent.
 			throw new AdempiereException(MSG_CreditorAddressIncomplete, getBPartnerValueAndName(bpartnerId), addressSource, msgBL.getTranslatableMsgText(missingAddressParts))
-					.appendParametersToMessage()
 					.setParameter("SEPA_Export_Line", line);
 		}
 

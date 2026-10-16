@@ -20,6 +20,7 @@ import de.metas.util.Loggables;
 import de.metas.util.PlainStringLoggable;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -1118,6 +1119,37 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		assertThatThrownBy(() -> exportXml(sepaExport))
 				.hasMessageContaining(MSG_DEBTOR_NAME_MISSING)
 				.hasMessageContaining("1000001");
+	}
+
+	@Test
+	public void export_headerError_userMessageHasNoTechnicalParameters()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		sepaExport.setSEPA_CreditorName("  ");
+		save(sepaExport);
+		createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+
+		// the user sees the translated message only; the record stays available as an exception parameter (e.g. for AD_Issue)
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_DEBTOR_NAME_MISSING)
+				.hasMessageNotContaining("Additional parameters")
+				.hasMessageNotContaining("POJOWrapper")
+				.isInstanceOfSatisfying(AdempiereException.class, e -> assertThat(e.getParameter("sepaDocument")).isNotNull());
+	}
+
+	@Test
+	public void export_lineError_userMessageHasNoTechnicalParameters()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_TR, CREDITOR_BIC_TR, new BigDecimal("100"), eur, null);
+		clearAddress(bankAccountOf(line));
+		setBillToLocation(line, "Teststrasse 1", "8000", "", "TR");
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_ADDRESS_INCOMPLETE)
+				.hasMessageNotContaining("Additional parameters")
+				.hasMessageNotContaining("POJOWrapper")
+				.isInstanceOfSatisfying(AdempiereException.class, e -> assertThat(e.getParameter("SEPA_Export_Line")).isNotNull());
 	}
 
 	@Test
