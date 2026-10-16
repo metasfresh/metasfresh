@@ -29,6 +29,7 @@ import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -55,6 +56,14 @@ public class C_Invoice
 	public void updateEdiStatus(final I_C_Invoice invoice)
 	{
 		final EDIExportStatus ediExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
+		if (ediExportStatus != null
+				&& (ediExportStatus.isSent() || ediExportStatus.isPending())
+				&& InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_EDI_ExportStatus))
+		{
+			// the error message of an earlier (failed) send is outdated now; a fresh validation-message might be set further down
+			invoice.setEDIErrorMsg(null);
+		}
+
 		if(ediExportStatus != null && ediExportStatus.isInProgressOrSend())
 		{
 			return;
@@ -82,6 +91,10 @@ public class C_Invoice
 			ifColumnsChanged = I_C_Invoice.COLUMNNAME_EDIErrorMsg)
 	public void translateEDIErrorMessage(final I_C_Invoice invoiceRecord)
 	{
+		if (Check.isBlank(invoiceRecord.getEDIErrorMsg()))
+		{
+			return; // don't turn a cleared message into an empty string
+		}
 		final ITranslatableString errorMsgTrl = TranslatableStrings.parse(invoiceRecord.getEDIErrorMsg());
 		invoiceRecord.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));
 	}
