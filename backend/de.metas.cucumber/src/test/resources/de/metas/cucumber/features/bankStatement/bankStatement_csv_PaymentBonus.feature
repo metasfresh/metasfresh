@@ -487,3 +487,59 @@ Feature: Payment bonus on the payment that is created from a CSV bank statement 
       | invoice         | 166.50 EUR |            | true   |
       | bonusCreditMemo | 2.78 EUR   | PB         |        |
 
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:bsCsvPaymentBonus_TC10
+  Scenario: CSV bank statement — reversing the payment of a pay-full line reverses the granted payment bonus credit memo, too; the invoice is open again
+    # the customer pays the full 166.50 without deducting the bonus: the payment of the line, completed for the invoice, grants the full bonus (2.78) once
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo                     | REST.Context |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsCsvPaymentBonus_10_@customerBPId@ | invoice      |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    When the following CSV with REST context variables is imported via data import config "bankStatementCsv":
+    """
+    2026-07-20,2026-07-20,2026-07-20,166.50,166.50,DE89370400440532013000,CH4189144993834976921,@customerName@,,bsCsvPaymentBonus_10_@customerBPId@,,EUR,@customerName@
+    """
+    And load C_BankStatement created by the import for bank account "org_EUR_account"
+      | C_BankStatement_ID.Identifier | Name           |
+      | bs_1                          | @customerName@ |
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_1                             | bs_1                          | 10   |
+    Then validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 166.50     | 166.50      | invoice                     | customerBP                   | false         |
+    And the C_BankStatement identified by bs_1 is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | payment                 | bs_1                              | bsl_1                                 |
+    And validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | PaymentBonus_CreditMemo_ID | IsAllocated |
+      | payment      | 166.50 | 0               | bonusCreditMemo            | Y           |
+    And the only payment bonus credit memo for invoice invoice is bonusCreditMemo
+    And validate created invoices
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid |
+      | invoice         | 166.50 EUR |            | true   |
+      | bonusCreditMemo | 2.78 EUR   | PB         |        |
+
+    # a payment reconciled by a bank statement cannot be reversed: the user voids the bank statement first (un-reconciles the payment), then reverses the payment
+    And the C_BankStatement identified by bs_1 is voided
+
+    When the payment identified by payment is reversed
+
+    Then validate created invoices
+      | C_Invoice_ID    | DocStatus |
+      | bonusCreditMemo | RE        |
+    And validate created invoices
+      | C_Invoice_ID | DocStatus | IsPaid | OpenAmt |
+      | invoice      | CO        | false  | 166.50  |
+    And validate payments
+      | C_Payment_ID | DocStatus |
+      | payment      | RE        |
+    And there is no payment bonus credit memo for invoice invoice

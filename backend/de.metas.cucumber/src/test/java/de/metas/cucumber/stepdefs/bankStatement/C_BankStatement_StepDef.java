@@ -127,6 +127,17 @@ public class C_BankStatement_StepDef
 		documentBL.processEx(bankStatementRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
+	/**
+	 * Voids the (completed) bank statement, which un-reconciles its payments; they stay completed and can then be reversed on their own.
+	 */
+	@Given("^the C_BankStatement identified by (.*) is voided$")
+	public void void_C_BankStatement(@NonNull final String bankStatementIdentifier)
+	{
+		final I_C_BankStatement bankStatementRecord = bankStatementTable.get(bankStatementIdentifier);
+		bankStatementRecord.setDocAction(IDocument.ACTION_Void);
+		documentBL.processEx(bankStatementRecord, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+	}
+
 	private void validateBankStatement(@NonNull final Map<String, String> row)
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_BankStatement.COLUMNNAME_C_BankStatement_ID + "." + TABLECOLUMN_IDENTIFIER);
