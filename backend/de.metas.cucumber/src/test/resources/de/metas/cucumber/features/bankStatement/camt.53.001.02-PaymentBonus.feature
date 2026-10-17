@@ -429,6 +429,165 @@ Feature: Payment bonus on the payment that is created from a bank statement line
       | invoice         | 166.50 EUR |            | true   |
       | bonusCreditMemo | 2.78 EUR   | PB         |        |
 
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:bsPaymentBonus_TC1c
+  Scenario: Bank statement — a line that pays the invoice minus Skonto only (the bonus not deducted) still grants the full payment bonus
+    # Skonto 2 % = 3.33; the customer pays 166.50 - 3.33 = 163.17 and does not deduct the bonus (2.78): a full settlement, so the full bonus is granted once
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   | C_PaymentTerm_ID |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsPaymentBonus_6 | skonto2          |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    And bank statement is imported with identifiers bs_1, not matching invoice amounts
+    """
+    <?xml version="1.0" encoding="utf-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+	<BkToCstmrStmt>
+		<GrpHdr>
+			<MsgId>MsgIdBSPB0006</MsgId>
+			<CreDtTm>2026-07-20T19:45:37.000Z</CreDtTm>
+			<MsgPgntn>
+				<PgNb>1</PgNb>
+				<LastPgInd>true</LastPgInd>
+			</MsgPgntn>
+		</GrpHdr>
+		<Stmt>
+			<Id>StmtIdBSPB0006</Id>
+			<ElctrncSeqNb>00001</ElctrncSeqNb>
+			<CreDtTm>2026-07-20T19:45:37.000Z</CreDtTm>
+			<Acct>
+				<Id>
+					<IBAN>DE89370400440532013000</IBAN>
+				</Id>
+				<Ccy>EUR</Ccy>
+				<Svcr>
+					<FinInstnId>
+						<BIC>AAAAAAAA82A</BIC>
+					</FinInstnId>
+				</Svcr>
+			</Acct>
+			<Bal>
+				<Tp>
+					<CdOrPrtry>
+						<Cd>PRCD</Cd>
+					</CdOrPrtry>
+				</Tp>
+				<Amt Ccy="EUR">1000.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt>
+					<Dt>2026-07-19</Dt>
+				</Dt>
+			</Bal>
+			<Bal>
+				<Tp>
+					<CdOrPrtry>
+						<Cd>CLBD</Cd>
+					</CdOrPrtry>
+				</Tp>
+				<Amt Ccy="EUR">1163.17</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt>
+					<Dt>2026-07-20</Dt>
+				</Dt>
+			</Bal>
+			<Ntry>
+				<NtryRef>00001</NtryRef>
+				<Amt Ccy="EUR">163.17</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts>BOOK</Sts>
+				<BookgDt>
+					<Dt>2026-07-20</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2026-07-20</Dt>
+				</ValDt>
+				<AcctSvcrRef>AAA-BSPB0006</AcctSvcrRef>
+				<BkTxCd>
+					<Prtry>
+						<Cd>TRF</Cd>
+						<Issr>SWIFT</Issr>
+					</Prtry>
+				</BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+						<TtlAmt Ccy="EUR">163.17</TtlAmt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+					</Btch>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>AAA-BSPB0006</AcctSvcrRef>
+							<PmtInfId>PmtInfBSPB0006</PmtInfId>
+						</Refs>
+						<Amt Ccy="EUR">163.17</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="EUR">163.17</Amt>
+							</InstdAmt>
+							<TxAmt>
+								<Amt Ccy="EUR">163.17</Amt>
+							</TxAmt>
+						</AmtDtls>
+						<RltdPties>
+							<Dbtr>
+								<Nm>Customer Test</Nm>
+								<PstlAdr>
+									<StrtNm>Street</StrtNm>
+									<BldgNb>152</BldgNb>
+									<PstCd>0000</PstCd>
+									<TwnNm>TestCity</TwnNm>
+									<Ctry>DE</Ctry>
+								</PstlAdr>
+							</Dbtr>
+							<DbtrAcct>
+								<Id>
+									<IBAN>CH4189144993834976921</IBAN>
+								</Id>
+							</DbtrAcct>
+							<Cdtr>
+								<Nm>Test CO</Nm>
+								<PstlAdr>
+									<AdrLine>Street 123</AdrLine>
+									<AdrLine>0000 CityTest</AdrLine>
+								</PstlAdr>
+							</Cdtr>
+						</RltdPties>
+						<RmtInf>
+							<Ustrd>bsPaymentBonus_6</Ustrd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Stmt>
+	</BkToCstmrStmt>
+</Document>
+    """
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_1                             | bs_1                          | 10   |
+    And validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.StmtAmt | OPT.C_Invoice_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.Processed |
+      | bsl_1                             | 163.17     | 163.17      | invoice                     | customerBP                   | false         |
+    And the C_BankStatement identified by bs_1 is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | payment                 | bs_1                              | bsl_1                                 |
+    And validate payments
+      | C_Payment_ID | PayAmt | DiscountAmt | PaymentBonusAmt | PaymentBonus_CreditMemo_ID | IsAllocated |
+      | payment      | 163.17 | 3.33        | 0               | bonusCreditMemo            | Y           |
+    And the only payment bonus credit memo for invoice invoice is bonusCreditMemo
+    And validate created invoices
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid |
+      | invoice         | 166.50 EUR |            | true   |
+      | bonusCreditMemo | 2.78 EUR   | PB         |        |
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
