@@ -275,6 +275,7 @@ Feature: Payment bonus on the payment that is created from a bank statement line
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:bsPaymentBonus_TC1b
   Scenario: Bank statement — a line that pays the full invoice amount grants the full payment bonus as its own credit memo
+    Given temporarily set sys config String value 'both' for sys config 'de.metas.invoice.paymentbonus.SettlementMode'
     # the customer pays the full 166.50 without deducting the bonus: the payment of the line, completed for the invoice, grants the full bonus (2.78) once, like the payment window
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   |
@@ -435,6 +436,7 @@ Feature: Payment bonus on the payment that is created from a bank statement line
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:bsPaymentBonus_TC1c
   Scenario: Bank statement — a line that pays the invoice minus Skonto only (the bonus not deducted) still grants the full payment bonus
+    Given temporarily set sys config String value 'both' for sys config 'de.metas.invoice.paymentbonus.SettlementMode'
     # Skonto 2 % = 3.33; the customer pays 166.50 - 3.33 = 163.17 and does not deduct the bonus (2.78): a full settlement, so the full bonus is granted once
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   | C_PaymentTerm_ID |
