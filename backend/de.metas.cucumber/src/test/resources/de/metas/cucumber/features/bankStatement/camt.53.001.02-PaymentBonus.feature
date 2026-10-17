@@ -274,8 +274,8 @@ Feature: Payment bonus on the payment that is created from a bank statement line
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:bsPaymentBonus_TC1b
-  Scenario: Bank statement — a line that pays the full invoice amount books no payment bonus
-    # the customer pays the full 166.50: the matcher never grants a bonus to a full payment
+  Scenario: Bank statement — a line that pays the full invoice amount grants the full payment bonus as its own credit memo
+    # the customer pays the full 166.50 without deducting the bonus: the payment of the line, completed for the invoice, grants the full bonus (2.78) once, like the payment window
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   |
       | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 | bsPaymentBonus_2 |
@@ -422,11 +422,12 @@ Feature: Payment bonus on the payment that is created from a bank statement line
       | payment                 | bs_1                              | bsl_1                                 |
     And validate payments
       | C_Payment_ID | PayAmt | PaymentBonusAmt | PaymentBonus_CreditMemo_ID | IsAllocated |
-      | payment      | 166.50 | 0               | null                       | Y           |
-    And there is no payment bonus credit memo for invoice invoice
+      | payment      | 166.50 | 0               | bonusCreditMemo            | Y           |
+    And the only payment bonus credit memo for invoice invoice is bonusCreditMemo
     And validate created invoices
-      | C_Invoice_ID | IsPaid |
-      | invoice      | true   |
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid |
+      | invoice         | 166.50 EUR |            | true   |
+      | bonusCreditMemo | 2.78 EUR   | PB         |        |
 
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management

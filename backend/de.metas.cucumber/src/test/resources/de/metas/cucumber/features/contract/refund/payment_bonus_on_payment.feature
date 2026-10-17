@@ -719,10 +719,10 @@ Feature: Payment bonus on the payment, next to Skonto
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
   @Id:paymentBonusOnPayment_TC_H1h
-  Scenario: Payment for an invoice — completing a full payment creates no payment bonus credit memo
+  Scenario: Payment for an invoice of a customer without refund contract — completing a full payment creates no payment bonus credit memo
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+      | invoice    | plainBP       | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | goodsLine  | invoice      | goodsProduct | 10 PCE      |
@@ -731,9 +731,9 @@ Feature: Payment bonus on the payment, next to Skonto
 
     And metasfresh contains C_Payment
       | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID |
-      | payment    | customerBP    | invoice      | true      | org_EUR_account     |
+      | payment    | plainBP       | invoice      | true      | org_EUR_account     |
     And the payment identified by payment gets its amounts from its invoice
-    # the customer did not deduct the bonus
+    # the customer has no refund contract, so there is no bonus to grant
     And the draft payment identified by payment is changed
       | PayAmt |
       | 166.50 |
@@ -753,6 +753,57 @@ Feature: Payment bonus on the payment, next to Skonto
     And validate C_AllocationLines
       | C_Invoice_ID | C_Payment_ID | Amount | WriteOffAmt |
       | invoice      | payment      | 166.50 | 0           |
+
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentBonusOnPayment_TC_H1pf
+  Scenario: Payment for an invoice — a customer who pays the full invoice is granted the full payment bonus as its own credit memo, linked to the payment
+    # the sales invoice without payment term: 10 x 10.00 goods (7 %) + 5 x 10.00 crates (19 %) = 166.50
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | goodsLine  | invoice      | goodsProduct | 10 PCE      |
+      | crateLine  | invoice      | crateProduct | 5 PCE       |
+    And the invoice identified by invoice is completed
+
+    # the customer did not deduct the bonus: pays the full 166.50
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | C_Invoice_ID | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | invoice      | true      | org_EUR_account     |
+    And the payment identified by payment gets its amounts from its invoice
+    And the draft payment identified by payment is changed
+      | PayAmt |
+      | 166.50 |
+    And validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt |
+      | payment      | 166.50 | 0               | 0           |
+
+    When the payment identified by payment is completed
+
+    # the full bonus (2.6 % of 100.00 goods = 2.60 + 7 % VAT = 2.78) is granted anyway, once; the payment bonus of the payment stays 0, the payment is linked to the grant
+    Then validate payments
+      | C_Payment_ID | PayAmt | PaymentBonusAmt | WriteOffAmt | PaymentBonus_CreditMemo_ID | IsAllocated |
+      | payment      | 166.50 | 0               | 0           | bonusCreditMemo            | true        |
+    And the only payment bonus credit memo for invoice invoice is bonusCreditMemo
+    # the invoice is paid by the payment alone
+    And validate created invoices
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid |
+      | invoice         | 166.50 EUR |            | true   |
+      | bonusCreditMemo | 2.78 EUR   | PB         |        |
+    And validate C_AllocationLines
+      | C_Invoice_ID | C_Payment_ID | Amount | DiscountAmt | WriteOffAmt | OverUnderAmt |
+      | invoice      | payment      | 166.50 | 0           | 0           | 0            |
+    # the grant books the bonus on the bonus product's revenue account, with the 7 % VAT of the bonus product only
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Account_ID       | C_BPartner_ID | Record_ID       | M_Product_ID | C_Tax_ID |
+      | P_Revenue_Acct        | 2.60 EUR    |             | bonusRevenueAcct | customerBP    | bonusCreditMemo | bonusWare    | lowTax   |
+      | T_Due_Acct            | 0.18 EUR    |             |                  | customerBP    | bonusCreditMemo |              | lowTax   |
+      | C_Receivable_Acct     |             | 2.78 EUR    |                  | customerBP    | bonusCreditMemo |              | -        |
+      | *                     |             |             |                  |               | bonusCreditMemo |              |          |
 
 
   @from:cucumber
