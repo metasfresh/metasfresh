@@ -1,6 +1,9 @@
 package de.metas.invoice.paymentbonus;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
@@ -34,6 +37,7 @@ public class PaymentBonusOnPaymentService
 
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final Optional<PaymentBonusDeductionProvider> provider;
 	@NonNull private final PaymentBonusCreditMemoService creditMemoService;
 
@@ -165,6 +169,54 @@ public class PaymentBonusOnPaymentService
 				.creditMemoGrandTotal(creditMemoGrandTotal)
 				.invoiceOpenAmtBeforeCreditMemo(Money.of(openAmtBeforeCreditMemo, deduction.getCurrencyId()))
 				.build());
+	}
+
+	/**
+	 * Decides whether the payment, which is about to be allocated, settles its invoice in full without deducting the payment bonus
+	 * (it pays the open amount, or the open amount minus the Skonto; see {@link PaymentBonusAmountMatcher#classify}) and the invoice's customer is owed the bonus anyway.
+	 * Has to be called <b>before</b> the payment is allocated, because the open amount of the invoice is the base of the decision.
+	 * Pay-short payments (with {@code PaymentBonusAmt}) are the business of {@link #generateCreditMemoIfAny(I_C_Payment, LocalDate)}.
+	 *
+	 * @return the full, uncapped bonus to grant; empty if there is none, the payment is not a full settlement, or the bonus of the invoice was already booked
+	 */
+	public Optional<PaymentBonusDeduction> computePayFullBonusGrantIfAny(@NonNull final I_C_Payment payment)
+	{
+		if (!payment.isReceipt() || payment.getC_Invoice_ID() <= 0 || payment.getPaymentBonusAmt().signum() != 0 || payment.getPayAmt().signum() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		final PaymentBonusDeduction deduction = computeDeduction(payment).orElse(null);
+		if (deduction == null || creditMemoService.isCreditMemoAlreadyGenerated(deduction.getInvoiceId()))
+		{
+			return Optional.empty();
+		}
+
+		final CurrencyCode currencyCode = currencyDAO.getCurrencyCodeById(deduction.getCurrencyId());
+		final Amount openAmt = Amount.of(paymentDAO.getInvoiceOpenAmount(payment, true), currencyCode);
+		final Amount discountAmt = Amount.of(payment.getDiscountAmt(), currencyCode);
+		final Amount bonusGrossAmt = deduction.getGrossAmount().toAmount(currencyDAO::getCurrencyCodeById);
+		final Amount paidAmt = Amount.of(payment.getPayAmt(), currencyCode);
+
+		final PaymentBonusAmountMatcher.SettlementType settlementType = PaymentBonusAmountMatcher.classify(openAmt, discountAmt, bonusGrossAmt, paidAmt, true);
+		return settlementType == PaymentBonusAmountMatcher.SettlementType.PAY_FULL ? Optional.of(deduction) : Optional.empty();
+	}
+
+	/**
+	 * Books the full bonus that {@link #computePayFullBonusGrantIfAny(I_C_Payment)} found as its own invoice-linked payment bonus credit memo,
+	 * in the caller's thread-inherited transaction, and links it in {@code PaymentBonus_CreditMemo_ID} of the payment, so that the payment's reversal reaches it, too.
+	 * To be called after the payment was allocated: the invoice is then settled, so the credit memo's own allocation against it is 0 and the grant stays an open credit of the customer.
+	 *
+	 * @param allocationDate the credit memo's invoice and accounting date
+	 */
+	public InvoiceId generatePayFullBonusGrant(
+			@NonNull final I_C_Payment payment,
+			@NonNull final PaymentBonusDeduction deduction,
+			@NonNull final LocalDate allocationDate)
+	{
+		final InvoiceId creditMemoId = creditMemoService.generateCreditMemo(deduction, allocationDate);
+		payment.setPaymentBonus_CreditMemo_ID(creditMemoId.getRepoId());
+		return creditMemoId;
 	}
 
 	/**

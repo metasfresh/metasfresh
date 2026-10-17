@@ -144,6 +144,23 @@ public class AD_SysConfig_StepDef
 		resetSysConfigCache();
 	}
 
+	/**
+	 * Sets a sys config to a String value for the current scenario; its prior value is restored after the scenario, and a sys config that
+	 * had no value before is deleted again.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given temporarily set sys config String value 'both' for sys config 'de.metas.invoice.paymentbonus.SettlementMode'
+	 * </pre>
+	 */
+	@And("temporarily set sys config String value {string} for sys config {string}")
+	public void temporarily_set_sys_config_string_value(@NonNull final String value, @NonNull final String sysConfigName)
+	{
+		rememberPriorValue(sysConfigName);
+		enable_sys_config("String", value, sysConfigName);
+	}
+
 	@And("update AD_SysConfig with login AD_User_ID")
 	public void set_sysConfig_login_user(@NonNull final DataTable dataTable)
 	{

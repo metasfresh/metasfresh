@@ -58,6 +58,45 @@ public final class PaymentBonusAmountMatcher
 		return Optional.empty();
 	}
 
+	/**
+	 * How a paid amount settles an invoice. Pure and partner-agnostic: whether a deduction is <i>granted</i> to a partner is the caller's decision.
+	 */
+	public enum SettlementType
+	{
+		/** The customer deducted the payment bonus themselves: open - bonus, or open - Skonto - bonus. */
+		SELF_DEDUCT,
+		/** The customer paid the full amount: open, or open - Skonto (full payment still counts as pay-full when it takes the Skonto). */
+		PAY_FULL,
+		/** Anything else (partial or unrecognised amount, or a paid amount in another currency). */
+		OTHER
+	}
+
+	/**
+	 * Classifies {@code paidAmt}: {@link SettlementType#PAY_FULL} if it is {@code openAmt} or {@code openAmt - discountAmt};
+	 * else {@link SettlementType#SELF_DEDUCT} if {@link #match} finds a deduction (open - bonus, open - Skonto - bonus);
+	 * else {@link SettlementType#OTHER}. The pay-full rules come first, so an amount that is both (e.g. Skonto equals bonus) is PAY_FULL.
+	 * Currency handling is the same as in {@link #match}: a {@code paidAmt} in another currency is OTHER, a deduction in another currency throws.
+	 *
+	 * @param bonusGrossAmt the gross payment bonus, or {@code null} if there is none
+	 * @param bonusAllowed  {@code false} if no payment bonus may be deducted (e.g. a purchase document); then open - bonus is OTHER
+	 */
+	public static SettlementType classify(
+			@NonNull final Amount openAmt,
+			@NonNull final Amount discountAmt,
+			@Nullable final Amount bonusGrossAmt,
+			@NonNull final Amount paidAmt,
+			final boolean bonusAllowed)
+	{
+		if (openAmt.isEqualByComparingTo(paidAmt) || openAmt.subtract(discountAmt).isEqualByComparingTo(paidAmt))
+		{
+			return SettlementType.PAY_FULL;
+		}
+
+		return match(openAmt, discountAmt, bonusGrossAmt, paidAmt, bonusAllowed).isPresent()
+				? SettlementType.SELF_DEDUCT
+				: SettlementType.OTHER;
+	}
+
 	@Value
 	public static class MatchedDeductions
 	{

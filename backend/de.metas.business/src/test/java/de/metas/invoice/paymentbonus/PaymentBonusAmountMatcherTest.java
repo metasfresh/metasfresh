@@ -103,4 +103,64 @@ class PaymentBonusAmountMatcherTest
 	{
 		assertThat(PaymentBonusAmountMatcher.match(eur("100"), eur("3"), eur("10"), eur("80"), true)).isEmpty();
 	}
+
+	@Test
+	void classify_paidEqualsOpen_payFull()
+	{
+		assertThat(PaymentBonusAmountMatcher.classify(eur("100"), eur("3"), eur("10"), eur("100"), true))
+				.isEqualTo(PaymentBonusAmountMatcher.SettlementType.PAY_FULL);
+		assertThat(PaymentBonusAmountMatcher.classify(eur("100"), eur("0"), null, eur("100"), false))
+				.isEqualTo(PaymentBonusAmountMatcher.SettlementType.PAY_FULL);
+	}
+
+	@Test
+	void classify_paidEqualsOpenMinusSkonto_payFull()
+	{
+		assertThat(PaymentBonusAmountMatcher.classify(eur("100"), eur("3"), eur("10"), eur("97"), true))
+				.isEqualTo(PaymentBonusAmountMatcher.SettlementType.PAY_FULL);
+		assertThat(PaymentBonusAmountMatcher.classify(eur("100"), eur("3"), null, eur("97"), true))
+				.isEqualTo(PaymentBonusAmountMatcher.SettlementType.PAY_FULL);
+	}
+
+	@Test
+	void classify_selfDeduct_notPayFull()
+	{
+		assertThat(PaymentBonusAmountMatcher.classify(eur("100"), eur("3"), eur("10"), eur("90"), true))
+				.as("open - bonus")
+				.isEqualTo(PaymentBonusAmountMatcher.SettlementType.SELF_DEDUCT);
+		assertThat(PaymentBonusAmountMatcher.classify(eur("100"), eur("3"), eur("10"), eur("87"), true))
+				.as("open - Skonto - bonus")
+				.isEqualTo(PaymentBonusAmountMatcher.SettlementType.SELF_DEDUCT);
+	}
+
+	@Test
+	void classify_partialOrUnrecognised_other()
+	{
+		assertThat(PaymentBonusAmountMatcher.classify(eur("100"), eur("3"), eur("10"), eur("80"), true))
+				.isEqualTo(PaymentBonusAmountMatcher.SettlementType.OTHER);
+		assertThat(PaymentBonusAmountMatcher.classify(eur("100"), eur("3"), eur("10"), eur("90"), false))
+				.as("bonus not allowed: open - bonus is unrecognised")
+				.isEqualTo(PaymentBonusAmountMatcher.SettlementType.OTHER);
+		assertThat(PaymentBonusAmountMatcher.classify(eur("100"), eur("3"), null, eur("90"), true))
+				.as("no bonus: open - 10 is unrecognised")
+				.isEqualTo(PaymentBonusAmountMatcher.SettlementType.OTHER);
+	}
+
+	@Test
+	void classify_currencyMismatch_sameBehaviourAsMatch()
+	{
+		assertThat(PaymentBonusAmountMatcher.classify(eur("100"), eur("3"), eur("10"), Amount.of("100", CurrencyCode.CHF), true))
+				.as("paid in another currency matches nothing")
+				.isEqualTo(PaymentBonusAmountMatcher.SettlementType.OTHER);
+		assertThatThrownBy(() -> PaymentBonusAmountMatcher.classify(eur("100"), eur("3"), Amount.of("10", CurrencyCode.CHF), eur("90"), true))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	@Test
+	void classify_skontoEqualsBonus_payFullWins()
+	{
+		// paid 90 == open - Skonto == open - bonus; the pay-full rule comes first
+		assertThat(PaymentBonusAmountMatcher.classify(eur("100"), eur("10"), eur("10"), eur("90"), true))
+				.isEqualTo(PaymentBonusAmountMatcher.SettlementType.PAY_FULL);
+	}
 }

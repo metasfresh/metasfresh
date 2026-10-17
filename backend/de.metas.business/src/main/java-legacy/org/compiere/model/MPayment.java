@@ -48,7 +48,9 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoBooking;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
+import de.metas.invoice.paymentbonus.PaymentBonusSettlementMode;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -1610,7 +1612,18 @@ public final class MPayment extends X_C_Payment
 		final Timestamp allocationDateTrx = invoice.getDateInvoiced().after(getDateTrx()) ? invoice.getDateInvoiced() : getDateTrx();
 
 		// the payment bonus is booked by a credit memo that allocates itself against the invoice; so it has to be created before the open amount is retrieved
-		generatePaymentBonusCreditMemoIfAny(allocationDateTrx);
+		// which way of settling with the payment bonus this instance allows: the short payment that deducts the bonus and/or the grant to a customer who pays in full
+		final PaymentBonusSettlementMode paymentBonusSettlementMode = PaymentBonusSettlementMode.ofSysConfig(
+				Services.get(ISysConfigBL.class),
+				ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID()));
+
+		if (paymentBonusSettlementMode.isSelfDeductAllowed())
+		{
+			generatePaymentBonusCreditMemoIfAny(allocationDateTrx);
+		}
+
+		// a customer who pays in full is owed the bonus anyway; decided on the open amount before this payment is allocated, booked after (see below)
+		final PaymentBonusDeduction payFullBonusGrant = paymentBonusSettlementMode.isPayFullGrantAllowed() ? computePayFullBonusGrantIfAny() : null;
 
 		final Money invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, false);
 		final Money payAmt = getPayAmtAsMoney();
@@ -1700,6 +1713,9 @@ public final class MPayment extends X_C_Payment
 		alloc.saveEx(get_TrxName());
 		m_processMsg = "@C_AllocationHdr_ID@: " + alloc.getDocumentNo();
 
+		// the invoice is settled now, so the grant's allocation against it is 0 and the grant stays an open credit of the customer
+		generatePayFullBonusGrant(payFullBonusGrant, allocationDateTrx);
+
 		// Get Project from Invoice
 		final int C_Project_ID = DB.getSQLValue(get_TrxName(),
 				"SELECT MAX(C_Project_ID) FROM C_Invoice WHERE C_Invoice_ID=?", getC_Invoice_ID());
@@ -1731,6 +1747,33 @@ public final class MPayment extends X_C_Payment
 		// with this payment's transaction as the thread-inherited one, which the credit memo needs; never in a new transaction
 		trxManager.call(trxName, () -> paymentBonusOnPaymentService.get().generateCreditMemoIfAny(this, allocationDate))
 				.ifPresent(this::alignPaymentBonusAmtWithCreditMemo);
+	}
+
+	/**
+	 * @return the full bonus that is owed to the customer because this payment settles its invoice in full without deducting the bonus; {@code null} if none.
+	 * Has to be called before this payment is allocated.
+	 */
+	@Nullable
+	private PaymentBonusDeduction computePayFullBonusGrantIfAny()
+	{
+		return paymentBonusOnPaymentService.get().computePayFullBonusGrantIfAny(this).orElse(null);
+	}
+
+	/**
+	 * Books the pay-full bonus grant of {@link #computePayFullBonusGrantIfAny()}, if any, in this payment's transaction: a failure fails the payment's completion and nothing stays half-booked.
+	 */
+	private void generatePayFullBonusGrant(@Nullable final PaymentBonusDeduction payFullBonusGrant, @NonNull final Timestamp allocationDateTrx)
+	{
+		if (payFullBonusGrant == null)
+		{
+			return;
+		}
+
+		final String trxName = getActiveTrxNameForPaymentBonusCreditMemo();
+		final LocalDate allocationDate = TimeUtil.asLocalDate(allocationDateTrx, orgDAO.getTimeZone(OrgId.ofRepoId(getAD_Org_ID())));
+
+		// with this payment's transaction as the thread-inherited one, which the credit memo needs; never in a new transaction
+		trxManager.call(trxName, () -> paymentBonusOnPaymentService.get().generatePayFullBonusGrant(this, payFullBonusGrant, allocationDate));
 	}
 
 	/**
