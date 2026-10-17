@@ -49,6 +49,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoBooking;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.invoice.paymentbonus.PaymentBonusSettlementMode;
 import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
@@ -1611,10 +1612,18 @@ public final class MPayment extends X_C_Payment
 		final Timestamp allocationDateTrx = invoice.getDateInvoiced().after(getDateTrx()) ? invoice.getDateInvoiced() : getDateTrx();
 
 		// the payment bonus is booked by a credit memo that allocates itself against the invoice; so it has to be created before the open amount is retrieved
-		generatePaymentBonusCreditMemoIfAny(allocationDateTrx);
+		// which way of settling with the payment bonus this instance allows: the short payment that deducts the bonus and/or the grant to a customer who pays in full
+		final PaymentBonusSettlementMode paymentBonusSettlementMode = PaymentBonusSettlementMode.ofSysConfig(
+				Services.get(ISysConfigBL.class),
+				ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID()));
+
+		if (paymentBonusSettlementMode.isSelfDeductAllowed())
+		{
+			generatePaymentBonusCreditMemoIfAny(allocationDateTrx);
+		}
 
 		// a customer who pays in full is owed the bonus anyway; decided on the open amount before this payment is allocated, booked after (see below)
-		final PaymentBonusDeduction payFullBonusGrant = computePayFullBonusGrantIfAny();
+		final PaymentBonusDeduction payFullBonusGrant = paymentBonusSettlementMode.isPayFullGrantAllowed() ? computePayFullBonusGrantIfAny() : null;
 
 		final Money invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, false);
 		final Money payAmt = getPayAmtAsMoney();
