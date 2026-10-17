@@ -155,4 +155,12 @@ class PaymentBonusAmountMatcherTest
 		assertThatThrownBy(() -> PaymentBonusAmountMatcher.classify(eur("100"), eur("3"), Amount.of("10", CurrencyCode.CHF), eur("90"), true))
 				.isInstanceOf(AdempiereException.class);
 	}
+
+	@Test
+	void classify_skontoEqualsBonus_payFullWins()
+	{
+		// paid 90 == open - Skonto == open - bonus; the pay-full rule comes first
+		assertThat(PaymentBonusAmountMatcher.classify(eur("100"), eur("10"), eur("10"), eur("90"), true))
+				.isEqualTo(PaymentBonusAmountMatcher.SettlementType.PAY_FULL);
+	}
 }
