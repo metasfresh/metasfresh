@@ -284,6 +284,9 @@ Feature: Average PO - Check costing when reversing a material receipt
     #
     And while a concurrent transaction commits a new M_CostDetail for M_MatchPO mpo1, the material receipt identified by receipt1 is reversed as reversal1
     Then the concurrent M_CostDetail commit failed, because M_MatchPO mpo1 was deleted first
+    And validate the created material receipt lines
+      | M_InOutLine_ID  | M_InOut_ID | M_Product_ID |
+      | reversal1_line1 | reversal1  | product      |
     And Wait until receipt reversal1 are posted
     And after not more than 10s, M_CostDetails are found for product product and cost element AveragePO
       | TableName   | Record_ID       | IsSOTrx | Amt      | Qty     | IsChangingCosts |
