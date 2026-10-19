@@ -1458,3 +1458,66 @@ Feature: EDI INVOIC export via postgREST
   ]
 }
     """
+
+
+  # ################################################################################################
+  # ################################################################################################
+  @Id:S32545_TC5
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00359_EDI_INVOICE_JSON
+@F00359
+  Scenario: an invoice made only of packing lines is EDI-invalid for an EDI INVOIC recipient
+    # - The customer is an EDI INVOIC recipient (flag + recipient GLN) with a GLN on its location.
+    # - Invoice 1 has one packing line only: it is not exportable and gets EDI_ExportStatus I (invalid).
+    # - Invoice 2 (control, same partner) has a goods line and a packing line: it stays Pending (P).
+    #   It proves the packing-only guard, not the partner setup, causes the invalid status.
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City |
+      | loc_bill                 | DE          | billAddr     | 111        | billCity |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName |
+      | bpLoc_bill | 1111111111111 | customer1                | loc_bill                     | true         | true         | billBPName       |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiInvoicRecipient | EdiInvoicRecipientGLN | Identifier |
+      | customer1     | Y                    | 3333333333333         | ediSetting |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
+      | wh             | customer1     | bpLoc_bill             |
+    And metasfresh contains M_Products:
+      | Identifier    | Value              | Name              | Description              |
+      | productNormal | normalProductValue | normalProductName | normalProductDescription |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID |
+      | salesPLV               | productNormal | 5.00     | PCE      |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID |
+      | o_1        | true    | customer1     | bpLoc_bill             | F            | 2025-05-01  | 2025-05-01Z  | wh             |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID  | QtyEntered |
+      | ol_1       | o_1                   | productNormal | 1          |
+    And the order identified by o_1 is completed
+
+    # Invoices are built directly (no C_Order_ID on the header), so the shipment check does not apply.
+    And metasfresh contains C_Invoice:
+      | Identifier  | REST.Context   | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | crateOnly   | crateOnly_ID   | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+      | goodsAndPkg | goodsAndPkg_ID | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID  | C_OrderLine_ID | QtyInvoiced | IsPackagingMaterial |
+      | crateOnly    | productNormal |                | 1 PCE       | Y                   |
+      | goodsAndPkg  | productNormal | ol_1           | 1 PCE       | N                   |
+      | goodsAndPkg  | productNormal |                | 1 PCE       | Y                   |
+    And the invoice identified by crateOnly is completed
+    And the invoice identified by goodsAndPkg is completed
+
+    # The stored EDIErrorMsg is the German message text of NotExistsNonPackagingInvoiceLineError
+    # (the session language of the test run), followed by the invoice document number.
+    # The asserted part is the text stating "only packaging-material lines and no exportable line".
+    Then after not more than 30s, C_Invoice records have the following export status
+      | C_Invoice_ID | EDI_ExportStatus | EDIErrorMsg                                                         |
+      | crateOnly    | I                | nur Verpackungsmaterial-Positionen und keine exportierbare Position |
+      | goodsAndPkg  | P                |                                                                     |

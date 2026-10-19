@@ -118,6 +118,22 @@ public class EDI_cctop_invoic_v_StepDef
 				.buildAndEnqueue();
 	}
 
+	/**
+	 * Waits until each C_Invoice has the given export status, then optionally checks its error message.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_ID</b> — (required, identifier-ref) the invoice<br>
+	 *   <b>EDI_ExportStatus</b> — (required) expected export status code<br>
+	 *   <b>EDIErrorMsg</b> — (optional) text the stored error message must contain<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 30s, C_Invoice records have the following export status
+	 *   | C_Invoice_ID | EDI_ExportStatus | EDIErrorMsg |
+	 *   | invoice_1    | I                | some text   |
+	 * </pre>
+	 */
 	@Then("^after not more than (.*)s, C_Invoice records have the following export status$")
 	public void validate_export_status(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
@@ -139,6 +155,9 @@ public class EDI_cctop_invoic_v_StepDef
 			InterfaceWrapperHelper.refresh(ediInvoiceRecord);
 			return exportStatus.equals(ediInvoiceRecord.getEDI_ExportStatus());
 		});
+
+		tableRow.getAsOptionalString(de.metas.edi.model.I_C_Invoice.COLUMNNAME_EDIErrorMsg)
+				.ifPresent(expected -> assertThat(ediInvoiceRecord.getEDIErrorMsg()).contains(expected));
 	}
 
 	@Then("EDI_cctop_invoic_500_v of the following EDI_cctop_invoic_v is validated")
