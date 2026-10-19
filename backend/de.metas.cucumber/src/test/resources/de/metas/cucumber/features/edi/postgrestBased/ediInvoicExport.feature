@@ -591,12 +591,12 @@ Feature: EDI INVOIC export via postgREST
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00359_EDI_INVOICE_JSON
 @F00359
-  Scenario: a packaging-material invoice line does not add a second delivery party (DP)
-    # A packaging-material line (deposit / Leergut) carries no C_OrderLine_ID.
-    # It must not be exported as an INVOIC line item, and — because it would otherwise fall back to
-    # the invoice's own bill-to location — it must not emit a second DP party. The order's delivery
-    # (HandOver) location differs from the bill-to, so the genuine DP is the delivery location and a
-    # spurious second DP (= bill-to, from the packaging line) is detectable.
+  Scenario: a packaging-material invoice line is an INVOIC line and does not add a second delivery party (DP)
+    # - A packaging-material line (deposit / Leergut) carries no C_OrderLine_ID.
+    # - It is exported as its own INVOIC line (Lines entry with Packaging.IsPackagingMaterial = true).
+    # - It must still emit NO second DP party (it would otherwise fall back to the bill-to location).
+    # - The order's delivery (HandOver) location differs from the bill-to, so the genuine DP is the
+    #   delivery location and a spurious second DP (= bill-to) is detectable.
     Given metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
       | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
@@ -659,10 +659,9 @@ Feature: EDI INVOIC export via postgREST
 }
     """
 
-    # The packaging line is excluded from Lines (only the product line is exported), and Partners
-    # carries exactly ONE "DP" (the HandOver delivery location) — NOT a second DP at the bill-to
-    # location. Without the fix the order-less packaging line adds that second DP and the Partners
-    # array has 6 entries, so this assertion fails.
+    # - Lines: product line (Packaging null) + packing line (Packaging marker).
+    # - Partners: exactly ONE "DP" (the HandOver delivery location), NOT a second DP at the bill-to.
+    # Lines: 2 entries — the order-less packaging line (Line 20, 1 PCE × 5.00) is now exported as its own line with the Packaging marker; the product line keeps Packaging null. Partners unchanged: exactly one DP.
     Then the metasfresh REST-API responds with
     """
 {
@@ -673,7 +672,15 @@ Feature: EDI INVOIC export via postgREST
         {
           "Invoice_Line": 10,
           "Product_Name": "normalProductName",
-          "Product_Supplier_ProductNo": "normalProductValue"
+          "Product_Supplier_ProductNo": "normalProductValue",
+          "Packaging": null
+        },
+        {
+          "Invoice_Line": 20,
+          "Product_Name": "normalProductName",
+          "Product_Supplier_ProductNo": "normalProductValue",
+          "NetAmt": 5.0,
+          "Packaging": { "IsPackagingMaterial": true }
         }
       ],
       "Partners": [
