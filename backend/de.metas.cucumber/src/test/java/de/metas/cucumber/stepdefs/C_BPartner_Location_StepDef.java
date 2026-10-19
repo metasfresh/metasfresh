@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationBL;
@@ -65,6 +66,7 @@ public class C_BPartner_Location_StepDef
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_Location_StepDefData locationTable;
+	private final M_Shipper_StepDefData shipperTable;
 
 	private final TestContext restTestContext;
 
@@ -250,6 +252,10 @@ public class C_BPartner_Location_StepDef
 
 		tableRow.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_IsPreAdviceRequired)
 				.ifPresent(bPartnerLocationRecord::setIsPreAdviceRequired);
+
+		tableRow.getAsOptionalIdentifier(I_C_BPartner_Location.COLUMNNAME_M_Shipper_ID)
+				.map(shipperTable::getId)
+				.ifPresent(shipperId -> bPartnerLocationRecord.setM_Shipper_ID(shipperId.getRepoId()));
 
 		final Integer bpartnerLocationId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 		if (bpartnerLocationId != null && bpartnerLocationId > 0)
