@@ -1150,3 +1150,311 @@ Feature: EDI INVOIC export via postgREST
   ]
 }
     """
+
+
+  # ################################################################################################
+  # ################################################################################################
+  @Id:S32545_TC1a
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00359_EDI_INVOICE_JSON
+@F00359
+  Scenario: INVOIC JSON of an invoice with goods and crate lines split per Positions Nr. lists every line
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City  |
+      | loc_bill                 | DE          | billAddr     | 111        | billCity  |
+      | loc_delivery             | DE          | delivAddr    | 222        | delivCity |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier  | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName |
+      | bpLoc_bill  | 1111111111111 | customer1                | loc_bill                     | true         | true         | billBPName       |
+      | bpLoc_deliv | 2222222222222 | customer1                | loc_delivery                 | true         | false        | delivBPName      |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
+      | wh             | customer1     | bpLoc_bill             |
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | P1         |
+      | P2         |
+    And metasfresh contains C_TaxCategory
+      | Identifier   |
+      | tax7Category |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsDocumentLevel |
+      | tax7       | tax7Category     | 7    | DE                       | DE                        | Y               |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID.InternalName | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsDocumentLevel |
+      | tax19      | Normal                        | 19   | DE                       | DE                        | Y               |
+    And metasfresh contains M_Products:
+      | Identifier   | GTIN          |
+      | goodsKiku    |               |
+      | goodsEvelina |               |
+      | eps186       | 4000000032557 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | goodsKiku    | 1.00     | PCE      | tax7Category     |
+      | salesPLV               | goodsEvelina | 1.00     | PCE      | tax7Category     |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID.InternalName |
+      | salesPLV               | eps186 | 0.00 | PCE      | Normal                        |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID |
+      | o_1        | true    | customer1     | bpLoc_deliv            | F            | 2025-05-01  | 2025-05-01Z  | wh             |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_kiku    | o_1                   | goodsKiku    | 220        |
+      | ol_evelina | o_1                   | goodsEvelina | 165        |
+    And the order identified by o_1 is completed
+
+    And metasfresh contains C_Invoice:
+      | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | inv        | inv_ID       | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | C_OrderLine_ID | QtyInvoiced | Price  | C_Tax_ID$set | IsPackagingMaterial | C_Project_ID |
+      | inv          | goodsKiku    | ol_kiku        | 220 PCE     | 1.00   | tax7         | N                   | P1           |
+      | inv          | goodsEvelina | ol_evelina     | 165 PCE     | 1.00   | tax7         | N                   | P2           |
+      | inv          | eps186 |                | 15 PCE      | 0.00 | tax19        | Y                   | P2           |
+      | inv          | eps186 |                | 20 PCE      | 0.00 | tax19        | Y                   | P1           |
+    And the invoice identified by inv is completed
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@inv_ID@"
+    }
+  ]
+}
+    """
+
+    # Σ NetAmt 220 + 165 + 0 + 0 = 385.00 = Invoice_TotalLines (case A, reference case A)
+    # Partners: no HandOver, no shipment → DP / SN fall back to the order location (edi_cctop_119_v_view.sql:116-117,164-165); IV = invoice location (:135); crate lines excluded from BY / DP / SN (:55,99,150)
+    # One test partner with two locations stands for an order (delivery) location and a separate bill-to location: parties are keyed by location (edi_cctop_119_v_view.sql), so the JSON differs only in name fields; approved TC1 allows "a different (bill-to) location"
+    # Partners: SU = org remit-to (no M_InOut_ID on the test invoice), exactly one DP
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @inv_ID@,
+      "Invoice_TotalLines": 385.0,
+      "Invoice_TotalVAT": 26.95,
+      "Invoice_GrandTotal": 411.95,
+      "Lines": [
+        {
+          "Invoice_Line": 10,
+          "Invoice_QtyInvoiced": 220,
+          "NetAmt": 220.0,
+          "Tax_Percent": 7.0,
+          "Tax_Amount": 15.4,
+          "Product_DepositType": null,
+          "Packaging": null
+        },
+        {
+          "Invoice_Line": 20,
+          "Invoice_QtyInvoiced": 165,
+          "NetAmt": 165.0,
+          "Tax_Percent": 7.0,
+          "Tax_Amount": 11.55,
+          "Product_DepositType": null,
+          "Packaging": null
+        },
+        {
+          "Invoice_Line": 30,
+          "Invoice_QtyInvoiced": 15,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 0.0,
+          "Tax_Percent": 19.0,
+          "Tax_Amount": 0,
+          "Product_DepositType": null,
+          "ORDERS_Line": null,
+          "Order_Line": 30,
+          "Product_Buyer_CU_GTIN": "4000000032557",
+          "Product_Supplier_TU_GTIN": "4000000032557",
+          "Product_Buyer_TU_GTIN": null,
+          "Packaging": { "IsPackagingMaterial": true }
+        },
+        {
+          "Invoice_Line": 40,
+          "Invoice_QtyInvoiced": 20,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 0.0,
+          "Tax_Percent": 19.0,
+          "Tax_Amount": 0,
+          "Product_DepositType": null,
+          "ORDERS_Line": null,
+          "Order_Line": 40,
+          "Product_Buyer_CU_GTIN": "4000000032557",
+          "Product_Supplier_TU_GTIN": "4000000032557",
+          "Product_Buyer_TU_GTIN": null,
+          "Packaging": { "IsPackagingMaterial": true }
+        }
+      ],
+      "Partners": [
+        { "EANCOM_LocationType": "SU", "Name": "metasfresh AG", "City": "Bonn" },
+        { "EANCOM_LocationType": "BY", "GLN": "2222222222222", "Address1": "delivAddr", "City": "delivCity" },
+        { "EANCOM_LocationType": "IV", "GLN": "1111111111111", "Address1": "billAddr", "City": "billCity" },
+        { "EANCOM_LocationType": "SN", "GLN": "2222222222222", "Address1": "delivAddr", "City": "delivCity" },
+        { "EANCOM_LocationType": "DP", "GLN": "2222222222222", "Address1": "delivAddr", "City": "delivCity" }
+      ],
+      "Sums": [
+        { "Tax_Percent": 19.0, "Tax_BaseAmt": 0.0, "Tax_Amt": 0.0, "TotalAmt": 0.0, "Tax_Exempt": false },
+        { "Tax_Percent": 7.0, "Tax_BaseAmt": 385.0, "Tax_Amt": 26.95, "Tax_Exempt": false }
+      ]
+    }
+  ]
+}
+    """
+
+
+  # ################################################################################################
+  # ################################################################################################
+  @Id:S32545_TC1b
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00359_EDI_INVOICE_JSON
+@F00359
+  Scenario: INVOIC JSON of an invoice with goods, a crate line and a negative bonus line lists every line
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City  |
+      | loc_bill                 | DE          | billAddr     | 111        | billCity  |
+      | loc_delivery             | DE          | delivAddr    | 222        | delivCity |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier  | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName |
+      | bpLoc_bill  | 1111111111111 | customer1                | loc_bill                     | true         | true         | billBPName       |
+      | bpLoc_deliv | 2222222222222 | customer1                | loc_delivery                 | true         | false        | delivBPName      |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
+      | wh             | customer1     | bpLoc_bill             |
+    And metasfresh contains C_TaxCategory
+      | Identifier   |
+      | tax7Category |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsDocumentLevel |
+      | tax7       | tax7Category     | 7    | DE                       | DE                        | Y               |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID.InternalName | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsDocumentLevel |
+      | tax19      | Normal                        | 19   | DE                       | DE                        | Y               |
+    And metasfresh contains M_Products:
+      | Identifier    | GTIN          | DepositType |
+      | goodsEvelina  |               |             |
+      | bonusWare     |               |             |
+      | eps186        | 4000000032557 |             |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | goodsEvelina | 1.00     | PCE      | tax7Category     |
+      | salesPLV               | bonusWare    | 16.50    | PCE      | tax7Category     |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID.InternalName |
+      | salesPLV               | eps186        | 0.00     | PCE      | Normal                        |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID |
+      | o_1        | true    | customer1     | bpLoc_deliv            | F            | 2025-05-01  | 2025-05-01Z  | wh             |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_evelina | o_1                   | goodsEvelina | 550        |
+      | ol_bonus   | o_1                   | bonusWare    | 1          |
+    And the order identified by o_1 is completed
+
+    And metasfresh contains C_Invoice:
+      | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | inv        | inv_ID       | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID  | C_OrderLine_ID | QtyInvoiced | Price  | C_Tax_ID$set | IsPackagingMaterial |
+      | inv          | goodsEvelina  | ol_evelina     | 550 PCE     | 1.00   | tax7         | N                   |
+      | inv          | eps186        |                | 50 PCE      | 0.00   | tax19        | Y                   |
+      | inv          | bonusWare     | ol_bonus       | 1 PCE       | -16.50 | tax7         | N                   |
+    And the invoice identified by inv is completed
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@inv_ID@"
+    }
+  ]
+}
+    """
+
+    # Σ NetAmt 550 + 0 − 16.50 = 533.50 = Invoice_TotalLines (case B, reference case B)
+    # taxes document-level (IsDocumentLevel=Y, MInvoiceTax.java:257,302): VAT per rate on the summed base; per-line Tax_Amount is TaxAmtInfo (HALF_UP per line) — case B line taxes sum to 37.34, the per-base 7 % tax is 37.35, never compare the two
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @inv_ID@,
+      "Invoice_TotalLines": 533.5,
+      "Invoice_TotalVAT": 37.35,
+      "Invoice_GrandTotal": 570.85,
+      "Lines": [
+        {
+          "Invoice_Line": 10,
+          "NetAmt": 550.0,
+          "Tax_Amount": 38.5,
+          "Product_DepositType": null,
+          "Packaging": null
+        },
+        {
+          "Invoice_Line": 20,
+          "Invoice_QtyInvoiced": 50,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "NetAmt": 0.0,
+          "Tax_Percent": 19.0,
+          "Tax_Amount": 0,
+          "Product_DepositType": null,
+          "ORDERS_Line": null,
+          "Order_Line": 20,
+          "Product_Buyer_CU_GTIN": "4000000032557",
+          "Product_Supplier_TU_GTIN": "4000000032557",
+          "Product_Buyer_TU_GTIN": null,
+          "Packaging": { "IsPackagingMaterial": true }
+        },
+        {
+          "Invoice_Line": 30,
+          "NetAmt": -16.5,
+          "Tax_Amount": -1.16,
+          "Product_DepositType": null,
+          "Packaging": null
+        }
+      ],
+      "Partners": [
+        { "EANCOM_LocationType": "SU", "Name": "metasfresh AG", "City": "Bonn" },
+        { "EANCOM_LocationType": "BY", "GLN": "2222222222222", "Address1": "delivAddr", "City": "delivCity" },
+        { "EANCOM_LocationType": "IV", "GLN": "1111111111111", "Address1": "billAddr", "City": "billCity" },
+        { "EANCOM_LocationType": "SN", "GLN": "2222222222222", "Address1": "delivAddr", "City": "delivCity" },
+        { "EANCOM_LocationType": "DP", "GLN": "2222222222222", "Address1": "delivAddr", "City": "delivCity" }
+      ],
+      "Sums": [
+        { "Tax_Percent": 19.0, "Tax_BaseAmt": 0.0, "Tax_Amt": 0.0, "TotalAmt": 0.0, "Tax_Exempt": false },
+        { "Tax_Percent": 7.0, "Tax_BaseAmt": 533.5, "Tax_Amt": 37.35, "Tax_Exempt": false }
+      ]
+    }
+  ]
+}
+    """
