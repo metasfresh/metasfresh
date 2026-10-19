@@ -142,6 +142,33 @@ it('receives what the operator corrected after the scan', async () => {
   expect(onClick.mock.calls[0][0]).toEqual(expect.objectContaining({ lotNo: '501', barcode: LMQ_CODE }));
 });
 
+it('receives the quantity and weight the operator entered after the scan, with the scanned Lot-Nr and MHD', async () => {
+  const { onClick } = renderCatchWeightButton();
+  await openDialog();
+  await scan(LMQ_CODE);
+  expect(document.getElementById('qty-input')).toBeEnabled();
+  expect(document.getElementById('catch-weight')).toBeEnabled();
+  await act(async () => {
+    fireEvent.change(document.getElementById('qty-input'), { target: { value: '3' } });
+  });
+  await act(async () => {
+    fireEvent.change(document.getElementById('catch-weight'), { target: { value: '0.303' } });
+  });
+  await confirm();
+
+  expect(onClick).toHaveBeenCalledTimes(1);
+  expect(onClick.mock.calls[0][0]).toEqual(
+    expect.objectContaining({
+      qtyEnteredAndValidated: '3',
+      catchWeight: '0.303',
+      catchWeightUom: 'kg',
+      lotNo: '500',
+      bestBeforeDate: '2025-11-08',
+      barcode: LMQ_CODE,
+    })
+  );
+});
+
 // Co-/by-products keep the previous behaviour: each scan receives one piece right away.
 it('receives a co-product right on the scan, with the manual-input escape offered', async () => {
   const { onClick } = renderCatchWeightButton({ isCatchWeightScanMandatory: false });
