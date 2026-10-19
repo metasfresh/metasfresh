@@ -50,6 +50,7 @@ const MaterialReceiptLineScreen = () => {
       qtyReceived,
       qtyToReceive,
       skipReceiveTargetStep,
+      catchWeightScanRequired,
       defaultLotNo,
       defaultBestBeforeDate,
     },
@@ -201,7 +202,8 @@ const MaterialReceiptLineScreen = () => {
           readAttributes={readAttributes}
           defaultLotNo={defaultLotNo}
           defaultBestBeforeDate={defaultBestBeforeDate}
-          isCatchWeightScanMandatory={!coproduct} // main finished good only; co-/by-products keep receive-on-scan
+          // per-customer setting, main finished good only; otherwise (and for co-/by-products) receive-on-scan + manual input
+          isCatchWeightScanMandatory={!!catchWeightScanRequired && !coproduct}
         />
         {noGebindeReason && (
           <p className="help is-danger" data-testid="receive-no-gebinde-hint">

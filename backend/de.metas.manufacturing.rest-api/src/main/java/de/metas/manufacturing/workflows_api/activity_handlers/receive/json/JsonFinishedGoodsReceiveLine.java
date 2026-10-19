@@ -22,6 +22,10 @@ public class JsonFinishedGoodsReceiveLine
 
 	boolean coproduct;
 	boolean skipReceiveTargetStep;
+	/**
+	 * {@code true} if a catch-weight line can only be received by scanning a code that the operator then confirms (no manual input)
+	 */
+	boolean catchWeightScanRequired;
 	@NonNull String productName;
 	@NonNull String uom;
 	@Nullable String catchWeightUomSymbol;

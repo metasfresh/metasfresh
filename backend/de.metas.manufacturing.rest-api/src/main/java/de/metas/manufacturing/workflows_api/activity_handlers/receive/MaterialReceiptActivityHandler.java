@@ -180,6 +180,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.id(line.getId().toJson())
 				.coproduct(!isMainFinishedGood)
 				.skipReceiveTargetStep(lineConfig.isSkipReceiveTargetStep())
+				.catchWeightScanRequired(lineConfig.isCatchWeightScanRequired())
 				.productName(line.getProductValueAndProductName().translate(adLanguage))
 				.uom(uom)
 				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), adLanguage))
