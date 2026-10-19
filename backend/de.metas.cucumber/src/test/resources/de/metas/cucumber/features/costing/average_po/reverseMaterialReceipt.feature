@@ -282,7 +282,7 @@ Feature: Average PO - Check costing when reversing a material receipt
     #
     # Reverse the material receipt while the concurrent posting commits
     #
-    And the material receipt identified by receipt1 is reversed as reversal1, while a concurrent transaction commits a new M_CostDetail for M_MatchPO mpo1 right before that M_MatchPO is deleted
+    And while a concurrent transaction commits a new M_CostDetail for M_MatchPO mpo1, the material receipt identified by receipt1 is reversed as reversal1
     Then the concurrent M_CostDetail commit failed, because M_MatchPO mpo1 was deleted first
     And Wait until receipt reversal1 are posted
     And after not more than 10s, M_CostDetails are found for product product and cost element AveragePO

@@ -30,11 +30,11 @@ public class M_MatchPO_ConcurrentCostDetail_StepDef
 	@Nullable private Integer concurrentCostDetailId;
 	@Nullable private Throwable concurrentCommitError;
 
-	@And("^the material receipt identified by (.*) is reversed as (.*), while a concurrent transaction commits a new M_CostDetail for M_MatchPO (.*) right before that M_MatchPO is deleted$")
+	@And("^while a concurrent transaction commits a new M_CostDetail for M_MatchPO (.*), the material receipt identified by (.*) is reversed as (.*)$")
 	public void reverseWhileConcurrentCostDetailCommit(
+			@NonNull final String matchPOIdentifier,
 			@NonNull final String receiptIdentifier,
-			@NonNull final String reversalIdentifier,
-			@NonNull final String matchPOIdentifier)
+			@NonNull final String reversalIdentifier)
 	{
 		final MatchPOId matchPOId = matchPOTable.getId(matchPOIdentifier);
 		try (final ConcurrentMatchPOCostDetailCommit concurrentCommit = ConcurrentMatchPOCostDetailCommit.insertUncommitted(matchPOId))

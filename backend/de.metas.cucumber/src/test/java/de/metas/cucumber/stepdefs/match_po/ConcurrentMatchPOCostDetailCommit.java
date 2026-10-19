@@ -58,6 +58,7 @@ final class ConcurrentMatchPOCostDetailCommit implements AutoCloseable
 			final int clientId = selectInt(connection, "SELECT AD_Client_ID FROM M_CostDetail WHERE M_MatchPO_ID=? ORDER BY M_CostDetail_ID LIMIT 1", matchPOId.getRepoId());
 			final int costDetailId = DB.getNextID(clientId, I_M_CostDetail.Table_Name);
 
+			// Copy via a temp table: same table, so SELECT * keeps the column order; M_CostDetail has no unique index besides its PK.
 			execute(connection, "CREATE TEMPORARY TABLE tmp_concurrent_matchpo_costdetail ON COMMIT DROP AS"
 					+ " SELECT * FROM M_CostDetail WHERE M_MatchPO_ID=? ORDER BY M_CostDetail_ID LIMIT 1", matchPOId.getRepoId());
 			execute(connection, "UPDATE tmp_concurrent_matchpo_costdetail SET M_CostDetail_ID=?", costDetailId);
@@ -167,6 +168,7 @@ final class ConcurrentMatchPOCostDetailCommit implements AutoCloseable
 		try
 		{
 			connection.rollback();
+			connection.setAutoCommit(true); // don't hand the connection back to the pool with autoCommit=false
 		}
 		catch (final SQLException e)
 		{

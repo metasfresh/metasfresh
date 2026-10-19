@@ -28,7 +28,7 @@ import java.util.function.Consumer;
 final class M_CostDetail_BeforeDeleteHook
 {
 	private static final M_CostDetail_BeforeDeleteHook INSTANCE = new M_CostDetail_BeforeDeleteHook();
-	private static final AtomicBoolean registered = new AtomicBoolean(false);
+	private static boolean registered = false; // guarded by the class monitor, see registerOnce()
 
 	private final AtomicReference<ArmedHook> armedHook = new AtomicReference<>();
 
@@ -42,10 +42,7 @@ final class M_CostDetail_BeforeDeleteHook
 			@NonNull final Consumer<String> hook,
 			@NonNull final Runnable action)
 	{
-		if (registered.compareAndSet(false, true))
-		{
-			Services.get(IModelInterceptorRegistry.class).addModelInterceptor(INSTANCE);
-		}
+		registerOnce();
 
 		final ArmedHook armed = new ArmedHook(matchPOId, hook, new AtomicBoolean(false));
 		INSTANCE.armedHook.set(armed);
@@ -63,6 +60,15 @@ final class M_CostDetail_BeforeDeleteHook
 			throw new AdempiereException("No M_CostDetail of the M_MatchPO was deleted, so the hook was never called")
 					.appendParametersToMessage()
 					.setParameter("matchPOId", matchPOId);
+		}
+	}
+
+	private static synchronized void registerOnce()
+	{
+		if (!registered)
+		{
+			Services.get(IModelInterceptorRegistry.class).addModelInterceptor(INSTANCE);
+			registered = true;
 		}
 	}
 
