@@ -51,6 +51,7 @@ import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.tourplanning.M_Tour_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocBaseType;
@@ -169,6 +170,7 @@ public class M_InOut_StepDef
 	private final M_HU_StepDefData huTable;
 	private final C_Project_StepDefData projectTable;
 	@NonNull private final M_Product_StepDefData productTable;
+	private final M_Shipper_StepDefData shipperTable;
 	private final TestContext restTestContext;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -210,7 +212,8 @@ public class M_InOut_StepDef
 	 * <b>MovementType</b> — (optional) expected movement type code (e.g. {@code C+} for a customer return)<br>
 	 * <b>OPT.C_Order_ID</b> — (optional, identifier-ref, null-allowed) expected sales order; pass
 	 *   {@code null} to assert the shipment/receipt carries no order (e.g. a POS return, which is order-less)<br>
-	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
+	 * <b>M_Shipper_ID</b> — (optional, identifier-ref) expected shipper (Lieferweg) on the shipment header<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData, M_Shipper_StepDefData
 	 * @cucumber.example <pre>
 	 * And validate the created shipments
 	 *   | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | DateOrdered | processed | DocStatus |
@@ -302,6 +305,10 @@ public class M_InOut_StepDef
 					final int expectedOrderId = orderIdentifier.isNullPlaceholder() ? 0 : orderTable.get(orderIdentifier.getAsString()).getC_Order_ID();
 					softly.assertThat(inout.getC_Order_ID()).as("C_Order_ID").isEqualTo(expectedOrderId);
 				});
+
+		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_Shipper_ID)
+				.map(shipperTable::getId)
+				.ifPresent(expectedShipperId -> softly.assertThat(inout.getM_Shipper_ID()).as("M_Shipper_ID").isEqualTo(expectedShipperId.getRepoId()));
 
 		softly.assertAll();
 	}

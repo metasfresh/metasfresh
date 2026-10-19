@@ -1,6 +1,7 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1364471192L;
+	private static final long serialVersionUID = -1820310047L;
 
     /** Standard Constructor */
     public X_M_Shipper (final Properties ctx, final int M_Shipper_ID, @Nullable final String trxName)
@@ -59,6 +60,19 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setDocumentCopies (final @Nullable BigDecimal DocumentCopies)
+	{
+		set_Value (COLUMNNAME_DocumentCopies, DocumentCopies);
+	}
+
+	@Override
+	public BigDecimal getDocumentCopies() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_DocumentCopies);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
