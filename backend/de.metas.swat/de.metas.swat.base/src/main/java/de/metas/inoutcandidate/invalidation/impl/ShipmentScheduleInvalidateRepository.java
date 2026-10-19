@@ -30,6 +30,7 @@ import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -87,15 +88,37 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	/**
 	 * Invalidate by M_Product_ID
 	 */
-	private static final String SQL_RECOMPUTE_BY_PRODUCT = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
-			+ " SELECT "
-			+ " s." + COLUMNNAME_M_ShipmentSchedule_ID + ", ? , s." + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + ", ?"
-			+ " FROM " + I_M_ShipmentSchedule.Table_Name + " s "
-			+ "   INNER JOIN " + I_C_OrderLine.Table_Name + " ol ON ol." + COLUMNNAME_C_OrderLine_ID + "=s." + COLUMNNAME_C_OrderLine_ID
-			+ " WHERE true "
-			+ "   AND s.IsActive='Y' AND s." + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N' "
-			+ "   AND NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=s." + COLUMNNAME_M_ShipmentSchedule_ID + ")"
-			+ "   AND ol.M_Product_ID=? ";
+	private String sqlRecomputeByProduct()
+	{
+		return "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
+				+ " SELECT "
+				+ " s." + COLUMNNAME_M_ShipmentSchedule_ID + ", ? , s." + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + ", ?"
+				+ " FROM " + I_M_ShipmentSchedule.Table_Name + " s "
+				+ "   INNER JOIN " + I_C_OrderLine.Table_Name + " ol ON ol." + COLUMNNAME_C_OrderLine_ID + "=s." + COLUMNNAME_C_OrderLine_ID
+				+ " WHERE true "
+				+ "   AND s.IsActive='Y' AND s." + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N' "
+				+ "   AND " + sqlNoPendingFlagOfOwnTrx("s." + COLUMNNAME_M_ShipmentSchedule_ID)
+				+ "   AND ol.M_Product_ID=? ";
+	}
+
+	/**
+	 * SQL predicate that is true if the given schedule has no pending (not yet picked up) recompute flag that could be skipped.
+	 * <p>
+	 * Inside a thread-inherited transaction we dedup only against a pending flag written by this very transaction
+	 * ({@code pg_current_xact_id_if_assigned()} is NULL until the transaction wrote something, so nothing matches then).
+	 * A flag of another transaction must not suppress ours: the recompute may process that other flag before our change is committed
+	 * and thus never see our change. Without a transaction we keep the legacy "any pending flag" dedup.
+	 */
+	private String sqlNoPendingFlagOfOwnTrx(@NonNull final String scheduleIdColumnSql)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		final boolean ownTrxActive = trxManager.isActive(threadTrx);
+
+		return "NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + scheduleIdColumnSql
+				+ (ownTrxActive ? " and e.DBTransactionNo = pg_current_xact_id_if_assigned()::text::numeric" : "")
+				+ ")";
+	}
 
 	private static final String SQL_RECOMPUTE_ALL =               //
 			"INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
@@ -134,7 +157,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	{
 		final String chunkUUID = UUID.randomUUID().toString();
 		final String description = truncInvalidateDescription("" + productId);
-		final int count = DB.executeUpdateAndThrowExceptionOnFail(SQL_RECOMPUTE_BY_PRODUCT, new Object[] { description, chunkUUID, productId }, ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sqlRecomputeByProduct(), new Object[] { description, chunkUUID, productId }, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Invalidated {} entries for productId={} ", count, productId);
 
 		if (count > 0)
@@ -208,8 +231,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				// Only those which are not processed
 				+ "   AND " + I_M_ShipmentSchedule.COLUMNNAME_Processed + "=? "
 				// Only those which were not already added
-				+ "   AND NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "."
-				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
+				+ "   AND " + sqlNoPendingFlagOfOwnTrx(I_M_ShipmentSchedule.Table_Name + "." + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
 		sqlParams.addAll(headerAggregationKeysParams);
 		sqlParams.add(false); // Processed=false
 
@@ -251,9 +273,8 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 					+ " WHERE "
 					// Only our shipment schedule Ids
 					+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + " IN " + sqlInWhereClause
-					// Only those which were not already added (technically not necessary, but shall reduce unnecessary bloat)
-					+ "   AND NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "."
-					+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
+					// Only those not already flagged by this transaction (a flag of another transaction must not suppress ours, see sqlNoPendingFlagOfOwnTrx)
+					+ "   AND " + sqlNoPendingFlagOfOwnTrx(I_M_ShipmentSchedule.Table_Name + "." + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
 
 			count += DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		}

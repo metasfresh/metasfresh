@@ -4,6 +4,8 @@ import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegmentBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
@@ -129,5 +131,46 @@ public class ShipmentScheduleInvalidateRepositoryTest
 		assertThat(sqlParams)
 				.as("the locator repo-id must be collected as an SQL parameter")
 				.contains(555);
+	}
+
+	private static final String OWN_TRX_TERM = "DBTransactionNo = pg_current_xact_id_if_assigned()::text::numeric";
+
+	private String pendingFlagPredicate() throws Exception
+	{
+		final Method m = ShipmentScheduleInvalidateRepository.class.getDeclaredMethod("sqlNoPendingFlagOfOwnTrx", String.class);
+		m.setAccessible(true);
+		return (String)m.invoke(repository, "s.M_ShipmentSchedule_ID");
+	}
+
+	@Test
+	public void pendingFlagPredicate_threadTrx_matchesOwnTrxOnly() throws Exception
+	{
+		final String[] predicate = new String[1];
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+			try
+			{
+				predicate[0] = pendingFlagPredicate();
+			}
+			catch (final Exception e)
+			{
+				throw new RuntimeException(e);
+			}
+		});
+
+		assertThat(predicate[0])
+				.as("inside a thread-inherited trx, dedup only against the own transaction's pending flag")
+				.contains(OWN_TRX_TERM)
+				.contains("e.AD_PInstance_ID is NULL")
+				.contains("e.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID");
+	}
+
+	@Test
+	public void pendingFlagPredicate_noThreadTrx_isLegacy() throws Exception
+	{
+		assertThat(pendingFlagPredicate())
+				.as("without a thread-inherited trx the legacy any-pending-flag dedup applies")
+				.doesNotContain("DBTransactionNo")
+				.contains("e.AD_PInstance_ID is NULL")
+				.contains("e.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID");
 	}
 }
