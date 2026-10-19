@@ -1,6 +1,5 @@
 package de.metas.inoutcandidate.spi;
 
-import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
@@ -52,7 +51,6 @@ class ShipmentScheduleStockChangedEventHandlerTest
 		saveRecord(warehouse);
 
 		final ShipmentScheduleInvalidateBL invalidateBL = new ShipmentScheduleInvalidateBL(new PickingBOMService());
-		Services.registerService(IShipmentScheduleInvalidateBL.class, invalidateBL);
 		final ShipmentScheduleStockChangedEventHandler handler = new ShipmentScheduleStockChangedEventHandler(invalidateBL);
 
 		final StockChangedEvent event = StockChangedEvent.builder()
