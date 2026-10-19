@@ -54,3 +54,70 @@ Feature: shipment schedule recompute pass meets a concurrent change
     Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_1       | orderLine_1    | N             |
+
+  @Id:S33004_TC3_product
+  Scenario: a product-wide flag committed after the recompute pass is not lost
+    Given the shipment schedule recompute queues are paused
+    When the order identified by order_1 is completed
+    And the pending shipment schedule creation is processed
+    And the pending shipment schedule recompute pass runs
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | orderLine_1    | N             |
+    And the shipment schedule "ss_1" is flagged for recompute 1 times in one transaction, also from nested calls
+    When the shipment schedules of product "product_1" are flagged for recompute in a transaction committed only after the pending recompute ran
+    Then 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_1
+    When the shipment schedule recompute queues are resumed
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | orderLine_1    | N             |
+
+  @Id:S33004_TC3_headerKey
+  Scenario: a header-aggregation-key flag committed after the recompute pass is not lost
+    Given the shipment schedule recompute queues are paused
+    When the order identified by order_1 is completed
+    And the pending shipment schedule creation is processed
+    And the pending shipment schedule recompute pass runs
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | orderLine_1    | N             |
+    And the shipment schedule "ss_1" is flagged for recompute 1 times in one transaction, also from nested calls
+    When the shipment schedules with the header aggregation key of "ss_1" are flagged for recompute in a transaction committed only after the pending recompute ran
+    Then 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_1
+    When the shipment schedule recompute queues are resumed
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | orderLine_1    | N             |
+
+  @Id:S33004_TC4_single
+  Scenario: repeated flags of one schedule in one transaction leave exactly one marker
+    Given the shipment schedule recompute queues are paused
+    When the order identified by order_1 is completed
+    And the pending shipment schedule creation is processed
+    And the pending shipment schedule recompute pass runs
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | orderLine_1    | N             |
+    When the shipment schedule "ss_1" is flagged for recompute 5 times in one transaction, also from nested calls
+    Then 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_1
+    When the shipment schedule recompute queues are resumed
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | orderLine_1    | N             |
+
+  @Id:S33004_TC4_withPending
+  Scenario: repeated flags in a later transaction add one marker next to the older pending one
+    Given the shipment schedule recompute queues are paused
+    When the order identified by order_1 is completed
+    And the pending shipment schedule creation is processed
+    And the pending shipment schedule recompute pass runs
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | orderLine_1    | N             |
+    And the shipment schedule "ss_1" is flagged for recompute 1 times in one transaction, also from nested calls
+    When the shipment schedule "ss_1" is flagged for recompute 5 times in one transaction, also from nested calls
+    Then 2 untagged M_ShipmentSchedule_Recompute markers exist for ss_1
+    When the shipment schedule recompute queues are resumed
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | orderLine_1    | N             |
