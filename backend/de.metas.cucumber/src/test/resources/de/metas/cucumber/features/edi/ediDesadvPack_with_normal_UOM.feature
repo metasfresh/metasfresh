@@ -1,4 +1,4 @@
-@ghActions:run_on_executor5
+@ghActions:run_on_executor8
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00350_EDI
 @F00350

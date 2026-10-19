@@ -21,13 +21,13 @@ jobs:
     outputs:
       tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
-      # The sanitized BASE branch name; selects the DB seed (metasfresh/metas-db:seed-<base-refname>) in job db-images.
-      base-refname: ${{ steps.base-refname.outputs.refname }}
       # Floating tag of the BASE branch this ref derives from (e.g. soft_panda_hotfix for soft_panda_hotfix_Foo).
       # Used as an additional --cache-from so a feature branch's FIRST build reuses the base image's already-published
       # layers and pushes only the small delta. For a base branch (or an unrecognised ref) this equals tag-floating,
       # so the extra cache-from is a harmless no-op.
       base-tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.base-refname.outputs.refname }}
+      # The sanitized BASE branch name; selects the DB seed (metasfresh/metas-db:seed-<base-refname>) in job db-images.
+      base-refname: ${{ steps.base-refname.outputs.refname }}
       build-info-properties: ${{ steps.build-info-properties.outputs.content }}
       git-properties: ${{ steps.git-properties.outputs.content }}
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
@@ -62,8 +62,8 @@ jobs:
         run: |
           echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: determine-base-refname
-        # Resolve the BASE branch this ref derives from. It selects the DB seed (init output base-refname) and the
-        # base-tag-floating cache-from, so a feature branch's first build reuses the base branch's image cache.
+        # In short: reuse the base branch's already-built image cache so a feature branch's first build stays fast.
+        # Resolve the BASE branch this ref derives from, for the base-tag-floating cache-from (see init outputs).
         # Feature branches follow the "<base>_<suffix>" convention; the base branches are listed in CICD_BRANCH_MAP.
         # Pick the LONGEST base that the ref equals or starts with ("<base>_"); fall back to the ref itself
         # (base branches, merge-queue/merge-* branches, or anything unrecognised) -> base-tag == own tag, no-op.
@@ -79,7 +79,7 @@ jobs:
             fi
           done
           [ -z "$best" ] && best="$GIT_REF"
-          echo "Base branch resolved (DB seed, cache-from): $best"
+          echo "Base branch resolved for cache-from: $best"
           echo "refname=$(echo "$best" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: sanitize-branch-for-gh-pages
         id: sanitize-branch-gh-pages
@@ -1392,20 +1392,50 @@ jobs:
           --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
           --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
           .
-      - name: push-result-image
-        if: env.ACT != 'true'
+      - name: extract-results
+        run: |
+          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
+          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
+      # The test layers run with --fail-never, so a RED test run still yields a valid image whose inline cache would,
+      # once pushed to the floating tag, be replayed by every later build with unchanged inputs (a re-run could never turn it green).
+      # Therefore only a GREEN result image is pushed to the floating (cache-from) tag; a red one is never offered as cache.
+      - name: determine-test-status
+        id: test-status
+        run: |
+          # green = every module's surefire exit code AND its "BUILD SUCCESS" pseudo exit code are 0 (a missing file counts as red)
+          is_green() {
+            for module in "$@"; do
+              [ "$(cat "junit/$module/junit.exit-code" 2>/dev/null)" = 0 ] && [ "$(cat "junit/$module/junit.mvn.exit-code" 2>/dev/null)" = 0 ] || return 1
+            done
+          }
+          report() { # <output-name> <image-tag> <modules...>
+            local output=$1 tag=$2; shift 2
+            if is_green "$@"; then
+              echo "$output=true" >> $GITHUB_OUTPUT
+            else
+              echo "$output=false" >> $GITHUB_OUTPUT
+              echo "Tests of [$*] are red => NOT pushing ghcr.io/metasfresh/metas-junit:$tag, so its red result is never reused as build cache"
+              echo "* tests of [$*] are red => \`metas-junit:$tag\` NOT pushed as build cache" >> $GITHUB_STEP_SUMMARY
+            fi
+          }
+          report j8-green '${{ needs.init.outputs.tag-floating }}' commons backend
+          report j14-green '${{ needs.init.outputs.tag-floating }}-j14' camel
+      - name: push-result-image-j8
+        if: env.ACT != 'true' && steps.test-status.outputs.j8-green == 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: |
-            docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
-            docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
-      - name: extract-results
-        run: |
-          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
-          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
+          command: docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
+      - name: push-result-image-j14
+        if: env.ACT != 'true' && steps.test-status.outputs.j14-green == 'true'
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
       - name: upload backend junit results
         uses: actions/upload-artifact@v6
         if: always()
@@ -1557,10 +1587,10 @@ jobs:
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, cucumber-build, db-apply-migrations ]
     strategy:
-      max-parallel: 10
+      max-parallel: 12
       fail-fast: false
       matrix:
-        profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, report, catchall ]
+        profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, profile8, profile9, profile10, report, catchall ]
         include:
           - profile: profile1
             params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor1"
@@ -1576,10 +1606,16 @@ jobs:
             params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor6"
           - profile: profile7
             params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor7"
+          - profile: profile8
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor8"
+          - profile: profile9
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor9"
+          - profile: profile10
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor10"
           - profile: report
             params: -DexcludedGroups="ignore,flaky" -Dgroups="report"
           - profile: catchall
-            params: -DexcludedGroups="ignore,ghActions:run_on_executor1,ghActions:run_on_executor2,ghActions:run_on_executor3,ghActions:run_on_executor4,ghActions:run_on_executor5,ghActions:run_on_executor6,ghActions:run_on_executor7,report,flaky"
+            params: -DexcludedGroups="ignore,ghActions:run_on_executor1,ghActions:run_on_executor2,ghActions:run_on_executor3,ghActions:run_on_executor4,ghActions:run_on_executor5,ghActions:run_on_executor6,ghActions:run_on_executor7,ghActions:run_on_executor8,ghActions:run_on_executor9,ghActions:run_on_executor10,report,flaky"
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -2005,7 +2041,7 @@ jobs:
       # `!cancelled()` - i.e. success or failure, but NOT a cancellation. On those paths the
       # stack is torn down as early as it was before this was a separate step, so the runner
       # does not hold ~7 idle containers through report generation, the image push and the
-      # artifact uploads (and x3, once per parallel mobile shard, like the frontend shards).
+      # artifact uploads (once per parallel mobile shard, like the frontend shards).
       - name: stop stack
         if: ${{ !cancelled() }}
         working-directory: docker-builds/e2e-tests/
@@ -2149,7 +2185,7 @@ jobs:
       # `!cancelled()` - i.e. success or failure, but NOT a cancellation. On those paths the
       # stack is torn down as early as it was before this was a separate step, so the runner
       # does not hold ~7 idle containers through report generation, the image push and the
-      # artifact uploads (and x3 for the parallel frontend shards).
+      # artifact uploads (once per parallel frontend shard).
       - name: stop stack
         if: ${{ !cancelled() }}
         working-directory: docker-builds/e2e-tests/

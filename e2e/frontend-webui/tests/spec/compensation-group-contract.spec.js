@@ -7,7 +7,7 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
-import { getFieldData, getTabRows, waitForRecordSaved, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import { getFieldData, getTabRows, getWindowLayout, waitForRecordSaved, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { openRelatedDocument } from '../utils/DocumentReferences';
 
 /**
@@ -29,6 +29,9 @@ import { openRelatedDocument } from '../utils/DocumentReferences';
  *      those conditions, with start and end date, opened in Verträge (540359).
  *   5. Auftrag (143): a sales order for the partner; completing it adds the contract group and
  *      its discount line.
+ *   6. Verträge (540359): a second term for the partner, entered directly in the window (on
+ *      conditions whose transition has a duration, so the end date is computed); it saves and
+ *      gets its DocumentNo from the sequence.
  *
  * Besides the flow, the spec asserts the window titles, tab names, field labels and field order
  * the operator sees.
@@ -53,11 +56,42 @@ const CALENDAR_WINDOW_ID = 117; // Kalenderjahr und Periode (C_Calendar)
 const CREATE_CONTRACT_PROCESS = 'C_Flatrate_Term_Create_For_BPartners';
 const BPARTNER_TO_CONTRACT_TERM_REFERENCE = 'reference-C_Flatrate_Term';
 
+// Contract change action "Vertrag/ Abo ändern" (C_Flatrate_Term_Change) and its action list keys
+const CHANGE_CONTRACT_PROCESS = 'C_Flatrate_Term_Change';
+const CHANGE_ACTION_CANCEL = 'CA'; // "Kündigen"
+const CHANGE_ACTION_SINGLE_PERIOD = 'VO'; // "Einzelne Periode stornieren"
+// Tab "Wechselkonditionen" of the transition (C_Contract_Change): the action "Kündigen" needs a status change to "Qu"
+const TRANSITION_CHANGE_TAB_ID = 540422;
+const CONTRACT_CHANGE_ACTION_STATUS_CHANGE = 'ST';
+const CONTRACT_STATUS_CANCELLED = 'Qu';
+const DURATION_UNIT_DAY = 'day';
+
 // Tabs (AD_Tab ids)
 const SCHEMA_LINE_TAB_ID = 541042; // C_CompensationGroup_SchemaLine
 const SETTINGS_DOCTYPE_TAB_ID = 549508; // C_CompensationGroup_ContractSettings_DocType
 const CALENDAR_YEAR_TAB_ID = 129; // C_Year
 const ORDER_LINE_TAB = 'AD_Tab-187';
+// Auftrag Kompensationsgruppe (C_Order_CompensationGroup) and its order-lines tab
+const ORDER_COMPENSATION_GROUP_WINDOW_ID = 542196;
+const ORDER_COMPENSATION_GROUP_LINES_TAB_ID = 549518;
+// Bestellung (purchase order) and its line tab
+const PURCHASE_ORDER_WINDOW_ID = 181;
+const PURCHASE_ORDER_LINE_TAB_ID = 293;
+// Menu (AD_Menu ids): folder "Kompensationsgruppen" under "Vertrieb", right after "Auftrag", holding these four entries
+const MENU_SALES_FOLDER = '1000010';
+const MENU_SALES_ORDER = '1000040';
+const MENU_COMPENSATION_GROUPS_FOLDER = '542368';
+const MENU_COMPENSATION_GROUPS_ENTRIES = [
+  { nodeId: '542367', type: 'window', elementId: '542196' }, // Auftrag Kompensationsgruppe
+  { nodeId: '541040', type: 'window', elementId: '540415' }, // Kompensationsgruppe Schema
+  { nodeId: '541726', type: 'window', elementId: '541169' }, // Kompensationsgruppe Schema Kategorie
+  { nodeId: '542364', type: 'window', elementId: '542194' }, // Kompensationsgruppen-Vertragseinstellungen
+];
+// Related Documents entry of a contract to its order compensation groups (data-cy: the target window's InternalName)
+const CONTRACT_TO_ORDER_COMPENSATION_GROUP_REFERENCE = 'reference-C_Order_CompensationGroup';
+// Ref-list keys of C_CompensationGroup_SchemaLine.Type
+const SCHEMA_LINE_TYPE_CONTRACT = 'F';
+const SCHEMA_LINE_TYPE_REVENUE_BREAKS = 'R';
 
 // Ref-list keys of C_Flatrate_Conditions.Type_Conditions
 const TYPE_CONDITIONS_COMPENSATION_GROUP = 'CompensationGroup';
@@ -85,6 +119,7 @@ const DE = {
   schemaLineTab: 'Kompensationszeilen',
   isAdditive: 'Additiv',
   schemaLineCategory: 'Gilt für Produktkategorie',
+  schemaLinePackingCategory: 'Packmittel-Kategorie',
   schemaLineProduct: 'Produkt',
   schemaLineSeqNo: 'Reihenfolge',
   schemaLineDiscount: 'Gesamtauftragsrabatt %',
@@ -95,12 +130,58 @@ const DE = {
   settingsSchema: 'Kompensationsgruppe Schema',
   settingsDescription: 'Beschreibung',
   settingsDocType: 'Belegart',
+  settingsPassOnServiceCompany: 'Servicegebühr von', // short enough to show uncut in the header
 
   transitionWindow: 'Vertrags-Übergang',
   conditionsWindow: 'Vertragsbedingungen',
   conditionsSettings: 'Einstellungen für Kompensationsgruppen-Verträge',
+  conditionsPassOnServiceCompany: 'Servicegebühr von',
 
   createContractEndDate: 'Enddatum',
+
+  salesFolder: 'Vertrieb',
+  compensationGroupsFolder: 'Kompensationsgruppen',
+  orderCompensationGroupWindow: 'Auftrag Kompensationsgruppe',
+  orderCompensationGroupOrder: 'Auftrag/Bestellung', // the group's order may be a sales or a purchase order
+  orderCompensationGroupContract: 'Vertrag',
+  orderCompensationGroupLinesTab: 'Auftragsposition',
+  orderCompensationGroupLineNo: 'Zeile Nr.', // C_OrderLine.Line on the order-lines tab
+  compensationTypeDiscount: 'Rabatt', // C_OrderLine.GroupCompensationType D
+  compensationAmtTypePercent: 'Prozent', // C_OrderLine.GroupCompensationAmtType P
+
+  contractMasterStartDate: 'Vertragspartner seit',
+  contractMasterEndDate: 'Vertragspartner bis',
+  orderLineConditionsForNewContract: 'Vertragsbedingungen neuer Vertrag', // C_OrderLine.C_Flatrate_Conditions_ID
+  orderLineCallOffContract: 'Abrufvertrag', // C_OrderLine.C_Flatrate_Term_ID
+
+  schemaLineCondition: 'Bedingung', // C_CompensationGroup_SchemaLine.Type
+  schemaLineTypeContract: 'Vertrag',
+  schemaLineTypeRevenueBreaks: 'Umsatzstaffel',
+  schemaLineRevenueFrom: 'Umsatz ab', // C_CompensationGroup_SchemaLine.BreakValue
+  schemaLineContractConditions: 'Vertragsbedingungen', // C_CompensationGroup_SchemaLine.C_Flatrate_Conditions_ID
+};
+
+// The same captions in en_US (AD_*_Trl en_US), for the English pass of the order compensation group test
+const EN = {
+  compensationGroupsFolder: 'Compensation Groups',
+  orderCompensationGroupWindow: 'Order Compensation Group',
+  orderCompensationGroupOrder: 'Sales/Purchase Order',
+  orderCompensationGroupContract: 'Contract',
+  orderCompensationGroupLinesTab: 'Order Line',
+  orderCompensationGroupLineNo: 'Line No',
+  compensationTypeDiscount: 'Discount',
+  compensationAmtTypePercent: 'Percent',
+
+  contractMasterStartDate: 'Master Start Date',
+  contractMasterEndDate: 'Master End Date',
+  orderLineConditionsForNewContract: 'Conditions for New Contract',
+  orderLineCallOffContract: 'Call-off Contract',
+
+  schemaLineCondition: 'Condition',
+  schemaLineTypeContract: 'Contract',
+  schemaLineTypeRevenueBreaks: 'Revenue Breaks',
+  schemaLineRevenueFrom: 'Revenue From',
+  schemaLineContractConditions: 'Contract Conditions',
 };
 
 // Business values
@@ -135,7 +216,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     const masterdata = await Backend.createMasterdata({
       request: {
         login: { user: { language: LANGUAGE } },
-        productCategories: { GOODS_CATEGORY: {} },
+        productCategories: { GOODS_CATEGORY: {}, CARTON_CATEGORY: {} },
         bpartners: { CUSTOMER: { isCustomer: true, isVendor: false } },
         warehouses: { wh: {} },
         products: {
@@ -148,6 +229,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
     const goods = masterdata.products.GOODS;
     const discount = masterdata.products.DISCOUNT;
     const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
+    const cartonCategoryId = masterdata.productCategories.CARTON_CATEGORY.id;
 
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
@@ -181,12 +263,14 @@ test.describe('Compensation-group contract — create through the WebUI and comp
 
       await expectLabel(modal, 'SeqNo', DE.schemaLineSeqNo);
       await expectLabel(modal, 'M_Product_Category_ID', DE.schemaLineCategory);
+      await expectLabel(modal, 'M_Product_Category_PackingMaterial_ID', DE.schemaLinePackingCategory);
       await expectLabel(modal, 'M_Product_ID', DE.schemaLineProduct);
       await expectLabel(modal, 'CompleteOrderDiscount', DE.schemaLineDiscount);
-      // the "applies to" category sits directly between the sequence and the discount product
-      await expectFieldsDirectlyInOrder(modal, ['SeqNo', 'M_Product_Category_ID', 'M_Product_ID']);
+      // the "applies to" category and the packing-material category sit directly between the sequence and the discount product
+      await expectFieldsDirectlyInOrder(modal, ['SeqNo', 'M_Product_Category_ID', 'M_Product_Category_PackingMaterial_ID', 'M_Product_ID']);
 
       await selectListByKey(page, modal, 'M_Product_Category_ID', goodsCategoryId);
+      await selectListByKey(page, modal, 'M_Product_Category_PackingMaterial_ID', cartonCategoryId);
       await selectLookup(page, modal, 'M_Product_ID', discount.productCode);
       await fillNumber(page, modal, 'CompleteOrderDiscount', DISCOUNT_PERCENT);
       await snap(page, '540415-schema-line');
@@ -194,12 +278,24 @@ test.describe('Compensation-group contract — create through the WebUI and comp
 
       // the category column is also in the schema-line grid, next to the product
       await expect(page.locator('th[data-testid="column-M_Product_Category_ID"]')).toBeVisible();
+      await expect(page.locator('th[data-testid="column-M_Product_Category_PackingMaterial_ID"]')).toBeVisible();
 
       const lines = await getTabRows(SCHEMA_WINDOW_ID, schemaId, `AD_Tab-${SCHEMA_LINE_TAB_ID}`);
       expect(lines, 'exactly one schema line').toHaveLength(1);
       expect(lookupKey(lines[0].fieldsByName.M_Product_Category_ID.value)).toBe(String(goodsCategoryId));
+      expect(lookupKey(lines[0].fieldsByName.M_Product_Category_PackingMaterial_ID.value)).toBe(String(cartonCategoryId));
       expect(lookupKey(lines[0].fieldsByName.M_Product_ID.value)).toBe(String(discount.id));
       expect(Number(lines[0].fieldsByName.CompleteOrderDiscount.value)).toBe(DISCOUNT_PERCENT);
+
+      // The sales order in step 5 has no packing instruction, so a line limited to a packing-material category
+      // would (correctly) give it no discount. The rest of this flow covers the unfiltered line: clear the field again.
+      // (the schema-line grid edits in place: double-click the cell, then its clear icon)
+      const packingCell = page.locator('table tbody tr').first().locator('[data-cy="cell-M_Product_Category_PackingMaterial_ID"]');
+      await packingCell.dblclick();
+      await withFieldCommit(page, 'M_Product_Category_PackingMaterial_ID',
+        () => page.locator('table tbody tr').first().locator('.input-icon:has(.meta-icon-close-alt)').click());
+      const clearedLines = await getTabRows(SCHEMA_WINDOW_ID, schemaId, `AD_Tab-${SCHEMA_LINE_TAB_ID}`);
+      expect(lookupKey(clearedLines[0].fieldsByName.M_Product_Category_PackingMaterial_ID?.value), 'packing-material category cleared again').toBeNull();
     });
 
     // ------------------------------------------------------------------
@@ -215,6 +311,8 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await expectLabel(page, 'C_CompensationGroup_Schema_ID', DE.settingsSchema);
       await expectLabel(page, 'Description', DE.settingsDescription);
       await expectFieldsDirectlyInOrder(page, ['Name', 'C_CompensationGroup_Schema_ID', 'Description']);
+      await expectLabel(page, 'PassOn_InvoiceProcessingServiceCompany_ID', DE.settingsPassOnServiceCompany);
+      await expectLabelNotCutOff(page, 'PassOn_InvoiceProcessingServiceCompany_ID');
 
       await fillText(page, page, 'Name', settingsName);
       settingsId = await waitForNewRecordId(page, SETTINGS_WINDOW_ID);
@@ -292,6 +390,8 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await expect(page.locator('.form-field-C_CompensationGroup_ContractSettings_ID')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       await expectLabel(page, 'C_CompensationGroup_ContractSettings_ID', DE.conditionsSettings);
       await expectFieldsDirectlyInOrder(page, ['Name', 'Type_Conditions', 'C_CompensationGroup_ContractSettings_ID']);
+      await expectLabel(page, 'PassOn_InvoiceProcessingServiceCompany_ID', DE.conditionsPassOnServiceCompany);
+      await expectLabelNotCutOff(page, 'PassOn_InvoiceProcessingServiceCompany_ID');
 
       await selectListByKey(page, page, 'C_CompensationGroup_ContractSettings_ID', settingsId);
       expect(lookupKey((await getFieldData(CONDITIONS_WINDOW_ID, conditionsId, 'C_CompensationGroup_ContractSettings_ID')).value)).toBe(String(settingsId));
@@ -380,7 +480,7 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       expect(discountLine.fieldsByName.IsGroupCompensationLine.value).toBe(true);
       expect(goodsLine.fieldsByName.IsGroupCompensationLine.value).toBe(false);
       // ... and that group is the one of this contract, built from this schema
-      // (C_Order_CompensationGroup has no window, so it is read through the testing backend)
+      // (read through the testing backend; the window "Auftrag Kompensationsgruppe" is covered by the test 'order compensation groups of two contracts')
       await Backend.expect({
         title: 'the order\'s compensation group belongs to the contract and its schema',
         salesOrders: {
@@ -403,6 +503,670 @@ test.describe('Compensation-group contract — create through the WebUI and comp
       await discountRow.locator('[data-cy="cell-LineNetAmt"]').scrollIntoViewIfNeeded();
       await snap(page, '143-sales-order-discount-group-amount');
     });
+
+    // ------------------------------------------------------------------
+    // 6. Verträge (540359): a term entered directly in the window saves and gets its number
+    //    from the sequence. DocumentNo is mandatory and filled on save, never by the operator.
+    //    The partner has contract data now (from step 4), so the window offers it. The end date
+    //    is read-only there and computed from the transition, so these conditions use a
+    //    transition with a duration (step 3's has none: its terms keep an entered end date).
+    // ------------------------------------------------------------------
+    let yearTransitionId;
+    await test.step('6a. Transition window: a completed transition of 12 months', async () => {
+      await openNewRecord(page, TRANSITION_WINDOW_ID);
+      await fillText(page, page, 'Name', `${transitionName} 12M`);
+      yearTransitionId = await waitForNewRecordId(page, TRANSITION_WINDOW_ID);
+      const contractCalendarId = await pickContractCalendarWithYear(yearTransitionId, contractStart.getFullYear());
+      await selectListByKey(page, page, 'C_Calendar_Contract_ID', contractCalendarId);
+      await fillNumber(page, page, 'TermDuration', 12);
+      await selectListByKey(page, page, 'TermDurationUnit', DURATION_UNIT_MONTH);
+      await fillNumber(page, page, 'TermOfNotice', 0);
+      await selectListByKey(page, page, 'TermOfNoticeUnit', DURATION_UNIT_MONTH);
+      await waitForRecordSaved(TRANSITION_WINDOW_ID, yearTransitionId, { maxRetries: 20, retryDelayMs: 500 });
+      await completeDocument(page);
+      await expectDocStatus(TRANSITION_WINDOW_ID, yearTransitionId, 'CO');
+    });
+
+    let yearConditionsId;
+    await test.step('6b. Conditions window: compensation-group conditions with the 12-month transition', async () => {
+      await openNewRecord(page, CONDITIONS_WINDOW_ID);
+      await fillText(page, page, 'Name', `${conditionsName} 12M`);
+      yearConditionsId = await waitForNewRecordId(page, CONDITIONS_WINDOW_ID);
+      await selectListByKey(page, page, 'Type_Conditions', TYPE_CONDITIONS_COMPENSATION_GROUP);
+      await selectListByKey(page, page, 'C_CompensationGroup_ContractSettings_ID', settingsId);
+      await selectListByKey(page, page, 'C_Flatrate_Transition_ID', yearTransitionId);
+      await waitForRecordSaved(CONDITIONS_WINDOW_ID, yearConditionsId, { maxRetries: 20, retryDelayMs: 500 });
+      await completeDocument(page);
+      await expectDocStatus(CONDITIONS_WINDOW_ID, yearConditionsId, 'CO');
+    });
+
+    await test.step('6c. Verträge: a new term entered in the window saves with a sequence document number', async () => {
+      const flatrateDataId = lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'C_Flatrate_Data_ID')).value);
+      const billLocationId = lookupKey((await getFieldData(CONTRACT_WINDOW_ID, termId, 'Bill_Location_ID')).value);
+      const firstTermDocumentNo = String((await getFieldData(CONTRACT_WINDOW_ID, termId, 'DocumentNo')).value);
+
+      await openNewRecord(page, CONTRACT_WINDOW_ID);
+      const newTermId = await waitForNewRecordId(page, CONTRACT_WINDOW_ID);
+
+      await selectListByKey(page, page, 'C_Flatrate_Data_ID', flatrateDataId);
+      await selectListByKey(page, page, 'C_Flatrate_Conditions_ID', yearConditionsId);
+      // the contract data set the invoice partner (callout); its location is the second part of that lookup
+      await selectLookupPartByKey(page, 'Bill_Location_ID', billLocationId);
+      await fillDate(page, page, 'StartDate', contractStart);
+
+      await waitForRecordSaved(CONTRACT_WINDOW_ID, newTermId, { maxRetries: 20, retryDelayMs: 500 });
+      expect(lookupKey((await getFieldData(CONTRACT_WINDOW_ID, newTermId, 'Bill_BPartner_ID')).value)).toBe(String(customer.id));
+
+      const documentNo = String((await getFieldData(CONTRACT_WINDOW_ID, newTermId, 'DocumentNo')).value ?? '');
+      console.log(`[INFO] new term ${newTermId}: DocumentNo=${documentNo} (term of step 4: ${firstTermDocumentNo})`);
+      // the sequence may carry a prefix/suffix, so only what a missing number would look like is excluded
+      expect(documentNo.trim(), 'DocumentNo is filled').not.toBe('');
+      expect(documentNo, 'DocumentNo is not the former default "0"').not.toBe('0');
+      const hasPreliminaryMarkers = documentNo.trim().startsWith('<') && documentNo.trim().endsWith('>');
+      expect(hasPreliminaryMarkers, `DocumentNo "${documentNo}" is not a preliminary "<...>" number`).toBe(false);
+      expect(documentNo, 'each term gets its own number').not.toBe(firstTermDocumentNo);
+
+      // the new term is deliberately left drafted: completing it would hit MSG_CompensationGroup_OverlappingTerm (same partner, doc types and period as the step-4 term)
+      // the saved term, reloaded, shows that number to the operator
+      await page.goto(`${FRONTEND_BASE_URL}/window/${CONTRACT_WINDOW_ID}/${newTermId}`);
+      await expect(page.locator('.form-field-DocumentNo input').first()).toHaveValue(documentNo, { timeout: SLOW_ACTION_TIMEOUT });
+      await snap(page, '540359-term-entered-in-window');
+    });
+  });
+
+  /**
+   * Early end of a contract: the first contract is ended with the contract action "Kündigen" (end date X) and a
+   * follow-up contract with another schema starts on X + 1. The overlap check must accept the follow-up, and each
+   * order gets the discount of the contract that is valid on its order date.
+   */
+  test('ends a contract early and a follow-up contract takes over from the next day', async ({ page }) => {
+    allure.epic('E0170: Contract Management');
+    allure.story('Early end of a compensation-group contract with a follow-up contract');
+    allure.severity('critical');
+    test.setTimeout(20 * 60 * 1000);
+    page.setDefaultTimeout(60 * 1000);
+
+    const runId = Date.now();
+    const x = contractReferenceDay();
+    const contractAStart = addDays(x, -7);
+    const contractAEnd = addDays(x, 30);
+    const contractBStart = addDays(x, 1);
+    const contractBEnd = endOfYear(x);
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: LANGUAGE } },
+        productCategories: { GOODS_CATEGORY: {} },
+        bpartners: { CUSTOMER: { isCustomer: true, isVendor: false } },
+        warehouses: { wh: {} },
+        products: {
+          GOODS: { productCategory: 'GOODS_CATEGORY', prices: [{ price: GOODS_PRICE }] },
+          DISCOUNT_A: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+          DISCOUNT_B: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+        },
+      },
+    });
+    const customer = masterdata.bpartners.CUSTOMER;
+    const goods = masterdata.products.GOODS;
+    const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    let transitionId;
+    let conditionsA;
+    let conditionsB;
+    await test.step('1. Setup: transition, and two schemas (3 % and 5 %) with their settings and conditions', async () => {
+      transitionId = await createTransition(page, `CG transition ${runId}`, x.getFullYear(), { allowCancellation: true });
+      conditionsA = await createConditions(page, {
+        schemaName: `CG early A ${runId}`, goodsCategoryId, additive: false,
+        lines: [{ discountProduct: masterdata.products.DISCOUNT_A, percent: 3 }],
+        transitionId, name: `CG conditions early A ${runId}`,
+      });
+      conditionsB = await createConditions(page, {
+        schemaName: `CG early B ${runId}`, goodsCategoryId, additive: false,
+        lines: [{ discountProduct: masterdata.products.DISCOUNT_B, percent: 5 }],
+        transitionId, name: `CG conditions early B ${runId}`,
+      });
+    });
+
+    let termA;
+    await test.step('2. Contract A (3 %) from X - 7 to X + 30', async () => {
+      termA = await createContractTerm(page, customer, conditionsA, contractAStart, contractAEnd);
+      expect(String((await getFieldData(CONTRACT_WINDOW_ID, termA, 'EndDate')).value)).toContain(isoDate(contractAEnd));
+    });
+
+    await test.step('3. Contract action "Kündigen" ends contract A on X', async () => {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${CONTRACT_WINDOW_ID}/${termA}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      const modal = await openAction(page, CHANGE_CONTRACT_PROCESS);
+      // The action list already shows "Kündigen"; a value that is already selected sends no save,
+      // so another value is selected first.
+      await selectListByKey(page, modal, 'Action', CHANGE_ACTION_SINGLE_PERIOD);
+      await selectListByKey(page, modal, 'Action', CHANGE_ACTION_CANCEL);
+      await fillDate(page, modal, 'EventDate', x);
+      await snap(page, '540359-kuendigen-parameters');
+      const processStarted = page.waitForResponse((r) => r.url().includes('/process/') && r.url().endsWith('/start'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await modal.getByTestId('process-modal-start-button').click();
+      expect((await processStarted).ok(), '"Vertrag/ Abo ändern" must run without error').toBe(true);
+      await modal.waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await expect.poll(async () => String((await getFieldData(CONTRACT_WINDOW_ID, termA, 'EndDate')).value), {
+        message: 'contract A ends on X', timeout: VERY_SLOW_ACTION_TIMEOUT,
+      }).toContain(isoDate(x));
+    });
+
+    await test.step('4. Contract B (5 %) from X + 1 is accepted', async () => {
+      await createContractTerm(page, customer, conditionsB, contractBStart, contractBEnd, { openTerm: false });
+    });
+
+    await test.step('5. Order dated X gets the 3 % discount line, order dated X + 1 the 5 % discount line', async () => {
+      const orderX = await completeSalesOrder(page, customer, goods, x);
+      const linesX = await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB);
+      expect(linesX, 'order X: goods line + one discount line').toHaveLength(2);
+      const discountX = discountLineOf(linesX, masterdata.products.DISCOUNT_A);
+      expect(discountX, 'order X: the 3 % discount line').toBeTruthy();
+      expect(Number(discountX.fieldsByName.LineNetAmt.value)).toBeCloseTo(-30, 2);
+      await expectOrderGridAmount(page, orderX, masterdata.products.DISCOUNT_A, '-30,00');
+      await snap(page, '143-order-x-3-percent');
+
+      const orderX1 = await completeSalesOrder(page, customer, goods, addDays(x, 1));
+      const linesX1 = await getTabRows(SALES_ORDER_WINDOW_ID, orderX1, ORDER_LINE_TAB);
+      expect(linesX1, 'order X + 1: goods line + one discount line').toHaveLength(2);
+      const discountX1 = discountLineOf(linesX1, masterdata.products.DISCOUNT_B);
+      expect(discountX1, 'order X + 1: the 5 % discount line').toBeTruthy();
+      expect(Number(discountX1.fieldsByName.LineNetAmt.value)).toBeCloseTo(-50, 2);
+      await expectOrderGridAmount(page, orderX1, masterdata.products.DISCOUNT_B, '-50,00');
+      await snap(page, '143-order-x1-5-percent');
+    });
+  });
+
+
+  /**
+   * The order compensation groups of two contracts, seen in the window "Auftrag Kompensationsgruppe" and its
+   * neighbours: zoom from an order line into its group, the group's order-lines tab, and the "Vertrag" filter that
+   * tells the two contracts' groups apart, the menu folder that holds the window, and the contract's Related Documents
+   * entry to its groups; plus the German captions of the contract's master dates, of the order-line contract columns
+   * (sales and purchase order) and of the schema-line condition fields, and finally the same captions in English.
+   */
+  test('order compensation groups of two contracts: group window, contract filter and contract captions', async ({ page }) => {
+    allure.epic('E0170: Contract Management');
+    allure.story('Order compensation group window: zoom from the order line, order lines, contract filter, captions');
+    allure.severity('normal');
+    test.setTimeout(20 * 60 * 1000);
+    page.setDefaultTimeout(60 * 1000);
+
+    const runId = Date.now();
+    const x = contractReferenceDay();
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: LANGUAGE } },
+        productCategories: { GOODS_CATEGORY: {} },
+        bpartners: { CUSTOMER: { isCustomer: true, isVendor: false } },
+        warehouses: { wh: {} },
+        products: {
+          GOODS: { productCategory: 'GOODS_CATEGORY', prices: [{ price: GOODS_PRICE }] },
+          DISCOUNT_A: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+          DISCOUNT_B: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+        },
+      },
+    });
+    const customer = masterdata.bpartners.CUSTOMER;
+    const goods = masterdata.products.GOODS;
+    const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    let conditionsA;
+    let conditionsB;
+    await test.step('1. Setup: transition, and two schemas (3 % and 5 %) with their settings and conditions', async () => {
+      const transitionId = await createTransition(page, `CG transition ${runId}`, x.getFullYear());
+      conditionsA = await createConditions(page, {
+        schemaName: `CG groups A ${runId}`, goodsCategoryId, additive: false,
+        lines: [{ discountProduct: masterdata.products.DISCOUNT_A, percent: 3 }],
+        transitionId, name: `CG conditions groups A ${runId}`,
+      });
+      conditionsB = await createConditions(page, {
+        schemaName: `CG groups B ${runId}`, goodsCategoryId, additive: false,
+        lines: [{ discountProduct: masterdata.products.DISCOUNT_B, percent: 5 }],
+        transitionId, name: `CG conditions groups B ${runId}`,
+      });
+    });
+
+    let termA;
+    await test.step('2. Contract A (3 %) from X - 7 to X, contract B (5 %) from X + 1; the master dates carry German labels', async () => {
+      termA = await createContractTerm(page, customer, conditionsA, addDays(x, -7), x);
+      // the start / end of the whole contract relationship carry German labels
+      await expectLabel(page, 'MasterStartDate', DE.contractMasterStartDate);
+      await expectLabel(page, 'MasterEndDate', DE.contractMasterEndDate);
+      await page.locator('.form-field-MasterStartDate').first().scrollIntoViewIfNeeded();
+      await snap(page, '540359-contract-master-dates');
+      await createContractTerm(page, customer, conditionsB, addDays(x, 1), endOfYear(x), { openTerm: false });
+    });
+
+    let orderX;
+    let groupX;
+    let groupX1;
+    await test.step('3. One order per contract, each with its compensation group', async () => {
+      orderX = await completeSalesOrder(page, customer, goods, x);
+      const discountX = discountLineOf(await getTabRows(SALES_ORDER_WINDOW_ID, orderX, ORDER_LINE_TAB), masterdata.products.DISCOUNT_A);
+      expect(discountX, 'order X: the 3 % discount line').toBeTruthy();
+      const orderX1 = await completeSalesOrder(page, customer, goods, addDays(x, 1));
+      const discountX1 = discountLineOf(await getTabRows(SALES_ORDER_WINDOW_ID, orderX1, ORDER_LINE_TAB), masterdata.products.DISCOUNT_B);
+      expect(discountX1, 'order X + 1: the 5 % discount line').toBeTruthy();
+
+      groupX = lookupKey(discountX.fieldsByName.C_Order_CompensationGroup_ID.value);
+      groupX1 = lookupKey(discountX1.fieldsByName.C_Order_CompensationGroup_ID.value);
+      expect(groupX, 'order X has a compensation group').toBeTruthy();
+      expect(groupX1, 'order X + 1 has a compensation group').toBeTruthy();
+    });
+
+    let groupPage;
+    // ------------------------------------------------------------------
+    // 4. Auftrag Kompensationsgruppe (542196): the read-only window of the order compensation groups
+    // ------------------------------------------------------------------
+    await test.step('4a. Order line: "Zoom into" its compensation group opens the order compensation group window', async () => {
+      await expectOrderGridAmount(page, orderX, masterdata.products.DISCOUNT_A, '-30,00');
+      // the order line's own contract columns: conditions of a contract to be created, and the call-off contract
+      await expect(page.locator('th[data-testid="column-C_Flatrate_Conditions_ID"]')).toHaveText(DE.orderLineConditionsForNewContract);
+      await expect(page.locator('th[data-testid="column-C_Flatrate_Term_ID"]')).toHaveText(DE.orderLineCallOffContract);
+      const discountRow = page.locator('table tbody tr')
+        .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: masterdata.products.DISCOUNT_A.productCode }) });
+      const groupCell = discountRow.locator('[data-cy="cell-C_Order_CompensationGroup_ID"]');
+      await groupCell.scrollIntoViewIfNeeded();
+      await groupCell.click();
+      await groupCell.click({ button: 'right' });
+      const contextMenu = page.locator('.context-menu');
+      await contextMenu.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const zoomInto = contextMenu.locator('.context-menu-item').filter({ has: page.locator('.meta-icon-share') }).first();
+      await snap(page, '143-order-line-zoom-into-group');
+      await page.locator('th[data-testid="column-C_Flatrate_Term_ID"]').scrollIntoViewIfNeeded();
+      await snap(page, '143-order-line-contract-columns');
+      // "Zoom into" opens the target in a new browser tab
+      const popupOpened = page.context().waitForEvent('page', { timeout: SLOW_ACTION_TIMEOUT });
+      await zoomInto.click();
+      groupPage = await popupOpened;
+      await groupPage.waitForURL(new RegExp(`/window/${ORDER_COMPENSATION_GROUP_WINDOW_ID}/${groupX}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await groupPage.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+
+      await expectWindowTitle(groupPage, DE.orderCompensationGroupWindow);
+      await expectLabel(groupPage, 'C_Order_ID', DE.orderCompensationGroupOrder);
+      await expectLabel(groupPage, 'C_Flatrate_Term_ID', DE.orderCompensationGroupContract);
+      await expectFieldsDirectlyInOrder(groupPage, ['Name', 'C_Order_ID', 'C_Flatrate_Term_ID', 'C_CompensationGroup_Schema_ID']);
+      expect(lookupKey((await getFieldData(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, 'C_Order_ID')).value)).toBe(String(orderX));
+      expect(lookupKey((await getFieldData(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, 'C_Flatrate_Term_ID')).value)).toBe(String(termA));
+      // read-only: the fields cannot be edited
+      await expect(groupPage.locator('.form-field-Name input').first()).toBeDisabled();
+      await snap(groupPage, '542196-order-compensation-group');
+    });
+
+    await test.step('4b. Sub-tab "Auftragsposition": the group\'s order lines, the discount line with "Rabatt" / "Prozent"', async () => {
+      await expectTabCaption(groupPage, ORDER_COMPENSATION_GROUP_LINES_TAB_ID, DE.orderCompensationGroupLinesTab);
+      const linesTab = groupPage.getByTestId(`tab-AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`);
+      await linesTab.click();
+      await expect(linesTab.locator('a.nav-link')).toHaveClass(/active/);
+
+      const lines = await getTabRows(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, `AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`);
+      expect(lines, 'goods line + discount line of order X').toHaveLength(2);
+
+      await expect(groupPage.locator('th[data-testid="column-Line"]')).toHaveText(DE.orderCompensationGroupLineNo);
+      const rows = groupPage.locator('table tbody tr');
+      await expect(rows).toHaveCount(2, { timeout: SLOW_ACTION_TIMEOUT });
+      const discountRow = rows.filter({ has: groupPage.locator('[data-cy="cell-M_Product_ID"]', { hasText: masterdata.products.DISCOUNT_A.productCode }) });
+      await expect(discountRow).toHaveCount(1);
+      await expect(discountRow.locator('[data-cy="cell-LineNetAmt"]')).toContainText('-30,00');
+      // (the list cells show "<value>_<name>", e.g. "D_Rabatt", as in the sales order's line grid)
+      await expect(discountRow.locator('[data-cy="cell-GroupCompensationType"]')).toContainText(DE.compensationTypeDiscount);
+      await expect(discountRow.locator('[data-cy="cell-GroupCompensationAmtType"]')).toContainText(DE.compensationAmtTypePercent);
+      await discountRow.locator('[data-cy="cell-GroupCompensationAmtType"]').scrollIntoViewIfNeeded();
+      await snap(groupPage, '542196-order-lines-tab');
+
+      // sorted by line no.: the tab's default sort, and the rows as shown
+      const layout = await getWindowLayout(ORDER_COMPENSATION_GROUP_WINDOW_ID);
+      const linesTabLayout = (layout.tabs ?? []).find((tab) => String(tab.tabId).endsWith(String(ORDER_COMPENSATION_GROUP_LINES_TAB_ID)));
+      expect(linesTabLayout, 'layout of the order-lines tab').toBeTruthy();
+      // (the WebUI appends the key column as tie-breaker)
+      expect(linesTabLayout.defaultOrderBys?.[0], 'order-lines tab: default sort by line no., ascending').toEqual({ fieldName: 'Line', ascending: true });
+      const lineNos = (await rows.locator('[data-cy="cell-Line"]').allTextContents()).map((text) => Number(text.replace(/\D/g, '')));
+      expect(lineNos, 'line numbers shown').toHaveLength(2);
+      expect(lineNos, 'rows in line-no. order').toEqual([...lineNos].sort((a, b) => a - b));
+    });
+
+    await test.step('4c. List: filter "Vertrag" narrows the groups to the ones of that contract', async () => {
+      // unfiltered: all order compensation groups, sorted by order, newest first
+      // (other groups may exist on the DB, so the sort and the size are checked on the backend's view, not on row positions)
+      const unfiltered = await readOrderCompensationGroupView(groupPage);
+      expect(unfiltered.size, 'both orders\' groups and possibly others are listed').toBeGreaterThanOrEqual(2);
+      const orderIds = unfiltered.rows.map((row) => Number(lookupKey(row.fieldsByName.C_Order_ID?.value)));
+      expect(orderIds, 'sorted by order, newest first').toEqual([...orderIds].sort((a, b) => b - a));
+
+      await groupPage.goto(`${FRONTEND_BASE_URL}/window/${ORDER_COMPENSATION_GROUP_WINDOW_ID}`);
+      const rowOf = (groupId) => groupPage.getByTestId(`table-row-${groupId}`);
+      await expect(groupPage.locator('table tbody tr').first()).toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await snap(groupPage, '542196-list-unfiltered');
+
+      const termADocumentNo = String((await getFieldData(CONTRACT_WINDOW_ID, termA, 'DocumentNo')).value);
+      // "Filter" opens the filter panel of the selection columns (the "default" filter, the window's only one)
+      await groupPage.locator('.filters-not-frequent button.toggle-filters').click();
+      const filterPanel = groupPage.locator('.filter-default');
+      await filterPanel.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const filterFields = await filterPanel.evaluate((panel) => Array.from(panel.querySelectorAll('.form-group[class*="form-field-"]'))
+        .map((formGroup) => Array.from(formGroup.classList).find((cssClass) => cssClass.startsWith('form-field-')).substring('form-field-'.length)));
+      expect(filterFields, 'filter fields: name, order, contract, schema, organisation').toEqual(['Name', 'C_Order_ID', 'C_Flatrate_Term_ID', 'C_CompensationGroup_Schema_ID', 'AD_Org_ID']);
+      await expectLabel(filterPanel, 'C_Flatrate_Term_ID', DE.orderCompensationGroupContract);
+      const contractInput = filterPanel.locator('.form-field-C_Flatrate_Term_ID input').first();
+      await contractInput.click();
+      await contractInput.pressSequentially(termADocumentNo, { delay: 30 });
+      const contractOption = groupPage.locator(`.input-dropdown-list [data-testid="option-${termA}"]`);
+      await contractOption.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await contractOption.click();
+      await expect(groupPage.locator('.input-dropdown-list')).toHaveCount(0);
+      await snap(groupPage, '542196-filter-vertrag');
+      await groupPage.getByTestId('filter-apply-button').click();
+
+      await expect(groupPage.locator('table tbody tr'), 'only the group of contract A').toHaveCount(1, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await expect(rowOf(groupX)).toBeVisible();
+      await expect(rowOf(groupX1)).toHaveCount(0);
+      await snap(groupPage, '542196-list-filtered-by-contract');
+      await groupPage.close();
+    });
+
+    await test.step('4d. Menu: folder "Kompensationsgruppen" under "Vertrieb", right after "Auftrag", with its four entries', async () => {
+      // depth 2: a sub-folder is listed only together with its own children
+      const salesFolder = await getMenuNode(page, MENU_SALES_FOLDER, 2);
+      expect(salesFolder.caption).toBe(DE.salesFolder);
+      const salesChildIds = (salesFolder.children ?? []).map((child) => String(child.nodeId));
+      expect(salesChildIds.indexOf(MENU_COMPENSATION_GROUPS_FOLDER), 'the folder comes right after "Auftrag"')
+        .toBe(salesChildIds.indexOf(MENU_SALES_ORDER) + 1);
+
+      const folder = await getMenuNode(page, MENU_COMPENSATION_GROUPS_FOLDER);
+      expect(folder.caption).toBe(DE.compensationGroupsFolder);
+      expect(String(folder.parentId), 'parent folder').toBe(MENU_SALES_FOLDER);
+      const entries = (folder.children ?? [])
+        .filter((child) => child.type !== 'newRecord')
+        .map((child) => ({ nodeId: String(child.nodeId), type: child.type, elementId: String(child.elementId) }));
+      expect(entries, 'the four entries, in this order').toEqual(MENU_COMPENSATION_GROUPS_ENTRIES);
+      // (a window entry's caption may carry the internal name in parentheses)
+      expect(folder.children.find((child) => String(child.nodeId) === MENU_COMPENSATION_GROUPS_ENTRIES[0].nodeId).caption)
+        .toContain(DE.orderCompensationGroupWindow);
+    });
+
+    await test.step('4e. Contract A: Related Documents lead to its order compensation group', async () => {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${CONTRACT_WINDOW_ID}/${termA}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await openRelatedDocument({
+        dataCy: CONTRACT_TO_ORDER_COMPENSATION_GROUP_REFERENCE,
+        stepName: 'Contract A - open its order compensation groups',
+        maxRetries: 5,
+        retryDelay: 2000,
+      });
+      // the contract has one group, which is opened
+      await page.waitForURL(new RegExp(`/window/${ORDER_COMPENSATION_GROUP_WINDOW_ID}/${groupX}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await expectWindowTitle(page, DE.orderCompensationGroupWindow);
+      await snap(page, '540359-related-order-compensation-group');
+    });
+
+    await test.step('5. Schema window: the line condition fields read "Bedingung" (Vertrag / Umsatzstaffel), "Umsatz ab", "Vertragsbedingungen"; no organisation on the lines', async () => {
+      const schemaId = lookupKey((await getFieldData(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, 'C_CompensationGroup_Schema_ID')).value);
+      await page.goto(`${FRONTEND_BASE_URL}/window/${SCHEMA_WINDOW_ID}/${schemaId}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await page.getByTestId(`tab-AD_Tab-${SCHEMA_LINE_TAB_ID}`).click();
+      await expect(page.locator('th[data-testid="column-Type"]')).toHaveText(DE.schemaLineCondition, { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(page.locator('th[data-testid="column-BreakValue"]')).toHaveText(DE.schemaLineRevenueFrom);
+      await expect(page.locator('th[data-testid="column-C_Flatrate_Conditions_ID"]')).toHaveText(DE.schemaLineContractConditions);
+      await expect(page.locator('th[data-testid="column-AD_Org_ID"]'), 'no organisation column on the schema lines').toHaveCount(0);
+      await expect(page.locator('th[data-testid="column-AD_Client_ID"]'), 'no client column on the schema lines').toHaveCount(0);
+      await page.locator('th[data-testid="column-Type"]').scrollIntoViewIfNeeded();
+      await snap(page, '540415-schema-lines-grid');
+
+      // a new line (cancelled again): the condition offers "Vertrag" and "Umsatzstaffel" and shows the matching field
+      const modal = await openNewIncludedRow(page, SCHEMA_LINE_TAB_ID);
+      await expectLabel(modal, 'Type', DE.schemaLineCondition);
+      await expect(modal.locator('.form-field-AD_Org_ID'), 'no organisation in the schema line form').toHaveCount(0);
+      await expect(modal.locator('.form-field-AD_Client_ID'), 'no client in the schema line form').toHaveCount(0);
+      await modal.locator('.form-field-Type input').first().click();
+      await expect(page.locator('.input-dropdown-list [data-testid="option-F"]')).toContainText(DE.schemaLineTypeContract);
+      await expect(page.locator('.input-dropdown-list [data-testid="option-R"]')).toContainText(DE.schemaLineTypeRevenueBreaks);
+      await snap(page, '540415-schema-line-condition-options');
+      await page.keyboard.press('Escape');
+      await selectListByKey(page, modal, 'Type', SCHEMA_LINE_TYPE_REVENUE_BREAKS);
+      await expectLabel(modal, 'BreakValue', DE.schemaLineRevenueFrom);
+      await snap(page, '540415-schema-line-revenue-breaks');
+      await selectListByKey(page, modal, 'Type', SCHEMA_LINE_TYPE_CONTRACT);
+      await expectLabel(modal, 'C_Flatrate_Conditions_ID', DE.schemaLineContractConditions);
+      await snap(page, '540415-schema-line-contract');
+      // the incomplete line is discarded: closing asks "Do you really want to leave?"
+      page.once('dialog', (dialog) => dialog.accept());
+      await closeModal(modal);
+    });
+
+    await test.step('6. Purchase order lines (last: the new order stays unsaved): the contract columns carry the same captions', async () => {
+      await openNewRecord(page, PURCHASE_ORDER_WINDOW_ID);
+      const purchaseLinesTab = page.getByTestId(`tab-AD_Tab-${PURCHASE_ORDER_LINE_TAB_ID}`);
+      await purchaseLinesTab.click();
+      const conditionsHeader = page.locator('th[data-testid="column-C_Flatrate_Conditions_ID"]');
+      await expect(conditionsHeader).toHaveText(DE.orderLineConditionsForNewContract, { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(page.locator('th[data-testid="column-C_Flatrate_Term_ID"]')).toHaveText(DE.orderLineCallOffContract);
+      await conditionsHeader.scrollIntoViewIfNeeded();
+      await snap(page, '181-purchase-order-line-contract-columns');
+    });
+
+    await test.step('7. en_US: the same captions in English', async () => {
+      const english = await Backend.createMasterdata({ request: { login: { user: { language: 'en_US' } } } });
+      await page.context().clearCookies();
+      await LoginPage.goto();
+      await LoginPage.login(english.login.user);
+      await DashboardPage.expectVisible();
+
+      expect((await getMenuNode(page, MENU_COMPENSATION_GROUPS_FOLDER)).caption).toBe(EN.compensationGroupsFolder);
+
+      // order compensation group window and its order-lines tab
+      await page.goto(`${FRONTEND_BASE_URL}/window/${ORDER_COMPENSATION_GROUP_WINDOW_ID}/${groupX}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await expectWindowTitle(page, EN.orderCompensationGroupWindow);
+      await expectLabel(page, 'C_Order_ID', EN.orderCompensationGroupOrder);
+      await expectLabel(page, 'C_Flatrate_Term_ID', EN.orderCompensationGroupContract);
+      await expectTabCaption(page, ORDER_COMPENSATION_GROUP_LINES_TAB_ID, EN.orderCompensationGroupLinesTab);
+      await page.getByTestId(`tab-AD_Tab-${ORDER_COMPENSATION_GROUP_LINES_TAB_ID}`).click();
+      await expect(page.locator('th[data-testid="column-Line"]')).toHaveText(EN.orderCompensationGroupLineNo, { timeout: SLOW_ACTION_TIMEOUT });
+      const discountRow = page.locator('table tbody tr')
+        .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: masterdata.products.DISCOUNT_A.productCode }) });
+      await expect(discountRow).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(discountRow.locator('[data-cy="cell-GroupCompensationType"]')).toContainText(EN.compensationTypeDiscount);
+      await expect(discountRow.locator('[data-cy="cell-GroupCompensationAmtType"]')).toContainText(EN.compensationAmtTypePercent);
+      await snap(page, '542196-order-lines-tab-en');
+
+      // contract master dates
+      await page.goto(`${FRONTEND_BASE_URL}/window/${CONTRACT_WINDOW_ID}/${termA}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await expectLabel(page, 'MasterStartDate', EN.contractMasterStartDate);
+      await expectLabel(page, 'MasterEndDate', EN.contractMasterEndDate);
+      await page.locator('.form-field-MasterStartDate').first().scrollIntoViewIfNeeded();
+      await snap(page, '540359-contract-master-dates-en');
+
+      // the sales order line's contract columns
+      await expectOrderGridAmount(page, orderX, masterdata.products.DISCOUNT_A, '-30.00');
+      await expect(page.locator('th[data-testid="column-C_Flatrate_Conditions_ID"]')).toHaveText(EN.orderLineConditionsForNewContract);
+      await expect(page.locator('th[data-testid="column-C_Flatrate_Term_ID"]')).toHaveText(EN.orderLineCallOffContract);
+      await page.locator('th[data-testid="column-C_Flatrate_Term_ID"]').scrollIntoViewIfNeeded();
+      await snap(page, '143-order-line-contract-columns-en');
+
+      // schema lines: the condition fields and the condition values
+      const schemaId = lookupKey((await getFieldData(ORDER_COMPENSATION_GROUP_WINDOW_ID, groupX, 'C_CompensationGroup_Schema_ID')).value);
+      await page.goto(`${FRONTEND_BASE_URL}/window/${SCHEMA_WINDOW_ID}/${schemaId}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await page.getByTestId(`tab-AD_Tab-${SCHEMA_LINE_TAB_ID}`).click();
+      await expect(page.locator('th[data-testid="column-Type"]')).toHaveText(EN.schemaLineCondition, { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(page.locator('th[data-testid="column-BreakValue"]')).toHaveText(EN.schemaLineRevenueFrom);
+      await expect(page.locator('th[data-testid="column-C_Flatrate_Conditions_ID"]')).toHaveText(EN.schemaLineContractConditions);
+      const modal = await openNewIncludedRow(page, SCHEMA_LINE_TAB_ID);
+      await expectLabel(modal, 'Type', EN.schemaLineCondition);
+      await modal.locator('.form-field-Type input').first().click();
+      await expect(page.locator('.input-dropdown-list [data-testid="option-F"]')).toContainText(EN.schemaLineTypeContract);
+      await expect(page.locator('.input-dropdown-list [data-testid="option-R"]')).toContainText(EN.schemaLineTypeRevenueBreaks);
+      await snap(page, '540415-schema-line-condition-options-en');
+      await page.keyboard.press('Escape');
+      page.once('dialog', (dialog) => dialog.accept());
+      await closeModal(modal);
+    });
+  });
+
+  /**
+   * "Erzeuge Vertrag" for a partner that already has an overlapping compensation-group contract on the same
+   * order document type: the contract must not be created, and the operator must be told on screen why -
+   * which contract it clashes with, for which invoice partner and in which period.
+   */
+  test('creating a contract that overlaps an existing one tells the operator why it was refused', async ({ page }) => {
+    allure.epic('E0170: Contract Management');
+    allure.story('Overlapping compensation-group contract is refused with a visible reason');
+    allure.severity('critical');
+    test.setTimeout(20 * 60 * 1000);
+    page.setDefaultTimeout(60 * 1000);
+
+    const runId = Date.now();
+    const x = contractReferenceDay();
+    const existingStart = x;
+    const existingEnd = addDays(x, 30);
+    const overlappingStart = addDays(x, 5);
+    const overlappingEnd = addDays(x, 60);
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: LANGUAGE } },
+        productCategories: { GOODS_CATEGORY: {} },
+        bpartners: { CUSTOMER: { isCustomer: true, isVendor: false } },
+        products: {
+          DISCOUNT: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+        },
+      },
+    });
+    const customer = masterdata.bpartners.CUSTOMER;
+    const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    let conditionsId;
+    let existingTerm;
+    let existingDocumentNo;
+    await test.step('1. Setup: conditions "3 %" and an active contract from X to X + 30', async () => {
+      const transitionId = await createTransition(page, `CG transition ${runId}`, x.getFullYear());
+      conditionsId = await createConditions(page, {
+        schemaName: `CG overlap ${runId}`, goodsCategoryId, additive: false,
+        lines: [{ discountProduct: masterdata.products.DISCOUNT, percent: DISCOUNT_PERCENT }],
+        transitionId, name: `CG conditions overlap ${runId}`,
+      });
+      existingTerm = await createContractTerm(page, customer, conditionsId, existingStart, existingEnd);
+      existingDocumentNo = String((await getFieldData(CONTRACT_WINDOW_ID, existingTerm, 'DocumentNo')).value);
+      expect(existingDocumentNo, 'the existing contract has a document no').toBeTruthy();
+      expect(await countContractsOfPartner(page, customer.id)).toBe(1);
+      expect(String((await getFieldData(CONTRACT_WINDOW_ID, existingTerm, 'EndDate')).value), 'the existing contract ends on X + 30').toContain(isoDate(existingEnd));
+      await expectDocStatus(CONTRACT_WINDOW_ID, existingTerm, 'CO');
+    });
+
+    await test.step('2. "Erzeuge Vertrag" with the same conditions from X + 5 is refused with a visible reason', async () => {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${customer.id}`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      const modal = await openAction(page, CREATE_CONTRACT_PROCESS);
+      await selectListByKey(page, modal, 'C_Flatrate_Conditions_ID', conditionsId);
+      await fillDate(page, modal, 'StartDate', overlappingStart);
+      await fillDate(page, modal, 'EndDate', overlappingEnd);
+      const processStarted = page.waitForResponse((r) => r.url().includes('/process/') && r.url().endsWith('/start'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await modal.getByTestId('process-modal-start-button').click();
+      await processStarted;
+      await snap(page, '540460-overlap-refused');
+
+      // The refusal reason is shown in the error notification (the long text sits behind "(read more)"):
+      // it names the clashing contract, the invoice partner and the period.
+      const reason = page.locator('.notification-item.error .notification-content').first();
+      await expect(reason, 'an error notification shows the refusal').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      const readMore = reason.getByText('(read more)');
+      if (await readMore.isVisible()) {
+        await readMore.click();
+      }
+      await expect(reason, 'the clashing contract\'s document no is shown').toContainText(existingDocumentNo);
+      await expect(reason, 'the invoice partner is shown').toContainText(customer.bpartnerCode);
+      await expect(reason, 'the clashing contract\'s start is shown').toContainText(germanDate(existingStart));
+      await expect(reason, 'the clashing contract\'s end is shown').toContainText(germanDate(existingEnd));
+    });
+
+    await test.step('3. No second contract exists for the partner', async () => {
+      expect(await countContractsOfPartner(page, customer.id)).toBe(1);
+    });
+  });
+
+  /**
+   * Additive schema with two lines on one base: both percentages apply to the same goods amount
+   * (3,15 % and 0,25 % of 1 000,00 = -31,50 and -2,50), not one after the other (compounding would give -2,42).
+   */
+  test('an additive schema with two lines applies both percentages to the same base', async ({ page }) => {
+    allure.epic('E0170: Contract Management');
+    allure.story('Additive compensation schema with two discount lines on one order');
+    allure.severity('critical');
+    test.setTimeout(20 * 60 * 1000);
+    page.setDefaultTimeout(60 * 1000);
+
+    const runId = Date.now();
+    const today = contractReferenceDay();
+    const contractStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const contractEnd = endOfYear(today);
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: LANGUAGE } },
+        productCategories: { GOODS_CATEGORY: {} },
+        bpartners: { CUSTOMER: { isCustomer: true, isVendor: false } },
+        warehouses: { wh: {} },
+        products: {
+          GOODS: { productCategory: 'GOODS_CATEGORY', prices: [{ price: GOODS_PRICE }] },
+          DISCOUNT_1: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+          DISCOUNT_2: { type: 'Item', isStocked: false, productCategory: 'GOODS_CATEGORY', prices: [{ price: 1 }] },
+        },
+      },
+    });
+    const customer = masterdata.bpartners.CUSTOMER;
+    const goods = masterdata.products.GOODS;
+    const goodsCategoryId = masterdata.productCategories.GOODS_CATEGORY.id;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    let conditionsId;
+    await test.step('1. Setup: additive schema with two lines on one product category, settings, conditions', async () => {
+      const transitionId = await createTransition(page, `CG transition ${runId}`, contractStart.getFullYear());
+      conditionsId = await createConditions(page, {
+        schemaName: `CG additive ${runId}`, goodsCategoryId, additive: true,
+        lines: [
+          { discountProduct: masterdata.products.DISCOUNT_1, percent: 3.15 },
+          { discountProduct: masterdata.products.DISCOUNT_2, percent: 0.25 },
+        ],
+        transitionId, name: `CG conditions additive ${runId}`,
+      });
+    });
+
+    await test.step('2. Contract for the partner', async () => {
+      await createContractTerm(page, customer, conditionsId, contractStart, contractEnd);
+    });
+
+    await test.step('3. One order: -31,50 and -2,50 on the same 1 000,00 goods amount', async () => {
+      const orderId = await completeSalesOrder(page, customer, goods, today);
+      const lines = await getTabRows(SALES_ORDER_WINDOW_ID, orderId, ORDER_LINE_TAB);
+      expect(lines, 'goods line + two discount lines').toHaveLength(3);
+      const discount1 = discountLineOf(lines, masterdata.products.DISCOUNT_1);
+      const discount2 = discountLineOf(lines, masterdata.products.DISCOUNT_2);
+      expect(discount1, '3,15 % discount line').toBeTruthy();
+      expect(discount2, '0,25 % discount line').toBeTruthy();
+      expect(Number(discount1.fieldsByName.LineNetAmt.value)).toBeCloseTo(-31.5, 2);
+      expect(Number(discount2.fieldsByName.LineNetAmt.value), 'additive: 0,25 % of 1 000,00, not of the reduced amount').toBeCloseTo(-2.5, 2);
+      await expectOrderGridAmount(page, orderId, masterdata.products.DISCOUNT_1, '-31,50');
+      await expectOrderGridAmount(page, orderId, masterdata.products.DISCOUNT_2, '-2,50');
+      await snap(page, '143-additive-two-discount-lines');
+    });
   });
 });
 
@@ -416,6 +1180,29 @@ function lookupKey(value) {
     return null;
   }
   return typeof value === 'object' ? String(value.key) : String(value);
+}
+
+/** dd.MM.yyyy, the date format of the de_DE login */
+function germanDate(date) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
+}
+
+/**
+ * Number of contract terms whose invoice partner is `partnerId`, read from the backend's contract view
+ * (the rendered grid is not counted: it is filled after the container is visible).
+ */
+async function countContractsOfPartner(page, partnerId) {
+  const viewResponse = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${CONTRACT_WINDOW_ID}`, {
+    data: { documentType: String(CONTRACT_WINDOW_ID), viewType: 'grid', filters: [] },
+    headers: { 'Content-Type': 'application/json' },
+  });
+  expect(viewResponse.ok(), 'the contract view opens').toBe(true);
+  const view = await viewResponse.json();
+  const rowsResponse = await page.request.get(`${WEBAPI_BASE_URL}/documentView/${CONTRACT_WINDOW_ID}/${view.viewId}?firstRow=0&pageLength=${Math.max(view.size, 1)}`);
+  expect(rowsResponse.ok(), 'the contract view rows are read').toBe(true);
+  const rows = (await rowsResponse.json()).result ?? [];
+  return rows.filter((row) => lookupKey(row.fieldsByName?.Bill_BPartner_ID?.value) === String(partnerId)).length;
 }
 
 /** yyyy-MM-dd of a local date */
@@ -481,6 +1268,16 @@ async function expectLabel(scope, fieldName, caption) {
 }
 
 /**
+ * Assert the label is painted in full: the label cuts overflowing text off with an ellipsis
+ * (overflow: hidden), so a cut-off label is wider (scrollWidth) than its visible box (clientWidth).
+ */
+async function expectLabelNotCutOff(scope, fieldName) {
+  const label = scope.locator(`.form-field-${fieldName} > label.form-control-label`).first();
+  const { scrollWidth, clientWidth } = await label.evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
+  expect(scrollWidth, `label of ${fieldName} is cut off (text ${scrollWidth}px, visible ${clientWidth}px)`).toBeLessThanOrEqual(clientWidth);
+}
+
+/**
  * Assert that the given fields render as consecutive element lines of ONE element group, in this
  * order, with no other visible field between them. Lines whose field is hidden by display logic
  * render without a form group and are skipped. Pattern taken from vatid-status-on-bpartner-window.spec.js.
@@ -529,14 +1326,24 @@ async function fillNumber(page, scope, fieldName, value) {
   await withFieldCommit(page, fieldName, () => input.press('Tab'));
 }
 
+/**
+ * Type a date and leave the field.
+ *
+ * The commit is awaited from before the text is typed, not only from the Tab: the date widget
+ * PATCHes as soon as the typed text parses as a valid date (DatePicker.handleDateChange, on the
+ * input's change), so the PATCH already goes out during `fill`, and the blur on Tab sends no
+ * second PATCH. Armed only after `fill`, the wait misses a response that arrives first.
+ */
 async function fillDate(page, scope, fieldName, date) {
   const text = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
   const input = scope.locator(`.form-field-${fieldName} input[type="text"]`).first();
   await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await input.click();
   await input.press('ControlOrMeta+a');
-  await input.fill(text);
-  await withFieldCommit(page, fieldName, () => input.press('Tab'));
+  await withFieldCommit(page, fieldName, async () => {
+    await input.fill(text);
+    await input.press('Tab');
+  });
 }
 
 async function setCheckbox(page, fieldName) {
@@ -563,6 +1370,33 @@ async function selectListByKey(page, scope, fieldName, key) {
     await input.click();
     await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await option.click();
+  }, key);
+  await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
+}
+
+/**
+ * Pick the option with the given key in one part of a composed lookup (e.g. the location part
+ * of the partner lookup), whose input is rendered as #lookup_<fieldName>, and wait until that key
+ * has been committed. When the part offers a single option, the WebUI selects it by itself on the
+ * input click and closes the dropdown, so the option is clicked only if the dropdown stays open.
+ */
+async function selectLookupPartByKey(page, fieldName, key) {
+  const input = page.locator(`#lookup_${fieldName} input.input-field`).first();
+  await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  const option = page.locator(`.input-dropdown-list [data-testid="option-${key}"]`).first();
+  let committed = false;
+  await withFieldCommit(page, fieldName, async () => {
+    const commit = page.waitForResponse((response) => {
+      const request = response.request();
+      return request.method() === 'PATCH' && Array.isArray(request.postDataJSON())
+        && request.postDataJSON().some((change) => change.path === fieldName && lookupKey(change.value) === String(key));
+    }, { timeout: SLOW_ACTION_TIMEOUT }).then(() => { committed = true; }, () => {});
+    await input.click();
+    const optionShown = option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT }).then(() => true, () => false);
+    await Promise.race([commit, optionShown]);
+    if (!committed) {
+      await option.click();
+    }
   }, key);
   await expect(page.locator('.input-dropdown-list')).toHaveCount(0);
 }
@@ -670,4 +1504,200 @@ async function expectDocStatus(windowId, recordId, docStatus) {
     message: `DocStatus of ${windowId}/${recordId}`,
     timeout: VERY_SLOW_ACTION_TIMEOUT,
   }).toBe(docStatus);
+}
+
+// ----------------------------------------------------------------------
+// Setup helpers for the contract tests below the first one (all through the WebUI)
+// ----------------------------------------------------------------------
+
+/** Today, but never the last day of the year, so that "the next day" is in the same fiscal year. */
+function contractReferenceDay() {
+  const today = new Date();
+  const lastDay = new Date(today.getFullYear(), 11, 31);
+  return today >= lastDay ? new Date(today.getFullYear(), 11, 30) : new Date(today.getFullYear(), today.getMonth(), today.getDate());
+}
+
+/** The date `days` after `date`, clamped to the end of its year (the transition calendar covers that year only). */
+function addDays(date, days) {
+  const result = new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+  const yearEnd = endOfYear(date);
+  const yearStart = new Date(date.getFullYear(), 0, 1);
+  return result > yearEnd ? yearEnd : result < yearStart ? yearStart : result;
+}
+
+function endOfYear(date) {
+  return new Date(date.getFullYear(), 11, 31);
+}
+
+/** Transition with duration 0 (the contract keeps its entered end date), completed. @returns its id */
+async function createTransition(page, name, fiscalYear, { allowCancellation = false } = {}) {
+  await openNewRecord(page, TRANSITION_WINDOW_ID);
+  await fillText(page, page, 'Name', name);
+  const transitionId = await waitForNewRecordId(page, TRANSITION_WINDOW_ID);
+  const contractCalendarId = await pickContractCalendarWithYear(transitionId, fiscalYear);
+  await selectListByKey(page, page, 'C_Calendar_Contract_ID', contractCalendarId);
+  await fillNumber(page, page, 'TermDuration', 0);
+  await selectListByKey(page, page, 'TermDurationUnit', DURATION_UNIT_MONTH);
+  await fillNumber(page, page, 'TermOfNotice', 0);
+  await selectListByKey(page, page, 'TermOfNoticeUnit', DURATION_UNIT_MONTH);
+  await waitForRecordSaved(TRANSITION_WINDOW_ID, transitionId, { maxRetries: 20, retryDelayMs: 500 });
+  if (allowCancellation) {
+    // tab "Wechselkonditionen": a status change to "Gekündigt" without a notice period, as the action "Kündigen" requires
+    const modal = await openNewIncludedRow(page, TRANSITION_CHANGE_TAB_ID);
+    await selectListByKey(page, modal, 'Action', CONTRACT_CHANGE_ACTION_STATUS_CHANGE);
+    await selectListByKey(page, modal, 'ContractStatus', CONTRACT_STATUS_CANCELLED);
+    // the deadline already shows 0 (no notice period); the unit is chosen
+    await selectListByKey(page, modal, 'DeadLineUnit', DURATION_UNIT_DAY);
+    await closeModal(modal);
+    const rows = await getTabRows(TRANSITION_WINDOW_ID, transitionId, `AD_Tab-${TRANSITION_CHANGE_TAB_ID}`);
+    expect(rows, 'one change condition row').toHaveLength(1);
+  }
+  await completeDocument(page);
+  await expectDocStatus(TRANSITION_WINDOW_ID, transitionId, 'CO');
+  return transitionId;
+}
+
+/**
+ * Schema (with its lines), settings (listing the standard sales order doc type) and completed conditions of
+ * type compensation group. Percentages are typed with a decimal point, because a decimal comma is dropped
+ * by the number fields (known WebUI behaviour).
+ * @returns the id of the conditions
+ */
+async function createConditions(page, { schemaName, goodsCategoryId, additive, lines, transitionId, name }) {
+  // schema
+  await openNewRecord(page, SCHEMA_WINDOW_ID);
+  await fillText(page, page, 'Name', schemaName);
+  const schemaId = await waitForNewRecordId(page, SCHEMA_WINDOW_ID);
+  if (additive) {
+    await setCheckbox(page, 'IsAdditive');
+    await waitForRecordSaved(SCHEMA_WINDOW_ID, schemaId, { maxRetries: 20, retryDelayMs: 500 });
+  }
+  let seqNo = 10;
+  for (const line of lines) {
+    const modal = await openNewIncludedRow(page, SCHEMA_LINE_TAB_ID);
+    await fillNumber(page, modal, 'SeqNo', seqNo);
+    await selectListByKey(page, modal, 'M_Product_Category_ID', goodsCategoryId);
+    await selectLookup(page, modal, 'M_Product_ID', line.discountProduct.productCode);
+    await fillNumber(page, modal, 'CompleteOrderDiscount', line.percent);
+    await closeModal(modal);
+    seqNo += 10;
+  }
+  const schemaLines = await getTabRows(SCHEMA_WINDOW_ID, schemaId, `AD_Tab-${SCHEMA_LINE_TAB_ID}`);
+  expect(schemaLines, `schema ${schemaName} has its lines`).toHaveLength(lines.length);
+  expect(schemaLines.map((l) => Number(l.fieldsByName.CompleteOrderDiscount.value)).sort())
+    .toEqual(lines.map((l) => l.percent).sort());
+
+  // settings
+  await openNewRecord(page, SETTINGS_WINDOW_ID);
+  await fillText(page, page, 'Name', `${name} settings`);
+  const settingsId = await waitForNewRecordId(page, SETTINGS_WINDOW_ID);
+  await selectLookup(page, page, 'C_CompensationGroup_Schema_ID', schemaName);
+  await waitForRecordSaved(SETTINGS_WINDOW_ID, settingsId, { maxRetries: 20, retryDelayMs: 500 });
+  const docTypeModal = await openNewIncludedRow(page, SETTINGS_DOCTYPE_TAB_ID);
+  await selectLookup(page, docTypeModal, 'C_DocType_ID', DOCTYPE_STANDARD_ORDER_NAME, { exact: true });
+  await closeModal(docTypeModal);
+
+  // conditions
+  await openNewRecord(page, CONDITIONS_WINDOW_ID);
+  await fillText(page, page, 'Name', name);
+  const conditionsId = await waitForNewRecordId(page, CONDITIONS_WINDOW_ID);
+  await selectListByKey(page, page, 'Type_Conditions', TYPE_CONDITIONS_COMPENSATION_GROUP);
+  await expect(page.locator('.form-field-C_CompensationGroup_ContractSettings_ID')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+  await selectListByKey(page, page, 'C_CompensationGroup_ContractSettings_ID', settingsId);
+  await selectListByKey(page, page, 'C_Flatrate_Transition_ID', transitionId);
+  await waitForRecordSaved(CONDITIONS_WINDOW_ID, conditionsId, { maxRetries: 20, retryDelayMs: 500 });
+  await completeDocument(page);
+  await expectDocStatus(CONDITIONS_WINDOW_ID, conditionsId, 'CO');
+  return conditionsId;
+}
+
+/**
+ * Business-partner action "Erzeuge Vertrag" for the conditions, with the given dates.
+ * With `openTerm` (default) the partner's single contract term is opened and its id returned.
+ */
+async function createContractTerm(page, customer, conditionsId, start, end, { openTerm = true } = {}) {
+  await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${customer.id}`);
+  await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+  const modal = await openAction(page, CREATE_CONTRACT_PROCESS);
+  await selectListByKey(page, modal, 'C_Flatrate_Conditions_ID', conditionsId);
+  await fillDate(page, modal, 'StartDate', start);
+  await fillDate(page, modal, 'EndDate', end);
+  await expect(modal.locator('.form-field-IsComplete input[type="checkbox"]').first(), 'the term is completed by the action').toBeChecked();
+  const processStarted = page.waitForResponse((r) => r.url().includes('/process/') && r.url().endsWith('/start'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+  await modal.getByTestId('process-modal-start-button').click();
+  expect((await processStarted).ok(), '"Erzeuge Vertrag" must run without error').toBe(true);
+  await modal.waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
+  if (!openTerm) {
+    return null;
+  }
+  await openRelatedDocument({
+    dataCy: BPARTNER_TO_CONTRACT_TERM_REFERENCE,
+    stepName: 'Business partner - open the created contract term',
+    maxRetries: 10,
+    retryDelay: 2000,
+    refreshOnRetry: true,
+  });
+  const termId = await waitForNewRecordId(page, CONTRACT_WINDOW_ID);
+  await expectDocStatus(CONTRACT_WINDOW_ID, termId, 'CO');
+  return termId;
+}
+
+/** A menu node (AD_Menu id) with its children down to `depth`, read from the backend's menu tree of the logged-in user. */
+async function getMenuNode(page, nodeId, depth = 1) {
+  const response = await page.request.get(`${WEBAPI_BASE_URL}/menu/node/${nodeId}?depth=${depth}`);
+  expect(response.ok(), `menu node ${nodeId}`).toBe(true);
+  return await response.json();
+}
+
+/** The unfiltered grid view of the order compensation group window, read from the backend: { size, rows (first page) } */
+async function readOrderCompensationGroupView(page) {
+  const viewResponse = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${ORDER_COMPENSATION_GROUP_WINDOW_ID}`, {
+    data: { documentType: String(ORDER_COMPENSATION_GROUP_WINDOW_ID), viewType: 'grid', filters: [] },
+    headers: { 'Content-Type': 'application/json' },
+  });
+  expect(viewResponse.ok(), 'the order compensation group view opens').toBe(true);
+  const view = await viewResponse.json();
+  const rowsResponse = await page.request.get(`${WEBAPI_BASE_URL}/documentView/${ORDER_COMPENSATION_GROUP_WINDOW_ID}/${view.viewId}?firstRow=0&pageLength=20`);
+  expect(rowsResponse.ok(), 'the order compensation group view rows are read').toBe(true);
+  return { size: view.size, rows: (await rowsResponse.json()).result ?? [] };
+}
+
+/** Creates a sales order for the customer with one goods line, dated `date`, completes it. @returns the order id */
+async function completeSalesOrder(page, customer, goods, date) {
+  await SalesOrderPage.goto();
+  await SalesOrderPage.clickNew();
+  const orderId = await SalesOrderPage.selectCustomer(customer.bpartnerCode);
+  await fillDateIfChanged(page, page, 'DateOrdered', date);
+  await SalesOrderPage.addOrderLine({ product: goods.productCode, quantity: 1, recordId: orderId });
+  await SalesOrderPage.complete();
+  await expectDocStatus(SALES_ORDER_WINDOW_ID, orderId, 'CO');
+  return orderId;
+}
+
+/** Like fillDate, but sends nothing when the field already shows the date (a PATCH would never come). */
+async function fillDateIfChanged(page, scope, fieldName, date) {
+  const text = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
+  const input = scope.locator(`.form-field-${fieldName} input[type="text"]`).first();
+  await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  if ((await input.inputValue()).trim().startsWith(text)) {
+    return;
+  }
+  await fillDate(page, scope, fieldName, date);
+}
+
+function discountLineOf(lines, discountProduct) {
+  return lines.find((l) => lookupKey(l.fieldsByName.M_Product_ID.value) === String(discountProduct.id));
+}
+
+/** The discount line, as the operator sees it in the order-line grid. */
+async function expectOrderGridAmount(page, orderId, discountProduct, amountText) {
+  await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${orderId}`);
+  const orderLineTab = page.getByTestId(`tab-${ORDER_LINE_TAB}`);
+  await orderLineTab.click();
+  await expect(orderLineTab.locator('a.nav-link')).toHaveClass(/active/);
+  const row = page.locator('table tbody tr')
+    .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: discountProduct.productCode }) });
+  await expect(row).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+  await expect(row.locator('[data-cy="cell-LineNetAmt"]')).toContainText(amountText);
+  await row.scrollIntoViewIfNeeded();
 }

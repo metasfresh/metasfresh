@@ -12,6 +12,10 @@ Feature: Inventory Costing
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-14T08:00:00+00:00
     And documents are accounted immediately
+    # The scenarios assert cost details for both cost elements. The seed DB has no active MovingAverageInvoice element;
+    # if it is first created by the assertion step, the inventories were costed without it and it has no cost details.
+    # So activate both before any document is costed, instead of relying on an earlier feature having done so.
+    And cost elements for material costing methods AveragePO,MovingAverageInvoice are active
     And metasfresh contains M_Products:
       | Identifier | X12DE355 |
       | P1         | PCE      |

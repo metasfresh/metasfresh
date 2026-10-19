@@ -2,7 +2,7 @@
 @allure.label.epic:E0160_Manufacturing_Execution
 @allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
 @F8033
-@ghActions:run_on_executor6
+@ghActions:run_on_executor10
 Feature: Production dispo scenarios with BOMs whose components have their own BOMs in turn.
 ## F8033: Production
 

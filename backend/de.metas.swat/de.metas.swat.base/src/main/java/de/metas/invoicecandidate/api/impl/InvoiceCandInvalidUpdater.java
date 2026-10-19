@@ -32,6 +32,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.compensationGroup.PercentCompensationLineInvoicing;
@@ -86,6 +87,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	private final transient InvoiceCandBL invoiceCandBL;
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	@NonNull private final transient IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -411,6 +413,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Save it
 		invoiceCandDAO.save(icRecord);
+
+		invoiceCandidateListeners.onAfterUpdated(icRecord);
 	}
 
 	/**

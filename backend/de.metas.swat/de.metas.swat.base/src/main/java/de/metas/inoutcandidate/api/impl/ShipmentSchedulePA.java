@@ -2,9 +2,11 @@ package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -37,6 +39,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -67,9 +70,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOf
 public class ShipmentSchedulePA implements IShipmentSchedulePA
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
-	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	// lazy: ShipmentScheduleInvalidateRepository needs the Spring context on construction, but this service is created while Spring is still starting up
+	@Nullable private IShipmentScheduleInvalidateRepository _invalidSchedulesRepo; // null = not yet initialized
+
+	private IShipmentScheduleInvalidateRepository invalidSchedulesRepo()
+	{
+		if (_invalidSchedulesRepo == null)
+		{
+			_invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+		}
+		return _invalidSchedulesRepo;
+	}
 
 	/**
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
@@ -269,16 +285,26 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
-	public List<I_M_ShipmentSchedule> retrieveUnprocessedForRecord(@NonNull final TableRecordReference recordRef)
+	public ImmutableSet<TableRecordReference> retrieveRecordsWithUnprocessedSchedules(@NonNull final Collection<TableRecordReference> recordRefs)
+	{
+		final ImmutableListMultimap<AdTableId, TableRecordReference> recordRefsByTableId = Multimaps.index(recordRefs, TableRecordReference::getAdTableId);
+		return recordRefsByTableId.keySet()
+				.stream()
+				.flatMap(adTableId -> streamRecordsWithUnprocessedSchedules(adTableId, recordRefsByTableId.get(adTableId)))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private Stream<TableRecordReference> streamRecordsWithUnprocessedSchedules(@NonNull final AdTableId adTableId, @NonNull final Collection<TableRecordReference> recordRefs)
 	{
 		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, recordRef.getRecord_ID())
-				.orderBy(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, adTableId)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, recordRefs.stream().map(TableRecordReference::getRecord_ID).collect(ImmutableSet.toImmutableSet()))
 				.create()
-				.listImmutable(I_M_ShipmentSchedule.class);
+				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, Integer.class)
+				.stream()
+				.map(recordId -> TableRecordReference.of(adTableId.getRepoId(), recordId));
 	}
 
 	/**
@@ -287,7 +313,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public List<OlAndSched> retrieveInvalid(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
 	{
-		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 		// 1.
 		// Mark the M_ShipmentSchedule_Recompute records that point to the scheds which we will work with
 		// This allows us to distinguish them from records created later
@@ -295,14 +320,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// task 08727: Tag the recompute records out-of-trx.
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
-		invalidSchedulesRepo.markAllToRecomputeOutOfTrx(pinstanceId, maxToProcess);
+		invalidSchedulesRepo().markAllToRecomputeOutOfTrx(pinstanceId, maxToProcess);
 
 		// 2.
 		// Load the scheds the are pointed to by our marked M_ShipmentSchedule_Recompute records
 		final List<I_M_ShipmentSchedule> shipmentSchedules = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
-				.filter(invalidSchedulesRepo.createInvalidShipmentSchedulesQueryFilter(pinstanceId))
+				.filter(invalidSchedulesRepo().createInvalidShipmentSchedulesQueryFilter(pinstanceId))
 				.create()
 				.setOrderBy(queryBL.createSqlQueryOrderBy(ORDER_CLAUSE))
 				.list();
@@ -322,8 +347,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@VisibleForTesting
 	List<OlAndSched> createOlAndScheds(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
 		final Set<OrderAndLineId> orderLineIds = shipmentSchedules.stream()
 				.map(ShipmentSchedulePA::extractOrderAndLineId)
 				.filter(Objects::nonNull)
@@ -486,8 +509,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// Invalidate the inout candidates which we updated
 		if (invalidate)
 		{
-			final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
-			invalidSchedulesRepo.invalidateSchedulesForSelection(selectionToUpdateId);
+			invalidSchedulesRepo().invalidateSchedulesForSelection(selectionToUpdateId);
 		}
 	}
 
@@ -624,7 +646,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		final Map<Integer, I_M_ShipmentSchedule> schedules = new LinkedHashMap<>();
 
 		// add all the shipment schedules from the QtyPicked entries
-		final Map<Integer, I_M_ShipmentSchedule> schedulesForInOutLine = Services.get(IShipmentScheduleAllocDAO.class).retrieveSchedulesForInOutLineQuery(inoutLine)
+		final Map<Integer, I_M_ShipmentSchedule> schedulesForInOutLine = shipmentScheduleAllocDAO.retrieveSchedulesForInOutLineQuery(inoutLine)
 				.create()
 				.mapById(I_M_ShipmentSchedule.class);
 		schedules.putAll(schedulesForInOutLine);

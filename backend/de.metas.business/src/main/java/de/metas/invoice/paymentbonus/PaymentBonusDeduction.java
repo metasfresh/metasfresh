@@ -1,0 +1,209 @@
+package de.metas.invoice.paymentbonus;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * The bonus that a customer deducts when paying a sales invoice ("bei Zahlung"): a percentage of the invoice's net goods value, plus the VAT of the bonus products on top.
+ * It is booked as a payment bonus credit memo with one line per bonus product, which is allocated against the invoice.
+ */
+@Value
+public class PaymentBonusDeduction
+{
+	@NonNull OrgId orgId;
+
+	/** The sales invoice that the customer paid less. */
+	@NonNull InvoiceId invoiceId;
+
+	/** The invoice's partner; the credit memo is issued to it. */
+	@NonNull BPartnerId customerId;
+
+	@NonNull CurrencyId currencyId;
+
+	@NonNull CurrencyPrecision precision;
+
+	@NonNull ImmutableList<PaymentBonusDeductionLine> lines;
+
+	@Builder(toBuilder = true)
+	private PaymentBonusDeduction(
+			@NonNull final OrgId orgId,
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final BPartnerId customerId,
+			@NonNull final CurrencyId currencyId,
+			@NonNull final CurrencyPrecision precision,
+			@NonNull @Singular final ImmutableList<PaymentBonusDeductionLine> lines)
+	{
+		Check.assumeNotEmpty(lines, "lines");
+		lines.forEach(line -> line.getNetAmt().assertCurrencyId(currencyId));
+
+		this.orgId = orgId;
+		this.invoiceId = invoiceId;
+		this.customerId = customerId;
+		this.currencyId = currencyId;
+		this.precision = precision;
+		this.lines = lines;
+	}
+
+	public Money getNetAmount()
+	{
+		return lines.stream().map(PaymentBonusDeductionLine::getNetAmt).reduce(Money.zero(currencyId), Money::add);
+	}
+
+	/**
+	 * @return the net amount plus the VAT on top; the VAT is computed per tax on the sum of its lines, like the credit memo's own taxes
+	 */
+	public Money getGrossAmount()
+	{
+		return computeGrossAmount(lines);
+	}
+
+	private Money computeGrossAmount(@NonNull final List<PaymentBonusDeductionLine> lines)
+	{
+		final Map<TaxId, Tax> taxesById = new LinkedHashMap<>();
+		final Map<TaxId, BigDecimal> netAmtsByTaxId = new LinkedHashMap<>();
+		for (final PaymentBonusDeductionLine line : lines)
+		{
+			final TaxId taxId = line.getTax().getTaxId();
+			taxesById.put(taxId, line.getTax());
+			netAmtsByTaxId.merge(taxId, line.getNetAmt().toBigDecimal(), BigDecimal::add);
+		}
+
+		BigDecimal grossAmt = BigDecimal.ZERO;
+		for (final Map.Entry<TaxId, BigDecimal> entry : netAmtsByTaxId.entrySet())
+		{
+			grossAmt = grossAmt.add(taxesById.get(entry.getKey()).calculateGross(entry.getValue(), precision.toInt()));
+		}
+		return Money.of(grossAmt, currencyId);
+	}
+
+	/**
+	 * Scales this deduction down for a customer who may deduct at most the given amount, e.g. because the payment leaves less open than this deduction.
+	 * Because of the rounding of the VAT, {@link #withGrossAmount(Money)} can land one cent above the requested amount; so lower amounts are tried, one cent at a time.
+	 * <p>
+	 * Use the returned deduction as it is: scaling this deduction again to the returned gross amount can land on a different amount when the lines have different taxes.
+	 *
+	 * @param maxGrossAmount the limit, in this deduction's currency; may be zero or negative
+	 * @return this deduction if the limit is not below its gross amount;
+	 * otherwise the scaled deduction with the largest gross amount not above the limit;
+	 * empty if the limit is not positive or no positive amount up to it can be reached
+	 */
+	public Optional<PaymentBonusDeduction> withLargestReachableGrossAmountNotAbove(@NonNull final Money maxGrossAmount)
+	{
+		maxGrossAmount.assertCurrencyId(currencyId);
+
+		if (!maxGrossAmount.isLessThan(getGrossAmount()))
+		{
+			return Optional.of(this);
+		}
+
+		return scaleToLargestReachableGrossAmountNotAbove(maxGrossAmount);
+	}
+
+	/**
+	 * Scales this deduction to the given gross amount, up or down, e.g. to the amount that the customer actually deducted, like {@link #withGrossAmount(Money)}.
+	 * Unlike {@link #withLargestReachableGrossAmountNotAbove(Money)}, an amount above this deduction's gross amount is booked as it is, not lowered to this deduction.
+	 * Because of the rounding of the VAT, {@link #withGrossAmount(Money)} can land one cent above the requested amount; so lower amounts are tried, one cent at a time.
+	 *
+	 * @param grossAmount the amount to reach, in this deduction's currency; may be zero or negative
+	 * @return the scaled deduction with the largest gross amount not above the given one (this deduction if that is its own gross amount);
+	 * empty if the amount is not positive or no positive amount up to it can be reached
+	 */
+	public Optional<PaymentBonusDeduction> withLargestReachableGrossAmountUpTo(@NonNull final Money grossAmount)
+	{
+		grossAmount.assertCurrencyId(currencyId);
+		return scaleToLargestReachableGrossAmountNotAbove(grossAmount);
+	}
+
+	private Optional<PaymentBonusDeduction> scaleToLargestReachableGrossAmountNotAbove(@NonNull final Money maxGrossAmount)
+	{
+		final Money oneCent = Money.of(BigDecimal.ONE.movePointLeft(precision.toInt()), currencyId);
+		for (Money candidate = maxGrossAmount; candidate.signum() > 0; candidate = candidate.subtract(oneCent))
+		{
+			final PaymentBonusDeduction scaled = withGrossAmount(candidate);
+			if (!scaled.getGrossAmount().isGreaterThan(maxGrossAmount))
+			{
+				return Optional.of(scaled);
+			}
+		}
+		return Optional.empty();
+	}
+
+	/**
+	 * Scales the lines' net amounts so that the gross amount is the given one, e.g. because the customer deducted a different amount than computed.
+	 * Because of the rounding of the VAT, not every gross amount can be reached; then the result's gross amount is the closest one.
+	 */
+	public PaymentBonusDeduction withGrossAmount(@NonNull final Money grossAmountToReach)
+	{
+		grossAmountToReach.assertCurrencyId(currencyId);
+		if (grossAmountToReach.signum() <= 0)
+		{
+			throw new AdempiereException("The payment bonus needs to be a positive amount")
+					.markAsUserValidationError()
+					.appendParametersToMessage()
+					.setParameter("paymentBonus", grossAmountToReach);
+		}
+
+		final Money grossAmount = getGrossAmount();
+		if (grossAmount.isEqualByComparingTo(grossAmountToReach))
+		{
+			return this;
+		}
+
+		final BigDecimal factor = grossAmountToReach.toBigDecimal().divide(grossAmount.toBigDecimal(), 12, RoundingMode.HALF_UP);
+		final List<PaymentBonusDeductionLine> scaledLines = new ArrayList<>();
+		for (final PaymentBonusDeductionLine line : lines)
+		{
+			scaledLines.add(line.withNetAmt(line.getNetAmt().multiply(factor).round(precision)));
+		}
+
+		// the rounding of the scaled lines and of their VAT can miss the gross amount by a few cents; correct the biggest line, one cent at a time
+		final int biggestLineIndex = scaledLines.indexOf(scaledLines.stream().max(Comparator.comparing(line -> line.getNetAmt().toBigDecimal())).get());
+		final BigDecimal oneCent = BigDecimal.ONE.movePointLeft(precision.toInt());
+		for (int i = 0; i < 10; i++)
+		{
+			final Money difference = grossAmountToReach.subtract(computeGrossAmount(scaledLines));
+			if (difference.signum() == 0)
+			{
+				break;
+			}
+
+			final PaymentBonusDeductionLine biggestLine = scaledLines.get(biggestLineIndex);
+			final BigDecimal step = difference.signum() > 0 ? oneCent : oneCent.negate();
+			scaledLines.set(biggestLineIndex, biggestLine.withNetAmt(biggestLine.getNetAmt().add(Money.of(step, currencyId))));
+
+			final Money newDifference = grossAmountToReach.subtract(computeGrossAmount(scaledLines));
+			if (newDifference.abs().isGreaterThanOrEqualTo(difference.abs()))
+			{
+				scaledLines.set(biggestLineIndex, biggestLine); // no closer; keep the previous one
+				break;
+			}
+		}
+
+		return toBuilder()
+				.clearLines()
+				.lines(scaledLines)
+				.build();
+	}
+}

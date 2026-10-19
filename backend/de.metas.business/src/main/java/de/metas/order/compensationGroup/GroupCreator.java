@@ -6,6 +6,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
+import de.metas.order.compensationGroup.calibration.GroupCalibrations;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -49,6 +50,7 @@ public final class GroupCreator
 	private final BigDecimal qty;
 
 	@Nullable private final FlatrateTermId flatrateTermId;
+	@Nullable private final GroupCalibrations calibrations;
 
 	@Builder
 	private GroupCreator(
@@ -57,7 +59,8 @@ public final class GroupCreator
 			//
 			@NonNull final GroupTemplate groupTemplate,
 			@Nullable final BigDecimal qty,
-			@Nullable final FlatrateTermId flatrateTermId)
+			@Nullable final FlatrateTermId flatrateTermId,
+			@Nullable final GroupCalibrations calibrations)
 	{
 		this.groupsRepo = groupsRepo;
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
@@ -65,6 +68,7 @@ public final class GroupCreator
 		this.groupTemplate = groupTemplate;
 		this.qty = coalesceNotNull(qty, ONE);
 		this.flatrateTermId = flatrateTermId;
+		this.calibrations = calibrations;
 	}
 
 	public static class GroupCreatorBuilder
@@ -97,6 +101,7 @@ public final class GroupCreator
 						.newContractConditionsId(contractConditionsId)
 						.newFlatrateTermId(flatrateTermId)
 						.qtyMultiplier(qty)
+						.calibrations(calibrations)
 						.build());
 
 		recreateGroup(group);

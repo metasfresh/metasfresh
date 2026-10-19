@@ -55,6 +55,7 @@ import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BankStatement;
@@ -70,25 +71,16 @@ import java.util.Optional;
 import java.util.Set;
 
 @Component
+@RequiredArgsConstructor
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IBankStatementBL bankStatementBL;
-	private final MoneyService moneyService;
-	private final PaymentAllocationService paymentAllocationService;
-
-	public BankStatementPaymentBL(
-			@NonNull final IBankStatementBL bankStatementBL,
-			@NonNull final MoneyService moneyService,
-			@NonNull final PaymentAllocationService paymentAllocationService)
-	{
-		this.bankStatementBL = bankStatementBL;
-		this.moneyService = moneyService;
-		this.paymentAllocationService = paymentAllocationService;
-	}
+	@NonNull private final IBankStatementBL bankStatementBL;
+	@NonNull private final MoneyService moneyService;
+	@NonNull private final PaymentAllocationService paymentAllocationService;
 
 	@Override
 	public void findOrCreateSinglePaymentAndLinkIfPossible(
@@ -216,9 +208,17 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 
 			final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(payAmount.getCurrencyId(), invoiceId, evaluationDate).orElse(null);
 			
-			if (invoiceToAllocate != null && invoiceToAllocate.grantDiscount(payAmount.toAmount(moneyService::getCurrencyCodeByCurrencyId)))
+			if (invoiceToAllocate != null)
 			{
-				paymentBuilder.discountAmt(invoiceToAllocate.getDiscountAmountConverted().toBigDecimal());
+				// Skonto, or the payment bonus, or both: the one that the paid amount matches
+				paymentAllocationService.matchDeductions(
+								invoiceToAllocate,
+								payAmount.toAmount(moneyService::getCurrencyCodeByCurrencyId),
+								PaymentDirection.ofInboundPaymentFlag(inboundPayment))
+						.ifPresent(matched -> {
+							paymentBuilder.discountAmt(matched.getDiscountAmt().toBigDecimal());
+							paymentBuilder.paymentBonusAmt(matched.getBonusAmt().toBigDecimal());
+						});
 			}
 
 			paymentBuilder.invoiceId(invoiceId);

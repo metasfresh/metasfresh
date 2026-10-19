@@ -25,9 +25,10 @@ describe('CostPrice component', () => {
     const wrapper = renderInEditMode();
     const input = wrapper.find('input');
 
-    expect(input.props().type).toBe('number');
-    // Without step="any" the browser's default step of 1 makes 12.35 invalid, which blocks a <form> submit.
-    expect(input.props().step).toBe('any');
+    // A text input with a decimal keyboard, not a browser number input: that one drops a decimal comma, and its
+    // default step of 1 would make 12.35 invalid, which blocks a <form> submit.
+    expect(input.props().type).toBe('text');
+    expect(input.props().inputMode).toBe('decimal');
     expect(input.getDOMNode().validity.stepMismatch).toBe(false);
     expect(input.getDOMNode().checkValidity()).toBe(true);
   });

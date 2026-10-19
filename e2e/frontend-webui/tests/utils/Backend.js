@@ -62,6 +62,9 @@ export const Backend = {
 
       // Store masterdata in test context for later use
       testContext.lastMasterdata = responseBody;
+      // Carry the identifiers the creation registered (e.g. calibration rules, which the response sections
+      // alone do not make resolvable) into the expectations, as the mobile-webui Backend does.
+      testContext.lastExpectContext = responseBody.context;
 
       // The sysconfigs in the request are written on the app node (8282). Any
       // sysconfig-gated query (e.g. the product-lookup picker) runs on the

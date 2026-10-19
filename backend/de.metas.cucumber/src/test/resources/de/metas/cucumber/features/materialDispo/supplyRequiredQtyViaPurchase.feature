@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
-@ghActions:run_on_executor6
+@ghActions:run_on_executor8
 Feature: Disposal is correctly considered in Material Dispo; Stock shortage solved via purchase
 ## F5100: Material Disposition
 

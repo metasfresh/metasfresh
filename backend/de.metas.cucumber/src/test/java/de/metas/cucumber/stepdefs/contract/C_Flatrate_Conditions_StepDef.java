@@ -35,6 +35,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.contract.commission.hierarchy.C_HierarchyCommissionSettings_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.licensefee.C_LicenseFeeSettings_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.margin.C_Customer_Trade_Margin_StepDefData;
@@ -98,7 +99,7 @@ public class C_Flatrate_Conditions_StepDef
 	 * <p>
 	 * DataTable columns:
 	 * <ul>
-	 *     <li>{@code Name} (required) — the conditions' name (also the upsert key)</li>
+	 *     <li>{@code Name} (optional, unique name generated when omitted) — the conditions' name (also the upsert key)</li>
 	 *     <li>{@code Type_Conditions} (required) — the conditions type code</li>
 	 *     <li>{@code OPT.Type_Flatrate}, {@code OPT.M_Product_Flatrate_ID.Identifier},
 	 *         {@code OPT.C_HierarchyCommissionSettings_ID.Identifier}, {@code OPT.C_LicenseFeeSettings_ID.Identifier},
@@ -124,8 +125,8 @@ public class C_Flatrate_Conditions_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String name = tableRow.get(COLUMNNAME_Name);
-			assertThat(name).as(COLUMNNAME_Name + " is mandatory").isNotBlank();
+			// without a Name, a unique one is generated, so that the conditions of an earlier run are not reused (and upserted)
+			final String name = Check.isNotBlank(tableRow.get(COLUMNNAME_Name)) ? tableRow.get(COLUMNNAME_Name) : ValueAndName.unique().getName();
 
 			final String conditionsType = tableRow.get(COLUMNNAME_Type_Conditions);
 			assertThat(conditionsType).as(COLUMNNAME_Type_Conditions + " is mandatory").isNotBlank();

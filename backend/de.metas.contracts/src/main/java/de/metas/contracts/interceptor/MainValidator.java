@@ -35,6 +35,7 @@ import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionProcessor;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.order.ContractOrderService;
+import de.metas.contracts.refund.RefundInvoiceCandidateListener;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
 import de.metas.contracts.subscription.invoicecandidatehandler.ExcludeSubscriptionOrderLines;
 import de.metas.document.location.IDocumentLocationBL;
@@ -166,6 +167,7 @@ public class MainValidator extends AbstractModuleInterceptor
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(FlatrateTermInvoiceCandidateListener.instance);
+		invoiceCandidateListeners.addListener(new RefundInvoiceCandidateListener());
 
 		// a sales order's contract-created compensation lines must not be copied onto its purchase
 		// order (neither the auto-created drop-ship PO nor a manually run C_Order_CreatePOFromSOs) --

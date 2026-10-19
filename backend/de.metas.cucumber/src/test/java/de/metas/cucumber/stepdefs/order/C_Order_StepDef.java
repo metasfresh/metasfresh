@@ -40,10 +40,12 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
+import de.metas.cucumber.stepdefs.process.AD_Process_Run_StepDef;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
@@ -72,6 +74,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
+import de.metas.order.process.C_Order_CreateFromProposal;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -90,6 +93,7 @@ import de.metas.util.Optionals;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -202,6 +206,7 @@ public class C_Order_StepDef
 	@NonNull private final C_Order_StepDefData orderTable;
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData checkupReportTable;
 	@NonNull private final C_OrderLine_StepDef orderLineStepDef;
+	@NonNull private final AD_Process_Run_StepDef processRunStepDef;
 	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final M_PricingSystem_StepDefData pricingSystemDataTable;
@@ -213,6 +218,7 @@ public class C_Order_StepDef
 	@NonNull private final M_Shipper_StepDefData shipperTable;
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final C_PromotionCode_StepDefData promotionCodeTable;
+	@NonNull private final C_DocType_StepDefData docTypeTable;
 
 	@Given("simple completed order with one line")
 	public void createAndCompleteSimpleOrders(@NonNull final DataTable dataTable)
@@ -511,6 +517,44 @@ public class C_Order_StepDef
 		return order;
 	}
 
+	/**
+	 * Arms a one-time DB deadlock for the next completion of the given order: that completion fails after its
+	 * {@code AFTER_COMPLETE} interceptors ran, and the document engine rolls it back and retries it.
+	 */
+	@And("^the next completion of the order identified by (\\S+) runs into a DB deadlock once$")
+	public void order_next_completion_runs_into_deadlock(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		C_Order_SimulatedDeadlockOnCompletion.arm(OrderId.ofRepoId(order.getC_Order_ID()), null);
+	}
+
+	/**
+	 * Like {@link #order_next_completion_runs_into_deadlock(String)}, but the armed completion's attempts (the deadlocked one and its retry) first set
+	 * the given description and save the order in {@code AFTER_COMPLETE}, like an interceptor that saves the order. In the deadlocked attempt, that
+	 * save also writes the values its {@code prepareIt()} / {@code approveIt()} set (e.g. {@code C_DocType_ID}, {@code IsApproved}), and is rolled back with it.
+	 */
+	@And("^the next completion of the order identified by (\\S+) saves the order with the description '(.*)' and then runs into a DB deadlock once$")
+	public void order_next_completion_saves_description_and_runs_into_deadlock(@NonNull final String orderIdentifier, @NonNull final String description)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		C_Order_SimulatedDeadlockOnCompletion.arm(OrderId.ofRepoId(order.getC_Order_ID()), description);
+	}
+
+	@And("^the completion of the order identified by (.*) did run into the DB deadlock$")
+	public void order_completion_did_run_into_deadlock(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		assertThat(C_Order_SimulatedDeadlockOnCompletion.isHit(OrderId.ofRepoId(order.getC_Order_ID())))
+				.as("the armed DB deadlock was hit by a completion of order %s", orderIdentifier)
+				.isTrue();
+	}
+
+	@After
+	public void disarmSimulatedDeadlocksAfterScenario()
+	{
+		C_Order_SimulatedDeadlockOnCompletion.disarmAll();
+	}
+
 	@And("^the order identified by (.*) is (reactivated|completed|closed|voided|reversed)$")
 	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
@@ -522,17 +566,6 @@ public class C_Order_StepDef
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				logger.info("Order {} was reactivated", order);
-
-				// Force a fresh load for this identifier: orderTable's StepDefData caches the model per
-				// identifier (a fresh TableRecordReference still keeps its own SoftReference once loaded), so
-				// without this, a later doc action on the same identifier reuses THIS SAME MOrder instance —
-				// unlike a real WebUI/REST request, which always loads a fresh PO per doc action
-				// (DocumentInterfaceWrapperHelper.getPO). That matters because MOrder.completeIt0() only
-				// re-runs prepareIt() (and so TIMING_BEFORE_PREPARE) when its private m_justPrepared flag is
-				// still false; reactivation never resets that flag, so re-completing the SAME cached instance
-				// after reactivation silently skips prepareIt() — a cucumber-harness-only gap a genuinely
-				// fresh instance (as production always has) does not have.
-				orderTable.putOrReplace(orderIdentifier, order);
 				break;
 			case completed:
 				completeOrder(order);
@@ -960,6 +993,10 @@ public class C_Order_StepDef
 	 *   <li>{@code DateOrdered} / {@code DatePromised} (optional) — compared as {@code LocalDate} in the order org's time zone</li>
 	 *   <li>{@code InvoiceStatus} (optional) — expected invoice status: {@code O} = open, {@code PI} = partially invoiced, {@code CI} = completely invoiced;
 	 *       waits up to 60s for it, because it follows the asynchronous recompute of the order's invoice candidates</li>
+	 *   <li>{@code GrandTotal} (optional) — expected grand total, compared by value</li>
+	 *   <li>{@code C_DocType_ID} (optional) — identifier of the expected {@code C_DocType} of the order itself; unlike {@code DocBaseType},
+	 *       it does not fall back to {@code C_DocTypeTarget_ID}, so it detects an order that was completed without its {@code C_DocType_ID}</li>
+	 *   <li>{@code IsApproved} (optional) — expected approval flag</li>
 	 * </ul>
 	 */
 	@And("validate the created orders")
@@ -1030,6 +1067,12 @@ public class C_Order_StepDef
 			order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		}
 
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
+				.map(bpartnerIdentifier -> bpartnerIdentifier.lookupNotNullIn(bpartnerTable))
+				.ifPresent(bpartner -> order.setC_BPartner_ID(bpartner.getC_BPartner_ID()));
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
+				.map(bpartnerLocationTable::getId)
+				.ifPresent(bpLocationId -> order.setC_BPartner_Location_ID(bpLocationId.getRepoId()));
 		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsReprintOrderCheckup)
 				.ifPresent(order::setIsReprintOrderCheckup);
 		tableRow.getAsOptionalString(COLUMNNAME_PaymentRule)
@@ -1192,6 +1235,17 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_DocStatus)
 				.ifPresent(docStatus -> softly.assertThat(order.getDocStatus()).as("DocStatus for Identifier=%s", identifierStr).isEqualTo(docStatus));
+
+		// the order's own C_DocType_ID (not falling back to the target doc type, unlike DocBaseType above)
+		row.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_DocType_ID)
+				.map(docTypeTable::getId)
+				.ifPresent(docTypeId -> softly.assertThat(order.getC_DocType_ID()).as("C_DocType_ID for Identifier=%s", identifierStr).isEqualTo(docTypeId.getRepoId()));
+
+		row.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsApproved)
+				.ifPresent(isApproved -> softly.assertThat(order.isApproved()).as("IsApproved for Identifier=%s", identifierStr).isEqualTo(isApproved));
+
+		row.getAsOptionalBigDecimal(I_C_Order.COLUMNNAME_GrandTotal)
+				.ifPresent(grandTotal -> softly.assertThat(order.getGrandTotal()).as("GrandTotal for Identifier=%s", identifierStr).isEqualByComparingTo(grandTotal));
 
 		row.getAsOptionalString(I_C_Order.COLUMNNAME_InvoiceStatus)
 				.ifPresent(invoiceStatus -> softly.assertThat(awaitInvoiceStatus(order, invoiceStatus)).as("InvoiceStatus for Identifier=%s", identifierStr).isEqualTo(invoiceStatus));
@@ -1402,6 +1456,50 @@ public class C_Order_StepDef
 
 			assertThat(orderLine).isPresent();
 		}
+	}
+
+	/**
+	 * Runs the order window's "create sales order from proposal / quotation" action ({@code C_Order_CreateFromProposal})
+	 * on a completed quotation or proposal and registers the new, drafted sales order.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Order_ID</b> — (required, identifier-ref) the completed quotation or proposal<br>
+	 *   <b>SalesOrder.C_Order_ID</b> — (required) identifier under which the created sales order is registered<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When sales order is created from proposal:
+	 *   | C_Order_ID | SalesOrder.C_Order_ID |
+	 *   | quote_1    | order_1               |
+	 * </pre>
+	 */
+	@When("sales order is created from proposal:")
+	public void create_sales_order_from_proposal(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Order proposal = row.getAsIdentifier(COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+
+			final DocTypeId salesOrderDocTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(DocBaseType.SalesOrder)
+					.docSubType(DocSubType.StandardOrder)
+					.adClientId(proposal.getAD_Client_ID())
+					.adOrgId(proposal.getAD_Org_ID())
+					.build());
+
+			processRunStepDef.newProcessInfoBuilder(adProcessDAO.retrieveProcessIdByClass(C_Order_CreateFromProposal.class))
+					.setRecord(TableRecordReference.of(I_C_Order.Table_Name, proposal.getC_Order_ID()))
+					.addParameter("C_DocType_ID", salesOrderDocTypeId.getRepoId())
+					.buildAndPrepareExecution()
+					.switchContextWhenRunning()
+					.executeSync()
+					.getResult()
+					.propagateErrorIfAny();
+
+			final I_C_Order proposalReloaded = orderBL.getById(OrderId.ofRepoId(proposal.getC_Order_ID()));
+			assertThat(proposalReloaded.getRef_Order_ID()).as("Ref_Order_ID of proposal %s", proposal.getC_Order_ID()).isPositive();
+			orderTable.putOrReplace(row.getAsIdentifier("SalesOrder.C_Order_ID"), orderBL.getById(OrderId.ofRepoId(proposalReloaded.getRef_Order_ID())));
+		});
 	}
 
 	@When("C_Order is cloned")

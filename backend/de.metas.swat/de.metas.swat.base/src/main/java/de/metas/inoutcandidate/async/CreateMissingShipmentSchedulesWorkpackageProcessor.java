@@ -23,11 +23,13 @@
 package de.metas.inoutcandidate.async;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IEnqueueResult;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -43,10 +45,13 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -55,6 +60,17 @@ import java.util.Properties;
 
 /**
  * Workpackage used to create missing shipment schedules.
+ * <p>
+ * Concurrency: a run creates its batch of shipment schedules in one transaction, without explicit row locks. Concurrent (e.g. user)
+ * transactions are therefore not blocked by it, beyond the standard foreign key locks that its new rows take on the records they
+ * reference (which only conflict with deleting such a record or changing its key) until the batch commits. The other way round, the
+ * batch waits at most for its {@code lock_timeout} for a concurrent transaction (sysconfig
+ * {@code de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.LockTimeoutMillis}, default 500 ms).
+ * If the batch collides with a concurrent transaction that deletes one of its order lines (see
+ * {@link #isCollisionWithConcurrentTransaction(Throwable)}), the whole batch is rolled back and the run is retried after
+ * sysconfig {@code de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.RetryMillis} (default 5 s), at most
+ * sysconfig {@code de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.MaxRetries} (default 10) times;
+ * after that, the collision is an error like any other.
  *
  * @author tsa
  */
@@ -64,6 +80,30 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 
 	private static final String SYSCONFIG_MaxToProcess = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.MaxToProcess";
 	private static final int DEFAULT_MaxToProcess = 500;
+
+	/**
+	 * PostgreSQL {@code lock_timeout} of a run's batch transaction; {@code <= 0} means no timeout. See {@link #setLockTimeout()}.
+	 */
+	private static final String SYSCONFIG_LockTimeoutMillis = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.LockTimeoutMillis";
+	private static final int DEFAULT_LockTimeoutMillis = 500;
+
+	/**
+	 * How long to wait before a run whose batch collided with a concurrent transaction is retried. See {@link #isCollisionWithConcurrentTransaction(Throwable)}.
+	 */
+	private static final String SYSCONFIG_RetryMillis = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.RetryMillis";
+	private static final int DEFAULT_RetryMillis = 5000;
+
+	/**
+	 * How often a workpackage is retried because of such collisions at most; after that, the collision is an error like any other.
+	 */
+	private static final String SYSCONFIG_MaxRetries = "de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor.MaxRetries";
+	private static final int DEFAULT_MaxRetries = 10;
+
+	/**
+	 * The (deferred) foreign key from {@code M_ShipmentSchedule.C_OrderLine_ID} to {@code C_OrderLine}.
+	 * The other handler's schedules (subscription progress) reference their source record via {@code AD_Table_ID/Record_ID}, without a foreign key.
+	 */
+	private static final String FK_M_ShipmentSchedule_C_OrderLine = "corderline_corderline";
 
 	public static void scheduleIfNotPostponed(final IContextAware ctxAware)
 	{
@@ -159,7 +199,23 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 		// This is NOT removable: the batching design requires exactly one bounded, atomic trx per batch; removing it
 		// would either restore the unbounded-single-trx OOM, or split creation and by-id flagging across transactions
 		// and break the same-trx invalidation invariant documented in de/metas/inoutcandidate/CLAUDE.md.
-		final CreateMissingCandidatesResult result = trxManager.callInThreadInheritedTrx(() -> processOneBatch(ctx, maxToProcess));
+		final CreateMissingCandidatesResult result;
+		try
+		{
+			result = trxManager.callInThreadInheritedTrx(() -> processOneBatch(ctx, maxToProcess));
+		}
+		catch (final RuntimeException e)
+		{
+			// The batch transaction was rolled back, i.e. no schedule of this batch was created.
+			if (isCollisionWithConcurrentTransaction(e) && workpackage.getSkipped_Count() < getMaxRetries())
+			{
+				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(
+						"The batch collided with a concurrent transaction; retrying later",
+						getRetryMillis(),
+						e);
+			}
+			throw e;
+		}
 
 		Loggables.addLog("Created " + result.getCreatedShipmentScheduleIds().size() + " candidates");
 
@@ -176,6 +232,55 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 		return sysConfigBL.getIntValue(SYSCONFIG_MaxToProcess, DEFAULT_MaxToProcess);
 	}
 
+	private int getRetryMillis()
+	{
+		return sysConfigBL.getIntValue(SYSCONFIG_RetryMillis, DEFAULT_RetryMillis);
+	}
+
+	private int getMaxRetries()
+	{
+		return sysConfigBL.getIntValue(SYSCONFIG_MaxRetries, DEFAULT_MaxRetries);
+	}
+
+	/**
+	 * Whether the batch failed because a concurrent transaction changed the records it was creating shipment schedules for, so that
+	 * retrying the run later succeeds:
+	 * <ul>
+	 * <li>The candidate order lines are selected from committed data, but a concurrent, not yet committed transaction may delete one
+	 * of them, e.g. a sales order's reactivation deleting the discount lines of a compensation group. If that transaction commits
+	 * first, the batch's commit fails on the deferred foreign key {@code corderline_corderline} (SQLSTATE 23503).</li>
+	 * <li>If that transaction is still running when the batch commits, the foreign key check waits for it: it locks the referenced order
+	 * line {@code FOR KEY SHARE}, which conflicts with a not yet committed deletion of that line (or a change of its key), but not with
+	 * an update of its other columns. It waits until the lock timeout (SQLSTATE 55P03); see {@link #setLockTimeout()}.</li>
+	 * </ul>
+	 * A retried run selects the candidates again, so it no longer sees the deleted lines. Any other error, also a violation of another
+	 * foreign key, is not retried, so that a genuine bug is not retried over and over.
+	 */
+	@VisibleForTesting
+	static boolean isCollisionWithConcurrentTransaction(@NonNull final Throwable e)
+	{
+		return DBException.findSQLExceptionInCauseChainOrNull(
+				e,
+				sqlException -> DBException.isLockNotAvailable(sqlException) || DBException.isForeignKeyViolation(sqlException, FK_M_ShipmentSchedule_C_OrderLine))
+				!= null;
+	}
+
+	/**
+	 * Sets a {@code lock_timeout} for the current (batch) transaction, so that the batch never waits long for a lock held by a concurrent
+	 * (e.g. a user's) transaction: it gives up, is rolled back, and the run is retried later (see {@link #isCollisionWithConcurrentTransaction(Throwable)}).
+	 * The batch itself takes no explicit row locks, so concurrent transactions don't wait for it, apart from the usual commit-time
+	 * foreign key checks of its new rows.
+	 */
+	private void setLockTimeout()
+	{
+		final int lockTimeoutMillis = sysConfigBL.getIntValue(SYSCONFIG_LockTimeoutMillis, DEFAULT_LockTimeoutMillis);
+		if (lockTimeoutMillis <= 0)
+		{
+			return;
+		}
+		DB.executeUpdateAndThrowExceptionOnFail("SET LOCAL lock_timeout = " + lockTimeoutMillis, ITrx.TRXNAME_ThreadInherited);
+	}
+
 	/**
 	 * Creates one bounded batch of missing shipment schedules and, in the same (batch) transaction, invalidates them
 	 * by id. See the invocation site in {@link #processWorkPackage(I_C_Queue_WorkPackage, String)} for why both effects
@@ -183,6 +288,8 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	 */
 	private CreateMissingCandidatesResult processOneBatch(@NonNull final Properties ctx, @NonNull final QueryLimit maxToProcess)
 	{
+		setLockTimeout();
+
 		final CreateMissingCandidatesResult batchResult = inOutCandHandlerBL.createMissingCandidates(ctx, maxToProcess);
 
 		// After shipment schedules were created, invalidate them (by id, in THIS same batch trx) because we want to

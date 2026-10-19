@@ -120,8 +120,18 @@ async function openSingleRecord(page, windowId) {
   await page.waitForURL(/\/window\/\d+\/\d+/, {
     timeout: SLOW_ACTION_TIMEOUT,
   });
+  // Wait for a rendered field of the document, not just the `.window-wrapper`
+  // shell. The shell mounts as soon as the route changes, but the document's
+  // layout and data arrive later through two REST calls (GET
+  // /window/<id>/layout, then GET /window/<id>/<docId>/). Until the data
+  // response is handled, the master `docId` is unset and the header wires no
+  // ALT+E handler (`handleOpenAdvancedEdit` is undefined without a `dataId`),
+  // so an ALT+E pressed in that gap is lost and `.panel-modal` never opens.
+  // `createWindow` dispatches the layout only after the data (and with it the
+  // `docId`), so a field inside `.sections-wrapper` proves the handler is
+  // wired.
   await page
-    .locator('.window-wrapper, .row-selected .form-group')
+    .locator('.window-wrapper .sections-wrapper .form-group')
     .first()
     .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   // Give React a beat to register shortcut handlers after navigation.

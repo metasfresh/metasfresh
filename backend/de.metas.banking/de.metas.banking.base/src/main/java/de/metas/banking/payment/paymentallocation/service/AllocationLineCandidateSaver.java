@@ -106,6 +106,12 @@ final class AllocationLineCandidateSaver
 					.setParameter("candidate", candidate)
 					.appendParametersToMessage();
 		}
+		else if (AllocationLineCandidateType.PaymentBonus.equals(type))
+		{
+			throw new AdempiereException("Cannot save PaymentBonus directly. It is allocated by the completion of its payment bonus credit memo.")
+					.setParameter("candidate", candidate)
+					.appendParametersToMessage();
+		}
 		else if (AllocationLineCandidateType.InboundPaymentToOutboundPayment.equals(type))
 		{
 			return saveCandidate_InboundPaymentToOutboundPayment(candidate);

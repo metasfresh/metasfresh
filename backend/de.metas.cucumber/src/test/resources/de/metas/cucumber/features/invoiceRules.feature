@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00703_Invoice_Rule
-@ghActions:run_on_executor5
+@ghActions:run_on_executor10
 Feature: invoice rules
 ## F00703: Invoice Rule
 

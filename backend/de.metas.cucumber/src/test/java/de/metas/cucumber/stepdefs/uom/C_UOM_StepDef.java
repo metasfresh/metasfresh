@@ -98,6 +98,33 @@ public class C_UOM_StepDef
 		}
 	}
 
+	/**
+	 * Asserts the standard precision of existing UOMs.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>X12DE355</b> — (required) UOM code<br>
+	 *   <b>StdPrecision</b> — (required) expected standard precision<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And validate C_UOM:
+	 *   | X12DE355 | StdPrecision |
+	 *   | PCE      | 0            |
+	 * </pre>
+	 */
+	@And("validate C_UOM:")
+	public void validate_C_UOM(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String x12de355 = DataTableUtil.extractStringForColumnName(row, I_C_UOM.COLUMNNAME_X12DE355);
+			final int expectedStdPrecision = DataTableUtil.extractIntForColumnName(row, I_C_UOM.COLUMNNAME_StdPrecision);
+
+			final I_C_UOM uomRecord = uomDao.getByX12DE355(X12DE355.ofCode(x12de355));
+			assertThat(uomRecord.getStdPrecision()).as("StdPrecision of UOM %s", x12de355).isEqualTo(expectedStdPrecision);
+		}
+	}
+
 	@And("metasfresh contains C_UOMs:")
 	public void metasfresh_contains_C_UOMs(@NonNull final DataTable dataTable)
 	{

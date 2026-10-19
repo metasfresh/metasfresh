@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_CompensationGroup_SchemaLine extends org.compiere.model.PO implements I_C_CompensationGroup_SchemaLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 5883618L;
+	private static final long serialVersionUID = 979796550L;
 
     /** Standard Constructor */
     public X_C_CompensationGroup_SchemaLine (final Properties ctx, final int C_CompensationGroup_SchemaLine_ID, @Nullable final String trxName)
@@ -131,6 +131,21 @@ public class X_C_CompensationGroup_SchemaLine extends org.compiere.model.PO impl
 	public int getM_Product_Category_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_Category_ID);
+	}
+
+	@Override
+	public void setM_Product_Category_PackingMaterial_ID (final int M_Product_Category_PackingMaterial_ID)
+	{
+		if (M_Product_Category_PackingMaterial_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_Category_PackingMaterial_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_Category_PackingMaterial_ID, M_Product_Category_PackingMaterial_ID);
+	}
+
+	@Override
+	public int getM_Product_Category_PackingMaterial_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Product_Category_PackingMaterial_ID);
 	}
 
 	@Override
