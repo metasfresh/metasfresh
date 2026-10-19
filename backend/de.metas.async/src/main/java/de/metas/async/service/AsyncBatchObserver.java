@@ -410,8 +410,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			catch (final Exception e)
 			{
 				// dev-note: e.g. a transient DB error. Don't let it fail the notification handler or the caller; fall back to the notified progress.
-				Loggables.withLogger(logger, Level.WARN).addLog("AsyncBatchId={}: could not retrieve the current progress; trusting the notified progress. Error: {}", batchId.getRepoId(), e.getLocalizedMessage());
-				logger.warn("AsyncBatchId={}: could not retrieve the current progress", batchId.getRepoId(), e);
+				logger.warn("AsyncBatchId={}: could not retrieve the current progress; trusting the notified progress", batchId.getRepoId(), e);
 				return Optional.empty();
 			}
 		}
