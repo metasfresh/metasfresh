@@ -41,6 +41,9 @@ public class JsonCreateProductRequest
 	/** M_Product.GuaranteeDaysMin — minimum guaranteed shelf-life days for this product */
 	@Nullable Integer guaranteeDaysMin;
 
+	/** M_Product.BestBeforeDays — total shelf life in days, used to default the best-before date at receipt */
+	@Nullable Integer bestBeforeDays;
+
 	@Nullable BOM bom;
 
 	//

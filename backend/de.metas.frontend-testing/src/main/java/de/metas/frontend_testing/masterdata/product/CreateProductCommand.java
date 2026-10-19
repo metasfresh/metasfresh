@@ -135,6 +135,10 @@ public class CreateProductCommand
 		{
 			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
 		}
+		if (request.getBestBeforeDays() != null)
+		{
+			productRecord.setBestBeforeDays(request.getBestBeforeDays());
+		}
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());

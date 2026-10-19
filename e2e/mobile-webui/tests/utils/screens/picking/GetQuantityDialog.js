@@ -1,6 +1,7 @@
 import { test } from "../../../../playwright.config";
-import { expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { expectErrorToast, expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from "@playwright/test";
+import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
 
 const NAME = 'GetQuantityDialog';
 /** @returns {import('@playwright/test').Locator} */
@@ -96,6 +97,60 @@ export const GetQuantityDialog = {
                 const el = document.querySelector('[data-testid="qrCode-input"]');
                 return el && el.value === '';
             });
+    }),
+
+    // Mandatory catch-weight scan: the dialog opens on the scanner and offers neither the quantity form
+    // (so nothing can be confirmed) nor the switch to manual input.
+    expectOnlyCatchWeightScanOffered: async () => await test.step(`${NAME} - Expect only the catch weight scan to be offered`, async () => {
+        await expect(page.getByTestId('qrCode-input')).toBeAttached({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.getByTestId('switchToManualInput-button')).toHaveCount(0);
+        await expect(page.locator('#qty-input')).toHaveCount(0);
+    }),
+
+    // Mandatory catch-weight scan: a valid scan receives nothing yet, it fills the fields for review.
+    scanCatchWeightQRCodeForReview: async ({ qrCode }) => await test.step(`${NAME} - Scan for review: ${qrCode}`, async () => {
+        await BarcodeScannerComponent.type(qrCode);
+        await expect(page.locator('#qty-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.getByTestId('qrCode-input')).toHaveCount(0);
+    }),
+
+    // Mandatory catch-weight scan: a code that cannot be received is rejected with a message,
+    // and the scanner stays open with nothing filled in.
+    scanCatchWeightQRCodeExpectingError: async ({ qrCode, expectedError }) => await test.step(`${NAME} - Scan ${qrCode}, expecting error '${expectedError}'`, async () => {
+        await expectErrorToast(
+            expectedError,
+            async () => await BarcodeScannerComponent.type(qrCode),
+            ({ textContent }) => expect(textContent).toContain(expectedError)
+        );
+        // the closed message has left the screen (its close animation can outlive the message text)
+        await expect(page.locator('.Toastify__toast')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+        await GetQuantityDialog.expectOnlyCatchWeightScanOffered();
+    }),
+
+    expectLotNo: async (expected) => await test.step(`${NAME} - Expect LotNo '${expected}'`, async () => {
+        await expect(page.getByTestId('lotNo')).toHaveValue(`${expected}`);
+    }),
+
+    // expected in the displayed format DD.MM.YYYY, or '' for empty
+    expectBestBeforeDate: async (expected) => await test.step(`${NAME} - Expect BestBeforeDate '${expected}'`, async () => {
+        await expect(page.getByTestId('bestBeforeDate')).toHaveValue(`${expected}`);
+    }),
+
+    // Replaces whatever the field shows (pre-filled default or scanned value).
+    replaceLotNo: async (lotNo) => await test.step(`${NAME} - Replace LotNo with '${lotNo}'`, async () => {
+        const field = page.getByTestId('lotNo');
+        await field.tap();
+        await field.fill(lotNo);
+    }),
+
+    // The scanner view's close button: leaves the dialog without receiving anything.
+    clickCloseScanner: async () => await test.step(`${NAME} - Close scanner`, async () => {
+        await page.getByTestId('done-button').tap();
+        await GetQuantityDialog.waitToClose();
+    }),
+
+    expectCatchWeight: async (expected) => await test.step(`${NAME} - Expect CatchWeight '${expected}'`, async () => {
+        await expect(page.locator('#catch-weight')).toHaveValue(`${expected}`);
     }),
 
     clickQtyNotFoundReason: async ({ reason }) => await test.step(`${NAME} - Click qty not found reason '${reason}'`, async () => {

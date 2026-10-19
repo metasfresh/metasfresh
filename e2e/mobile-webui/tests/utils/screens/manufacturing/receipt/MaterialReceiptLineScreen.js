@@ -109,6 +109,12 @@ export const MaterialReceiptLineScreen = {
         }
     }),
 
+    // Opens the receive dialog only; the spec then drives GetQuantityDialog step by step.
+    clickReceiveQtyButton: async () => await test.step(`${NAME} - Click receive qty button`, async () => {
+        await page.getByTestId('receive-qty-button').tap();
+        await GetQuantityDialog.waitForDialog();
+    }),
+
     receiveQtyWithQRCode: async ({ catchWeightQRCode }) => await test.step(`${NAME} - Receive via QrCode`, async () => {
         await page.getByTestId('receive-qty-button').tap();
 
