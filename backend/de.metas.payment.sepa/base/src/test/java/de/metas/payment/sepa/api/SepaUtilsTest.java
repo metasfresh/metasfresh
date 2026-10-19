@@ -100,6 +100,28 @@ class SepaUtilsTest
 		assertThat(SepaUtils.getBankAccountInfo(bankAccount().IBAN(" DE62007620110623852957 ").QR_IBAN("CH4431999123000889012").build())).isEqualTo("DE62007620110623852957 (ID 7)");
 		assertThat(SepaUtils.getBankAccountInfo(bankAccount().QR_IBAN("CH4431999123000889012").accountNo("123").build())).isEqualTo("CH4431999123000889012 (ID 7)");
 		assertThat(SepaUtils.getBankAccountInfo(bankAccount().IBAN(" ").accountNo("123").build())).isEqualTo("123 (ID 7)");
+
+		// the info goes into a message that the process runs through parseTranslation; "@@" stands for a plain "@" there
+		assertThat(SepaUtils.getBankAccountInfo(bankAccount().accountNo("12@34@").build())).isEqualTo("12@@34@@ (ID 7)");
+	}
+
+	@Test
+	void assertValidAccountCountry_atSignInCountry_isEscaped()
+	{
+		assertThatThrownBy(() -> SepaUtils.assertValidAccountCountry(bankAccount().IBAN("CH@1").accountCountry("Schweiz@CH").build()))
+				.isInstanceOf(SepaMarshallerException.class)
+				.hasMessageContaining("de.metas.payment.sepa.SEPA_Export_BankAccountCountryInvalid")
+				.hasMessageContaining("CH@@1 (ID 7)")
+				.hasMessageContaining("Schweiz@@CH");
+	}
+
+	@Test
+	void extractIIDFromSwissIbanOrNull_tooShort_atSignInIban_isEscaped()
+	{
+		assertThatThrownBy(() -> SepaUtils.extractIIDFromSwissIbanOrNull("CH50@2", () -> TranslatableStrings.constant("line 1")))
+				.isInstanceOf(SepaMarshallerException.class)
+				.hasMessageContaining("de.metas.payment.sepa.SEPA_Export_IbanTooShort")
+				.hasMessageContaining("CH50@@2");
 	}
 
 	@Test

@@ -59,6 +59,7 @@ VALUES (0,545949 /*From ID Server*/,0,TO_TIMESTAMP('2026-10-16 10:00:12','YYYY-M
 ;
 
 -- 4. SepaUtils (shared with the .03 and pain.008 marshallers): {0} IBAN, QR-IBAN or account number, {1} C_BP_BankAccount_ID, {2} the country
+-- (superseded by 5829590 for 545950/545951: {0} the whole bank account info "<number> (ID n)", or "ID n" if the account has no number; {1} the country)
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
 VALUES (0,545950 /*From ID Server*/,0,TO_TIMESTAMP('2026-10-16 10:00:13','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.sepa','Y','Bankkonto {0} (ID {1}): Die Adresse ist erfasst, aber das Land fehlt. Bitte erfassen Sie das Land der Adresse.','E',TO_TIMESTAMP('2026-10-16 10:00:13','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.sepa.SEPA_Export_BankAccountCountryMissing')
 ;

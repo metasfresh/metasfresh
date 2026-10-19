@@ -535,6 +535,19 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	}
 
 	@Test
+	public void export_qrIbanWithAtSignInReference_fails_referenceEscaped()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		createQrIbanLine(sepaExport, null, new BigDecimal("100"), chf, "Rechnung@4711");
+
+		// the process runs the error message through parseTranslation, which takes text between two "@" for an AD_Message/AD_Element; "@@" stands for a plain "@"
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining("SEPA_Export_InvalidReference")
+				.hasMessageContaining(MSG_QR_REFERENCE_REQUIRED)
+				.hasMessageContaining("Rechnung@@4711");
+	}
+
+	@Test
 	public void export_ibanAndQrIban_mistypedQrReference_fails()
 	{
 		// looks like a QR reference (27 digits) but the check digit is wrong: a typo, not a reference for the normal IBAN

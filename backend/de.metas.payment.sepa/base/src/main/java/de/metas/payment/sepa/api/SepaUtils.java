@@ -192,12 +192,13 @@ public class SepaUtils
 		}
 		if (!ISO_3166_ALPHA2.matcher(country).matches())
 		{
-			throw new SepaMarshallerException(MSG_BankAccountCountryInvalid, getBankAccountInfo(bankAccount), country);
+			throw new SepaMarshallerException(MSG_BankAccountCountryInvalid, getBankAccountInfo(bankAccount), escapeAtSignsForParseTranslation(country));
 		}
 	}
 
 	/**
-	 * @return "number (ID id)" with the first of IBAN, QR-IBAN and account number that is set, or just "ID id" if none is
+	 * @return "number (ID id)" with the first of IBAN, QR-IBAN and account number that is set, or just "ID id" if none is;
+	 * every "@" in the number is escaped as "@@" (see {@link #escapeAtSignsForParseTranslation(String)}), i.e. the text is meant for a message that is passed through {@code IMsgBL.parseTranslation}
 	 */
 	@VisibleForTesting
 	static String getBankAccountInfo(@NonNull final BankAccount bankAccount)
@@ -207,7 +208,7 @@ public class SepaUtils
 				StringUtils.trimBlankToNull(bankAccount.getIBAN()),
 				StringUtils.trimBlankToNull(bankAccount.getQR_IBAN()),
 				StringUtils.trimBlankToNull(bankAccount.getAccountNo()));
-		return number != null ? number + " (" + idInfo + ")" : idInfo;
+		return number != null ? escapeAtSignsForParseTranslation(number) + " (" + idInfo + ")" : idInfo;
 	}
 
 	/**
@@ -262,7 +263,7 @@ public class SepaUtils
 		final String ibanToUse = iban.replaceAll(" ", "");
 		if (ibanToUse.length() < IBAN_IID_END_IDX)
 		{
-			throw new SepaMarshallerException(MSG_IbanTooShort, iban, ibanOwnerInfo.get());
+			throw new SepaMarshallerException(MSG_IbanTooShort, escapeAtSignsForParseTranslation(iban), ibanOwnerInfo.get());
 		}
 		return ibanToUse.substring(IBAN_IID_START_IDX, IBAN_IID_END_IDX);
 	}

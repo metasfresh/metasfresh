@@ -855,7 +855,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			@NonNull final AdMessageKey reason)
 	{
 		final ITranslatableString reference = structuredReference != null
-				? TranslatableStrings.anyLanguage(structuredReference)
+				? TranslatableStrings.anyLanguage(SepaUtils.escapeAtSignsForParseTranslation(structuredReference))
 				: msgBL.getTranslatableMsgText(MSG_NoStructuredReference);
 		return new AdempiereException(SepaUtils.ERR_SEPA_Export_InvalidReference, msgBL.getTranslatableMsgText(reason, SepaUtils.createInfo(line), reference))
 				.setRecord(TableRecordReference.of(line));
