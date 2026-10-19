@@ -21,14 +21,26 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 
 	void flagForRecompute(Set<ShipmentScheduleId> shipmentScheduleIds);
 
+	/**
+	 * Same as {@link #flagSegmentForRecompute(Collection)} for one segment.
+	 */
 	void flagForRecomputeStorageSegment(IShipmentScheduleSegment storageSegment);
 
+	/**
+	 * Flags the shipment schedules of the given storage segments for recompute.
+	 * <p>
+	 * Routes by the thread-inherited transaction: if it is active, the flags are written in it (they commit or roll back with the caller's change);
+	 * otherwise (none, or already committed) they are written out of transaction.
+	 * Callers that must not write into the current transaction use {@link #flagSegmentsForRecompute(Collection, PInstanceId)}.
+	 */
 	void flagSegmentForRecompute(Collection<IShipmentScheduleSegment> storageSegments);
 
 	/**
 	 * Invalidates shipment schedules for the given storage segments.
 	 * <p>
 	 * <b>IMPORTANT:</b> won't invalidate any processed schedules.
+	 * <p>
+	 * Always writes out of transaction (a separate, immediately committed one), regardless of the thread-inherited transaction.
 	 *
 	 * @param addToSelectionId if not null will add the invalidated records to given selection
 	 */
