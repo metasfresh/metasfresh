@@ -7,6 +7,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateQtyDetailsRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -38,12 +39,14 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
 import org.eevolution.api.PPOrderAndBOMLineId;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
+import java.math.BigDecimal;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
@@ -82,7 +85,7 @@ import static org.compiere.model.X_AD_OrgInfo.STORECREDITCARDDATA_Speichern;
 /**
  * Voiding a PP_Order posts a {@link PPOrderDeletedEvent} (snapshot taken before the void, with the original BOM-line IDs)
  * and a {@link PPOrderChangedEvent} (qty 0; the BOM lines get recreated with new IDs).
- * Material-dispo may receive them in either order; both orders must leave no candidate of the PP_Order behind.
+ * Material-dispo usually handles the deleted event first; but if it handles the changed event first, the deleted event must still leave no candidate of the PP_Order behind.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 public class PPOrderDeletedHandlerTest
@@ -95,6 +98,7 @@ public class PPOrderDeletedHandlerTest
 	private static final int NEW_BOM_LINE_1_ID = 151;
 	private static final int NEW_BOM_LINE_2_ID = 181;
 
+	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private PPOrderCreatedHandler ppOrderCreatedHandler;
 	private PPOrderChangedHandler ppOrderChangedHandler;
 	private PPOrderDeletedHandler ppOrderDeletedHandler;
@@ -113,7 +117,7 @@ public class PPOrderDeletedHandlerTest
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval, new CandidateQtyDetailsRepository());
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryWriteService);
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
@@ -155,6 +159,11 @@ public class PPOrderDeletedHandlerTest
 
 		ppOrderChangedHandler.handleEvent(createVoidChangedEvent(ppOrderBeforeVoid));
 		assertThat(DispoTestUtils.filterExclStock()).as("precondition: the changed event updates, but does not delete").hasSize(3);
+		assertThat(candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderBeforeVoid.getPpOrderId()))
+				.filteredOn(candidate -> candidate.getType() == CandidateType.DEMAND)
+				.extracting(candidate -> PPOrderBOMLineId.toRepoId(ProductionDetail.cast(candidate.getBusinessCaseDetail()).getPpOrderBOMLineId()))
+				.as("precondition: the changed event relinked the BOM-line candidates to the recreated BOM lines")
+				.containsExactlyInAnyOrder(NEW_BOM_LINE_1_ID, NEW_BOM_LINE_2_ID);
 
 		ppOrderDeletedHandler.handleEvent(createDeletedEvent(ppOrderBeforeVoid));
 
@@ -191,7 +200,7 @@ public class PPOrderDeletedHandlerTest
 		final PPOrderId ppOrderId = ppOrderBeforeVoid.getPpOrderId();
 		return PPOrderChangedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
-				.ppOrderAfterChanges(ppOrderBeforeVoid)
+				.ppOrderAfterChanges(createPPOrder(ZERO, NEW_BOM_LINE_1_ID, NEW_BOM_LINE_2_ID))
 				.oldDocStatus(DocStatus.Completed)
 				.newDocStatus(DocStatus.Completed)
 				.oldDatePromised(AFTER_NOW)
@@ -225,6 +234,11 @@ public class PPOrderDeletedHandlerTest
 
 	private static PPOrder createPPOrderBeforeVoid()
 	{
+		return createPPOrder(TEN, OLD_BOM_LINE_1_ID, OLD_BOM_LINE_2_ID);
+	}
+
+	private static PPOrder createPPOrder(@NonNull final BigDecimal qtyRequired, final int bomLine1Id, final int bomLine2Id)
+	{
 		return PPOrder.builder()
 				.ppOrderId(PPOrderId.ofRepoId(PP_ORDER_ID))
 				.docStatus(DocStatus.Completed)
@@ -233,26 +247,26 @@ public class PPOrderDeletedHandlerTest
 						.datePromised(AFTER_NOW)
 						.dateStartSchedule(NOW)
 						.productDescriptor(createProductDescriptor())
-						.qtyRequired(TEN)
+						.qtyRequired(qtyRequired)
 						.qtyDelivered(ZERO)
 						.warehouseId(WarehouseId.ofRepoId(20))
 						.bpartnerId(BPARTNER_ID)
 						.plantId(ResourceId.ofRepoId(120))
 						.productPlanningId(140)
 						.build())
-				.line(createBOMLine(OLD_BOM_LINE_1_ID, RAW_PRODUCT_1_ID, 1020))
-				.line(createBOMLine(OLD_BOM_LINE_2_ID, RAW_PRODUCT_2_ID, 1030))
+				.line(createBOMLine(bomLine1Id, qtyRequired, RAW_PRODUCT_1_ID, 1020))
+				.line(createBOMLine(bomLine2Id, qtyRequired, RAW_PRODUCT_2_ID, 1030))
 				.build();
 	}
 
-	private static PPOrderLine createBOMLine(final int ppOrderBOMLineId, final int productId, final int productBOMLineId)
+	private static PPOrderLine createBOMLine(final int ppOrderBOMLineId, @NonNull final BigDecimal qtyRequired, final int productId, final int productBOMLineId)
 	{
 		return PPOrderLine.builder()
 				.ppOrderLineId(ppOrderBOMLineId)
 				.ppOrderLineData(PPOrderLineData.builder()
 						.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productId))
 						.issueOrReceiveDate(NOW)
-						.qtyRequired(TEN)
+						.qtyRequired(qtyRequired)
 						.qtyDelivered(ZERO)
 						.productBomLineId(productBOMLineId)
 						.receipt(false)

@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -69,15 +71,13 @@ public final class PPOrderDeletedHandler
 	@Override
 	public void handleEvent(@NonNull final PPOrderDeletedEvent event)
 	{
-		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(event.getPpOrder().getPpOrderId());
+		final Map<Boolean, List<Candidate>> candidatesByIsHeader = candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(event.getPpOrder().getPpOrderId())
+				.stream()
+				.collect(Collectors.partitioningBy(PPOrderDeletedHandler::isHeaderCandidate));
 
 		// BOM-line candidates first, then the header
-		candidates.stream()
-				.filter(candidate -> !isHeaderCandidate(candidate))
-				.forEach(candidateChangeService::onCandidateDelete);
-		candidates.stream()
-				.filter(PPOrderDeletedHandler::isHeaderCandidate)
-				.forEach(candidateChangeService::onCandidateDelete);
+		candidatesByIsHeader.get(false).forEach(candidateChangeService::onCandidateDelete);
+		candidatesByIsHeader.get(true).forEach(candidateChangeService::onCandidateDelete);
 	}
 
 	private static boolean isHeaderCandidate(@NonNull final Candidate candidate)
