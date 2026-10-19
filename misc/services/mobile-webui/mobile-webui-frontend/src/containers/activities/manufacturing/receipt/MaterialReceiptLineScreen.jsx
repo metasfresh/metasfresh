@@ -40,7 +40,6 @@ const MaterialReceiptLineScreen = () => {
     lineProps: {
       aggregateToLU,
       aggregateToTU,
-      coproduct,
       currentReceivingHU,
       availableReceivingTargets,
       availableReceivingTUTargets,
@@ -202,8 +201,8 @@ const MaterialReceiptLineScreen = () => {
           readAttributes={readAttributes}
           defaultLotNo={defaultLotNo}
           defaultBestBeforeDate={defaultBestBeforeDate}
-          // per-customer setting, main finished good only; otherwise (and for co-/by-products) receive-on-scan + manual input
-          isCatchWeightScanMandatory={!!catchWeightScanRequired && !coproduct}
+          // per-customer setting; the backend sends it only for the main finished good (co-/by-products: receive-on-scan + manual input)
+          isCatchWeightScanMandatory={!!catchWeightScanRequired}
         />
         {noGebindeReason && (
           <p className="help is-danger" data-testid="receive-no-gebinde-hint">

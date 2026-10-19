@@ -168,8 +168,9 @@ describe('setting on (catchWeightScanRequired = true)', () => {
   });
 });
 
-it('keeps receive-on-scan and manual input for a co-product line even with the setting on', async () => {
-  renderScreen(catchWeightMainFinishedGood({ coproduct: true, catchWeightScanRequired: true }));
+// With the setting on, the backend still sends catchWeightScanRequired=false for a co-/by-product line.
+it('keeps receive-on-scan and manual input for a co-product line (backend sends no scan requirement)', async () => {
+  renderScreen(catchWeightMainFinishedGood({ coproduct: true, catchWeightScanRequired: false }));
   await openDialog();
 
   expect(screen.getByTestId('switchToManualInput-button')).toBeInTheDocument();
