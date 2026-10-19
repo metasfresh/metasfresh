@@ -22,17 +22,34 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.regex.Pattern;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for creating or replacing PL/pgSQL functions in the test DB.
  * Used by scenarios that verify DB-function-driven sequence providers.
  */
+@RequiredArgsConstructor
 public class DB_Function_StepDef
 {
+	private static final Pattern FUNCTION_NAME_PATTERN = Pattern.compile("[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)?");
+
+	@NonNull private final C_Invoice_StepDefData invoiceTable;
+
 	/**
 	 * Creates (or replaces) a PL/pgSQL function in the test database.
 	 * The function body is supplied inline in the feature file as a docstring.
@@ -52,5 +69,65 @@ public class DB_Function_StepDef
 	public void create_or_replace_pg_function(@NonNull final String ddl)
 	{
 		DB.executeUpdateAndThrowExceptionOnFail(ddl, ITrx.TRXNAME_None);
+	}
+
+	/**
+	 * Calls a SQL function that takes the ID of a {@code C_Invoice} and returns a row set,
+	 * splits the text in the first column of the first row by line breaks
+	 * and asserts the listed lines (1-based {@code LineNo}); lines not listed are not checked.
+	 * The function is called with the ID cast to {@code numeric}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>LineNo</b> — (required) 1-based line number of the text result<br>
+	 *   <b>Value</b> — (required) expected text of that line (empty for a blank line)<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the SQL function de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_QR_Code called with the ID of invoice_1 returns these lines:
+	 *   | LineNo | Value |
+	 *   | 1      | SPC   |
+	 * </pre>
+	 */
+	@Then("^the SQL function (\\S+) called with the ID of (\\S+) returns these lines:$")
+	public void sql_function_called_with_invoice_id_returns_lines(
+			@NonNull final String functionName,
+			@NonNull final String invoiceIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		assertThat(FUNCTION_NAME_PATTERN.matcher(functionName).matches())
+				.as("function name %s must be [schema.]name", functionName)
+				.isTrue();
+
+		final int invoiceId = invoiceTable.getId(invoiceIdentifier).getRepoId();
+		final String text = retrieveFirstColumnOfFirstRow("SELECT * FROM " + functionName + "(?::numeric)", invoiceId);
+		final String[] lines = text.split("\n", -1);
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final int lineNo = row.getAsInt("LineNo");
+			final String expected = row.getAsOptionalString("Value").orElse("");
+			assertThat(lineNo).as("LineNo").isBetween(1, lines.length);
+			assertThat(lines[lineNo - 1]).as("%s line %s", functionName, lineNo).isEqualTo(expected);
+		});
+	}
+
+	private static String retrieveFirstColumnOfFirstRow(@NonNull final String sql, final int id)
+	{
+		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
+		{
+			pstmt.setInt(1, id);
+			try (final ResultSet rs = pstmt.executeQuery())
+			{
+				if (!rs.next())
+				{
+					throw new AdempiereException("Function returned no row for ID " + id + ": " + sql);
+				}
+				return rs.getString(1);
+			}
+		}
+		catch (final SQLException e)
+		{
+			throw new AdempiereException("Failed calling " + sql, e);
+		}
 	}
 }
