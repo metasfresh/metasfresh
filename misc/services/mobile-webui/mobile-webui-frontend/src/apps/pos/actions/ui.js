@@ -1,4 +1,4 @@
-import { CLOSE_MODAL, CLOSE_PANEL, SHOW_MODAL, SHOW_PANEL } from '../actionTypes';
+import { CLOSE_MODAL, CLOSE_PANEL, SET_CASH_TENDERED_DRAFT, SHOW_MODAL, SHOW_PANEL } from '../actionTypes';
 
 export const MODAL_POSTerminalSelect = 'POSTerminalSelect';
 export const MODAL_SelectOrders = 'SelectOrders';
@@ -35,5 +35,15 @@ export const closePanelAction = () => {
   return {
     type: CLOSE_PANEL,
     payload: {},
+  };
+};
+
+// The tendered amount the cashier is typing into the cash payment dialog. Kept in the store, not in the dialog,
+// because the dialog (and the whole payment panel) is unmounted and re-mounted whenever a delayed websocket order
+// snapshot briefly drops the pending payment; the re-mounted dialog restores the amount from here.
+export const setCashTenderedDraftAction = ({ payment_uuid, tenderedEditingAmount }) => {
+  return {
+    type: SET_CASH_TENDERED_DRAFT,
+    payload: { payment_uuid, tenderedEditingAmount },
   };
 };

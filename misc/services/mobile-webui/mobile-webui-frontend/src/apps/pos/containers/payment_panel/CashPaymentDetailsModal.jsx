@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import PropTypes from 'prop-types';
 import './PaymentDetailsModal.scss';
@@ -13,13 +13,19 @@ const CashPaymentDetailsModal = ({
   precision,
   payAmount,
   tenderedAmount: tenderedAmountParam,
+  tenderedEditingAmountDraft,
+  onTenderedEditingAmountChanged,
   isAllowCancel,
   onOK,
   onCancel,
 }) => {
-  const [tenderedEditingAmount, setTenderedEditingAmount] = useState(() =>
-    toEditingAmount({ value: tenderedAmountParam ?? 0, precision })
+  // Start from the draft, if any: this dialog can be re-mounted while the cashier is typing (see PendingPaymentModal)
+  const [tenderedEditingAmount, setTenderedEditingAmount] = useState(
+    () => tenderedEditingAmountDraft ?? toEditingAmount({ value: tenderedAmountParam ?? 0, precision })
   );
+  useEffect(() => {
+    onTenderedEditingAmountChanged?.(tenderedEditingAmount);
+  }, [tenderedEditingAmount]);
 
   const tenderedAmount = tenderedEditingAmount.value;
   const changeBackAmount = tenderedAmount - payAmount;
@@ -95,6 +101,8 @@ CashPaymentDetailsModal.propTypes = {
   precision: PropTypes.number.isRequired,
   payAmount: PropTypes.number.isRequired,
   tenderedAmount: PropTypes.number,
+  tenderedEditingAmountDraft: PropTypes.object,
+  onTenderedEditingAmountChanged: PropTypes.func,
   changeBackAmount: PropTypes.number,
   isAllowCancel: PropTypes.bool.isRequired,
   onOK: PropTypes.func.isRequired,
