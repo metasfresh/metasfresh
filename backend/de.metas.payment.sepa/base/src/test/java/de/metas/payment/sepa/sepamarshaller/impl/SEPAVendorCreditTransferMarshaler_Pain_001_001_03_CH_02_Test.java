@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {
@@ -471,6 +472,28 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertIsInvalidQRReferenceWorks("33 36170 00113 54610 59304 00000", true);
 		assertIsInvalidQRReferenceWorks("333617000113546105930400000", false);
 		assertIsInvalidQRReferenceWorks("210000000003139471430009017", false);
+		assertIsInvalidQRReferenceWorks("33361700011354610593040000A", true); // 27 characters, but not only digits
+		assertIsInvalidQRReferenceWorks("333617000113546105930400001", true); // wrong check digit
+	}
+
+	@Test
+	public void createDocument_qrIban_27CharacterReferenceWithNonDigit_failsWithInvalidReference()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport("org", "12345", "INGBNL2A");
+		createSEPAExportLineQRVersion(sepaExport, "001", "NL31INGB0000000044", "INGBNL2A", new BigDecimal("100"), eur, "33361700011354610593040000A");
+
+		assertThatThrownBy(() -> xmlGenerator.createDocument(sepaExport))
+				.hasMessageContaining("SEPA_Export_InvalidReference");
+	}
+
+	@Test
+	public void createDocument_qrIban_referenceWithWrongCheckDigit_failsWithInvalidReference()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport("org", "12345", "INGBNL2A");
+		createSEPAExportLineQRVersion(sepaExport, "001", "NL31INGB0000000044", "INGBNL2A", new BigDecimal("100"), eur, "333617000113546105930400001");
+
+		assertThatThrownBy(() -> xmlGenerator.createDocument(sepaExport))
+				.hasMessageContaining("SEPA_Export_InvalidReference");
 	}
 
 	private void assertIsInvalidQRReferenceWorks(String input, boolean expected)

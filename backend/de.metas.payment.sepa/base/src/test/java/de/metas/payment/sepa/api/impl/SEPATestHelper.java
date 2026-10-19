@@ -2,6 +2,7 @@ package de.metas.payment.sepa.api.impl;
 
 import de.metas.currency.CurrencyCode;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
+import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line_Ref;
@@ -53,7 +54,7 @@ public class SEPATestHelper
 	public I_SEPA_Export createSepaExport()
 	{
 		createMockData();
-		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, true);
+		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
 		return command.run();
 	}
 	
