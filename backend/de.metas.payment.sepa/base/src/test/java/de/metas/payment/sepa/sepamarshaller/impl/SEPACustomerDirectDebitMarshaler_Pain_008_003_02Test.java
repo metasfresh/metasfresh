@@ -253,7 +253,7 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 
 		assertThatThrownBy(() -> xmlGenerator.createDocument(sepaExport))
 				.isInstanceOf(SepaMarshallerException.class)
-				.hasMessageContaining("A_Country is required");
+				.hasMessageContaining("de.metas.payment.sepa.SEPA_Export_BankAccountCountryMissing"); // in unit tests, the AD_Message value (see PlainMsgBL)
 	}
 
 }
