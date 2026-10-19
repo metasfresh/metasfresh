@@ -597,7 +597,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	}
 
 	@NonNull
-	private BigDecimal computeQtyRequiredForOlAndSched(
+	@VisibleForTesting
+	BigDecimal computeQtyRequiredForOlAndSched(
 			final @NonNull OlAndSched olAndSched,
 			final @NonNull DeliveryRule deliveryRule)
 	{
