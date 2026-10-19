@@ -885,7 +885,7 @@ public class CCache<K, V> implements CacheInterface
 			else
 			{
 				logger.debug("getAllOrLoad - Appling valuesLoader to load values for keysToLoad={}", keysToLoad);
-				final InFlightLoad load = new InFlightLoad(keysToLoad);
+				final InFlightLoad load = new InFlightLoad(ImmutableSet.copyOf(keysToLoad)); // a copy, because other threads read it while the loader gets keysToLoad
 				try
 				{
 					load.register();
