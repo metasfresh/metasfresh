@@ -90,11 +90,12 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(wfProcess);
 
 		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(job.getResponsibleId(), ClientId.METASFRESH);
+		final FinishedGoodsReceiptDefaults receiptDefaults = FinishedGoodsReceiptDefaults.of(job.getPpOrderId(), config.getEditableAttributes());
 
 		final ImmutableList<JsonFinishedGoodsReceiveLine> lines = job.getActivityById(wfActivity.getId())
 				.getFinishedGoodsReceiveAssumingNotNull()
 				.streamLines()
-				.map(line -> toJson(line, job.getCustomerId(), config, jsonOpts))
+				.map(line -> toJson(line, job.getCustomerId(), config, receiptDefaults, jsonOpts))
 				.collect(ImmutableList.toImmutableList());
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
@@ -110,6 +111,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			@NonNull final FinishedGoodsReceiveLine line,
 			@Nullable final BPartnerId customerId,
 			@NonNull final MobileUIManufacturingConfig config,
+			@NonNull final FinishedGoodsReceiptDefaults receiptDefaults,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		final List<I_M_HU_PI_Item_Product> tuPIItemProducts = huPIItemProductDAO.retrieveTUs(
@@ -188,6 +190,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.availableReceivingTargets(newLUTargets)
 				.availableReceivingTUTargets(tuTargetList)
 				.catchWeightUomSymbol(catchWeightUomSymbol)
+				.defaultBestBeforeDate(receiptDefaults.getBestBeforeDate(line.getProductId()))
+				.defaultLotNo(receiptDefaults.getLotNo())
 				.build();
 	}
 

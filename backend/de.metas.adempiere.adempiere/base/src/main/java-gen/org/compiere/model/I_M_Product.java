@@ -122,6 +122,29 @@ public interface I_M_Product
 	String COLUMNNAME_avv_no = "avv_no";
 
 	/**
+	 * Set Total shelf life.
+	 * Total shelf life of the product in days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBestBeforeDays (int BestBeforeDays);
+
+	/**
+	 * Get Total shelf life.
+	 * Total shelf life of the product in days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBestBeforeDays();
+
+	ModelColumn<I_M_Product, Object> COLUMN_BestBeforeDays = new ModelColumn<>(I_M_Product.class, "BestBeforeDays", null);
+	String COLUMNNAME_BestBeforeDays = "BestBeforeDays";
+
+	/**
 	 * Set BioControlNumber.
 	 *
 	 * <br>Type: List

@@ -385,6 +385,7 @@ public class ReceiveGoodsCommand
 
 		StringUtils.trimBlankToOptional(lotNo).ifPresent(huProducer::lotNumber);
 		Optional.ofNullable(bestBeforeDate).ifPresent(huProducer::bestBeforeDate);
+		huProducer.defaultBestBeforeDateFromProduct(); // the mobile client sends a best-before date only if the operator changed the pre-filled default
 		Optional.ofNullable(productionDate).ifPresent(huProducer::productionDate);
 
 		return huProducer

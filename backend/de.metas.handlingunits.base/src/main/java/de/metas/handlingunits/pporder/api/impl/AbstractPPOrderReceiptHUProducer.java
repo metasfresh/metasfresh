@@ -22,12 +22,12 @@
 
 package de.metas.handlingunits.pporder.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.sequence.DocSequenceId;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -63,11 +63,12 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest.CreateReceiptCandidateRequestBuilder;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -85,10 +86,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.ILotNumberBL;
-import org.adempiere.mm.attributes.api.LotNoContext;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_M_Product;
@@ -97,7 +96,6 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.model.I_PP_Order_BOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -117,7 +115,6 @@ import java.util.Optional;
 	// Services
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
-	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
@@ -125,7 +122,9 @@ import java.util.Optional;
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
-	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
+	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 
 	// Parameters
 	private final PPOrderId ppOrderId;
@@ -139,6 +138,9 @@ import java.util.Optional;
 	@SuppressWarnings({ "OptionalAssignedToNull", "OptionalUsedAsFieldOrParameterType" })
 	private Optional<String> lotNumberFromSequence = null;
 	@Nullable private LocalDate bestBeforeDate;
+	private boolean isDefaultBestBeforeDateFromProduct = false;
+	@SuppressWarnings({ "OptionalAssignedToNull", "OptionalUsedAsFieldOrParameterType" })
+	private Optional<LocalDate> bestBeforeDateDefault = null; // null = not computed yet
 	@Nullable private LocalDate _productionDate;
 	//
 	private boolean processReceiptCandidates;
@@ -362,10 +364,13 @@ import java.util.Optional;
 				}
 			}
 
-			if (bestBeforeDate != null
-					&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+			if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 			{
-				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+				final LocalDate bestBeforeDateToSet = getBestBeforeDateToSet(huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate));
+				if (bestBeforeDateToSet != null)
+				{
+					huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDateToSet);
+				}
 			}
 
 			if (huAttributes.hasAttribute(AttributeConstants.ProductionDate))
@@ -385,26 +390,22 @@ import java.util.Optional;
 		addAssignedHUs(hus);
 	}
 
+	@VisibleForTesting
 	@Nullable
-	private String getOrLoadLotNumberFromSeq()
+	String getOrLoadLotNumberFromSeq()
 	{
 		//noinspection OptionalAssignedToNull
 		if (lotNumberFromSequence == null)
 		{
-			final I_PP_Order_BOM ppOrderBom = ppOrderBOMDAO.getByOrderIdOrNull(ppOrderId);
-			final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(ppOrderBom.getLotNo_Sequence_ID());
-			Optional<String> lotNumber = Optional.empty();
-			if (sequenceId != null)
-			{
-				lotNumber = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
-						.sequenceId(sequenceId)
-						.clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
-						.build());
-
-			}
-			this.lotNumberFromSequence = lotNumber;
+			lotNumberFromSequence = huPPOrderBL.getAndIncrementLotNumberFromSequence(ppOrderId, getMovementDateInOrgTimeZone());
 		}
 		return lotNumberFromSequence.orElse(null);
+	}
+
+	private LocalDate getMovementDateInOrgTimeZone()
+	{
+		final OrgId orgId = OrgId.ofRepoIdOrAny(huPPOrderBL.getById(ppOrderId).getAD_Org_ID());
+		return getMovementDate().withZoneSameInstant(orgDAO.getTimeZone(orgId)).toLocalDate();
 	}
 
 	@Override
@@ -582,18 +583,51 @@ import java.util.Optional;
 	}
 
 	@Override
+	public IPPOrderReceiptHUProducer defaultBestBeforeDateFromProduct()
+	{
+		this.isDefaultBestBeforeDateFromProduct = true;
+		return this;
+	}
+
+	/**
+	 * @return the best-before date to set on a received HU whose current best-before date is the given one, or {@code null} to leave it as is
+	 */
+	@VisibleForTesting
+	@Nullable
+	LocalDate getBestBeforeDateToSet(@Nullable final LocalDate huBestBeforeDate)
+	{
+		if (bestBeforeDate != null)
+		{
+			return bestBeforeDate;
+		}
+		if (!isDefaultBestBeforeDateFromProduct || huBestBeforeDate != null)
+		{
+			return null;
+		}
+
+		// computed once per receipt, like the lot number and production date
+		//noinspection OptionalAssignedToNull
+		if (bestBeforeDateDefault == null)
+		{
+			bestBeforeDateDefault = attributesBL.computeBestBeforeDefault(getProductId(), getMovementDateInOrgTimeZone());
+		}
+		return bestBeforeDateDefault.orElse(null);
+	}
+
+	@Override
 	public IPPOrderReceiptHUProducer productionDate(@Nullable final LocalDate productionDate)
 	{
 		this._productionDate = productionDate;
 		return this;
 	}
 
+	@VisibleForTesting
 	@NonNull
-	private LocalDate getProductionDate()
+	LocalDate getProductionDate()
 	{
 		if (_productionDate == null)
 		{
-			_productionDate = getMovementDate().toLocalDate();
+			_productionDate = getMovementDateInOrgTimeZone();
 		}
 		return _productionDate;
 	}

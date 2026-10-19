@@ -40,6 +40,7 @@ const MaterialReceiptLineScreen = () => {
     lineProps: {
       aggregateToLU,
       aggregateToTU,
+      coproduct,
       currentReceivingHU,
       availableReceivingTargets,
       availableReceivingTUTargets,
@@ -49,6 +50,8 @@ const MaterialReceiptLineScreen = () => {
       qtyReceived,
       qtyToReceive,
       skipReceiveTargetStep,
+      defaultLotNo,
+      defaultBestBeforeDate,
     },
     pickTo,
     customQRCodeFormats,
@@ -196,6 +199,9 @@ const MaterialReceiptLineScreen = () => {
           caption={trl('activities.mfg.receipts.btnReceiveProducts')}
           customQRCodeFormats={customQRCodeFormats}
           readAttributes={readAttributes}
+          defaultLotNo={defaultLotNo}
+          defaultBestBeforeDate={defaultBestBeforeDate}
+          isCatchWeightScanMandatory={!coproduct} // main finished good only; co-/by-products keep receive-on-scan
         />
         {noGebindeReason && (
           <p className="help is-danger" data-testid="receive-no-gebinde-hint">
