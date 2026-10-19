@@ -1,4 +1,6 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00702
 @topic:sqlFunction
 @ghActions:run_on_executor7
 Feature: SQL function result lines
@@ -57,8 +59,8 @@ Feature: SQL function result lines
   # ##############################################################################################################
   Scenario: QR code function result of a completed invoice is checked line by line
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | AD_Org_ID | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
-      | order_1    | true    | customer_1               | org_1     | 2022-02-02  | bpLocation_1                          | F                | S                   | I               | 1000002                |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | AD_Org_ID | OPT.M_Warehouse_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
+      | order_1    | true    | customer_1               | org_1     | warehouse_1                   | 2022-02-02  | bpLocation_1                          | F                | S                   | I               | 1000002                |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_1 | order_1               | product_1               | 1          |
