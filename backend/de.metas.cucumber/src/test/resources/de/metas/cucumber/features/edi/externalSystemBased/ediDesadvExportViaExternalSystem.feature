@@ -71,9 +71,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_1 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_1      | ol_1                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_1      | ol_1                      | N             | 100          |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -139,9 +140,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_2 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_2      | ol_2_1                    | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_2      | ol_2_1                    | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -235,12 +237,13 @@ Feature: EDI DESADV export via External System
       | dB_140                   | customer1                | oB_140                | P                |
 
     # Both shipment schedules must be ready before batching into one M_InOut
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | ssA_140    | olA_140                   | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ssA_140    | olA_140                   | N             | 10           |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | ssB_140    | olB_140                   | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ssB_140    | olB_140                   | N             | 10           |
 
     # Batch-generate ONE shipment covering both schedules (the aggregated M_InOut).
     # The legacy interceptor sets M_InOut.C_Order_ID = null because the lines come from 2 orders.
@@ -333,12 +336,13 @@ Feature: EDI DESADV export via External System
       | d_repl_150               | customer1                | o_repl_150            | P                |
 
     # ── Generate one shipment per shipment schedule ───────────────────────────
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
-      | ss_ext_150  | ol_ext_150                | N             |
+      | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ss_ext_150  | ol_ext_150                | N             | 10           |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier   | C_OrderLine_ID.Identifier | IsToRecompute |
-      | ss_repl_150  | ol_repl_150               | N             |
+      | Identifier   | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | ss_repl_150  | ol_repl_150               | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -404,9 +408,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_10 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_10     | ol_10_1                   | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_10     | ol_10_1                   | N             | 100          |
 
     # Deliver only 70 of the 100 ordered, so a remainder stays open.
     # QtyToDeliver_Override_For_M_ShipmentSchedule_ID is the workpackage-parameter name that
@@ -465,9 +470,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_20 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_20     | ol_20_1                   | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_20     | ol_20_1                   | N             | 100          |
 
     # Deliver only 70 of the 100 ordered, so a remainder stays open (see S30013_10 on the column name).
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -521,10 +527,11 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_30 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_30_1   | ol_30_1                   | N             |
-      | s_s_30_2   | ol_30_2                   | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_30_1   | ol_30_1                   | N             | 100          |
+      | s_s_30_2   | ol_30_2                   | N             | 100          |
 
     # Only the first line is shipped; the second line's schedule stays open with nothing delivered.
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -583,9 +590,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_40 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_40     | ol_40_1                   | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_40     | ol_40_1                   | N             | 100          |
 
     # Deliver only 70 of the 100 ordered, so a remainder stays open (see S30013_10 on the column name).
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -636,9 +644,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_50 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_50     | ol_50_1                   | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_50     | ol_50_1                   | N             | 100          |
 
     # Deliver only 70 of the 100 ordered, so a remainder stays open (see S30013_10 on the column name).
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -712,11 +721,12 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_60 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_60_1   | ol_60_1                   | N             |
-      | s_s_60_2   | ol_60_2                   | N             |
-      | s_s_60_3   | ol_60_3                   | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_60_1   | ol_60_1                   | N             | 100          |
+      | s_s_60_2   | ol_60_2                   | N             | 100          |
+      | s_s_60_3   | ol_60_3                   | N             | 100          |
 
     # All three schedules go into ONE workpackage, so one shipment covers the whole order;
     # each line delivers 70 of its 100 (see S30013_10 on the override column name).
@@ -784,9 +794,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_70 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_70     | ol_70_1                   | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_70     | ol_70_1                   | N             | 100          |
 
     # Deliver only 70 of the 100 ordered, so a remainder stays open (see S30013_10 on the column name).
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -886,9 +897,10 @@ Feature: EDI DESADV export via External System
 
     # Updating the order re-invalidates its M_ShipmentSchedule, so wait for the recompute to land
     # before generating from it.
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_80     | ol_80_1                   | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_80     | ol_80_1                   | N             | 3            |
 
     # Deliver all 3 ordered, so the DESADV is fully delivered.
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -985,9 +997,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_100 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_100    | ol_100_1                  | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_100    | ol_100_1                  | N             | 100          |
 
     # Deliver only 70 of the 100 ordered, so a remainder stays open (see S30013_10 on the column name).
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -1057,9 +1070,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_110 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_110    | ol_110_1                  | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_110    | ol_110_1                  | N             | 100          |
 
     # Deliver only 70 of the 100 ordered, so a remainder stays open (see S30013_10 on the column name).
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
