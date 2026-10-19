@@ -103,7 +103,7 @@ FROM edi_cctop_invoic_v invoic_v
                                             'ORDERS_QtyInvoiced', v.qtyEnteredInBPartnerUOM,
                                             'ORDERS_QtyInvoiced_UOM', uom.x12de355,
                                             'Order_POReference', v.orderporeference,
-                                            'Order_Line', v.orderline,
+                                            'Order_Line', CASE WHEN v.IsPackagingMaterial = 'Y' AND v.c_orderline_id IS NULL THEN NULL ELSE v.orderline END,
                                             'Order_QtyInvoiced', v.QtyInvoicedInOrderedUOM,
                                             'Order_QtyInvoiced_UOM', v.eancom_ordered_uom,
                                             'Currency_Code', v.iso_code,
