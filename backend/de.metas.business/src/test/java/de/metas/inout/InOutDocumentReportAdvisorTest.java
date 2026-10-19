@@ -55,6 +55,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.compiere.model.X_C_DocType.DOCBASETYPE_MaterialDelivery;
+import static org.compiere.model.X_C_DocType.DOCBASETYPE_MaterialReceipt;
 
 /**
  * Boundary test for {@link InOutDocumentReportAdvisor}: pins the Lieferweg ({@code M_Shipper.DocumentCopies}) copy resolution
@@ -107,6 +108,7 @@ public class InOutDocumentReportAdvisorTest
 		manualShipment.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		manualShipment.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
 		manualShipment.setC_DocType_ID(docType.getC_DocType_ID());
+		manualShipment.setIsSOTrx(true);
 		manualShipment.setC_Order_ID(0);
 		manualShipment.setDocumentNo("MANUAL-1");
 		save(manualShipment);
@@ -172,12 +174,37 @@ public class InOutDocumentReportAdvisorTest
 		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
 	}
 
+	/** The Lieferweg count applies to customer shipments only: a material receipt keeps the per-address/doc-type copies. */
+	@Test
+	public void materialReceipt_ignoresShipperCount()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(false, DOCBASETYPE_MaterialReceipt, true, 0, 2, 1);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(2));
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
 	/**
 	 * @param hasShipper      false = M_InOut.M_Shipper_ID left unset
 	 * @param shipperCopies   M_Shipper.DocumentCopies; null = NULL
 	 * @param perAddressCopies C_BP_PrintFormat.DocumentCopies_Override; null = no C_BP_PrintFormat row
 	 */
 	private DocumentReportInfo reportInfoFor(
+			final boolean hasShipper,
+			final Integer shipperCopies,
+			final Integer perAddressCopies,
+			final int docTypeCopies)
+	{
+		return reportInfoFor(true, DOCBASETYPE_MaterialDelivery, hasShipper, shipperCopies, perAddressCopies, docTypeCopies);
+	}
+
+	/**
+	 * @param isSOTrx     M_InOut.IsSOTrx
+	 * @param docBaseType the M_InOut's C_DocType.DocBaseType
+	 */
+	private DocumentReportInfo reportInfoFor(
+			final boolean isSOTrx,
+			final String docBaseType,
 			final boolean hasShipper,
 			final Integer shipperCopies,
 			final Integer perAddressCopies,
@@ -192,7 +219,7 @@ public class InOutDocumentReportAdvisorTest
 		save(bpartnerLocation);
 
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
-		docType.setDocBaseType(DOCBASETYPE_MaterialDelivery);
+		docType.setDocBaseType(docBaseType);
 		docType.setDocumentCopies(docTypeCopies);
 		save(docType);
 
@@ -223,6 +250,7 @@ public class InOutDocumentReportAdvisorTest
 		shipment.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		shipment.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
 		shipment.setC_DocType_ID(docType.getC_DocType_ID());
+		shipment.setIsSOTrx(isSOTrx);
 		if (hasShipper)
 		{
 			shipment.setM_Shipper_ID(shipper.getM_Shipper_ID());

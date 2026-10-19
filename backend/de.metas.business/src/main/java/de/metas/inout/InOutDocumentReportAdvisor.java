@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
 import de.metas.order.IOrderDAO;
@@ -120,7 +121,7 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 				.build();
 
 		// the shipment's Lieferweg count (incl. 0) wins over the per-address/doc-type resolution, which stays the fallback
-		final PrintCopies shipperCopies = getShipperCopiesOrNull(inout);
+		final PrintCopies shipperCopies = getShipperCopiesOrNull(inout, docType);
 		final PrintCopies copies = shipperCopies != null ? shipperCopies : util.getDocumentCopies(docType, bpPrintFormatQuery);
 		// 0 copies are coerced to 1 when the print data is created, so a 0 must suppress the auto-print queue item instead
 		final boolean suppressAutoPrint = (shipperCopies != null && shipperCopies.isZero()) || util.resolveSuppressAutoPrint(bpPrintFormatQuery);
@@ -139,11 +140,18 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 	}
 
 	/**
-	 * @return the copies configured on the shipment's Lieferweg ({@code M_Shipper.DocumentCopies}); {@code null} if the shipment has no shipper or the column is NULL
+	 * @return the copies configured on the shipment's Lieferweg ({@code M_Shipper.DocumentCopies}); {@code null} if the record is not a customer shipment,
+	 * has no shipper or the column is NULL
 	 */
 	@Nullable
-	private PrintCopies getShipperCopiesOrNull(@NonNull final I_M_InOut inout)
+	private PrintCopies getShipperCopiesOrNull(@NonNull final I_M_InOut inout, @NonNull final I_C_DocType docType)
 	{
+		// the Lieferweg count is a delivery-note setting; receipts and returns keep their per-address/doc-type copies
+		if (!inout.isSOTrx() || !DocBaseType.Shipment.getCode().equals(docType.getDocBaseType()))
+		{
+			return null;
+		}
+
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(inout.getM_Shipper_ID());
 		if (shipperId == null)
 		{
