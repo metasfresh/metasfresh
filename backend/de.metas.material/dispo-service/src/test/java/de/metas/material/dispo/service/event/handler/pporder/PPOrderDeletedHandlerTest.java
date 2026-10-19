@@ -16,7 +16,7 @@ import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailR
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -29,6 +29,9 @@ import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderLineData;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import de.metas.material.planning.pporder.PPOrderCandidateRepository;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -36,8 +39,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_M_Warehouse;
 import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -57,6 +63,7 @@ import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.X_AD_OrgInfo.STORECREDITCARDDATA_Speichern;
 
@@ -98,6 +105,8 @@ public class PPOrderDeletedHandlerTest
 	private static final int NEW_BOM_LINE_1_ID = 151;
 	private static final int NEW_BOM_LINE_2_ID = 181;
 
+	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(20);
+
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private PPOrderCreatedHandler ppOrderCreatedHandler;
 	private PPOrderChangedHandler ppOrderChangedHandler;
@@ -115,6 +124,11 @@ public class PPOrderDeletedHandlerTest
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		// Pre-create the warehouse so WarehouseBL.isIgnoreInMaterialDispo can load it.
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		setValue(warehouse, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, WAREHOUSE_ID.getRepoId());
+		saveRecord(warehouse);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
@@ -123,13 +137,16 @@ public class PPOrderDeletedHandlerTest
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
 		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
 				supplyCandidateHandler,
-				new DemandCandiateHandler(
+				new DemandCandidateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryWriteService,
 						Mockito.mock(PostMaterialEventService.class),
 						new AvailableToPromiseRepository(),
 						stockCandidateService,
-						supplyCandidateHandler)));
+						supplyCandidateHandler,
+						Mockito.mock(MaterialPlanningContextHelper.class),
+						new PPOrderCandidateDemandMatcher(),
+						new PPOrderCandidateRepository())));
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(candidateChangeService, new MainDataRequestHandler(), candidateRepositoryRetrieval);
 		ppOrderChangedHandler = new PPOrderChangedHandler(candidateRepositoryRetrieval, candidateChangeService);
@@ -249,7 +266,7 @@ public class PPOrderDeletedHandlerTest
 						.productDescriptor(createProductDescriptor())
 						.qtyRequired(qtyRequired)
 						.qtyDelivered(ZERO)
-						.warehouseId(WarehouseId.ofRepoId(20))
+						.warehouseId(WAREHOUSE_ID)
 						.bpartnerId(BPARTNER_ID)
 						.plantId(ResourceId.ofRepoId(120))
 						.productPlanningId(140)
