@@ -23,6 +23,7 @@ const CashPaymentDetailsModal = ({
   const [tenderedEditingAmount, setTenderedEditingAmount] = useState(
     () => tenderedEditingAmountDraft ?? toEditingAmount({ value: tenderedAmountParam ?? 0, precision })
   );
+  // report only actual changes: the callback is a new function on every render, so it is deliberately not a dependency
   useEffect(() => {
     onTenderedEditingAmountChanged?.(tenderedEditingAmount);
   }, [tenderedEditingAmount]);

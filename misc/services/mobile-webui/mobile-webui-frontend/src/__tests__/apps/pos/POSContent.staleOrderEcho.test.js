@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 
 import { posReducer } from '../../../apps/pos/reducers';
-import { ADD_PAYMENT, POS_TERMINAL_LOAD_DONE, UPDATE_ORDER } from '../../../apps/pos/actionTypes';
+import { ADD_PAYMENT, POS_TERMINAL_LOAD_DONE, REMOVE_PAYMENT, UPDATE_ORDER } from '../../../apps/pos/actionTypes';
 import { POSContent } from '../../../apps/pos/containers/POSContent';
 
 // No backend in jsdom: the order panel loads products on mount.
@@ -125,14 +125,19 @@ describe('POSContent - cash dialog vs. the delayed websocket snapshots', () => {
     expect(tenderedAmountText()).toContain('10.00 €');
   });
 
+  // Regression guard for keying the draft by payment uuid (it passes without the fix, too).
   it('does not carry a tendered amount over to another cash payment', () => {
     const store = newStore();
     checkoutAndTapCash(store);
     tapNumpad('10');
     expect(okButton()).toBeEnabled();
 
-    // the cashier cancels; the order echo drops the payment, and the cashier taps CASH again: a new payment
-    applySnapshot(store, checkoutSnapshot);
+    // the cashier cancels (the payment is removed), then taps CASH again: a new payment with a new uuid
+    const payment_uuid = store.getState()['applications/pos'].orders.byUUID[ORDER_UUID].payments[0].uuid;
+    act(() => {
+      store.dispatch({ type: REMOVE_PAYMENT, payload: { order_uuid: ORDER_UUID, payment_uuid } });
+    });
+    expect(screen.queryByTestId('pos-cash-payment-modal')).not.toBeInTheDocument();
     act(() => {
       store.dispatch({ type: ADD_PAYMENT, payload: { order_uuid: ORDER_UUID, paymentMethod: 'CASH', amount: 2.5 } });
     });

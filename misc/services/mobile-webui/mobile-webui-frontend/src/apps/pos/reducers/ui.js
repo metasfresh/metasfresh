@@ -47,7 +47,8 @@ export function uiReducer(applicationState, action) {
       if (current?.payment_uuid === payment_uuid && current?.tenderedEditingAmount === tenderedEditingAmount) {
         return applicationState;
       }
-      // only one cash payment dialog is open at a time, so one draft is enough
+      // Only one cash payment dialog is open at a time, so one draft is enough; the next dialog replaces it.
+      // Not cleared on checkout or cancel: a late snapshot can still re-open the dialog for that payment.
       return {
         ...applicationState,
         cashTenderedDraft: { payment_uuid, tenderedEditingAmount },
