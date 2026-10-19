@@ -132,7 +132,7 @@ public class C_InvoiceLine_StepDef
 	 *   <b>M_InOutLine_ID</b> — (optional, identifier-ref) source receipt/shipment line<br>
 	 *   <b>C_ElementValue_Override_ID</b> — (optional, identifier-ref) per-line GL account override (purchase invoices)<br>
 	 *   <b>Identifier</b> — (optional) alias for cross-step reference<br>
-	 * @cucumber.depends C_Invoice_StepDefData, M_Product_StepDefData, C_Tax_StepDefData, C_ElementValue_StepDefData, C_OrderLine_StepDefData
+	 * @cucumber.depends C_Invoice_StepDefData, M_Product_StepDefData, C_Tax_StepDefData, C_ElementValue_StepDefData, C_OrderLine_StepDefData, C_Project_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains C_InvoiceLines
