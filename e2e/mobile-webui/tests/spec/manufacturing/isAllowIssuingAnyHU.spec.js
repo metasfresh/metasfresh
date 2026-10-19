@@ -10,7 +10,7 @@ import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/rec
 import { expectErrorToast, expectErrorToastIf, page } from '../../utils/common';
 import { RawMaterialIssueLineScanScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScanScreen';
 
-const createMasterdata = async ({ finishedProductUOMConfigs, isCreateRawMaterialsStock = true, manufacturing } = {}) => {
+const createMasterdata = async ({ finishedProductUOMConfigs, isCreateRawMaterialsStock = true, manufacturing, huComp1ExternalBarcode } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -39,7 +39,9 @@ const createMasterdata = async ({ finishedProductUOMConfigs, isCreateRawMaterial
             },
             handlingUnits: isCreateRawMaterialsStock
                 ? {
-                    "HU_COMP1": { product: 'COMP1', warehouse: 'wh', qty: 100 },
+                    // HU_COMP1 carries the legacy customer barcode under test (undefined when a test
+                    // does not need it, in which case its plain M_HU.Value is what gets scanned).
+                    "HU_COMP1": { product: 'COMP1', warehouse: 'wh', qty: 100, externalBarcode: huComp1ExternalBarcode },
                     "HU_COMP2": { product: 'COMP2', warehouse: 'wh', qty: 100 },
                 }
                 : {},
@@ -118,6 +120,139 @@ test.describe('Test isAllowIssuingAnyHU', () => {
 
         await test.step('Issue COMP1 via on-the-fly scan', async () => {
             await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '5 Stk', qtyIssued: '0 Stk' });
+            await ManufacturingJobScreen.clickIssueButton({ index: 1 });
+            await RawMaterialIssueLineScreen.scanQRCode({ qrCode: masterdata.handlingUnits.HU_COMP1.qrCode, expectQtyEntered: '5' });
+            await RawMaterialIssueLineScreen.goBack();
+            await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '5 Stk', qtyIssued: '5 Stk' });
+        });
+    });
+
+    //
+    // TC6: On-the-fly issue from an HU identified by its legacy customer barcode (ExternalBarcode)
+    // — the direct analogue of TC-B7 above, but the operator scans the printed customer label
+    // instead of the metasfresh QR code.
+    //
+    // This is regression/acceptance coverage, not a RED-then-GREEN fix proof: the scanner resolves
+    // any scanned code (global QR, ExternalBarcode, M_HU.Value alike) through the already-tolerant
+    // singular HU lookup BEFORE ever calling the on-the-fly endpoint, and always sends that endpoint
+    // the resolved metasfresh QR code — never the raw scanned string. Verified via
+    // api_request_audit.body on the local DB: every issueSchedule/createOnTheFly request carries an
+    // `HU#1#{...}` QR code regardless of what was actually scanned. So the on-the-fly acceptance this
+    // test proves already worked before this task, end-to-end through the mobile UI; no
+    // ManufacturingJobService change was needed. expectOnTheFlyCall proves the scan genuinely takes
+    // the on-the-fly path (HU not part of the job's pre-planned steps) rather than matching a known
+    // step locally, which never calls the backend at all.
+    //
+    // noinspection JSUnusedLocalSymbols
+    test('isAllowIssuingAnyHU=true: on-the-fly scan and issue an HU identified by its legacy customer barcode', async ({ page }) => {
+        allure.epic('E0160: Manufacturing Execution');
+        allure.tag('F8030: MobileUI Manufacturing');
+        allure.tag('F8030');
+        allure.story('On-the-fly issue schedule creation from a legacy-labelled HU');
+        allure.severity('critical');
+
+        const huComp1ExternalBarcode = `EXT${Date.now()}`;
+        const masterdata = await createMasterdata({
+            isCreateRawMaterialsStock: true,
+            manufacturing: { isAllowIssuingAnyHU: true },
+            huComp1ExternalBarcode,
+        });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('mfg');
+        await ManufacturingJobsListScreen.waitForScreen();
+        await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+
+        await test.step('Issue COMP1 via on-the-fly scan of its printed customer barcode', async () => {
+            await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '5 Stk', qtyIssued: '0 Stk' });
+            await ManufacturingJobScreen.clickIssueButton({ index: 1 });
+            await RawMaterialIssueLineScreen.scanQRCode({ qrCode: masterdata.handlingUnits.HU_COMP1.externalBarcode, expectQtyEntered: '5', expectOnTheFlyCall: true });
+            await RawMaterialIssueLineScreen.goBack();
+            await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '5 Stk', qtyIssued: '5 Stk' });
+        });
+    });
+
+    //
+    // TC6: On-the-fly issue from an HU identified by its plain M_HU.Value (no ExternalBarcode)
+    //
+    // noinspection JSUnusedLocalSymbols
+    test('isAllowIssuingAnyHU=true: on-the-fly scan and issue an HU identified by its plain HU value', async ({ page }) => {
+        allure.epic('E0160: Manufacturing Execution');
+        allure.tag('F8030: MobileUI Manufacturing');
+        allure.tag('F8030');
+        allure.story('On-the-fly issue schedule creation from a plain-M_HU.Value-labelled HU');
+        allure.severity('critical');
+
+        // huComp1ExternalBarcode deliberately omitted: HU_COMP1.ExternalBarcode stays genuinely NULL,
+        // so the only thing the operator has to scan is the HU's own plain value. M_HU.Value always
+        // equals the M_HU_ID (verified against the stack, see picking_unpack_legacy_label_target.spec.js),
+        // so the value printed on such a label is exactly the huId the masterdata API already returns.
+        const masterdata = await createMasterdata({
+            isCreateRawMaterialsStock: true,
+            manufacturing: { isAllowIssuingAnyHU: true },
+        });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('mfg');
+        await ManufacturingJobsListScreen.waitForScreen();
+        await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+
+        await test.step('Issue COMP1 via on-the-fly scan of its plain HU value', async () => {
+            await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '5 Stk', qtyIssued: '0 Stk' });
+            await ManufacturingJobScreen.clickIssueButton({ index: 1 });
+            await RawMaterialIssueLineScreen.scanQRCode({ qrCode: `${masterdata.handlingUnits.HU_COMP1.huId}`, expectQtyEntered: '5', expectOnTheFlyCall: true });
+            await RawMaterialIssueLineScreen.goBack();
+            await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '5 Stk', qtyIssued: '5 Stk' });
+        });
+    });
+
+    //
+    // Pre-existing behaviour, not changed by this task (kept as regression coverage): an unrecognised
+    // code at the on-the-fly issue scan is rejected before the qty dialog opens, nothing gets issued,
+    // and the panel stays usable. The toast text here is the mobile app's generic fallback message —
+    // resolution fails one step earlier, in the already-tolerant HU lookup the scanner uses to
+    // pre-resolve the code (a different REST site than the one this task touches), not in the
+    // on-the-fly issue-schedule endpoint itself.
+    //
+    // noinspection JSUnusedLocalSymbols
+    test('isAllowIssuingAnyHU=true: an unrecognised code at the on-the-fly scan is rejected, then recovery works', async ({ page }) => {
+        allure.epic('E0160: Manufacturing Execution');
+        allure.tag('F8030: MobileUI Manufacturing');
+        allure.tag('F8030');
+        allure.story('On-the-fly issue schedule creation rejects an unrecognised code, panel stays usable');
+        allure.severity('normal');
+
+        const masterdata = await createMasterdata({
+            isCreateRawMaterialsStock: true,
+            manufacturing: { isAllowIssuingAnyHU: true },
+        });
+        // A code matching no known format at all — no metasfresh QR code, no GS1/EAN, and no
+        // ExternalBarcode or M_HU.Value on file. The case where the system genuinely cannot identify
+        // what was scanned.
+        const unrecognisedCode = `NOT-A-CODE-${Date.now()}`;
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('mfg');
+        await ManufacturingJobsListScreen.waitForScreen();
+        await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+
+        await test.step('Scan a code the system cannot identify — the operator must see a clear message, nothing gets issued', async () => {
+            await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '5 Stk', qtyIssued: '0 Stk' });
+            await ManufacturingJobScreen.clickIssueButton({ index: 1 });
+            await RawMaterialIssueLineScreen.scanQRCodeExpectResolveError({
+                qrCode: unrecognisedCode,
+                expectedToastText: 'Please try again. If the problem persists, contact support.',
+            });
+        });
+
+        await RawMaterialIssueLineScanScreen.goBack();
+        await RawMaterialIssueLineScreen.goBack();
+        await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '5 Stk', qtyIssued: '0 Stk' });
+
+        await test.step('Scan the correct HU afterwards — the on-the-fly issue commits normally, the panel is usable again', async () => {
             await ManufacturingJobScreen.clickIssueButton({ index: 1 });
             await RawMaterialIssueLineScreen.scanQRCode({ qrCode: masterdata.handlingUnits.HU_COMP1.qrCode, expectQtyEntered: '5' });
             await RawMaterialIssueLineScreen.goBack();
