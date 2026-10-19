@@ -1,5 +1,6 @@
 package de.metas.payment.sepa.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.common.util.time.SystemTime;
@@ -8,6 +9,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.api.SEPAExportContext;
+import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -20,9 +22,11 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.util.Env;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Process that creates SEPA xmls in 3 steps:
@@ -48,6 +52,10 @@ public class C_PaySelection_SEPA_XmlExport
 
 	@Param(parameterName = "IsGroupTransactions")
 	private boolean isGroupTransactions;
+
+	private final static String PARAM_SEPA_PROTOCOL = "SEPA_Protocol";
+	@Param(parameterName = PARAM_SEPA_PROTOCOL)
+	private String sepaProtocolCode;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -89,7 +97,7 @@ public class C_PaySelection_SEPA_XmlExport
 
 		//
 		// First, generate the SEPA export as an intermediary step, to use the old framework.
-		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection, isGroupTransactions);
+		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection, isGroupTransactions, SEPAProtocol.ofNullableCode(sepaProtocolCode));
 
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
 				.referenceAsEndToEndId(referenceAsEndToEndId)
@@ -108,6 +116,23 @@ public class C_PaySelection_SEPA_XmlExport
 				.reportData(new ByteArrayResource(xml.getContent()))
 				.build());
 
-		return MSG_OK;
+		// the WebUI shows the summary next to the download; the warnings are also in the process log
+		return createSummary(xml, Env.getADLanguageOrBaseLanguage(getCtx()));
+	}
+
+	/**
+	 * @return the export's warnings, one per line, translated to the given language; {@link #MSG_OK} if there are none
+	 */
+	@VisibleForTesting
+	static String createSummary(@NonNull final SEPACreditTransferXML xml, @NonNull final String adLanguage)
+	{
+		if (xml.getWarnings().isEmpty())
+		{
+			return MSG_OK;
+		}
+		return xml.getWarnings()
+				.stream()
+				.map(warning -> warning.translate(adLanguage))
+				.collect(Collectors.joining("\n"));
 	}
 }
