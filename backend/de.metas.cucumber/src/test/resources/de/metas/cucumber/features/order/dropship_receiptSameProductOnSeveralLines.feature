@@ -486,12 +486,15 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
       | C_SO_OrderLine_ID | C_PO_OrderLine_ID | OPT.C_Order_ID |
       | sol_e1            | pol_e1            | po_1           |
 
-    # the schedules are still flagged for recompute: the pending recompute pass has not run yet
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier |
       | ss_e1      | sol_e1                    |
       | ss_e2      | sol_e2                    |
       | ss_g       | sol_g                     |
+    # the schedules are still flagged for recompute: the pending recompute pass has not run yet
+    And 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_e1
+    And 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_e2
+    And 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_g
     And after not more than 60s, load M_ReceiptSchedule for C_OrderLine:
       | C_OrderLine_ID | M_ReceiptSchedule_ID |
       | pol_e1         | rs_e1                |
@@ -499,11 +502,16 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
       | M_HU_LUTU_Configuration_ID.Identifier | HUList | numberHUsGenerated | C_OrderLine_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
       | lutu_e1                               | hus_e1 | 1                  | pol_e1         | N               | 0     | N               | 1     | N               | 924         | 101                                |
 
-    # the receipt is committed only after the pending recompute pass ran
+    # no wait for IsToRecompute N before receipt_e1: the receipt must be booked while the recompute pass is pending (the race window)
     And create material receipt while the pending shipment schedule recompute runs before the receipt is committed
       | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_e1 | pol_e1         | receipt_e1            |
     And the shipment schedule recompute queues are resumed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_e1      | sol_e1                    | N             |
+      | ss_e2      | sol_e2                    | N             |
+      | ss_g       | sol_g                     | N             |
 
     And load C_OrderLines allocated to sales order lines:
       | C_SO_OrderLine_ID | C_PO_OrderLine_ID | OPT.C_Order_ID |
@@ -520,6 +528,12 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
     And create material receipt
       | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_e2 | pol_e2         | receipt_e2            |
+    # the next goods arrive after the previous receipt's picked quantity is on the shipment schedules
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_e1      | sol_e1                    | N             |
+      | ss_e2      | sol_e2                    | N             |
+      | ss_g       | sol_g                     | N             |
     And create material receipt
       | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
       | hus_g  | pol_g          | receipt_g             |

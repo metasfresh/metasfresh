@@ -41,9 +41,6 @@ Feature: shipment schedule recompute pass meets a concurrent change
 # ######################################################################################################################
 # ######################################################################################################################
 # ######################################################################################################################
-  @from:cucumber
-  @allure.label.epic:E0100_Sales
-  @allure.label.feature:F00130_Shipment_Schedule
   @Id:S33004_harness
   Scenario: a new shipment schedule waits for the paused recompute pass and is recomputed once the queues resume
     Given the shipment schedule recompute queues are paused

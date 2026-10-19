@@ -23,7 +23,9 @@
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
@@ -67,7 +69,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>
  * Pausing removes the queue processors from the running executor; their workpackages stay queued and are processed once
  * the processors are resumed. Removal shuts down the processor's thread pool, which waits for a running workpackage
- * (up to 25 s) before interrupting it; to never get there, pausing first waits until the processors are idle.
+ * (up to 25 s) before interrupting it. Pausing therefore removes a processor only in the poll iteration in which it was just
+ * seen idle (pool of 1 thread, no running workpackage), and polls again while it is busy. This narrows the window between
+ * the idle check and the removal to the two calls following each other, but cannot exclude that the processor takes a
+ * workpackage in exactly that gap; the interrupt of a workpackage running then is possible, though not expected.
  */
 public class ShipmentScheduleRecomputeRaceHarness
 {
@@ -107,12 +112,21 @@ public class ShipmentScheduleRecomputeRaceHarness
 				.as("PoolSize of %s (C_Queue_Processor_ID=%s): the idle wait below is only exact for a pool of 1 thread", processorRecord.getName(), processorRecord.getC_Queue_Processor_ID())
 				.isEqualTo(1));
 
-		StepDefUtil.tryAndWait(TIMEOUT_SECONDS, POLL_MILLIS, () -> runningProcessors.stream().allMatch(IQueueProcessor::isAvailableToWork));
-
-		for (final I_C_Queue_Processor processorRecord : processorRecords)
+		// Check idleness and remove in the same poll iteration, one processor at a time: a processor that picks up a workpackage
+		// after the check is polled again instead of being removed while busy.
+		final ImmutableMap<Integer, I_C_Queue_Processor> processorRecordById = Maps.uniqueIndex(processorRecords, I_C_Queue_Processor::getC_Queue_Processor_ID);
+		for (final IQueueProcessor runningProcessor : runningProcessors)
 		{
-			pausedQueueProcessors.add(processorRecord);
-			executor.removeQueueProcessor(processorRecord.getC_Queue_Processor_ID());
+			final I_C_Queue_Processor processorRecord = processorRecordById.get(runningProcessor.getQueueProcessorId().getRepoId());
+			StepDefUtil.tryAndWait(TIMEOUT_SECONDS, POLL_MILLIS, () -> {
+				if (!runningProcessor.isAvailableToWork())
+				{
+					return false;
+				}
+				executor.removeQueueProcessor(processorRecord.getC_Queue_Processor_ID());
+				pausedQueueProcessors.add(processorRecord);
+				return true;
+			});
 		}
 	}
 

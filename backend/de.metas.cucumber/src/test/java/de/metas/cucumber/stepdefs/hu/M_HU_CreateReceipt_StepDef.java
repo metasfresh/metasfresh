@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -47,6 +48,8 @@ import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -56,10 +59,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -75,6 +76,7 @@ public class M_HU_CreateReceipt_StepDef
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final M_HU_List_StepDefData huListTable;
@@ -101,8 +103,7 @@ public class M_HU_CreateReceipt_StepDef
 	}
 
 	/**
-	 * Books the receipt like {@code create material receipt}, but keeps the receipt's transaction open while the pending shipment schedule recompute pass runs.
-	 * In production this is a receipt completed while the recompute worker processes an older recompute flag; the harness makes that timing deterministic.
+	 * Books the receipt like {@code create material receipt}, but keeps its transaction open while the pending shipment schedule recompute pass runs.
 	 * Requires the paused recompute queues, and that the sales-order lines allocated to the receipt's purchase-order line have no picked quantity yet.
 	 *
 	 * @cucumber.stepdef
@@ -121,7 +122,7 @@ public class M_HU_CreateReceipt_StepDef
 		final DataTableRows rows = DataTableRows.of(dataTable);
 		for (final DataTableRow row : rows.stream().collect(ImmutableList.toImmutableList()))
 		{
-			final int poOrderLineId = extractAndRefreshReceiptSchedule(row).getC_OrderLine_ID();
+			final OrderLineId poOrderLineId = OrderLineId.ofRepoId(extractAndRefreshReceiptSchedule(row).getC_OrderLine_ID());
 			recomputeRaceHarness.runInTransactionCommittedAfterRecompute(
 					() -> {
 						createMaterialReceipt(row);
@@ -131,15 +132,9 @@ public class M_HU_CreateReceipt_StepDef
 		}
 	}
 
-	private void assertNoQtyPickedOnSalesOrderLinesOf(final int poOrderLineId)
+	private void assertNoQtyPickedOnSalesOrderLinesOf(@NonNull final OrderLineId poOrderLineId)
 	{
-		final ImmutableSet<Integer> salesOrderLineIds = queryBL.createQueryBuilderOutOfTrx(I_C_PO_OrderLine_Alloc.class)
-				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, poOrderLineId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.stream()
-				.map(I_C_PO_OrderLine_Alloc::getC_SO_OrderLine_ID)
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<OrderLineId> salesOrderLineIds = orderDAO.retrieveSOLineIdsByPOLineId(poOrderLineId);
 		assertThat(salesOrderLineIds).as("Sales-order lines allocated to purchase-order line %s", poOrderLineId).isNotEmpty();
 
 		final int qtyPickedCount = queryBL.createQueryBuilderOutOfTrx(I_M_ShipmentSchedule_QtyPicked.class)
