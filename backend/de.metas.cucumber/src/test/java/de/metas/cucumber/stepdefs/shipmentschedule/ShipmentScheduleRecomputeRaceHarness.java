@@ -23,9 +23,7 @@
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
@@ -87,8 +85,8 @@ public class ShipmentScheduleRecomputeRaceHarness
 	private final List<I_C_Queue_Processor> pausedQueueProcessors = new ArrayList<>();
 
 	/**
-	 * Removes every running queue processor that is assigned to the recompute pass's package processor from the async executor,
-	 * after waiting until none of them is processing a workpackage. Their workpackages stay queued until {@link #resumeRecomputeQueueProcessors()}.
+	 * Removes every running queue processor that is assigned to the recompute pass's package processor from the async executor;
+	 * each one is removed right after it was seen idle (waiting while it processes a workpackage). Their workpackages stay queued until {@link #resumeRecomputeQueueProcessors()}.
 	 */
 	public void pauseRecomputeQueueProcessors() throws InterruptedException
 	{
@@ -104,20 +102,16 @@ public class ShipmentScheduleRecomputeRaceHarness
 				.as("Running queue processors assigned to %s", UpdateInvalidShipmentSchedulesWorkpackageProcessor.class.getSimpleName())
 				.isNotEmpty();
 
-		final ImmutableList<I_C_Queue_Processor> processorRecords = runningProcessors.stream()
-				.map(processor -> InterfaceWrapperHelper.loadOutOfTrx(processor.getQueueProcessorId().getRepoId(), I_C_Queue_Processor.class))
-				.collect(ImmutableList.toImmutableList());
-		// IQueueProcessor.isAvailableToWork means "a thread permit is free"; it only means "no workpackage is running" for a pool of one thread
-		processorRecords.forEach(processorRecord -> assertThat(processorRecord.getPoolSize())
-				.as("PoolSize of %s (C_Queue_Processor_ID=%s): the idle wait below is only exact for a pool of 1 thread", processorRecord.getName(), processorRecord.getC_Queue_Processor_ID())
-				.isEqualTo(1));
-
-		// Check idleness and remove in the same poll iteration, one processor at a time: a processor that picks up a workpackage
-		// after the check is polled again instead of being removed while busy.
-		final ImmutableMap<Integer, I_C_Queue_Processor> processorRecordById = Maps.uniqueIndex(processorRecords, I_C_Queue_Processor::getC_Queue_Processor_ID);
 		for (final IQueueProcessor runningProcessor : runningProcessors)
 		{
-			final I_C_Queue_Processor processorRecord = processorRecordById.get(runningProcessor.getQueueProcessorId().getRepoId());
+			final I_C_Queue_Processor processorRecord = InterfaceWrapperHelper.loadOutOfTrx(runningProcessor.getQueueProcessorId().getRepoId(), I_C_Queue_Processor.class);
+			// IQueueProcessor.isAvailableToWork means "a thread permit is free"; it only means "no workpackage is running" for a pool of one thread
+			assertThat(processorRecord.getPoolSize())
+					.as("PoolSize of %s (C_Queue_Processor_ID=%s): the idle wait below is only exact for a pool of 1 thread", processorRecord.getName(), processorRecord.getC_Queue_Processor_ID())
+					.isEqualTo(1);
+
+			// Check idleness and remove in the same poll iteration: a processor that picks up a workpackage
+			// after the check is polled again instead of being removed while busy.
 			StepDefUtil.tryAndWait(TIMEOUT_SECONDS, POLL_MILLIS, () -> {
 				if (!runningProcessor.isAvailableToWork())
 				{
