@@ -200,6 +200,26 @@ public class InOutDocumentReportAdvisorTest
 		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
 	}
 
+	/** A vendor return (MMS, not SOTrx) keeps the per-address/doc-type copies: the Lieferweg count needs IsSOTrx. */
+	@Test
+	public void vendorReturn_ignoresShipperCount()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(false, DOCBASETYPE_MaterialDelivery, true, BigDecimal.ZERO, 2, 1);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(2));
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
+	/** A customer return (MMR, SOTrx) keeps the per-address/doc-type copies: the Lieferweg count needs DocBaseType MMS. */
+	@Test
+	public void customerReturn_ignoresShipperCount()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(true, DOCBASETYPE_MaterialReceipt, true, BigDecimal.ZERO, 2, 1);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(2));
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
 	/**
 	 * @param hasShipper      false = M_InOut.M_Shipper_ID left unset
 	 * @param shipperCopies   M_Shipper.DocumentCopies; null = NULL
