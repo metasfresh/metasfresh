@@ -34,17 +34,22 @@ import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
 import de.metas.report.DocumentReportInfo;
+import de.metas.report.PrintCopies;
 import de.metas.report.PrintFormatId;
 import de.metas.report.StandardDocumentReportType;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -54,6 +59,7 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 {
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final DocumentReportAdvisorUtil util;
 
 	public InOutDocumentReportAdvisor(@NonNull final DocumentReportAdvisorUtil util)
@@ -113,17 +119,41 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 				.isDropShip(docIsDropShip)
 				.build();
 
+		// the shipment's Lieferweg count (incl. 0) wins over the per-address/doc-type resolution, which stays the fallback
+		final PrintCopies shipperCopies = getShipperCopiesOrNull(inout);
+		final PrintCopies copies = shipperCopies != null ? shipperCopies : util.getDocumentCopies(docType, bpPrintFormatQuery);
+		// 0 copies are coerced to 1 when the print data is created, so a 0 must suppress the auto-print queue item instead
+		final boolean suppressAutoPrint = (shipperCopies != null && shipperCopies.isZero()) || util.resolveSuppressAutoPrint(bpPrintFormatQuery);
+
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_M_InOut.Table_Name, inoutId))
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
-				.copies(util.getDocumentCopies(docType, bpPrintFormatQuery))
+				.copies(copies)
 				.documentNo(inout.getDocumentNo())
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)
 				.language(language)
 				.poReference(inout.getPOReference())
-				.suppressAutoPrint(util.resolveSuppressAutoPrint(bpPrintFormatQuery))
+				.suppressAutoPrint(suppressAutoPrint)
 				.build();
+	}
+
+	/**
+	 * @return the copies configured on the shipment's Lieferweg ({@code M_Shipper.DocumentCopies}); {@code null} if the shipment has no shipper or the column is NULL
+	 */
+	@Nullable
+	private PrintCopies getShipperCopiesOrNull(@NonNull final I_M_InOut inout)
+	{
+		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(inout.getM_Shipper_ID());
+		if (shipperId == null)
+		{
+			return null;
+		}
+
+		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
+		return InterfaceWrapperHelper.isNull(shipper, I_M_Shipper.COLUMNNAME_DocumentCopies)
+				? null
+				: PrintCopies.ofInt(shipper.getDocumentCopies());
 	}
 
 	@Nullable
