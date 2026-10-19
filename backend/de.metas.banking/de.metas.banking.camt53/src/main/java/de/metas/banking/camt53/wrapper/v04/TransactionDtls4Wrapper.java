@@ -31,7 +31,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 import static de.metas.banking.camt53.jaxb.camt053_001_04.CreditDebitCode.CRDT;
 
