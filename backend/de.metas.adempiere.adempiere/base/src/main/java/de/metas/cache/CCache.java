@@ -45,7 +45,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -423,7 +422,7 @@ public class CCache<K, V> implements CacheInterface
 	private void clear()
 	{
 		// Clear
-		inFlightLoads.forEach(InFlightLoad::invalidateIfOtherThread);
+		inFlightLoads.forEach(load -> load.invalidateIfOtherThread(null));
 		cache.invalidateAll();
 		cache.cleanUp();
 
@@ -535,13 +534,7 @@ public class CCache<K, V> implements CacheInterface
 
 	private void invalidateInFlightLoads(@NonNull final Set<?> keys)
 	{
-		for (final InFlightLoad load : inFlightLoads)
-		{
-			if (keys.contains(load.key))
-			{
-				load.invalidateIfOtherThread();
-			}
-		}
+		inFlightLoads.forEach(load -> load.invalidateIfOtherThread(keys));
 	}
 
 	/**
@@ -694,13 +687,16 @@ public class CCache<K, V> implements CacheInterface
 	}
 
 	/**
-	 * One run of a value loader. If the cache (or the load's key) is reset by another thread while it runs, the loaded value is returned to the caller
+	 * One run of a value loader, for one key ({@link #get(Object, Callable)}) or for several keys ({@link #getAllOrLoad(Collection, Function)}).
+	 * If the cache (or one of the load's keys) is reset by another thread while it runs, the loaded value is returned to the caller
 	 * but not cached, because it might have been read before the change which triggered the reset.
 	 * A reset from the loading thread itself (e.g. the loader creates a missing record) does not discard the load, as before.
 	 */
 	private final class InFlightLoad
 	{
-		private final Object key;
+		@Nullable private final Object key;
+		@Nullable private final Set<?> bulkKeys;
+		@Nullable private final Set<Object> invalidatedBulkKeys;
 		private final Thread loadingThread = Thread.currentThread();
 		private volatile boolean invalidated = false;
 		private boolean registered = false;
@@ -708,6 +704,15 @@ public class CCache<K, V> implements CacheInterface
 		private InFlightLoad(@NonNull final Object key)
 		{
 			this.key = key;
+			this.bulkKeys = null;
+			this.invalidatedBulkKeys = null;
+		}
+
+		private InFlightLoad(@NonNull final Set<?> bulkKeys)
+		{
+			this.key = null;
+			this.bulkKeys = bulkKeys;
+			this.invalidatedBulkKeys = ConcurrentHashMap.newKeySet();
 		}
 
 		private V run(@NonNull final Callable<V> valueLoader) throws Exception
@@ -741,15 +746,38 @@ public class CCache<K, V> implements CacheInterface
 			}
 		}
 
-		private void invalidateIfOtherThread()
+		/**
+		 * @param resetKeys the keys which are reset, or {@code null} if the whole cache is reset
+		 */
+		private void invalidateIfOtherThread(@Nullable final Set<?> resetKeys)
 		{
-			if (loadingThread != Thread.currentThread())
+			if (loadingThread == Thread.currentThread())
+			{
+				return;
+			}
+
+			if (resetKeys == null || (key != null && resetKeys.contains(key)))
 			{
 				invalidated = true;
+			}
+			else if (bulkKeys != null && invalidatedBulkKeys != null)
+			{
+				for (final Object resetKey : resetKeys)
+				{
+					if (bulkKeys.contains(resetKey))
+					{
+						invalidatedBulkKeys.add(resetKey);
+					}
+				}
 			}
 		}
 
 		private boolean isInvalidated() {return invalidated;}
+
+		private boolean isInvalidated(@NonNull final Object bulkKey)
+		{
+			return invalidated || (invalidatedBulkKeys != null && invalidatedBulkKeys.contains(bulkKey));
+		}
 	}
 
 	@Getter
@@ -857,11 +885,10 @@ public class CCache<K, V> implements CacheInterface
 			else
 			{
 				logger.debug("getAllOrLoad - Appling valuesLoader to load values for keysToLoad={}", keysToLoad);
-				final Map<K, InFlightLoad> loadsByKey = new HashMap<>(keysToLoad.size());
-				keysToLoad.forEach(key -> loadsByKey.put(key, new InFlightLoad(key)));
+				final InFlightLoad load = new InFlightLoad(keysToLoad);
 				try
 				{
-					loadsByKey.values().forEach(InFlightLoad::register);
+					load.register();
 					final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
 
 					// add loaded values to cache and notify listener
@@ -869,15 +896,15 @@ public class CCache<K, V> implements CacheInterface
 					{
 						final K key = entry.getKey();
 						final V value = entry.getValue();
-						final InFlightLoad load = loadsByKey.get(key);
-						if (load != null && load.isInvalidated())
+						final boolean requestedKey = keysToLoad.contains(key);
+						if (requestedKey && load.isInvalidated(key))
 						{
 							logger.debug("getAllOrLoad - Not caching the value for key={} because it was reset while it was loaded", key);
 							continue;
 						}
 
 						cache.put(key, value);
-						if (load != null && load.isInvalidated())
+						if (requestedKey && load.isInvalidated(key))
 						{
 							// reset after the check above, but before the put
 							cache.asMap().remove(key, value);
@@ -889,7 +916,7 @@ public class CCache<K, V> implements CacheInterface
 				}
 				finally
 				{
-					loadsByKey.values().forEach(InFlightLoad::unregister);
+					load.unregister();
 				}
 			}
 
