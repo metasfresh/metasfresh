@@ -71,6 +71,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
+import de.metas.order.model.interceptor.C_Order;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -187,7 +188,7 @@ public class C_Order_StepDef
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	@NonNull private final de.metas.order.model.interceptor.C_Order orderCallouts = SpringContextHolder.instance.getBean(de.metas.order.model.interceptor.C_Order.class);
+	@NonNull private final C_Order orderCallouts = SpringContextHolder.instance.getBean(C_Order.class);
 	@NonNull private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -515,7 +516,7 @@ public class C_Order_StepDef
 	 * {@code IsPreAdviceRequired}), falling back to the partner's own, and saves the order.
 	 * <p>
 	 * In production this happens when a user picks the ship-to location in the sales order window: the WebUI
-	 * fires the {@code C_BPartner_Location_ID} callout {@link de.metas.order.model.interceptor.C_Order#updateDeliveryPartnerDefaults}.
+	 * fires the {@code C_BPartner_Location_ID} callout {@link C_Order#updateDeliveryPartnerDefaults}.
 	 * Callouts do not fire when {@code metasfresh contains C_Orders:} saves the order programmatically, so this step
 	 * invokes that very callout method on the order.
 	 *
