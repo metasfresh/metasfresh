@@ -82,12 +82,14 @@ public class M_Shipper_StepDef
 	 *   <b>IsCreateDeliveryPlanning</b> — (optional)<br>
 	 *   <b>PriorityRule</b> — (optional) the shipper's priority rule code (1=Urgent, 3=High, 5=Medium,
 	 *     7=Low, 9=Minor); left empty (the AD column default) when omitted<br>
+	 *   <b>DocumentCopies</b> — (optional) number of delivery-note copies printed for shipments with this
+	 *     shipper; 0 means "print nothing"; left NULL (fall back to the partner / doc-type copies) when omitted<br>
 	 * @cucumber.depends StepDefData: M_Shipper_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And contains M_Shippers
-	 *   | Identifier | PriorityRule |
-	 *   | express    | 1            |
+	 *   | Identifier | PriorityRule | DocumentCopies |
+	 *   | express    | 1            | 3              |
 	 * </pre>
 	 */
 	@And("contains M_Shippers")
@@ -137,6 +139,9 @@ public class M_Shipper_StepDef
 		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_PriorityRule)
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(record::setPriorityRule);
+
+		row.getAsOptionalBigDecimal(I_M_Shipper.COLUMNNAME_DocumentCopies)
+				.ifPresent(record::setDocumentCopies);
 
 		InterfaceWrapperHelper.save(record);
 
