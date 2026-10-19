@@ -1465,7 +1465,7 @@ Feature: EDI INVOIC export via postgREST
   @Id:S32545_TC5
   @from:cucumber
 @allure.label.epic:E0292_EDI
-@allure.label.feature:F00357_EDI_INVOICE
+@allure.label.feature:F00357_EDI_INVOIC
 @F00357
   Scenario: an invoice made only of packing lines is EDI-invalid for an EDI INVOIC recipient
     # - The customer is an EDI INVOIC recipient (flag + recipient GLN) with a GLN on its location.
