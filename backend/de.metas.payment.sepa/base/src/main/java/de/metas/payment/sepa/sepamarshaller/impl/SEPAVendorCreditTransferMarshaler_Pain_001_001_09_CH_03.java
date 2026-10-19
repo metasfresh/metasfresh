@@ -21,6 +21,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
@@ -75,6 +76,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -246,6 +248,33 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 	private static final AdMessageKey MSG_MissingAddressPartCountry = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_MissingAddressPartCountry");
 	private static final AdMessageKey MSG_MissingAddressPartsTownAndCountry = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_MissingAddressPartsTownAndCountry");
 
+	/**
+	 * Errors of the export (header); parameter: the SEPA_Export's DocumentNo
+	 */
+	private static final AdMessageKey MSG_NoLines = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_NoLines");
+	private static final AdMessageKey MSG_DebtorNameMissing = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_DebtorNameMissing");
+	private static final AdMessageKey MSG_DebtorBankUnidentified = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_DebtorBankUnidentified");
+	/**
+	 * The debtor account as the owner of a too short IBAN ({@link SepaUtils#extractIIDFromSwissIbanOrNull}); parameter: the SEPA_Export's DocumentNo
+	 */
+	private static final AdMessageKey MSG_DebtorAccountOfExport = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_DebtorAccountOfExport");
+
+	/**
+	 * Errors of a payment (export line); first parameter: partner and bank account of the line ({@link SepaUtils#createInfo})
+	 */
+	private static final AdMessageKey MSG_InvalidAmount = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidAmount"); // {1} amount
+	private static final AdMessageKey MSG_AmountTooManyDecimals = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_AmountTooManyDecimals"); // {1} amount, {2} currency, {3} allowed decimals
+	private static final AdMessageKey MSG_CreditorBankUnidentified = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_CreditorBankUnidentified");
+	private static final AdMessageKey MSG_CreditorNameMissing = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_CreditorNameMissing");
+	private static final AdMessageKey MSG_QrIbanCurrencyNotSupported = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_QrIbanCurrencyNotSupported"); // {1} currency
+	private static final AdMessageKey MSG_IsrNotSupported = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_IsrNotSupported");
+	/**
+	 * Reasons for {@link SepaUtils#ERR_SEPA_Export_InvalidReference}; {1}: the structured reference, or {@link #MSG_NoStructuredReference}
+	 */
+	private static final AdMessageKey MSG_QrReferenceRequired = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_QrReferenceRequired");
+	private static final AdMessageKey MSG_QrReferenceCheckDigitWrong = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_QrReferenceCheckDigitWrong");
+	private static final AdMessageKey MSG_NoStructuredReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_NoStructuredReference");
+
 	private final ObjectFactory objectFactory;
 	private final DatatypeFactory datatypeFactory;
 	@NonNull private final BankRepository bankRepository;
@@ -301,9 +330,14 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		}
 		catch (final RuntimeException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
-					.setParameter("sepaDocument", sepaDocument);
+			// AD_Issue stores the exception's record (AD_Table_ID/Record_ID); a line error already names its SEPA_Export_Line, so only errors without a record get the export.
+			// The record is not appended to the message, which the user sees.
+			final AdempiereException exception = AdempiereException.wrapIfNeeded(e);
+			if (exception.getRecord() == null)
+			{
+				exception.setRecord(TableRecordReference.of(sepaDocument));
+			}
+			throw exception;
 		}
 	}
 
@@ -354,9 +388,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		final List<I_SEPA_Export_Line> sepaDocumentLines = sepaDocumentBL.retrieveLines(sepaDocument);
 		if (sepaDocumentLines.isEmpty())
 		{
-			throw new AdempiereException("The given SEPA_Export record has no lines with active=Y and error=N")
-					.appendParametersToMessage()
-					.setParameter("SEPA_Export", sepaDocument);
+			throw new SepaMarshallerException(MSG_NoLines, SepaUtils.escapeAtSignsForParseTranslation(sepaDocument.getDocumentNo()));
 		}
 
 		final Map<ArrayKey, PaymentInstruction30> key2pmtInf = new LinkedHashMap<>();
@@ -414,8 +446,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		final String debtorName = truncate(SepaUtils.replaceForbiddenChars(sepaDocument.getSEPA_CreditorName()), MAX_LENGTH_NAME_SEPA);
 		if (debtorName == null)
 		{
-			throw new SepaMarshallerException("SEPA_Export " + sepaDocument.getDocumentNo() + " has no SEPA_CreditorName (the name of the paying organisation, sent as debtor name)."
-					+ " It is taken from the name of the business partner linked to the organisation; please set that name and create the SEPA export again.");
+			// SEPA_CreditorName is the name of the paying organisation, taken from the name of the business partner linked to the organisation
+			throw new SepaMarshallerException(MSG_DebtorNameMissing, SepaUtils.escapeAtSignsForParseTranslation(sepaDocument.getDocumentNo()));
 		}
 
 		final PartyIdentification135 initgPty = objectFactory.createPartyIdentification135();
@@ -529,10 +561,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		// Debitor Agent (i.e. Bank)
 		// IG 4.2 DbtrAgt: BICFI (was BIC) or the IID as ClrSysMmbId; IG 3.4: no empty FinInstnId
 		final String debtorBic = StringUtils.trimBlankToNull(sepaHdr.getSwiftCode());
-		final BranchAndFinancialInstitutionIdentification6 dbtrAgt = createAgent(debtorBic, debtorBic == null ? SepaUtils.extractIIDFromSwissIbanOrNull(iban, () -> "the debtor account of SEPA_Export " + sepaHdr.getDocumentNo()) : null);
+		final BranchAndFinancialInstitutionIdentification6 dbtrAgt = createAgent(debtorBic, debtorBic == null ? SepaUtils.extractIIDFromSwissIbanOrNull(iban, () -> msgBL.getTranslatableMsgText(MSG_DebtorAccountOfExport, SepaUtils.escapeAtSignsForParseTranslation(sepaHdr.getDocumentNo()))) : null);
 		if (dbtrAgt == null)
 		{
-			throw new SepaMarshallerException("The SEPA_Export has neither a BIC nor a CH/LI IBAN to identify the debtor's bank; SEPA_Export=" + sepaHdr);
+			throw new SepaMarshallerException(MSG_DebtorBankUnidentified, SepaUtils.escapeAtSignsForParseTranslation(sepaHdr.getDocumentNo()));
 		}
 		pmtInf.setDbtrAgt(dbtrAgt);
 
@@ -554,10 +586,17 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			final CurrencyCode currencyIsoCode = currency.getCurrencyCode();
 
 			final BigDecimal amount = NumberUtils.stripTrailingDecimalZeros(line.getAmt());
-			Check.errorIf(amount == null || amount.signum() <= 0, "Invalid amount={} of SEPA_Export_Line={}", amount, line);
-			Check.errorIf(amount.scale() > currency.getPrecision().toInt(),
-						  "Invalid number of decimal points; amount={} has {} decimal points, but the currency {} only allows {}; SEPA_Export_Line={}",
-						  amount, amount.scale(), currencyIsoCode, currency.getPrecision(), line);
+			// the amount is passed as text, so that the message shows it exactly (no rounding or grouping by the message format)
+			if (amount == null || amount.signum() <= 0)
+			{
+				throw new SepaMarshallerException(MSG_InvalidAmount, SepaUtils.createInfo(line), amount != null ? amount.toPlainString() : "")
+						.setRecord(TableRecordReference.of(line));
+			}
+			if (amount.scale() > currency.getPrecision().toInt())
+			{
+				throw new SepaMarshallerException(MSG_AmountTooManyDecimals, SepaUtils.createInfo(line), amount.toPlainString(), currencyIsoCode.toThreeLetterCode(), String.valueOf(currency.getPrecision().toInt()))
+						.setRecord(TableRecordReference.of(line));
+			}
 
 			final ActiveOrHistoricCurrencyAndAmount instdAmt = objectFactory.createActiveOrHistoricCurrencyAndAmount();
 			instdAmt.setCcy(currencyIsoCode.toThreeLetterCode());
@@ -642,7 +681,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			return null;
 		}
 
-		final String iidFromIban = PAYMENT_TYPE_5.equals(paymentType) ? null : SepaUtils.extractIIDFromSwissIbanOrNull(line.getIBAN(), () -> "line " + SepaUtils.createInfo(line));
+		final String iidFromIban = PAYMENT_TYPE_5.equals(paymentType) ? null : SepaUtils.extractIIDFromSwissIbanOrNull(line.getIBAN(), () -> TranslatableStrings.anyLanguage(SepaUtils.createInfo(line)));
 		final String bic = iidFromIban == null ? StringUtils.trimBlankToNull(line.getSwiftCode()) : null;
 		final BranchAndFinancialInstitutionIdentification6 agent = createAgent(bic, iidFromIban);
 		if (agent != null || !PAYMENT_TYPE_6.equals(paymentType))
@@ -662,8 +701,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		final PostalAddress24 bankAddress = bank != null && bank.getLocationId() != null ? createPstlAdr(null, locationDAO.getById(bank.getLocationId())) : null;
 		if (bankName == null || bankAddress == null || !isCompleteAddress(bankAddress))
 		{
-			throw new SepaMarshallerException("Foreign payment (payment type X) and the creditor account is not a CH/LI IBAN: the creditor's bank has neither a BIC nor a bank address (name, town and country)."
-					+ " Please set the BIC or the address of the bank; " + SepaUtils.createInfo(line));
+			throw new SepaMarshallerException(MSG_CreditorBankUnidentified, SepaUtils.createInfo(line))
+					.setRecord(TableRecordReference.of(line));
 		}
 
 		final FinancialInstitutionIdentification18 finInstnId = objectFactory.createFinancialInstitutionIdentification18();
@@ -781,7 +820,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			if (!SepaUtils.isValidQrReference(structuredReference))
 			{
 				// only reached if the account has a QR-IBAN but no IBAN, so there is no other way to pay it
-				throw newInvalidQrReferenceException(line, structuredReference, "the bank account has only a QR-IBAN, so a valid QR reference (27 digits incl. check digit) is required");
+				throw newInvalidQrReferenceException(line, structuredReference, MSG_QrReferenceRequired);
 			}
 			cdOrPrtry.setPrtry(CREDITOR_REFERENCE_TYPE_QRR);
 		}
@@ -789,7 +828,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		{
 			// IBAN + QR-IBAN account and a reference that looks like a QR reference, but fails the check digit: most likely a typo of the QR-bill reference.
 			// Sending it to the normal IBAN as Ustrd would break the creditor's automatic matching, so we stop here.
-			throw newInvalidQrReferenceException(line, structuredReference, "the reference has the format of a QR reference (27 digits), but its check digit is wrong");
+			throw newInvalidQrReferenceException(line, structuredReference, MSG_QrReferenceCheckDigitWrong);
 		}
 		else if (isValidCreditorReference(structuredReference))
 		{
@@ -807,15 +846,19 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		return cdtrRefInf;
 	}
 
+	/**
+	 * The same message as the .03 marshaller, with the translated reason (which names the line's partner and bank account and the reference) as its parameter.
+	 */
 	private AdempiereException newInvalidQrReferenceException(
 			@NonNull final I_SEPA_Export_Line line,
 			@Nullable final String structuredReference,
-			@NonNull final String reason)
+			@NonNull final AdMessageKey reason)
 	{
-		return new AdempiereException(SepaUtils.ERR_SEPA_Export_InvalidReference, SepaUtils.createInfo(line))
-				.appendParametersToMessage()
-				.setParameter("structuredReference", structuredReference != null ? structuredReference : "no structured reference")
-				.setParameter("reason", reason);
+		final ITranslatableString reference = structuredReference != null
+				? TranslatableStrings.anyLanguage(SepaUtils.escapeAtSignsForParseTranslation(structuredReference))
+				: msgBL.getTranslatableMsgText(MSG_NoStructuredReference);
+		return new AdempiereException(SepaUtils.ERR_SEPA_Export_InvalidReference, msgBL.getTranslatableMsgText(reason, SepaUtils.createInfo(line), reference))
+				.setRecord(TableRecordReference.of(line));
 	}
 
 	/**
@@ -917,7 +960,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		if (cdtr.getNm() == null)
 		{
 			// IG 4.3 Cdtr/Nm: "Must be supplied" (mandatory in the XSD, too)
-			throw new SepaMarshallerException("The payment has no creditor name. Please set the account holder name of the bank account or the name of the business partner; " + SepaUtils.createInfo(line));
+			throw new SepaMarshallerException(MSG_CreditorNameMissing, SepaUtils.createInfo(line))
+					.setRecord(TableRecordReference.of(line));
 		}
 
 		// Bank account is authoritative: when it carries any address data we use it
@@ -957,18 +1001,22 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		}
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID());
-		final ITranslatableString addressSource = msgBL.getTranslatableMsgText(addressSourceMessage, Strings.nullToEmpty(addressSourceName));
 		if (PAYMENT_TYPE_6.equals(paymentType))
 		{
 			// X: the export fails, so that the address is completed before a foreign payment is sent.
-			throw new AdempiereException(MSG_CreditorAddressIncomplete, getBPartnerValueAndName(bpartnerId), addressSource, msgBL.getTranslatableMsgText(missingAddressParts))
-					.appendParametersToMessage()
-					.setParameter("SEPA_Export_Line", line);
+			// The process runs the error message through parseTranslation, so the names are escaped (the warning below is escaped when the summary is built).
+			throw new AdempiereException(
+					MSG_CreditorAddressIncomplete,
+					SepaUtils.escapeAtSignsForParseTranslation(getBPartnerValueAndName(bpartnerId)),
+					msgBL.getTranslatableMsgText(addressSourceMessage, SepaUtils.escapeAtSignsForParseTranslation(Strings.nullToEmpty(addressSourceName))),
+					msgBL.getTranslatableMsgText(missingAddressParts))
+					.setRecord(TableRecordReference.of(line));
 		}
 
 		// D and S: Cdtr/PstlAdr is optional (IG 4.3), so we leave out the incomplete address instead of sending an invalid one and warn the user.
 		if (omittedAddressWarnings.add(ArrayKey.of(bpartnerId, addressSourceMessage, addressSourceName, missingAddressParts)))
 		{
+			final ITranslatableString addressSource = msgBL.getTranslatableMsgText(addressSourceMessage, Strings.nullToEmpty(addressSourceName));
 			addWarning(msgBL.getTranslatableMsgText(MSG_CreditorAddressOmitted, getBPartnerValueAndName(bpartnerId), addressSource, msgBL.getTranslatableMsgText(missingAddressParts)));
 		}
 		return cdtr;
@@ -1173,10 +1221,11 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 			{
 				final boolean domesticCurrency = currencyCode.isEuro() || currencyCode.isCHF();
 				// IG 3.16: "The QR-IBAN and the QR reference are intended for billing in CHF" (EUR until November 2027)
-				Check.errorIf(qrIbanPayment && !domesticCurrency,
-							  SepaMarshallerException.class,
-							  "line {} has a QR-IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
-							  SepaUtils.createInfo(line), currencyCode);
+				if (qrIbanPayment && !domesticCurrency)
+				{
+					throw new SepaMarshallerException(MSG_QrIbanCurrencyNotSupported, SepaUtils.createInfo(line), currencyCode.toThreeLetterCode())
+							.setRecord(TableRecordReference.of(line));
+				}
 
 				// "domestic" IBAN; it contains the IID and we will use it. IG 3.15: in a currency other than CHF/EUR it is "X" (V1, foreign currency domestic)
 				paymentType = domesticCurrency ? PAYMENT_TYPE_3 : PAYMENT_TYPE_6;
@@ -1195,8 +1244,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		if (PAYMENT_TYPE_1.equals(paymentType))
 		{
 			// IG 3.15: the payment types are D, S, X and C; there is no ISR payment type anymore
-			throw new SepaMarshallerException(PAIN_001_001_09_CH_03 + " does not support ISR payments (the ISR was replaced by the QR-bill)."
-					+ " Clear the ESR flag of the bank account, set a QR-IBAN, or use an ISO 11649 (RF) creditor reference; " + SepaUtils.createInfo(line));
+			throw new SepaMarshallerException(MSG_IsrNotSupported, SepaUtils.createInfo(line))
+					.setRecord(TableRecordReference.of(line));
 		}
 		return paymentType;
 	}

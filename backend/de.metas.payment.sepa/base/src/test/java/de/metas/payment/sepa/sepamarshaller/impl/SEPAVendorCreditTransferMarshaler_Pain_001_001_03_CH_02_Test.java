@@ -9,6 +9,7 @@ import de.metas.banking.api.BankRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.i18n.Msg;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
@@ -22,8 +23,12 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentIdentificatio
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PostalAddress6CH;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.ThrowableAssert;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,6 +51,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {
+	/**
+	 * In unit tests, a message is rendered as its AD_Message value followed by its parameters (see PlainMsgBL).
+	 */
+	private static final String MSG_BANK_ACCOUNT_COUNTRY_MISSING = "de.metas.payment.sepa.SEPA_Export_BankAccountCountryMissing";
+
+	private static final String PARTNER_NAME_WITH_AT_SIGNS = "Vendor info@muster.ch / buchhaltung@muster.ch";
+
 	private BankRepository bankRepository;
 	private BankAccountService bankAccountService;
 	private SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 xmlGenerator;
@@ -454,6 +466,54 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 				.hasMessageContaining("SEPA_Export_InvalidReference");
 	}
 
+	@Test
+	public void createDocument_foreignWithoutBicAndBankName_errorKeepsAtSignsOfPartnerName()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport("org", "12345", "INGBNL2A");
+		// payment type 6: no ESR account, no swiss IBAN, not EUR; no BIC and no bank, so there is no bank name
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, "001", "NL31INGB0000000044", null, new BigDecimal("100"), chf);
+		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.load(line.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class);
+		bankAccount.setIsEsrAccount(false);
+		bankAccount.setC_Bank_ID(0);
+		save(bankAccount);
+		setBPartner(line, PARTNER_NAME_WITH_AT_SIGNS);
+
+		assertErrorKeepsAtSignsOfPartnerName(() -> xmlGenerator.createDocument(sepaExport), "has no information about the bank name");
+	}
+
+	@Test
+	public void createDocument_swissIbanInForeignCurrency_errorKeepsAtSignsOfPartnerName()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport("org", "12345", "INGBNL2A");
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, "001", "CH5021977000004331346", null, new BigDecimal("100"), PlainCurrencyDAO.createCurrencyId(CurrencyCode.USD));
+		setBPartner(line, PARTNER_NAME_WITH_AT_SIGNS);
+
+		assertErrorKeepsAtSignsOfPartnerName(() -> xmlGenerator.createDocument(sepaExport), "has a swizz IBAN, but the currency is USD");
+	}
+
+	/**
+	 * The process runs the error message through parseTranslation, which takes text between two "@" for an AD_Message/AD_Element; "@@" stands for a plain "@".
+	 */
+	private static void assertErrorKeepsAtSignsOfPartnerName(@NonNull final ThrowableAssert.ThrowingCallable call, @NonNull final String expectedText)
+	{
+		assertThatThrownBy(call)
+				.isInstanceOf(SepaMarshallerException.class)
+				.hasMessageContaining(expectedText)
+				.hasMessageContaining("Vendor info@@muster.ch / buchhaltung@@muster.ch")
+				.satisfies(e -> assertThat(Msg.parseTranslation("de_CH", e.getMessage())).contains(PARTNER_NAME_WITH_AT_SIGNS));
+	}
+
+	private static void setBPartner(@NonNull final I_SEPA_Export_Line line, @NonNull final String name)
+	{
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setName(name);
+		bpartner.setValue("TestVendor");
+		save(bpartner);
+
+		line.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		save(line);
+	}
+
 	private void assertIsInvalidQRReferenceWorks(String input, boolean expected)
 	{
 		boolean result = SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isInvalidQRReference(input);
@@ -559,7 +619,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		assertThatThrownBy(() -> xmlGenerator.createStructuredPstlAdr(bankAccount, partnerLocation))
 				.isInstanceOf(SepaMarshallerException.class)
-				.hasMessageContaining("A_Country is required");
+				.hasMessageContaining(MSG_BANK_ACCOUNT_COUNTRY_MISSING);
 	}
 
 	@Test
@@ -571,7 +631,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		assertThatThrownBy(() -> xmlGenerator.createStructuredPstlAdr(bankAccount, partnerLocation))
 				.isInstanceOf(SepaMarshallerException.class)
-				.hasMessageContaining("'Switzerland' is not a valid ISO-3166 alpha-2 country code");
+				.hasMessageContaining("de.metas.payment.sepa.SEPA_Export_BankAccountCountryInvalid")
+				.hasMessageContaining("Switzerland");
 	}
 
 	@Test
@@ -651,7 +712,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		assertThatThrownBy(() -> xmlGenerator.createUnstructuredPstlAdr(bankAccount, partnerLocation))
 				.isInstanceOf(SepaMarshallerException.class)
-				.hasMessageContaining("A_Country is required");
+				.hasMessageContaining(MSG_BANK_ACCOUNT_COUNTRY_MISSING);
 	}
 
 	@Test
