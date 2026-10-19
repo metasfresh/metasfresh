@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.shipmentschedule.ShipmentScheduleRecomputeRaceHarness;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -64,6 +65,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -95,6 +97,7 @@ public class M_Inventory_StepDef
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final M_Inventory_StepDefData inventoryTable;
 	@NonNull private final M_InventoryLine_StepDefData inventoryLineTable;
@@ -106,6 +109,7 @@ public class M_Inventory_StepDef
 	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	@NonNull private final M_HU_PI_Item_Product_StepDefData huPIItemProductTable;
 	@NonNull private final M_HU_PI_StepDefData huPITable;
+	@NonNull private final ShipmentScheduleRecomputeRaceHarness recomputeRaceHarness;
 
 	@Given("metasfresh contains M_Inventories:")
 	public void createInventories(@NonNull final DataTable dataTable)
@@ -129,6 +133,43 @@ public class M_Inventory_StepDef
 		final I_M_Inventory inventory = inventoryTable.get(inventoryIdentifier);
 		inventory.setDocAction(IDocument.ACTION_Complete);
 		documentBL.processEx(inventory, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
+	/**
+	 * Completes the inventory like {@code the inventory identified by ... is completed}, but keeps the completion's transaction open while the pending
+	 * shipment schedule recompute pass runs; the transaction is committed after the pass. Requires the paused recompute queues.
+	 * While the transaction is open, asserts that the completion is not visible outside, i.e. that the inventory is not completed in the DB yet.
+	 * <p>
+	 * Stands in for the completion of a long inventory batch, whose stock changes raise storage-segment flags for the recompute while the batch is
+	 * still running ({@code ShipmentScheduleSegmentChangedProcessor}, mid-batch flush). The completion is held open at that point because only a
+	 * commit after the recompute pass makes the race deterministic.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.params <b>inventoryIdentifier</b> -- the inventory's identifier in M_Inventory_StepDefData
+	 * @cucumber.depends StepDefData: M_Inventory_StepDefData<br>
+	 *   Given the shipment schedule recompute queues are paused
+	 * @cucumber.example
+	 * <pre>
+	 * When the inventory identified by inventory is completed, committed only after the pending recompute ran
+	 * </pre>
+	 */
+	@Given("the inventory identified by {word} is completed, committed only after the pending recompute ran")
+	public void inventory_is_completed_committedAfterRecompute(@NonNull final String inventoryIdentifier) throws InterruptedException
+	{
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryTable.get(inventoryIdentifier).getM_Inventory_ID());
+
+		recomputeRaceHarness.runInTransactionCommittedAfterRecompute(
+				() -> {
+					inventoryService.completeDocument(inventoryId);
+					return null;
+				},
+				() -> assertThat(queryBL.createQueryBuilderOutOfTrx(I_M_Inventory.class)
+						.addEqualsFilter(I_M_Inventory.COLUMNNAME_M_Inventory_ID, inventoryId)
+						.addEqualsFilter(I_M_Inventory.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
+						.create()
+						.count())
+						.as("Completed M_Inventory %s visible outside the completing transaction (it must not commit before the recompute pass ran)", inventoryId)
+						.isZero());
 	}
 
 	@Given("^the inventory identified by (.*) is reversed$")
