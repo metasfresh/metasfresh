@@ -1465,16 +1465,16 @@ Feature: EDI INVOIC export via postgREST
   @Id:S32545_TC5
   @from:cucumber
 @allure.label.epic:E0292_EDI
-@allure.label.feature:F00359_EDI_INVOICE_JSON
-@F00359
+@allure.label.feature:F00357_EDI_INVOICE
+@F00357
   Scenario: an invoice made only of packing lines is EDI-invalid for an EDI INVOIC recipient
     # - The customer is an EDI INVOIC recipient (flag + recipient GLN) with a GLN on its location.
     # - Invoice 1 has one packing line only: it is not exportable and gets EDI_ExportStatus I (invalid).
     # - Invoice 2 (control, same partner) has a goods line and a packing line: it stays Pending (P).
     #   It proves the packing-only guard, not the partner setup, causes the invalid status.
     Given metasfresh contains C_BPartners without locations:
-      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
-      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | N        | pricingSystem      |
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City |
       | loc_bill                 | DE          | billAddr     | 111        | billCity |
@@ -1488,8 +1488,8 @@ Feature: EDI INVOIC export via postgREST
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
       | wh             | customer1     | bpLoc_bill             |
     And metasfresh contains M_Products:
-      | Identifier    | Value              | Name              | Description              |
-      | productNormal | normalProductValue | normalProductName | normalProductDescription |
+      | Identifier    |
+      | productNormal |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID |
       | salesPLV               | productNormal | 5.00     | PCE      |
@@ -1503,9 +1503,9 @@ Feature: EDI INVOIC export via postgREST
 
     # Invoices are built directly (no C_Order_ID on the header), so the shipment check does not apply.
     And metasfresh contains C_Invoice:
-      | Identifier  | REST.Context   | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | crateOnly   | crateOnly_ID   | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
-      | goodsAndPkg | goodsAndPkg_ID | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+      | Identifier  | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | crateOnly   | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+      | goodsAndPkg | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID | M_Product_ID  | C_OrderLine_ID | QtyInvoiced | IsPackagingMaterial |
       | crateOnly    | productNormal |                | 1 PCE       | Y                   |
@@ -1514,8 +1514,8 @@ Feature: EDI INVOIC export via postgREST
     And the invoice identified by crateOnly is completed
     And the invoice identified by goodsAndPkg is completed
 
-    # The stored EDIErrorMsg is the German message text of NotExistsNonPackagingInvoiceLineError
-    # (the session language of the test run), followed by the invoice document number.
+    # The stored EDIErrorMsg is the text of NotExistsNonPackagingInvoiceLineError in the database
+    # base language (German), followed by the invoice document number.
     # The asserted part is the text stating "only packaging-material lines and no exportable line".
     Then after not more than 30s, C_Invoice records have the following export status
       | C_Invoice_ID | EDI_ExportStatus | EDIErrorMsg                                                         |

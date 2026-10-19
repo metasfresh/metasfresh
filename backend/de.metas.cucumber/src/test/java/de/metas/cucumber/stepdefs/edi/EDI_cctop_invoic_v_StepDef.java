@@ -157,7 +157,9 @@ public class EDI_cctop_invoic_v_StepDef
 		});
 
 		tableRow.getAsOptionalString(de.metas.edi.model.I_C_Invoice.COLUMNNAME_EDIErrorMsg)
-				.ifPresent(expected -> assertThat(ediInvoiceRecord.getEDIErrorMsg()).contains(expected));
+				.ifPresent(expected -> assertThat(ediInvoiceRecord.getEDIErrorMsg())
+						.as("EDIErrorMsg of C_Invoice %s", tableRow.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID).getAsString())
+						.contains(expected));
 	}
 
 	@Then("EDI_cctop_invoic_500_v of the following EDI_cctop_invoic_v is validated")
