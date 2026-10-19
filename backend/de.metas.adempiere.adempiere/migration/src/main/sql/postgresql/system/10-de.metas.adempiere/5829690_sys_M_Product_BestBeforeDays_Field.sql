@@ -2,7 +2,7 @@
 -- (AD_Window 247). Both go on the main tab of window 140 / 247 respectively, in the same element group as
 -- the minimum-shelf-life field GuaranteeDaysMin. Creates the field and UI element only if the tab has no field for
 -- the column yet (an instance that already has one is left untouched). The column itself comes from the script
--- 5829680_sys_gh32668_M_Product_BestBeforeDays.sql.
+-- 5829680_sys_M_Product_BestBeforeDays.sql.
 
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,Updated,UpdatedBy)
 SELECT 0,(SELECT c.AD_Column_ID FROM AD_Column c WHERE c.ColumnName='BestBeforeDays' AND c.AD_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_Product')),785689 /*From ID Server*/,0,(SELECT t.AD_Tab_ID FROM AD_Tab t WHERE t.AD_Window_ID=140 AND t.AD_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_Product') AND t.TabLevel=0 ORDER BY t.SeqNo LIMIT 1),TO_TIMESTAMP('2026-10-19 15:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Gesamthaltbarkeit des Produkts in Tagen.',10,'D','Anzahl der Tage, die das Produkt ab Produktion insgesamt haltbar ist (Mindesthaltbarkeitsdatum minus Produktionsdatum).','Y','Y','N','N','N','N','N','N','Gesamthaltbarkeit',290,TO_TIMESTAMP('2026-10-19 15:00:00','YYYY-MM-DD HH24:MI:SS'),100
