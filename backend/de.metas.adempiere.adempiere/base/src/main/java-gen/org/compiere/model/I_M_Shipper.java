@@ -97,6 +97,7 @@ public interface I_M_Shipper
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -106,6 +107,7 @@ public interface I_M_Shipper
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -115,6 +117,29 @@ public interface I_M_Shipper
 
 	ModelColumn<I_M_Shipper, Object> COLUMN_Description = new ModelColumn<>(I_M_Shipper.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Document Copies.
+	 * Number of copies to be printed. (Can be overwritten in the Print Format tab in the Business Partner window)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentCopies (int DocumentCopies);
+
+	/**
+	 * Get Document Copies.
+	 * Number of copies to be printed. (Can be overwritten in the Print Format tab in the Business Partner window)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDocumentCopies();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_DocumentCopies = new ModelColumn<>(I_M_Shipper.class, "DocumentCopies", null);
+	String COLUMNNAME_DocumentCopies = "DocumentCopies";
 
 	/**
 	 * Set Internal Name.
@@ -256,6 +281,7 @@ public interface I_M_Shipper
 
 	/**
 	 * Set Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -265,6 +291,7 @@ public interface I_M_Shipper
 
 	/**
 	 * Get Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -297,7 +324,8 @@ public interface I_M_Shipper
 	String COLUMNNAME_PickupTimeFrom = "PickupTimeFrom";
 
 	/**
-	 * Set Abholung Uhrzeit bis.
+	 * Set Pickup Time To.
+	 * Pickup Time To
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: true
@@ -306,7 +334,8 @@ public interface I_M_Shipper
 	void setPickupTimeTo (java.sql.Timestamp PickupTimeTo);
 
 	/**
-	 * Get Abholung Uhrzeit bis.
+	 * Get Pickup Time To.
+	 * Pickup Time To
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: true

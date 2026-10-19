@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1364471192L;
+	private static final long serialVersionUID = 905639043L;
 
     /** Standard Constructor */
     public X_M_Shipper (final Properties ctx, final int M_Shipper_ID, @Nullable final String trxName)
@@ -59,6 +59,18 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setDocumentCopies (final int DocumentCopies)
+	{
+		set_Value (COLUMNNAME_DocumentCopies, DocumentCopies);
+	}
+
+	@Override
+	public int getDocumentCopies() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DocumentCopies);
 	}
 
 	@Override
