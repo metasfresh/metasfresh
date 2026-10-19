@@ -7,6 +7,7 @@ Feature: Delivery-note copies from the shipper (Lieferweg) of the ship-to addres
   The ship-to address references a shipper (Lieferweg); the shipper carries the number of delivery-note copies.
   - The sales order takes the shipper over from its ship-to address; the shipment takes it from the order.
   - A shipper copy count wins over a per-address C_BP_PrintFormat copy count.
+  - A shipper copy count of 0 prints nothing: no printing-queue item is created.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -89,3 +90,48 @@ Feature: Delivery-note copies from the shipper (Lieferweg) of the ship-to addres
       | shipmentQueue       | 3      |
     And C_Printing_Queue contains 1 items for the record identified by "shipment"
 
+
+  # ##############################################################################################
+  # ##############################################################################################
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @Id:S32661_TC2
+  Scenario: Shipper with 0 copies wins over a per-address print format with 2 copies -> the shipment is archived but not enqueued for printing
+    Given contains M_Shippers
+      | Identifier         | DocumentCopies |
+      | Anlieferung_Kalter | 0              |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier      | C_BPartner_ID | GLN           | IsShipTo | IsBillTo | M_Shipper_ID       |
+      | FUZ_Bremerhaven | DulkHaasnoot  | 4008123466102 | true     | true     | Anlieferung_Kalter |
+    And metasfresh contains C_BP_PrintFormat:
+      | C_BPartner_ID | C_BPartner_Location_ID | DocumentCopies_Override |
+      | DulkHaasnoot  | FUZ_Bremerhaven        | 2                       |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | C_BPartner_Location_ID | M_Warehouse_ID |
+      | salesOrder | true    | DulkHaasnoot  | 2026-10-19  | FUZ_Bremerhaven        | warehouse      |
+    And the order identified by salesOrder takes over the delivery defaults of its ship-to location
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID | M_Product_ID | QtyEntered |
+      | salesOrderLine | salesOrder | seafood      | 10         |
+    And the order identified by salesOrder is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID |
+      | schedule   | salesOrderLine | N             | warehouse      |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | schedule              | D            | false               | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | schedule              | shipment   |
+    And validate the created shipments
+      | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Shipper_ID       |
+      | shipment   | DulkHaasnoot  | FUZ_Bremerhaven        | Anlieferung_Kalter |
+
+    When the shipment identified by shipment is completed
+
+    Then after not more than 60s validate C_Doc_Outbound_Log:
+      | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.DocBaseType | OPT.DocStatus |
+      | outboundLog                      | shipment             | M_InOut       | MMS             | CO            |
+    And an AD_Archive exists for the record identified by "shipment"
+    And C_Printing_Queue contains 0 items for the record identified by "shipment"
