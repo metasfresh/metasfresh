@@ -329,6 +329,12 @@ public class MMatchPO extends X_M_MatchPO
 	@Override
 	protected boolean beforeDelete()
 	{
+		// Lock the row before cleaning up its cost details, so that a concurrent posting of this M_MatchPO cannot commit a new M_CostDetail
+		// between that cleanup and the DELETE (FK MMatchPO_MCostDetail is checked only at commit, which makes this trx's commit fail).
+		// The posting's commit-time FK check now waits for this trx, and then fails itself because the M_MatchPO is gone.
+		// The DELETE would take the same lock a few statements later anyway.
+		DB.getSQLValueEx(get_TrxName(), "SELECT M_MatchPO_ID FROM M_MatchPO WHERE M_MatchPO_ID=? FOR UPDATE", getM_MatchPO_ID());
+
 		if (isPosted())
 		{
 			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), DocBaseType.MatchPO, getAD_Org_ID());
