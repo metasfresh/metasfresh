@@ -140,7 +140,7 @@ public class M_Shipper_StepDef
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(record::setPriorityRule);
 
-		row.getAsOptionalInt(I_M_Shipper.COLUMNNAME_DocumentCopies)
+		row.getAsOptionalBigDecimal(I_M_Shipper.COLUMNNAME_DocumentCopies)
 				.ifPresent(record::setDocumentCopies);
 
 		InterfaceWrapperHelper.save(record);

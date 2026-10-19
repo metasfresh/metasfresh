@@ -51,6 +51,9 @@ import org.compiere.model.I_M_Shipper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -128,7 +131,7 @@ public class InOutDocumentReportAdvisorTest
 	@Test
 	public void shipperCountWinsOverPerAddressOverride()
 	{
-		final DocumentReportInfo reportInfo = reportInfoFor(true, 3, 1, 1);
+		final DocumentReportInfo reportInfo = reportInfoFor(true, new BigDecimal("3"), 1, 1);
 
 		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(3));
 		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
@@ -148,7 +151,7 @@ public class InOutDocumentReportAdvisorTest
 	@Test
 	public void shipperCountZeroSuppresses()
 	{
-		final DocumentReportInfo reportInfo = reportInfoFor(true, 0, 2, 1);
+		final DocumentReportInfo reportInfo = reportInfoFor(true, BigDecimal.ZERO, 2, 1);
 
 		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ZERO);
 		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isTrue();
@@ -161,6 +164,19 @@ public class InOutDocumentReportAdvisorTest
 		final DocumentReportInfo reportInfo = reportInfoFor(true, null, null, 4);
 
 		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(4));
+		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
+	}
+
+	/**
+	 * A fractional Lieferweg count can only come from a non-UI write (the field accepts whole numbers only);
+	 * it is rounded up, so a positive count never turns into 0 (= print nothing).
+	 */
+	@Test
+	public void shipperCountFractional_roundedUp()
+	{
+		final DocumentReportInfo reportInfo = reportInfoFor(true, new BigDecimal("0.4"), 2, 1);
+
+		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ONE);
 		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
 	}
 
@@ -178,7 +194,7 @@ public class InOutDocumentReportAdvisorTest
 	@Test
 	public void materialReceipt_ignoresShipperCount()
 	{
-		final DocumentReportInfo reportInfo = reportInfoFor(false, DOCBASETYPE_MaterialReceipt, true, 0, 2, 1);
+		final DocumentReportInfo reportInfo = reportInfoFor(false, DOCBASETYPE_MaterialReceipt, true, BigDecimal.ZERO, 2, 1);
 
 		Assertions.assertThat(reportInfo.getCopies()).isEqualTo(PrintCopies.ofInt(2));
 		Assertions.assertThat(reportInfo.isSuppressAutoPrint()).isFalse();
@@ -191,7 +207,7 @@ public class InOutDocumentReportAdvisorTest
 	 */
 	private DocumentReportInfo reportInfoFor(
 			final boolean hasShipper,
-			final Integer shipperCopies,
+			@Nullable final BigDecimal shipperCopies,
 			final Integer perAddressCopies,
 			final int docTypeCopies)
 	{
@@ -206,7 +222,7 @@ public class InOutDocumentReportAdvisorTest
 			final boolean isSOTrx,
 			final String docBaseType,
 			final boolean hasShipper,
-			final Integer shipperCopies,
+			@Nullable final BigDecimal shipperCopies,
 			final Integer perAddressCopies,
 			final int docTypeCopies)
 	{

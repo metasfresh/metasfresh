@@ -54,6 +54,7 @@ import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.math.RoundingMode;
 
 @Component
 public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
@@ -158,10 +159,17 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 			return null;
 		}
 
+		// the generated getter returns 0 for NULL, so NULL ("not set") must be checked on the column itself
 		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
-		return InterfaceWrapperHelper.isNull(shipper, I_M_Shipper.COLUMNNAME_DocumentCopies)
-				? null
-				: PrintCopies.ofInt(shipper.getDocumentCopies());
+		if (InterfaceWrapperHelper.isNull(shipper, I_M_Shipper.COLUMNNAME_DocumentCopies))
+		{
+			return null;
+		}
+
+		// the column is a Quantity (so that clearing it in the UI stores NULL, not 0); a fraction can only come from a non-UI write
+		// and is rounded up, so a positive count never becomes 0 (= print nothing)
+		final int copies = shipper.getDocumentCopies().setScale(0, RoundingMode.CEILING).intValueExact();
+		return PrintCopies.ofInt(copies);
 	}
 
 	@Nullable
