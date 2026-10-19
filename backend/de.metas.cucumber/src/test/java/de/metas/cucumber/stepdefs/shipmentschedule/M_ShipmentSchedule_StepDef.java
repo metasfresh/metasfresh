@@ -243,6 +243,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
 	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
+	@NonNull private final ShipmentScheduleRecomputeRaceHarness recomputeRaceHarness;
 
 	private final TestContext testContext;
 
@@ -479,6 +480,111 @@ public class M_ShipmentSchedule_StepDef
 	public void enqueueBoundedRecomputePass()
 	{
 		UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();
+	}
+
+	/**
+	 * Stops the async queue processors that run the shipment schedule recompute pass, so that the scenario runs the pass itself
+	 * (see {@link ShipmentScheduleRecomputeRaceHarness}).
+	 * In production these processors are always on; the pause makes a race with the pass deterministic.
+	 * <p>
+	 * The paused processors also run the creation of missing shipment schedules and the generation of shipments, so resume them
+	 * before any shipment step. They are resumed after the scenario in any case.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given the shipment schedule recompute queues are paused
+	 * </pre>
+	 */
+	@Given("the shipment schedule recompute queues are paused")
+	public void pauseRecomputeQueues() throws InterruptedException
+	{
+		recomputeRaceHarness.pauseRecomputeQueueProcessors();
+	}
+
+	/**
+	 * Starts the async queue processors stopped by {@code the shipment schedule recompute queues are paused} again; their queued workpackages are then processed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the shipment schedule recompute queues are resumed
+	 * </pre>
+	 */
+	@And("the shipment schedule recompute queues are resumed")
+	public void resumeRecomputeQueues()
+	{
+		recomputeRaceHarness.resumeRecomputeQueueProcessors();
+	}
+
+	@After
+	public void resumeRecomputeQueuesAfterScenario()
+	{
+		recomputeRaceHarness.resumeRecomputeQueueProcessors();
+	}
+
+	/**
+	 * Creates the missing shipment schedules in the step thread.
+	 * In production the async {@code CreateMissingShipmentSchedules} workpackage does this after e.g. a sales order's completion;
+	 * while the recompute queues are paused, that workpackage waits, so the scenario runs it itself.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the pending shipment schedule creation is processed
+	 * </pre>
+	 */
+	@When("the pending shipment schedule creation is processed")
+	public void processPendingShipmentScheduleCreation()
+	{
+		recomputeRaceHarness.processPendingShipmentScheduleCreation();
+	}
+
+	/**
+	 * Runs one shipment schedule recompute pass in the step thread and asserts that it succeeds.
+	 * In production the async {@code UpdateInvalidShipmentSchedules} workpackage runs it; while the recompute queues are paused,
+	 * the scenario decides when it runs, which makes a race with it deterministic. Requires the paused queues.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the pending shipment schedule recompute pass runs
+	 * </pre>
+	 */
+	@When("the pending shipment schedule recompute pass runs")
+	public void runPendingRecomputePass()
+	{
+		final RuntimeException failure = recomputeRaceHarness.runPendingRecomputePass();
+		if (failure != null)
+		{
+			throw failure;
+		}
+	}
+
+	/**
+	 * Asserts how many untagged ({@code AD_PInstance_ID IS NULL}) {@code M_ShipmentSchedule_Recompute} markers the given shipment schedule has,
+	 * i.e. whether it waits for the next recompute pass.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_1
+	 * </pre>
+	 */
+	@Then("^(\\d+) untagged M_ShipmentSchedule_Recompute markers? exists? for (.*)$")
+	public void assertUntaggedRecomputeMarkerCount(final int expectedCount, @NonNull final String shipmentScheduleIdentifier)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		final int untaggedMarkerCount = queryBL.createQueryBuilderOutOfTrx(I_M_ShipmentSchedule_Recompute.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, null)
+				.create()
+				.count();
+		assertThat(untaggedMarkerCount)
+				.as("Untagged M_ShipmentSchedule_Recompute markers of shipment schedule %s", shipmentScheduleIdentifier)
+				.isEqualTo(expectedCount);
 	}
 
 	/**
