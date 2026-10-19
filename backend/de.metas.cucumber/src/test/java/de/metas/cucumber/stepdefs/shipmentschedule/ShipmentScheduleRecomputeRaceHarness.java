@@ -99,13 +99,20 @@ public class ShipmentScheduleRecomputeRaceHarness
 				.as("Running queue processors assigned to %s", UpdateInvalidShipmentSchedulesWorkpackageProcessor.class.getSimpleName())
 				.isNotEmpty();
 
+		final ImmutableList<I_C_Queue_Processor> processorRecords = runningProcessors.stream()
+				.map(processor -> InterfaceWrapperHelper.loadOutOfTrx(processor.getQueueProcessorId().getRepoId(), I_C_Queue_Processor.class))
+				.collect(ImmutableList.toImmutableList());
+		// IQueueProcessor.isAvailableToWork means "a thread permit is free"; it only means "no workpackage is running" for a pool of one thread
+		processorRecords.forEach(processorRecord -> assertThat(processorRecord.getPoolSize())
+				.as("PoolSize of %s (C_Queue_Processor_ID=%s): the idle wait below is only exact for a pool of 1 thread", processorRecord.getName(), processorRecord.getC_Queue_Processor_ID())
+				.isEqualTo(1));
+
 		StepDefUtil.tryAndWait(TIMEOUT_SECONDS, POLL_MILLIS, () -> runningProcessors.stream().allMatch(IQueueProcessor::isAvailableToWork));
 
-		for (final IQueueProcessor processor : runningProcessors)
+		for (final I_C_Queue_Processor processorRecord : processorRecords)
 		{
-			final int queueProcessorId = processor.getQueueProcessorId().getRepoId();
-			pausedQueueProcessors.add(InterfaceWrapperHelper.loadOutOfTrx(queueProcessorId, I_C_Queue_Processor.class));
-			executor.removeQueueProcessor(queueProcessorId);
+			pausedQueueProcessors.add(processorRecord);
+			executor.removeQueueProcessor(processorRecord.getC_Queue_Processor_ID());
 		}
 	}
 
@@ -217,9 +224,10 @@ public class ShipmentScheduleRecomputeRaceHarness
 		finally
 		{
 			release.countDown();
+			// also when the steps above failed: the change's commit must not leak into the next scenario
+			changeThread.join(TimeUnit.SECONDS.toMillis(TIMEOUT_SECONDS));
 		}
 
-		changeThread.join(TimeUnit.SECONDS.toMillis(TIMEOUT_SECONDS));
 		assertThat(changeThread.isAlive()).as("The change's thread is still running").isFalse();
 		rethrowIfFailed(changeFailure);
 		if (recomputeFailure != null)
