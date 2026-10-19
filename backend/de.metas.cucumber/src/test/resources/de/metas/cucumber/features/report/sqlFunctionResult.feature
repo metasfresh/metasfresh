@@ -43,6 +43,12 @@ Feature: SQL function result lines
     And metasfresh contains AD_OrgInfo:
       | AD_OrgInfo_ID.Identifier | AD_Org_ID.Identifier | Org_BPartner_ID.Identifier | OrgBP_Location_ID.Identifier |
       | org_info_1               | org_1                | org_bpartner               | orgBpLocation_1              |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value                | Name               | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouse_1               | sql_function_wh      | sqlFunctionWarehouse | org_bpartner               | orgBpLocation_1                       |
+    And metasfresh contains M_Locator:
+      | M_Locator_ID.Identifier | Value           | M_Warehouse_ID.Identifier |
+      | locator_1               | sql_function_lc | warehouse_1               |
 
 
   # ##############################################################################################################
