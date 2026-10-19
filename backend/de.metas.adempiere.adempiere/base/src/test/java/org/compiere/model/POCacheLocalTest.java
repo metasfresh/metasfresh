@@ -22,8 +22,10 @@
 
 package org.compiere.model;
 
+import de.metas.cache.CacheMgt;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,6 +49,12 @@ class POCacheLocalTest
 		FakeTablePO.registerPOInfo();
 	}
 
+	@AfterEach
+	void afterEach()
+	{
+		CacheMgt.get().reset(); // drop the fake table's POInfo
+	}
+
 	/**
 	 * The cache-local can be the last holder of its parent while one of its methods runs.
 	 * E.g. in {@code X_AD_JavaClass.getAD_JavaClass_Type()} -> {@code PO.get_ValueAsPO} -> {@code POCacheLocal.get()},
@@ -59,6 +67,7 @@ class POCacheLocalTest
 		final POCacheLocal cacheLocal = createCacheLocalReferencingChild(child);
 		assertGarbageCollectorClearsUnreferencedObject(() -> new FakeTablePO(ctx));
 
+		// with a strong reference the parent is never cleared; with a weak one it is, and the next call used to fail
 		runGarbageCollectorUntilCleared(parentRef);
 
 		assertThat(cacheLocal.get()).isSameAs(child);

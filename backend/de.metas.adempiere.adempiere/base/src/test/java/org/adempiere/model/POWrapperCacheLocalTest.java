@@ -22,9 +22,11 @@
 
 package org.adempiere.model;
 
+import de.metas.cache.CacheMgt;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.FakeTablePO;
 import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -57,6 +59,12 @@ class POWrapperCacheLocalTest
 		FakeTablePO.registerPOInfo();
 	}
 
+	@AfterEach
+	void afterEach()
+	{
+		CacheMgt.get().reset(); // drop the fake table's POInfo
+	}
+
 	@Test
 	void get_worksAfterGC_whenOnlyTheCacheLocalReferencesTheParent()
 	{
@@ -64,6 +72,7 @@ class POWrapperCacheLocalTest
 		final POWrapperCacheLocal cacheLocal = createCacheLocalReferencingChild(child);
 		assertGarbageCollectorClearsUnreferencedObject(this::newPOWrapper);
 
+		// with a strong reference the parent is never cleared; with a weak one it is, and the next call used to fail
 		runGarbageCollectorUntilCleared(parentRef);
 
 		assertThat(cacheLocal.get()).isSameAs(child);

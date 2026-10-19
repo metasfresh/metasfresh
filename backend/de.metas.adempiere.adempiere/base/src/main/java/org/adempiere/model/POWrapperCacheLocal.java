@@ -31,13 +31,12 @@ import org.compiere.model.AbstractPOCacheLocal;
 /**
  * Same as {@link org.compiere.model.POCacheLocal}, but for a {@link POWrapper} parent.
  * <p>
- * The parent is referenced strongly on purpose. An instance lives only in its parent's {@code POWrapper.poCacheLocals} map
- * (or in a running call on it), so this reference adds no retention: parent and cache-local are collected together.
- * A weak reference could be cleared by the GC while a getter on the parent was still running, which failed the call with "POWrapper reference expired".
+ * The parent is referenced strongly on purpose: an instance is reachable only from its parent's {@code POWrapper.poCacheLocals} (or from a running call on it),
+ * so parent and cache-local form a closed cycle which the GC collects together. A weak reference could be cleared while a method of this class is running.
  */
 /*package*/class POWrapperCacheLocal extends AbstractPOCacheLocal
 {
-	@NonNull private final POWrapper parentPOWrapper;
+	private final POWrapper parentPOWrapper;
 	private final int parentColumnIndex;
 
 	public POWrapperCacheLocal(@NonNull final POWrapper parentPOWrapper, final String parentColumnName, final String refTableName)

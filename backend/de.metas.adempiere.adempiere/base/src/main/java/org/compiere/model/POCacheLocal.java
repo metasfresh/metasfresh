@@ -31,14 +31,12 @@ import java.util.Properties;
  * Extends {@link AbstractPOCacheLocal} by also holding a reference to the cached PO's "parent" (e.g. a C_BPartner's C_Order).
  * Allows to set e.g. a new C_BPartner_ID to that order.
  * <p>
- * The parent is referenced strongly on purpose. An instance lives only in its parent's {@code PO.m_poCacheLocals} map
- * (or in a running call on it), so this reference adds no retention: parent and cache-local are collected together.
- * A weak reference was cleared by the GC while a getter on the parent was still running
- * (e.g. {@code X_AD_JavaClass.getAD_JavaClass_Type()}, whose caller no longer used the parent), which failed the call with "Parent PO reference expired".
+ * The parent is referenced strongly on purpose: an instance is reachable only from its parent's {@code PO.m_poCacheLocals} (or from a running call on it),
+ * so parent and cache-local form a closed cycle which the GC collects together. A weak reference could be cleared while a method of this class is running.
  */
 public final class POCacheLocal extends AbstractPOCacheLocal
 {
-	@NonNull private final PO parentPO;
+	private final PO parentPO;
 
 	public static POCacheLocal newInstance(@NonNull final PO parent, @NonNull final String parentColumnName, @NonNull final String tableName)
 	{

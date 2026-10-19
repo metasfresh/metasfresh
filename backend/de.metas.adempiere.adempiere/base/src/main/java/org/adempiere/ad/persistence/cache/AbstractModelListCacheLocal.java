@@ -41,9 +41,8 @@ import de.metas.util.Check;
 /**
  * Abstract list of models which expires when parent model's context or transaction was changed.
  * <p>
- * The parent model is referenced strongly on purpose. Implementations keep an instance only as a dynamic attribute of its parent model
- * (or in a running call on it), so this reference adds no retention: parent and cache are collected together.
- * A weak reference could be cleared by the GC while a method of this cache was still running, which failed the call with "Model list cache expired for good".
+ * The parent model is referenced strongly on purpose: implementations keep an instance only as a dynamic attribute of its parent model (or in a running call on it),
+ * so parent and cache form a closed cycle which the GC collects together. A weak reference could be cleared while a method of this class is running.
  *
  * @author tsa
  *
@@ -112,7 +111,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 	// public String toString()
 	// {
 	// return getClass().getSimpleName() + "["
-	// + "parent=" + parentModel
+	// + "parent=" + parentModelRef.get()
 	// + ", ctx=" + ctx
 	// + ", items(" + (items == null ? 0 : items.size()) + ")=" + items
 	// + "]";
