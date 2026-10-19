@@ -1,8 +1,11 @@
 package de.metas.cache;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -133,27 +136,112 @@ class CCacheInFlightLoadResetTest
 	}
 
 	/**
-	 * A reader which waits for the same in-flight load (Guava de-duplicates concurrent loads of one key)
-	 * and started after the reset must not get the stale value either.
+	 * Guava's invalidateAll() leaves an entry which is still loading in place, so a reader which starts after the reset
+	 * also waits for the (stale) in-flight load. When that load is discarded, the reader must load again.
 	 */
 	@Test
-	void readerJoiningInFlightLoadAfterReset_getsFreshValue() throws Exception
+	void readerStartingAfterReset_getsFreshValue() throws Exception
 	{
-		final CCache<String, String> cache = CCache.newCache("CCacheInFlightLoadResetTest_joiner", 1, CCache.EXPIREMINUTES_Never);
+		final CCache<String, String> cache = CCache.newCache("CCacheInFlightLoadResetTest_afterReset", 1, CCache.EXPIREMINUTES_Never);
 
 		final CountDownLatch release = new CountDownLatch(1);
 		final CompletableFuture<String> inFlightLoad = startBlockedLoad(cache, release);
 
 		db.set("new");
 		cache.reset();
-
 		final CompletableFuture<String> reader = CompletableFuture.supplyAsync(() -> getOrLoadFromDb(cache), executor);
-		Thread.sleep(300); // let the reader reach the in-flight load
-		release.countDown();
+		release.countDown(); // the reader's outcome is the same whether it reached the in-flight load before this or not
 
 		assertThat(inFlightLoad.get(10, TimeUnit.SECONDS)).isEqualTo("old");
 		assertThat(reader.get(10, TimeUnit.SECONDS)).as("reader that started after the reset").isEqualTo("new");
 		assertThat(cache.get(KEY)).isEqualTo("new");
+	}
+
+	/**
+	 * Guava de-duplicates concurrent loads of one key: the reader waits for the in-flight load instead of loading itself.
+	 * When that load is discarded because of a reset, the reader must load again instead of getting the stale value.
+	 */
+	@Test
+	void readerWaitingForInFlightLoad_loadsAgainWhenThatLoadIsDiscarded() throws Exception
+	{
+		final CCache<String, String> cache = CCache.newCache("CCacheInFlightLoadResetTest_joiner", 1, CCache.EXPIREMINUTES_Never);
+
+		final CountDownLatch release = new CountDownLatch(1);
+		final CompletableFuture<String> inFlightLoad = startBlockedLoad(cache, release);
+
+		final CompletableFuture<String> reader = new CompletableFuture<>();
+		final Thread readerThread = new Thread(() -> reader.complete(getOrLoadFromDb(cache)), "reader");
+		readerThread.start();
+		awaitWaiting(readerThread);
+
+		db.set("new");
+		cache.reset();
+		release.countDown();
+
+		assertThat(inFlightLoad.get(10, TimeUnit.SECONDS)).isEqualTo("old");
+		assertThat(reader.get(10, TimeUnit.SECONDS)).as("reader which waited for the discarded load").isEqualTo("new");
+		assertThat(cache.get(KEY)).isEqualTo("new");
+		assertThat(loadCount.get()).as("the blocked load + the reader's own load").isEqualTo(2);
+	}
+
+	private static void awaitWaiting(final Thread thread) throws InterruptedException
+	{
+		final long deadline = System.currentTimeMillis() + 10_000;
+		while (thread.getState() != Thread.State.WAITING && thread.getState() != Thread.State.TIMED_WAITING)
+		{
+			assertThat(System.currentTimeMillis()).as("thread %s is waiting", thread.getName()).isLessThan(deadline);
+			Thread.sleep(5);
+		}
+	}
+
+	/**
+	 * A loader which itself causes a reset (e.g. it creates a missing record, and the save resets the cache) can't have read stale data
+	 * because of that reset, so its value is cached as before.
+	 */
+	@Test
+	void loaderResettingTheCacheItself_valueIsCached()
+	{
+		final CCache<String, String> cache = CCache.newCache("CCacheInFlightLoadResetTest_selfReset", 1, CCache.EXPIREMINUTES_Never);
+
+		assertThat(cache.getOrLoad(KEY, () -> {
+			cache.reset();
+			cache.remove(KEY);
+			return "created";
+		})).isEqualTo("created");
+		assertThat(cache.get(KEY)).isEqualTo("created");
+	}
+
+	@Test
+	void getAllOrLoad_loadInFlightDuringReset_isReturnedButNotCached() throws Exception
+	{
+		final CCache<String, String> cache = CCache.newCache("CCacheInFlightLoadResetTest_getAll", 10, CCache.EXPIREMINUTES_Never);
+
+		final CountDownLatch dbRead = new CountDownLatch(1);
+		final CountDownLatch release = new CountDownLatch(1);
+		final CompletableFuture<Collection<String>> inFlightLoad = CompletableFuture.supplyAsync(
+				() -> cache.getAllOrLoad(ImmutableList.of("k1", "k2"), keys -> {
+					final String value = db.get();
+					dbRead.countDown();
+					try
+					{
+						assertThat(release.await(10, TimeUnit.SECONDS)).isTrue();
+					}
+					catch (final InterruptedException e)
+					{
+						throw new RuntimeException(e);
+					}
+					return keys.stream().collect(ImmutableMap.toImmutableMap(key -> key, key -> value));
+				}),
+				executor);
+		assertThat(dbRead.await(10, TimeUnit.SECONDS)).isTrue();
+
+		db.set("new");
+		cache.remove("k1");
+		release.countDown();
+
+		assertThat(inFlightLoad.get(10, TimeUnit.SECONDS)).containsExactlyInAnyOrder("old", "old");
+		assertThat(cache.get("k1")).as("k1 was removed while loading").isNull();
+		assertThat(cache.get("k2")).as("k2 was not reset").isEqualTo("old");
 	}
 
 	@Test

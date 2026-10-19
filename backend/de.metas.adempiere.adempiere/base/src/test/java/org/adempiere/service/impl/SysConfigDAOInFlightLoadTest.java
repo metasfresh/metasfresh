@@ -125,13 +125,9 @@ class SysConfigDAOInFlightLoadTest
 		});
 		loadStarted = null;
 
-		// a reader which starts after the commit, and probably waits for the same in-flight load
-		final CompletableFuture<Optional<String>> readerAfterCommit = CompletableFuture.supplyAsync(() -> dao.getValue(NAME, ORG), executor);
-		Thread.sleep(300);
 		releaseLoad.countDown();
-
 		assertThat(concurrentRead[0].get(10, TimeUnit.SECONDS)).as("the in-flight load returns what it read").contains("N");
-		assertThat(readerAfterCommit.get(10, TimeUnit.SECONDS)).as("reader which started after the commit").contains("Y");
+
 		assertThat(dao.getValue(NAME, ORG)).as("after the commit").contains("Y");
 	}
 }
