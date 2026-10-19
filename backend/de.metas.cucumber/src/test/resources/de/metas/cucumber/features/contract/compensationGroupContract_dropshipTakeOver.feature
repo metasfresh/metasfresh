@@ -3620,7 +3620,7 @@ Feature: Compensation-group contract take-over of the customer's discount lines
     # 3 goods + the vendor's own discount line + the take-over line + the fee line
     And the order identified by poDropship has 6 order lines
     And validate C_OrderLine:
-      | C_OrderLine_ID           | OPT.Description        |
-      | ol_poBonusVendorDropship | 3% Bonus Vendor_24     |
-      | ol_poTakeOver            | 3% Bonus Ware_24       |
+      | C_OrderLine_ID           | OPT.Description             |
+      | ol_poBonusVendorDropship | 3% Bonus Vendor_24          |
+      | ol_poTakeOver            | 3% Bonus Ware_24            |
       | ol_poServiceFee          | 2.6% Payment Service Fee_24 |
