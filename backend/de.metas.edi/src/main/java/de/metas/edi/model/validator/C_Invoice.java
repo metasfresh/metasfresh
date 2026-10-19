@@ -56,7 +56,9 @@ public class C_Invoice
 	public void updateEdiStatus(final I_C_Invoice invoice)
 	{
 		final EDIExportStatus ediExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
-		if (ediExportStatus == null || !(ediExportStatus.isInProgressOrSend() || ediExportStatus.isError()))
+		// while an export is running, done or failed, the export owns the status; don't re-validate
+		final boolean isStatusOwnedByExport = ediExportStatus != null && (ediExportStatus.isInProgressOrSend() || ediExportStatus.isError());
+		if (!isStatusOwnedByExport)
 		{
 			ediDocumentBL.updateEdiExportStatus(invoice);
 		}
@@ -71,9 +73,10 @@ public class C_Invoice
 	private static void clearErrorMsgIfChangedToSentOrPending(@NonNull final I_C_Invoice invoice)
 	{
 		final EDIExportStatus ediExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
-		if (ediExportStatus != null
+		final boolean isStatusChangedToSentOrPending = ediExportStatus != null
 				&& (ediExportStatus.isSent() || ediExportStatus.isPending())
-				&& InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_EDI_ExportStatus))
+				&& InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_EDI_ExportStatus);
+		if (isStatusChangedToSentOrPending)
 		{
 			invoice.setEDIErrorMsg(null);
 		}
