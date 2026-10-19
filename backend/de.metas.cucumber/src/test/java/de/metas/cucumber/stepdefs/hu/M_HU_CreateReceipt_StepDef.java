@@ -31,11 +31,13 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.deliveryplanning.M_Delivery_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.cucumber.stepdefs.shipmentschedule.ShipmentScheduleRecomputeRaceHarness;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.receipt.ReceiptFromReceiptScheduleService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.ApplyReceiptScheduleChangesRequest;
@@ -44,14 +46,17 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
@@ -69,6 +74,7 @@ public class M_HU_CreateReceipt_StepDef
 	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final M_HU_List_StepDefData huListTable;
@@ -76,6 +82,7 @@ public class M_HU_CreateReceipt_StepDef
 	@NonNull private final M_InOut_StepDefData inOutTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 	@NonNull private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
+	@NonNull private final ShipmentScheduleRecomputeRaceHarness recomputeRaceHarness;
 
 	/**
 	 * Books the given handling units, the way the HU editor's confirm ({@code WEBUI_M_HU_CreateReceipt_*}) does.
@@ -91,6 +98,63 @@ public class M_HU_CreateReceipt_StepDef
 	public void createMaterialReceipts(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::createMaterialReceipt);
+	}
+
+	/**
+	 * Books the receipt like {@code create material receipt}, but keeps the receipt's transaction open while the pending shipment schedule recompute pass runs.
+	 * In production this is a receipt completed while the recompute worker processes an older recompute flag; the harness makes that timing deterministic.
+	 * Requires the paused recompute queues, and that the sales-order lines allocated to the receipt's purchase-order line have no picked quantity yet.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns Same as {@code create material receipt}
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_HU_List_StepDefData, M_ReceiptSchedule_StepDefData, C_OrderLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And create material receipt while the pending shipment schedule recompute runs before the receipt is committed
+	 *   | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
+	 *   | hus_e1 | pol_e1         | receipt_e1            |
+	 * </pre>
+	 */
+	@And("create material receipt while the pending shipment schedule recompute runs before the receipt is committed")
+	public void createMaterialReceiptsWhilePendingRecomputeRuns(@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final DataTableRows rows = DataTableRows.of(dataTable);
+		for (final DataTableRow row : rows.stream().collect(ImmutableList.toImmutableList()))
+		{
+			final int poOrderLineId = extractAndRefreshReceiptSchedule(row).getC_OrderLine_ID();
+			recomputeRaceHarness.runInTransactionCommittedAfterRecompute(
+					() -> {
+						createMaterialReceipt(row);
+						return null;
+					},
+					() -> assertNoQtyPickedOnSalesOrderLinesOf(poOrderLineId));
+		}
+	}
+
+	private void assertNoQtyPickedOnSalesOrderLinesOf(final int poOrderLineId)
+	{
+		final ImmutableSet<Integer> salesOrderLineIds = queryBL.createQueryBuilderOutOfTrx(I_C_PO_OrderLine_Alloc.class)
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, poOrderLineId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(I_C_PO_OrderLine_Alloc::getC_SO_OrderLine_ID)
+				.collect(ImmutableSet.toImmutableSet());
+		assertThat(salesOrderLineIds).as("Sales-order lines allocated to purchase-order line %s", poOrderLineId).isNotEmpty();
+
+		final int qtyPickedCount = queryBL.createQueryBuilderOutOfTrx(I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(
+						I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID,
+						I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID,
+						queryBL.createQueryBuilderOutOfTrx(I_M_ShipmentSchedule.class)
+								.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, salesOrderLineIds)
+								.create())
+				.create()
+				.count();
+		assertThat(qtyPickedCount)
+				.as("M_ShipmentSchedule_QtyPicked visible outside the receipt's transaction (the receipt must not commit before the recompute pass ran)")
+				.isZero();
 	}
 
 	private void createMaterialReceipt(final DataTableRow row)
