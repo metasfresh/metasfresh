@@ -592,26 +592,27 @@ public class M_ShipmentSchedule_StepDef
 
 	/**
 	 * Flags all shipment schedules of the product for recompute in a transaction that stays open (uncommitted) while the recompute pass runs;
-	 * the transaction is committed after the pass. Requires the paused queues. While the transaction is open, asserts that its flag is not visible
-	 * outside, i.e. that the untagged marker of "ss_1" is still the one flagged before.
+	 * the transaction is committed after the pass. Fails if the recompute queues are not paused. While the transaction is open, asserts that its flag
+	 * is not visible outside, i.e. that the untagged marker of the observed shipment schedule is still the one flagged before.
 	 * <p>
-	 * Stands in for a product change, e.g. {@code InOutCandidateValidator.java:143} (receipt line) which calls
-	 * {@code IShipmentScheduleInvalidateBL.flagForRecompute(ProductId)} and commits with the document's transaction.
-	 * The BL is called directly (documented exemption): the document change itself cannot be held open at a deterministic point, and the race is only
+	 * Stands in for {@code InOutCandidateValidator.productChange} (:143, fired on an M_Product IsDiverse/ProductType change), which calls
+	 * {@code IShipmentScheduleInvalidateBL.flagForRecompute(ProductId)}; the flag commits with the changing M_Product's transaction.
+	 * The BL is called directly (documented exemption): the product change itself cannot be held open at a deterministic point, and the race is only
 	 * reproducible when the commit happens after the pass.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.params
 	 *   <b>productIdentifier</b> -- the product's identifier in M_Product_StepDefData<br>
-	 * @cucumber.depends StepDefData: M_Product_StepDefData; StepDefData: M_ShipmentSchedule_StepDefData (ss_1, for the visibility assertion)<br>
+	 *   <b>observedScheduleIdentifier</b> -- the shipment schedule whose untagged marker count (expected: 1) is asserted while the transaction is open<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_ShipmentSchedule_StepDefData<br>
 	 *   Given the shipment schedule recompute queues are paused
 	 * @cucumber.example
 	 * <pre>
-	 * When the shipment schedules of product "product_1" are flagged for recompute in a transaction committed only after the pending recompute ran
+	 * When the shipment schedules of product "product_1" are flagged for recompute in a transaction committed only after the pending recompute ran, observed on "ss_1"
 	 * </pre>
 	 */
-	@When("the shipment schedules of product {string} are flagged for recompute in a transaction committed only after the pending recompute ran")
-	public void flagShipmentSchedulesOfProductCommittedAfterRecompute(@NonNull final String productIdentifier) throws InterruptedException
+	@When("the shipment schedules of product {string} are flagged for recompute in a transaction committed only after the pending recompute ran, observed on {string}")
+	public void flagShipmentSchedulesOfProductCommittedAfterRecompute(@NonNull final String productIdentifier, @NonNull final String observedScheduleIdentifier) throws InterruptedException
 	{
 		final ProductId productId = ProductId.ofRepoId(productTable.get(productIdentifier).getM_Product_ID());
 
@@ -620,30 +621,32 @@ public class M_ShipmentSchedule_StepDef
 					shipmentScheduleInvalidateBL.flagForRecompute(productId);
 					return null;
 				},
-				() -> assertUntaggedRecomputeMarkerCount(1, "ss_1"));
+				() -> assertUntaggedRecomputeMarkerCount(1, observedScheduleIdentifier));
 	}
 
 	/**
 	 * Flags all shipment schedules with the header aggregation key of the given shipment schedule's current key for recompute, in a transaction that stays
-	 * open (uncommitted) while the recompute pass runs; the transaction is committed after the pass. Requires the paused queues.
-	 * While the transaction is open, asserts that its flag is not visible outside, i.e. that the untagged marker of "ss_1" is still the one flagged before.
+	 * open (uncommitted) while the recompute pass runs; the transaction is committed after the pass. Fails if the recompute queues are not paused.
+	 * While the transaction is open, asserts that its flag is not visible outside, i.e. that the untagged marker of the observed shipment schedule is still the one flagged before.
 	 * <p>
-	 * Stands in for a header aggregation key change, e.g. {@code M_ShipmentSchedule.java:254-276}, which calls
-	 * {@code IShipmentScheduleInvalidateBL.flagHeaderAggregationKeysForRecompute(Set<String>)} and commits with the changing transaction.
+	 * Stands in for {@code de.metas.inoutcandidate.modelvalidator.M_ShipmentSchedule#invalidateSchedulesWithOldAndNewHeaderAggregationKey}
+	 * (swat.base, call at :276), which calls {@code IShipmentScheduleInvalidateBL.flagHeaderAggregationKeysForRecompute(Set<String>)};
+	 * the flag commits with the changing shipment schedule's transaction.
 	 * The BL is called directly (documented exemption): the race is only reproducible when the commit happens after the recompute pass.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.params
 	 *   <b>shipmentScheduleIdentifier</b> -- the identifier in M_ShipmentSchedule_StepDefData whose header aggregation key is flagged<br>
+	 *   <b>observedScheduleIdentifier</b> -- the shipment schedule whose untagged marker count (expected: 1) is asserted while the transaction is open<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData<br>
 	 *   Given the shipment schedule recompute queues are paused
 	 * @cucumber.example
 	 * <pre>
-	 * When the shipment schedules with the header aggregation key of "ss_1" are flagged for recompute in a transaction committed only after the pending recompute ran
+	 * When the shipment schedules with the header aggregation key of "ss_1" are flagged for recompute in a transaction committed only after the pending recompute ran, observed on "ss_1"
 	 * </pre>
 	 */
-	@When("the shipment schedules with the header aggregation key of {string} are flagged for recompute in a transaction committed only after the pending recompute ran")
-	public void flagShipmentSchedulesOfHeaderAggregationKeyCommittedAfterRecompute(@NonNull final String shipmentScheduleIdentifier) throws InterruptedException
+	@When("the shipment schedules with the header aggregation key of {string} are flagged for recompute in a transaction committed only after the pending recompute ran, observed on {string}")
+	public void flagShipmentSchedulesOfHeaderAggregationKeyCommittedAfterRecompute(@NonNull final String shipmentScheduleIdentifier, @NonNull final String observedScheduleIdentifier) throws InterruptedException
 	{
 		final String headerAggregationKey = InterfaceWrapperHelper.load(
 						shipmentScheduleTable.get(shipmentScheduleIdentifier).getM_ShipmentSchedule_ID(),
@@ -656,7 +659,7 @@ public class M_ShipmentSchedule_StepDef
 					shipmentScheduleInvalidateBL.flagHeaderAggregationKeysForRecompute(ImmutableSet.of(headerAggregationKey));
 					return null;
 				},
-				() -> assertUntaggedRecomputeMarkerCount(1, "ss_1"));
+				() -> assertUntaggedRecomputeMarkerCount(1, observedScheduleIdentifier));
 	}
 
 	/**
