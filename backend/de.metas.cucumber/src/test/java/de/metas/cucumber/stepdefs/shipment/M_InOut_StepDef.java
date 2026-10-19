@@ -50,6 +50,7 @@ import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.tourplanning.M_Tour_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocBaseType;
@@ -164,6 +165,7 @@ public class M_InOut_StepDef
 	private final M_Tour_StepDefData tourTable;
 	private final M_HU_StepDefData huTable;
 	private final C_Project_StepDefData projectTable;
+	private final M_Shipper_StepDefData shipperTable;
 	private final TestContext restTestContext;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -200,7 +202,8 @@ public class M_InOut_StepDef
 	 * <b>ExternalSystem.Value</b> — (optional) expected external system value<br>
 	 * <b>C_DocType.DocBaseType</b> — (optional) expected doc base type + C_DocType.Name<br>
 	 * <b>ExternalId</b> — (optional) expected external ID<br>
-	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
+	 * <b>M_Shipper_ID</b> — (optional, identifier-ref) expected shipper (Lieferweg) on the shipment header<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData, M_Shipper_StepDefData
 	 * @cucumber.example <pre>
 	 * And validate the created shipments
 	 *   | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | DateOrdered | processed | DocStatus |
@@ -276,6 +279,10 @@ public class M_InOut_StepDef
 					final I_C_Project project = projectTable.get(projectIdentifier);
 					softly.assertThat(inout.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
 				});
+
+		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_Shipper_ID)
+				.map(shipperTable::getId)
+				.ifPresent(expectedShipperId -> softly.assertThat(inout.getM_Shipper_ID()).as("M_Shipper_ID").isEqualTo(expectedShipperId.getRepoId()));
 
 		softly.assertAll();
 	}
