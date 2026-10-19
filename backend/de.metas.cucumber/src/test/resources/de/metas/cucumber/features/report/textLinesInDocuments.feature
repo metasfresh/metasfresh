@@ -283,10 +283,11 @@ Feature: Free text lines print at their position on a sales order confirmation
     And the PDF archived for the record identified by "order" has no overlapping text
 
     # -- the delivery note: a separate print pipeline, generated from the same completed order --
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss10       | line10         | N             |
-      | ss20       | line20         | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss10       | line10         | N             | 1            |
+      | ss20       | line20         | N             | 1            |
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss10                  |
@@ -374,10 +375,11 @@ Feature: Free text lines print at their position on a sales order confirmation
     # template was not touched by this feature -- an order with zero text lines gives it nothing to catch
     # either way. Printed anyway, per the frozen test case, to prove the feature does not break its own
     # pipeline for the ordinary, text-line-free order that is still the common case.
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss10       | line10         | N             |
-      | ss20       | line20         | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss10       | line10         | N             | 1            |
+      | ss20       | line20         | N             | 1            |
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss10                  |
@@ -646,13 +648,14 @@ Feature: Free text lines print at their position on a sales order confirmation
     And the text line identified by "freshHeading" has TextLineScope "Following"
 
     When the order identified by order is completed
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss10       | line10         | N             |
-      | ss20       | line20         | N             |
-      | ss30       | line30         | N             |
-      | ss40       | line40         | N             |
-      | ss50       | line50         | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss10       | line10         | N             | 1            |
+      | ss20       | line20         | N             | 1            |
+      | ss30       | line30         | N             | 1            |
+      | ss40       | line40         | N             | 1            |
+      | ss50       | line50         | N             | 1            |
     # the partial delivery: ONLY the second group ships
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
@@ -750,13 +753,14 @@ Feature: Free text lines print at their position on a sales order confirmation
     And the text line identified by "topBlock" has a blank line at position 3
 
     When the order identified by order is completed
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss10       | line10         | N             |
-      | ss20       | line20         | N             |
-      | ss30       | line30         | N             |
-      | ss40       | line40         | N             |
-      | ss50       | line50         | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss10       | line10         | N             | 1            |
+      | ss20       | line20         | N             | 1            |
+      | ss30       | line30         | N             | 1            |
+      | ss40       | line40         | N             | 1            |
+      | ss50       | line50         | N             | 1            |
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss30                  |
@@ -817,12 +821,13 @@ Feature: Free text lines print at their position on a sales order confirmation
     Then the text line identified by "groupHeading" has TextLineScope "Following"
 
     When the order identified by order is completed
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss10       | line10         | N             |
-      | ss20       | line20         | N             |
-      | ss30       | line30         | N             |
-      | ss40       | line40         | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss10       | line10         | N             | 1            |
+      | ss20       | line20         | N             | 1            |
+      | ss30       | line30         | N             | 1            |
+      | ss40       | line40         | N             | 1            |
 
     # first delivery: one article of the second group
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
@@ -916,10 +921,11 @@ Feature: Free text lines print at their position on a sales order confirmation
     And the order line identified by "line40" still has Line 40
 
     When the order identified by order is completed
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss20       | line20         | N             |
-      | ss40       | line40         | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss20       | line20         | N             | 1            |
+      | ss40       | line40         | N             | 1            |
 
     # the remaining article of the first group
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
@@ -988,12 +994,13 @@ Feature: Free text lines print at their position on a sales order confirmation
       """
 
     When the order identified by order is completed
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss10       | line10         | N             |
-      | ss20       | line20         | N             |
-      | ss30       | line30         | N             |
-      | ss40       | line40         | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss10       | line10         | N             | 1            |
+      | ss20       | line20         | N             | 1            |
+      | ss30       | line30         | N             | 1            |
+      | ss40       | line40         | N             | 1            |
 
     # the first delivery note takes one article out of each group, so the heading's run reaches it
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
