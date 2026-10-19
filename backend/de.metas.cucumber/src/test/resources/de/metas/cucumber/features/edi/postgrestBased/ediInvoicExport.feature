@@ -846,7 +846,7 @@ Feature: EDI INVOIC export via postgREST
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00359_EDI_INVOICE_JSON
 @F00359
-  Scenario: INVOIC JSON of an invoice with goods and priced crate lines split per Positions Nr. lists every line
+  Scenario: INVOIC JSON of an invoice with goods lines and separate priced crate lines (one per project) lists every line
     Given metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
       | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
@@ -875,10 +875,10 @@ Feature: EDI INVOIC export via postgREST
       | Identifier | C_TaxCategory_ID.InternalName | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsDocumentLevel |
       | tax19      | Normal                        | 19   | DE                       | DE                        | Y               |
     And metasfresh contains M_Products:
-      | Identifier    | GTIN          | DepositType |
-      | goodsKiku     |               |             |
-      | goodsEvelina  |               |             |
-      | eps186_priced | 4000000032540 | RC          |
+      | Identifier    | GTIN          | DepositType | REST.Context.Value | REST.Context.Name |
+      | goodsKiku     |               |             |                    |                   |
+      | goodsEvelina  |               |             |                    |                   |
+      | eps186_priced | 4000000032540 | RC          | crateValue_TC1c    | crateName_TC1c    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | salesPLV               | goodsKiku    | 1.00     | PCE      | tax7Category     |
@@ -972,6 +972,10 @@ Feature: EDI INVOIC export via postgREST
           "Product_Buyer_CU_GTIN": "4000000032540",
           "Product_Supplier_TU_GTIN": "4000000032540",
           "Product_Buyer_TU_GTIN": null,
+          "Currency_Code": "EUR",
+          "PriceUOM": "PCE",
+          "Product_Name": "@crateName_TC1c@",
+          "Product_Supplier_ProductNo": "@crateValue_TC1c@",
           "Packaging": { "IsPackagingMaterial": true }
         },
         {
@@ -988,6 +992,10 @@ Feature: EDI INVOIC export via postgREST
           "Product_Buyer_CU_GTIN": "4000000032540",
           "Product_Supplier_TU_GTIN": "4000000032540",
           "Product_Buyer_TU_GTIN": null,
+          "Currency_Code": "EUR",
+          "PriceUOM": "PCE",
+          "Product_Name": "@crateName_TC1c@",
+          "Product_Supplier_ProductNo": "@crateValue_TC1c@",
           "Packaging": { "IsPackagingMaterial": true }
         }
       ],
@@ -1040,10 +1048,10 @@ Feature: EDI INVOIC export via postgREST
       | Identifier | C_TaxCategory_ID.InternalName | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsDocumentLevel |
       | tax19      | Normal                        | 19   | DE                       | DE                        | Y               |
     And metasfresh contains M_Products:
-      | Identifier    | GTIN          | DepositType |
-      | goodsEvelina  |               |             |
-      | bonusWare     |               |             |
-      | eps186_priced | 4000000032540 | RC          |
+      | Identifier    | GTIN          | DepositType | REST.Context.Value | REST.Context.Name |
+      | goodsEvelina  |               |             |                    |                   |
+      | bonusWare     |               |             |                    |                   |
+      | eps186_priced | 4000000032540 | RC          | crateValue_TC1d    | crateName_TC1d    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | salesPLV               | goodsEvelina | 1.00     | PCE      | tax7Category     |
@@ -1124,6 +1132,10 @@ Feature: EDI INVOIC export via postgREST
           "Product_Buyer_CU_GTIN": "4000000032540",
           "Product_Supplier_TU_GTIN": "4000000032540",
           "Product_Buyer_TU_GTIN": null,
+          "Currency_Code": "EUR",
+          "PriceUOM": "PCE",
+          "Product_Name": "@crateName_TC1d@",
+          "Product_Supplier_ProductNo": "@crateValue_TC1d@",
           "Packaging": { "IsPackagingMaterial": true }
         },
         {
@@ -1158,7 +1170,7 @@ Feature: EDI INVOIC export via postgREST
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00359_EDI_INVOICE_JSON
 @F00359
-  Scenario: INVOIC JSON of an invoice with goods and crate lines split per Positions Nr. lists every line
+  Scenario: INVOIC JSON of an invoice with goods lines and separate crate lines (one per project) lists every line
     Given metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
       | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
@@ -1187,10 +1199,10 @@ Feature: EDI INVOIC export via postgREST
       | Identifier | C_TaxCategory_ID.InternalName | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsDocumentLevel |
       | tax19      | Normal                        | 19   | DE                       | DE                        | Y               |
     And metasfresh contains M_Products:
-      | Identifier   | GTIN          |
-      | goodsKiku    |               |
-      | goodsEvelina |               |
-      | eps186       | 4000000032557 |
+      | Identifier   | GTIN          | REST.Context.Value | REST.Context.Name |
+      | goodsKiku    |               |                    |                   |
+      | goodsEvelina |               |                    |                   |
+      | eps186       | 4000000032557 | crateValue_TC1a    | crateName_TC1a    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | salesPLV               | goodsKiku    | 1.00     | PCE      | tax7Category     |
@@ -1283,6 +1295,10 @@ Feature: EDI INVOIC export via postgREST
           "Product_Buyer_CU_GTIN": "4000000032557",
           "Product_Supplier_TU_GTIN": "4000000032557",
           "Product_Buyer_TU_GTIN": null,
+          "Currency_Code": "EUR",
+          "PriceUOM": "PCE",
+          "Product_Name": "@crateName_TC1a@",
+          "Product_Supplier_ProductNo": "@crateValue_TC1a@",
           "Packaging": { "IsPackagingMaterial": true }
         },
         {
@@ -1298,6 +1314,10 @@ Feature: EDI INVOIC export via postgREST
           "Product_Buyer_CU_GTIN": "4000000032557",
           "Product_Supplier_TU_GTIN": "4000000032557",
           "Product_Buyer_TU_GTIN": null,
+          "Currency_Code": "EUR",
+          "PriceUOM": "PCE",
+          "Product_Name": "@crateName_TC1a@",
+          "Product_Supplier_ProductNo": "@crateValue_TC1a@",
           "Packaging": { "IsPackagingMaterial": true }
         }
       ],
@@ -1350,10 +1370,10 @@ Feature: EDI INVOIC export via postgREST
       | Identifier | C_TaxCategory_ID.InternalName | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsDocumentLevel |
       | tax19      | Normal                        | 19   | DE                       | DE                        | Y               |
     And metasfresh contains M_Products:
-      | Identifier   | GTIN          | DepositType |
-      | goodsEvelina |               |             |
-      | bonusWare    |               |             |
-      | eps186       | 4000000032557 |             |
+      | Identifier   | GTIN          | DepositType | REST.Context.Value | REST.Context.Name |
+      | goodsEvelina |               |             |                    |                   |
+      | bonusWare    |               |             |                    |                   |
+      | eps186       | 4000000032557 |             | crateValue_TC1b    | crateName_TC1b    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | salesPLV               | goodsEvelina | 1.00     | PCE      | tax7Category     |
@@ -1432,6 +1452,10 @@ Feature: EDI INVOIC export via postgREST
           "Product_Buyer_CU_GTIN": "4000000032557",
           "Product_Supplier_TU_GTIN": "4000000032557",
           "Product_Buyer_TU_GTIN": null,
+          "Currency_Code": "EUR",
+          "PriceUOM": "PCE",
+          "Product_Name": "@crateName_TC1b@",
+          "Product_Supplier_ProductNo": "@crateValue_TC1b@",
           "Packaging": { "IsPackagingMaterial": true }
         },
         {
@@ -1513,10 +1537,9 @@ Feature: EDI INVOIC export via postgREST
     And the invoice identified by crateOnly is completed
     And the invoice identified by goodsAndPkg is completed
 
-    # The stored EDIErrorMsg is the text of NotExistsNonPackagingInvoiceLineError in the database
-    # base language (German), followed by the invoice document number.
-    # The asserted part is the text stating "only packaging-material lines and no exportable line".
+    # The stored EDIErrorMsg is the text of the AD_Message NotExistsNonPackagingInvoiceLineError
+    # (in the language of the session), so it is asserted by the message key, independent of the language.
     Then after not more than 30s, C_Invoice records have the following export status
-      | C_Invoice_ID | EDI_ExportStatus | EDIErrorMsg                                                         |
-      | crateOnly    | I                | nur Verpackungsmaterial-Positionen und keine exportierbare Position |
-      | goodsAndPkg  | P                |                                                                     |
+      | C_Invoice_ID | EDI_ExportStatus | EDIErrorMsg.AD_Message                |
+      | crateOnly    | I                | NotExistsNonPackagingInvoiceLineError |
+      | goodsAndPkg  | P                |                                       |

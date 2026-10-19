@@ -1217,6 +1217,8 @@ Feature: Invoice export via postgREST
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00350_EDI
 @F00350
+@allure.label.feature:F00359_EDI_INVOICE_JSON
+@F00359
   Scenario: Historical invoices JSON export keeps excluding packing lines
     # Historical Invoices JSON reads edi_cctop_invoic_500_v (as the XML export does): packing lines stay excluded there. Only Lines is asserted.
     Given metasfresh contains M_Products:

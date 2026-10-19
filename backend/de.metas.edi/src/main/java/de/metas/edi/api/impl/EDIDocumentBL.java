@@ -312,12 +312,12 @@ public class EDIDocumentBL
 
 		final Set<String> ilMissingFields = new HashSet<>();
 		final List<I_C_InvoiceLine> invoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(invoice);
-		boolean hasExportableLine = false;
+		boolean hasNonPackagingLine = false;
 		for (final I_C_InvoiceLine il : invoiceLines)
 		{
 			if (!il.isPackagingMaterial())
 			{
-				hasExportableLine = true;
+				hasNonPackagingLine = true;
 			}
 
 			if (il.getLine() <= 0)
@@ -344,7 +344,7 @@ public class EDIDocumentBL
 		// JSON lines, but they never resolve a DP/SN party (edi_cctop_119_v uses non-packaging lines only).
 		// So an invoice whose lines are ALL packaging material would export an INVOIC without a delivery party:
 		// fail loudly instead. (RM credit memos and line-less invoices keep their prior behaviour.)
-		if (!invoiceIsRMCreditMemo && !invoiceLines.isEmpty() && !hasExportableLine)
+		if (!invoiceIsRMCreditMemo && !invoiceLines.isEmpty() && !hasNonPackagingLine)
 		{
 			feedback.add(new EDIMissingDependencyException(ERR_NotExistsNonPackagingInvoiceLineError,
 														   org.compiere.model.I_C_Invoice.Table_Name, invoice.getDocumentNo()));
