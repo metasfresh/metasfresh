@@ -381,6 +381,14 @@ public interface ITrxManager extends ISingletonService
 	}
 
 	/**
+	 * @return the timing of the thread-inherited transaction's listener method that is currently running, or {@link ITrxListenerManager.TrxEventTiming#NONE} if none is running.
+	 */
+	default ITrxListenerManager.TrxEventTiming getCurrentTrxEventTiming()
+	{
+		return getCurrentTrxListenerManagerOrAutoCommit().getCurrentTiming();
+	}
+
+	/**
 	 * Checks if given <code>trxName</code> is a valid and concrete transaction name.
 	 * <p>
 	 * If there is a transaction placeholder like {@link ITrx#TRXNAME_None}, {@link ITrx#TRXNAME_ThreadInherited} etc, then it will return <code>false</code>.

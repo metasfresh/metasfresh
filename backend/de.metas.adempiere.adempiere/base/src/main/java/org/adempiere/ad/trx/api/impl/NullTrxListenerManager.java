@@ -54,6 +54,12 @@ public final class NullTrxListenerManager implements ITrxListenerManager
 		return false;
 	}
 
+	@Override
+	public TrxEventTiming getCurrentTiming()
+	{
+		return TrxEventTiming.NONE;
+	}
+
 	/**
 	 * Does nothing
 	 */

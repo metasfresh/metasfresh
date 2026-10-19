@@ -28,6 +28,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -113,7 +114,9 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		final boolean ownTrxActive = trxManager.isActive(threadTrx);
+		// a transaction restarted inside an after-commit callback works on already committed data, so today's dedup is safe there
+		final boolean ownTrxActive = trxManager.isActive(threadTrx)
+				&& trxManager.getCurrentTrxEventTiming() != ITrxListenerManager.TrxEventTiming.AFTER_COMMIT;
 
 		return "NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + scheduleIdColumnSql
 				+ (ownTrxActive ? " and e.DBTransactionNo = pg_current_xact_id_if_assigned()::text::numeric" : "")

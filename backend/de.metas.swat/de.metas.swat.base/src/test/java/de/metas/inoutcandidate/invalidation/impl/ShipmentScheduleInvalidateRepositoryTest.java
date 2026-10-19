@@ -6,6 +6,7 @@ import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegmentBuil
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
@@ -162,6 +163,30 @@ public class ShipmentScheduleInvalidateRepositoryTest
 				.contains(OWN_TRX_TERM)
 				.contains("e.AD_PInstance_ID is NULL")
 				.contains("e.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID");
+	}
+
+	@Test
+	public void pendingFlagPredicate_afterCommitCallback_isLegacy() throws Exception
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final String[] predicate = new String[1];
+		trxManager.runInThreadInheritedTrx(() -> trxManager.runAfterCommit(() -> {
+			// like the real transaction, which restarts itself on the first DB access of the callback
+			trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone).start();
+			try
+			{
+				predicate[0] = pendingFlagPredicate();
+			}
+			catch (final Exception e)
+			{
+				throw new RuntimeException(e);
+			}
+		}));
+
+		assertThat(predicate[0])
+				.as("an after-commit callback works on already committed data, so the legacy any-pending-flag dedup applies")
+				.isNotNull()
+				.doesNotContain("DBTransactionNo");
 	}
 
 	@Test

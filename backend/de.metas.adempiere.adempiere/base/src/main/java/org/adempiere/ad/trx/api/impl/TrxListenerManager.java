@@ -123,7 +123,8 @@ public class TrxListenerManager implements ITrxListenerManager
 		fireListeners(OnError.ThrowException, TrxEventTiming.BEFORE_COMMIT, trx);
 	}
 
-	private TrxEventTiming getCurrentTiming()
+	@Override
+	public TrxEventTiming getCurrentTiming()
 	{
 		return runningWithinTrxEventTiming.get();
 	}

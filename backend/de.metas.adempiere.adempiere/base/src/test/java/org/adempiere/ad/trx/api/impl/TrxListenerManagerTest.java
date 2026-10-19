@@ -50,6 +50,27 @@ public class TrxListenerManagerTest
 	}
 
 	@Test
+	public void getCurrentTiming_isNoneOutsideAndTheRunningTimingInsideListeners() throws SQLException
+	{
+		Services.get(ISysConfigBL.class).setValue(TrxConstraintsBL.SYSCONFIG_TRX_CONSTRAINTS_DISABLED, true, ClientId.METASFRESH, OrgId.ANY);
+
+		final TrxManager trxManager = new TrxManager();
+		final Trx trx = new Trx(trxManager, "trxName", true);
+		final ITrxListenerManager trxListenerManager = trx.getTrxListenerManager();
+
+		final java.util.List<TrxEventTiming> seen = new java.util.ArrayList<>();
+		trxListenerManager.newEventListener(TrxEventTiming.BEFORE_COMMIT)
+				.registerHandlingMethod(innerTrx -> seen.add(trxListenerManager.getCurrentTiming()));
+		trxListenerManager.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> seen.add(trxListenerManager.getCurrentTiming()));
+
+		assertThat(trxListenerManager.getCurrentTiming()).isEqualTo(TrxEventTiming.NONE);
+		trx.commit(false);
+		assertThat(seen).containsExactly(TrxEventTiming.BEFORE_COMMIT, TrxEventTiming.AFTER_COMMIT);
+		assertThat(trxListenerManager.getCurrentTiming()).isEqualTo(TrxEventTiming.NONE);
+	}
+
+	@Test
 	public void testOnAfterCommit() throws SQLException
 	{
 		Services.get(ISysConfigBL.class).setValue(TrxConstraintsBL.SYSCONFIG_TRX_CONSTRAINTS_DISABLED, true, ClientId.METASFRESH, OrgId.ANY);

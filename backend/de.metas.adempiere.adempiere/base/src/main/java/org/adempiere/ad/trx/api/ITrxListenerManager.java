@@ -187,6 +187,11 @@ public interface ITrxListenerManager
 
 	boolean canRegisterOnTiming(TrxEventTiming timing);
 
+	/**
+	 * @return the timing of the listener method that is currently running, or {@link TrxEventTiming#NONE} if none is running.
+	 */
+	TrxEventTiming getCurrentTiming();
+
 	default void runAfterCommit(@NonNull final Runnable runnable)
 	{
 		newEventListener(TrxEventTiming.AFTER_COMMIT)
