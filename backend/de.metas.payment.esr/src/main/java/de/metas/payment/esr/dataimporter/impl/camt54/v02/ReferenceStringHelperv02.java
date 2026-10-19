@@ -12,6 +12,7 @@ import org.compiere.util.Env;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -48,8 +49,8 @@ public class ReferenceStringHelperv02
 		return cdtrRefInf != null
 				&& cdtrRefInf.getTp() != null
 				&& cdtrRefInf.getTp().getCdOrPrtry() != null
-				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
-				|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
+				&& (ESRType.TYPE_ESR.getCode().equals(cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
+				|| ESRType.TYPE_QRR.getCode().equals(cdtrRefInf.getTp().getCdOrPrtry().getPrtry()));
 	}
 
 	/**
@@ -91,7 +92,7 @@ public class ReferenceStringHelperv02
 	{
 		// get the esr reference string out of the XML tree
 		// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
-		return txDtls.getRmtInf().getStrd().stream()
+		return streamStrd(txDtls)
 				.map(StructuredRemittanceInformation7::getCdtrRefInf)
 
 				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
@@ -121,7 +122,7 @@ public class ReferenceStringHelperv02
 
 	private Optional<ESRType> extractType(@NonNull final EntryTransaction2 txDtls)
 	{
-		return txDtls.getRmtInf().getStrd().stream()
+		return streamStrd(txDtls)
 				.map(StructuredRemittanceInformation7::getCdtrRefInf)
 				.filter(ReferenceStringHelperv02::isSupportedESRType)
 				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
@@ -137,10 +138,19 @@ public class ReferenceStringHelperv02
 	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction2 txDtls)
 	{
 		// get the esr reference string out of the XML tree
-		return txDtls.getRmtInf().getStrd().stream()
+		return streamStrd(txDtls)
 				.map(StructuredRemittanceInformation7::getCdtrRefInf)
 				.filter(Objects::nonNull)
 				.map(CreditorReferenceInformation2::getRef)
 				.findFirst();
+	}
+
+	/**
+	 * {@code TxDtls/RmtInf} is optional: a payment without remittance info (e.g. a debit confirmation) has none.
+	 * It then has no structured remittance information either, so no reference is found and the caller reports "missing ESR reference".
+	 */
+	private static Stream<StructuredRemittanceInformation7> streamStrd(@NonNull final EntryTransaction2 txDtls)
+	{
+		return txDtls.getRmtInf() != null ? txDtls.getRmtInf().getStrd().stream() : Stream.empty();
 	}
 }
