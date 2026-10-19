@@ -76,7 +76,14 @@ public class AsyncBatchService
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
 		computeProgress(asyncBatch, trxName)
-				.ifPresent(asyncBatchEventBusService::postRequest);
+				.ifPresent(request -> {
+					Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatch for: asyncBatchID: " + request.getAsyncBatchId() +
+							" allWPSize: " + request.getNoOfEnqueuedWPs() +
+							" processedWPSize: " + request.getNoOfProcessedWPs() +
+							" erroredWPSize: " + request.getNoOfErrorWPs());
+
+					asyncBatchEventBusService.postRequest(request);
+				});
 	}
 
 	/**
@@ -107,11 +114,6 @@ public class AsyncBatchService
 		final int workPackagesWithErrorCount = (int)workPackages.stream()
 				.filter(I_C_Queue_WorkPackage::isError)
 				.count();
-
-		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatch for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
-				" allWPSize: " + workPackages.size() +
-				" processedWPSize: " + workPackagesProcessedCount +
-				" erroredWPSize: " + workPackagesWithErrorCount);
 
 		return Optional.of(AsyncBatchNotifyRequest.builder()
 				.clientId(Env.getClientId())
@@ -156,6 +158,7 @@ public class AsyncBatchService
 		// remove that other caller's registration and release its lock.
 		// So: observeOn stays outside the try - if it fails, we registered nothing and must remove nothing;
 		// and waitToBeProcessed already removes our registration itself, also when it fails.
+		//
 		// dev-note: the observer re-confirms a notified "all processed" with the current count; a foreign workpackage of the same
 		// async batch might have notified it before our own workpackages were committed
 		asyncBatchObserver.observeOn(asyncBatchId, () -> retrieveCurrentProgress(asyncBatchId));

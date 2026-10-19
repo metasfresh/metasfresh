@@ -335,6 +335,10 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			checkIfBatchIsDone();
 		}
 
+		/**
+		 * Called by {@link #removeObserver(AsyncBatchId)} after the monitoring lock was released.
+		 * So the current progress is not available any more (it is counted relative to that lock) and the last known progress decides.
+		 */
 		private void forceCompletionIfNotAlreadyCompleted()
 		{
 			if (checkIfBatchIsDone())
@@ -368,7 +372,8 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			// Example: saving a shipment schedule enqueues its recompute into the same async batch; if that recompute is processed
 			// while our shipment workpackage is not yet committed, it notifies "1 of 1 processed".
 			// So we re-confirm with the current count, which includes our committed workpackages.
-			final Optional<WorkPackagesProgress> currentProgress = currentProgressSupplier.get().map(BatchProgress::getWPsProgress);
+			// The current count replaces the notified progress, so a refuted snapshot is not reused later.
+			final Optional<WorkPackagesProgress> currentProgress = retrieveCurrentProgress();
 			if (currentProgress.isPresent())
 			{
 				this.wpProgress = currentProgress.get();
@@ -390,6 +395,25 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 			Loggables.withLogger(logger, Level.INFO).addLog("AsyncBatchId={}: the current progress {} does not confirm the notified progress; waiting for further notifications", batchId.getRepoId(), wpProgress);
 			return false;
+		}
+
+		/**
+		 * @return the current progress, or empty if it cannot be determined; then the notified progress is trusted, as before the re-check existed.
+		 */
+		@NonNull
+		private Optional<WorkPackagesProgress> retrieveCurrentProgress()
+		{
+			try
+			{
+				return currentProgressSupplier.get().map(BatchProgress::getWPsProgress);
+			}
+			catch (final Exception e)
+			{
+				// dev-note: e.g. a transient DB error. Don't let it fail the notification handler or the caller; fall back to the notified progress.
+				Loggables.withLogger(logger, Level.WARN).addLog("AsyncBatchId={}: could not retrieve the current progress; trusting the notified progress. Error: {}", batchId.getRepoId(), e.getLocalizedMessage());
+				logger.warn("AsyncBatchId={}: could not retrieve the current progress", batchId.getRepoId(), e);
+				return Optional.empty();
+			}
 		}
 
 		@NonNull
