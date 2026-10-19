@@ -21,7 +21,10 @@ import de.metas.util.Loggables;
 import de.metas.util.PlainStringLoggable;
 import de.metas.util.Services;
 import lombok.NonNull;
+import de.metas.i18n.Msg;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.SpringContextHolder;
@@ -95,6 +98,20 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	private static final String MSG_MISSING_TOWN = "de.metas.payment.sepa.SEPA_Export_MissingAddressPartTown";
 	private static final String MSG_MISSING_COUNTRY = "de.metas.payment.sepa.SEPA_Export_MissingAddressPartCountry";
 	private static final String MSG_MISSING_TOWN_AND_COUNTRY = "de.metas.payment.sepa.SEPA_Export_MissingAddressPartsTownAndCountry";
+	private static final String MSG_NO_LINES = "de.metas.payment.sepa.SEPA_Export_NoLines";
+	private static final String MSG_DEBTOR_NAME_MISSING = "de.metas.payment.sepa.SEPA_Export_DebtorNameMissing";
+	private static final String MSG_DEBTOR_BANK_UNIDENTIFIED = "de.metas.payment.sepa.SEPA_Export_DebtorBankUnidentified";
+	private static final String MSG_DEBTOR_ACCOUNT_OF_EXPORT = "de.metas.payment.sepa.SEPA_Export_DebtorAccountOfExport";
+	private static final String MSG_IBAN_TOO_SHORT = "de.metas.payment.sepa.SEPA_Export_IbanTooShort";
+	private static final String MSG_INVALID_AMOUNT = "de.metas.payment.sepa.SEPA_Export_InvalidAmount";
+	private static final String MSG_AMOUNT_TOO_MANY_DECIMALS = "de.metas.payment.sepa.SEPA_Export_AmountTooManyDecimals";
+	private static final String MSG_CREDITOR_BANK_UNIDENTIFIED = "de.metas.payment.sepa.SEPA_Export_CreditorBankUnidentified";
+	private static final String MSG_CREDITOR_NAME_MISSING = "de.metas.payment.sepa.SEPA_Export_CreditorNameMissing";
+	private static final String MSG_QR_IBAN_CURRENCY_NOT_SUPPORTED = "de.metas.payment.sepa.SEPA_Export_QrIbanCurrencyNotSupported";
+	private static final String MSG_ISR_NOT_SUPPORTED = "de.metas.payment.sepa.SEPA_Export_IsrNotSupported";
+	private static final String MSG_QR_REFERENCE_REQUIRED = "de.metas.payment.sepa.SEPA_Export_QrReferenceRequired";
+	private static final String MSG_QR_REFERENCE_CHECK_DIGIT_WRONG = "de.metas.payment.sepa.SEPA_Export_QrReferenceCheckDigitWrong";
+	private static final String MSG_NO_STRUCTURED_REFERENCE = "de.metas.payment.sepa.SEPA_Export_NoStructuredReference";
 
 	/**
 	 * Partners as shown in the messages: search key and name
@@ -389,7 +406,87 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
 
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("neither a BIC nor a CH/LI IBAN to identify the debtor's bank");
+				.hasMessageContaining(MSG_DEBTOR_BANK_UNIDENTIFIED)
+				.hasMessageContaining("1000001");
+	}
+
+	@Test
+	public void export_debtorWithoutBicAndWithTooShortSwissIban_fails()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		sepaExport.setSwiftCode(null);
+		sepaExport.setIBAN("CH72 80");
+		save(sepaExport);
+		createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_IBAN_TOO_SHORT)
+				.hasMessageContaining("CH72 80")
+				.hasMessageContaining(MSG_DEBTOR_ACCOUNT_OF_EXPORT + " - 1000001");
+	}
+
+	@Test
+	public void export_noLines_fails()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_NO_LINES)
+				.hasMessageContaining("1000001");
+	}
+
+	@Test
+	public void export_noLines_atSignInDocumentNo_isEscaped()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		sepaExport.setDocumentNo("10@01");
+		save(sepaExport);
+
+		// the process runs the error message through parseTranslation; "@@" stands for a plain "@"
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_NO_LINES)
+				.hasMessageContaining("10@@01");
+	}
+
+	@Test
+	public void export_zeroAmount_fails()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, BigDecimal.ZERO, eur, null);
+		setBPartner(line, "Test Vendor GmbH");
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_INVALID_AMOUNT)
+				.hasMessageContaining("Test Vendor GmbH")
+				.isInstanceOfSatisfying(AdempiereException.class, e -> assertThat(e.getRecord()).isEqualTo(TableRecordReference.of(line)));
+	}
+
+	@Test
+	public void export_lineError_partnerNameWithAtSigns_keptInError()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, BigDecimal.ZERO, eur, null);
+		setBPartner(line, "Vendor info@muster.ch / buchhaltung@muster.ch");
+
+		// the process runs the error message through parseTranslation, which takes text between two "@" for an AD_Message/AD_Element; "@@" stands for a plain "@"
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_INVALID_AMOUNT)
+				.hasMessageContaining("Vendor info@@muster.ch / buchhaltung@@muster.ch")
+				.satisfies(e -> assertThat(Msg.parseTranslation("de_CH", e.getMessage())).contains("Vendor info@muster.ch / buchhaltung@muster.ch"));
+	}
+
+	@Test
+	public void export_amountWithTooManyDecimals_fails()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100.001"), eur, null);
+		setBPartner(line, "Test Vendor GmbH");
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_AMOUNT_TOO_MANY_DECIMALS)
+				.hasMessageContaining("Test Vendor GmbH")
+				.hasMessageContaining("100.001")
+				.hasMessageContaining("EUR");
 	}
 
 	@Test
@@ -444,10 +541,24 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		final I_SEPA_Export sepaExport = createSEPAExport();
 		createQrIbanLine(sepaExport, null, new BigDecimal("100"), chf, "210000000003139471430009018"); // wrong check digit
 
-		// same AD_Message as the .03 marshaller
+		// same AD_Message as the .03 marshaller, with the translated reason as its parameter
 		assertThatThrownBy(() -> exportXml(sepaExport))
 				.hasMessageContaining("SEPA_Export_InvalidReference")
+				.hasMessageContaining(MSG_QR_REFERENCE_REQUIRED)
 				.hasMessageContaining("210000000003139471430009018");
+	}
+
+	@Test
+	public void export_qrIbanWithAtSignInReference_fails_referenceEscaped()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		createQrIbanLine(sepaExport, null, new BigDecimal("100"), chf, "Rechnung@4711");
+
+		// the process runs the error message through parseTranslation, which takes text between two "@" for an AD_Message/AD_Element; "@@" stands for a plain "@"
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining("SEPA_Export_InvalidReference")
+				.hasMessageContaining(MSG_QR_REFERENCE_REQUIRED)
+				.hasMessageContaining("Rechnung@@4711");
 	}
 
 	@Test
@@ -459,6 +570,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 
 		assertThatThrownBy(() -> exportXml(sepaExport))
 				.hasMessageContaining("SEPA_Export_InvalidReference")
+				.hasMessageContaining(MSG_QR_REFERENCE_CHECK_DIGIT_WRONG)
 				.hasMessageContaining("210000000003139471430009018");
 	}
 
@@ -470,7 +582,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 
 		assertThatThrownBy(() -> exportXml(sepaExport))
 				.hasMessageContaining("SEPA_Export_InvalidReference")
-				.hasMessageContaining("no structured reference")
+				.hasMessageContaining(MSG_QR_REFERENCE_REQUIRED)
+				.hasMessageContaining(MSG_NO_STRUCTURED_REFERENCE)
 				.hasMessageNotContaining("'null'");
 	}
 
@@ -536,7 +649,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 
 		// IG 3.16: QR-IBAN and QR reference are intended for CHF (and EUR until November 2027)
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("QR-IBAN")
+				.hasMessageContaining(MSG_QR_IBAN_CURRENCY_NOT_SUPPORTED)
 				.hasMessageContaining("USD");
 	}
 
@@ -635,20 +748,23 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		bankAccount.setIsEsrAccount(true);
 		save(bankAccount);
 
+		setBPartner(line, "Test Vendor GmbH");
+
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("does not support ISR payments")
-				.hasMessageContaining("Clear the ESR flag of the bank account, set a QR-IBAN, or use an ISO 11649 (RF) creditor reference");
+				.hasMessageContaining(MSG_ISR_NOT_SUPPORTED)
+				.hasMessageContaining("Test Vendor GmbH");
 	}
 
 	@Test
 	public void export_foreignWithoutBicAndWithoutBankAddress_fails()
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport();
-		createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, null, new BigDecimal("100"), chf, null);
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, null, new BigDecimal("100"), chf, null);
+		setBPartner(line, "Test Vendor GmbH");
 
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("creditor account is not a CH/LI IBAN")
-				.hasMessageContaining("neither a BIC nor a bank address");
+				.hasMessageContaining(MSG_CREDITOR_BANK_UNIDENTIFIED)
+				.hasMessageContaining("Test Vendor GmbH");
 	}
 
 	@Test
@@ -1045,7 +1161,56 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 
 		// the Dbtr would be an empty group element (IG 3.4, IG 4.2 Dbtr 1..1)
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("SEPA_CreditorName");
+				.hasMessageContaining(MSG_DEBTOR_NAME_MISSING)
+				.hasMessageContaining("1000001");
+	}
+
+	@Test
+	public void export_headerError_userMessageHasNoTechnicalParameters()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		sepaExport.setSEPA_CreditorName("  ");
+		save(sepaExport);
+		createSEPAExportLine(sepaExport, CREDITOR_IBAN_DE, CREDITOR_BIC_DE, new BigDecimal("100"), eur, null);
+
+		// the user sees the translated message only; the export is the exception's record, which AD_Issue stores as AD_Table_ID/Record_ID
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_DEBTOR_NAME_MISSING)
+				.hasMessageNotContaining("Additional parameters")
+				.hasMessageNotContaining("POJOWrapper")
+				.isInstanceOfSatisfying(AdempiereException.class, e -> assertThat(e.getRecord()).isEqualTo(TableRecordReference.of(sepaExport)));
+	}
+
+	@Test
+	public void export_lineError_userMessageHasNoTechnicalParameters()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_TR, CREDITOR_BIC_TR, new BigDecimal("100"), eur, null);
+		clearAddress(bankAccountOf(line));
+		setBillToLocation(line, "Teststrasse 1", "8000", "", "TR");
+
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_ADDRESS_INCOMPLETE)
+				.hasMessageNotContaining("Additional parameters")
+				.hasMessageNotContaining("POJOWrapper")
+				.isInstanceOfSatisfying(AdempiereException.class, e -> assertThat(e.getRecord()).isEqualTo(TableRecordReference.of(line)));
+	}
+
+	@Test
+	public void export_foreign_locationNameWithAtSigns_keptInError()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, CREDITOR_IBAN_TR, CREDITOR_BIC_TR, new BigDecimal("100"), eur, null);
+		clearAddress(bankAccountOf(line));
+		final I_C_BPartner_Location bpLocation = setBillToLocation(line, "Teststrasse 1", "8000", "", "TR");
+		bpLocation.setName("info@muster.ch / buchhaltung@muster.ch");
+		save(bpLocation);
+
+		// the process runs the error message through parseTranslation, which takes text between two "@" for an AD_Message/AD_Element; "@@" stands for a plain "@"
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_ADDRESS_INCOMPLETE)
+				.hasMessageContaining("info@@muster.ch / buchhaltung@@muster.ch")
+				.satisfies(e -> assertThat(Msg.parseTranslation("de_CH", e.getMessage())).contains("info@muster.ch / buchhaltung@muster.ch"));
 	}
 
 	@Test
@@ -1060,7 +1225,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 
 		// IG 4.3 Cdtr/Nm: "Must be supplied"
 		assertThatThrownBy(() -> exportXml(sepaExport))
-				.hasMessageContaining("creditor name");
+				.hasMessageContaining(MSG_CREDITOR_NAME_MISSING)
+				.hasMessageContaining("C_BP_BankAccount_ID"); // the line's bank account, as SepaUtils.createInfo names it (its column name in unit tests)
 	}
 
 	@Test
@@ -1255,7 +1421,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		save(bankAccount);
 	}
 
-	private static void setBillToLocation(
+	private static I_C_BPartner_Location setBillToLocation(
 			@NonNull final I_SEPA_Export_Line line,
 			@NonNull final String address1,
 			@NonNull final String postal,
@@ -1284,6 +1450,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 		bpLocation.setIsBillToDefault(true);
 		bpLocation.setIsActive(true);
 		save(bpLocation);
+		return bpLocation;
 	}
 
 	private static I_C_BPartner setBPartner(@NonNull final I_SEPA_Export_Line line, @NonNull final String name)
