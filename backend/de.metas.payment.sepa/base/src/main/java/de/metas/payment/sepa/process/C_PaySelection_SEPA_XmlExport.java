@@ -1,6 +1,7 @@
 package de.metas.payment.sepa.process;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.common.util.time.SystemTime;
@@ -10,6 +11,7 @@ import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
+import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -25,8 +27,8 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.util.Env;
 import org.springframework.core.io.ByteArrayResource;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Process that creates SEPA xmls in 3 steps:
@@ -40,6 +42,8 @@ public class C_PaySelection_SEPA_XmlExport
 		implements IProcessPrecondition
 {
 	private static final AdMessageKey MSG_NO_SELECTION = AdMessageKey.of("de.metas.payment.sepa.noPaySelection");
+
+	private static final String WARNINGS_SEPARATOR = " · "; // middle dot
 
 	//
 	// services
@@ -118,18 +122,35 @@ public class C_PaySelection_SEPA_XmlExport
 	}
 
 	/**
-	 * @return the export's warnings, one per line, translated to the given language; {@link #MSG_OK} if there are none
+	 * @return {@link #MSG_OK} if the export has no warnings; otherwise its warnings translated to the given language, on one line: a single warning as it is,
+	 * several numbered as {@code 1) … · 2) …}; every "@" is escaped as "@@", i.e. the text is meant to be passed through {@code IMsgBL.parseTranslation}
 	 */
 	@VisibleForTesting
 	static String createSummary(@NonNull final SEPACreditTransferXML xml, @NonNull final String adLanguage)
 	{
-		if (xml.getWarnings().isEmpty())
+		// one line, because the WebUI collapses line breaks in the notification; escaped, because the warnings contain partner, location and bank account names
+		final List<String> warnings = xml.getWarnings()
+				.stream()
+				.map(warning -> SepaUtils.escapeAtSignsForParseTranslation(warning.translate(adLanguage)))
+				.collect(ImmutableList.toImmutableList());
+		if (warnings.isEmpty())
 		{
 			return MSG_OK;
 		}
-		return xml.getWarnings()
-				.stream()
-				.map(warning -> warning.translate(adLanguage))
-				.collect(Collectors.joining("\n"));
+		else if (warnings.size() == 1)
+		{
+			return warnings.get(0);
+		}
+
+		final StringBuilder summary = new StringBuilder();
+		for (int i = 0; i < warnings.size(); i++)
+		{
+			if (i > 0)
+			{
+				summary.append(WARNINGS_SEPARATOR);
+			}
+			summary.append(i + 1).append(") ").append(warnings.get(i));
+		}
+		return summary.toString();
 	}
 }
