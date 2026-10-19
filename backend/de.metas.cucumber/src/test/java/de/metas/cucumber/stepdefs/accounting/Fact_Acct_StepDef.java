@@ -6,6 +6,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -206,6 +207,27 @@ public class Fact_Acct_StepDef
 					.as("P_Asset_Acct balance of %s up to %s", row.getAsString(I_Fact_Acct.COLUMNNAME_M_Product_ID), dateAcct)
 					.isEqualByComparingTo(expectedBalance);
 		});
+	}
+
+	/**
+	 * Makes the documents' Net postings look like postings made before Fact_Acct.VATCodeAmountType existed: the VAT code stays, the amount type is empty
+	 * (the one-shot backfill leaves such rows empty when it cannot derive the type).
+	 */
+	@And("^the Net VAT code amount type is removed from the Fact_Acct records of documents (.*), as on postings made before the amount type existed$")
+	public void removeNetVATCodeAmountType(@NonNull final String commaSeparatedIdentifiers)
+	{
+		for (final TableRecordReference recordRef : identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers))
+		{
+			final int updated = queryBL.createQueryBuilder(I_Fact_Acct.class)
+					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_VATCodeAmountType, VATCodeAmountType.Net)
+					.create()
+					.updateDirectly()
+					.addSetColumnValue(I_Fact_Acct.COLUMNNAME_VATCodeAmountType, null)
+					.execute();
+			assertThat(updated).as("Net Fact_Acct records of %s", recordRef).isPositive();
+		}
 	}
 
 	/**
