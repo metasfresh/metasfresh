@@ -60,6 +60,9 @@ public class SEPAExportFromPaySelectionChainTest
 
 	private static final String DEBTOR_IBAN = "CH72 8000 5000 0888 7776 6";
 	private static final String DEBTOR_BIC = "RAIFCH22005";
+	// synthetic PostFinance-shaped account: clearing number 09000 (PostFinance), valid mod-97 check digits, no real holder
+	private static final String POSTFINANCE_DEBTOR_IBAN = "CH67 0900 0000 0300 0123 4";
+	private static final String POSTFINANCE_BIC = "POFICHBEXXX";
 	private static final String CREDITOR_IBAN_CH = "CH50 2197 7000 0043 3134 6";
 	private static final String CREDITOR_QR_IBAN = "CH44 3199 9123 0008 8901 2";
 	private static final String QR_REFERENCE = "210000000003139471430009017";
@@ -156,6 +159,32 @@ public class SEPAExportFromPaySelectionChainTest
 	}
 
 	/**
+	 * Reference payment shape of the ISO 20022 2019 change: one credit transfer, CHF 1.00, debtor = the org's PostFinance account, domestic creditor IBAN, protocol not chosen.
+	 * The default protocol gives a pain.001.001.09 file that is valid against the SIX pain.001.001.09.ch.03 XSD; choosing pain.001.001.03.ch.02 gives the old format.
+	 */
+	@Test
+	void referenceCase_CHF1_PostFinanceToDomesticIban() throws Exception
+	{
+		final I_C_PaySelection paySelection = createPaySelection(PaySelectionTrxType.CREDIT_TRANSFER, POSTFINANCE_DEBTOR_IBAN, POSTFINANCE_BIC);
+		createPaySelectionLine(paySelection, createVendorBankAccount(CREDITOR_IBAN_CH, null), null, new BigDecimal("1.00"));
+
+		final byte[] xmlDefault = exportAsProcessDoes(paySelection, null);
+
+		assertThat(rootNamespace(xmlDefault)).isEqualTo(NAMESPACE_PAIN_001_001_09);
+		assertValidAgainstXsd(xmlDefault);
+		final Document doc = parse(xmlDefault);
+		final String pmtInf = "Document/CstmrCdtTrfInitn/PmtInf";
+		assertThat(text(doc, pmtInf + "/DbtrAcct/Id/IBAN")).isEqualTo("CH6709000000030001234");
+		assertThat(text(doc, pmtInf + "/DbtrAgt/FinInstnId/BICFI")).isEqualTo(POSTFINANCE_BIC);
+		assertThat(new BigDecimal(text(doc, pmtInf + "/CdtTrfTxInf/Amt/InstdAmt"))).isEqualByComparingTo("1.00");
+		assertThat(doc.getElementsByTagNameNS(NAMESPACE_PAIN_001_001_09, "InstdAmt").item(0).getAttributes().getNamedItem("Ccy").getNodeValue()).isEqualTo("CHF");
+		assertThat(text(doc, pmtInf + "/CdtTrfTxInf/CdtrAcct/Id/IBAN")).isEqualTo("CH5021977000004331346");
+
+		final byte[] xmlOld = exportAsProcessDoes(paySelection, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
+		assertThat(rootNamespace(xmlOld)).isEqualTo(NAMESPACE_PAIN_001_001_03_CH_02);
+	}
+
+	/**
 	 * Same two calls as the process {@code C_PaySelection_SEPA_XmlExport}.
 	 */
 	private static byte[] exportAsProcessDoes(@NonNull final I_C_PaySelection paySelection, @Nullable final SEPAProtocol chosenProtocol)
@@ -180,16 +209,21 @@ public class SEPAExportFromPaySelectionChainTest
 
 	private I_C_PaySelection createPaySelection(@NonNull final PaySelectionTrxType trxType)
 	{
+		return createPaySelection(trxType, DEBTOR_IBAN, DEBTOR_BIC);
+	}
+
+	private I_C_PaySelection createPaySelection(@NonNull final PaySelectionTrxType trxType, @NonNull final String debtorIban, @NonNull final String debtorBic)
+	{
 		final Bank debtorBank = bankRepository.createBank(BankCreateRequest.builder()
 				.bankName("Debtor Bank")
 				.routingNo("routingNo")
-				.swiftCode(DEBTOR_BIC)
+				.swiftCode(debtorBic)
 				.build());
 
 		final I_C_BP_BankAccount debtorAccount = newInstance(I_C_BP_BankAccount.class);
 		debtorAccount.setC_Bank_ID(debtorBank.getBankId().getRepoId());
 		debtorAccount.setC_Currency_ID(chf.getRepoId());
-		debtorAccount.setIBAN(DEBTOR_IBAN);
+		debtorAccount.setIBAN(debtorIban);
 		debtorAccount.setSEPA_CreditorIdentifier("CH51ZZZ12345678901"); // needed for direct debit only
 		debtorAccount.setA_Name("Test Debtor AG");
 		save(debtorAccount);
@@ -230,6 +264,15 @@ public class SEPAExportFromPaySelectionChainTest
 			@NonNull final I_C_BP_BankAccount vendorBankAccount,
 			@Nullable final String reference)
 	{
+		createPaySelectionLine(paySelection, vendorBankAccount, reference, new BigDecimal("100"));
+	}
+
+	private void createPaySelectionLine(
+			@NonNull final I_C_PaySelection paySelection,
+			@NonNull final I_C_BP_BankAccount vendorBankAccount,
+			@Nullable final String reference,
+			@NonNull final BigDecimal payAmt)
+	{
 		final I_C_Invoice purchaseInvoice = newInstance(I_C_Invoice.class);
 		purchaseInvoice.setIsSOTrx(false);
 		purchaseInvoice.setC_BPartner_ID(vendor.getC_BPartner_ID());
@@ -245,7 +288,7 @@ public class SEPAExportFromPaySelectionChainTest
 		line.setC_Invoice_ID(purchaseInvoice.getC_Invoice_ID());
 		line.setC_BPartner_ID(vendor.getC_BPartner_ID());
 		line.setC_BP_BankAccount_ID(vendorBankAccount.getC_BP_BankAccount_ID());
-		line.setPayAmt(new BigDecimal("100"));
+		line.setPayAmt(payAmt);
 		line.setReference(reference);
 		save(line);
 	}
