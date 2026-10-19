@@ -1,49 +1,25 @@
 package de.metas.customs;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.document.location.RenderedAddressAndCapturedLocation;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.NoUOMConversionException;
-import org.compiere.model.I_C_Customs_Invoice;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
-
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
 import de.metas.customs.process.ShipmentLinesForCustomsInvoiceRepo;
 import de.metas.document.DocTypeId;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
@@ -69,8 +45,27 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.NoUOMConversionException;
+import org.compiere.model.I_C_Customs_Invoice;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -205,7 +200,7 @@ public class CustomsInvoiceService
 
 		Quantity qty = null;
 		Money lineNetAmt = Money.of(BigDecimal.ZERO, currencyId);
-		ArrayList<CustomsInvoiceLineAlloc> allocations = new ArrayList<>();
+		final ArrayList<CustomsInvoiceLineAlloc> allocations = new ArrayList<>();
 
 		for (final InOutAndLineId inoutAndLineId : shipmentLinesForProducts)
 		{
@@ -358,9 +353,7 @@ public class CustomsInvoiceService
 
 		if (Check.isEmpty(linesToExport))
 		{
-			final ITranslatableString errorMessage = Services.get(IMsgBL.class).getTranslatableMsgText(ERR_NoValidLines);
-
-			throw new AdempiereException(errorMessage);
+			throw new AdempiereException(ERR_NoValidLines);
 		}
 
 		final ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = linesToExport
@@ -378,10 +371,10 @@ public class CustomsInvoiceService
 		final String documentNo = reserveDocumentNo(docTypeId);
 
 		final RenderedAddressAndCapturedLocation bpartnerAddress = documentLocationBL.computeRenderedAddress(DocumentLocation.builder()
-												 .bpartnerId(bpartnerLocationId.getBpartnerId())
-												 .bpartnerLocationId(bpartnerLocationId)
-												 .contactId(contactId)
-												 .build());
+				.bpartnerId(bpartnerLocationId.getBpartnerId())
+				.bpartnerLocationId(bpartnerLocationId)
+				.contactId(contactId)
+				.build());
 
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(bpartnerLocationId)
@@ -414,7 +407,7 @@ public class CustomsInvoiceService
 		return ProductId.ofRepoId(shipmentLineRecord.getM_Product_ID());
 	}
 
-	public List<InOutAndLineId> retrieveLinesToExport(IQueryFilter<I_M_InOut> queryFilter)
+	public List<InOutAndLineId> retrieveLinesToExport(final IQueryFilter<I_M_InOut> queryFilter)
 	{
 		final ImmutableList<InOutId> selectedShipments = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_InOut.class)
@@ -424,7 +417,7 @@ public class CustomsInvoiceService
 				.stream()
 				.collect(ImmutableList.toImmutableList());
 
-		List<InOutAndLineId> shipmentLinesToExport = shipmentLinesForCustomsInvoiceRepo.retrieveValidLinesToExport(selectedShipments);
+		final List<InOutAndLineId> shipmentLinesToExport = shipmentLinesForCustomsInvoiceRepo.retrieveValidLinesToExport(selectedShipments);
 
 		return shipmentLinesToExport;
 
@@ -436,9 +429,7 @@ public class CustomsInvoiceService
 
 		if (Check.isEmpty(linesToExport))
 		{
-			final ITranslatableString errorMessage = Services.get(IMsgBL.class).getTranslatableMsgText(ERR_NoValidLines);
-
-			throw new AdempiereException(errorMessage);
+			throw new AdempiereException(ERR_NoValidLines);
 		}
 
 		final ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = linesToExport
@@ -458,7 +449,7 @@ public class CustomsInvoiceService
 	}
 
 	@VisibleForTesting
-	void addShipmentLinesToCustomsInvoice(@NonNull ProductId productId, @NonNull final ImmutableSet<InOutAndLineId> shipmentLinesForProduct, @NonNull final CustomsInvoiceId customsInvoiceId)
+	void addShipmentLinesToCustomsInvoice(@NonNull final ProductId productId, @NonNull final ImmutableSet<InOutAndLineId> shipmentLinesForProduct, @NonNull final CustomsInvoiceId customsInvoiceId)
 	{
 		CustomsInvoice customsInvoice = customsInvoiceRepo.retrieveById(customsInvoiceId);
 
@@ -487,7 +478,7 @@ public class CustomsInvoiceService
 		final List<CustomsInvoiceLine> newLines = new ArrayList<>();
 		{
 			boolean added = false;
-			for (CustomsInvoiceLine existingLine : existingLines)
+			for (final CustomsInvoiceLine existingLine : existingLines)
 			{
 				if (Util.same(customsInvoiceLineForProductFound, existingLine))
 				{
