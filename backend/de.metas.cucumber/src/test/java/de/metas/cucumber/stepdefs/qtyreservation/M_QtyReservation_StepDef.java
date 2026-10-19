@@ -249,7 +249,7 @@ public class M_QtyReservation_StepDef
 	 * </pre>
 	 */
 	@When("M_QtyReservation bucket is reduced, committed only after the pending recompute ran:")
-	public void reduce_M_QtyReservation_bucket_committedAfterRecompute(@NonNull final DataTable dataTable) throws InterruptedException
+	public void reduce_M_QtyReservation_bucket_committedAfterRecompute(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final ReduceQtyReservationRequest request = toReduceRequest(row);
