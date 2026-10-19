@@ -102,18 +102,22 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	/**
-	 * SQL predicate that is true if the given schedule has no pending (not yet picked up) recompute flag that could be skipped.
+	 * SQL predicate that is true if the given schedule has no pending (not yet picked up) recompute flag that would make a new flag of ours redundant.
 	 * <p>
-	 * Inside a thread-inherited transaction we dedup only against a pending flag written by this very transaction
-	 * ({@code pg_current_xact_id_if_assigned()} is NULL until the transaction wrote something, so nothing matches then).
+	 * While the thread-inherited transaction has an open DB transaction, we dedup only against a pending flag written by this very DB transaction
+	 * ({@code pg_current_xact_id_if_assigned()} is NULL until it wrote something, so nothing matches then).
 	 * A flag of another transaction must not suppress ours: the recompute may process that other flag before our change is committed
-	 * and thus never see our change. This includes after-commit callbacks, which run in a restarted transaction. Without a transaction we keep the legacy "any pending flag" dedup.
+	 * and thus never see our change.
+	 * <p>
+	 * In an after-commit callback the transaction is inactive until a DB access restarts it; from then on it is a new transaction that
+	 * may write business data before flagging, so the rule above applies. Before the restart nothing is uncommitted, so the legacy
+	 * "any pending flag" dedup, which we also keep when there is no transaction at all, is safe.
 	 */
 	private String sqlNoPendingFlagOfOwnTrx(@NonNull final String scheduleIdColumnSql)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		// after-commit callbacks run in a restarted transaction that may write business data before flagging, so they deduplicate only within that transaction
+		// "active" = the thread trx has an open DB transaction; an after-commit callback that has not accessed the DB yet has none
 		final boolean ownTrxActive = trxManager.isActive(threadTrx);
 
 		return "NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + scheduleIdColumnSql

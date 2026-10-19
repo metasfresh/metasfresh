@@ -189,6 +189,29 @@ public class ShipmentScheduleInvalidateRepositoryTest
 	}
 
 	@Test
+	public void pendingFlagPredicate_afterCommitCallbackBeforeRestart_isLegacy() throws Exception
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final String[] predicate = new String[1];
+		trxManager.runInThreadInheritedTrx(() -> trxManager.runAfterCommit(() -> {
+			// no DB access yet, so the trx is not restarted and nothing is uncommitted
+			try
+			{
+				predicate[0] = pendingFlagPredicate();
+			}
+			catch (final Exception e)
+			{
+				throw new RuntimeException(e);
+			}
+		}));
+
+		assertThat(predicate[0])
+				.as("before a DB access restarts the trx, an after-commit callback has no open DB transaction")
+				.isNotNull()
+				.doesNotContain("DBTransactionNo");
+	}
+
+	@Test
 	public void pendingFlagPredicate_noThreadTrx_isLegacy() throws Exception
 	{
 		assertThat(pendingFlagPredicate())
