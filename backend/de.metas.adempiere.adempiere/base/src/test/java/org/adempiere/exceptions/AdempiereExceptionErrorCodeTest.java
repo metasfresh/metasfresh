@@ -98,4 +98,12 @@ class AdempiereExceptionErrorCodeTest
 		final I_AD_Issue issue = load(issueId, I_AD_Issue.class);
 		assertThat(issue.getErrorCode()).isNull();
 	}
+
+	@Test
+	void exceptionOfADMessage_isUserValidationError()
+	{
+		// the AdMessageKey constructors replace new AdempiereException(msgBL.getTranslatableMsgText(..)), which is flagged as user-friendly
+		assertThat(new AdempiereException(MSG_WITH_ERROR_CODE).isUserValidationError()).isTrue();
+		assertThat(new AdempiereException(MSG_WITH_ERROR_CODE, "param").isUserValidationError()).isTrue();
+	}
 }

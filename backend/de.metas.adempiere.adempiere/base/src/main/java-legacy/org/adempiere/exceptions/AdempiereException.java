@@ -275,6 +275,8 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = msgBL.getTranslatableMsgText(messageKey);
 		this.errorCode = msgBL.getErrorCode(messageKey);
 		this.mdcContextMap = captureMDCContextMap();
+		// an AD_Message based text is a nice, user-friendly error message
+		this.userValidationError = true;
 	}
 
 	public AdempiereException(final String adLanguage, @NonNull final AdMessageKey adMessage, final Object... params)
@@ -283,6 +285,7 @@ public class AdempiereException extends RuntimeException
 		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
 		this.mdcContextMap = captureMDCContextMap();
 		this.errorCode = msgBL.getErrorCode(adMessage);
+		this.userValidationError = true;
 
 		setParameter("AD_Language", this.adLanguage);
 		setParameter("AD_Message", adMessage);
