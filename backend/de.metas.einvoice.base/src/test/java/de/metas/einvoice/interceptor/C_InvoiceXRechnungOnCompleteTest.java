@@ -146,6 +146,13 @@ public class C_InvoiceXRechnungOnCompleteTest
 					assertThat(ade.getMessage())
 							.as("Exception message must contain a BR-DE-* rule id (KoSIT XRechnung rule)")
 							.containsPattern("BR-DE-\\d+");
+					assertThat(ade.getMessage())
+							.as("Exception message must surface the rule message text (BR-DE-15: Buyer reference BT-10)")
+							.contains("BT-10")
+							.contains("Buyer reference");
+					assertThat(ade.getMessage())
+							.as("Exception message must surface the failing location")
+							.contains("CrossIndustryInvoice");
 				});
 	}
 

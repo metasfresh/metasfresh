@@ -260,6 +260,7 @@ public class C_BPartner_StepDef
 	 *                   <b>C_Dunning_ID</b> — (optional) step-def identifier of the dunning schema<br>
 	 *                   <b>VATaxID</b> — (optional) new VAT-ID value; use {@code null} token to clear<br>
 	 *                   <b>Name</b> — (optional) new partner name<br>
+	 *                   <b>IsActive</b> — (optional) {@code Y}/{@code N}; activates or deactivates the partner<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_BPartner:
@@ -641,6 +642,9 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name)
 				.filter(EmptyUtil::isNotBlank)
 				.ifPresent(bPartner::setName);
+
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsActive)
+				.ifPresent(bPartner::setIsActive);
 
 		InterfaceWrapperHelper.save(bPartner);
 
