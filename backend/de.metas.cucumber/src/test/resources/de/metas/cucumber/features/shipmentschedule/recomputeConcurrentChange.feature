@@ -199,9 +199,9 @@ Feature: shipment schedule recompute pass meets a concurrent change
     Given the shipment schedule recompute queues are paused
     And the shipment schedule "shipmentSchedule" is flagged for recompute 1 times in one transaction, also from nested calls
     When the shipment identified by shipment is reversed, committed only after the pending recompute ran
-    # 1 marker: the reversal's own flag is committed first; the order line's after-commit flag (C_OrderLine_ShipmentSchedule)
-    # is then deduplicated against that committed flag
-    Then 1 untagged M_ShipmentSchedule_Recompute marker exists for shipmentSchedule
+    # 2 markers, each written in its own transaction: the reversal's flag (M_ShipmentSchedule_QtyPicked change) and the order line's
+    # after-commit flag (C_OrderLine_ShipmentSchedule), which runs in a restarted transaction and deduplicates only within that transaction
+    Then 2 untagged M_ShipmentSchedule_Recompute markers exist for shipmentSchedule
     When the shipment schedule recompute queues are resumed
     And the shipment-schedule recompute work queue drains to zero pending workpackages
     Then after not more than 60s, validate shipment schedules:

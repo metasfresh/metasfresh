@@ -166,7 +166,7 @@ public class ShipmentScheduleInvalidateRepositoryTest
 	}
 
 	@Test
-	public void pendingFlagPredicate_afterCommitCallback_isLegacy() throws Exception
+	public void pendingFlagPredicate_afterCommitCallback_matchesOwnTrxOnly() throws Exception
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final String[] predicate = new String[1];
@@ -184,9 +184,8 @@ public class ShipmentScheduleInvalidateRepositoryTest
 		}));
 
 		assertThat(predicate[0])
-				.as("an after-commit callback works on already committed data, so the legacy any-pending-flag dedup applies")
-				.isNotNull()
-				.doesNotContain("DBTransactionNo");
+				.as("an after-commit callback runs in a restarted transaction that may write business data before flagging")
+				.contains(OWN_TRX_TERM);
 	}
 
 	@Test

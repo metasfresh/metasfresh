@@ -55,13 +55,6 @@ import lombok.NonNull;
 		return true;
 	}
 
-	@Override
-	public TrxEventTiming getCurrentTiming()
-	{
-		// listeners are executed directly on registration, there is no running listener timing to report
-		return TrxEventTiming.NONE;
-	}
-
 	private void execute(final RegisterListenerRequest listener)
 	{
 		if (!listener.isActive())

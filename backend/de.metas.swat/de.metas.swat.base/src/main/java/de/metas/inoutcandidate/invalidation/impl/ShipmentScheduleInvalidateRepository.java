@@ -28,7 +28,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -108,15 +107,14 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * Inside a thread-inherited transaction we dedup only against a pending flag written by this very transaction
 	 * ({@code pg_current_xact_id_if_assigned()} is NULL until the transaction wrote something, so nothing matches then).
 	 * A flag of another transaction must not suppress ours: the recompute may process that other flag before our change is committed
-	 * and thus never see our change. Without a transaction we keep the legacy "any pending flag" dedup.
+	 * and thus never see our change. This includes after-commit callbacks, which run in a restarted transaction. Without a transaction we keep the legacy "any pending flag" dedup.
 	 */
 	private String sqlNoPendingFlagOfOwnTrx(@NonNull final String scheduleIdColumnSql)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		// a transaction restarted inside an after-commit callback works on already committed data, so today's dedup is safe there
-		final boolean ownTrxActive = trxManager.isActive(threadTrx)
-				&& trxManager.getCurrentTrxEventTiming() != ITrxListenerManager.TrxEventTiming.AFTER_COMMIT;
+		// after-commit callbacks run in a restarted transaction that may write business data before flagging, so they deduplicate only within that transaction
+		final boolean ownTrxActive = trxManager.isActive(threadTrx);
 
 		return "NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + scheduleIdColumnSql
 				+ (ownTrxActive ? " and e.DBTransactionNo = pg_current_xact_id_if_assigned()::text::numeric" : "")
