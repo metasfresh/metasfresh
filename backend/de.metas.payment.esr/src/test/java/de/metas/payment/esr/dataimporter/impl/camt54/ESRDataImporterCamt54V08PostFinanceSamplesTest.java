@@ -281,7 +281,7 @@ public class ESRDataImporterCamt54V08PostFinanceSamplesTest
 	{
 		final ESRStatement stmt = importFile("camt054_v08_qrr_single_line.xml");
 		assertLines(stmt,
-				line("6045.85", "000000000102175968010376491", false));
+				line("6045.85", "000000000000000000000000218", false));
 		assertThat(stmt.getCtrlAmount()).isEqualByComparingTo("6045.85");
 		assertThat(stmt.getCtrlQty()).isNull();
 	}
