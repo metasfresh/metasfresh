@@ -388,7 +388,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		final List<I_SEPA_Export_Line> sepaDocumentLines = sepaDocumentBL.retrieveLines(sepaDocument);
 		if (sepaDocumentLines.isEmpty())
 		{
-			throw new SepaMarshallerException(MSG_NoLines, sepaDocument.getDocumentNo());
+			throw new SepaMarshallerException(MSG_NoLines, SepaUtils.escapeAtSignsForParseTranslation(sepaDocument.getDocumentNo()));
 		}
 
 		final Map<ArrayKey, PaymentInstruction30> key2pmtInf = new LinkedHashMap<>();
@@ -447,7 +447,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		if (debtorName == null)
 		{
 			// SEPA_CreditorName is the name of the paying organisation, taken from the name of the business partner linked to the organisation
-			throw new SepaMarshallerException(MSG_DebtorNameMissing, sepaDocument.getDocumentNo());
+			throw new SepaMarshallerException(MSG_DebtorNameMissing, SepaUtils.escapeAtSignsForParseTranslation(sepaDocument.getDocumentNo()));
 		}
 
 		final PartyIdentification135 initgPty = objectFactory.createPartyIdentification135();
@@ -561,10 +561,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		// Debitor Agent (i.e. Bank)
 		// IG 4.2 DbtrAgt: BICFI (was BIC) or the IID as ClrSysMmbId; IG 3.4: no empty FinInstnId
 		final String debtorBic = StringUtils.trimBlankToNull(sepaHdr.getSwiftCode());
-		final BranchAndFinancialInstitutionIdentification6 dbtrAgt = createAgent(debtorBic, debtorBic == null ? SepaUtils.extractIIDFromSwissIbanOrNull(iban, () -> msgBL.getTranslatableMsgText(MSG_DebtorAccountOfExport, sepaHdr.getDocumentNo())) : null);
+		final BranchAndFinancialInstitutionIdentification6 dbtrAgt = createAgent(debtorBic, debtorBic == null ? SepaUtils.extractIIDFromSwissIbanOrNull(iban, () -> msgBL.getTranslatableMsgText(MSG_DebtorAccountOfExport, SepaUtils.escapeAtSignsForParseTranslation(sepaHdr.getDocumentNo()))) : null);
 		if (dbtrAgt == null)
 		{
-			throw new SepaMarshallerException(MSG_DebtorBankUnidentified, sepaHdr.getDocumentNo());
+			throw new SepaMarshallerException(MSG_DebtorBankUnidentified, SepaUtils.escapeAtSignsForParseTranslation(sepaHdr.getDocumentNo()));
 		}
 		pmtInf.setDbtrAgt(dbtrAgt);
 

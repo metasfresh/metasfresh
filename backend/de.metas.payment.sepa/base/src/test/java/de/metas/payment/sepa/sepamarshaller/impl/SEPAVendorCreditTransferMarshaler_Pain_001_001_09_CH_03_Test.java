@@ -435,6 +435,19 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03_Test
 	}
 
 	@Test
+	public void export_noLines_atSignInDocumentNo_isEscaped()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport();
+		sepaExport.setDocumentNo("10@01");
+		save(sepaExport);
+
+		// the process runs the error message through parseTranslation; "@@" stands for a plain "@"
+		assertThatThrownBy(() -> exportXml(sepaExport))
+				.hasMessageContaining(MSG_NO_LINES)
+				.hasMessageContaining("10@@01");
+	}
+
+	@Test
 	public void export_zeroAmount_fails()
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport();
