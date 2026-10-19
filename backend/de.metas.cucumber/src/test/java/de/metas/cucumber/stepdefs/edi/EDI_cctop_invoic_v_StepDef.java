@@ -75,8 +75,8 @@ public class EDI_cctop_invoic_v_StepDef
 	private static final String TAGNAME_EDI_CCTOP_INVOIC_500_V = "EDI_cctop_invoic_500_v";
 	private static final String TAGNAME_EDI_CCTOP_119_V = "EDI_cctop_119_v";
 
-	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final EDI_cctop_invoic_v_StepDefData cctopInvoiceTable;
 	private final C_Invoice_StepDefData invoiceTable;
