@@ -1218,16 +1218,16 @@ Feature: Invoice export via postgREST
 @allure.label.feature:F00350_EDI
 @F00350
   Scenario: Historical invoices JSON export keeps excluding packing lines
-    # Historical Invoices JSON reads edi_cctop_invoic_500_v (as the XML export does): packing lines stay excluded there. Only Lines is asserted, so the scenario is branch-neutral.
+    # Historical Invoices JSON reads edi_cctop_invoic_500_v (as the XML export does): packing lines stay excluded there. Only Lines is asserted.
     Given metasfresh contains M_Products:
-      | Identifier         | REST.Context.Value                     | REST.Context.Name                     | Description                                  |
+      | Identifier          | REST.Context.Value                      | REST.Context.Name                      | Description                                   |
       | product_S32545_HIST | postgRESTExportProductValue_S32545_HIST | postgRESTExportProductName_S32545_HIST | postgRESTExportProductDescription_S32545_HIST |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID        | PriceStd | C_UOM_ID |
       | salesPLV               | product_S32545_HIST | 5.00     | PCE      |
     And metasfresh contains C_Invoice:
-      | Identifier             | REST.Context              | ExternalId            | ExternalSystem.Value | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo   | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | salesInvoiceS32545_HIST | salesInvoiceS32545_HIST_ID | externalId_S32545_HIST | Shopware6            | customer1     | Ausgangsrechnung        | S32545_HIST  | 2025-05-01   | Spot                     | true    | EUR                 |
+      | Identifier              | REST.Context               | ExternalId             | ExternalSystem.Value | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo  | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoiceS32545_HIST | salesInvoiceS32545_HIST_ID | externalId_S32545_HIST | Shopware6            | customer1     | Ausgangsrechnung        | S32545_HIST | 2025-05-01   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID            | M_Product_ID        | QtyInvoiced | IsPackagingMaterial |
       | salesInvoiceS32545_HIST | product_S32545_HIST | 1 PCE       | N                   |

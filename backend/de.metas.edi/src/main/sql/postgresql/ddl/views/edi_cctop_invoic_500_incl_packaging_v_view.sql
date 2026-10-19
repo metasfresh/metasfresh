@@ -21,7 +21,7 @@
  */
 
 -- View: public.edi_cctop_invoic_500_incl_packaging_v
--- Has dependents (edi_cctop_invoic_500_v -> c_invoice_export_edi_invoic_json_v, historical_invoices_json_v): change it only via db_alter_view in a new migration script.
+-- Has dependents: c_invoice_export_edi_invoic_json_v; edi_cctop_invoic_500_v (-> historical_invoices_json_v): change it only via db_alter_view in a new migration script.
 
 CREATE OR REPLACE VIEW edi_cctop_invoic_500_incl_packaging_v AS
 SELECT il.ispackagingmaterial                                                  AS IsPackagingMaterial,

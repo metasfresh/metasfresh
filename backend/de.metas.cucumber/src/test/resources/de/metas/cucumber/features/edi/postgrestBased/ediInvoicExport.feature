@@ -661,7 +661,6 @@ Feature: EDI INVOIC export via postgREST
 
     # - Lines: product line (Packaging null) + packing line (Packaging marker).
     # - Partners: exactly ONE "DP" (the HandOver delivery location), NOT a second DP at the bill-to.
-    # Lines: 2 entries — the order-less packaging line (Line 20, 1 PCE × 5.00) is now exported as its own line with the Packaging marker; the product line keeps Packaging null. Partners unchanged: exactly one DP.
     Then the metasfresh REST-API responds with
     """
 {
@@ -842,7 +841,7 @@ Feature: EDI INVOIC export via postgREST
 
   # ################################################################################################
   # ################################################################################################
-  @Id:S32545_TC1a_priced
+  @Id:S32545_TC1c
   @from:cucumber
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00359_EDI_INVOICE_JSON
@@ -927,9 +926,9 @@ Feature: EDI INVOIC export via postgREST
 }
     """
 
-    # Σ NetAmt 220 + 165 + 22.50 + 30.00 = 437.50 = Invoice_TotalLines (case A priced, reference case A)
+    # Σ NetAmt 220 + 165 + 22.50 + 30.00 = 437.50 = Invoice_TotalLines
     # Partners: no HandOver, no shipment → DP / SN fall back to the order location (edi_cctop_119_v_view.sql:116-117,164-165); IV = invoice location (:135); crate lines excluded from BY / DP / SN (:55,99,150)
-    # One test partner with two locations stands for an order (delivery) location and a separate bill-to location: parties are keyed by location (edi_cctop_119_v_view.sql), so the JSON differs only in name fields; approved TC1 allows "a different (bill-to) location"
+    # One test partner with two locations stands for an order (delivery) location and a separate bill-to location: parties are keyed by location (edi_cctop_119_v_view.sql), so the JSON differs only in name fields (the bill-to location may differ from the order location)
     # Partners: SU = org remit-to (no M_InOut_ID on the test invoice), exactly one DP
     Then the metasfresh REST-API responds with
     """
@@ -1011,7 +1010,7 @@ Feature: EDI INVOIC export via postgREST
 
   # ################################################################################################
   # ################################################################################################
-  @Id:S32545_TC1b_priced
+  @Id:S32545_TC1d
   @from:cucumber
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00359_EDI_INVOICE_JSON
@@ -1091,7 +1090,7 @@ Feature: EDI INVOIC export via postgREST
 }
     """
 
-    # Σ NetAmt 550 + 75.00 − 16.50 = 608.50 = Invoice_TotalLines (case B priced, reference case B)
+    # Σ NetAmt 550 + 75.00 − 16.50 = 608.50 = Invoice_TotalLines
     # taxes document-level (IsDocumentLevel=Y, MInvoiceTax.java:257,302): VAT per rate on the summed base; per-line Tax_Amount is TaxAmtInfo (HALF_UP per line) — case B line taxes sum to 37.34, the per-base 7 % tax is 37.35, never compare the two
     # 1.50 EUR and RC are test values; the real EPS deposit price is customer master data
     Then the metasfresh REST-API responds with
@@ -1212,11 +1211,11 @@ Feature: EDI INVOIC export via postgREST
       | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | inv        | inv_ID       | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID | M_Product_ID | C_OrderLine_ID | QtyInvoiced | Price  | C_Tax_ID$set | IsPackagingMaterial | C_Project_ID |
-      | inv          | goodsKiku    | ol_kiku        | 220 PCE     | 1.00   | tax7         | N                   | P1           |
-      | inv          | goodsEvelina | ol_evelina     | 165 PCE     | 1.00   | tax7         | N                   | P2           |
-      | inv          | eps186       |                | 15 PCE      | 0.00   | tax19        | Y                   | P2           |
-      | inv          | eps186       |                | 20 PCE      | 0.00   | tax19        | Y                   | P1           |
+      | C_Invoice_ID | M_Product_ID | C_OrderLine_ID | QtyInvoiced | Price | C_Tax_ID$set | IsPackagingMaterial | C_Project_ID |
+      | inv          | goodsKiku    | ol_kiku        | 220 PCE     | 1.00  | tax7         | N                   | P1           |
+      | inv          | goodsEvelina | ol_evelina     | 165 PCE     | 1.00  | tax7         | N                   | P2           |
+      | inv          | eps186       |                | 15 PCE      | 0.00  | tax19        | Y                   | P2           |
+      | inv          | eps186       |                | 20 PCE      | 0.00  | tax19        | Y                   | P1           |
     And the invoice identified by inv is completed
 
     And the following API_Audit_Config records are created:
@@ -1239,9 +1238,9 @@ Feature: EDI INVOIC export via postgREST
 }
     """
 
-    # Σ NetAmt 220 + 165 + 0 + 0 = 385.00 = Invoice_TotalLines (reference case A)
+    # Σ NetAmt 220 + 165 + 0 + 0 = 385.00 = Invoice_TotalLines
     # Partners: no HandOver, no shipment → DP / SN fall back to the order location (edi_cctop_119_v_view.sql:116-117,164-165); IV = invoice location (:135); crate lines excluded from BY / DP / SN (:55,99,150)
-    # One test partner with two locations stands for an order (delivery) location and a separate bill-to location: parties are keyed by location (edi_cctop_119_v_view.sql), so the JSON differs only in name fields; approved TC1 allows "a different (bill-to) location"
+    # One test partner with two locations stands for an order (delivery) location and a separate bill-to location: parties are keyed by location (edi_cctop_119_v_view.sql), so the JSON differs only in name fields (the bill-to location may differ from the order location)
     # Partners: SU = org remit-to (no M_InOut_ID on the test invoice), exactly one DP
     Then the metasfresh REST-API responds with
     """
@@ -1351,17 +1350,17 @@ Feature: EDI INVOIC export via postgREST
       | Identifier | C_TaxCategory_ID.InternalName | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsDocumentLevel |
       | tax19      | Normal                        | 19   | DE                       | DE                        | Y               |
     And metasfresh contains M_Products:
-      | Identifier    | GTIN          | DepositType |
-      | goodsEvelina  |               |             |
-      | bonusWare     |               |             |
-      | eps186        | 4000000032557 |             |
+      | Identifier   | GTIN          | DepositType |
+      | goodsEvelina |               |             |
+      | bonusWare    |               |             |
+      | eps186       | 4000000032557 |             |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | salesPLV               | goodsEvelina | 1.00     | PCE      | tax7Category     |
       | salesPLV               | bonusWare    | 16.50    | PCE      | tax7Category     |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID.InternalName |
-      | salesPLV               | eps186        | 0.00     | PCE      | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID.InternalName |
+      | salesPLV               | eps186       | 0.00     | PCE      | Normal                        |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID |
       | o_1        | true    | customer1     | bpLoc_deliv            | F            | 2025-05-01  | 2025-05-01Z  | wh             |
@@ -1375,10 +1374,10 @@ Feature: EDI INVOIC export via postgREST
       | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | inv        | inv_ID       | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID | M_Product_ID  | C_OrderLine_ID | QtyInvoiced | Price  | C_Tax_ID$set | IsPackagingMaterial |
-      | inv          | goodsEvelina  | ol_evelina     | 550 PCE     | 1.00   | tax7         | N                   |
-      | inv          | eps186        |                | 50 PCE      | 0.00   | tax19        | Y                   |
-      | inv          | bonusWare     | ol_bonus       | 1 PCE       | -16.50 | tax7         | N                   |
+      | C_Invoice_ID | M_Product_ID | C_OrderLine_ID | QtyInvoiced | Price  | C_Tax_ID$set | IsPackagingMaterial |
+      | inv          | goodsEvelina | ol_evelina     | 550 PCE     | 1.00   | tax7         | N                   |
+      | inv          | eps186       |                | 50 PCE      | 0.00   | tax19        | Y                   |
+      | inv          | bonusWare    | ol_bonus       | 1 PCE       | -16.50 | tax7         | N                   |
     And the invoice identified by inv is completed
 
     And the following API_Audit_Config records are created:
@@ -1401,7 +1400,7 @@ Feature: EDI INVOIC export via postgREST
 }
     """
 
-    # Σ NetAmt 550 + 0 − 16.50 = 533.50 = Invoice_TotalLines (reference case B)
+    # Σ NetAmt 550 + 0 − 16.50 = 533.50 = Invoice_TotalLines
     # taxes document-level (IsDocumentLevel=Y, MInvoiceTax.java:257,302): VAT per rate on the summed base; per-line Tax_Amount is TaxAmtInfo (HALF_UP per line) — case B line taxes sum to 37.34, the per-base 7 % tax is 37.35, never compare the two
     Then the metasfresh REST-API responds with
     """
