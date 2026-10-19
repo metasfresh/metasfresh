@@ -16,6 +16,7 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -120,6 +121,15 @@ public class ReferenceStringHelper
 			return false;
 		}
 		return de.metas.payment.camt054_001_08.DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
+	}
+
+	/**
+	 * {@code TxDtls/RmtInf} is optional: a payment without remittance info (e.g. a debit confirmation) has none.
+	 * It then has no structured remittance information either, so no reference is found and the caller reports "missing ESR reference".
+	 */
+	private static Stream<de.metas.payment.camt054_001_08.StructuredRemittanceInformation16> streamStrd(@NonNull final EntryTransaction10 txDtls)
+	{
+		return txDtls.getRmtInf() != null ? txDtls.getRmtInf().getStrd().stream() : Stream.empty();
 	}
 
 	private static boolean isESRorQRRType(final String value)
@@ -301,7 +311,7 @@ public class ReferenceStringHelper
 	private Optional<String> extractEsrReference(@NonNull final EntryTransaction10 txDtls)
 	{
 		// get the esr reference string out of the XML tree
-		return txDtls.getRmtInf().getStrd().stream()
+		return streamStrd(txDtls)
 				.map(strd -> strd.getCdtrRefInf())
 
 				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
@@ -316,7 +326,7 @@ public class ReferenceStringHelper
 	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction10 txDtls)
 	{
 		// get the esr reference string out of the XML tree
-		return txDtls.getRmtInf().getStrd().stream()
+		return streamStrd(txDtls)
 				.map(strd -> strd.getCdtrRefInf())
 				.filter(cdtrRefInf -> cdtrRefInf != null)
 				.map(cdtrRefInf -> cdtrRefInf.getRef())
@@ -325,9 +335,7 @@ public class ReferenceStringHelper
 
 	private Optional<ESRType> extractType(@NonNull final EntryTransaction10 txDtls)
 	{
-		return txDtls.getRmtInf()
-				.getStrd()
-				.stream()
+		return streamStrd(txDtls)
 				.map(strd -> Optional.ofNullable(strd.getCdtrRefInf())) // Safely map to CreditorReferenceInformation2
 				.filter(Optional::isPresent)
 				.map(Optional::get)
