@@ -28,8 +28,8 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 
 import java.sql.PreparedStatement;
@@ -122,7 +122,12 @@ public class DB_Function_StepDef
 				{
 					throw new AdempiereException("Function returned no row for ID " + id + ": " + sql);
 				}
-				return rs.getString(1);
+				final String text = rs.getString(1);
+				if (text == null)
+				{
+					throw new AdempiereException("Function returned NULL in its first column for ID " + id + ": " + sql);
+				}
+				return text;
 			}
 		}
 		catch (final SQLException e)
