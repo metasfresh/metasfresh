@@ -84,7 +84,7 @@ class AbstractModelListCacheLocalTest
 		final TestModelListCacheLocal cache = createCache();
 		assertGarbageCollectorClearsUnreferencedObject(() -> InterfaceWrapperHelper.newInstance(I_C_BPartner.class));
 
-		// with a strong reference the parent is never cleared; with a weak one it is, and the next call used to fail
+		// a strong parent reference is never cleared; a weak one would be, and the next call would then fail
 		runGarbageCollectorUntilCleared(parentRef);
 
 		assertThat(cache.getItems()).containsExactly(ITEM);

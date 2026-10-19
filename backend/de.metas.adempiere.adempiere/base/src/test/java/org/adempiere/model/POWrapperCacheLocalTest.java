@@ -72,7 +72,7 @@ class POWrapperCacheLocalTest
 		final POWrapperCacheLocal cacheLocal = createCacheLocalReferencingChild(child);
 		assertGarbageCollectorClearsUnreferencedObject(this::newPOWrapper);
 
-		// with a strong reference the parent is never cleared; with a weak one it is, and the next call used to fail
+		// a strong parent reference is never cleared; a weak one would be, and the next call would then fail
 		runGarbageCollectorUntilCleared(parentRef);
 
 		assertThat(cacheLocal.get()).isSameAs(child);
