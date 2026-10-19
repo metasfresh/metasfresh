@@ -121,3 +121,127 @@ Feature: shipment schedule recompute pass meets a concurrent change
     Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_1       | orderLine_1    | N             |
+
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @Id:S33004_TC2_repick
+  Scenario: reversing a shipment of an aggregate HU re-picks it while the pending recompute runs, and the re-picked quantity is not lost
+    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And temporarily set sys config boolean value true for sys config 'SKIP_WP_PROCESSOR_FOR_AUTOMATION'
+    And temporarily set sys config boolean value false for sys config 'de.metas.handlingunits.HUConstants.Fresh_QuickShipment'
+    And temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU'
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | 200.0      | 200.0       | Y         |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | TU         |
+      | LU         |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name | HU_UnitType | IsCurrent |
+      | TU                            | TU                    | TU   | TU          | Y         |
+      | LU                            | LU                    | LU   | LU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
+      | TU                         | TU                            | 0   | MI       |                                  |
+      | LU                         | LU                            | 10  | HU       | TU                               |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | TUx4                               | TU                         | product_1               | 4   | 2000-01-01 |
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inventory                 | 2024-01-10   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory                 | line1                         | product_1               | 0       | 1000     | PCE          |
+    And complete inventory with inventoryIdentifier 'inventory'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID    |
+      | line1              | pickFromCU |
+    And transform CU to new LU
+      | sourceCU   | newLU                | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
+      | pickFromCU | pickFromAggregatedLU | TU       | 4           | 10          |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer_1               | 2024-01-15  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product_1               | 160        | TUx4                                   |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | L1                        | N             |
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU           | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product_1             | pickFromAggregatedLU | 3         | 1           | N                     | 2027-03-01     | 9876  |
+    And complete picking job
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule                 | shipment              | CO            |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | L1                        | N             |
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | OPT.QtyPickList |
+      | shipmentSchedule      | 0               |
+
+    # an older pending flag, which the recompute pass running during the reversal deletes.
+    # Guard: the reversal's own shipment-line and HU segment changes are flushed after its commit and re-flag the schedule, so it heals
+    Given the shipment schedule recompute queues are paused
+    And the shipment schedule "shipmentSchedule" is flagged for recompute 1 times in one transaction, also from nested calls
+    When the shipment identified by shipment is reversed, committed only after the pending recompute ran
+    Then 1 untagged M_ShipmentSchedule_Recompute marker exists for shipmentSchedule
+    When the shipment schedule recompute queues are resumed
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | OPT.QtyPickList |
+      | shipmentSchedule      | 12              |
+    # the TUs replayed through the aggregate HU were merged into one row (without the merge: one row of 4 per TU)
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
+      | QtyPicked | Processed |
+      | 12        | N         |
+
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @Id:S33004_TC2_regularPick
+  Scenario: a regular pick committed after the recompute pass still gets its picked quantity onto the shipment schedule
+    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inventory                 | 2024-01-10   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory                 | line1                         | product_1               | 0       | 10       | PCE          |
+    And complete inventory with inventoryIdentifier 'inventory'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | line1              | hu_1    |
+    And the order identified by order_1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | orderLine_1    | N             |
+
+    # an older pending flag, which the recompute pass running during the pick deletes.
+    # Guard: the pick's HU segment change is flushed after its commit and re-flags the schedule, so it heals
+    Given the shipment schedule recompute queues are paused
+    And the shipment schedule "ss_1" is flagged for recompute 1 times in one transaction, also from nested calls
+    When the following qty is picked while the pending shipment schedule recompute runs before the pick is committed
+      | M_ShipmentSchedule_ID.Identifier | M_HU_ID.Identifier | QtyPicked |
+      | ss_1                             | hu_1               | 10        |
+    Then 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_1
+    When the shipment schedule recompute queues are resumed
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | OPT.QtyPickList |
+      | ss_1                  | 10              |

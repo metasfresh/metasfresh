@@ -51,6 +51,7 @@ import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.shipmentschedule.ShipmentScheduleRecomputeRaceHarness;
 import de.metas.cucumber.stepdefs.tourplanning.M_Tour_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocBaseType;
@@ -170,6 +171,7 @@ public class M_InOut_StepDef
 	private final C_Project_StepDefData projectTable;
 	@NonNull private final M_Product_StepDefData productTable;
 	private final TestContext restTestContext;
+	@NonNull private final ShipmentScheduleRecomputeRaceHarness recomputeRaceHarness;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -598,8 +600,7 @@ public class M_InOut_StepDef
 				documentBL.processEx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				break;
 			case reversed:
-				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				reverse(shipment);
 				break;
 			case voided:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
@@ -614,6 +615,71 @@ public class M_InOut_StepDef
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	private void reverse(@NonNull final I_M_InOut shipment)
+	{
+		shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+		documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+	}
+
+	/**
+	 * Reverses the shipment like {@code the shipment identified by ... is reversed}, but keeps the reversal's transaction open while the pending shipment schedule
+	 * recompute pass runs; the transaction is committed after the pass. Requires the paused recompute queues.
+	 * While the transaction is open, asserts out of transaction that the reversal is not visible: the shipment is still completed and the
+	 * sum of {@code M_ShipmentSchedule_QtyPicked.QtyPicked} over the shipment's lines is unchanged.
+	 * <p>
+	 * The real trigger: reversing a shipment ({@code M_InOut} Reverse_Correct, {@code M_InOut.java:295}) reopens the picking jobs of its HUs
+	 * ({@code PickingJobService.reopenPickingJobs} -> {@code PickingJobReopenCommand}), which replays one add-qty-picked request per picked TU of an
+	 * aggregate HU through the same VHU, merging them via {@code HUShipmentScheduleBL.tryMergeQtyPickedIntoExistingForVHU}. The reversal's transaction commits
+	 * at an arbitrary moment in relation to a recompute pass; the held transaction makes that moment deterministic.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.params <b>shipmentIdentifier</b> -- the shipment's identifier in M_InOut_StepDefData
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData<br>
+	 *   Given the shipment schedule recompute queues are paused
+	 * @cucumber.example
+	 * <pre>
+	 * When the shipment identified by shipment is reversed, committed only after the pending recompute ran
+	 * </pre>
+	 */
+	@And("the shipment identified by {word} is reversed, committed only after the pending recompute ran")
+	public void reverseShipmentCommittedAfterRecompute(@NonNull final String shipmentIdentifier) throws InterruptedException
+	{
+		final I_M_InOut shipmentOutOfTrx = inoutTable.get(shipmentIdentifier);
+		final ImmutableSet<Integer> lineIds = inOutDAO.retrieveLines(shipmentOutOfTrx)
+				.stream()
+				.map(org.compiere.model.I_M_InOutLine::getM_InOutLine_ID)
+				.collect(ImmutableSet.toImmutableSet());
+		assertThat(lineIds).as("Lines of shipment %s", shipmentIdentifier).isNotEmpty();
+		final BigDecimal qtyPickedBefore = retrieveQtyPickedOutOfTrx(lineIds);
+		assertThat(qtyPickedBefore).as("QtyPicked of the shipment %s before its reversal", shipmentIdentifier).isGreaterThan(BigDecimal.ZERO);
+
+		recomputeRaceHarness.runInTransactionCommittedAfterRecompute(
+				() -> {
+					final I_M_InOut shipment = InterfaceWrapperHelper.load(shipmentOutOfTrx.getM_InOut_ID(), I_M_InOut.class);
+					reverse(shipment);
+					return null;
+				},
+				() -> {
+					assertThat(InterfaceWrapperHelper.loadOutOfTrx(shipmentOutOfTrx.getM_InOut_ID(), I_M_InOut.class).getDocStatus())
+							.as("DocStatus of shipment %s visible outside the reversal's transaction", shipmentIdentifier)
+							.isEqualTo(IDocument.STATUS_Completed);
+					assertThat(retrieveQtyPickedOutOfTrx(lineIds))
+							.as("QtyPicked of the shipment lines visible outside the reversal's transaction (the reversal must not commit before the recompute pass ran)")
+							.isEqualByComparingTo(qtyPickedBefore);
+				});
+	}
+
+	private BigDecimal retrieveQtyPickedOutOfTrx(@NonNull final Set<Integer> shipmentLineIds)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, shipmentLineIds)
+				.create()
+				.stream()
+				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	/**
