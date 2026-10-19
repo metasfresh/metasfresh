@@ -35,7 +35,7 @@ Feature: QR-bill payload uses structured addresses (address type S)
   # ----------------------------------------------------------------------------------------------------
   # Completed invoice, QR-IBAN account, QRR reference
   # ----------------------------------------------------------------------------------------------------
-  @Id:S32986_TC11_1
+  @Id:QR_STRUCTURED_1
   Scenario: invoice QR-bill payload has structured creditor and debtor addresses
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -86,7 +86,7 @@ Feature: QR-bill payload uses structured addresses (address type S)
   # ----------------------------------------------------------------------------------------------------
   # Dunning letter on that invoice
   # ----------------------------------------------------------------------------------------------------
-  @Id:S32986_TC11_2
+  @Id:QR_STRUCTURED_2
   Scenario: dunning QR-bill payload has structured creditor and debtor addresses
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -138,7 +138,7 @@ Feature: QR-bill payload uses structured addresses (address type S)
   # ----------------------------------------------------------------------------------------------------
   # Creditor street without building number
   # ----------------------------------------------------------------------------------------------------
-  @Id:S32986_TC11_3
+  @Id:QR_STRUCTURED_3
   Scenario: creditor street without building number gives an empty building-number line
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -176,7 +176,7 @@ Feature: QR-bill payload uses structured addresses (address type S)
   # Organization account without QR-IBAN. Only the CR / UD blocks
   # change; account, amount, reference type, reference, message and trailer are what the function printed before.
   # ----------------------------------------------------------------------------------------------------
-  @Id:S32986_TC11_4
+  @Id:QR_STRUCTURED_4
   Scenario: organization account without QR-IBAN - only the address blocks differ
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |

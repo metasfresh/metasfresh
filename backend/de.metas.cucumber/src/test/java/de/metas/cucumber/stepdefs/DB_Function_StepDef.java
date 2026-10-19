@@ -82,14 +82,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DB_Function_StepDef
 {
 	private static final Pattern SQL_FUNCTION_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?");
+	private static final String QR_ORG_VALUE = "901";
+	private static final String ESR_ENABLED_SYSCONFIG = "de.metas.payment.esr.Enabled";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDunningBL dunningBL = Services.get(IDunningBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	private static final String QR_ORG_VALUE = "901";
-	private static final String ESR_ENABLED_SYSCONFIG = "de.metas.payment.esr.Enabled";
 
 	/** ESR on/off before the scenario switched it on; null if it did not */
 	private Boolean esrEnabledBeforeScenario;
