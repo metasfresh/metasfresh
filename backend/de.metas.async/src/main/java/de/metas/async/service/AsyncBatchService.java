@@ -40,7 +40,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.util.Env;
+import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -116,7 +116,7 @@ public class AsyncBatchService
 				.count();
 
 		return Optional.of(AsyncBatchNotifyRequest.builder()
-				.clientId(Env.getClientId())
+				.clientId(ClientId.ofRepoId(asyncBatch.getAD_Client_ID()))
 				.asyncBatchId(asyncBatch.getC_Async_Batch_ID())
 				.noOfProcessedWPs(workPackagesProcessedCount)
 				.noOfEnqueuedWPs(workPackages.size())
