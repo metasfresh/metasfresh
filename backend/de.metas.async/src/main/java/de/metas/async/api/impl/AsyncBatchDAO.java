@@ -14,6 +14,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.Query;
@@ -79,20 +80,18 @@ public class AsyncBatchDAO implements IAsyncBatchDAO
 				? InterfaceWrapperHelper.getTrxName(asyncBatch)
 				: trxNameCandidate;
 
-		String whereClause = I_C_Queue_WorkPackage.COLUMNNAME_C_Async_Batch_ID + " = ? ";
-		final List<Object> params = new ArrayList<Object>();
-		params.add(asyncBatch.getC_Async_Batch_ID());
+		final IQueryBuilder<I_C_Queue_WorkPackage> queryBuilder = queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Async_Batch_ID, asyncBatch.getC_Async_Batch_ID());
 
 		if (processed != null)
 		{
-			whereClause += " AND " + I_C_Queue_WorkPackage.COLUMNNAME_Processed + " = ? ";
-			params.add(processed);
+			queryBuilder.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, processed);
 		}
 
-		return new Query(ctx, I_C_Queue_WorkPackage.Table_Name, whereClause, trxName)
-				.setOnlyActiveRecords(true)
-				.setParameters(params)
-				.setOrderBy(I_C_Queue_WorkPackage.COLUMNNAME_Updated + " DESC ")
+		return queryBuilder
+				.orderByDescending(I_C_Queue_WorkPackage.COLUMNNAME_Updated)
+				.create()
 				.list(I_C_Queue_WorkPackage.class);
 	}
 
