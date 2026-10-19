@@ -20,9 +20,9 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.DeliveryRule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.material.event.commons.OrderLineDescriptor;
+import de.metas.order.DeliveryRule;
 import de.metas.shipping.ShipperId;
 
 /*
@@ -121,7 +121,11 @@ public class ShipmentScheduleUpdaterTest
 		assertThat(schedWithZeroOverride.isProcessed())
 				.as("explicit QtyToDeliver_Override=0 is an override => schedule is not processed")
 				.isFalse();
+	}
 
+	@Test
+	public void updateProcessedFlag_nullQtyToDeliverOverride_nothingReserved_isProcessed()
+	{
 		final I_M_ShipmentSchedule schedWithoutOverride = newInstance(I_M_ShipmentSchedule.class); // QtyToDeliver_Override=NULL
 		shipmentScheduleUpdater.updateProcessedFlag(schedWithoutOverride);
 		assertThat(schedWithoutOverride.isProcessed())

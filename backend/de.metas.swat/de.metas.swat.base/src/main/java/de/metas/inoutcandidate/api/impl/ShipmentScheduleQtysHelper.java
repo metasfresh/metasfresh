@@ -140,7 +140,8 @@ import java.math.BigDecimal;
 		// the model getter collapses NULL to ZERO, so check the column for NULL to tell an explicit 0 from "no override"
 		final boolean hasQtyToDeliverOverride = !InterfaceWrapperHelper.isNull(discardedShipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 		final BigDecimal qtyToDeliverOverride = discardedShipmentSchedule.getQtyToDeliver_Override();
-		if (hasQtyToDeliverOverride)
+		// only a present, non-negative override is honoured; a negative one falls back to the base qty (same as ShipmentScheduleUpdater.computeQtyRequiredForOlAndSched)
+		if (hasQtyToDeliverOverride && qtyToDeliverOverride.signum() >= 0)
 		{
 			logger.debug("deliveryRule={}; -> set QtyToDeliver to QtyToDeliverOverride={}", deliveryRule, qtyToDeliverOverride);
 			discardedShipmentSchedule.setQtyToDeliver(qtyToDeliverOverride);
