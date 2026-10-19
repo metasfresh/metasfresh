@@ -25,7 +25,7 @@ select ('SPC' || E'\n' || --QRType
         COALESCE(replace(qr_iban, ' ', ''), replace(iban, ' ', ''), '') || E'\n' || -- Account
         'S' || E'\n' || -- CR - AdressTyp = S address
         orgbp.name || E'\n' || --CR – Name
-       (extract_street_and_number(COALESCE(orgl.address1, ''))).street || E'\n' || --CR –Street
+        (extract_street_and_number(COALESCE(orgl.address1, ''))).street || E'\n' || --CR –Street
         (extract_street_and_number(COALESCE(orgl.address1, ''))).number || E'\n' || --CR –Street no
         COALESCE(orgl.postal, '') || E'\n' || -- CR Postal code
         COALESCE(orgl.city, '') || E'\n' || -- CR city
@@ -44,8 +44,8 @@ select ('SPC' || E'\n' || --QRType
         cur.iso_code || E'\n' ||
         'S' || E'\n' || -- UD– AdressTyp = S address
         substring(bpartneraddress from 1 for position(E'\n' in bpartneraddress)) || --UD – Name
-       (extract_street_and_number(COALESCE(l.address1, ''))).street || E'\n' || --UD –Street
-       (extract_street_and_number(COALESCE(l.address1, ''))).number || E'\n' || --UD –Street no
+        (extract_street_and_number(COALESCE(l.address1, ''))).street || E'\n' || --UD –Street
+        (extract_street_and_number(COALESCE(l.address1, ''))).number || E'\n' || --UD –Street no
         COALESCE(l.postal, '') || E'\n' || -- UD Postal code
         COALESCE(l.city, '') || E'\n' || -- UD city
         c.countrycode || E'\n' || -- UD Country

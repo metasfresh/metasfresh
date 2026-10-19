@@ -54,8 +54,6 @@ BEGIN
 END;
 $$;
 
-;
-
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_QR_Code (IN p_C_invoice_id numeric);
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_QR_Code(IN p_C_invoice_id numeric)
@@ -83,7 +81,7 @@ select ('SPC' || E'\n' || --QRType
         COALESCE(replace(qr_iban, ' ', ''), replace(iban, ' ', ''), '') || E'\n' || -- Account
         'S' || E'\n' || -- CR - AdressTyp = S address
         orgbp.name || E'\n' || --CR – Name
-       (extract_street_and_number(COALESCE(orgl.address1, ''))).street || E'\n' || --CR –Street
+        (extract_street_and_number(COALESCE(orgl.address1, ''))).street || E'\n' || --CR –Street
         (extract_street_and_number(COALESCE(orgl.address1, ''))).number || E'\n' || --CR –Street no
         COALESCE(orgl.postal, '') || E'\n' || -- CR Postal code
         COALESCE(orgl.city, '') || E'\n' || -- CR city
@@ -102,8 +100,8 @@ select ('SPC' || E'\n' || --QRType
         cur.iso_code || E'\n' ||
         'S' || E'\n' || -- UD– AdressTyp = S address
         substring(bpartneraddress from 1 for position(E'\n' in bpartneraddress)) || --UD – Name
-       (extract_street_and_number(COALESCE(l.address1, ''))).street || E'\n' || --UD –Street
-       (extract_street_and_number(COALESCE(l.address1, ''))).number || E'\n' || --UD –Street no
+        (extract_street_and_number(COALESCE(l.address1, ''))).street || E'\n' || --UD –Street
+        (extract_street_and_number(COALESCE(l.address1, ''))).number || E'\n' || --UD –Street no
         COALESCE(l.postal, '') || E'\n' || -- UD Postal code
         COALESCE(l.city, '') || E'\n' || -- UD city
         c.countrycode || E'\n' || -- UD Country
@@ -223,7 +221,7 @@ select ('SPC' || E'\n' || --QRType
         '0200' || E'\n' || --Version
         '1' || E'\n' || --Coding
         COALESCE(replace(qr_iban, ' ', ''), replace(iban, ' ', ''), '') || E'\n' || -- Account
-          'S' || E'\n' || -- CR - AdressTyp = S address
+        'S' || E'\n' || -- CR - AdressTyp = S address
         (case when orgbp.IsCompany = 'Y' then orgbp.Companyname else orgbp.name end) || E'\n' || --CR – Name
         (extract_street_and_number(COALESCE(orgl.address1, ''))).street || E'\n' || --CR –Street
         (extract_street_and_number(COALESCE(orgl.address1, ''))).number || E'\n' || --CR –Street no
@@ -232,14 +230,14 @@ select ('SPC' || E'\n' || --QRType
         orgc.countrycode || E'\n' || -- CR Country
         E'\n' || -- E'\n' || --UCR – AdressTyp
         E'\n' || -- E'\n' || --UCR – Name
-        E'\n' || -- E'\n' || --UCR - Street or address line 1
-        E'\n' || -- E'\n' || --UCR – Building number or address line 2
+        E'\n' || -- E'\n' || --UCR - Street
+        E'\n' || -- E'\n' || --UCR – Building number
         E'\n' || -- E'\n' || --UCR – Postal code
         E'\n' || -- E'\n' || --UCR – City
         E'\n' || -- E'\n' || --UCR – Country
         to_char((i.grandtotal - coalesce(y.zuordnung, 0)), 'FM99990.00') || E'\n' ||
         cur.iso_code || E'\n' ||
-         'S' || E'\n' || -- UD– AdressTyp = S address
+        'S' || E'\n' || -- UD– AdressTyp = S address
         (case
              when bp.IsCompany = 'Y' then bp.companyname
              else (coalesce(u.FirstName, '') || ' ' || coalesce(u.LastName, '')) end)
@@ -358,6 +356,3 @@ WHERE dd.C_DunningDoc_ID = p_C_DunningDoc_ID
 $$
     LANGUAGE sql STABLE
 ;
-
-
-

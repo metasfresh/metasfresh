@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
@@ -33,7 +34,6 @@ import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.organization.IOrgDAO;
-import de.metas.cache.CacheMgt;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -42,11 +42,11 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.service.ClientId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -74,8 +74,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Step definitions to read the text result of a PL/pgSQL / SQL report function and assert it line by line,
- * plus the set-up steps the QR-bill scenarios need (organization as QR-bill creditor, a dunning letter on an invoice).
+ * Step definitions to read the text result of a PL/pgSQL / SQL report function and assert it line by line.
+ * It also holds the set-up steps the QR-bill scenarios need (organization as QR-bill creditor, a dunning letter on an invoice).
+ * Limits of the result step: the function has one numeric argument (an invoice or dunning document ID), returns a column named
+ * <code>QR_Code</code>, and <code>&lt;GrandTotal&gt;</code> is resolved from an invoice, so it fits the QR-bill functions only.
  */
 public class DB_Function_StepDef
 {

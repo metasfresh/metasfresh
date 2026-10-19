@@ -23,7 +23,7 @@ select ('SPC' || E'\n' || --QRType
         '0200' || E'\n' || --Version
         '1' || E'\n' || --Coding
         COALESCE(replace(qr_iban, ' ', ''), replace(iban, ' ', ''), '') || E'\n' || -- Account
-          'S' || E'\n' || -- CR - AdressTyp = S address
+        'S' || E'\n' || -- CR - AdressTyp = S address
         (case when orgbp.IsCompany = 'Y' then orgbp.Companyname else orgbp.name end) || E'\n' || --CR – Name
         (extract_street_and_number(COALESCE(orgl.address1, ''))).street || E'\n' || --CR –Street
         (extract_street_and_number(COALESCE(orgl.address1, ''))).number || E'\n' || --CR –Street no
@@ -32,14 +32,14 @@ select ('SPC' || E'\n' || --QRType
         orgc.countrycode || E'\n' || -- CR Country
         E'\n' || -- E'\n' || --UCR – AdressTyp
         E'\n' || -- E'\n' || --UCR – Name
-        E'\n' || -- E'\n' || --UCR - Street or address line 1
-        E'\n' || -- E'\n' || --UCR – Building number or address line 2
+        E'\n' || -- E'\n' || --UCR - Street
+        E'\n' || -- E'\n' || --UCR – Building number
         E'\n' || -- E'\n' || --UCR – Postal code
         E'\n' || -- E'\n' || --UCR – City
         E'\n' || -- E'\n' || --UCR – Country
         to_char((i.grandtotal - coalesce(y.zuordnung, 0)), 'FM99990.00') || E'\n' ||
         cur.iso_code || E'\n' ||
-         'S' || E'\n' || -- UD– AdressTyp = S address
+        'S' || E'\n' || -- UD– AdressTyp = S address
         (case
              when bp.IsCompany = 'Y' then bp.companyname
              else (coalesce(u.FirstName, '') || ' ' || coalesce(u.LastName, '')) end)
