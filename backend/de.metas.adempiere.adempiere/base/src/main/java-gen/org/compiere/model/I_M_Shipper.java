@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
@@ -122,21 +123,21 @@ public interface I_M_Shipper
 	 * Set Document Copies.
 	 * Number of copies to be printed. (Can be overwritten in the Print Format tab in the Business Partner window)
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentCopies (int DocumentCopies);
+	void setDocumentCopies (@Nullable BigDecimal DocumentCopies);
 
 	/**
 	 * Get Document Copies.
 	 * Number of copies to be printed. (Can be overwritten in the Print Format tab in the Business Partner window)
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getDocumentCopies();
+	BigDecimal getDocumentCopies();
 
 	ModelColumn<I_M_Shipper, Object> COLUMN_DocumentCopies = new ModelColumn<>(I_M_Shipper.class, "DocumentCopies", null);
 	String COLUMNNAME_DocumentCopies = "DocumentCopies";
