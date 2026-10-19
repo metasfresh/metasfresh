@@ -1053,7 +1053,10 @@ Feature: reversed shipment clears HU C_BPartner_ID
     And M_HU_Storage are validated
       | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | hu_s_1     | hu_1               | p_1                     | 10  |
-    And after not more than 60 seconds metasfresh has MD_Stock data
+    # The shipment reversal (RC) fires async stock events (delete+create) that must
+    # propagate through RabbitMQ before MD_Stock reaches its final value. Use 120s for
+    # CI headroom (mirrors the 120s post-reversal MD_Stock wait earlier in this feature).
+    And after not more than 120 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | p_1                     | 10        |
 
