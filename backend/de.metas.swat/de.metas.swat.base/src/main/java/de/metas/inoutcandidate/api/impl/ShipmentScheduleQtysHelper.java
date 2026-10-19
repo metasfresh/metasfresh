@@ -14,6 +14,7 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -136,8 +137,10 @@ import java.math.BigDecimal;
 			return;
 		}
 
+		// the model getter collapses NULL to ZERO, so check the column for NULL to tell an explicit 0 from "no override"
+		final boolean hasQtyToDeliverOverride = !InterfaceWrapperHelper.isNull(discardedShipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 		final BigDecimal qtyToDeliverOverride = discardedShipmentSchedule.getQtyToDeliver_Override();
-		if (qtyToDeliverOverride.signum() > 0)
+		if (hasQtyToDeliverOverride)
 		{
 			logger.debug("deliveryRule={}; -> set QtyToDeliver to QtyToDeliverOverride={}", deliveryRule, qtyToDeliverOverride);
 			discardedShipmentSchedule.setQtyToDeliver(qtyToDeliverOverride);

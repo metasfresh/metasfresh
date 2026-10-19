@@ -608,7 +608,13 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		if (olAndSched.getQtyOverride() != null)
 		{
 			final BigDecimal qtyToDeliverOverrideFulFilled = ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched, shipmentScheduleAllocDAO);
-			if (olAndSched.getQtyOverride().compareTo(qtyToDeliverOverrideFulFilled) > 0)
+			if (olAndSched.getQtyOverride().signum() == 0)
+			{
+				// an explicit override of zero means "deliver nothing"; don't fall back to QtyOrdered - QtyDelivered
+				qtyRequired = BigDecimal.ZERO;
+				logger.debug("QtyOverride is explicitly zero; => qtyRequired={}", qtyRequired);
+			}
+			else if (olAndSched.getQtyOverride().compareTo(qtyToDeliverOverrideFulFilled) > 0)
 			{
 				qtyRequired = olAndSched.getQtyOverride().subtract(qtyToDeliverOverrideFulFilled);
 				logger.debug("QtyOverride={} is greater than QtyToDeliverOverrideFulFilled={}; => use the delta as QtyRequired={}", olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired);
@@ -811,7 +817,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			return;
 
 		}
-		final boolean noQtyOverride = sched.getQtyToDeliver_Override().signum() <= 0;
+		final boolean noQtyOverride = InterfaceWrapperHelper.isNull(sched, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 		final boolean noQtyReserved = sched.getQtyReserved().signum() <= 0;
 		final boolean noQtyPickedAndNotDelivered = sched.getQtyPickList().signum() <= 0;
 
