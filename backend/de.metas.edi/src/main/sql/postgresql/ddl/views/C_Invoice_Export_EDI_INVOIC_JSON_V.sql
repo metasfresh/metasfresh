@@ -122,9 +122,12 @@ FROM edi_cctop_invoic_v invoic_v
                                             'Product_Buyer_ProductNo', v.CustomerProductNo,
                                             'Product_Supplier_TU_GTIN', v.Supplier_GTIN_CU,
                                             'Product_Supplier_ProductNo', v.Value,
-                                            'Product_DepositType', v.Product_DepositType
+                                            'Product_DepositType', v.Product_DepositType,
+                                            'Packaging', CASE WHEN v.IsPackagingMaterial = 'Y'
+                                                                  THEN JSON_BUILD_OBJECT('IsPackagingMaterial', TRUE)
+                                                         END
                                         ) ORDER BY v.line) AS json_data
-                    FROM edi_cctop_invoic_500_v v
+                    FROM edi_cctop_invoic_500_incl_packaging_v v
                              LEFT JOIN c_uom uom ON uom.c_uom_id = v.C_UOM_BPartner_ID
                     GROUP BY c_invoice_id) edi_500_v ON edi_500_v.c_invoice_id = invoic_v.c_invoice_id
          LEFT JOIN (SELECT c_invoice_id,
