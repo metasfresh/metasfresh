@@ -183,7 +183,7 @@ public class RabbitMQEnqueuer implements EventEnqueuer
 				}
 				else if (failedIndex > startIndex)
 				{
-					logger.debug("Sending failed after {} sends on the same channel; retrying on a new channel: {}", failedIndex - startIndex, sends.get(failedIndex).getEvent(), e);
+					logger.info("Sending failed after {} sends on the same channel; retrying on a new channel: {}", failedIndex - startIndex, sends.get(failedIndex).getEvent(), e);
 					nextIndex = failedIndex;
 				}
 				else
