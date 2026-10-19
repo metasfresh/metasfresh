@@ -58,7 +58,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # Header: organisation, schema, period, document no., status (draft and completed), Original
 # ############################################################################################################################################
   @Id:S32216_UStVA_010
-  @from:cucumber
   Scenario: the header shows the declaration data for a draft and for a completed declaration
 
     And metasfresh contains C_Tax
@@ -102,7 +101,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # no tax line -> empty tax; balance = - sum of declared tax; refund prints negative; codes are not a fixed list
 # ############################################################################################################################################
   @Id:S32216_UStVA_020
-  @from:cucumber
   Scenario: one summary row per VAT code of the declaration, with the balance as the negated sum of the declared tax lines
 
     # five codes, in the shape of Kz 81 / 41 (sales net), 66 (input tax), 66a (input net), 61 (input tax)
@@ -170,7 +168,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # Credit notes reduce the code; cut-off toward zero for positive and negative bases; zero lines are dropped
 # ############################################################################################################################################
   @Id:S32216_UStVA_030
-  @from:cucumber
   Scenario: credit notes reduce the net, cents are cut off toward zero and zero-amount lines are not printed
 
     And metasfresh contains C_Tax
@@ -238,7 +235,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # Detail list: per code every snapshot row with its source document; detail sums equal the summary before the cut-off
 # ############################################################################################################################################
   @Id:S32216_UStVA_040
-  @from:cucumber
   Scenario: detail rows per code add up to the declared amounts before the cut-off and show the source document
 
     And metasfresh contains C_Tax
@@ -295,7 +291,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # Source documents: allocation (discount) rows and an invoice of the same code; display sign for a sales code
 # ############################################################################################################################################
   @Id:S32216_UStVA_050
-  @from:cucumber
   Scenario: an allocation and an invoice both appear in the detail list; a sales code prints positive, the balance is payable
 
     And metasfresh contains C_Tax
@@ -348,7 +343,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # A code configured for sales and purchase prints the declared sign (debit - credit)
 # ############################################################################################################################################
   @Id:S32216_UStVA_060
-  @from:cucumber
   Scenario: a VAT code used on the sales and on the purchase side prints the declared debit minus credit
 
     And metasfresh contains C_Tax
@@ -384,7 +378,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | BALANCE      |               |         |         | 190.00      |
 
   @Id:S32216_UStVA_065
-  @from:cucumber
   Scenario: a VAT code with a sales row and a row for both sides prints the declared debit minus credit
 
     And metasfresh contains C_Tax
@@ -425,7 +418,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # Frozen snapshot: a completed declaration prints the same after new postings and a repost
 # ############################################################################################################################################
   @Id:S32216_UStVA_070
-  @from:cucumber
   Scenario: a completed declaration prints the same amounts after a repost and after another posting in the period
 
     And metasfresh contains C_Tax
@@ -491,7 +483,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # A snapshot row whose source document cannot be found still prints, with its amount and empty document fields
 # ############################################################################################################################################
   @Id:S32216_UStVA_080
-  @from:cucumber
   Scenario: a snapshot row without a findable source document is printed with its amount and empty document fields
 
     And metasfresh contains C_Tax
@@ -534,7 +525,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # Correction: header shows Correction and the Original's document no.
 # ############################################################################################################################################
   @Id:S32216_UStVA_090
-  @from:cucumber
   Scenario: a correction declaration prints as Correction with the document no. of its Original
 
     And metasfresh contains C_Tax
@@ -595,7 +585,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # Empty declaration: header and a zero balance, no code rows
 # ############################################################################################################################################
   @Id:S32216_UStVA_100
-  @from:cucumber
   Scenario: a declaration without lines prints the header and a zero balance
 
     And metasfresh contains C_TaxDeclaration:
@@ -614,7 +603,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # Output VAT and input VAT in one period: the balance nets the declared output tax (Kz 81 net + tax rows) against the input tax (Kz 66)
 # ############################################################################################################################################
   @Id:S32216_UStVA_110
-  @from:cucumber
   Scenario: the balance nets the output tax of a sales code against the input tax of a purchase code
 
     And metasfresh contains C_Tax
@@ -662,7 +650,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # Header: tax number and VAT ID come only from the organisation's business partner
 # ############################################################################################################################################
   @Id:S32216_UStVA_120
-  @from:cucumber
   Scenario: the header shows the tax number and the VAT ID of the organisation's business partner
 
     And metasfresh contains AD_Org:
@@ -680,7 +667,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | HEADER       | 21/815/08150 | DE136695976 |
 
   @Id:S32216_UStVA_125
-  @from:cucumber
   Scenario: a deactivated former business partner of the organisation is ignored in the header
 
     # no Value columns: a unique one is generated per run, so the scenario can run again on the same DB
@@ -709,7 +695,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # Source documents: an SAP GL journal (Hauptbuchjournal) tax booking
 # ############################################################################################################################################
   @Id:S32216_UStVA_130
-  @from:cucumber
   Scenario: an SAP GL journal tax booking shows its document no., dates and business partner in the detail
 
     And metasfresh contains C_Tax
@@ -749,7 +734,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
       | DETAIL       | v66T          | T          | sgj       | 19.00  | 2024-01-12   | 2024-01-10 | vendor        |
 
   @Id:S32216_UStVA_135
-  @from:cucumber
   Scenario: a generated SAP GL journal tax line shows the business partner of its base line in the detail
 
     And metasfresh contains C_Tax
@@ -793,7 +777,6 @@ Feature: Tax Declaration UStVA report ("Umsatzsteuer-Voranmeldung")
 # Declaration lines without amount type: postings made before the amount type existed, which the backfill could not type
 # ############################################################################################################################################
   @Id:S32216_UStVA_140
-  @from:cucumber
   Scenario: a declaration line without amount type gets its own summary row "type unknown" with the amount in the net column, and its postings stay in the detail list
 
     And metasfresh contains C_Tax

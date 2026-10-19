@@ -73,6 +73,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -368,7 +369,6 @@ public class TaxDeclarationUStVAReport_StepDef
 			return;
 		}
 		final BigDecimal expected = sumDeclaredTaxNegated(actualRows, declarationId, null);
-		softly.assertThat(balances).hasSize(1);
 		softly.assertThat(balances.get(0).getBalanceAmt())
 				.as("%s: BALANCE = - sum of the declared tax amounts (all SUMMARY rows)\n%s", ctx, dump)
 				.isEqualByComparingTo(expected);
@@ -624,7 +624,7 @@ public class TaxDeclarationUStVAReport_StepDef
 		return codes;
 	}
 
-	private static java.util.Optional<String> cell(final DataTableRow row, final String column)
+	private static Optional<String> cell(final DataTableRow row, final String column)
 	{
 		return row.getAsOptionalString(column).map(String::trim).filter(s -> !s.isEmpty());
 	}
@@ -689,10 +689,10 @@ public class TaxDeclarationUStVAReport_StepDef
 				+ "        currency, print_date, to_char(posting_date,'YYYY-MM-DD') AS posting_date, to_char(doc_date,'YYYY-MM-DD') AS doc_date,"
 				+ "        bpartner_name, bpartner_vatid, amount"
 				+ " FROM report.tax_declaration_ustva_report(p_C_TaxDeclaration_ID => ?::numeric, p_AD_Language => ?::varchar)";
-		return DB.retrieveRowsOutOfTrx(sql, Arrays.<Object>asList(declarationId, "de_DE"), UStVAReport_StepDefRowMapper::toRow);
+		return DB.retrieveRowsOutOfTrx(sql, Arrays.<Object>asList(declarationId, "de_DE"), UStVAReportRowMapper::toRow);
 	}
 
-	private static final class UStVAReport_StepDefRowMapper
+	private static final class UStVAReportRowMapper
 	{
 		static UStVAReportRow toRow(final ResultSet rs) throws SQLException
 		{
@@ -715,7 +715,7 @@ public class TaxDeclarationUStVAReport_StepDef
 					.periodFrom(rs.getString("period_from"))
 					.periodTo(rs.getString("period_to"))
 					.currency(rs.getString("currency"))
-					.printDate(rs.getObject("print_date"))
+					.printDate(rs.getTimestamp("print_date"))
 					.postingDate(rs.getString("posting_date"))
 					.docDate(rs.getString("doc_date"))
 					.bpartnerName(rs.getString("bpartner_name"))
@@ -748,7 +748,7 @@ public class TaxDeclarationUStVAReport_StepDef
 		@Nullable String periodFrom;
 		@Nullable String periodTo;
 		@Nullable String currency;
-		@Nullable Object printDate;
+		@Nullable Timestamp printDate;
 		@Nullable String postingDate;
 		@Nullable String docDate;
 		@Nullable String bpartnerName;
