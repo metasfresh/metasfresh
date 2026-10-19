@@ -47,7 +47,7 @@ public class ESRDataImporterCamt54V08PostFinanceSamplesTest
 	@Test
 	public void att11_masked_singleQrrLine()
 	{
-		final ESRStatement statement = importFile("camt054_v08_is184_att11_masked.xml");
+		final ESRStatement statement = importFile("camt054_v08_att11_masked.xml");
 
 		assertThat(statement.getErrorMsgs()).isEmpty();
 		assertThat(statement.getTransactions()).hasSize(1);
@@ -96,6 +96,7 @@ public class ESRDataImporterCamt54V08PostFinanceSamplesTest
 			assertThat(trx.getType()).isEqualTo(ESRType.TYPE_QRR);
 			assertThat(trx.getErrorMsgs()).isEmpty();
 		});
+		assertLine(statement.getTransactions().get(0), "852.10", "374275749662732624797381579");
 		assertThat(statement.getCtrlAmount()).isEqualByComparingTo("30279.53");
 		assertThat(statement.getCtrlQty()).isEqualByComparingTo("63");
 	}
