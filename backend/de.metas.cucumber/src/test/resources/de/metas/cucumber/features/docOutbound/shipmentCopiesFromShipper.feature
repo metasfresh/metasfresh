@@ -40,7 +40,7 @@ Feature: Delivery-note copies from the shipper (Lieferweg) of the ship-to addres
       | productPrice | priceListVers          | seafood      | 10.0     | Normal                        | PCE               |
     And metasfresh contains C_BPartners:
       | Identifier   | M_PricingSystem_ID | OPT.IsCustomer |
-      | DulkHaasnoot | ps                 | Y              |
+      | shipCopiesBP | ps                 | Y              |
 
 
   # ##############################################################################################
@@ -49,16 +49,16 @@ Feature: Delivery-note copies from the shipper (Lieferweg) of the ship-to addres
   # ##############################################################################################
 
   @Id:S32661_TC1
-  Scenario: Shipper "frei Bremerhaven" with 3 copies on the ship-to address, no per-address print format -> 3 copies are enqueued
+  Scenario: Shipper with 3 copies on the ship-to address, no per-address print format -> 3 copies are enqueued
     Given contains M_Shippers
-      | Identifier       | DocumentCopies |
-      | frei_Bremerhaven | 3              |
+      | Identifier      | DocumentCopies |
+      | shipper_3copies | 3              |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier      | C_BPartner_ID | GLN           | IsShipTo | IsBillTo | M_Shipper_ID     |
-      | FUZ_Bremerhaven | DulkHaasnoot  | 4008123466101 | true     | true     | frei_Bremerhaven |
+      | Identifier    | C_BPartner_ID | GLN           | IsShipTo | IsBillTo | M_Shipper_ID    |
+      | shipCopiesLoc | shipCopiesBP  | 4008123466101 | true     | true     | shipper_3copies |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | C_BPartner_Location_ID | M_Warehouse_ID |
-      | salesOrder | true    | DulkHaasnoot  | 2026-10-19  | FUZ_Bremerhaven        | warehouse      |
+      | salesOrder | true    | shipCopiesBP  | 2026-10-19  | shipCopiesLoc          | warehouse      |
     And the order identified by salesOrder takes over the delivery defaults of its ship-to location
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID | M_Product_ID | QtyEntered |
@@ -74,8 +74,8 @@ Feature: Delivery-note copies from the shipper (Lieferweg) of the ship-to addres
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | schedule              | shipment   |
     And validate the created shipments
-      | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Shipper_ID     |
-      | shipment   | DulkHaasnoot  | FUZ_Bremerhaven        | frei_Bremerhaven |
+      | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Shipper_ID    |
+      | shipment   | shipCopiesBP  | shipCopiesLoc          | shipper_3copies |
 
     When the shipment identified by shipment is completed
 
@@ -99,17 +99,17 @@ Feature: Delivery-note copies from the shipper (Lieferweg) of the ship-to addres
   @Id:S32661_TC2
   Scenario: Shipper with 0 copies wins over a per-address print format with 2 copies -> the shipment is archived but not enqueued for printing
     Given contains M_Shippers
-      | Identifier         | DocumentCopies |
-      | Anlieferung_Kalter | 0              |
+      | Identifier      | DocumentCopies |
+      | shipper_0copies | 0              |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier      | C_BPartner_ID | GLN           | IsShipTo | IsBillTo | M_Shipper_ID       |
-      | FUZ_Bremerhaven | DulkHaasnoot  | 4008123466102 | true     | true     | Anlieferung_Kalter |
+      | Identifier    | C_BPartner_ID | GLN           | IsShipTo | IsBillTo | M_Shipper_ID    |
+      | shipCopiesLoc | shipCopiesBP  | 4008123466102 | true     | true     | shipper_0copies |
     And metasfresh contains C_BP_PrintFormat:
       | C_BPartner_ID | C_BPartner_Location_ID | DocumentCopies_Override |
-      | DulkHaasnoot  | FUZ_Bremerhaven        | 2                       |
+      | shipCopiesBP  | shipCopiesLoc          | 2                       |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | C_BPartner_Location_ID | M_Warehouse_ID |
-      | salesOrder | true    | DulkHaasnoot  | 2026-10-19  | FUZ_Bremerhaven        | warehouse      |
+      | salesOrder | true    | shipCopiesBP  | 2026-10-19  | shipCopiesLoc          | warehouse      |
     And the order identified by salesOrder takes over the delivery defaults of its ship-to location
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID | M_Product_ID | QtyEntered |
@@ -125,8 +125,8 @@ Feature: Delivery-note copies from the shipper (Lieferweg) of the ship-to addres
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | schedule              | shipment   |
     And validate the created shipments
-      | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Shipper_ID       |
-      | shipment   | DulkHaasnoot  | FUZ_Bremerhaven        | Anlieferung_Kalter |
+      | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Shipper_ID    |
+      | shipment   | shipCopiesBP  | shipCopiesLoc          | shipper_0copies |
 
     When the shipment identified by shipment is completed
 
