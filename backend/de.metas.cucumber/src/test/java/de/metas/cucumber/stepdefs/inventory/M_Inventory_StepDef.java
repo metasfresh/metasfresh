@@ -156,7 +156,7 @@ public class M_Inventory_StepDef
 	@Given("the inventory identified by {word} is completed, committed only after the pending recompute ran")
 	public void inventory_is_completed_committedAfterRecompute(@NonNull final String inventoryIdentifier) throws InterruptedException
 	{
-		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryTable.get(inventoryIdentifier).getM_Inventory_ID());
+		final InventoryId inventoryId = inventoryTable.getId(StepDefDataIdentifier.ofString(inventoryIdentifier));
 
 		recomputeRaceHarness.runInTransactionCommittedAfterRecompute(
 				() -> {

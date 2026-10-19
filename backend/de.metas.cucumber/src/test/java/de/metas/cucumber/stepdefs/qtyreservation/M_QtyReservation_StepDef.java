@@ -41,7 +41,6 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderAndLineId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
-import com.google.common.collect.ImmutableList;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -115,6 +114,15 @@ import javax.annotation.Nullable;
  *   <li><b>SupplyType</b> — (optional, default {@code OH}) supply type of the bucket: {@code OH} or {@code PS}</li>
  *   <li><b>QtyTU</b> — (required) number of TUs to unreserve; must not exceed the bucket's reversible TUs</li>
  * </ul>
+ *
+ * <h3>{@code M_QtyReservation bucket is reduced, committed only after the pending recompute ran:}</h3>
+ * <p>Same columns as {@code M_QtyReservation bucket is reduced:}, but the reduction's transaction stays open while the pending shipment schedule recompute pass runs
+ * and is committed afterwards. Requires {@code the shipment schedule recompute queues are paused}.
+ * <pre>
+ * When M_QtyReservation bucket is reduced, committed only after the pending recompute ran:
+ *   | C_OrderLine_ID | SupplyType | QtyTU |
+ *   | orderLine_1    | OH         | 1     |
+ * </pre>
  *
  * <h3>{@code M_QtyReservation bucket reduction is rejected:}</h3>
  * <p>Same columns as {@code M_QtyReservation bucket is reduced:}, but expects the reduction to fail because more TUs are requested than are reversible.
@@ -236,15 +244,14 @@ public class M_QtyReservation_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * When M_QtyReservation bucket is reduced, committed only after the pending recompute ran:
-	 *   | C_OrderLine_ID | OPT.SupplyType | QtyTU |
-	 *   | orderLine_1    | OH             | 1     |
+	 *   | C_OrderLine_ID | SupplyType | QtyTU |
+	 *   | orderLine_1    | OH         | 1     |
 	 * </pre>
 	 */
 	@When("M_QtyReservation bucket is reduced, committed only after the pending recompute ran:")
 	public void reduce_M_QtyReservation_bucket_committedAfterRecompute(@NonNull final DataTable dataTable) throws InterruptedException
 	{
-		for (final DataTableRow row : DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList()))
-		{
+		DataTableRows.of(dataTable).forEach(row -> {
 			final ReduceQtyReservationRequest request = toReduceRequest(row);
 			final QtyTU reversibleBefore = qtyReservationService.getTotalReversibleQtyTU(request.getOrderAndLineId(), request.getSupplyType(), request.getDatePromised());
 
@@ -256,7 +263,7 @@ public class M_QtyReservation_StepDef
 					() -> Assertions.assertThat(qtyReservationService.getTotalReversibleQtyTU(request.getOrderAndLineId(), request.getSupplyType(), request.getDatePromised()))
 							.as("reversible QtyTU of %s visible outside the reduction's transaction (the reduction must not commit before the recompute pass ran)", request)
 							.isEqualTo(reversibleBefore));
-		}
+		});
 	}
 
 	/**
