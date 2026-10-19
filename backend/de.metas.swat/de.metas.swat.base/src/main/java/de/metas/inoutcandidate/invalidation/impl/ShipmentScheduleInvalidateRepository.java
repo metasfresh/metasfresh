@@ -315,13 +315,38 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	@Override
 	public void invalidateStorageSegmentsInThreadInheritedTrx(@Nullable final Collection<IShipmentScheduleSegment> storageSegments)
 	{
-		throw new UnsupportedOperationException("implemented by the in-transaction segment flag change");
+		invalidateStorageSegments(
+				storageSegments,
+				null, // no selection
+				ITrx.TRXNAME_ThreadInherited,
+				sqlNoPendingFlagOfOwnTrx(I_M_ShipmentSchedule.Table_Name + "." + COLUMNNAME_M_ShipmentSchedule_ID));
 	}
 
 	@Override
 	public void invalidateStorageSegments(
 			@Nullable final Collection<IShipmentScheduleSegment> storageSegments,
 			@Nullable final PInstanceId addToSelectionId)
+	{
+		invalidateStorageSegments(
+				storageSegments,
+				addToSelectionId,
+				ITrx.TRXNAME_None,
+				// legacy dedup: any pending flag suppresses ours
+				"NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e "
+						+ " where "
+						+ " e.AD_PInstance_ID is NULL"
+						+ " and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "." + COLUMNNAME_M_ShipmentSchedule_ID + ")");
+	}
+
+	/**
+	 * @param trxName     transaction the flag rows are inserted and enqueued in; {@link ITrx#TRXNAME_None} (null) = separate, immediately committed transaction
+	 * @param sqlNotExistsPendingFlag predicate (on the {@code M_ShipmentSchedule} table alias) that is true if no pending flag makes ours redundant
+	 */
+	private void invalidateStorageSegments(
+			@Nullable final Collection<IShipmentScheduleSegment> storageSegments,
+			@Nullable final PInstanceId addToSelectionId,
+			@Nullable final String trxName,
+			@NonNull final String sqlNotExistsPendingFlag)
 	{
 		if (storageSegments == null || storageSegments.isEmpty())
 		{
@@ -371,10 +396,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		// Not already exists
 		sqlWhereClause.append("\n AND ");
-		sqlWhereClause.append(" NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e "
-				+ " where "
-				+ " e.AD_PInstance_ID is NULL"
-				+ " and e.M_ShipmentSchedule_ID=" + ssAlias + "" + COLUMNNAME_M_ShipmentSchedule_ID + ")");
+		sqlWhereClause.append(sqlNotExistsPendingFlag);
 
 		//
 		// Build INSERT SQL
@@ -386,7 +408,6 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		//
 		// Execute
-		final String trxName = ITrx.TRXNAME_None;
 		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), trxName);
 		logger.debug("Invalidated {} shipment schedules for segments={}", count, storageSegments);
 

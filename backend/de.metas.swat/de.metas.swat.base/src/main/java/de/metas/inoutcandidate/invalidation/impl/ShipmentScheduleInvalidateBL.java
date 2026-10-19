@@ -48,6 +48,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.ITaskExecutorService;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
@@ -144,15 +147,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void flagForRecomputeStorageSegment(@NonNull final IShipmentScheduleSegment segment)
 	{
-		final PInstanceId addToSelectionId = null;
-		invalidSchedulesRepo.invalidateStorageSegments(ImmutableSet.of(segment), addToSelectionId);
+		flagSegmentsRoutedByTrx(ImmutableSet.of(segment));
 	}
 
 	@Override
 	public void flagSegmentForRecompute(final Collection<IShipmentScheduleSegment> segments)
 	{
-		final PInstanceId addToSelectionId = null;
-		invalidSchedulesRepo.invalidateStorageSegments(segments, addToSelectionId);
+		flagSegmentsRoutedByTrx(segments);
 	}
 
 	@Override
@@ -161,6 +162,36 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 			@Nullable final PInstanceId addToSelectionId)
 	{
 		invalidSchedulesRepo.invalidateStorageSegments(segments, addToSelectionId);
+	}
+
+	/**
+	 * With an active thread-inherited transaction, the flags are written in that transaction, so they commit or roll back with the change that made the segments stale.
+	 * Otherwise they are written out of transaction.
+	 */
+	private void flagSegmentsRoutedByTrx(@Nullable final Collection<IShipmentScheduleSegment> segments)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (trxManager.isActive(threadTrx))
+		{
+			flagSegmentsForRecomputeInThreadInheritedTrx(segments);
+		}
+		else
+		{
+			flagSegmentsForRecomputeOutOfTrx(segments);
+		}
+	}
+
+	/** Flags in a separate, immediately committed transaction (not rolled back with the caller). */
+	void flagSegmentsForRecomputeOutOfTrx(@Nullable final Collection<IShipmentScheduleSegment> segments)
+	{
+		invalidSchedulesRepo.invalidateStorageSegments(segments, null);
+	}
+
+	/** Flags in the thread-inherited transaction. */
+	void flagSegmentsForRecomputeInThreadInheritedTrx(@Nullable final Collection<IShipmentScheduleSegment> segments)
+	{
+		invalidSchedulesRepo.invalidateStorageSegmentsInThreadInheritedTrx(segments);
 	}
 
 	@Override
