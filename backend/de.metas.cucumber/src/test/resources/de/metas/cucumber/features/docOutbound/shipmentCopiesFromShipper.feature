@@ -1,6 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0280_Document_and_Email_Management
 @allure.label.feature:F00280
+@allure.label.feature:F36020_Outbound_Documents
 @ghActions:run_on_executor5
 Feature: Delivery-note copies from the shipper (Lieferweg) of the ship-to address
 ## F00280: Doc Outbound
