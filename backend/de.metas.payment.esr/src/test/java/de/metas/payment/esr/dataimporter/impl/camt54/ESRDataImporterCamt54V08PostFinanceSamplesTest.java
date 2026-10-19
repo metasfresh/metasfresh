@@ -45,7 +45,7 @@ public class ESRDataImporterCamt54V08PostFinanceSamplesTest
 	}
 
 	@Test
-	public void att11_masked_singleQrrLine()
+	public void maskedSample_singleQrrLine()
 	{
 		final ESRStatement statement = importFile("camt054_v08_att11_masked.xml");
 
