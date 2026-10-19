@@ -82,12 +82,12 @@
 						<RltdPties>
 							<Dbtr>
 								<Pty>
-									<Nm>Meyerhans Mühlen AG</Nm>
+									<Nm>Muster Handels AG</Nm>
 									<PstlAdr>
-										<StrtNm>Industriestrasse</StrtNm>
+										<StrtNm>Musterstrasse</StrtNm>
 										<BldgNb>55</BldgNb>
-										<PstCd>8570</PstCd>
-										<TwnNm>Weinfelden</TwnNm>
+										<PstCd>8000</PstCd>
+										<TwnNm>Zürich</TwnNm>
 										<Ctry>CH</Ctry>
 									</PstlAdr>
 								</Pty>
@@ -99,12 +99,12 @@
 							</DbtrAcct>
 							<UltmtDbtr>
 								<Pty>
-									<Nm>Meyerhans Mühlen AG</Nm>
+									<Nm>Muster Handels AG</Nm>
 									<PstlAdr>
-										<StrtNm>Industriestrasse</StrtNm>
+										<StrtNm>Musterstrasse</StrtNm>
 										<BldgNb>55</BldgNb>
-										<PstCd>8570</PstCd>
-										<TwnNm>Weinfelden</TwnNm>
+										<PstCd>8000</PstCd>
+										<TwnNm>Zürich</TwnNm>
 										<Ctry>CH</Ctry>
 									</PstlAdr>
 								</Pty>

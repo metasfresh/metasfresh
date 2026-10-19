@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 
 /**
- * Imports the PostFinance camt.054.001.08 sample files (plus one masked real-life notification).
+ * Imports the PostFinance camt.054.001.08 sample files (plus one anonymised real-life notification).
  * The expected lines are derived from each file's own content (Ntry / NtryDtls / TxDtls / RmtInf), not from a run of the importer.
  */
 public class ESRDataImporterCamt54V08PostFinanceSamplesTest
@@ -254,7 +254,7 @@ public class ESRDataImporterCamt54V08PostFinanceSamplesTest
 	{
 		assertThatThrownBy(() -> importFile("camt.054_P_CH0309000000772897159_1120564402_0_2025050600511334.xml"))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("ESR_CAMT54_MultipleTransactionsTypes");
+				.hasMessage(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
 	}
 
 	@Test
@@ -262,9 +262,13 @@ public class ESRDataImporterCamt54V08PostFinanceSamplesTest
 	{
 		assertThatThrownBy(() -> importFile("8_camt054 CWD_SIA Einzelbestaetigung_v2019.xml"))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("ESR_CAMT54_MultipleTransactionsTypes");
+				.hasMessage(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
 	}
 
+	/**
+	 * Characterization of a known gap: the importer does not null-guard a missing RmtInf element, so the import aborts with an NPE.
+	 * Replace this expectation when that guard is added.
+	 */
 	@Test
 	public void debitConfirmationWithoutRmtInf()
 	{
@@ -273,9 +277,9 @@ public class ESRDataImporterCamt54V08PostFinanceSamplesTest
 	}
 
 	@Test
-	public void is184Att11Masked()
+	public void qrrSingleLineWithoutBtch()
 	{
-		final ESRStatement stmt = importFile("camt054_v08_is184_att11_masked.xml");
+		final ESRStatement stmt = importFile("camt054_v08_qrr_single_line.xml");
 		assertLines(stmt,
 				line("6045.85", "000000000102175968010376491", false));
 		assertThat(stmt.getCtrlAmount()).isEqualByComparingTo("6045.85");
