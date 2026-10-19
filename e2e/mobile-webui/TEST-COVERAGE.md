@@ -200,8 +200,9 @@
 | BPartner GRAIRequired=No → no GRAI scanner shown | `picking/picking-grai-scan.spec.js` |
 | Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete | `picking/picking-grai-scan.spec.js` |
 | Scan a Migros GRAI derived from a PO reference different from the order's → accepted (PO-reference match removed), TU resolved and created carrying the GRAI | `picking/picking-grai-poreference-accepted.spec.js` |
+| Scan a canonical GRAI whose company prefix starts with 8003 → read as canonical (not as a GS1 AI 8003 barcode), TU resolved and created carrying the GRAI unchanged | `picking/picking-grai-scan-8003-company-prefix.spec.js` |
 
-**9/9 — 100%**
+**10/10 — 100%**
 
 ### Inline GRAI capture in Flow Through (LU_TU) picking
 
