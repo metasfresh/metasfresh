@@ -209,7 +209,12 @@ public interface ITrx
 	{
 		getProperty(propertyName, () -> {
 			final ListAccumulator<T> accum = new ListAccumulator<>();
-			runAfterCommit(() -> accum.flush(afterCommitListProcessor));
+			runAfterCommit(() -> {
+				// A trx can be committed more than once (the next DB access starts it again).
+				// The after-commit listener runs only once, so items added after this commit need a new accumulator, with its own listener.
+				setProperty(propertyName, null);
+				accum.flush(afterCommitListProcessor);
+			});
 			return accum;
 		})
 				.addAll(itemsToAccumulate);
