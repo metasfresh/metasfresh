@@ -227,7 +227,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		if (orderLinesAggregator == null)
 		{
 			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(purchaseOrder, purchaseQtySource, p_TypeOfPurchase);
-			orderLinesAggregator.setItemAggregationKeyBuilder(CreatePOLineFromSOLinesAggregationKeyBuilder.INSTANCE);
+			orderLinesAggregator.setItemAggregationKeyBuilder(CreatePOLineFromSOLinesAggregationKeyBuilder.forPurchaseType(p_TypeOfPurchase));
 			orderLinesAggregator.setGroupsBufferSize(100);
 
 			orderKey2OrderLineAggregator.put(purchaseOrder.getDocumentNo(), orderLinesAggregator);

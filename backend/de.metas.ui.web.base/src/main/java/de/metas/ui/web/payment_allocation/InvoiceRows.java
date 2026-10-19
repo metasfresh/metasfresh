@@ -112,6 +112,9 @@ public class InvoiceRows implements IEditableRowsData<InvoiceRow>
 			return newRow;
 		}
 
+		// Carry only the prepared-for-allocation flag: a genuine invalidate (the C_Invoice record changed) must refresh
+		// all repository-computed amounts (openAmt, discount, service fee, payment bonus) from the fresh row, not keep stale values.
+		// The user's typed-but-not-yet-persisted amounts are preserved by not rebuilding on marking (see InvoicesView), not here.
 		return newRow.withPreparedForAllocation(oldRow.isPreparedForAllocation());
 	}
 
