@@ -7,6 +7,7 @@ import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -47,7 +49,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>
  * The expected values of every test are derived from the file's own content (entries, transaction details, amounts, references);
  * they are never taken from a run of the importer. One test per file.
- * Three files have no expected value yet; their tests only record the outcome (see the comments on them).
+ * No test asserts a crash: a file the importer refuses on purpose is asserted as an {@link AdempiereException} carrying the named
+ * AD_Message; a payment without remittance info or reference becomes a line with an error message.
  */
 public class ESRDataImporterCamt54V08PostFinanceSamplesTest
 {
@@ -131,24 +134,6 @@ public class ESRDataImporterCamt54V08PostFinanceSamplesTest
 			assertThat(trx.getTrxType()).as("%s: trxType", what).isEqualTo(expectedLine.trxType);
 			assertThat(trx.getErrorMsgs()).as("%s: error messages", what).hasSize(expectedLine.errorCount);
 		}
-	}
-
-	/**
-	 * Imports the file and prints what happened; asserts nothing, so it passes however the import ends.
-	 */
-	private void recordOutcome(@NonNull final String fileName)
-	{
-		String outcome;
-		try
-		{
-			final ESRStatement statement = importFile(fileName);
-			outcome = "imported " + statement.getTransactions().size() + " line(s), ctrlAmount=" + statement.getCtrlAmount() + ", ctrlQty=" + statement.getCtrlQty();
-		}
-		catch (final Throwable t)
-		{
-			outcome = "import threw " + t.getClass().getName() + ": " + t.getMessage();
-		}
-		System.out.println("PF-SAMPLE-OUTCOME file=" + fileName + " -> " + outcome);
 	}
 
 	/** 200519_camt054_P_CH2909000000250094239_1111091335_0_2020061900081727_v2019.xml: 2 line(s), control amount 1692.22, control quantity 2. */
@@ -338,32 +323,55 @@ public class ESRDataImporterCamt54V08PostFinanceSamplesTest
 	}
 
 	/**
-	 * camt.054_P_CH0309000000772897159_1120564402_0_2025050600511334.xml: NO expected value yet; the outcome (import ends with an exception, or lines) is only recorded.
-	 * Whether this file must import is an open decision; this test must not be changed to assert whatever happens today.
+	 * camt.054_P_CH0309000000772897159_1120564402_0_2025050600511334.xml: the import is refused with
+	 * {@code ESR_CAMT54_MultipleTransactionsTypes} (deliberate rule, not a crash).
+	 * Reason, from the file content: every one of its 4 {@code NtryDtls} mixes lines that carry a QRR / SCOR reference
+	 * (16 {@code Cd=SCOR} references in total) with lines that have none, and the importer refuses a batch that mixes
+	 * reference types (kept as is on purpose).
 	 */
 	@Test
-	public void testFile10_ScorMixedWithoutReference_OutcomeRecordedOnly()
+	public void testFile10_ScorMixedWithoutReference_RefusedMultipleTransactionsTypes()
 	{
-		recordOutcome("camt.054_P_CH0309000000772897159_1120564402_0_2025050600511334.xml");
+		assertImportRefusedMultipleTransactionsTypes("camt.054_P_CH0309000000772897159_1120564402_0_2025050600511334.xml");
 	}
 
 	/**
-	 * 8_camt054 CWD_SIA Einzelbestaetigung_v2019.xml: NO expected value yet; the outcome (import ends with an exception, or lines) is only recorded.
-	 * Whether this file must import is an open decision; this test must not be changed to assert whatever happens today.
+	 * 8_camt054 CWD_SIA Einzelbestaetigung_v2019.xml: the import is refused with {@code ESR_CAMT54_MultipleTransactionsTypes}
+	 * (deliberate rule, not a crash).
+	 * Reason, from the file content: its single {@code NtryDtls} holds 4 debit lines, one with a QRR reference, one with a
+	 * {@code Cd=SCOR} reference and two without any, so it mixes reference types (kept as is on purpose).
 	 */
 	@Test
-	public void testFile11_CwdSia_Debit_ScorAndQrr_OutcomeRecordedOnly()
+	public void testFile11_CwdSia_Debit_ScorAndQrr_RefusedMultipleTransactionsTypes()
 	{
-		recordOutcome("8_camt054 CWD_SIA Einzelbestaetigung_v2019.xml");
+		assertImportRefusedMultipleTransactionsTypes("8_camt054 CWD_SIA Einzelbestaetigung_v2019.xml");
 	}
 
 	/**
-	 * 7_camt054 CND Ausfuehrungsbestaetigung_ISO2019_v2019.xml: NO expected value yet; the outcome (import ends with an exception, or lines) is only recorded.
-	 * Whether this file must import is an open decision; this test must not be changed to assert whatever happens today.
+	 * 7_camt054 CND Ausfuehrungsbestaetigung_ISO2019_v2019.xml: a debit confirmation with 1 {@code TxDtls} of -241.50 and no
+	 * {@code RmtInf} block, no {@code Btch}. A payment without remittance info is not an exception: it becomes one line
+	 * with 2 error messages ("unsupported credit/debit code" for the debit, "missing ESR reference" for the absent reference),
+	 * type ESR (the fallback), no reference.
 	 */
 	@Test
-	public void testFile12_Cnd_DebitConfirmation_NoRmtInf_OutcomeRecordedOnly()
+	public void testFile12_Cnd_DebitConfirmation_NoRmtInf_BecomesErrorLine()
 	{
-		recordOutcome("7_camt054 CND Ausfuehrungsbestaetigung_ISO2019_v2019.xml");
+		assertImport(
+				"7_camt054 CND Ausfuehrungsbestaetigung_ISO2019_v2019.xml",
+				"-241.50",
+				null,
+				ImmutableList.of(
+					expected("-241.50", null, ESRType.TYPE_ESR, ESRConstants.ESRTRXTYPE_UNKNOWN, 2)));
+
+		final ESRStatement statement = importFile("7_camt054 CND Ausfuehrungsbestaetigung_ISO2019_v2019.xml");
+		assertThat(statement.getTransactions().get(0).getErrorMsgs())
+				.contains(ReferenceStringHelper.MSG_MISSING_ESR_REFERENCE.toAD_Message());
+	}
+
+	private void assertImportRefusedMultipleTransactionsTypes(@NonNull final String fileName)
+	{
+		assertThatThrownBy(() -> importFile(fileName))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessage(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
 	}
 }
