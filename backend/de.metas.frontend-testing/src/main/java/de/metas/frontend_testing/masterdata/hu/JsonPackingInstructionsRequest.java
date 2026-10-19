@@ -44,7 +44,8 @@ public class JsonPackingInstructionsRequest
 	 * Optional fixed override for the generated GRAI's {@code (companyPrefix, assetType)} pair — e.g. to build
 	 * a Migros returnable-asset GRAI ({@code companyPrefix=7613204, assetType=00307}, see
 	 * {@code de.metas.handlingunits.grai.DummyGRAITemplate}) mapped to this TU for the PO-reference-gate E2E
-	 * scenarios. Only used when {@link #graiMapping} is {@code true}; when {@code null} a random pair is
+	 * scenarios, or a company prefix starting with {@code 8003} (the GS1 AI for GRAI) for the canonical-first
+	 * parsing E2E. Only used when {@link #graiMapping} is {@code true}; when {@code null} a random pair is
 	 * generated (the pre-existing behaviour). Set both or neither.
 	 */
 	@Nullable String graiCompanyPrefix;
