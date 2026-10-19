@@ -516,7 +516,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		save(bankAccount);
 		setBPartner(line, PARTNER_NAME_WITH_AT_SIGNS);
 
-		assertErrorKeepsAtSignsOfPartnerName(() -> xmlGenerator.createDocument(sepaExport), "SEPA_Export_NoBankName"); // new_dawn_uat reports this error as the AD_Message of that name (the 03.ch.02 marshaller was already translated there)
+		assertErrorKeepsAtSignsOfPartnerName(() -> xmlGenerator.createDocument(sepaExport), "SEPA_Export_NoBankName");
 	}
 
 	@Test
