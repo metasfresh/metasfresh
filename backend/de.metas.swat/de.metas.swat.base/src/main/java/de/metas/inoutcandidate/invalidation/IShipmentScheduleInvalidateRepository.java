@@ -11,6 +11,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.IQuery;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
@@ -69,6 +70,13 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	 * @param addToSelectionId if not null will add the invalidated records to given selection
 	 */
 	void invalidateStorageSegments(Collection<IShipmentScheduleSegment> storageSegments, PInstanceId addToSelectionId);
+
+	/**
+	 * Same as {@link #invalidateStorageSegments(Collection, PInstanceId)} (no selection), but the flag rows are
+	 * written inside the caller's thread-inherited transaction, so they commit or roll back together with the change that
+	 * made the segments stale.
+	 */
+	void invalidateStorageSegmentsInThreadInheritedTrx(@Nullable Collection<IShipmentScheduleSegment> storageSegments);
 
 	void invalidateSchedulesForSelection(PInstanceId pinstanceId);
 

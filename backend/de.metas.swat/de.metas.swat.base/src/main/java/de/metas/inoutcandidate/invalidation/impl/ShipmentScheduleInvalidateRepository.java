@@ -313,6 +313,12 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
+	public void invalidateStorageSegmentsInThreadInheritedTrx(@Nullable final Collection<IShipmentScheduleSegment> storageSegments)
+	{
+		throw new UnsupportedOperationException("implemented by the in-transaction segment flag change");
+	}
+
+	@Override
 	public void invalidateStorageSegments(
 			@Nullable final Collection<IShipmentScheduleSegment> storageSegments,
 			@Nullable final PInstanceId addToSelectionId)
