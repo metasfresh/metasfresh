@@ -18,12 +18,12 @@
 				<Ccy>CHF</Ccy>
 				<Svcr>
 					<FinInstnId>
-						<Nm>Migros Bank AG</Nm>
+						<Nm>Muster Debitor 1 AG</Nm>
 					</FinInstnId>
 				</Svcr>
 			</Acct>
 			<Ntry>
-				<NtryRef>CH0000000000000000001</NtryRef>
+				<NtryRef>SAMPLE-NTRY-1</NtryRef>
 				<Amt Ccy="CHF">6045.85</Amt>
 				<CdtDbtInd>CRDT</CdtDbtInd>
 				<RvslInd>false</RvslInd>
@@ -36,7 +36,7 @@
 				<ValDt>
 					<Dt>2025-07-15</Dt>
 				</ValDt>
-				<AcctSvcrRef>14627723891</AcctSvcrRef>
+				<AcctSvcrRef>10000000001</AcctSvcrRef>
 				<BkTxCd>
 					<Domn>
 						<Cd>PMNT</Cd>
@@ -55,7 +55,7 @@
 				<NtryDtls>
 					<TxDtls>
 						<Refs>
-							<AcctSvcrRef>14627723891</AcctSvcrRef>
+							<AcctSvcrRef>10000000001</AcctSvcrRef>
 							<EndToEndId>NOTPROVIDED</EndToEndId>
 							<Prtry>
 								<Tp>01</Tp>
@@ -82,7 +82,7 @@
 						<RltdPties>
 							<Dbtr>
 								<Pty>
-									<Nm>Muster AG</Nm>
+									<Nm>Muster Debitor 2 AG</Nm>
 									<PstlAdr>
 										<StrtNm>Musterstrasse</StrtNm>
 										<BldgNb>1</BldgNb>
@@ -94,12 +94,12 @@
 							</Dbtr>
 							<DbtrAcct>
 								<Id>
-									<IBAN>CH5604835012345678009</IBAN>
+									<IBAN>CH5604835000000000001</IBAN>
 								</Id>
 							</DbtrAcct>
 							<UltmtDbtr>
 								<Pty>
-									<Nm>Muster AG</Nm>
+									<Nm>Muster Debitor 2 AG</Nm>
 									<PstlAdr>
 										<StrtNm>Musterstrasse</StrtNm>
 										<BldgNb>1</BldgNb>
@@ -118,7 +118,7 @@
 											<Prtry>QRR</Prtry>
 										</CdOrPrtry>
 									</Tp>
-									<Ref>000000000102175968010376491</Ref>
+									<Ref>000000000000000000000000218</Ref>
 								</CdtrRefInf>
 							</Strd>
 						</RmtInf>
