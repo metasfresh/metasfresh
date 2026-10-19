@@ -53,5 +53,8 @@ public class InsertRemoteIssueRequest
 	String issueCategory;
 
 	@Nullable
+	String errorCode;
+
+	@Nullable
 	String stacktrace;
 }
