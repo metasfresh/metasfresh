@@ -54,15 +54,6 @@ public class PlainEventEnqueuer implements EventEnqueuer
 		eventsQueue.enqueue(event, topic);
 	}
 
-	/**
-	 * Events are processed right away, in the order in which they are enqueued, so there is nothing to batch.
-	 */
-	@Override
-	public void enqueueEventsInOneBatch(@NonNull final Runnable enqueueEvents)
-	{
-		enqueueEvents.run();
-	}
-
 	private static class EventsQueue
 	{
 		private final LinkedBlockingQueue<ImmutablePair<Event, Topic>> eventsQueue = new LinkedBlockingQueue<>();

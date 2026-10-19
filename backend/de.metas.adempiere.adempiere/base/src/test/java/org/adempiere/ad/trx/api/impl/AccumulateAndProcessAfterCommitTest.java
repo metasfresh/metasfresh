@@ -86,6 +86,20 @@ class AccumulateAndProcessAfterCommitTest
 		assertThat(processedLists).containsExactly(ImmutableList.of("a"), ImmutableList.of("b", "c"));
 	}
 
+	/**
+	 * While the after-commit listeners run, the trx is not active, so items added by a processor are processed right away (no new listener, no loop).
+	 */
+	@Test
+	void processorThatAddsItemsAgain_getsThemProcessedRightAway()
+	{
+		trxManager.runInNewTrx(() -> trxManager.accumulateAndProcessAfterCommit(PROPERTY_NAME, ImmutableList.of("a"), list -> {
+			processedLists.add(list);
+			accumulate("added-by-processor");
+		}));
+
+		assertThat(processedLists).containsExactly(ImmutableList.of("a"), ImmutableList.of("added-by-processor"));
+	}
+
 	@Test
 	void withoutTrx_eachItemIsProcessedRightAway()
 	{

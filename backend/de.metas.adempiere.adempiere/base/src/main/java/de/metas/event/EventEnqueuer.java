@@ -31,10 +31,11 @@ public interface EventEnqueuer
 	void enqueueLocalEvent(Event event, Topic topic);
 
 	/**
-	 * Runs the given code and sends all events that it enqueues on the current thread as one batch, in the order in which they were enqueued.
-	 * <p>
-	 * Use it for events whose consumers rely on their order, e.g. all events of one commit.
-	 * A nested call adds its events to the outer batch.
+	 * Runs the given code and sends the events it enqueues on this thread as one batch, in enqueue order.
+	 * A nested call joins the outer batch. By default, the events are just sent one by one.
 	 */
-	void enqueueEventsInOneBatch(@NonNull Runnable enqueueEvents);
+	default void enqueueEventsInOneBatch(@NonNull final Runnable enqueueEvents)
+	{
+		enqueueEvents.run();
+	}
 }

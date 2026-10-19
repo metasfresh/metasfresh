@@ -24,8 +24,8 @@ package de.metas.material.event;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.event.Event;
-import de.metas.event.impl.ChannelRecordingRabbitTemplateFactory;
-import de.metas.event.impl.ChannelRecordingRabbitTemplateFactory.Publish;
+import de.metas.event.test.ChannelRecordingRabbitTemplateFactory;
+import de.metas.event.test.ChannelRecordingRabbitTemplateFactory.Publish;
 import de.metas.event.impl.EventBusFactory;
 import de.metas.event.impl.EventBusMonitoringService;
 import de.metas.event.impl.RabbitMQEnqueuer;

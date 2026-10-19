@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.event.impl;
+package de.metas.event.test;
 
 import com.google.common.collect.ImmutableList;
 import com.rabbitmq.client.AlreadyClosedException;
@@ -47,13 +47,9 @@ import java.util.Set;
 import java.util.function.Function;
 
 /**
- * Creates a real {@link RabbitTemplate} on top of a fake broker connection that opens a <b>new channel for every channel request</b>.
- * <p>
- * That is what Spring's {@code CachingConnectionFactory} does when its cached channel is busy (checked out by another thread):
- * its channel cache size is not a limit. RabbitMQ only keeps the order of messages within one channel,
- * so two sends that end up on different channels can reach the consumer swapped.
- * <p>
- * Every {@code basicPublish} is recorded with the number of the channel it went out on.
+ * A real {@link RabbitTemplate} on a fake connection that opens a new channel for every channel request,
+ * like {@code CachingConnectionFactory} does while its cached channel is busy.
+ * Records every {@code basicPublish} with its channel number.
  */
 public class ChannelRecordingRabbitTemplateFactory
 {
@@ -68,6 +64,7 @@ public class ChannelRecordingRabbitTemplateFactory
 
 	private final List<Publish> publishes = new ArrayList<>();
 	private final Set<String> bodiesToFail = new HashSet<>();
+	private final Set<String> bodiesClosingTheChannel = new HashSet<>();
 	private int nextChannelNumber = 1;
 
 	/**
@@ -94,11 +91,20 @@ public class ChannelRecordingRabbitTemplateFactory
 	}
 
 	/**
-	 * The publish of a message with the given body fails, and the broker closes that channel, like it does e.g. for a missing exchange.
+	 * The publish of the given body throws right away (e.g. an I/O error), and the channel is closed.
 	 */
 	public void failPublishOfBody(@NonNull final String body)
 	{
 		bodiesToFail.add(body);
+	}
+
+	/**
+	 * The publish of the given body succeeds, but then the broker closes the channel (asynchronously, as e.g. for a missing exchange),
+	 * so the next publish on that channel fails.
+	 */
+	public void closeChannelAfterPublishOfBody(@NonNull final String body)
+	{
+		bodiesClosingTheChannel.add(body);
 	}
 
 	public ImmutableList<Publish> getPublishes()
@@ -154,6 +160,10 @@ public class ChannelRecordingRabbitTemplateFactory
 						throw new IOException("Simulated publish failure for body=" + bodyStr);
 					}
 					publishes.add(new Publish(channelNumber, exchange, routingKey, bodyStr));
+					if (bodiesClosingTheChannel.contains(bodyStr))
+					{
+						open[0] = false;
+					}
 					return null;
 				}
 				default:

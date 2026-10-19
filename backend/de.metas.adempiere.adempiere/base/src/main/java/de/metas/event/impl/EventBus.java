@@ -305,14 +305,14 @@ final class EventBus implements IEventBus
 		eventEnqueuer.enqueueEventsInOneBatch(() -> {
 			for (final Event event : events)
 			{
-				// e.g. if saving the event's AD_EventLog fails, still enqueue the remaining events
 				try
 				{
 					enqueueEvent(event);
 				}
 				catch (final Exception e)
 				{
-					logger.warn(StringUtils.formatMessage("Failed to enqueue event to topic name. Ignored; topicName={}; event={}", topic.getName(), event), e);
+					// e.g. saving the AD_EventLog failed; still enqueue the other events
+					logger.warn(StringUtils.formatMessage("Failed to prepare event for enqueuing. Ignored; topicName={}; event={}", topic.getName(), event), e);
 				}
 			}
 		});

@@ -25,7 +25,8 @@ package de.metas.event.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.event.Event;
 import de.metas.event.Topic;
-import de.metas.event.impl.ChannelRecordingRabbitTemplateFactory.Publish;
+import de.metas.event.test.ChannelRecordingRabbitTemplateFactory;
+import de.metas.event.test.ChannelRecordingRabbitTemplateFactory.Publish;
 import de.metas.event.remote.rabbitmq.RabbitMQDestinationResolver;
 import de.metas.event.remote.rabbitmq.queues.default_queue.DefaultQueueConfiguration;
 import org.adempiere.test.AdempiereTestHelper;
@@ -68,7 +69,9 @@ class RabbitMQEnqueuerTest
 
 		enqueuer.enqueueDistributedEvent(event("e2"), DISTRIBUTED_TOPIC);
 		assertThat(broker.getPublishes()).extracting(Publish::getBody).containsExactly("e1", "e2");
-		assertThat(broker.getPublishes()).extracting(Publish::getChannelNumber).containsExactly(1, 2);
+		assertThat(broker.getPublishes()).extracting(Publish::getChannelNumber)
+				.as("each plain send checks out its own channel (the fake always opens a new one, like a busy CachingConnectionFactory)")
+				.containsExactly(1, 2);
 	}
 
 	@Test
@@ -112,20 +115,52 @@ class RabbitMQEnqueuerTest
 		assertThat(broker.getPublishes()).extracting(Publish::getChannelNumber).containsOnly(1);
 	}
 
+	private void enqueueBatchOf(final String... names)
+	{
+		enqueuer.enqueueEventsInOneBatch(() -> {
+			for (final String name : names)
+			{
+				enqueuer.enqueueDistributedEvent(event(name), DISTRIBUTED_TOPIC);
+			}
+		});
+	}
+
 	@Test
-	void batch_aFailingSendIsSkipped_andTheRemainingEventsAreSentOnANewChannel()
+	void batch_aSendThatFailsRightAway_isRetriedOnANewChannel_thenSkipped_andTheOthersAreSent()
 	{
 		broker.failPublishOfBody("e2");
 
-		enqueuer.enqueueEventsInOneBatch(() -> {
-			enqueuer.enqueueDistributedEvent(event("e1"), DISTRIBUTED_TOPIC);
-			enqueuer.enqueueDistributedEvent(event("e2"), DISTRIBUTED_TOPIC);
-			enqueuer.enqueueDistributedEvent(event("e3"), DISTRIBUTED_TOPIC);
-			enqueuer.enqueueDistributedEvent(event("e4"), DISTRIBUTED_TOPIC);
-		});
+		enqueueBatchOf("e1", "e2", "e3", "e4");
 
 		assertThat(broker.getPublishes()).extracting(Publish::getBody).containsExactly("e1", "e3", "e4");
-		assertThat(broker.getPublishes()).extracting(Publish::getChannelNumber).containsExactly(1, 2, 2);
+		assertThat(broker.getPublishes()).extracting(Publish::getChannelNumber)
+				.as("e2 fails on channel 1 and again on channel 2; e3 and e4 go out on channel 3")
+				.containsExactly(1, 3, 3);
+	}
+
+	/**
+	 * E.g. a missing exchange: the broker closes the channel after the publish, so the publish of the next event fails.
+	 * That next event is fine and must not be lost.
+	 */
+	@Test
+	void batch_whenTheBrokerClosesTheChannelAfterAPublish_theNextEventIsSentOnANewChannel()
+	{
+		broker.closeChannelAfterPublishOfBody("e2");
+
+		enqueueBatchOf("e1", "e2", "e3", "e4");
+
+		assertThat(broker.getPublishes()).extracting(Publish::getBody).containsExactly("e1", "e2", "e3", "e4");
+		assertThat(broker.getPublishes()).extracting(Publish::getChannelNumber).containsExactly(1, 1, 2, 2);
+	}
+
+	@Test
+	void batchOfOneEvent_aFailingSendIsLogged_notThrown()
+	{
+		broker.failPublishOfBody("e1");
+
+		enqueueBatchOf("e1");
+
+		assertThat(broker.getPublishes()).isEmpty();
 	}
 
 	@Test

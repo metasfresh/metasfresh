@@ -78,11 +78,15 @@ public interface IEventBus
 	void enqueueEvent(Event event);
 
 	/**
-	 * Enqueue the given events in RabbitMQ, in the given order.
-	 * They are sent together over one channel, so the broker keeps their order. RabbitMQ only guarantees the order within one channel.
-	 * An event that fails to be enqueued is logged and skipped; the others are still enqueued.
+	 * Enqueue the given events in RabbitMQ, in the given order, as one batch (see {@link EventEnqueuer#enqueueEventsInOneBatch(Runnable)}).
+	 * With RabbitMQ they go out on one channel, so the broker keeps their order.
+	 * An event that cannot be enqueued is logged and skipped.
+	 * Note: with {@code de.metas.event.MonitorIncomingEvents}, the per-event span covers only adding the event to the batch, not the actual send.
 	 */
-	void enqueueEvents(@NonNull List<Event> events);
+	default void enqueueEvents(@NonNull final List<Event> events)
+	{
+		events.forEach(this::enqueueEvent);
+	}
 
 	/**
 	 * Create an event and serialize the given {@code obj} to be the event's body (payload).

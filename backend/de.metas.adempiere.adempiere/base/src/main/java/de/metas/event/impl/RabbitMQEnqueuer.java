@@ -31,6 +31,7 @@ import de.metas.event.remote.rabbitmq.RabbitMQDestinationResolver;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.amqp.core.MessagePostProcessor;
@@ -56,7 +57,7 @@ public class RabbitMQEnqueuer implements EventEnqueuer
 	@NonNull private final RabbitMQDestinationResolver rabbitMQDestinationResolver;
 
 	/**
-	 * The sends collected by {@link #enqueueEventsInOneBatch(Runnable)} on the current thread; {@code null} if the thread is not inside a batch.
+	 * Sends collected by {@link #enqueueEventsInOneBatch(Runnable)} on this thread; {@code null} outside a batch.
 	 */
 	private final ThreadLocal<List<PendingSend>> currentBatch = new ThreadLocal<>();
 
@@ -99,20 +100,18 @@ public class RabbitMQEnqueuer implements EventEnqueuer
 	}
 
 	/**
-	 * Collects the events that the given code enqueues on the current thread, and then sends them in that order over <b>one</b> channel.
+	 * Collects the events that the given code enqueues on this thread and then sends them, in that order, over one channel.
+	 * Needed because RabbitMQ keeps the order only within a channel, and Spring's {@code CachingConnectionFactory}
+	 * opens a new channel for a plain send when the cached one is busy.
 	 * <p>
-	 * Why: RabbitMQ only keeps the order of messages that were published on the same channel.
-	 * Each plain {@code convertAndSend} checks a channel out of Spring's {@code CachingConnectionFactory} and gives it back afterwards.
-	 * If the cached channel is busy (checked out by another thread), a new channel is opened (the cache size is not a limit),
-	 * so two consecutive sends of this thread can go out on different channels and reach the consumer swapped.
+	 * The events collected so far are also sent if the given code throws.
 	 */
 	@Override
 	public void enqueueEventsInOneBatch(@NonNull final Runnable enqueueEvents)
 	{
 		if (currentBatch.get() != null)
 		{
-			// nested call: the outermost batch sends the events
-			enqueueEvents.run();
+			enqueueEvents.run(); // nested: the outermost batch sends
 			return;
 		}
 
@@ -143,17 +142,26 @@ public class RabbitMQEnqueuer implements EventEnqueuer
 	}
 
 	/**
-	 * Sends all given events within one {@link RabbitOperations#invoke}, which binds one channel to this thread for all of them.
+	 * Sends within one {@link RabbitOperations#invoke}, which binds one channel to this thread.
+	 * Note: {@code invoke} physically closes that channel afterwards (no publisher confirms), so a single event is sent the plain way.
 	 * <p>
-	 * Like single sends: an event whose send fails is logged and skipped, and the remaining events are still sent.
-	 * Because the broker may have closed the channel on that failure, they are sent within a new {@code invoke}, so on a new channel.
+	 * As with single sends, an event that cannot be sent is logged and skipped.
+	 * RabbitMQ reports most publish errors asynchronously by closing the channel, so the <i>next</i> publish fails.
+	 * Therefore a send that fails after other sends on the same channel is retried on a new channel; only a send that fails as first one of its channel is skipped.
 	 */
 	private void sendInOneChannel(@NonNull final List<PendingSend> sends)
 	{
+		if (sends.size() == 1)
+		{
+			sendAndLogIfFailed(sends.get(0));
+			return;
+		}
+
 		int nextIndex = 0;
 		while (nextIndex < sends.size())
 		{
-			final int[] currentIndex = { nextIndex };
+			final int startIndex = nextIndex;
+			final int[] currentIndex = { startIndex };
 			try
 			{
 				rabbitOperations.invoke(operations -> {
@@ -167,18 +175,41 @@ public class RabbitMQEnqueuer implements EventEnqueuer
 			}
 			catch (final Exception e)
 			{
-				if (currentIndex[0] >= sends.size())
+				final int failedIndex = currentIndex[0];
+				if (failedIndex >= sends.size())
 				{
-					// all events were sent; only releasing the channel failed
-					logger.warn("Failed to release the channel after sending {} events. Ignored.", sends.size(), e);
+					logger.warn("All {} events were sent, but releasing the channel failed. Ignored.", sends.size(), e);
 					return;
 				}
-
-				final PendingSend failedSend = sends.get(currentIndex[0]);
-				logger.warn(StringUtils.formatMessage("Failed to enqueue event to topic name. Ignored; topicName={}; event={}", failedSend.getTopic().getName(), failedSend.getEvent()), e);
-				nextIndex = currentIndex[0] + 1;
+				else if (failedIndex > startIndex)
+				{
+					logger.debug("Sending failed after {} sends on the same channel; retrying on a new channel: {}", failedIndex - startIndex, sends.get(failedIndex).getEvent(), e);
+					nextIndex = failedIndex;
+				}
+				else
+				{
+					logFailedSend(sends.get(failedIndex), e);
+					nextIndex = failedIndex + 1;
+				}
 			}
 		}
+	}
+
+	private void sendAndLogIfFailed(@NonNull final PendingSend send)
+	{
+		try
+		{
+			send.sendWith(rabbitOperations);
+		}
+		catch (final Exception e)
+		{
+			logFailedSend(send, e);
+		}
+	}
+
+	private static void logFailedSend(@NonNull final PendingSend send, @NonNull final Exception e)
+	{
+		logger.warn(StringUtils.formatMessage("Failed to enqueue event to topic name. Ignored; topicName={}; event={}", send.getTopic().getName(), send.getEvent()), e);
 	}
 
 	@NonNull
@@ -193,7 +224,7 @@ public class RabbitMQEnqueuer implements EventEnqueuer
 		};
 	}
 
-	@lombok.Value
+	@Value
 	private static class PendingSend
 	{
 		@NonNull Event event;

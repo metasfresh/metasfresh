@@ -48,11 +48,8 @@ public class PostMaterialEventService
 	}
 
 	/**
-	 * Makes sure the given {@code event} will be fired via {@link #enqueueEventsNow(Collection)} after the current trx is committed.
-	 * <p>
-	 * All events of one trx are collected in one list, so they are sent together, in the order they were posted, and over one RabbitMQ channel.
-	 * This way the consumer gets them in that order.
-	 * If there is no trx, the event is fired right away.
+	 * Fires the given {@code event} via {@link #enqueueEventsNow(Collection)} after the current trx is committed, or right away if there is no trx.
+	 * All events of one trx are fired together, in the order they were posted, so the consumer gets them in that order.
 	 */
 	public void enqueueEventAfterNextCommit(@NonNull final MaterialEvent event)
 	{
@@ -74,7 +71,7 @@ public class PostMaterialEventService
 	}
 
 	/**
-	 * Fires the given events in the given order, over one RabbitMQ channel, so that the consumer gets them in that order.
+	 * Fires the given events as one batch, in the given order (with RabbitMQ: on one channel), so the consumer gets them in that order.
 	 * <b>Important:</b> same as {@link #enqueueEventNow(MaterialEvent)}, all the data which these events refer to must already be committed!
 	 */
 	public void enqueueEventsNow(@NonNull final Collection<MaterialEvent> events)

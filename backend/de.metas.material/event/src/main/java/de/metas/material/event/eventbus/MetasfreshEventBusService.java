@@ -100,7 +100,7 @@ public final class MetasfreshEventBusService
 	}
 
 	/**
-	 * Enqueues the given events in the given order, over one RabbitMQ channel, so that the consumer gets them in that order.
+	 * Enqueues the given events as one batch, in the given order; see {@link IEventBus#enqueueEvents(java.util.List)}.
 	 */
 	public void enqueueEvents(@NonNull final Collection<MaterialEvent> events)
 	{
