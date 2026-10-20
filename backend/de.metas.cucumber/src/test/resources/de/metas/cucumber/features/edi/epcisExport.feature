@@ -79,9 +79,10 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
 
     When the order identified by o_EPCIS_010 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier   | C_OrderLine_ID | IsToRecompute |
-      | ss_EPCIS_010 | ol_EPCIS_010   | N             |
+      | Identifier   | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_EPCIS_010 | ol_EPCIS_010   | N             | 4            |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -157,9 +158,10 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
 
     When the order identified by o_EPCIS_020 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier   | C_OrderLine_ID | IsToRecompute |
-      | ss_EPCIS_020 | ol_EPCIS_020   | N             |
+      | Identifier   | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_EPCIS_020 | ol_EPCIS_020   | N             | 4            |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -232,9 +234,10 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
 
     When the order identified by o_EPCIS_030 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier   | C_OrderLine_ID | IsToRecompute |
-      | ss_EPCIS_030 | ol_EPCIS_030   | N             |
+      | Identifier   | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_EPCIS_030 | ol_EPCIS_030   | N             | 50           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
