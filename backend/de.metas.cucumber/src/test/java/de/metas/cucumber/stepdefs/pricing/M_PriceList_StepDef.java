@@ -365,6 +365,57 @@ public class M_PriceList_StepDef
 	}
 
 	/**
+	 * Asserts the complete set of {@code M_ProductPrice} rows (active and inactive) of a price list version: it has
+	 * exactly the given rows, so a product that must not get a price is asserted by leaving it out.
+	 * <p>
+	 * Columns: {@code M_Product_ID} (identifier), {@code PriceStd}; optional {@code M_AttributeSetInstance_ID}
+	 * (identifier; the price must carry the same attribute values), {@code CopyOf_M_ProductPrice_ID} (identifier of a
+	 * price registered earlier; asserts the price has its <b>own</b> attribute set instance, i.e. not the same ID as
+	 * that earlier price's).
+	 */
+	@Then("the M_ProductPrices of M_PriceList_Version {word} are:")
+	public void validate_M_ProductPrices_of_version(@NonNull final String priceListVersionIdentifier, @NonNull final DataTable dataTable)
+	{
+		final I_M_PriceList_Version plv = StepDefDataIdentifier.ofString(priceListVersionIdentifier).lookupNotNullIn(priceListVersionTable);
+		final List<I_M_ProductPrice> actualPrices = queryBL.createQueryBuilder(I_M_ProductPrice.class)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, plv.getM_PriceList_Version_ID())
+				.create()
+				.list();
+
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(Collectors.toList());
+		assertThat(actualPrices).as("number of M_ProductPrices of M_PriceList_Version %s", priceListVersionIdentifier).hasSize(rows.size());
+
+		for (final DataTableRow row : rows)
+		{
+			final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_M_ProductPrice.COLUMNNAME_M_Product_ID);
+			final int productId = productIdentifier.lookupNotNullIn(productTable).getM_Product_ID();
+			final BigDecimal expectedPriceStd = row.getAsBigDecimal(I_M_ProductPrice.COLUMNNAME_PriceStd);
+
+			final I_M_ProductPrice actual = actualPrices.stream()
+					.filter(price -> price.getM_Product_ID() == productId)
+					.findFirst()
+					.orElse(null);
+			assertThat(actual).as("M_ProductPrice of product %s in M_PriceList_Version %s", productIdentifier, priceListVersionIdentifier).isNotNull();
+			assertThat(actual.getPriceStd()).as("PriceStd of product %s in M_PriceList_Version %s", productIdentifier, priceListVersionIdentifier).isEqualByComparingTo(expectedPriceStd);
+
+			row.getAsOptionalIdentifier(I_M_ProductPrice.COLUMNNAME_M_AttributeSetInstance_ID)
+					.map(attributeSetInstanceTable::get)
+					.ifPresent(expectedAsi -> {
+						assertThat(actual.getM_AttributeSetInstance_ID()).as("M_AttributeSetInstance_ID of product %s", productIdentifier).isGreaterThan(0);
+						assertThat(toAttributesKey(InterfaceWrapperHelper.load(actual.getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class)))
+								.as("attribute values of the price of product %s", productIdentifier)
+								.isEqualTo(toAttributesKey(expectedAsi));
+					});
+			row.getAsOptionalIdentifier("CopyOf_M_ProductPrice_ID")
+					.map(productPriceTable::get)
+					.ifPresent(source -> {
+						assertThat(source.getM_AttributeSetInstance_ID()).as("source price must have an ASI").isGreaterThan(0);
+						assertThat(actual.getM_AttributeSetInstance_ID()).as("the copied price must have its own ASI").isNotEqualTo(source.getM_AttributeSetInstance_ID());
+					});
+		}
+	}
+
+	/**
 	 * Loads the version of the price list with the latest {@code ValidFrom} (highest ID on a tie), asserts the given
 	 * columns and registers it under the row's {@code Identifier}.
 	 * <p>
@@ -387,20 +438,47 @@ public class M_PriceList_StepDef
 				.first(I_M_PriceList_Version.class);
 		assertThat(latest).as("latest M_PriceList_Version of M_PriceList %s", priceListIdentifier).isNotNull();
 
-		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		validateAndRegisterVersion(latest, "latest version of " + priceListIdentifier, DataTableRows.of(dataTable).singleRow());
+	}
 
+	/**
+	 * Loads the version of the price list that is valid from exactly the given date (highest ID if several, any
+	 * {@code IsActive}), asserts the given columns and registers it under the row's {@code Identifier}. Use it to
+	 * reach a version that is not the latest one.
+	 * <p>
+	 * Columns: {@code Identifier}, optional {@code Name}, {@code M_DiscountSchema_ID} (identifier),
+	 * {@code M_Pricelist_Version_Base_ID} (identifier).
+	 */
+	@Then("the M_PriceList_Version of M_PriceList {word} valid from {word} is:")
+	public void validate_M_PriceList_Version_valid_from(@NonNull final String priceListIdentifier, @NonNull final String validFromIsoDate, @NonNull final DataTable dataTable)
+	{
+		final I_M_PriceList priceList = StepDefDataIdentifier.ofString(priceListIdentifier).lookupNotNullIn(priceListTable);
+		final Timestamp validFrom = Timestamp.from(java.time.LocalDate.parse(validFromIsoDate).atStartOfDay(SystemTime.zoneId()).toInstant());
+		final I_M_PriceList_Version version = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceList.getM_PriceList_ID())
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_ValidFrom, validFrom)
+				.orderByDescending(I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID)
+				.create()
+				.first(I_M_PriceList_Version.class);
+		assertThat(version).as("M_PriceList_Version of M_PriceList %s valid from %s", priceListIdentifier, validFromIsoDate).isNotNull();
+
+		validateAndRegisterVersion(version, "version of " + priceListIdentifier + " valid from " + validFromIsoDate, DataTableRows.of(dataTable).singleRow());
+	}
+
+	private void validateAndRegisterVersion(@NonNull final I_M_PriceList_Version latest, @NonNull final String what, @NonNull final DataTableRow row)
+	{
 		row.getAsOptionalLocalDate(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
 				.ifPresent(validFrom -> assertThat(latest.getValidFrom())
-						.as("ValidFrom of the latest version of %s", priceListIdentifier)
+						.as("ValidFrom of the %s", what)
 						.isEqualTo(Timestamp.from(validFrom.atStartOfDay(SystemTime.zoneId()).toInstant())));
 		row.getAsOptionalString(I_M_PriceList_Version.COLUMNNAME_Name)
-				.ifPresent(name -> assertThat(latest.getName()).as("Name of the latest version of %s", priceListIdentifier).isEqualTo(name));
+				.ifPresent(name -> assertThat(latest.getName()).as("Name of the %s", what).isEqualTo(name));
 		row.getAsOptionalIdentifier(I_M_PriceList_Version.COLUMNNAME_M_DiscountSchema_ID)
 				.map(identifier -> identifier.lookupNotNullIn(discountSchemaTable))
-				.ifPresent(schema -> assertThat(latest.getM_DiscountSchema_ID()).as("M_DiscountSchema_ID of the latest version of %s", priceListIdentifier).isEqualTo(schema.getM_DiscountSchema_ID()));
+				.ifPresent(schema -> assertThat(latest.getM_DiscountSchema_ID()).as("M_DiscountSchema_ID of the %s", what).isEqualTo(schema.getM_DiscountSchema_ID()));
 		row.getAsOptionalIdentifier(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID)
 				.map(identifier -> identifier.lookupNotNullIn(priceListVersionTable))
-				.ifPresent(base -> assertThat(latest.getM_Pricelist_Version_Base_ID()).as("M_Pricelist_Version_Base_ID of the latest version of %s", priceListIdentifier).isEqualTo(base.getM_PriceList_Version_ID()));
+				.ifPresent(base -> assertThat(latest.getM_Pricelist_Version_Base_ID()).as("M_Pricelist_Version_Base_ID of the %s", what).isEqualTo(base.getM_PriceList_Version_ID()));
 
 		row.getAsIdentifier().putOrReplace(priceListVersionTable, latest);
 	}
@@ -662,6 +740,10 @@ public class M_PriceList_StepDef
 				.orElse(AttributesKey.NONE);
 	}
 
+	/**
+	 * Updates price lists. Columns: {@code Identifier} (or {@code M_PriceList_ID}), optional {@code IsTaxIncluded},
+	 * {@code C_Currency.ISO_Code}, {@code C_Country.CountryCode} ({@code none} clears the country).
+	 */
 	@And("update M_PriceLists:")
 	public void updatePriceLists(@NonNull final DataTable dataTable)
 	{
@@ -676,6 +758,13 @@ public class M_PriceList_StepDef
 
 		final I_M_PriceList priceList = identifier.lookupNotNullIn(priceListTable);
 		row.getAsOptionalBoolean("IsTaxIncluded").ifPresent(priceList::setIsTaxIncluded);
+		// changing country/currency of a list that other lists are based on is not re-validated for those lists
+		row.getAsOptionalString("C_Currency.ISO_Code")
+				.map(CurrencyCode::ofThreeLetterCode)
+				.map(currencyRepository::getCurrencyIdByCurrencyCode)
+				.ifPresent(currencyId -> priceList.setC_Currency_ID(currencyId.getRepoId()));
+		row.getAsOptionalString("C_Country.CountryCode")
+				.ifPresent(countryCode -> priceList.setC_Country_ID("none".equalsIgnoreCase(countryCode) ? -1 : countryDAO.retrieveCountryByCountryCode(countryCode).getC_Country_ID()));
 
 		save(priceList);
 		priceListTable.putOrReplace(identifier, priceList);
