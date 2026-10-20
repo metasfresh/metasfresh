@@ -3,7 +3,8 @@
 -- with their own AD_Column/AD_Element ids. AD rows are therefore detected by (table, column name) / column name
 -- and created only if missing; the physical column is added only if missing. Pre-existing M_Product / I_Product AD_Columns are
 -- reconciled to core (EntityType D, Integer reference); their physical column types are NOT touched. An existing
--- unbounded NUMERIC column is left as is (compatible as long as the values are whole days).
+-- unbounded NUMERIC column is left as is (compatible as long as the values are whole days). A pre-existing AD_Element
+-- is reconciled to EntityType D and gets the en_US core wording only if its en_US translation is not yet translated.
 
 -- Element (German base text, en_US override below); created only if no element named BestBeforeDays exists
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy)
@@ -14,11 +15,18 @@ WHERE NOT EXISTS (SELECT 1 FROM AD_Element e WHERE e.ColumnName='BestBeforeDays'
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID,Description,Help,Name,PrintName,IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
 SELECT l.AD_Language,t.AD_Element_ID,t.Description,t.Help,t.Name,t.PrintName,'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
 FROM AD_Language l, AD_Element t
-WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Element_ID=585545
+WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.ColumnName='BestBeforeDays'
 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='Y',Name='Total shelf life',PrintName='Total shelf life',Description='Total shelf life of the product in days.',Help='Number of days the product stays good in total, counted from its production date (best-before date minus production date).',Updated=TO_TIMESTAMP('2026-10-19 14:00:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585545 AND AD_Language='en_US'
+-- Reconcile a pre-existing element (any id) to core: EntityType D
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2026-10-19 14:00:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
+WHERE ColumnName='BestBeforeDays' AND EntityType<>'D'
+;
+
+-- en_US core wording, only where not yet translated (an instance's own en_US translation and all other languages stay untouched)
+UPDATE AD_Element_Trl SET IsTranslated='Y',Name='Total shelf life',PrintName='Total shelf life',Description='Total shelf life of the product in days.',Help='Number of days the product stays good in total, counted from its production date (best-before date minus production date).',Updated=TO_TIMESTAMP('2026-10-19 14:00:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
+WHERE AD_Language='en_US' AND IsTranslated='N' AND AD_Element_ID IN (SELECT AD_Element_ID FROM AD_Element WHERE ColumnName='BestBeforeDays')
 ;
 
 -- M_Product.BestBeforeDays
