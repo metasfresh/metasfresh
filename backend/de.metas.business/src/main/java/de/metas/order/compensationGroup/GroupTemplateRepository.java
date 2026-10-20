@@ -77,6 +77,15 @@ public class GroupTemplateRepository
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
 
+	private final CCache<GroupTemplateRegularLineId, Optional<UomId>> //
+			regularLineUomIdsById = CCache.<GroupTemplateRegularLineId, Optional<UomId>>builder()
+			.tableName(I_C_CompensationGroup_Schema_TemplateLine.Table_Name)
+			.initialCapacity(50)
+			.maximumSize(500)
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
+
 	private final Map<GroupTemplateCompensationLineType, GroupMatcherFactory> groupMatcherFactoriesByType;
 
 	public GroupTemplateRepository(final Optional<List<GroupMatcherFactory>> groupMatcherFactories)
@@ -98,6 +107,11 @@ public class GroupTemplateRepository
 
 	/** @return the UOM of the given template line; empty if the line does not exist */
 	public Optional<UomId> getRegularLineUomId(@NonNull final GroupTemplateRegularLineId templateLineId)
+	{
+		return regularLineUomIdsById.getOrLoad(templateLineId, this::retrieveRegularLineUomId);
+	}
+
+	private Optional<UomId> retrieveRegularLineUomId(@NonNull final GroupTemplateRegularLineId templateLineId)
 	{
 		return queryBL
 				.createQueryBuilderOutOfTrx(I_C_CompensationGroup_Schema_TemplateLine.class)

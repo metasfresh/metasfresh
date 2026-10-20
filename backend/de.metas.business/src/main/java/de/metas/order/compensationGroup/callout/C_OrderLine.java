@@ -24,8 +24,8 @@ package de.metas.order.compensationGroup.callout;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.compensationGroup.GroupTemplateRegularLineId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
-import de.metas.order.compensationGroup.calibration.CalibrationFactorFieldRepository;
 import de.metas.order.compensationGroup.calibration.CalibrationRule;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -36,7 +36,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,22 +45,21 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /**
- * Keeps the Kalibrierfaktor ({@code GroupCompensationCalibrationFactor}) and {@code QtyEntered} of a calibrated order line in sync
+ * Keeps the calibration factor ({@code GroupCompensationCalibrationFactor}) and {@code QtyEntered} of a calibrated order line in sync
  * when the user edits one of them in the UI:
  * <ul>
  * <li>factor changed: {@code QtyEntered = uncalibrated qty x factor %}, rounded like at line creation ({@link CalibrationRule#computeQtyCalibrated(Quantity, Percent)})</li>
- * <li>{@code QtyEntered} changed (typed, or set by the Gebindemenge/TU callout): {@code factor = QtyEntered / uncalibrated qty x 100}, rounded half-up to 2 decimals</li>
+ * <li>{@code QtyEntered} changed (typed, or set by the TU qty callout): {@code factor = QtyEntered / uncalibrated qty x 100}, rounded half-up to 2 decimals</li>
  * </ul>
- * Both act only on a tab whose factor field is editable ({@code AD_Field.IsReadOnly='N'}). In core window 143 the field is read-only, so nothing changes there;
- * a customer window can make the field editable to enable this.
+ * Both act in every window and only on a calibrated line, i.e. one with a calibration rule or a calibration factor; any other line is left alone.
+ * The factor field is shown and editable only where a window makes it so (e.g. a customer's sales order window); elsewhere it just follows an edited QtyEntered.
  * <p>
  * Both methods are in this one callout class on purpose: with the default {@link Callout.RecursionAvoidanceLevel#CalloutClass}
  * they form one callout instance, and the callout executor does not re-enter an instance that is already running.
  * That stops the cycle factor -&gt; QtyEntered -&gt; factor in both directions.
- * Neither method skips indirect calls, so a QtyEntered set by another callout (e.g. from the Gebindemenge) still updates the factor.
+ * Neither method skips indirect calls, so a QtyEntered set by another callout (e.g. from the TU qty) still updates the factor.
  * <p>
  * The rule reference and the uncalibrated qty are never changed here.
  */
@@ -76,10 +74,8 @@ public class C_OrderLine
 	private static final AdMessageKey MSG_UOMChanged = AdMessageKey.of("C_OrderLine_CalibrationFactorUOMChanged");
 
 	private static final int FACTOR_SCALE = 2;
-	private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
 
 	@NonNull private final GroupTemplateRepository groupTemplateRepository;
-	@NonNull private final CalibrationFactorFieldRepository calibrationFactorFieldRepository;
 
 	@PostConstruct
 	void postConstruct()
@@ -88,9 +84,9 @@ public class C_OrderLine
 	}
 
 	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor, skipIfCopying = true)
-	public void onCalibrationFactorChanged(@NonNull final I_C_OrderLine orderLine, @NonNull final ICalloutField field)
+	public void onCalibrationFactorChanged(@NonNull final I_C_OrderLine orderLine)
 	{
-		final BigDecimal factor = getCalibrationFactorOrNull(orderLine);
+		final Percent factor = OrderGroupRepository.getCalibrationFactor(orderLine);
 		final BigDecimal qtyUncalibrated = getQtyUncalibratedOrNull(orderLine);
 
 		// a new line runs every field callout once; an empty factor there is not a user edit
@@ -98,20 +94,15 @@ public class C_OrderLine
 		{
 			return;
 		}
-		if (!isFactorEditable(field))
-		{
-			return;
-		}
-
 		if (factor == null)
 		{
 			throw new AdempiereException(MSG_FactorMandatory).markAsUserValidationError();
 		}
-		if (factor.signum() < 0)
+		if (factor.toBigDecimal().signum() < 0)
 		{
 			throw new AdempiereException(MSG_NegativeFactor).markAsUserValidationError();
 		}
-		if (orderLine.getC_CompensationGroup_CalibrationRule_ID() <= 0 || qtyUncalibrated == null)
+		if (!isCalibrated(orderLine) || qtyUncalibrated == null)
 		{
 			throw new AdempiereException(MSG_LineNotCalibrated).markAsUserValidationError();
 		}
@@ -121,15 +112,15 @@ public class C_OrderLine
 		}
 
 		final Quantity base = Quantitys.of(qtyUncalibrated, UomId.ofRepoId(orderLine.getC_UOM_ID()));
-		final Quantity qtyCalibrated = CalibrationRule.computeQtyCalibrated(base, Percent.of(factor));
+		final Quantity qtyCalibrated = CalibrationRule.computeQtyCalibrated(base, factor);
 		orderLine.setQtyEntered(qtyCalibrated.toBigDecimal());
 	}
 
 	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_QtyEntered, skipIfCopying = true)
-	public void onQtyEnteredChanged(@NonNull final I_C_OrderLine orderLine, @NonNull final ICalloutField field)
+	public void onQtyEnteredChanged(@NonNull final I_C_OrderLine orderLine)
 	{
 		final BigDecimal qtyUncalibrated = getQtyUncalibratedOrNull(orderLine);
-		if (qtyUncalibrated == null || qtyUncalibrated.signum() <= 0)
+		if (!isCalibrated(orderLine) || qtyUncalibrated == null || qtyUncalibrated.signum() <= 0)
 		{
 			return;
 		}
@@ -143,24 +134,15 @@ public class C_OrderLine
 		{
 			return;
 		}
-		if (!isFactorEditable(field))
-		{
-			return;
-		}
-
-		final BigDecimal factor = qtyEntered
-				.multiply(ONE_HUNDRED)
-				.divide(qtyUncalibrated, FACTOR_SCALE, RoundingMode.HALF_UP);
-		orderLine.setGroupCompensationCalibrationFactor(factor);
+		OrderGroupRepository.setCalibrationFactor(orderLine, Percent.of(qtyEntered, qtyUncalibrated, FACTOR_SCALE));
 	}
 
 	/**
-	 * The generated getter returns 0 for an empty value; an empty factor must stay distinguishable from factor 0.
+	 * A line is calibrated if it has a calibration rule or a calibration factor.
 	 */
-	@Nullable
-	private static BigDecimal getCalibrationFactorOrNull(@NonNull final I_C_OrderLine orderLine)
+	private static boolean isCalibrated(@NonNull final I_C_OrderLine orderLine)
 	{
-		return InterfaceWrapperHelper.getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor);
+		return orderLine.getC_CompensationGroup_CalibrationRule_ID() > 0 || OrderGroupRepository.getCalibrationFactor(orderLine) != null;
 	}
 
 	/**
@@ -184,14 +166,5 @@ public class C_OrderLine
 		}
 		final UomId lineUomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
 		return lineUomId != null && groupTemplateRepository.getRegularLineUomId(templateLineId).filter(lineUomId::equals).isPresent();
-	}
-
-	/**
-	 * @return true if the tab the user works in has an editable factor field (e.g. a customer's sales order window); false in core window 143, where it is read-only, and outside the UI
-	 */
-	private boolean isFactorEditable(@NonNull final ICalloutField field)
-	{
-		final int adTabId = field.getCalloutRecord() != null ? field.getCalloutRecord().getAD_Tab_ID() : -1;
-		return adTabId > 0 && calibrationFactorFieldRepository.isFactorEditableInTab(adTabId);
 	}
 }

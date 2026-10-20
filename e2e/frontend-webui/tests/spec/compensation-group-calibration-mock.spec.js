@@ -27,7 +27,7 @@ import {
  *   - the menu line is not calibrated (no factor, no stored rule, calibration group hidden)
  *   - Rice_Pudding is 1.500 x 0,25 x 80 % = 300 LTR, uncalibrated 375 LTR; factor, rule and uncalibrated quantity
  *     are shown read-only in the line's advanced edit
- *   - the clerk types 375 as the line's Menge (the mock's value): factor 80 %, rule 10 and uncalibrated 375 stay
+ *   - the clerk types 375 as the line's Menge (the mock's value): the factor follows (375 / 375 = 100 %); rule 10 and uncalibrated 375 stay
  *   - the menu line's Menge 1.500 -> 1.600 leaves Rice_Pudding untouched (no automatic rescale)
  *   - a manually added line has no calibration group; no calibration column in the grid
  *
@@ -127,17 +127,17 @@ test.describe('Compensation group calibration - mock case', () => {
             });
         });
 
-        await test.step('the clerk types Menge 375 inline in the grid on Rice_Pudding (the mock\'s value): factor 80 %, rule 10, uncalibrated 375 stay', async () => {
+        await test.step('the clerk types Menge 375 inline in the grid on Rice_Pudding (the mock\'s value): factor follows to 100 %, rule 10, uncalibrated 375 stay', async () => {
             await setLineQtyInline(page, rice, 375);
 
             await expectLineQty(page, rice, 375);
-            await expectCalibrationGroup(page, rice, { factor: '80', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-after-override' });
+            await expectCalibrationGroup(page, rice, { factor: '100', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-after-override' });
 
             await Backend.expect({
-                title: 'Mock case: line Menge overridden to 375, calibration data unchanged',
+                title: 'Mock case: line Menge overridden to 375, factor follows to 100, rule and uncalibrated quantity unchanged',
                 salesOrders: {
                     [orderId]: {
-                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 375, calibrationFactor: 80, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
+                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 375, calibrationFactor: 100, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
                     },
                 },
             });
@@ -155,7 +155,7 @@ test.describe('Compensation group calibration - mock case', () => {
                     [orderId]: {
                         lines: [
                             { product: 'MENU_WED_DESSERT', qtyEntered: 1600, calibrated: false },
-                            { product: 'RICE_PUDDING', qtyEntered: 375, calibrationFactor: 80, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 },
+                            { product: 'RICE_PUDDING', qtyEntered: 375, calibrationFactor: 100, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 },
                         ],
                     },
                 },

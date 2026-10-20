@@ -1227,6 +1227,21 @@ public class OrderGroupRepository implements GroupRepository
 				.firstIdOnly(GroupTemplateId::ofRepoIdOrNull);
 	}
 
+	/**
+	 * @return the calibration factor of the line (100-based percent); empty if none is stored.
+	 * The generated getter returns 0 for an empty value, but an empty factor must stay distinguishable from factor 0.
+	 */
+	@Nullable
+	public static Percent getCalibrationFactor(@NonNull final I_C_OrderLine orderLine)
+	{
+		return Percent.ofNullable(InterfaceWrapperHelper.getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor));
+	}
+
+	public static void setCalibrationFactor(@NonNull final I_C_OrderLine orderLine, @Nullable final Percent factor)
+	{
+		orderLine.setGroupCompensationCalibrationFactor(factor != null ? factor.toBigDecimal() : null);
+	}
+
 	public I_C_OrderLine createRegularLineFromTemplate(
 			@NonNull final GroupTemplateRegularLine from,
 			@NonNull final I_C_Order targetOrder,
@@ -1251,7 +1266,7 @@ public class OrderGroupRepository implements GroupRepository
 			qtyEntered = calibrationRule.computeQtyCalibrated(qtyEnteredUncalibrated);
 
 			// the calibration columns are not updateable: they are only set while the line is new
-			orderLine.setGroupCompensationCalibrationFactor(calibrationRule.getFactor().toBigDecimal());
+			setCalibrationFactor(orderLine, calibrationRule.getFactor());
 			orderLine.setC_CompensationGroup_CalibrationRule_ID(CalibrationRuleId.toRepoId(calibrationRule.getId()));
 			orderLine.setGroupCompensationQtyEnteredUncalibrated(qtyEnteredUncalibrated.toBigDecimal());
 		}
