@@ -10,10 +10,14 @@ import de.metas.util.Services;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -66,8 +70,15 @@ class ShipmentScheduleInvalidateBLRoutingTest
 	@Test
 	void committedThreadTrxInAfterCommit_flagsOutOfTrx()
 	{
-		trxManager.runInThreadInheritedTrx(() -> trxManager.runAfterCommit(() -> bl.flagForRecomputeStorageSegment(segment)));
+		final List<ITrx> trxs = new ArrayList<>();
+		trxManager.runInThreadInheritedTrx(() -> trxManager.runAfterCommit(() -> {
+			trxs.add(trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone));
+			bl.flagForRecomputeStorageSegment(segment);
+		}));
 
+		assertThat(trxs).as("setup: the callback ran").hasSize(1);
+		assertThat(trxManager.isNull(trxs.get(0))).as("setup: the committed trx is still thread-inherited").isFalse();
+		assertThat(trxs.get(0).isActive()).as("setup: committed, not restarted").isFalse();
 		verify(repo, times(1)).invalidateStorageSegments(any(), isNull());
 		verify(repo, never()).invalidateStorageSegmentsInThreadInheritedTrx(any());
 	}

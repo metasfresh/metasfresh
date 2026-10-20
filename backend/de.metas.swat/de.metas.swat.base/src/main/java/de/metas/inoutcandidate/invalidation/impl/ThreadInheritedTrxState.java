@@ -42,9 +42,13 @@ import javax.annotation.Nullable;
  * <li>{@code T} committed (or rolled back, or closed) and dispatching its post-commit listeners, not restarted - NOT open: the change is
  * already committed, and a write would restart {@code T} where it may never be committed.</li>
  * </ul>
- * The last state is told apart from "never started" by the listener timing: while AFTER_COMMIT/AFTER_ROLLBACK/AFTER_CLOSE listeners run,
- * no BEFORE_COMMIT listener can be registered. BEFORE_COMMIT listeners themselves run on an active trx, so for an inactive trx
- * "cannot register BEFORE_COMMIT" means post-commit dispatch.
+ * The last state is told apart from "never started" by the listener timing: while any listener runs (BEFORE_COMMIT, AFTER_COMMIT,
+ * AFTER_ROLLBACK, AFTER_CLOSE), no BEFORE_COMMIT listener can be registered; outside listener dispatch it can.
+ * <p>
+ * Known, accepted edge: the timing API cannot tell BEFORE_COMMIT from AFTER_COMMIT, and BEFORE_COMMIT listeners can run on an INACTIVE trx
+ * ({@code AbstractTrx.commit} fires them without starting the trx, and e.g. {@code JavaProcess.endTrx} commits trxs that were never started).
+ * Such an inactive trx inside BEFORE_COMMIT is treated as not open, so the flag is written out of trx.
+ * Today this is practically unreachable: the only BEFORE_COMMIT registrants touching HU data register after DB reads, which start the trx.
  */
 final class ThreadInheritedTrxState
 {
@@ -71,7 +75,7 @@ final class ThreadInheritedTrxState
 		{
 			return true;
 		}
-		// inactive: never started (open) or in its post-commit listener dispatch (not open)
+		// inactive: never started (open) or in a listener dispatch - post-commit, or (accepted edge, see class Javadoc) BEFORE_COMMIT of a never-started trx (not open)
 		return trx.getTrxListenerManager().canRegisterOnTiming(TrxEventTiming.BEFORE_COMMIT);
 	}
 }
