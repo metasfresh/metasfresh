@@ -111,6 +111,7 @@ public class C_OrderLine
 	 * Converts the uncalibrated qty as before the changes (value and UOM from the same snapshot, so two UOM edits before a save convert once).
 	 * No conversion: {@link NoUOMConversionException}, like {@code CalloutOrder.qty}.
 	 * Not on a product change, where {@code CalloutOrder.product} resets the UOM.
+	 * Factor and Qty are not recomputed: the UOM is read-only in the order windows.
 	 */
 	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_C_UOM_ID, skipIfCopying = true)
 	public void onUomChanged(@NonNull final I_C_OrderLine orderLine, @NonNull final ICalloutField field)
