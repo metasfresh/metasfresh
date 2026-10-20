@@ -92,9 +92,10 @@ Feature: EDI DESADV export via postgREST
       | o_1        | DocumentNo | o_1_DocumentNo |
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 180s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_1      | ol_1                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_1      | ol_1                      | N             | 100          |
        
     # This controls the SSCC18 value such that our LU and desc-pack get SSCC18-value 012345670010000005
     And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
@@ -392,11 +393,12 @@ Feature: EDI DESADV export via postgREST
       | o_cg       | DocumentNo | o_cg_DocumentNo  |
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 180s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_main    | ol_main        | N             |
-      | ss_sub1    | ol_sub1        | N             |
-      | ss_sub2    | ol_sub2        | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_main    | ol_main        | N             | 10           |
+      | ss_sub1    | ol_sub1        | N             | 10           |
+      | ss_sub2    | ol_sub2        | N             | 10           |
 
     And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
 
@@ -496,9 +498,10 @@ Feature: EDI DESADV export via postgREST
     And the order identified by o_ms_1 is completed
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 180s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_ms_1    | ol_ms_1        | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_ms_1    | ol_ms_1        | N             | 10           |
 
     And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
 
@@ -522,9 +525,10 @@ Feature: EDI DESADV export via postgREST
     And the order identified by o_ms_2 is completed
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 180s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_ms_2    | ol_ms_2        | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_ms_2    | ol_ms_2        | N             | 10           |
 
     And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=2000000.
 
@@ -643,10 +647,11 @@ Feature: EDI DESADV export via postgREST
     And the order identified by o_ns is completed
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 180s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ss_shipped    | ol_shipped     | N             |
-      | ss_notShipped | ol_notShipped  | N             |
+      | Identifier    | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_shipped    | ol_shipped     | N             | 100          |
+      | ss_notShipped | ol_notShipped  | N             | 50           |
 
     And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
 
@@ -752,9 +757,10 @@ Feature: EDI DESADV export via postgREST
       | o_050      | DocumentNo | o_050_DocumentNo  |
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 180s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_050    | ol_050                    | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_050    | ol_050                    | N             | 100          |
 
     And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
 
@@ -1004,9 +1010,10 @@ Feature: EDI DESADV export via postgREST
       | o_060      | DocumentNo | o_060_DocumentNo  |
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 180s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_060    | ol_060                    | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_060    | ol_060                    | N             | 100          |
 
     And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
 
@@ -1183,15 +1190,16 @@ Feature: EDI DESADV export via postgREST
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # All three shipment schedules (2 from order A, 1 from order B) must be ready before batching
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier     | C_OrderLine_ID | IsToRecompute |
-      | ssA1_S29231    | olA1_S29231    | N             |
+      | Identifier  | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ssA1_S29231 | olA1_S29231    | N             | 10           |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier     | C_OrderLine_ID | IsToRecompute |
-      | ssA2_S29231    | olA2_S29231    | N             |
+      | Identifier  | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ssA2_S29231 | olA2_S29231    | N             | 5            |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier     | C_OrderLine_ID | IsToRecompute |
-      | ssB1_S29231    | olB1_S29231    | N             |
+      | Identifier  | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ssB1_S29231 | olB1_S29231    | N             | 7            |
 
     # Batch-generate ONE shipment covering all three schedules (the aggregated M_InOut)
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
@@ -1341,9 +1349,10 @@ Feature: EDI DESADV export via postgREST
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier     | C_OrderLine_ID | IsToRecompute |
-      | ss_S29231_110  | ol_S29231_110  | N             |
+      | Identifier    | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_S29231_110 | ol_S29231_110  | N             | 10           |
 
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
@@ -1466,9 +1475,10 @@ Feature: EDI DESADV export via postgREST
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ss_S29231_160 | ol_S29231_160  | N             |
+      | Identifier    | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_S29231_160 | ol_S29231_160  | N             | 20           |
 
     # ─── First partial: ship 10 of 20 ──────────────────────────────────────────
     # QtyToDeliver_Override_For_M_ShipmentSchedule_ID is the workpackage-parameter name that
@@ -1486,9 +1496,10 @@ Feature: EDI DESADV export via postgREST
     # Wait for the schedule to reflect the first partial delivery before invoking the second
     # generate-shipments run.  Without this recompute-wait the second workpackage may see a
     # stale QtyToDeliver and produce no shipment (same pattern as duplicateShipmentLineGuard.feature).
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ss_S29231_160 | ol_S29231_160  | N             |
+      | Identifier    | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_S29231_160 | ol_S29231_160  | N             | 10           |
 
     # ─── Second partial: ship the remaining 10 of 20 ───────────────────────────
     # Use OPT.IgnoreCreated to exclude the first M_InOut (otherwise the
