@@ -30,7 +30,6 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.manufacturing.config.FinishedGoodsReceiveLineConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.config.ReceiveUnitType;
@@ -95,7 +94,6 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -133,8 +131,6 @@ public class ManufacturingJobService
 	@VisibleForTesting
 	static final String SYSCONFIG_defaultFilters = "mobileui.manufacturing.defaultFilters";
 	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
-	@VisibleForTesting
-	static final AdMessageKey MSG_CatchWeightReceiveOneAtATime = AdMessageKey.of("MaterialReceipt_CatchWeightReceiveOneAtATime");
 
 	public static ManufacturingJobService newInstanceForUnitTesting()
 	{
@@ -522,7 +518,6 @@ public class ManufacturingJobService
 		@NonNull final ReceiveUnitType receiveUnitType = config.getReceiveUnitTypeEffective();
 
 		final FinishedGoodsReceiveLine receiveLine = job.getFinishedGoodsReceiveLineById(receiveFrom.getFinishedGoodsReceiveLineId());
-		assertOneUnitPerReceiptIfCatchWeightScanRequired(receiveLine, config, receiveFrom.getQtyReceived());
 
 		return newReceiveGoodsCommand()
 				.job(job)
@@ -540,36 +535,8 @@ public class ManufacturingJobService
 				.barcode(receiveFrom.getBarcode())
 				.receiveUnitType(receiveUnitType)
 				.tuPIItemProductIdForTUMode(receiveLine.getTuPIItemProductId())
+				.catchWeightScanRequired(config.effectiveForReceiveLine(receiveLine).isCatchWeightScanRequired())
 				.build().execute();
-	}
-
-	/**
-	 * Catch weight with a mandatory scan is received one at a time: one receipt = one unit carrying the one scanned weight.
-	 * The mobile client fixes the qty at 1; this rejects any other qty (e.g. from a stale cached client or a direct API call),
-	 * which would produce one HU of N units carrying a single unit's weight.
-	 * <p>
-	 * The scan is mandatory for the main finished good only, and only if the product is catch weight and its weight is captured at receipt
-	 * (same conditions under which the mobile client requires the scan).
-	 */
-	@VisibleForTesting
-	static void assertOneUnitPerReceiptIfCatchWeightScanRequired(
-			@NonNull final FinishedGoodsReceiveLine receiveLine,
-			@NonNull final MobileUIManufacturingConfig config,
-			@NonNull final BigDecimal qtyToReceive)
-	{
-		final boolean isMainFinishedGood = receiveLine.getCoProductBOMLineId() == null;
-		final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(isMainFinishedGood);
-		final boolean isCatchWeightScanRequired = lineConfig.isCatchWeightScanRequired()
-				&& lineConfig.isCaptureCatchWeight()
-				&& receiveLine.getCatchWeightUOMId() != null;
-
-		if (isCatchWeightScanRequired && qtyToReceive.compareTo(BigDecimal.ONE) != 0)
-		{
-			throw new AdempiereException(MSG_CatchWeightReceiveOneAtATime, qtyToReceive)
-					.markAsUserValidationError()
-					.setParameter("finishedGoodsReceiveLineId", receiveLine.getId())
-					.setParameter("qtyToReceive", qtyToReceive);
-		}
 	}
 
 	private ReceiveGoodsCommandBuilder newReceiveGoodsCommand()

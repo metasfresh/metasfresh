@@ -19,6 +19,7 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.manufacturing.config.ReceiveUnitType;
@@ -41,6 +42,7 @@ import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -57,6 +59,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,6 +68,8 @@ public class ReceiveGoodsCommand
 	private static final AdMessageKey MSG_ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED");
 	private static final AdMessageKey MSG_MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED");
 	private static final AdMessageKey MSG_NOT_ACTIVE_HU = AdMessageKey.of("de.metas.manufacturing.job.service.commands.NOT_ACTIVE_HU");
+	@VisibleForTesting
+	public static final AdMessageKey MSG_CatchWeightReceiveOneAtATime = AdMessageKey.of("MaterialReceipt_CatchWeightReceiveOneAtATime");
 
 	//
 	// Services
@@ -93,6 +98,12 @@ public class ReceiveGoodsCommand
 	@NonNull private final ReceiveUnitType receiveUnitType;
 	/** Required when {@link #receiveUnitType} is TU. If null in TU mode, falls back to CU qty calculation. */
 	@Nullable private final HUPIItemProductId tuPIItemProductIdForTUMode;
+	/**
+	 * The effective "catch-weight scan required" of the line (see {@link de.metas.manufacturing.config.FinishedGoodsReceiveLineConfig#isCatchWeightScanRequired()}).
+	 * Then every receipt is exactly one piece carrying its own scanned weight, lot and best-before date, whatever the receive unit type;
+	 * in TU mode those pieces fill the current TU up to its packing capacity.
+	 */
+	private final boolean catchWeightScanRequired;
 
 	//
 	// State
@@ -101,6 +112,7 @@ public class ReceiveGoodsCommand
 	@NonNull private ManufacturingJob job;
 	@Nullable private I_PP_Order _ppOrder; // lazy
 	@Nullable private I_PP_Order_BOMLine _coProductLine; // lazy
+	@Nullable private Quantity _qtyToReceive; // lazy
 	@NonNull private final ArrayList<I_M_HU> receivedHUs = new ArrayList<>();
 
 	@Builder
@@ -125,7 +137,8 @@ public class ReceiveGoodsCommand
 			@Nullable final Quantity catchWeight,
 			@Nullable final ScannedCode barcode,
 			@Nullable final ReceiveUnitType receiveUnitType,
-			@Nullable final HUPIItemProductId tuPIItemProductIdForTUMode)
+			@Nullable final HUPIItemProductId tuPIItemProductIdForTUMode,
+			final boolean catchWeightScanRequired)
 	{
 		this.trxManager = trxManager;
 		this.handlingUnitsBL = handlingUnitsBL;
@@ -147,6 +160,7 @@ public class ReceiveGoodsCommand
 		this.barcode = barcode;
 		this.receiveUnitType = receiveUnitType != null ? receiveUnitType : ReceiveUnitType.CU;
 		this.tuPIItemProductIdForTUMode = tuPIItemProductIdForTUMode;
+		this.catchWeightScanRequired = catchWeightScanRequired;
 
 		// state
 		this.job = job;
@@ -172,6 +186,8 @@ public class ReceiveGoodsCommand
 	@NonNull
 	private FinishedGoodsReceiveLine receiveLine(@NonNull final FinishedGoodsReceiveLine line)
 	{
+		getQtyToReceive(); // validate the qty before any HU is created
+
 		@Nullable final ReceivingTarget receivingTarget;
 		if (this.receivingTarget.getReceiveToNewLU() != null)
 		{
@@ -292,6 +308,16 @@ public class ReceiveGoodsCommand
 			throw new AdempiereException("No CU-TU association defined");
 		}
 
+		if (isFillCurrentTUPieceByPiece())
+		{
+			final I_M_HU currentTU = findCurrentNotFullTU(existingLU, tuPIItemProductId).orElse(null);
+			if (currentTU != null)
+			{
+				HUTransformService.newInstance().cusToExistingTU(ImmutableList.of(retrieveSingleVHU()), currentTU);
+				return ReceivingTarget.ofExistingLU(existingLU, tuPIItemProductId);
+			}
+		}
+
 		final List<I_M_HU> tusOrVhus = receiveTUs(tuPIItemProductId);
 		for (final I_M_HU tu : tusOrVhus)
 		{
@@ -304,6 +330,14 @@ public class ReceiveGoodsCommand
 	private ReceivingTarget receiveToExistingTU(@NonNull final I_M_HU existingTU)
 	{
 		assertMixingDifferentProductsAllowed(existingTU);
+
+		if (isFillCurrentTUPieceByPiece() && isFull(existingTU))
+		{
+			// the TU is full per its packing => start a new TU of the same packing; it becomes the current TU
+			final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoId(existingTU.getM_HU_PI_Item_Product_ID());
+			final I_M_HU newTU = CollectionUtils.singleElement(receiveTUs(tuPIItemProductId));
+			return ReceivingTarget.ofExistingTU(newTU);
+		}
 
 		final I_M_HU vhu = retrieveSingleVHU();
 
@@ -395,6 +429,16 @@ public class ReceiveGoodsCommand
 
 	private Quantity getQtyToReceive()
 	{
+		Quantity qtyToReceive = this._qtyToReceive;
+		if (qtyToReceive == null)
+		{
+			qtyToReceive = this._qtyToReceive = computeQtyToReceive();
+		}
+		return qtyToReceive;
+	}
+
+	private Quantity computeQtyToReceive()
+	{
 		final UomId fallbackUomId;
 		final I_PP_Order_BOMLine coProductLine = getCOProductLine();
 		if (coProductLine != null)
@@ -411,20 +455,85 @@ public class ReceiveGoodsCommand
 				? loadingAndSavingSupportServices.getTUPIItemProduct(tuPIItemProductIdForTUMode)
 				: null;
 
-		return computeQtyToReceive(qtyToReceiveBD, fallbackUomId, tuPIItemProductForTUMode);
+		return computeQtyToReceive(qtyToReceiveBD, fallbackUomId, tuPIItemProductForTUMode, catchWeightScanRequired);
 	}
 
 	@VisibleForTesting
 	static Quantity computeQtyToReceive(
 			@NonNull final BigDecimal qtyToReceiveBD,
 			@NonNull final UomId fallbackUomId,
-			@Nullable final HUPIItemProduct tuPIItemProductForTUMode)
+			@Nullable final HUPIItemProduct tuPIItemProductForTUMode,
+			final boolean catchWeightScanRequired)
 	{
+		if (catchWeightScanRequired)
+		{
+			// One receipt = one piece in every receive mode: the qty counts pieces, it is never converted from TUs,
+			// else the one scanned weight, lot and best-before date would land on the packing's N pieces.
+			final Quantity qtyPieces = Quantitys.of(qtyToReceiveBD, fallbackUomId);
+			if (!qtyPieces.isOne())
+			{
+				throw new AdempiereException(MSG_CatchWeightReceiveOneAtATime, qtyToReceiveBD)
+						.markAsUserValidationError()
+						.setParameter("qtyToReceive", qtyPieces);
+			}
+			return qtyPieces;
+		}
+
 		if (tuPIItemProductForTUMode == null || tuPIItemProductForTUMode.isInfiniteCapacity())
 		{
 			return Quantitys.of(qtyToReceiveBD, fallbackUomId);
 		}
 		return tuPIItemProductForTUMode.computeQtyCUsOfQtyTUs(QtyTU.ofBigDecimal(qtyToReceiveBD));
+	}
+
+	/**
+	 * TU receive mode with the mandatory catch-weight scan: each receipt adds one piece to the current TU;
+	 * a full TU (per its packing capacity) is followed by a new one. LU aggregation of those TUs is unchanged.
+	 */
+	private boolean isFillCurrentTUPieceByPiece()
+	{
+		return catchWeightScanRequired && receiveUnitType.isTU();
+	}
+
+	/**
+	 * @return the most recent TU on the LU that has the given packing and is not full yet
+	 */
+	private Optional<I_M_HU> findCurrentNotFullTU(@NonNull final I_M_HU lu, @NonNull final HUPIItemProductId tuPIItemProductId)
+	{
+		return handlingUnitsBL.retrieveIncludedHUs(lu)
+				.stream()
+				.filter(handlingUnitsBL::isTransportUnit)
+				.filter(tu -> tu.getM_HU_PI_Item_Product_ID() == tuPIItemProductId.getRepoId())
+				.filter(tu -> !isFull(tu))
+				.max(Comparator.comparing(I_M_HU::getM_HU_ID));
+	}
+
+	private boolean isFull(@NonNull final I_M_HU tu)
+	{
+		final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(tu.getM_HU_PI_Item_Product_ID());
+		if (tuPIItemProductId == null)
+		{
+			return false; // packing (hence capacity) unknown
+		}
+
+		final HUPIItemProduct tuPIItemProduct = loadingAndSavingSupportServices.getTUPIItemProduct(tuPIItemProductId);
+		if (tuPIItemProduct.isInfiniteCapacity())
+		{
+			return false;
+		}
+
+		final IHUProductStorage productStorage = handlingUnitsBL.getStorageFactory().getStorage(tu).getProductStorageOrNull(getProductId());
+		final Quantity qtyInTU = productStorage != null
+				? productStorage.getQty(tuPIItemProduct.getQtyCUsPerTU().getUOM())
+				: tuPIItemProduct.getQtyCUsPerTU().toZero();
+		return isFull(qtyInTU, tuPIItemProduct);
+	}
+
+	@VisibleForTesting
+	static boolean isFull(@NonNull final Quantity qtyInTU, @NonNull final HUPIItemProduct tuPIItemProduct)
+	{
+		return !tuPIItemProduct.isInfiniteCapacity()
+				&& qtyInTU.compareTo(tuPIItemProduct.getQtyCUsPerTU()) >= 0;
 	}
 
 	@Nullable

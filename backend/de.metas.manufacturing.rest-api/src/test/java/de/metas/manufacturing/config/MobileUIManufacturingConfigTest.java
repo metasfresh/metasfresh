@@ -415,7 +415,7 @@ class MobileUIManufacturingConfigTest
 					.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
 					.build();
 
-			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(true);
+			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(true, true);
 
 			assertThat(lineConfig.isAllowReceiveToLU()).isTrue();
 			assertThat(lineConfig.isAllowReceiveToTU()).isTrue();
@@ -433,7 +433,7 @@ class MobileUIManufacturingConfigTest
 					.isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE)
 					.build();
 
-			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(true);
+			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(true, true);
 
 			// The first three differ from the co-product outcome, which is permissive for the two allow-flags
 			// and false for the skip-flag regardless of config. Catch weight now matches the co-product
@@ -454,7 +454,7 @@ class MobileUIManufacturingConfigTest
 					.isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE)
 					.build();
 
-			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(false);
+			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(false, true);
 
 			assertThat(lineConfig.isAllowReceiveToLU()).isTrue();
 			assertThat(lineConfig.isAllowReceiveToTU()).isTrue();
@@ -474,7 +474,7 @@ class MobileUIManufacturingConfigTest
 					.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
 					.build();
 
-			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(false);
+			final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(false, true);
 
 			assertThat(lineConfig.isAllowReceiveToLU()).isTrue();
 			assertThat(lineConfig.isAllowReceiveToTU()).isTrue();
@@ -486,18 +486,39 @@ class MobileUIManufacturingConfigTest
 		void catchWeightScanRequired_mainFinishedGood_followsTheFlag()
 		{
 			assertThat(configBuilder().isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.TRUE).build()
-					.effectiveForReceiveLine(true).isCatchWeightScanRequired()).isTrue();
+					.effectiveForReceiveLine(true, true).isCatchWeightScanRequired()).isTrue();
 			assertThat(configBuilder().isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.FALSE).build()
-					.effectiveForReceiveLine(true).isCatchWeightScanRequired()).isFalse();
+					.effectiveForReceiveLine(true, true).isCatchWeightScanRequired()).isFalse();
 			assertThat(configBuilder().build()
-					.effectiveForReceiveLine(true).isCatchWeightScanRequired()).isFalse();
+					.effectiveForReceiveLine(true, true).isCatchWeightScanRequired()).isFalse();
 		}
 
 		@Test
 		void catchWeightScanRequired_coProduct_isNeverRequired()
 		{
 			assertThat(configBuilder().isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.TRUE).build()
-					.effectiveForReceiveLine(false).isCatchWeightScanRequired()).isFalse();
+					.effectiveForReceiveLine(false, true).isCatchWeightScanRequired()).isFalse();
+		}
+
+		/**
+		 * The effective flag is defined once here; the mobile client uses it as is and the receipt enforces it,
+		 * so without a weight to scan the scan must not be required.
+		 */
+		@Test
+		void catchWeightScanRequired_notACatchWeightProduct_isNotRequired()
+		{
+			assertThat(configBuilder().isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.TRUE).build()
+					.effectiveForReceiveLine(true, false).isCatchWeightScanRequired()).isFalse();
+		}
+
+		@Test
+		void catchWeightScanRequired_catchWeightNotCapturedAtReceipt_isNotRequired()
+		{
+			assertThat(configBuilder()
+					.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.TRUE)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE)
+					.build()
+					.effectiveForReceiveLine(true, true).isCatchWeightScanRequired()).isFalse();
 		}
 	}
 }

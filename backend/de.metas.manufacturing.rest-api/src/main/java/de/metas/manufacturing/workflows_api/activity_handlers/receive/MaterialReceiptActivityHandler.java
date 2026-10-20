@@ -123,7 +123,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final String adLanguage = jsonOpts.getAdLanguage();
 
 		final boolean isMainFinishedGood = line.getCoProductBOMLineId() == null;
-		final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(isMainFinishedGood);
+		final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(line);
 
 		// A structure excluded by configuration comes out as an empty list WITHOUT an emptyReason: that reason is the
 		// operator-facing no-receiving-Gebinde guidance and must only ever accompany "no target at all".
@@ -153,7 +153,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final java.math.BigDecimal qtyToReceive;
 		final java.math.BigDecimal qtyReceived;
 
-		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null)
+		// With the mandatory catch-weight scan every receipt is one piece, also in TU mode, so the line counts pieces.
+		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null && !lineConfig.isCatchWeightScanRequired())
 		{
 			final HUPIItemProduct huPIItemProduct = huPIItemProductDAO.getById(line.getTuPIItemProductId());
 			final QtyTU qtyToReceiveTU = huPIItemProduct.computeQtyTUsOfTotalCUs(line.getQtyToReceive(), line.getProductId());

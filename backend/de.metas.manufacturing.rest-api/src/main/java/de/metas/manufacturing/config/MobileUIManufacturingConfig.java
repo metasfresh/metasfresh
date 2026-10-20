@@ -2,6 +2,7 @@ package de.metas.manufacturing.config;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
@@ -57,12 +58,19 @@ public class MobileUIManufacturingConfig
 		return isFinishedGoodsCatchWeightScanRequired.orElseFalse();
 	}
 
+	@NonNull
+	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(@NonNull final FinishedGoodsReceiveLine line)
+	{
+		return effectiveForReceiveLine(line.getCoProductBOMLineId() == null, line.getCatchWeightUOMId() != null);
+	}
+
 	/**
-	 * @param isMainFinishedGood {@code false} for a co-/by-product line. THREE of the four flags exempt such a line
-	 *                           from the configured simplification; catch weight does NOT — it applies to every line.
+	 * @param isMainFinishedGood   {@code false} for a co-/by-product line. THREE of the four flags exempt such a line
+	 *                             from the configured simplification; catch weight does NOT — it applies to every line.
+	 * @param isCatchWeightProduct {@code true} if the line's product has a catch-weight UOM
 	 */
 	@NonNull
-	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(final boolean isMainFinishedGood)
+	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(final boolean isMainFinishedGood, final boolean isCatchWeightProduct)
 	{
 		// Three of the four flags exempt co-/by-products, and the polarity differs because "exempt" means the
 		// opposite thing per flag: for the two allow-flags the co-/by-product must stay PERMITTED (it is
@@ -80,8 +88,13 @@ public class MobileUIManufacturingConfig
 				.allowReceiveToTU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToTUEffective())
 				.captureCatchWeight(getIsCaptureCatchWeightAtReceiptEffective())
 				.skipReceiveTargetStep(isMainFinishedGood && getIsSkipFinishedGoodsReceiveTargetStepEffective())
-				// main finished good only: co-/by-product lines keep receive-on-scan and manual input
-				.catchWeightScanRequired(isMainFinishedGood && getIsFinishedGoodsCatchWeightScanRequiredEffective())
+				// The one place the effective "catch-weight scan required" is defined; the mobile client gets it as is and
+				// the receipt enforces it. Main finished good only: co-/by-product lines keep receive-on-scan and manual input.
+				// Without a catch-weight UOM or with catch weight not captured at receipt there is no weight to scan.
+				.catchWeightScanRequired(isMainFinishedGood
+						&& isCatchWeightProduct
+						&& getIsCaptureCatchWeightAtReceiptEffective()
+						&& getIsFinishedGoodsCatchWeightScanRequiredEffective())
 				.build();
 	}
 

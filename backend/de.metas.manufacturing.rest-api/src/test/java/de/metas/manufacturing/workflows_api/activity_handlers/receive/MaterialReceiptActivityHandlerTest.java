@@ -26,6 +26,7 @@ import de.metas.product.ProductId;
 import de.metas.product.allergen.ProductAllergensService;
 import de.metas.product.hazard_symbol.ProductHazardSymbolService;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
@@ -66,6 +67,7 @@ class MaterialReceiptActivityHandlerTest
 {
 	private MaterialReceiptActivityHandler handler;
 	private I_C_UOM uom;
+	private UomId catchWeightUomId;
 	private PPOrderId ppOrderId;
 
 	@BeforeEach
@@ -77,6 +79,7 @@ class MaterialReceiptActivityHandlerTest
 		SystemTime.setFixedTimeSource(ZonedDateTime.parse("2026-10-19T12:00:00Z"));
 
 		uom = BusinessTestHelper.createUomPCE();
+		catchWeightUomId = UomId.ofRepoId(BusinessTestHelper.createUomKg().getC_UOM_ID());
 		ppOrderId = HUPPOrderBL_LotNumberFromSequence_Test.createPPOrderBOM(
 				HUPPOrderBL_LotNumberFromSequence_Test.createPPOrder(AdempiereTestHelper.createOrgWithTimeZone(ZoneId.of("UTC"))),
 				HUPPOrderBL_LotNumberFromSequence_Test.createDateLotSequence());
@@ -108,6 +111,7 @@ class MaterialReceiptActivityHandlerTest
 		SystemTime.resetTimeSource();
 	}
 
+	// Both products are catch weight: the scan requirement differs per line only because one is a co-product.
 	@Test
 	void mainFinishedGoodAndCoProduct_perLineDefaults()
 	{
@@ -177,6 +181,7 @@ class MaterialReceiptActivityHandlerTest
 				.qtyToReceive(Quantity.of(BigDecimal.TEN, uom))
 				.qtyReceived(Quantity.zero(uom))
 				.coProductBOMLineId(coProductBOMLineId)
+				.catchWeightUOMId(catchWeightUomId)
 				.build();
 	}
 
