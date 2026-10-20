@@ -128,6 +128,32 @@ class InvoiceServiceTest
 	}
 
 	/**
+	 * Only the order whose shipped line has no invoice candidate goes through the async batch; a shipment line without order line is ignored.
+	 */
+	@Test
+	void generateInvoicesFromShipmentLines_mixed()
+	{
+		final I_C_OrderLine orderLineWithIC = createOrderLine();
+		final I_C_Invoice_Candidate existingIC = createIC(orderLineWithIC);
+		final I_C_OrderLine orderLineWithoutIC = createOrderLine();
+		final I_M_InOutLine shipmentLineWithoutOrderLine = newInstance(I_M_InOutLine.class);
+		saveRecord(shipmentLineWithoutOrderLine);
+
+		invoiceService.generateInvoicesFromShipmentLines(ImmutableList.of(
+				createShipmentLine(orderLineWithIC),
+				createShipmentLine(orderLineWithoutIC),
+				shipmentLineWithoutOrderLine));
+
+		Mockito.verify(asyncBatchService, Mockito.times(1)).executeBatch(any(), any());
+		assertThat(retrieveICsForOrderLine(orderLineWithIC)).hasSize(1);
+		final List<I_C_Invoice_Candidate> newICs = retrieveICsForOrderLine(orderLineWithoutIC);
+		assertThat(newICs).hasSize(1);
+		assertThat(retrieveInvoicedICIds()).containsExactlyInAnyOrder(
+				InvoiceCandidateId.ofRepoId(existingIC.getC_Invoice_Candidate_ID()),
+				InvoiceCandidateId.ofRepoId(newICs.get(0).getC_Invoice_Candidate_ID()));
+	}
+
+	/**
 	 * Fakes {@link AsyncBatchService#executeBatch(Supplier, AsyncBatchId)}: like the real async queue, the workpackages of an awaited async batch are processed before the method returns.
 	 * Workpackages of other batches (or of no batch) stay pending.
 	 * Processing a C_Order element mimics the C_Order IC-handler: it creates the missing invoice candidates of the order's lines.

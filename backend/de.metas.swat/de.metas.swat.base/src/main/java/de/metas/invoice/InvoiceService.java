@@ -45,7 +45,6 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
@@ -72,7 +71,6 @@ public class InvoiceService
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final AsyncBatchService asyncBatchService;
 	private final CreateInvoiceForModelService createInvoiceForModelService;
@@ -138,14 +136,7 @@ public class InvoiceService
 			return ImmutableSet.of();
 		}
 
-		final ImmutableSet<OrderLineId> orderLineIdsWithICs = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLineIds)
-				.create()
-				.listDistinct(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, Integer.class)
-				.stream()
-				.map(OrderLineId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
+		final ImmutableSet<OrderLineId> orderLineIdsWithICs = invoiceCandDAO.retrieveOrderLineIdsWithInvoiceCandidates(orderLineIds);
 		return Sets.difference(orderLineIds, orderLineIdsWithICs).immutableCopy();
 	}
 
