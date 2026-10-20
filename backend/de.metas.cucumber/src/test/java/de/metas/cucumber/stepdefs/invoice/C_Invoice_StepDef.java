@@ -325,6 +325,7 @@ public class C_Invoice_StepDef
 	 *   <li>{@code M_PriceList_ID} — price list identifier</li>
 	 *   <li>{@code AD_User_ID} — contact identifier</li>
 	 *   <li>{@code DateAcct} — accounting date; defaults to today</li>
+	 *   <li>{@code POReference} — optional customer order reference of the invoice header</li>
 	 *   <li>{@code DocumentNo} — the document number; a {@code @name@} placeholder is replaced with the {@link TestContext} variable of that name,
 	 *   e.g. {@code INV-@runId@}, any other value is taken literally. The validation steps (e.g. {@code validate created invoices}) resolve it the same way.</li>
 	 * </ul>
@@ -941,6 +942,7 @@ public class C_Invoice_StepDef
 				.map(this::resolveDocumentNo)
 				.ifPresent(invoice::setDocumentNo);
 		row.getAsOptionalString(COLUMNNAME_ExternalId).ifPresent(invoice::setExternalId);
+		row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(invoice::setPOReference);
 
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID)
 				.map(dataSourceTable::getId)

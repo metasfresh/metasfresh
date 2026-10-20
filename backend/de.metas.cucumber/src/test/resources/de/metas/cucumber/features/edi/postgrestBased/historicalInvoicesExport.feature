@@ -1211,3 +1211,62 @@ Feature: Invoice export via postgREST
   }
 ]
     """
+
+  @Id:S32545_HIST
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
+@allure.label.feature:F00359_EDI_INVOICE_JSON
+@F00359
+  Scenario: Historical invoices JSON export keeps excluding packing lines
+    # Historical Invoices JSON reads edi_cctop_invoic_500_v (as the XML export does): packing lines stay excluded there. Only Lines is asserted.
+    Given metasfresh contains M_Products:
+      | Identifier          | REST.Context.Value                      | REST.Context.Name                      | Description                                   |
+      | product_S32545_HIST | postgRESTExportProductValue_S32545_HIST | postgRESTExportProductName_S32545_HIST | postgRESTExportProductDescription_S32545_HIST |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID        | PriceStd | C_UOM_ID |
+      | salesPLV               | product_S32545_HIST | 5.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier              | REST.Context               | ExternalId             | ExternalSystem.Value | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo  | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoiceS32545_HIST | salesInvoiceS32545_HIST_ID | externalId_S32545_HIST | Shopware6            | customer1     | Ausgangsrechnung        | S32545_HIST | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID            | M_Product_ID        | QtyInvoiced | IsPackagingMaterial |
+      | salesInvoiceS32545_HIST | product_S32545_HIST | 1 PCE       | N                   |
+      | salesInvoiceS32545_HIST | product_S32545_HIST | 1 PCE       | Y                   |
+    And the invoice identified by salesInvoiceS32545_HIST is completed
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Historical_Invoices_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "ExternalId",
+      "value": "externalId_S32545_HIST"
+    }
+  ]
+}
+    """
+
+    Then the metasfresh REST-API responds with
+    """
+[
+  {
+    "ExternalId": "externalId_S32545_HIST",
+    "Lines": [
+      {
+        "Invoice_Line": 10,
+        "Product_Name": "@postgRESTExportProductName_S32545_HIST@"
+      }
+    ]
+  }
+]
+    """
