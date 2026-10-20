@@ -94,5 +94,6 @@ public class JsonMobileConfigResponse
 		@Nullable List<AttributeCode> editableAttributes;
 		@Nullable Boolean isAllowEmptyingHUs;
 		@Nullable Boolean isConfirmEmptyingHU;
+		@Nullable Boolean isFinishedGoodsCatchWeightScanRequired;
 	}
 }

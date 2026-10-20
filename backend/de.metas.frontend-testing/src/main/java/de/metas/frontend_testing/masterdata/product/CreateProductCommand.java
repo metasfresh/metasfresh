@@ -73,6 +73,7 @@ public class CreateProductCommand
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(CreateProductCommand.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final LotNoSequenceRepository lotNoSequenceRepository = new LotNoSequenceRepository();
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
@@ -177,6 +178,10 @@ public class CreateProductCommand
 		if (request.getGuaranteeDaysMin() != null)
 		{
 			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
+		}
+		if (request.getBestBeforeDays() != null)
+		{
+			productRecord.setBestBeforeDays(request.getBestBeforeDays());
 		}
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
@@ -408,6 +413,11 @@ public class CreateProductCommand
 		bomRecord.setC_DocType_ID(getBOMDocTypeId().getRepoId());
 		bomRecord.setDateDoc(TimeUtil.asTimestamp(Instant.now()));
 		bomRecord.setDocStatus(X_PP_Product_BOM.DOCSTATUS_Drafted);
+		final JsonCreateProductRequest.LotNoSequence lotNoSequence = request.getBom() != null ? request.getBom().getLotNoSequence() : null;
+		if (lotNoSequence != null)
+		{
+			bomRecord.setLotNo_Sequence_ID(lotNoSequenceRepository.create(lotNoSequence, productRecord.getValue()).getRepoId());
+		}
 		saveRecord(bomRecord);
 		return bomRecord;
 	}

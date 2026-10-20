@@ -1,5 +1,6 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.receive.json;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.handlingunits.attribute.json.JsonAttribute;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonAllergen;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonHazardSymbol;
@@ -10,6 +11,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Value
@@ -21,6 +23,10 @@ public class JsonFinishedGoodsReceiveLine
 
 	boolean coproduct;
 	boolean skipReceiveTargetStep;
+	/**
+	 * {@code true} if a catch-weight line can only be received by scanning a code that the operator then confirms (no manual input)
+	 */
+	boolean catchWeightScanRequired;
 	@NonNull String productName;
 	@NonNull String uom;
 	@Nullable String catchWeightUomSymbol;
@@ -41,4 +47,14 @@ public class JsonFinishedGoodsReceiveLine
 	 * attributes, in the config's {@code SeqNo} order.
 	 */
 	@NonNull List<JsonAttribute> editableAttributes;
+
+	/**
+	 * Pre-filled best-before date (MHD); {@code null} if there is no default
+	 */
+	@Nullable @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate defaultBestBeforeDate;
+
+	/**
+	 * Pre-filled lot number; {@code null} if there is no default
+	 */
+	@Nullable String defaultLotNo;
 }

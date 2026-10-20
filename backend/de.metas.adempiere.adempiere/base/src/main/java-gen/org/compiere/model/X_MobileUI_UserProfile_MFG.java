@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements I_MobileUI_UserProfile_MFG, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -103513110L;
+	private static final long serialVersionUID = 1219969750L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_MFG (final Properties ctx, final int MobileUI_UserProfile_MFG_ID, @Nullable final String trxName)
@@ -152,6 +152,27 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	public java.lang.String getIsCaptureCatchWeightAtReceipt() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsCaptureCatchWeightAtReceipt);
+	}
+
+	/** 
+	 * IsFinishedGoodsCatchWeightScanRequired AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISFINISHEDGOODSCATCHWEIGHTSCANREQUIRED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISFINISHEDGOODSCATCHWEIGHTSCANREQUIRED_Yes = "Y";
+	/** No = N */
+	public static final String ISFINISHEDGOODSCATCHWEIGHTSCANREQUIRED_No = "N";
+	@Override
+	public void setIsFinishedGoodsCatchWeightScanRequired (final @Nullable java.lang.String IsFinishedGoodsCatchWeightScanRequired)
+	{
+		set_Value (COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired, IsFinishedGoodsCatchWeightScanRequired);
+	}
+
+	@Override
+	public java.lang.String getIsFinishedGoodsCatchWeightScanRequired() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired);
 	}
 
 	/** 

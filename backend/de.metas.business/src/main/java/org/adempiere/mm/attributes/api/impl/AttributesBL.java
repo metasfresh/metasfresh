@@ -64,7 +64,9 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Properties;
 
 public class AttributesBL implements IAttributesBL
@@ -353,6 +355,18 @@ public class AttributesBL implements IAttributesBL
 		//
 		// Calculate the Best-Before date
 		return TimeUtil.addDays(dateReceipt, bestBeforeDays);
+	}
+
+	@Override
+	public Optional<LocalDate> computeBestBeforeDefault(@NonNull final ProductId productId, @NonNull final LocalDate receiptDate)
+	{
+		final int bestBeforeDays = productsService.getById(productId).getBestBeforeDays();
+		if (bestBeforeDays <= 0)
+		{
+			// NULL is read as 0 by the generated getter, so 0 and NULL both mean "not set"
+			return Optional.empty();
+		}
+		return Optional.of(receiptDate.plusDays(bestBeforeDays));
 	}
 
 	@Override
