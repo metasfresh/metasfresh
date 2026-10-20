@@ -25,6 +25,7 @@ package de.metas.invoice;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IEnqueueResult;
@@ -44,6 +45,7 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
@@ -69,8 +71,8 @@ public class InvoiceService
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final AsyncBatchService asyncBatchService;
 	private final CreateInvoiceForModelService createInvoiceForModelService;
@@ -106,9 +108,26 @@ public class InvoiceService
 	/**
 	 * The invoice candidates of the shipped order lines are created asynchronously, by a workpackage that is scheduled when the order is completed.
 	 * That workpackage might still be pending, e.g. because workpackages with a higher priority overtook it.
-	 * Therefore, we create the orders' missing candidates within an async batch that we wait for. Orders whose candidates already exist are not changed.
+	 * Therefore, if a shipped order line has no invoice candidate yet, we create its order's missing candidates within an async batch that we wait for.
 	 */
 	private void generateMissingInvoiceCandidatesForOrders(@NonNull final List<I_M_InOutLine> shipmentLines)
+	{
+		final ImmutableSet<OrderLineId> orderLineIdsWithoutICs = retrieveOrderLineIdsWithoutInvoiceCandidates(shipmentLines);
+		if (orderLineIdsWithoutICs.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableList<TableRecordReference> orderRefs = orderDAO.retrieveIdsByOrderLineIds(orderLineIdsWithoutICs)
+				.stream()
+				.map(orderId -> TableRecordReference.of(I_C_Order.Table_Name, orderId))
+				.collect(ImmutableList.toImmutableList());
+
+		createInvoiceForModelService.generateMissingInvoiceCandidatesForModel(orderRefs);
+	}
+
+	@NonNull
+	private ImmutableSet<OrderLineId> retrieveOrderLineIdsWithoutInvoiceCandidates(@NonNull final List<I_M_InOutLine> shipmentLines)
 	{
 		final ImmutableSet<OrderLineId> orderLineIds = shipmentLines.stream()
 				.map(shipmentLine -> OrderLineId.ofRepoIdOrNull(shipmentLine.getC_OrderLine_ID()))
@@ -116,15 +135,18 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 		if (orderLineIds.isEmpty())
 		{
-			return;
+			return ImmutableSet.of();
 		}
 
-		final ImmutableList<TableRecordReference> orderRefs = orderDAO.retrieveIdsByOrderLineIds(orderLineIds)
+		final ImmutableSet<OrderLineId> orderLineIdsWithICs = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLineIds)
+				.create()
+				.listDistinct(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, Integer.class)
 				.stream()
-				.map(orderId -> TableRecordReference.of(I_C_Order.Table_Name, orderId))
-				.collect(ImmutableList.toImmutableList());
+				.map(OrderLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 
-		createInvoiceForModelService.generateMissingInvoiceCandidatesForModel(orderRefs);
+		return Sets.difference(orderLineIds, orderLineIdsWithICs).immutableCopy();
 	}
 
 	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
