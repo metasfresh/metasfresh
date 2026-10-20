@@ -39,13 +39,9 @@ Feature: Asserting on the rendered PDF of an archived document
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | ppA        | plv                    | productA     | 10.0     | PCE      |
-    # dev-note: pin the payment term, so the order does not depend on the branch's default
-    And metasfresh contains C_PaymentTerm
-      | Identifier          |
-      | customerPaymentTerm |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | C_PaymentTerm_ID    |
-      | customer   | N        | Y          | ps                 | customerPaymentTerm |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | customer   | N        | Y          | ps                 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
       | customerLocation | customer      | CH           | Y               | Y               |
