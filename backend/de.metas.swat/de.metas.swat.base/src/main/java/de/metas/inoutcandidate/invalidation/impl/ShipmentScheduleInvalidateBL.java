@@ -158,6 +158,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	@Override
+	public void flagForRecompute(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable final String dataTrxName)
+	{
+		trxChecker.checkTrx(dataTrxName, "shipment schedules " + shipmentScheduleIds);
+		flagForRecompute(shipmentScheduleIds);
+	}
+
+	@Override
 	public void flagForRecomputeStorageSegment(@NonNull final IShipmentScheduleSegment segment)
 	{
 		flagSegmentsRoutedByTrx(ImmutableSet.of(segment));

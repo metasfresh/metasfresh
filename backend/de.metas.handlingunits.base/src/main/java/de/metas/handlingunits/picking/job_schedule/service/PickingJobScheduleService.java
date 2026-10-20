@@ -30,6 +30,7 @@ import de.metas.workplace.WorkplaceRepository;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -130,8 +131,12 @@ public class PickingJobScheduleService
 
 	public void deleteJobSchedulesById(@NonNull final Set<PickingJobScheduleId> jobScheduleIds)
 	{
+		// Captured before the repository call. It cannot tell which trx the repository writes in (both sides are the thread-inherited trx);
+		// it only guards a trx boundary placed between the job-schedule writes and the flag call (e.g. wrapping just the flag call in
+		// runInNewTrx), which the check catches in unit-test mode.
+		final String dataTrxName = Services.get(ITrxManager.class).getThreadInheritedTrxName();
 		final PickingJobScheduleCollection deletedSchedules = pickingJobScheduleRepository.deleteByIdsAndReturn(jobScheduleIds);
-		pickingJobShipmentScheduleService.flagForRecompute(deletedSchedules.getShipmentScheduleIds());
+		pickingJobShipmentScheduleService.flagForRecompute(deletedSchedules.getShipmentScheduleIds(), dataTrxName);
 	}
 
 	public PickingJobScheduleCollection list(@NonNull final PickingJobScheduleQuery query)

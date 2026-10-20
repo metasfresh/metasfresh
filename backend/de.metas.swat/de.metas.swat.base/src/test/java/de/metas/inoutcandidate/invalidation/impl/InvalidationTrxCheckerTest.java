@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.invalidation.impl;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -331,6 +333,38 @@ class InvalidationTrxCheckerTest
 		{
 			trxManager.getTrx(otherTrxName).close();
 		}
+	}
+
+	/** The id-only overload checks the caller's data trx, and no flag is written before the check throws. */
+	@Test
+	void idOverload_differentTrx_throws()
+	{
+		final ShipmentScheduleInvalidateBL bl = newBl(new InvalidationTrxChecker());
+		final String otherTrxName = trxManager.createTrxName("test-data-trx", true);
+		trxManager.getTrx(otherTrxName).start();
+		try
+		{
+			trxManager.runInThreadInheritedTrx(() -> assertThatThrownBy(() -> bl.flagForRecompute(ImmutableSet.of(ShipmentScheduleId.ofRepoId(1)), otherTrxName))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("Recompute flags for")
+					.hasMessageContaining(otherTrxName));
+			Mockito.verifyZeroInteractions(repo);
+		}
+		finally
+		{
+			trxManager.getTrx(otherTrxName).close();
+		}
+	}
+
+	@Test
+	void idOverload_sameTrx_flags()
+	{
+		final ShipmentScheduleInvalidateBL bl = newBl(new InvalidationTrxChecker());
+		final ImmutableSet<ShipmentScheduleId> ids = ImmutableSet.of(ShipmentScheduleId.ofRepoId(1));
+
+		trxManager.runInThreadInheritedTrx(() -> bl.flagForRecompute(ids, trxManager.getThreadInheritedTrxName()));
+
+		Mockito.verify(repo).invalidateShipmentSchedules(ids);
 	}
 
 	/** In an after-commit callback (listener errors are swallowed) a mismatch must only warn, and the flag write must still happen. */

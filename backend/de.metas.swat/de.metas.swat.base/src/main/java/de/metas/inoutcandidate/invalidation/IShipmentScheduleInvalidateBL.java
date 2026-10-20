@@ -10,6 +10,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 
@@ -20,6 +21,15 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	void flagForRecompute(ShipmentScheduleId shipmentScheduleId);
 
 	void flagForRecompute(Set<ShipmentScheduleId> shipmentScheduleIds);
+
+	/**
+	 * Same as {@link #flagForRecompute(Set)}, but first verifies that the caller's data (the changes that make the flags necessary) is in the
+	 * thread-inherited transaction, which is where the flags are written. A mismatch means the flags would not commit or roll back with the data:
+	 * it throws in unit-test mode or with SysConfig FailOnTrxMismatch=Y, otherwise it only warns (and it only warns inside transaction listener callbacks).
+	 *
+	 * @param dataTrxName the transaction the caller's data change is in (or will be written in); {@code null} for none
+	 */
+	void flagForRecompute(Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable String dataTrxName);
 
 	/**
 	 * Same as {@link #flagSegmentForRecompute(Collection)} for one segment.
