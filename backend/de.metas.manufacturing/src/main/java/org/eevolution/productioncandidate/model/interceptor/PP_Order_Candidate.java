@@ -24,7 +24,6 @@ package org.eevolution.productioncandidate.model.interceptor;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
@@ -180,11 +179,9 @@ public class PP_Order_Candidate
 			final String qtyEnteredColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyEntered).translate(adLanguage);
 			final String qtyProcessedColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed).translate(adLanguage);
 
-			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED,
-																			 qtyEnteredColumnTrl,
-																			 qtyProcessedColumnTrl);
-
-			throw new AdempiereException(message)
+			throw new AdempiereException(MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED,
+					qtyEnteredColumnTrl,
+					qtyProcessedColumnTrl)
 					.appendParametersToMessage()
 					.setParameter("PP_Order_Candidate_ID", ppOrderCandidateRecord.getPP_Order_Candidate_ID())
 					.setParameter("QtyProcessed", ppOrderCandidateRecord.getQtyProcessed())
@@ -205,8 +202,7 @@ public class PP_Order_Candidate
 		{
 			final String qtyToProcessColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess).translate(adLanguage);
 
-			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT, qtyToProcessColumnTrl);
-			throw new AdempiereException(message)
+			throw new AdempiereException(MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT, qtyToProcessColumnTrl)
 					.appendParametersToMessage()
 					.setParameter("PP_Order_Candidate_ID", ppOrderCandidateRecord.getPP_Order_Candidate_ID())
 					.setParameter("PP_Order_Candidate.QtyToProcess", ppOrderCandidateRecord.getQtyToProcess())

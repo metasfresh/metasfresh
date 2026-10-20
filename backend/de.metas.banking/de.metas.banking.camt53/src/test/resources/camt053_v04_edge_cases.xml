@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.04">
+	<BkToCstmrStmt>
+		<GrpHdr>
+			<MsgId>TESTMSG-V04</MsgId>
+			<CreDtTm>2024-05-03T06:30:00</CreDtTm>
+		</GrpHdr>
+		<Stmt>
+			<Id>TESTSTMT-V04</Id>
+			<CreDtTm>2024-05-03T06:30:00</CreDtTm>
+			<Acct>
+				<Id>
+					<IBAN>CH3908704016075473007</IBAN>
+				</Id>
+				<Ccy>CHF</Ccy>
+			</Acct>
+			<Bal>
+				<Tp>
+					<CdOrPrtry>
+						<Cd>OPBD</Cd>
+					</CdOrPrtry>
+				</Tp>
+				<Amt Ccy="CHF">100.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt>
+					<Dt>2024-05-02</Dt>
+				</Dt>
+			</Bal>
+			<!-- DBIT; TxDtls without Refs, with Cdtr only (no Dbtr) -->
+			<Ntry>
+				<NtryRef>NTRY-1</NtryRef>
+				<Amt Ccy="CHF">10.00</Amt>
+				<CdtDbtInd>DBIT</CdtDbtInd>
+				<Sts>BOOK</Sts>
+				<BkTxCd>
+					<Prtry>
+						<Cd>NTRF</Cd>
+					</Prtry>
+				</BkTxCd>
+				<NtryDtls>
+					<TxDtls>
+						<Amt Ccy="CHF">10.00</Amt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+						<RltdPties>
+							<Cdtr>
+								<Nm>Only Creditor AG</Nm>
+							</Cdtr>
+						</RltdPties>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Stmt>
+	</BkToCstmrStmt>
+</Document>

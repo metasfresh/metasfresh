@@ -31,7 +31,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModel;
@@ -75,6 +74,9 @@ public class JsonErrorItem
 	@Nullable
 	String issueCategory;
 
+	@Nullable
+	String errorCode;
+
 	/**
 	 * Local exception.
 	 * It won't be serialized. It's just used for local troubleshooting.
@@ -95,6 +97,7 @@ public class JsonErrorItem
 			@JsonProperty("sourceClassName") @Nullable final String sourceClassName,
 			@JsonProperty("sourceMethodName") @Nullable final String sourceMethodName,
 			@JsonProperty("issueCategory") @Nullable final String issueCategory,
+			@JsonProperty("errorCode") @Nullable final String errorCode,
 			@Nullable final Throwable throwable)
 	{
 		this.message = message;
@@ -107,6 +110,7 @@ public class JsonErrorItem
 		this.sourceMethodName = sourceMethodName;
 		this.issueCategory = issueCategory;
 		this.orgCode = orgCode;
+		this.errorCode = errorCode;
 		this.throwable = throwable;
 	}
 
