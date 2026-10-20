@@ -48,12 +48,12 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.process.M_PricelistVersion_MutateCustomerPrices;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
-import de.metas.pricing.process.M_PricelistVersion_MutateCustomerPrices;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -63,9 +63,9 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import javax.annotation.Nullable;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -328,6 +328,8 @@ public class M_PriceList_StepDef
 	 * Runs the "apply to derivative price lists" process
 	 * ({@code M_PricelistVersion_MutateCustomerPrices}) with the given price list version as its record, and keeps
 	 * the process result summary for later assertions.
+	 * A process error fails the step ({@code onErrorThrowException}); without it {@code ProcessExecutor} only
+	 * records the error in the result and the scenario would continue unnoticed.
 	 */
 	@When("the 'apply to derivative price lists' process is invoked for M_PriceList_Version {word}")
 	public void apply_to_derivative_price_lists(@NonNull final String priceListVersionIdentifier)
@@ -340,12 +342,17 @@ public class M_PriceList_StepDef
 				.setAD_User_ID(Env.getAD_User_ID(Env.getCtx()))
 				.setRecord(I_M_PriceList_Version.Table_Name, basePriceListVersion.getM_PriceList_Version_ID())
 				.buildAndPrepareExecution()
+				.onErrorThrowException() // else ProcessExecutor swallows errors into the result and the step would pass
 				.executeSync()
 				.getResult();
 
 		lastDerivativeProcessSummary = result.getSummary();
 	}
 
+	/**
+	 * Asserts the number of M_PriceList_Versions of the price list. <b>All</b> versions are counted, inactive ones
+	 * included (no {@code IsActive} filter), whatever their {@code ValidFrom}.
+	 */
 	@Then("M_PriceList {word} has {int} M_PriceList_Versions")
 	public void validate_M_PriceList_Version_count(@NonNull final String priceListIdentifier, final int expectedCount)
 	{
@@ -360,6 +367,11 @@ public class M_PriceList_StepDef
 	/**
 	 * Loads the version of the price list with the latest {@code ValidFrom} (highest ID on a tie), asserts the given
 	 * columns and registers it under the row's {@code Identifier}.
+	 * <p>
+	 * Caution: "latest" means highest {@code ValidFrom}, then highest ID, with <b>no</b> {@code IsActive} filter.
+	 * It is NOT "latest active" and NOT "most recently created": an inactive version can be the latest one, and when
+	 * a derivative's existing version is dated after the newly created one, the new version is not the latest.
+	 * <p>
 	 * Columns: {@code Identifier}, optional {@code ValidFrom}, {@code Name}, {@code M_DiscountSchema_ID} (identifier),
 	 * {@code M_Pricelist_Version_Base_ID} (identifier).
 	 */

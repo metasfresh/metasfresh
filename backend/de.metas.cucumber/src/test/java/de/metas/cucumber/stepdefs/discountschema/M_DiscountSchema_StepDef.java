@@ -28,13 +28,13 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_ConversionType;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
@@ -139,8 +139,9 @@ public class M_DiscountSchema_StepDef
 
 	/**
 	 * Creates {@code M_DiscountSchemaLine} rows of a pricing schema (for the derivative price list update).
-	 * The three price bases default to the source price list's price (list price, standard price, limit price),
-	 * so a line only needs the surcharges it wants to test.
+	 * The three price bases default to the source price list's prices: {@code List_Base=L} (list price),
+	 * {@code Std_Base=S} (standard price) and {@code Limit_Base=X} (limit price), where L/S/X are the codes of the
+	 * M_DiscountSchemaLine price base reference. So a line only needs the surcharges it wants to test.
 	 * <p>
 	 * Required columns: {@code M_DiscountSchema_ID} (identifier), {@code SeqNo}.
 	 * <br>Optional columns: {@code M_Product_ID} (identifier), {@code M_Product_Category_ID} (identifier),
