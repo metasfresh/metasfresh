@@ -82,9 +82,10 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
 
     When the order identified by o_S0500 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_S0500   | ol_S0500       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_S0500   | ol_S0500       | N             | 4            |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -163,9 +164,10 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
 
     When the order identified by o_S0500_020 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ss_S0500_020  | ol_S0500_020   | N             |
+      | Identifier    | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_S0500_020  | ol_S0500_020   | N             | 50           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -222,9 +224,10 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
 
     When the order identified by o_S0500_030 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ss_S0500_030  | ol_S0500_030   | N             |
+      | Identifier    | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_S0500_030  | ol_S0500_030   | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -308,9 +311,10 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
 
     When the order identified by o_S0500_040 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ss_S0500_040  | ol_S0500_040   | N             |
+      | Identifier    | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_S0500_040  | ol_S0500_040   | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -388,9 +392,10 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
 
     When the order identified by o_S0500_050 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ss_S0500_050  | ol_S0500_050   | N             |
+      | Identifier    | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_S0500_050  | ol_S0500_050   | N             | 20           |
 
     # Override to deliver only 4 PCE (= 2 TU) of the 20 ordered
     And update shipment schedules

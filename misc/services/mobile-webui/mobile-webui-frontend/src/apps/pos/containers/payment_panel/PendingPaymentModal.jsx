@@ -1,4 +1,4 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import CashPaymentDetailsModal from './CashPaymentDetailsModal';
 import { checkoutPayment, removePayment } from '../../actions/orders';
 import CardPaymentDetailsModal from './CardPaymentDetailsModal';
@@ -7,6 +7,8 @@ import PropTypes from 'prop-types';
 import { round } from '../../../../utils/numbers';
 import { PAYMENT_STATUS_FAILED, PAYMENT_STATUS_NEW, PAYMENT_STATUS_PENDING } from '../../constants/paymentStatus';
 import { PAYMENT_METHOD_CARD, PAYMENT_METHOD_CASH } from '../../constants/paymentMethods';
+import { setCashTenderedDraftAction } from '../../actions/ui';
+import { getCashTenderedDraftFromState } from '../../reducers/uiUtils';
 
 const PendingPaymentModal = ({
   posTerminalId,
@@ -19,6 +21,9 @@ const PendingPaymentModal = ({
   const dispatch = useDispatch();
 
   const payment = findNextPendingPayment({ payments });
+  const cashTenderedDraft = useSelector((globalState) =>
+    getCashTenderedDraftFromState({ globalState, payment_uuid: payment?.uuid })
+  );
   if (!payment) return null;
 
   const handleCheckout = ({ cardPayAmount, cashTenderedAmount } = {}) => {
@@ -44,6 +49,10 @@ const PendingPaymentModal = ({
         precision={currencyPrecision}
         payAmount={payment.amount}
         tenderedAmount={payment.cashTenderedAmount}
+        tenderedEditingAmountDraft={cashTenderedDraft}
+        onTenderedEditingAmountChanged={(tenderedEditingAmount) =>
+          dispatch(setCashTenderedDraftAction({ payment_uuid: payment.uuid, tenderedEditingAmount }))
+        }
         onOK={handleCheckout}
         isAllowCancel={payment.allowDelete}
         onCancel={handleDelete}

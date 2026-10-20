@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.report;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -35,6 +36,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_PrintFormat;
 
 import static org.compiere.model.I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_BP_PrintFormat.COLUMNNAME_DocumentCopies_Override;
 import static org.compiere.model.I_C_BP_PrintFormat.COLUMNNAME_IsAutoPrint;
 import static org.compiere.model.I_C_BP_PrintFormat.COLUMNNAME_IsDropShip;
 
@@ -46,6 +49,7 @@ import static org.compiere.model.I_C_BP_PrintFormat.COLUMNNAME_IsDropShip;
 public class C_BP_PrintFormat_StepDef
 {
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
 	/**
 	 * @cucumber.stepdef
@@ -53,7 +57,9 @@ public class C_BP_PrintFormat_StepDef
 	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) the business partner this preference applies to<br>
 	 *   <b>IsDropShip</b> — (optional) restricts the row to drop-ship (true) or non-drop-ship (false) shipments; omitted matches either<br>
 	 *   <b>IsAutoPrint</b> — (optional) "false" suppresses auto-print for matching documents; "true" or omitted leaves auto-print enabled<br>
-	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) restricts the row to documents for this address; omitted matches any address<br>
+	 *   <b>DocumentCopies_Override</b> — (optional) number of copies to print for matching documents<br>
+	 * @cucumber.depends StepDefData: C_BPartner_StepDefData, C_BPartner_Location_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains C_BP_PrintFormat:
@@ -85,6 +91,13 @@ public class C_BP_PrintFormat_StepDef
 		{
 			record.setIsAutoPrint(StringUtils.ofBoolean(isAutoPrint));
 		}
+
+		row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
+				.map(bpartnerLocationTable::getId)
+				.ifPresent(bpartnerLocationId -> record.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId()));
+
+		row.getAsOptionalInt(COLUMNNAME_DocumentCopies_Override)
+				.ifPresent(record::setDocumentCopies_Override);
 
 		InterfaceWrapperHelper.save(record);
 	}
