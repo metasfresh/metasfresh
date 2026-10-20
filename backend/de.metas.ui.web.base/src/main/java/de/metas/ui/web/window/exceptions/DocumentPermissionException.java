@@ -2,7 +2,6 @@ package de.metas.ui.web.window.exceptions;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import org.adempiere.exceptions.AdempiereException;
 
 /*
@@ -53,13 +52,13 @@ public class DocumentPermissionException extends AdempiereException
 
 	public static DocumentPermissionException noAccess(final DocumentPermission permissionRequired)
 	{
-		return new DocumentPermissionException(permissionRequired, TranslatableStrings.builder().appendADMessage(MSG_NoAccess).build());
+		return new DocumentPermissionException(permissionRequired, MSG_NoAccess);
 	}
 
 	@Deprecated
-	public static DocumentPermissionException of(final DocumentPermission permissionRequired, final String errorMessage)
+	public static DocumentPermissionException of(final DocumentPermission permissionRequired, final AdMessageKey adMessage)
 	{
-		return new DocumentPermissionException(permissionRequired, TranslatableStrings.parse(errorMessage));
+		return new DocumentPermissionException(permissionRequired, adMessage);
 	}
 
 	public static DocumentPermissionException of(final DocumentPermission permissionRequired, final ITranslatableString errorMessage)
@@ -67,9 +66,15 @@ public class DocumentPermissionException extends AdempiereException
 		return new DocumentPermissionException(permissionRequired, errorMessage);
 	}
 
-	private DocumentPermissionException(final DocumentPermission permissionRequired, final ITranslatableString errorMessage)
+	private DocumentPermissionException(final DocumentPermission permissionRequired, final AdMessageKey adMessage)
 	{
-		super(errorMessage);
+		super(adMessage);
+		setParameter("PermissionRequired", permissionRequired);
+	}
+
+	private DocumentPermissionException(final DocumentPermission permissionRequired, final ITranslatableString string)
+	{
+		super(string);
 		setParameter("PermissionRequired", permissionRequired);
 	}
 }

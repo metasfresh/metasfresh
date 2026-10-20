@@ -23,6 +23,9 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
+import javax.annotation.Nullable;
+
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -61,10 +64,14 @@ class CreateSEPAExportFromPaySelectionCommand
 	private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
 
 	private final I_C_PaySelection source;
+	@Nullable private final SEPAProtocol chosenCreditTransferProtocol;
 
-	public CreateSEPAExportFromPaySelectionCommand(@NonNull final org.compiere.model.I_C_PaySelection source)
+	public CreateSEPAExportFromPaySelectionCommand(
+			@NonNull final org.compiere.model.I_C_PaySelection source,
+			@Nullable final SEPAProtocol chosenCreditTransferProtocol)
 	{
 		this.source = InterfaceWrapperHelper.create(source, I_C_PaySelection.class);
+		this.chosenCreditTransferProtocol = chosenCreditTransferProtocol;
 	}
 
 	public I_SEPA_Export run()
@@ -104,7 +111,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setC_BPartner_ID(line.getC_BPartner_ID());
 		exportLine.setDescription(sourceInvoice.getDescription());
 
-		exportLine.setIBAN(toNullOrRemoveSpaces(bpBankAccount.getIBAN()));
+		exportLine.setIBAN(selectIBANOrNull(bpBankAccount));
 
 		// task 07789: note that for the CASE of ESR accounts, there is a model validator in de.metas.payment.esr which will
 		// set this field
@@ -130,7 +137,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		}
 
 		final I_SEPA_Export header = newInstance(I_SEPA_Export.class, paySelectionHeader);
-		final SEPAProtocol sepaProtocol = SEPAProtocol.ofPaySelectionTrxType(paySelectionTrxType);
+		final SEPAProtocol sepaProtocol = SEPAProtocol.ofPaySelectionTrxType(paySelectionTrxType, chosenCreditTransferProtocol);
 		header.setSEPA_Protocol(sepaProtocol.getCode());
 
 		//
@@ -150,13 +157,7 @@ class CreateSEPAExportFromPaySelectionCommand
 
 		// Set corresponding data
 		header.setAD_Org_ID(paySelectionHeader.getAD_Org_ID());
-		final String iban = bpBankAccount.getIBAN();
-
-		if (Check.isNotBlank(iban))
-		{
-			header.setIBAN(iban.replaceAll(" ", ""));
-		}
-
+		header.setIBAN(selectIBANOrNull(bpBankAccount));
 		header.setPaymentDate(paySelectionHeader.getPayDate());
 		header.setProcessed(false);
 		header.setSEPA_CreditorName(orgBP.getName());
@@ -193,6 +194,15 @@ class CreateSEPAExportFromPaySelectionCommand
 			return null;
 		}
 		return from.replace(" ", "");
+	}
+
+	@Nullable
+	private String selectIBANOrNull(@NonNull final I_C_BP_BankAccount bp_bankAccount)
+	{
+		return coalesceSuppliers(
+				() -> toNullOrRemoveSpaces(bp_bankAccount.getIBAN()),
+				() -> toNullOrRemoveSpaces(bp_bankAccount.getQR_IBAN())
+		);
 	}
 
 }
