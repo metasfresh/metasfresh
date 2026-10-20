@@ -25,6 +25,7 @@ package de.metas.pricing.service.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.cache.annotation.CacheCtx;
@@ -93,7 +94,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -813,13 +813,10 @@ public class PriceListDAO implements IPriceListDAO
 		final PriceListId basePricelistId = PriceListId.ofRepoId(newBasePLV.getM_PriceList_ID());
 		final LocalDate newBaseDay = TimeUtil.asLocalDate(newBasePLV.getValidFrom());
 
-		// the version to copy per derivative list; on equal dates the most recently created one
-		final Map<Integer, I_M_PriceList_Version> versionsToCopyByPriceListId = new HashMap<>();
-		for (final I_M_PriceList_Version version : retrieveCustomPLVsToMutate(basePricelistId))
-		{
-			versionsToCopyByPriceListId.merge(version.getM_PriceList_ID(), version,
-					(v1, v2) -> v1.getM_PriceList_Version_ID() >= v2.getM_PriceList_Version_ID() ? v1 : v2);
-		}
+		// the DB guarantees one version per list here (unique index on M_PriceList_ID + ValidFrom; the retrieval picks the max ValidFrom)
+		final Map<Integer, I_M_PriceList_Version> versionsToCopyByPriceListId = Maps.uniqueIndex(
+				retrieveCustomPLVsToMutate(basePricelistId),
+				I_M_PriceList_Version::getM_PriceList_ID);
 
 		final MutateCustomerPricesResult.MutateCustomerPricesResultBuilder result = MutateCustomerPricesResult.builder();
 		final List<I_M_PriceList> derivativeLists = retrieveDerivativePriceListsQuery(basePricelistId)
@@ -859,10 +856,10 @@ public class PriceListDAO implements IPriceListDAO
 		return queryBL.createQueryBuilder(I_M_PriceList_Version.class)
 				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceListId)
 				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_M_PriceList_Version.COLUMNNAME_ValidFrom, Operator.GREATER_OR_EQUAL, TimeUtil.asTimestamp(day))
+				.addCompareFilter(I_M_PriceList_Version.COLUMNNAME_ValidFrom, Operator.LESS, TimeUtil.asTimestamp(day.plusDays(1)))
 				.create()
-				.list(I_M_PriceList_Version.class)
-				.stream()
-				.anyMatch(version -> day.equals(TimeUtil.asLocalDate(version.getValidFrom())));
+				.anyMatch();
 	}
 
 	private PriceListVersionId createNewPLV(final I_M_PriceList_Version oldCustomerPLV, final I_M_PriceList_Version newBasePLV, final UserId userId)
