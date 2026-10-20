@@ -24,15 +24,15 @@ package de.metas.cucumber.stepdefs.docoutbound;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
-import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.util.Check;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -41,7 +41,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -98,7 +97,7 @@ public class C_Doc_Outbound_Log_StepDef
 	 *   <b>Record_ID</b> — (required, identifier-ref) the order or invoice the log belongs to<br>
 	 *   <b>AD_Table.Name</b> — (required) C_Order or C_Invoice<br>
 	 *   <b>CurrentEMailAddress</b>, <b>CurrentEMailAddressCC</b> — (optional) expected address; the literal <code>null</code> expects none<br>
-	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) expected business partner<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) expected business partner; the literal <code>null</code> expects none<br>
 	 *   <b>DocBaseType</b> — (optional) expected base type of the log's document type<br>
 	 *   <b>DocStatus</b>, <b>POReference</b>, <b>DocumentNo</b> — (optional) expected values<br>
 	 *   <b>DateDoc</b> — (optional) expected document date, e.g. 2022-05-17<br>
@@ -145,6 +144,7 @@ public class C_Doc_Outbound_Log_StepDef
 	/**
 	 * Validates the history lines of an outbound log, in creation order
 	 * (the n-th table row of a log is checked against its n-th line) and stores each line under its identifier.
+	 * The log must have exactly as many lines as the table has rows for it.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -165,9 +165,15 @@ public class C_Doc_Outbound_Log_StepDef
 	@And("validate C_Doc_Outbound_Log_Line:")
 	public void validate_C_Doc_Outbound_Log_Line(@NonNull final DataTable dataTable)
 	{
+		final DataTableRows rows = DataTableRows.of(dataTable);
+		final Map<Integer, Integer> expectedLineCountByLogId = new HashMap<>();
+		rows.stream().forEach(row -> expectedLineCountByLogId.merge(
+				row.getAsIdentifier(I_C_Doc_Outbound_Log_Line.COLUMNNAME_C_Doc_Outbound_Log_ID).lookupNotNullIn(docOutboundLogTable).getC_Doc_Outbound_Log_ID(),
+				1,
+				Integer::sum));
 		final Map<Integer, Integer> rowCountByLogId = new HashMap<>();
 
-		DataTableRows.of(dataTable).forEach(row -> {
+		rows.forEach(row -> {
 			final I_C_Doc_Outbound_Log docOutboundLog = row.getAsIdentifier(I_C_Doc_Outbound_Log_Line.COLUMNNAME_C_Doc_Outbound_Log_ID).lookupNotNullIn(docOutboundLogTable);
 
 			final List<I_C_Doc_Outbound_Log_Line> docOutboundLogLines = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class)
@@ -177,10 +183,11 @@ public class C_Doc_Outbound_Log_StepDef
 					.create()
 					.list(I_C_Doc_Outbound_Log_Line.class);
 
-			final int lineIndex = rowCountByLogId.merge(docOutboundLog.getC_Doc_Outbound_Log_ID(), 1, Integer::sum) - 1;
 			assertThat(docOutboundLogLines)
 					.as("C_Doc_Outbound_Log_Line count of C_Doc_Outbound_Log_ID=%s", docOutboundLog.getC_Doc_Outbound_Log_ID())
-					.hasSizeGreaterThan(lineIndex);
+					.hasSize(expectedLineCountByLogId.get(docOutboundLog.getC_Doc_Outbound_Log_ID()));
+
+			final int lineIndex = rowCountByLogId.merge(docOutboundLog.getC_Doc_Outbound_Log_ID(), 1, Integer::sum) - 1;
 			final I_C_Doc_Outbound_Log_Line docOutboundLogLine = docOutboundLogLines.get(lineIndex);
 
 			final TableRecordReference recordReference = getTableRecordReference(row);
@@ -246,13 +253,15 @@ public class C_Doc_Outbound_Log_StepDef
 			return mismatch(I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailAddressCC, currentEmailAddressCC.get(), docOutboundLog.getCurrentEMailAddressCC());
 		}
 
-		final Optional<StepDefDataIdentifier> bpIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID).filter(StepDefDataIdentifier::isNotNullPlaceholder);
+		// literal "null" = the partner must not be set
+		final Optional<StepDefDataIdentifier> bpIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID);
 		if (bpIdentifier.isPresent())
 		{
-			final int expectedBPartnerId = bpIdentifier.get().lookupNotNullIn(bpartnerTable).getC_BPartner_ID();
-			if (docOutboundLog.getC_BPartner_ID() != expectedBPartnerId)
+			final int expectedBPartnerId = bpIdentifier.get().isNullPlaceholder() ? -1 : bpIdentifier.get().lookupNotNullIn(bpartnerTable).getC_BPartner_ID();
+			final boolean matches = expectedBPartnerId <= 0 ? docOutboundLog.getC_BPartner_ID() <= 0 : docOutboundLog.getC_BPartner_ID() == expectedBPartnerId;
+			if (!matches)
 			{
-				return mismatch(COLUMNNAME_C_BPartner_ID, expectedBPartnerId, docOutboundLog.getC_BPartner_ID());
+				return mismatch(COLUMNNAME_C_BPartner_ID, expectedBPartnerId <= 0 ? "not set" : expectedBPartnerId, docOutboundLog.getC_BPartner_ID());
 			}
 		}
 

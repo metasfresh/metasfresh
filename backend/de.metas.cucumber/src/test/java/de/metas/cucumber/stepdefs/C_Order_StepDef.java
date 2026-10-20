@@ -598,6 +598,7 @@ public class C_Order_StepDef
 	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) new business partner<br>
 	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) new partner location<br>
 	 *   <b>AD_User_ID</b> — (optional, identifier-ref) new contact<br>
+	 *   (for the three identifier columns above the literal <code>null</code> clears the field)<br>
 	 *   <b>POReference</b> — (optional) new PO reference<br>
 	 *   <b>DateOrdered</b> — (optional) new order date, e.g. 2022-05-17<br>
 	 *   <b>EMail</b> — (optional) new order e-mail address<br>
@@ -646,14 +647,11 @@ public class C_Order_StepDef
 				.ifPresent(expected -> order.setLC_Date(Timestamp.from(expected)));
 
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
-				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
-				.ifPresent(id -> order.setC_BPartner_ID(id.lookupNotNullIdIn(bpartnerTable).getRepoId()));
+				.ifPresent(id -> order.setC_BPartner_ID(id.isNullPlaceholder() ? 0 : id.lookupNotNullIdIn(bpartnerTable).getRepoId()));
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
-				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
-				.ifPresent(id -> order.setC_BPartner_Location_ID(id.lookupNotNullIdIn(bpartnerLocationTable).getRepoId()));
+				.ifPresent(id -> order.setC_BPartner_Location_ID(id.isNullPlaceholder() ? 0 : id.lookupNotNullIdIn(bpartnerLocationTable).getRepoId()));
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
-				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
-				.ifPresent(id -> order.setAD_User_ID(id.lookupNotNullIdIn(userTable).getRepoId()));
+				.ifPresent(id -> order.setAD_User_ID(id.isNullPlaceholder() ? 0 : id.lookupNotNullIdIn(userTable).getRepoId()));
 		tableRow.getAsOptionalString(COLUMNNAME_POReference)
 				.ifPresent(order::setPOReference);
 		tableRow.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateOrdered)
