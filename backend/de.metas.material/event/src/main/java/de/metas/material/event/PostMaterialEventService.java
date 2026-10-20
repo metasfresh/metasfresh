@@ -1,6 +1,6 @@
 package de.metas.material.event;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.util.Services;
@@ -38,6 +38,8 @@ public class PostMaterialEventService
 {
 	private static final Logger logger = LogManager.getLogger(PostMaterialEventService.class);
 
+	private static final String TRX_PROPERTY_EventsToEnqueueAfterCommit = PostMaterialEventService.class.getName() + ".EventsToEnqueueAfterCommit";
+
 	private final MetasfreshEventBusService materialEventService;
 
 	public PostMaterialEventService(@NonNull final MetasfreshEventBusService materialEventService)
@@ -46,14 +48,15 @@ public class PostMaterialEventService
 	}
 
 	/**
-	 * Adds a trx listener to make sure the given {@code event} will be fired via {@link #enqueueEventNow(MaterialEvent)} before the given {@code trxName} is committed.
+	 * Fires the given {@code event} via {@link #enqueueEventsNow(Collection)} after the current trx is committed, or right away if there is no trx.
+	 * All events of one trx are fired together, in the order they were posted, so the consumer gets them in that order.
 	 */
 	public void enqueueEventAfterNextCommit(@NonNull final MaterialEvent event)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		trxManager.accumulateAndProcessAfterCommit(event.getEventName(),
-				ImmutableSet.of(event),
+		trxManager.accumulateAndProcessAfterCommit(TRX_PROPERTY_EventsToEnqueueAfterCommit,
+				ImmutableList.of(event),
 				this::enqueueEventsNow);
 	}
 
@@ -67,8 +70,13 @@ public class PostMaterialEventService
 		logger.debug("Posted MaterialEvent={}", event);
 	}
 
-	public void enqueueEventsNow(final Collection<MaterialEvent> events)
+	/**
+	 * Fires the given events as one batch, in the given order (with RabbitMQ: on one channel), so the consumer gets them in that order.
+	 * <b>Important:</b> same as {@link #enqueueEventNow(MaterialEvent)}, all the data which these events refer to must already be committed!
+	 */
+	public void enqueueEventsNow(@NonNull final Collection<MaterialEvent> events)
 	{
-		events.forEach(this::enqueueEventNow);
+		materialEventService.enqueueEvents(events);
+		logger.debug("Posted MaterialEvents={}", events);
 	}
 }
