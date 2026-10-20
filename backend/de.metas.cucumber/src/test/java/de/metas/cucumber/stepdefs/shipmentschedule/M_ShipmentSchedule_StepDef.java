@@ -567,6 +567,90 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	/**
+	 * Arms a one-shot failure of the next recompute pass: the batch's transaction fails when it commits, after the pass computed and cleaned up.
+	 * The armed failure is disarmed after the scenario in any case.
+	 * <p>
+	 * Stands in for a commit-time failure of the recompute batch's transaction (lost connection, serialization failure) of
+	 * {@code UpdateInvalidShipmentSchedulesWorkpackageProcessor#processWorkPackage}.
+	 * The failure is injected by a hook registered at {@code IShipmentScheduleUpdater#registerCandidateProcessor} (documented exemption): a real commit failure cannot be provoked deterministically.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the next shipment schedule recompute pass fails when its transaction commits
+	 * </pre>
+	 */
+	@And("the next shipment schedule recompute pass fails when its transaction commits")
+	public void armRecomputePassCommitFailure()
+	{
+		recomputeRaceHarness.armNextPassFailure(ShipmentScheduleRecomputeRaceHarness.PassFailureMode.COMMIT);
+	}
+
+	/**
+	 * Arms a one-shot failure of the next recompute pass while it recomputes (before it cleans up its markers).
+	 * The armed failure is disarmed after the scenario in any case.
+	 * <p>
+	 * Stands in for any exception of a handler or candidate processor while {@code ShipmentScheduleUpdater#updateSchedules} runs.
+	 * The failure is injected by a hook registered at {@code IShipmentScheduleUpdater#registerCandidateProcessor} (documented exemption).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the next shipment schedule recompute pass fails while recomputing
+	 * </pre>
+	 */
+	@And("the next shipment schedule recompute pass fails while recomputing")
+	public void armRecomputePassComputeFailure()
+	{
+		recomputeRaceHarness.armNextPassFailure(ShipmentScheduleRecomputeRaceHarness.PassFailureMode.RECOMPUTE);
+	}
+
+	@After
+	public void disarmRecomputePassFailureAfterScenario()
+	{
+		recomputeRaceHarness.disarmPassFailure();
+	}
+
+	/**
+	 * Runs one recompute pass in the step thread and asserts that it FAILS (use after arming a failure). Requires the paused queues.
+	 * In production the async {@code UpdateInvalidShipmentSchedules} workpackage runs the pass; its failure is caught by the queue processor.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the pending shipment schedule recompute pass runs and fails
+	 * </pre>
+	 */
+	@When("the pending shipment schedule recompute pass runs and fails")
+	public void runPendingRecomputePassExpectingFailure()
+	{
+		assertThat(recomputeRaceHarness.runPendingRecomputePass())
+				.as("Failure of the recompute pass; was a failure armed?")
+				.isNotNull();
+	}
+
+	/**
+	 * Runs the shipment schedule updater inside a caller's transaction that catches the updater's failure and commits normally; asserts that the updater failed.
+	 * Requires the paused queues and an armed failure (while recomputing).
+	 * <p>
+	 * Stands in for the process {@code M_ShipmentSchedule_Update} (:28), which runs the updater inside the process's transaction, and for any caller that catches the failure and goes on.
+	 * The real {@code IShipmentScheduleUpdater#updateShipmentSchedules} runs, with a fresh selection.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the pending shipment schedule recompute pass runs inside a caller's transaction that catches the failure and commits
+	 * </pre>
+	 */
+	@When("the pending shipment schedule recompute pass runs inside a caller's transaction that catches the failure and commits")
+	public void runPendingRecomputePassInCallersTransaction()
+	{
+		assertThat(recomputeRaceHarness.runUpdaterInCallersTransactionThatCatchesFailure())
+				.as("Failure the caller caught; was a failure armed?")
+				.isNotNull();
+	}
+
+	/**
 	 * Asserts how many untagged ({@code AD_PInstance_ID IS NULL}) {@code M_ShipmentSchedule_Recompute} markers the given shipment schedule has,
 	 * i.e. whether it waits for the next recompute pass.
 	 *

@@ -34,22 +34,31 @@ import de.metas.async.processor.IQueueProcessorsExecutor;
 import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
+import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
+import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -171,6 +180,93 @@ public class ShipmentScheduleRecomputeRaceHarness
 		{
 			return e;
 		}
+	}
+
+	/**
+	 * How the armed failure hook makes the next recompute pass fail.
+	 */
+	public enum PassFailureMode
+	{
+		/** the batch transaction fails when it commits */
+		COMMIT,
+		/** the recompute fails while it computes */
+		RECOMPUTE
+	}
+
+	// The updater is a singleton and has no "unregister", so the hook is registered once per JVM and is inert unless armed.
+	private static final AtomicBoolean failureHookRegistered = new AtomicBoolean(false);
+	// JVM-global state: not safe for scenarios running in parallel; fine because the suite runs sequentially and the queues are paused while armed.
+	private static final AtomicReference<PassFailureMode> armedFailureMode = new AtomicReference<>();
+
+	/**
+	 * Arms a one-shot failure for the next recompute pass; the hook registered at the updater stays inert otherwise.
+	 */
+	public void armNextPassFailure(@NonNull final PassFailureMode mode)
+	{
+		if (failureHookRegistered.compareAndSet(false, true))
+		{
+			Services.get(IShipmentScheduleUpdater.class).registerCandidateProcessor(new FailureHook());
+		}
+		armedFailureMode.set(mode);
+	}
+
+	/**
+	 * Disarms the failure hook; safe to call anytime (also when it fired already or was never armed).
+	 */
+	public void disarmPassFailure()
+	{
+		armedFailureMode.set(null);
+	}
+
+	private static final class FailureHook implements IShipmentSchedulesAfterFirstPassUpdater
+	{
+		@Override
+		public void doUpdateAfterFirstPass(final Properties ctx, final IShipmentSchedulesDuringUpdate candidates)
+		{
+			final PassFailureMode mode = armedFailureMode.getAndSet(null); // one-shot
+			if (mode == PassFailureMode.RECOMPUTE)
+			{
+				throw new AdempiereException("Simulated failure while recomputing the shipment schedules");
+			}
+			else if (mode == PassFailureMode.COMMIT)
+			{
+				Services.get(ITrxManager.class).getThreadInheritedTrx(OnTrxMissingPolicy.Fail)
+						.getTrxListenerManager()
+						.runBeforeCommit(() -> {
+							throw new AdempiereException("Simulated failure when the recompute batch's transaction commits");
+						});
+			}
+		}
+	}
+
+	/**
+	 * Runs the updater like {@code M_ShipmentSchedule_Update} does when run inside a caller's transaction: the caller catches the updater's
+	 * failure and then commits normally.
+	 *
+	 * @return the failure the updater ended with, or {@code null} if it succeeded
+	 */
+	@Nullable
+	public RuntimeException runUpdaterInCallersTransactionThatCatchesFailure()
+	{
+		assertRecomputeQueueProcessorsPaused();
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		final ShipmentScheduleUpdateInvalidRequest request = ShipmentScheduleUpdateInvalidRequest.builder()
+				.ctx(Env.getCtx())
+				.selectionId(Services.get(IADPInstanceDAO.class).createSelectionId())
+				.build();
+		final AtomicReference<RuntimeException> caught = new AtomicReference<>();
+		trxManager.runInThreadInheritedTrx(() -> {
+			try
+			{
+				Services.get(IShipmentScheduleUpdater.class).updateShipmentSchedules(request);
+			}
+			catch (final RuntimeException e)
+			{
+				caught.set(e);
+			}
+		});
+		return caught.get();
 	}
 
 	/**

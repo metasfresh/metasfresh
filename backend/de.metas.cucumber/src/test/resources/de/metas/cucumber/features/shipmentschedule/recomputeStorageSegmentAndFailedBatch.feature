@@ -181,3 +181,59 @@ Feature: shipment schedule recompute is not lost for storage-segment flags
     Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ssB        | olB            | N             |
+
+# ######################################################################################################################
+# ######################################################################################################################
+  @Id:S33004_TC8_commitFails
+  Scenario: a recompute batch whose transaction fails at commit keeps the flags of its shipment schedules
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_a    | true    | customer_1    | 2024-01-15  | warehouse_1    | A            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l1         | order_a    | product_1    | 10         |
+    And the order identified by order_a is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | l1             | N             |
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+
+    Given the shipment schedule recompute queues are paused
+    And the shipment schedule "ss_1" is flagged for recompute 1 times in one transaction, also from nested calls
+    And the next shipment schedule recompute pass fails when its transaction commits
+    When the pending shipment schedule recompute pass runs and fails
+    # the failed batch rolled back, so its flag must still wait for the next pass
+    Then 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_1
+    When the shipment schedule recompute queues are resumed
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | l1             | N             |
+
+# ######################################################################################################################
+# ######################################################################################################################
+  @Id:S33004_TC8_callerCommits
+  Scenario: a recompute failing inside a caller's transaction that catches it and commits keeps the flags of its shipment schedules
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_a    | true    | customer_1    | 2024-01-15  | warehouse_1    | A            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l1         | order_a    | product_1    | 10         |
+    And the order identified by order_a is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | l1             | N             |
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+
+    Given the shipment schedule recompute queues are paused
+    And the shipment schedule "ss_1" is flagged for recompute 1 times in one transaction, also from nested calls
+    And the next shipment schedule recompute pass fails while recomputing
+    When the pending shipment schedule recompute pass runs inside a caller's transaction that catches the failure and commits
+    # the caller committed; the failed recompute must not have consumed the flag
+    Then 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_1
+    When the shipment schedule recompute queues are resumed
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_1       | l1             | N             |
