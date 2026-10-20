@@ -35,6 +35,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
@@ -47,10 +48,13 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
 import de.metas.order.compensationGroup.calibration.CalibrationRule;
+import de.metas.order.compensationGroup.calibration.CalibrationMatchKey;
 import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
+import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationRuleRepository;
 import de.metas.order.compensationGroup.calibration.GroupCalibrations;
 import de.metas.organization.OrgId;
 import de.metas.util.lang.Percent;
+import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -934,6 +938,32 @@ public class OrderGroupRepositoryTest
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
 		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
+	}
+
+	@Test
+	void calibration_storedRuleFactor0_8_toOrderLine()
+	{
+		// rule as saved in the window: the raw stored fraction 0.8
+		final I_C_CompensationGroup_CalibrationRule ruleRecord = newInstance(I_C_CompensationGroup_CalibrationRule.class);
+		ruleRecord.setC_BPartner_ID(1);
+		ruleRecord.setGroupCompensationCalibrationFactor(new BigDecimal("0.8"));
+		saveRecord(ruleRecord);
+		final CalibrationRule rule = CompensationGroupCalibrationRuleRepository.newInstanceForUnitTesting().getActiveRules()
+				.findFirstMatching(CalibrationMatchKey.builder()
+						.orgId(OrgId.ANY)
+						.bpartnerId(BPartnerId.ofRepoId(1))
+						.bpGroupId(BPGroupId.ofRepoId(1))
+						.productId(productId)
+						.productCategoryId(ProductCategoryId.ofRepoId(1))
+						.build())
+				.orElseThrow(() -> new AssertionError("rule not matched"));
+
+		final GroupTemplateRegularLine templateLine = templateLine(1, "0.25", 2);
+		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("1500"), templateLine, rule));
+
+		// base 1500 x 0.25 = 375
+		assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.8");
 	}
 
 	@Test
