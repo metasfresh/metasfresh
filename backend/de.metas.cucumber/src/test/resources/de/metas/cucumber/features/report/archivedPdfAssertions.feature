@@ -16,6 +16,8 @@ Feature: Asserting on the rendered PDF of an archived document
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
     And set sys config boolean value false for sys config de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant
     And metasfresh has date and time 2025-04-01T13:30:13+01:00[Europe/Berlin]
+    # the order is completed on 2025-04-01; do not depend on that period being open in the database
+    And all periods are open
     # another feature in this suite flips this flag; pin it so this scenario cannot depend on suite order.
     # The steps read the archive through IArchiveBL, which works for both storages.
     And update AD_Client
