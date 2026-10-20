@@ -142,7 +142,7 @@ public class PlainMsgBL implements IMsgBL
 		}
 		else
 		{
-			return TranslatableStrings.constant(adMessage.toAD_Message() + " - " + Joiner.on(", ").join(msgParameters));
+			return TranslatableStrings.constant(adMessage.toAD_Message() + " - " + Joiner.on(", ").useForNull("-").join(msgParameters));
 		}
 	}
 
@@ -175,5 +175,12 @@ public class PlainMsgBL implements IMsgBL
 	public Optional<AdMessageKey> getAdMessageKeyById(final AdMessageId adMessageId)
 	{
 		return Optional.empty();
+	}
+
+	@Nullable
+	@Override
+	public String getErrorCode(final @NonNull AdMessageKey messageKey)
+	{
+		return null;
 	}
 }

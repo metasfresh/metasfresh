@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
+	<BkToCstmrStmt>
+		<GrpHdr>
+			<MsgId>TESTMSG-0001</MsgId>
+			<CreDtTm>2024-05-03T06:30:00</CreDtTm>
+		</GrpHdr>
+		<Stmt>
+			<Id>TESTSTMT-0001</Id>
+			<CreDtTm>2024-05-03T06:30:00</CreDtTm>
+			<Acct>
+				<Id>
+					<IBAN>CH3908704016075473007</IBAN>
+				</Id>
+				<Ccy>CHF</Ccy>
+				<Svcr>
+					<FinInstnId>
+						<BICFI>TESTCHZZ</BICFI>
+					</FinInstnId>
+				</Svcr>
+			</Acct>
+			<Bal>
+				<Tp>
+					<CdOrPrtry>
+						<Cd>OPBD</Cd>
+					</CdOrPrtry>
+				</Tp>
+				<Amt Ccy="CHF">1000.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt>
+					<Dt>2024-05-02</Dt>
+				</Dt>
+			</Bal>
+			<!-- (a) CRDT, single transaction, QRR payment with structured creditor reference -->
+			<Ntry>
+				<NtryRef>NTRY-A</NtryRef>
+				<Amt Ccy="CHF">100.50</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts>
+					<Cd>BOOK</Cd>
+				</Sts>
+				<BookgDt>
+					<Dt>2024-05-03</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2024-05-03</Dt>
+				</ValDt>
+				<AcctSvcrRef>ASR-A</AcctSvcrRef>
+				<BkTxCd>
+					<Prtry>
+						<Cd>NTRF</Cd>
+					</Prtry>
+				</BkTxCd>
+				<NtryDtls>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>ASR-A-TX</AcctSvcrRef>
+						</Refs>
+						<RltdPties>
+							<Dbtr>
+								<Pty>
+									<Nm>Test Debtor AG</Nm>
+								</Pty>
+							</Dbtr>
+						</RltdPties>
+						<RmtInf>
+							<Strd>
+								<CdtrRefInf>
+									<Tp>
+										<CdOrPrtry>
+											<Prtry>QRR</Prtry>
+										</CdOrPrtry>
+									</Tp>
+									<Ref>210000000003139471430009017</Ref>
+								</CdtrRefInf>
+							</Strd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+				<AddtlNtryInf>QRR Incoming payment</AddtlNtryInf>
+			</Ntry>
+			<!-- (b) CRDT, single transaction, no QRR -->
+			<Ntry>
+				<NtryRef>NTRY-B</NtryRef>
+				<Amt Ccy="CHF">200.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts>
+					<Cd>BOOK</Cd>
+				</Sts>
+				<BookgDt>
+					<Dt>2024-05-03</Dt>
+				</BookgDt>
+				<ValDt>
+					<DtTm>2024-05-03T10:15:00</DtTm>
+				</ValDt>
+				<AcctSvcrRef>ASR-B</AcctSvcrRef>
+				<BkTxCd>
+					<Prtry>
+						<Cd>NTRF</Cd>
+					</Prtry>
+				</BkTxCd>
+				<NtryDtls>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>ASR-B-TX</AcctSvcrRef>
+						</Refs>
+						<RltdPties>
+							<Dbtr>
+								<Pty>
+									<Nm>Sample Payer GmbH</Nm>
+								</Pty>
+							</Dbtr>
+						</RltdPties>
+						<RmtInf>
+							<Ustrd>Invoice 4711</Ustrd>
+						</RmtInf>
+						<AddtlTxInf>Credit transfer</AddtlTxInf>
+					</TxDtls>
+				</NtryDtls>
+				<AddtlNtryInf>Incoming credit transfer</AddtlNtryInf>
+			</Ntry>
+			<!-- (c) DBIT, single transaction -->
+			<Ntry>
+				<NtryRef>NTRY-C</NtryRef>
+				<Amt Ccy="CHF">50.25</Amt>
+				<CdtDbtInd>DBIT</CdtDbtInd>
+				<Sts>
+					<Cd>BOOK</Cd>
+				</Sts>
+				<BookgDt>
+					<Dt>2024-05-03</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2024-05-04</Dt>
+				</ValDt>
+				<AcctSvcrRef>ASR-C</AcctSvcrRef>
+				<BkTxCd>
+					<Prtry>
+						<Cd>NTRF</Cd>
+					</Prtry>
+				</BkTxCd>
+				<NtryDtls>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>ASR-C-TX</AcctSvcrRef>
+						</Refs>
+						<RltdPties>
+							<Cdtr>
+								<Pty>
+									<Nm>Example Supplier SA</Nm>
+								</Pty>
+							</Cdtr>
+						</RltdPties>
+						<RmtInf>
+							<Ustrd>Order 815</Ustrd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+				<AddtlNtryInf>Outgoing payment</AddtlNtryInf>
+			</Ntry>
+			<!-- (d) CRDT, batch entry with 2 transactions -->
+			<Ntry>
+				<NtryRef>NTRY-D</NtryRef>
+				<Amt Ccy="CHF">300.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts>
+					<Cd>BOOK</Cd>
+				</Sts>
+				<BookgDt>
+					<Dt>2024-05-03</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2024-05-03</Dt>
+				</ValDt>
+				<AcctSvcrRef>ASR-D</AcctSvcrRef>
+				<BkTxCd>
+					<Prtry>
+						<Cd>NTRF</Cd>
+					</Prtry>
+				</BkTxCd>
+				<NtryDtls>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>ASR-D-TX1</AcctSvcrRef>
+						</Refs>
+						<Amt Ccy="CHF">100.00</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<RltdPties>
+							<Dbtr>
+								<Pty>
+									<Nm>Batch Payer One</Nm>
+								</Pty>
+							</Dbtr>
+						</RltdPties>
+						<RmtInf>
+							<Ustrd>Batch item 1</Ustrd>
+						</RmtInf>
+						<AddtlTxInf>Batch credit 1</AddtlTxInf>
+					</TxDtls>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>ASR-D-TX2</AcctSvcrRef>
+						</Refs>
+						<Amt Ccy="CHF">200.00</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<RltdPties>
+							<Dbtr>
+								<Pty>
+									<Nm>Batch Payer Two</Nm>
+								</Pty>
+							</Dbtr>
+						</RltdPties>
+						<RmtInf>
+							<Ustrd>Batch item 2</Ustrd>
+						</RmtInf>
+						<AddtlTxInf>Batch credit 2</AddtlTxInf>
+					</TxDtls>
+				</NtryDtls>
+				<AddtlNtryInf>Batch credit</AddtlNtryInf>
+			</Ntry>
+		</Stmt>
+	</BkToCstmrStmt>
+</Document>
