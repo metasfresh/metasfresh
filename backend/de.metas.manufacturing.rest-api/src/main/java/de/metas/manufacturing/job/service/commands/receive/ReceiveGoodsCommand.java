@@ -3,14 +3,11 @@ package de.metas.manufacturing.job.service.commands.receive;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProduct;
-import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
@@ -44,7 +41,6 @@ import de.metas.quantity.Quantitys;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -52,6 +48,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
@@ -65,8 +62,9 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class ReceiveGoodsCommand
 {
@@ -86,8 +84,6 @@ public class ReceiveGoodsCommand
 	@NonNull private final IPPOrderBOMBL ppOrderBOMBL;
 	@NonNull private final ManufacturingJobService jobService;
 	@NonNull private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
 	//
 	// Parameters
@@ -345,7 +341,7 @@ public class ReceiveGoodsCommand
 			{
 				// the TU is full per its packing => start a new TU of the same packing; it becomes the current TU
 				final I_M_HU newTU = CollectionUtils.singleElement(receiveTUs(tuPIItemProduct.getId()));
-				return ReceivingTarget.ofExistingTU(newTU);
+				return placeNextToFullTU(handlingUnitsBL, newTU, existingTU, tuPIItemProduct.getId());
 			}
 		}
 
@@ -506,59 +502,79 @@ public class ReceiveGoodsCommand
 	}
 
 	/**
-	 * @return the most recent TU on the LU that has the given packing and is not full yet
+	 * @return the newest TU on the LU, if it has the given packing and is not full yet
 	 */
 	private Optional<I_M_HU> findCurrentNotFullTU(@NonNull final I_M_HU lu, @NonNull final HUPIItemProductId tuPIItemProductId)
 	{
-		return handlingUnitsBL.retrieveIncludedHUs(lu)
-				.stream()
-				.filter(handlingUnitsBL::isTransportUnit)
-				.filter(tu -> getTUPIItemProduct(tu)
+		return findCurrentNotFullTU(
+				handlingUnitsBL.retrieveIncludedHUs(lu),
+				handlingUnitsBL::isTransportUnit,
+				tu -> getTUPIItemProduct(tu)
 						.filter(tuPIItemProduct -> HUPIItemProductId.equals(tuPIItemProduct.getId(), tuPIItemProductId))
 						.filter(tuPIItemProduct -> !isFull(tu, tuPIItemProduct))
-						.isPresent())
-				.max(Comparator.comparing(I_M_HU::getM_HU_ID));
+						.isPresent());
+	}
+
+	@VisibleForTesting
+	static Optional<I_M_HU> findCurrentNotFullTU(
+			@NonNull final List<I_M_HU> husOnLU,
+			@NonNull final Predicate<I_M_HU> isRealTU,
+			@NonNull final Predicate<I_M_HU> isOfPackingAndNotFull)
+	{
+		// Only the newest TU can be the current one: the older ones were filled before it was started.
+		// So only that one is checked (packing and capacity cost DB lookups), not every TU on the LU.
+		return husOnLU.stream()
+				.filter(isRealTU)
+				.max(Comparator.comparing(I_M_HU::getM_HU_ID))
+				.filter(isOfPackingAndNotFull);
 	}
 
 	/**
-	 * @return the packing (CU-TU association) of the given TU. The TU record itself does not always carry it
-	 * (e.g. a TU received here), so it is taken from the TU's material item.
+	 * The new TU started because the full TU was picked belongs where the full TU is: on its LU, which then is the receiving target.
 	 */
-	private Optional<HUPIItemProduct> getTUPIItemProduct(@NonNull final I_M_HU tu)
+	@VisibleForTesting
+	static ReceivingTarget placeNextToFullTU(
+			@NonNull final IHandlingUnitsBL handlingUnitsBL,
+			@NonNull final I_M_HU newTU,
+			@NonNull final I_M_HU fullTU,
+			@NonNull final HUPIItemProductId tuPIItemProductId)
 	{
-		final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(tu.getM_HU_PI_Item_Product_ID());
-		if (tuPIItemProductId != null)
+		final I_M_HU lu = handlingUnitsBL.getLoadingUnitHU(fullTU);
+		if (lu == null)
 		{
-			return Optional.of(loadingAndSavingSupportServices.getTUPIItemProduct(tuPIItemProductId));
+			return ReceivingTarget.ofExistingTU(newTU);
 		}
 
-		return handlingUnitsDAO.retrieveItems(tu, HUItemType.Material)
-				.stream()
-				.map(materialItem -> huPIItemProductDAO.retrievePIMaterialItemProduct(materialItem, getProductId(), date))
-				.filter(Objects::nonNull)
-				.findFirst()
-				.map(record -> loadingAndSavingSupportServices.getTUPIItemProduct(HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())));
+		HUTransformService.newInstance().tuToExistingLU(newTU, QtyTU.ONE, lu);
+		return ReceivingTarget.ofExistingLU(lu, tuPIItemProductId);
+	}
+
+	private Optional<HUPIItemProduct> getTUPIItemProduct(@NonNull final I_M_HU tu)
+	{
+		return loadingAndSavingSupportServices.getTUPIItemProduct(tu, getProductId(), date);
 	}
 
 	private boolean isFull(@NonNull final I_M_HU tu, @NonNull final HUPIItemProduct tuPIItemProduct)
+	{
+		return isFull(tuPIItemProduct, uom -> {
+			final IHUProductStorage productStorage = handlingUnitsBL.getStorageFactory().getStorage(tu).getProductStorageOrNull(getProductId());
+			return productStorage != null ? productStorage.getQty(uom) : Quantity.zero(uom);
+		});
+	}
+
+	/**
+	 * @param qtyInTU the product qty in the TU, in the given UOM; only asked for if the packing has a finite capacity
+	 */
+	@VisibleForTesting
+	static boolean isFull(@NonNull final HUPIItemProduct tuPIItemProduct, @NonNull final Function<I_C_UOM, Quantity> qtyInTU)
 	{
 		if (tuPIItemProduct.isInfiniteCapacity())
 		{
 			return false;
 		}
 
-		final IHUProductStorage productStorage = handlingUnitsBL.getStorageFactory().getStorage(tu).getProductStorageOrNull(getProductId());
-		final Quantity qtyInTU = productStorage != null
-				? productStorage.getQty(tuPIItemProduct.getQtyCUsPerTU().getUOM())
-				: tuPIItemProduct.getQtyCUsPerTU().toZero();
-		return isFull(qtyInTU, tuPIItemProduct);
-	}
-
-	@VisibleForTesting
-	static boolean isFull(@NonNull final Quantity qtyInTU, @NonNull final HUPIItemProduct tuPIItemProduct)
-	{
-		return !tuPIItemProduct.isInfiniteCapacity()
-				&& qtyInTU.compareTo(tuPIItemProduct.getQtyCUsPerTU()) >= 0;
+		final Quantity capacity = tuPIItemProduct.getQtyCUsPerTU();
+		return qtyInTU.apply(capacity.getUOM()).compareTo(capacity) >= 0;
 	}
 
 	@Nullable
