@@ -234,8 +234,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			try
 			{
 				// Leftover tagged flags are released once the batch transaction ends (commit, rollback or close), so the release never waits on the batch's own row locks.
+				// Flags released after a failed batch get a retry pass, bounded by this request's retry generation (see the repository).
 				// Trade-off: a failing release inside the trx listener is only logged, not thrown.
-				invalidSchedulesRepo.releaseRecomputeMarkersAfterTrxEnd(selectionId);
+				invalidSchedulesRepo.releaseRecomputeMarkersAfterTrxEnd(selectionId, request.getRecomputeRetryGeneration());
 			}
 			finally
 			{

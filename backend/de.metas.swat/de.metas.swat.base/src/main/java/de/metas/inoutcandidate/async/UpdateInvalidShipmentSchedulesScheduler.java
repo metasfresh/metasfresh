@@ -23,6 +23,7 @@
 package de.metas.inoutcandidate.async;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableMap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
@@ -31,6 +32,7 @@ import de.metas.util.Loggables;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -81,6 +83,20 @@ public class UpdateInvalidShipmentSchedulesScheduler extends WorkpackagesOnCommi
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * A retry pass carries its generation as workpackage parameter; a normal pass carries none (i.e. 0).
+	 * Retry requests are scheduled out of trx, so each gets its own collector and the generations of different requests never meet in one workpackage.
+	 */
+	@Override
+	protected Map<String, Object> extractParametersFromItem(@NonNull final ShipmentSchedulesUpdateSchedulerRequest item)
+	{
+		if (item.getRetryGeneration() <= 0)
+		{
+			return ImmutableMap.of();
+		}
+		return ImmutableMap.of(UpdateInvalidShipmentSchedulesWorkpackageProcessor.PARAM_RecomputeRetryGeneration, item.getRetryGeneration());
 	}
 
 	@Override

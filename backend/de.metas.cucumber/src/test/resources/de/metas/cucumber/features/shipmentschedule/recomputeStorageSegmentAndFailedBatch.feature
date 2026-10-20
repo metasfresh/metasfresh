@@ -204,9 +204,12 @@ Feature: shipment schedule recompute is not lost for storage-segment flags
     When the pending shipment schedule recompute pass runs and fails
     # the failed batch rolled back, so its flag must still wait for the next pass
     Then 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_1
+    # a failed recompute workpackage is not retried by the queue; releasing the flag enqueued a retry pass (generation 1)
+    And there is exactly 1 pending "UpdateInvalidShipmentSchedules" workpackage with parameter RecomputeRetryGeneration = 1, identified as retryPass_1
     When the shipment schedule recompute queues are resumed
     And the shipment-schedule recompute work queue drains to zero pending workpackages
-    Then after not more than 60s, M_ShipmentSchedules are found:
+    Then the C_Queue_WorkPackage identified as retryPass_1 is processed without error
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_1       | l1             | N             |
 
@@ -232,8 +235,11 @@ Feature: shipment schedule recompute is not lost for storage-segment flags
     When the pending shipment schedule recompute pass runs inside a caller's transaction that catches the failure and commits
     # the caller committed; the failed recompute must not have consumed the flag
     Then 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_1
+    # releasing the flag after the caller's commit enqueued a retry pass (generation 1)
+    And there is exactly 1 pending "UpdateInvalidShipmentSchedules" workpackage with parameter RecomputeRetryGeneration = 1, identified as retryPass_1
     When the shipment schedule recompute queues are resumed
     And the shipment-schedule recompute work queue drains to zero pending workpackages
-    Then after not more than 60s, M_ShipmentSchedules are found:
+    Then the C_Queue_WorkPackage identified as retryPass_1 is processed without error
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_1       | l1             | N             |

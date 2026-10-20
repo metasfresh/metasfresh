@@ -36,6 +36,7 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeInstance;
@@ -954,23 +955,24 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
-	public void releaseRecomputeMarkerOutOfTrx(final PInstanceId pinstanceId)
+	public int releaseRecomputeMarkerOutOfTrx(final PInstanceId pinstanceId)
 	{
 		final Object[] sqlParams = new Object[] { pinstanceId };
 		final String sql = "UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " SET AD_PInstance_ID=NULL WHERE AD_PInstance_ID=?";
 
 		final int result = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_None);
 		logger.debug("Updated {} {} entries for AD_Pinstance_ID={} and released the marker.", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, pinstanceId);
+		return result;
 	}
 
 	@Override
-	public void releaseRecomputeMarkersAfterTrxEnd(@NonNull final PInstanceId pinstanceId)
+	public void releaseRecomputeMarkersAfterTrxEnd(@NonNull final PInstanceId pinstanceId, final int retryGeneration)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 		if (!ThreadInheritedTrxState.isThreadTrxOpenForWrites(threadTrx))
 		{
-			releaseRecomputeMarkerOutOfTrx(pinstanceId);
+			releaseAndRetry(pinstanceId, retryGeneration);
 			return;
 		}
 
@@ -978,6 +980,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		// AFTER_CLOSE is the backstop for a trx that ends without AFTER_COMMIT/AFTER_ROLLBACK: a failed commit (JavaProcess.endTrx never rolls back) or a failed rollback.
 		// close() returns the connection to the pool, which resets it (rollback); once that is done no row lock is held (a brief wait is possible, a deadlock is not).
 		// The guard is set only after a successful release: a release that failed after the commit/rollback is retried at close, a successful one is not repeated.
+		// The retry pass is enqueued after the guard is set, so a failing enqueue does not repeat the release.
 		final AtomicBoolean released = new AtomicBoolean(false);
 		final ITrxListenerManager listenerManager = threadTrx.getTrxListenerManager();
 		for (final TrxEventTiming timing : new TrxEventTiming[] { TrxEventTiming.AFTER_COMMIT, TrxEventTiming.AFTER_ROLLBACK, TrxEventTiming.AFTER_CLOSE })
@@ -987,11 +990,54 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 					.registerHandlingMethod(trx -> {
 						if (!released.get())
 						{
-							releaseRecomputeMarkerOutOfTrx(pinstanceId);
+							final int releasedCount = releaseRecomputeMarkerOutOfTrx(pinstanceId);
 							released.set(true);
+							enqueueRetryPassIfBelowCap(releasedCount, retryGeneration);
 						}
 					});
 		}
+	}
+
+	private void releaseAndRetry(@NonNull final PInstanceId pinstanceId, final int retryGeneration)
+	{
+		final int releasedCount = releaseRecomputeMarkerOutOfTrx(pinstanceId);
+		enqueueRetryPassIfBelowCap(releasedCount, retryGeneration);
+	}
+
+	/**
+	 * Flags are left over only by a batch that did not commit (a successful batch deletes its flags in its trx), and a failed
+	 * recompute workpackage is not retried by the async framework. So, if flags were released, enqueue a retry pass of the next
+	 * generation -- unless the failed batch's generation already reached the cap: a schedule that fails every batch would
+	 * otherwise enqueue a new pass after each failure, forever. At the cap the released flags wait for the next normal pass.
+	 * <p>
+	 * Goes through the regular scheduler, out of trx, so the "enough workpackages queued" check applies right away.
+	 */
+	private void enqueueRetryPassIfBelowCap(final int releasedCount, final int failedBatchRetryGeneration)
+	{
+		if (releasedCount <= 0)
+		{
+			return;
+		}
+
+		final int maxRetryGeneration = Services.get(ISysConfigBL.class).getIntValue(
+				UpdateInvalidShipmentSchedulesWorkpackageProcessor.SYSCONFIG_MaxRetriesAfterFailedBatch,
+				UpdateInvalidShipmentSchedulesWorkpackageProcessor.DEFAULT_MaxRetriesAfterFailedBatch);
+		if (failedBatchRetryGeneration >= maxRetryGeneration)
+		{
+			logger.warn("A recompute batch of retry generation {} failed and released {} {} records; the cap of {} retries is reached,"
+								+ " so no retry pass is enqueued and the records wait for the next recompute pass",
+						failedBatchRetryGeneration, releasedCount, M_SHIPMENT_SCHEDULE_RECOMPUTE, maxRetryGeneration);
+			return;
+		}
+
+		final int retryGeneration = failedBatchRetryGeneration + 1;
+		logger.info("A recompute batch of retry generation {} failed and released {} {} records; enqueueing retry pass of generation {} (cap {})",
+					failedBatchRetryGeneration, releasedCount, M_SHIPMENT_SCHEDULE_RECOMPUTE, retryGeneration, maxRetryGeneration);
+		UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(ShipmentSchedulesUpdateSchedulerRequest.builder()
+				.ctx(Env.getCtx())
+				.trxName(ITrx.TRXNAME_None)
+				.retryGeneration(retryGeneration)
+				.build());
 	}
 
 	@Override

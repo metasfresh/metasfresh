@@ -125,8 +125,10 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 
 	/**
 	 * Untag M_ShipmentSchedule_Recompute records which were tagged with given tag
+	 *
+	 * @return the number of untagged records
 	 */
-	void releaseRecomputeMarkerOutOfTrx(PInstanceId adPInstanceId);
+	int releaseRecomputeMarkerOutOfTrx(PInstanceId adPInstanceId);
 
 	/**
 	 * Untags the records tagged with the given tag once the thread-inherited transaction ends (commit or rollback), so the
@@ -134,8 +136,17 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	 * <p>
 	 * The release also runs after the trx is closed, for a trx that ends without a commit or rollback event (failed commit or failed rollback).
 	 * Trade-off: trx listeners only log a failing handler (they never throw), so a failing release is logged, not propagated as the immediate release was.
+	 * <p>
+	 * <b>Bounded retry:</b> records are released only if the batch did not commit (a successful batch deleted them in its trx). The async framework
+	 * does not retry a failed recompute workpackage, so if at least one record was released, a retry pass of generation {@code retryGeneration + 1}
+	 * is enqueued (out of trx, through the regular scheduler and its "enough workpackages queued" check) -- but only while {@code retryGeneration}
+	 * is below the cap {@code de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor.MaxRetriesAfterFailedBatch} (default 3).
+	 * Without the cap, a schedule that fails every batch would enqueue a new pass after every failure, forever. At the cap the released records stay
+	 * untagged and are picked up by the next normal pass.
+	 *
+	 * @param retryGeneration the retry generation of the batch: 0 for a normal pass and for callers outside a recompute workpackage, {@code n} for the n-th retry pass
 	 */
-	void releaseRecomputeMarkersAfterTrxEnd(@NonNull PInstanceId adPInstanceId);
+	void releaseRecomputeMarkersAfterTrxEnd(@NonNull PInstanceId adPInstanceId, int retryGeneration);
 
 	/**
 	 * Startup housekeeping: re-inserts every tagged M_ShipmentSchedule_Recompute marker as untagged (the tagging pass that held it is gone),
