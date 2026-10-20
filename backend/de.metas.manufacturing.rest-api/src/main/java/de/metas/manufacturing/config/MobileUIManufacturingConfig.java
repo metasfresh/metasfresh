@@ -61,7 +61,7 @@ public class MobileUIManufacturingConfig
 	@NonNull
 	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(@NonNull final FinishedGoodsReceiveLine line)
 	{
-		return effectiveForReceiveLine(line.getCoProductBOMLineId() == null, line.getCatchWeightUOMId() != null);
+		return effectiveForReceiveLine(line.isMainFinishedGood(), line.getCatchWeightUOMId() != null);
 	}
 
 	/**
@@ -88,8 +88,7 @@ public class MobileUIManufacturingConfig
 				.allowReceiveToTU(!isMainFinishedGood || getIsAllowFinishedGoodsReceiveToTUEffective())
 				.captureCatchWeight(getIsCaptureCatchWeightAtReceiptEffective())
 				.skipReceiveTargetStep(isMainFinishedGood && getIsSkipFinishedGoodsReceiveTargetStepEffective())
-				// The one place the effective "catch-weight scan required" is defined; the mobile client gets it as is and
-				// the receipt enforces it. Main finished good only: co-/by-product lines keep receive-on-scan and manual input.
+				// Main finished good only: co-/by-product lines keep receive-on-scan and manual input.
 				// Without a catch-weight UOM or with catch weight not captured at receipt there is no weight to scan.
 				.catchWeightScanRequired(isMainFinishedGood
 						&& isCatchWeightProduct

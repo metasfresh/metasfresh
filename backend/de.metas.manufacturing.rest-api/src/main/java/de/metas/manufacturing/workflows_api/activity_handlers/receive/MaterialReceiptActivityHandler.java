@@ -122,7 +122,6 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		final boolean isMainFinishedGood = line.getCoProductBOMLineId() == null;
 		final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(line);
 
 		// A structure excluded by configuration comes out as an empty list WITHOUT an emptyReason: that reason is the
@@ -179,7 +178,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 
 		return JsonFinishedGoodsReceiveLine.builder()
 				.id(line.getId().toJson())
-				.coproduct(!isMainFinishedGood)
+				.coproduct(!line.isMainFinishedGood())
 				.skipReceiveTargetStep(lineConfig.isSkipReceiveTargetStep())
 				.catchWeightScanRequired(lineConfig.isCatchWeightScanRequired())
 				.productName(line.getProductValueAndProductName().translate(adLanguage))
