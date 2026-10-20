@@ -9,7 +9,6 @@ import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.interfaces.I_C_DocType;
-import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.esr.api.IESRImportDAO;
@@ -40,6 +39,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /*
@@ -163,7 +163,9 @@ public class ESRImportCamt54V08MatchingTest extends ESRTestBase
 		invoice.setDocumentNo("INV-1");
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
 		invoice.setC_Currency_ID(chf.getRepoId());
-		invoice.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
+		// A sales invoice (ARI) is a financial document; open amount and allocation skip non-financial invoices where IsFinancial exists.
+		// Set by column name so this class compiles unchanged on code lines without C_Invoice.IsFinancial (there the call is a no-op).
+		setValue(invoice, "IsFinancial", true);
 		invoice.setIsSOTrx(true);
 		invoice.setDocStatus(IDocument.STATUS_Completed);
 		invoice.setProcessed(true);
