@@ -135,8 +135,7 @@ public class C_OrderLine
 		{
 			return;
 		}
-		// raw value: the generated getter returns 0 for an emptied Qty, which would turn the factor into 0
-		final BigDecimal qtyEntered = InterfaceWrapperHelper.getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_QtyEntered);
+		final BigDecimal qtyEntered = getQtyEnteredOrNull(orderLine);
 		if (qtyEntered == null || qtyEntered.signum() < 0)
 		{
 			return;
@@ -156,6 +155,15 @@ public class C_OrderLine
 	private static boolean isCalibrated(@NonNull final I_C_OrderLine orderLine)
 	{
 		return orderLine.getC_CompensationGroup_CalibrationRule_ID() > 0 || OrderGroupRepository.getCalibrationFactor(orderLine) != null;
+	}
+
+	/**
+	 * The generated getter returns 0 for an emptied Qty, which would turn the factor into 0.
+	 */
+	@Nullable
+	private static BigDecimal getQtyEnteredOrNull(@NonNull final I_C_OrderLine orderLine)
+	{
+		return InterfaceWrapperHelper.getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_QtyEntered);
 	}
 
 	/**
