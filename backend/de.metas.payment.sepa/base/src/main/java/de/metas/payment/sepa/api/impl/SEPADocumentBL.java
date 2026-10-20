@@ -81,8 +81,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 	{
 		if (SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02.equals(protocol))
 		{
-			final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
-			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext);
+			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(getBankRepository(), exportContext);
 		}
 		else if (SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_09_CH_03.equals(protocol))
 		{
