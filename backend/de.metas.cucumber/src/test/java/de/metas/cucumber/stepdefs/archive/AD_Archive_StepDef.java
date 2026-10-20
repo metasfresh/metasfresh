@@ -1,0 +1,323 @@
+/*
+ * #%L
+ * de.metas.cucumber
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.cucumber.stepdefs.archive;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
+import de.metas.util.Services;
+import io.cucumber.java.en.Then;
+import io.qameta.allure.Allure;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.pdfbox.text.TextPosition;
+import org.compiere.model.I_AD_Archive;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * Verifies that an {@code AD_Archive} record (the generated document PDF) exists for a given document, and
+ * inspects the text of the actual rendered PDF (via Apache PDFBox) of that archive.
+ */
+@RequiredArgsConstructor
+public class AD_Archive_StepDef
+{
+	@NonNull private final IdentifiersResolver identifiersResolver;
+
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+
+	/** AD_Archive_IDs already attached to the report in THIS scenario — see {@link #attachToAllureReportOnce}. */
+	@NonNull private final Set<Integer> attachedArchiveIds = new HashSet<>();
+
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then an AD_Archive exists for the record identified by shipment
+	 * </pre>
+	 */
+	@Then("an AD_Archive exists for the record identified by {string}")
+	public void assert_archive_exists(@NonNull final String recordIdentifier)
+	{
+		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
+
+		final int count = queryBL.createQueryBuilder(I_AD_Archive.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+				.create()
+				.count();
+
+		assertThat(count)
+				.as("AD_Archive count for record %s", recordRef)
+				.isGreaterThanOrEqualTo(1);
+	}
+
+	/**
+	 * Extracts the text of the most recently archived PDF for the given record (via PDFBox) and asserts it
+	 * contains the given text.
+	 * <p>
+	 * Prefer a single distinctive word over a phrase when the text under test can wrap: a line break falls
+	 * between two words, so a multi-word needle fails as soon as the layout wraps between them.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the PDF archived for the record identified by "order" contains text "Teillieferungsavis"
+	 * </pre>
+	 */
+	@Then("the PDF archived for the record identified by {string} contains text {string}")
+	public void assert_archived_pdf_contains_text(
+			@NonNull final String recordIdentifier,
+			@NonNull final String expectedText)
+	{
+		final String pdfText = extractPdfVisualLines(recordIdentifier).stream()
+				.map(PdfLine::getText)
+				.collect(Collectors.joining("\n"));
+
+		assertThat(pdfText)
+				.as("Text extracted from the PDF archived for record %s", recordIdentifier)
+				.contains(expectedText);
+	}
+
+	/**
+	 * The negative of {@link #assert_archived_pdf_contains_text(String, String)}: asserts that the text does
+	 * not appear ANYWHERE in the archived PDF. This is the assertion for "the text is gone" (e.g. a block
+	 * of the layout that must not print for this document).
+	 * <p>
+	 * Use a single distinctive word, for the same reason as the positive step: a needle that the layout can
+	 * wrap in the middle would be absent from the extracted text even when the value did print.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the PDF archived for the record identified by "order" does not contain text "Zwischenpalette"
+	 * </pre>
+	 */
+	@Then("the PDF archived for the record identified by {string} does not contain text {string}")
+	public void assert_archived_pdf_does_not_contain_text(
+			@NonNull final String recordIdentifier,
+			@NonNull final String unexpectedText)
+	{
+		final String pdfText = extractPdfVisualLines(recordIdentifier).stream()
+				.map(PdfLine::getText)
+				.collect(Collectors.joining("\n"));
+
+		assertThat(pdfText)
+				.as("Text extracted from the PDF archived for record %s", recordIdentifier)
+				.doesNotContain(unexpectedText);
+	}
+
+	/**
+	 * Extracts the most recently archived PDF for the given record as an ordered list of visual text lines
+	 * (top-to-bottom, left-to-right) — the order a human reads on the page, which is what a reviewer would
+	 * check by eye — each carrying the page it sits on and its vertical position.
+	 * <p>
+	 * {@link PDFTextStripper#setSortByPosition(boolean)} is what makes the order VISUAL rather than the raw
+	 * content-stream order: a Jasper band placed above another one may well be written to the content stream
+	 * after it.
+	 * <p>
+	 * The grouping is PDFBox's own. {@code writeString} fires once per WORD, not once per line (PDFBox 2.x
+	 * {@code PDFTextStripper.writeLine} calls it per {@code WordWithTextPositions}), so {@link PdfLineStripper}
+	 * accumulates words and flushes a line only on {@code writeLineSeparator} — which reproduces exactly what
+	 * {@code getText()} would have returned, while also keeping the coordinates {@code getText()} discards.
+	 */
+	private List<PdfLine> extractPdfVisualLines(@NonNull final String recordIdentifier)
+	{
+		final byte[] pdfBytes = getLatestArchivedPdfBytes(recordIdentifier);
+
+		final List<PdfLine> lines;
+		try (final PDDocument document = PDDocument.load(pdfBytes))
+		{
+			final PdfLineStripper stripper = new PdfLineStripper();
+			stripper.getText(document); // the captured lines, not the return value, are what we use
+			lines = stripper.getLines();
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException("Failed to extract text from the PDF archived for record " + recordIdentifier, e);
+		}
+
+		// A rendered document PDF always carries text. If it carries none, the render or the archiving went
+		// wrong; fail here rather than let a text assertion pass against an empty extraction.
+		assertThat(lines)
+				.as("Text lines extracted from the PDF archived for record %s", recordIdentifier)
+				.isNotEmpty();
+
+		return lines;
+	}
+
+	private byte[] getLatestArchivedPdfBytes(@NonNull final String recordIdentifier)
+	{
+		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
+
+		// Deliberately not IArchiveDAO.retrieveLastArchives: that orders by Created descending
+		// (ArchiveDAO.java:87). A scenario that prints the same record twice can produce both archives
+		// within one clock tick, and then "last" is whichever row the DB happens to return first.
+		// AD_Archive_ID is monotonic and never ties, so ordering by it picks the newest archive
+		// deterministically -- which is what an assertion about "the PDF just printed" needs.
+		final I_AD_Archive archive = queryBL.createQueryBuilder(I_AD_Archive.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+				.orderByDescending(I_AD_Archive.COLUMNNAME_AD_Archive_ID)
+				.create()
+				.first();
+
+		if (archive == null)
+		{
+			throw new AdempiereException("No AD_Archive found for record " + recordRef);
+		}
+
+		// Read via IArchiveBL, not AD_Archive.BinaryData: DBArchiveStorage stores the document ZIPPED in
+		// that column, and with AD_Client.StoreArchiveOnFileSystem='Y' it is not in the column at all.
+		// Only the archive storage knows how to hand back the plain document bytes.
+		final byte[] binaryData = archiveBL.getBinaryData(archive);
+		assertThat(binaryData)
+				.as("Archived PDF data of AD_Archive_ID=%s", archive.getAD_Archive_ID())
+				.isNotNull()
+				.isNotEmpty();
+
+		attachToAllureReportOnce(archive.getAD_Archive_ID(), recordIdentifier, binaryData);
+
+		return binaryData;
+	}
+
+	/**
+	 * Attaches the rendered PDF to the Allure report, so a reviewer can open the actual document a
+	 * scenario asserted against instead of inferring it from extracted text.
+	 * <p>
+	 * Deduplicated per archive: several assertion steps in one scenario read the same document, and each
+	 * would otherwise attach another copy of it. This step-def instance lives for exactly one scenario
+	 * (picocontainer builds a fresh one per scenario), so the set needs no clearing.
+	 */
+	private void attachToAllureReportOnce(
+			final int archiveId,
+			@NonNull final String recordIdentifier,
+			@NonNull final byte[] pdfBytes)
+	{
+		if (!attachedArchiveIds.add(archiveId))
+		{
+			return;
+		}
+
+		Allure.addAttachment(
+				"PDF archived for " + recordIdentifier + " (AD_Archive_ID=" + archiveId + ")",
+				"application/pdf",
+				new ByteArrayInputStream(pdfBytes),
+				".pdf");
+	}
+
+	/** One visual line of the PDF: the page it sits on, its vertical position, and its text. */
+	@Value
+	private static class PdfLine
+	{
+		int pageIndex;
+		float y;
+		@NonNull String text;
+	}
+
+	/**
+	 * Collects one {@link PdfLine} per visual line PDFBox emits, in top-to-bottom reading order, keeping the
+	 * vertical position that {@link PDFTextStripper#getText(PDDocument)} throws away.
+	 */
+	private static final class PdfLineStripper extends PDFTextStripper
+	{
+		private final List<PdfLine> lines = new ArrayList<>();
+		private final StringBuilder currentLine = new StringBuilder();
+		private Float currentY = null;
+		private int currentPageIndex = 0;
+
+		PdfLineStripper() throws IOException
+		{
+			super();
+			setSortByPosition(true);
+			setLineSeparator("\n");
+		}
+
+		@Override
+		protected void writeString(final String text, final List<TextPosition> textPositions)
+		{
+			currentLine.append(text);
+			if (currentY == null && !textPositions.isEmpty())
+			{
+				currentY = textPositions.get(0).getYDirAdj();
+			}
+		}
+
+		@Override
+		protected void writeWordSeparator()
+		{
+			currentLine.append(getWordSeparator());
+		}
+
+		@Override
+		protected void writeLineSeparator()
+		{
+			flushCurrentLine();
+		}
+
+		@Override
+		protected void startPage(final PDPage page)
+		{
+			currentPageIndex = getCurrentPageNo();
+		}
+
+		@Override
+		protected void endPage(final PDPage page)
+		{
+			flushCurrentLine(); // the last line of a page is not followed by a line separator
+		}
+
+		private void flushCurrentLine()
+		{
+			final String text = currentLine.toString().trim();
+			if (!text.isEmpty() && currentY != null)
+			{
+				lines.add(new PdfLine(currentPageIndex, currentY, text));
+			}
+			currentLine.setLength(0);
+			currentY = null;
+		}
+
+		List<PdfLine> getLines()
+		{
+			return lines;
+		}
+	}
+}
