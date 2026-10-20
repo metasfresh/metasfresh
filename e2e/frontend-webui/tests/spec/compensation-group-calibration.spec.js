@@ -227,9 +227,9 @@ test.describe('Compensation group calibration', () => {
                 .toHaveText(/^0[.,]667$/, { timeout: SLOW_ACTION_TIMEOUT });
         });
 
-        await test.step('Part 1: a new rule opens with factor 100 and keeps it when saved without touching the factor (Kita C)', async () => {
+        await test.step('Part 1: a new rule opens with factor 1 and keeps it when saved without touching the factor (Kita C)', async () => {
             await newRuleThroughWindow(page, rulesWindowUrl);
-            await expect(page.locator(`.form-field-${FIELD_FACTOR} input`)).toHaveValue(/^100$/, { timeout: SLOW_ACTION_TIMEOUT });
+            await expect(page.locator(`.form-field-${FIELD_FACTOR} input`)).toHaveValue(/^1$/, { timeout: SLOW_ACTION_TIMEOUT });
 
             await NumericWidget.setValue('SeqNo', 40);
             await LookupWidget.setValue('C_BPartner_ID', kitaC);
@@ -237,12 +237,12 @@ test.describe('Compensation group calibration', () => {
             const kitaCRuleId = recordIdFromUrl(page);
             await waitForRecordSaved(rulesWindowId, kitaCRuleId, { maxRetries: 20, retryDelayMs: 1000 });
 
-            // read back from the server: the saved rule carries factor 100
+            // read back from the server: the saved rule carries factor 1
             await page.goto(rulesWindowUrl);
             await expectGridLoaded(page);
             await filterRulesByCustomer(page, kitaC);
             await expect(page.getByTestId(`table-row-${kitaCRuleId}`).locator(`[data-cy="cell-${FIELD_FACTOR}"]`))
-                .toHaveText(/^100$/, { timeout: SLOW_ACTION_TIMEOUT });
+                .toHaveText(/^1$/, { timeout: SLOW_ACTION_TIMEOUT });
         });
 
         await test.step('Part 1: under the customer filter the rules show in SeqNo order', async () => {
