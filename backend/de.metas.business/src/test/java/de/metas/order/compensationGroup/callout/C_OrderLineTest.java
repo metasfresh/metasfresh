@@ -38,7 +38,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class C_OrderLineTest
 {
-
 	private C_OrderLine callout;
 	private I_C_UOM ltr;
 	private I_C_UOM ml;
@@ -52,7 +51,7 @@ class C_OrderLineTest
 
 		ltr = BusinessTestHelper.createUOM("LTR", null, 0);
 		ml = BusinessTestHelper.createUOM("ML", null, 0);
-
+		bucket = BusinessTestHelper.createUOM("BUCKET", null, 0);
 	}
 
 	/**
@@ -70,14 +69,12 @@ class C_OrderLineTest
 		return line;
 	}
 
-
 	/**
 	 * A calibrated line in LTR of a product that can also be sold in buckets.
 	 */
 	private I_C_OrderLine calibratedLineWithBucketConversion(final String baseLtr, final String ltrPerBucket)
 	{
 		final I_M_Product product = BusinessTestHelper.createProduct("P", ltr);
-		bucket = BusinessTestHelper.createUOM("BUCKET", null, 0);
 		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
 				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.fromUomId(UomId.ofRepoId(bucket.getC_UOM_ID()))
