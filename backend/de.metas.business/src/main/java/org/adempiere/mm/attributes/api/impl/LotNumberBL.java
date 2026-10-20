@@ -57,6 +57,20 @@ public class LotNumberBL implements ILotNumberBL
 	private static final Logger logger = LogManager.getLogger(LotNumberBL.class);
 
 	private final IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
+	/**
+	 * Lazy: singletons create LotNumberBL eagerly, before IDocumentNoBuilderFactory (no default constructor) is registered.
+	 */
+	@Nullable private IDocumentNoBuilderFactory _documentNoBuilderFactory;
+
+	private IDocumentNoBuilderFactory documentNoBuilderFactory()
+	{
+		IDocumentNoBuilderFactory result = _documentNoBuilderFactory;
+		if (result == null)
+		{
+			result = _documentNoBuilderFactory = Services.get(IDocumentNoBuilderFactory.class);
+		}
+		return result;
+	}
 
 	@Override
 	public String calculateLotNumber(final Date date)
@@ -82,10 +96,7 @@ public class LotNumberBL implements ILotNumberBL
 	@Override
 	public Optional<String> getAndIncrementLotNo(@NonNull final LotNoContext context)
 	{
-		// looked up lazily, not as a field: singletons create LotNumberBL eagerly, before IDocumentNoBuilderFactory (no default constructor) is registered
-		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
-
-		final String lotNo = documentNoFactory.forSequenceId(context.getSequenceId())
+		final String lotNo = documentNoBuilderFactory().forSequenceId(context.getSequenceId())
 				.setFailOnError(true)
 				.setClientId(context.getClientId())
 				.setEvaluationContext(createEvaluationContext(context))
@@ -108,8 +119,7 @@ public class LotNumberBL implements ILotNumberBL
 		final DocumentNoParts lotNoParts;
 		try
 		{
-			// looked up lazily, see getAndIncrementLotNo
-			lotNoParts = Services.get(IDocumentNoBuilderFactory.class).forSequenceId(context.getSequenceId())
+			lotNoParts = documentNoBuilderFactory().forSequenceId(context.getSequenceId())
 					.setClientId(context.getClientId())
 					.setEvaluationContext(createEvaluationContext(context))
 					.setUsePreliminaryDocumentNo(true) // read the incremental number instead of consuming it
