@@ -73,12 +73,14 @@ public class C_Location_StepDef
 			location.setC_Country_ID(country.getC_Country_ID());
 
 			final String address1 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Location.COLUMNNAME_Address1);
+			final String address4 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Location.COLUMNNAME_Address4);
 			final String postalCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Location.COLUMNNAME_Postal);
 			final String city = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Location.COLUMNNAME_City);
 			final String regionName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Location.COLUMNNAME_RegionName);
 			final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_Location.COLUMNNAME_IsActive, true);
 
 			location.setAddress1(address1);
+			location.setAddress4(address4);
 			location.setPostal(postalCode);
 			location.setCity(city);
 			location.setRegionName(regionName);
