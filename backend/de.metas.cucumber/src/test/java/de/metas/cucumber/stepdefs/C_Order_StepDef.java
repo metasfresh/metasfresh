@@ -587,6 +587,28 @@ public class C_Order_StepDef
 				.forEach(this::validateOrder);
 	}
 
+	/**
+	 * Updates fields of an existing (typically reactivated) order.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> or <b>C_Order_ID</b> — (required, identifier-ref) the order to update<br>
+	 *   <b>DocBaseType</b>, <b>DocSubType</b> — (optional) both needed to change the document type<br>
+	 *   <b>PaymentRule</b>, <b>PreparationDate</b>, <b>LC_Date</b> — (optional)<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) new business partner<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) new partner location<br>
+	 *   <b>AD_User_ID</b> — (optional, identifier-ref) new contact<br>
+	 *   <b>POReference</b> — (optional) new PO reference<br>
+	 *   <b>DateOrdered</b> — (optional) new order date, e.g. 2022-05-17<br>
+	 *   <b>EMail</b> — (optional) new order e-mail address<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData, AD_User_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update order
+	 *   | Identifier | C_BPartner_ID | C_BPartner_Location_ID | AD_User_ID | POReference | DateOrdered | EMail          |
+	 *   | order_1    | bpartner_2    | location_2             | user_2     | PO-2        | 2022-05-18  | new@email.test |
+	 * </pre>
+	 */
 	@And("update order")
 	public void update_order(@NonNull final DataTable dataTable)
 	{
@@ -622,6 +644,22 @@ public class C_Order_StepDef
 				.ifPresent(expected -> order.setPreparationDate(Timestamp.from(expected)));
 		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_LC_Date)
 				.ifPresent(expected -> order.setLC_Date(Timestamp.from(expected)));
+
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.ifPresent(id -> order.setC_BPartner_ID(id.lookupNotNullIdIn(bpartnerTable).getRepoId()));
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.ifPresent(id -> order.setC_BPartner_Location_ID(id.lookupNotNullIdIn(bpartnerLocationTable).getRepoId()));
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.ifPresent(id -> order.setAD_User_ID(id.lookupNotNullIdIn(userTable).getRepoId()));
+		tableRow.getAsOptionalString(COLUMNNAME_POReference)
+				.ifPresent(order::setPOReference);
+		tableRow.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateOrdered)
+				.ifPresent(order::setDateOrdered);
+		tableRow.getAsOptionalString(COLUMNNAME_EMail)
+				.ifPresent(order::setEMail);
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
