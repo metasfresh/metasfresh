@@ -39,8 +39,11 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -105,7 +108,7 @@ class ShipmentScheduleSegmentChangedProcessorTest
 
 		@SuppressWarnings("unchecked")
 		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
-		verify(invalidator).flagSegmentForRecompute(captor.capture());
+		verify(invalidator).flagSegmentsForRecomputeOutOfTrx(captor.capture());
 
 		assertThat(captor.getValue())
 				.as("adding %d value-equal segments must be deduped to a single distinct segment", REPEATED_ADD_COUNT)
@@ -144,7 +147,7 @@ class ShipmentScheduleSegmentChangedProcessorTest
 
 		@SuppressWarnings("unchecked")
 		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
-		verify(invalidator).flagSegmentForRecompute(captor.capture());
+		verify(invalidator).flagSegmentsForRecomputeOutOfTrx(captor.capture());
 
 		assertThat(captor.getValue())
 				.as("all %d distinct segments must be retained", DISTINCT_SEGMENT_COUNT)
@@ -181,7 +184,7 @@ class ShipmentScheduleSegmentChangedProcessorTest
 
 		@SuppressWarnings("unchecked")
 		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
-		verify(invalidator).flagSegmentForRecompute(captor.capture());
+		verify(invalidator).flagSegmentsForRecomputeOutOfTrx(captor.capture());
 
 		assertThat(captor.getValue())
 				.as("value-equal identity-based segments must be normalized and deduped to a single segment")
@@ -232,8 +235,11 @@ class ShipmentScheduleSegmentChangedProcessorTest
 		// capture EVERY flush: the mid-batch threshold flushes AND the final AFTER_COMMIT flush of the remainder
 		@SuppressWarnings("unchecked")
 		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
-		verify(invalidator, atLeastOnce()).flagSegmentForRecompute(captor.capture());
-		final List<Collection<IShipmentScheduleSegment>> flushes = captor.getAllValues();
+		verify(invalidator, atLeastOnce()).flagSegmentsForRecomputeInThreadInheritedTrx(captor.capture());
+		final List<Collection<IShipmentScheduleSegment>> flushes = new ArrayList<>(captor.getAllValues());
+		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> afterCommitCaptor = ArgumentCaptor.forClass(Collection.class);
+		verify(invalidator).flagSegmentsForRecomputeOutOfTrx(afterCommitCaptor.capture());
+		flushes.addAll(afterCommitCaptor.getAllValues());
 
 		// (a) more than one flush → at least one mid-batch flush fired before the trx commit
 		assertThat(flushes.size())
@@ -255,6 +261,44 @@ class ShipmentScheduleSegmentChangedProcessorTest
 		assertThat(union)
 				.as("union of all flushed segments must equal the full distinct set — none lost, none duplicated")
 				.containsExactlyInAnyOrderElementsOf(distinctSegments);
+	}
+
+	/**
+	 * A failing mid-batch flush (in the business transaction, behind a savepoint) must not break the transaction and must not lose
+	 * the segments: they are retained and the AFTER_COMMIT flush passes them to the out-of-trx method.
+	 */
+	@Test
+	void midBatchFlushFailureRetainsSegments()
+	{
+		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+		when(invalidator.getSegmentFlushThreshold()).thenReturn(1);
+		doThrow(new RuntimeException("test: mid-batch flush failed"))
+				.doNothing()
+				.when(invalidator).flagSegmentsForRecomputeInThreadInheritedTrx(any());
+
+		final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
+				.productId(1)
+				.bpartnerId(2)
+				.locatorId(3)
+				.build();
+
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+			final ShipmentScheduleSegmentChangedProcessor processor =
+					ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator);
+			assertThat(processor).isNotNull();
+
+			// reaches the threshold -> mid-batch flush -> throws -> must be swallowed
+			processor.addSegment(segment);
+		});
+
+		verify(invalidator, times(1)).flagSegmentsForRecomputeInThreadInheritedTrx(any());
+
+		@SuppressWarnings("unchecked")
+		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
+		verify(invalidator).flagSegmentsForRecomputeOutOfTrx(captor.capture());
+		assertThat(captor.getValue())
+				.as("the segment of the failed mid-batch flush must be retained and flagged out of trx after commit")
+				.containsExactly(segment);
 	}
 
 	/**
