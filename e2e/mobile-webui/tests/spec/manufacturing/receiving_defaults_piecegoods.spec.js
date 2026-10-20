@@ -222,12 +222,14 @@ test('Date-based lot-number sequence — the lot is pre-filled and received as s
         bestBeforeDays: BEST_BEFORE_DAYS,
         lotNoSequence: { prefix: lotPrefix, dateBased: true },
     });
+    const receiptDayBefore = receiptDayPlusDays(0).iso;
     const { jobId } = await startReceiveFlow(masterdata);
 
     await MaterialReceiptLineScreen.clickReceiveQtyButton();
     const shownLotNo = await GetQuantityDialog.expectLotNoMatching(new RegExp(`^${lotPrefix}.+$`));
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
     await ManufacturingJobScreen.waitForScreen();
+    const receiptDayAfter = receiptDayPlusDays(0).iso;
 
     await ManufacturingJobScreen.complete();
 
@@ -241,7 +243,9 @@ test('Date-based lot-number sequence — the lot is pre-filled and received as s
         hus: {
             'lu1': {
                 storages: { 'BOM': '4 PCE' },
-                attributes: { 'Lot-Nummer': shownLotNo },
+                // The untouched lot is generated at receipt for the receipt day: if the run crossed midnight,
+                // that is the next day's lot, which can only be checked by its prefix.
+                attributes: { 'Lot-Nummer': receiptDayBefore === receiptDayAfter ? shownLotNo : `startsWith:${lotPrefix}` },
             },
         },
     });

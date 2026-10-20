@@ -87,9 +87,20 @@ final class HUAttributeAssertions
 		});
 	}
 
+	/**
+	 * An expected string value {@code startsWith:<prefix>} only requires the actual value to start with {@code <prefix>},
+	 * e.g. for a generated lot number whose exact value the test cannot know.
+	 */
+	private static final String EXPECTED_STARTS_WITH = "startsWith:";
+
 	private static void assertAttributeValue_String(final String expectedValueStr, final ImmutableAttributeSet actualAttributes, final AttributeCode attributeCode)
 	{
 		final String actualValueStr = actualAttributes.getValueAsString(attributeCode);
+		if (expectedValueStr != null && expectedValueStr.startsWith(EXPECTED_STARTS_WITH))
+		{
+			assertThat(actualValueStr).as("String attribute " + attributeCode).startsWith(expectedValueStr.substring(EXPECTED_STARTS_WITH.length()));
+			return;
+		}
 		assertThat(actualValueStr).as("String attribute " + attributeCode).isEqualTo(expectedValueStr);
 	}
 
