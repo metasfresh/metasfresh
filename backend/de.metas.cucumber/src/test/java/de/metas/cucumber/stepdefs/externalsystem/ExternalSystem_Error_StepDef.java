@@ -64,6 +64,7 @@ public class ExternalSystem_Error_StepDef
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 
 	private static final int MAX_WAIT_SECONDS_FOR_PINSTANCE = 60;
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
@@ -80,8 +81,9 @@ public class ExternalSystem_Error_StepDef
 		final org.compiere.model.I_M_InOut inout = inoutTable.get(inoutIdentifier);
 		assertThat(inout).isNotNull();
 
-		// EDI_AD_PInstance_ID is written only after the export's RabbitMQ publish, which the preceding step already waits on:
-		// EDIWorkpackageProcessor saves it in the workpackage trx, which commits after the publish.
+		// Both pInstance sources are written only after the export's RabbitMQ publish, which the preceding step already waits on:
+		// EDIWorkpackageProcessor saves EDI_AD_PInstance_ID in the workpackage trx, which commits after the publish, and
+		// ExternalSystemScriptedExportConversionService binds the pInstance to the status row after the publish returns.
 		// So wait for it; reading it once fails intermittently.
 		final PInstanceId pInstanceId = StepDefUtil.<PInstanceId>tryAndWaitForItem()
 				.worker(() -> retrievePInstanceIdForShipment(inout, inoutIdentifier))
@@ -122,7 +124,7 @@ public class ExternalSystem_Error_StepDef
 
 		return pInstanceId != null
 				? ProviderResult.resultWasFound(pInstanceId)
-				: ProviderResult.resultWasNotFound("No pInstance yet for M_InOut " + inoutIdentifier + " (checked EDI_AD_PInstance_ID and ExternalSystem_ScriptedExportConversion_Status)");
+				: ProviderResult.resultWasNotFound("No pInstance found for M_InOut " + inoutIdentifier + " (checked EDI_AD_PInstance_ID and ExternalSystem_ScriptedExportConversion_Status)");
 	}
 
 	private void sendErrorResponse(@NonNull final DataTableRow row, @NonNull final PInstanceId pInstanceId) throws IOException
