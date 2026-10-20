@@ -67,8 +67,10 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Invoice;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -196,6 +198,10 @@ public class C_InvoiceLine_StepDef
 				.map(inOutLineTable::getId)
 				.ifPresent(inOutLineId -> queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLineId.getRepoId()));
 
+		// ...or the same product and qty on lines of different projects
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
+				.ifPresent(projectIdentifier -> queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Project_ID, extractExpectedProjectId(projectIdentifier)));
+
 		final List<I_C_InvoiceLine> invoiceLineRecords = queryBuilder.create().list(I_C_InvoiceLine.class);
 		if (invoiceLineRecords.isEmpty())
 		{
@@ -262,10 +268,27 @@ public class C_InvoiceLine_StepDef
 			final I_C_InvoiceLine currentInvoiceLine = Check.singleElement(invoiceLines.stream()
 					.filter(line -> line.getM_Product_ID() == productId.getRepoId())
 					.filter(line -> line.getQtyInvoiced().equals(qtyInvoiced))
+					.filter(line -> isOfExpectedProject(line, row))
 					.collect(ImmutableList.toImmutableList()));
 
 			validateInvoiceLine(currentInvoiceLine, invoiceRecord, row);
 		});
+	}
+
+	private boolean isOfExpectedProject(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final DataTableRow row)
+	{
+		return row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
+				.map(projectIdentifier -> Objects.equals(ProjectId.ofRepoIdOrNull(invoiceLine.getC_Project_ID()), extractExpectedProjectId(projectIdentifier)))
+				.orElse(true);
+	}
+
+	/** @return the identified project, or {@code null} for the {@code null} placeholder (expects no project) */
+	@Nullable
+	private ProjectId extractExpectedProjectId(@NonNull final StepDefDataIdentifier projectIdentifier)
+	{
+		return projectIdentifier.isNullPlaceholder()
+				? null
+				: projectTable.getIdOptional(projectIdentifier).orElseGet(() -> projectIdentifier.getAsId(ProjectId.class));
 	}
 
 	private ProductId getProductId(final DataTableRow row)
