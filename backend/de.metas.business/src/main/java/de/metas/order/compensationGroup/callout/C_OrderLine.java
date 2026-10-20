@@ -25,6 +25,7 @@ package de.metas.order.compensationGroup.callout;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.compensationGroup.GroupTemplateRegularLineId;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
+import de.metas.order.compensationGroup.calibration.CalibrationFactorFieldRepository;
 import de.metas.order.compensationGroup.calibration.CalibrationRule;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -35,6 +36,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -53,8 +55,8 @@ import java.math.RoundingMode;
  * <li>factor changed: {@code QtyEntered = uncalibrated qty x factor %}, rounded like at line creation ({@link CalibrationRule#computeQtyCalibrated(Quantity, Percent)})</li>
  * <li>{@code QtyEntered} changed (typed, or set by the Gebindemenge/TU callout): {@code factor = QtyEntered / uncalibrated qty x 100}, rounded half-up to 2 decimals</li>
  * </ul>
- * The factor is changed only on a calibrated line, i.e. one that has a calibration rule or a factor.
- * In core window 143 the factor field is read-only, so the user cannot edit it there; it still follows an edited QtyEntered.
+ * Both act only on a tab whose factor field is editable ({@code AD_Field.IsReadOnly='N'}). In core window 143 the field is read-only, so nothing changes there;
+ * a customer window can make the field editable to enable this.
  * <p>
  * Both methods are in this one callout class on purpose: with the default {@link Callout.RecursionAvoidanceLevel#CalloutClass}
  * they form one callout instance, and the callout executor does not re-enter an instance that is already running.
@@ -77,6 +79,7 @@ public class C_OrderLine
 	private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
 
 	@NonNull private final GroupTemplateRepository groupTemplateRepository;
+	@NonNull private final CalibrationFactorFieldRepository calibrationFactorFieldRepository;
 
 	@PostConstruct
 	void postConstruct()
@@ -85,13 +88,17 @@ public class C_OrderLine
 	}
 
 	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor, skipIfCopying = true)
-	public void onCalibrationFactorChanged(@NonNull final I_C_OrderLine orderLine)
+	public void onCalibrationFactorChanged(@NonNull final I_C_OrderLine orderLine, @NonNull final ICalloutField field)
 	{
 		final BigDecimal factor = getCalibrationFactorOrNull(orderLine);
 		final BigDecimal qtyUncalibrated = getQtyUncalibratedOrNull(orderLine);
 
 		// a new line runs every field callout once; an empty factor there is not a user edit
 		if (factor == null && (InterfaceWrapperHelper.isNew(orderLine) || qtyUncalibrated == null))
+		{
+			return;
+		}
+		if (!isFactorEditable(field))
 		{
 			return;
 		}
@@ -119,15 +126,10 @@ public class C_OrderLine
 	}
 
 	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_QtyEntered, skipIfCopying = true)
-	public void onQtyEnteredChanged(@NonNull final I_C_OrderLine orderLine)
+	public void onQtyEnteredChanged(@NonNull final I_C_OrderLine orderLine, @NonNull final ICalloutField field)
 	{
 		final BigDecimal qtyUncalibrated = getQtyUncalibratedOrNull(orderLine);
 		if (qtyUncalibrated == null || qtyUncalibrated.signum() <= 0)
-		{
-			return;
-		}
-		// a line is calibrated, and its factor follows the qty, if it has a rule or a factor
-		if (orderLine.getC_CompensationGroup_CalibrationRule_ID() <= 0 && getCalibrationFactorOrNull(orderLine) == null)
 		{
 			return;
 		}
@@ -138,6 +140,10 @@ public class C_OrderLine
 			return;
 		}
 		if (!isLineUomEqualToTemplateLineUom(orderLine))
+		{
+			return;
+		}
+		if (!isFactorEditable(field))
 		{
 			return;
 		}
@@ -178,5 +184,14 @@ public class C_OrderLine
 		}
 		final UomId lineUomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
 		return lineUomId != null && groupTemplateRepository.getRegularLineUomId(templateLineId).filter(lineUomId::equals).isPresent();
+	}
+
+	/**
+	 * @return true if the tab the user works in has an editable factor field (e.g. a customer's sales order window); false in core window 143, where it is read-only, and outside the UI
+	 */
+	private boolean isFactorEditable(@NonNull final ICalloutField field)
+	{
+		final int adTabId = field.getCalloutRecord() != null ? field.getCalloutRecord().getAD_Tab_ID() : -1;
+		return adTabId > 0 && calibrationFactorFieldRepository.isFactorEditableInTab(adTabId);
 	}
 }
