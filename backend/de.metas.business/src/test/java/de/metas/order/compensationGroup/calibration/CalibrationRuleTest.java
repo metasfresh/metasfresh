@@ -73,6 +73,16 @@ class CalibrationRuleTest
 	}
 
 	@Test
+	void factorWithTwoDecimals_roundsOnceAtTheEnd()
+	{
+		// 375 x 93.33 % = 349.9875: rounded once, at the end
+		assertThat(computeQtyCalibrated("375", 2, "93.33")).isEqualByComparingTo("349.99");
+		assertThat(computeQtyCalibrated("375", 0, "93.33")).isEqualByComparingTo("350");
+		// 0.15 x 66.67 % = 0.100005
+		assertThat(computeQtyCalibrated("0.15", 2, "66.67")).isEqualByComparingTo("0.11");
+	}
+
+	@Test
 	void up_precision3()
 	{
 		// 0.125 x 33.3 % = 0.041625

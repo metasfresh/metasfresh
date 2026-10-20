@@ -105,9 +105,7 @@ public class C_OrderLine
 		{
 			throw new AdempiereException(MSG_LineNotCalibrated);
 		}
-		final Quantity base = Quantitys.of(qtyUncalibrated, UomId.ofRepoId(orderLine.getC_UOM_ID()));
-		// exactly base x factor (80 % = x 0.8), rounded once to the UOM precision (like at line creation, see CalibrationRule#computeQtyCalibrated)
-		final Quantity qtyCalibrated = base.multiply(factor.toFractionBigDecimal()).roundToUOMPrecision();
+		final Quantity qtyCalibrated = Quantitys.of(qtyUncalibrated, UomId.ofRepoId(orderLine.getC_UOM_ID())).multiply(factor);
 		orderLine.setQtyEntered(qtyCalibrated.toBigDecimal());
 	}
 
