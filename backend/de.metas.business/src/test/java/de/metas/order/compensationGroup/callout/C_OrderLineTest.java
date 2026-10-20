@@ -30,13 +30,13 @@ import static org.mockito.Mockito.when;
 
 /**
  * Kalibrierfaktor editable on the order line: factor -> QtyEntered and QtyEntered -> factor,
- * only on a tab whose factor field is editable (the customer's sales order window; core window 143 keeps it read-only).
+ * only on a tab whose factor field is editable (core window 143 keeps it read-only, so nothing changes there).
  * <p>
- * Example data mirror the customer's mock (msauat order 0249): Milchreis Vanilla, base 375 LTR, rule factor 80, Qty 300.
+ * Example line: uncalibrated (base) qty 375 LTR, rule factor 80, Qty 300.
  */
 class C_OrderLineTest
 {
-	private static final int TAB_FACTOR_EDITABLE = 543622;
+	private static final int TAB_FACTOR_EDITABLE = 1000001;
 	private static final int TAB_FACTOR_READONLY = 187;
 	private static final int TAB_WITHOUT_FACTOR_FIELD = 999;
 
@@ -277,6 +277,15 @@ class C_OrderLineTest
 			final I_C_OrderLine line = calibratedLine("0", "50", "0");
 			typeQty(line, "2", TAB_FACTOR_EDITABLE);
 			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("50");
+		}
+
+		@Test
+		void emptyQty_leavesFactor()
+		{
+			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			line.setQtyEntered(null);
+			callout.onQtyEnteredChanged(line, fieldOnTab(TAB_FACTOR_EDITABLE));
+			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
 		}
 
 		@Test

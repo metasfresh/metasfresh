@@ -137,7 +137,8 @@ public class C_OrderLine
 		{
 			return;
 		}
-		final BigDecimal qtyEntered = orderLine.getQtyEntered();
+		// raw value: the generated getter returns 0 for an emptied Qty, which would turn the factor into 0
+		final BigDecimal qtyEntered = InterfaceWrapperHelper.getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_QtyEntered);
 		if (qtyEntered == null || qtyEntered.signum() < 0)
 		{
 			return;
