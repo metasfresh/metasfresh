@@ -9,7 +9,6 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.process.ProblemCollector;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.Param;
@@ -63,8 +62,7 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 
 		if (selectionCount == 0)
 		{
-			final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(MSG_No_DocOutboundLog_Selection);
-			throw new AdempiereException(translatableMsgText);
+			throw new AdempiereException(MSG_No_DocOutboundLog_Selection);
 		}
 	}
 
@@ -162,12 +160,7 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 
 		//
 		// Do not enqueue if the log was sent at least once
-		if (p_OnlyNotSentMails && isSentAtLeastOnce(logLine))
-		{
-			return false; // don't collect this, just silently skip it
-		}
-
-		return true;
+		return !p_OnlyNotSentMails || !isSentAtLeastOnce(logLine); // don't collect this, just silently skip it
 	}
 
 	private boolean isSentAtLeastOnce(final I_C_Doc_Outbound_Log_Line docOutboundLine)

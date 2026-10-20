@@ -176,4 +176,11 @@ public class PlainMsgBL implements IMsgBL
 	{
 		return Optional.empty();
 	}
+
+	@Nullable
+	@Override
+	public String getErrorCode(final @NonNull AdMessageKey messageKey)
+	{
+		return null;
+	}
 }
