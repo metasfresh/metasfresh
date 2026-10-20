@@ -425,8 +425,9 @@ export async function setLineQtyTU(page, productCode, qtyTU, { expectedQty, expe
     expect(response.ok(), `Gebindemenge ${qtyTU} on the ${productCode} line is saved`).toBe(true);
     await expect.poll(() => advancedEditQty(modal, 'QtyEntered'), { timeout: SLOW_ACTION_TIMEOUT, message: `Menge of the ${productCode} line after Gebindemenge ${qtyTU}` })
         .toBeCloseTo(expectedQty, 2);
+    // the factor is stored with 4 decimals (0.6667 = 66.67 %)
     await expect.poll(() => advancedEditQty(modal, FIELD_FACTOR), { timeout: SLOW_ACTION_TIMEOUT, message: `Kalibrierfaktor of the ${productCode} line after Gebindemenge ${qtyTU}` })
-        .toBeCloseTo(expectedFactor, 2);
+        .toBeCloseTo(expectedFactor, 4);
     await snap(page, `advanced-edit-${productCode.split('_')[0].toLowerCase()}-qty-tu-${qtyTU}`);
     await AdvancedEdit.close();
     await page.reload();

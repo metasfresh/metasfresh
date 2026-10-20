@@ -25,20 +25,20 @@ import {
  * Compensation-group calibration, TC2 "mock case": the customer's mock replayed 1:1.
  *
  * A school menu (1 PCE template line, the menu line itself) with the dessert component Rice_Pudding 0,25 LTR; the
- * customer School_A (BP group Group_Standard) has a customer rule with factor 80 %. The clerk enters 1.500 menus
+ * customer School_A (BP group Group_Standard) has a customer rule with factor 0,8 (80 %). The clerk enters 1.500 menus
  * through the order quick input:
  *
  *   - the menu line is not calibrated (no factor, no stored rule, calibration group hidden)
  *   - Rice_Pudding is 1.500 x 0,25 x 80 % = 300 LTR, uncalibrated 375 LTR; factor, rule and uncalibrated quantity
  *     are shown in the line's advanced edit (the factor editable on a calibrated line, rule and uncalibrated quantity read-only)
- *   - the clerk types 375 as the line's Menge (the mock's value): the factor follows (375 / 375 = 100 %); rule 10 and uncalibrated 375 stay
+ *   - the clerk types 375 as the line's Menge (the mock's value): the factor follows (375 / 375 = 1); rule 10 and uncalibrated 375 stay
  *   - the menu line's Menge 1.500 -> 1.600 leaves Rice_Pudding untouched (no automatic rescale)
  *   - a manually added line has no calibration group; no calibration column in the grid
- *   - the clerk types the factor in the advanced edit: 50 -> Menge 187,5; 0 -> Menge 0, the line is kept;
+ *   - the clerk types the factor in the advanced edit: 0,5 -> Menge 187,5; 0 -> Menge 0, the line is kept;
  *     an empty factor is refused with an error notification; rule 10 and uncalibrated 375 stay
  *   - the clerk picks the Gebinde (25 LTR per TU) and types the Gebindemenge 10: Menge follows to 250 (10 x 25), the
- *     factor follows that Menge (250 / 375 = 66,67 %; on purpose not the rule's 80 %)
- *   - the clerk types the factor 100 -> Menge 375
+ *     factor follows that Menge (250 / 375 = 0,6667; on purpose not the rule's 0,8)
+ *   - the clerk types the factor 1 -> Menge 375
  *   - once the order is completed the factor is read-only
  *
  * Everything is driven through the rendered UI; the stored lines are cross-checked through the testing backend.
@@ -98,7 +98,7 @@ test.describe('Compensation group calibration - mock case', () => {
                     },
                 },
                 // rule 10: the customer School_A (the customer is in BP group Group_Standard, which holds many customers)
-                calibrationRules: { RULE10: { seqNo: 10, bpartner: 'SCHOOL_A', factor: 80 } },
+                calibrationRules: { RULE10: { seqNo: 10, bpartner: 'SCHOOL_A', factor: 0.8 } },
             },
         });
         const schoolA = masterdata.bpartners.SCHOOL_A.bpartnerCode;
@@ -127,7 +127,7 @@ test.describe('Compensation group calibration - mock case', () => {
             // the menu line itself is not calibrated: rule 10 matches the customer, but a menu line is skipped
             await expectCalibrationGroupHidden(page, menu);
             // the component shows factor (editable), rule (by name) and uncalibrated quantity (read-only)
-            await expectCalibrationGroup(page, rice, { factor: '80', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-calibrated' });
+            await expectCalibrationGroup(page, rice, { factor: '0.8', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-calibrated' });
 
             await Backend.expect({
                 title: 'Mock case: menu line not calibrated, Rice_Pudding 300 LTR at factor 80 % (uncalibrated 375)',
@@ -135,24 +135,24 @@ test.describe('Compensation group calibration - mock case', () => {
                     [orderId]: {
                         lines: [
                             { product: 'MENU_WED_DESSERT', qtyEntered: 1500, calibrated: false },
-                            { product: 'RICE_PUDDING', qtyEntered: 300, calibrationFactor: 80, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 },
+                            { product: 'RICE_PUDDING', qtyEntered: 300, calibrationFactor: 0.8, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 },
                         ],
                     },
                 },
             });
         });
 
-        await test.step('the clerk types Menge 375 inline in the grid on Rice_Pudding (the mock\'s value): factor follows to 100 %, rule 10, uncalibrated 375 stay', async () => {
+        await test.step('the clerk types Menge 375 inline in the grid on Rice_Pudding (the mock\'s value): factor follows to 1, rule 10, uncalibrated 375 stay', async () => {
             await setLineQtyInline(page, rice, 375);
 
             await expectLineQty(page, rice, 375);
-            await expectCalibrationGroup(page, rice, { factor: '100', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-after-override' });
+            await expectCalibrationGroup(page, rice, { factor: '1', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-after-override' });
 
             await Backend.expect({
-                title: 'Mock case: line Menge overridden to 375, factor follows to 100, rule and uncalibrated quantity unchanged',
+                title: 'Mock case: line Menge overridden to 375, factor follows to 1, rule and uncalibrated quantity unchanged',
                 salesOrders: {
                     [orderId]: {
-                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 375, calibrationFactor: 100, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
+                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 375, calibrationFactor: 1, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
                     },
                 },
             });
@@ -170,7 +170,7 @@ test.describe('Compensation group calibration - mock case', () => {
                     [orderId]: {
                         lines: [
                             { product: 'MENU_WED_DESSERT', qtyEntered: 1600, calibrated: false },
-                            { product: 'RICE_PUDDING', qtyEntered: 375, calibrationFactor: 100, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 },
+                            { product: 'RICE_PUDDING', qtyEntered: 375, calibrationFactor: 1, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 },
                         ],
                     },
                 },
@@ -197,17 +197,17 @@ test.describe('Compensation group calibration - mock case', () => {
             });
         });
 
-        await test.step('advanced edit: the clerk types factor 50 on Rice_Pudding -> Menge 187,5; rule 10, uncalibrated 375 stay', async () => {
-            await setCalibrationFactor(page, rice, 50, { expectedQty: 187.5 });
+        await test.step('advanced edit: the clerk types factor 0,5 on Rice_Pudding -> Menge 187,5; rule 10, uncalibrated 375 stay', async () => {
+            await setCalibrationFactor(page, rice, 0.5, { expectedQty: 187.5 });
 
             await expectLineQty(page, rice, 187.5);
-            await expectCalibrationGroup(page, rice, { factor: '50', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-factor-50' });
+            await expectCalibrationGroup(page, rice, { factor: '0.5', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-factor-0.5' });
 
             await Backend.expect({
-                title: 'Mock case: factor 50 typed, Menge follows to 187,5',
+                title: 'Mock case: factor 0,5 typed, Menge follows to 187,5',
                 salesOrders: {
                     [orderId]: {
-                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 187.5, calibrationFactor: 50, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
+                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 187.5, calibrationFactor: 0.5, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
                     },
                 },
             });
@@ -244,34 +244,34 @@ test.describe('Compensation group calibration - mock case', () => {
             });
         });
 
-        await test.step('advanced edit: the clerk picks the Gebinde (25 LTR per TU) and types Gebindemenge 10 -> Menge 250, factor follows to 66,67 %; rule 10, uncalibrated 375 stay', async () => {
+        await test.step('advanced edit: the clerk picks the Gebinde (25 LTR per TU) and types Gebindemenge 10 -> Menge 250, factor follows to 0,6667; rule 10, uncalibrated 375 stay', async () => {
             // Menge 0 -> Gebindemenge 0: picking the Gebinde leaves Menge and factor at 0
             await setLinePackingInstruction(page, rice, ricePuddingTU, { expectedQtyTU: 0, expectedQty: 0 });
-            await setLineQtyTU(page, rice, 10, { expectedQty: 250, expectedFactor: 66.67 });
+            await setLineQtyTU(page, rice, 10, { expectedQty: 250, expectedFactor: 0.6667 });
 
             await expectLineQty(page, rice, 250);
-            await expectCalibrationGroup(page, rice, { factor: '66.67', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-after-qty-tu' });
+            await expectCalibrationGroup(page, rice, { factor: '0.6667', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-after-qty-tu' });
 
             await Backend.expect({
-                title: 'Mock case: Gebindemenge 10 x 25 LTR typed, Menge follows to 250, factor follows to 66,67 (250 / 375)',
+                title: 'Mock case: Gebindemenge 10 x 25 LTR typed, Menge follows to 250, factor follows to 0,6667 (250 / 375)',
                 salesOrders: {
                     [orderId]: {
-                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 250, calibrationFactor: 66.67, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
+                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 250, calibrationFactor: 0.6667, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
                     },
                 },
             });
         });
 
-        await test.step('advanced edit: factor 100 -> Menge 375', async () => {
-            await setCalibrationFactor(page, rice, 100, { expectedQty: 375 });
+        await test.step('advanced edit: factor 1 -> Menge 375', async () => {
+            await setCalibrationFactor(page, rice, 1, { expectedQty: 375 });
 
             await expectLineQty(page, rice, 375);
 
             await Backend.expect({
-                title: 'Mock case: factor 100 typed, Menge follows to 375',
+                title: 'Mock case: factor 1 typed, Menge follows to 375',
                 salesOrders: {
                     [orderId]: {
-                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 375, calibrationFactor: 100, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
+                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 375, calibrationFactor: 1, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
                     },
                 },
             });
@@ -283,7 +283,7 @@ test.describe('Compensation group calibration - mock case', () => {
             await page.reload();
             await lineRow(page, rice).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-            await expectCalibrationGroup(page, rice, { factor: '100', rulePrefix: '10', uncalibrated: '375', factorEditable: false, snapshotName: 'advanced-edit-rice-pudding-completed' });
+            await expectCalibrationGroup(page, rice, { factor: '1', rulePrefix: '10', uncalibrated: '375', factorEditable: false, snapshotName: 'advanced-edit-rice-pudding-completed' });
         });
     });
 });
