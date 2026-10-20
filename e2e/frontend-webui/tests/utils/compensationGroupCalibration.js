@@ -359,3 +359,74 @@ export async function setLineQtyInline(page, productCode, quantity) {
     await page.reload();
     await lineRow(page, productCode).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 }
+
+/** The numeric value of the field shown in the open advanced edit (de_DE format, e.g. "1.500,5" -> 1500.5). */
+async function advancedEditQty(modal, fieldName) {
+    return Number((await modal.locator(`.form-field-${fieldName} input`).first().inputValue()).replace(/\./g, '').replace(',', '.'));
+}
+
+/**
+ * Pick the Gebinde (packing instruction, M_HU_PI_Item_Product_ID) of the line of the product in its advanced edit,
+ * by the TU name, and wait for the save response. The line then shows `expectedQtyTU` / `expectedQty`
+ * (the packing callout recomputes Menge from the Gebindemenge). Then close and reload, so the grid shows what is stored.
+ */
+export async function setLinePackingInstruction(page, productCode, tuName, { expectedQtyTU, expectedQty } = {}) {
+    await openLineAdvancedEdit(page, productCode);
+    const modal = page.locator('.panel-modal-content');
+    const field = modal.locator('.form-field-M_HU_PI_Item_Product_ID');
+    await field.locator('input').first().click();
+    const option = page.locator('.input-dropdown-list .input-dropdown-list-option').filter({ hasText: tuName }).first();
+    await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const saveResponse = page.waitForResponse(
+        (response) => response.request().method() === 'PATCH' && /\/window\/\d+\/\d+\//.test(response.url())
+            && (response.request().postData() || '').includes('M_HU_PI_Item_Product_ID'),
+        { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    await option.click();
+    const response = await saveResponse;
+    expect(response.ok(), `Gebinde "${tuName}" on the ${productCode} line is saved`).toBe(true);
+    await expect(field.locator('input').first()).toHaveValue(new RegExp(tuName));
+    if (expectedQtyTU !== undefined) {
+        await expect.poll(() => advancedEditQty(modal, 'QtyEnteredTU'), { timeout: SLOW_ACTION_TIMEOUT, message: `Gebindemenge of the ${productCode} line` })
+            .toBeCloseTo(expectedQtyTU, 2);
+    }
+    if (expectedQty !== undefined) {
+        await expect.poll(() => advancedEditQty(modal, 'QtyEntered'), { timeout: SLOW_ACTION_TIMEOUT, message: `Menge of the ${productCode} line` })
+            .toBeCloseTo(expectedQty, 2);
+    }
+    await snap(page, `advanced-edit-${productCode.split('_')[0].toLowerCase()}-packing-instruction`);
+    await AdvancedEdit.close();
+    await page.reload();
+    await lineRow(page, productCode).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+}
+
+/**
+ * Type a new Gebindemenge (QtyEnteredTU) into the advanced edit of the line of the product, commit it with Tab and wait
+ * for the save response. The packing callout sets Menge = Gebindemenge x CUs per TU (`expectedQty`); on a calibrated
+ * line the factor follows that Menge (`expectedFactor`). Then close and reload, so the grid shows what is stored.
+ */
+export async function setLineQtyTU(page, productCode, qtyTU, { expectedQty, expectedFactor }) {
+    await openLineAdvancedEdit(page, productCode);
+    const modal = page.locator('.panel-modal-content');
+    const qtyTUInput = modal.locator('.form-field-QtyEnteredTU input').first();
+    await expect(qtyTUInput).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+    await qtyTUInput.click();
+    await page.keyboard.press('Control+a');
+    await qtyTUInput.fill(String(qtyTU));
+    const saveResponse = page.waitForResponse(
+        (response) => response.request().method() === 'PATCH' && /\/window\/\d+\/\d+\//.test(response.url())
+            && (response.request().postData() || '').includes('QtyEnteredTU'),
+        { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    await page.keyboard.press('Tab');
+    const response = await saveResponse;
+    expect(response.ok(), `Gebindemenge ${qtyTU} on the ${productCode} line is saved`).toBe(true);
+    await expect.poll(() => advancedEditQty(modal, 'QtyEntered'), { timeout: SLOW_ACTION_TIMEOUT, message: `Menge of the ${productCode} line after Gebindemenge ${qtyTU}` })
+        .toBeCloseTo(expectedQty, 2);
+    await expect.poll(() => advancedEditQty(modal, FIELD_FACTOR), { timeout: SLOW_ACTION_TIMEOUT, message: `Kalibrierfaktor of the ${productCode} line after Gebindemenge ${qtyTU}` })
+        .toBeCloseTo(expectedFactor, 2);
+    await snap(page, `advanced-edit-${productCode.split('_')[0].toLowerCase()}-qty-tu-${qtyTU}`);
+    await AdvancedEdit.close();
+    await page.reload();
+    await lineRow(page, productCode).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+}

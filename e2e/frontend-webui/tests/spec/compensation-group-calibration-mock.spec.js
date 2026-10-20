@@ -15,8 +15,10 @@ import {
     expectNoCalibrationGridColumn,
     lineRow,
     setCalibrationFactor,
+    setLinePackingInstruction,
     setLineQty,
     setLineQtyInline,
+    setLineQtyTU,
 } from '../utils/compensationGroupCalibration';
 
 /**
@@ -33,7 +35,10 @@ import {
  *   - the menu line's Menge 1.500 -> 1.600 leaves Rice_Pudding untouched (no automatic rescale)
  *   - a manually added line has no calibration group; no calibration column in the grid
  *   - the clerk types the factor in the advanced edit: 50 -> Menge 187,5; 0 -> Menge 0, the line is kept;
- *     an empty factor is refused with a message; 100 -> Menge 375; rule 10 and uncalibrated 375 stay
+ *     an empty factor is refused with a message; rule 10 and uncalibrated 375 stay
+ *   - the clerk picks the Gebinde (25 LTR per TU) and types the Gebindemenge 10: Menge follows to 250 (10 x 25), the
+ *     factor follows that Menge (250 / 375 = 66,67 %; on purpose not the rule's 80 %)
+ *   - the clerk types the factor 100 -> Menge 375
  *   - once the order is completed the factor is read-only
  *
  * Everything is driven through the rendered UI; the stored lines are cross-checked through the testing backend.
@@ -56,7 +61,7 @@ test.describe('Compensation group calibration - mock case', () => {
         allure.story('TC2 mock case: calibrated component, per-order override, factor edit, uncalibrated menu and manual lines, completed order');
         allure.severity('critical');
 
-        // masterdata + 1 order with quick input, 2 line edits, a manual line, 4 factor edits, completion, 6 advanced edit checks
+        // masterdata + 1 order with quick input, 2 line edits, a manual line, 4 factor edits, Gebinde + Gebindemenge edit, completion, 6 advanced edit checks
         test.setTimeout(600000);
 
         // ============================================================
@@ -81,6 +86,8 @@ test.describe('Compensation group calibration - mock case', () => {
                     MANUAL_ITEM: { name: 'Manual_Item', type: 'Item', prices: [{ price: 1, currencyCode: 'EUR' }] },
                 },
                 warehouses: { wh: {} },
+                // a Gebinde of Rice_Pudding: 25 LTR per TU (not the product's default, the clerk picks it on the line)
+                packingInstructions: { RICE_PUDDING_PI: { tu: 'TU_RICE_PUDDING', product: 'RICE_PUDDING', qtyCUsPerTU: 25 } },
                 compensationGroupSchemas: {
                     schema_menu_wed_dessert: {
                         name: 'Menu_Wed_Dessert schema',
@@ -98,6 +105,7 @@ test.describe('Compensation group calibration - mock case', () => {
         const menu = masterdata.products.MENU_WED_DESSERT.productCode;
         const rice = masterdata.products.RICE_PUDDING.productCode;
         const manualItem = masterdata.products.MANUAL_ITEM.productCode;
+        const ricePuddingTU = masterdata.packingInstructions.RICE_PUDDING_PI.tuName;
 
         await LoginPage.goto();
         await LoginPage.login(masterdata.login.user);
@@ -231,6 +239,24 @@ test.describe('Compensation group calibration - mock case', () => {
                 salesOrders: {
                     [orderId]: {
                         lines: [{ product: 'RICE_PUDDING', qtyEntered: 0, calibrationFactor: 0, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
+                    },
+                },
+            });
+        });
+
+        await test.step('advanced edit: the clerk picks the Gebinde (25 LTR per TU) and types Gebindemenge 10 -> Menge 250, factor follows to 66,67 %; rule 10, uncalibrated 375 stay', async () => {
+            // Menge 0 -> Gebindemenge 0: picking the Gebinde leaves Menge and factor at 0
+            await setLinePackingInstruction(page, rice, ricePuddingTU, { expectedQtyTU: 0, expectedQty: 0 });
+            await setLineQtyTU(page, rice, 10, { expectedQty: 250, expectedFactor: 66.67 });
+
+            await expectLineQty(page, rice, 250);
+            await expectCalibrationGroup(page, rice, { factor: '66.67', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-after-qty-tu' });
+
+            await Backend.expect({
+                title: 'Mock case: Gebindemenge 10 x 25 LTR typed, Menge follows to 250, factor follows to 66,67 (250 / 375)',
+                salesOrders: {
+                    [orderId]: {
+                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 250, calibrationFactor: 66.67, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
                     },
                 },
             });
