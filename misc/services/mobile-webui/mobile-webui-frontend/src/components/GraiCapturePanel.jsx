@@ -59,11 +59,10 @@ const GraiCapturePanel = ({
   );
 
   // Capture rapid RFID bursts (a whole batch of GRAIs scanned back-to-back) reliably, mirroring the
-  // HU-Manager GRAIScreen. The reader inside BarcodeScannerComponent rebuilds its onReadDone every
-  // render, so its window-keydown effect re-subscribes during a fast burst and drops codes after the
-  // first; this direct reader keeps a STABLE onReadDone (onBarcodeString, memoised on the stable
-  // onAddGrais), so it stays subscribed for the whole burst and every code lands. Codes that both
-  // readers happen to deliver are deduped by onAddGrais (mergeGraiArrays), so there is no double-count.
+  // HU-Manager GRAIScreen. The reader inside BarcodeScannerComponent is switched off while the scanner
+  // processes a scan, so during a fast burst it drops the codes that arrive in the meantime; this direct
+  // reader stays on for the whole burst, so every code lands. Codes that both readers deliver are
+  // deduped by onAddGrais (mergeGraiArrays), so there is no double-count.
   useKeyboardBarcodeReader({ onReadDone: onBarcodeString, disabled: loading });
 
   return (
