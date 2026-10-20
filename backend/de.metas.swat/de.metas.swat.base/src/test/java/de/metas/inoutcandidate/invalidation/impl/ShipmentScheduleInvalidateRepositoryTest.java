@@ -323,9 +323,12 @@ public class ShipmentScheduleInvalidateRepositoryTest
 		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(java.util.Collections.singletonList(huge));
 
 		assertStatementsCoverAndWithinBudget(inserts);
-		final java.util.Set<Object> allParams = new java.util.HashSet<>();
-		inserts.forEach(insert -> allParams.addAll(insert.getSqlParams()));
-		assertThat(allParams.contains(2)).as("the smaller (bpartner) dimension is the one kept").isTrue();
+		assertThat(inserts).as("the bpartner dimension fits, so one statement").hasSize(1);
+		final ShipmentScheduleInvalidateRepository.StorageSegmentsInsert insert = inserts.get(0);
+		assertThat(insert.getSqlParams().subList(4, insert.getSqlParams().size()))
+				.as("after the 4 statement params only the bpartner is bound: no product id (that would under-invalidate)")
+				.containsExactly(2);
+		assertThat(insert.getSql()).as("no product predicate").doesNotContain(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID);
 	}
 
 	@Test
@@ -476,6 +479,11 @@ public class ShipmentScheduleInvalidateRepositoryTest
 				.locatorIds(segmentWithLocators(1, 33_000).getLocatorIds())
 				.build();
 
-		assertStatementsCoverAndWithinBudget(buildInserts(java.util.Collections.singletonList(segment)));
+		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(java.util.Collections.singletonList(segment));
+
+		assertStatementsCoverAndWithinBudget(inserts);
+		assertThat(inserts).hasSize(1);
+		assertThat(inserts.get(0).getSqlParams()).as("only the 4 statement params: nothing restricts the segment").hasSize(4);
+		assertThat(inserts.get(0).getSql()).as("match-all clause").contains("(true)");
 	}
 }

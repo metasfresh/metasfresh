@@ -508,9 +508,13 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	/**
 	 * A segment that needs more bind parameters than one statement may carry would kill the connection, so it is replaced by
-	 * wider segments that fit (over-invalidation is safe, a lost flag is not):
-	 * first it loses its locator and attribute restriction; if that is still too big, it keeps only its products
-	 * (partitioned into several segments if even those are too many).
+	 * wider segments that fit (over-invalidation is safe, a lost flag is not; a widened piece is never dropped):
+	 * <ol>
+	 * <li>Step 1: drop the locator and attribute restriction.
+	 * <li>Step 2 (if step 1 is still too big, or has no restriction left): keep the smaller of the restricting product / bpartner dimension,
+	 * partitioned into pieces that fit; the other dimensions become "any".
+	 * <li>Step 3 (no restricting product or bpartner dimension): fall back to a {@code true} clause that matches every unprocessed schedule, and log a warning.
+	 * </ol>
 	 */
 	private List<BuiltSegment> widenToFitBudget(@NonNull final BuiltSegment oversized)
 	{
