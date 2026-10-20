@@ -1087,6 +1087,18 @@ public class OrderGroupRepositoryTest
 		assertThat(OrderGroupRepository.getCalibrationFactor(line)).isNull();
 	}
 
+	@Test
+	void calibrationFactorFromQty_isQtyEnteredByUncalibratedQty_roundedHalfUpTo4DecimalsOfTheFraction()
+	{
+		final I_C_OrderLine line = newInstance(I_C_OrderLine.class);
+
+		OrderGroupRepository.setCalibrationFactorFromQty(line, new BigDecimal("350"), new BigDecimal("375"));
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.9333");
+
+		OrderGroupRepository.setCalibrationFactorFromQty(line, new BigDecimal("2"), new BigDecimal("3"));
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.6667");
+	}
+
 	private static CalibrationRule calibrationRule(final int ruleId, final String factorPercent)
 	{
 		return CalibrationRule.builder()

@@ -74,7 +74,6 @@ public class C_OrderLine
 	private static final AdMessageKey MSG_NegativeFactor = AdMessageKey.of("C_CompensationGroup_CalibrationRule_NegativeFactor");
 	private static final AdMessageKey MSG_LineNotCalibrated = AdMessageKey.of("C_OrderLine_CalibrationFactorNotCalibrated");
 
-	private static final int FACTOR_SCALE = 2;
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@PostConstruct
@@ -122,7 +121,7 @@ public class C_OrderLine
 		{
 			return;
 		}
-		OrderGroupRepository.setCalibrationFactor(orderLine, Percent.of(qtyEntered, qtyUncalibrated, FACTOR_SCALE));
+		OrderGroupRepository.setCalibrationFactorFromQty(orderLine, qtyEntered, qtyUncalibrated);
 	}
 
 	/**

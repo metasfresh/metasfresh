@@ -106,6 +106,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Component
 public class OrderGroupRepository implements GroupRepository
 {
+	private static final int CALIBRATION_FACTOR_PERCENT_PRECISION = 2;
+
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -1243,6 +1245,17 @@ public class OrderGroupRepository implements GroupRepository
 	public static void setCalibrationFactor(@NonNull final I_C_OrderLine orderLine, @Nullable final Percent factor)
 	{
 		orderLine.setGroupCompensationCalibrationFactor(Percent.toFractionBigDecimalOrNull(factor));
+	}
+
+	/**
+	 * Stores {@code qtyEntered / qtyUncalibrated}, rounded half-up to 2 decimals of the percent (350 / 375 = 93.33 % = 0.9333).
+	 */
+	public static void setCalibrationFactorFromQty(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final BigDecimal qtyEntered,
+			@NonNull final BigDecimal qtyUncalibrated)
+	{
+		setCalibrationFactor(orderLine, Percent.of(qtyEntered, qtyUncalibrated, CALIBRATION_FACTOR_PERCENT_PRECISION));
 	}
 
 	public I_C_OrderLine createRegularLineFromTemplate(
