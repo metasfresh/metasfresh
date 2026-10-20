@@ -85,6 +85,8 @@ public class DB_Function_StepDef
 	private static final Pattern SQL_FUNCTION_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?");
 	private static final String QR_ORG_VALUE = "901";
 	private static final String ESR_ENABLED_SYSCONFIG = "de.metas.payment.esr.Enabled";
+	/** purchase-QR account flag; not in the core model, only in DBs whose customer extension adds it */
+	private static final String COLUMNNAME_IsPOESR = "IsPOESR";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDunningBL dunningBL = Services.get(IDunningBL.class);
@@ -187,7 +189,8 @@ public class DB_Function_StepDef
 	 * keeps every other feature's data (in the default organization) untouched. Also switches the ESR module on (the way customers
 	 * who print QR-bills run it), until the end of the scenario.
 	 * Columns: <code>Name</code>, <code>Address1</code>, <code>Postal</code>, <code>City</code>, <code>CountryCode</code>,
-	 * <code>IBAN</code>, <code>OPT.QR_IBAN</code>, <code>OPT.SEPA_CreditorIdentifier</code>.
+	 * <code>IBAN</code>, <code>OPT.QR_IBAN</code>, <code>OPT.SEPA_CreditorIdentifier</code>, <code>OPT.IsPOESR</code> (flags the account as the
+	 * purchase-QR account; the column is not part of the core model, so the step fails if the database does not have it).
 	 */
 	@Given("^the invoice identified by (\\S+) belongs to an organization that is the QR-bill creditor:$")
 	public void the_invoice_belongs_to_an_organization_that_is_the_qr_bill_creditor(
@@ -276,6 +279,15 @@ public class DB_Function_StepDef
 		if (Check.isNotBlank(creditorIdentifier))
 		{
 			bankAccount.setSEPA_CreditorIdentifier(creditorIdentifier);
+		}
+		final Boolean isPOESR = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsPOESR, null);
+		if (isPOESR != null)
+		{
+			// the column exists only where a customer extension added it; fail instead of silently ignoring the request
+			assertThat(InterfaceWrapperHelper.hasModelColumnName(bankAccount, COLUMNNAME_IsPOESR))
+					.as("C_BP_BankAccount has column " + COLUMNNAME_IsPOESR)
+					.isTrue();
+			InterfaceWrapperHelper.setValue(bankAccount, COLUMNNAME_IsPOESR, isPOESR);
 		}
 		save(bankAccount);
 
