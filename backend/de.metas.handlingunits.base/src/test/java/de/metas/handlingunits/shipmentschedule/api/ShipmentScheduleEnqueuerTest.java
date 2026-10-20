@@ -29,8 +29,10 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.LockOwner;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.spi.impl.PlainLockDatabase;
@@ -40,9 +42,12 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -101,6 +106,44 @@ class ShipmentScheduleEnqueuerTest
 				.isInstanceOf(AdempiereException.class)
 				.isNotInstanceOf(LockFailedException.class)
 				.hasMessage(expectedMessage);
+	}
+
+	/**
+	 * Only the schedules locked by the run's main lock are enqueued (one that became eligible after locking is left for the next run),
+	 * and they are read over a snapshot, so that the lock handover to the work packages does not shrink the result while it is iterated.
+	 */
+	@Test
+	void lockedSchedulesQuery_iteratesOverSnapshot()
+	{
+		final ILockManager lockManager = Services.get(ILockManager.class);
+
+		final I_M_ShipmentSchedule locked = newInstance(I_M_ShipmentSchedule.class);
+		locked.setHeaderAggregationKey("key");
+		saveRecord(locked);
+		final I_M_ShipmentSchedule notLocked = newInstance(I_M_ShipmentSchedule.class);
+		notLocked.setHeaderAggregationKey("key");
+		saveRecord(notLocked);
+
+		final I_M_ShipmentSchedule lockedButFilteredOut = newInstance(I_M_ShipmentSchedule.class);
+		lockedButFilteredOut.setHeaderAggregationKey("key");
+		lockedButFilteredOut.setIsActive(false);
+		saveRecord(lockedButFilteredOut);
+
+		final ILock mainLock = lockManager.lock()
+				.setOwner(LockOwner.newOwner("ShipmentScheduleEnqueuerTest"))
+				.setAutoCleanup(true)
+				.addRecordByModel(locked)
+				.addRecordByModel(lockedButFilteredOut)
+				.acquire();
+
+		final IQuery<I_M_ShipmentSchedule> query = ShipmentScheduleEnqueuer.newInstance()
+				.createLockedShipmentSchedulesQuery(mainLock, Services.get(IQueryBL.class).createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+						.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, locked.getM_ShipmentSchedule_ID(), notLocked.getM_ShipmentSchedule_ID(), lockedButFilteredOut.getM_ShipmentSchedule_ID())
+						.addOnlyActiveRecordsFilter());
+
+		assertThat(query.<Boolean>getOption(IQuery.OPTION_GuaranteedIteratorRequired)).isTrue();
+		final List<I_M_ShipmentSchedule> result = query.list(I_M_ShipmentSchedule.class);
+		assertThat(result).extracting(I_M_ShipmentSchedule::getM_ShipmentSchedule_ID).containsExactly(locked.getM_ShipmentSchedule_ID());
 	}
 
 	/**
