@@ -131,14 +131,13 @@ public class EDI_cctop_invoic_v_StepDef
 	 * @cucumber.columns
 	 *   <b>C_Invoice_ID</b> — (required, identifier-ref) the invoice<br>
 	 *   <b>EDI_ExportStatus</b> — (required) expected export status code<br>
-	 *   <b>EDIErrorMsg</b> — (optional) text the stored error message must contain<br>
 	 *   <b>EDIErrorMsg.AD_Message</b> — (optional) AD_Message value; the stored error message must contain the text of that message in at least one system language (de_DE, de_CH, en_US), so the check does not depend on the base language<br>
 	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * Then after not more than 30s, C_Invoice records have the following export status
-	 *   | C_Invoice_ID | EDI_ExportStatus | EDIErrorMsg | EDIErrorMsg.AD_Message |
-	 *   | invoice_1    | I                | some text   | SomeMessageKey         |
+	 *   | C_Invoice_ID | EDI_ExportStatus | EDIErrorMsg.AD_Message |
+	 *   | invoice_1    | I                | SomeMessageKey         |
 	 * </pre>
 	 */
 	@Then("^after not more than (.*)s, C_Invoice records have the following export status$")
@@ -162,11 +161,6 @@ public class EDI_cctop_invoic_v_StepDef
 			InterfaceWrapperHelper.refresh(ediInvoiceRecord);
 			return exportStatus.equals(ediInvoiceRecord.getEDI_ExportStatus());
 		});
-
-		tableRow.getAsOptionalString(de.metas.edi.model.I_C_Invoice.COLUMNNAME_EDIErrorMsg)
-				.ifPresent(expected -> assertThat(ediInvoiceRecord.getEDIErrorMsg())
-						.as("EDIErrorMsg of C_Invoice %s", tableRow.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID).getAsString())
-						.contains(expected));
 
 		tableRow.getAsOptionalString(COLUMNNAME_EDIErrorMsg_AD_Message)
 				.ifPresent(messageKey -> assertThat(SYSTEM_LANGUAGES.stream()

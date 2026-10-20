@@ -930,8 +930,8 @@ Feature: EDI INVOIC export via postgREST
     # Partners: no HandOver, no shipment → DP / SN fall back to the order location (edi_cctop_119_v_view.sql:116-117,164-165); IV = invoice location (:135); crate lines excluded from BY / DP / SN (:55,99,150)
     # One test partner with two locations stands for an order (delivery) location and a separate bill-to location: parties are keyed by location (edi_cctop_119_v_view.sql), so the JSON differs only in name fields (the bill-to location may differ from the order location)
     # Partners: SU = org remit-to (no M_InOut_ID on the test invoice), exactly one DP
-    # Order_POReference = COALESCE(NULLIF(o.poreference,''), i.poreference) (edi_cctop_invoic_500_v_view.sql:83): the order's reference on lines with an order line (goods, bonus), the invoice's on crate lines without one; the test order and invoice carry the same fictitious reference, as a keyed-in order's invoice does
-    # Order_Line stays null on crate lines (no order line); on goods/bonus lines it is the order line's number
+    # Order_POReference = COALESCE(NULLIF(o.poreference,''), i.poreference) (edi_cctop_invoic_500_incl_packaging_v_view.sql:82): the order's reference on lines with an order line (goods, bonus), the invoice's on crate lines without one; the test order and invoice carry the same fictitious reference, as a keyed-in order's invoice does
+    # Order_Line is null on crate lines (no order line); on goods/bonus lines it is the order line's number
     Then the metasfresh REST-API responds with
     """
 {
@@ -1107,8 +1107,8 @@ Feature: EDI INVOIC export via postgREST
     # Σ NetAmt 550 + 75.00 − 16.50 = 608.50 = Invoice_TotalLines
     # taxes document-level (IsDocumentLevel=Y, MInvoiceTax.java:257,302): VAT per rate on the summed base; per-line Tax_Amount is TaxAmtInfo (HALF_UP per line) — case B line taxes sum to 37.34, the per-base 7 % tax is 37.35, never compare the two
     # 1.50 EUR and RC are test values; the real EPS deposit price is customer master data
-    # Order_POReference = COALESCE(NULLIF(o.poreference,''), i.poreference) (edi_cctop_invoic_500_v_view.sql:83): the order's reference on lines with an order line (goods, bonus), the invoice's on crate lines without one; the test order and invoice carry the same fictitious reference, as a keyed-in order's invoice does
-    # Order_Line stays null on crate lines (no order line); on goods/bonus lines it is the order line's number
+    # Order_POReference = COALESCE(NULLIF(o.poreference,''), i.poreference) (edi_cctop_invoic_500_incl_packaging_v_view.sql:82): the order's reference on lines with an order line (goods, bonus), the invoice's on crate lines without one; the test order and invoice carry the same fictitious reference, as a keyed-in order's invoice does
+    # Order_Line is null on crate lines (no order line); on goods/bonus lines it is the order line's number
     Then the metasfresh REST-API responds with
     """
 {
@@ -1265,8 +1265,8 @@ Feature: EDI INVOIC export via postgREST
     # Partners: no HandOver, no shipment → DP / SN fall back to the order location (edi_cctop_119_v_view.sql:116-117,164-165); IV = invoice location (:135); crate lines excluded from BY / DP / SN (:55,99,150)
     # One test partner with two locations stands for an order (delivery) location and a separate bill-to location: parties are keyed by location (edi_cctop_119_v_view.sql), so the JSON differs only in name fields (the bill-to location may differ from the order location)
     # Partners: SU = org remit-to (no M_InOut_ID on the test invoice), exactly one DP
-    # Order_POReference = COALESCE(NULLIF(o.poreference,''), i.poreference) (edi_cctop_invoic_500_v_view.sql:83): the order's reference on lines with an order line (goods, bonus), the invoice's on crate lines without one; the test order and invoice carry the same fictitious reference, as a keyed-in order's invoice does
-    # Order_Line stays null on crate lines (no order line); on goods/bonus lines it is the order line's number
+    # Order_POReference = COALESCE(NULLIF(o.poreference,''), i.poreference) (edi_cctop_invoic_500_incl_packaging_v_view.sql:82): the order's reference on lines with an order line (goods, bonus), the invoice's on crate lines without one; the test order and invoice carry the same fictitious reference, as a keyed-in order's invoice does
+    # Order_Line is null on crate lines (no order line); on goods/bonus lines it is the order line's number
     Then the metasfresh REST-API responds with
     """
 {
@@ -1439,8 +1439,8 @@ Feature: EDI INVOIC export via postgREST
 
     # Σ NetAmt 550 + 0 − 16.50 = 533.50 = Invoice_TotalLines
     # taxes document-level (IsDocumentLevel=Y, MInvoiceTax.java:257,302): VAT per rate on the summed base; per-line Tax_Amount is TaxAmtInfo (HALF_UP per line) — case B line taxes sum to 37.34, the per-base 7 % tax is 37.35, never compare the two
-    # Order_POReference = COALESCE(NULLIF(o.poreference,''), i.poreference) (edi_cctop_invoic_500_v_view.sql:83): the order's reference on lines with an order line (goods, bonus), the invoice's on crate lines without one; the test order and invoice carry the same fictitious reference, as a keyed-in order's invoice does
-    # Order_Line stays null on crate lines (no order line); on goods/bonus lines it is the order line's number
+    # Order_POReference = COALESCE(NULLIF(o.poreference,''), i.poreference) (edi_cctop_invoic_500_incl_packaging_v_view.sql:82): the order's reference on lines with an order line (goods, bonus), the invoice's on crate lines without one; the test order and invoice carry the same fictitious reference, as a keyed-in order's invoice does
+    # Order_Line is null on crate lines (no order line); on goods/bonus lines it is the order line's number
     Then the metasfresh REST-API responds with
     """
 {
