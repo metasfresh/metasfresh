@@ -2,14 +2,27 @@
 -- Convert the existing values on the calibration rules and on the order lines (all document statuses):
 -- a value above 1 is a 100-based percent and is divided by 100, rounded to v_scale decimals; values up to 1 are taken as already converted and stay as they are.
 -- Empty factors (order lines that were never calibrated) stay empty.
--- Re-run safe: both tables are backed up with the suffix '_cff' first; if that backup is already registered, the conversion already ran
--- and is skipped (a second run would divide again, e.g. 1.2 -> 0.01).
+-- Only the affected rows (factor > 1) are backed up, with the suffix '_cff'; on an instance without such rows the backups are empty.
+-- Re-run safe: if the '_cff' backup is already registered, the conversion already ran and is skipped
+-- (a second run would divide again, e.g. 1.2 -> 0.01).
 
 DO
 $$
     DECLARE
         v_scale CONSTANT integer := 2; -- decimals of the converted fraction
+        v_ts             text    := TO_CHAR(NOW(), 'YYYYMMDD_HH24MISS_MS');
+        v_tableName      text;
+        v_backupName     text;
+        v_rowcount       integer;
     BEGIN
+        CREATE TABLE IF NOT EXISTS backup.backup_tables
+        (
+            backup_table_name text PRIMARY KEY,
+            source_table_name text        NOT NULL,
+            created_at        timestamptz NOT NULL DEFAULT NOW(),
+            row_count         integer
+        );
+
         IF EXISTS (SELECT 1
                    FROM backup.backup_tables
                    WHERE backup_table_name LIKE 'backup.c_compensationgroup_calibrationrule_bkp_%_cff')
@@ -18,8 +31,15 @@ $$
             RETURN;
         END IF;
 
-        PERFORM backup_table('c_compensationgroup_calibrationrule', '_cff');
-        PERFORM backup_table('c_orderline', '_cff');
+        FOREACH v_tableName IN ARRAY ARRAY ['c_compensationgroup_calibrationrule', 'c_orderline']
+            LOOP
+                v_backupName := 'backup.' || v_tableName || '_bkp_' || v_ts || '_cff';
+                EXECUTE 'CREATE TABLE ' || v_backupName || ' AS SELECT * FROM ' || v_tableName || ' WHERE GroupCompensationCalibrationFactor > 1';
+                GET DIAGNOSTICS v_rowcount = ROW_COUNT;
+                INSERT INTO backup.backup_tables (backup_table_name, source_table_name, created_at, row_count)
+                VALUES (v_backupName, v_tableName, NOW(), v_rowcount);
+                RAISE NOTICE 'Backup % : % rows', v_backupName, v_rowcount;
+            END LOOP;
 
         UPDATE C_CompensationGroup_CalibrationRule
         SET GroupCompensationCalibrationFactor = ROUND(GroupCompensationCalibrationFactor / 100, v_scale),
