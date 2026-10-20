@@ -35,7 +35,7 @@ import {
  *   - the menu line's Menge 1.500 -> 1.600 leaves Rice_Pudding untouched (no automatic rescale)
  *   - a manually added line has no calibration group; no calibration column in the grid
  *   - the clerk types the factor in the advanced edit: 50 -> Menge 187,5; 0 -> Menge 0, the line is kept;
- *     an empty factor is refused with a message; rule 10 and uncalibrated 375 stay
+ *     an empty factor is refused with an error notification; rule 10 and uncalibrated 375 stay
  *   - the clerk picks the Gebinde (25 LTR per TU) and types the Gebindemenge 10: Menge follows to 250 (10 x 25), the
  *     factor follows that Menge (250 / 375 = 66,67 %; on purpose not the rule's 80 %)
  *   - the clerk types the factor 100 -> Menge 375
@@ -229,8 +229,8 @@ test.describe('Compensation group calibration - mock case', () => {
             });
         });
 
-        await test.step('advanced edit: an empty factor is refused with a message; factor 0 and Menge 0 stay', async () => {
-            await setCalibrationFactor(page, rice, '', { rejected: true, expectedError: 'Der Kalibrierfaktor darf nicht leer sein.' });
+        await test.step('advanced edit: an empty factor is refused with an error notification; factor 0 and Menge 0 stay', async () => {
+            await setCalibrationFactor(page, rice, '', { rejected: true });
 
             await expectLineQty(page, rice, 0);
 

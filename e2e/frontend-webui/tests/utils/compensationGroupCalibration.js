@@ -256,9 +256,9 @@ export async function expectCalibrationGroup(page, productCode, { factor, rulePr
 /**
  * Type a new Kalibrierfaktor into the advanced edit of the line of the product ('' blanks it), commit it with Tab and
  * wait for the save response. Accepted: the Menge of the advanced edit shows `expectedQty`. Rejected (`rejected: true`):
- * the save fails and an error notification shows `expectedError`. Then close and reload, so the grid shows what is stored.
+ * the save fails (not OK, user-friendly error flag in the JSON) and exactly one error notification shows (language-independent, no text match). Then close and reload, so the grid shows what is stored.
  */
-export async function setCalibrationFactor(page, productCode, factor, { expectedQty, rejected = false, expectedError, snapshotName } = {}) {
+export async function setCalibrationFactor(page, productCode, factor, { expectedQty, rejected = false, snapshotName } = {}) {
     await openLineAdvancedEdit(page, productCode);
     const modal = page.locator('.panel-modal-content');
     const factorInput = modal.locator(`.form-field-${FIELD_FACTOR} input`);
@@ -277,7 +277,9 @@ export async function setCalibrationFactor(page, productCode, factor, { expected
     if (rejected) {
         expect(response.ok(), `factor "${factor}" on the ${productCode} line is refused`).toBe(false);
         // a user-friendly save error is shown as an error notification (frontend App.js), not as a field error
-        errorNotification = page.locator('.notification-handler .notification-item.error').filter({ hasText: expectedError });
+        const body = await response.json();
+        expect(body.userFriendlyError, `the refusal of factor "${factor}" is a user-friendly error`).toBe(true);
+        errorNotification = page.locator('.notification-handler .notification-item.error');
         await expect(errorNotification).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
     } else {
         expect(response.ok(), `factor "${factor}" on the ${productCode} line is saved`).toBe(true);
