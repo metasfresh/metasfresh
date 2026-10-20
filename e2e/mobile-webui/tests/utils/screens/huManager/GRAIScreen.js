@@ -115,13 +115,15 @@ export const GRAIScreen = {
         const released = new Promise((resolve) => { release = resolve; });
         let sent;
         const sentGraiCodes = new Promise((resolve) => { sent = resolve; });
+        let held = false;
         const handler = async (route) => {
-            if (!isSendRequest(route.request())) return route.fallback();
-            await page.unroute(SEND_URL_PATTERN, handler);
+            if (held || !isSendRequest(route.request())) return route.fallback();
+            held = true; // only the next Send; not unrouted here, as unrouting continues the in-flight route
             sent(route.request().postDataJSON().graiCodes);
             const response = await route.fetch();
             await released;
             await route.fulfill({ response });
+            await page.unroute(SEND_URL_PATTERN, handler);
         };
         await page.route(SEND_URL_PATTERN, handler);
         return { sentGraiCodes, release };
