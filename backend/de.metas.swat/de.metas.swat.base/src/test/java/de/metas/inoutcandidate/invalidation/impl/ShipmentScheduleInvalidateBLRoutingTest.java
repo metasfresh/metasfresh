@@ -71,14 +71,17 @@ class ShipmentScheduleInvalidateBLRoutingTest
 	void committedThreadTrxInAfterCommit_flagsOutOfTrx()
 	{
 		final List<ITrx> trxs = new ArrayList<>();
+		final List<Boolean> activeAtCallback = new ArrayList<>();
 		trxManager.runInThreadInheritedTrx(() -> trxManager.runAfterCommit(() -> {
-			trxs.add(trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone));
+			final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+			trxs.add(trx);
+			activeAtCallback.add(trx.isActive());
 			bl.flagForRecomputeStorageSegment(segment);
 		}));
 
 		assertThat(trxs).as("setup: the callback ran").hasSize(1);
 		assertThat(trxManager.isNull(trxs.get(0))).as("setup: the committed trx is still thread-inherited").isFalse();
-		assertThat(trxs.get(0).isActive()).as("setup: committed, not restarted").isFalse();
+		assertThat(activeAtCallback).as("setup: committed, not restarted at callback time").containsExactly(false);
 		verify(repo, times(1)).invalidateStorageSegments(any(), isNull());
 		verify(repo, never()).invalidateStorageSegmentsInThreadInheritedTrx(any());
 	}
