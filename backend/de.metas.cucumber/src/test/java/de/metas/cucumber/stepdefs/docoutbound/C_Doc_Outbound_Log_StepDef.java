@@ -59,6 +59,7 @@ import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -97,6 +98,7 @@ public class C_Doc_Outbound_Log_StepDef
 
 	private final C_Doc_Outbound_Log_StepDefData docOutboundLogTable;
 	private final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable;
+	private final AD_Archive_StepDefData archiveTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_Invoice_StepDefData invoiceTable;
@@ -107,6 +109,7 @@ public class C_Doc_Outbound_Log_StepDef
 	public C_Doc_Outbound_Log_StepDef(
 			@NonNull final C_Doc_Outbound_Log_StepDefData docOutboundLogTable,
 			@NonNull final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable,
+			@NonNull final AD_Archive_StepDefData archiveTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
@@ -114,6 +117,7 @@ public class C_Doc_Outbound_Log_StepDef
 	{
 		this.docOutboundLogTable = docOutboundLogTable;
 		this.docOutboundLogLineTable = docOutboundLogLineTable;
+		this.archiveTable = archiveTable;
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
 		this.invoiceTable = invoiceTable;
@@ -327,6 +331,7 @@ public class C_Doc_Outbound_Log_StepDef
 	 *   <b>AD_Table.Name</b> — (required) C_Order or C_Invoice<br>
 	 *   <b>CurrentEMailAddress</b>, <b>CurrentEMailAddressCC</b> — (optional) expected address; the literal <code>null</code> expects none<br>
 	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) expected business partner; the literal <code>null</code> expects none<br>
+	 *   <b>C_BP_Group_ID</b> — (optional) expected business partner group id (a virtual column derived from the partner)<br>
 	 *   <b>DocBaseType</b> — (optional) expected base type of the log's document type<br>
 	 *   <b>DocStatus</b>, <b>POReference</b>, <b>DocumentNo</b> — (optional) expected values<br>
 	 *   <b>DateDoc</b> — (optional) expected document date, e.g. 2022-05-17<br>
@@ -363,6 +368,10 @@ public class C_Doc_Outbound_Log_StepDef
 							return false;
 						}
 
+						final Optional<I_C_Doc_Outbound_Log> knownLog = docOutboundLogTable.getOptional(row.getAsIdentifier(COLUMNNAME_C_Doc_Outbound_Log_ID));
+						assertThat(knownLog.map(I_C_Doc_Outbound_Log::getC_Doc_Outbound_Log_ID).orElse(docOutboundLog.getC_Doc_Outbound_Log_ID()))
+								.as("the outbound document must stay the same one (C_Doc_Outbound_Log_ID)")
+								.isEqualTo(docOutboundLog.getC_Doc_Outbound_Log_ID());
 						docOutboundLogTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_C_Doc_Outbound_Log_ID), docOutboundLog);
 						return true;
 					},
@@ -382,7 +391,9 @@ public class C_Doc_Outbound_Log_StepDef
 	 *   <b>Record_ID</b> — (required, identifier-ref) the order or invoice the line belongs to<br>
 	 *   <b>AD_Table.Name</b> — (required) C_Order or C_Invoice<br>
 	 *   <b>DocBaseType</b>, <b>DocStatus</b> — (optional) expected values<br>
-	 * @cucumber.depends StepDefData: C_Doc_Outbound_Log_StepDefData, C_Doc_Outbound_Log_Line_StepDefData, C_Order_StepDefData, C_Invoice_StepDefData
+	 *   <b>AD_Archive_ID</b> — (optional, identifier) the PDF the line references: an identifier not used yet is bound to the line's archive (which must not be bound to another identifier), a known one must match the line's archive<br>
+	 *   <b>AD_Archive.C_BPartner_ID</b> — (optional, identifier-ref) expected business partner of the line's archive; the literal <code>null</code> expects none<br>
+	 * @cucumber.depends StepDefData: C_Doc_Outbound_Log_StepDefData, C_Doc_Outbound_Log_Line_StepDefData, AD_Archive_StepDefData, C_BPartner_StepDefData, C_Order_StepDefData, C_Invoice_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And validate C_Doc_Outbound_Log_Line:
@@ -434,6 +445,31 @@ public class C_Doc_Outbound_Log_StepDef
 			row.getAsOptionalString(I_C_Doc_Outbound_Log_Line.COLUMNNAME_DocStatus)
 					.filter(Check::isNotBlank)
 					.ifPresent(docStatus -> assertThat(docOutboundLogLine.getDocStatus()).isEqualTo(docStatus));
+
+			final I_AD_Archive lineArchive = docOutboundLogLine.getAD_Archive_ID() > 0 ? load(docOutboundLogLine.getAD_Archive_ID(), I_AD_Archive.class) : null;
+
+			row.getAsOptionalIdentifier(I_C_Doc_Outbound_Log_Line.COLUMNNAME_AD_Archive_ID).ifPresent(archiveIdentifier -> {
+				assertThat(lineArchive).as("AD_Archive of the log line %s", docOutboundLogLine.getC_Doc_Outbound_Log_Line_ID()).isNotNull();
+				final Optional<I_AD_Archive> knownArchive = archiveTable.getOptional(archiveIdentifier);
+				if (knownArchive.isPresent())
+				{
+					assertThat(lineArchive.getAD_Archive_ID())
+							.as("AD_Archive_ID of the log line %s, expected to be the archive %s", docOutboundLogLine.getC_Doc_Outbound_Log_Line_ID(), archiveIdentifier.getAsString())
+							.isEqualTo(knownArchive.get().getAD_Archive_ID());
+				}
+				else
+				{
+					archiveTable.put(archiveIdentifier, lineArchive); // fails if the archive is already bound to another identifier
+				}
+			});
+
+			row.getAsOptionalIdentifier(I_AD_Archive.Table_Name + "." + COLUMNNAME_C_BPartner_ID).ifPresent(bpIdentifier -> {
+				assertThat(lineArchive).as("AD_Archive of the log line %s", docOutboundLogLine.getC_Doc_Outbound_Log_Line_ID()).isNotNull();
+				final int expectedBPartnerId = bpIdentifier.isNullPlaceholder() ? 0 : bpIdentifier.lookupNotNullIn(bpartnerTable).getC_BPartner_ID();
+				assertThat(Math.max(lineArchive.getC_BPartner_ID(), 0))
+						.as("C_BPartner_ID of the archive of the log line %s", docOutboundLogLine.getC_Doc_Outbound_Log_Line_ID())
+						.isEqualTo(expectedBPartnerId);
+			});
 
 			docOutboundLogLineTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_C_Doc_Outbound_Log_Line_ID), docOutboundLogLine);
 		});
@@ -512,6 +548,12 @@ public class C_Doc_Outbound_Log_StepDef
 			{
 				return mismatch(COLUMNNAME_C_BPartner_ID, expectedBPartnerId <= 0 ? "not set" : expectedBPartnerId, docOutboundLog.getC_BPartner_ID());
 			}
+		}
+
+		final Optional<Integer> bpGroupId = row.getAsOptionalInt(I_C_Doc_Outbound_Log.COLUMNNAME_C_BP_Group_ID);
+		if (bpGroupId.isPresent() && bpGroupId.get() != docOutboundLog.getC_BP_Group_ID())
+		{
+			return mismatch(I_C_Doc_Outbound_Log.COLUMNNAME_C_BP_Group_ID, bpGroupId.get(), docOutboundLog.getC_BP_Group_ID());
 		}
 
 		final Optional<String> docBaseType = row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocBaseType).filter(Check::isNotBlank);
@@ -613,10 +655,13 @@ public class C_Doc_Outbound_Log_StepDef
 	{
 		final TableRecordReference recordReference = getTableRecordReference(row);
 
-		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+		final List<I_C_Doc_Outbound_Log> logs = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
 				.addEqualsFilter(COLUMNNAME_Record_ID, recordReference.getRecord_ID())
 				.addEqualsFilter(COLUMNNAME_AD_Table_ID, recordReference.getAD_Table_ID())
 				.create()
-				.firstOnlyOrNull(I_C_Doc_Outbound_Log.class);
+				.list(I_C_Doc_Outbound_Log.class);
+
+		assertThat(logs).as("C_Doc_Outbound_Logs of %s (exactly one expected)", recordReference).hasSizeLessThanOrEqualTo(1);
+		return logs.isEmpty() ? null : logs.get(0);
 	}
 }

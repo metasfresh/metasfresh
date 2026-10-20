@@ -98,9 +98,10 @@ public interface IDocOutboundDAO extends ISingletonService
 	/**
 	 * Sets the {@link I_C_Doc_Outbound_Log#COLUMNNAME_DocStatus} of the outbound log header(s) of the given record.
 	 * The history lines are not touched. Does nothing if the record has no outbound log.
-	 * Runs in the thread-inherited transaction, i.e. the one of the document being processed.
+	 *
+	 * @param contextProvider the model (typically the document itself) whose ctx and trxName the update runs in
 	 */
-	void updateLogHeaderDocStatus(@NonNull TableRecordReference tableRecordReference, @Nullable DocStatus docStatus);
+	void updateLogHeaderDocStatus(@NonNull Object contextProvider, @NonNull TableRecordReference tableRecordReference, @Nullable DocStatus docStatus);
 
 	void updateLogAndLinesDocStatus(@NonNull TableRecordReference tableRecordReference, @Nullable DocStatus docStatus);
 }

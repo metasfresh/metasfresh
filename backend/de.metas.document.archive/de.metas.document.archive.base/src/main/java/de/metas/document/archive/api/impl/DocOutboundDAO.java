@@ -258,17 +258,28 @@ public class DocOutboundDAO implements IDocOutboundDAO
 
 	public void updateLogAndLinesDocStatus(@NonNull final TableRecordReference tableRecordReference, @Nullable final DocStatus docStatus)
 	{
-		updateLogHeaderDocStatus(tableRecordReference, docStatus);
+		updateLogDocStatus(queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class), tableRecordReference, docStatus);
 		updateLogLineDocStatus(tableRecordReference, docStatus);
 	}
 
 	@Override
-	public void updateLogHeaderDocStatus(@NonNull final TableRecordReference tableRecordReference, @Nullable final DocStatus docStatus)
+	public void updateLogHeaderDocStatus(
+			@NonNull final Object contextProvider,
+			@NonNull final TableRecordReference tableRecordReference,
+			@Nullable final DocStatus docStatus)
+	{
+		updateLogDocStatus(queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, contextProvider), tableRecordReference, docStatus);
+	}
+
+	private void updateLogDocStatus(
+			@NonNull final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder,
+			@NonNull final TableRecordReference tableRecordReference,
+			@Nullable final DocStatus docStatus)
 	{
 		final ICompositeQueryUpdater<I_C_Doc_Outbound_Log> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Doc_Outbound_Log.class)
 				.addSetColumnValue(I_C_Doc_Outbound_Log.COLUMNNAME_DocStatus, DocStatus.toCodeOrNull(docStatus));
 
-		queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+		queryBuilder
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_Record_ID, tableRecordReference.getRecord_ID())

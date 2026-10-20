@@ -145,8 +145,7 @@ import org.compiere.model.PO;
 
 		if (timing == ModelValidator.TIMING_AFTER_REACTIVATE)
 		{
-			// the document is in progress again: its outbound log must not keep showing the completed state
-			docOutboundDAO.updateLogHeaderDocStatus(TableRecordReference.of(po), DocStatus.InProgress);
+			onDocumentReactivated(po);
 		}
 
 		if (timing == ModelValidator.TIMING_AFTER_VOID
@@ -157,6 +156,21 @@ import org.compiere.model.PO;
 		}
 
 		return null;
+	}
+
+	/**
+	 * The document is in progress again: its outbound log header must not keep showing the completed state.
+	 * Only documents this producer's configuration accepts (table and DocBaseType) are touched; the history lines stay as they are.
+	 * The update runs in the ctx and trxName of the document.
+	 */
+	/* package */void onDocumentReactivated(@NonNull final Object document)
+	{
+		if (!acceptDocument(document))
+		{
+			return;
+		}
+
+		docOutboundDAO.updateLogHeaderDocStatus(document, TableRecordReference.of(document), DocStatus.InProgress);
 	}
 
 	/**
