@@ -3,6 +3,7 @@ package de.metas.rest_api.utils;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.v1.JsonErrorItem.JsonErrorItemBuilder;
+import de.metas.error.impl.ErrorManager;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -86,6 +87,7 @@ public class JsonErrors
 				.adIssueId(adIssueId)
 				.issueCategory(issueCategory)
 				.parameters(extractParameters(throwable, adLanguage))
+				.errorCode(ErrorManager.getErrorCode(throwable))
 				.throwable(throwable);
 		if (detail != null)
 		{
