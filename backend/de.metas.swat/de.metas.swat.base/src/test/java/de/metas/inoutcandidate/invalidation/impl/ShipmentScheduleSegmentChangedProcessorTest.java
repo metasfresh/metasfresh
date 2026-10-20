@@ -56,7 +56,7 @@ import static org.mockito.Mockito.when;
  * <p>
  * The processor accumulates segments into a dedup {@link java.util.LinkedHashSet} and, on trx commit (AFTER_COMMIT
  * listener), flushes them out of transaction via {@link ShipmentScheduleInvalidateBL#flagSegmentsForRecomputeOutOfTrx(Collection)}
- * (a mid-batch flush uses {@link ShipmentScheduleInvalidateBL#flagSegmentsForRecomputeInThreadInheritedTrx(Collection)} in an active trx). These tests
+ * (a mid-batch flush uses {@link ShipmentScheduleInvalidateBL#flagSegmentsForRecomputeInThreadInheritedTrx(Collection)} in an open trx). These tests
  * assert that (a) value-equal segments collapse to one, (b) distinct segments are all retained (dedupe, not
  * truncation), and (c) identity-equals implementations (e.g. the HU-derived segments) are also deduped because the
  * accumulator normalizes every segment to the value-based {@link ImmutableShipmentScheduleSegment} before adding.
@@ -338,8 +338,8 @@ class ShipmentScheduleSegmentChangedProcessorTest
 
 	/**
 	 * A segment that reaches the threshold when the thread trx is already committed (here: added by an after-commit listener that
-	 * ran before the processor's own) must be flagged out of trx; running in the thread-inherited trx would restart a transaction
-	 * that is never committed.
+	 * runs after the processor's own commit flush) must be flagged out of trx; running in the thread-inherited trx would restart a
+	 * transaction that is never committed.
 	 */
 	@Test
 	void midBatchFlushAfterCommit_flagsOutOfTrx_neverInThreadInheritedTrx()
@@ -356,7 +356,7 @@ class ShipmentScheduleSegmentChangedProcessorTest
 			final ShipmentScheduleSegmentChangedProcessor processor = ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator);
 			assertThat(processor).isNotNull();
 
-			// registered BEFORE the processor's own listener, so it runs first
+			// registered AFTER the processor's own listener (created by getOrCreate above), so it runs after the commit flush
 			trx.getTrxListenerManager()
 					.newEventListener(TrxEventTiming.AFTER_COMMIT)
 					.registerHandlingMethod(committedTrx -> processor.addSegment(segment));
@@ -394,8 +394,12 @@ class ShipmentScheduleSegmentChangedProcessorTest
 			assertThat(processor).isNotNull();
 
 			processor.addSegment(s1); // active trx -> in-trx flush -> fails -> mid-batch flush disabled
-			trx.commit(true); // commit flush succeeds -> re-enabled
-			processor.addSegment(s2); // trx is committed (inactive) -> mid-batch flush must run again, out of trx
+			// registered after the processor's own listener: runs after its commit flush (succeeds -> re-enabled), while the trx is
+			// committed and not restarted -> the mid-batch flush must run again, out of trx
+			trx.getTrxListenerManager()
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.registerHandlingMethod(committedTrx -> processor.addSegment(s2));
+			trx.commit(true);
 
 			@SuppressWarnings("unchecked")
 			final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
@@ -414,25 +418,41 @@ class ShipmentScheduleSegmentChangedProcessorTest
 		}
 	}
 
-	/** A committed transaction keeps being thread-inherited, but a collector on it would never be flushed again. */
+	/** A committed transaction keeps being thread-inherited in its after-commit callbacks, but a collector on it would never be flushed again. */
 	@Test
-	void getOrCreate_inactiveThreadTrx_returnsNull() throws Exception
+	void getOrCreate_committedThreadTrxInAfterCommit_returnsNull()
 	{
 		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final String trxName = trxManager.createTrxName("test-committed", true);
-		final ITrx trx = trxManager.getTrx(trxName);
-		trx.start();
-		trx.commit(true);
-		assertThat(trxManager.isActive(trx)).as("setup: committed trx is inactive").isFalse();
+		final List<ShipmentScheduleSegmentChangedProcessor> processors = new ArrayList<>();
+		final List<ITrx> trxs = new ArrayList<>();
+		trxManager.runInThreadInheritedTrx(() -> trxManager.runAfterCommit(() -> {
+			trxs.add(trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone));
+			processors.add(ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator));
+		}));
+
+		assertThat(trxManager.isNull(trxs.get(0))).as("setup: the committed trx is still thread-inherited").isFalse();
+		assertThat(trxs.get(0).isActive()).as("setup: committed, not restarted").isFalse();
+		assertThat(processors).as("no collector on a committed trx during its post-commit dispatch").containsExactly((ShipmentScheduleSegmentChangedProcessor)null);
+	}
+
+	/** Transactions start lazily (e.g. a process trx before its first SQL statement): an unstarted trx gets a collector. */
+	@Test
+	void getOrCreate_unstartedThreadTrx_returnsProcessor()
+	{
+		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final String trxName = trxManager.createTrxName("test-unstarted", true);
+		assertThat(trxManager.getTrx(trxName).isActive()).as("setup: created, never started").isFalse();
 
 		final String previousTrxName = trxManager.setThreadInheritedTrxName(trxName);
 		try
 		{
 			assertThat(ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator))
-					.as("no collector on a committed (inactive) trx")
-					.isNull();
+					.as("an unstarted trx is not committed; its collector is flushed when it commits")
+					.isNotNull();
 		}
 		finally
 		{

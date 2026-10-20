@@ -31,7 +31,6 @@ import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -105,24 +104,22 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	/**
 	 * SQL predicate that is true if the given schedule has no pending (not yet picked up) recompute flag that would make a new flag of ours redundant.
 	 * <p>
-	 * While the thread-inherited transaction has an open DB transaction, we dedup only against a pending flag written by this very DB transaction
+	 * While the thread-inherited transaction is open for writes (active, or not yet started: it starts lazily on its first DB access, and the
+	 * business change follows in it; see {@link ThreadInheritedTrxState}), we dedup only against a pending flag written by this very DB transaction
 	 * ({@code pg_current_xact_id_if_assigned()} is NULL until it wrote something, so nothing matches then).
 	 * A flag of another transaction must not suppress ours: the recompute may process that other flag before our change is committed
 	 * and thus never see our change.
 	 * <p>
-	 * In an after-commit callback the transaction is inactive until a DB access restarts it; from then on it is a new transaction that
+	 * In an after-commit callback the committed transaction is inactive until a DB access restarts it; from then on it is a new transaction that
 	 * may write business data before flagging, so the rule above applies. Before the restart nothing is uncommitted, so the legacy
 	 * "any pending flag" dedup, which we also keep when there is no transaction at all, is safe.
 	 */
 	private String sqlNoPendingFlagOfOwnTrx(@NonNull final String scheduleIdColumnSql)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		// "active" = the thread trx has an open DB transaction; an after-commit callback that has not accessed the DB yet has none
-		final boolean ownTrxActive = trxManager.isActive(threadTrx);
+		final boolean ownTrx = ThreadInheritedTrxState.isThreadInheritedTrxOpenForWrites();
 
 		return "NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + scheduleIdColumnSql
-				+ (ownTrxActive ? " and e.DBTransactionNo = pg_current_xact_id_if_assigned()::text::numeric" : "")
+				+ (ownTrx ? " and e.DBTransactionNo = pg_current_xact_id_if_assigned()::text::numeric" : "")
 				+ ")";
 	}
 
@@ -355,7 +352,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		}
 
 		// One chunkUUID for all statements of this call: the recompute is enqueued once, after the last statement.
-		// With an active transaction all statements run in it (and a failure rolls them all back to the caller's savepoint),
+		// In a transaction (trxName set) all statements run in it (and a failure rolls them all back to the caller's savepoint),
 		// so the own-trx dedup predicate sees the earlier statements and nothing needs enqueuing on failure.
 		// Out of trx every statement autocommits: if a later one fails, the earlier committed flags still need their workpackage.
 		final String chunkUUID = UUID.randomUUID().toString();
@@ -1008,8 +1005,9 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 			@Nullable final String trxName,
 			@NonNull final String chunkUUID)
 	{
+		// query in the given trx: on the out-of-trx path a thread-inherited query would restart a committed thread trx
 		final List<Integer> asyncBatchIds = queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class, context, trxName)
 				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_ChunkUUID, chunkUUID)
 				.create()
 				.listDistinct(I_M_ShipmentSchedule_Recompute.COLUMNNAME_C_Async_Batch_ID, Integer.class);

@@ -56,8 +56,9 @@ final class ShipmentScheduleSegmentChangedProcessor
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		// a committed trx stays thread-inherited but inactive; its collector would never be flushed again
-		if (trxManager.isNull(trx) || !trxManager.isActive(trx))
+		// during its post-commit listener dispatch a committed trx stays thread-inherited but inactive; its collector would never be flushed again.
+		// An unstarted trx (it starts lazily on its first DB access) does get a collector: it commits later.
+		if (!ThreadInheritedTrxState.isThreadTrxOpenForWrites(trx))
 		{
 			return null;
 		}
@@ -138,10 +139,11 @@ final class ShipmentScheduleSegmentChangedProcessor
 	private boolean midBatchFlushDisabled = false;
 
 	/**
-	 * Mid-batch flush. With an ACTIVE thread-inherited transaction the flags are written in it, behind a savepoint, so they commit
-	 * or roll back with the change that made the segments stale, and a failure rolls back to the savepoint instead of aborting the
-	 * business transaction. Without an active transaction (e.g. a segment added from an after-commit listener; running in the
-	 * thread-inherited trx would restart a transaction that is never committed) the flags are written out of transaction.
+	 * Mid-batch flush. With a thread-inherited transaction that is open for writes (see {@link ThreadInheritedTrxState}) the flags are
+	 * written in it, behind a savepoint, so they commit or roll back with the change that made the segments stale, and a failure rolls
+	 * back to the savepoint instead of aborting the business transaction.
+	 * The out-of-trx branch is defensive only: a processor is only handed out for an open trx, but a caller may keep its reference and add
+	 * segments from that trx's post-commit listener (running in the thread-inherited trx there would restart a transaction that is never committed).
 	 * On failure the segments are kept, further mid-batch flushes are disabled, and {@link #flushAfterCommit()} flags them.
 	 */
 	private void flushMidBatch()
@@ -156,7 +158,7 @@ final class ShipmentScheduleSegmentChangedProcessor
 		try
 		{
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
-			if (trxManager.isActive(trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone)))
+			if (ThreadInheritedTrxState.isThreadInheritedTrxOpenForWrites())
 			{
 				// runInThreadInheritedTrx is NESTED: it creates a savepoint and rolls back to it on failure
 				trxManager.runInThreadInheritedTrx(
@@ -193,7 +195,7 @@ final class ShipmentScheduleSegmentChangedProcessor
 		this.segments.add(ImmutableShipmentScheduleSegment.copyOf(segment));
 
 		// Bound the accumulator during a long-running batch: flush mid-batch once it reaches the configured threshold
-		// (a threshold <= 0 disables this). In an active trx the flush runs in it behind a savepoint, otherwise out of trx; see flushMidBatch().
+		// (a threshold <= 0 disables this). In an open trx the flush runs in it behind a savepoint, otherwise out of trx; see flushMidBatch().
 		if (flushThreshold > 0 && segments.size() >= flushThreshold)
 		{
 			flushMidBatch();

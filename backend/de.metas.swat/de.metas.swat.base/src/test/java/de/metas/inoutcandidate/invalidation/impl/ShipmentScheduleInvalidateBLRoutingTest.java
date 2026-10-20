@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.invalidation.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
@@ -63,13 +64,20 @@ class ShipmentScheduleInvalidateBLRoutingTest
 
 	/** After-commit callbacks run on the committed, now inactive, trx until its first DB access. */
 	@Test
-	void committedInactiveThreadTrx_flagsOutOfTrx() throws Exception
+	void committedThreadTrxInAfterCommit_flagsOutOfTrx()
 	{
-		final String trxName = trxManager.createTrxName("test-committed", true);
-		final ITrx trx = trxManager.getTrx(trxName);
-		trx.start();
-		trx.commit(true);
-		assertThat(trxManager.isActive(trx)).as("setup: committed trx is inactive").isFalse();
+		trxManager.runInThreadInheritedTrx(() -> trxManager.runAfterCommit(() -> bl.flagForRecomputeStorageSegment(segment)));
+
+		verify(repo, times(1)).invalidateStorageSegments(any(), isNull());
+		verify(repo, never()).invalidateStorageSegmentsInThreadInheritedTrx(any());
+	}
+
+	/** Transactions start lazily (e.g. a process trx before its first SQL statement): an unstarted trx is not a committed one. */
+	@Test
+	void unstartedThreadTrx_flagsInTrx()
+	{
+		final String trxName = trxManager.createTrxName("test-unstarted", true);
+		assertThat(trxManager.getTrx(trxName).isActive()).as("setup: created, never started").isFalse();
 
 		final String previousTrxName = trxManager.setThreadInheritedTrxName(trxName);
 		try
@@ -81,36 +89,56 @@ class ShipmentScheduleInvalidateBLRoutingTest
 			trxManager.setThreadInheritedTrxName(previousTrxName);
 		}
 
-		verify(repo, times(1)).invalidateStorageSegments(any(), isNull());
-		verify(repo, never()).invalidateStorageSegmentsInThreadInheritedTrx(any());
+		verify(repo, times(1)).invalidateStorageSegmentsInThreadInheritedTrx(any());
+		verify(repo, never()).invalidateStorageSegments(any(), any());
 	}
 
 	/** A collector on a committed trx is never flushed, so the notification must flag synchronously and never go async. */
 	@Test
-	void notifySegmentsChanged_committedInactiveThreadTrx_flagsOutOfTrxSynchronously() throws Exception
+	void notifySegmentsChanged_committedThreadTrxInAfterCommit_flagsOutOfTrxSynchronously()
 	{
 		final ITaskExecutorService taskExecutorService = Mockito.mock(ITaskExecutorService.class);
 		Services.registerService(ITaskExecutorService.class, taskExecutorService);
 		final ShipmentScheduleInvalidateBL blSpy = Mockito.spy(bl);
 		final IShipmentScheduleSegment validSegment = ImmutableShipmentScheduleSegment.builder().productId(1).bpartnerId(2).locatorId(3).build();
 
-		final String trxName = trxManager.createTrxName("test-committed", true);
+		trxManager.runInThreadInheritedTrx(() -> trxManager.runAfterCommit(() -> blSpy.notifySegmentsChanged(ImmutableSet.of(validSegment))));
+
+		verify(blSpy, times(1)).flagSegmentsForRecomputeOutOfTrx(any());
+		verify(taskExecutorService, never()).submit(any(Runnable.class), any(String.class));
+	}
+
+	/** An unstarted trx gets the collector, which flags after the trx committed; nothing synchronous, nothing async. */
+	@Test
+	void notifySegmentsChanged_unstartedThreadTrx_collectsUntilCommit() throws Exception
+	{
+		final ITaskExecutorService taskExecutorService = Mockito.mock(ITaskExecutorService.class);
+		Services.registerService(ITaskExecutorService.class, taskExecutorService);
+		final ShipmentScheduleInvalidateBL blSpy = Mockito.spy(bl);
+		final IShipmentScheduleSegment validSegment = ImmutableShipmentScheduleSegment.builder().productId(1).bpartnerId(2).locatorId(3).build();
+
+		final String trxName = trxManager.createTrxName("test-unstarted", true);
 		final ITrx trx = trxManager.getTrx(trxName);
-		trx.start();
-		trx.commit(true);
-		assertThat(trxManager.isActive(trx)).as("setup: committed trx is inactive").isFalse();
+		assertThat(trx.isActive()).as("setup: created, never started").isFalse();
 
 		final String previousTrxName = trxManager.setThreadInheritedTrxName(trxName);
 		try
 		{
 			blSpy.notifySegmentsChanged(ImmutableSet.of(validSegment));
+
+			verify(blSpy, never()).flagSegmentsForRecomputeOutOfTrx(any());
+			verify(blSpy, never()).flagSegmentsForRecomputeInThreadInheritedTrx(any());
+			verify(taskExecutorService, never()).submit(any(Runnable.class), any(String.class));
+
+			trx.start(); // the business change's first DB access
+			trx.commit(true);
 		}
 		finally
 		{
 			trxManager.setThreadInheritedTrxName(previousTrxName);
 		}
 
-		verify(blSpy, times(1)).flagSegmentsForRecomputeOutOfTrx(any());
+		verify(blSpy, times(1)).flagSegmentsForRecomputeOutOfTrx(ImmutableList.of(validSegment));
 		verify(taskExecutorService, never()).submit(any(Runnable.class), any(String.class));
 	}
 }

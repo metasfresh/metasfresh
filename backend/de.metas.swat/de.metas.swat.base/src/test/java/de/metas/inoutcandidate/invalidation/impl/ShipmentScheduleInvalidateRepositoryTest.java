@@ -4,19 +4,30 @@ import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegmentBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 /*
  * #%L
@@ -219,6 +230,41 @@ public class ShipmentScheduleInvalidateRepositoryTest
 				.doesNotContain("DBTransactionNo")
 				.contains("e.AD_PInstance_ID is NULL")
 				.contains("e.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID");
+	}
+
+	/** Transactions start lazily: the flag write starts the trx, and the business change follows in it. */
+	@Test
+	public void pendingFlagPredicate_unstartedThreadTrx_matchesOwnTrxOnly() throws Exception
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final String trxName = trxManager.createTrxName("test-unstarted", true);
+		assertThat(trxManager.getTrx(trxName).isActive()).as("setup: created, never started").isFalse();
+
+		final String previousTrxName = trxManager.setThreadInheritedTrxName(trxName);
+		try
+		{
+			assertThat(pendingFlagPredicate())
+					.as("an unstarted thread trx is not committed; a flag of another transaction must not suppress ours")
+					.contains(OWN_TRX_TERM);
+		}
+		finally
+		{
+			trxManager.setThreadInheritedTrxName(previousTrxName);
+		}
+	}
+
+	/** The out-of-trx path must not query in the thread-inherited trx: that would restart a committed trx that may never commit again. */
+	@Test
+	public void enqueueShipmentScheduleRecompute_outOfTrx_queriesOutOfTrx()
+	{
+		final IQueryBL queryBLSpy = Mockito.spy(Services.get(IQueryBL.class));
+		Services.registerService(IQueryBL.class, queryBLSpy);
+		final ShipmentScheduleInvalidateRepository repositoryWithSpy = new ShipmentScheduleInvalidateRepository();
+
+		repositoryWithSpy.enqueueShipmentScheduleRecompute(Env.getCtx(), ITrx.TRXNAME_None, "chunk-uuid");
+
+		verify(queryBLSpy).createQueryBuilder(eq(I_M_ShipmentSchedule_Recompute.class), any(Properties.class), isNull());
+		verify(queryBLSpy, never()).createQueryBuilder(eq(I_M_ShipmentSchedule_Recompute.class), any(Properties.class), eq(ITrx.TRXNAME_ThreadInherited));
 	}
 
 	private static IShipmentScheduleSegment segmentWithLocators(final int productId, final int locatorCount)

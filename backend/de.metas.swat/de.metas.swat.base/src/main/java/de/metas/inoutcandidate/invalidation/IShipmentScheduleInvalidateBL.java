@@ -29,8 +29,9 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	/**
 	 * Flags the shipment schedules of the given storage segments for recompute.
 	 * <p>
-	 * Routes by the thread-inherited transaction: if it is active, the flags are written in it (they commit or roll back with the caller's change);
-	 * otherwise (none, or already committed) they are written out of transaction.
+	 * Routes by the thread-inherited transaction: if it is open for writes (active, or created but not yet started - transactions start lazily on
+	 * their first DB access), the flags are written in it (they commit or roll back with the caller's change);
+	 * otherwise (none, or committed and running its after-commit/rollback/close listeners without having been restarted) they are written out of transaction.
 	 * Callers that must not write into the current transaction use {@link #flagSegmentsForRecompute(Collection, PInstanceId)}.
 	 */
 	void flagSegmentForRecompute(Collection<IShipmentScheduleSegment> storageSegments);

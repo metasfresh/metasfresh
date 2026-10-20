@@ -165,14 +165,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	/**
-	 * With an active thread-inherited transaction, the flags are written in that transaction, so they commit or roll back with the change that made the segments stale.
-	 * Otherwise they are written out of transaction.
+	 * With a thread-inherited transaction that is open for writes (active, or not yet started), the flags are written in that transaction, so they
+	 * commit or roll back with the change that made the segments stale. Otherwise (no transaction, or a committed one during its post-commit
+	 * listener dispatch, see {@link ThreadInheritedTrxState}) they are written out of transaction.
 	 */
 	private void flagSegmentsRoutedByTrx(@Nullable final Collection<IShipmentScheduleSegment> segments)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (trxManager.isActive(threadTrx))
+		if (ThreadInheritedTrxState.isThreadInheritedTrxOpenForWrites())
 		{
 			flagSegmentsForRecomputeInThreadInheritedTrx(segments);
 		}
@@ -392,9 +391,9 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (!trxManager.isNull(threadTrx) && !trxManager.isActive(threadTrx))
+		if (!trxManager.isNull(threadTrx) && !ThreadInheritedTrxState.isThreadTrxOpenForWrites(threadTrx))
 		{
-			// a collector on a committed transaction is never flushed, so the flag is written now
+			// committed trx in its post-commit listener dispatch: a collector on it is never flushed, so the flag is written now
 			flagSegmentsForRecomputeOutOfTrx(segmentsEffective);
 			return;
 		}
