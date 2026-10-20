@@ -32,6 +32,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.CreateInvoiceForModelService;
+import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.invoicecandidate.C_Order_Handler;
@@ -61,6 +62,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 class InvoiceServiceTest
 {
+	private AsyncBatchService asyncBatchService;
 	private InvoiceService invoiceService;
 	private final List<Set<InvoiceCandidateId>> invoicedICIds = new ArrayList<>();
 
@@ -72,7 +74,7 @@ class InvoiceServiceTest
 		createAsyncBatchType(C_Async_Batch_InternalName_EnqueueInvoiceCandidateCreation);
 		createInvoiceCandidateHandlerForOrders();
 
-		final AsyncBatchService asyncBatchService = Mockito.mock(AsyncBatchService.class);
+		asyncBatchService = Mockito.mock(AsyncBatchService.class);
 		Mockito.when(asyncBatchService.executeBatch(any(), any()))
 				.thenAnswer(invocation -> enqueueAndProcessBatch(invocation.getArgument(0), invocation.getArgument(1)));
 
@@ -93,6 +95,10 @@ class InvoiceServiceTest
 	{
 		final I_C_OrderLine orderLine = createOrderLine();
 		final I_M_InOutLine shipmentLine = createShipmentLine(orderLine);
+
+		// like when the order is completed without an async batch: the IC-creation workpackage is enqueued, but it is not (yet) processed
+		CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(orderLine.getC_Order());
+		assertThat(retrieveWorkpackagesWithoutAsyncBatch()).hasSize(1); // guard
 		assertThat(retrieveICsForOrderLine(orderLine)).isEmpty(); // guard
 
 		invoiceService.generateInvoicesFromShipmentLines(ImmutableList.of(shipmentLine));
@@ -104,6 +110,9 @@ class InvoiceServiceTest
 				.containsExactly(InvoiceCandidateId.ofRepoId(orderLineICs.get(0).getC_Invoice_Candidate_ID()));
 	}
 
+	/**
+	 * The order's invoice candidates already exist; they are invoiced without any async-batch round trip.
+	 */
 	@Test
 	void generateInvoicesFromShipmentLines_orderICsAlreadyCreated()
 	{
@@ -113,7 +122,8 @@ class InvoiceServiceTest
 
 		invoiceService.generateInvoicesFromShipmentLines(ImmutableList.of(shipmentLine));
 
-		assertThat(retrieveICsForOrderLine(orderLine)).hasSize(1); // no duplicate
+		Mockito.verify(asyncBatchService, Mockito.never()).executeBatch(any(), any());
+		assertThat(retrieveICsForOrderLine(orderLine)).hasSize(1);
 		assertThat(retrieveInvoicedICIds()).containsExactly(InvoiceCandidateId.ofRepoId(existingIC.getC_Invoice_Candidate_ID()));
 	}
 
@@ -153,6 +163,14 @@ class InvoiceServiceTest
 	{
 		assertThat(invoicedICIds).hasSize(1);
 		return invoicedICIds.get(0);
+	}
+
+	private static List<I_C_Queue_WorkPackage> retrieveWorkpackagesWithoutAsyncBatch()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Queue_WorkPackage.class)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Async_Batch_ID, null)
+				.create()
+				.list();
 	}
 
 	private static List<I_C_Invoice_Candidate> retrieveICsForOrderLine(final I_C_OrderLine orderLine)
