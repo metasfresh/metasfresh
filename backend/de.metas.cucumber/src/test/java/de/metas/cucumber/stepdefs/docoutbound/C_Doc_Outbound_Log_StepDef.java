@@ -36,13 +36,14 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
-import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -56,6 +57,7 @@ import org.adempiere.archive.api.ArchiveRequest;
 import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_DocType;
@@ -99,6 +101,8 @@ public class C_Doc_Outbound_Log_StepDef
 	private final C_Order_StepDefData orderTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final IdentifiersResolver identifiersResolver;
+	/** Original state per touched config id; <code>null</code> = the scenario created it. */
+	private final Map<Integer, ConfigState> originalConfigStates = new HashMap<>();
 
 	public C_Doc_Outbound_Log_StepDef(
 			@NonNull final C_Doc_Outbound_Log_StepDefData docOutboundLogTable,
@@ -117,8 +121,10 @@ public class C_Doc_Outbound_Log_StepDef
 	}
 
 	/**
-	 * Makes sure the given table is configured for outbound documents: updates the active-or-not configuration of that table
-	 * if one exists, otherwise creates it. A blank/absent <code>DocBaseType</code> leaves an existing value untouched.
+	 * Makes sure the given table is configured for outbound documents: activates the existing configuration of that table
+	 * and sets its <code>DocBaseType</code> if given, otherwise creates a configuration.
+	 * The configuration is shared by all scenarios of the DB, so the original state (absent, or its IsActive and DocBaseType)
+	 * is remembered and restored after the scenario.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -144,18 +150,67 @@ public class C_Doc_Outbound_Log_StepDef
 					.create()
 					.first(I_C_Doc_Outbound_Config.class);
 
-			final I_C_Doc_Outbound_Config config = existingConfig != null ? existingConfig : newInstance(I_C_Doc_Outbound_Config.class);
-			config.setAD_Table_ID(adTableId);
+			final I_C_Doc_Outbound_Config config;
+			if (existingConfig != null)
+			{
+				originalConfigStates.putIfAbsent(existingConfig.getC_Doc_Outbound_Config_ID(), new ConfigState(existingConfig.isActive(), existingConfig.getDocBaseType()));
+				config = existingConfig;
+			}
+			else
+			{
+				config = newInstance(I_C_Doc_Outbound_Config.class);
+				config.setAD_Table_ID(adTableId);
+			}
 			config.setIsActive(true);
 			docBaseType.ifPresent(config::setDocBaseType);
 			saveRecord(config);
+
+			if (existingConfig == null)
+			{
+				originalConfigStates.put(config.getC_Doc_Outbound_Config_ID(), null);
+			}
 		});
+	}
+
+	/**
+	 * Restores the outbound configurations changed by this scenario: deletes the ones it created, resets IsActive and DocBaseType of the others.
+	 * Runs on scenario pass and failure, so no scenario leaks its configuration into the next one of the shared DB.
+	 */
+	@After
+	public void restoreDocOutboundConfigs()
+	{
+		originalConfigStates.forEach((configId, originalState) -> {
+			final I_C_Doc_Outbound_Config config = load(configId, I_C_Doc_Outbound_Config.class);
+			if (originalState == null)
+			{
+				InterfaceWrapperHelper.delete(config);
+			}
+			else
+			{
+				config.setIsActive(originalState.isActive);
+				config.setDocBaseType(originalState.docBaseType);
+				saveRecord(config);
+			}
+		});
+		originalConfigStates.clear();
+	}
+
+	private static final class ConfigState
+	{
+		private final boolean isActive;
+		@Nullable private final String docBaseType;
+
+		private ConfigState(final boolean isActive, @Nullable final String docBaseType)
+		{
+			this.isActive = isActive;
+			this.docBaseType = docBaseType;
+		}
 	}
 
 	/**
 	 * Runs the "Massendruck PDF" outbound-log process for the given log: takes the last archive of the log and marks it as printed,
 	 * which writes a <code>pdf</code> line to the log. The process itself lives in a module the cucumber module does not depend on,
-	 * so the same service calls are made here: {@link IArchiveBL#getLastArchive} then {@link IArchiveBL#updatePrintedRecords}.
+	 * so the same service calls are made here (inactive logs are skipped as in the process): {@link IArchiveBL#getLastArchive} then {@link IArchiveBL#updatePrintedRecords}.
 	 * In production this is triggered by the user selecting the log in the outbound documents window and running the process;
 	 * a direct call is used because the process needs a window view as input.
 	 *
@@ -172,6 +227,11 @@ public class C_Doc_Outbound_Log_StepDef
 		final I_C_Doc_Outbound_Log docOutboundLog = docOutboundLogTable.get(logIdentifier);
 		// reload: the stored instance may predate the last refresh of the header
 		final I_C_Doc_Outbound_Log reloadedLog = load(docOutboundLog.getC_Doc_Outbound_Log_ID(), I_C_Doc_Outbound_Log.class);
+
+		if (!reloadedLog.isActive())
+		{
+			return; // the process skips inactive logs
+		}
 
 		final AdArchive lastArchive = archiveBL.getLastArchive(TableRecordReference.ofReferenced(reloadedLog))
 				.orElseThrow(() -> new AdempiereException("No archive found for C_Doc_Outbound_Log_ID=" + reloadedLog.getC_Doc_Outbound_Log_ID()));
@@ -206,6 +266,8 @@ public class C_Doc_Outbound_Log_StepDef
 	/**
 	 * Prints a report of the given document directly, as a user does when running a report process for it from a window:
 	 * the report PDF is archived for the document without any business partner, and does not go through the document archiver.
+	 * No report process runs in the scenario, so AD_Process_ID and AD_PInstance_ID of the archive stay unset (a real print sets them; the outbound log
+	 * only looks at record, partner and configuration of the archive).
 	 * The archive request is the one the report starter's print service sends, without the direct print-queue enqueueing (which needs a configured printer).
 	 *
 	 * @cucumber.stepdef
