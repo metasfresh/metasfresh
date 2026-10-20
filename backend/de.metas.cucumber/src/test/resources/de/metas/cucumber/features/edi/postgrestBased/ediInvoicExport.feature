@@ -887,8 +887,8 @@ Feature: EDI INVOIC export via postgREST
       | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID.InternalName |
       | salesPLV               | eps186_priced | 1.50     | PCE      | Normal                        |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID |
-      | o_1        | true    | customer1     | bpLoc_deliv            | F            | 2025-05-01  | 2025-05-01Z  | wh             |
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID | POReference |
+      | o_1        | true    | customer1     | bpLoc_deliv            | F            | 2025-05-01  | 2025-05-01Z  | wh             | ED04711003 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
       | ol_kiku    | o_1                   | goodsKiku    | 220        |
@@ -896,8 +896,8 @@ Feature: EDI INVOIC export via postgREST
     And the order identified by o_1 is completed
 
     And metasfresh contains C_Invoice:
-      | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv        | inv_ID       | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+      | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | POReference |
+      | inv        | inv_ID       | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 | ED04711003 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID | M_Product_ID  | C_OrderLine_ID | QtyInvoiced | Price | C_Tax_ID$set | IsPackagingMaterial | C_Project_ID |
       | inv          | goodsKiku     | ol_kiku        | 220 PCE     | 1.00  | tax7         | N                   | P1           |
@@ -930,6 +930,8 @@ Feature: EDI INVOIC export via postgREST
     # Partners: no HandOver, no shipment → DP / SN fall back to the order location (edi_cctop_119_v_view.sql:116-117,164-165); IV = invoice location (:135); crate lines excluded from BY / DP / SN (:55,99,150)
     # One test partner with two locations stands for an order (delivery) location and a separate bill-to location: parties are keyed by location (edi_cctop_119_v_view.sql), so the JSON differs only in name fields (the bill-to location may differ from the order location)
     # Partners: SU = org remit-to (no M_InOut_ID on the test invoice), exactly one DP
+    # Order_POReference = COALESCE(NULLIF(o.poreference,''), i.poreference) (edi_cctop_invoic_500_v_view.sql:83): the order's reference on lines with an order line (goods, bonus), the invoice's on crate lines without one; the test order and invoice carry the same fictitious reference, as a keyed-in order's invoice does
+    # Order_Line stays null on crate lines (no order line); on goods/bonus lines it is the order line's number
     Then the metasfresh REST-API responds with
     """
 {
@@ -942,6 +944,7 @@ Feature: EDI INVOIC export via postgREST
       "Lines": [
         {
           "Invoice_Line": 10,
+          "Order_POReference": "ED04711003",
           "Invoice_QtyInvoiced": 220,
           "NetAmt": 220.0,
           "Tax_Percent": 7.0,
@@ -951,6 +954,7 @@ Feature: EDI INVOIC export via postgREST
         },
         {
           "Invoice_Line": 20,
+          "Order_POReference": "ED04711003",
           "Invoice_QtyInvoiced": 165,
           "NetAmt": 165.0,
           "Tax_Percent": 7.0,
@@ -960,6 +964,7 @@ Feature: EDI INVOIC export via postgREST
         },
         {
           "Invoice_Line": 30,
+          "Order_POReference": "ED04711003",
           "Invoice_QtyInvoiced": 15,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "PricePerUnit": 1.5,
@@ -980,6 +985,7 @@ Feature: EDI INVOIC export via postgREST
         },
         {
           "Invoice_Line": 40,
+          "Order_POReference": "ED04711003",
           "Invoice_QtyInvoiced": 20,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "PricePerUnit": 1.5,
@@ -1060,8 +1066,8 @@ Feature: EDI INVOIC export via postgREST
       | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID.InternalName |
       | salesPLV               | eps186_priced | 1.50     | PCE      | Normal                        |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID |
-      | o_1        | true    | customer1     | bpLoc_deliv            | F            | 2025-05-01  | 2025-05-01Z  | wh             |
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID | POReference |
+      | o_1        | true    | customer1     | bpLoc_deliv            | F            | 2025-05-01  | 2025-05-01Z  | wh             | ED04711004 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
       | ol_evelina | o_1                   | goodsEvelina | 550        |
@@ -1069,8 +1075,8 @@ Feature: EDI INVOIC export via postgREST
     And the order identified by o_1 is completed
 
     And metasfresh contains C_Invoice:
-      | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv        | inv_ID       | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+      | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | POReference |
+      | inv        | inv_ID       | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 | ED04711004 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID | M_Product_ID  | C_OrderLine_ID | QtyInvoiced | Price  | C_Tax_ID$set | IsPackagingMaterial |
       | inv          | goodsEvelina  | ol_evelina     | 550 PCE     | 1.00   | tax7         | N                   |
@@ -1101,6 +1107,8 @@ Feature: EDI INVOIC export via postgREST
     # Σ NetAmt 550 + 75.00 − 16.50 = 608.50 = Invoice_TotalLines
     # taxes document-level (IsDocumentLevel=Y, MInvoiceTax.java:257,302): VAT per rate on the summed base; per-line Tax_Amount is TaxAmtInfo (HALF_UP per line) — case B line taxes sum to 37.34, the per-base 7 % tax is 37.35, never compare the two
     # 1.50 EUR and RC are test values; the real EPS deposit price is customer master data
+    # Order_POReference = COALESCE(NULLIF(o.poreference,''), i.poreference) (edi_cctop_invoic_500_v_view.sql:83): the order's reference on lines with an order line (goods, bonus), the invoice's on crate lines without one; the test order and invoice carry the same fictitious reference, as a keyed-in order's invoice does
+    # Order_Line stays null on crate lines (no order line); on goods/bonus lines it is the order line's number
     Then the metasfresh REST-API responds with
     """
 {
@@ -1113,6 +1121,7 @@ Feature: EDI INVOIC export via postgREST
       "Lines": [
         {
           "Invoice_Line": 10,
+          "Order_POReference": "ED04711004",
           "NetAmt": 550.0,
           "Tax_Amount": 38.5,
           "Product_DepositType": null,
@@ -1120,6 +1129,7 @@ Feature: EDI INVOIC export via postgREST
         },
         {
           "Invoice_Line": 20,
+          "Order_POReference": "ED04711004",
           "Invoice_QtyInvoiced": 50,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "PricePerUnit": 1.5,
@@ -1140,6 +1150,7 @@ Feature: EDI INVOIC export via postgREST
         },
         {
           "Invoice_Line": 30,
+          "Order_POReference": "ED04711004",
           "NetAmt": -16.5,
           "Tax_Amount": -1.16,
           "Product_DepositType": null,
@@ -1211,8 +1222,8 @@ Feature: EDI INVOIC export via postgREST
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID.InternalName |
       | salesPLV               | eps186       | 0.00     | PCE      | Normal                        |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID |
-      | o_1        | true    | customer1     | bpLoc_deliv            | F            | 2025-05-01  | 2025-05-01Z  | wh             |
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID | POReference |
+      | o_1        | true    | customer1     | bpLoc_deliv            | F            | 2025-05-01  | 2025-05-01Z  | wh             | ED04711001 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
       | ol_kiku    | o_1                   | goodsKiku    | 220        |
@@ -1220,8 +1231,8 @@ Feature: EDI INVOIC export via postgREST
     And the order identified by o_1 is completed
 
     And metasfresh contains C_Invoice:
-      | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv        | inv_ID       | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+      | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | POReference |
+      | inv        | inv_ID       | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 | ED04711001 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID | M_Product_ID | C_OrderLine_ID | QtyInvoiced | Price | C_Tax_ID$set | IsPackagingMaterial | C_Project_ID |
       | inv          | goodsKiku    | ol_kiku        | 220 PCE     | 1.00  | tax7         | N                   | P1           |
@@ -1254,6 +1265,8 @@ Feature: EDI INVOIC export via postgREST
     # Partners: no HandOver, no shipment → DP / SN fall back to the order location (edi_cctop_119_v_view.sql:116-117,164-165); IV = invoice location (:135); crate lines excluded from BY / DP / SN (:55,99,150)
     # One test partner with two locations stands for an order (delivery) location and a separate bill-to location: parties are keyed by location (edi_cctop_119_v_view.sql), so the JSON differs only in name fields (the bill-to location may differ from the order location)
     # Partners: SU = org remit-to (no M_InOut_ID on the test invoice), exactly one DP
+    # Order_POReference = COALESCE(NULLIF(o.poreference,''), i.poreference) (edi_cctop_invoic_500_v_view.sql:83): the order's reference on lines with an order line (goods, bonus), the invoice's on crate lines without one; the test order and invoice carry the same fictitious reference, as a keyed-in order's invoice does
+    # Order_Line stays null on crate lines (no order line); on goods/bonus lines it is the order line's number
     Then the metasfresh REST-API responds with
     """
 {
@@ -1266,6 +1279,7 @@ Feature: EDI INVOIC export via postgREST
       "Lines": [
         {
           "Invoice_Line": 10,
+          "Order_POReference": "ED04711001",
           "Invoice_QtyInvoiced": 220,
           "NetAmt": 220.0,
           "Tax_Percent": 7.0,
@@ -1275,6 +1289,7 @@ Feature: EDI INVOIC export via postgREST
         },
         {
           "Invoice_Line": 20,
+          "Order_POReference": "ED04711001",
           "Invoice_QtyInvoiced": 165,
           "NetAmt": 165.0,
           "Tax_Percent": 7.0,
@@ -1284,6 +1299,7 @@ Feature: EDI INVOIC export via postgREST
         },
         {
           "Invoice_Line": 30,
+          "Order_POReference": "ED04711001",
           "Invoice_QtyInvoiced": 15,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "NetAmt": 0.0,
@@ -1303,6 +1319,7 @@ Feature: EDI INVOIC export via postgREST
         },
         {
           "Invoice_Line": 40,
+          "Order_POReference": "ED04711001",
           "Invoice_QtyInvoiced": 20,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "NetAmt": 0.0,
@@ -1382,8 +1399,8 @@ Feature: EDI INVOIC export via postgREST
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID.InternalName |
       | salesPLV               | eps186       | 0.00     | PCE      | Normal                        |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID |
-      | o_1        | true    | customer1     | bpLoc_deliv            | F            | 2025-05-01  | 2025-05-01Z  | wh             |
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID | POReference |
+      | o_1        | true    | customer1     | bpLoc_deliv            | F            | 2025-05-01  | 2025-05-01Z  | wh             | ED04711002 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
       | ol_evelina | o_1                   | goodsEvelina | 550        |
@@ -1391,8 +1408,8 @@ Feature: EDI INVOIC export via postgREST
     And the order identified by o_1 is completed
 
     And metasfresh contains C_Invoice:
-      | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv        | inv_ID       | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+      | Identifier | REST.Context | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | POReference |
+      | inv        | inv_ID       | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 | ED04711002 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID | M_Product_ID | C_OrderLine_ID | QtyInvoiced | Price  | C_Tax_ID$set | IsPackagingMaterial |
       | inv          | goodsEvelina | ol_evelina     | 550 PCE     | 1.00   | tax7         | N                   |
@@ -1422,6 +1439,8 @@ Feature: EDI INVOIC export via postgREST
 
     # Σ NetAmt 550 + 0 − 16.50 = 533.50 = Invoice_TotalLines
     # taxes document-level (IsDocumentLevel=Y, MInvoiceTax.java:257,302): VAT per rate on the summed base; per-line Tax_Amount is TaxAmtInfo (HALF_UP per line) — case B line taxes sum to 37.34, the per-base 7 % tax is 37.35, never compare the two
+    # Order_POReference = COALESCE(NULLIF(o.poreference,''), i.poreference) (edi_cctop_invoic_500_v_view.sql:83): the order's reference on lines with an order line (goods, bonus), the invoice's on crate lines without one; the test order and invoice carry the same fictitious reference, as a keyed-in order's invoice does
+    # Order_Line stays null on crate lines (no order line); on goods/bonus lines it is the order line's number
     Then the metasfresh REST-API responds with
     """
 {
@@ -1434,6 +1453,7 @@ Feature: EDI INVOIC export via postgREST
       "Lines": [
         {
           "Invoice_Line": 10,
+          "Order_POReference": "ED04711002",
           "NetAmt": 550.0,
           "Tax_Amount": 38.5,
           "Product_DepositType": null,
@@ -1441,6 +1461,7 @@ Feature: EDI INVOIC export via postgREST
         },
         {
           "Invoice_Line": 20,
+          "Order_POReference": "ED04711002",
           "Invoice_QtyInvoiced": 50,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "NetAmt": 0.0,
@@ -1460,6 +1481,7 @@ Feature: EDI INVOIC export via postgREST
         },
         {
           "Invoice_Line": 30,
+          "Order_POReference": "ED04711002",
           "NetAmt": -16.5,
           "Tax_Amount": -1.16,
           "Product_DepositType": null,
