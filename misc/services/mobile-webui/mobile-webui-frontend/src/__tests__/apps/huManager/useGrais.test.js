@@ -132,9 +132,8 @@ describe('useGrais - send response while the user keeps scanning', () => {
     expect(result.current.dirty).toBe(true);
   });
 
-  it('extras present at send time are kept after the answer (unchanged behaviour)', async () => {
-    // Send is disabled in the UI while extras exist, but the TU count can shrink on the backend:
-    // the answer reports tuCount 1, so the 2nd sent code is no longer assigned and shows as an extra.
+  it('the backend lowers the TU count: the GRAIs beyond it show as extras, not dirty (unchanged behaviour)', async () => {
+    // The answer reports tuCount 1, so the 2nd sent code is no longer assigned and shows as an extra.
     const result = await renderUseGrais({ tuCount: 2 });
     act(() => result.current.addGrais(['A', 'B']));
 
@@ -160,6 +159,38 @@ describe('useGrais - send response while the user keeps scanning', () => {
 
     expect(result.current.graiCodes).toEqual(['A', 'B']);
     expect(result.current.dirty).toBe(false);
+  });
+
+  it('Undo while the send is in flight, then a scan: the scan is kept and unsaved (dirty)', async () => {
+    const result = await renderUseGrais();
+    act(() => result.current.addGrais(['A', 'B']));
+
+    const answer = sendAndHoldResponse(result);
+    api.getGRAIs.mockResolvedValueOnce({ graiCodes: ['A', 'B'], tuCount: 0 });
+    await act(async () => {
+      result.current.loadFromBackend();
+    });
+    act(() => result.current.addGrais(['C']));
+    await answer({ graiCodes: ['A', 'B'], tuCount: 0 });
+
+    expect(result.current.graiCodes).toEqual(['A', 'B', 'C']);
+    expect(result.current.dirty).toBe(true);
+  });
+
+  it('a failed Undo while the send is in flight does not discard the edits made meanwhile', async () => {
+    const result = await renderUseGrais();
+    act(() => result.current.addGrais(['A', 'B']));
+
+    const answer = sendAndHoldResponse(result);
+    act(() => result.current.addGrais(['C']));
+    api.getGRAIs.mockRejectedValueOnce(new Error('boom'));
+    await act(async () => {
+      result.current.loadFromBackend();
+    });
+    await answer({ graiCodes: ['A', 'B'], tuCount: 0 });
+
+    expect(result.current.graiCodes).toEqual(['A', 'B', 'C']);
+    expect(result.current.dirty).toBe(true);
   });
 
   it('a failed send keeps the local list and stays dirty', async () => {

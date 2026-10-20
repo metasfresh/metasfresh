@@ -195,27 +195,31 @@ export const mergeGraiArrays = (prev, newGrais, existingCodes = [], alreadySkipp
 /**
  * Build the list to show once the backend has answered a Send, keeping what the user changed while
  * the request was in flight. Scanning, removing and Clear All all stay possible while sending, so
- * the list on screen may already differ from the list that was sent:
+ * the list on screen may already differ from the baseline (the list that was sent, or the list an
+ * Undo showed while the request was in flight):
  * - the backend's answer is taken as the saved state (the assigned GRAIs it persisted), followed by
- *   the extras (beyond `tuCount`) that were on screen at send time, as before;
- * - a GRAI that was sent but has been removed since stays removed;
- * - a GRAI added since the send is kept, appended at the end.
- * When nothing changed in between, the result is the backend answer plus the extras.
+ *   the baseline's extras (beyond `tuCount`), as before;
+ * - a GRAI of the baseline that has been removed since stays removed;
+ * - a GRAI added since the baseline is kept, appended at the end.
+ * When nothing changed since the baseline, the result is the backend answer plus the extras.
  *
  * @param {Object} params
- * @param {string[]} params.sentGrais - the full list on screen when Send was tapped
+ * @param {string[]} params.baselineGrais - the full list on screen when Send was tapped, or the list
+ *   shown by an Undo made while the request was in flight
  * @param {string[]} params.currentGrais - the list on screen now, when the answer arrives
  * @param {string[]} params.backendGrais - the GRAIs the backend reports as saved
  * @param {number} params.tuCount - the TU count from the backend answer (0 = unlimited)
  * @returns {string[]}
  */
-export const mergeGraisAfterSend = ({ sentGrais, currentGrais, backendGrais, tuCount }) => {
-  const sent = new Set(sentGrais);
+export const mergeGraisAfterSend = ({ baselineGrais, currentGrais, backendGrais, tuCount }) => {
+  const baseline = new Set(baselineGrais);
   const current = new Set(currentGrais);
-  const removedSinceSend = (grai) => sent.has(grai) && !current.has(grai);
+  const removedSinceBaseline = (grai) => baseline.has(grai) && !current.has(grai);
 
-  const saved = [...backendGrais, ...getExtraGrais(sentGrais, tuCount)].filter((grai) => !removedSinceSend(grai));
-  const addedSinceSend = currentGrais.filter((grai) => !sent.has(grai));
+  const saved = [...backendGrais, ...getExtraGrais(baselineGrais, tuCount)].filter(
+    (grai) => !removedSinceBaseline(grai)
+  );
+  const addedSinceBaseline = currentGrais.filter((grai) => !baseline.has(grai));
 
-  return mergeGraiArrays(mergeGraiArrays([], saved).merged, addedSinceSend).merged;
+  return mergeGraiArrays(mergeGraiArrays([], saved).merged, addedSinceBaseline).merged;
 };

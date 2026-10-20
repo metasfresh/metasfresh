@@ -107,6 +107,7 @@ export const GRAIScreen = {
     /**
      * Keep the backend's answer to the next Send (PUT .../grai) away from the app until `release()` is called,
      * like a slow network. The request itself reaches the backend right away.
+     * Call it right before the Send tap: the route stays armed until a Send happens.
      * @returns {Promise<{ sentGraiCodes: Promise<string[]>, release: () => void }>}
      */
     holdNextSendResponse: async () => await test.step(`${NAME} - Hold the backend answer to the next Send`, async () => {
