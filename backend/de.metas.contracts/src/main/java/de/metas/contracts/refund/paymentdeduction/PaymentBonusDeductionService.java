@@ -421,7 +421,8 @@ public class PaymentBonusDeductionService implements PaymentBonusDeductionProvid
 	 * Splits the already rounded {@code totalNetAmt} among the projects in proportion to their base, so that the parts add up to it exactly.
 	 * Each project gets the rounded-down share (in the smallest unit of the currency); the missing smallest units go to the projects with the biggest remainders (largest-remainder method).
 	 * On equal remainders the lower project ID comes first and the project-less part last, so the result is deterministic.
-	 * Projects whose base is not positive get no part.
+	 * Projects whose base is not positive, or whose part comes out as zero, get no part.
+	 * Caller-guaranteed precondition: {@code totalNetAmt} is positive and at least one project has a positive base (the caller returns before for a non-positive bonus).
 	 *
 	 * @return the part per project, in the order lower project ID first and project-less last; the key {@code null} is the project-less part
 	 */
@@ -468,7 +469,12 @@ public class PaymentBonusDeductionService implements PaymentBonusDeductionProvid
 
 		final CurrencyId currencyId = totalNetAmt.getCurrencyId();
 		final Map<ProjectId, Money> result = new LinkedHashMap<>();
-		unitsByProjectId.forEach((projectId, units) -> result.put(projectId, Money.of(units.movePointLeft(precision.toInt()), currencyId)));
+		unitsByProjectId.forEach((projectId, units) -> {
+			if (units.signum() > 0)
+			{
+				result.put(projectId, Money.of(units.movePointLeft(precision.toInt()), currencyId));
+			}
+		});
 		return result;
 	}
 }
