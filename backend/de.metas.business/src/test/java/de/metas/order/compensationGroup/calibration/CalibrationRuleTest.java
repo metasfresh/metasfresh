@@ -16,7 +16,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The factor is a 100-based percent: 80 = 80 %, 100 = unchanged, 0 = Qty 0.
+ * The factor is a Percent: 80 % = x 0.8, 100 % = unchanged, 0 % = Qty 0.
  * The calibrated qty is rounded UP (away from zero) to the UOM precision.
  */
 class CalibrationRuleTest

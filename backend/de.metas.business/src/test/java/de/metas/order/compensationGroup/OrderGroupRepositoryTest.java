@@ -906,7 +906,7 @@ public class OrderGroupRepositoryTest
 	}
 
 	// ────────────────────────────────────────────────────────────────────────────────────────────
-	// Calibration: the factor is a 100-based percent; the base qty (template qty x menu qty)
+	// Calibration: the factor is a Percent (the column stores it as a fraction, 80 % = 0.8); the base qty (template qty x menu qty)
 	// is rounded half-up to the UOM precision before the factor is applied; a line without a matching rule stores no calibration;
 	// the calibrated result is rounded UP to the UOM precision.
 	// ────────────────────────────────────────────────────────────────────────────────────────────
@@ -1070,6 +1070,21 @@ public class OrderGroupRepositoryTest
 				.productId(productId)
 				.qty(Quantity.of(new BigDecimal(qty), uom))
 				.build();
+	}
+
+	@Test
+	void calibrationFactor_isStoredAsFraction()
+	{
+		final I_C_OrderLine line = newInstance(I_C_OrderLine.class);
+
+		OrderGroupRepository.setCalibrationFactor(line, Percent.of(80));
+		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.8");
+
+		line.setGroupCompensationCalibrationFactor(new BigDecimal("0.9333"));
+		assertThat(OrderGroupRepository.getCalibrationFactor(line)).isEqualTo(Percent.of(new BigDecimal("93.33")));
+
+		OrderGroupRepository.setCalibrationFactor(line, null);
+		assertThat(OrderGroupRepository.getCalibrationFactor(line)).isNull();
 	}
 
 	private static CalibrationRule calibrationRule(final int ruleId, final String factorPercent)

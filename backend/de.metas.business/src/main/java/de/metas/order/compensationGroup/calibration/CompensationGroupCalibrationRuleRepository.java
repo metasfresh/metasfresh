@@ -69,16 +69,20 @@ public class CompensationGroupCalibrationRuleRepository
 	}
 
 	/**
-	 * @return the calibration factor of the rule; the column is mandatory, so an unset factor reads as 0 (like the generated getter).
+	 * @return the calibration factor of the rule. The column holds it as a fraction (0.8 = 80 %, 1 = unchanged);
+	 * it is mandatory, so an unset factor reads as 0 (like the generated getter).
 	 */
 	@NonNull
 	public static Percent getCalibrationFactor(@NonNull final I_C_CompensationGroup_CalibrationRule record)
 	{
-		return Percent.of(record.getGroupCompensationCalibrationFactor());
+		return Percent.ofFraction(record.getGroupCompensationCalibrationFactor());
 	}
 
+	/**
+	 * Stores the factor as a fraction (80 % = 0.8).
+	 */
 	public static void setCalibrationFactor(@NonNull final I_C_CompensationGroup_CalibrationRule record, @NonNull final Percent factor)
 	{
-		record.setGroupCompensationCalibrationFactor(factor.toBigDecimal());
+		record.setGroupCompensationCalibrationFactor(factor.toFraction());
 	}
 }

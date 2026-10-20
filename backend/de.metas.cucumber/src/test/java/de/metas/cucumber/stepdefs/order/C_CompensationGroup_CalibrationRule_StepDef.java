@@ -66,7 +66,7 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 * <b>Identifier</b> — (required) alias of the rule<br>
-	 * <b>GroupCompensationCalibrationFactor</b> — (required) the factor<br>
+	 * <b>GroupCompensationCalibrationFactor</b> — (required) the factor as stored, a fraction (0.8 = 80 %, 1 = unchanged)<br>
 	 * <b>SeqNo</b> — (optional) evaluation order, defaults to 10<br>
 	 * <b>C_BPartner_ID</b> — (optional, identifier-ref) customer<br>
 	 * <b>C_BP_Group_ID</b> — (optional, identifier-ref) business partner group<br>
@@ -104,7 +104,7 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 	private void createRule(@NonNull final DataTableRow row)
 	{
 		final I_C_CompensationGroup_CalibrationRule record = newInstance(I_C_CompensationGroup_CalibrationRule.class);
-		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.of(row.getAsBigDecimal(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor)));
+		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.ofFraction(row.getAsBigDecimal(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor)));
 		record.setSeqNo(row.getAsOptionalInt(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_SeqNo).orElse(10));
 		row.getAsOptionalIdentifier(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_C_BPartner_ID)
 				.ifPresent(id -> record.setC_BPartner_ID(id.lookupNotNullIn(bpartnerTable).getC_BPartner_ID()));
@@ -129,7 +129,7 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 * <b>Identifier</b> — (required, identifier-ref) the rule<br>
-	 * <b>GroupCompensationCalibrationFactor</b> — (required) the new factor<br>
+	 * <b>GroupCompensationCalibrationFactor</b> — (required) the new factor as stored, a fraction (0.8 = 80 %)<br>
 	 * <b>ErrorMessageKey</b> — (required with {@code expecting error}) AD_Message value of the expected error<br>
 	 * @cucumber.depends StepDefData: C_CompensationGroup_CalibrationRule_StepDefData
 	 * @cucumber.example
@@ -147,7 +147,7 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final Runnable update = () -> {
 				final I_C_CompensationGroup_CalibrationRule record = getRuleFresh(row);
-				CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.of(row.getAsBigDecimal(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor)));
+				CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.ofFraction(row.getAsBigDecimal(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor)));
 				saveRecord(record);
 			};
 			if (expectingError == null)

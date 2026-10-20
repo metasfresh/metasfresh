@@ -370,6 +370,31 @@ class C_OrderLineTest
 	}
 
 	/**
+	 * The column holds the factor as a fraction (0.8 = 80 %, 1 = unchanged), which is what the user types in the WebUI.
+	 */
+	@Nested
+	class StoredScale
+	{
+		@Test
+		void typedFraction0_8_onBase375_gives300()
+		{
+			final I_C_OrderLine line = calibratedLine("375", "100", "375");
+			line.setGroupCompensationCalibrationFactor(new BigDecimal("0.8"));
+			callout.onCalibrationFactorChanged(line);
+			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
+		}
+
+		@Test
+		void qty350_storesFraction0_9333()
+		{
+			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			typeQty(line, "350");
+			// 350 / 375 = 0.93333.. -> 93.33 % -> 0.9333
+			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.9333");
+		}
+	}
+
+	/**
 	 * Both methods must be one callout instance: the callout executor does not re-enter an instance that is already running,
 	 * which stops the cycle factor -> QtyEntered -> factor. Neither may skip indirect calls, so a TU qty edit,
 	 * which sets QtyEntered from another callout, still updates the factor.

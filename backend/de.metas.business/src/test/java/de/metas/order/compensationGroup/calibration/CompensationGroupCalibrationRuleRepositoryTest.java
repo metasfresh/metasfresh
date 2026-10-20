@@ -6,6 +6,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,6 +51,18 @@ class CompensationGroupCalibrationRuleRepositoryTest
 	}
 
 	@Test
+	void calibrationFactor_isStoredAsFraction()
+	{
+		final I_C_CompensationGroup_CalibrationRule record = newInstance(I_C_CompensationGroup_CalibrationRule.class);
+
+		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.of(80));
+		assertThat(record.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.8");
+
+		record.setGroupCompensationCalibrationFactor(new BigDecimal("1.25"));
+		assertThat(CompensationGroupCalibrationRuleRepository.getCalibrationFactor(record)).isEqualTo(Percent.of(125));
+	}
+
+	@Test
 	void calibrationFactor_unset_readsAsZero()
 	{
 		// mandatory column: like the generated getter, an unset factor reads as 0
@@ -63,7 +76,7 @@ class CompensationGroupCalibrationRuleRepositoryTest
 	{
 		final I_C_CompensationGroup_CalibrationRule record = newInstance(I_C_CompensationGroup_CalibrationRule.class);
 		record.setC_BPartner_ID(1);
-		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.of(80));
+		record.setGroupCompensationCalibrationFactor(new BigDecimal("0.8")); // the raw stored fraction: fails if fromRecord bypasses the helper
 		saveRecord(record);
 
 		assertThat(CompensationGroupCalibrationRuleRepository.fromRecord(record).getFactor()).isEqualTo(Percent.of(80));

@@ -82,6 +82,15 @@ public class Percent implements Comparable<Percent>
 	}
 
 	/**
+	 * @param fraction 1 based value, e.g. {@code 0.8} for 80 %
+	 */
+	@NonNull
+	public static Percent ofFraction(@NonNull final BigDecimal fraction)
+	{
+		return of(fraction.movePointRight(2));
+	}
+
+	/**
 	 * Convenience method, similar to {@link #of(BigDecimal, BigDecimal, int)}, but the {@code numerator} is {@code compareValue - baseValue}.
 	 * <p>
 	 * Examples:
@@ -160,6 +169,15 @@ public class Percent implements Comparable<Percent>
 		return percent.toBigDecimal();
 	}
 
+	/**
+	 * @return the 1 based value (e.g. {@code 0.8} for 80 %), or null if the given percent is null
+	 */
+	@Nullable
+	public static BigDecimal toFractionOrNull(@Nullable final Percent percent)
+	{
+		return percent != null ? percent.toFraction() : null;
+	}
+
 	@NonNull
 	public static BigDecimal toBigDecimalOrZero(@Nullable final Percent percent)
 	{
@@ -203,6 +221,15 @@ public class Percent implements Comparable<Percent>
 	public BigDecimal toBigDecimal()
 	{
 		return value;
+	}
+
+	/**
+	 * @return 1 based value, e.g. {@code 0.8} for 80 %
+	 */
+	@NonNull
+	public BigDecimal toFraction()
+	{
+		return NumberUtils.stripTrailingDecimalZeros(value.movePointLeft(2));
 	}
 
 	/**

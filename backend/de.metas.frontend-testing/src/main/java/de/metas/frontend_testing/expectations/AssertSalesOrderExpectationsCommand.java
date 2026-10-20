@@ -54,7 +54,7 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
  *     // assert the order's compensation groups (by record id, e.g. an order created in the UI)
  *     '1000123': { compensationGroups: [{ flatrateTermId: 1000456, compensationGroupSchemaId: 1000789 }] },
  *     // assert order lines by product (masterdata keys), incl. the calibration data
- *     'SO3': { lines: [{ product: 'P1', qtyEntered: 15, calibrationFactor: 150, calibrationRule: 'R1', qtyEnteredUncalibrated: 10 }] },
+ *     'SO3': { lines: [{ product: 'P1', qtyEntered: 15, calibrationFactor: 1.5, calibrationRule: 'R1', qtyEnteredUncalibrated: 10 }] },
  *     // assert an order line without calibration, e.g. no rule matched (no factor, no rule, no uncalibrated qty)
  *     'SO4': { lines: [{ product: 'P1', qtyEntered: 10, calibrated: false }] }
  *   }
@@ -247,8 +247,8 @@ class AssertSalesOrderExpectationsCommand
 			throw new AdempiereException("Expectation hasCalibrationRule=false cannot be combined with an expected calibration rule: " + expectation);
 		}
 
-		// the generated getters map a NULL decimal to zero, so the nullable calibration columns are read as stored
-		final BigDecimal actualFactor = Percent.toBigDecimalOrNull(OrderGroupRepository.getCalibrationFactor(actual));
+		// the generated getters map a NULL decimal to zero, so the nullable calibration columns are read as stored; the factor is compared as stored (a fraction)
+		final BigDecimal actualFactor = Percent.toFractionOrNull(OrderGroupRepository.getCalibrationFactor(actual));
 		final BigDecimal actualQtyUncalibrated = InterfaceWrapperHelper.getValueAsBigDecimalOrNull(actual, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated);
 
 		assertDecimal("QtyEntered of " + lineDescription, actual.getQtyEntered(), expectation.getQtyEntered());

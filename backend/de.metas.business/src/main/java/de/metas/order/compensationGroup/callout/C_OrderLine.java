@@ -57,8 +57,10 @@ import java.math.RoundingMode;
  * when the user edits one of them in the UI:
  * <ul>
  * <li>factor changed: {@code QtyEntered = uncalibrated qty x factor %}, rounded like at line creation ({@link CalibrationRule#computeQtyCalibrated(Quantity)})</li>
- * <li>{@code QtyEntered} changed (typed, or set by the TU qty callout): {@code factor = QtyEntered / uncalibrated qty x 100}, rounded half-up to 2 decimals</li>
+ * <li>{@code QtyEntered} changed (typed, or set by the TU qty callout): {@code factor = QtyEntered / uncalibrated qty}, rounded half-up to 2 decimals of the percent,
+ * i.e. 4 decimals of the stored fraction (350 / 375 = 93.33 % = 0.9333)</li>
  * </ul>
+ * The column holds the factor as a fraction (0.8 = 80 %, 1 = unchanged); it is read and written only through the {@link OrderGroupRepository} helpers.
  * Both act in every window and only on a calibrated line, i.e. one with a calibration rule or a calibration factor; any other line is left alone.
  * The factor field is shown and editable only where a window makes it so (e.g. a customer's sales order window); elsewhere it just follows an edited QtyEntered.
  * <p>
@@ -120,8 +122,8 @@ public class C_OrderLine
 		}
 
 		final Quantity base = Quantitys.of(baseInLineUom, UomId.ofRepoId(orderLine.getC_UOM_ID()));
-		// exactly base x factor / 100, rounded once to the UOM precision (like at line creation, see CalibrationRule#computeQtyCalibrated)
-		final Quantity qtyCalibrated = base.multiply(factor.toBigDecimal().movePointLeft(2)).roundToUOMPrecision();
+		// exactly base x factor (80 % = x 0.8), rounded once to the UOM precision (like at line creation, see CalibrationRule#computeQtyCalibrated)
+		final Quantity qtyCalibrated = base.multiply(factor.toFraction()).roundToUOMPrecision();
 		orderLine.setQtyEntered(qtyCalibrated.toBigDecimal());
 	}
 

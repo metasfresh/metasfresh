@@ -64,7 +64,7 @@ public class CreateCalibrationRuleCommand
 		{
 			rule.setC_CompensationGroup_Schema_ID(schemaId.getRepoId());
 		}
-		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(rule, Percent.of(request.getFactor()));
+		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(rule, Percent.ofFraction(request.getFactor()));
 		repository.save(rule);
 
 		final CalibrationRuleId ruleId = CalibrationRuleId.ofRepoId(rule.getC_CompensationGroup_CalibrationRule_ID());

@@ -105,7 +105,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 
 		assertThatCode(() -> assertLines(actual, expect("P1")
 				.qtyEntered(new BigDecimal("15"))
-				.calibrationFactor(new BigDecimal("150"))
+				.calibrationFactor(new BigDecimal("1.5"))
 				.calibrationRule(Identifier.ofString("R1"))
 				.qtyEnteredUncalibrated(new BigDecimal("10.00"))
 				.build()))
@@ -146,7 +146,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	{
 		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15", "150", RULE_1, "10"));
 
-		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrationFactor(new BigDecimal("200")).build()))
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrationFactor(new BigDecimal("2")).build()))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("GroupCompensationCalibrationFactor");
 	}
@@ -156,7 +156,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	{
 		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15", null, null, null));
 
-		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrationFactor(new BigDecimal("100")).build()))
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrationFactor(new BigDecimal("1")).build()))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("GroupCompensationCalibrationFactor");
 	}
@@ -258,7 +258,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	{
 		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", null, null, null));
 
-		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrated(false).calibrationFactor(new BigDecimal("100")).build()))
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrated(false).calibrationFactor(new BigDecimal("1")).build()))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("calibrated=false cannot be combined");
 	}
@@ -280,7 +280,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 
 		assertThatCode(() -> assertLines(actual, expect("P1")
 				.qtyEntered(new BigDecimal("200"))
-				.calibrationFactor(new BigDecimal("100"))
+				.calibrationFactor(new BigDecimal("1"))
 				.qtyEnteredUncalibrated(new BigDecimal("200"))
 				.hasCalibrationRule(false)
 				.build()))
