@@ -105,20 +105,20 @@ public class C_OrderLine
 		}
 		if (factor == null)
 		{
-			throw new AdempiereException(MSG_FactorMandatory).markAsUserValidationError();
+			throw new AdempiereException(MSG_FactorMandatory);
 		}
 		if (factor.signum() < 0)
 		{
-			throw new AdempiereException(MSG_NegativeFactor).markAsUserValidationError();
+			throw new AdempiereException(MSG_NegativeFactor);
 		}
 		if (qtyUncalibrated == null)
 		{
-			throw new AdempiereException(MSG_LineNotCalibrated).markAsUserValidationError();
+			throw new AdempiereException(MSG_LineNotCalibrated);
 		}
 		final BigDecimal baseInLineUom = convertBaseToLineUom(orderLine, qtyUncalibrated);
 		if (baseInLineUom == null)
 		{
-			throw new AdempiereException(MSG_UOMChanged).markAsUserValidationError();
+			throw new AdempiereException(MSG_UOMChanged);
 		}
 
 		final Quantity base = Quantitys.of(baseInLineUom, UomId.ofRepoId(orderLine.getC_UOM_ID()));

@@ -184,7 +184,7 @@ class C_OrderLineTest
 		void negativeFactor_isRefused()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			assertThatThrownBy(() -> typeFactor(line, "-1")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_CompensationGroup_CalibrationRule_NegativeFactor");
+			assertThatThrownBy(() -> typeFactor(line, "-1")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_CompensationGroup_CalibrationRule_NegativeFactor").matches(AdempiereException::isUserValidationError, "user validation error");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		}
 
@@ -192,7 +192,7 @@ class C_OrderLineTest
 		void emptyFactor_isRefused()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			assertThatThrownBy(() -> typeFactor(line, null)).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorMandatory");
+			assertThatThrownBy(() -> typeFactor(line, null)).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorMandatory").matches(AdempiereException::isUserValidationError, "user validation error");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		}
 
@@ -200,7 +200,7 @@ class C_OrderLineTest
 		void lineWithoutRuleAndBase_isRefused()
 		{
 			final I_C_OrderLine line = uncalibratedLine(true);
-			assertThatThrownBy(() -> typeFactor(line, "80")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorNotCalibrated");
+			assertThatThrownBy(() -> typeFactor(line, "80")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorNotCalibrated").matches(AdempiereException::isUserValidationError, "user validation error");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("5");
 		}
 
@@ -217,7 +217,7 @@ class C_OrderLineTest
 		void newManualLine_factorTyped_isRefused()
 		{
 			final I_C_OrderLine line = uncalibratedLine(false);
-			assertThatThrownBy(() -> typeFactor(line, "80")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorNotCalibrated");
+			assertThatThrownBy(() -> typeFactor(line, "80")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorNotCalibrated").matches(AdempiereException::isUserValidationError, "user validation error");
 		}
 
 		@Test
@@ -269,7 +269,7 @@ class C_OrderLineTest
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			line.setC_UOM_ID(ml.getC_UOM_ID());
-			assertThatThrownBy(() -> typeFactor(line, "100")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorUOMChanged");
+			assertThatThrownBy(() -> typeFactor(line, "100")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorUOMChanged").matches(AdempiereException::isUserValidationError, "user validation error");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		}
 
