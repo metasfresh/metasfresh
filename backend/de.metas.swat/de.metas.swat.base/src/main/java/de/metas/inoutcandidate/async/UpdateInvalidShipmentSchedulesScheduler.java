@@ -22,15 +22,22 @@
 
 package de.metas.inoutcandidate.async;
 
+import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.slf4j.Logger;
 
 import java.util.Optional;
 import java.util.Properties;
 
 public class UpdateInvalidShipmentSchedulesScheduler extends WorkpackagesOnCommitSchedulerTemplate<ShipmentSchedulesUpdateSchedulerRequest>
 {
+	private static final Logger logger = LogManager.getLogger(UpdateInvalidShipmentSchedulesScheduler.class);
+
 	public UpdateInvalidShipmentSchedulesScheduler(final boolean createOneWorkpackagePerAsyncBatch)
 	{
 		super(UpdateInvalidShipmentSchedulesWorkpackageProcessor.class);
@@ -53,6 +60,27 @@ public class UpdateInvalidShipmentSchedulesScheduler extends WorkpackagesOnCommi
 	protected Object extractModelToEnqueueFromItem(final Collector collector, final ShipmentSchedulesUpdateSchedulerRequest item)
 	{
 		return null; // there is no actual model to be collected
+	}
+
+	/**
+	 * One processable workpackage recomputes all flagged schedules, so none is created if more than one is already queued.
+	 * <p>
+	 * Decided here, not when the flag is written: for a flag written in a transaction this runs after the commit, so the queued
+	 * workpackages (which only count while not yet started) start after the commit and see the flag. Decided while the flag was
+	 * still uncommitted, they could all run before the commit, leaving the committed flag without a workpackage.
+	 */
+	@Override
+	protected boolean isSkipCreatingWorkpackages(@NonNull final IWorkPackageQueue workPackageQueue)
+	{
+		final int alreadyEnqueuedWPs = workPackageQueue.size();
+		if (alreadyEnqueuedWPs > 1)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not scheduling WP because there are {} processable workpackages, and we just need one to revalidate all flagged schedules: {}",
+					alreadyEnqueuedWPs,
+					UpdateInvalidShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
+			return true;
+		}
+		return false;
 	}
 
 	@Override
