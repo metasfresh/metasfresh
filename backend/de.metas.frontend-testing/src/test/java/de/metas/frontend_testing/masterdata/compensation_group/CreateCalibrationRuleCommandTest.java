@@ -6,9 +6,11 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
+import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationRuleRepository;
 import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,7 +91,7 @@ public class CreateCalibrationRuleCommandTest
 		assertThat(rule.getM_Product_ID()).isEqualTo(13);
 		assertThat(rule.getM_Product_Category_ID()).isEqualTo(14);
 		assertThat(rule.getC_CompensationGroup_Schema_ID()).isEqualTo(15);
-		assertThat(rule.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("150");
+		assertThat(CompensationGroupCalibrationRuleRepository.getCalibrationFactor(rule)).isEqualTo(Percent.of(150));
 		assertThat(context.getId(Identifier.ofString("rule1"), CalibrationRuleId.class))
 				.isEqualTo(response.getId());
 	}

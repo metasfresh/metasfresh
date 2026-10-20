@@ -6,9 +6,11 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
+import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationRuleRepository;
 import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
@@ -62,7 +64,7 @@ public class CreateCalibrationRuleCommand
 		{
 			rule.setC_CompensationGroup_Schema_ID(schemaId.getRepoId());
 		}
-		rule.setGroupCompensationCalibrationFactor(request.getFactor());
+		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(rule, Percent.of(request.getFactor()));
 		repository.save(rule);
 
 		final CalibrationRuleId ruleId = CalibrationRuleId.ofRepoId(rule.getC_CompensationGroup_CalibrationRule_ID());

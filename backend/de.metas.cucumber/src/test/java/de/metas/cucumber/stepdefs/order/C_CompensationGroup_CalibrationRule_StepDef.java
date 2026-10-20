@@ -30,7 +30,9 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.bpgroup.C_BP_Group_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
+import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationRuleRepository;
 import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
+import de.metas.util.lang.Percent;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -102,7 +104,7 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 	private void createRule(@NonNull final DataTableRow row)
 	{
 		final I_C_CompensationGroup_CalibrationRule record = newInstance(I_C_CompensationGroup_CalibrationRule.class);
-		record.setGroupCompensationCalibrationFactor(row.getAsBigDecimal(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor));
+		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.of(row.getAsBigDecimal(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor)));
 		record.setSeqNo(row.getAsOptionalInt(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_SeqNo).orElse(10));
 		row.getAsOptionalIdentifier(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_C_BPartner_ID)
 				.ifPresent(id -> record.setC_BPartner_ID(id.lookupNotNullIn(bpartnerTable).getC_BPartner_ID()));
@@ -145,7 +147,7 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final Runnable update = () -> {
 				final I_C_CompensationGroup_CalibrationRule record = getRuleFresh(row);
-				record.setGroupCompensationCalibrationFactor(row.getAsBigDecimal(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor));
+				CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.of(row.getAsBigDecimal(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor)));
 				saveRecord(record);
 			};
 			if (expectingError == null)
