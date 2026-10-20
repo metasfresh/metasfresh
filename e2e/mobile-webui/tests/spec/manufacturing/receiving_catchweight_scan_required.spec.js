@@ -20,15 +20,18 @@ import { receiptDayPlusDays } from '../../utils/receiptDay';
 const L_M_CODE = 'LMQ#1#0.101#08.11.2025#500';
 // A second piece from another lot, with its own weight and best-before date.
 const L_M_CODE_2 = 'LMQ#1#0.093#15.11.2025#501';
+// A third piece, from yet another lot.
+const L_M_CODE_3 = 'LMQ#1#0.097#22.11.2025#502';
 const BEST_BEFORE_DAYS = 70;
 
-const createMasterdata = async ({ isFinishedGoodsCatchWeightScanRequired }) => {
+// isTUMode: the line is received in TUs (receive unit type TU); the PP order then carries the two-piece TU packing.
+const createMasterdata = async ({ isFinishedGoodsCatchWeightScanRequired, isTUMode = false }) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
             login: { user: { language: 'en_US' } },
             mobileConfig: {
-                manufacturing: { isFinishedGoodsCatchWeightScanRequired },
+                manufacturing: { isFinishedGoodsCatchWeightScanRequired, receiveUnitType: isTUMode ? 'TU' : 'CU' },
             },
             warehouses: { 'wh': {} },
             products: {
@@ -43,6 +46,8 @@ const createMasterdata = async ({ isFinishedGoodsCatchWeightScanRequired }) => {
                 'BOM_PI': { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'BOM', qtyCUsPerTU: 4 },
                 // one piece per TU: every receipt of one piece fills one TU
                 'BOM_PI_1PCE': { lu: 'LU1', qtyTUsPerLU: 20, tu: 'TU1', product: 'BOM', qtyCUsPerTU: 1 },
+                // two pieces per TU: the third receipt in TU mode needs a second TU
+                'BOM_PI_2PCE': { lu: 'LU2', qtyTUsPerLU: 20, tu: 'TU2', product: 'BOM', qtyCUsPerTU: 2 },
             },
             handlingUnits: {
                 'HU_COMP1': { product: 'COMP1', warehouse: 'wh', qty: 1000 },
@@ -52,6 +57,7 @@ const createMasterdata = async ({ isFinishedGoodsCatchWeightScanRequired }) => {
                     warehouse: 'wh',
                     product: 'BOM',
                     qty: 100,
+                    piItemProduct: isTUMode ? 'TU2' : undefined,
                     datePromised: '2025-03-01T00:00:00.000+02:00',
                 },
             },
@@ -231,6 +237,192 @@ test('Scan required, target picked by scanning an HU QR code: one piece is recei
                 attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' },
                 cus: [
                     { qty: '1 PCE', attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+                ],
+            },
+        },
+    });
+
+    await ManufacturingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan required, TU mode: each receipt adds one piece to the current TU; a full TU is followed by a new one', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');
+    allure.story('Mandatory catch-weight scan on finished goods receipt');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata({ isFinishedGoodsCatchWeightScanRequired: true, isTUMode: true });
+    const { jobId } = await startJob(masterdata);
+
+    // Every receipt is one piece, so the line counts pieces, not TUs.
+    await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: '0 Stk' });
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 }); // i.e., main product
+    await MaterialReceiptLineScreen.selectNewTUTarget({ tuPIItemProductTestId: masterdata.packingInstructions.BOM_PI_2PCE.tuPIItemProductTestId });
+
+    // first piece: starts TU 1
+    await receiveOneScannedPiece({ qrCode: L_M_CODE, expectedCatchWeight: '0.101', expectedLotNo: '500', expectedBestBeforeDate: '08.11.2025', qtyReceivedAfter: '1 Stk' });
+    // second piece: goes into TU 1, which is then full (2 pieces per TU)
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+    await receiveOneScannedPiece({ qrCode: L_M_CODE_2, expectedCatchWeight: '0.093', expectedLotNo: '501', expectedBestBeforeDate: '15.11.2025', qtyReceivedAfter: '2 Stk' });
+    // third piece: TU 1 is full, so TU 2 is started
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+    await receiveOneScannedPiece({ qrCode: L_M_CODE_3, expectedCatchWeight: '0.097', expectedLotNo: '502', expectedBestBeforeDate: '22.11.2025', qtyReceivedAfter: '3 Stk' });
+
+    await Backend.expect({
+        title: 'TU 1 holds two pieces and TU 2 one piece, each piece with its own scanned weight, lot and best-before date',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [
+                    { tu: 'tu1', qty: '1 PCE' },
+                    { tu: 'tu1', qty: '1 PCE' },
+                    { tu: 'tu2', qty: '1 PCE' },
+                ],
+            },
+        },
+        hus: {
+            'tu1': {
+                storages: { 'BOM': '2 PCE' },
+                attributes: { 'WeightNet': '0.194' },
+                cus: [
+                    { qty: '1 PCE', attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+                    { qty: '1 PCE', attributes: { 'WeightNet': '0.093', 'Lot-Nummer': '501', 'HU_BestBeforeDate': '2025-11-15' } },
+                ],
+            },
+            'tu2': {
+                storages: { 'BOM': '1 PCE' },
+                attributes: { 'WeightNet': '0.097', 'Lot-Nummer': '502', 'HU_BestBeforeDate': '2025-11-22' },
+                cus: [
+                    { qty: '1 PCE', attributes: { 'WeightNet': '0.097', 'Lot-Nummer': '502', 'HU_BestBeforeDate': '2025-11-22' } },
+                ],
+            },
+        },
+    });
+
+    await ManufacturingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan required, TU mode, existing TU picked by its QR code: each piece is added to that TU; once it is full a new TU is started', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');
+    allure.story('Mandatory catch-weight scan on finished goods receipt');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata({ isFinishedGoodsCatchWeightScanRequired: true, isTUMode: true });
+    const { jobId } = await startJob(masterdata);
+
+    // the label of a two-piece TU
+    const tuQRCode = await ManufacturingJobScreen.generateSingleHUQRCode({ piTestId: masterdata.packingInstructions.BOM_PI_2PCE.tuPITestId, numberOfHUs: 1 });
+
+    // first piece: the label's TU is received with it
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 }); // i.e., main product
+    await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: tuQRCode });
+    await receiveOneScannedPiece({ qrCode: L_M_CODE, expectedCatchWeight: '0.101', expectedLotNo: '500', expectedBestBeforeDate: '08.11.2025', qtyReceivedAfter: '1 Stk' });
+
+    // second piece: the operator scans the label of that existing TU again; the piece goes into it, which is then full
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+    await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: tuQRCode });
+    await receiveOneScannedPiece({ qrCode: L_M_CODE_2, expectedCatchWeight: '0.093', expectedLotNo: '501', expectedBestBeforeDate: '15.11.2025', qtyReceivedAfter: '2 Stk' });
+
+    // third piece: the operator scans the full TU's label once more; a new TU is started for the piece
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+    await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: tuQRCode });
+    await receiveOneScannedPiece({ qrCode: L_M_CODE_3, expectedCatchWeight: '0.097', expectedLotNo: '502', expectedBestBeforeDate: '22.11.2025', qtyReceivedAfter: '3 Stk' });
+
+    await Backend.expect({
+        title: 'The labelled TU holds two pieces, the new TU one piece, each piece with its own scanned weight, lot and best-before date',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [
+                    { tu: 'tu1', qty: '1 PCE' },
+                    { tu: 'tu1', qty: '1 PCE' },
+                    { tu: 'tu2', qty: '1 PCE' },
+                ],
+            },
+        },
+        hus: {
+            [tuQRCode]: {
+                storages: { 'BOM': '2 PCE' },
+                attributes: { 'WeightNet': '0.194' },
+                cus: [
+                    { qty: '1 PCE', attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+                    { qty: '1 PCE', attributes: { 'WeightNet': '0.093', 'Lot-Nummer': '501', 'HU_BestBeforeDate': '2025-11-15' } },
+                ],
+            },
+            // tu1 is the labelled TU: same content
+            'tu1': {
+                storages: { 'BOM': '2 PCE' },
+            },
+            'tu2': {
+                storages: { 'BOM': '1 PCE' },
+                attributes: { 'WeightNet': '0.097', 'Lot-Nummer': '502', 'HU_BestBeforeDate': '2025-11-22' },
+                cus: [
+                    { qty: '1 PCE', attributes: { 'WeightNet': '0.097', 'Lot-Nummer': '502', 'HU_BestBeforeDate': '2025-11-22' } },
+                ],
+            },
+        },
+    });
+
+    await ManufacturingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan required, TU mode, new LU: the pieces fill the LU\'s current TU; a full TU is followed by a new TU on the same LU', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');
+    allure.story('Mandatory catch-weight scan on finished goods receipt');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata({ isFinishedGoodsCatchWeightScanRequired: true, isTUMode: true });
+    const { jobId } = await startJob(masterdata);
+
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 }); // i.e., main product
+    await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.BOM_PI_2PCE.luPIItemTestId });
+
+    // first piece: creates the LU with its first TU
+    await receiveOneScannedPiece({ qrCode: L_M_CODE, expectedCatchWeight: '0.101', expectedLotNo: '500', expectedBestBeforeDate: '08.11.2025', qtyReceivedAfter: '1 Stk' });
+    // second piece: into that TU on the LU, which is then full
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+    await receiveOneScannedPiece({ qrCode: L_M_CODE_2, expectedCatchWeight: '0.093', expectedLotNo: '501', expectedBestBeforeDate: '15.11.2025', qtyReceivedAfter: '2 Stk' });
+    // third piece: a new TU on the same LU
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+    await receiveOneScannedPiece({ qrCode: L_M_CODE_3, expectedCatchWeight: '0.097', expectedLotNo: '502', expectedBestBeforeDate: '22.11.2025', qtyReceivedAfter: '3 Stk' });
+
+    await Backend.expect({
+        title: 'One LU with a TU of two pieces and a TU of one piece, each piece with its own scanned weight, lot and best-before date',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [
+                    { lu: 'lu1', qty: '1 PCE' },
+                    { lu: 'lu1', qty: '1 PCE' },
+                    { lu: 'lu1', qty: '1 PCE' },
+                ],
+            },
+        },
+        hus: {
+            'lu1': {
+                storages: { 'BOM': '3 PCE' },
+                attributes: { 'WeightNet': '0.291' },
+                tus: [
+                    // the new LU's (empty) aggregate of full TUs: the first piece is a partial TU, so it went into a real TU
+                    { isAggregatedTU: true },
+                    {
+                        storages: { 'BOM': '2 PCE' },
+                        cus: [
+                            { qty: '1 PCE', attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+                            { qty: '1 PCE', attributes: { 'WeightNet': '0.093', 'Lot-Nummer': '501', 'HU_BestBeforeDate': '2025-11-15' } },
+                        ],
+                    },
+                    {
+                        storages: { 'BOM': '1 PCE' },
+                        cus: [
+                            { qty: '1 PCE', attributes: { 'WeightNet': '0.097', 'Lot-Nummer': '502', 'HU_BestBeforeDate': '2025-11-22' } },
+                        ],
+                    },
                 ],
             },
         },
