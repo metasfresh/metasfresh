@@ -245,6 +245,60 @@ Feature: Bonus that the customer deducts when paying an invoice
 
   # ##############################################################################################
   # ##############################################################################################
+  # A goods-category bonus and a packaging-category bonus, each on its own base and VAT
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentCustomerDeduction_TC2b
+  Scenario: A goods-category bonus and a packaging-category bonus become two credit memo lines, each on its own base and VAT
+    Given metasfresh contains C_Flatrate_Conditions:
+      | Identifier     | Type_Conditions |
+      | conditionsWare | Refund          |
+      | conditionsPack | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | IsDeductedAtPayment |
+      | configWare | conditionsWare           | monthlySchedule      | 5.2           | goodsCategory         | bonusWare        | Y                   |
+      | configPack | conditionsPack           | monthlySchedule      | 0.8           | packCategory          | bonusPack        | Y                   |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
+      | termWare   | conditionsWare                      | customerBP                  | 2026-07-01 | 2026-12-31 |
+      | termPack   | conditionsPack                      | customerBP                  | 2026-07-01 | 2026-12-31 |
+
+    # the goods bonus: 5.2 % of the 100.00 goods = 5.20 + 7 % VAT 0.36 = 5.56
+    # the packaging bonus: 0.8 % of the 50.00 crates = 0.40 + 19 % VAT 0.08 = 0.48; together 6.04
+    # the customer pays 166.50 - 6.04 = 160.46
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 160.46 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | invoice      | payment      | bonusCreditMemo           |
+
+    Then validate created invoices
+      | C_Invoice_ID    | GrandTotal | DocSubType | IsPaid |
+      | invoice         | 166.50 EUR |            | true   |
+      | bonusCreditMemo | 6.04 EUR   | PB         | true   |
+    And validate created invoice lines
+      | C_Invoice_ID    | M_Product_ID | QtyInvoiced | LineNetAmt | C_Tax_ID |
+      | bonusCreditMemo | bonusWare    | 1           | 5.20       | lowTax   |
+      | bonusCreditMemo | bonusPack    | 1           | 0.40       | highTax  |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Account_ID       | Record_ID       | M_Product_ID | C_Tax_ID |
+      | P_Revenue_Acct        | 5.20 EUR    |             | bonusRevenueAcct | bonusCreditMemo | bonusWare    | lowTax   |
+      | P_Revenue_Acct        | 0.40 EUR    |             | bonusRevenueAcct | bonusCreditMemo | bonusPack    | highTax  |
+      | T_Due_Acct            | 0.36 EUR    |             |                  | bonusCreditMemo |              | lowTax   |
+      | T_Due_Acct            | 0.08 EUR    |             |                  | bonusCreditMemo |              | highTax  |
+      | C_Receivable_Acct     |             | 6.04 EUR    |                  | bonusCreditMemo |              | -        |
+      | *                     |             |             |                  | bonusCreditMemo |              |          |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
   # Partial payments: the bonus is deducted once
   # ##############################################################################################
   # ##############################################################################################
