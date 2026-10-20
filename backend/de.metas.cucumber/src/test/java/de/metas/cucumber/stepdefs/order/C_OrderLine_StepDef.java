@@ -71,6 +71,7 @@ import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -121,7 +122,6 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import de.metas.util.lang.Percent;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.DataTableUtil.NULL_STRING;
