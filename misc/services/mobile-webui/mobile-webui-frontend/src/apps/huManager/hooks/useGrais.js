@@ -5,7 +5,14 @@ import { getAssignedGrais, getExtraGrais, mergeGraiArrays, mergeGraisAfterSend }
 import * as api from '../api';
 
 export const useGrais = ({ huId }) => {
-  const [graiCodes, setGraiCodes] = useState([]);
+  const [graiCodes, setGraiCodesState] = useState([]);
+  // The latest list, readable synchronously: scanner callbacks and the Send answer can arrive before
+  // React has re-rendered with the previous change.
+  const graiCodesRef = useRef([]);
+  const setGraiCodes = useCallback((grais) => {
+    graiCodesRef.current = grais;
+    setGraiCodesState(grais);
+  }, []);
   const [tuCount, setTuCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [dirty, setDirty] = useState(false);
@@ -16,10 +23,21 @@ export const useGrais = ({ huId }) => {
   // The list shown by the latest successful reload (Undo), and the edit count at that moment.
   const lastReloadRef = useRef(null);
 
-  const markEdited = useCallback(() => {
-    editCountRef.current += 1;
-    setDirty(true);
-  }, []);
+  /**
+   * Apply a user edit. An edit that leaves the list unchanged (e.g. the scanner delivering a GRAI that
+   * is already in the list again) is ignored: it neither counts as an edit nor marks the screen unsaved.
+   */
+  const editGrais = useCallback(
+    (computeNewGrais) => {
+      const prev = graiCodesRef.current;
+      const next = computeNewGrais(prev);
+      if (next === prev) return;
+      setGraiCodes(next);
+      editCountRef.current += 1;
+      setDirty(true);
+    },
+    [setGraiCodes]
+  );
 
   // Load initial state from backend
   useEffect(() => {
@@ -33,28 +51,17 @@ export const useGrais = ({ huId }) => {
       })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setLoading(false));
-  }, [huId]);
+  }, [huId, setGraiCodes]);
 
-  const addGrais = useCallback(
-    (newGrais) => {
-      setGraiCodes((prev) => mergeGraiArrays(prev, newGrais).merged);
-      markEdited();
-    },
-    [markEdited]
-  );
+  const addGrais = useCallback((newGrais) => editGrais((prev) => mergeGraiArrays(prev, newGrais).merged), [editGrais]);
 
   const removeGrai = useCallback(
-    (graiToRemove) => {
-      setGraiCodes((prev) => prev.filter((g) => g !== graiToRemove));
-      markEdited();
-    },
-    [markEdited]
+    (graiToRemove) =>
+      editGrais((prev) => (prev.includes(graiToRemove) ? prev.filter((g) => g !== graiToRemove) : prev)),
+    [editGrais]
   );
 
-  const clearAllGrais = useCallback(() => {
-    setGraiCodes([]);
-    markEdited();
-  }, [markEdited]);
+  const clearAllGrais = useCallback(() => editGrais((prev) => (prev.length ? [] : prev)), [editGrais]);
 
   /**
    * Send the assigned GRAIs to the backend. The user may keep scanning, removing or tapping Undo
@@ -65,10 +72,10 @@ export const useGrais = ({ huId }) => {
   const sendToBackend = useCallback(() => {
     if (!huId) return;
     setSending(true);
-    const sendBaseline = { grais: graiCodes, editCount: editCountRef.current };
+    const sendBaseline = { grais: graiCodesRef.current, editCount: editCountRef.current };
     const reloadAtSend = lastReloadRef.current;
     api
-      .setGRAIs(huId, getAssignedGrais(graiCodes, tuCount))
+      .setGRAIs(huId, getAssignedGrais(sendBaseline.grais, tuCount))
       .then((response) => {
         const backendGrais = response.graiCodes || [];
         const newTuCount = response.tuCount || 0;
@@ -76,10 +83,10 @@ export const useGrais = ({ huId }) => {
         const baseline = lastReloadRef.current !== reloadAtSend ? lastReloadRef.current : sendBaseline;
         const editedSinceBaseline = editCountRef.current !== baseline.editCount;
         setTuCount(newTuCount);
-        setGraiCodes((currentGrais) =>
+        setGraiCodes(
           mergeGraisAfterSend({
             baselineGrais: baseline.grais,
-            currentGrais,
+            currentGrais: graiCodesRef.current,
             backendGrais,
             tuCount: newTuCount,
           })
@@ -89,7 +96,7 @@ export const useGrais = ({ huId }) => {
       })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setSending(false));
-  }, [huId, graiCodes, tuCount]);
+  }, [huId, tuCount, setGraiCodes]);
 
   const loadFromBackend = useCallback(() => {
     if (!huId) return;
@@ -103,7 +110,7 @@ export const useGrais = ({ huId }) => {
         setDirty(false);
       })
       .catch((axiosError) => toastError({ axiosError }));
-  }, [huId]);
+  }, [huId, setGraiCodes]);
 
   const assignedGrais = getAssignedGrais(graiCodes, tuCount);
   const extraGrais = getExtraGrais(graiCodes, tuCount);

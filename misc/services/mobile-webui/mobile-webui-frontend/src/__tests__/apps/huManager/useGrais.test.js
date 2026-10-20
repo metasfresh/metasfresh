@@ -193,6 +193,27 @@ describe('useGrais - send response while the user keeps scanning', () => {
     expect(result.current.dirty).toBe(true);
   });
 
+  it('a GRAI already in the list delivered again while sending (scanner re-read) changes nothing: not dirty', async () => {
+    const result = await renderUseGrais();
+    act(() => result.current.addGrais(['A', 'B']));
+
+    const answer = sendAndHoldResponse(result);
+    act(() => result.current.addGrais(['B']));
+    await answer({ graiCodes: ['A', 'B'], tuCount: 0 });
+
+    expect(result.current.graiCodes).toEqual(['A', 'B']);
+    expect(result.current.dirty).toBe(false);
+  });
+
+  it('a GRAI already in the list scanned again after a send changes nothing: stays not dirty', async () => {
+    const result = await renderUseGrais({ initialGrais: ['A'] });
+    act(() => result.current.addGrais(['A']));
+    act(() => result.current.removeGrai('X'));
+
+    expect(result.current.graiCodes).toEqual(['A']);
+    expect(result.current.dirty).toBe(false);
+  });
+
   it('a failed send keeps the local list and stays dirty', async () => {
     const result = await renderUseGrais();
     act(() => result.current.addGrais(['A']));
