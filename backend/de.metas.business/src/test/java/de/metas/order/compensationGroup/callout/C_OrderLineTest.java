@@ -1,15 +1,15 @@
 package de.metas.order.compensationGroup.callout;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
+import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
-import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstance;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstanceFactory;
 import org.adempiere.exceptions.AdempiereException;
