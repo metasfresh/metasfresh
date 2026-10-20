@@ -1,10 +1,12 @@
 import { test } from "../../../playwright.config";
+import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
+import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 
@@ -312,6 +314,30 @@ test('Clear All GRAIs cancelled keeps chips', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
+test('GRAIs scanned back to back are each added once', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI scanning');
+    allure.severity('critical');
+
+    await createMasterdataAndScanLU({ page });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    const barcodes = makeGraiBarcodes(3);
+    await GRAIScreen.scanGraiBarcodesBackToBack({ barcodeStrings: barcodes });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+
+    // The scanner component has consumed every scan: nothing is left in its reader, so nothing can be
+    // delivered later (again, or glued to the next scan).
+    await BarcodeScannerComponent.waitForInputFieldToGetEmpty();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+    for (let n = 1; n <= barcodes.length; n++) {
+        await GRAIScreen.expectGraiChipWithText({ text: graiChipText(n) });
+    }
+});
+
+// noinspection JSUnusedLocalSymbols
 test('Over-scan shows extra chips in orange', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
@@ -507,6 +533,47 @@ test('Undo discards unsaved changes and reloads from backend', async ({ page }) 
     await GRAIScreen.tapUndoButton();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 2 });
     await GRAIScreen.expectSendButtonDisabled();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('A GRAI scanned while Send is still in flight is kept and can be sent', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI Send');
+    allure.severity('critical');
+
+    await createMasterdataAndScanLU({ page });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100000000001' });
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100000000002' });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 2 });
+
+    // The user taps Send and, without waiting for the answer, scans the next GRAI
+    const sendResponse = await GRAIScreen.holdNextSendResponse();
+    await GRAIScreen.tapSendButtonWithoutWaiting();
+    await test.step('Send request carries the 2 GRAIs on screen at tap time', async () => {
+        expect(await sendResponse.sentGraiCodes).toEqual([graiChipText(1), graiChipText(2)]);
+    });
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100000000003' });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+
+    // The answer arrives: the 3rd GRAI is still there and still unsaved
+    sendResponse.release();
+    await GRAIScreen.waitForSendResponseHandled();
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: [graiChipText(1), graiChipText(2), graiChipText(3)] });
+    await GRAIScreen.expectSendButtonEnabled();
+    await GRAIScreen.expectUndoButtonEnabled();
+
+    // A second Send saves all 3
+    await GRAIScreen.tapSendButton();
+    await GRAIScreen.expectSendButtonDisabled();
+
+    // Verify backend persistence: reload from backend, all 3 GRAIs survived the round-trip
+    await GRAIScreen.reloadFromBackend();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: [graiChipText(1), graiChipText(2), graiChipText(3)] });
 });
 
 // noinspection JSUnusedLocalSymbols
