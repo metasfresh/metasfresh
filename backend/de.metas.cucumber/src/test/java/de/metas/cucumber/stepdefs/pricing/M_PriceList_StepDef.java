@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDef;
@@ -55,6 +56,7 @@ import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -65,6 +67,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -77,6 +80,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
@@ -103,6 +107,7 @@ public class M_PriceList_StepDef
 	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
+	@NonNull private final M_DiscountSchema_StepDefData discountSchemaTable;
 	@NonNull private final C_TaxCategory_StepDef taxCategoryStepDef;
 
 	@And("metasfresh contains M_PricingSystems")
@@ -115,6 +120,16 @@ public class M_PriceList_StepDef
 	public void add_M_PriceList(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::createM_PriceList);
+	}
+
+	/**
+	 * Like {@code metasfresh contains M_PriceLists}, but always inserts a new record: no existing price list
+	 * (same pricing system / country / SOTrx) is looked up and overwritten.
+	 */
+	@And("metasfresh contains new M_PriceLists:")
+	public void add_new_M_PriceList(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::createNewM_PriceList);
 	}
 
 	private void createM_PricingSystem(@NonNull final DataTableRow row)
@@ -176,6 +191,37 @@ public class M_PriceList_StepDef
 		row.getAsIdentifier().putOrReplace(priceListTable, priceList);
 	}
 
+	private void createNewM_PriceList(@NonNull final DataTableRow row)
+	{
+		final I_M_PricingSystem pricingSystem = row.getAsIdentifier(COLUMNNAME_M_PricingSystem_ID).lookupNotNullIn(pricingSystemTable);
+		final I_C_Country country = extractOptionalCountry(row).orElse(null);
+		final SOTrx soTrx = SOTrx.ofBoolean(row.getAsBoolean("SOTrx"));
+		final boolean isSOPriceList = row.getAsOptionalBoolean(I_M_PriceList.COLUMNNAME_IsSOPriceList).orElse(soTrx.toBoolean());
+
+		final I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
+
+		final OrgId orgId = row.getAsOptionalIdentifier("AD_Org_ID").map(orgTable::getId).orElse(ORG_ID);
+		final String name = row.getAsOptionalName("Name").orElseGet(() -> pricingSystem.getName() + "_" + (country != null ? country.getCountryCode() : "-") + "_" + soTrx + "_" + row.getAsIdentifier().getAsString());
+
+		priceList.setAD_Org_ID(orgId.getRepoId());
+		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+		priceList.setC_Currency_ID(extractCurrencyId(row).getRepoId());
+		priceList.setName(name);
+		priceList.setIsTaxIncluded(row.getAsOptionalBoolean("IsTaxIncluded").orElseFalse());
+		priceList.setPricePrecision(row.getAsOptionalInt("PricePrecision").orElse(2));
+		priceList.setIsActive(row.getAsOptionalBoolean("IsActive").orElseTrue());
+		priceList.setIsSOPriceList(isSOPriceList);
+		priceList.setC_Country_ID(country != null ? country.getC_Country_ID() : -1);
+
+		row.getAsOptionalString("Description").ifPresent(priceList::setDescription);
+		row.getAsOptionalIdentifier(I_M_PriceList.COLUMNNAME_BasePriceList_ID)
+				.map(priceListTable::get)
+				.ifPresent(basePriceList -> priceList.setBasePriceList_ID(basePriceList.getM_PriceList_ID()));
+
+		saveRecord(priceList);
+		row.getAsIdentifier().putOrReplace(priceListTable, priceList);
+	}
+
 	private Optional<I_M_PriceList> getExistingPriceList(@NonNull final SOTrx soTrx, @NonNull final PricingSystemId pricingSystemId, final CountryId countryId)
 	{
 		final List<I_M_PriceList> existingPriceLists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx, null);
@@ -215,6 +261,84 @@ public class M_PriceList_StepDef
 	public void add_M_PriceListVersion(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::createM_PriceList_Version);
+	}
+
+	/**
+	 * Like {@code metasfresh contains M_PriceList_Versions}, but always inserts a new record: no existing version
+	 * of the price list valid at that date is looked up and overwritten.
+	 */
+	@And("metasfresh contains new M_PriceList_Versions:")
+	public void add_new_M_PriceListVersion(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::createNewM_PriceList_Version);
+	}
+
+	private void createNewM_PriceList_Version(@NonNull final DataTableRow row)
+	{
+		final I_M_PriceList priceList = row.getAsIdentifier(COLUMNNAME_M_PriceList_ID).lookupNotNullIn(priceListTable);
+
+		final ZonedDateTime validFrom = row.getAsOptionalLocalDate(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.orElse(DEFAULT_ValidFrom)
+				.atStartOfDay(SystemTime.zoneId()); // same zone as the existing step
+
+		final I_M_PriceList_Version priceListVersion = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
+		priceListVersion.setAD_Org_ID(priceList.getAD_Org_ID());
+		priceListVersion.setM_PriceList_ID(priceList.getM_PriceList_ID());
+		priceListVersion.setValidFrom(Timestamp.from(validFrom.toInstant()));
+		priceListVersion.setIsActive(row.getAsOptionalBoolean("IsActive").orElseTrue());
+		row.getAsOptionalString(I_M_PriceList_Version.COLUMNNAME_Description).ifPresent(priceListVersion::setDescription);
+		row.getAsOptionalIdentifier(I_M_PriceList_Version.COLUMNNAME_M_DiscountSchema_ID)
+				.map(discountSchemaTable::get)
+				.map(I_M_DiscountSchema::getM_DiscountSchema_ID)
+				.ifPresent(priceListVersion::setM_DiscountSchema_ID);
+		row.getAsOptionalIdentifier(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID)
+				.map(priceListVersionTable::get)
+				.map(I_M_PriceList_Version::getM_PriceList_Version_ID)
+				.ifPresent(priceListVersion::setM_Pricelist_Version_Base_ID);
+
+		saveRecord(priceListVersion);
+		row.getAsIdentifier().putOrReplace(priceListVersionTable, priceListVersion);
+	}
+
+	@Then("the M_PriceLists are persisted separately:")
+	public void validate_M_PriceLists(@NonNull final DataTable dataTable)
+	{
+		final List<Integer> ids = DataTableRows.of(dataTable).stream().map(this::validateM_PriceList).collect(Collectors.toList());
+		assertThat(ids).as("every identifier must be its own M_PriceList record").doesNotHaveDuplicates();
+	}
+
+	private int validateM_PriceList(@NonNull final DataTableRow row)
+	{
+		final I_M_PriceList cached = row.getAsIdentifier().lookupNotNullIn(priceListTable);
+		final I_M_PriceList actual = InterfaceWrapperHelper.load(cached.getM_PriceList_ID(), I_M_PriceList.class);
+
+		final I_M_PricingSystem pricingSystem = row.getAsIdentifier(COLUMNNAME_M_PricingSystem_ID).lookupNotNullIn(pricingSystemTable);
+		assertThat(actual.getM_PricingSystem_ID()).isEqualTo(pricingSystem.getM_PricingSystem_ID());
+		assertThat(actual.getC_Currency_ID()).isEqualTo(extractCurrencyId(row).getRepoId());
+		extractOptionalCountry(row).ifPresent(country -> assertThat(actual.getC_Country_ID()).isEqualTo(country.getC_Country_ID()));
+		row.getAsOptionalName("Name").ifPresent(name -> assertThat(actual.getName()).isEqualTo(name));
+		row.getAsOptionalBoolean("IsActive").ifPresent(isActive -> assertThat(actual.isActive()).isEqualTo(isActive));
+		return actual.getM_PriceList_ID();
+	}
+
+	@Then("the M_PriceList_Versions are persisted separately:")
+	public void validate_M_PriceList_Versions(@NonNull final DataTable dataTable)
+	{
+		final List<Integer> ids = DataTableRows.of(dataTable).stream().map(this::validateM_PriceList_Version).collect(Collectors.toList());
+		assertThat(ids).as("every identifier must be its own M_PriceList_Version record").doesNotHaveDuplicates();
+	}
+
+	private int validateM_PriceList_Version(@NonNull final DataTableRow row)
+	{
+		final I_M_PriceList_Version cached = row.getAsIdentifier().lookupNotNullIn(priceListVersionTable);
+		final I_M_PriceList_Version actual = InterfaceWrapperHelper.load(cached.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
+
+		final I_M_PriceList priceList = row.getAsIdentifier(COLUMNNAME_M_PriceList_ID).lookupNotNullIn(priceListTable);
+		assertThat(actual.getM_PriceList_ID()).isEqualTo(priceList.getM_PriceList_ID());
+		final Timestamp expectedValidFrom = Timestamp.from(row.getAsLocalDate(I_M_PriceList_Version.COLUMNNAME_ValidFrom).atStartOfDay(SystemTime.zoneId()).toInstant());
+		assertThat(actual.getValidFrom()).isEqualTo(expectedValidFrom);
+		row.getAsOptionalString(I_M_PriceList_Version.COLUMNNAME_Description).ifPresent(description -> assertThat(actual.getDescription()).isEqualTo(description));
+		return actual.getM_PriceList_Version_ID();
 	}
 
 	private void createM_PriceList_Version(@NonNull final DataTableRow row)
