@@ -205,7 +205,6 @@ public class M_InOut_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
