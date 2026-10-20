@@ -130,13 +130,21 @@ final class ShipmentScheduleSegmentChangedProcessor
 	}
 
 	/**
-	 * Mid-batch flush: writes the flags in the business transaction, behind a savepoint, so they commit or roll back with the
-	 * change that made the segments stale, and a failing flush rolls back to the savepoint instead of aborting the business
-	 * transaction. On failure the segments are kept and flagged by {@link #flushAfterCommit()}.
+	 * Set after the first failed mid-batch flush: the remaining segments are left to {@link #flushAfterCommit()} instead of
+	 * retrying (and warning about) the full accumulator on every further {@link #addSegment}.
+	 */
+	private boolean midBatchFlushDisabled = false;
+
+	/**
+	 * Mid-batch flush. With an ACTIVE thread-inherited transaction the flags are written in it, behind a savepoint, so they commit
+	 * or roll back with the change that made the segments stale, and a failure rolls back to the savepoint instead of aborting the
+	 * business transaction. Without an active transaction (e.g. a segment added from an after-commit listener; running in the
+	 * thread-inherited trx would restart a transaction that is never committed) the flags are written out of transaction.
+	 * On failure the segments are kept, further mid-batch flushes are disabled, and {@link #flushAfterCommit()} flags them.
 	 */
 	private void flushMidBatch()
 	{
-		if (segments.isEmpty())
+		if (midBatchFlushDisabled || segments.isEmpty())
 		{
 			return;
 		}
@@ -145,13 +153,22 @@ final class ShipmentScheduleSegmentChangedProcessor
 
 		try
 		{
-			// runInThreadInheritedTrx is NESTED: it creates a savepoint and rolls back to it on failure
-			Services.get(ITrxManager.class).runInThreadInheritedTrx(
-					() -> shipmentScheduleInvalidator.flagSegmentsForRecomputeInThreadInheritedTrx(segmentsCopy));
+			final ITrxManager trxManager = Services.get(ITrxManager.class);
+			if (trxManager.isActive(trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone)))
+			{
+				// runInThreadInheritedTrx is NESTED: it creates a savepoint and rolls back to it on failure
+				trxManager.runInThreadInheritedTrx(
+						() -> shipmentScheduleInvalidator.flagSegmentsForRecomputeInThreadInheritedTrx(segmentsCopy));
+			}
+			else
+			{
+				shipmentScheduleInvalidator.flagSegmentsForRecomputeOutOfTrx(segmentsCopy);
+			}
 		}
 		catch (final RuntimeException ex)
 		{
-			logger.warn("Mid-batch invalidation-segment flush failed ({} segments retained for the AFTER_COMMIT flush)", segments.size(), ex);
+			midBatchFlushDisabled = true;
+			logger.warn("Mid-batch invalidation-segment flush failed ({} segments retained for the AFTER_COMMIT flush; further mid-batch flushes disabled)", segments.size(), ex);
 			return;
 		}
 

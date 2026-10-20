@@ -290,16 +290,75 @@ public class ShipmentScheduleInvalidateRepositoryTest
 	}
 
 	@Test
-	public void storageSegmentInserts_singleOverBudgetSegment_getsItsOwnStatement_andIsNotDropped()
+	public void storageSegmentInserts_segmentInDangerousBand_isWidened_everyStatementWithinBudget()
 	{
-		final IShipmentScheduleSegment huge = segmentWithLocators(1, ShipmentScheduleInvalidateRepository.MAX_SQL_PARAMS_PER_STATEMENT + 1000);
+		// 33,000 locators + product + bpartner = 33,002 params > 32,767: sending it would kill the connection
+		final IShipmentScheduleSegment dangerous = segmentWithLocators(1, 33_000);
 		final IShipmentScheduleSegment small = segmentWithLocators(2, 10);
 
-		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(java.util.Arrays.asList(small, huge));
+		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(java.util.Arrays.asList(small, dangerous));
 
-		assertThat(inserts).hasSize(2);
-		assertThat(inserts.stream().mapToInt(ShipmentScheduleInvalidateRepository.StorageSegmentsInsert::getSegmentsCount).sum()).isEqualTo(2);
-		assertThat(inserts.get(1).getSqlParams()).containsAll(huge.getLocatorIds());
-		inserts.forEach(ShipmentScheduleInvalidateRepositoryTest::assertParamCountMatchesPlaceholders);
+		final List<Object> allParams = new ArrayList<>();
+		for (final ShipmentScheduleInvalidateRepository.StorageSegmentsInsert insert : inserts)
+		{
+			assertThat(insert.getSqlParams().size()).isLessThanOrEqualTo(ShipmentScheduleInvalidateRepository.MAX_SQL_PARAMS_PER_STATEMENT);
+			assertParamCountMatchesPlaceholders(insert);
+			allParams.addAll(insert.getSqlParams());
+		}
+		assertThat(allParams).as("the widened segment must still be flagged by its product").contains(1);
+		assertThat(allParams).as("the locator restriction of the oversized segment is dropped").doesNotContain(1_000_001 + 20_000);
+		assertThat(allParams).as("the small segment is untouched").containsAll(small.getLocatorIds());
+	}
+
+	@Test
+	public void storageSegmentInserts_segmentWithTooManyProducts_isPartitioned_allProductsBound_withinBudget()
+	{
+		final List<Integer> productIds = new ArrayList<>();
+		for (int i = 1; i <= 70_000; i++)
+		{
+			productIds.add(i);
+		}
+		final IShipmentScheduleSegment huge = ImmutableShipmentScheduleSegment.builder().productIds(productIds).bpartnerId(2).locatorId(3).build();
+
+		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(java.util.Collections.singletonList(huge));
+
+		final List<Object> allParams = new ArrayList<>();
+		for (final ShipmentScheduleInvalidateRepository.StorageSegmentsInsert insert : inserts)
+		{
+			assertThat(insert.getSqlParams().size()).isLessThanOrEqualTo(ShipmentScheduleInvalidateRepository.MAX_SQL_PARAMS_PER_STATEMENT);
+			assertParamCountMatchesPlaceholders(insert);
+			allParams.addAll(insert.getSqlParams());
+		}
+		assertThat(inserts).hasSizeGreaterThan(1);
+		assertThat(allParams).containsAll(productIds);
+	}
+
+	@Test
+	public void invalidateStorageSegments_outOfTrx_laterChunkFails_stillEnqueuesForCommittedChunks()
+	{
+		final ShipmentScheduleInvalidateRepository spy = org.mockito.Mockito.spy(new ShipmentScheduleInvalidateRepository());
+		org.mockito.Mockito.doReturn(1).doThrow(new RuntimeException("test: chunk 2 failed")).when(spy).executeStorageSegmentsInsert(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+		org.mockito.Mockito.doNothing().when(spy).enqueueShipmentScheduleRecompute(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+
+		final List<IShipmentScheduleSegment> segments = java.util.Arrays.asList(segmentWithLocators(1, 20_000), segmentWithLocators(2, 20_000));
+
+		org.assertj.core.api.Assertions.assertThatThrownBy(() -> spy.invalidateStorageSegments(segments, null))
+				.hasMessageContaining("chunk 2 failed");
+
+		org.mockito.Mockito.verify(spy).enqueueShipmentScheduleRecompute(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.any());
+	}
+
+	@Test
+	public void invalidateStorageSegments_inTrx_laterChunkFails_doesNotEnqueue()
+	{
+		final ShipmentScheduleInvalidateRepository spy = org.mockito.Mockito.spy(new ShipmentScheduleInvalidateRepository());
+		org.mockito.Mockito.doReturn(1).doThrow(new RuntimeException("test: chunk 2 failed")).when(spy).executeStorageSegmentsInsert(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+
+		final List<IShipmentScheduleSegment> segments = java.util.Arrays.asList(segmentWithLocators(1, 20_000), segmentWithLocators(2, 20_000));
+
+		org.assertj.core.api.Assertions.assertThatThrownBy(() -> spy.invalidateStorageSegmentsInThreadInheritedTrx(segments))
+				.hasMessageContaining("chunk 2 failed");
+
+		org.mockito.Mockito.verify(spy, org.mockito.Mockito.never()).enqueueShipmentScheduleRecompute(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
 	}
 }
