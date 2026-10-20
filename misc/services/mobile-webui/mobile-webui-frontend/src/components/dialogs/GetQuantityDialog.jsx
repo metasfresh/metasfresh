@@ -57,6 +57,9 @@ const assertLotNoAndBestBeforeDateScanned = (qrCode) => {
   }
 };
 
+// Catch weight with a mandatory scan is received one at a time: one receipt = one unit carrying the one scanned weight.
+const QTY_SCAN_FOR_REVIEW = 1;
+
 const GetQuantityDialog = ({
   readOnly: readOnlyParam = false,
   hideQtyInput = false,
@@ -102,19 +105,22 @@ const GetQuantityDialog = ({
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
   const useZeroAsInitialValue = useBooleanSetting('qtyInput.useZeroAsInitialValue');
 
+  const useCatchWeight = !scaleDevice && catchWeightUom;
+  // Mandatory scan: the operator cannot leave the scanner without a scan, and the scan only fills the fields for review.
+  const isScanForReview = isCatchWeightScanMandatory && !!useCatchWeight;
+
   const [qtyInfo, setQtyInfo] = useState(
-    qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget)
+    qtyInfos.invalidOfNumber(
+      isScanForReview ? QTY_SCAN_FOR_REVIEW : (useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget
+    )
   );
   const [rejectedReason, setRejectedReason] = useState(computeDefaultQtyRejectedReason(qtyRejectedReasons));
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
-  const useCatchWeight = !scaleDevice && catchWeightUom;
   const [catchWeight, setCatchWeight] = useState(
     qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : catchWeightParam)
   );
   const [showCatchWeightQRCodeReader, setShowCatchWeightQRCodeReader] = useState(useCatchWeight);
-  // Mandatory scan: the operator cannot leave the scanner without a scan, and the scan only fills the fields for review.
-  const isScanForReview = isCatchWeightScanMandatory && !!useCatchWeight;
   const [scannedQRCodeInfo, setScannedQRCodeInfo] = useState(null);
 
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
@@ -174,7 +180,7 @@ const GetQuantityDialog = ({
     if (isProcessing) return;
 
     if (allValid) {
-      const inputQtyEnteredAndValidated = qtyInfos.toNumberOrString(qtyInfo);
+      const inputQtyEnteredAndValidated = isScanForReview ? QTY_SCAN_FOR_REVIEW : qtyInfos.toNumberOrString(qtyInfo);
 
       let qtyEnteredAndValidated = inputQtyEnteredAndValidated;
       if (!!qtyAlreadyOnScale && typeof inputQtyEnteredAndValidated === 'number') {
@@ -217,7 +223,7 @@ const GetQuantityDialog = ({
 
   // Overwrites the pre-filled values with the scanned ones and shows them for review; the operator confirms.
   const fillFieldsFromScannedQRCode = ({ qrCode, scannedBarcode }) => {
-    setQtyInfo(qtyInfos.invalidOfNumber(1));
+    setQtyInfo(qtyInfos.invalidOfNumber(QTY_SCAN_FOR_REVIEW));
     setCatchWeight(qtyInfos.invalidOfNumber(qrCode.weightNet));
     if (qrCode.lotNo != null) {
       setLotNo(qrCode.lotNo);
@@ -436,7 +442,7 @@ const GetQuantityDialog = ({
                           qty={qtyInfos.toNumberOrString(qtyInfo)}
                           uom={uom}
                           validateQtyEntered={validateQtyEntered}
-                          readonly={useScaleDevice || readOnly}
+                          readonly={useScaleDevice || isScanForReview || readOnly}
                           onQtyChange={onQtyEntered}
                           isRequestFocus={true}
                         />

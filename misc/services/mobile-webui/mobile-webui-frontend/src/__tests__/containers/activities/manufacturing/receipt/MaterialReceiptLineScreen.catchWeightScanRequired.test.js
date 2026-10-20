@@ -168,6 +168,69 @@ describe('setting on (catchWeightScanRequired = true)', () => {
   });
 });
 
+// Catch weight is received one at a time: one receipt = one block = one scanned weight.
+describe('quantity per receipt', () => {
+  const qtyInput = () => document.getElementById('qty-input');
+  const typeQty = async (qty) => {
+    await act(async () => {
+      fireEvent.change(qtyInput(), { target: { value: `${qty}` } });
+    });
+  };
+  const confirm = async () => {
+    await act(async () => {
+      fireEvent.click(screen.getByText(CONFIRM_CAPTION));
+    });
+  };
+
+  it('setting on: the quantity is fixed at 1 and read-only, while lot, best-before date and weight stay editable', async () => {
+    renderScreen(catchWeightMainFinishedGood({ catchWeightScanRequired: true }));
+    await openDialog();
+    await scan(LMQ_CODE);
+
+    expect(qtyInput()).toHaveValue(1);
+    expect(qtyInput()).toBeDisabled();
+    expect(screen.getByTestId('lotNo')).toBeEnabled();
+    expect(screen.getByTestId('bestBeforeDate')).toBeEnabled();
+    expect(document.getElementById('catch-weight')).toBeEnabled();
+  });
+
+  it('setting on: the receipt is posted with quantity 1, even if a quantity change reaches the field', async () => {
+    renderScreen(catchWeightMainFinishedGood({ catchWeightScanRequired: true }));
+    await openDialog();
+    await scan(LMQ_CODE);
+
+    await typeQty(3); // a disabled input cannot be typed into by the operator; this guards against the event anyway
+    await confirm();
+
+    expect(postManufacturingReceiveEventThunk).toHaveBeenCalledTimes(1);
+    // confirmed from the review form, so the weight comes as the field's string value
+    expect(postManufacturingReceiveEventThunk.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ qtyReceived: 1, catchWeight: '0.101', lotNo: '500', barcode: LMQ_CODE })
+    );
+  });
+
+  it('setting off: the quantity stays editable and the entered quantity is received', async () => {
+    renderScreen(catchWeightMainFinishedGood({ catchWeightScanRequired: false }));
+    await openDialog();
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('switchToManualInput-button'));
+    });
+
+    expect(qtyInput()).toBeEnabled();
+
+    await typeQty(3);
+    await act(async () => {
+      fireEvent.change(document.getElementById('catch-weight'), { target: { value: '0.3' } });
+    });
+    await confirm();
+
+    expect(postManufacturingReceiveEventThunk).toHaveBeenCalledTimes(1);
+    expect(postManufacturingReceiveEventThunk.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ qtyReceived: 3, catchWeight: '0.3' })
+    );
+  });
+});
+
 // With the setting on, the backend still sends catchWeightScanRequired=false for a co-/by-product line.
 it('keeps receive-on-scan and manual input for a co-product line (backend sends no scan requirement)', async () => {
   renderScreen(catchWeightMainFinishedGood({ coproduct: true, catchWeightScanRequired: false }));
