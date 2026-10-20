@@ -259,6 +259,10 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipsched_004_3 | sol_004_3                 | N             |
 
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipsched_004_3 | sol_004_3                 | N             |
+
     # Verify all candidates are present with correct ATP chain
     And after not more than 10s, MD_Candidates are found
       | Identifier      | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP | M_Warehouse_ID |

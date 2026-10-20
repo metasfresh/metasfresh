@@ -329,6 +329,7 @@ export const PickingJobScreen = {
     }),
 
     completeExpectingNetworkError: async () => await step(`${NAME} - Complete, expect network-error retry panel`, async () => {
+        await waitForJobScreenToSettle();
         await page.locator('#last-confirm-button').tap();
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
