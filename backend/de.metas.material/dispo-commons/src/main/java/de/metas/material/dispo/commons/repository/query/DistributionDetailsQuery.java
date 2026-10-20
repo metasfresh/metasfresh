@@ -13,6 +13,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.eevolution.api.PPOrderBOMLineId;
 
 import javax.annotation.Nullable;
 
@@ -76,6 +77,7 @@ public class DistributionDetailsQuery
 	int ddOrderLineId;
 	int ddOrderId;
 	int ppOrderCandidateId;
+	@Nullable PPOrderBOMLineId ppOrderBOMLineId;
 
 	/**
 	 * Convenience method that uses this instance to kickstart and return a builder.
@@ -145,6 +147,11 @@ public class DistributionDetailsQuery
 			if (ppOrderCandidateId > 0)
 			{
 				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId);
+				doFilter = true;
+			}
+			if (ppOrderBOMLineId != null)
+			{
+				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_PP_Order_BOMLine_ID, ppOrderBOMLineId);
 				doFilter = true;
 			}
 

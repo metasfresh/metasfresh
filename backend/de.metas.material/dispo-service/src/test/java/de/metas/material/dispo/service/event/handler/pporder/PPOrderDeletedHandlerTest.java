@@ -132,7 +132,7 @@ public class PPOrderDeletedHandlerTest
 						supplyCandidateHandler)));
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(candidateChangeService, new MainDataRequestHandler(), candidateRepositoryRetrieval);
-		ppOrderChangedHandler = new PPOrderChangedHandler(candidateRepositoryRetrieval, candidateChangeService);
+		ppOrderChangedHandler = new PPOrderChangedHandler(candidateRepositoryRetrieval, candidateRepositoryWriteService, candidateChangeService);
 		ppOrderDeletedHandler = new PPOrderDeletedHandler(candidateChangeService, candidateRepositoryRetrieval);
 	}
 

@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
@@ -117,6 +118,17 @@ public class DistributionDetail implements BusinessCaseDetail
 	public BusinessCaseDetail withPPOrderId(@Nullable final PPOrderId newPPOrderId)
 	{
 		final PPOrderRef ppOrderRefNew = PPOrderRef.withPPOrderId(forwardPPOrderRef, newPPOrderId);
+		if (Objects.equals(this.forwardPPOrderRef, ppOrderRefNew))
+		{
+			return this;
+		}
+
+		return toBuilder().forwardPPOrderRef(ppOrderRefNew).build();
+	}
+
+	public DistributionDetail withForwardPPOrderAndBOMLineId(@Nullable final PPOrderAndBOMLineId newPPOrderAndBOMLineId)
+	{
+		final PPOrderRef ppOrderRefNew = PPOrderRef.withPPOrderAndBOMLineId(forwardPPOrderRef, newPPOrderAndBOMLineId);
 		if (Objects.equals(this.forwardPPOrderRef, ppOrderRefNew))
 		{
 			return this;

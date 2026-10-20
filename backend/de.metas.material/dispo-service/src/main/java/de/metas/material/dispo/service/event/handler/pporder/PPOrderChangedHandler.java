@@ -7,8 +7,13 @@ import de.metas.Profiles;
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
@@ -57,14 +62,17 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 	private static final Logger logger = LogManager.getLogger(PPOrderChangedHandler.class);
 
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 	private final CandidateChangeService candidateChangeService;
 
 	public PPOrderChangedHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryWriteService,
 			@NonNull final CandidateChangeService candidateChangeService)
 	{
 		this.candidateChangeService = candidateChangeService;
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
+		this.candidateRepositoryWriteService = candidateRepositoryWriteService;
 	}
 
 	@Override
@@ -98,7 +106,34 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 						event.getPpOrderLineChanges()));
 		// TODO: handle delete and creation of new lines
 
+		moveDistributionCandidatesToNewBOMLines(event.getPpOrderLineChanges());
+
 		updatedCandidatesToPersist.forEach(candidateChangeService::onCandidateNewOrChange);
+	}
+
+	/**
+	 * Changing e.g. the qty of a PP_Order deletes and re-creates its BOM lines, so the distribution candidates that supply a BOM line need to reference the new line.
+	 * Otherwise, the DD_Order_Candidate created from such a distribution candidate (see {@link de.metas.material.dispo.service.event.handler.ddordercandidate.DDOrderCandidateAdvisedHandler})
+	 * references a deleted PP_Order_BOMLine.
+	 */
+	private void moveDistributionCandidatesToNewBOMLines(@NonNull final List<ChangedPPOrderLineDescriptor> ppOrderLineChanges)
+	{
+		for (final ChangedPPOrderLineDescriptor ppOrderLineChange : ppOrderLineChanges)
+		{
+			final PPOrderAndBOMLineId oldPPOrderLineId = ppOrderLineChange.getOldPPOrderLineId();
+			final PPOrderAndBOMLineId newPPOrderLineId = ppOrderLineChange.getNewPPOrderLineId();
+			if (newPPOrderLineId == null || newPPOrderLineId.equals(oldPPOrderLineId))
+			{
+				continue;
+			}
+
+			candidateRepositoryWriteService.updateCandidatesByQuery(
+					CandidatesQuery.builder()
+							.businessCase(CandidateBusinessCase.DISTRIBUTION)
+							.distributionDetailsQuery(DistributionDetailsQuery.builder().ppOrderBOMLineId(oldPPOrderLineId.getLineId()).build())
+							.build(),
+					candidate -> candidate.withBusinessCaseDetail(DistributionDetail.class, distributionDetail -> distributionDetail.withForwardPPOrderAndBOMLineId(newPPOrderLineId)));
+		}
 	}
 
 	private static Candidate extractHeaderCandidate(final List<Candidate> candidates)
