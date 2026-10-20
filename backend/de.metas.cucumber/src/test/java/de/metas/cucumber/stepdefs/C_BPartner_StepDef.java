@@ -363,6 +363,8 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setPO_DiscountSchema_ID(discountSchemaRecord.getM_DiscountSchema_ID());
 		}
 
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation).ifPresent(bPartnerRecord::setIsAllowPriceMutation);
+
 		final StepDefDataIdentifier soDiscountSchemaIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_DiscountSchema_ID).orElse(null);
 		if (soDiscountSchemaIdentifier != null)
 		{
