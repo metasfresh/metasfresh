@@ -56,7 +56,8 @@ final class ShipmentScheduleSegmentChangedProcessor
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (trxManager.isNull(trx))
+		// a committed trx stays thread-inherited but inactive; its collector would never be flushed again
+		if (trxManager.isNull(trx) || !trxManager.isActive(trx))
 		{
 			return null;
 		}

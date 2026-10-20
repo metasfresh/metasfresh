@@ -390,6 +390,15 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 			return;
 		}
 
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (!trxManager.isNull(threadTrx) && !trxManager.isActive(threadTrx))
+		{
+			// a collector on a committed transaction is never flushed, so the flag is written now
+			flagSegmentsForRecomputeOutOfTrx(segmentsEffective);
+			return;
+		}
+
 		final ShipmentScheduleSegmentChangedProcessor collector = ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(this);
 		if (collector != null)
 		{

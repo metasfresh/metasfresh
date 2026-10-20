@@ -352,14 +352,14 @@ class ShipmentScheduleSegmentChangedProcessorTest
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.runInThreadInheritedTrx(() -> {
 			final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+			// obtained while the trx is active: an after-commit callback never gets a collector on the committed (inactive) trx
+			final ShipmentScheduleSegmentChangedProcessor processor = ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator);
+			assertThat(processor).isNotNull();
+
 			// registered BEFORE the processor's own listener, so it runs first
 			trx.getTrxListenerManager()
 					.newEventListener(TrxEventTiming.AFTER_COMMIT)
-					.registerHandlingMethod(committedTrx -> ShipmentScheduleSegmentChangedProcessor
-							.getOrCreateIfThreadInheritedElseNull(invalidator)
-							.addSegment(segment));
-
-			assertThat(ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator)).isNotNull();
+					.registerHandlingMethod(committedTrx -> processor.addSegment(segment));
 		});
 
 		verify(invalidator, never()).flagSegmentsForRecomputeInThreadInheritedTrx(any());
@@ -407,6 +407,32 @@ class ShipmentScheduleSegmentChangedProcessorTest
 		catch (final java.sql.SQLException ex)
 		{
 			throw new RuntimeException(ex);
+		}
+		finally
+		{
+			trxManager.setThreadInheritedTrxName(previousTrxName);
+		}
+	}
+
+	/** A committed transaction keeps being thread-inherited, but a collector on it would never be flushed again. */
+	@Test
+	void getOrCreate_inactiveThreadTrx_returnsNull() throws Exception
+	{
+		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final String trxName = trxManager.createTrxName("test-committed", true);
+		final ITrx trx = trxManager.getTrx(trxName);
+		trx.start();
+		trx.commit(true);
+		assertThat(trxManager.isActive(trx)).as("setup: committed trx is inactive").isFalse();
+
+		final String previousTrxName = trxManager.setThreadInheritedTrxName(trxName);
+		try
+		{
+			assertThat(ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator))
+					.as("no collector on a committed (inactive) trx")
+					.isNull();
 		}
 		finally
 		{

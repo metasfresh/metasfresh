@@ -6,6 +6,7 @@ import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.util.Services;
+import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.test.AdempiereTestHelper;
@@ -82,5 +83,34 @@ class ShipmentScheduleInvalidateBLRoutingTest
 
 		verify(repo, times(1)).invalidateStorageSegments(any(), isNull());
 		verify(repo, never()).invalidateStorageSegmentsInThreadInheritedTrx(any());
+	}
+
+	/** A collector on a committed trx is never flushed, so the notification must flag synchronously and never go async. */
+	@Test
+	void notifySegmentsChanged_committedInactiveThreadTrx_flagsOutOfTrxSynchronously() throws Exception
+	{
+		final ITaskExecutorService taskExecutorService = Mockito.mock(ITaskExecutorService.class);
+		Services.registerService(ITaskExecutorService.class, taskExecutorService);
+		final ShipmentScheduleInvalidateBL blSpy = Mockito.spy(bl);
+		final IShipmentScheduleSegment validSegment = ImmutableShipmentScheduleSegment.builder().productId(1).bpartnerId(2).locatorId(3).build();
+
+		final String trxName = trxManager.createTrxName("test-committed", true);
+		final ITrx trx = trxManager.getTrx(trxName);
+		trx.start();
+		trx.commit(true);
+		assertThat(trxManager.isActive(trx)).as("setup: committed trx is inactive").isFalse();
+
+		final String previousTrxName = trxManager.setThreadInheritedTrxName(trxName);
+		try
+		{
+			blSpy.notifySegmentsChanged(ImmutableSet.of(validSegment));
+		}
+		finally
+		{
+			trxManager.setThreadInheritedTrxName(previousTrxName);
+		}
+
+		verify(blSpy, times(1)).flagSegmentsForRecomputeOutOfTrx(any());
+		verify(taskExecutorService, never()).submit(any(Runnable.class), any(String.class));
 	}
 }
