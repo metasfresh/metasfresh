@@ -27,12 +27,17 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_ConversionType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
+import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 
@@ -49,17 +54,20 @@ public class M_DiscountSchema_StepDef
 	private final M_Product_StepDefData productTable;
 	private final M_PricingSystem_StepDefData pricingSystemTable;
 	private final M_DiscountSchemaBreak_StepDefData discountSchemaBreakTable;
+	private final M_Product_Category_StepDefData productCategoryTable;
 
 	public M_DiscountSchema_StepDef(
 			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
-			@NonNull final M_DiscountSchemaBreak_StepDefData discountSchemaBreakTable)
+			@NonNull final M_DiscountSchemaBreak_StepDefData discountSchemaBreakTable,
+			@NonNull final M_Product_Category_StepDefData productCategoryTable)
 	{
 		this.discountSchemaTable = discountSchemaTable;
 		this.productTable = productTable;
 		this.pricingSystemTable = pricingSystemTable;
 		this.discountSchemaBreakTable = discountSchemaBreakTable;
+		this.productCategoryTable = productCategoryTable;
 	}
 
 	/**
@@ -127,6 +135,66 @@ public class M_DiscountSchema_StepDef
 	{
 		DataTableRows.of(dataTable)
 				.forEach(this::createDiscountSchemaBreak);
+	}
+
+	/**
+	 * Creates {@code M_DiscountSchemaLine} rows of a pricing schema (for the derivative price list update).
+	 * The three price bases default to the source price list's price (list price, standard price, limit price),
+	 * so a line only needs the surcharges it wants to test.
+	 * <p>
+	 * Required columns: {@code M_DiscountSchema_ID} (identifier), {@code SeqNo}.
+	 * <br>Optional columns: {@code M_Product_ID} (identifier), {@code M_Product_Category_ID} (identifier),
+	 * {@code Std_AddAmt}, {@code List_AddAmt}, {@code Limit_AddAmt} (all default 0).
+	 * <pre>{@code
+	 * And metasfresh contains M_DiscountSchemaLines:
+	 *   | M_DiscountSchema_ID | SeqNo | M_Product_ID | Std_AddAmt |
+	 *   | ds_1                | 10    | p_1          | 1.50       |
+	 * }</pre>
+	 */
+	@Given("metasfresh contains M_DiscountSchemaLines:")
+	public void create_discount_schema_lines(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::createDiscountSchemaLine);
+	}
+
+	private void createDiscountSchemaLine(@NonNull final DataTableRow row)
+	{
+		final I_M_DiscountSchema schema = row.getAsIdentifier(I_M_DiscountSchemaLine.COLUMNNAME_M_DiscountSchema_ID).lookupNotNullIn(discountSchemaTable);
+
+		final I_M_DiscountSchemaLine line = InterfaceWrapperHelper.newInstance(I_M_DiscountSchemaLine.class);
+		line.setM_DiscountSchema_ID(schema.getM_DiscountSchema_ID());
+		line.setSeqNo(row.getAsInt(I_M_DiscountSchemaLine.COLUMNNAME_SeqNo));
+
+		row.getAsOptionalIdentifier(I_M_DiscountSchemaLine.COLUMNNAME_M_Product_ID)
+				.map(productIdentifier -> productIdentifier.lookupNotNullIn(productTable))
+				.ifPresent(product -> line.setM_Product_ID(product.getM_Product_ID()));
+		row.getAsOptionalIdentifier(I_M_DiscountSchemaLine.COLUMNNAME_M_Product_Category_ID)
+				.map(categoryIdentifier -> categoryIdentifier.lookupNotNullIn(productCategoryTable))
+				.ifPresent(category -> line.setM_Product_Category_ID(category.getM_Product_Category_ID()));
+
+		// same values as the schema lines the application creates by default
+		line.setList_Base("L");
+		line.setStd_Base("S");
+		line.setLimit_Base("X");
+		line.setList_Rounding("C");
+		line.setStd_Rounding("C");
+		line.setLimit_Rounding("C");
+		line.setList_Discount(BigDecimal.ZERO);
+		line.setStd_Discount(BigDecimal.ZERO);
+		line.setLimit_Discount(BigDecimal.ZERO);
+		// mandatory currency conversion columns, irrelevant here because the price lists share one currency
+		line.setConversionDate(Timestamp.valueOf("2015-11-09 00:00:00"));
+		line.setC_ConversionType_ID(Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_ConversionType.class)
+				.addEqualsFilter(I_C_ConversionType.COLUMNNAME_Value, "S")
+				.create()
+				.firstIdOnly());
+
+		line.setStd_AddAmt(row.getAsOptionalBigDecimal(I_M_DiscountSchemaLine.COLUMNNAME_Std_AddAmt).orElse(BigDecimal.ZERO));
+		line.setList_AddAmt(row.getAsOptionalBigDecimal(I_M_DiscountSchemaLine.COLUMNNAME_List_AddAmt).orElse(BigDecimal.ZERO));
+		line.setLimit_AddAmt(row.getAsOptionalBigDecimal(I_M_DiscountSchemaLine.COLUMNNAME_Limit_AddAmt).orElse(BigDecimal.ZERO));
+
+		saveRecord(line);
 	}
 
 	private void createDiscountSchemaBreak(@NonNull final DataTableRow tableRow)

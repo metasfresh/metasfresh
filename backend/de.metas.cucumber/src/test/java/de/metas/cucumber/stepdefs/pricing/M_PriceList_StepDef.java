@@ -49,6 +49,11 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
+import de.metas.pricing.process.M_PricelistVersion_MutateCustomerPrices;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -57,8 +62,10 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -73,6 +80,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.Env;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -98,6 +106,7 @@ public class M_PriceList_StepDef
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_PricingSystem_StepDefData pricingSystemTable;
@@ -109,6 +118,12 @@ public class M_PriceList_StepDef
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final M_DiscountSchema_StepDefData discountSchemaTable;
 	@NonNull private final C_TaxCategory_StepDef taxCategoryStepDef;
+
+	/**
+	 * Summary text of the last "apply to derivative price lists" process run in this scenario
+	 * ({@code null} until the process was invoked); read it via {@link #getLastDerivativeProcessSummary()}.
+	 */
+	@Nullable private String lastDerivativeProcessSummary;
 
 	@And("metasfresh contains M_PricingSystems")
 	public void add_M_PricingSystem(@NonNull final DataTable dataTable)
@@ -301,6 +316,81 @@ public class M_PriceList_StepDef
 
 		saveRecord(priceListVersion);
 		row.getAsIdentifier().putOrReplace(priceListVersionTable, priceListVersion);
+	}
+
+	@Nullable
+	public String getLastDerivativeProcessSummary()
+	{
+		return lastDerivativeProcessSummary;
+	}
+
+	/**
+	 * Runs the "apply to derivative price lists" process
+	 * ({@code M_PricelistVersion_MutateCustomerPrices}) with the given price list version as its record, and keeps
+	 * the process result summary for later assertions.
+	 */
+	@When("the 'apply to derivative price lists' process is invoked for M_PriceList_Version {word}")
+	public void apply_to_derivative_price_lists(@NonNull final String priceListVersionIdentifier)
+	{
+		final I_M_PriceList_Version basePriceListVersion = StepDefDataIdentifier.ofString(priceListVersionIdentifier).lookupNotNullIn(priceListVersionTable);
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(M_PricelistVersion_MutateCustomerPrices.class);
+
+		final ProcessExecutionResult result = ProcessInfo.builder()
+				.setAD_Process_ID(processId)
+				.setAD_User_ID(Env.getAD_User_ID(Env.getCtx()))
+				.setRecord(I_M_PriceList_Version.Table_Name, basePriceListVersion.getM_PriceList_Version_ID())
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
+
+		lastDerivativeProcessSummary = result.getSummary();
+	}
+
+	@Then("M_PriceList {word} has {int} M_PriceList_Versions")
+	public void validate_M_PriceList_Version_count(@NonNull final String priceListIdentifier, final int expectedCount)
+	{
+		final I_M_PriceList priceList = StepDefDataIdentifier.ofString(priceListIdentifier).lookupNotNullIn(priceListTable);
+		final int actualCount = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceList.getM_PriceList_ID())
+				.create()
+				.count();
+		assertThat(actualCount).as("number of M_PriceList_Versions of M_PriceList %s", priceListIdentifier).isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Loads the version of the price list with the latest {@code ValidFrom} (highest ID on a tie), asserts the given
+	 * columns and registers it under the row's {@code Identifier}.
+	 * Columns: {@code Identifier}, optional {@code ValidFrom}, {@code Name}, {@code M_DiscountSchema_ID} (identifier),
+	 * {@code M_Pricelist_Version_Base_ID} (identifier).
+	 */
+	@Then("the latest M_PriceList_Version of M_PriceList {word} is:")
+	public void validate_latest_M_PriceList_Version(@NonNull final String priceListIdentifier, @NonNull final DataTable dataTable)
+	{
+		final I_M_PriceList priceList = StepDefDataIdentifier.ofString(priceListIdentifier).lookupNotNullIn(priceListTable);
+		final I_M_PriceList_Version latest = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceList.getM_PriceList_ID())
+				.orderByDescending(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.orderByDescending(I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID)
+				.create()
+				.first(I_M_PriceList_Version.class);
+		assertThat(latest).as("latest M_PriceList_Version of M_PriceList %s", priceListIdentifier).isNotNull();
+
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+
+		row.getAsOptionalLocalDate(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.ifPresent(validFrom -> assertThat(latest.getValidFrom())
+						.as("ValidFrom of the latest version of %s", priceListIdentifier)
+						.isEqualTo(Timestamp.from(validFrom.atStartOfDay(SystemTime.zoneId()).toInstant())));
+		row.getAsOptionalString(I_M_PriceList_Version.COLUMNNAME_Name)
+				.ifPresent(name -> assertThat(latest.getName()).as("Name of the latest version of %s", priceListIdentifier).isEqualTo(name));
+		row.getAsOptionalIdentifier(I_M_PriceList_Version.COLUMNNAME_M_DiscountSchema_ID)
+				.map(identifier -> identifier.lookupNotNullIn(discountSchemaTable))
+				.ifPresent(schema -> assertThat(latest.getM_DiscountSchema_ID()).as("M_DiscountSchema_ID of the latest version of %s", priceListIdentifier).isEqualTo(schema.getM_DiscountSchema_ID()));
+		row.getAsOptionalIdentifier(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID)
+				.map(identifier -> identifier.lookupNotNullIn(priceListVersionTable))
+				.ifPresent(base -> assertThat(latest.getM_Pricelist_Version_Base_ID()).as("M_Pricelist_Version_Base_ID of the latest version of %s", priceListIdentifier).isEqualTo(base.getM_PriceList_Version_ID()));
+
+		row.getAsIdentifier().putOrReplace(priceListVersionTable, latest);
 	}
 
 	@Then("the M_PriceLists exist:")
