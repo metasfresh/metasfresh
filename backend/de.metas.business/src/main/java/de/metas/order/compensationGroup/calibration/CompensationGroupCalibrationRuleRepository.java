@@ -74,7 +74,7 @@ public class CompensationGroupCalibrationRuleRepository
 	@NonNull
 	public static Percent getCalibrationFactor(@NonNull final I_C_CompensationGroup_CalibrationRule record)
 	{
-		return Percent.ofNullableFraction(record.getGroupCompensationCalibrationFactor());
+		return Percent.ofFraction(record.getGroupCompensationCalibrationFactor());
 	}
 
 	public static void setCalibrationFactor(@NonNull final I_C_CompensationGroup_CalibrationRule record, @NonNull final Percent factor)

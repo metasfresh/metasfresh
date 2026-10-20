@@ -84,10 +84,15 @@ public class Percent implements Comparable<Percent>
 	/**
 	 * @param fraction e.g. {@code 0.8} for 80 %
 	 */
+	public static Percent ofFraction(@NonNull final BigDecimal fraction)
+	{
+		return of(fraction.movePointRight(2));
+	}
+
 	@Nullable
 	public static Percent ofNullableFraction(@Nullable final BigDecimal fraction)
 	{
-		return fraction != null ? of(fraction.movePointRight(2)) : null;
+		return fraction != null ? ofFraction(fraction) : null;
 	}
 
 	/**

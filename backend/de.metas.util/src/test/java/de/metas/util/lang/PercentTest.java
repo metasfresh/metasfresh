@@ -2,6 +2,7 @@ package de.metas.util.lang;
 
 import static java.math.BigDecimal.ONE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -171,6 +172,15 @@ public class PercentTest
 		assertThat(Percent.ofDelta(ONE, new BigDecimal("1.2")).toBigDecimal()).isEqualByComparingTo("20");
 		assertThat(Percent.ofDelta(ONE, new BigDecimal("0.75")).toBigDecimal()).isEqualByComparingTo("-25");
 		assertThat(Percent.ofDelta(new BigDecimal("0.75"), new BigDecimal("0.750")).toBigDecimal()).isEqualByComparingTo("0");
+	}
+
+	@Test
+	public void ofFraction()
+	{
+		assertThat(Percent.ofFraction(new BigDecimal("0.8"))).isEqualTo(Percent.of(80));
+		assertThat(Percent.ofFraction(ONE)).isSameAs(Percent.ONE_HUNDRED);
+		assertThat(Percent.ofFraction(BigDecimal.ZERO)).isSameAs(Percent.ZERO);
+		assertThatThrownBy(() -> Percent.ofFraction(null)).isInstanceOf(NullPointerException.class);
 	}
 
 	@Test

@@ -104,7 +104,7 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 	private void createRule(@NonNull final DataTableRow row)
 	{
 		final I_C_CompensationGroup_CalibrationRule record = newInstance(I_C_CompensationGroup_CalibrationRule.class);
-		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.ofNullableFraction(row.getAsBigDecimal(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor)));
+		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.ofFraction(row.getAsBigDecimal(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor)));
 		record.setSeqNo(row.getAsOptionalInt(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_SeqNo).orElse(10));
 		row.getAsOptionalIdentifier(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_C_BPartner_ID)
 				.ifPresent(id -> record.setC_BPartner_ID(id.lookupNotNullIn(bpartnerTable).getC_BPartner_ID()));
@@ -147,7 +147,7 @@ public class C_CompensationGroup_CalibrationRule_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final Runnable update = () -> {
 				final I_C_CompensationGroup_CalibrationRule record = getRuleFresh(row);
-				CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.ofNullableFraction(row.getAsBigDecimal(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor)));
+				CompensationGroupCalibrationRuleRepository.setCalibrationFactor(record, Percent.ofFraction(row.getAsBigDecimal(I_C_CompensationGroup_CalibrationRule.COLUMNNAME_GroupCompensationCalibrationFactor)));
 				saveRecord(record);
 			};
 			if (expectingError == null)
