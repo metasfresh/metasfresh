@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_ImportLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2140054709L;
+	private static final long serialVersionUID = 1757794379L;
 
     /** Standard Constructor */
     public X_ESR_ImportLine (final Properties ctx, final int ESR_ImportLine_ID, @Nullable final String trxName)
@@ -482,6 +482,17 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
+	public void setFileName (final @Nullable java.lang.String FileName)
+	{
+		throw new IllegalArgumentException ("FileName is virtual column");	}
+
+	@Override
+	public java.lang.String getFileName() 
+	{
+		return get_ValueAsString(COLUMNNAME_FileName);
+	}
+
+	@Override
 	public void setImportErrorMsg (final @Nullable java.lang.String ImportErrorMsg)
 	{
 		set_Value (COLUMNNAME_ImportErrorMsg, ImportErrorMsg);
@@ -601,6 +612,8 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public static final String TYPE_QRR = "QRR";
 	/** ESR = ISR Reference */
 	public static final String TYPE_ESR = "ISR Reference";
+	/** SCOR = SCOR */
+	public static final String TYPE_SCOR = "SCOR";
 	@Override
 	public void setType (final java.lang.String Type)
 	{

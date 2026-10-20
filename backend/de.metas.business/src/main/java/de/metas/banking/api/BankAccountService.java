@@ -11,7 +11,10 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -72,6 +75,13 @@ public class BankAccountService
 		return bankAccountDAO.getById(bankAccountId);
 	}
 
+	@NonNull
+	public BankAccount getByIdNotNull(@NonNull final BankAccountId bankAccountId)
+	{
+		return Optional.ofNullable(getById(bankAccountId))
+				.orElseThrow(() -> new AdempiereException("No Bank Account found for " + bankAccountId));
+	}
+
 	public BankAccountAcct getBankAccountAcct(
 			@NonNull final BankAccountId bankAccountId,
 			@NonNull final AcctSchemaId acctSchemaId)
@@ -99,5 +109,31 @@ public class BankAccountService
 		final BankId bankId = bankAccountDAO.getBankId(bankAccountId);
 
 		return bankRepo.retrieveDataImportConfigIdForBank(bankId);
+	}
+
+	public boolean isImportAsSingleSummaryLine(@NonNull final BankAccountId bankAccountId)
+	{
+		final BankId bankId = bankAccountDAO.getBankId(bankAccountId);
+		return bankRepo.isImportAsSingleSummaryLine(bankId);
+	}
+
+	@NonNull
+	public Optional<BankId> getBankIdBySwiftCode(@NonNull final String swiftCode)
+	{
+		return bankRepo.getBankIdBySwiftCode(swiftCode);
+	}
+
+	@NonNull
+	public Optional<BankAccountId> getBankAccountId(
+			@NonNull final BankId bankId,
+			@NonNull final String accountNo)
+	{
+		return bankAccountDAO.getBankAccountId(bankId, accountNo);
+	}
+
+	@NonNull
+	public Optional<BankAccountId> getBankAccountIdByIBAN(@NonNull final String iban)
+	{
+		return bankAccountDAO.getBankAccountIdByIBAN(iban);
 	}
 }

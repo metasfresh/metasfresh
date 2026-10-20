@@ -2,6 +2,7 @@ package de.metas.payment.sepa.sepamarshaller.impl;
 
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
+import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -15,6 +16,7 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentIdentificatio
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,6 +47,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	public void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(BankAccountService.newInstanceForUnitTesting()); // SEPADocumentBL needs it
 
 		this.bankRepository = new BankRepository();
 		final SEPAExportContext exportContext = SEPAExportContext.builder()

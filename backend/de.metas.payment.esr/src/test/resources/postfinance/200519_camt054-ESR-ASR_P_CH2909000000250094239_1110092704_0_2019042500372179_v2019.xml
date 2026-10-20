@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08 file:///C:/Users/zwahlenma/Desktop/camt.054.001.08.xsd">
+	<BkToCstmrDbtCdtNtfctn>
+		<GrpHdr>
+			<MsgId>20190424375204228750928</MsgId>
+			<CreDtTm>2019-04-25T00:20:05</CreDtTm>
+			<MsgPgntn>
+				<PgNb>1</PgNb>
+				<LastPgInd>true</LastPgInd>
+			</MsgPgntn>
+			<AddtlInf>SPS/2.0/PROD</AddtlInf>
+		</GrpHdr>
+		<Ntfctn>
+			<Id>20190424375204228750931</Id>
+			<CreDtTm>2019-04-25T00:20:05</CreDtTm>
+			<FrToDt>
+				<FrDtTm>2019-04-24T00:00:00</FrDtTm>
+				<ToDtTm>2019-04-24T23:59:59</ToDtTm>
+			</FrToDt>
+			<Acct>
+				<Id>
+					<IBAN>CH2909000000250094239</IBAN>
+				</Id>
+				<Ccy>CHF</Ccy>
+				<Ownr>
+					<Nm>Robert Schneider SA</Nm>
+				</Ownr>
+			</Acct>
+			<Ntry>
+				<NtryRef>020010001</NtryRef>
+				<Amt Ccy="CHF">147.00</Amt>
+				<CdtDbtInd>DBIT</CdtDbtInd>
+				<RvslInd>false</RvslInd>
+				<Sts>
+					<Cd>BOOK</Cd>
+				</Sts>
+				<BookgDt>
+					<Dt>2019-04-24</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2019-04-25</Dt>
+				</ValDt>
+				<AcctSvcrRef>100820002V496ZRA</AcctSvcrRef>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>CNTR</Cd>
+							<SubFmlyCd>CWDL</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<Chrgs>
+					<TtlChrgsAndTaxAmt Ccy="CHF">4.40</TtlChrgsAndTaxAmt>
+					<Rcrd>
+						<Amt Ccy="CHF">4.40</Amt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+						<ChrgInclInd>false</ChrgInclInd>
+						<Tp>
+							<Prtry>
+								<Id>6</Id>
+							</Prtry>
+						</Tp>
+					</Rcrd>
+				</Chrgs>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+					</Btch>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>180410CH02UZ2PC1</AcctSvcrRef>
+							<Prtry>
+								<Tp>06</Tp>
+								<Ref>20190423848301000100105</Ref>
+							</Prtry>
+						</Refs>
+						<Amt Ccy="CHF">147.00</Amt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+						<BkTxCd>
+							<Domn>
+								<Cd>PMNT</Cd>
+								<Fmly>
+									<Cd>CNTR</Cd>
+									<SubFmlyCd>CWDL</SubFmlyCd>
+								</Fmly>
+							</Domn>
+						</BkTxCd>
+						<Chrgs>
+							<TtlChrgsAndTaxAmt Ccy="CHF">4.40</TtlChrgsAndTaxAmt>
+							<Rcrd>
+								<Amt Ccy="CHF">4.40</Amt>
+								<CdtDbtInd>DBIT</CdtDbtInd>
+								<ChrgInclInd>false</ChrgInclInd>
+								<Tp>
+									<Prtry>
+										<Id>6</Id>
+									</Prtry>
+								</Tp>
+							</Rcrd>
+						</Chrgs>
+						<RltdPties>
+							<Cdtr>
+								<Pty>
+									<Nm>Maria Bernasconi</Nm>
+								</Pty>
+							</Cdtr>
+							<CdtrAcct>
+								<Id>
+									<IBAN>CH5109000000250092291</IBAN>
+								</Id>
+							</CdtrAcct>
+						</RltdPties>
+						<RmtInf>
+							<Strd>
+								<CdtrRefInf>
+									<Ref>100041698214115449371805278</Ref>
+								</CdtrRefInf>
+								<AddtlRmtInf>?REJECT?0</AddtlRmtInf>
+							</Strd>
+						</RmtInf>
+						<RltdDts>
+							<AccptncDtTm>2019-04-23T20:00:00</AccptncDtTm>
+						</RltdDts>
+					</TxDtls>
+				</NtryDtls>
+				<AddtlNtryInf>SAMMELLASTSCHRIFT ASR VERARBEITUNG VOM 24.04.2019 KUNDENNUMMER 02-1000-1 PAKET ID: 180410CH00000AL0</AddtlNtryInf>
+			</Ntry>
+		</Ntfctn>
+	</BkToCstmrDbtCdtNtfctn>
+</Document>
