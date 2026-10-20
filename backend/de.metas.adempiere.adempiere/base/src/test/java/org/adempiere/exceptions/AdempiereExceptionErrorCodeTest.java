@@ -42,8 +42,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Pins the ErrorCode chain: {@link IMsgBL#getErrorCode(AdMessageKey)} -> {@link AdempiereException#getErrorCode()} -> AD_Issue.ErrorCode.
  * <p>
- * Not covered here: the DB leg AD_Message.ErrorCode -> {@code Msg} cache -> {@code MsgBL#getErrorCode}, because {@code Msg} does not read
- * AD_Message in unit-test mode (and {@code Msg.Message} is private).
+ * Not covered here: the DB leg AD_Message.ErrorCode -> {@code MessagesMapRepository} -> {@code Message} -> {@code Msg} / {@code MsgBL#getErrorCode},
+ * because {@code MessagesMapRepository} returns an empty map in unit-test mode.
  */
 class AdempiereExceptionErrorCodeTest
 {
