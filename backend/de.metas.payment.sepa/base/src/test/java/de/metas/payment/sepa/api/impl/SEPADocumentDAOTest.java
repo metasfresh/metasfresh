@@ -23,8 +23,6 @@ class SEPADocumentDAOTest
 	void save_persistsTheProcessedFlagOfTheExport()
 	{
 		final I_SEPA_Export export = newInstance(I_SEPA_Export.class);
-		export.setProcessed(false);
-
 		export.setProcessed(true);
 		Services.get(ISEPADocumentDAO.class).save(export);
 
