@@ -243,7 +243,7 @@ class QuotationAggregatorTest
 		assertThat(quotationLines).hasSize(1);
 		assertThat(quotationLines).allSatisfy(line -> {
 			assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).as("no calibration rule stored").isLessThanOrEqualTo(0);
-			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).as("no calibration factor stored").isNull();
+			assertThat(OrderGroupRepository.getCalibrationFactor(line)).as("no calibration factor stored").isNull();
 			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).as("no uncalibrated qty stored").isNull();
 		});
 

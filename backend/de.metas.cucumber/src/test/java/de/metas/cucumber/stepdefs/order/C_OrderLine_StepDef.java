@@ -1162,7 +1162,7 @@ public class C_OrderLine_StepDef
 						.isEqualTo(vendorBPartnerId.getRepoId()));
 
 		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)
-				.ifPresent(expected -> assertNullableBigDecimal(softly, Optional.ofNullable(OrderGroupRepository.getCalibrationFactor(orderLine)).map(Percent::toBigDecimal).orElse(null), expected, "GroupCompensationCalibrationFactor", identifierStr));
+				.ifPresent(expected -> assertNullableBigDecimal(softly, Percent.toBigDecimalOrNull(OrderGroupRepository.getCalibrationFactor(orderLine)), expected, "GroupCompensationCalibrationFactor", identifierStr));
 
 		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)
 				.ifPresent(expected -> assertNullableBigDecimal(softly, InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated), expected, "GroupCompensationQtyEnteredUncalibrated", identifierStr));
