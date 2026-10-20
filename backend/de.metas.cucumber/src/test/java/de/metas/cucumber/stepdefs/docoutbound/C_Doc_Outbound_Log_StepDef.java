@@ -22,6 +22,11 @@
 
 package de.metas.cucumber.stepdefs.docoutbound;
 
+import com.google.common.collect.ImmutableSet;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfWriter;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -29,6 +34,9 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.logging.LogManager;
@@ -38,15 +46,28 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.archive.AdArchive;
+import org.adempiere.archive.api.ArchiveInfo;
+import org.adempiere.archive.api.ArchiveRequest;
+import org.adempiere.archive.api.ArchiveResult;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.PO;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.core.io.ByteArrayResource;
 
 import javax.annotation.Nullable;
+import java.io.ByteArrayOutputStream;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
@@ -60,31 +81,164 @@ import static de.metas.document.archive.model.I_C_Doc_Outbound_Log.COLUMNNAME_C_
 import static de.metas.document.archive.model.I_C_Doc_Outbound_Log.COLUMNNAME_Record_ID;
 import static de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line.COLUMNNAME_C_Doc_Outbound_Log_Line_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_Doc_Outbound_Log_StepDef
 {
 	private static final Logger logger = LogManager.getLogger(C_Doc_Outbound_Log_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
 	private final C_Doc_Outbound_Log_StepDefData docOutboundLogTable;
 	private final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_Invoice_StepDefData invoiceTable;
+	private final IdentifiersResolver identifiersResolver;
 
 	public C_Doc_Outbound_Log_StepDef(
 			@NonNull final C_Doc_Outbound_Log_StepDefData docOutboundLogTable,
 			@NonNull final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable)
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final IdentifiersResolver identifiersResolver)
 	{
 		this.docOutboundLogTable = docOutboundLogTable;
 		this.docOutboundLogLineTable = docOutboundLogLineTable;
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
 		this.invoiceTable = invoiceTable;
+		this.identifiersResolver = identifiersResolver;
+	}
+
+	/**
+	 * Makes sure the given table is configured for outbound documents: updates the active-or-not configuration of that table
+	 * if one exists, otherwise creates it. A blank/absent <code>DocBaseType</code> leaves an existing value untouched.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>AD_Table.Name</b> — (required) table name of the configured document, e.g. C_Order<br>
+	 *   <b>DocBaseType</b> — (optional) restricts the configuration to documents of this base type, e.g. SOO<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_Doc_Outbound_Config:
+	 *   | AD_Table.Name | DocBaseType |
+	 *   | C_Order       | SOO         |
+	 * </pre>
+	 */
+	@And("metasfresh contains C_Doc_Outbound_Config:")
+	public void metasfresh_contains_C_Doc_Outbound_Config(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final int adTableId = tableDAO.retrieveTableId(row.getAsString(I_AD_Table.Table_Name + "." + I_AD_Table.COLUMNNAME_Name));
+			final Optional<String> docBaseType = row.getAsOptionalString(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType).filter(Check::isNotBlank);
+
+			final I_C_Doc_Outbound_Config existingConfig = queryBL.createQueryBuilder(I_C_Doc_Outbound_Config.class)
+					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_AD_Table_ID, adTableId)
+					.orderBy(I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID)
+					.create()
+					.first(I_C_Doc_Outbound_Config.class);
+
+			final I_C_Doc_Outbound_Config config = existingConfig != null ? existingConfig : newInstance(I_C_Doc_Outbound_Config.class);
+			config.setAD_Table_ID(adTableId);
+			config.setIsActive(true);
+			docBaseType.ifPresent(config::setDocBaseType);
+			saveRecord(config);
+		});
+	}
+
+	/**
+	 * Runs the "Massendruck PDF" outbound-log process for the given log: takes the last archive of the log and marks it as printed,
+	 * which writes a <code>pdf</code> line to the log. The process itself lives in a module the cucumber module does not depend on,
+	 * so the same service calls are made here: {@link IArchiveBL#getLastArchive} then {@link IArchiveBL#updatePrintedRecords}.
+	 * In production this is triggered by the user selecting the log in the outbound documents window and running the process;
+	 * a direct call is used because the process needs a window view as input.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Doc_Outbound_Log_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And Massendruck PDF is run for C_Doc_Outbound_Log "orderOutboundLog"
+	 * </pre>
+	 */
+	@And("Massendruck PDF is run for C_Doc_Outbound_Log {string}")
+	public void massendruck_PDF_is_run_for_C_Doc_Outbound_Log(@NonNull final String logIdentifier)
+	{
+		final I_C_Doc_Outbound_Log docOutboundLog = docOutboundLogTable.get(logIdentifier);
+		// reload: the stored instance may predate the last refresh of the header
+		final I_C_Doc_Outbound_Log reloadedLog = load(docOutboundLog.getC_Doc_Outbound_Log_ID(), I_C_Doc_Outbound_Log.class);
+
+		final AdArchive lastArchive = archiveBL.getLastArchive(TableRecordReference.ofReferenced(reloadedLog))
+				.orElseThrow(() -> new AdempiereException("No archive found for C_Doc_Outbound_Log_ID=" + reloadedLog.getC_Doc_Outbound_Log_ID()));
+
+		archiveBL.updatePrintedRecords(ImmutableSet.of(lastArchive.getId()), Env.getLoggedUserId());
+	}
+
+	/**
+	 * Re-creates the PDF of the given order or invoice, as the "re-create archive" workpackage does for a selected outbound log:
+	 * the document archiver produces a new archive of the document in its current state.
+	 * In production the user triggers this on the outbound log; the workpackage only loads the document and calls the archiver,
+	 * which is what is done here synchronously.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the document PDF of "order_1" is re-created
+	 * </pre>
+	 */
+	@And("the document PDF of {string} is re-created")
+	public void the_document_PDF_is_re_created(@NonNull final String recordIdentifier)
+	{
+		final TableRecordReference recordReference = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
+
+		trxManager.runInNewTrx(() -> {
+			final PO po = TableModelLoader.instance.getPO(recordReference);
+			DefaultModelArchiver.of(po).archive();
+		});
+	}
+
+	/**
+	 * Prints a report of the given document directly, as a user does when running a report process for it from a window:
+	 * the report PDF is archived for the document without any business partner, and does not go through the document archiver.
+	 * The archive request is the one the report starter's print service sends, without the direct print-queue enqueueing (which needs a configured printer).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And a direct report print of "order_1" is archived
+	 * </pre>
+	 */
+	@And("a direct report print of {string} is archived")
+	public void a_direct_report_print_of_is_archived(@NonNull final String recordIdentifier)
+	{
+		final TableRecordReference recordReference = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
+
+		final ArchiveInfo archiveInfo = new ArchiveInfo("Direct report print", recordReference);
+
+		// same request as MassPrintingService.print(), minus the direct print-queue enqueueing (needs a configured printer)
+		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
+				.ctx(Env.getCtx())
+				.trxName(ITrx.TRXNAME_ThreadInherited)
+				.data(new ByteArrayResource(createOnePagePdf()))
+				.force(true)
+				.save(true)
+				.isReport(archiveInfo.isReport())
+				.recordRef(archiveInfo.getRecordRef())
+				.processId(archiveInfo.getProcessId())
+				.pinstanceId(archiveInfo.getPInstanceId())
+				.archiveName(archiveInfo.getName())
+				.bpartnerId(archiveInfo.getBpartnerId())
+				.copies(archiveInfo.getCopies())
+				.build());
+
+		assertThat(archiveResult.isNoArchive()).as("direct report print of %s archived", recordReference).isFalse();
 	}
 
 	/**
@@ -235,6 +389,26 @@ public class C_Doc_Outbound_Log_StepDef
 		assertThat(matchingLogIds)
 				.as("C_Doc_Outbound_Log_IDs with DocStatus=%s for record %s", docStatus, recordReference)
 				.isEmpty();
+	}
+
+	/** A minimal readable PDF as report data of a direct print. */
+	@NonNull
+	private static byte[] createOnePagePdf()
+	{
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		final Document document = new Document();
+		try
+		{
+			PdfWriter.getInstance(document, out);
+			document.open();
+			document.add(new Paragraph("Direct report print"));
+			document.close();
+		}
+		catch (final DocumentException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+		return out.toByteArray();
 	}
 
 	@NonNull
