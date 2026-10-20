@@ -90,13 +90,16 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	private final I_C_PaySelection source;
 	private final boolean isGroupTransactions;
+	@Nullable private final SEPAProtocol chosenCreditTransferProtocol;
 
 	public CreateSEPAExportFromPaySelectionCommand(
 			@NonNull final org.compiere.model.I_C_PaySelection source,
-			final boolean isGroupTransactions)
+			final boolean isGroupTransactions,
+			@Nullable final SEPAProtocol chosenCreditTransferProtocol)
 	{
 		this.source = InterfaceWrapperHelper.create(source, I_C_PaySelection.class);
 		this.isGroupTransactions = isGroupTransactions;
+		this.chosenCreditTransferProtocol = chosenCreditTransferProtocol;
 	}
 
 	public I_SEPA_Export run()
@@ -184,7 +187,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		}
 
 		final I_SEPA_Export header = newInstance(I_SEPA_Export.class, paySelectionHeader);
-		final SEPAProtocol sepaProtocol = SEPAProtocol.ofPaySelectionTrxType(paySelectionTrxType);
+		final SEPAProtocol sepaProtocol = SEPAProtocol.ofPaySelectionTrxType(paySelectionTrxType, chosenCreditTransferProtocol);
 		header.setSEPA_Protocol(sepaProtocol.getCode());
 
 		//

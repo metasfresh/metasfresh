@@ -8,8 +8,6 @@ import de.metas.banking.BankId;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.api.IBPBankAccountDAO;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.pair.IPair;
@@ -18,7 +16,7 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
@@ -88,13 +86,11 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -102,7 +98,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Supplier;
 
 import static java.math.BigDecimal.ZERO;
 
@@ -128,7 +123,6 @@ import static java.math.BigDecimal.ZERO;
  */
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements SEPAMarshaler
 {
-	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
 	private static final AdMessageKey ERR_SEPA_Export_NoBankName = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_NoBankName");
 
 	protected static final String BIC_NOTPROVIDED = "NOTPROVIDED";
@@ -313,7 +307,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		}
 
 		// Payment Informations: create one PaymentInstructionInformationSDD for each line
-		final List<I_SEPA_Export_Line> sepaDocumentLines = Services.get(ISEPADocumentDAO.class).retrieveLines(sepaDocument);
+		final List<I_SEPA_Export_Line> sepaDocumentLines = Services.get(ISEPADocumentBL.class).retrieveLines(sepaDocument);
 		if (sepaDocumentLines.isEmpty())
 		{
 			throw new AdempiereException("The given SEPA_Export record has no lines with active=Y and error=N")
@@ -359,7 +353,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		creditTransferInitiation.getGrpHdr().setNbOfTxs(String.valueOf(nbOfTxs));
 
 		sepaDocument.setProcessed(!creditTransferInitiation.getPmtInf().isEmpty());
-		InterfaceWrapperHelper.save(sepaDocument);
+		Services.get(ISEPADocumentDAO.class).save(sepaDocument);
 		return document;
 
 	}
@@ -464,7 +458,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		}
 
 		final Date dueDate = Services.get(ISEPADocumentBL.class).getDueDate(sepaLine);
-		pmtInf.setReqdExctnDt(newXMLGregorianCalendar(dueDate));
+		pmtInf.setReqdExctnDt(SepaUtils.toXMLGregorianCalendarDate(datatypeFactory, dueDate));
 
 		//
 		// debitor
@@ -559,7 +553,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final FinancialInstitutionIdentification7CH finInstnId = objectFactory.createFinancialInstitutionIdentification7CH();
 			cdtrAgt.setFinInstnId(finInstnId);
 
-			final String bcFromIBAN = extractBCFromIban(line.getIBAN(), line);
+			final String bcFromIBAN = SepaUtils.extractIIDFromSwissIbanOrNull(line.getIBAN(), () -> TranslatableStrings.anyLanguage(SepaUtils.createInfo(line)));
 			if (Check.isNotBlank(bcFromIBAN))
 			{
 				// this is our best bet. Even data in adempiere might be wrong/outdated
@@ -596,7 +590,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				{
 					final String bankName = bankAccountService.getBankName(BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID()))
 							.orElseThrow(() ->
-									new SepaMarshallerException(ERR_SEPA_Export_NoBankName, paymentType, createInfo(line)));
+									new SepaMarshallerException(ERR_SEPA_Export_NoBankName, paymentType, SepaUtils.createInfo(line)));
 
 					finInstnId.setNm(bankName);
 					finInstnId.setBIC(null); // if we use Nm, then there should be no BIC element
@@ -683,16 +677,14 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					|| PAYMENT_TYPE_3.equals(paymentType)
 					|| PAYMENT_TYPE_5.equals(paymentType))
 			{
-				Check.errorIf(Objects.equals(paymentType, PAYMENT_TYPE_1), SepaMarshallerException.class,
-						"SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
-
+				// payment type 1 cannot get here: extractPaymentType returns it only for a line with a StructuredRemittanceInfo
 				if (bankAccount != null && !Check.isBlank(bankAccount.getQR_IBAN()))
 				{
 					final String QRReference = StringUtils.cleanWhitespace(line.getStructuredRemittanceInfo());
 
 					if (isInvalidQRReference(QRReference))
 					{
-						throw new AdempiereException(ERR_SEPA_Export_InvalidReference, createInfo(line));
+						throw new AdempiereException(SepaUtils.ERR_SEPA_Export_InvalidReference, SepaUtils.createInfo(line));
 					}
 
 					final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
@@ -760,21 +752,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			cdtTrfTxInf.setPmtId(pmtId);
 		}
 		return cdtTrfTxInf;
-	}
-
-	@SafeVarargs
-	@Nullable
-	private final String getFirstNonEmpty(@NonNull final Supplier<String>... values)
-	{
-		final String result = CoalesceUtil.firstValidValue(
-				Check::isNotBlank,
-				values);
-
-		if (result != null)
-		{
-			return result.trim();
-		}
-		return result;
 	}
 
 	private PostalAddress6CH createStructuredPstlAdr(
@@ -873,47 +850,12 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	}
 
 	/**
-	 * for IBANs that start with "CH" or "LI", this method extracts the swizz Banking code and returns it. If the given <code>iban</code> is <code>null</code>, emtpy of not "CH"/"LI", it returns
-	 * <code>null</code>.
-	 *
-	 * @see <a href="http://www.swissiban.com/de.htm">http://www.swissiban.com/de.htm</a> for what it does (it's simple).
+	 * @return an exception with the given message, formatted like {@link Check#errorIf} does, but taken as it is, i.e. not parsed for "@...@" translation tokens;
+	 * so the parameters from {@link SepaUtils#createInfo}, which are escaped for the parseTranslation of the process, keep their "@"
 	 */
-	@Nullable
-	private String extractBCFromIban(
-			@Nullable final String iban,
-			@NonNull final I_SEPA_Export_Line line)
+	private static SepaMarshallerException newLineError(@NonNull final String messageFormat, final Object... params)
 	{
-		if (Check.isBlank(iban))
-		{
-			return null;
-		}
-		if (!isSwizzIBAN(iban))
-		{
-			return null;
-		}
-
-		final int bcStartIdx = 4;
-		final int bcEndIdx = 9;
-		final String ibanToUse = iban.replaceAll(" ", "");
-
-		Check.errorIf(ibanToUse.length() < bcEndIdx,
-				SepaMarshallerException.class,
-				"Given IBAN {} for line {} is to short. Please verify that it's actually an IBAN at all",
-				iban, createInfo(line));
-		return ibanToUse.substring(bcStartIdx, bcEndIdx);
-	}
-
-	/**
-	 * Returns true if the given IBAN is supposed to contain a swizz bank code (BC). This can be assumes if the given IBAN (stripped from spaces) starts with either "CH" or "LI".
-	 */
-	private boolean isSwizzIBAN(@Nullable final String iban)
-	{
-		if (Check.isBlank(iban))
-		{
-			return false;
-		}
-		final String ibanToUse = iban.replaceAll(" ", "");
-		return ibanToUse.startsWith("CH") || ibanToUse.startsWith("LI");
+		return new SepaMarshallerException(TranslatableStrings.constant("Error: " + StringUtils.formatMessage(messageFormat, params)));
 	}
 
 	private PartyIdentification32CH copyPartyIdentificationSEPA2(final PartyIdentification32CHNameAndId initgPty)
@@ -924,15 +866,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		partyCopy.setNm(initgPty.getNm());
 
 		return partyCopy;
-	}
-
-	private XMLGregorianCalendar newXMLGregorianCalendar(final Date date)
-	{
-		final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-
-		final String dateStr = df.format(date);
-
-		return datatypeFactory.newXMLGregorianCalendar(dateStr);
 	}
 
 	public String getPainIdentifier()
@@ -975,14 +908,14 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final CurrencyCode currencyCode = extractCurrencyCode(line);
 			final String iban = line.getIBAN();
 
-			final boolean swizzIban = isSwizzIBAN(iban);
+			final boolean swizzIban = SepaUtils.isSwissIBAN(iban);
 			if (swizzIban || bpBankAccount.isESRAccount())
 			{
 				// "domestic" IBAN. it contains the bank code (BC) and we will use it.
-				Check.errorIf(!currencyCode.isEuro() && !currencyCode.isCHF(),
-						SepaMarshallerException.class,
-						"line {} has a swizz IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
-						createInfo(line), currencyCode);
+				if (!currencyCode.isEuro() && !currencyCode.isCHF())
+				{
+					throw newLineError("line {} has a swizz IBAN, but the currency is {} instead of 'CHF' or 'EUR'", SepaUtils.createInfo(line), currencyCode);
+				}
 
 				paymentMode = PAYMENT_TYPE_3; // we can go with zahlart 2.2
 			}
@@ -1003,22 +936,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		return paymentMode;
 	}
 
-	private String createInfo(@NonNull final I_SEPA_Export_Line line)
-	{
-		final StringBuilder sb = new StringBuilder();
-		if (line.getC_BPartner_ID() > 0)
-		{
-			sb.append("@C_BPartner_ID@ ");
-			sb.append(getBPartnerNameById(line.getC_BPartner_ID()));
-		}
-		if (line.getC_BP_BankAccount_ID() > 0)
-		{
-			sb.append(" @C_BP_BankAccount_ID@ ");
-			sb.append(line.getC_BP_BankAccount().getDescription());
-		}
-		return Services.get(IMsgBL.class).parseTranslation(InterfaceWrapperHelper.getCtx(line), sb.toString());
-	}
-
 	@VisibleForTesting
 	@Nullable
 	static String replaceForbiddenChars(@Nullable final String input)
@@ -1030,12 +947,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		return input.replaceAll(FORBIDDEN_CHARS, "_");
 	}
 
-	private String getBPartnerNameById(final int bpartnerRepoId)
-	{
-		final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
-		return bpartnerService.getBPartnerName(BPartnerId.ofRepoIdOrNull(bpartnerRepoId));
-	}
-
 	@NonNull
 	private PartyIdentification32CHName convertPartyIdentification32CHName(
 			@NonNull final I_SEPA_Export_Line line,
@@ -1045,16 +956,16 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		final PartyIdentification32CHName cdtr = objectFactory.createPartyIdentification32CHName();
 		if (bankAccount == null)
 		{
-			cdtr.setNm(SepaUtils.replaceForbiddenChars(getFirstNonEmpty(
+			cdtr.setNm(SepaUtils.replaceForbiddenChars(SepaUtils.getFirstNonEmpty(
 					line::getSEPA_MandateRefNo,
-					() -> getBPartnerNameById(line.getC_BPartner_ID()))));
+					() -> SepaUtils.getBPartnerNameById(line.getC_BPartner_ID()))));
 		}
 		else
 		{
-			cdtr.setNm(SepaUtils.replaceForbiddenChars(getFirstNonEmpty(
+			cdtr.setNm(SepaUtils.replaceForbiddenChars(SepaUtils.getFirstNonEmpty(
 					bankAccount::getAccountName,
 					line::getSEPA_MandateRefNo,
-					() -> getBPartnerNameById(line.getC_BPartner_ID()))));
+					() -> SepaUtils.getBPartnerNameById(line.getC_BPartner_ID()))));
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
@@ -1083,20 +994,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	@VisibleForTesting
 	static boolean isInvalidQRReference(@NonNull final String reference)
 	{
-		if (reference.length() != 27)
-		{
-			return true;
-		}
-
-		final int[] checkSequence = { 0, 9, 4, 6, 8, 2, 7, 1, 3, 5 };
-		int carryOver = 0;
-
-		for (int i = 1; i <= reference.length() - 1; i++)
-		{
-			final int idx = ((carryOver + Integer.parseInt(reference.substring(i - 1, i))) % 10);
-			carryOver = checkSequence[idx];
-		}
-
-		return !(Integer.parseInt(reference.substring(26)) == (10 - carryOver) % 10);
+		return !SepaUtils.isValidQrReference(reference);
 	}
 }
