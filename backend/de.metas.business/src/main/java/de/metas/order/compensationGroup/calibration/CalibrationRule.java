@@ -87,16 +87,8 @@ public class CalibrationRule
 	 */
 	public Quantity computeQtyCalibrated(@NonNull final Quantity qtyEnteredUncalibrated)
 	{
-		return computeQtyCalibrated(qtyEnteredUncalibrated, getFactor());
-	}
-
-	/**
-	 * Same computation as {@link #computeQtyCalibrated(Quantity)}, for a factor that is not (or no longer) the rule's factor, e.g. one typed on the order line.
-	 *
-	 * @param factor a 100-based percent: 80 = 80 %, 100 = unchanged, 0 = zero
-	 */
-	public static Quantity computeQtyCalibrated(@NonNull final Quantity qtyEnteredUncalibrated, @NonNull final Percent factor)
-	{
-		return qtyEnteredUncalibrated.multiply(factor);
+		return qtyEnteredUncalibrated
+				.multiply(getFactor().toBigDecimal().movePointLeft(2))
+				.roundToUOMPrecision();
 	}
 }

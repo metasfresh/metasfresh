@@ -1228,7 +1228,7 @@ public class OrderGroupRepository implements GroupRepository
 	}
 
 	/**
-	 * @return the calibration factor of the line (100-based percent); empty if none is stored.
+	 * @return the calibration factor of the line (100-based percent); null if none is stored.
 	 * The generated getter returns 0 for an empty value, but an empty factor must stay distinguishable from factor 0.
 	 */
 	@Nullable

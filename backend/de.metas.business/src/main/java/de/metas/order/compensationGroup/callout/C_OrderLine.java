@@ -56,7 +56,7 @@ import java.math.RoundingMode;
  * Keeps the calibration factor ({@code GroupCompensationCalibrationFactor}) and {@code QtyEntered} of a calibrated order line in sync
  * when the user edits one of them in the UI:
  * <ul>
- * <li>factor changed: {@code QtyEntered = uncalibrated qty x factor %}, rounded like at line creation ({@link CalibrationRule#computeQtyCalibrated(Quantity, Percent)})</li>
+ * <li>factor changed: {@code QtyEntered = uncalibrated qty x factor %}, rounded like at line creation ({@link CalibrationRule#computeQtyCalibrated(Quantity)})</li>
  * <li>{@code QtyEntered} changed (typed, or set by the TU qty callout): {@code factor = QtyEntered / uncalibrated qty x 100}, rounded half-up to 2 decimals</li>
  * </ul>
  * Both act in every window and only on a calibrated line, i.e. one with a calibration rule or a calibration factor; any other line is left alone.
@@ -98,8 +98,7 @@ public class C_OrderLine
 		final Percent factor = OrderGroupRepository.getCalibrationFactor(orderLine);
 		final BigDecimal qtyUncalibrated = getQtyUncalibratedOrNull(orderLine);
 
-		// a new line runs every field callout once; an empty factor there is not a user edit
-		if (factor == null && (InterfaceWrapperHelper.isNew(orderLine) || qtyUncalibrated == null))
+		if (factor == null && qtyUncalibrated == null) // an empty factor on a line that was never calibrated: nothing to do
 		{
 			return;
 		}
@@ -111,7 +110,7 @@ public class C_OrderLine
 		{
 			throw new AdempiereException(MSG_NegativeFactor).markAsUserValidationError();
 		}
-		if (!isCalibrated(orderLine) || qtyUncalibrated == null)
+		if (qtyUncalibrated == null)
 		{
 			throw new AdempiereException(MSG_LineNotCalibrated).markAsUserValidationError();
 		}
@@ -122,7 +121,8 @@ public class C_OrderLine
 		}
 
 		final Quantity base = Quantitys.of(baseInLineUom, UomId.ofRepoId(orderLine.getC_UOM_ID()));
-		final Quantity qtyCalibrated = CalibrationRule.computeQtyCalibrated(base, factor);
+		// exactly base x factor / 100, rounded once to the UOM precision (like at line creation, see CalibrationRule#computeQtyCalibrated)
+		final Quantity qtyCalibrated = base.multiply(factor.toBigDecimal().movePointLeft(2)).roundToUOMPrecision();
 		orderLine.setQtyEntered(qtyCalibrated.toBigDecimal());
 	}
 

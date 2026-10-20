@@ -84,16 +84,21 @@ class C_OrderLineTest
 	 */
 	private I_C_OrderLine calibratedLineInBuckets()
 	{
+		return calibratedLineInBuckets("375", "25");
+	}
+
+	private I_C_OrderLine calibratedLineInBuckets(final String baseLtr, final String ltrPerBucket)
+	{
 		final I_C_UOM bucket = BusinessTestHelper.createUOM("BUCKET", null, 0);
 		final I_M_Product product = BusinessTestHelper.createProduct("P", ltr);
 		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
 				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.fromUomId(UomId.ofRepoId(bucket.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(ltr.getC_UOM_ID()))
-				.fromToMultiplier(new BigDecimal("25"))
+				.fromToMultiplier(new BigDecimal(ltrPerBucket))
 				.build());
 
-		final I_C_OrderLine line = calibratedLine("375", "80", "300");
+		final I_C_OrderLine line = calibratedLine(baseLtr, "80", "300");
 		line.setM_Product_ID(product.getM_Product_ID());
 		line.setC_UOM_ID(bucket.getC_UOM_ID());
 		line.setQtyEntered(new BigDecimal("12"));
@@ -232,6 +237,32 @@ class C_OrderLineTest
 		}
 
 		@Test
+		void convertedBase15Buckets_factor80_gives12()
+		{
+			final I_C_OrderLine line = calibratedLineInBuckets();
+			typeFactor(line, "80");
+			assertThat(line.getQtyEntered()).isEqualByComparingTo("12");
+		}
+
+		@Test
+		void convertedBaseWithMoreDecimalsThanTheUomPrecision_isRoundedUpOnce()
+		{
+			// 100 LTR = 3.333333 buckets (1 bucket = 30 LTR); bucket precision 0; x 100 % = 3.333333 -> 4
+			final I_C_OrderLine line = calibratedLineInBuckets("100", "30");
+			typeFactor(line, "100");
+			assertThat(line.getQtyEntered()).isEqualByComparingTo("4");
+		}
+
+		@Test
+		void convertedBaseIsNotRoundedBeforeTheFactorIsApplied()
+		{
+			// 100 LTR = 12.5 buckets (1 bucket = 8 LTR), precision 0; x 40 % = 5 exactly (rounding the base to 13 first would give 5.2 -> 6)
+			final I_C_OrderLine line = calibratedLineInBuckets("100", "8");
+			typeFactor(line, "40");
+			assertThat(line.getQtyEntered()).isEqualByComparingTo("5");
+		}
+
+		@Test
 		void lineUomWithoutConversion_isRefused()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
@@ -310,21 +341,21 @@ class C_OrderLineTest
 		}
 
 		@Test
+		void lineWithFactorButWithoutRule_qtyEdit_updatesFactor()
+		{
+			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			line.setC_CompensationGroup_CalibrationRule_ID(0);
+			typeQty(line, "375");
+			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
+		}
+
+		@Test
 		void lineUomWithoutConversion_leavesFactor()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			line.setC_UOM_ID(ml.getC_UOM_ID());
 			typeQty(line, "375");
 			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
-		}
-
-		@Test
-		void qtyEdit_followsInEveryWindow_factorIsUpdatedWheneverTheLineIsCalibrated()
-		{
-			// no window or tab is consulted any more: the same Qty edit gives the same factor everywhere
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			typeQty(line, "375");
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
 		}
 
 		@Test
