@@ -1,4 +1,4 @@
--- Must run before: 5665510_sys_gh13758_DateTrx_C_Payment.sql
+-- Forced ordering (sub-slot): must run before 5665510_sys_gh13758_DateTrx_C_Payment.sql
 -- That script converts C_Payment.DateTrx, C_BankStatement.StatementDate and C_BankStatementLine.ValutaDate/DateAcct/StatementLineDate
 -- to TIMESTAMP WITH TIME ZONE, which rewrites those tables. Back them up first.
 -- A table is backed up only while its column is still TIMESTAMP WITHOUT TIME ZONE, so DBs that already applied the conversion are not copied again.
