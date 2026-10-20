@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08 file:///C:/Users/burkhalterl/Documents/Musterfiles%20ISOV19/Schemen/camt.054.001.08.xsd">
+	<BkToCstmrDbtCdtNtfctn>
+		<GrpHdr>
+			<MsgId>20200618375204295372463</MsgId>
+			<CreDtTm>2022-03-08T23:31:31</CreDtTm>
+			<MsgPgntn>
+				<PgNb>1</PgNb>
+				<LastPgInd>true</LastPgInd>
+			</MsgPgntn>
+			<AddtlInf>SPS/2.0/PROD</AddtlInf>
+		</GrpHdr>
+		<Ntfctn>
+			<Id>20200618375204295372465</Id>
+			<CreDtTm>2022-03-08T23:31:31</CreDtTm>
+			<FrToDt>
+				<FrDtTm>2022-03-08T00:00:00</FrDtTm>
+				<ToDtTm>2022-03-08T23:59:59</ToDtTm>
+			</FrToDt>
+			<Acct>
+				<Id>
+					<IBAN>CH2909000000250094239</IBAN>
+				</Id>
+				<Ccy>CHF</Ccy>
+				<Ownr>
+					<Nm>Robert Schneider SA Grands magasins Biel/Bienne</Nm>
+				</Ownr>
+			</Acct>
+			<Ntry>
+				<NtryRef>CH2909000000250094239</NtryRef>
+				<Amt Ccy="CHF">501.05</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<RvslInd>false</RvslInd>
+				<Sts>
+					<Cd>BOOK</Cd>
+				</Sts>
+				<BookgDt>
+					<Dt>2022-03-08</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2022-03-08</Dt>
+				</ValDt>
+				<AcctSvcrRef>1000000000000000</AcctSvcrRef>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>RCDT</Cd>
+							<SubFmlyCd>AUTT</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+					</Btch>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>2000000000000000</AcctSvcrRef>
+							<InstrId>1006265-25bbb3b1a</InstrId>
+							<EndToEndId>NOTPROVIDED</EndToEndId>
+							<UETR>b009c997-97b3-4a9c-803c-d645a7276b0</UETR>
+							<Prtry>
+								<Tp>00</Tp>
+								<Ref>00000000000000000000020</Ref>
+							</Prtry>
+						</Refs>
+						<Amt Ccy="CHF">501.05</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<BkTxCd>
+							<Domn>
+								<Cd>PMNT</Cd>
+								<Fmly>
+									<Cd>RCDT</Cd>
+									<SubFmlyCd>AUTT</SubFmlyCd>
+								</Fmly>
+							</Domn>
+						</BkTxCd>
+						<RltdPties>
+							<Dbtr>
+								<Pty>
+									<Nm>Bernasconi Maria</Nm>
+									<PstlAdr>
+										<AdrLine>Place de la Gare 12</AdrLine>
+										<AdrLine>2502 Biel/Bienne</AdrLine>
+									</PstlAdr>
+								</Pty>
+							</Dbtr>
+							<DbtrAcct>
+								<Id>
+									<IBAN>CH5109000000250092291</IBAN>
+								</Id>
+							</DbtrAcct>
+							<CdtrAcct>
+								<Id>
+									<IBAN>CH2909000000250094239</IBAN>
+								</Id>
+							</CdtrAcct>
+						</RltdPties>
+						<RltdAgts>
+							<DbtrAgt>
+								<FinInstnId>
+									<BICFI>POFICHBEXXX</BICFI>
+									<Nm>POSTFINANCE AG</Nm>
+									<PstlAdr>
+										<AdrLine>MINGERSTRASSE , 20</AdrLine>
+										<AdrLine>3030 BERN</AdrLine>
+									</PstlAdr>
+								</FinInstnId>
+							</DbtrAgt>
+						</RltdAgts>
+						<RmtInf>
+							<Ustrd>Muster</Ustrd>
+							<Ustrd> Musterfile</Ustrd>
+							<Strd>
+								<AddtlRmtInf>?REJECT?0</AddtlRmtInf>
+								<AddtlRmtInf>?ERROR?000</AddtlRmtInf>
+							</Strd>
+						</RmtInf>
+						<RltdDts>
+							<AccptncDtTm>2022-03-08T20:00:00</AccptncDtTm>
+						</RltdDts>
+					</TxDtls>
+				</NtryDtls>
+				<AddtlNtryInf>SAMMELGUTSCHRIFT FÜR KONTO: CH2909000000250094239 VERARBEITUNG VOM 08.03.2022 PAKET ID: 200000000000XXX</AddtlNtryInf>
+			</Ntry>
+		</Ntfctn>
+	</BkToCstmrDbtCdtNtfctn>
+</Document>
