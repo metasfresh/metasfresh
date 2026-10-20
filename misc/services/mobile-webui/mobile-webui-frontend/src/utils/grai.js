@@ -54,8 +54,15 @@ export const parseGraiFromGs1Barcode = (barcodeString) => {
 };
 
 /**
- * Try to parse a GRAI from raw input. First tries GS1 barcode parsing,
- * then checks if it's already in dot-separated format.
+ * Try to parse a GRAI from raw input. First checks if it's already in dot-separated
+ * (canonical) format, then tries GS1 barcode parsing — the same order as the backend
+ * `de.metas.handlingunits.grai.GRAI.parse`.
+ *
+ * Canonical MUST win: a canonical GRAI whose company prefix starts with "8003"
+ * (e.g. `8003214.95365.1999803101`) is also accepted by the GS1 parser as AI 8003
+ * and would otherwise be misread (`14.9536.5.199.803101`).
+ * The other way round, only a GS1 string containing exactly two non-adjacent inner dots
+ * (possible in an alphanumeric serial) is taken as canonical — the backend does the same.
  *
  * @param {string} inputString - Raw input (barcode or manual entry)
  * @returns {string|null} Dot-separated GRAI or null
@@ -65,14 +72,9 @@ export const parseGraiFromRawInput = (inputString) => {
 
   const trimmed = inputString.trim();
 
-  // Try GS1 barcode first
-  const gs1Result = parseGraiFromGs1Barcode(trimmed);
-  if (gs1Result) return gs1Result;
-
-  // Check if already in dot-separated format
   if (isValidGrai(trimmed)) return trimmed;
 
-  return null;
+  return parseGraiFromGs1Barcode(trimmed);
 };
 
 /**

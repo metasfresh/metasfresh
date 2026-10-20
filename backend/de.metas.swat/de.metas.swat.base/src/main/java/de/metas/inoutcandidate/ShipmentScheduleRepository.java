@@ -76,10 +76,13 @@ import org.compiere.model.X_C_Order;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -357,7 +360,9 @@ public class ShipmentScheduleRepository
 				.priorityRule(PriorityRule.ofNullableCode(record.getPriorityRule()))
 				.externalSystemId(ExternalSystemId.ofRepoIdOrNull(record.getExternalSystem_ID()));
 
-		return shipmentScheduleBuilder.build();
+		final ShipmentSchedule shipmentSchedule = shipmentScheduleBuilder.build();
+		shipmentSchedule.setPersistedMutableFields(shipmentSchedule.toPersistedMutableFields());
+		return shipmentSchedule;
 	}
 
 	public ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
@@ -394,16 +399,49 @@ public class ShipmentScheduleRepository
 		}
 	}
 
+	/**
+	 * Persists the mutable fields that were changed since the given instance was loaded (or last saved).
+	 * Unchanged fields are not written, so a concurrent update of them (e.g. the export API setting the ExportStatus
+	 * while the async carrier advise holds an instance it loaded before) is not overwritten with a stale value.
+	 */
 	public void save(@NonNull final ShipmentSchedule shipmentSchedule)
 	{
 		final I_M_ShipmentSchedule record = load(shipmentSchedule.getId(), I_M_ShipmentSchedule.class);
-		// right now these are the only mutable property
-		record.setExportStatus(shipmentSchedule.getExportStatus().getCode());
-		record.setCarrier_Advising_Status(shipmentSchedule.getCarrierAdvisingStatus().getCode());
-		record.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(shipmentSchedule.getCarrierGoodsTypeId()));
-		record.setCarrier_Product_ID(CarrierProductId.toRepoId(shipmentSchedule.getCarrierProductId()));
-		record.setCarrierAdviceErrorMsg(shipmentSchedule.getCarrierAdviseErrorMessage());
+
+		// right now these are the only mutable properties
+		final ShipmentSchedule.PersistedMutableFields persisted = shipmentSchedule.getPersistedMutableFields();
+		final ShipmentSchedule.PersistedMutableFields current = shipmentSchedule.toPersistedMutableFields();
+		if (isChanged(persisted, current, ShipmentSchedule.PersistedMutableFields::getExportStatus))
+		{
+			record.setExportStatus(current.getExportStatus().getCode());
+		}
+		if (isChanged(persisted, current, ShipmentSchedule.PersistedMutableFields::getCarrierAdvisingStatus))
+		{
+			record.setCarrier_Advising_Status(current.getCarrierAdvisingStatus().getCode());
+		}
+		if (isChanged(persisted, current, ShipmentSchedule.PersistedMutableFields::getCarrierGoodsTypeId))
+		{
+			record.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(current.getCarrierGoodsTypeId()));
+		}
+		if (isChanged(persisted, current, ShipmentSchedule.PersistedMutableFields::getCarrierProductId))
+		{
+			record.setCarrier_Product_ID(CarrierProductId.toRepoId(current.getCarrierProductId()));
+		}
+		if (isChanged(persisted, current, ShipmentSchedule.PersistedMutableFields::getCarrierAdviseErrorMessage))
+		{
+			record.setCarrierAdviceErrorMsg(current.getCarrierAdviseErrorMessage());
+		}
 		saveRecord(record);
+
+		shipmentSchedule.setPersistedMutableFields(current);
+	}
+
+	private static boolean isChanged(
+			@Nullable final ShipmentSchedule.PersistedMutableFields persisted,
+			@NonNull final ShipmentSchedule.PersistedMutableFields current,
+			@NonNull final Function<ShipmentSchedule.PersistedMutableFields, Object> field)
+	{
+		return persisted == null || !Objects.equals(field.apply(persisted), field.apply(current));
 	}
 
 	public ImmutableMap<ShipmentScheduleId, ShipmentSchedule> getByIds(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
