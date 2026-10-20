@@ -101,7 +101,7 @@ public class C_Doc_Outbound_Log_StepDef
 	private final C_Order_StepDefData orderTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final IdentifiersResolver identifiersResolver;
-	/** Original state per touched config id; <code>null</code> = the scenario created it. */
+	/** State per touched config id, as it was before the first change by this scenario. */
 	private final Map<Integer, ConfigState> originalConfigStates = new HashMap<>();
 
 	public C_Doc_Outbound_Log_StepDef(
@@ -153,7 +153,8 @@ public class C_Doc_Outbound_Log_StepDef
 			final I_C_Doc_Outbound_Config config;
 			if (existingConfig != null)
 			{
-				originalConfigStates.putIfAbsent(existingConfig.getC_Doc_Outbound_Config_ID(), new ConfigState(existingConfig.isActive(), existingConfig.getDocBaseType()));
+				// remember the state before the scenario's first change; a repeated call finds the entry (also of a created config) and keeps it
+				originalConfigStates.putIfAbsent(existingConfig.getC_Doc_Outbound_Config_ID(), ConfigState.existing(existingConfig.isActive(), existingConfig.getDocBaseType()));
 				config = existingConfig;
 			}
 			else
@@ -167,7 +168,7 @@ public class C_Doc_Outbound_Log_StepDef
 
 			if (existingConfig == null)
 			{
-				originalConfigStates.put(config.getC_Doc_Outbound_Config_ID(), null);
+				originalConfigStates.put(config.getC_Doc_Outbound_Config_ID(), ConfigState.created());
 			}
 		});
 	}
@@ -181,7 +182,7 @@ public class C_Doc_Outbound_Log_StepDef
 	{
 		originalConfigStates.forEach((configId, originalState) -> {
 			final I_C_Doc_Outbound_Config config = load(configId, I_C_Doc_Outbound_Config.class);
-			if (originalState == null)
+			if (originalState.createdByScenario)
 			{
 				InterfaceWrapperHelper.delete(config);
 			}
@@ -197,11 +198,23 @@ public class C_Doc_Outbound_Log_StepDef
 
 	private static final class ConfigState
 	{
+		private final boolean createdByScenario;
 		private final boolean isActive;
 		@Nullable private final String docBaseType;
 
-		private ConfigState(final boolean isActive, @Nullable final String docBaseType)
+		static ConfigState created()
 		{
+			return new ConfigState(true, false, null);
+		}
+
+		static ConfigState existing(final boolean isActive, @Nullable final String docBaseType)
+		{
+			return new ConfigState(false, isActive, docBaseType);
+		}
+
+		private ConfigState(final boolean createdByScenario, final boolean isActive, @Nullable final String docBaseType)
+		{
+			this.createdByScenario = createdByScenario;
 			this.isActive = isActive;
 			this.docBaseType = docBaseType;
 		}
