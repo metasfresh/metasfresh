@@ -1,6 +1,7 @@
 package de.metas.order.compensationGroup.callout;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstance;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstanceFactory;
@@ -38,7 +39,7 @@ class C_OrderLineTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		callout = new C_OrderLine();
+		callout = new C_OrderLine(GroupTemplateRepository.newInstanceForUnitTesting());
 
 		ltr = BusinessTestHelper.createUOM("LTR", null, 0);
 		ml = BusinessTestHelper.createUOM("ML", null, 0);

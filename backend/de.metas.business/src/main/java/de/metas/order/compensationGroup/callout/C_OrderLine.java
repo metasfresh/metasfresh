@@ -23,14 +23,16 @@
 package de.metas.order.compensationGroup.callout;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.order.compensationGroup.GroupTemplateRegularLineId;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.calibration.CalibrationRule;
-import de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -63,6 +65,7 @@ import java.math.RoundingMode;
  */
 @Callout(I_C_OrderLine.class)
 @Component
+@RequiredArgsConstructor
 public class C_OrderLine
 {
 	private static final AdMessageKey MSG_FactorMandatory = AdMessageKey.of("C_OrderLine_CalibrationFactorMandatory");
@@ -72,6 +75,8 @@ public class C_OrderLine
 
 	private static final int FACTOR_SCALE = 2;
 	private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
+
+	@NonNull private final GroupTemplateRepository groupTemplateRepository;
 
 	@PostConstruct
 	void postConstruct()
@@ -164,16 +169,14 @@ public class C_OrderLine
 	/**
 	 * The uncalibrated qty has no UOM of its own: it is in the UOM of the template line the order line was created from.
 	 */
-	private static boolean isLineUomEqualToTemplateLineUom(@NonNull final I_C_OrderLine orderLine)
+	private boolean isLineUomEqualToTemplateLineUom(@NonNull final I_C_OrderLine orderLine)
 	{
-		final int templateLineId = orderLine.getC_CompensationGroup_Schema_TemplateLine_ID();
-		if (templateLineId <= 0)
+		final GroupTemplateRegularLineId templateLineId = GroupTemplateRegularLineId.ofRepoIdOrNull(orderLine.getC_CompensationGroup_Schema_TemplateLine_ID());
+		if (templateLineId == null)
 		{
 			return false;
 		}
-		final I_C_CompensationGroup_Schema_TemplateLine templateLine = InterfaceWrapperHelper.load(templateLineId, I_C_CompensationGroup_Schema_TemplateLine.class);
-		return templateLine != null
-				&& templateLine.getC_UOM_ID() > 0
-				&& templateLine.getC_UOM_ID() == orderLine.getC_UOM_ID();
+		final UomId lineUomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
+		return lineUomId != null && groupTemplateRepository.getRegularLineUomId(templateLineId).filter(lineUomId::equals).isPresent();
 	}
 }

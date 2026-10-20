@@ -96,6 +96,17 @@ public class GroupTemplateRepository
 				() -> new GroupTemplateRepository(Optional.empty()));
 	}
 
+	/** @return the UOM of the given template line; empty if the line does not exist */
+	public Optional<UomId> getRegularLineUomId(@NonNull final GroupTemplateRegularLineId templateLineId)
+	{
+		return queryBL
+				.createQueryBuilderOutOfTrx(I_C_CompensationGroup_Schema_TemplateLine.class)
+				.addEqualsFilter(I_C_CompensationGroup_Schema_TemplateLine.COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID, templateLineId)
+				.create()
+				.firstOptional(I_C_CompensationGroup_Schema_TemplateLine.class)
+				.map(record -> UomId.ofRepoIdOrNull(record.getC_UOM_ID()));
+	}
+
 	public GroupTemplate getById(@NonNull final GroupTemplateId groupTemplateId)
 	{
 		return groupTemplatesById.getOrLoad(groupTemplateId, this::retrieveById);
