@@ -41,6 +41,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import org.adempiere.ad.trx.api.ITrx;
@@ -93,7 +94,25 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		this.notifyBatchFor(asyncBatchId, request);
 	}
 
+	/**
+	 * Like {@link #observeOn(AsyncBatchId, Supplier)}, but the batch is completed on the notified progress alone, without re-confirming it.
+	 */
 	public void observeOn(@NonNull final AsyncBatchId id)
+	{
+		observeOn(id, Optional::empty);
+	}
+
+	/**
+	 * Registers an observer for the given async batch, see {@link #waitToBeProcessed(AsyncBatchId)}.
+	 *
+	 * @param currentProgressSupplier supplies the batch's progress as currently committed in the DB.
+	 *                                A notified progress that says "all processed" is only trusted after this supplier confirms it,
+	 *                                because that notification may have been counted before the caller's own workpackages were committed.
+	 *                                If it supplies nothing, the notified progress is trusted.
+	 */
+	public void observeOn(
+			@NonNull final AsyncBatchId id,
+			@NonNull final Supplier<Optional<AsyncBatchNotifyRequest>> currentProgressSupplier)
 	{
 		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id.getRepoId()
 																+ " date: " + Instant.now() + " ; "
@@ -119,7 +138,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		//dev-note: acquire an owner related lock to make sure there is just one AsyncBatchObserver that's registering a certain async batch at a time
 		final ILock lock = lockBatch(id, Duration.ofMillis(timeoutMS));
 
-		asyncBatch2Completion.put(id, new BatchProgress(lock, id));
+		asyncBatch2Completion.put(id, new BatchProgress(lock, id, currentProgressSupplier));
 	}
 
 	/**
@@ -268,11 +287,15 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	{
 		private static final Logger logger = LogManager.getLogger(BatchProgress.class);
 
-		public BatchProgress(@NonNull final ILock lock, @NonNull final AsyncBatchId batchId)
+		public BatchProgress(
+				@NonNull final ILock lock,
+				@NonNull final AsyncBatchId batchId,
+				@NonNull final Supplier<Optional<AsyncBatchNotifyRequest>> currentProgressSupplier)
 		{
 			this.completableFuture = new CompletableFuture<>();
 			this.lock = lock;
 			this.batchId = batchId;
+			this.currentProgressSupplier = currentProgressSupplier;
 		}
 
 		@NonNull
@@ -283,6 +306,9 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 		@NonNull
 		ILock lock;
+
+		@NonNull
+		Supplier<Optional<AsyncBatchNotifyRequest>> currentProgressSupplier;
 
 		@NonFinal
 		volatile boolean isEnqueueingDone;
@@ -302,6 +328,10 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			checkIfBatchIsDone();
 		}
 
+		/**
+		 * Called by {@link #removeObserver(AsyncBatchId)} after the monitoring lock was released.
+		 * So the current progress is not available any more (it is counted relative to that lock) and the last known progress decides.
+		 */
 		private void forceCompletionIfNotAlreadyCompleted()
 		{
 			if (checkIfBatchIsDone())
@@ -316,9 +346,30 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 		private synchronized boolean checkIfBatchIsDone()
 		{
+			if (completableFuture.isDone())
+			{
+				return true;
+			}
+
 			if (wpProgress == null || !isEnqueueingDone)
 			{
 				return false;
+			}
+
+			if (!wpProgress.isProcessedSuccessfully() && !wpProgress.isProcessedWithError())
+			{
+				return false;
+			}
+
+			// dev-note: the notified progress might have been counted before our own workpackages were committed.
+			// Example: saving a shipment schedule enqueues its recompute into the same async batch; if that recompute is processed
+			// while our shipment workpackage is not yet committed, it notifies "1 of 1 processed".
+			// So we re-confirm with the current count, which includes our committed workpackages.
+			// The current count replaces the notified progress, so a refuted snapshot is not reused later.
+			final Optional<WorkPackagesProgress> currentProgress = retrieveCurrentProgress();
+			if (currentProgress.isPresent())
+			{
+				this.wpProgress = currentProgress.get();
 			}
 
 			if (wpProgress.isProcessedSuccessfully())
@@ -335,7 +386,26 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 				return true;
 			}
 
+			Loggables.withLogger(logger, Level.INFO).addLog("AsyncBatchId={}: the current progress {} does not confirm the notified progress; waiting for further notifications", batchId.getRepoId(), wpProgress);
 			return false;
+		}
+
+		/**
+		 * @return the current progress, or empty if it cannot be determined; then the notified progress is trusted, as before the re-check existed.
+		 */
+		@NonNull
+		private Optional<WorkPackagesProgress> retrieveCurrentProgress()
+		{
+			try
+			{
+				return currentProgressSupplier.get().map(BatchProgress::getWPsProgress);
+			}
+			catch (final Exception e)
+			{
+				// dev-note: e.g. a transient DB error. Don't let it fail the notification handler or the caller; fall back to the notified progress.
+				logger.warn("AsyncBatchId={}: could not retrieve the current progress; trusting the notified progress", batchId.getRepoId(), e);
+				return Optional.empty();
+			}
 		}
 
 		@NonNull
@@ -348,6 +418,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 					.build();
 		}
 
+		@ToString
 		private static class WorkPackagesProgress
 		{
 			@NonNull
