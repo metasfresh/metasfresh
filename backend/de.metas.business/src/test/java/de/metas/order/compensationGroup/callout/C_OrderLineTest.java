@@ -1,6 +1,11 @@
 package de.metas.order.compensationGroup.callout;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.product.ProductId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstance;
@@ -10,6 +15,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -67,6 +73,30 @@ class C_OrderLineTest
 		line.setGroupCompensationQtyEnteredUncalibrated(new BigDecimal(base));
 		line.setGroupCompensationCalibrationFactor(new BigDecimal(factor));
 		line.setQtyEntered(new BigDecimal(qty));
+		saveRecord(line);
+		return line;
+	}
+
+
+	/**
+	 * A calibrated line whose UOM is a bucket (1 bucket = 25 LTR for the product), the template line / base being in LTR:
+	 * base 375 LTR = 15 buckets, factor 80, Qty 12 buckets.
+	 */
+	private I_C_OrderLine calibratedLineInBuckets()
+	{
+		final I_C_UOM bucket = BusinessTestHelper.createUOM("BUCKET", null, 0);
+		final I_M_Product product = BusinessTestHelper.createProduct("P", ltr);
+		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.fromUomId(UomId.ofRepoId(bucket.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(ltr.getC_UOM_ID()))
+				.fromToMultiplier(new BigDecimal("25"))
+				.build());
+
+		final I_C_OrderLine line = calibratedLine("375", "80", "300");
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(bucket.getC_UOM_ID());
+		line.setQtyEntered(new BigDecimal("12"));
 		saveRecord(line);
 		return line;
 	}
@@ -193,7 +223,16 @@ class C_OrderLineTest
 		}
 
 		@Test
-		void lineUomDiffersFromTemplateLineUom_isRefused()
+		void lineUomConvertibleFromTemplateLineUom_baseIsConverted()
+		{
+			final I_C_OrderLine line = calibratedLineInBuckets();
+			typeFactor(line, "100");
+			assertThat(line.getQtyEntered()).isEqualByComparingTo("15"); // 375 LTR = 15 buckets
+			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
+		}
+
+		@Test
+		void lineUomWithoutConversion_isRefused()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			line.setC_UOM_ID(ml.getC_UOM_ID());
@@ -261,7 +300,17 @@ class C_OrderLineTest
 		}
 
 		@Test
-		void lineUomDiffersFromTemplateLineUom_leavesFactor()
+		void lineUomConvertibleFromTemplateLineUom_factorFromConvertedBase()
+		{
+			final I_C_OrderLine line = calibratedLineInBuckets();
+			typeQty(line, "12"); // 12 of 15 buckets
+			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
+			typeQty(line, "15");
+			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
+		}
+
+		@Test
+		void lineUomWithoutConversion_leavesFactor()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			line.setC_UOM_ID(ml.getC_UOM_ID());

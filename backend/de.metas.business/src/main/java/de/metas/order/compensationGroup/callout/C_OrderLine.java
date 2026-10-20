@@ -29,7 +29,11 @@ import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.calibration.CalibrationRule;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.uom.UOMConversionContext.Rounding;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -38,6 +42,7 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.NoUOMConversionException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
@@ -45,6 +50,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Keeps the calibration factor ({@code GroupCompensationCalibrationFactor}) and {@code QtyEntered} of a calibrated order line in sync
@@ -74,6 +80,9 @@ public class C_OrderLine
 	private static final AdMessageKey MSG_UOMChanged = AdMessageKey.of("C_OrderLine_CalibrationFactorUOMChanged");
 
 	private static final int FACTOR_SCALE = 2;
+	private static final int CONVERTED_BASE_SCALE = 6;
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@NonNull private final GroupTemplateRepository groupTemplateRepository;
 
@@ -106,12 +115,13 @@ public class C_OrderLine
 		{
 			throw new AdempiereException(MSG_LineNotCalibrated).markAsUserValidationError();
 		}
-		if (!isLineUomEqualToTemplateLineUom(orderLine))
+		final BigDecimal baseInLineUom = convertBaseToLineUom(orderLine, qtyUncalibrated);
+		if (baseInLineUom == null)
 		{
 			throw new AdempiereException(MSG_UOMChanged).markAsUserValidationError();
 		}
 
-		final Quantity base = Quantitys.of(qtyUncalibrated, UomId.ofRepoId(orderLine.getC_UOM_ID()));
+		final Quantity base = Quantitys.of(baseInLineUom, UomId.ofRepoId(orderLine.getC_UOM_ID()));
 		final Quantity qtyCalibrated = CalibrationRule.computeQtyCalibrated(base, factor);
 		orderLine.setQtyEntered(qtyCalibrated.toBigDecimal());
 	}
@@ -130,11 +140,13 @@ public class C_OrderLine
 		{
 			return;
 		}
-		if (!isLineUomEqualToTemplateLineUom(orderLine))
+		final BigDecimal baseInLineUom = convertBaseToLineUom(orderLine, qtyUncalibrated);
+		if (baseInLineUom == null || baseInLineUom.signum() <= 0)
 		{
 			return;
 		}
-		OrderGroupRepository.setCalibrationFactor(orderLine, Percent.of(qtyEntered, qtyUncalibrated, FACTOR_SCALE));
+
+		OrderGroupRepository.setCalibrationFactor(orderLine, Percent.of(qtyEntered, baseInLineUom, FACTOR_SCALE));
 	}
 
 	/**
@@ -157,14 +169,43 @@ public class C_OrderLine
 	/**
 	 * The uncalibrated qty has no UOM of its own: it is in the UOM of the template line the order line was created from.
 	 */
-	private boolean isLineUomEqualToTemplateLineUom(@NonNull final I_C_OrderLine orderLine)
+	/**
+	 * The uncalibrated qty has no UOM of its own: it is in the UOM of the template line the order line was created from.
+	 *
+	 * @return the uncalibrated qty in the UOM of the order line (converted with the product's UOM conversion if the UOMs differ, without rounding it to the UOM precision);
+	 * null if there is no template line or no conversion between the two UOMs
+	 */
+	@Nullable
+	private BigDecimal convertBaseToLineUom(@NonNull final I_C_OrderLine orderLine, @NonNull final BigDecimal qtyUncalibrated)
 	{
 		final GroupTemplateRegularLineId templateLineId = GroupTemplateRegularLineId.ofRepoIdOrNull(orderLine.getC_CompensationGroup_Schema_TemplateLine_ID());
-		if (templateLineId == null)
-		{
-			return false;
-		}
 		final UomId lineUomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
-		return lineUomId != null && groupTemplateRepository.getRegularLineUomId(templateLineId).filter(lineUomId::equals).isPresent();
+		if (templateLineId == null || lineUomId == null)
+		{
+			return null;
+		}
+		final UomId templateLineUomId = groupTemplateRepository.getRegularLineUomId(templateLineId).orElse(null);
+		if (templateLineUomId == null)
+		{
+			return null;
+		}
+		if (templateLineUomId.equals(lineUomId))
+		{
+			return qtyUncalibrated;
+		}
+
+		try
+		{
+			return uomConversionBL.convertQty(
+					ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()),
+					Rounding.PRESERVE_SCALE,
+					qtyUncalibrated.setScale(Math.max(qtyUncalibrated.scale(), CONVERTED_BASE_SCALE), RoundingMode.UNNECESSARY),
+					uomDAO.getById(templateLineUomId),
+					uomDAO.getById(lineUomId));
+		}
+		catch (final NoUOMConversionException e)
+		{
+			return null;
+		}
 	}
 }

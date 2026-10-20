@@ -216,7 +216,8 @@ export async function openLineAdvancedEdit(page, productCode) {
 
 /**
  * The calibration group of the line's advanced edit shows factor, rule (by its name, which starts with its SeqNo)
- * and uncalibrated quantity, all read-only, and nothing else (no unit widget; the line unit is shown once, outside it).
+ * and uncalibrated quantity, and nothing else. The factor of a calibrated line of a draft document is editable here
+ * (read-only logic: no rule and no uncalibrated qty); rule and uncalibrated quantity are read-only (no unit widget; the line unit is shown once, outside it).
  */
 export async function expectCalibrationGroup(page, productCode, { factor, rulePrefix, uncalibrated, snapshotName }) {
     await openLineAdvancedEdit(page, productCode);
@@ -224,7 +225,7 @@ export async function expectCalibrationGroup(page, productCode, { factor, rulePr
     const factorInput = modal.locator(`.form-field-${FIELD_FACTOR} input`);
     await expect(factorInput).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     await expect(factorInput).toHaveValue(new RegExp(`^${factor.replace('.', '[.,]')}$`));
-    await expect(factorInput).toBeDisabled();
+    await expect(factorInput).toBeEnabled();
 
     const ruleInput = modal.locator(`.form-field-${FIELD_RULE} input`).first();
     await expect(ruleInput).toHaveValue(new RegExp(`^${rulePrefix}_.+`));

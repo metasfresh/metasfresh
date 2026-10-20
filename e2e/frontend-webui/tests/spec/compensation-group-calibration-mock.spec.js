@@ -26,7 +26,7 @@ import {
  *
  *   - the menu line is not calibrated (no factor, no stored rule, calibration group hidden)
  *   - Rice_Pudding is 1.500 x 0,25 x 80 % = 300 LTR, uncalibrated 375 LTR; factor, rule and uncalibrated quantity
- *     are shown read-only in the line's advanced edit
+ *     are shown in the line's advanced edit (the factor editable on a calibrated line, rule and uncalibrated quantity read-only)
  *   - the clerk types 375 as the line's Menge (the mock's value): the factor follows (375 / 375 = 100 %); rule 10 and uncalibrated 375 stay
  *   - the menu line's Menge 1.500 -> 1.600 leaves Rice_Pudding untouched (no automatic rescale)
  *   - a manually added line has no calibration group; no calibration column in the grid
@@ -100,7 +100,7 @@ test.describe('Compensation group calibration - mock case', () => {
 
         let orderId;
 
-        await test.step('quick input: 1.500 menus -> menu line 1.500 (group hidden), Rice_Pudding 300 LTR (80 % / rule 10 / 375, read-only)', async () => {
+        await test.step('quick input: 1.500 menus -> menu line 1.500 (group hidden), Rice_Pudding 300 LTR (80 % / rule 10 / 375)', async () => {
             const order = await createOrder(page, schoolA);
             orderId = order.orderId;
             await addMenuThroughQuickInput(page, menu, 1500);
@@ -111,7 +111,7 @@ test.describe('Compensation group calibration - mock case', () => {
 
             // the menu line itself is not calibrated: rule 10 matches the customer, but a menu line is skipped
             await expectCalibrationGroupHidden(page, menu);
-            // the component shows factor, rule (by name) and uncalibrated quantity, all read-only
+            // the component shows factor (editable), rule (by name) and uncalibrated quantity (read-only)
             await expectCalibrationGroup(page, rice, { factor: '80', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-calibrated' });
 
             await Backend.expect({
