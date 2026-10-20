@@ -22,7 +22,6 @@
 
 package de.metas.document.archive.api.impl;
 
-import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.engine.DocStatus;
 import lombok.NonNull;
@@ -42,7 +41,6 @@ import org.junit.jupiter.api.Test;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -72,7 +70,7 @@ class DocOutboundServiceRefreshTest
 	{
 		AdempiereTestHelper.get().init();
 
-		docOutboundService = new DocOutboundService(new DocOutboundLogHeaderPopulator(new DocOutboundLogMailRecipientRegistry(Optional.empty())));
+		docOutboundService = DocOutboundService.newInstanceForUnitTesting();
 
 		partnerA = partner("A");
 		partnerB = partner("B");
@@ -151,16 +149,30 @@ class DocOutboundServiceRefreshTest
 	}
 
 	@Test
-	void inProgressDocument_headerStatusKept()
+	void inProgressDocument_headerStatusCOKept()
 	{
-		final I_C_Order order = order(DocStatus.InProgress);
-		final I_C_Doc_Outbound_Log log = existingLog(order, DocStatus.InProgress);
+		assertHeaderStatusCOKeptForDocumentStatus(DocStatus.InProgress);
+	}
+
+	@Test
+	void draftedDocument_headerStatusCOKept()
+	{
+		assertHeaderStatusCOKeptForDocumentStatus(DocStatus.Drafted);
+	}
+
+	/**
+	 * Only a completed / waiting-for-payment document status is written to the header; a header that says CO keeps it for any other document status.
+	 */
+	private void assertHeaderStatusCOKeptForDocumentStatus(@NonNull final DocStatus documentStatus)
+	{
+		final I_C_Order order = order(documentStatus);
+		final I_C_Doc_Outbound_Log log = existingLog(order, DocStatus.Completed);
 
 		docOutboundService.refreshLogFromNewDocumentArchive(archive(order, partnerB.getC_BPartner_ID()));
 
 		final I_C_Doc_Outbound_Log reloaded = reload(log);
-		assertThat(reloaded.getDocStatus()).isEqualTo(DocStatus.InProgress.getCode());
-		assertThat(reloaded.getPOReference()).isEqualTo("newPOReference");
+		assertThat(reloaded.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
+		assertThat(reloaded.getPOReference()).isEqualTo("newPOReference"); // the refresh did run
 	}
 
 	@Test
@@ -177,28 +189,11 @@ class DocOutboundServiceRefreshTest
 		assertThat(TimeUtil.asLocalDate(reloaded.getDateDoc())).isEqualTo(NEW_DATE_ORDERED);
 	}
 
-	@Test
-	void printAndMailDates_asyncBatch_org_kept()
-	{
-		final I_C_Order order = order(DocStatus.Completed);
-		final I_C_Doc_Outbound_Log log = existingLog(order, DocStatus.InProgress);
-
-		docOutboundService.refreshLogFromNewDocumentArchive(archive(order, partnerB.getC_BPartner_ID()));
-
-		final I_C_Doc_Outbound_Log reloaded = reload(log);
-		assertThat(reloaded.getC_BPartner_ID()).isEqualTo(partnerB.getC_BPartner_ID()); // the refresh did run
-		assertThat(reloaded.getDateLastPrint()).isEqualTo(DATE_LAST_PRINT);
-		assertThat(reloaded.getDateLastEMail()).isEqualTo(DATE_LAST_EMAIL);
-		assertThat(reloaded.getC_Async_Batch_ID()).isEqualTo(ASYNC_BATCH_ID);
-		assertThat(reloaded.getAD_Org_ID()).isEqualTo(LOG_ORG_ID);
-	}
-
 	/**
-	 * A mass print writes {@code DateLastPrint} on its own instance of the log row after the row was created;
-	 * the refresh must work on the current row, not on an instance that predates that write.
+	 * The refresh does not write the print / mail dates, the async batch or the org; a print date written after the log's creation survives it.
 	 */
 	@Test
-	void refreshKeepsDateLastPrint()
+	void printAndMailDates_asyncBatch_org_kept()
 	{
 		final I_C_Order order = order(DocStatus.Completed);
 		final I_C_Doc_Outbound_Log log = existingLog(order, DocStatus.InProgress);
@@ -210,10 +205,13 @@ class DocOutboundServiceRefreshTest
 
 		docOutboundService.refreshLogFromNewDocumentArchive(archive(order, partnerB.getC_BPartner_ID()));
 
+		// a truly concurrent writer is not modelled: the in-memory DB saves whole rows; in production PO.saveUpdate writes only the changed columns (PO.java:2895-2913)
 		final I_C_Doc_Outbound_Log reloaded = reload(log);
+		assertThat(reloaded.getC_BPartner_ID()).isEqualTo(partnerB.getC_BPartner_ID()); // the refresh did run
 		assertThat(reloaded.getDateLastPrint()).isEqualTo(massPrintDate);
-		assertThat(reloaded.getC_BPartner_ID()).isEqualTo(partnerB.getC_BPartner_ID());
-		assertThat(reloaded.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
+		assertThat(reloaded.getDateLastEMail()).isEqualTo(DATE_LAST_EMAIL);
+		assertThat(reloaded.getC_Async_Batch_ID()).isEqualTo(ASYNC_BATCH_ID);
+		assertThat(reloaded.getAD_Org_ID()).isEqualTo(LOG_ORG_ID);
 	}
 
 	private I_C_BPartner partner(@NonNull final String name)

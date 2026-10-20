@@ -22,6 +22,7 @@
 
 package de.metas.document.archive.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
@@ -40,6 +41,8 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.archive.api.IPDFArchiveProvider;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -64,6 +67,16 @@ public class DocOutboundService implements IPDFArchiveProvider
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final DocOutboundLogHeaderPopulator docOutboundLogHeaderPopulator;
+
+	@VisibleForTesting
+	public static DocOutboundService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				DocOutboundService.class,
+				() -> new DocOutboundService(DocOutboundLogHeaderPopulator.newInstanceForUnitTesting()));
+	}
 
 	public DocOutboundService(@NonNull final DocOutboundLogHeaderPopulator docOutboundLogHeaderPopulator)
 	{

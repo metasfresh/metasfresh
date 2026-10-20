@@ -26,9 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.document.archive.api.impl.DocOutboundLogHeaderPopulator;
 import de.metas.document.archive.api.impl.DocOutboundService;
-import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.process.AdProcessId;
@@ -45,12 +43,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
 
 import static de.metas.document.archive.spi.impl.MockedDocumentReportService.MOCKED_REPORT_FILENAME;
 
@@ -70,7 +65,7 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 
 		Env.setClientId(Env.getCtx(), helper.createClient());
 
-		SpringContextHolder.registerJUnitBean(new DocOutboundService(new DocOutboundLogHeaderPopulator(new DocOutboundLogMailRecipientRegistry(Optional.empty()))));
+		DocOutboundService.newInstanceForUnitTesting(); // registers itself, the archiver looks it up from the Spring context
 	}
 
 	private MockedDocumentReportService createMockedDocumentReportService()

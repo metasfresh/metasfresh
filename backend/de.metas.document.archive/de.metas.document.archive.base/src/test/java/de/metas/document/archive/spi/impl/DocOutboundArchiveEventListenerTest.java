@@ -4,7 +4,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.archive.api.impl.DocOutboundLogHeaderPopulator;
-import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import org.compiere.model.I_AD_User;
@@ -25,7 +24,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
 import java.util.Properties;
 
 public class DocOutboundArchiveEventListenerTest
@@ -39,7 +37,7 @@ public class DocOutboundArchiveEventListenerTest
 
 		archiveBL = new DocOutboundArchiveEventListener(
 				AttachmentEntryService.createInstanceForUnitTesting(),
-				new DocOutboundLogHeaderPopulator(new DocOutboundLogMailRecipientRegistry(Optional.empty())));
+				DocOutboundLogHeaderPopulator.newInstanceForUnitTesting());
 		Services.get(IArchiveEventManager.class).registerArchiveEventListener(archiveBL);
 	}
 

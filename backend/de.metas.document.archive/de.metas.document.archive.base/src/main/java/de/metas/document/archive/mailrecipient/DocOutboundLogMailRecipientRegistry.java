@@ -1,9 +1,12 @@
 package de.metas.document.archive.mailrecipient;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -38,6 +41,19 @@ public class DocOutboundLogMailRecipientRegistry
 	private final DocOutboundLogMailRecipientProvider defaultProvider;
 
 	private final ImmutableMap<String, DocOutboundLogMailRecipientProvider> tableName2provider;
+
+	/**
+	 * @return a registry without any providers, registered as JUnit bean
+	 */
+	@VisibleForTesting
+	public static DocOutboundLogMailRecipientRegistry newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				DocOutboundLogMailRecipientRegistry.class,
+				() -> new DocOutboundLogMailRecipientRegistry(Optional.empty()));
+	}
 
 	public DocOutboundLogMailRecipientRegistry(
 			@NonNull final Optional<List<DocOutboundLogMailRecipientProvider>> providers)

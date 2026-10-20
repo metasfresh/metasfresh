@@ -22,6 +22,7 @@
 
 package de.metas.document.archive.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
@@ -37,6 +38,8 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
@@ -57,6 +60,16 @@ public class DocOutboundLogHeaderPopulator
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
+
+	@VisibleForTesting
+	public static DocOutboundLogHeaderPopulator newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				DocOutboundLogHeaderPopulator.class,
+				() -> new DocOutboundLogHeaderPopulator(DocOutboundLogMailRecipientRegistry.newInstanceForUnitTesting()));
+	}
 
 	public DocOutboundLogHeaderPopulator(@NonNull final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry)
 	{
