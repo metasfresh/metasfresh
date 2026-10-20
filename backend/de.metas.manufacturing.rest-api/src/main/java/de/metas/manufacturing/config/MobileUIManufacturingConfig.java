@@ -79,15 +79,15 @@ public class MobileUIManufacturingConfig
 	}
 
 	/**
-	 * @param isMainFinishedGood   {@code false} for a co-/by-product line. Three of the five flags exempt such a line;
-	 *                             catch weight and receive-without-packing-item do not — they apply to every line.
-	 *                             The catch-weight scan requirement applies to the main finished good only.
+	 * @param isMainFinishedGood   {@code false} for a co-/by-product line. The three FinishedGoods* target flags and the
+	 *                             catch-weight scan requirement exempt such a line; catch weight and
+	 *                             receive-without-packing-item do not — they apply to every line.
 	 * @param isCatchWeightProduct {@code true} if the line's product has a catch-weight UOM
 	 */
 	@NonNull
 	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(final boolean isMainFinishedGood, final boolean isCatchWeightProduct)
 	{
-		// Three of the four flags exempt co-/by-products, and the polarity differs because "exempt" means the
+		// The three FinishedGoods* target flags exempt co-/by-products, and the polarity differs because "exempt" means the
 		// opposite thing per flag: for the two allow-flags the co-/by-product must stay PERMITTED (it is
 		// legitimately received into a TU, including an infinite-capacity one), whereas for the skip-flag it must
 		// keep its target chooser, i.e. NOT skip. That exemption is a deliberately conservative default - those

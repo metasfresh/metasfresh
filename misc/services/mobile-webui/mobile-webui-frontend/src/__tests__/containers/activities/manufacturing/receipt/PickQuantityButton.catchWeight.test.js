@@ -168,13 +168,14 @@ it('receives one unit with the weight the operator entered after the scan, with 
   );
 });
 
-// Lot-Nr and MHD configured as editable attributes as well: with the mandatory scan they are shown once, in the
+// Lot-Nr, MHD and production date configured as editable attributes as well: with the mandatory scan they are shown once, in the
 // scan-review rows, and sent once, through the dedicated fields; the other configured attributes stay as they are.
 it('shows the scanned Lot-Nr and MHD once and sends them through the dedicated fields only', async () => {
   const { onClick } = renderCatchWeightButton({
     editableAttributes: [
       { code: 'HU_BestBeforeDate', caption: 'Best before', valueType: 'DATE' },
       { code: 'Lot-Nummer', caption: 'Lot', valueType: 'STRING' },
+      { code: 'ProductionDate', caption: 'Production date', valueType: 'DATE' },
       { code: 'Color', caption: 'Color', valueType: 'STRING' },
     ],
   });
@@ -185,6 +186,7 @@ it('shows the scanned Lot-Nr and MHD once and sends them through the dedicated f
   expect(screen.getByTestId('bestBeforeDate')).toHaveValue('2025-11-08');
   expect(screen.queryByTestId('attr-Lot-Nummer-field')).not.toBeInTheDocument();
   expect(screen.queryByTestId('attr-HU_BestBeforeDate-field')).not.toBeInTheDocument();
+  expect(screen.queryByTestId('attr-ProductionDate-field')).not.toBeInTheDocument();
   await act(async () => {
     fireEvent.change(screen.getByTestId('attr-Color-field'), { target: { value: 'red' } });
   });

@@ -32,7 +32,7 @@ const createMasterdata = async ({ bestBeforeDays, lotNoSequence } = {}) => {
                 'bestBeforeDateAttr': { value: BEST_BEFORE_DATE, attributeSetNames: ['mfgAttrSet'] },
             },
             mobileConfig: {
-                manufacturing: { editableAttributes: [BEST_BEFORE_DATE, LOT_NO] },
+                manufacturing: { editableAttributes: [LOT_NO, BEST_BEFORE_DATE] }, // the default pair: the list is global, other specs rely on it
             },
             warehouses: { 'wh': {} },
             products: {

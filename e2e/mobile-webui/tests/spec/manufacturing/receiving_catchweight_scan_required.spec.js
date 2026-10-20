@@ -25,10 +25,11 @@ const L_M_CODE_3 = 'LMQ#1#0.097#22.11.2025#502';
 const BEST_BEFORE_DAYS = 70;
 
 // With the scan required, the scanned lot and best-before date are shown in the dialog's own lot / best-before
-// rows whether or not they are configured as editable attributes. Without it, the pre-filled best-before date
-// is the initial value of the best-before editable-attribute row (attr-<code>-field), so the attribute is
-// configured as editable and is an instance attribute of the attribute set of the product's category.
+// rows (configured as editable attributes or not). Without it, the pre-filled best-before date is the initial
+// value of the best-before editable-attribute row (attr-<code>-field), so lot and best-before date are configured
+// as editable and are instance attributes of the attribute set of the product's category.
 // isTUMode: the line is received in TUs (receive unit type TU); the PP order then carries the two-piece TU packing.
+const LOT_NO = 'Lot-Nummer';
 const BEST_BEFORE_DATE = 'HU_BestBeforeDate';
 const createMasterdata = async ({ isFinishedGoodsCatchWeightScanRequired, isTUMode = false }) => {
     return await Backend.createMasterdata({
@@ -37,15 +38,15 @@ const createMasterdata = async ({ isFinishedGoodsCatchWeightScanRequired, isTUMo
             login: { user: { language: 'en_US' } },
             productCategories: { 'mfgCat': { attributeSetName: 'mfgAttrSet' } },
             attributes: {
-                // the lot is on the attribute set but not configured as editable
-                'lotNumberAttr': { value: 'Lot-Nummer', attributeSetNames: ['mfgAttrSet'] },
+                'lotNumberAttr': { value: LOT_NO, attributeSetNames: ['mfgAttrSet'] },
                 'bestBeforeDateAttr': { value: BEST_BEFORE_DATE, attributeSetNames: ['mfgAttrSet'] },
             },
             mobileConfig: {
                 manufacturing: {
                     isFinishedGoodsCatchWeightScanRequired,
                     receiveUnitType: isTUMode ? 'TU' : 'CU',
-                    editableAttributes: [BEST_BEFORE_DATE],
+                    // the default pair (the editable-attribute list is global, so other specs rely on it)
+                    editableAttributes: [LOT_NO, BEST_BEFORE_DATE],
                 },
             },
             warehouses: { 'wh': {} },

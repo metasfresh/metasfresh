@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_MobileUI_MFG_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1213926478L;
+	private static final long serialVersionUID = -1696759892L;
 
     /** Standard Constructor */
     public X_MobileUI_MFG_Config (final Properties ctx, final int MobileUI_MFG_Config_ID, @Nullable final String trxName)
@@ -107,18 +107,6 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
-	public void setIsFinishedGoodsCatchWeightScanRequired (final boolean IsFinishedGoodsCatchWeightScanRequired)
-	{
-		set_Value (COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired, IsFinishedGoodsCatchWeightScanRequired);
-	}
-
-	@Override
-	public boolean isFinishedGoodsCatchWeightScanRequired() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired);
-	}
-
-	@Override
 	public void setIsConfirmEmptyingHU (final boolean IsConfirmEmptyingHU)
 	{
 		set_Value (COLUMNNAME_IsConfirmEmptyingHU, IsConfirmEmptyingHU);
@@ -128,6 +116,18 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	public boolean isConfirmEmptyingHU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsConfirmEmptyingHU);
+	}
+
+	@Override
+	public void setIsFinishedGoodsCatchWeightScanRequired (final boolean IsFinishedGoodsCatchWeightScanRequired)
+	{
+		set_Value (COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired, IsFinishedGoodsCatchWeightScanRequired);
+	}
+
+	@Override
+	public boolean isFinishedGoodsCatchWeightScanRequired() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired);
 	}
 
 	@Override

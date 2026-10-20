@@ -8,12 +8,15 @@ import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog'
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../../constants/HUAttributes';
 import { PickAttribute } from '../../../../reducers/wfProcesses/picking/PickAttribute';
 
+const ATTRIBUTE_ProductionDate = 'ProductionDate';
+
 // With the mandatory catch-weight scan, the scanned lot number and best-before date are always shown for review,
 // whether or not they are configured as editable attributes: in the dialog's own lot / best-before rows, sent
 // through the dedicated lotNo / bestBeforeDate fields. They are therefore left out of the editable-attribute rows,
-// so that each value is shown once and sent through one channel only.
+// so that each value is shown once and sent through one channel only. The production date a scanned code may
+// carry is sent through the dedicated productionDate field as well, so its row is left out too.
 const SCAN_FOR_REVIEW_READ_ATTRIBUTES = [PickAttribute.LotNo, PickAttribute.BestBeforeDate];
-const SCAN_FOR_REVIEW_ATTRIBUTE_CODES = [HU_ATTRIBUTE_LotNo, HU_ATTRIBUTE_BestBeforeDate];
+const SCAN_FOR_REVIEW_ATTRIBUTE_CODES = [HU_ATTRIBUTE_LotNo, HU_ATTRIBUTE_BestBeforeDate, ATTRIBUTE_ProductionDate];
 
 const PickQuantityButton = ({
   qtyTarget,
