@@ -25,6 +25,13 @@ export const GetQuantityDialog = {
         await expect(page.locator('#qty-input')).toHaveValue(`${expected}`);
     }),
 
+    // The quantity is shown but cannot be changed by the operator.
+    expectQtyEnteredFixedAt: async (expected) => await test.step(`${NAME} - Expect QtyEntered fixed at '${expected}'`, async () => {
+        const qtyInput = page.locator('#qty-input');
+        await expect(qtyInput).toHaveValue(`${expected}`, { timeout: SLOW_ACTION_TIMEOUT });
+        await expect(qtyInput).toBeDisabled();
+    }),
+
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
         await page.locator('#qty-input').type(`${qty}`);
     }),
