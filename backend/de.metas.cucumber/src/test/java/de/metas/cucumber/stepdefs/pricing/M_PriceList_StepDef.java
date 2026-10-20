@@ -88,6 +88,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
@@ -337,7 +338,13 @@ public class M_PriceList_StepDef
 		final I_M_PriceList_Version basePriceListVersion = StepDefDataIdentifier.ofString(priceListVersionIdentifier).lookupNotNullIn(priceListVersionTable);
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(M_PricelistVersion_MutateCustomerPrices.class);
 
+		// the result text is asserted in English: run the process in a copy of the context with language en_US,
+		// so the shared context (and other scenarios) stay untouched
+		final Properties processCallerCtx = Env.copyCtx(Env.getCtx());
+		Env.setContext(processCallerCtx, Env.CTXNAME_AD_Language, "en_US");
+
 		final ProcessExecutionResult result = ProcessInfo.builder()
+				.setCtx(processCallerCtx)
 				.setAD_Process_ID(processId)
 				.setAD_User_ID(Env.getAD_User_ID(Env.getCtx()))
 				.setRecord(I_M_PriceList_Version.Table_Name, basePriceListVersion.getM_PriceList_Version_ID())
