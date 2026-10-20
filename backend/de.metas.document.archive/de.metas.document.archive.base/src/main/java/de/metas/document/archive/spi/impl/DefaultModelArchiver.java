@@ -6,6 +6,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.AsyncHelper;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.api.impl.DocOutboundService;
 import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
@@ -87,6 +88,7 @@ public class DefaultModelArchiver
 	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
 	private final transient IDocumentNoBL documentNoBL = Services.get(IDocumentNoBL.class);
 	private DocumentReportService _documentReportService; // lazy
+	private DocOutboundService _docOutboundService; // lazy
 
 	//
 	// Parameters
@@ -194,6 +196,15 @@ public class DefaultModelArchiver
 		return _documentReportService;
 	}
 
+	private DocOutboundService getDocOutboundService()
+	{
+		if (_docOutboundService == null)
+		{
+			_docOutboundService = SpringContextHolder.instance.getBean(DocOutboundService.class);
+		}
+		return _docOutboundService;
+	}
+
 	@VisibleForTesting
 	public void setDocumentReportService(final DocumentReportService documentReportService)
 	{
@@ -250,6 +261,9 @@ public class DefaultModelArchiver
 
 		InterfaceWrapperHelper.save(archive);
 		logger.debug("Archive: {}", archive);
+
+		// a new PDF of the document => the document's outbound log header (if there is one already) shall describe this PDF
+		getDocOutboundService().refreshLogFromNewDocumentArchive(archive);
 
 		return archiveResult;
 	}

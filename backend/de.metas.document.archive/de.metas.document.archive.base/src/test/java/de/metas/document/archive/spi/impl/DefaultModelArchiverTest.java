@@ -27,6 +27,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.DocTypeId;
+import de.metas.document.archive.api.impl.DocOutboundLogHeaderPopulator;
+import de.metas.document.archive.api.impl.DocOutboundService;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.invoice.service.InvoiceDocumentReportAdvisor;
 import de.metas.report.DefaultPrintFormatsRepository;
 import de.metas.report.DocTypePrintOptionsRepository;
@@ -42,9 +45,12 @@ import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_Archive;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import org.compiere.model.I_Test;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
 
 import static de.metas.document.archive.spi.impl.MockedDocumentReportService.MOCKED_REPORT_FILENAME;
 
@@ -60,6 +66,8 @@ class DefaultModelArchiverTest
 		helper = new DefaultModelArchiverTestHelper();
 
 		Env.setClientId(Env.getCtx(), helper.createClient());
+
+		SpringContextHolder.registerJUnitBean(new DocOutboundService(new DocOutboundLogHeaderPopulator(new DocOutboundLogMailRecipientRegistry(Optional.empty()))));
 	}
 
 	private MockedDocumentReportService createMockedDocumentReportService()

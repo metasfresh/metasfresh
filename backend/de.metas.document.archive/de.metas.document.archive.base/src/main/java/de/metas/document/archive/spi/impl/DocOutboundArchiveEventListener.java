@@ -2,20 +2,14 @@ package de.metas.document.archive.spi.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.DocTypeId;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
-import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
-import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
+import de.metas.document.archive.api.impl.DocOutboundLogHeaderPopulator;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
@@ -24,7 +18,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.IMsgBL;
-import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -34,18 +27,13 @@ import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.archive.api.ArchiveEmailSentStatus;
 import org.adempiere.archive.api.ArchivePrintOutStatus;
 import org.adempiere.archive.spi.IArchiveEventListener;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -54,17 +42,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
 {
 	private final AttachmentEntryService attachmentEntryService;
-	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
+	private final DocOutboundLogHeaderPopulator docOutboundLogHeaderPopulator;
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	public DocOutboundArchiveEventListener(
 			@NonNull final AttachmentEntryService attachmentEntryService,
-			@NonNull final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry)
+			@NonNull final DocOutboundLogHeaderPopulator docOutboundLogHeaderPopulator)
 	{
 		this.attachmentEntryService = attachmentEntryService;
-		this.docOutboundLogMailRecipientRegistry = docOutboundLogMailRecipientRegistry;
+		this.docOutboundLogHeaderPopulator = docOutboundLogHeaderPopulator;
 	}
 
 	@Override
@@ -222,21 +210,12 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	{
 		final TableRecordReference reference = TableRecordReference.ofReferenced(archiveRecord);
 
-		final int adTableId = reference.getAD_Table_ID();
-		final int recordId = reference.getRecord_ID();
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(archiveRecord);
-
 		final I_C_Doc_Outbound_Log docOutboundLogRecord = newInstance(I_C_Doc_Outbound_Log.class);
 		docOutboundLogRecord.setAD_Org_ID(archiveRecord.getAD_Org_ID());
-		docOutboundLogRecord.setAD_Table_ID(adTableId);
-		docOutboundLogRecord.setRecord_ID(recordId);
+		docOutboundLogRecord.setAD_Table_ID(reference.getAD_Table_ID());
+		docOutboundLogRecord.setRecord_ID(reference.getRecord_ID());
 		docOutboundLogRecord.setC_BPartner_ID(archiveRecord.getC_BPartner_ID());
-		docOutboundLogRecord.setPOReference(archiveRecord.getPOReference());
 		docOutboundLogRecord.setC_Async_Batch_ID(archiveRecord.getC_Async_Batch_ID());
-
-		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
-		docOutboundLogRecord.setC_DocType_ID(doctypeID);
 
 		docOutboundLogRecord.setDateLastEMail(null);
 		docOutboundLogRecord.setDateLastPrint(null);
@@ -244,56 +223,13 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final DocStatus docStatus = docActionBL.getDocStatusOrNull(reference);
 		docOutboundLogRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
-		docOutboundLogRecord.setDocumentNo(archiveRecord.getDocumentNo());
-		docOutboundLogRecord.setFileName(archiveRecord.getName());
-
-		final LocalDate documentDate = CoalesceUtil.coalesce(
-				docActionBL.getDocumentDate(ctx, adTableId, recordId),
-				TimeUtil.asLocalDate(docOutboundLogRecord.getCreated()));
-
-		docOutboundLogRecord.setDateDoc(TimeUtil.asTimestamp(documentDate)); // task 08905: Also set the the documentDate
-
-		setMailRecipients(docOutboundLogRecord);
+		docOutboundLogHeaderPopulator.populateDocumentFields(docOutboundLogRecord, archiveRecord);
+		docOutboundLogHeaderPopulator.populateRecipients(docOutboundLogRecord);
 		save(docOutboundLogRecord);
 
 		shareDocumentAttachmentsWithDocoutBoundLog(archiveRecord, docOutboundLogRecord);
 
 		return docOutboundLogRecord;
-	}
-
-	private void setMailRecipients(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
-	{
-		final DocOutboundLogMailRecipientRequest recipientRequest = DocOutboundLogMailRecipientRequest.builder()
-				.recordRef(TableRecordReference.ofOrNull(docOutboundLogRecord.getAD_Table_ID(), docOutboundLogRecord.getRecord_ID()))
-				.clientId(ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID()))
-				.orgId(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()))
-				.docTypeId(DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID()))
-				.build();
-
-		docOutboundLogMailRecipientRegistry.getRecipient(recipientRequest)
-				.ifPresent(recipients -> updateRecordWithRecipient(docOutboundLogRecord, recipients));
-	}
-
-	private void updateRecordWithRecipient(
-			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord,
-			@NonNull final DocOutBoundRecipients recipients)
-	{
-		final String tableName = TableRecordReference.ofReferenced(docOutboundLogRecord).getTableName();
-		final boolean isInvoiceEmailEnabled = I_C_Invoice.Table_Name.equals(tableName) && recipients.isInvoiceAsEmail();
-		docOutboundLogRecord.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled);
-
-		if (recipients.getTo() != null)
-		{
-			// an email-only recipient (e.g. the bill-to location fallback) has no AD_User => toRepoId returns -1
-			docOutboundLogRecord.setCurrentEMailRecipient_ID(DocOutBoundRecipientId.toRepoId(recipients.getTo().getId()));
-			docOutboundLogRecord.setCurrentEMailAddress(recipients.getTo().getEmailAddress());
-		}
-
-		if (recipients.getCc() != null)
-		{
-			docOutboundLogRecord.setCurrentEMailCCRecipient_ID(recipients.getCc().getId().getRepoId());
-			docOutboundLogRecord.setCurrentEMailAddressCC(recipients.getCc().getEmailAddress());
-		}
 	}
 
 	private void shareDocumentAttachmentsWithDocoutBoundLog(

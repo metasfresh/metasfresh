@@ -25,6 +25,8 @@ package de.metas.document.archive.api.impl;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
@@ -50,6 +52,7 @@ import java.util.Optional;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
 public class DocOutboundService implements IPDFArchiveProvider
@@ -59,6 +62,13 @@ public class DocOutboundService implements IPDFArchiveProvider
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final DocOutboundLogHeaderPopulator docOutboundLogHeaderPopulator;
+
+	public DocOutboundService(@NonNull final DocOutboundLogHeaderPopulator docOutboundLogHeaderPopulator)
+	{
+		this.docOutboundLogHeaderPopulator = docOutboundLogHeaderPopulator;
+	}
 
 	@Override
 	public <T extends I_AD_Archive> Optional<T> getPDFArchiveForModel(
@@ -145,5 +155,53 @@ public class DocOutboundService implements IPDFArchiveProvider
 			@Nullable final String poReference)
 	{
 		archiveDAO.updatePOReferenceIfExists(recordReference, poReference);
+	}
+
+	/**
+	 * Refreshes the header of the document's active outbound log from a new PDF of that document, as the document archiver produced it.
+	 * <p>
+	 * Afterwards the header carries what a newly created log would get from that PDF:
+	 * <ul>
+	 * <li>the document fields ({@code POReference}, {@code C_DocType_ID}, {@code DocumentNo}, {@code DateDoc}, {@code FileName}), always;</li>
+	 * <li>the PDF's business partner, if it has one; otherwise the header's partner is kept;</li>
+	 * <li>the document's current status, if it is completed ({@code CO}) or waiting for payment ({@code WP}); any other status (e.g. closed) leaves the header's status as it is.</li>
+	 * </ul>
+	 * The print / mail dates, the async batch, the org and the history lines are not touched.
+	 * <p>
+	 * Does nothing if the document has no active outbound log yet (its first PDF creates the log afterwards) or if the archive references no record.
+	 * <p>
+	 * The log row is loaded freshly here, in the current (thread-inherited) transaction, and only the refreshed columns are changed,
+	 * so a concurrent writer of other columns (e.g. a mass print setting {@code DateLastPrint}) keeps its value.
+	 *
+	 * @param archiveRecord the new document PDF; must be saved
+	 */
+	public void refreshLogFromNewDocumentArchive(@NonNull final I_AD_Archive archiveRecord)
+	{
+		final TableRecordReference documentRef = TableRecordReference.ofReferencedOrNull(archiveRecord);
+		if (documentRef == null)
+		{
+			return;
+		}
+
+		final I_C_Doc_Outbound_Log logRecord = archiveDAO.retrieveLog(documentRef);
+		if (logRecord == null)
+		{
+			return;
+		}
+
+		docOutboundLogHeaderPopulator.populateDocumentFields(logRecord, archiveRecord);
+
+		if (archiveRecord.getC_BPartner_ID() > 0)
+		{
+			logRecord.setC_BPartner_ID(archiveRecord.getC_BPartner_ID());
+		}
+
+		final DocStatus documentStatus = documentBL.getDocStatusOrNull(documentRef);
+		if (documentStatus == DocStatus.Completed || documentStatus == DocStatus.WaitingPayment)
+		{
+			logRecord.setDocStatus(documentStatus.getCode());
+		}
+
+		saveRecord(logRecord);
 	}
 }

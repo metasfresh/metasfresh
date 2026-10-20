@@ -83,6 +83,9 @@ Feature: Outbound document log follows its document through reactivation and re-
       | dofd_line_2                           | dofd_log                         | dofd_order           | C_Order       | SOO         | IP        | dofd_archive_1           | dofd_bp_a                           |
 
     # step 4: complete again -> still one log, customer B, CO, new history line
+    # the re-completion happens the next morning, as in the reference case; with the clock still frozen at the first completion,
+    # both PDFs would carry the same Created and "the newest PDF" (ordered by Created) would be ambiguous
+    And metasfresh has date and time 2022-02-04T08:39:00+01:00[Europe/Berlin]
     When the order identified by dofd_order is completed
     Then after not more than 60s validate C_Doc_Outbound_Log:
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | C_BPartner_ID.Identifier | C_BP_Group_ID | DocStatus |
