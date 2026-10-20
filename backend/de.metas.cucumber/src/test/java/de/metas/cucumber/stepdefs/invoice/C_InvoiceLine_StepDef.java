@@ -128,10 +128,11 @@ public class C_InvoiceLine_StepDef
 	 *   <b>Price</b> — (optional) explicit price<br>
 	 *   <b>IsPackagingMaterial</b> — (optional) mark the line as packaging material; omit to keep the model default (N)<br>
 	 *   <b>C_OrderLine_ID</b> — (optional, identifier-ref) source order line<br>
+	 *   <b>C_Project_ID</b> — (optional, identifier-ref) project (Positions Nr.) of the line<br>
 	 *   <b>M_InOutLine_ID</b> — (optional, identifier-ref) source receipt/shipment line<br>
 	 *   <b>C_ElementValue_Override_ID</b> — (optional, identifier-ref) per-line GL account override (purchase invoices)<br>
 	 *   <b>Identifier</b> — (optional) alias for cross-step reference<br>
-	 * @cucumber.depends C_Invoice_StepDefData, M_Product_StepDefData, C_Tax_StepDefData, C_ElementValue_StepDefData, C_OrderLine_StepDefData
+	 * @cucumber.depends C_Invoice_StepDefData, M_Product_StepDefData, C_Tax_StepDefData, C_ElementValue_StepDefData, C_OrderLine_StepDefData, C_Project_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains C_InvoiceLines
@@ -466,6 +467,11 @@ public class C_InvoiceLine_StepDef
 		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID)
 				.map(orderLineTable::getId)
 				.ifPresent(orderLineId -> invoiceLine.setC_OrderLine_ID(orderLineId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(projectIdentifier -> projectTable.getIdOptional(projectIdentifier).orElseGet(() -> projectIdentifier.getAsId(ProjectId.class)))
+				.ifPresent(projectId -> invoiceLine.setC_Project_ID(projectId.getRepoId()));
 
 		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID)
 				.map(inOutLineTable::getId)

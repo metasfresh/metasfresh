@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -36,6 +37,8 @@ import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_cctop_invoic_v;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -60,6 +63,8 @@ import static org.assertj.core.api.Assertions.*;
 
 public class EDI_cctop_invoic_v_StepDef
 {
+	private static final String COLUMNNAME_EDIErrorMsg_AD_Message = "EDIErrorMsg.AD_Message";
+	private static final List<String> SYSTEM_LANGUAGES = ImmutableList.of("de_DE", "de_CH", "en_US");
 	private static final String TAGNAME_GTIN = "GTIN";
 	private static final String TAGNAME_CONTACT = "Contact";
 	private static final String TAGNAME_EANCOM_LOCATIONTYPE = "eancom_locationtype";
@@ -70,7 +75,8 @@ public class EDI_cctop_invoic_v_StepDef
 	private static final String TAGNAME_EDI_CCTOP_INVOIC_500_V = "EDI_cctop_invoic_500_v";
 	private static final String TAGNAME_EDI_CCTOP_119_V = "EDI_cctop_119_v";
 
-	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	@NonNull private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final EDI_cctop_invoic_v_StepDefData cctopInvoiceTable;
 	private final C_Invoice_StepDefData invoiceTable;
@@ -118,6 +124,22 @@ public class EDI_cctop_invoic_v_StepDef
 				.buildAndEnqueue();
 	}
 
+	/**
+	 * Waits until each C_Invoice has the given export status, then optionally checks its error message.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_ID</b> — (required, identifier-ref) the invoice<br>
+	 *   <b>EDI_ExportStatus</b> — (required) expected export status code<br>
+	 *   <b>EDIErrorMsg.AD_Message</b> — (optional) AD_Message value; the stored error message must contain the text of that message in at least one system language (de_DE, de_CH, en_US), so the check does not depend on the base language<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 30s, C_Invoice records have the following export status
+	 *   | C_Invoice_ID | EDI_ExportStatus | EDIErrorMsg.AD_Message |
+	 *   | invoice_1    | I                | SomeMessageKey         |
+	 * </pre>
+	 */
 	@Then("^after not more than (.*)s, C_Invoice records have the following export status$")
 	public void validate_export_status(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
@@ -139,6 +161,14 @@ public class EDI_cctop_invoic_v_StepDef
 			InterfaceWrapperHelper.refresh(ediInvoiceRecord);
 			return exportStatus.equals(ediInvoiceRecord.getEDI_ExportStatus());
 		});
+
+		tableRow.getAsOptionalString(COLUMNNAME_EDIErrorMsg_AD_Message)
+				.ifPresent(messageKey -> assertThat(SYSTEM_LANGUAGES.stream()
+						.map(adLanguage -> msgBL.getMsg(adLanguage, AdMessageKey.of(messageKey)))
+						.anyMatch(text -> ediInvoiceRecord.getEDIErrorMsg() != null && ediInvoiceRecord.getEDIErrorMsg().contains(text)))
+						.as("EDIErrorMsg of C_Invoice %s is expected to contain the text of the message %s in one of %s, but is: %s",
+							tableRow.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID).getAsString(), messageKey, SYSTEM_LANGUAGES, ediInvoiceRecord.getEDIErrorMsg())
+						.isTrue());
 	}
 
 	@Then("EDI_cctop_invoic_500_v of the following EDI_cctop_invoic_v is validated")
