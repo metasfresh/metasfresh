@@ -11,7 +11,7 @@
 | Picking | 65 | 68 | 96% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 25 | 31 | 81% |
-| HU Manager | 14 | 16 | 88% |
+| HU Manager | 16 | 18 | 89% |
 | HU Consolidation | 8 | 9 | 89% |
 | Inventory | 1 | 3 | 33% |
 
@@ -410,6 +410,15 @@
 | ❌ Scan generated HU QR code, change locator | — |
 
 **5/6 — 83%**
+
+### GRAI screen (send / undo)
+
+| Scenario | Test |
+|---|---|
+| Send 2 GRAIs, scan a 3rd (unsaved) → Undo reloads the 2 saved GRAIs, Send disabled | `humanager/grai.spec.js` |
+| Scan a GRAI while Send is still in flight → it survives the answer, Send + Undo stay enabled, a second Send persists all GRAIs | `humanager/grai.spec.js` |
+
+**2/2 — 100%**
 
 ---
 
