@@ -47,15 +47,15 @@ Feature: Derivative price lists
       | Identifier   |
       | dpl_tc1_prod |
     And metasfresh contains M_PricingSystems
-      | Identifier    |
-      | dpl_tc1_ps_b  |
-      | dpl_tc1_ps_c  |
+      | Identifier   |
+      | dpl_tc1_ps_b |
+      | dpl_tc1_ps_c |
     And metasfresh contains new M_PriceLists:
-      | Identifier   | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name           |
-      | dpl_tc1_base | dpl_tc1_ps_b       | DE                    | EUR                 | true  | dpl_tc1_base   |
+      | Identifier   | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name         |
+      | dpl_tc1_base | dpl_tc1_ps_b       | DE                    | EUR                 | true  | dpl_tc1_base |
     And metasfresh contains new M_PriceLists:
-      | Identifier   | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name           | BasePriceList_ID |
-      | dpl_tc1_cust | dpl_tc1_ps_c       | DE                    | EUR                 | true  | dpl_tc1_cust   | dpl_tc1_base     |
+      | Identifier   | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name         | BasePriceList_ID |
+      | dpl_tc1_cust | dpl_tc1_ps_c       | DE                    | EUR                 | true  | dpl_tc1_cust | dpl_tc1_base     |
     And metasfresh contains new M_PriceList_Versions:
       | Identifier      | M_PriceList_ID | ValidFrom  |
       | dpl_tc1_base_v1 | dpl_tc1_base   | 2092-01-10 |
@@ -65,17 +65,17 @@ Feature: Derivative price lists
       | dpl_tc1_pp_base | dpl_tc1_base_v1        | dpl_tc1_prod | 5.00     | PCE               |
       | dpl_tc1_pp_cust | dpl_tc1_cust_v1        | dpl_tc1_prod | 2.00     | PCE               |
     And metasfresh contains C_BPartners:
-      | Identifier   | Name         | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
-      | dpl_tc1_bp   | dpl_tc1_bp   | Y          | dpl_tc1_ps_c       | Y                    |
+      | Identifier | Name       | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
+      | dpl_tc1_bp | dpl_tc1_bp | Y          | dpl_tc1_ps_c       | Y                    |
     And metasfresh contains M_DiscountSchemas:
-      | Identifier   | DiscountType | Name         | ValidFrom  |
-      | dpl_tc1_ds   | P            | dpl_tc1_ds   | 2092-01-01 |
+      | Identifier | DiscountType | Name       | ValidFrom  |
+      | dpl_tc1_ds | P            | dpl_tc1_ds | 2092-01-01 |
     And metasfresh contains M_DiscountSchemaLines:
       | M_DiscountSchema_ID | SeqNo | M_Product_ID | Std_AddAmt |
       | dpl_tc1_ds          | 10    | dpl_tc1_prod | 1.50       |
     And metasfresh contains new M_PriceList_Versions:
-      | Identifier          | M_PriceList_ID | ValidFrom  | M_DiscountSchema_ID |
-      | dpl_tc1_base_v2     | dpl_tc1_base   | 2092-03-01 | dpl_tc1_ds          |
+      | Identifier      | M_PriceList_ID | ValidFrom  | M_DiscountSchema_ID |
+      | dpl_tc1_base_v2 | dpl_tc1_base   | 2092-03-01 | dpl_tc1_ds          |
     And metasfresh contains M_ProductPrices
       | Identifier         | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
       | dpl_tc1_pp_base_v2 | dpl_tc1_base_v2        | dpl_tc1_prod | 5.00     | PCE               |
@@ -95,7 +95,7 @@ Feature: Derivative price lists
   @Id:S32970_TC2
   Scenario: TC2 manual override is the starting point and a product missing on the customer version is not added
     Given metasfresh contains M_Products:
-      | Identifier   |
+      | Identifier     |
       | dpl_tc2_prod_a |
       | dpl_tc2_prod_b |
     And metasfresh contains M_PricingSystems
@@ -148,15 +148,15 @@ Feature: Derivative price lists
   @Id:S32970_TC3
   Scenario: TC3 schema lines by product category, a negative surcharge and a product without matching line
     Given metasfresh contains M_Product_Categories:
-      | Identifier      |
-      | dpl_tc3_cat_up  |
+      | Identifier       |
+      | dpl_tc3_cat_up   |
       | dpl_tc3_cat_down |
       | dpl_tc3_cat_none |
     And metasfresh contains M_Products:
-      | Identifier       | OPT.M_Product_Category_ID.Identifier |
-      | dpl_tc3_prod_up  | dpl_tc3_cat_up                       |
-      | dpl_tc3_prod_down | dpl_tc3_cat_down                    |
-      | dpl_tc3_prod_none | dpl_tc3_cat_none                    |
+      | Identifier        | OPT.M_Product_Category_ID.Identifier |
+      | dpl_tc3_prod_up   | dpl_tc3_cat_up                       |
+      | dpl_tc3_prod_down | dpl_tc3_cat_down                     |
+      | dpl_tc3_prod_none | dpl_tc3_cat_none                     |
     And metasfresh contains M_PricingSystems
       | Identifier   |
       | dpl_tc3_ps_b |
@@ -172,10 +172,10 @@ Feature: Derivative price lists
       | dpl_tc3_base_v1 | dpl_tc3_base   | 2094-01-10 |
       | dpl_tc3_cust_v1 | dpl_tc3_cust   | 2094-01-10 |
     And metasfresh contains M_ProductPrices
-      | Identifier         | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID.X12DE355 |
-      | dpl_tc3_pp_up      | dpl_tc3_cust_v1        | dpl_tc3_prod_up   | 10.00    | PCE               |
-      | dpl_tc3_pp_down    | dpl_tc3_cust_v1        | dpl_tc3_prod_down | 10.00    | PCE               |
-      | dpl_tc3_pp_none    | dpl_tc3_cust_v1        | dpl_tc3_prod_none | 10.00    | PCE               |
+      | Identifier      | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID.X12DE355 |
+      | dpl_tc3_pp_up   | dpl_tc3_cust_v1        | dpl_tc3_prod_up   | 10.00    | PCE               |
+      | dpl_tc3_pp_down | dpl_tc3_cust_v1        | dpl_tc3_prod_down | 10.00    | PCE               |
+      | dpl_tc3_pp_none | dpl_tc3_cust_v1        | dpl_tc3_prod_none | 10.00    | PCE               |
     And metasfresh contains C_BPartners:
       | Identifier | Name       | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
       | dpl_tc3_bp | dpl_tc3_bp | Y          | dpl_tc3_ps_c       | Y                    |
@@ -208,28 +208,28 @@ Feature: Derivative price lists
       | Identifier   |
       | dpl_tc4_prod |
     And metasfresh contains M_PricingSystems
-      | Identifier         |
-      | dpl_tc4_ps_b       |
-      | dpl_tc4_ps_nopart  |
-      | dpl_tc4_ps_nocust  |
-      | dpl_tc4_ps_flagn   |
-      | dpl_tc4_ps_ok      |
+      | Identifier        |
+      | dpl_tc4_ps_b      |
+      | dpl_tc4_ps_nopart |
+      | dpl_tc4_ps_nocust |
+      | dpl_tc4_ps_flagn  |
+      | dpl_tc4_ps_ok     |
     And metasfresh contains new M_PriceLists:
       | Identifier   | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name         |
       | dpl_tc4_base | dpl_tc4_ps_b       | DE                    | EUR                 | true  | dpl_tc4_base |
     And metasfresh contains new M_PriceLists:
-      | Identifier      | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name            | BasePriceList_ID |
-      | dpl_tc4_nopart  | dpl_tc4_ps_nopart  | DE                    | EUR                 | true  | dpl_tc4_nopart  | dpl_tc4_base     |
-      | dpl_tc4_nocust  | dpl_tc4_ps_nocust  | DE                    | EUR                 | true  | dpl_tc4_nocust  | dpl_tc4_base     |
-      | dpl_tc4_flagn   | dpl_tc4_ps_flagn   | DE                    | EUR                 | true  | dpl_tc4_flagn   | dpl_tc4_base     |
-      | dpl_tc4_ok      | dpl_tc4_ps_ok      | DE                    | EUR                 | true  | dpl_tc4_ok      | dpl_tc4_base     |
+      | Identifier     | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name           | BasePriceList_ID |
+      | dpl_tc4_nopart | dpl_tc4_ps_nopart  | DE                    | EUR                 | true  | dpl_tc4_nopart | dpl_tc4_base     |
+      | dpl_tc4_nocust | dpl_tc4_ps_nocust  | DE                    | EUR                 | true  | dpl_tc4_nocust | dpl_tc4_base     |
+      | dpl_tc4_flagn  | dpl_tc4_ps_flagn   | DE                    | EUR                 | true  | dpl_tc4_flagn  | dpl_tc4_base     |
+      | dpl_tc4_ok     | dpl_tc4_ps_ok      | DE                    | EUR                 | true  | dpl_tc4_ok     | dpl_tc4_base     |
     And metasfresh contains new M_PriceList_Versions:
-      | Identifier         | M_PriceList_ID | ValidFrom  |
-      | dpl_tc4_base_v1    | dpl_tc4_base   | 2095-01-10 |
-      | dpl_tc4_nopart_v1  | dpl_tc4_nopart | 2095-01-10 |
-      | dpl_tc4_nocust_v1  | dpl_tc4_nocust | 2095-01-10 |
-      | dpl_tc4_flagn_v1   | dpl_tc4_flagn  | 2095-01-10 |
-      | dpl_tc4_ok_v1      | dpl_tc4_ok     | 2095-01-10 |
+      | Identifier        | M_PriceList_ID | ValidFrom  |
+      | dpl_tc4_base_v1   | dpl_tc4_base   | 2095-01-10 |
+      | dpl_tc4_nopart_v1 | dpl_tc4_nopart | 2095-01-10 |
+      | dpl_tc4_nocust_v1 | dpl_tc4_nocust | 2095-01-10 |
+      | dpl_tc4_flagn_v1  | dpl_tc4_flagn  | 2095-01-10 |
+      | dpl_tc4_ok_v1     | dpl_tc4_ok     | 2095-01-10 |
     And metasfresh contains M_ProductPrices
       | Identifier        | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
       | dpl_tc4_pp_nopart | dpl_tc4_nopart_v1      | dpl_tc4_prod | 2.00     | PCE               |
@@ -474,13 +474,13 @@ Feature: Derivative price lists
       | dpl_tc9_cust1_v1 | dpl_tc9_cust1  | 2099-01-10 | dpl_tc9_ds_o1       |
       | dpl_tc9_cust2_v1 | dpl_tc9_cust2  | 2099-01-10 | dpl_tc9_ds_o2       |
     And metasfresh contains M_ProductPrices
-      | Identifier       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
-      | dpl_tc9_pp_c1    | dpl_tc9_cust1_v1       | dpl_tc9_prod | 2.00     | PCE               |
-      | dpl_tc9_pp_c2    | dpl_tc9_cust2_v1       | dpl_tc9_prod | 4.00     | PCE               |
+      | Identifier    | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | dpl_tc9_pp_c1 | dpl_tc9_cust1_v1       | dpl_tc9_prod | 2.00     | PCE               |
+      | dpl_tc9_pp_c2 | dpl_tc9_cust2_v1       | dpl_tc9_prod | 4.00     | PCE               |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name          | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
-      | dpl_tc9_bp_1  | dpl_tc9_bp_1  | Y          | dpl_tc9_ps_c1      | Y                    |
-      | dpl_tc9_bp_2  | dpl_tc9_bp_2  | Y          | dpl_tc9_ps_c2      | Y                    |
+      | Identifier   | Name         | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
+      | dpl_tc9_bp_1 | dpl_tc9_bp_1 | Y          | dpl_tc9_ps_c1      | Y                    |
+      | dpl_tc9_bp_2 | dpl_tc9_bp_2 | Y          | dpl_tc9_ps_c2      | Y                    |
     And metasfresh contains M_DiscountSchemaLines:
       | M_DiscountSchema_ID | SeqNo | M_Product_ID | Std_AddAmt |
       | dpl_tc9_ds          | 10    | dpl_tc9_prod | 1.50       |
@@ -528,12 +528,12 @@ Feature: Derivative price lists
       | dpl_tc10_cust_v1   | dpl_tc10_cust  | 2100-01-10 |
       | dpl_tc10_cust_late | dpl_tc10_cust  | 2100-06-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier         | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 |
-      | dpl_tc10_pp_v1     | dpl_tc10_cust_v1       | dpl_tc10_prod | 2.00     | PCE               |
-      | dpl_tc10_pp_late   | dpl_tc10_cust_late     | dpl_tc10_prod | 4.00     | PCE               |
+      | Identifier       | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 |
+      | dpl_tc10_pp_v1   | dpl_tc10_cust_v1       | dpl_tc10_prod | 2.00     | PCE               |
+      | dpl_tc10_pp_late | dpl_tc10_cust_late     | dpl_tc10_prod | 4.00     | PCE               |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name          | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
-      | dpl_tc10_bp   | dpl_tc10_bp   | Y          | dpl_tc10_ps_c      | Y                    |
+      | Identifier  | Name        | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
+      | dpl_tc10_bp | dpl_tc10_bp | Y          | dpl_tc10_ps_c      | Y                    |
     And metasfresh contains M_DiscountSchemas:
       | Identifier  | DiscountType | Name        | ValidFrom  |
       | dpl_tc10_ds | P            | dpl_tc10_ds | 2100-01-01 |
@@ -551,8 +551,8 @@ Feature: Derivative price lists
       | Identifier         | ValidFrom  |
       | dpl_tc10_cust_late | 2100-06-01 |
     And the M_PriceList_Version of M_PriceList dpl_tc10_cust valid from 2100-03-01 is:
-      | Identifier      | Name                      | M_DiscountSchema_ID | M_Pricelist_Version_Base_ID |
-      | dpl_tc10_cust_n | dpl_tc10_cust 2100-03-01  | dpl_tc10_ds         | dpl_tc10_cust_late          |
+      | Identifier      | Name                     | M_DiscountSchema_ID | M_Pricelist_Version_Base_ID |
+      | dpl_tc10_cust_n | dpl_tc10_cust 2100-03-01 | dpl_tc10_ds         | dpl_tc10_cust_late          |
     And the M_ProductPrices of M_PriceList_Version dpl_tc10_cust_n are:
       | M_Product_ID  | PriceStd |
       | dpl_tc10_prod | 5.50     |
