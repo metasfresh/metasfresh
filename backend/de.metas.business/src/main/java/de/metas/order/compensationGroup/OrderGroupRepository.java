@@ -1230,8 +1230,7 @@ public class OrderGroupRepository implements GroupRepository
 	}
 
 	/**
-	 * @return the calibration factor of the line; null if none is stored. The column holds it as a fraction (0.8 = 80 %, 1 = unchanged).
-	 * The generated getter returns 0 for an empty value, but an empty factor must stay distinguishable from factor 0.
+	 * @return null if none is stored (the generated getter would return 0)
 	 */
 	@Nullable
 	public static Percent getCalibrationFactor(@NonNull final I_C_OrderLine orderLine)
@@ -1239,16 +1238,13 @@ public class OrderGroupRepository implements GroupRepository
 		return Percent.ofNullableFraction(InterfaceWrapperHelper.getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor));
 	}
 
-	/**
-	 * Stores the factor as a fraction (80 % = 0.8); null clears it.
-	 */
 	public static void setCalibrationFactor(@NonNull final I_C_OrderLine orderLine, @Nullable final Percent factor)
 	{
 		orderLine.setGroupCompensationCalibrationFactor(Percent.toFractionBigDecimalOrNull(factor));
 	}
 
 	/**
-	 * Stores {@code qtyEntered / qtyUncalibrated}, rounded half-up to 2 decimals of the percent (350 / 375 = 93.33 % = 0.9333).
+	 * Rounded half-up to 2 decimals of the percent: 350 / 375 = 93.33 % = 0.9333.
 	 */
 	public static void setCalibrationFactorFromQty(
 			@NonNull final I_C_OrderLine orderLine,
@@ -1281,7 +1277,7 @@ public class OrderGroupRepository implements GroupRepository
 			final Quantity qtyEnteredUncalibrated = qtyEntered;
 			qtyEntered = calibrationRule.computeQtyCalibrated(qtyEnteredUncalibrated);
 
-			// rule and uncalibrated qty are only set while the line is new; the factor is updateable and kept in sync with QtyEntered by callout.C_OrderLine
+			// the factor is kept in sync with QtyEntered by callout.C_OrderLine
 			setCalibrationFactor(orderLine, calibrationRule.getFactor());
 			orderLine.setC_CompensationGroup_CalibrationRule_ID(CalibrationRuleId.toRepoId(calibrationRule.getId()));
 			orderLine.setGroupCompensationQtyEnteredUncalibrated(qtyEnteredUncalibrated.toBigDecimal());

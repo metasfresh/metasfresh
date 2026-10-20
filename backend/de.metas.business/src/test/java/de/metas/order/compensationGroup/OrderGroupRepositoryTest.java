@@ -906,9 +906,8 @@ public class OrderGroupRepositoryTest
 	}
 
 	// ────────────────────────────────────────────────────────────────────────────────────────────
-	// Calibration: the factor is a Percent (the column stores it as a fraction, 80 % = 0.8); the base qty (template qty x menu qty)
-	// is rounded half-up to the UOM precision before the factor is applied; a line without a matching rule stores no calibration;
-	// the calibrated result is rounded UP to the UOM precision.
+	// Calibration: the base qty (template qty x menu qty) is rounded half-up to the UOM precision, then x factor rounded UP;
+	// a line without a matching rule stores no calibration.
 	// ────────────────────────────────────────────────────────────────────────────────────────────
 	@Test
 	void calibration_matchingRule_roundsBaseThenAppliesPercent()

@@ -36,7 +36,6 @@ public class CalibrationRule
 	@Nullable ProductId productId;
 	@Nullable ProductCategoryId productCategoryId;
 	@Nullable GroupTemplateId schemaId;
-	/** the percent the base qty is scaled by: 80 % = x 0.8, 100 % = unchanged, 0 % = zero; the rule column stores it as a fraction (0.8) */
 	@NonNull Percent factor;
 
 	@Builder
@@ -83,7 +82,7 @@ public class CalibrationRule
 
 	/**
 	 * @param qtyEnteredUncalibrated the base qty (template qty x menu qty), already rounded to its UOM precision
-	 * @return the base qty x {@link #factor} (80 % = x 0.8, 100 % = unchanged, 0 % = zero), rounded to the UOM precision
+	 * @return the base qty x {@link #factor}, rounded UP to the UOM precision
 	 */
 	public Quantity computeQtyCalibrated(@NonNull final Quantity qtyEnteredUncalibrated)
 	{

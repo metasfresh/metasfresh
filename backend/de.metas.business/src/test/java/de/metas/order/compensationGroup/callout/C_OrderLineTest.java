@@ -34,10 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Calibration factor editable on the order line: factor -> QtyEntered and QtyEntered -> factor,
- * in any window.
- * <p>
- * Example line: uncalibrated (base) qty 375 LTR, factor 0.8 (80 %), Qty 300. Factors are given as stored and typed: a fraction.
+ * Example line: uncalibrated qty 375 LTR, factor 0.8, Qty 300. Factors are given as stored and typed: a fraction.
  */
 class C_OrderLineTest
 {
@@ -59,7 +56,7 @@ class C_OrderLineTest
 	}
 
 	/**
-	 * A calibrated line as created from a menu template: rule + base (in the line UOM) + factor stored.
+	 * As created from a menu template: rule, uncalibrated qty (in the line UOM) and factor stored.
 	 */
 	private I_C_OrderLine calibratedLine(final String base, final String factor, final String qty)
 	{
@@ -75,7 +72,7 @@ class C_OrderLineTest
 
 
 	/**
-	 * A calibrated line of a product sold in LTR (base 375 LTR, factor 0.8, Qty 300) that also has a bucket UOM.
+	 * A calibrated line in LTR of a product that can also be sold in buckets.
 	 */
 	private I_C_OrderLine calibratedLineWithBucketConversion(final String baseLtr, final String ltrPerBucket)
 	{
@@ -94,9 +91,6 @@ class C_OrderLineTest
 		return line;
 	}
 
-	/**
-	 * The user (or another callout) changes the line UOM; the line before the change is the saved one.
-	 */
 	private void changeUom(final I_C_OrderLine line, final I_C_UOM uom)
 	{
 		final I_C_OrderLine lineBeforeChanges = newInstance(I_C_OrderLine.class);
@@ -345,9 +339,6 @@ class C_OrderLineTest
 		}
 	}
 
-	/**
-	 * The uncalibrated qty is kept in the line UOM: a UOM change converts it, like {@code CalloutOrder.qty} does for the line.
-	 */
 	@Nested
 	class UomChanged
 	{
@@ -405,9 +396,6 @@ class C_OrderLineTest
 		}
 	}
 
-	/**
-	 * The column holds the factor as a fraction (0.8 = 80 %, 1 = unchanged), which is what the user types in the WebUI.
-	 */
 	@Nested
 	class StoredScale
 	{
@@ -431,9 +419,7 @@ class C_OrderLineTest
 	}
 
 	/**
-	 * Both methods must be one callout instance: the callout executor does not re-enter an instance that is already running,
-	 * which stops the cycle factor -> QtyEntered -> factor. Neither may skip indirect calls, so a TU qty edit,
-	 * which sets QtyEntered from another callout, still updates the factor.
+	 * See the {@link C_OrderLine} Javadoc.
 	 */
 	@Test
 	void bothColumnsAreServedByOneCalloutInstance()

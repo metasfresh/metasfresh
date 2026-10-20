@@ -247,7 +247,7 @@ class AssertSalesOrderExpectationsCommand
 			throw new AdempiereException("Expectation hasCalibrationRule=false cannot be combined with an expected calibration rule: " + expectation);
 		}
 
-		// the generated getters map a NULL decimal to zero, so the nullable calibration columns are read as stored; the factor is compared as stored (a fraction)
+		// the generated getters map NULL to 0
 		final BigDecimal actualFactor = Percent.toFractionBigDecimalOrNull(OrderGroupRepository.getCalibrationFactor(actual));
 		final BigDecimal actualQtyUncalibrated = InterfaceWrapperHelper.getValueAsBigDecimalOrNull(actual, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated);
 

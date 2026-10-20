@@ -82,8 +82,7 @@ public class Percent implements Comparable<Percent>
 	}
 
 	/**
-	 * @param fraction value as a fraction of one, e.g. {@code 0.8} for 80 %, {@code 1} for 100 %
-	 * @return the percent, or null if the given fraction is null
+	 * @param fraction e.g. {@code 0.8} for 80 %
 	 */
 	@Nullable
 	public static Percent ofNullableFraction(@Nullable final BigDecimal fraction)
@@ -171,8 +170,7 @@ public class Percent implements Comparable<Percent>
 	}
 
 	/**
-	 * @return the value as a fraction of one (e.g. {@code 0.8} for 80 %), or null if the given percent is null
-	 * @see #toFractionBigDecimal()
+	 * @return e.g. {@code 0.8} for 80 %
 	 */
 	@Nullable
 	public static BigDecimal toFractionBigDecimalOrNull(@Nullable final Percent percent)
@@ -216,7 +214,7 @@ public class Percent implements Comparable<Percent>
 	}
 
 	/**
-	 * @return 100 based value; same as {@link #toBigDecimalOneHundredBased()}, kept as the JSON value
+	 * @return 100 based value, like {@link #toBigDecimalOneHundredBased()}
 	 */
 	@JsonValue
 	@NonNull
@@ -226,7 +224,7 @@ public class Percent implements Comparable<Percent>
 	}
 
 	/**
-	 * @return the 100 based value, e.g. {@code 80} for 80 %
+	 * @return e.g. {@code 80} for 80 %
 	 */
 	@NonNull
 	public BigDecimal toBigDecimalOneHundredBased()
@@ -235,7 +233,7 @@ public class Percent implements Comparable<Percent>
 	}
 
 	/**
-	 * @return the value as a fraction of one, e.g. {@code 0.8} for 80 %, {@code 1} for 100 %
+	 * @return e.g. {@code 0.8} for 80 %
 	 */
 	@NonNull
 	public BigDecimal toFractionBigDecimal()

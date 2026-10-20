@@ -48,23 +48,13 @@ import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 
 /**
- * Keeps the calibration factor ({@code GroupCompensationCalibrationFactor}) and {@code QtyEntered} of a calibrated order line in sync
- * when the user edits one of them in the UI:
- * <ul>
- * <li>factor changed: {@code QtyEntered = uncalibrated qty x factor %}, rounded like at line creation ({@link CalibrationRule#computeQtyCalibrated(Quantity)})</li>
- * <li>{@code QtyEntered} changed (typed, or set by the TU qty callout): {@code factor = QtyEntered / uncalibrated qty}, rounded half-up to 2 decimals of the percent,
- * i.e. 4 decimals of the stored fraction (350 / 375 = 93.33 % = 0.9333)</li>
- * </ul>
- * The column holds the factor as a fraction (0.8 = 80 %, 1 = unchanged); it is read and written only through the {@link OrderGroupRepository} helpers.
- * Both act in every window and only on a calibrated line, i.e. one with a calibration rule or a calibration factor; any other line is left alone.
- * The factor field is shown and editable only where a window makes it so (e.g. a customer's sales order window); elsewhere it just follows an edited QtyEntered.
+ * Keeps factor, {@code QtyEntered} and uncalibrated qty of a calibrated order line consistent, in every window:
+ * factor -&gt; {@code QtyEntered} (like {@link CalibrationRule#computeQtyCalibrated(Quantity)}), {@code QtyEntered} -&gt; factor,
+ * UOM -&gt; uncalibrated qty converted.
  * <p>
- * Both methods are in this one callout class on purpose: with the default {@link Callout.RecursionAvoidanceLevel#CalloutClass}
- * they form one callout instance, and the callout executor does not re-enter an instance that is already running.
- * That stops the cycle factor -&gt; QtyEntered -&gt; factor in both directions.
- * Neither method skips indirect calls, so a QtyEntered set by another callout (e.g. from the TU qty) still updates the factor.
- * <p>
- * The rule reference is never changed here; the uncalibrated qty only follows a UOM change.
+ * All methods are in one class on purpose: with {@link Callout.RecursionAvoidanceLevel#CalloutClass} the executor does not re-enter
+ * a running instance, which stops the cycle factor -&gt; QtyEntered -&gt; factor. No method skips indirect calls,
+ * so a QtyEntered set by another callout (e.g. from the TU qty) still updates the factor.
  */
 @Callout(I_C_OrderLine.class)
 @Component
@@ -88,7 +78,7 @@ public class C_OrderLine
 		final Percent factor = OrderGroupRepository.getCalibrationFactor(orderLine);
 		final BigDecimal qtyUncalibrated = getQtyUncalibratedOrNull(orderLine);
 
-		if (factor == null && qtyUncalibrated == null) // an empty factor on a line that was never calibrated: nothing to do
+		if (factor == null && qtyUncalibrated == null)
 		{
 			return;
 		}
@@ -125,8 +115,8 @@ public class C_OrderLine
 	}
 
 	/**
-	 * Keeps the uncalibrated qty in the line UOM. No conversion: {@link NoUOMConversionException}, like {@code CalloutOrder.qty}.
-	 * A product change resets the UOM ({@code CalloutOrder.product}); then the uncalibrated qty is left as is.
+	 * No conversion: {@link NoUOMConversionException}, like {@code CalloutOrder.qty}.
+	 * Not on a product change, where {@code CalloutOrder.product} resets the UOM.
 	 */
 	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_C_UOM_ID, skipIfCopying = true)
 	public void onUomChanged(@NonNull final I_C_OrderLine orderLine, @NonNull final ICalloutField field)
@@ -152,16 +142,13 @@ public class C_OrderLine
 				uomConversionBL.convertQty(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()), qtyUncalibrated, uomFromId, uomToId));
 	}
 
-	/**
-	 * A line is calibrated if it has a calibration rule or a calibration factor.
-	 */
 	private static boolean isCalibrated(@NonNull final I_C_OrderLine orderLine)
 	{
 		return orderLine.getC_CompensationGroup_CalibrationRule_ID() > 0 || OrderGroupRepository.getCalibrationFactor(orderLine) != null;
 	}
 
 	/**
-	 * The generated getter returns 0 for an emptied Qty, which would turn the factor into 0.
+	 * The generated getter returns 0 for an emptied Qty.
 	 */
 	@Nullable
 	private static BigDecimal getQtyEnteredOrNull(@NonNull final I_C_OrderLine orderLine)
@@ -170,7 +157,7 @@ public class C_OrderLine
 	}
 
 	/**
-	 * The generated getter returns 0 for an empty value; an uncalibrated line has none, a calibrated one can have 0.
+	 * The generated getter returns 0 for an uncalibrated line.
 	 */
 	@Nullable
 	private static BigDecimal getQtyUncalibratedOrNull(@NonNull final I_C_OrderLine orderLine)
