@@ -74,6 +74,9 @@ public class JsonErrorItem
 	@Nullable
 	String issueCategory;
 
+	@Nullable
+	String errorCode;
+
 	/**
 	 * Local exception.
 	 * It won't be serialized. It's just used for local troubleshooting.
@@ -85,7 +88,7 @@ public class JsonErrorItem
 	@Builder
 	private JsonErrorItem(
 			@JsonProperty("message") @Nullable final String message,
-			@JsonProperty("userFriendlyError") boolean userFriendlyError,
+			@JsonProperty("userFriendlyError") final boolean userFriendlyError,
 			@JsonProperty("detail") @Nullable final String detail,
 			@JsonProperty("stackTrace") @Nullable final String stackTrace,
 			@JsonProperty("parameters") @Nullable @Singular final Map<String, String> parameters,
@@ -94,6 +97,7 @@ public class JsonErrorItem
 			@JsonProperty("sourceClassName") @Nullable final String sourceClassName,
 			@JsonProperty("sourceMethodName") @Nullable final String sourceMethodName,
 			@JsonProperty("issueCategory") @Nullable final String issueCategory,
+			@JsonProperty("errorCode") @Nullable final String errorCode,
 			@Nullable final Throwable throwable)
 	{
 		this.message = message;
@@ -106,6 +110,7 @@ public class JsonErrorItem
 		this.sourceMethodName = sourceMethodName;
 		this.issueCategory = issueCategory;
 		this.orgCode = orgCode;
+		this.errorCode = errorCode;
 		this.throwable = throwable;
 	}
 

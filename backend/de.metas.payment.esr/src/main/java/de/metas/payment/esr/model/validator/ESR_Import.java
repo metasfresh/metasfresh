@@ -27,7 +27,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.esr.api.IESRImportDAO;
@@ -54,7 +53,6 @@ public class ESR_Import
 	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final AdMessageKey ERR_ESR_Import_DefaultAccountNotFoundForOrg = AdMessageKey.of("ESR_Import_DefaultAccountNotFoundForOrg");
 
@@ -94,7 +92,7 @@ public class ESR_Import
 
 			final I_AD_Org org = orgDAO.getById(orgId);
 
-			throw new AdempiereException(msgBL.getTranslatableMsgText(ERR_ESR_Import_DefaultAccountNotFoundForOrg, org.getName()));
+			throw new AdempiereException(ERR_ESR_Import_DefaultAccountNotFoundForOrg, org.getName());
 		}
 
 		esrImport.setC_BP_BankAccount_ID(orgBankAccount.get().getC_BP_BankAccount_ID());
