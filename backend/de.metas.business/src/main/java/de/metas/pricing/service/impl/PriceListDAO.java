@@ -924,8 +924,22 @@ public class PriceListDAO implements IPriceListDAO
 				+ " = 'Y') ";
 		final IQueryFilter<I_M_PriceList_Version> maxValidFromFilter = TypedSqlQueryFilter.of(maxValidFromTypedFilter);
 
-		final IQuery<I_C_BPartner> customerQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
+		return retrieveDerivativePriceListsQuery(basePriceListId)
+				.andCollectChildren(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, I_M_PriceList_Version.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePriceListId)
+				.filter(maxValidFromFilter)
+				.create()
+				.list(I_M_PriceList_Version.class);
+	}
 
+	/**
+	 * @return the active sales price lists derived from the given base list that share its currency (and country, if the base list has one)
+	 * and whose pricing system belongs to an active customer that allows price mutation.
+	 */
+	protected final IQueryBuilder<I_M_PriceList> retrieveDerivativePriceListsQuery(@NonNull final PriceListId basePriceListId)
+	{
+		final IQuery<I_C_BPartner> customerQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
@@ -946,20 +960,10 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		return derivativeListsQuery
-
 				.addInSubQueryFilter()
 				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
 				.subQuery(customerQuery)
-				.end()
-				.andCollectChildren(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, I_M_PriceList_Version.class)
-				.addOnlyActiveRecordsFilter()
-
-				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePriceListId)
-
-				.filter(maxValidFromFilter)
-				.create()
-
-				.list(I_M_PriceList_Version.class);
+				.end();
 	}
 
 	@Override

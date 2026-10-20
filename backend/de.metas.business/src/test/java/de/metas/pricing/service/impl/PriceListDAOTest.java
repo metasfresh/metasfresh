@@ -1375,6 +1375,12 @@ public class PriceListDAOTest
 
 	}
 
+	/*
+	 * Note on the retrieveCustomPLVsToMutate_* tests: they run through PlainPriceListDAO, which replaces the real SQL
+	 * "latest ValidFrom among the list's active versions" subquery (including its v.IsActive='Y' condition in PriceListDAO)
+	 * with an in-memory version step. The version rule is therefore covered against the real SQL only by the cucumber
+	 * scenario TC15 of derivative_price_lists.feature; the query for the eligible derivative lists is shared by both implementations.
+	 */
 	@Test
 	public void retrieveCustomPLVsToMutate_baseWithoutCountry_noCountryRestriction()
 	{
@@ -1463,6 +1469,23 @@ public class PriceListDAOTest
 		save(onlyVersion);
 
 		assertThat(retrieveCustomPLVsToMutate(base)).isEmpty();
+	}
+
+	@Test
+	public void retrieveCustomPLVsToMutate_derivativeWithOtherCurrency_isSkipped()
+	{
+		final I_M_PricingSystem derivativePS = createPricingSystem("DERIV PS", "DERIV PS");
+		createPartner("customer", true, true, derivativePS.getM_PricingSystem_ID());
+
+		final I_M_PriceList base = createPriceList(pricingSystem, null, "base", true, null, EURO);
+		final I_M_PriceList sameCurrency = createPriceList(derivativePS, base, "same currency", true, null, EURO);
+		final I_M_PriceList otherCurrency = createPriceList(derivativePS, base, "other currency", true, null, PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF));
+		final I_M_PriceList_Version plvSameCurrency = createPLV(sameCurrency.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+		createPLV(otherCurrency.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+
+		assertThat(retrieveCustomPLVsToMutate(base))
+				.extracting(I_M_PriceList_Version::getM_PriceList_Version_ID)
+				.containsExactly(plvSameCurrency.getM_PriceList_Version_ID());
 	}
 
 	private List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(final I_M_PriceList basePriceList)

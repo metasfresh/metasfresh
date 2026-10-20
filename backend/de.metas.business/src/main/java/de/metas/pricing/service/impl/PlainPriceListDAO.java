@@ -8,11 +8,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_DiscountSchemaLine;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
@@ -153,40 +149,11 @@ public class PlainPriceListDAO extends PriceListDAO
 	@Override
 	protected List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final PriceListId basePricelistId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQuery<I_C_BPartner> customerQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
-
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
-				.create();
-
-		final I_M_PriceList basePriceList = getById(basePricelistId);
-
-		final IQueryBuilder<I_M_PriceList> derivativeListsQuery = queryBL.createQueryBuilder(I_M_PriceList.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, true)
-				.addEqualsFilter(I_M_PriceList.COLUMN_BasePriceList_ID, basePricelistId)
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Currency_ID, basePriceList.getC_Currency_ID());
-
-		// a base price list without country does not restrict by country
-		if (basePriceList.getC_Country_ID() > 0)
-		{
-			derivativeListsQuery.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, basePriceList.getC_Country_ID());
-		}
-
-		final List<I_M_PriceList_Version> customerVersions = derivativeListsQuery
-
-				.addInSubQueryFilter()
-				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
-				.subQuery(customerQuery)
-				.end()
+		final List<I_M_PriceList_Version> customerVersions = retrieveDerivativePriceListsQuery(basePricelistId)
 				.andCollectChildren(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, I_M_PriceList_Version.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePricelistId)
 				.create()
-
 				.list(I_M_PriceList_Version.class);
 
 		return customerVersions.stream()
