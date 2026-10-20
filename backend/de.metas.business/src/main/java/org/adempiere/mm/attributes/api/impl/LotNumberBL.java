@@ -57,8 +57,9 @@ public class LotNumberBL implements ILotNumberBL
 	private static final Logger logger = LogManager.getLogger(LotNumberBL.class);
 
 	private final IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
+
 	/**
-	 * Lazy: singletons create LotNumberBL eagerly, before IDocumentNoBuilderFactory (no default constructor) is registered.
+	 * Lazy because the HU singletons (e.g. HUPPOrderBL) create LotNumberBL eagerly, before the Spring bean IDocumentNoBuilderFactory is registered.
 	 */
 	@Nullable private IDocumentNoBuilderFactory _documentNoBuilderFactory;
 
