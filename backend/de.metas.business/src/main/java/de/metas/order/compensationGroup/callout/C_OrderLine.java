@@ -107,7 +107,7 @@ public class C_OrderLine
 		{
 			throw new AdempiereException(MSG_FactorMandatory).markAsUserValidationError();
 		}
-		if (factor.toBigDecimal().signum() < 0)
+		if (factor.signum() < 0)
 		{
 			throw new AdempiereException(MSG_NegativeFactor).markAsUserValidationError();
 		}
