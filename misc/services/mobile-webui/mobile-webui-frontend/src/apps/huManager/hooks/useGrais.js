@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { toastError } from '../../../utils/toast';
-import { getAssignedGrais, getExtraGrais, mergeGraiArrays } from '../../../utils/grai';
+import { getAssignedGrais, getExtraGrais, mergeGraiArrays, mergeGraisAfterSend } from '../../../utils/grai';
 import * as api from '../api';
 
 export const useGrais = ({ huId }) => {
@@ -10,6 +10,15 @@ export const useGrais = ({ huId }) => {
   const [loading, setLoading] = useState(true);
   const [dirty, setDirty] = useState(false);
   const [sending, setSending] = useState(false);
+  // Count the user's edits and the reloads from the backend, so that the answer to a Send can tell
+  // whether the list was changed while the request was in flight (the user does not have to wait).
+  const editCountRef = useRef(0);
+  const reloadCountRef = useRef(0);
+
+  const markEdited = useCallback(() => {
+    editCountRef.current += 1;
+    setDirty(true);
+  }, []);
 
   // Load initial state from backend
   useEffect(() => {
@@ -25,35 +34,52 @@ export const useGrais = ({ huId }) => {
       .finally(() => setLoading(false));
   }, [huId]);
 
-  const addGrais = useCallback((newGrais) => {
-    setGraiCodes((prev) => mergeGraiArrays(prev, newGrais).merged);
-    setDirty(true);
-  }, []);
+  const addGrais = useCallback(
+    (newGrais) => {
+      setGraiCodes((prev) => mergeGraiArrays(prev, newGrais).merged);
+      markEdited();
+    },
+    [markEdited]
+  );
 
-  const removeGrai = useCallback((graiToRemove) => {
-    setGraiCodes((prev) => prev.filter((g) => g !== graiToRemove));
-    setDirty(true);
-  }, []);
+  const removeGrai = useCallback(
+    (graiToRemove) => {
+      setGraiCodes((prev) => prev.filter((g) => g !== graiToRemove));
+      markEdited();
+    },
+    [markEdited]
+  );
 
   const clearAllGrais = useCallback(() => {
     setGraiCodes([]);
-    setDirty(true);
-  }, []);
+    markEdited();
+  }, [markEdited]);
 
   const sendToBackend = useCallback(() => {
     if (!huId) return;
     setSending(true);
+    const sentGrais = graiCodes;
+    const editCountAtSend = editCountRef.current;
+    const reloadCountAtSend = reloadCountRef.current;
     api
       .setGRAIs(huId, getAssignedGrais(graiCodes, tuCount))
       .then((response) => {
         const backendGrais = response.graiCodes || [];
         const newTuCount = response.tuCount || 0;
+        // Undo (reload) while sending discarded the local edits: show what the backend saved.
+        const reloadedSinceSend = reloadCountRef.current !== reloadCountAtSend;
+        const editedSinceSend = !reloadedSinceSend && editCountRef.current !== editCountAtSend;
         setTuCount(newTuCount);
-        setGraiCodes((prev) => {
-          const currentExtras = getExtraGrais(prev, newTuCount);
-          return [...backendGrais, ...currentExtras];
-        });
-        setDirty(false);
+        setGraiCodes((currentGrais) =>
+          mergeGraisAfterSend({
+            sentGrais: reloadedSinceSend ? currentGrais : sentGrais,
+            currentGrais,
+            backendGrais,
+            tuCount: newTuCount,
+          })
+        );
+        // Changes made while the request was in flight are not saved yet, so Send and Undo stay enabled.
+        setDirty(editedSinceSend);
       })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setSending(false));
@@ -61,6 +87,7 @@ export const useGrais = ({ huId }) => {
 
   const loadFromBackend = useCallback(() => {
     if (!huId) return;
+    reloadCountRef.current += 1;
     api
       .getGRAIs(huId)
       .then((response) => {
