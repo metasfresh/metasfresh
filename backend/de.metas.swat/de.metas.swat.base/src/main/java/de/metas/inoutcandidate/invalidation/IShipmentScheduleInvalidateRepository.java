@@ -137,6 +137,14 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	 */
 	void releaseRecomputeMarkersAfterTrxEnd(@NonNull PInstanceId adPInstanceId);
 
+	/**
+	 * Startup housekeeping: re-inserts every tagged M_ShipmentSchedule_Recompute marker as untagged (the tagging pass that held it is gone),
+	 * in its own immediately committed transaction. It does NOT enqueue a recompute pass; the caller does.
+	 *
+	 * @return the number of markers reset, as reported by {@code Reset_M_ShipmentSchedule_Recompute()}
+	 */
+	int resetStaleRecomputeMarkers();
+
 	IQueryFilter<I_M_ShipmentSchedule> createInvalidShipmentSchedulesQueryFilter(PInstanceId pinstanceId);
 
 	void invalidateShipmentSchedulesFor(IQuery<I_M_ShipmentSchedule> query);

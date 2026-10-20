@@ -899,6 +899,12 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
+	public int resetStaleRecomputeMarkers()
+	{
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT de_metas_inoutcandidate.Reset_M_ShipmentSchedule_Recompute()");
+	}
+
+	@Override
 	public void deleteRecomputeMarkers(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		// deleteDirectly (bulk filter-based DELETE), NOT delete(): M_ShipmentSchedule_Recompute is a keyless
