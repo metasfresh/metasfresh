@@ -63,11 +63,12 @@ public class C_OrderLine
 	private static final AdMessageKey MSG_NegativeFactor = AdMessageKey.of("C_CompensationGroup_CalibrationRule_NegativeFactor");
 
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
 
 	@PostConstruct
 	void postConstruct()
 	{
-		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+		calloutProvider.registerAnnotatedCallout(this);
 	}
 
 	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor, skipIfCopying = true)

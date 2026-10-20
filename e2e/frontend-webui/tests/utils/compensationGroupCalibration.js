@@ -284,7 +284,7 @@ export async function setCalibrationFactor(page, productCode, factor, { expected
     } else {
         expect(response.ok(), `factor "${factor}" on the ${productCode} line is saved`).toBe(true);
         const qtyInput = modal.locator('.form-field-QtyEntered input');
-        await expect.poll(async () => Number((await qtyInput.inputValue()).replace(',', '.')), {
+        await expect.poll(async () => parseGermanNumber(await qtyInput.inputValue()), {
             timeout: SLOW_ACTION_TIMEOUT,
             message: `Menge of the ${productCode} line after factor "${factor}"`,
         }).toBeCloseTo(expectedQty, 2);
@@ -364,7 +364,7 @@ export async function setLineQtyInline(page, productCode, quantity) {
 
 /** The numeric value of the field shown in the open advanced edit (de_DE format, e.g. "1.500,5" -> 1500.5). */
 async function advancedEditQty(modal, fieldName) {
-    return Number((await modal.locator(`.form-field-${fieldName} input`).first().inputValue()).replace(/\./g, '').replace(',', '.'));
+    return parseGermanNumber(await modal.locator(`.form-field-${fieldName} input`).first().inputValue());
 }
 
 /**
