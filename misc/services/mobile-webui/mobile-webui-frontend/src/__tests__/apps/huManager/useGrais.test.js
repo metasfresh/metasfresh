@@ -205,12 +205,20 @@ describe('useGrais - send response while the user keeps scanning', () => {
     expect(result.current.dirty).toBe(false);
   });
 
-  it('a GRAI already in the list scanned again after a send changes nothing: stays not dirty', async () => {
+  it('adding a GRAI already in the list, removing an absent one changes nothing: not dirty', async () => {
     const result = await renderUseGrais({ initialGrais: ['A'] });
     act(() => result.current.addGrais(['A']));
     act(() => result.current.removeGrai('X'));
 
     expect(result.current.graiCodes).toEqual(['A']);
+    expect(result.current.dirty).toBe(false);
+  });
+
+  it('Clear All on an empty list changes nothing: not dirty', async () => {
+    const result = await renderUseGrais();
+    act(() => result.current.clearAllGrais());
+
+    expect(result.current.graiCodes).toEqual([]);
     expect(result.current.dirty).toBe(false);
   });
 
