@@ -1,15 +1,18 @@
 package de.metas.document.archive.interceptor;
 
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.spi.impl.AbstractDocOutboundProducer;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -25,6 +28,7 @@ import org.compiere.model.PO;
 {
 	private static final String COLUMNNAME_Processed = "Processed";
 
+	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
 	private final ModelValidationEngine modelValidationEngine;
 	private int m_AD_Client_ID = -1;
 
@@ -137,6 +141,12 @@ import org.compiere.model.PO;
 				&& !Services.get(IDocumentBL.class).isReversalDocument(po))
 		{
 			createDocOutbound(po);
+		}
+
+		if (timing == ModelValidator.TIMING_AFTER_REACTIVATE)
+		{
+			// the document is in progress again: its outbound log must not keep showing the completed state
+			docOutboundDAO.updateLogHeaderDocStatus(TableRecordReference.of(po), DocStatus.InProgress);
 		}
 
 		if (timing == ModelValidator.TIMING_AFTER_VOID

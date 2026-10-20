@@ -258,11 +258,12 @@ public class DocOutboundDAO implements IDocOutboundDAO
 
 	public void updateLogAndLinesDocStatus(@NonNull final TableRecordReference tableRecordReference, @Nullable final DocStatus docStatus)
 	{
-		updateLogDocStatus(tableRecordReference, docStatus);
+		updateLogHeaderDocStatus(tableRecordReference, docStatus);
 		updateLogLineDocStatus(tableRecordReference, docStatus);
 	}
 
-	private void updateLogDocStatus(@NonNull final TableRecordReference tableRecordReference, @Nullable final DocStatus docStatus)
+	@Override
+	public void updateLogHeaderDocStatus(@NonNull final TableRecordReference tableRecordReference, @Nullable final DocStatus docStatus)
 	{
 		final ICompositeQueryUpdater<I_C_Doc_Outbound_Log> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Doc_Outbound_Log.class)
 				.addSetColumnValue(I_C_Doc_Outbound_Log.COLUMNNAME_DocStatus, DocStatus.toCodeOrNull(docStatus));
