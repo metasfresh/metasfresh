@@ -350,6 +350,16 @@ public class M_PriceList_StepDef
 	}
 
 	/**
+	 * Asserts that the summary text returned by the last "apply to derivative price lists" run of this scenario
+	 * contains the given text (case-sensitive). Fails if the process was not run or returned no summary.
+	 */
+	@Then("the 'apply to derivative price lists' result text contains {string}")
+	public void validate_derivative_process_result_contains(@NonNull final String expectedText)
+	{
+		assertThat(lastDerivativeProcessSummary).as("summary of the last 'apply to derivative price lists' run").contains(expectedText);
+	}
+
+	/**
 	 * Asserts the number of M_PriceList_Versions of the price list. <b>All</b> versions are counted, inactive ones
 	 * included (no {@code IsActive} filter), whatever their {@code ValidFrom}.
 	 */
@@ -369,7 +379,7 @@ public class M_PriceList_StepDef
 	 * exactly the given rows, so a product that must not get a price is asserted by leaving it out.
 	 * <p>
 	 * Columns: {@code M_Product_ID} (identifier), {@code PriceStd}; optional {@code M_AttributeSetInstance_ID}
-	 * (identifier; the price must carry the same attribute values), {@code CopyOf_M_ProductPrice_ID} (identifier of a
+	 * (identifier; the price must carry the same attribute values), {@code IsSeasonFixedPrice} (Y/N), {@code CopyOf_M_ProductPrice_ID} (identifier of a
 	 * price registered earlier; asserts the price has its <b>own</b> attribute set instance, i.e. not the same ID as
 	 * that earlier price's).
 	 */
@@ -398,6 +408,8 @@ public class M_PriceList_StepDef
 			assertThat(actual).as("M_ProductPrice of product %s in M_PriceList_Version %s", productIdentifier, priceListVersionIdentifier).isNotNull();
 			assertThat(actual.getPriceStd()).as("PriceStd of product %s in M_PriceList_Version %s", productIdentifier, priceListVersionIdentifier).isEqualByComparingTo(expectedPriceStd);
 
+			row.getAsOptionalBoolean(I_M_ProductPrice.COLUMNNAME_IsSeasonFixedPrice)
+					.ifPresent(expected -> assertThat(actual.isSeasonFixedPrice()).as("IsSeasonFixedPrice of product %s in M_PriceList_Version %s", productIdentifier, priceListVersionIdentifier).isEqualTo(expected));
 			row.getAsOptionalIdentifier(I_M_ProductPrice.COLUMNNAME_M_AttributeSetInstance_ID)
 					.map(attributeSetInstanceTable::get)
 					.ifPresent(expectedAsi -> {
@@ -660,6 +672,7 @@ public class M_PriceList_StepDef
 				.ifPresent(productPrice::setM_HU_PI_Item_Product);
 
 		row.getAsOptionalBoolean(I_M_ProductPrice.COLUMNNAME_IsAttributeDependant).ifPresent(productPrice::setIsAttributeDependant);
+		row.getAsOptionalBoolean(I_M_ProductPrice.COLUMNNAME_IsSeasonFixedPrice).ifPresent(productPrice::setIsSeasonFixedPrice);
 
 		row.getAsOptionalIdentifier(I_M_ProductPrice.COLUMNNAME_M_AttributeSetInstance_ID)
 				.map(attributeSetInstanceTable::get)

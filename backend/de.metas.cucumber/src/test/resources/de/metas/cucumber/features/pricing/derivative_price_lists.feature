@@ -391,6 +391,84 @@ Feature: Derivative price lists
       | M_Product_ID | PriceStd |
       | dpl_tc6_prod | 3.50     |
 
+  # Real-world setup: the derivatives are created while the base list still has a country (the list validation
+  # rejects a derivative whose country differs from its base list), then the country is removed from the base list.
+  # A base list without country restricts nothing: the derivatives with DE, FR and no country are all updated.
+  @Id:S32970_TC7
+  Scenario: TC7 a base list without country updates its derivatives whatever their country
+    Given metasfresh contains M_Products:
+      | Identifier   |
+      | dpl_tc7_prod |
+    And metasfresh contains M_PricingSystems
+      | Identifier   |
+      | dpl_tc7_ps_b |
+      | dpl_tc7_ps_s |
+    And metasfresh contains new M_PriceLists:
+      | Identifier   | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name         |
+      | dpl_tc7_base | dpl_tc7_ps_b       | DE                    | EUR                 | true  | dpl_tc7_base |
+    And metasfresh contains new M_PriceLists:
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name       | BasePriceList_ID |
+      | dpl_tc7_de | dpl_tc7_ps_s       | DE                    | EUR                 | true  | dpl_tc7_de | dpl_tc7_base     |
+    And update M_PriceLists:
+      | Identifier   | C_Country.CountryCode |
+      | dpl_tc7_base | FR                    |
+    And metasfresh contains new M_PriceLists:
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name       | BasePriceList_ID |
+      | dpl_tc7_fr | dpl_tc7_ps_s       | FR                    | EUR                 | true  | dpl_tc7_fr | dpl_tc7_base     |
+    And update M_PriceLists:
+      | Identifier   | C_Country.CountryCode |
+      | dpl_tc7_base | none                  |
+    And metasfresh contains new M_PriceLists:
+      | Identifier     | M_PricingSystem_ID | C_Currency.ISO_Code | SOTrx | Name           | BasePriceList_ID |
+      | dpl_tc7_nocntr | dpl_tc7_ps_s       | EUR                 | true  | dpl_tc7_nocntr | dpl_tc7_base     |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier        | M_PriceList_ID | ValidFrom  |
+      | dpl_tc7_base_v1   | dpl_tc7_base   | 2103-01-10 |
+      | dpl_tc7_de_v1     | dpl_tc7_de     | 2103-01-10 |
+      | dpl_tc7_fr_v1     | dpl_tc7_fr     | 2103-01-10 |
+      | dpl_tc7_nocntr_v1 | dpl_tc7_nocntr | 2103-01-10 |
+    And metasfresh contains M_ProductPrices
+      | Identifier        | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | dpl_tc7_pp_de     | dpl_tc7_de_v1          | dpl_tc7_prod | 2.00     | PCE               |
+      | dpl_tc7_pp_fr     | dpl_tc7_fr_v1          | dpl_tc7_prod | 2.00     | PCE               |
+      | dpl_tc7_pp_nocntr | dpl_tc7_nocntr_v1      | dpl_tc7_prod | 2.00     | PCE               |
+    And metasfresh contains C_BPartners:
+      | Identifier   | Name         | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
+      | dpl_tc7_bp_s | dpl_tc7_bp_s | Y          | dpl_tc7_ps_s       | Y                    |
+    And metasfresh contains M_DiscountSchemas:
+      | Identifier | DiscountType | Name       | ValidFrom  |
+      | dpl_tc7_ds | P            | dpl_tc7_ds | 2103-01-01 |
+    And metasfresh contains M_DiscountSchemaLines:
+      | M_DiscountSchema_ID | SeqNo | M_Product_ID | Std_AddAmt |
+      | dpl_tc7_ds          | 10    | dpl_tc7_prod | 1.50       |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier      | M_PriceList_ID | ValidFrom  | M_DiscountSchema_ID |
+      | dpl_tc7_base_v2 | dpl_tc7_base   | 2103-03-01 | dpl_tc7_ds          |
+
+    When the 'apply to derivative price lists' process is invoked for M_PriceList_Version dpl_tc7_base_v2
+
+    Then M_PriceList dpl_tc7_de has 2 M_PriceList_Versions
+    And M_PriceList dpl_tc7_fr has 2 M_PriceList_Versions
+    And M_PriceList dpl_tc7_nocntr has 2 M_PriceList_Versions
+    And the latest M_PriceList_Version of M_PriceList dpl_tc7_de is:
+      | Identifier    | ValidFrom  | Name                  | M_Pricelist_Version_Base_ID |
+      | dpl_tc7_de_v2 | 2103-03-01 | dpl_tc7_de 2103-03-01 | dpl_tc7_de_v1               |
+    And the M_ProductPrices of M_PriceList_Version dpl_tc7_de_v2 are:
+      | M_Product_ID | PriceStd |
+      | dpl_tc7_prod | 3.50     |
+    And the latest M_PriceList_Version of M_PriceList dpl_tc7_fr is:
+      | Identifier    | ValidFrom  |
+      | dpl_tc7_fr_v2 | 2103-03-01 |
+    And the M_ProductPrices of M_PriceList_Version dpl_tc7_fr_v2 are:
+      | M_Product_ID | PriceStd |
+      | dpl_tc7_prod | 3.50     |
+    And the latest M_PriceList_Version of M_PriceList dpl_tc7_nocntr is:
+      | Identifier        | ValidFrom  |
+      | dpl_tc7_nocntr_v2 | 2103-03-01 |
+    And the M_ProductPrices of M_PriceList_Version dpl_tc7_nocntr_v2 are:
+      | M_Product_ID | PriceStd |
+      | dpl_tc7_prod | 3.50     |
+
   # The base list has its own flagged customer, yet gets no new version (it has no base list itself); a list linked
   # to some other base list stays unchanged, while a derivative of this base list is updated as positive control.
   @Id:S32970_TC8
@@ -673,3 +751,268 @@ Feature: Derivative price lists
     And the M_ProductPrices of M_PriceList_Version dpl_tc12_cust_v3 are:
       | M_Product_ID  | PriceStd |
       | dpl_tc12_prod | 4.50     |
+
+  # Both the inactive and the purchase derivative stay unchanged; the active sales derivative of the same pricing
+  # system is the positive control.
+  @Id:S32970_TC13
+  Scenario: TC13 an inactive derivative list and a purchase derivative list are not updated
+    Given metasfresh contains M_Products:
+      | Identifier    |
+      | dpl_tc13_prod |
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | dpl_tc13_ps_b |
+      | dpl_tc13_ps_c |
+    And metasfresh contains new M_PriceLists:
+      | Identifier    | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name          |
+      | dpl_tc13_base | dpl_tc13_ps_b      | DE                    | EUR                 | true  | dpl_tc13_base |
+    And metasfresh contains new M_PriceLists:
+      | Identifier      | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsActive | Name            | BasePriceList_ID |
+      | dpl_tc13_active | dpl_tc13_ps_c      | DE                    | EUR                 | true  | true     | dpl_tc13_active | dpl_tc13_base    |
+      | dpl_tc13_inact  | dpl_tc13_ps_c      | DE                    | EUR                 | true  | false    | dpl_tc13_inact  | dpl_tc13_base    |
+      | dpl_tc13_purch  | dpl_tc13_ps_c      | DE                    | EUR                 | false | true     | dpl_tc13_purch  | dpl_tc13_base    |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier         | M_PriceList_ID  | ValidFrom  |
+      | dpl_tc13_base_v1   | dpl_tc13_base   | 2104-01-10 |
+      | dpl_tc13_active_v1 | dpl_tc13_active | 2104-01-10 |
+      | dpl_tc13_inact_v1  | dpl_tc13_inact  | 2104-01-10 |
+      | dpl_tc13_purch_v1  | dpl_tc13_purch  | 2104-01-10 |
+    And metasfresh contains M_ProductPrices
+      | Identifier         | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 |
+      | dpl_tc13_pp_active | dpl_tc13_active_v1     | dpl_tc13_prod | 2.00     | PCE               |
+      | dpl_tc13_pp_inact  | dpl_tc13_inact_v1      | dpl_tc13_prod | 2.00     | PCE               |
+      | dpl_tc13_pp_purch  | dpl_tc13_purch_v1      | dpl_tc13_prod | 2.00     | PCE               |
+    And metasfresh contains C_BPartners:
+      | Identifier  | Name        | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
+      | dpl_tc13_bp | dpl_tc13_bp | Y          | dpl_tc13_ps_c      | Y                    |
+    And metasfresh contains M_DiscountSchemas:
+      | Identifier  | DiscountType | Name        | ValidFrom  |
+      | dpl_tc13_ds | P            | dpl_tc13_ds | 2104-01-01 |
+    And metasfresh contains M_DiscountSchemaLines:
+      | M_DiscountSchema_ID | SeqNo | M_Product_ID  | Std_AddAmt |
+      | dpl_tc13_ds         | 10    | dpl_tc13_prod | 1.50       |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier       | M_PriceList_ID | ValidFrom  | M_DiscountSchema_ID |
+      | dpl_tc13_base_v2 | dpl_tc13_base  | 2104-03-01 | dpl_tc13_ds         |
+
+    When the 'apply to derivative price lists' process is invoked for M_PriceList_Version dpl_tc13_base_v2
+
+    Then M_PriceList dpl_tc13_active has 2 M_PriceList_Versions
+    And the M_ProductPrices of M_PriceList_Version dpl_tc13_active_v1 are:
+      | M_Product_ID  | PriceStd |
+      | dpl_tc13_prod | 2.00     |
+    And M_PriceList dpl_tc13_inact has 1 M_PriceList_Versions
+    And M_PriceList dpl_tc13_purch has 1 M_PriceList_Versions
+
+  # The first run creates the version (2.00 + 1.50 = 3.50); a second run on the same base version creates nothing
+  # and reports the derivative as skipped.
+  @Id:S32970_TC14
+  Scenario: TC14 a second run on the same base version creates no further version and reports it as skipped
+    Given metasfresh contains M_Products:
+      | Identifier    |
+      | dpl_tc14_prod |
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | dpl_tc14_ps_b |
+      | dpl_tc14_ps_c |
+    And metasfresh contains new M_PriceLists:
+      | Identifier    | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name          |
+      | dpl_tc14_base | dpl_tc14_ps_b      | DE                    | EUR                 | true  | dpl_tc14_base |
+    And metasfresh contains new M_PriceLists:
+      | Identifier    | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name          | BasePriceList_ID |
+      | dpl_tc14_cust | dpl_tc14_ps_c      | DE                    | EUR                 | true  | dpl_tc14_cust | dpl_tc14_base    |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier       | M_PriceList_ID | ValidFrom  |
+      | dpl_tc14_base_v1 | dpl_tc14_base  | 2105-01-10 |
+      | dpl_tc14_cust_v1 | dpl_tc14_cust  | 2105-01-10 |
+    And metasfresh contains M_ProductPrices
+      | Identifier     | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 |
+      | dpl_tc14_pp_v1 | dpl_tc14_cust_v1       | dpl_tc14_prod | 2.00     | PCE               |
+    And metasfresh contains C_BPartners:
+      | Identifier  | Name        | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
+      | dpl_tc14_bp | dpl_tc14_bp | Y          | dpl_tc14_ps_c      | Y                    |
+    And metasfresh contains M_DiscountSchemas:
+      | Identifier  | DiscountType | Name        | ValidFrom  |
+      | dpl_tc14_ds | P            | dpl_tc14_ds | 2105-01-01 |
+    And metasfresh contains M_DiscountSchemaLines:
+      | M_DiscountSchema_ID | SeqNo | M_Product_ID  | Std_AddAmt |
+      | dpl_tc14_ds         | 10    | dpl_tc14_prod | 1.50       |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier       | M_PriceList_ID | ValidFrom  | M_DiscountSchema_ID |
+      | dpl_tc14_base_v2 | dpl_tc14_base  | 2105-03-01 | dpl_tc14_ds         |
+
+    When the 'apply to derivative price lists' process is invoked for M_PriceList_Version dpl_tc14_base_v2
+
+    Then M_PriceList dpl_tc14_cust has 2 M_PriceList_Versions
+    And the latest M_PriceList_Version of M_PriceList dpl_tc14_cust is:
+      | Identifier       | ValidFrom  | M_Pricelist_Version_Base_ID |
+      | dpl_tc14_cust_v2 | 2105-03-01 | dpl_tc14_cust_v1            |
+    And the M_ProductPrices of M_PriceList_Version dpl_tc14_cust_v2 are:
+      | M_Product_ID  | PriceStd |
+      | dpl_tc14_prod | 3.50     |
+
+    When the 'apply to derivative price lists' process is invoked for M_PriceList_Version dpl_tc14_base_v2
+
+    Then M_PriceList dpl_tc14_cust has 2 M_PriceList_Versions
+    And the M_ProductPrices of M_PriceList_Version dpl_tc14_cust_v2 are:
+      | M_Product_ID  | PriceStd |
+      | dpl_tc14_prod | 3.50     |
+    And the 'apply to derivative price lists' result text contains "skipped"
+
+  # The latest version by date (2106-02-01, price 9.00) is inactive: the latest ACTIVE version (2106-01-10, 2.00) is
+  # the copy source and its base version. A derivative whose versions are all inactive is skipped.
+  @Id:S32970_TC15
+  Scenario: TC15 the previous version is the latest active one; a derivative without active version is skipped
+    Given metasfresh contains M_Products:
+      | Identifier    |
+      | dpl_tc15_prod |
+    And metasfresh contains M_PricingSystems
+      | Identifier     |
+      | dpl_tc15_ps_b  |
+      | dpl_tc15_ps_c1 |
+      | dpl_tc15_ps_c2 |
+    And metasfresh contains new M_PriceLists:
+      | Identifier    | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name          |
+      | dpl_tc15_base | dpl_tc15_ps_b      | DE                    | EUR                 | true  | dpl_tc15_base |
+    And metasfresh contains new M_PriceLists:
+      | Identifier     | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name           | BasePriceList_ID |
+      | dpl_tc15_cust  | dpl_tc15_ps_c1     | DE                    | EUR                 | true  | dpl_tc15_cust  | dpl_tc15_base    |
+      | dpl_tc15_cust2 | dpl_tc15_ps_c2     | DE                    | EUR                 | true  | dpl_tc15_cust2 | dpl_tc15_base    |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier          | M_PriceList_ID | ValidFrom  | IsActive |
+      | dpl_tc15_base_v1    | dpl_tc15_base  | 2106-01-10 | true     |
+      | dpl_tc15_cust_v1    | dpl_tc15_cust  | 2106-01-10 | true     |
+      | dpl_tc15_cust_inact | dpl_tc15_cust  | 2106-02-01 | false    |
+      | dpl_tc15_cust2_v1   | dpl_tc15_cust2 | 2106-01-10 | false    |
+    And metasfresh contains M_ProductPrices
+      | Identifier        | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 |
+      | dpl_tc15_pp_v1    | dpl_tc15_cust_v1       | dpl_tc15_prod | 2.00     | PCE               |
+      | dpl_tc15_pp_inact | dpl_tc15_cust_inact    | dpl_tc15_prod | 9.00     | PCE               |
+      | dpl_tc15_pp_c2    | dpl_tc15_cust2_v1      | dpl_tc15_prod | 2.00     | PCE               |
+    And metasfresh contains C_BPartners:
+      | Identifier   | Name         | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
+      | dpl_tc15_bp1 | dpl_tc15_bp1 | Y          | dpl_tc15_ps_c1     | Y                    |
+      | dpl_tc15_bp2 | dpl_tc15_bp2 | Y          | dpl_tc15_ps_c2     | Y                    |
+    And metasfresh contains M_DiscountSchemas:
+      | Identifier  | DiscountType | Name        | ValidFrom  |
+      | dpl_tc15_ds | P            | dpl_tc15_ds | 2106-01-01 |
+    And metasfresh contains M_DiscountSchemaLines:
+      | M_DiscountSchema_ID | SeqNo | M_Product_ID  | Std_AddAmt |
+      | dpl_tc15_ds         | 10    | dpl_tc15_prod | 1.50       |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier       | M_PriceList_ID | ValidFrom  | M_DiscountSchema_ID |
+      | dpl_tc15_base_v2 | dpl_tc15_base  | 2106-03-01 | dpl_tc15_ds         |
+
+    When the 'apply to derivative price lists' process is invoked for M_PriceList_Version dpl_tc15_base_v2
+
+    Then M_PriceList dpl_tc15_cust has 3 M_PriceList_Versions
+    And the latest M_PriceList_Version of M_PriceList dpl_tc15_cust is:
+      | Identifier       | ValidFrom  | Name                     | M_DiscountSchema_ID | M_Pricelist_Version_Base_ID |
+      | dpl_tc15_cust_v2 | 2106-03-01 | dpl_tc15_cust 2106-03-01 | dpl_tc15_ds         | dpl_tc15_cust_v1            |
+    And the M_ProductPrices of M_PriceList_Version dpl_tc15_cust_v2 are:
+      | M_Product_ID  | PriceStd |
+      | dpl_tc15_prod | 3.50     |
+    And M_PriceList dpl_tc15_cust2 has 1 M_PriceList_Versions
+
+  # First run: one derivative gets a new version, the other (all versions inactive) is skipped; the text names both.
+  # Second run on another base list without any derivative: "no derivative price list qualifies".
+  @Id:S32970_TC17
+  Scenario: TC17 the result text names the created and the skipped derivatives, or that none qualifies
+    Given metasfresh contains M_Products:
+      | Identifier    |
+      | dpl_tc17_prod |
+    And metasfresh contains M_PricingSystems
+      | Identifier     |
+      | dpl_tc17_ps_b  |
+      | dpl_tc17_ps_b2 |
+      | dpl_tc17_ps_c1 |
+      | dpl_tc17_ps_c2 |
+    And metasfresh contains new M_PriceLists:
+      | Identifier     | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name           |
+      | dpl_tc17_base  | dpl_tc17_ps_b      | DE                    | EUR                 | true  | dpl_tc17_base  |
+      | dpl_tc17_base2 | dpl_tc17_ps_b2     | DE                    | EUR                 | true  | dpl_tc17_base2 |
+    And metasfresh contains new M_PriceLists:
+      | Identifier     | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name           | BasePriceList_ID |
+      | dpl_tc17_cust1 | dpl_tc17_ps_c1     | DE                    | EUR                 | true  | dpl_tc17_cust1 | dpl_tc17_base    |
+      | dpl_tc17_cust2 | dpl_tc17_ps_c2     | DE                    | EUR                 | true  | dpl_tc17_cust2 | dpl_tc17_base    |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier        | M_PriceList_ID | ValidFrom  | IsActive |
+      | dpl_tc17_base_v1  | dpl_tc17_base  | 2108-01-10 | true     |
+      | dpl_tc17_base2_v1 | dpl_tc17_base2 | 2108-01-10 | true     |
+      | dpl_tc17_cust1_v1 | dpl_tc17_cust1 | 2108-01-10 | true     |
+      | dpl_tc17_cust2_v1 | dpl_tc17_cust2 | 2108-01-10 | false    |
+    And metasfresh contains M_ProductPrices
+      | Identifier         | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 |
+      | dpl_tc17_pp_cust1  | dpl_tc17_cust1_v1      | dpl_tc17_prod | 2.00     | PCE               |
+      | dpl_tc17_pp_cust2  | dpl_tc17_cust2_v1      | dpl_tc17_prod | 2.00     | PCE               |
+    And metasfresh contains C_BPartners:
+      | Identifier   | Name         | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
+      | dpl_tc17_bp1 | dpl_tc17_bp1 | Y          | dpl_tc17_ps_c1     | Y                    |
+      | dpl_tc17_bp2 | dpl_tc17_bp2 | Y          | dpl_tc17_ps_c2     | Y                    |
+    And metasfresh contains M_DiscountSchemas:
+      | Identifier  | DiscountType | Name        | ValidFrom  |
+      | dpl_tc17_ds | P            | dpl_tc17_ds | 2108-01-01 |
+    And metasfresh contains M_DiscountSchemaLines:
+      | M_DiscountSchema_ID | SeqNo | M_Product_ID  | Std_AddAmt |
+      | dpl_tc17_ds         | 10    | dpl_tc17_prod | 1.50       |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier        | M_PriceList_ID | ValidFrom  | M_DiscountSchema_ID |
+      | dpl_tc17_base_v2  | dpl_tc17_base  | 2108-03-01 | dpl_tc17_ds         |
+      | dpl_tc17_base2_v2 | dpl_tc17_base2 | 2108-03-01 | dpl_tc17_ds         |
+
+    When the 'apply to derivative price lists' process is invoked for M_PriceList_Version dpl_tc17_base_v2
+
+    Then the 'apply to derivative price lists' result text contains "1 new version"
+    And the 'apply to derivative price lists' result text contains "dpl_tc17_cust1"
+    And the 'apply to derivative price lists' result text contains "dpl_tc17_cust2"
+    And the 'apply to derivative price lists' result text contains "skipped:"
+
+    When the 'apply to derivative price lists' process is invoked for M_PriceList_Version dpl_tc17_base2_v2
+
+    Then the 'apply to derivative price lists' result text contains "no derivative price list qualifies"
+
+  # A season-fixed customer price is not transformed by the matching schema line (2.00 stays) and keeps its flag.
+  @Id:S32970_TC18
+  Scenario: TC18 a season-fixed customer price keeps its price and flag although a schema line matches
+    Given metasfresh contains M_Products:
+      | Identifier    |
+      | dpl_tc18_prod |
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | dpl_tc18_ps_b |
+      | dpl_tc18_ps_c |
+    And metasfresh contains new M_PriceLists:
+      | Identifier    | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name          |
+      | dpl_tc18_base | dpl_tc18_ps_b      | DE                    | EUR                 | true  | dpl_tc18_base |
+    And metasfresh contains new M_PriceLists:
+      | Identifier    | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name          | BasePriceList_ID |
+      | dpl_tc18_cust | dpl_tc18_ps_c      | DE                    | EUR                 | true  | dpl_tc18_cust | dpl_tc18_base    |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier       | M_PriceList_ID | ValidFrom  |
+      | dpl_tc18_base_v1 | dpl_tc18_base  | 2109-01-10 |
+      | dpl_tc18_cust_v1 | dpl_tc18_cust  | 2109-01-10 |
+    And metasfresh contains M_ProductPrices
+      | Identifier     | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | IsSeasonFixedPrice |
+      | dpl_tc18_pp_v1 | dpl_tc18_cust_v1       | dpl_tc18_prod | 2.00     | PCE               | true               |
+    And metasfresh contains C_BPartners:
+      | Identifier  | Name        | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
+      | dpl_tc18_bp | dpl_tc18_bp | Y          | dpl_tc18_ps_c      | Y                    |
+    And metasfresh contains M_DiscountSchemas:
+      | Identifier  | DiscountType | Name        | ValidFrom  |
+      | dpl_tc18_ds | P            | dpl_tc18_ds | 2109-01-01 |
+    And metasfresh contains M_DiscountSchemaLines:
+      | M_DiscountSchema_ID | SeqNo | M_Product_ID  | Std_AddAmt |
+      | dpl_tc18_ds         | 10    | dpl_tc18_prod | 1.50       |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier       | M_PriceList_ID | ValidFrom  | M_DiscountSchema_ID |
+      | dpl_tc18_base_v2 | dpl_tc18_base  | 2109-03-01 | dpl_tc18_ds         |
+
+    When the 'apply to derivative price lists' process is invoked for M_PriceList_Version dpl_tc18_base_v2
+
+    Then M_PriceList dpl_tc18_cust has 2 M_PriceList_Versions
+    And the latest M_PriceList_Version of M_PriceList dpl_tc18_cust is:
+      | Identifier       | ValidFrom  |
+      | dpl_tc18_cust_v2 | 2109-03-01 |
+    And the M_ProductPrices of M_PriceList_Version dpl_tc18_cust_v2 are:
+      | M_Product_ID  | PriceStd | IsSeasonFixedPrice |
+      | dpl_tc18_prod | 2.00     | true               |
