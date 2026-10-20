@@ -534,21 +534,40 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 			withoutLocatorsAndAttributes.anyLocator();
 		}
 		final BuiltSegment widened = buildSegment(withoutLocatorsAndAttributes.build());
-		if (widened.fitsBudget())
+		if (widened.sqlWhereClause != null && widened.fitsBudget())
 		{
 			return ImmutableList.of(widened);
 		}
 
-		final ImmutableList.Builder<BuiltSegment> productOnlySegments = ImmutableList.builder();
-		for (final List<Integer> productIdsChunk : Iterables.partition(segment.getProductIds(), MAX_SQL_PARAMS_PER_STATEMENT / 2))
+		// Keep the restriction of the smaller of the product / bpartner dimension (if it is a real restriction, not "any"), partitioned to fit.
+		// The other dimensions become "any" (a superset).
+		final boolean productRestricts = !segment.isAnyProduct() && !segment.isNoProducts();
+		final boolean bpartnerRestricts = !segment.isAnyBPartner() && !segment.isNoBPartners();
+		final boolean keepProducts = productRestricts && (!bpartnerRestricts || segment.getProductIds().size() <= segment.getBpartnerIds().size());
+		final boolean keepBPartners = !keepProducts && bpartnerRestricts;
+		if (keepProducts || keepBPartners)
 		{
-			productOnlySegments.add(buildSegment(ImmutableShipmentScheduleSegment.builder()
-					.productIds(productIdsChunk)
-					.anyBPartner()
-					.anyLocator()
-					.build()));
+			final ImmutableList.Builder<BuiltSegment> pieces = ImmutableList.builder();
+			final Set<Integer> keptIds = keepProducts ? segment.getProductIds() : segment.getBpartnerIds();
+			for (final List<Integer> idsChunk : Iterables.partition(keptIds, MAX_SQL_PARAMS_PER_STATEMENT / 2))
+			{
+				final ImmutableShipmentScheduleSegment.ImmutableShipmentScheduleSegmentBuilder piece = ImmutableShipmentScheduleSegment.builder().anyLocator();
+				if (keepProducts)
+				{
+					piece.productIds(idsChunk).anyBPartner();
+				}
+				else
+				{
+					piece.anyProduct().bpartnerIds(idsChunk);
+				}
+				pieces.add(buildSegment(piece.build()));
+			}
+			return pieces.build();
 		}
-		return productOnlySegments.build();
+
+		// Nothing restricts the segment in a dimension that can be kept: flag every unprocessed schedule. Over-invalidating is safe, dropping the segment is not.
+		logger.warn("Segment cannot be narrowed below the bind-parameter budget; flagging all unprocessed shipment schedules instead");
+		return ImmutableList.of(new BuiltSegment(segment, "true", ImmutableList.of()));
 	}
 
 	private StorageSegmentsInsert buildStorageSegmentsInsert(

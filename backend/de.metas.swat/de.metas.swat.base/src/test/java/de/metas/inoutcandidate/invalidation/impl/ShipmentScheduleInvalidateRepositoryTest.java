@@ -311,7 +311,7 @@ public class ShipmentScheduleInvalidateRepositoryTest
 	}
 
 	@Test
-	public void storageSegmentInserts_segmentWithTooManyProducts_isPartitioned_allProductsBound_withinBudget()
+	public void storageSegmentInserts_segmentWithTooManyProducts_keepsTheSmallerBPartnerDimension_withinBudget()
 	{
 		final List<Integer> productIds = new ArrayList<>();
 		for (int i = 1; i <= 70_000; i++)
@@ -322,15 +322,31 @@ public class ShipmentScheduleInvalidateRepositoryTest
 
 		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(java.util.Collections.singletonList(huge));
 
-		final List<Object> allParams = new ArrayList<>();
-		for (final ShipmentScheduleInvalidateRepository.StorageSegmentsInsert insert : inserts)
+		assertStatementsCoverAndWithinBudget(inserts);
+		final java.util.Set<Object> allParams = new java.util.HashSet<>();
+		inserts.forEach(insert -> allParams.addAll(insert.getSqlParams()));
+		assertThat(allParams.contains(2)).as("the smaller (bpartner) dimension is the one kept").isTrue();
+	}
+
+	@Test
+	public void storageSegmentInserts_segmentWithTooManyProductsAndBPartners_partitionsTheSmallerDimension()
+	{
+		final List<Integer> productIds = new ArrayList<>();
+		final List<Integer> bpartnerIds = new ArrayList<>();
+		for (int i = 1; i <= 70_000; i++)
 		{
-			assertThat(insert.getSqlParams().size()).isLessThanOrEqualTo(ShipmentScheduleInvalidateRepository.MAX_SQL_PARAMS_PER_STATEMENT);
-			assertParamCountMatchesPlaceholders(insert);
-			allParams.addAll(insert.getSqlParams());
+			productIds.add(i);
+			bpartnerIds.add(i);
 		}
+		final IShipmentScheduleSegment huge = ImmutableShipmentScheduleSegment.builder().productIds(productIds).bpartnerIds(bpartnerIds).locatorId(3).build();
+
+		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(java.util.Collections.singletonList(huge));
+
+		assertStatementsCoverAndWithinBudget(inserts);
 		assertThat(inserts).hasSizeGreaterThan(1);
-		assertThat(new java.util.HashSet<>(allParams).containsAll(productIds)).isTrue();
+		final java.util.Set<Object> allParams = new java.util.HashSet<>();
+		inserts.forEach(insert -> allParams.addAll(insert.getSqlParams()));
+		assertThat(allParams.containsAll(productIds)).isTrue();
 	}
 
 	@Test
@@ -420,5 +436,46 @@ public class ShipmentScheduleInvalidateRepositoryTest
 
 		org.mockito.Mockito.verify(spy, org.mockito.Mockito.times(5)).buildShipmentScheduleWhereClause(
 				org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyList());
+	}
+
+	private void assertStatementsCoverAndWithinBudget(final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts)
+	{
+		assertThat(inserts).as("a widened segment must never be dropped: at least one statement").isNotEmpty();
+		for (final ShipmentScheduleInvalidateRepository.StorageSegmentsInsert insert : inserts)
+		{
+			assertThat(insert.getSqlParams().size()).isLessThanOrEqualTo(ShipmentScheduleInvalidateRepository.MAX_SQL_PARAMS_PER_STATEMENT);
+			assertParamCountMatchesPlaceholders(insert);
+		}
+	}
+
+	@Test
+	public void storageSegmentInserts_anyProductWithOversizedBPartners_isNotDropped_keepsBPartnerRestriction()
+	{
+		final List<Integer> bpartnerIds = new ArrayList<>();
+		for (int i = 1; i <= 33_000; i++)
+		{
+			bpartnerIds.add(i);
+		}
+		// product 0 = "any product"
+		final IShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder().productId(0).bpartnerIds(bpartnerIds).locatorId(3).build();
+
+		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(java.util.Collections.singletonList(segment));
+
+		assertStatementsCoverAndWithinBudget(inserts);
+		final java.util.Set<Object> allParams = new java.util.HashSet<>();
+		inserts.forEach(insert -> allParams.addAll(insert.getSqlParams()));
+		assertThat(allParams.containsAll(bpartnerIds)).as("the bpartner restriction is the smallest fitting dimension and is kept").isTrue();
+	}
+
+	@Test
+	public void storageSegmentInserts_anyProductAnyBPartnerWithOversizedLocators_isNotDropped()
+	{
+		final IShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
+				.productId(0)
+				.anyBPartner()
+				.locatorIds(segmentWithLocators(1, 33_000).getLocatorIds())
+				.build();
+
+		assertStatementsCoverAndWithinBudget(buildInserts(java.util.Collections.singletonList(segment)));
 	}
 }
