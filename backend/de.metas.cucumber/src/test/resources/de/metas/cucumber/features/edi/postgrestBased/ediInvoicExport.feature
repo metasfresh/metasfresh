@@ -164,7 +164,8 @@ Feature: EDI INVOIC export via postgREST
           "Product_Buyer_ProductNo": null,
           "Product_Supplier_TU_GTIN": null,
           "Product_Supplier_ProductNo": "postgRESTExportProductValue",
-          "Product_DepositType": null
+          "Product_DepositType": null,
+          "Packaging": null
         }
       ],
       "Sums": [
@@ -566,7 +567,8 @@ Feature: EDI INVOIC export via postgREST
           "Product_Buyer_ProductNo": null,
           "Product_Supplier_TU_GTIN": null,
           "Product_Supplier_ProductNo": "@productValue@",
-          "Product_DepositType": null
+          "Product_DepositType": null,
+          "Packaging": null
         }
       ],
       "Sums": [

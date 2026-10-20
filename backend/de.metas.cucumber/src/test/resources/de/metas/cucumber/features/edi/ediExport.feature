@@ -1398,3 +1398,133 @@ Feature: EDI_cctop_invoic_v export format
       | expDesadv                    | ProductNo | BUYER-9501    |
       | expDesadv                    | GTIN_CU   | 4013000000511 |
       | expDesadv                    | EAN_CU    | 4013000000512 |
+
+
+  # ################################################################################################
+  # ################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @allure.label.feature:F00359_EDI_INVOICE_JSON
+  @F00359
+  @Id:S32545_XML
+  Scenario: invoice with goods and a crate line from the shipment: the EDI_cctop_invoic_v XML carries only the goods line
+    # Real case: an EDI INVOIC recipient on the XML (replication interface) channel gets goods packed in crates;
+    # the invoice made from the shipment carries the goods line and the crate line.
+    # The XML export reads edi_cctop_invoic_500_v, which leaves packing lines out.
+    Given load EXP_Processor_Type
+      | EXP_Processor_Type_ID.Identifier | Value    |
+      | type_1                           | RabbitMQ |
+    And metasfresh contains Exp_Processor
+      | EXP_Processor_ID.Identifier | Name               | EXP_Processor_Type_ID.Identifier |
+      | ep_1                        | ediExportProcessor | type_1                           |
+    And metasfresh contains AD_Replication_Strategy
+      | AD_ReplicationStrategy_ID.Identifier | Name     | EntityType | EXP_Processor_ID.Identifier |
+      | rs_1                                 | rabbitMQ | U          | ep_1                        |
+    And update AD_Client
+      | AD_Client_ID.Identifier | AD_ReplicationStrategy_ID.Identifier |
+      | 1000000                 | rs_1                                 |
+    And update EXP_ProcessorParameter for the following EXP_Processor
+      | EXP_Processor_ID.Identifier | Value          | ParameterValue |
+      | ep_1                        | exchangeName   | ediExport      |
+      | ep_1                        | routingKey     | ediExport      |
+      | ep_1                        | isDurableQueue | true           |
+
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | pricingSystem |
+    And metasfresh contains M_PriceLists
+      | Identifier     | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | salesPriceList | pricingSystem      | DE           | EUR           | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | salesPLV   | salesPriceList |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | N        | pricingSystem      |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City |
+      | loc_1                    | DE          | custAddr     | 111        | custCity |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpLoc_1    | 4300000000038 | customer1                | loc_1                        | true                | true                |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiInvoicRecipient | EdiInvoicRecipientGLN | Identifier |
+      | customer1     | Y                    | 4300000000038         | ediSetting |
+    And metasfresh contains M_Product_Categories:
+      | Identifier  |
+      | pm_category |
+    And metasfresh contains M_Products:
+      | Identifier | M_Product_Category_ID | IsStocked |
+      | goods      |                       | false     |
+      | crate      | pm_category           | false     |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | goods        | 1.00     | PCE      |
+      | salesPLV               | crate        | 1.50     | PCE      |
+    And metasfresh contains M_HU_PI:
+      | Identifier |
+      | huPI_crate |
+    And metasfresh contains M_HU_PI_Version:
+      | Identifier      | M_HU_PI_ID | HU_UnitType |
+      | huVersion_crate | huPI_crate | TU          |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID |
+      | pm_crate                | crate        |
+    And metasfresh contains M_HU_PI_Item:
+      | Identifier     | M_HU_PI_Version_ID | Qty | ItemType | M_HU_PackingMaterial_ID |
+      | huPIItem_crate | huVersion_crate    | 10  | PM       | pm_crate                |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier  | M_HU_PI_Item_ID | Qty | M_Product_ID |
+      | goods_crate | huPIItem_crate  | 11  | goods        |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | POReference |
+      | o_1        | true    | customer1     | bpLoc_1                | F            | 2021-04-16  | KL04711     |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_goods   | o_1        | goods        | 220        | goods_crate             |
+    And the order identified by o_1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_goods   | ol_goods       | N             |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_goods              |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | ss_goods              | shipment   |
+    # 220 / 11 = 20 crates
+    And validate the created shipment lines
+      | M_InOutLine_ID | M_InOut_ID | M_Product_ID | MovementQty |
+      | crate_line     | shipment   | crate        | 20          |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | ol_goods       | ic_goods               |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID | M_InOutLine_ID |
+      | ic_crate               | crate_line     |
+    And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID | IgnoreInvoiceSchedule |
+      | ic_goods               | Y                     |
+      | ic_crate               | Y                     |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID | C_Invoice_Candidate_ID |
+      | invoice_1    | ic_goods               |
+    # One invoice carries the goods line and the crate line
+    And validate invoice lines for invoice_1:
+      | C_InvoiceLine_ID | M_Product_ID | QtyInvoiced |
+      | il_goods         | goods        | 220         |
+      | il_crate         | crate        | 20          |
+
+    When invoice is EDI exported
+      | C_Invoice_ID.Identifier |
+      | invoice_1               |
+    Then RabbitMQ receives a EDI_cctop_invoic_v
+      | EDI_cctop_invoic_v_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
+      | ic_1                             | ep_1                        | routingKey                   |
+    # The XML carries exactly one line item: the goods line; the crate line is not a line item
+    And the EDI_cctop_invoic_v ic_1 XML has exactly these EDI_cctop_invoic_500_v lines:
+      | Line | M_Product_ID | QtyInvoiced |
+      | 10   | goods        | 220         |
