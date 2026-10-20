@@ -31,9 +31,9 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UOMConversionContext.Rounding;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -81,8 +81,7 @@ public class C_OrderLine
 
 	private static final int FACTOR_SCALE = 2;
 	private static final int CONVERTED_BASE_SCALE = 6;
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@NonNull private final GroupTemplateRepository groupTemplateRepository;
 
@@ -168,9 +167,6 @@ public class C_OrderLine
 
 	/**
 	 * The uncalibrated qty has no UOM of its own: it is in the UOM of the template line the order line was created from.
-	 */
-	/**
-	 * The uncalibrated qty has no UOM of its own: it is in the UOM of the template line the order line was created from.
 	 *
 	 * @return the uncalibrated qty in the UOM of the order line (converted with the product's UOM conversion if the UOMs differ, without rounding it to the UOM precision);
 	 * null if there is no template line or no conversion between the two UOMs
@@ -197,11 +193,10 @@ public class C_OrderLine
 		try
 		{
 			return uomConversionBL.convertQty(
-					ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()),
-					Rounding.PRESERVE_SCALE,
+					UOMConversionContext.of(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()), Rounding.PRESERVE_SCALE),
 					qtyUncalibrated.setScale(Math.max(qtyUncalibrated.scale(), CONVERTED_BASE_SCALE), RoundingMode.UNNECESSARY),
-					uomDAO.getById(templateLineUomId),
-					uomDAO.getById(lineUomId));
+					templateLineUomId,
+					lineUomId);
 		}
 		catch (final NoUOMConversionException e)
 		{
