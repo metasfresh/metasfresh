@@ -34,7 +34,10 @@ import java.util.Map;
 
 public class C_ProjectType_StepDef
 {
-	private final ProjectTypeRepository projectTypeRepository = SpringContextHolder.instance.getBean(ProjectTypeRepository.class);
+	/**
+	 * Lazy: the {@code @After} hook makes Cucumber instantiate this class for every scenario, so the bean is resolved only when a step uses it.
+	 */
+	private final SpringContextHolder.Lazy<ProjectTypeRepository> projectTypeRepository = SpringContextHolder.lazyBean(ProjectTypeRepository.class);
 
 	/**
 	 * Active state of each project type before this scenario changed it temporarily; restored by {@link #restoreTemporaryProjectTypes()}.
@@ -45,9 +48,9 @@ public class C_ProjectType_StepDef
 	public void setActive(@NonNull final String projectTypeValue, @NonNull final String active)
 	{
 		final boolean isActive = active.equals("active");
-		final I_C_ProjectType projectType = projectTypeRepository.getByName(projectTypeValue);
+		final I_C_ProjectType projectType = projectTypeRepository.get().getByName(projectTypeValue);
 		projectType.setIsActive(isActive);
-		projectTypeRepository.save(projectType);
+		projectTypeRepository.get().save(projectType);
 	}
 
 	/**
@@ -62,7 +65,7 @@ public class C_ProjectType_StepDef
 	@And("^temporarily set project type (.*) to (active|inactive)$")
 	public void temporarilySetActive(@NonNull final String projectTypeValue, @NonNull final String active)
 	{
-		priorIsActiveByProjectType.putIfAbsent(projectTypeValue, projectTypeRepository.getByName(projectTypeValue).isActive());
+		priorIsActiveByProjectType.putIfAbsent(projectTypeValue, projectTypeRepository.get().getByName(projectTypeValue).isActive());
 		setActive(projectTypeValue, active);
 	}
 

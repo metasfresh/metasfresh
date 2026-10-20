@@ -554,6 +554,7 @@ public class C_Invoice_StepDef
 				});
 
 		row.getAsOptionalString(COLUMNNAME_ExternalId)
+				.map(this::resolvePlaceholders)
 				.ifPresent(externalId -> softly.assertThat(invoice.getExternalId()).as("ExternalId").isEqualTo(externalId));
 
 		row.getAsOptionalIdentifier(COLUMNNAME_C_DocType_ID)
@@ -1059,7 +1060,7 @@ public class C_Invoice_StepDef
 	@NonNull
 	private ProviderResult<I_C_Invoice> findInvoiceByExternalIdAndCandidateCount(@NonNull final Map<String, String> row)
 	{
-		final String externalId = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalId);
+		final String externalId = resolvePlaceholders(DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalId));
 		final int numberOfCandidates = DataTableUtil.extractIntOrMinusOneForColumnName(row, "OPT.NumberOfCandidates");
 
 		final I_C_Invoice invoice = queryBL.createQueryBuilder(I_C_Invoice.class)

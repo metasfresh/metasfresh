@@ -536,7 +536,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00359_EDI_INVOICE_JSON
   @F00359
-  Scenario: order with the contract's bonus line: the INVOIC JSON lists goods, a 0,00 crate line without GTIN and the bonus line
+  Scenario: order with the contract's bonus line: the INVOIC JSON lists goods, the bonus line and a 0,00 crate line without GTIN
     # Real case: goods packed in EPS crates (TU x 11), the central partner's contract adds a 3 % bonus line on completion.
     # The crate carries no GTIN and no deposit type and is priced 0,00 (packing master data without GTIN / deposit type, not charged).
     # Line order: here the bonus line is on the same shipment as the goods, so the invoice lists goods, bonus, crate.
