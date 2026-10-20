@@ -34,7 +34,6 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -71,14 +70,14 @@ import java.util.function.Supplier;
 class DocumentNoBuilder implements IDocumentNoBuilder
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(DocumentNoBuilder.class);
+	private static final Logger logger = LogManager.getLogger(DocumentNoBuilder.class);
 	private final transient IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
 	final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private static final AdMessageKey MSG_PROVIDER_NOT_APPLICABLE = AdMessageKey.of("de.metas.document.CustomSequenceNotProviderNoApplicable");
 
 	private static final int QUERY_TIME_OUT = MSequence.QUERY_TIME_OUT;
-	private static final transient SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
+	private static final SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
 
 	private ClientId _adClientId;
 	private Boolean _isAdempiereSys;
@@ -263,8 +262,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			final Evaluatee evalContext = getEvaluationContext();
 			if (!customSequenceNoProvider.isApplicable(evalContext))
 			{
-				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_PROVIDER_NOT_APPLICABLE, docSeqInfo.getName());
-				throw new DocumentNoBuilderException(msg)
+				throw new DocumentNoBuilderException(MSG_PROVIDER_NOT_APPLICABLE, docSeqInfo.getName())
 						.appendParametersToMessage()
 						.setParameter("context", evalContext);
 			}
@@ -361,10 +359,10 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 		final IMutable<Integer> currentSeq = new Mutable<>(-1);
 		DB.executeUpdateEx(sql,
-						   sqlParams.toArray(),
-						   trxName,
-						   QUERY_TIME_OUT,
-						   rs -> currentSeq.setValue(rs.getInt(1)));
+				sqlParams.toArray(),
+				trxName,
+				QUERY_TIME_OUT,
+				rs -> currentSeq.setValue(rs.getInt(1)));
 
 		return currentSeq.getValue();
 	}

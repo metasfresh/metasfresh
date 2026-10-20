@@ -46,6 +46,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -147,6 +148,13 @@ public class CCache<K, V> implements CacheInterface
 	@Nullable private final CacheAdditionListener<K, V> additionListener;
 
 	private final boolean allowDisablingCacheByThreadLocal;
+
+	/**
+	 * Loads which are currently running in {@link #get(Object, Callable)} or {@link #getAllOrLoad(Collection, Function)}.
+	 * A reset/remove from another thread marks the affected ones as invalidated, so that their (possibly stale) result is not cached.
+	 * Needed because Guava keeps a value whose load was in flight while {@link Cache#invalidateAll()} or {@link Cache#invalidate(Object)} ran.
+	 */
+	private final Set<InFlightLoad> inFlightLoads = ConcurrentHashMap.newKeySet();
 
 	/**
 	 * Metasfresh Cache - expires after 2 hours
@@ -394,6 +402,7 @@ public class CCache<K, V> implements CacheInterface
 	private void clear()
 	{
 		// Clear
+		inFlightLoads.forEach(load -> load.invalidateIfOtherThread(null));
 		cache.invalidateAll();
 		cache.cleanUp();
 
@@ -492,6 +501,7 @@ public class CCache<K, V> implements CacheInterface
 		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
 		{
 			final V value = cache.getIfPresent(key);
+			invalidateInFlightLoads(ImmutableSet.of(key));
 			cache.invalidate(key);
 			logger.debug("remove - Removed key={}; item that was actually in this cache={}", key, value);
 			return value;
@@ -502,8 +512,14 @@ public class CCache<K, V> implements CacheInterface
 	{
 		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
 		{
+			invalidateInFlightLoads(ImmutableSet.copyOf(keys));
 			cache.invalidateAll(keys);
 		}
+	}
+
+	private void invalidateInFlightLoads(@NonNull final Set<?> keys)
+	{
+		inFlightLoads.forEach(load -> load.invalidateIfOtherThread(keys));
 	}
 
 	/**
@@ -572,9 +588,16 @@ public class CCache<K, V> implements CacheInterface
 				return cache.getIfPresent(key);
 			}
 
+			final InFlightLoad load = new InFlightLoad(key);
 			try
 			{
-				return cache.get(key, valueInitializer);
+				final V value = cache.get(key, () -> load.run(valueInitializer));
+				if (load.isInvalidated())
+				{
+					// a reset ran after the check in InFlightLoad.run(), but before Guava stored the value
+					cache.asMap().remove(key, value);
+				}
+				return value;
 			}
 			catch (final InvalidCacheLoadException e)
 			{
@@ -589,12 +612,168 @@ public class CCache<K, V> implements CacheInterface
 			}
 			catch (final UncheckedExecutionException e)
 			{
+				if (e.getCause() instanceof DiscardedLoadException)
+				{
+					final DiscardedLoadException discarded = (DiscardedLoadException)e.getCause();
+					if (discarded.getLoad() == load)
+					{
+						@SuppressWarnings("unchecked") final V discardedValue = (V)discarded.getValue();
+						return discardedValue;
+					}
+					// We waited for another thread's load, which was discarded because of a reset => load again.
+					// Not via Guava: its entry of the discarded load might still be there for a moment.
+					return loadBypassingGuava(key, valueInitializer);
+				}
 				throw (RuntimeException)e.getCause();
 			}
 			catch (final ExecutionError e)
 			{
 				throw (Error)e.getCause();
 			}
+			finally
+			{
+				load.unregister();
+			}
+		}
+	}
+
+	@Nullable
+	private V loadBypassingGuava(@NonNull final K key, @NonNull final Callable<V> valueLoader)
+	{
+		final InFlightLoad load = new InFlightLoad(key);
+		load.register();
+		try
+		{
+			final V value = valueLoader.call();
+			if (value != null && !load.isInvalidated())
+			{
+				cache.put(key, value);
+				if (load.isInvalidated())
+				{
+					cache.asMap().remove(key, value);
+				}
+			}
+			return value;
+		}
+		catch (final RuntimeException e)
+		{
+			throw e;
+		}
+		catch (final Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+		finally
+		{
+			load.unregister();
+		}
+	}
+
+	/**
+	 * One run of a value loader, for one key ({@link #get(Object, Callable)}) or for several keys ({@link #getAllOrLoad(Collection, Function)}).
+	 * If the cache (or one of the load's keys) is reset by another thread while it runs, the loaded value is returned to the caller
+	 * but not cached, because it might have been read before the change which triggered the reset.
+	 * A reset from the loading thread itself (e.g. the loader creates a missing record) does not discard the load, as before.
+	 */
+	private final class InFlightLoad
+	{
+		@Nullable private final Object key;
+		@Nullable private final Set<?> bulkKeys;
+		@Nullable private final Set<Object> invalidatedBulkKeys;
+		private final Thread loadingThread = Thread.currentThread();
+		private volatile boolean invalidated = false;
+		private boolean registered = false;
+
+		private InFlightLoad(@NonNull final Object key)
+		{
+			this.key = key;
+			this.bulkKeys = null;
+			this.invalidatedBulkKeys = null;
+		}
+
+		private InFlightLoad(@NonNull final Set<?> bulkKeys)
+		{
+			this.key = null;
+			this.bulkKeys = bulkKeys;
+			this.invalidatedBulkKeys = ConcurrentHashMap.newKeySet();
+		}
+
+		private V run(@NonNull final Callable<V> valueLoader) throws Exception
+		{
+			register(); // before loading, so that a reset from now on sees it
+			final V value = valueLoader.call();
+			if (value != null && invalidated)
+			{
+				logger.debug("Not caching the value for key={} because the cache was reset while it was loaded", key);
+				// Makes Guava drop the load; see the catch in get(key, Callable).
+				// Note: Guava counts it in CacheStats.loadExceptionCount.
+				throw new DiscardedLoadException(this, value);
+			}
+			return value;
+		}
+
+		private void register()
+		{
+			inFlightLoads.add(this);
+			registered = true;
+		}
+
+		/**
+		 * Called by the loading thread when done. Cheap for cache hits, where the loader never ran.
+		 */
+		private void unregister()
+		{
+			if (registered)
+			{
+				inFlightLoads.remove(this);
+			}
+		}
+
+		/**
+		 * @param resetKeys the keys which are reset, or {@code null} if the whole cache is reset
+		 */
+		private void invalidateIfOtherThread(@Nullable final Set<?> resetKeys)
+		{
+			if (loadingThread == Thread.currentThread())
+			{
+				return;
+			}
+
+			if (resetKeys == null || (key != null && resetKeys.contains(key)))
+			{
+				invalidated = true;
+			}
+			else if (bulkKeys != null && invalidatedBulkKeys != null)
+			{
+				for (final Object resetKey : resetKeys)
+				{
+					if (bulkKeys.contains(resetKey))
+					{
+						invalidatedBulkKeys.add(resetKey);
+					}
+				}
+			}
+		}
+
+		private boolean isInvalidated() {return invalidated;}
+
+		private boolean isInvalidated(@NonNull final Object bulkKey)
+		{
+			return invalidated || (invalidatedBulkKeys != null && invalidatedBulkKeys.contains(bulkKey));
+		}
+	}
+
+	@Getter
+	private static final class DiscardedLoadException extends RuntimeException
+	{
+		private final Object load;
+		private final Object value;
+
+		private DiscardedLoadException(@NonNull final Object load, @NonNull final Object value)
+		{
+			super("Loaded value discarded because the cache was reset while loading", null, false, false);
+			this.load = load;
+			this.value = value;
 		}
 	}
 
@@ -674,18 +853,39 @@ public class CCache<K, V> implements CacheInterface
 			else
 			{
 				logger.debug("getAllOrLoad - Appling valuesLoader to load values for keysToLoad={}", keysToLoad);
-				final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
-
-				// add loaded values to cache and notify listener
-				for (final Entry<K, V> entry : valuesLoaded.entrySet())
+				final InFlightLoad load = new InFlightLoad(ImmutableSet.copyOf(keysToLoad)); // a copy, because other threads read it while the loader gets keysToLoad
+				try
 				{
-					final K key = entry.getKey();
-					final V value = entry.getValue();
+					load.register();
+					final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
 
-					cache.put(key, value);
-					fireAdditionListener(key, value);
+					// add loaded values to cache and notify listener
+					for (final Entry<K, V> entry : valuesLoaded.entrySet())
+					{
+						final K key = entry.getKey();
+						final V value = entry.getValue();
+						final boolean requestedKey = keysToLoad.contains(key);
+						if (requestedKey && load.isInvalidated(key))
+						{
+							logger.debug("getAllOrLoad - Not caching the value for key={} because it was reset while it was loaded", key);
+							continue;
+						}
+
+						cache.put(key, value);
+						if (requestedKey && load.isInvalidated(key))
+						{
+							// reset after the check above, but before the put
+							cache.asMap().remove(key, value);
+							continue;
+						}
+						fireAdditionListener(key, value);
+					}
+					values.addAll(valuesLoaded.values()); // add loaded values to the list we will return
 				}
-				values.addAll(valuesLoaded.values()); // add loaded values to the list we will return
+				finally
+				{
+					load.unregister();
+				}
 			}
 
 			return values;
