@@ -6,6 +6,7 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
+import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 
@@ -310,6 +311,30 @@ test('Clear All GRAIs cancelled keeps chips', async ({ page }) => {
     // Click Clear All but cancel — chips should remain
     await GRAIScreen.clearAllGraisAndCancel();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 2 });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('GRAIs scanned back to back are each added once', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI scanning');
+    allure.severity('critical');
+
+    await createMasterdataAndScanLU({ page });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    const barcodes = makeGraiBarcodes(3);
+    await GRAIScreen.scanGraiBarcodesBackToBack({ barcodeStrings: barcodes });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+
+    // The scanner component has consumed every scan: nothing is left in its reader, so nothing can be
+    // delivered later (again, or glued to the next scan).
+    await BarcodeScannerComponent.waitForInputFieldToGetEmpty();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+    for (let n = 1; n <= barcodes.length; n++) {
+        await GRAIScreen.expectGraiChipWithText({ text: graiChipText(n) });
+    }
 });
 
 // noinspection JSUnusedLocalSymbols

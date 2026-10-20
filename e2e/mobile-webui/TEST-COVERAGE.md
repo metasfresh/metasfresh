@@ -411,14 +411,15 @@
 
 **5/6 — 83%**
 
-### GRAI screen (send / undo)
+### GRAI screen (scan / send / undo)
 
 | Scenario | Test |
 |---|---|
 | Send 2 GRAIs, scan a 3rd (unsaved) → Undo reloads the 2 saved GRAIs, Send disabled | `humanager/grai.spec.js` |
 | Scan a GRAI while Send is still in flight → it survives the answer, Send + Undo stay enabled, a second Send persists all GRAIs | `humanager/grai.spec.js` |
+| Scan 3 GRAIs back to back → each is added once, the scanner component holds nothing back (no repeated or glued scan) | `humanager/grai.spec.js` |
 
-**2/2 — 100%**
+**3/3 — 100%**
 
 ---
 

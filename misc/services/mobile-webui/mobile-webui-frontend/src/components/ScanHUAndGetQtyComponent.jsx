@@ -85,12 +85,10 @@ const ScanHUAndGetQtyComponent = ({
   const [graiCapture, setGraiCapture] = useState({ codes: [], skippedCodes: [] });
   const { codes: graiCodes, skippedCodes } = graiCapture;
   const skippedCount = skippedCodes.length;
-  // Stable handler identities (matching the HU-Manager useGrais hook): an inline arrow here would be
-  // a new function every render, so GraiCapturePanel's onResolvedResult useCallback would change each
-  // render and BarcodeScannerComponent would re-subscribe its keyboard listener mid-scan — dropping
-  // codes during a rapid RFID burst (multiple GRAIs scanned back-to-back). handleAddGrais additionally
-  // depends on `existingLuGrais`, which is stable for the whole capture session (fetched once per
-  // pick-step entry — see useAvailablePickingTargets), so identity stability still holds.
+  // Stable handler identities (matching the HU-Manager useGrais hook), so GraiCapturePanel's memoised
+  // callbacks do not change on every render. handleAddGrais additionally depends on `existingLuGrais`,
+  // which is stable for the whole capture session (fetched once per pick-step entry — see
+  // useAvailablePickingTargets), so identity stability still holds.
   const handleAddGrais = useCallback(
     (newGrais) =>
       setGraiCapture((prev) => {

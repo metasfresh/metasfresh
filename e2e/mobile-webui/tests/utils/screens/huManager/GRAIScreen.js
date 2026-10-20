@@ -36,10 +36,17 @@ export const GRAIScreen = {
         // Use typeBatch with a single code so Enter is dispatched after the barcode,
         // triggering immediate processing instead of relying on the interval timer flush.
         await BarcodeScannerComponent.typeBatch({ codes: [barcodeString] });
-        // The scanner component's own reader can still hold the code (it sometimes misses the Enter when
-        // the screen re-renders on that key) and flushes it a little later; a next scan typed before
-        // that would be appended to it. Wait until the scanner has consumed the code.
+        // Wait until the scanner component has consumed the code, so the next scan starts on an empty reader.
         await BarcodeScannerComponent.waitForInputFieldToGetEmpty();
+    }),
+
+    // Scans the GRAIs one after the other as separate scans (each one ends with Enter), as fast as an
+    // operator can trigger them: no waiting in between for the previous scan to be consumed.
+    scanGraiBarcodesBackToBack: async ({ barcodeStrings }) => await test.step(`${NAME} - Scan ${barcodeStrings.length} GRAI barcodes back to back`, async () => {
+        await GRAIScreen.expectVisible();
+        for (const barcodeString of barcodeStrings) {
+            await BarcodeScannerComponent.type(barcodeString);
+        }
     }),
 
     expectGraiChipWithText: async ({ text }) => await test.step(`${NAME} - Expect GRAI chip containing "${text}"`, async () => {
