@@ -218,14 +218,19 @@ export async function openLineAdvancedEdit(page, productCode) {
  * The calibration group of the line's advanced edit shows factor, rule (by its name, which starts with its SeqNo)
  * and uncalibrated quantity, and nothing else. The factor of a calibrated line of a draft document is editable here
  * (read-only logic: no rule and no uncalibrated qty); rule and uncalibrated quantity are read-only (no unit widget; the line unit is shown once, outside it).
+ * With `factorEditable: false` the factor is expected read-only too (e.g. a completed document).
  */
-export async function expectCalibrationGroup(page, productCode, { factor, rulePrefix, uncalibrated, snapshotName }) {
+export async function expectCalibrationGroup(page, productCode, { factor, rulePrefix, uncalibrated, snapshotName, factorEditable = true }) {
     await openLineAdvancedEdit(page, productCode);
     const modal = page.locator('.panel-modal-content');
     const factorInput = modal.locator(`.form-field-${FIELD_FACTOR} input`);
     await expect(factorInput).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     await expect(factorInput).toHaveValue(new RegExp(`^${factor.replace('.', '[.,]')}$`));
-    await expect(factorInput).toBeEnabled();
+    if (factorEditable) {
+        await expect(factorInput).toBeEnabled();
+    } else {
+        await expect(factorInput).toBeDisabled();
+    }
 
     const ruleInput = modal.locator(`.form-field-${FIELD_RULE} input`).first();
     await expect(ruleInput).toHaveValue(new RegExp(`^${rulePrefix}_.+`));
@@ -246,6 +251,50 @@ export async function expectCalibrationGroup(page, productCode, { factor, rulePr
     await modal.locator(`.form-field-${FIELD_UNCALIBRATED}`).scrollIntoViewIfNeeded();
     await snap(page, snapshotName ?? `advanced-edit-${productCode.split('_')[0].toLowerCase()}-calibrated`);
     await AdvancedEdit.close();
+}
+
+/**
+ * Type a new Kalibrierfaktor into the advanced edit of the line of the product ('' blanks it), commit it with Tab and
+ * wait for the save response. Accepted: the Menge of the advanced edit shows `expectedQty`. Rejected (`rejected: true`):
+ * the save fails and an error notification shows `expectedError`. Then close and reload, so the grid shows what is stored.
+ */
+export async function setCalibrationFactor(page, productCode, factor, { expectedQty, rejected = false, expectedError, snapshotName } = {}) {
+    await openLineAdvancedEdit(page, productCode);
+    const modal = page.locator('.panel-modal-content');
+    const factorInput = modal.locator(`.form-field-${FIELD_FACTOR} input`);
+    await expect(factorInput).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+    await factorInput.click();
+    await page.keyboard.press('Control+a');
+    await factorInput.fill(String(factor));
+    const saveResponse = page.waitForResponse(
+        (response) => response.request().method() === 'PATCH' && /\/window\/\d+\/\d+\//.test(response.url())
+            && (response.request().postData() || '').includes(FIELD_FACTOR),
+        { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    await page.keyboard.press('Tab');
+    const response = await saveResponse;
+    let errorNotification = null;
+    if (rejected) {
+        expect(response.ok(), `factor "${factor}" on the ${productCode} line is refused`).toBe(false);
+        // a user-friendly save error is shown as an error notification (frontend App.js), not as a field error
+        errorNotification = page.locator('.notification-handler .notification-item.error').filter({ hasText: expectedError });
+        await expect(errorNotification).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+    } else {
+        expect(response.ok(), `factor "${factor}" on the ${productCode} line is saved`).toBe(true);
+        const qtyInput = modal.locator('.form-field-QtyEntered input');
+        await expect.poll(async () => Number((await qtyInput.inputValue()).replace(',', '.')), {
+            timeout: SLOW_ACTION_TIMEOUT,
+            message: `Menge of the ${productCode} line after factor "${factor}"`,
+        }).toBeCloseTo(expectedQty, 2);
+    }
+    await snap(page, snapshotName ?? `advanced-edit-${productCode.split('_')[0].toLowerCase()}-factor-${factor === '' ? 'empty' : factor}`);
+    if (errorNotification) {
+        await errorNotification.locator('.meta-icon-close-1').click();
+        await expect(errorNotification).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+    }
+    await AdvancedEdit.close();
+    await page.reload();
+    await lineRow(page, productCode).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 }
 
 /** With no rule matched the calibration group is not shown. */

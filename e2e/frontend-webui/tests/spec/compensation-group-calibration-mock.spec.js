@@ -5,6 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { completeDocument, expectDocStatus } from '../utils/ContractWindowHelpers';
 import {
     addMenuThroughQuickInput,
     createOrder,
@@ -13,6 +14,7 @@ import {
     expectLineQty,
     expectNoCalibrationGridColumn,
     lineRow,
+    setCalibrationFactor,
     setLineQty,
     setLineQtyInline,
 } from '../utils/compensationGroupCalibration';
@@ -30,6 +32,9 @@ import {
  *   - the clerk types 375 as the line's Menge (the mock's value): the factor follows (375 / 375 = 100 %); rule 10 and uncalibrated 375 stay
  *   - the menu line's Menge 1.500 -> 1.600 leaves Rice_Pudding untouched (no automatic rescale)
  *   - a manually added line has no calibration group; no calibration column in the grid
+ *   - the clerk types the factor in the advanced edit: 50 -> Menge 187,5; 0 -> Menge 0, the line is kept;
+ *     an empty factor is refused with a message; 100 -> Menge 375; rule 10 and uncalibrated 375 stay
+ *   - once the order is completed the factor is read-only
  *
  * Everything is driven through the rendered UI; the stored lines are cross-checked through the testing backend.
  * The sales-order window is opened through the menu (never addressed by id). German captions are used on purpose
@@ -48,10 +53,10 @@ test.describe('Compensation group calibration - mock case', () => {
         allure.tag('F00127: Compensation Groups');
         allure.tag('F00127');
         allure.tag('Compensation group calibration');
-        allure.story('TC2 mock case: calibrated component, per-order override, uncalibrated menu and manual lines');
+        allure.story('TC2 mock case: calibrated component, per-order override, factor edit, uncalibrated menu and manual lines, completed order');
         allure.severity('critical');
 
-        // masterdata + 1 order with quick input, 2 line edits, a manual line, 4 advanced edits
+        // masterdata + 1 order with quick input, 2 line edits, a manual line, 4 factor edits, completion, 6 advanced edit checks
         test.setTimeout(600000);
 
         // ============================================================
@@ -99,10 +104,12 @@ test.describe('Compensation group calibration - mock case', () => {
         await DashboardPage.expectVisible();
 
         let orderId;
+        let orderWindowId;
 
         await test.step('quick input: 1.500 menus -> menu line 1.500 (group hidden), Rice_Pudding 300 LTR (80 % / rule 10 / 375)', async () => {
             const order = await createOrder(page, schoolA);
             orderId = order.orderId;
+            orderWindowId = order.windowId;
             await addMenuThroughQuickInput(page, menu, 1500);
 
             await expectLineQty(page, menu, 1500);
@@ -180,6 +187,77 @@ test.describe('Compensation group calibration - mock case', () => {
                     },
                 },
             });
+        });
+
+        await test.step('advanced edit: the clerk types factor 50 on Rice_Pudding -> Menge 187,5; rule 10, uncalibrated 375 stay', async () => {
+            await setCalibrationFactor(page, rice, 50, { expectedQty: 187.5 });
+
+            await expectLineQty(page, rice, 187.5);
+            await expectCalibrationGroup(page, rice, { factor: '50', rulePrefix: '10', uncalibrated: '375', snapshotName: 'advanced-edit-rice-pudding-factor-50' });
+
+            await Backend.expect({
+                title: 'Mock case: factor 50 typed, Menge follows to 187,5',
+                salesOrders: {
+                    [orderId]: {
+                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 187.5, calibrationFactor: 50, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
+                    },
+                },
+            });
+        });
+
+        await test.step('advanced edit: factor 0 -> Menge 0, the line is kept', async () => {
+            await setCalibrationFactor(page, rice, 0, { expectedQty: 0 });
+
+            await expect(lineRow(page, rice)).toHaveCount(1);
+            await expectLineQty(page, rice, 0);
+
+            await Backend.expect({
+                title: 'Mock case: factor 0 typed, Menge 0, line kept',
+                salesOrders: {
+                    [orderId]: {
+                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 0, calibrationFactor: 0, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
+                    },
+                },
+            });
+        });
+
+        await test.step('advanced edit: an empty factor is refused with a message; factor 0 and Menge 0 stay', async () => {
+            await setCalibrationFactor(page, rice, '', { rejected: true, expectedError: 'Der Kalibrierfaktor darf nicht leer sein.' });
+
+            await expectLineQty(page, rice, 0);
+
+            await Backend.expect({
+                title: 'Mock case: empty factor refused, stored line unchanged',
+                salesOrders: {
+                    [orderId]: {
+                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 0, calibrationFactor: 0, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
+                    },
+                },
+            });
+        });
+
+        await test.step('advanced edit: factor 100 -> Menge 375', async () => {
+            await setCalibrationFactor(page, rice, 100, { expectedQty: 375 });
+
+            await expectLineQty(page, rice, 375);
+
+            await Backend.expect({
+                title: 'Mock case: factor 100 typed, Menge follows to 375',
+                salesOrders: {
+                    [orderId]: {
+                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 375, calibrationFactor: 100, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
+                    },
+                },
+            });
+        });
+
+        await test.step('completed order: the factor is read-only', async () => {
+            await completeDocument(page);
+            await expectDocStatus(orderWindowId, orderId, 'CO');
+            await page.reload();
+            await lineRow(page, rice).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+            await expectCalibrationGroup(page, rice, { factor: '100', rulePrefix: '10', uncalibrated: '375', factorEditable: false, snapshotName: 'advanced-edit-rice-pudding-completed' });
         });
     });
 });
