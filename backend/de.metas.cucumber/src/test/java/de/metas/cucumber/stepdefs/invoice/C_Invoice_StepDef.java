@@ -171,7 +171,7 @@ public class C_Invoice_StepDef
 	/**
 	 * An {@code @name@} placeholder: two '@' with at least one other character between them.
 	 */
-	private static final Pattern DOCUMENT_NO_PLACEHOLDER = Pattern.compile("@[^@]+@");
+	private static final Pattern PLACEHOLDER = Pattern.compile("@[^@]+@");
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
@@ -328,6 +328,8 @@ public class C_Invoice_StepDef
 	 *   <li>{@code POReference} — optional customer order reference of the invoice header</li>
 	 *   <li>{@code DocumentNo} — the document number; a {@code @name@} placeholder is replaced with the {@link TestContext} variable of that name,
 	 *   e.g. {@code INV-@runId@}, any other value is taken literally. The validation steps (e.g. {@code validate created invoices}) resolve it the same way.</li>
+	 *   <li>{@code ExternalId} — the external id; {@code @name@} placeholders are resolved like in {@code DocumentNo}, so a scenario can
+	 *   make it unique per run (e.g. from a product's {@code REST.Context.Value}).</li>
 	 * </ul>
 	 */
 	@And("metasfresh contains C_Invoice:")
@@ -614,7 +616,7 @@ public class C_Invoice_StepDef
 				});
 
 		row.getAsOptionalString(COLUMNNAME_DocumentNo)
-				.map(this::resolveDocumentNo)
+				.map(this::resolvePlaceholders)
 				.ifPresent(documentNo -> softly.assertThat(invoice.getDocumentNo()).as(COLUMNNAME_DocumentNo).isEqualTo(documentNo));
 
 		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_M_Warehouse_ID)
@@ -631,12 +633,12 @@ public class C_Invoice_StepDef
 	}
 
 	/**
-	 * Resolves the {@code @name@} placeholders of a DocumentNo; any other value is taken literally
+	 * Resolves the {@code @name@} placeholders of a DocumentNo or ExternalId; any other value is taken literally
 	 * (the expression compiler would throw on a single '@' and turn '@@' into '@').
 	 */
-	private String resolveDocumentNo(@NonNull final String documentNo)
+	private String resolvePlaceholders(@NonNull final String value)
 	{
-		return DOCUMENT_NO_PLACEHOLDER.matcher(documentNo).find() ? restTestContext.resolveVariables(documentNo) : documentNo;
+		return PLACEHOLDER.matcher(value).find() ? restTestContext.resolveVariables(value) : value;
 	}
 
 	private BigDecimal computeOpenAmount(@NonNull final InvoiceId invoiceId)
@@ -939,9 +941,11 @@ public class C_Invoice_StepDef
 		invoice.setC_Currency_ID(currencyId.getRepoId());
 
 		row.getAsOptionalString(COLUMNNAME_DocumentNo)
-				.map(this::resolveDocumentNo)
+				.map(this::resolvePlaceholders)
 				.ifPresent(invoice::setDocumentNo);
-		row.getAsOptionalString(COLUMNNAME_ExternalId).ifPresent(invoice::setExternalId);
+		row.getAsOptionalString(COLUMNNAME_ExternalId)
+				.map(this::resolvePlaceholders)
+				.ifPresent(invoice::setExternalId);
 		row.getAsOptionalString(COLUMNNAME_POReference).ifPresent(invoice::setPOReference);
 
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID)

@@ -22,14 +22,18 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_EDI_Document;
@@ -47,6 +51,7 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -54,6 +59,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +82,9 @@ public class EDI_cctop_invoic_v_StepDef
 	private static final String TAGNAME_BUYER_GTIN_TU = "Buyer_GTIN_TU";
 	private static final String TAGNAME_EDI_CCTOP_INVOIC_500_V = "EDI_cctop_invoic_500_v";
 	private static final String TAGNAME_EDI_CCTOP_119_V = "EDI_cctop_119_v";
+	private static final String TAGNAME_LINE = "Line";
+	private static final String TAGNAME_VALUE = "Value";
+	private static final String TAGNAME_QTY_INVOICED = "QtyInvoiced";
 
 	@NonNull private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -81,15 +92,125 @@ public class EDI_cctop_invoic_v_StepDef
 	private final EDI_cctop_invoic_v_StepDefData cctopInvoiceTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final EDI_Desadv_StepDefData desadvTable;
+	private final M_Product_StepDefData productTable;
+	private final TestContext testContext;
 
 	public EDI_cctop_invoic_v_StepDef(
 			@NonNull final EDI_cctop_invoic_v_StepDefData cctopInvoiceTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final EDI_Desadv_StepDefData desadvTable)
+			@NonNull final EDI_Desadv_StepDefData desadvTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final TestContext testContext)
 	{
 		this.cctopInvoiceTable = cctopInvoiceTable;
 		this.invoiceTable = invoiceTable;
 		this.desadvTable = desadvTable;
+		this.productTable = productTable;
+		this.testContext = testContext;
+	}
+
+	/**
+	 * Asserts the order of the {@code Lines} of the single invoice in the last INVOIC JSON export response:
+	 * line by line, in array order, the {@code Invoice_Line} and whether the line is a packing line ({@code Packaging} set).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Invoice_Line</b> — (required) the expected {@code Invoice_Line}, one row per line, in the expected order<br>
+	 *   <b>IsPackagingMaterial</b> — (required) {@code Y} if the line carries the {@code Packaging} sub-object, {@code N} if {@code Packaging} is null<br>
+	 * @cucumber.depends TestContext (the response of the INVOIC JSON export request)
+	 * @cucumber.example
+	 * <pre>
+	 * And the INVOIC JSON response lists its Lines in this order:
+	 *   | Invoice_Line | IsPackagingMaterial |
+	 *   | 10           | N                   |
+	 *   | 20           | Y                   |
+	 * </pre>
+	 */
+	@And("the INVOIC JSON response lists its Lines in this order:")
+	public void validate_INVOIC_JSON_lines_order(@NonNull final DataTable dataTable) throws IOException
+	{
+		final JsonNode invoices = JsonObjectMapperHolder.sharedJsonObjectMapper()
+				.readTree(testContext.getApiResponseBodyAsString())
+				.get("metasfresh_INVOIC");
+		assertThat(invoices).as("metasfresh_INVOIC").isNotNull();
+		assertThat(invoices.size()).as("number of invoices in metasfresh_INVOIC").isEqualTo(1);
+
+		final List<String> actualLines = new ArrayList<>();
+		invoices.get(0).get("Lines").forEach(line -> actualLines.add(
+				lineOrderKey(line.get("Invoice_Line").asInt(), isPackagingLine(line.get("Packaging")))));
+
+		final List<String> expectedLines = DataTableRows.of(dataTable).stream()
+				.map(row -> lineOrderKey(row.getAsInt("Invoice_Line"), row.getAsBoolean("IsPackagingMaterial")))
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(actualLines).as("Invoice_Line|IsPackagingMaterial of the INVOIC JSON Lines, in array order").containsExactlyElementsOf(expectedLines);
+	}
+
+	private static boolean isPackagingLine(@Nullable final JsonNode packaging)
+	{
+		return packaging != null && !packaging.isNull() && packaging.path("IsPackagingMaterial").asBoolean(false);
+	}
+
+	private static String lineOrderKey(final int invoiceLine, final boolean isPackagingMaterial)
+	{
+		return invoiceLine + "|" + (isPackagingMaterial ? "Y" : "N");
+	}
+
+	/**
+	 * Asserts the complete list of line items ({@code EDI_cctop_invoic_500_v} elements) of an {@code EDI_cctop_invoic_v} XML
+	 * received from RabbitMQ: no line item more, none less.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Line</b> — (required) the line item's {@code Line}<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) product; compared with the line item's {@code Value}<br>
+	 *   <b>QtyInvoiced</b> — (required) the line item's {@code QtyInvoiced}<br>
+	 * @cucumber.depends StepDefData: EDI_cctop_invoic_v_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the EDI_cctop_invoic_v ic_1 XML has exactly these EDI_cctop_invoic_500_v lines:
+	 *   | Line | M_Product_ID | QtyInvoiced |
+	 *   | 10   | goods        | 20          |
+	 * </pre>
+	 */
+	@And("^the EDI_cctop_invoic_v (.*) XML has exactly these EDI_cctop_invoic_500_v lines:$")
+	public void validate_exact_EDI_cctop_invoic_500_v_lines(@NonNull final String invoicIdentifier, @NonNull final DataTable dataTable)
+	{
+		final Document invoic = cctopInvoiceTable.get(invoicIdentifier);
+		final NodeList lineElements = invoic.getElementsByTagName(TAGNAME_EDI_CCTOP_INVOIC_500_V);
+
+		final List<String> actualLines = new ArrayList<>();
+		for (int index = 0; index < lineElements.getLength(); index++)
+		{
+			final Element lineElement = (Element)lineElements.item(index);
+			actualLines.add(lineKey(
+					getElementText(lineElement, TAGNAME_LINE),
+					getElementText(lineElement, TAGNAME_VALUE),
+					new BigDecimal(getElementText(lineElement, TAGNAME_QTY_INVOICED))));
+		}
+
+		final List<String> expectedLines = DataTableRows.of(dataTable).stream()
+				.map(row -> lineKey(
+						String.valueOf(row.getAsInt(TAGNAME_LINE)),
+						row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable).getValue(),
+						row.getAsBigDecimal(TAGNAME_QTY_INVOICED)))
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(actualLines).as("EDI_cctop_invoic_500_v line items (Line|Value|QtyInvoiced) of %s", invoicIdentifier)
+				.containsExactlyInAnyOrderElementsOf(expectedLines);
+	}
+
+	private static String lineKey(@NonNull final String line, @NonNull final String productValue, @NonNull final BigDecimal qtyInvoiced)
+	{
+		return line + "|" + productValue + "|" + qtyInvoiced.stripTrailingZeros().toPlainString();
+	}
+
+	@NonNull
+	private static String getElementText(@NonNull final Element parent, @NonNull final String tagName)
+	{
+		final Element element = getElement(parent, tagName);
+		assertThat(element).as("element %s in %s", tagName, parent.getTagName()).isNotNull();
+		return element.getTextContent().trim();
 	}
 
 	@Then("invoice is EDI exported")
