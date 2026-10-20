@@ -91,14 +91,23 @@ class C_OrderLineTest
 		return line;
 	}
 
-	private void changeUom(final I_C_OrderLine line, final I_C_UOM uom)
+	/**
+	 * The line before the changes is the saved one.
+	 */
+	private static ICalloutField calloutFieldWithLineBeforeChanges(final I_C_OrderLine line)
 	{
 		final I_C_OrderLine lineBeforeChanges = newInstance(I_C_OrderLine.class);
 		lineBeforeChanges.setM_Product_ID(line.getM_Product_ID());
 		lineBeforeChanges.setC_UOM_ID(line.getC_UOM_ID());
+		lineBeforeChanges.setGroupCompensationQtyEnteredUncalibrated(InterfaceWrapperHelper.getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated));
 		final ICalloutField field = Mockito.mock(ICalloutField.class);
 		Mockito.when(field.getModelBeforeChanges(I_C_OrderLine.class)).thenReturn(lineBeforeChanges);
+		return field;
+	}
 
+	private void changeUom(final I_C_OrderLine line, final I_C_UOM uom)
+	{
+		final ICalloutField field = calloutFieldWithLineBeforeChanges(line);
 		line.setC_UOM_ID(uom.getC_UOM_ID());
 		callout.onUomChanged(line, field);
 	}
@@ -374,16 +383,25 @@ class C_OrderLineTest
 		{
 			// CalloutOrder.product resets the UOM to the new product's stock UOM; that must not be blocked for a missing conversion
 			final I_C_OrderLine line = calibratedLineWithBucketConversion("375", "25");
-			final I_C_OrderLine lineBeforeChanges = newInstance(I_C_OrderLine.class);
-			lineBeforeChanges.setM_Product_ID(line.getM_Product_ID());
-			lineBeforeChanges.setC_UOM_ID(line.getC_UOM_ID());
-			final ICalloutField field = Mockito.mock(ICalloutField.class);
-			Mockito.when(field.getModelBeforeChanges(I_C_OrderLine.class)).thenReturn(lineBeforeChanges);
+			final ICalloutField field = calloutFieldWithLineBeforeChanges(line);
 
 			line.setM_Product_ID(BusinessTestHelper.createProduct("P2", ml).getM_Product_ID());
 			line.setC_UOM_ID(ml.getC_UOM_ID());
 			callout.onUomChanged(line, field);
 
+			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
+		}
+
+		@Test
+		void secondUomChangeBeforeSave_convertsFromTheSavedUom()
+		{
+			// saved: 375 LTR; the user picks BUCKET (15), then LTR again, without saving in between
+			final I_C_OrderLine line = calibratedLineWithBucketConversion("375", "25");
+			final ICalloutField field = calloutFieldWithLineBeforeChanges(line);
+			line.setC_UOM_ID(bucket.getC_UOM_ID());
+			callout.onUomChanged(line, field);
+			line.setC_UOM_ID(ltr.getC_UOM_ID());
+			callout.onUomChanged(line, field);
 			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
 		}
 
@@ -422,7 +440,7 @@ class C_OrderLineTest
 	 * See the {@link C_OrderLine} Javadoc.
 	 */
 	@Test
-	void bothColumnsAreServedByOneCalloutInstance()
+	void allColumnsAreServedByOneCalloutInstance()
 	{
 		final List<AnnotatedCalloutInstance> instances = new AnnotatedCalloutInstanceFactory()
 				.setAnnotatedCalloutObject(callout)

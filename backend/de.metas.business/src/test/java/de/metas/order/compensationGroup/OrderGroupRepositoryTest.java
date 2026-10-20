@@ -47,14 +47,14 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
-import de.metas.order.compensationGroup.calibration.CalibrationRule;
 import de.metas.order.compensationGroup.calibration.CalibrationMatchKey;
+import de.metas.order.compensationGroup.calibration.CalibrationRule;
 import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
 import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationRuleRepository;
 import de.metas.order.compensationGroup.calibration.GroupCalibrations;
 import de.metas.organization.OrgId;
-import de.metas.util.lang.Percent;
 import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
+import de.metas.util.lang.Percent;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -961,7 +961,7 @@ public class OrderGroupRepositoryTest
 		final GroupTemplateRegularLine templateLine = templateLine(1, "0.25", 2);
 		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, calibratedRequest(new BigDecimal("1500"), templateLine, rule));
 
-		// base 1500 x 0.25 = 375
+		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375"); // 1500 x 0.25
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.8");
 	}

@@ -48,9 +48,8 @@ import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 
 /**
- * Keeps factor, {@code QtyEntered} and uncalibrated qty of a calibrated order line consistent, in every window:
- * factor -&gt; {@code QtyEntered} (like {@link CalibrationRule#computeQtyCalibrated(Quantity)}), {@code QtyEntered} -&gt; factor,
- * UOM -&gt; uncalibrated qty converted.
+ * Calibrated order line, in every window: factor -&gt; {@code QtyEntered} (like {@link CalibrationRule#computeQtyCalibrated(Quantity)}),
+ * {@code QtyEntered} -&gt; factor, UOM -&gt; uncalibrated qty converted to the new UOM.
  * <p>
  * All methods are in one class on purpose: with {@link Callout.RecursionAvoidanceLevel#CalloutClass} the executor does not re-enter
  * a running instance, which stops the cycle factor -&gt; QtyEntered -&gt; factor. No method skips indirect calls,
@@ -115,31 +114,33 @@ public class C_OrderLine
 	}
 
 	/**
+	 * Converts the uncalibrated qty as before the changes (value and UOM from the same snapshot, so two UOM edits before a save convert once).
 	 * No conversion: {@link NoUOMConversionException}, like {@code CalloutOrder.qty}.
 	 * Not on a product change, where {@code CalloutOrder.product} resets the UOM.
 	 */
 	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_C_UOM_ID, skipIfCopying = true)
 	public void onUomChanged(@NonNull final I_C_OrderLine orderLine, @NonNull final ICalloutField field)
 	{
-		final BigDecimal qtyUncalibrated = getQtyUncalibratedOrNull(orderLine);
+		final I_C_OrderLine orderLineOld = field.getModelBeforeChanges(I_C_OrderLine.class);
+		final BigDecimal qtyUncalibrated = getQtyUncalibratedOrNull(orderLineOld);
 		if (qtyUncalibrated == null)
 		{
 			return;
 		}
-		final I_C_OrderLine orderLineOld = field.getModelBeforeChanges(I_C_OrderLine.class);
 		if (orderLineOld.getM_Product_ID() != orderLine.getM_Product_ID())
 		{
 			return;
 		}
 		final UomId uomFromId = UomId.ofRepoIdOrNull(orderLineOld.getC_UOM_ID());
 		final UomId uomToId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
-		if (uomFromId == null || uomToId == null || uomFromId.equals(uomToId))
+		if (uomFromId == null || uomToId == null)
 		{
 			return;
 		}
 
-		orderLine.setGroupCompensationQtyEnteredUncalibrated(
-				uomConversionBL.convertQty(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()), qtyUncalibrated, uomFromId, uomToId));
+		orderLine.setGroupCompensationQtyEnteredUncalibrated(uomFromId.equals(uomToId)
+				? qtyUncalibrated
+				: uomConversionBL.convertQty(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()), qtyUncalibrated, uomFromId, uomToId));
 	}
 
 	private static boolean isCalibrated(@NonNull final I_C_OrderLine orderLine)
