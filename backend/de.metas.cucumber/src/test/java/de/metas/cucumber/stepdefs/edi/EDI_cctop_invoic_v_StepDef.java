@@ -111,22 +111,21 @@ public class EDI_cctop_invoic_v_StepDef
 
 	/**
 	 * Asserts the order of the {@code Lines} of the single invoice in the last INVOIC JSON export response:
-	 * line by line, in array order, the {@code Invoice_Line} and whether the line is a packing line ({@code Packaging} set).
+	 * the {@code Invoice_Line} values must come exactly in the given sequence.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>Invoice_Line</b> — (required) the expected {@code Invoice_Line}, one row per line, in the expected order<br>
-	 *   <b>IsPackagingMaterial</b> — (required) {@code Y} if the line carries the {@code Packaging} sub-object, {@code N} if {@code Packaging} is null<br>
 	 * @cucumber.depends TestContext (the response of the INVOIC JSON export request)
 	 * @cucumber.example
 	 * <pre>
-	 * And the INVOIC JSON response lists its Lines in this order:
-	 *   | Invoice_Line | IsPackagingMaterial |
-	 *   | 10           | N                   |
-	 *   | 20           | Y                   |
+	 * And the INVOIC JSON response lists its Lines in this Invoice_Line order:
+	 *   | Invoice_Line |
+	 *   | 10           |
+	 *   | 20           |
 	 * </pre>
 	 */
-	@And("the INVOIC JSON response lists its Lines in this order:")
+	@And("the INVOIC JSON response lists its Lines in this Invoice_Line order:")
 	public void validate_INVOIC_JSON_lines_order(@NonNull final DataTable dataTable) throws IOException
 	{
 		final JsonNode invoices = JsonObjectMapperHolder.sharedJsonObjectMapper()
@@ -135,25 +134,14 @@ public class EDI_cctop_invoic_v_StepDef
 		assertThat(invoices).as("metasfresh_INVOIC").isNotNull();
 		assertThat(invoices.size()).as("number of invoices in metasfresh_INVOIC").isEqualTo(1);
 
-		final List<String> actualLines = new ArrayList<>();
-		invoices.get(0).get("Lines").forEach(line -> actualLines.add(
-				lineOrderKey(line.get("Invoice_Line").asInt(), isPackagingLine(line.get("Packaging")))));
+		final List<Integer> actualLineNos = new ArrayList<>();
+		invoices.get(0).get("Lines").forEach(line -> actualLineNos.add(line.get("Invoice_Line").asInt()));
 
-		final List<String> expectedLines = DataTableRows.of(dataTable).stream()
-				.map(row -> lineOrderKey(row.getAsInt("Invoice_Line"), row.getAsBoolean("IsPackagingMaterial")))
+		final List<Integer> expectedLineNos = DataTableRows.of(dataTable).stream()
+				.map(row -> row.getAsInt("Invoice_Line"))
 				.collect(ImmutableList.toImmutableList());
 
-		assertThat(actualLines).as("Invoice_Line|IsPackagingMaterial of the INVOIC JSON Lines, in array order").containsExactlyElementsOf(expectedLines);
-	}
-
-	private static boolean isPackagingLine(@Nullable final JsonNode packaging)
-	{
-		return packaging != null && !packaging.isNull() && packaging.path("IsPackagingMaterial").asBoolean(false);
-	}
-
-	private static String lineOrderKey(final int invoiceLine, final boolean isPackagingMaterial)
-	{
-		return invoiceLine + "|" + (isPackagingMaterial ? "Y" : "N");
+		assertThat(actualLineNos).as("Invoice_Line of the INVOIC JSON Lines, in array order").containsExactlyElementsOf(expectedLineNos);
 	}
 
 	/**

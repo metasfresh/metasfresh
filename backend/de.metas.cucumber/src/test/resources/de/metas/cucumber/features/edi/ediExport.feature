@@ -1409,10 +1409,10 @@ Feature: EDI_cctop_invoic_v export format
   @allure.label.feature:F00359_EDI_INVOICE_JSON
   @F00359
   @Id:S32545_XML
-  Scenario: invoice with goods and a crate line from the shipment: the EDI_cctop_invoic_v XML still carries only the goods line
+  Scenario: invoice with goods and a crate line from the shipment: the EDI_cctop_invoic_v XML carries only the goods line
     # Real case: an EDI INVOIC recipient on the XML (replication interface) channel gets goods packed in crates;
     # the invoice made from the shipment carries the goods line and the crate line.
-    # The XML export reads edi_cctop_invoic_500_v, which keeps leaving packing lines out.
+    # The XML export reads edi_cctop_invoic_500_v, which leaves packing lines out.
     Given load EXP_Processor_Type
       | EXP_Processor_Type_ID.Identifier | Value    |
       | type_1                           | RabbitMQ |
@@ -1524,7 +1524,7 @@ Feature: EDI_cctop_invoic_v export format
     Then RabbitMQ receives a EDI_cctop_invoic_v
       | EDI_cctop_invoic_v_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
       | ic_1                             | ep_1                        | routingKey                   |
-    # The XML carries exactly one line item: the goods line; the crate line stays out (unchanged XML)
+    # The XML carries exactly one line item: the goods line; the crate line is not a line item
     And the EDI_cctop_invoic_v ic_1 XML has exactly these EDI_cctop_invoic_500_v lines:
       | Line | M_Product_ID | QtyInvoiced |
       | 10   | goods        | 220         |

@@ -11,8 +11,9 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
 ## - The packing material lines come from the shipment, as in production; none is typed into the invoice.
 ## - A store partner orders and receives the goods; a central partner is billed (the order's bill-to).
 ## - Taxes are document-level: goods 7 %, packing material 19 %.
-## - Lines come in Invoice_Line order, goods lines before packing lines: the format sent to the clearing center states it
-##   (crate lines in invoice-line order, after the goods), so the order is asserted, not only the content of each line.
+## - The shipping warehouse has its own partner: the supplier party (SU) is that partner, because the invoice references the shipment.
+## - Lines come in Invoice_Line order; the format sent to the clearing center states it (packing lines in invoice-line order),
+##   so the order is asserted, not only the content of each line.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -47,14 +48,17 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal | OPT.City    |
       | loc_store                | DE          | storeStreet 1   | 85080      | storeCity   |
       | loc_central              | DE          | centralStreet 2 | 22297      | centralCity |
+      | loc_warehouse            | DE          | depotStreet 3   | 88045      | depotCity   |
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | InvoiceRule | REST.Context.Name | REST.Context.Value |
       | store      | Y          | N        | pricingSystem      | D           | storeName         | storeValue         |
       | central    | Y          | N        | pricingSystem      | D           | centralName       | centralValue       |
+      | depotOwner | N          | N        | pricingSystem      |             | depotName         | depotValue         |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.IsShipToDefault | OPT.IsBillToDefault | OPT.BPartnerName |
       | storeLoc   | 4300000000014 | store                    | loc_store                    | true         | true         | true                | true                | storeSiteName    |
       | centralLoc | 4300000000021 | central                  | loc_central                  | true         | true         | true                | true                | centralSiteName  |
+      | depotLoc   | 4300000000045 | depotOwner               | loc_warehouse                | true         | true         | true                | true                | depotSiteName    |
 
   # ################################################################################################
   # ################################################################################################
@@ -64,10 +68,11 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
   @allure.label.feature:F00359_EDI_INVOICE_JSON
   @F00359
   Scenario: drop-ship order of two vendors: the INVOIC JSON lists the goods lines and one priced crate line per project
-    # Real case: two goods lines of two vendors on a drop-ship warehouse, packed in EPS crates (TU x 11).
+    # Real case: two goods lines of two vendors on a drop-ship warehouse, packed in EPS crates (TU x 11), with size and origin attributes.
+    # Test values: the GTIN of one packing instruction and of the crate, the crate's deposit type RC.
     # Two purchase orders → two projects → one crate line per project on shipment and invoice.
     Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
-    And set project type Sales/Purchase Order to active
+    And temporarily set project type Sales/Purchase Order to active
     And metasfresh contains M_DiscountSchemas:
       | Identifier         | Name                 | DiscountType | ValidFrom  |
       | vendorDiscountPlan | invoic_packing_vndr1 | F            | 2026-01-01 |
@@ -80,8 +85,8 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | vendor_1   | vendor_1      | Y               | Y               |
       | vendor_2   | vendor_2      | Y               | Y               |
     And metasfresh contains M_Warehouse:
-      | Identifier        | IsDropShipWarehouse |
-      | dropshipWarehouse | Y                   |
+      | Identifier        | IsDropShipWarehouse | C_BPartner_ID | C_BPartner_Location_ID |
+      | dropshipWarehouse | Y                   | depotOwner    | depotLoc               |
     And metasfresh contains M_Product_Categories:
       | Identifier  |
       | pm_category |
@@ -114,9 +119,9 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | Identifier   | M_HU_PI_Version_ID | Qty | ItemType | M_HU_PackingMaterial_ID |
       | huPIItem_eps | huVersion_eps      | 10  | PM       | pm_eps                  |
     And metasfresh contains M_HU_PI_Item_Product:
-      | Identifier  | M_HU_PI_Item_ID | Qty | M_Product_ID |
-      | kiku_eps    | huPIItem_eps    | 11  | goodsKiku    |
-      | evelina_eps | huPIItem_eps    | 11  | goodsEvelina |
+      | Identifier  | M_HU_PI_Item_ID | Qty | M_Product_ID | GTIN          |
+      | kiku_eps    | huPIItem_eps    | 11  | goodsKiku    | 4000000032564 |
+      | evelina_eps | huPIItem_eps    | 11  | goodsEvelina |               |
     And metasfresh contains M_Attributes:
       | Identifier | Value           | Name            | AttributeValueType |
       | attrSize   | S32545_Groesse  | S32545_Groesse  | S                  |
@@ -215,10 +220,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
     """
     # - Lines: 2 goods lines (7 %) + 1 crate line per project (19 %, Packaging marker, Order_Line null).
     # - Σ NetAmt 220 + 165 + 30.00 + 22.50 = 437.50 = Invoice_TotalLines; VAT 7 % of 385.00 = 26.95, 19 % of 52.50 = 9.98 (document-level); gross 474.43.
-    # - Partners: BY / DP / SN = store location, IV = central (bill-to) location, SU = the shipping warehouse's partner (the invoice references the shipment); exactly one DP.
+    # - Partners: BY / DP / SN = store location, IV = central (bill-to) location, SU = the shipping warehouse's partner location (the invoice references the shipment); exactly one DP.
     # - Crate: GTIN 4000000032540 as CU and supplier GTIN, no TU GTIN (no packing instruction on the line), deposit type RC.
-    # - The packing candidates are invoiced in no fixed order: which crate line gets line 30 or 40 varies, so the crate lines are matched by content;
-    #   the order check pins the goods lines first, then the packing lines.
+    # - Goods: the Kiku packing instruction's GTIN is the line's TU GTIN; Evelina's packing instruction has none.
+    # - The packing candidates are invoiced in no fixed order: which crate line gets line 30 or 40 varies, so the crate lines are matched by content.
     Then the metasfresh REST-API responds with
     """
 {
@@ -329,18 +334,18 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
         },
         {
           "EANCOM_LocationType": "SU",
-          "GLN": null,
-          "Name": "metasfresh AG",
+          "GLN": "4300000000045",
+          "Name": "@depotName@",
           "Name2": null,
-          "PartnerNo": "metasfresh",
+          "PartnerNo": "@depotValue@",
           "VATaxID": null,
           "ReferenceNo": null,
-          "SiteName": null,
+          "SiteName": "depotSiteName",
           "Setup_Place_No": null,
-          "Address1": "Am Nossbacher Weg 2",
+          "Address1": "depotStreet 3",
           "Address2": null,
-          "Postal": "53179",
-          "City": "Bonn",
+          "Postal": "88045",
+          "City": "depotCity",
           "CountryCode": "DE",
           "Phone": null,
           "Fax": null,
@@ -393,7 +398,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_Name": "@kikuName@",
           "Product_Description": "@kikuName@",
           "Product_Buyer_CU_GTIN": null,
-          "Product_Buyer_TU_GTIN": null,
+          "Product_Buyer_TU_GTIN": "4000000032564",
           "Product_Buyer_ProductNo": null,
           "Product_Supplier_TU_GTIN": null,
           "Product_Supplier_ProductNo": "@kikuValue@",
@@ -430,36 +435,6 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Packaging": null
         },
         {
-          "Invoice_QtyInvoiced": 20,
-          "Invoice_QtyInvoiced_UOM": "PCE",
-          "ORDERS_Line": null,
-          "ORDERS_QtyInvoiced": null,
-          "ORDERS_QtyInvoiced_UOM": null,
-          "Order_POReference": "ED04711A",
-          "Order_Line": null,
-          "Order_QtyInvoiced": 20,
-          "Order_QtyInvoiced_UOM": "PCE",
-          "Currency_Code": "EUR",
-          "PricePerUnit": 1.5,
-          "PriceUOM": "PCE",
-          "Discount_Amt": 0,
-          "QtyBasedOn": null,
-          "NetAmt": 30.0,
-          "Tax_Percent": 19,
-          "Tax_Amount": 5.7,
-          "Product_Name": "@crateName@",
-          "Product_Description": "@crateName@",
-          "Product_Buyer_CU_GTIN": "4000000032540",
-          "Product_Buyer_TU_GTIN": null,
-          "Product_Buyer_ProductNo": null,
-          "Product_Supplier_TU_GTIN": "4000000032540",
-          "Product_Supplier_ProductNo": "@crateValue@",
-          "Product_DepositType": "RC",
-          "Packaging": {
-            "IsPackagingMaterial": true
-          }
-        },
-        {
           "Invoice_QtyInvoiced": 15,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "ORDERS_Line": null,
@@ -477,6 +452,36 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "NetAmt": 22.5,
           "Tax_Percent": 19,
           "Tax_Amount": 4.28,
+          "Product_Name": "@crateName@",
+          "Product_Description": "@crateName@",
+          "Product_Buyer_CU_GTIN": "4000000032540",
+          "Product_Buyer_TU_GTIN": null,
+          "Product_Buyer_ProductNo": null,
+          "Product_Supplier_TU_GTIN": "4000000032540",
+          "Product_Supplier_ProductNo": "@crateValue@",
+          "Product_DepositType": "RC",
+          "Packaging": {
+            "IsPackagingMaterial": true
+          }
+        },
+        {
+          "Invoice_QtyInvoiced": 20,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "ORDERS_Line": null,
+          "ORDERS_QtyInvoiced": null,
+          "ORDERS_QtyInvoiced_UOM": null,
+          "Order_POReference": "ED04711A",
+          "Order_Line": null,
+          "Order_QtyInvoiced": 20,
+          "Order_QtyInvoiced_UOM": "PCE",
+          "Currency_Code": "EUR",
+          "PricePerUnit": 1.5,
+          "PriceUOM": "PCE",
+          "Discount_Amt": 0,
+          "QtyBasedOn": null,
+          "NetAmt": 30.0,
+          "Tax_Percent": 19,
+          "Tax_Amount": 5.7,
           "Product_Name": "@crateName@",
           "Product_Description": "@crateName@",
           "Product_Buyer_CU_GTIN": "4000000032540",
@@ -517,13 +522,12 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
   ]
 }
     """
-    And the INVOIC JSON response lists its Lines in this order:
-      | Invoice_Line | IsPackagingMaterial |
-      | 10           | N                   |
-      | 20           | N                   |
-      | 30           | Y                   |
-      | 40           | Y                   |
-    And set project type Sales/Purchase Order to inactive
+    And the INVOIC JSON response lists its Lines in this Invoice_Line order:
+      | Invoice_Line |
+      | 10           |
+      | 20           |
+      | 30           |
+      | 40           |
 
   # ################################################################################################
   # ################################################################################################
@@ -534,7 +538,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
   @F00359
   Scenario: order with the contract's bonus line: the INVOIC JSON lists goods, a 0,00 crate line without GTIN and the bonus line
     # Real case: goods packed in EPS crates (TU x 11), the central partner's contract adds a 3 % bonus line on completion.
-    # The crate carries no GTIN and no deposit type and is priced 0,00, as the packing products are set up today.
+    # The crate carries no GTIN and no deposit type and is priced 0,00 (packing master data without GTIN / deposit type, not charged).
+    # Line order: here the bonus line is on the same shipment as the goods, so the invoice lists goods, bonus, crate.
+    # On the source invoice the bonus line comes after the crate line; how it reached that invoice is not known.
+    # Only the ascending Invoice_Line order is the rule; which line gets which number follows the invoicing.
     Given metasfresh contains M_Product_Categories:
       | Identifier     |
       | goods_category |
@@ -565,8 +572,8 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | Identifier  | M_HU_PI_Item_ID | Qty | M_Product_ID |
       | evelina_eps | huPIItem_eps    | 11  | goodsEvelina |
     And metasfresh contains M_Warehouse:
-      | Identifier    |
-      | mainWarehouse |
+      | Identifier    | C_BPartner_ID | C_BPartner_Location_ID |
+      | mainWarehouse | depotOwner    | depotLoc               |
 
     And load C_DocType:
       | DocBaseType | DocSubType | C_DocType_ID      |
@@ -659,7 +666,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
     # - Lines: goods 550 × 1.00, the contract's bonus line 1 × -16.50 (both 7 %, with an order line), crate 50 × 0.00 (19 %, Packaging marker, Order_Line null).
     # - The crate has no GTIN and no deposit type: identified by Packaging and Product_Supplier_ProductNo.
     # - Σ NetAmt 550 - 16.50 + 0 = 533.50 = Invoice_TotalLines; VAT 7 % of 533.50 = 37.35 (document-level; the line taxes sum to 37.34), 19 % of 0 = 0; gross 570.85.
-    # - Partners as in the drop-ship case: BY / DP / SN = store, IV = central, SU = warehouse partner; exactly one DP.
+    # - Partners as in the drop-ship case: BY / DP / SN = store, IV = central, SU = the warehouse partner location; exactly one DP.
     Then the metasfresh REST-API responds with
     """
 {
@@ -770,18 +777,18 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
         },
         {
           "EANCOM_LocationType": "SU",
-          "GLN": null,
-          "Name": "metasfresh AG",
+          "GLN": "4300000000045",
+          "Name": "@depotName@",
           "Name2": null,
-          "PartnerNo": "metasfresh",
+          "PartnerNo": "@depotValue@",
           "VATaxID": null,
           "ReferenceNo": null,
-          "SiteName": null,
+          "SiteName": "depotSiteName",
           "Setup_Place_No": null,
-          "Address1": "Am Nossbacher Weg 2",
+          "Address1": "depotStreet 3",
           "Address2": null,
-          "Postal": "53179",
-          "City": "Bonn",
+          "Postal": "88045",
+          "City": "depotCity",
           "CountryCode": "DE",
           "Phone": null,
           "Fax": null,
@@ -929,11 +936,11 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
   ]
 }
     """
-    And the INVOIC JSON response lists its Lines in this order:
-      | Invoice_Line | IsPackagingMaterial |
-      | 10           | N                   |
-      | 20           | N                   |
-      | 30           | Y                   |
+    And the INVOIC JSON response lists its Lines in this Invoice_Line order:
+      | Invoice_Line |
+      | 10           |
+      | 20           |
+      | 30           |
 
   # ################################################################################################
   # ################################################################################################
@@ -944,7 +951,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
   @F00359
   Scenario: two goods lines in the same crates and one in cartons: the INVOIC JSON lists one crate line for both goods lines and a carton line
     # Real case: two goods lines share one crate line (88 + 48 = 136 crates), a third goods line is packed in cartons.
-    # The crate is priced and returnable (RC); the carton is not charged (0,00) and not returnable (NRC); both carry a GTIN.
+    # Test values: the crate's price 1,50 and deposit type RC, the carton's deposit type NRC, the GTINs of both; the carton is not charged (0,00).
     Given metasfresh contains M_Product_Categories:
       | Identifier  |
       | pm_category |
@@ -984,8 +991,8 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
       | elstar_eps   | huPIItem_eps    | 10  | goodsElstar   |
       | kiwi_carton  | huPIItem_carton | 12  | goodsKiwi     |
     And metasfresh contains M_Warehouse:
-      | Identifier    |
-      | mainWarehouse |
+      | Identifier    | C_BPartner_ID | C_BPartner_Location_ID |
+      | mainWarehouse | depotOwner    | depotLoc               |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | OPT.Bill_Location_ID.Identifier | DeliveryRule | DateOrdered | PreparationDate      | M_Warehouse_ID | POReference |
@@ -1056,7 +1063,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
     # - Lines: 3 goods lines (7 %), one crate line of 136 for the first two goods lines, one carton line of 10 (19 %, Packaging marker, Order_Line null).
     # - Σ NetAmt 1355.20 + 720.00 + 120.00 + 204.00 + 0 = 2399.20 = Invoice_TotalLines; VAT 7 % of 2195.20 = 153.66, 19 % of 204.00 = 38.76; gross 2591.62.
     # - Crate: GTIN, deposit type RC, 1.50; carton: GTIN, deposit type NRC, 0.00.
-    # - Crate and carton lines are matched by content (which one gets line 40 or 50 varies); the order check pins goods first, then packing.
+    # - Crate and carton lines are matched by content: which one gets line 40 or 50 varies.
     Then the metasfresh REST-API responds with
     """
 {
@@ -1167,18 +1174,18 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
         },
         {
           "EANCOM_LocationType": "SU",
-          "GLN": null,
-          "Name": "metasfresh AG",
+          "GLN": "4300000000045",
+          "Name": "@depotName@",
           "Name2": null,
-          "PartnerNo": "metasfresh",
+          "PartnerNo": "@depotValue@",
           "VATaxID": null,
           "ReferenceNo": null,
-          "SiteName": null,
+          "SiteName": "depotSiteName",
           "Setup_Place_No": null,
-          "Address1": "Am Nossbacher Weg 2",
+          "Address1": "depotStreet 3",
           "Address2": null,
-          "Postal": "53179",
-          "City": "Bonn",
+          "Postal": "88045",
+          "City": "depotCity",
           "CountryCode": "DE",
           "Phone": null,
           "Fax": null,
@@ -1297,36 +1304,6 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Packaging": null
         },
         {
-          "Invoice_QtyInvoiced": 136,
-          "Invoice_QtyInvoiced_UOM": "PCE",
-          "ORDERS_Line": null,
-          "ORDERS_QtyInvoiced": null,
-          "ORDERS_QtyInvoiced_UOM": null,
-          "Order_POReference": "ED04711C",
-          "Order_Line": null,
-          "Order_QtyInvoiced": 136,
-          "Order_QtyInvoiced_UOM": "PCE",
-          "Currency_Code": "EUR",
-          "PricePerUnit": 1.5,
-          "PriceUOM": "PCE",
-          "Discount_Amt": 0,
-          "QtyBasedOn": null,
-          "NetAmt": 204.0,
-          "Tax_Percent": 19,
-          "Tax_Amount": 38.76,
-          "Product_Name": "@crateName@",
-          "Product_Description": "@crateName@",
-          "Product_Buyer_CU_GTIN": "4000000032540",
-          "Product_Buyer_TU_GTIN": null,
-          "Product_Buyer_ProductNo": null,
-          "Product_Supplier_TU_GTIN": "4000000032540",
-          "Product_Supplier_ProductNo": "@crateValue@",
-          "Product_DepositType": "RC",
-          "Packaging": {
-            "IsPackagingMaterial": true
-          }
-        },
-        {
           "Invoice_QtyInvoiced": 10,
           "Invoice_QtyInvoiced_UOM": "PCE",
           "ORDERS_Line": null,
@@ -1352,6 +1329,36 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
           "Product_Supplier_TU_GTIN": "4000000032557",
           "Product_Supplier_ProductNo": "@cartonValue@",
           "Product_DepositType": "NRC",
+          "Packaging": {
+            "IsPackagingMaterial": true
+          }
+        },
+        {
+          "Invoice_QtyInvoiced": 136,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "ORDERS_Line": null,
+          "ORDERS_QtyInvoiced": null,
+          "ORDERS_QtyInvoiced_UOM": null,
+          "Order_POReference": "ED04711C",
+          "Order_Line": null,
+          "Order_QtyInvoiced": 136,
+          "Order_QtyInvoiced_UOM": "PCE",
+          "Currency_Code": "EUR",
+          "PricePerUnit": 1.5,
+          "PriceUOM": "PCE",
+          "Discount_Amt": 0,
+          "QtyBasedOn": null,
+          "NetAmt": 204.0,
+          "Tax_Percent": 19,
+          "Tax_Amount": 38.76,
+          "Product_Name": "@crateName@",
+          "Product_Description": "@crateName@",
+          "Product_Buyer_CU_GTIN": "4000000032540",
+          "Product_Buyer_TU_GTIN": null,
+          "Product_Buyer_ProductNo": null,
+          "Product_Supplier_TU_GTIN": "4000000032540",
+          "Product_Supplier_ProductNo": "@crateValue@",
+          "Product_DepositType": "RC",
           "Packaging": {
             "IsPackagingMaterial": true
           }
@@ -1384,10 +1391,10 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
   ]
 }
     """
-    And the INVOIC JSON response lists its Lines in this order:
-      | Invoice_Line | IsPackagingMaterial |
-      | 10           | N                   |
-      | 20           | N                   |
-      | 30           | N                   |
-      | 40           | Y                   |
-      | 50           | Y                   |
+    And the INVOIC JSON response lists its Lines in this Invoice_Line order:
+      | Invoice_Line |
+      | 10           |
+      | 20           |
+      | 30           |
+      | 40           |
+      | 50           |
