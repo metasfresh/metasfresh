@@ -104,7 +104,9 @@ public class PaymentAllocationService
 	{
 		final ImmutableList<I_C_Invoice> unpaidInvoices = invoiceDAO.retrieveUnpaid(unpaidInvoiceMatchingAmtQuery.getUnpaidInvoiceQuery());
 
-		if (unpaidInvoiceMatchingAmtQuery.getOpenAmountAtDate() == null || unpaidInvoiceMatchingAmtQuery.getOpenAmountEvaluationDate() == null)
+		if (unpaidInvoices.isEmpty() 
+				|| unpaidInvoiceMatchingAmtQuery.getOpenAmountAtDate() == null 
+				|| unpaidInvoiceMatchingAmtQuery.getOpenAmountEvaluationDate() == null)
 		{
 			return unpaidInvoices;
 		}
