@@ -4,13 +4,9 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstance;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstanceFactory;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,21 +21,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Kalibrierfaktor editable on the order line: factor -> QtyEntered and QtyEntered -> factor,
- * only on a tab whose factor field is editable (core window 143 keeps it read-only, so nothing changes there).
+ * on a calibrated line (rule or factor set).
  * <p>
  * Example line: uncalibrated (base) qty 375 LTR, rule factor 80, Qty 300.
  */
 class C_OrderLineTest
 {
-	private static final int TAB_FACTOR_EDITABLE = 1000001;
-	private static final int TAB_FACTOR_READONLY = 187;
-	private static final int TAB_WITHOUT_FACTOR_FIELD = 999;
-
 	private C_OrderLine callout;
 	private I_C_UOM ltr;
 	private I_C_UOM ml;
@@ -52,28 +42,6 @@ class C_OrderLineTest
 
 		ltr = BusinessTestHelper.createUOM("LTR", null, 0);
 		ml = BusinessTestHelper.createUOM("ML", null, 0);
-
-		final I_AD_Column factorColumn = newInstance(I_AD_Column.class);
-		factorColumn.setColumnName(I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor);
-		saveRecord(factorColumn);
-		final I_AD_Column qtyColumn = newInstance(I_AD_Column.class);
-		qtyColumn.setColumnName(I_C_OrderLine.COLUMNNAME_QtyEntered);
-		saveRecord(qtyColumn);
-
-		createField(TAB_FACTOR_EDITABLE, factorColumn, false);
-		createField(TAB_FACTOR_EDITABLE, qtyColumn, false);
-		createField(TAB_FACTOR_READONLY, factorColumn, true);
-		createField(TAB_FACTOR_READONLY, qtyColumn, false);
-		createField(TAB_WITHOUT_FACTOR_FIELD, qtyColumn, false);
-	}
-
-	private static void createField(final int tabId, final I_AD_Column column, final boolean readOnly)
-	{
-		final I_AD_Field field = newInstance(I_AD_Field.class);
-		field.setAD_Tab_ID(tabId);
-		field.setAD_Column_ID(column.getAD_Column_ID());
-		field.setIsReadOnly(readOnly);
-		saveRecord(field);
 	}
 
 	private int templateLine(final I_C_UOM uom)
@@ -115,25 +83,16 @@ class C_OrderLineTest
 		return line;
 	}
 
-	private static ICalloutField fieldOnTab(final int tabId)
-	{
-		final ICalloutRecord record = mock(ICalloutRecord.class);
-		when(record.getAD_Tab_ID()).thenReturn(tabId);
-		final ICalloutField field = mock(ICalloutField.class);
-		when(field.getCalloutRecord()).thenReturn(record);
-		return field;
-	}
-
-	private void typeFactor(final I_C_OrderLine line, @Nullable final String factor, final int tabId)
+	private void typeFactor(final I_C_OrderLine line, @Nullable final String factor)
 	{
 		line.setGroupCompensationCalibrationFactor(factor != null ? new BigDecimal(factor) : null);
-		callout.onCalibrationFactorChanged(line, fieldOnTab(tabId));
+		callout.onCalibrationFactorChanged(line);
 	}
 
-	private void typeQty(final I_C_OrderLine line, final String qty, final int tabId)
+	private void typeQty(final I_C_OrderLine line, final String qty)
 	{
 		line.setQtyEntered(new BigDecimal(qty));
-		callout.onQtyEnteredChanged(line, fieldOnTab(tabId));
+		callout.onQtyEnteredChanged(line);
 	}
 
 	@Nested
@@ -143,7 +102,7 @@ class C_OrderLineTest
 		void factor100_givesTheBase()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			typeFactor(line, "100", TAB_FACTOR_EDITABLE);
+			typeFactor(line, "100");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("375");
 			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
 			assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(10);
@@ -153,7 +112,7 @@ class C_OrderLineTest
 		void factor0_givesQty0()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			typeFactor(line, "0", TAB_FACTOR_EDITABLE);
+			typeFactor(line, "0");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
 		}
 
@@ -162,13 +121,13 @@ class C_OrderLineTest
 		{
 			// 375 x 93.33 % = 349.9875
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			typeFactor(line, "93.33", TAB_FACTOR_EDITABLE);
+			typeFactor(line, "93.33");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("350");
 
 			ltr.setStdPrecision(2);
 			saveRecord(ltr);
 			final I_C_OrderLine line2 = calibratedLine("375", "80", "300");
-			typeFactor(line2, "93.33", TAB_FACTOR_EDITABLE);
+			typeFactor(line2, "93.33");
 			assertThat(line2.getQtyEntered()).isEqualByComparingTo("349.99");
 		}
 
@@ -177,7 +136,7 @@ class C_OrderLineTest
 		{
 			final I_C_OrderLine line = calibratedLine("0", "50", "0");
 			line.setQtyEntered(new BigDecimal("3"));
-			typeFactor(line, "100", TAB_FACTOR_EDITABLE);
+			typeFactor(line, "100");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
 		}
 
@@ -185,7 +144,7 @@ class C_OrderLineTest
 		void negativeFactor_isRefused()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			assertThatThrownBy(() -> typeFactor(line, "-1", TAB_FACTOR_EDITABLE)).isInstanceOf(AdempiereException.class);
+			assertThatThrownBy(() -> typeFactor(line, "-1")).isInstanceOf(AdempiereException.class);
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		}
 
@@ -193,7 +152,7 @@ class C_OrderLineTest
 		void emptyFactor_isRefused()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			assertThatThrownBy(() -> typeFactor(line, null, TAB_FACTOR_EDITABLE)).isInstanceOf(AdempiereException.class);
+			assertThatThrownBy(() -> typeFactor(line, null)).isInstanceOf(AdempiereException.class);
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		}
 
@@ -201,7 +160,7 @@ class C_OrderLineTest
 		void lineWithoutRuleAndBase_isRefused()
 		{
 			final I_C_OrderLine line = uncalibratedLine(true);
-			assertThatThrownBy(() -> typeFactor(line, "80", TAB_FACTOR_EDITABLE)).isInstanceOf(AdempiereException.class);
+			assertThatThrownBy(() -> typeFactor(line, "80")).isInstanceOf(AdempiereException.class);
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("5");
 		}
 
@@ -209,14 +168,14 @@ class C_OrderLineTest
 		void newManualLine_factorTyped_isRefused()
 		{
 			final I_C_OrderLine line = uncalibratedLine(false);
-			assertThatThrownBy(() -> typeFactor(line, "80", TAB_FACTOR_EDITABLE)).isInstanceOf(AdempiereException.class);
+			assertThatThrownBy(() -> typeFactor(line, "80")).isInstanceOf(AdempiereException.class);
 		}
 
 		@Test
 		void newLine_emptyFactor_noBase_isNoOp()
 		{
 			final I_C_OrderLine line = uncalibratedLine(false);
-			typeFactor(line, null, TAB_FACTOR_EDITABLE);
+			typeFactor(line, null);
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("5");
 			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
 		}
@@ -226,15 +185,7 @@ class C_OrderLineTest
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			line.setC_UOM_ID(ml.getC_UOM_ID());
-			assertThatThrownBy(() -> typeFactor(line, "100", TAB_FACTOR_EDITABLE)).isInstanceOf(AdempiereException.class);
-			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
-		}
-
-		@Test
-		void readOnlyTab_leavesQty()
-		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			typeFactor(line, "100", TAB_FACTOR_READONLY);
+			assertThatThrownBy(() -> typeFactor(line, "100")).isInstanceOf(AdempiereException.class);
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		}
 	}
@@ -246,7 +197,7 @@ class C_OrderLineTest
 		void qty350_givesFactor93_33()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			typeQty(line, "350", TAB_FACTOR_EDITABLE);
+			typeQty(line, "350");
 			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("93.33");
 			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
 			assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(10);
@@ -256,7 +207,7 @@ class C_OrderLineTest
 		void qty375_givesFactor100()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			typeQty(line, "375", TAB_FACTOR_EDITABLE);
+			typeQty(line, "375");
 			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
 		}
 
@@ -265,9 +216,9 @@ class C_OrderLineTest
 		{
 			// 1 / 3 x 100 = 33.333..; 2 / 3 x 100 = 66.666..
 			final I_C_OrderLine line = calibratedLine("3", "100", "3");
-			typeQty(line, "1", TAB_FACTOR_EDITABLE);
+			typeQty(line, "1");
 			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("33.33");
-			typeQty(line, "2", TAB_FACTOR_EDITABLE);
+			typeQty(line, "2");
 			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("66.67");
 		}
 
@@ -275,7 +226,7 @@ class C_OrderLineTest
 		void base0_leavesFactor()
 		{
 			final I_C_OrderLine line = calibratedLine("0", "50", "0");
-			typeQty(line, "2", TAB_FACTOR_EDITABLE);
+			typeQty(line, "2");
 			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("50");
 		}
 
@@ -284,7 +235,7 @@ class C_OrderLineTest
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			line.setQtyEntered(null);
-			callout.onQtyEnteredChanged(line, fieldOnTab(TAB_FACTOR_EDITABLE));
+			callout.onQtyEnteredChanged(line);
 			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
 		}
 
@@ -292,7 +243,7 @@ class C_OrderLineTest
 		void negativeQty_leavesFactor()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			typeQty(line, "-10", TAB_FACTOR_EDITABLE);
+			typeQty(line, "-10");
 			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
 		}
 
@@ -301,23 +252,44 @@ class C_OrderLineTest
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			line.setC_UOM_ID(ml.getC_UOM_ID());
-			typeQty(line, "375", TAB_FACTOR_EDITABLE);
+			typeQty(line, "375");
 			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
 		}
 
 		@Test
-		void readOnlyTab_leavesFactor()
+		void lineWithoutRuleAndFactor_leavesFactor()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			typeQty(line, "375", TAB_FACTOR_READONLY);
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
+			// a base qty alone does not make the line calibrated: the factor stays empty
+			final I_C_OrderLine line = uncalibratedLine(true);
+			line.setC_CompensationGroup_Schema_TemplateLine_ID(templateLine(ltr));
+			line.setGroupCompensationQtyEnteredUncalibrated(new BigDecimal("375"));
+			typeQty(line, "300");
+			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
 		}
 
 		@Test
-		void tabWithoutFactorField_leavesFactor()
+		void readOnlyFactorField_followsQty()
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			typeQty(line, "375", TAB_WITHOUT_FACTOR_FIELD);
+			typeQty(line, "375");
+			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
+		}
+
+		@Test
+		void lineWithFactorButWithoutRule_updatesFactor()
+		{
+			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			line.setC_CompensationGroup_CalibrationRule_ID(0);
+			typeQty(line, "375");
+			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
+		}
+
+		@Test
+		void lineWithRuleButWithoutFactor_updatesFactor()
+		{
+			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			line.setGroupCompensationCalibrationFactor(null);
+			typeQty(line, "300");
 			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
 		}
 
@@ -325,7 +297,7 @@ class C_OrderLineTest
 		void uncalibratedLine_staysWithoutFactor()
 		{
 			final I_C_OrderLine line = uncalibratedLine(true);
-			typeQty(line, "7", TAB_FACTOR_EDITABLE);
+			typeQty(line, "7");
 			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
 		}
 	}
