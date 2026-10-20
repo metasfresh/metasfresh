@@ -1,6 +1,7 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.AdMessageKey;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
@@ -55,6 +56,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class ESRDataImporterCamt54V08PostFinanceSamplesTest
 {
 	private static final String RESOURCE_FOLDER = "/postfinance/";
+
+	/*
+	 * The AD_Message keys the importer uses, by value: their Java constants live in different classes on different code lines
+	 * (and are not public everywhere), so this class names the keys itself and compiles unchanged wherever it is copied.
+	 */
+	private static final AdMessageKey MSG_MISSING_ESR_REFERENCE = AdMessageKey.of("ESR_CAMT54_Missing_ESR_Reference");
+	private static final AdMessageKey MSG_MULTIPLE_TRANSACTIONS_TYPES = AdMessageKey.of("ESR_CAMT54_MultipleTransactionsTypes");
 
 	@BeforeEach
 	public void init()
@@ -365,13 +373,13 @@ public class ESRDataImporterCamt54V08PostFinanceSamplesTest
 
 		final ESRStatement statement = importFile("7_camt054 CND Ausfuehrungsbestaetigung_ISO2019_v2019.xml");
 		assertThat(statement.getTransactions().get(0).getErrorMsgs())
-				.contains(ReferenceStringHelper.MSG_MISSING_ESR_REFERENCE.toAD_Message());
+				.contains(MSG_MISSING_ESR_REFERENCE.toAD_Message());
 	}
 
 	private void assertImportRefusedMultipleTransactionsTypes(@NonNull final String fileName)
 	{
 		assertThatThrownBy(() -> importFile(fileName))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessage(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
+				.hasMessage(MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
 	}
 }

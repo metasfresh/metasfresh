@@ -1,5 +1,8 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.ITranslatableString;
+
 import java.io.OutputStream;
 
 import de.metas.payment.sepa.model.I_SEPA_Export;
@@ -29,4 +32,12 @@ import de.metas.payment.sepa.model.I_SEPA_Export;
 public interface SEPAMarshaler
 {
 	void marshal(I_SEPA_Export sepaDocument, OutputStream out);
+
+	/**
+	 * @return problems the user shall know about although the document was marshalled (e.g. data left out of the file); empty unless {@link #marshal(I_SEPA_Export, OutputStream)} found any
+	 */
+	default ImmutableList<ITranslatableString> getWarnings()
+	{
+		return ImmutableList.of();
+	}
 }
