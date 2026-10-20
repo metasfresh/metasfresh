@@ -23,23 +23,19 @@
 package de.metas.order.compensationGroup.callout;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.order.compensationGroup.GroupTemplateRegularLineId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.calibration.CalibrationRule;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConversionContext;
-import de.metas.uom.UOMConversionContext.Rounding;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.NoUOMConversionException;
@@ -50,7 +46,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /**
  * Keeps the calibration factor ({@code GroupCompensationCalibrationFactor}) and {@code QtyEntered} of a calibrated order line in sync
@@ -69,23 +64,18 @@ import java.math.RoundingMode;
  * That stops the cycle factor -&gt; QtyEntered -&gt; factor in both directions.
  * Neither method skips indirect calls, so a QtyEntered set by another callout (e.g. from the TU qty) still updates the factor.
  * <p>
- * The rule reference and the uncalibrated qty are never changed here.
+ * The rule reference is never changed here; the uncalibrated qty only follows a UOM change.
  */
 @Callout(I_C_OrderLine.class)
 @Component
-@RequiredArgsConstructor
 public class C_OrderLine
 {
 	private static final AdMessageKey MSG_FactorMandatory = AdMessageKey.of("C_OrderLine_CalibrationFactorMandatory");
 	private static final AdMessageKey MSG_NegativeFactor = AdMessageKey.of("C_CompensationGroup_CalibrationRule_NegativeFactor");
 	private static final AdMessageKey MSG_LineNotCalibrated = AdMessageKey.of("C_OrderLine_CalibrationFactorNotCalibrated");
-	private static final AdMessageKey MSG_UOMChanged = AdMessageKey.of("C_OrderLine_CalibrationFactorUOMChanged");
 
 	private static final int FACTOR_SCALE = 2;
-	private static final int CONVERTED_BASE_SCALE = 6;
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-	@NonNull private final GroupTemplateRepository groupTemplateRepository;
 
 	@PostConstruct
 	void postConstruct()
@@ -115,13 +105,7 @@ public class C_OrderLine
 		{
 			throw new AdempiereException(MSG_LineNotCalibrated);
 		}
-		final BigDecimal baseInLineUom = convertBaseToLineUom(orderLine, qtyUncalibrated);
-		if (baseInLineUom == null)
-		{
-			throw new AdempiereException(MSG_UOMChanged);
-		}
-
-		final Quantity base = Quantitys.of(baseInLineUom, UomId.ofRepoId(orderLine.getC_UOM_ID()));
+		final Quantity base = Quantitys.of(qtyUncalibrated, UomId.ofRepoId(orderLine.getC_UOM_ID()));
 		// exactly base x factor (80 % = x 0.8), rounded once to the UOM precision (like at line creation, see CalibrationRule#computeQtyCalibrated)
 		final Quantity qtyCalibrated = base.multiply(factor.toFractionBigDecimal()).roundToUOMPrecision();
 		orderLine.setQtyEntered(qtyCalibrated.toBigDecimal());
@@ -140,13 +124,35 @@ public class C_OrderLine
 		{
 			return;
 		}
-		final BigDecimal baseInLineUom = convertBaseToLineUom(orderLine, qtyUncalibrated);
-		if (baseInLineUom == null || baseInLineUom.signum() <= 0)
+		OrderGroupRepository.setCalibrationFactor(orderLine, Percent.of(qtyEntered, qtyUncalibrated, FACTOR_SCALE));
+	}
+
+	/**
+	 * Keeps the uncalibrated qty in the line UOM. No conversion: {@link NoUOMConversionException}, like {@code CalloutOrder.qty}.
+	 * A product change resets the UOM ({@code CalloutOrder.product}); then the uncalibrated qty is left as is.
+	 */
+	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_C_UOM_ID, skipIfCopying = true)
+	public void onUomChanged(@NonNull final I_C_OrderLine orderLine, @NonNull final ICalloutField field)
+	{
+		final BigDecimal qtyUncalibrated = getQtyUncalibratedOrNull(orderLine);
+		if (qtyUncalibrated == null)
+		{
+			return;
+		}
+		final I_C_OrderLine orderLineOld = field.getModelBeforeChanges(I_C_OrderLine.class);
+		if (orderLineOld.getM_Product_ID() != orderLine.getM_Product_ID())
+		{
+			return;
+		}
+		final UomId uomFromId = UomId.ofRepoIdOrNull(orderLineOld.getC_UOM_ID());
+		final UomId uomToId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
+		if (uomFromId == null || uomToId == null || uomFromId.equals(uomToId))
 		{
 			return;
 		}
 
-		OrderGroupRepository.setCalibrationFactor(orderLine, Percent.of(qtyEntered, baseInLineUom, FACTOR_SCALE));
+		orderLine.setGroupCompensationQtyEnteredUncalibrated(
+				uomConversionBL.convertQty(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()), qtyUncalibrated, uomFromId, uomToId));
 	}
 
 	/**
@@ -173,44 +179,5 @@ public class C_OrderLine
 	private static BigDecimal getQtyUncalibratedOrNull(@NonNull final I_C_OrderLine orderLine)
 	{
 		return InterfaceWrapperHelper.getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated);
-	}
-
-	/**
-	 * The uncalibrated qty has no UOM of its own: it is in the UOM of the template line the order line was created from.
-	 *
-	 * @return the uncalibrated qty in the UOM of the order line (converted with the product's UOM conversion if the UOMs differ, without rounding it to the UOM precision);
-	 * null if there is no template line or no conversion between the two UOMs
-	 */
-	@Nullable
-	private BigDecimal convertBaseToLineUom(@NonNull final I_C_OrderLine orderLine, @NonNull final BigDecimal qtyUncalibrated)
-	{
-		final GroupTemplateRegularLineId templateLineId = GroupTemplateRegularLineId.ofRepoIdOrNull(orderLine.getC_CompensationGroup_Schema_TemplateLine_ID());
-		final UomId lineUomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
-		if (templateLineId == null || lineUomId == null)
-		{
-			return null;
-		}
-		final UomId templateLineUomId = groupTemplateRepository.getRegularLineUomId(templateLineId).orElse(null);
-		if (templateLineUomId == null)
-		{
-			return null;
-		}
-		if (templateLineUomId.equals(lineUomId))
-		{
-			return qtyUncalibrated;
-		}
-
-		try
-		{
-			return uomConversionBL.convertQty(
-					UOMConversionContext.of(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()), Rounding.PRESERVE_SCALE),
-					qtyUncalibrated.setScale(Math.max(qtyUncalibrated.scale(), CONVERTED_BASE_SCALE), RoundingMode.UNNECESSARY),
-					templateLineUomId,
-					lineUomId);
-		}
-		catch (final NoUOMConversionException e)
-		{
-			return null;
-		}
 	}
 }

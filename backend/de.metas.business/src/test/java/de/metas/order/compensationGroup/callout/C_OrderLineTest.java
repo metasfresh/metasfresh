@@ -1,9 +1,7 @@
 package de.metas.order.compensationGroup.callout;
 
 import de.metas.business.BusinessTestHelper;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
@@ -13,7 +11,9 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstance;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstanceFactory;
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.NoUOMConversionException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_OrderLine;
@@ -22,6 +22,7 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -44,34 +45,26 @@ class C_OrderLineTest
 	private C_OrderLine callout;
 	private I_C_UOM ltr;
 	private I_C_UOM ml;
+	private I_C_UOM bucket;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		callout = new C_OrderLine(GroupTemplateRepository.newInstanceForUnitTesting());
+		callout = new C_OrderLine();
 
 		ltr = BusinessTestHelper.createUOM("LTR", null, 0);
 		ml = BusinessTestHelper.createUOM("ML", null, 0);
 
 	}
 
-	private int templateLine(final I_C_UOM uom)
-	{
-		final I_C_CompensationGroup_Schema_TemplateLine templateLine = newInstance(I_C_CompensationGroup_Schema_TemplateLine.class);
-		templateLine.setC_UOM_ID(uom.getC_UOM_ID());
-		saveRecord(templateLine);
-		return templateLine.getC_CompensationGroup_Schema_TemplateLine_ID();
-	}
-
 	/**
-	 * A calibrated line as created from a menu template: rule + base + factor stored, line UOM = template line UOM.
+	 * A calibrated line as created from a menu template: rule + base (in the line UOM) + factor stored.
 	 */
 	private I_C_OrderLine calibratedLine(final String base, final String factor, final String qty)
 	{
 		final I_C_OrderLine line = newInstance(I_C_OrderLine.class);
 		line.setC_UOM_ID(ltr.getC_UOM_ID());
-		line.setC_CompensationGroup_Schema_TemplateLine_ID(templateLine(ltr));
 		line.setC_CompensationGroup_CalibrationRule_ID(10);
 		line.setGroupCompensationQtyEnteredUncalibrated(new BigDecimal(base));
 		OrderGroupRepository.setCalibrationFactor(line, Percent.ofNullableFraction(new BigDecimal(factor)));
@@ -82,18 +75,12 @@ class C_OrderLineTest
 
 
 	/**
-	 * A calibrated line whose UOM is a bucket (1 bucket = 25 LTR for the product), the template line / base being in LTR:
-	 * base 375 LTR = 15 buckets, factor 0.8, Qty 12 buckets.
+	 * A calibrated line of a product sold in LTR (base 375 LTR, factor 0.8, Qty 300) that also has a bucket UOM.
 	 */
-	private I_C_OrderLine calibratedLineInBuckets()
+	private I_C_OrderLine calibratedLineWithBucketConversion(final String baseLtr, final String ltrPerBucket)
 	{
-		return calibratedLineInBuckets("375", "25");
-	}
-
-	private I_C_OrderLine calibratedLineInBuckets(final String baseLtr, final String ltrPerBucket)
-	{
-		final I_C_UOM bucket = BusinessTestHelper.createUOM("BUCKET", null, 0);
 		final I_M_Product product = BusinessTestHelper.createProduct("P", ltr);
+		bucket = BusinessTestHelper.createUOM("BUCKET", null, 0);
 		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
 				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.fromUomId(UomId.ofRepoId(bucket.getC_UOM_ID()))
@@ -103,10 +90,23 @@ class C_OrderLineTest
 
 		final I_C_OrderLine line = calibratedLine(baseLtr, "0.8", "300");
 		line.setM_Product_ID(product.getM_Product_ID());
-		line.setC_UOM_ID(bucket.getC_UOM_ID());
-		line.setQtyEntered(new BigDecimal("12"));
 		saveRecord(line);
 		return line;
+	}
+
+	/**
+	 * The user (or another callout) changes the line UOM; the line before the change is the saved one.
+	 */
+	private void changeUom(final I_C_OrderLine line, final I_C_UOM uom)
+	{
+		final I_C_OrderLine lineBeforeChanges = newInstance(I_C_OrderLine.class);
+		lineBeforeChanges.setM_Product_ID(line.getM_Product_ID());
+		lineBeforeChanges.setC_UOM_ID(line.getC_UOM_ID());
+		final ICalloutField field = Mockito.mock(ICalloutField.class);
+		Mockito.when(field.getModelBeforeChanges(I_C_OrderLine.class)).thenReturn(lineBeforeChanges);
+
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		callout.onUomChanged(line, field);
 	}
 
 	/**
@@ -231,49 +231,32 @@ class C_OrderLineTest
 		}
 
 		@Test
-		void lineUomConvertibleFromTemplateLineUom_baseIsConverted()
+		void afterUomChange_factor1_givesTheConvertedBase()
 		{
-			final I_C_OrderLine line = calibratedLineInBuckets();
+			final I_C_OrderLine line = calibratedLineWithBucketConversion("375", "25");
+			changeUom(line, bucket);
 			typeFactor(line, "1");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("15"); // 375 LTR = 15 buckets
-			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
 		}
 
 		@Test
-		void convertedBase15Buckets_factor80_gives12()
+		void afterUomChange_factor0_8_gives12Buckets()
 		{
-			final I_C_OrderLine line = calibratedLineInBuckets();
+			final I_C_OrderLine line = calibratedLineWithBucketConversion("375", "25");
+			changeUom(line, bucket);
 			typeFactor(line, "0.8");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("12");
 		}
 
 		@Test
-		void convertedBaseWithMoreDecimalsThanTheUomPrecision_isRoundedUpOnce()
+		void afterUomChange_baseRoundedUpAtConversion_thenFactorApplied()
 		{
-			// 100 LTR = 3.333333 buckets (1 bucket = 30 LTR); bucket precision 0; x 100 % = 3.333333 -> 4
-			final I_C_OrderLine line = calibratedLineInBuckets("100", "30");
-			typeFactor(line, "1");
-			assertThat(line.getQtyEntered()).isEqualByComparingTo("4");
-		}
-
-		@Test
-		void convertedBaseIsNotRoundedBeforeTheFactorIsApplied()
-		{
-			// 100 LTR = 12.5 buckets (1 bucket = 8 LTR), precision 0; x 40 % = 5 exactly (rounding the base to 13 first would give 5.2 -> 6)
-			final I_C_OrderLine line = calibratedLineInBuckets("100", "8");
+			// 100 LTR = 12.5 buckets (1 bucket = 8 LTR), bucket precision 0: base 13; x 0.4 = 5.2 -> 6
+			final I_C_OrderLine line = calibratedLineWithBucketConversion("100", "8");
+			changeUom(line, bucket);
 			typeFactor(line, "0.4");
-			assertThat(line.getQtyEntered()).isEqualByComparingTo("5");
+			assertThat(line.getQtyEntered()).isEqualByComparingTo("6");
 		}
-
-		@Test
-		void lineUomWithoutConversion_isRefused()
-		{
-			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
-			line.setC_UOM_ID(ml.getC_UOM_ID());
-			assertThatThrownBy(() -> typeFactor(line, "1")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorUOMChanged").matches(AdempiereException::isUserValidationError, "user validation error");
-			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
-		}
-
 	}
 
 	@Nested
@@ -334,9 +317,10 @@ class C_OrderLineTest
 		}
 
 		@Test
-		void lineUomConvertibleFromTemplateLineUom_factorFromConvertedBase()
+		void afterUomChange_factorFromConvertedBase()
 		{
-			final I_C_OrderLine line = calibratedLineInBuckets();
+			final I_C_OrderLine line = calibratedLineWithBucketConversion("375", "25");
+			changeUom(line, bucket);
 			typeQty(line, "12"); // 12 of 15 buckets
 			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
 			typeQty(line, "15");
@@ -353,20 +337,71 @@ class C_OrderLineTest
 		}
 
 		@Test
-		void lineUomWithoutConversion_leavesFactor()
-		{
-			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
-			line.setC_UOM_ID(ml.getC_UOM_ID());
-			typeQty(line, "375");
-			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
-		}
-
-		@Test
 		void uncalibratedLine_staysWithoutFactor()
 		{
 			final I_C_OrderLine line = uncalibratedLine(true);
 			typeQty(line, "7");
 			assertThat(OrderGroupRepository.getCalibrationFactor(line)).isNull();
+		}
+	}
+
+	/**
+	 * The uncalibrated qty is kept in the line UOM: a UOM change converts it, like {@code CalloutOrder.qty} does for the line.
+	 */
+	@Nested
+	class UomChanged
+	{
+		@Test
+		void toConvertibleUom_convertsTheBase()
+		{
+			final I_C_OrderLine line = calibratedLineWithBucketConversion("375", "25");
+			changeUom(line, bucket);
+			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("15");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
+			assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(10);
+		}
+
+		@Test
+		void toConvertibleUom_roundsTheBaseUpToTheNewUomPrecision()
+		{
+			// 100 LTR = 3.333.. buckets (1 bucket = 30 LTR), bucket precision 0
+			final I_C_OrderLine line = calibratedLineWithBucketConversion("100", "30");
+			changeUom(line, bucket);
+			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("4");
+		}
+
+		@Test
+		void toUomWithoutConversion_isRefused()
+		{
+			final I_C_OrderLine line = calibratedLineWithBucketConversion("375", "25");
+			assertThatThrownBy(() -> changeUom(line, ml)).isInstanceOf(NoUOMConversionException.class);
+			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
+		}
+
+		@Test
+		void productChangedInTheSameEdit_leavesTheBase()
+		{
+			// CalloutOrder.product resets the UOM to the new product's stock UOM; that must not be blocked for a missing conversion
+			final I_C_OrderLine line = calibratedLineWithBucketConversion("375", "25");
+			final I_C_OrderLine lineBeforeChanges = newInstance(I_C_OrderLine.class);
+			lineBeforeChanges.setM_Product_ID(line.getM_Product_ID());
+			lineBeforeChanges.setC_UOM_ID(line.getC_UOM_ID());
+			final ICalloutField field = Mockito.mock(ICalloutField.class);
+			Mockito.when(field.getModelBeforeChanges(I_C_OrderLine.class)).thenReturn(lineBeforeChanges);
+
+			line.setM_Product_ID(BusinessTestHelper.createProduct("P2", ml).getM_Product_ID());
+			line.setC_UOM_ID(ml.getC_UOM_ID());
+			callout.onUomChanged(line, field);
+
+			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
+		}
+
+		@Test
+		void uncalibratedLine_isLeftAlone()
+		{
+			final I_C_OrderLine line = uncalibratedLine(true);
+			changeUom(line, ml); // no conversion LTR -> ML, but nothing to convert
+			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).isNull();
 		}
 	}
 
@@ -410,6 +445,7 @@ class C_OrderLineTest
 		assertThat(instances).hasSize(1);
 		assertThat(instances.get(0).getColumnNames()).containsExactlyInAnyOrder(
 				I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor,
-				I_C_OrderLine.COLUMNNAME_QtyEntered);
+				I_C_OrderLine.COLUMNNAME_QtyEntered,
+				I_C_OrderLine.COLUMNNAME_C_UOM_ID);
 	}
 }
