@@ -353,69 +353,122 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 			return;
 		}
 
-		final String ssAlias = I_M_ShipmentSchedule.Table_Name + ".";
-		final StringBuilder sqlWhereClause = new StringBuilder();
-		final List<Object> sqlParams = new ArrayList<>();
-
-		// SELECT part: Description and AD_PInstance_ID
-		final String description = truncInvalidateDescription("" + storageSegments.size() + " storage segments: " + storageSegments);
-		sqlParams.add(description);
-		sqlParams.add(addToSelectionId);
-
+		// One chunkUUID for all statements of this call: the recompute is enqueued once, after the last statement.
+		// With an active transaction all statements run in it, so the own-trx dedup predicate sees the earlier statements.
 		final String chunkUUID = UUID.randomUUID().toString();
-		sqlParams.add(chunkUUID);
+		int count = 0;
+		for (final StorageSegmentsInsert insert : buildStorageSegmentsInserts(storageSegments, addToSelectionId, chunkUUID, sqlNotExistsPendingFlag))
+		{
+			count += DB.executeUpdateAndThrowExceptionOnFail(insert.getSql(), insert.getSqlParams().toArray(), trxName);
+		}
+		logger.debug("Invalidated {} shipment schedules for segments={}", count, storageSegments);
 
-		// Not Processed
-		sqlWhereClause.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Processed).append("=?");
-		sqlParams.add(false);
+		if (count > 0)
+		{
+			enqueueShipmentScheduleRecompute(Env.getCtx(), trxName, chunkUUID);
+		}
+	}
 
-		//
-		// Filter shipment schedules by segments
-		final StringBuilder sqlWhereClause_AllSegments = new StringBuilder();
+	/**
+	 * pgjdbc rejects a statement with more than 32,767 bind parameters (the failure can break the connection, so a savepoint does not help);
+	 * stay safely below.
+	 */
+	static final int MAX_SQL_PARAMS_PER_STATEMENT = 30_000;
+	/** Bind parameters of one statement that do not depend on the segments: description, AD_PInstance_ID, ChunkUUID, Processed. */
+	private static final int SQL_PARAMS_PER_STATEMENT_OVERHEAD = 4;
+
+	@lombok.Value
+	static class StorageSegmentsInsert
+	{
+		String sql;
+		List<Object> sqlParams;
+		int segmentsCount;
+	}
+
+	/**
+	 * Builds the INSERT statements that flag the schedules matching the given segments, split so that each statement stays below
+	 * {@link #MAX_SQL_PARAMS_PER_STATEMENT} bind parameters. A single segment that exceeds the budget on its own gets its own statement (and a warning).
+	 */
+	List<StorageSegmentsInsert> buildStorageSegmentsInserts(
+			@NonNull final Collection<IShipmentScheduleSegment> storageSegments,
+			@Nullable final PInstanceId addToSelectionId,
+			@NonNull final String chunkUUID,
+			@NonNull final String sqlNotExistsPendingFlag)
+	{
+		final String ssAlias = I_M_ShipmentSchedule.Table_Name + ".";
+		final List<StorageSegmentsInsert> result = new ArrayList<>();
+
+		final List<IShipmentScheduleSegment> chunkSegments = new ArrayList<>();
+		final StringBuilder chunkSqlAllSegments = new StringBuilder();
+		final List<Object> chunkSegmentParams = new ArrayList<>();
+
 		for (final IShipmentScheduleSegment storageSegment : storageSegments)
 		{
-			final String sqlWhereClause_Segment = buildShipmentScheduleWhereClause(ssAlias, storageSegment, sqlParams);
+			final List<Object> segmentParams = new ArrayList<>();
+			final String sqlWhereClause_Segment = buildShipmentScheduleWhereClause(ssAlias, storageSegment, segmentParams);
 			if (sqlWhereClause_Segment == null)
 			{
 				continue;
 			}
 
-			if (sqlWhereClause_AllSegments.length() > 0)
+			final boolean overBudget = SQL_PARAMS_PER_STATEMENT_OVERHEAD + chunkSegmentParams.size() + segmentParams.size() > MAX_SQL_PARAMS_PER_STATEMENT;
+			if (overBudget && !chunkSegments.isEmpty())
 			{
-				sqlWhereClause_AllSegments.append("\n OR ");
+				result.add(buildStorageSegmentsInsert(chunkSegments, chunkSqlAllSegments, chunkSegmentParams, addToSelectionId, chunkUUID, sqlNotExistsPendingFlag));
+				chunkSegments.clear();
+				chunkSqlAllSegments.setLength(0);
+				chunkSegmentParams.clear();
 			}
-			sqlWhereClause_AllSegments.append("(").append(sqlWhereClause_Segment).append(")");
+			if (SQL_PARAMS_PER_STATEMENT_OVERHEAD + segmentParams.size() > MAX_SQL_PARAMS_PER_STATEMENT)
+			{
+				logger.warn("Segment needs {} bind parameters, more than the budget of {}; flagging it in its own statement: {}",
+						segmentParams.size(), MAX_SQL_PARAMS_PER_STATEMENT, storageSegment);
+			}
+
+			if (chunkSqlAllSegments.length() > 0)
+			{
+				chunkSqlAllSegments.append("\n OR ");
+			}
+			chunkSqlAllSegments.append("(").append(sqlWhereClause_Segment).append(")");
+			chunkSegmentParams.addAll(segmentParams);
+			chunkSegments.add(storageSegment);
 		}
-		// If there are no segments filters there is no point to proceed
-		if (sqlWhereClause_AllSegments.length() <= 0)
+
+		if (!chunkSegments.isEmpty())
 		{
-			return;
+			result.add(buildStorageSegmentsInsert(chunkSegments, chunkSqlAllSegments, chunkSegmentParams, addToSelectionId, chunkUUID, sqlNotExistsPendingFlag));
 		}
-		// Add to main sql where clause
-		sqlWhereClause.append("\n AND (\n").append(sqlWhereClause_AllSegments).append("\n)");
+		return result;
+	}
 
-		// Not already exists
-		sqlWhereClause.append("\n AND ");
-		sqlWhereClause.append(sqlNotExistsPendingFlag);
+	private StorageSegmentsInsert buildStorageSegmentsInsert(
+			final List<IShipmentScheduleSegment> segments,
+			final CharSequence sqlAllSegments,
+			final List<Object> segmentParams,
+			@Nullable final PInstanceId addToSelectionId,
+			final String chunkUUID,
+			final String sqlNotExistsPendingFlag)
+	{
+		final String ssAlias = I_M_ShipmentSchedule.Table_Name + ".";
 
-		//
-		// Build INSERT SQL
+		final List<Object> sqlParams = new ArrayList<>();
+		// SELECT part: Description, AD_PInstance_ID and ChunkUUID
+		sqlParams.add(truncInvalidateDescription("" + segments.size() + " storage segments: " + segments));
+		sqlParams.add(addToSelectionId);
+		sqlParams.add(chunkUUID);
+		// Not Processed
+		sqlParams.add(false);
+		sqlParams.addAll(segmentParams);
+
 		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, AD_PInstance_ID, C_Async_Batch_ID, ChunkUUID) "
 				+ "\n SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, ?, " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + " , ?"
 				+ " FROM " + I_M_ShipmentSchedule.Table_Name
 				+ " WHERE "
-				+ "\n" + sqlWhereClause;
+				+ "\n" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Processed + "=?"
+				+ "\n AND (\n" + sqlAllSegments + "\n)"
+				+ "\n AND " + sqlNotExistsPendingFlag;
 
-		//
-		// Execute
-		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), trxName);
-		logger.debug("Invalidated {} shipment schedules for segments={}", count, storageSegments);
-
-		//
-		if (count > 0)
-		{
-			enqueueShipmentScheduleRecompute(Env.getCtx(), trxName, chunkUUID);
-		}
+		return new StorageSegmentsInsert(sql, sqlParams, segments.size());
 	}
 
 	/**

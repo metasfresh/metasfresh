@@ -220,4 +220,86 @@ public class ShipmentScheduleInvalidateRepositoryTest
 				.contains("e.AD_PInstance_ID is NULL")
 				.contains("e.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID");
 	}
+
+	private static IShipmentScheduleSegment segmentWithLocators(final int productId, final int locatorCount)
+	{
+		final List<Integer> locatorIds = new ArrayList<>();
+		for (int i = 1; i <= locatorCount; i++)
+		{
+			locatorIds.add(productId * 1_000_000 + i);
+		}
+		return ImmutableShipmentScheduleSegment.builder()
+				.productId(productId)
+				.bpartnerId(2)
+				.locatorIds(locatorIds)
+				.build();
+	}
+
+	private List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> buildInserts(final List<IShipmentScheduleSegment> segments)
+	{
+		return repository.buildStorageSegmentsInserts(segments, null, "chunk-uuid", "true");
+	}
+
+	private static void assertParamCountMatchesPlaceholders(final ShipmentScheduleInvalidateRepository.StorageSegmentsInsert insert)
+	{
+		assertThat(insert.getSql().chars().filter(c -> c == '?').count())
+				.as("placeholders must match the parameter list")
+				.isEqualTo(insert.getSqlParams().size());
+	}
+
+	@Test
+	public void storageSegmentInserts_aboveParamBudget_areSplit_eachBelowBudget_allSegmentsCovered()
+	{
+		// 10 segments x (1 product + 1 bpartner + 5000 locators) = 50,020 params > the budget
+		final List<IShipmentScheduleSegment> segments = new ArrayList<>();
+		for (int productId = 1; productId <= 10; productId++)
+		{
+			segments.add(segmentWithLocators(productId, 5000));
+		}
+
+		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(segments);
+
+		assertThat(inserts).as("must be split into several statements").hasSizeGreaterThan(1);
+		int covered = 0;
+		final List<Object> allParams = new ArrayList<>();
+		for (final ShipmentScheduleInvalidateRepository.StorageSegmentsInsert insert : inserts)
+		{
+			assertThat(insert.getSqlParams().size())
+					.as("each statement must stay below the budget")
+					.isLessThanOrEqualTo(ShipmentScheduleInvalidateRepository.MAX_SQL_PARAMS_PER_STATEMENT);
+			assertParamCountMatchesPlaceholders(insert);
+			covered += insert.getSegmentsCount();
+			allParams.addAll(insert.getSqlParams());
+		}
+		assertThat(covered).as("every segment must be in exactly one statement").isEqualTo(segments.size());
+		for (final IShipmentScheduleSegment segment : segments)
+		{
+			assertThat(allParams).as("the locators of every segment must be bound").containsAll(segment.getLocatorIds());
+		}
+	}
+
+	@Test
+	public void storageSegmentInserts_withinBudget_isOneStatement()
+	{
+		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(
+				java.util.Arrays.asList(segmentWithLocators(1, 10), segmentWithLocators(2, 10)));
+
+		assertThat(inserts).hasSize(1);
+		assertThat(inserts.get(0).getSegmentsCount()).isEqualTo(2);
+		assertParamCountMatchesPlaceholders(inserts.get(0));
+	}
+
+	@Test
+	public void storageSegmentInserts_singleOverBudgetSegment_getsItsOwnStatement_andIsNotDropped()
+	{
+		final IShipmentScheduleSegment huge = segmentWithLocators(1, ShipmentScheduleInvalidateRepository.MAX_SQL_PARAMS_PER_STATEMENT + 1000);
+		final IShipmentScheduleSegment small = segmentWithLocators(2, 10);
+
+		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(java.util.Arrays.asList(small, huge));
+
+		assertThat(inserts).hasSize(2);
+		assertThat(inserts.stream().mapToInt(ShipmentScheduleInvalidateRepository.StorageSegmentsInsert::getSegmentsCount).sum()).isEqualTo(2);
+		assertThat(inserts.get(1).getSqlParams()).containsAll(huge.getLocatorIds());
+		inserts.forEach(ShipmentScheduleInvalidateRepositoryTest::assertParamCountMatchesPlaceholders);
+	}
 }
