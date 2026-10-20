@@ -1,5 +1,7 @@
 package de.metas.payment.sepa.process;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.common.util.time.SystemTime;
@@ -8,6 +10,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.api.SEPAExportContext;
+import de.metas.payment.sepa.api.SEPAProtocol;
+import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -20,8 +24,10 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.util.Env;
 import org.springframework.core.io.ByteArrayResource;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -37,6 +43,8 @@ public class C_PaySelection_SEPA_XmlExport
 {
 	private static final AdMessageKey MSG_NO_SELECTION = AdMessageKey.of("de.metas.payment.sepa.noPaySelection");
 
+	private static final String WARNINGS_SEPARATOR = " · "; // middle dot
+
 	//
 	// services
 	private final ISEPADocumentBL sepaDocumentBL = Services.get(ISEPADocumentBL.class);
@@ -45,6 +53,10 @@ public class C_PaySelection_SEPA_XmlExport
 	private final static String REFERENCE_AS_END_TO_END_ID = "ReferenceAsEndToEndId";
 	@Param(parameterName = REFERENCE_AS_END_TO_END_ID)
 	private boolean referenceAsEndToEndId;
+
+	private final static String PARAM_SEPA_PROTOCOL = "SEPA_Protocol";
+	@Param(parameterName = PARAM_SEPA_PROTOCOL)
+	private String sepaProtocolCode;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -86,7 +98,7 @@ public class C_PaySelection_SEPA_XmlExport
 
 		//
 		// First, generate the SEPA export as an intermediary step, to use the old framework.
-		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection);
+		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection, SEPAProtocol.ofNullableCode(sepaProtocolCode));
 
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
 				.referenceAsEndToEndId(referenceAsEndToEndId)
@@ -105,6 +117,40 @@ public class C_PaySelection_SEPA_XmlExport
 				.reportData(new ByteArrayResource(xml.getContent()))
 				.build());
 
-		return MSG_OK;
+		// the WebUI shows the summary next to the download; the warnings are also in the process log
+		return createSummary(xml, Env.getADLanguageOrBaseLanguage(getCtx()));
+	}
+
+	/**
+	 * @return {@link #MSG_OK} if the export has no warnings; otherwise its warnings translated to the given language, on one line: a single warning as it is,
+	 * several numbered as {@code 1) … · 2) …}; every "@" is escaped as "@@", i.e. the text is meant to be passed through {@code IMsgBL.parseTranslation}
+	 */
+	@VisibleForTesting
+	static String createSummary(@NonNull final SEPACreditTransferXML xml, @NonNull final String adLanguage)
+	{
+		// one line, because the WebUI collapses line breaks in the notification; escaped, because the warnings contain partner, location and bank account names
+		final List<String> warnings = xml.getWarnings()
+				.stream()
+				.map(warning -> SepaUtils.escapeAtSignsForParseTranslation(warning.translate(adLanguage)))
+				.collect(ImmutableList.toImmutableList());
+		if (warnings.isEmpty())
+		{
+			return MSG_OK;
+		}
+		else if (warnings.size() == 1)
+		{
+			return warnings.get(0);
+		}
+
+		final StringBuilder summary = new StringBuilder();
+		for (int i = 0; i < warnings.size(); i++)
+		{
+			if (i > 0)
+			{
+				summary.append(WARNINGS_SEPARATOR);
+			}
+			summary.append(i + 1).append(") ").append(warnings.get(i));
+		}
+		return summary.toString();
 	}
 }
