@@ -160,7 +160,7 @@ export const GetQuantityDialog = {
 
     // Like expectBestBeforeDate, accepting any of the given values (e.g. a receipt-day default when the run may cross midnight).
     expectBestBeforeDateOneOf: async (expectedValues) => await test.step(`${NAME} - Expect BestBeforeDate one of ${expectedValues.join(', ')}`, async () => {
-        const anyOf = new RegExp(`^(${expectedValues.map((value) => value.replace(/\./g, '\\.')).join('|')})$`);
+        const anyOf = new RegExp(`^(${expectedValues.map((value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})$`);
         await expect(page.getByTestId('bestBeforeDate')).toHaveValue(anyOf);
     }),
 
