@@ -63,7 +63,7 @@ class C_OrderLineTest
 		line.setC_UOM_ID(ltr.getC_UOM_ID());
 		line.setC_CompensationGroup_CalibrationRule_ID(10);
 		line.setGroupCompensationQtyEnteredUncalibrated(new BigDecimal(base));
-		OrderGroupRepository.setCalibrationFactor(line, Percent.ofNullableFraction(new BigDecimal(factor)));
+		OrderGroupRepository.setCalibrationFactor(line, Percent.ofFraction(new BigDecimal(factor)));
 		line.setQtyEntered(new BigDecimal(qty));
 		saveRecord(line);
 		return line;
