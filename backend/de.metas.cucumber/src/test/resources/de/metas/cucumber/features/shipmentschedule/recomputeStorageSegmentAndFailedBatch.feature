@@ -121,3 +121,63 @@ Feature: shipment schedule recompute is not lost for storage-segment flags
     Then after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID | OPT.QtyOnHand |
       | s                     | 10            |
+
+# ######################################################################################################################
+# ######################################################################################################################
+  @Id:S33004_TC10_afterCommitNotify
+  Scenario: a storage segment change notified after its transaction committed still flags the shipment schedules of the segment
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_a    | true    | customer_1    | 2024-01-15  | warehouse_1    | A            |
+      | order_b    | true    | customer_1    | 2024-01-10  | warehouse_1    | A            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | olA        | order_a    | product_1    | 10         |
+      | olB        | order_b    | product_1    | 10         |
+    And the order identified by order_a is completed
+    And the order identified by order_b is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ssA        | olA            | N             |
+      | ssB        | olB            | N             |
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+
+    Given the shipment schedule recompute queues are paused
+    When a storage segment change for product "product_1" and warehouse "warehouse_1" is notified after its transaction committed
+    Then 1 untagged M_ShipmentSchedule_Recompute marker exists for ssB
+    When the shipment schedule recompute queues are resumed
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ssB        | olB            | N             |
+
+# ######################################################################################################################
+# ######################################################################################################################
+  @Id:S33004_TC10_orderLineControl
+  Scenario: control - a completed order line changed in its own transaction flags the shipment schedules of its segment
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_a    | true    | customer_1    | 2024-01-15  | warehouse_1    | A            |
+      | order_b    | true    | customer_1    | 2024-01-10  | warehouse_1    | A            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | olA        | order_a    | product_1    | 10         |
+      | olB        | order_b    | product_1    | 10         |
+    And the order identified by order_a is completed
+    And the order identified by order_b is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ssA        | olA            | N             |
+      | ssB        | olB            | N             |
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+
+    Given the shipment schedule recompute queues are paused
+    When update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.Description |
+      | olA                       | changed         |
+    Then after not more than 30s, 1 untagged M_ShipmentSchedule_Recompute marker exists for ssB
+    When the shipment schedule recompute queues are resumed
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ssB        | olB            | N             |

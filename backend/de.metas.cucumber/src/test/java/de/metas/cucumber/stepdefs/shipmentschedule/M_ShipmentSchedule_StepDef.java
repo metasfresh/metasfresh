@@ -77,6 +77,8 @@ import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackagePr
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
@@ -578,16 +580,81 @@ public class M_ShipmentSchedule_StepDef
 	@Then("^(\\d+) untagged M_ShipmentSchedule_Recompute markers? exists? for (.*)$")
 	public void assertUntaggedRecomputeMarkerCount(final int expectedCount, @NonNull final String shipmentScheduleIdentifier)
 	{
+		assertThat(countUntaggedRecomputeMarkers(shipmentScheduleIdentifier))
+				.as("Untagged M_ShipmentSchedule_Recompute markers of shipment schedule %s", shipmentScheduleIdentifier)
+				.isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Same as {@code N untagged M_ShipmentSchedule_Recompute marker(s) exist(s) for ...}, but polls until the count matches or the timeout is exceeded.
+	 * Use it where the flag is written asynchronously (a segment change notified outside any transaction is flagged by a task executor thread).
+	 * While the recompute queues are paused, the marker stays once written, so polling cannot miss it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 30s, 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_1
+	 * </pre>
+	 */
+	@Then("^after not more than (\\d+)s, (\\d+) untagged M_ShipmentSchedule_Recompute markers? exists? for (.*)$")
+	public void assertUntaggedRecomputeMarkerCountWithin(final int timeoutSec, final int expectedCount, @NonNull final String shipmentScheduleIdentifier) throws InterruptedException
+	{
+		try
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> countUntaggedRecomputeMarkers(shipmentScheduleIdentifier) == expectedCount);
+		}
+		catch (final AssertionError e)
+		{
+			// timed out (tryAndWait fails with an AssertionError): the one-shot assertion reports the actual count
+			assertUntaggedRecomputeMarkerCount(expectedCount, shipmentScheduleIdentifier);
+			throw e;
+		}
+	}
+
+	private int countUntaggedRecomputeMarkers(@NonNull final String shipmentScheduleIdentifier)
+	{
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
-		final int untaggedMarkerCount = queryBL.createQueryBuilderOutOfTrx(I_M_ShipmentSchedule_Recompute.class)
+		return queryBL.createQueryBuilderOutOfTrx(I_M_ShipmentSchedule_Recompute.class)
 				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
 				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				.create()
 				.count();
-		assertThat(untaggedMarkerCount)
-				.as("Untagged M_ShipmentSchedule_Recompute markers of shipment schedule %s", shipmentScheduleIdentifier)
-				.isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Notifies a storage segment change (product and warehouse, any business partner) from an after-commit handler, in a transaction of its own that is
+	 * then committed. Requires that no thread transaction exists yet.
+	 * <p>
+	 * Stands in for any code that notifies segment changes from an after-commit handler (the shape of the reservation interceptor):
+	 * {@code trxManager.accumulateAndProcessAfterCommit(..., IShipmentScheduleInvalidateBL::notifySegmentsChanged)}.
+	 * The BL is called directly (documented exemption): no registered production caller reaches this shape today.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.params
+	 *   <b>productIdentifier</b> -- the product's identifier in M_Product_StepDefData<br>
+	 *   <b>warehouseIdentifier</b> -- the warehouse's identifier in M_Warehouse_StepDefData<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_Warehouse_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When a storage segment change for product "product_1" and warehouse "warehouse_1" is notified after its transaction committed
+	 * </pre>
+	 */
+	@When("a storage segment change for product {string} and warehouse {string} is notified after its transaction committed")
+	public void notifySegmentChangeAfterCommit(@NonNull final String productIdentifier, @NonNull final String warehouseIdentifier)
+	{
+		final IShipmentScheduleSegment segment = ShipmentScheduleSegments.builder()
+				.productId(ProductId.ofRepoId(productTable.get(productIdentifier).getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoId(warehouseTable.get(warehouseIdentifier).getM_Warehouse_ID()))
+				.anyBPartnerId()
+				.build();
+
+		trxManager.assertThreadInheritedTrxNotExists();
+		trxManager.runInThreadInheritedTrx(() -> trxManager.accumulateAndProcessAfterCommit(
+				"M_ShipmentSchedule_StepDef.notifySegmentChangeAfterCommit",
+				ImmutableList.of(segment),
+				shipmentScheduleInvalidateBL::notifySegmentsChanged));
 	}
 
 	/**
