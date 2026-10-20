@@ -60,6 +60,20 @@
             <artifactId>de.metas.payment.esr</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -90,6 +104,19 @@
                         <configuration>
                             <schemaDirectory>src/main/resources/de/metas/banking/camt53/schema/camt_053_001_04</schemaDirectory>
                             <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_04</generatePackage>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+                            <episode>false</episode>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-de.metas.banking.camt53.schema.camt053.001.08</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <schemaDirectory>src/main/resources/de/metas/banking/camt53/schema/camt_053_001_08</schemaDirectory>
+                            <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_08</generatePackage>
                             <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
                             <episode>false</episode>
                         </configuration>

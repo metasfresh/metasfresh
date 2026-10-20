@@ -23,6 +23,8 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
+import javax.annotation.Nullable;
+
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -61,10 +63,14 @@ class CreateSEPAExportFromPaySelectionCommand
 	private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
 
 	private final I_C_PaySelection source;
+	@Nullable private final SEPAProtocol chosenCreditTransferProtocol;
 
-	public CreateSEPAExportFromPaySelectionCommand(@NonNull final org.compiere.model.I_C_PaySelection source)
+	public CreateSEPAExportFromPaySelectionCommand(
+			@NonNull final org.compiere.model.I_C_PaySelection source,
+			@Nullable final SEPAProtocol chosenCreditTransferProtocol)
 	{
 		this.source = InterfaceWrapperHelper.create(source, I_C_PaySelection.class);
+		this.chosenCreditTransferProtocol = chosenCreditTransferProtocol;
 	}
 
 	public I_SEPA_Export run()
@@ -130,7 +136,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		}
 
 		final I_SEPA_Export header = newInstance(I_SEPA_Export.class, paySelectionHeader);
-		final SEPAProtocol sepaProtocol = SEPAProtocol.ofPaySelectionTrxType(paySelectionTrxType);
+		final SEPAProtocol sepaProtocol = SEPAProtocol.ofPaySelectionTrxType(paySelectionTrxType, chosenCreditTransferProtocol);
 		header.setSEPA_Protocol(sepaProtocol.getCode());
 
 		//

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
+	<BkToCstmrStmt>
+		<GrpHdr>
+			<MsgId>TESTMSG-EDGE</MsgId>
+			<CreDtTm>2024-05-03T06:30:00</CreDtTm>
+		</GrpHdr>
+		<Stmt>
+			<Id>TESTSTMT-EDGE-1</Id>
+			<CreDtTm>2024-05-03T06:30:00</CreDtTm>
+			<Acct>
+				<Id>
+					<IBAN>CH3908704016075473007</IBAN>
+				</Id>
+				<Ccy>CHF</Ccy>
+			</Acct>
+			<Bal>
+				<Tp>
+					<CdOrPrtry>
+						<Cd>OPBD</Cd>
+					</CdOrPrtry>
+				</Tp>
+				<Amt Ccy="CHF">500.00</Amt>
+				<CdtDbtInd>DBIT</CdtDbtInd>
+				<Dt>
+					<Dt>2024-05-02</Dt>
+				</Dt>
+			</Bal>
+			<!-- E1: DBIT; TxDtls without Refs, with Cdtr only (no Dbtr), without AddtlTxInf -->
+			<Ntry>
+				<NtryRef>NTRY-E1</NtryRef>
+				<Amt Ccy="CHF">10.00</Amt>
+				<CdtDbtInd>DBIT</CdtDbtInd>
+				<Sts>
+					<Cd>BOOK</Cd>
+				</Sts>
+				<ValDt>
+					<Dt>2024-05-03</Dt>
+				</ValDt>
+				<BkTxCd>
+					<Prtry>
+						<Cd>NTRF</Cd>
+					</Prtry>
+				</BkTxCd>
+				<NtryDtls>
+					<TxDtls>
+						<Amt Ccy="CHF">10.00</Amt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+						<RltdPties>
+							<Cdtr>
+								<Pty>
+									<Nm>Only Creditor AG</Nm>
+								</Pty>
+							</Cdtr>
+						</RltdPties>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+			<!-- E2: CRDT; TxDtls with Dbtr only (no Cdtr), with AddtlTxInf -->
+			<Ntry>
+				<NtryRef>NTRY-E2</NtryRef>
+				<Amt Ccy="CHF">20.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts>
+					<Cd>BOOK</Cd>
+				</Sts>
+				<ValDt>
+					<Dt>2024-05-03</Dt>
+				</ValDt>
+				<BkTxCd>
+					<Prtry>
+						<Cd>NTRF</Cd>
+					</Prtry>
+				</BkTxCd>
+				<NtryDtls>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>ASR-E2-TX</AcctSvcrRef>
+						</Refs>
+						<Amt Ccy="CHF">20.00</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<RltdPties>
+							<Dbtr>
+								<Pty>
+									<Nm>Only Debtor GmbH</Nm>
+								</Pty>
+							</Dbtr>
+						</RltdPties>
+						<AddtlTxInf>Extra info</AddtlTxInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Stmt>
+		<!-- only a PRCD balance (no OPBD): must be used as beginning balance -->
+		<Stmt>
+			<Id>TESTSTMT-EDGE-2</Id>
+			<CreDtTm>2024-05-03T06:30:00</CreDtTm>
+			<Acct>
+				<Id>
+					<IBAN>CH3908704016075473007</IBAN>
+				</Id>
+				<Ccy>CHF</Ccy>
+			</Acct>
+			<Bal>
+				<Tp>
+					<CdOrPrtry>
+						<Cd>PRCD</Cd>
+					</CdOrPrtry>
+				</Tp>
+				<Amt Ccy="CHF">70.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt>
+					<Dt>2024-05-02</Dt>
+				</Dt>
+			</Bal>
+		</Stmt>
+	</BkToCstmrStmt>
+</Document>
