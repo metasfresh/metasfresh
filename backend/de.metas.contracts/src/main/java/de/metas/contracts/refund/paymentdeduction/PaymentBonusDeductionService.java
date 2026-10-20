@@ -37,6 +37,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.util.Check;
@@ -57,9 +58,11 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -303,7 +306,8 @@ public class PaymentBonusDeductionService implements PaymentBonusDeductionProvid
 			final CurrencyPrecision precision = currencyBL.getStdPrecision(currencyId);
 			final LocalDate dateInvoiced = TimeUtil.asLocalDate(invoice.getDateInvoiced());
 
-			final Map<ProductId, Money> netAmtsByBonusProductId = new LinkedHashMap<>();
+			// the bonus per bonus product and project (null = no project)
+			final Map<ProductId, Map<ProjectId, Money>> netAmtsByBonusProductIdAndProjectId = new LinkedHashMap<>();
 			for (final RefundContract contract : contracts)
 			{
 				// the bonus at payment is one flat percentage: the condition's only line (validated when it is saved). The config that the contract adds for quantity 0 is not one of the condition's.
@@ -315,33 +319,46 @@ public class PaymentBonusDeductionService implements PaymentBonusDeductionProvid
 				RefundConfigs.assertDeductedAtPaymentIsComputable(config);
 				final ProductId bonusProductId = Check.assumeNotNull(config.getBonusProductId(), "bonus product of {}", config);
 
-				final Money baseNetAmt = lines.stream()
+				final ImmutableList<InvoiceLineInfo> baseLines = lines.stream()
 						.filter(line -> RefundContractRepository.isMatching(contract, toRefundContractQuery(customerId, line, dateInvoiced), line::getProductCategoryIdAndAncestors))
 						.filter(line -> config.getProductId() == null || config.getProductId().equals(line.getProductId()))
 						.filter(line -> refundPackagingFilter.isIncluded(contract.getConditionsId(), line.getHuPIItemProductId(), customerId))
+						.collect(ImmutableList.toImmutableList());
+				final Money baseNetAmt = baseLines.stream()
 						.map(InvoiceLineInfo::getNetAmt)
 						.reduce(Money.zero(currencyId), Money::add);
 
+				// the bonus is computed and rounded once on the whole base; the projects only share it
 				final Money bonusNetAmt = baseNetAmt.multiply(config.getPercent(), precision);
 				if (bonusNetAmt.signum() <= 0)
 				{
 					continue;
 				}
-				netAmtsByBonusProductId.merge(bonusProductId, bonusNetAmt, Money::add);
+
+				final Map<ProjectId, Money> baseNetAmtsByProjectId = new LinkedHashMap<>();
+				baseLines.forEach(line -> baseNetAmtsByProjectId.merge(line.getProjectId(), line.getNetAmt(), Money::add));
+				final Map<ProjectId, Money> netAmtsByProjectId = netAmtsByBonusProductIdAndProjectId.computeIfAbsent(bonusProductId, k -> new LinkedHashMap<>());
+				apportionByLargestRemainder(bonusNetAmt, baseNetAmtsByProjectId, precision)
+						.forEach((projectId, netAmt) -> netAmtsByProjectId.merge(projectId, netAmt, Money::add));
 			}
 
-			if (netAmtsByBonusProductId.isEmpty())
+			if (netAmtsByBonusProductIdAndProjectId.isEmpty())
 			{
 				return Optional.empty();
 			}
 
-			final ImmutableList<PaymentBonusDeductionLine> deductionLines = netAmtsByBonusProductId.entrySet().stream()
-					.map(entry -> PaymentBonusDeductionLine.builder()
-							.bonusProductId(entry.getKey())
-							.tax(taxProvider.getTax(invoice, entry.getKey()))
-							.netAmt(entry.getValue())
-							.build())
-					.collect(ImmutableList.toImmutableList());
+			// one line per bonus product and project
+			final ImmutableList.Builder<PaymentBonusDeductionLine> deductionLinesBuilder = ImmutableList.builder();
+			netAmtsByBonusProductIdAndProjectId.forEach((bonusProductId, netAmtsByProjectId) -> {
+				final Tax tax = taxProvider.getTax(invoice, bonusProductId);
+				netAmtsByProjectId.forEach((projectId, netAmt) -> deductionLinesBuilder.add(PaymentBonusDeductionLine.builder()
+						.bonusProductId(bonusProductId)
+						.projectId(projectId)
+						.tax(tax)
+						.netAmt(netAmt)
+						.build()));
+			});
+			final ImmutableList<PaymentBonusDeductionLine> deductionLines = deductionLinesBuilder.build();
 
 			return Optional.of(PaymentBonusDeduction.builder()
 					.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
@@ -374,6 +391,7 @@ public class PaymentBonusDeductionService implements PaymentBonusDeductionProvid
 				.productId(productId)
 				.productCategoryIdAndAncestors(categoryIdAndAncestorsByProductId.getOrDefault(productId, ImmutableSet.of()))
 				.huPIItemProductId(orderLine != null ? OrderLinePackingInstructions.extractHUPIItemProductId(orderLine) : null)
+				.projectId(ProjectId.ofRepoIdOrNull(line.getC_Project_ID()))
 				.netAmt(Money.of(extractNetAmt(invoice, line, precision), CurrencyId.ofRepoId(invoice.getC_Currency_ID())))
 				.build();
 	}
@@ -396,5 +414,61 @@ public class PaymentBonusDeductionService implements PaymentBonusDeductionProvid
 		@NonNull ImmutableSet<ProductCategoryId> productCategoryIdAndAncestors;
 		@Nullable HUPIItemProductId huPIItemProductId;
 		@NonNull Money netAmt;
+		@Nullable ProjectId projectId;
+	}
+
+	/**
+	 * Splits the already rounded {@code totalNetAmt} among the projects in proportion to their base, so that the parts add up to it exactly.
+	 * Each project gets the rounded-down share (in the smallest unit of the currency); the missing smallest units go to the projects with the biggest remainders (largest-remainder method).
+	 * On equal remainders the lower project ID comes first and the project-less part last, so the result is deterministic.
+	 * Projects whose base is not positive get no part.
+	 *
+	 * @return the part per project, in the order lower project ID first and project-less last; the key {@code null} is the project-less part
+	 */
+	private static Map<ProjectId, Money> apportionByLargestRemainder(
+			@NonNull final Money totalNetAmt,
+			@NonNull final Map<ProjectId, Money> baseNetAmtsByProjectId,
+			@NonNull final CurrencyPrecision precision)
+	{
+		final List<ProjectId> projectIds = new ArrayList<>();
+		baseNetAmtsByProjectId.forEach((projectId, baseNetAmt) -> {
+			if (baseNetAmt.signum() > 0)
+			{
+				projectIds.add(projectId);
+			}
+		});
+		projectIds.sort(Comparator.nullsLast(Comparator.comparingInt(ProjectId::getRepoId)));
+
+		final BigDecimal totalBase = projectIds.stream()
+				.map(projectId -> baseNetAmtsByProjectId.get(projectId).toBigDecimal())
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		final BigDecimal totalUnits = totalNetAmt.toBigDecimal().movePointRight(precision.toInt());
+
+		// exact: share = totalUnits * base / totalBase = floor + remainder / totalBase
+		final Map<ProjectId, BigDecimal> unitsByProjectId = new LinkedHashMap<>();
+		final Map<ProjectId, BigDecimal> remainderByProjectId = new LinkedHashMap<>();
+		BigDecimal distributedUnits = BigDecimal.ZERO;
+		for (final ProjectId projectId : projectIds)
+		{
+			final BigDecimal numerator = totalUnits.multiply(baseNetAmtsByProjectId.get(projectId).toBigDecimal());
+			final BigDecimal floorUnits = numerator.divideToIntegralValue(totalBase);
+			unitsByProjectId.put(projectId, floorUnits);
+			remainderByProjectId.put(projectId, numerator.subtract(floorUnits.multiply(totalBase)));
+			distributedUnits = distributedUnits.add(floorUnits);
+		}
+
+		// projectIds is already in the tie-break order and the sort is stable
+		final List<ProjectId> byRemainderDescending = new ArrayList<>(projectIds);
+		byRemainderDescending.sort(Comparator.comparing(remainderByProjectId::get).reversed());
+		final int missingUnits = totalUnits.subtract(distributedUnits).toBigIntegerExact().intValueExact();
+		for (int i = 0; i < missingUnits; i++)
+		{
+			unitsByProjectId.merge(byRemainderDescending.get(i), BigDecimal.ONE, BigDecimal::add);
+		}
+
+		final CurrencyId currencyId = totalNetAmt.getCurrencyId();
+		final Map<ProjectId, Money> result = new LinkedHashMap<>();
+		unitsByProjectId.forEach((projectId, units) -> result.put(projectId, Money.of(units.movePointLeft(precision.toInt()), currencyId)));
+		return result;
 	}
 }

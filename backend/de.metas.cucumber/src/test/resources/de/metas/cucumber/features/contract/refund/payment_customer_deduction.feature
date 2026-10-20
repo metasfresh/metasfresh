@@ -433,6 +433,68 @@ Feature: Bonus that the customer deducts when paying an invoice
 
   # ##############################################################################################
   # ##############################################################################################
+  # The bonus does not divide into whole cents across the projects: the missing cent goes to one line
+  # ##############################################################################################
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @Id:paymentCustomerDeduction_TC12
+  Scenario: A bonus that does not divide into whole cents across three projects is rounded once and the missing cent goes to the first project, so the total is unchanged
+    Given metasfresh contains C_Flatrate_Conditions:
+      | Identifier     | Type_Conditions |
+      | conditionsWare | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_Category_ID | Bonus_Product_ID | IsDeductedAtPayment |
+      | configWare | conditionsWare           | monthlySchedule      | 3.34          | goodsCategory         | bonusWare        | Y                   |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    |
+      | termWare   | conditionsWare                      | customerBP                  | 2026-07-01 | 2026-12-31 |
+
+    # the sales invoice: 1 x 10.00 goods on each of three projects (equal base shares) + 5 x 10.00 crates
+    # GrandTotal = 30.00 + 2.10 + 50.00 + 9.50 = 91.60
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | project1   |
+      | project2   |
+      | project3   |
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | projectInvoice | customerBP    | Ausgangsrechnung        | 2026-07-15   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier  | C_Invoice_ID   | M_Product_ID | QtyInvoiced | C_Project_ID |
+      | goodsLineP1 | projectInvoice | goodsProduct | 1 PCE       | project1     |
+      | goodsLineP2 | projectInvoice | goodsProduct | 1 PCE       | project2     |
+      | goodsLineP3 | projectInvoice | goodsProduct | 1 PCE       | project3     |
+      | crateLine   | projectInvoice | crateProduct | 5 PCE       | null         |
+    And the invoice identified by projectInvoice is completed
+
+    # bonus: 3.34 % of the 30.00 goods = 1.002, rounded once to 1.00 + 7 % VAT 0.07 = 1.07; the customer pays 91.60 - 1.07 = 90.53
+    # 1.00 / 3 = 0.333 per project; rounded alone each would give 0.33 and the total 0.99
+    # all three remainders are equal: the lowest project (project 1) gets the missing cent
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt    | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customerBP    | 90.53 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID   | C_Payment_ID | PaymentBonus.C_Invoice_ID |
+      | projectInvoice | payment      | bonusCreditMemo           |
+
+    Then validate created invoices
+      | C_Invoice_ID    | GrandTotal | TotalLines | DocSubType | IsPaid |
+      | projectInvoice  | 91.60 EUR  | 80.00      |            | true   |
+      | bonusCreditMemo | 1.07 EUR   | 1.00       | PB         | true   |
+    And validate invoice lines for bonusCreditMemo:
+      | M_Product_ID | QtyInvoiced | LineNetAmt | C_Tax_ID | C_Project_ID |
+      | bonusWare    | 1           | 0.34       | lowTax   | project1     |
+      | bonusWare    | 1           | 0.33       | lowTax   | project2     |
+      | bonusWare    | 1           | 0.33       | lowTax   | project3     |
+
+
+  # ##############################################################################################
+  # ##############################################################################################
   # Partial payments: the bonus is deducted once
   # ##############################################################################################
   # ##############################################################################################
