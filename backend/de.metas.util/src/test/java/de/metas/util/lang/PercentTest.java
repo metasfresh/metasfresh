@@ -219,12 +219,12 @@ public class PercentTest
 		assertThat(Percent.of(new BigDecimal("12.5")).toBigDecimalOneHundredBased()).isEqualByComparingTo("12.5");
 		assertThat(Percent.ONE_HUNDRED.toBigDecimalOneHundredBased()).isEqualByComparingTo("100");
 		assertThat(Percent.ZERO.toBigDecimalOneHundredBased()).isEqualByComparingTo("0");
-		assertThat(Percent.ofNullableFraction(new BigDecimal("0.8")).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
+		assertThat(Percent.ofFraction(new BigDecimal("0.8")).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
 	}
 
 	@Test
-	public void ofNullableFraction_toFractionBigDecimal_roundTrips()
+	public void ofFraction_toFractionBigDecimal_roundTrips()
 	{
-		assertThat(Percent.ofNullableFraction(new BigDecimal("0.6667")).toFractionBigDecimal()).isEqualByComparingTo("0.6667");
+		assertThat(Percent.ofFraction(new BigDecimal("0.6667")).toFractionBigDecimal()).isEqualByComparingTo("0.6667");
 	}
 }

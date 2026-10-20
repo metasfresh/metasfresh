@@ -3,6 +3,8 @@
 -- a value above 1 is a 100-based percent and is divided by 100, rounded to v_scale decimals; values up to 1 are taken as already converted and stay as they are.
 -- Empty factors (order lines that were never calibrated) stay empty.
 -- Only the affected rows (factor > 1) are backed up, with the suffix '_cff'; on an instance without such rows the backups are empty.
+-- The backup is written here instead of with backup_table(): backup_table() has no row filter and would copy all of C_OrderLine.
+-- It uses the same backup.backup_tables registry and the same '_bkp_<timestamp><suffix>' naming as backup_table().
 -- Re-run safe: if the '_cff' backup is already registered, the conversion already ran and is skipped
 -- (a second run would divide again, e.g. 1.2 -> 0.01).
 
