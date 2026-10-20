@@ -24,7 +24,6 @@ import org.compiere.util.TimeUtil;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
-import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.AccountIdentificationSEPA;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.ActiveOrHistoricCurrencyAndAmountSEPA;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.ActiveOrHistoricCurrencyCodeEUR;
@@ -162,7 +161,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 
 		//
 		// Payment Informations: create one PaymentInstructionInformationSDD for each line
-		final List<I_SEPA_Export_Line> sepaDocumentLines = Services.get(ISEPADocumentDAO.class).retrieveLines(sepaDocument);
+		final List<I_SEPA_Export_Line> sepaDocumentLines = Services.get(ISEPADocumentBL.class).retrieveLines(sepaDocument);
 		if (sepaDocumentLines.isEmpty())
 		{
 			throw new AdempiereException("@NoLines@: " + sepaDocument);

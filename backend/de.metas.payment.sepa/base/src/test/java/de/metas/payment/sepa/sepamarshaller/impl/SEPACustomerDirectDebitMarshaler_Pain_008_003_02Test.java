@@ -6,9 +6,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.metas.banking.api.BankAccountService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.currency.CurrencyCode;
@@ -57,6 +59,7 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 	public void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(BankAccountService.newInstanceForUnitTesting()); // SEPADocumentBL needs it
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		this.xmlGenerator = new SEPACustomerDirectDebitMarshaler_Pain_008_003_02();

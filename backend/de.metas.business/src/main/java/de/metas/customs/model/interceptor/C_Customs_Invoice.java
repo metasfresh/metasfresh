@@ -1,7 +1,9 @@
 package de.metas.customs.model.interceptor;
 
-import java.util.Set;
-
+import de.metas.customs.CustomsInvoiceId;
+import de.metas.customs.CustomsInvoiceRepository;
+import de.metas.i18n.AdMessageKey;
+import de.metas.product.ProductId;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
@@ -10,13 +12,7 @@ import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.customs.CustomsInvoiceId;
-import de.metas.customs.CustomsInvoiceRepository;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
+import java.util.Set;
 
 /*
  * #%L
@@ -57,10 +53,7 @@ public class C_Customs_Invoice
 		if (!productIdsWithNoCustomsTariff.isEmpty())
 		{
 
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-			final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(MSG_C_Customs_Invoice_Tariff_NotSet);
-			throw new AdempiereException(translatableMsgText)
+			throw new AdempiereException(MSG_C_Customs_Invoice_Tariff_NotSet)
 					.markAsUserValidationError();
 		}
 	}
