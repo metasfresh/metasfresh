@@ -236,6 +236,29 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
 
 	/**
+	 * Set Finished goods: require catch-weight scan.
+	 * Receiving a catch-weight finished good at production receipt requires a scan.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFinishedGoodsCatchWeightScanRequired (boolean IsFinishedGoodsCatchWeightScanRequired);
+
+	/**
+	 * Get Finished goods: require catch-weight scan.
+	 * Receiving a catch-weight finished good at production receipt requires a scan.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFinishedGoodsCatchWeightScanRequired();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsFinishedGoodsCatchWeightScanRequired = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsFinishedGoodsCatchWeightScanRequired", null);
+	String COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired = "IsFinishedGoodsCatchWeightScanRequired";
+
+	/**
 	 * Set Confirm before booking.
 	 * Asks the operator to confirm, showing the quantity about to be written off and its unit of measure, before the HU's remaining quantity is booked off stock.
 	 *

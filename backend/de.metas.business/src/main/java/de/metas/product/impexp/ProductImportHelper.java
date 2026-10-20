@@ -203,6 +203,11 @@ import java.math.BigDecimal;
 		}
 
 		product.setGuaranteeDaysMin(from.getGuaranteeDaysMin());
+		// BestBeforeDays is nullable on the product: an import record without a value must not wipe the existing one
+		if (from.getBestBeforeDays() > 0)
+		{
+			product.setBestBeforeDays(from.getBestBeforeDays());
+		}
 	}
 
 	private de.metas.adempiere.model.I_M_Product createProductRecordNoSave(@NonNull final I_I_Product importRecord)
@@ -239,6 +244,7 @@ import java.math.BigDecimal;
 		product.setPZN(importRecord.getPZN());
 		product.setIsCommissioned(importRecord.isCommissioned());
 		product.setGuaranteeDaysMin(importRecord.getGuaranteeDaysMin());
+		product.setBestBeforeDays(importRecord.getBestBeforeDays());
 		product.setIsSelfPacked(importRecord.isSelfPacked());
 		product.setHeightInCm(importRecord.getHeightInCm());
 		product.setWidthInCm(importRecord.getWidthInCm());

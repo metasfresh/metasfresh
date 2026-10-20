@@ -2,6 +2,7 @@ package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.frontend_testing.JsonTestId;
 import de.metas.handlingunits.HUPIItemProduct;
@@ -24,6 +25,7 @@ import de.metas.manufacturing.config.FinishedGoodsReceiveLineConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.config.ReceiveUnitType;
+import de.metas.manufacturing.job.model.FinishedGoodsReceive;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
@@ -53,7 +55,9 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.Attribute;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.api.Params;
@@ -98,11 +102,12 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(wfProcess);
 
 		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(job.getResponsibleId(), ClientId.METASFRESH);
+		final FinishedGoodsReceive finishedGoodsReceive = job.getActivityById(wfActivity.getId()).getFinishedGoodsReceiveAssumingNotNull();
+		final FinishedGoodsReceiptDefaults receiptDefaults = FinishedGoodsReceiptDefaults.of(job.getPpOrderId(), getAttributeCodesToPreFill(finishedGoodsReceive, config));
 
-		final ImmutableList<JsonFinishedGoodsReceiveLine> lines = job.getActivityById(wfActivity.getId())
-				.getFinishedGoodsReceiveAssumingNotNull()
+		final ImmutableList<JsonFinishedGoodsReceiveLine> lines = finishedGoodsReceive
 				.streamLines()
-				.map(line -> toJson(line, job.getCustomerId(), config, jsonOpts))
+				.map(line -> toJson(line, job.getCustomerId(), config, receiptDefaults, jsonOpts))
 				.collect(ImmutableList.toImmutableList());
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
@@ -113,10 +118,33 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.build();
 	}
 
+	/**
+	 * The attribute codes whose default is pre-filled: the configured editable attributes, plus lot number and best-before date
+	 * if a line requires the catch-weight scan, because the scanned lot number and best-before date are always shown there for review.
+	 */
+	@NonNull
+	private static ImmutableSet<AttributeCode> getAttributeCodesToPreFill(
+			@NonNull final FinishedGoodsReceive finishedGoodsReceive,
+			@NonNull final MobileUIManufacturingConfig config)
+	{
+		final ImmutableSet.Builder<AttributeCode> result = ImmutableSet.<AttributeCode>builder()
+				.addAll(config.getEditableAttributeCodesInOrder());
+
+		final boolean isAnyLineCatchWeightScanRequired = finishedGoodsReceive.streamLines()
+				.anyMatch(line -> config.effectiveForReceiveLine(line).isCatchWeightScanRequired());
+		if (isAnyLineCatchWeightScanRequired)
+		{
+			result.add(AttributeConstants.ATTR_LotNumber, AttributeConstants.ATTR_BestBeforeDate);
+		}
+
+		return result.build();
+	}
+
 	private JsonFinishedGoodsReceiveLine toJson(
 			@NonNull final FinishedGoodsReceiveLine line,
 			@Nullable final BPartnerId customerId,
 			@NonNull final MobileUIManufacturingConfig config,
+			@NonNull final FinishedGoodsReceiptDefaults receiptDefaults,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		final List<I_M_HU_PI_Item_Product> tuPIItemProducts = huPIItemProductDAO.retrieveTUs(
@@ -127,8 +155,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		final boolean isMainFinishedGood = line.getCoProductBOMLineId() == null;
-		final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(isMainFinishedGood);
+		final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(line);
 
 		// retrieveTUs is pinned to HU_UnitType='TU', so the virtual ('V') packing instruction never comes back from
 		// it; add it here, as WEBUI_ProcessHelper#retrieveHUPIItemProductRecords(includeVirtualItem) does for the
@@ -164,7 +191,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final java.math.BigDecimal qtyToReceive;
 		final java.math.BigDecimal qtyReceived;
 
-		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null)
+		// With the mandatory catch-weight scan every receipt is one piece, also in TU mode, so the line counts pieces.
+		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null && !lineConfig.isCatchWeightScanRequired())
 		{
 			final HUPIItemProduct huPIItemProduct = huPIItemProductDAO.getById(line.getTuPIItemProductId());
 			final QtyTU qtyToReceiveTU = huPIItemProduct.computeQtyTUsOfTotalCUs(line.getQtyToReceive(), line.getProductId());
@@ -189,8 +217,9 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 
 		return JsonFinishedGoodsReceiveLine.builder()
 				.id(line.getId().toJson())
-				.coproduct(!isMainFinishedGood)
+				.coproduct(!line.isMainFinishedGood())
 				.skipReceiveTargetStep(lineConfig.isSkipReceiveTargetStep())
+				.catchWeightScanRequired(lineConfig.isCatchWeightScanRequired())
 				.productName(line.getProductValueAndProductName().translate(adLanguage))
 				.uom(uom)
 				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), adLanguage))
@@ -202,6 +231,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.availableReceivingTUTargets(tuTargetList)
 				.catchWeightUomSymbol(catchWeightUomSymbol)
 				.editableAttributes(buildEditableAttributes(line.getProductId(), config, adLanguage))
+				.defaultBestBeforeDate(receiptDefaults.getBestBeforeDate(line.getProductId()))
+				.defaultLotNo(receiptDefaults.getLotNo())
 				.build();
 	}
 

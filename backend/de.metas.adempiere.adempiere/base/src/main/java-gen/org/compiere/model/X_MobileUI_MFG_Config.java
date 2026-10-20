@@ -107,6 +107,18 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
+	public void setIsFinishedGoodsCatchWeightScanRequired (final boolean IsFinishedGoodsCatchWeightScanRequired)
+	{
+		set_Value (COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired, IsFinishedGoodsCatchWeightScanRequired);
+	}
+
+	@Override
+	public boolean isFinishedGoodsCatchWeightScanRequired() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired);
+	}
+
+	@Override
 	public void setIsConfirmEmptyingHU (final boolean IsConfirmEmptyingHU)
 	{
 		set_Value (COLUMNNAME_IsConfirmEmptyingHU, IsConfirmEmptyingHU);

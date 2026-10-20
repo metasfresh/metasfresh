@@ -88,6 +88,15 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 		return result;
 	}
 
+	/**
+	 * @return {@code true} if the sequence has no decimal pattern, because only then {@link #provideSequenceNo(Evaluatee, DocumentSequenceInfo, String)} ignores the incremental number.
+	 */
+	@Override
+	public boolean isSequenceNoIndependentOfIncrement(@NonNull final DocumentSequenceInfo docSeqInfo)
+	{
+		return Check.isEmpty(docSeqInfo.getDecimalPattern());
+	}
+
 	@Nullable
 	private static Date getDateOrNull(@NonNull final Evaluatee context, final @NonNull DocumentSequenceInfo docSeqInfo)
 	{

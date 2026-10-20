@@ -560,6 +560,7 @@ public class ManufacturingJobService
 				.barcode(receiveFrom.getBarcode())
 				.receiveUnitType(receiveUnitType)
 				.tuPIItemProductIdForTUMode(receiveLine.getTuPIItemProductId())
+				.catchWeightScanRequired(config.effectiveForReceiveLine(receiveLine).isCatchWeightScanRequired())
 				.build().execute();
 	}
 

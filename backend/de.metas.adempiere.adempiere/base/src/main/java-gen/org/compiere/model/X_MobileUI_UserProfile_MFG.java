@@ -155,6 +155,27 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	}
 
 	/** 
+	 * IsFinishedGoodsCatchWeightScanRequired AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISFINISHEDGOODSCATCHWEIGHTSCANREQUIRED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISFINISHEDGOODSCATCHWEIGHTSCANREQUIRED_Yes = "Y";
+	/** No = N */
+	public static final String ISFINISHEDGOODSCATCHWEIGHTSCANREQUIRED_No = "N";
+	@Override
+	public void setIsFinishedGoodsCatchWeightScanRequired (final @Nullable java.lang.String IsFinishedGoodsCatchWeightScanRequired)
+	{
+		set_Value (COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired, IsFinishedGoodsCatchWeightScanRequired);
+	}
+
+	@Override
+	public java.lang.String getIsFinishedGoodsCatchWeightScanRequired() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired);
+	}
+
+	/** 
 	 * IsScanResourceRequired AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */

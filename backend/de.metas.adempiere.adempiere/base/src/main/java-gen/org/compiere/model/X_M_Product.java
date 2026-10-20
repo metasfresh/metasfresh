@@ -70,6 +70,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsString(COLUMNNAME_avv_no);
 	}
 
+	@Override
+	public void setBestBeforeDays (final int BestBeforeDays)
+	{
+		set_Value (COLUMNNAME_BestBeforeDays, BestBeforeDays);
+	}
+
+	@Override
+	public int getBestBeforeDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_BestBeforeDays);
+	}
+
 	/** 
 	 * BioControlNumber AD_Reference_ID=541516
 	 * Reference name: BioControlNumber_Reference

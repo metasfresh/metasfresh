@@ -52,6 +52,7 @@ public class MobileUIManufacturingConfigRepository
 			.isAllowReceiveWithoutPackingItem(OptionalBoolean.FALSE)
 			.isAllowEmptyingHUs(OptionalBoolean.TRUE)
 			.isConfirmEmptyingHU(OptionalBoolean.TRUE)
+			.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.FALSE)
 			.build();
 
 	private final CCache<UserId, Optional<MobileUIManufacturingConfig>> userConfigsCache = CCache.<UserId, Optional<MobileUIManufacturingConfig>>builder()
@@ -139,6 +140,7 @@ public class MobileUIManufacturingConfigRepository
 				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofNullableString(record.getIsSkipFinishedGoodsReceiveTargetStep()))
 				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofNullableString(record.getIsCaptureCatchWeightAtReceipt()))
 				.isAllowReceiveWithoutPackingItem(OptionalBoolean.ofNullableString(record.getIsAllowReceiveWithoutPackingItem()))
+				.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.ofNullableString(record.getIsFinishedGoodsCatchWeightScanRequired()))
 				.build();
 	}
 
@@ -152,6 +154,7 @@ public class MobileUIManufacturingConfigRepository
 		record.setIsSkipFinishedGoodsReceiveTargetStep(from.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanString());
 		record.setIsCaptureCatchWeightAtReceipt(from.getIsCaptureCatchWeightAtReceipt().toBooleanString());
 		record.setIsAllowReceiveWithoutPackingItem(from.getIsAllowReceiveWithoutPackingItem().toBooleanString());
+		record.setIsFinishedGoodsCatchWeightScanRequired(from.getIsFinishedGoodsCatchWeightScanRequired().toBooleanString());
 	}
 
 	private Optional<MobileUIManufacturingConfig> retrieveGlobalConfig(@NonNull final ClientId clientId)
@@ -177,6 +180,7 @@ public class MobileUIManufacturingConfigRepository
 				.isAllowReceiveWithoutPackingItem(OptionalBoolean.ofBoolean(record.isAllowReceiveWithoutPackingItem()))
 				.isAllowEmptyingHUs(OptionalBoolean.ofBoolean(record.isAllowEmptyingHUs()))
 				.isConfirmEmptyingHU(OptionalBoolean.ofBoolean(record.isConfirmEmptyingHU()))
+				.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.ofBoolean(record.isFinishedGoodsCatchWeightScanRequired()))
 				.build();
 	}
 
