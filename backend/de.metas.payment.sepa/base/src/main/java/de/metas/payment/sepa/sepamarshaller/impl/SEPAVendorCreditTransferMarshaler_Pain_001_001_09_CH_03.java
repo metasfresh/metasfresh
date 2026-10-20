@@ -30,6 +30,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
+import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SepaMarshallerException;
 import de.metas.payment.sepa.api.SepaUtils;
@@ -423,7 +424,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03 implements 
 		creditTransferInitiation.getGrpHdr().setNbOfTxs(String.valueOf(nbOfTxs));
 
 		sepaDocument.setProcessed(!creditTransferInitiation.getPmtInf().isEmpty());
-		InterfaceWrapperHelper.save(sepaDocument);
+		Services.get(ISEPADocumentDAO.class).save(sepaDocument);
 		return document;
 	}
 
