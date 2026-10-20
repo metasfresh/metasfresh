@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.shipmentschedule.ShipmentScheduleRecomputeRaceHarness;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.QtyTU;
 import de.metas.inoutcandidate.qty_reservation.CreateQtyReservationRequest;
@@ -114,6 +115,15 @@ import javax.annotation.Nullable;
  *   <li><b>QtyTU</b> — (required) number of TUs to unreserve; must not exceed the bucket's reversible TUs</li>
  * </ul>
  *
+ * <h3>{@code M_QtyReservation bucket is reduced, committed only after the pending recompute ran:}</h3>
+ * <p>Same columns as {@code M_QtyReservation bucket is reduced:}, but the reduction's transaction stays open while the pending shipment schedule recompute pass runs
+ * and is committed afterwards. Requires {@code the shipment schedule recompute queues are paused}.
+ * <pre>
+ * When M_QtyReservation bucket is reduced, committed only after the pending recompute ran:
+ *   | C_OrderLine_ID | SupplyType | QtyTU |
+ *   | orderLine_1    | OH         | 1     |
+ * </pre>
+ *
  * <h3>{@code M_QtyReservation bucket reduction is rejected:}</h3>
  * <p>Same columns as {@code M_QtyReservation bucket is reduced:}, but expects the reduction to fail because more TUs are requested than are reversible.
  * <pre>
@@ -161,6 +171,7 @@ public class M_QtyReservation_StepDef
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final M_AttributeSetInstance_StepDefData asiTable;
+	@NonNull private final ShipmentScheduleRecomputeRaceHarness recomputeRaceHarness;
 
 	/**
 	 * Creates {@code M_QtyReservation} records directly in the DB, bypassing the cockpit V2 UI process.
@@ -215,6 +226,44 @@ public class M_QtyReservation_StepDef
 	public void reduce_M_QtyReservation_bucket(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> trxManager.runInNewTrx(() -> qtyReservationService.reduceReservation(toReduceRequest(row))));
+	}
+
+	/**
+	 * Reduces the reservation bucket like {@code M_QtyReservation bucket is reduced:}, but keeps the reduction's transaction open while the pending
+	 * shipment schedule recompute pass runs; the transaction is committed after the pass. Requires the paused recompute queues.
+	 * While the transaction is open, asserts that the reduction is not visible outside, i.e. that the bucket still has its reversible TUs.
+	 * <p>
+	 * Stands in for reducing a reservation from the material cockpit ({@code MD_CockpitV2_DeleteQtyReservation:82}), which calls
+	 * {@code QtyReservationService.reduceReservation}; its storage-segment flag (QtyReservationService:191) is raised outside the reduction's
+	 * transaction. The reduction is held open at that point because only a commit after the pass makes the race deterministic.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns Same as {@code M_QtyReservation bucket is reduced:}
+	 * @cucumber.depends StepDefData: C_OrderLine_StepDefData<br>
+	 *   Given the shipment schedule recompute queues are paused
+	 * @cucumber.example
+	 * <pre>
+	 * When M_QtyReservation bucket is reduced, committed only after the pending recompute ran:
+	 *   | C_OrderLine_ID | SupplyType | QtyTU |
+	 *   | orderLine_1    | OH         | 1     |
+	 * </pre>
+	 */
+	@When("M_QtyReservation bucket is reduced, committed only after the pending recompute ran:")
+	public void reduce_M_QtyReservation_bucket_committedAfterRecompute(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final ReduceQtyReservationRequest request = toReduceRequest(row);
+			final QtyTU reversibleBefore = qtyReservationService.getTotalReversibleQtyTU(request.getOrderAndLineId(), request.getSupplyType(), request.getDatePromised());
+
+			recomputeRaceHarness.runInTransactionCommittedAfterRecompute(
+					() -> {
+						qtyReservationService.reduceReservation(request);
+						return null;
+					},
+					() -> Assertions.assertThat(qtyReservationService.getTotalReversibleQtyTU(request.getOrderAndLineId(), request.getSupplyType(), request.getDatePromised()))
+							.as("reversible QtyTU of %s visible outside the reduction's transaction (the reduction must not commit before the recompute pass ran)", request)
+							.isEqualTo(reversibleBefore));
+		});
 	}
 
 	/**

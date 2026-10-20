@@ -59,6 +59,7 @@ import de.metas.process.ProcessInfoLog;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -73,9 +74,11 @@ import org.compiere.model.I_AD_UserGroup;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -104,6 +107,16 @@ public class ExternalSystem_Config_StepDef
 	private final ExternalSystem_Config_ScriptedExportConversion_StepDefData scriptedExportConversionConfigTable;
 
 	private final TestContext testContext;
+
+	/**
+	 * Trigger-on-complete configs created by the current scenario; deactivated again after the scenario.
+	 */
+	private final Set<ExternalSystemScriptedExportConversionConfigId> createdTriggerOnCompleteConfigIds = new LinkedHashSet<>();
+
+	/**
+	 * Pre-existing trigger-on-complete configs that the current scenario deactivated; reactivated again after the scenario.
+	 */
+	private final Set<ExternalSystemScriptedExportConversionConfigId> takenOverTriggerOnCompleteConfigIds = new LinkedHashSet<>();
 
 	public ExternalSystem_Config_StepDef(
 			@NonNull final ExternalSystem_Config_StepDefData configTable,
@@ -449,6 +462,12 @@ public class ExternalSystem_Config_StepDef
 					.forEach(existing -> {
 						existing.setIsActive(false);
 						InterfaceWrapperHelper.save(existing);
+
+						final ExternalSystemScriptedExportConversionConfigId existingId = ExternalSystemScriptedExportConversionConfigId.ofRepoId(existing.getExternalSystem_Config_ScriptedExportConversion_ID());
+						if (!createdTriggerOnCompleteConfigIds.contains(existingId))
+						{
+							takenOverTriggerOnCompleteConfigIds.add(existingId);
+						}
 					});
 		}
 
@@ -463,10 +482,49 @@ public class ExternalSystem_Config_StepDef
 
 		InterfaceWrapperHelper.save(scriptedExportConversionConfig);
 
-		final ExternalSystemScriptedExportConversionConfig config = scriptedExportConversionRepository.getById(
-				ExternalSystemScriptedExportConversionConfigId.ofRepoId(scriptedExportConversionConfig.getExternalSystem_Config_ScriptedExportConversion_ID())
-		);
+		final ExternalSystemScriptedExportConversionConfigId configId = ExternalSystemScriptedExportConversionConfigId.ofRepoId(scriptedExportConversionConfig.getExternalSystem_Config_ScriptedExportConversion_ID());
+		if (readStatusColumn)
+		{
+			createdTriggerOnCompleteConfigIds.add(configId);
+		}
+
+		final ExternalSystemScriptedExportConversionConfig config = scriptedExportConversionRepository.getById(configId);
 
 		scriptedExportConversionConfigTable.put(scriptedConfigIdentifier, config);
+	}
+
+	/**
+	 * Guaranteed-execution cleanup for {@link #add_externalSystemConfigWithScriptedExportConversionAndStatusColumn} -- an {@code @After} hook
+	 * rather than a trailing Gherkin step, since Cucumber skips remaining steps once one fails, i.e. on exactly the runs that need the cleanup.
+	 * A no-op for every scenario that never called that step.
+	 * <p>
+	 * A trigger-on-complete config is client-wide, so one left active would export (and, for EPCIS, block the reversal of) the documents of
+	 * every later feature on the same DB. The scripted-export repository filters on the child record's own {@code IsActive}, so that is the flag
+	 * switched here: the configs created by the scenario are deactivated, the pre-existing ones it took over are reactivated.
+	 */
+	@After
+	public void deactivateCreatedTriggerOnCompleteConfigsAfterScenario()
+	{
+		if (createdTriggerOnCompleteConfigIds.isEmpty() && takenOverTriggerOnCompleteConfigIds.isEmpty())
+		{
+			return;
+		}
+
+		createdTriggerOnCompleteConfigIds.forEach(configId -> setScriptedExportConversionConfigActive(configId, false));
+		takenOverTriggerOnCompleteConfigIds.forEach(configId -> setScriptedExportConversionConfigActive(configId, true));
+
+		createdTriggerOnCompleteConfigIds.clear();
+		takenOverTriggerOnCompleteConfigIds.clear();
+	}
+
+	private static void setScriptedExportConversionConfigActive(@NonNull final ExternalSystemScriptedExportConversionConfigId configId, final boolean active)
+	{
+		final I_ExternalSystem_Config_ScriptedExportConversion record = InterfaceWrapperHelper.load(configId, I_ExternalSystem_Config_ScriptedExportConversion.class);
+		if (record.isActive() == active)
+		{
+			return;
+		}
+		record.setIsActive(active);
+		InterfaceWrapperHelper.save(record);
 	}
 }

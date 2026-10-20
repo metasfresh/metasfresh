@@ -23,6 +23,7 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.async.QueueWorkPackageId;
@@ -157,16 +158,9 @@ public class ShipmentScheduleEnqueuer
 			@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters,
 			@NonNull final ILock mainLock)
 	{
-		final Iterator<I_M_ShipmentSchedule> shipmentSchedules = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class, localCtx.getCtx(), ITrx.TRXNAME_None)
-				.filter(workPackageParameters.getShipmentSchedulesQueryFiltersEffective())
-				//
-				.orderBy()
-				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey, Direction.Ascending, Nulls.Last)
-				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
-				.endOrderBy()
-				//
-				.create()
-				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+		final Iterator<I_M_ShipmentSchedule> shipmentSchedules = createLockedShipmentSchedulesQuery(
+				mainLock,
+				workPackageParameters.getShipmentSchedulesQueryFiltersEffective())
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
 				.iterate(I_M_ShipmentSchedule.class);
 
@@ -315,6 +309,29 @@ public class ShipmentScheduleEnqueuer
 			workpackageBuilder.discard();
 			result.incSkipped();
 		}
+	}
+
+	/**
+	 * Selects exactly the schedules locked by {@code mainLock} that also match {@code filter}.
+	 * Schedules that became eligible after locking are not locked, so they are left for the next run.
+	 * The iteration is over a snapshot (guaranteed iterator), so that the in-loop lock handover to the work packages does not shrink the result under the iterator.
+	 */
+	@VisibleForTesting
+	IQuery<I_M_ShipmentSchedule> createLockedShipmentSchedulesQuery(
+			@NonNull final ILock mainLock,
+			@NonNull final IQueryFilter<I_M_ShipmentSchedule> filter)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class, _ctx, ITrx.TRXNAME_None)
+				.filter(lockManager.getLockedByFilter(I_M_ShipmentSchedule.class, mainLock))
+				.filter(filter)
+				//
+				.orderBy()
+				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey, Direction.Ascending, Nulls.Last)
+				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.endOrderBy()
+				//
+				.create()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true);
 	}
 
 	/**

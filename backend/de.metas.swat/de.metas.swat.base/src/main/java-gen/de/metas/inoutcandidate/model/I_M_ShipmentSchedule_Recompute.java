@@ -1,8 +1,8 @@
 package de.metas.inoutcandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ShipmentSchedule_Recompute
  *  @author metasfresh (generated) 
@@ -85,6 +85,29 @@ public interface I_M_ShipmentSchedule_Recompute
 
 	ModelColumn<I_M_ShipmentSchedule_Recompute, Object> COLUMN_ChunkUUID = new ModelColumn<>(I_M_ShipmentSchedule_Recompute.class, "ChunkUUID", null);
 	String COLUMNNAME_ChunkUUID = "ChunkUUID";
+
+	/**
+	 * Set DB transaction number.
+	 * Number of the database transaction that wrote the record.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDBTransactionNo (@Nullable BigDecimal DBTransactionNo);
+
+	/**
+	 * Get DB transaction number.
+	 * Number of the database transaction that wrote the record.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDBTransactionNo();
+
+	ModelColumn<I_M_ShipmentSchedule_Recompute, Object> COLUMN_DBTransactionNo = new ModelColumn<>(I_M_ShipmentSchedule_Recompute.class, "DBTransactionNo", null);
+	String COLUMNNAME_DBTransactionNo = "DBTransactionNo";
 
 	/**
 	 * Set Shipment Candidate.

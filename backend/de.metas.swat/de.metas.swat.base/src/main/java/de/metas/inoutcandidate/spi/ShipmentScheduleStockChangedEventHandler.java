@@ -78,6 +78,8 @@ public class ShipmentScheduleStockChangedEventHandler implements MaterialEventHa
 				.bpartnerId(IShipmentScheduleSegment.ANY)
 				.build();
 
-		scheduleInvalidateBL.flagForRecomputeStorageSegment(storageSegment);
+		// Out of trx on purpose: the event is posted after the stock change committed (nothing to keep atomic with),
+		// and the event trx is shared with the other StockChangedEvent handlers (our insert must not abort or roll back theirs).
+		scheduleInvalidateBL.flagSegmentsForRecompute(ImmutableSet.of(storageSegment), null);
 	}
 }

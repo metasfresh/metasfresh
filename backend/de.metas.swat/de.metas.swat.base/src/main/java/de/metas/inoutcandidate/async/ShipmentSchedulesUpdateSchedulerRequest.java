@@ -38,13 +38,21 @@ public class ShipmentSchedulesUpdateSchedulerRequest
 	String trxName;
 	AsyncBatchId asyncBatchId;
 
+	/**
+	 * 0 for a normal pass; {@code n > 0} for the n-th retry pass after failed batches, see
+	 * {@link UpdateInvalidShipmentSchedulesWorkpackageProcessor#PARAM_RecomputeRetryGeneration}.
+	 */
+	int retryGeneration;
+
 	public ShipmentSchedulesUpdateSchedulerRequest(
 			@NonNull final Properties ctx,
 			@Nullable final String trxName,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final AsyncBatchId asyncBatchId,
+			final int retryGeneration)
 	{
 		this.ctx = ctx;
 		this.trxName = trxName;
 		this.asyncBatchId = asyncBatchId;
+		this.retryGeneration = retryGeneration;
 	}
 }
