@@ -52,6 +52,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
@@ -296,6 +297,25 @@ final class EventBus implements IEventBus
 				logger.warn(StringUtils.formatMessage("Failed to enqueue event to topic name. Ignored; topicName={}; event={}", topic.getName(), event), e);
 			}
 		}
+	}
+
+	@Override
+	public void enqueueEvents(@NonNull final List<Event> events)
+	{
+		eventEnqueuer.enqueueEventsInOneBatch(() -> {
+			for (final Event event : events)
+			{
+				try
+				{
+					enqueueEvent(event);
+				}
+				catch (final Exception e)
+				{
+					// e.g. saving the AD_EventLog failed; still enqueue the other events
+					logger.warn(StringUtils.formatMessage("Failed to prepare event for enqueuing. Ignored; topicName={}; event={}", topic.getName(), event), e);
+				}
+			}
+		});
 	}
 
 	private static class TypedConsumerAsEventListener<T> implements IEventListener

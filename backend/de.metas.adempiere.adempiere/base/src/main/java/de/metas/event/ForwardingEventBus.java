@@ -5,6 +5,7 @@ import lombok.NonNull;
 import org.slf4j.MDC.MDCCloseable;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -79,6 +80,12 @@ abstract class ForwardingEventBus implements IEventBus
 		{
 			delegate().enqueueEvent(event);
 		}
+	}
+
+	@Override
+	public void enqueueEvents(@NonNull final List<Event> events)
+	{
+		delegate().enqueueEvents(events);
 	}
 
 	@Override
