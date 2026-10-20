@@ -79,8 +79,8 @@ const ScanHUAndGetQtyComponent = ({
   // actual list of already-reported LU-skips, not just a count. A skipped code is NOT added to
   // `codes` (it must never occupy a crate slot), so without its own memory a second delivery of the
   // same physical scan would re-skip and re-count it. BarcodeScannerComponent and
-  // useKeyboardBarcodeReader can both deliver the same scan in one event tick (see the handler-identity
-  // comment below); feeding `prev.skippedCodes` back into mergeGraiArrays makes a redelivered skip a
+  // GraiCapturePanel's own useKeyboardBarcodeReader can both deliver the same scan (see GraiCapturePanel);
+  // feeding `prev.skippedCodes` back into mergeGraiArrays makes a redelivered skip a
   // silent no-op, so the count (and the toast) fire at most once per physical crate.
   const [graiCapture, setGraiCapture] = useState({ codes: [], skippedCodes: [] });
   const { codes: graiCodes, skippedCodes } = graiCapture;

@@ -56,7 +56,12 @@ describe('BarcodeScannerComponent next to a screen with its own keyboard reader'
   beforeEach(() => {
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     // React warns that the keystroke updates are not wrapped in act(); they are not, on purpose.
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    // Any other error is still printed.
+    const originalConsoleError = console.error;
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation((message, ...args) => {
+      if (String(message).includes('not wrapped in act(')) return;
+      originalConsoleError(message, ...args);
+    });
   });
   afterEach(() => {
     consoleLogSpy.mockRestore();
