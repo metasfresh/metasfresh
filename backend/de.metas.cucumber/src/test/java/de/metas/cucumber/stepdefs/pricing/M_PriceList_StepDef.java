@@ -197,6 +197,9 @@ public class M_PriceList_StepDef
 		final I_C_Country country = extractOptionalCountry(row).orElse(null);
 		final SOTrx soTrx = SOTrx.ofBoolean(row.getAsBoolean("SOTrx"));
 		final boolean isSOPriceList = row.getAsOptionalBoolean(I_M_PriceList.COLUMNNAME_IsSOPriceList).orElse(soTrx.toBoolean());
+		assertThat(isSOPriceList)
+				.as("The IsSOPriceList column must not contradict the SOTrx column (SOTrx=%s)", soTrx)
+				.isEqualTo(soTrx.toBoolean());
 
 		final I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 
@@ -300,7 +303,7 @@ public class M_PriceList_StepDef
 		row.getAsIdentifier().putOrReplace(priceListVersionTable, priceListVersion);
 	}
 
-	@Then("the M_PriceLists are persisted separately:")
+	@Then("the M_PriceLists exist:")
 	public void validate_M_PriceLists(@NonNull final DataTable dataTable)
 	{
 		final List<Integer> ids = DataTableRows.of(dataTable).stream().map(this::validateM_PriceList).collect(Collectors.toList());
@@ -321,7 +324,7 @@ public class M_PriceList_StepDef
 		return actual.getM_PriceList_ID();
 	}
 
-	@Then("the M_PriceList_Versions are persisted separately:")
+	@Then("the M_PriceList_Versions exist:")
 	public void validate_M_PriceList_Versions(@NonNull final DataTable dataTable)
 	{
 		final List<Integer> ids = DataTableRows.of(dataTable).stream().map(this::validateM_PriceList_Version).collect(Collectors.toList());

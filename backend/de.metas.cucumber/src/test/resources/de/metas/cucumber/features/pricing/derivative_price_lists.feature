@@ -1,10 +1,10 @@
 @from:cucumber
 @allure.label.epic:E0260_Pricing
-@allure.label.feature:F32000_Pricing
-@F32000
+@allure.label.feature:F32090_Derivative_Pricelists
+@F32090
 @ghActions:run_on_executor7
 Feature: Derivative price lists
-## F32000: Pricing
+## F32090: Derivative Pricelists
 
   Background:
     Given infrastructure and metasfresh are running
@@ -28,14 +28,14 @@ Feature: Derivative price lists
       | Identifier   | M_PriceList_ID | ValidFrom  | Description        |
       | dpl_setup_v1 | dpl_setup_1    | 2091-01-10 | dpl setup version1 |
       | dpl_setup_v2 | dpl_setup_1    | 2091-02-20 | dpl setup version2 |
-    Then the M_PriceLists are persisted separately:
+    Then the M_PriceLists exist:
       | Identifier  | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | IsActive | Name               |
       | dpl_setup_1 | dpl_setup_ps       | DE                    | EUR                 | true     | dpl_setup_list_eur |
       | dpl_setup_2 | dpl_setup_ps       | DE                    | CHF                 | false    | dpl_setup_list_chf |
-    And the M_PriceLists are persisted separately:
+    And the M_PriceLists exist:
       | Identifier  | M_PricingSystem_ID | C_Currency.ISO_Code | Name                  |
       | dpl_setup_3 | dpl_setup_ps       | EUR                 | dpl_setup_list_nocntr |
-    And the M_PriceList_Versions are persisted separately:
+    And the M_PriceList_Versions exist:
       | Identifier   | M_PriceList_ID | ValidFrom  | Description        |
       | dpl_setup_v1 | dpl_setup_1    | 2091-01-10 | dpl setup version1 |
       | dpl_setup_v2 | dpl_setup_1    | 2091-02-20 | dpl setup version2 |
