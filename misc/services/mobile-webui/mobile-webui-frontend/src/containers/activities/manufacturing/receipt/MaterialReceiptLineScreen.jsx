@@ -49,6 +49,9 @@ const MaterialReceiptLineScreen = () => {
       qtyReceived,
       qtyToReceive,
       skipReceiveTargetStep,
+      catchWeightScanRequired,
+      defaultLotNo,
+      defaultBestBeforeDate,
     },
     pickTo,
     customQRCodeFormats,
@@ -196,6 +199,10 @@ const MaterialReceiptLineScreen = () => {
           caption={trl('activities.mfg.receipts.btnReceiveProducts')}
           customQRCodeFormats={customQRCodeFormats}
           readAttributes={readAttributes}
+          defaultLotNo={defaultLotNo}
+          defaultBestBeforeDate={defaultBestBeforeDate}
+          // the backend's effective flag: setting on, main finished good, catch-weight product, weight captured at receipt
+          isCatchWeightScanMandatory={!!catchWeightScanRequired}
         />
         {noGebindeReason && (
           <p className="help is-danger" data-testid="receive-no-gebinde-hint">

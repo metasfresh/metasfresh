@@ -94,6 +94,29 @@ public interface I_I_Product
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Total shelf life.
+	 * Total shelf life of the product in days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBestBeforeDays (int BestBeforeDays);
+
+	/**
+	 * Get Total shelf life.
+	 * Total shelf life of the product in days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBestBeforeDays();
+
+	ModelColumn<I_I_Product, Object> COLUMN_BestBeforeDays = new ModelColumn<>(I_I_Product.class, "BestBeforeDays", null);
+	String COLUMNNAME_BestBeforeDays = "BestBeforeDays";
+
+	/**
 	 * Set Business Partner No..
 	 *
 	 * <br>Type: String

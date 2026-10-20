@@ -11,4 +11,8 @@ public class FinishedGoodsReceiveLineConfig
 	boolean allowReceiveToTU;
 	boolean skipReceiveTargetStep;
 	boolean captureCatchWeight;
+	/**
+	 * Catch-weight scan required, effective: setting on AND main finished good AND catch-weight product AND catch weight captured at receipt.
+	 */
+	boolean catchWeightScanRequired;
 }

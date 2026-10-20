@@ -28,6 +28,9 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+
 @Value
 @Builder
 public class LotNoContext
@@ -37,5 +40,11 @@ public class LotNoContext
 
 	@NonNull
 	ClientId clientId;
+
+	/**
+	 * Exposed to the sequence's evaluation context under the sequence's <code>AD_Sequence.DateColumn</code>; ignored if that column is not set.
+	 */
+	@Nullable
+	LocalDate date;
 
 }
