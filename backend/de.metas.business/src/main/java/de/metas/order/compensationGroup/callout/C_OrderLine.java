@@ -95,7 +95,8 @@ public class C_OrderLine
 	public void onQtyEnteredChanged(@NonNull final I_C_OrderLine orderLine)
 	{
 		final BigDecimal qtyUncalibrated = getQtyUncalibratedOrNull(orderLine);
-		if (!isCalibrated(orderLine) || qtyUncalibrated == null || qtyUncalibrated.signum() <= 0)
+		// qtyUncalibrated first: windows without the rule/factor fields (e.g. purchase order) have none, and isCalibrated() would read those columns (WARN on every Qty edit)
+		if (qtyUncalibrated == null || qtyUncalibrated.signum() <= 0 || !isCalibrated(orderLine))
 		{
 			return;
 		}
