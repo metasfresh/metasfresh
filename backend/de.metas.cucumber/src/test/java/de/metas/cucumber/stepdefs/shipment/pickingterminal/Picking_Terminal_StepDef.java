@@ -26,11 +26,13 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.shipmentschedule.ShipmentScheduleRecomputeRaceHarness;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
@@ -45,6 +47,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -67,25 +70,82 @@ public class Picking_Terminal_StepDef
 {
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_HU_StepDefData huTable;
+	private final ShipmentScheduleRecomputeRaceHarness recomputeRaceHarness;
 
 	private final PickingCandidateRepository pickingCandidateRepository = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public Picking_Terminal_StepDef(
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
-			@NonNull final M_HU_StepDefData huTable)
+			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final ShipmentScheduleRecomputeRaceHarness recomputeRaceHarness)
 	{
 		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.huTable = huTable;
+		this.recomputeRaceHarness = recomputeRaceHarness;
 	}
 
 	@And("the following qty is picked")
 	public void pickQty(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> row = dataTable.asMaps().get(0);
+		pickQty(dataTable.asMaps().get(0));
+	}
 
+	/**
+	 * Picks like {@code the following qty is picked}, but keeps the pick's transaction open while the pending shipment schedule recompute pass runs;
+	 * the transaction is committed after the pass. Requires the paused recompute queues.
+	 * While the transaction is open, asserts that the pick is not visible outside: the schedule has no new {@code M_ShipmentSchedule_QtyPicked} row.
+	 * <p>
+	 * The real trigger: a regular pick of an HU for a shipment schedule ({@code ProcessPickingCandidatesCommand}) saves the
+	 * {@code M_ShipmentSchedule_QtyPicked} row in the pick's transaction; the transaction commits at an arbitrary moment in relation
+	 * to a recompute pass. The held transaction makes that moment deterministic.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns Same as {@code the following qty is picked}<br>
+	 *   <b>M_ShipmentSchedule_ID.Identifier</b> -- (required) the shipment schedule to pick for<br>
+	 *   <b>M_HU_ID.Identifier</b> -- (required) the HU to pick from<br>
+	 *   <b>QtyPicked</b> -- (required) picked quantity
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_HU_StepDefData<br>
+	 *   Given the shipment schedule recompute queues are paused
+	 * @cucumber.example
+	 * <pre>
+	 * And the following qty is picked while the pending shipment schedule recompute runs before the pick is committed
+	 *   | M_ShipmentSchedule_ID.Identifier | M_HU_ID.Identifier | QtyPicked |
+	 *   | ss_1                             | hu_1               | 10        |
+	 * </pre>
+	 */
+	@And("the following qty is picked while the pending shipment schedule recompute runs before the pick is committed")
+	public void pickQtyWhilePendingRecomputeRuns(@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final Map<String, String> row = dataTable.asMaps().get(0);
+		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final int shipmentScheduleId = shipmentScheduleTable.get(shipmentScheduleIdentifier).getM_ShipmentSchedule_ID();
+		final int qtyPickedCountBefore = countQtyPickedOutOfTrx(shipmentScheduleId);
+
+		recomputeRaceHarness.runInTransactionCommittedAfterRecompute(
+				() -> {
+					pickQty(row);
+					return null;
+				},
+				() -> assertThat(countQtyPickedOutOfTrx(shipmentScheduleId))
+						.as("M_ShipmentSchedule_QtyPicked of %s visible outside the pick's transaction (the pick must not commit before the recompute pass ran)", shipmentScheduleIdentifier)
+						.isEqualTo(qtyPickedCountBefore));
+	}
+
+	private int countQtyPickedOutOfTrx(final int shipmentScheduleId)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create()
+				.count();
+	}
+
+	private void pickQty(@NonNull final Map<String, String> row)
+	{
 		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 

@@ -56,7 +56,9 @@ final class ShipmentScheduleSegmentChangedProcessor
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (trxManager.isNull(trx))
+		// during its post-commit listener dispatch a committed trx stays thread-inherited but inactive; its collector would never be flushed again.
+		// An unstarted trx (it starts lazily on its first DB access) does get a collector: it commits later.
+		if (!ThreadInheritedTrxState.isThreadTrxOpenForWrites(trx))
 		{
 			return null;
 		}
@@ -92,7 +94,7 @@ final class ShipmentScheduleSegmentChangedProcessor
 							return;
 						}
 
-						innerProcessor.process();
+						innerProcessor.flushAfterCommit();
 					});
 		}
 		return processor;
@@ -109,20 +111,72 @@ final class ShipmentScheduleSegmentChangedProcessor
 	 */
 	private final int flushThreshold;
 
-	private void process()
+	/**
+	 * AFTER_COMMIT flush: these segments describe an already-committed transaction, so the flags are always written out of
+	 * transaction. The thread-inherited transaction may meanwhile have been restarted by an earlier after-commit listener,
+	 * and flags written into it could be lost if that transaction rolls back.
+	 */
+	private void flushAfterCommit()
 	{
-		if (segments.isEmpty())
+		if (!segments.isEmpty())
+		{
+			final List<IShipmentScheduleSegment> segmentsCopy = new ArrayList<>(segments);
+
+			// Flag FIRST, clear AFTER: if flagging throws, the segments stay accumulated instead of being lost.
+			// Flagging is idempotent (it only marks schedules as "needs recompute"), so a retry is a harmless no-op.
+			shipmentScheduleInvalidator.flagSegmentsForRecomputeOutOfTrx(segmentsCopy);
+			segments.clear();
+		}
+
+		// the processor lives as long as the ITrx, which can commit several times: every successful commit-flush re-enables the mid-batch flush
+		midBatchFlushDisabled = false;
+	}
+
+	/**
+	 * Set after the first failed mid-batch flush: the remaining segments are left to {@link #flushAfterCommit()} instead of
+	 * retrying (and warning about) the full accumulator on every further {@link #addSegment}. Re-enabled by the next successful {@link #flushAfterCommit()}.
+	 */
+	private boolean midBatchFlushDisabled = false;
+
+	/**
+	 * Mid-batch flush. With a thread-inherited transaction that is open for writes (see {@link ThreadInheritedTrxState}) the flags are
+	 * written in it, behind a savepoint, so they commit or roll back with the change that made the segments stale, and a failure rolls
+	 * back to the savepoint instead of aborting the business transaction.
+	 * The out-of-trx branch is defensive only: a processor is only handed out for an open trx, but a caller may keep its reference and add
+	 * segments from that trx's post-commit listener (running in the thread-inherited trx there would restart a transaction that is never committed).
+	 * On failure the segments are kept, further mid-batch flushes are disabled, and {@link #flushAfterCommit()} flags them.
+	 */
+	private void flushMidBatch()
+	{
+		if (midBatchFlushDisabled || segments.isEmpty())
 		{
 			return;
 		}
 
 		final List<IShipmentScheduleSegment> segmentsCopy = new ArrayList<>(segments);
 
-		// Flag FIRST, clear AFTER: if flagging throws (it runs on a separate TRXNAME_None connection), the segments
-		// stay accumulated and are retried by the next flush (the AFTER_COMMIT listener) instead of being lost.
-		// flagSegmentForRecompute is idempotent (it only marks schedules as "needs recompute"), so a retry that
-		// re-flags an already-flagged schedule is a harmless no-op.
-		shipmentScheduleInvalidator.flagSegmentForRecompute(segmentsCopy);
+		try
+		{
+			final ITrxManager trxManager = Services.get(ITrxManager.class);
+			if (ThreadInheritedTrxState.isThreadInheritedTrxOpenForWrites())
+			{
+				// runInThreadInheritedTrx is NESTED: it creates a savepoint and rolls back to it on failure
+				trxManager.runInThreadInheritedTrx(
+						() -> shipmentScheduleInvalidator.flagSegmentsForRecomputeInThreadInheritedTrx(segmentsCopy));
+			}
+			else
+			{
+				shipmentScheduleInvalidator.flagSegmentsForRecomputeOutOfTrx(segmentsCopy);
+			}
+		}
+		catch (final RuntimeException ex)
+		{
+			midBatchFlushDisabled = true;
+			logger.warn("Mid-batch invalidation-segment flush failed ({} segments retained for the AFTER_COMMIT flush; further mid-batch flushes disabled)", segments.size(), ex);
+			return;
+		}
+
+		// Flag FIRST, clear AFTER (see flushAfterCommit)
 		segments.clear();
 	}
 
@@ -140,26 +194,11 @@ final class ShipmentScheduleSegmentChangedProcessor
 		// (the same OOM this class guards against). copyOf is a no-op for already-immutable segments.
 		this.segments.add(ImmutableShipmentScheduleSegment.copyOf(segment));
 
-		// Bound the accumulator during a long-running batch: flush mid-batch once it reaches the configured threshold,
-		// so memory stays bounded regardless of batch size / dedupe effectiveness (not only at AFTER_COMMIT). A
-		// threshold <= 0 disables the mid-batch flush. Safe mid-batch because the flush's matching SQL runs on its own
-		// connection (TRXNAME_None) and matches only COMMITTED schedules; the batch's own new (uncommitted) schedules
-		// are flagged by id directly on the batch trx via ShipmentScheduleInvalidateBL.notifySegmentChangedForShipmentScheduleInclSched
-		// -> flagForRecompute, so these already-committed-targeting segments lose no invalidations.
-		//
-		// Best-effort: a mid-batch flush failure must NOT abort the enclosing business transaction (the AFTER_COMMIT
-		// flush historically ran post-commit and could never do so). process() flags-then-clears, so on failure the
-		// segments remain accumulated and are retried at commit.
+		// Bound the accumulator during a long-running batch: flush mid-batch once it reaches the configured threshold
+		// (a threshold <= 0 disables this). In an open trx the flush runs in it behind a savepoint, otherwise out of trx; see flushMidBatch().
 		if (flushThreshold > 0 && segments.size() >= flushThreshold)
 		{
-			try
-			{
-				process();
-			}
-			catch (final RuntimeException ex)
-			{
-				logger.warn("Mid-batch invalidation-segment flush failed ({} segments retained for the AFTER_COMMIT retry)", segments.size(), ex);
-			}
+			flushMidBatch();
 		}
 	}
 

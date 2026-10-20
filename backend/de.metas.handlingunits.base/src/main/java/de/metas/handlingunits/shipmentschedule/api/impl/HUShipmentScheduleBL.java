@@ -1161,8 +1161,20 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	{
 		if (shipmentScheduleIds.isEmpty()) {return;}
 
-		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesService.flagForRecompute(shipmentScheduleIds);
+		getInvalidateBL().flagForRecompute(shipmentScheduleIds);
+	}
+
+	private static IShipmentScheduleInvalidateBL getInvalidateBL()
+	{
+		return Services.get(IShipmentScheduleInvalidateBL.class);
+	}
+
+	@Override
+	public void flagForRecompute(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable final String dataTrxName)
+	{
+		if (shipmentScheduleIds.isEmpty()) {return;}
+
+		getInvalidateBL().flagForRecompute(shipmentScheduleIds, dataTrxName);
 	}
 
 	@Override

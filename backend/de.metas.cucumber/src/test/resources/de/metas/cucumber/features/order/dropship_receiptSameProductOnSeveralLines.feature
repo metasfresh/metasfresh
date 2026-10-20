@@ -457,3 +457,91 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
       | M_ShipmentSchedule_ID | OPT.QtyPickList |
       | ss_10a                | 110             |
       | ss_10b                | 66              |
+
+
+  # ##############################################################################################
+  # Elstar is ordered on two sales-order lines (924 and 671), Gala on one (561).
+  # The first receipt is booked while the shipment schedule recompute pass, which was pending since the
+  # sales order's completion, is running: the recompute flags the receipt sets must not be lost.
+  # ##############################################################################################
+
+  @Id:S33004_TC1
+  Scenario: A drop-ship receipt booked while the pending shipment schedule recompute runs still gets its picked quantity onto the sales-order line's schedule
+    Given the shipment schedule recompute queues are paused
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | DateOrdered | PreparationDate      | M_Warehouse_ID.Identifier |
+      | so_1       | true    | customerStore            | customerHeadOffice              | 2026-07-01  | 2026-06-30T22:00:00Z | dropshipWarehouse         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | M_HU_PI_Item_Product_ID.Identifier | C_BPartner_Vendor_ID.Identifier |
+      | sol_e1     | so_1                  | elstar                  | 924        | tu11_elstar                        | vendor                          |
+      | sol_e2     | so_1                  | elstar                  | 671        | tu11_elstar                        | vendor                          |
+      | sol_g      | so_1                  | gala                    | 561        | tu11_gala                          | vendor                          |
+    When the order identified by so_1 is completed
+    And the pending shipment schedule creation is processed
+
+    Then the order is created:
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | po_1           | so_1                     | false   | POO         | CO            | true           |
+    And load C_OrderLines allocated to sales order lines:
+      | C_SO_OrderLine_ID | C_PO_OrderLine_ID | OPT.C_Order_ID |
+      | sol_e1            | pol_e1            | po_1           |
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier |
+      | ss_e1      | sol_e1                    |
+      | ss_e2      | sol_e2                    |
+      | ss_g       | sol_g                     |
+    # the schedules are still flagged for recompute: the pending recompute pass has not run yet
+    And 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_e1
+    And 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_e2
+    And 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_g
+    And after not more than 60s, load M_ReceiptSchedule for C_OrderLine:
+      | C_OrderLine_ID | M_ReceiptSchedule_ID |
+      | pol_e1         | rs_e1                |
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | HUList | numberHUsGenerated | C_OrderLine_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | lutu_e1                               | hus_e1 | 1                  | pol_e1         | N               | 0     | N               | 1     | N               | 924         | 101                                |
+
+    # no wait for IsToRecompute N before receipt_e1: the receipt must be booked while the recompute pass is pending (the race window)
+    And create material receipt while the pending shipment schedule recompute runs before the receipt is committed
+      | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
+      | hus_e1 | pol_e1         | receipt_e1            |
+    And the shipment schedule recompute queues are resumed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_e1      | sol_e1                    | N             |
+      | ss_e2      | sol_e2                    | N             |
+      | ss_g       | sol_g                     | N             |
+
+    And load C_OrderLines allocated to sales order lines:
+      | C_SO_OrderLine_ID | C_PO_OrderLine_ID | OPT.C_Order_ID |
+      | sol_e2            | pol_e2            | po_1           |
+      | sol_g             | pol_g             | po_1           |
+    And after not more than 60s, load M_ReceiptSchedule for C_OrderLine:
+      | C_OrderLine_ID | M_ReceiptSchedule_ID |
+      | pol_e2         | rs_e2                |
+      | pol_g          | rs_g                 |
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | HUList | numberHUsGenerated | C_OrderLine_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | lutu_e2                               | hus_e2 | 1                  | pol_e2         | N               | 0     | N               | 1     | N               | 671         | 101                                |
+      | lutu_g                                | hus_g  | 1                  | pol_g          | N               | 0     | N               | 1     | N               | 561         | 101                                |
+    And create material receipt
+      | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
+      | hus_e2 | pol_e2         | receipt_e2            |
+    # the next goods arrive after the previous receipt's picked quantity is on the shipment schedules
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_e1      | sol_e1                    | N             |
+      | ss_e2      | sol_e2                    | N             |
+      | ss_g       | sol_g                     | N             |
+    And create material receipt
+      | HUList | C_OrderLine_ID | M_InOut_ID.Identifier |
+      | hus_g  | pol_g          | receipt_g             |
+
+    # every receipt's picked quantity ends up on the schedule of its own sales-order line
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | OPT.QtyPickList |
+      | ss_e1                 | 924             |
+      | ss_e2                 | 671             |
+      | ss_g                  | 561             |

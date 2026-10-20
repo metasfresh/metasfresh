@@ -77,6 +77,8 @@ import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackagePr
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
@@ -90,6 +92,7 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
 import de.metas.shipping.ShipperId;
@@ -116,6 +119,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -197,6 +201,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
 	@NonNull private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
@@ -243,6 +248,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
 	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
+	@NonNull private final ShipmentScheduleRecomputeRaceHarness recomputeRaceHarness;
 
 	private final TestContext testContext;
 
@@ -479,6 +485,370 @@ public class M_ShipmentSchedule_StepDef
 	public void enqueueBoundedRecomputePass()
 	{
 		UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();
+	}
+
+	/**
+	 * Stops the async queue processors that run the shipment schedule recompute pass, so that the scenario runs the pass itself
+	 * (see {@link ShipmentScheduleRecomputeRaceHarness}).
+	 * In production these processors are always on; the pause makes a race with the pass deterministic.
+	 * <p>
+	 * The paused processors also run the creation of missing shipment schedules and the generation of shipments, so resume them
+	 * before any shipment step. They are resumed after the scenario in any case.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given the shipment schedule recompute queues are paused
+	 * </pre>
+	 */
+	@Given("the shipment schedule recompute queues are paused")
+	public void pauseRecomputeQueues() throws InterruptedException
+	{
+		recomputeRaceHarness.pauseRecomputeQueueProcessors();
+	}
+
+	/**
+	 * Starts the async queue processors stopped by {@code the shipment schedule recompute queues are paused} again; their queued workpackages are then processed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the shipment schedule recompute queues are resumed
+	 * </pre>
+	 */
+	@And("the shipment schedule recompute queues are resumed")
+	public void resumeRecomputeQueues()
+	{
+		recomputeRaceHarness.resumeRecomputeQueueProcessors();
+	}
+
+	@After
+	public void resumeRecomputeQueuesAfterScenario()
+	{
+		recomputeRaceHarness.resumeRecomputeQueueProcessors();
+	}
+
+	/**
+	 * Creates the missing shipment schedules in the step thread.
+	 * In production the async {@code CreateMissingShipmentSchedules} workpackage does this after e.g. a sales order's completion;
+	 * while the recompute queues are paused, that workpackage waits, so the scenario runs it itself.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the pending shipment schedule creation is processed
+	 * </pre>
+	 */
+	@When("the pending shipment schedule creation is processed")
+	public void processPendingShipmentScheduleCreation()
+	{
+		recomputeRaceHarness.processPendingShipmentScheduleCreation();
+	}
+
+	/**
+	 * Runs one shipment schedule recompute pass in the step thread and asserts that it succeeds.
+	 * In production the async {@code UpdateInvalidShipmentSchedules} workpackage runs it; while the recompute queues are paused,
+	 * the scenario decides when it runs, which makes a race with it deterministic. Requires the paused queues.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the pending shipment schedule recompute pass runs
+	 * </pre>
+	 */
+	@When("the pending shipment schedule recompute pass runs")
+	public void runPendingRecomputePass()
+	{
+		final RuntimeException failure = recomputeRaceHarness.runPendingRecomputePass();
+		if (failure != null)
+		{
+			throw failure;
+		}
+	}
+
+	/**
+	 * Arms a one-shot failure of the next recompute pass: the batch's transaction fails when it commits, after the pass computed and cleaned up.
+	 * The armed failure is disarmed after the scenario in any case.
+	 * <p>
+	 * Stands in for a commit-time failure of the recompute batch's transaction (lost connection, serialization failure) of
+	 * {@code UpdateInvalidShipmentSchedulesWorkpackageProcessor#processWorkPackage}.
+	 * The failure is injected by a hook registered at {@code IShipmentScheduleUpdater#registerCandidateProcessor} (documented exemption): a real commit failure cannot be provoked deterministically.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the next shipment schedule recompute pass fails when its transaction commits
+	 * </pre>
+	 */
+	@And("the next shipment schedule recompute pass fails when its transaction commits")
+	public void armRecomputePassCommitFailure()
+	{
+		recomputeRaceHarness.armNextPassFailure(ShipmentScheduleRecomputeRaceHarness.PassFailureMode.COMMIT);
+	}
+
+	/**
+	 * Arms a one-shot failure of the next recompute pass while it recomputes (before it cleans up its markers).
+	 * The armed failure is disarmed after the scenario in any case.
+	 * <p>
+	 * Stands in for any exception of a handler or candidate processor while {@code ShipmentScheduleUpdater#updateSchedules} runs.
+	 * The failure is injected by a hook registered at {@code IShipmentScheduleUpdater#registerCandidateProcessor} (documented exemption).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the next shipment schedule recompute pass fails while recomputing
+	 * </pre>
+	 */
+	@And("the next shipment schedule recompute pass fails while recomputing")
+	public void armRecomputePassComputeFailure()
+	{
+		recomputeRaceHarness.armNextPassFailure(ShipmentScheduleRecomputeRaceHarness.PassFailureMode.RECOMPUTE);
+	}
+
+	@After
+	public void disarmRecomputePassFailureAfterScenario()
+	{
+		recomputeRaceHarness.disarmPassFailure();
+	}
+
+	/**
+	 * Runs one recompute pass in the step thread and asserts that it FAILS (use after arming a failure). Requires the paused queues.
+	 * In production the async {@code UpdateInvalidShipmentSchedules} workpackage runs the pass; its failure is caught by the queue processor.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the pending shipment schedule recompute pass runs and fails
+	 * </pre>
+	 */
+	@When("the pending shipment schedule recompute pass runs and fails")
+	public void runPendingRecomputePassExpectingFailure()
+	{
+		assertThat(recomputeRaceHarness.runPendingRecomputePass())
+				.as("Failure of the recompute pass; was a failure armed?")
+				.isNotNull();
+	}
+
+	/**
+	 * Runs the shipment schedule updater inside a caller's transaction that catches the updater's failure and commits normally; asserts that the updater failed.
+	 * Requires the paused queues and an armed failure (while recomputing).
+	 * <p>
+	 * Stands in for the process {@code M_ShipmentSchedule_Update} (:28), which runs the updater inside the process's transaction, and for any caller that catches the failure and goes on.
+	 * The real {@code IShipmentScheduleUpdater#updateShipmentSchedules} runs, with a fresh selection.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the pending shipment schedule recompute pass runs inside a caller's transaction that catches the failure and commits
+	 * </pre>
+	 */
+	@When("the pending shipment schedule recompute pass runs inside a caller's transaction that catches the failure and commits")
+	public void runPendingRecomputePassInCallersTransaction()
+	{
+		assertThat(recomputeRaceHarness.runUpdaterInCallersTransactionThatCatchesFailure())
+				.as("Failure the caller caught; was a failure armed?")
+				.isNotNull();
+	}
+
+	/**
+	 * Asserts how many untagged ({@code AD_PInstance_ID IS NULL}) {@code M_ShipmentSchedule_Recompute} markers the given shipment schedule has,
+	 * i.e. whether it waits for the next recompute pass.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_1
+	 * </pre>
+	 */
+	@Then("^(\\d+) untagged M_ShipmentSchedule_Recompute markers? exists? for (.*)$")
+	public void assertUntaggedRecomputeMarkerCount(final int expectedCount, @NonNull final String shipmentScheduleIdentifier)
+	{
+		assertThat(countUntaggedRecomputeMarkers(shipmentScheduleIdentifier))
+				.as("Untagged M_ShipmentSchedule_Recompute markers of shipment schedule %s", shipmentScheduleIdentifier)
+				.isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Same as {@code N untagged M_ShipmentSchedule_Recompute marker(s) exist(s) for ...}, but polls until the count matches or the timeout is exceeded.
+	 * Use it where the flag is written asynchronously (a segment change notified outside any transaction is flagged by a task executor thread).
+	 * While the recompute queues are paused, the marker stays once written, so polling cannot miss it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 30s, 1 untagged M_ShipmentSchedule_Recompute marker exists for ss_1
+	 * </pre>
+	 */
+	@Then("^after not more than (\\d+)s, (\\d+) untagged M_ShipmentSchedule_Recompute markers? exists? for (.*)$")
+	public void assertUntaggedRecomputeMarkerCountWithin(final int timeoutSec, final int expectedCount, @NonNull final String shipmentScheduleIdentifier) throws InterruptedException
+	{
+		try
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> countUntaggedRecomputeMarkers(shipmentScheduleIdentifier) == expectedCount);
+		}
+		catch (final AssertionError e)
+		{
+			// timed out (tryAndWait fails with an AssertionError): the one-shot assertion reports the actual count
+			assertUntaggedRecomputeMarkerCount(expectedCount, shipmentScheduleIdentifier);
+			throw e;
+		}
+	}
+
+	private int countUntaggedRecomputeMarkers(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		return queryBL.createQueryBuilderOutOfTrx(I_M_ShipmentSchedule_Recompute.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, null)
+				.create()
+				.count();
+	}
+
+	/**
+	 * Notifies a storage segment change (product and warehouse, any business partner) from an after-commit handler, in a transaction of its own that is
+	 * then committed. Requires that no thread transaction exists yet.
+	 * <p>
+	 * Stands in for any code that notifies segment changes from an after-commit handler (the shape of the reservation interceptor):
+	 * {@code trxManager.accumulateAndProcessAfterCommit(..., IShipmentScheduleInvalidateBL::notifySegmentsChanged)}.
+	 * The BL is called directly (documented exemption): no registered production caller reaches this shape today.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.params
+	 *   <b>productIdentifier</b> -- the product's identifier in M_Product_StepDefData<br>
+	 *   <b>warehouseIdentifier</b> -- the warehouse's identifier in M_Warehouse_StepDefData<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_Warehouse_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When a storage segment change for product "product_1" and warehouse "warehouse_1" is notified after its transaction committed
+	 * </pre>
+	 */
+	@When("a storage segment change for product {string} and warehouse {string} is notified after its transaction committed")
+	public void notifySegmentChangeAfterCommit(@NonNull final String productIdentifier, @NonNull final String warehouseIdentifier)
+	{
+		final IShipmentScheduleSegment segment = ShipmentScheduleSegments.builder()
+				.productId(ProductId.ofRepoId(productTable.get(productIdentifier).getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoId(warehouseTable.get(warehouseIdentifier).getM_Warehouse_ID()))
+				.anyBPartnerId()
+				.build();
+
+		trxManager.assertThreadInheritedTrxNotExists();
+		trxManager.runInThreadInheritedTrx(() -> trxManager.accumulateAndProcessAfterCommit(
+				"M_ShipmentSchedule_StepDef.notifySegmentChangeAfterCommit",
+				ImmutableList.of(segment),
+				shipmentScheduleInvalidateBL::notifySegmentsChanged));
+	}
+
+	/**
+	 * Flags all shipment schedules of the product for recompute in a transaction that stays open (uncommitted) while the recompute pass runs;
+	 * the transaction is committed after the pass. Fails if the recompute queues are not paused. While the transaction is open, asserts that its flag
+	 * is not visible outside, i.e. that the untagged marker of the observed shipment schedule is still the one flagged before.
+	 * <p>
+	 * Stands in for {@code InOutCandidateValidator.productChange} (:143, fired on an M_Product IsDiverse/ProductType change), which calls
+	 * {@code IShipmentScheduleInvalidateBL.flagForRecompute(ProductId)}; the flag commits with the changing M_Product's transaction.
+	 * The BL is called directly (documented exemption): the product change itself cannot be held open at a deterministic point, and the race is only
+	 * reproducible when the commit happens after the pass.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.params
+	 *   <b>productIdentifier</b> -- the product's identifier in M_Product_StepDefData<br>
+	 *   <b>observedScheduleIdentifier</b> -- the shipment schedule whose untagged marker count (expected: 1) is asserted while the transaction is open<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_ShipmentSchedule_StepDefData<br>
+	 *   Given the shipment schedule recompute queues are paused
+	 * @cucumber.example
+	 * <pre>
+	 * When the shipment schedules of product "product_1" are flagged for recompute in a transaction committed only after the pending recompute ran, observed on "ss_1"
+	 * </pre>
+	 */
+	@When("the shipment schedules of product {string} are flagged for recompute in a transaction committed only after the pending recompute ran, observed on {string}")
+	public void flagShipmentSchedulesOfProductCommittedAfterRecompute(@NonNull final String productIdentifier, @NonNull final String observedScheduleIdentifier) throws InterruptedException
+	{
+		final ProductId productId = ProductId.ofRepoId(productTable.get(productIdentifier).getM_Product_ID());
+
+		recomputeRaceHarness.runInTransactionCommittedAfterRecompute(
+				() -> {
+					shipmentScheduleInvalidateBL.flagForRecompute(productId);
+					return null;
+				},
+				() -> assertUntaggedRecomputeMarkerCount(1, observedScheduleIdentifier));
+	}
+
+	/**
+	 * Flags all shipment schedules with the header aggregation key of the given shipment schedule's current key for recompute, in a transaction that stays
+	 * open (uncommitted) while the recompute pass runs; the transaction is committed after the pass. Fails if the recompute queues are not paused.
+	 * While the transaction is open, asserts that its flag is not visible outside, i.e. that the untagged marker of the observed shipment schedule is still the one flagged before.
+	 * <p>
+	 * Stands in for {@code de.metas.inoutcandidate.modelvalidator.M_ShipmentSchedule#invalidateSchedulesWithOldAndNewHeaderAggregationKey}
+	 * (swat.base, call at :276), which calls {@code IShipmentScheduleInvalidateBL.flagHeaderAggregationKeysForRecompute(Set<String>)};
+	 * the flag commits with the changing shipment schedule's transaction.
+	 * The BL is called directly (documented exemption): the race is only reproducible when the commit happens after the recompute pass.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.params
+	 *   <b>shipmentScheduleIdentifier</b> -- the identifier in M_ShipmentSchedule_StepDefData whose header aggregation key is flagged<br>
+	 *   <b>observedScheduleIdentifier</b> -- the shipment schedule whose untagged marker count (expected: 1) is asserted while the transaction is open<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData<br>
+	 *   Given the shipment schedule recompute queues are paused
+	 * @cucumber.example
+	 * <pre>
+	 * When the shipment schedules with the header aggregation key of "ss_1" are flagged for recompute in a transaction committed only after the pending recompute ran, observed on "ss_1"
+	 * </pre>
+	 */
+	@When("the shipment schedules with the header aggregation key of {string} are flagged for recompute in a transaction committed only after the pending recompute ran, observed on {string}")
+	public void flagShipmentSchedulesOfHeaderAggregationKeyCommittedAfterRecompute(@NonNull final String shipmentScheduleIdentifier, @NonNull final String observedScheduleIdentifier) throws InterruptedException
+	{
+		final String headerAggregationKey = InterfaceWrapperHelper.load(
+						shipmentScheduleTable.get(shipmentScheduleIdentifier).getM_ShipmentSchedule_ID(),
+						I_M_ShipmentSchedule.class)
+				.getHeaderAggregationKey();
+		assertThat(headerAggregationKey).as("HeaderAggregationKey of shipment schedule %s", shipmentScheduleIdentifier).isNotNull();
+
+		recomputeRaceHarness.runInTransactionCommittedAfterRecompute(
+				() -> {
+					shipmentScheduleInvalidateBL.flagHeaderAggregationKeysForRecompute(ImmutableSet.of(headerAggregationKey));
+					return null;
+				},
+				() -> assertUntaggedRecomputeMarkerCount(1, observedScheduleIdentifier));
+	}
+
+	/**
+	 * Flags the shipment schedule for recompute the given number of times in ONE transaction; every second call is made inside a nested
+	 * {@code trxManager.runInThreadInheritedTrx} block (i.e. in a savepoint), the others directly.
+	 * <p>
+	 * Stands in for repeated changes of one document within one transaction, each of which calls
+	 * {@code IShipmentScheduleInvalidateBL.flagForRecompute(ShipmentScheduleId)} (also from nested transaction blocks).
+	 * The BL is called directly (documented exemption): the step asserts the invariant on the number of markers, not the trigger.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.params
+	 *   <b>shipmentScheduleIdentifier</b> -- the identifier in M_ShipmentSchedule_StepDefData<br>
+	 *   <b>times</b> -- how often the flag is set within the one transaction<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the shipment schedule "ss_1" is flagged for recompute 5 times in one transaction, also from nested calls
+	 * </pre>
+	 */
+	@When("the shipment schedule {string} is flagged for recompute {int} times in one transaction, also from nested calls")
+	public void flagShipmentScheduleRepeatedlyInOneTransaction(@NonNull final String shipmentScheduleIdentifier, final int times)
+	{
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentScheduleTable.get(shipmentScheduleIdentifier).getM_ShipmentSchedule_ID());
+
+		trxManager.runInThreadInheritedTrx(() -> {
+			for (int i = 0; i < times; i++)
+			{
+				if (i % 2 == 0)
+				{
+					shipmentScheduleInvalidateBL.flagForRecompute(shipmentScheduleId);
+				}
+				else
+				{
+					trxManager.runInThreadInheritedTrx(() -> shipmentScheduleInvalidateBL.flagForRecompute(shipmentScheduleId));
+				}
+			}
+		});
 	}
 
 	/**

@@ -27,7 +27,10 @@ import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,8 +42,12 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -48,7 +55,8 @@ import static org.mockito.Mockito.when;
  * Regression guard for {@link ShipmentScheduleSegmentChangedProcessor}'s segment accumulation.
  * <p>
  * The processor accumulates segments into a dedup {@link java.util.LinkedHashSet} and, on trx commit (AFTER_COMMIT
- * listener), flushes them to {@link ShipmentScheduleInvalidateBL#flagSegmentForRecompute(Collection)}. These tests
+ * listener), flushes them out of transaction via {@link ShipmentScheduleInvalidateBL#flagSegmentsForRecomputeOutOfTrx(Collection)}
+ * (a mid-batch flush uses {@link ShipmentScheduleInvalidateBL#flagSegmentsForRecomputeInThreadInheritedTrx(Collection)} in an open trx). These tests
  * assert that (a) value-equal segments collapse to one, (b) distinct segments are all retained (dedupe, not
  * truncation), and (c) identity-equals implementations (e.g. the HU-derived segments) are also deduped because the
  * accumulator normalizes every segment to the value-based {@link ImmutableShipmentScheduleSegment} before adding.
@@ -105,7 +113,7 @@ class ShipmentScheduleSegmentChangedProcessorTest
 
 		@SuppressWarnings("unchecked")
 		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
-		verify(invalidator).flagSegmentForRecompute(captor.capture());
+		verify(invalidator).flagSegmentsForRecomputeOutOfTrx(captor.capture());
 
 		assertThat(captor.getValue())
 				.as("adding %d value-equal segments must be deduped to a single distinct segment", REPEATED_ADD_COUNT)
@@ -144,7 +152,7 @@ class ShipmentScheduleSegmentChangedProcessorTest
 
 		@SuppressWarnings("unchecked")
 		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
-		verify(invalidator).flagSegmentForRecompute(captor.capture());
+		verify(invalidator).flagSegmentsForRecomputeOutOfTrx(captor.capture());
 
 		assertThat(captor.getValue())
 				.as("all %d distinct segments must be retained", DISTINCT_SEGMENT_COUNT)
@@ -181,7 +189,7 @@ class ShipmentScheduleSegmentChangedProcessorTest
 
 		@SuppressWarnings("unchecked")
 		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
-		verify(invalidator).flagSegmentForRecompute(captor.capture());
+		verify(invalidator).flagSegmentsForRecomputeOutOfTrx(captor.capture());
 
 		assertThat(captor.getValue())
 				.as("value-equal identity-based segments must be normalized and deduped to a single segment")
@@ -232,8 +240,11 @@ class ShipmentScheduleSegmentChangedProcessorTest
 		// capture EVERY flush: the mid-batch threshold flushes AND the final AFTER_COMMIT flush of the remainder
 		@SuppressWarnings("unchecked")
 		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
-		verify(invalidator, atLeastOnce()).flagSegmentForRecompute(captor.capture());
-		final List<Collection<IShipmentScheduleSegment>> flushes = captor.getAllValues();
+		verify(invalidator, atLeastOnce()).flagSegmentsForRecomputeInThreadInheritedTrx(captor.capture());
+		final List<Collection<IShipmentScheduleSegment>> flushes = new ArrayList<>(captor.getAllValues());
+		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> afterCommitCaptor = ArgumentCaptor.forClass(Collection.class);
+		verify(invalidator).flagSegmentsForRecomputeOutOfTrx(afterCommitCaptor.capture());
+		flushes.addAll(afterCommitCaptor.getAllValues());
 
 		// (a) more than one flush → at least one mid-batch flush fired before the trx commit
 		assertThat(flushes.size())
@@ -255,6 +266,198 @@ class ShipmentScheduleSegmentChangedProcessorTest
 		assertThat(union)
 				.as("union of all flushed segments must equal the full distinct set — none lost, none duplicated")
 				.containsExactlyInAnyOrderElementsOf(distinctSegments);
+	}
+
+	/**
+	 * A failing mid-batch flush (in the business transaction, behind a savepoint) must not break the transaction and must not lose
+	 * the segments: they are retained and the AFTER_COMMIT flush passes them to the out-of-trx method.
+	 */
+	@Test
+	void midBatchFlushFailureRetainsSegments()
+	{
+		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+		when(invalidator.getSegmentFlushThreshold()).thenReturn(1);
+		doThrow(new RuntimeException("test: mid-batch flush failed"))
+				.doNothing()
+				.when(invalidator).flagSegmentsForRecomputeInThreadInheritedTrx(any());
+
+		final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
+				.productId(1)
+				.bpartnerId(2)
+				.locatorId(3)
+				.build();
+
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+			final ShipmentScheduleSegmentChangedProcessor processor =
+					ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator);
+			assertThat(processor).isNotNull();
+
+			// reaches the threshold -> mid-batch flush -> throws -> must be swallowed
+			processor.addSegment(segment);
+		});
+
+		verify(invalidator, times(1)).flagSegmentsForRecomputeInThreadInheritedTrx(any());
+
+		@SuppressWarnings("unchecked")
+		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
+		verify(invalidator).flagSegmentsForRecomputeOutOfTrx(captor.capture());
+		assertThat(captor.getValue())
+				.as("the segment of the failed mid-batch flush must be retained and flagged out of trx after commit")
+				.containsExactly(segment);
+	}
+
+	/**
+	 * After a failed mid-batch flush no further mid-batch flush is attempted (no O(n^2) retries / warn flood);
+	 * all segments are flagged by the AFTER_COMMIT flush.
+	 */
+	@Test
+	void afterMidBatchFlushFailure_noFurtherMidBatchFlushAttempts()
+	{
+		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+		when(invalidator.getSegmentFlushThreshold()).thenReturn(1);
+		doThrow(new RuntimeException("test: mid-batch flush failed"))
+				.when(invalidator).flagSegmentsForRecomputeInThreadInheritedTrx(any());
+
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+			final ShipmentScheduleSegmentChangedProcessor processor =
+					ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator);
+			assertThat(processor).isNotNull();
+			for (int productId = 1; productId <= 3; productId++)
+			{
+				processor.addSegment(ImmutableShipmentScheduleSegment.builder().productId(productId).bpartnerId(2).locatorId(3).build());
+			}
+		});
+
+		verify(invalidator, times(1)).flagSegmentsForRecomputeInThreadInheritedTrx(any());
+
+		@SuppressWarnings("unchecked")
+		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
+		verify(invalidator).flagSegmentsForRecomputeOutOfTrx(captor.capture());
+		assertThat(captor.getValue()).hasSize(3);
+	}
+
+	/**
+	 * A segment that reaches the threshold when the thread trx is already committed (here: added by an after-commit listener that
+	 * runs after the processor's own commit flush) must be flagged out of trx; running in the thread-inherited trx would restart a
+	 * transaction that is never committed.
+	 */
+	@Test
+	void midBatchFlushAfterCommit_flagsOutOfTrx_neverInThreadInheritedTrx()
+	{
+		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+		when(invalidator.getSegmentFlushThreshold()).thenReturn(1);
+
+		final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder().productId(1).bpartnerId(2).locatorId(3).build();
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.runInThreadInheritedTrx(() -> {
+			final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+			// obtained while the trx is active: an after-commit callback never gets a collector on the committed (inactive) trx
+			final ShipmentScheduleSegmentChangedProcessor processor = ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator);
+			assertThat(processor).isNotNull();
+
+			// registered AFTER the processor's own listener (created by getOrCreate above), so it runs after the commit flush
+			trx.getTrxListenerManager()
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.registerHandlingMethod(committedTrx -> processor.addSegment(segment));
+		});
+
+		verify(invalidator, never()).flagSegmentsForRecomputeInThreadInheritedTrx(any());
+		@SuppressWarnings("unchecked")
+		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
+		verify(invalidator, atLeastOnce()).flagSegmentsForRecomputeOutOfTrx(captor.capture());
+		assertThat(captor.getAllValues().stream().flatMap(Collection::stream)).contains(segment);
+	}
+
+	/**
+	 * The processor lives as long as the ITrx, which can commit several times: a mid-batch failure disables the mid-batch flush only
+	 * until the next successful commit flush.
+	 */
+	@Test
+	void midBatchFlushDisabledByFailure_isReEnabledByTheNextCommit()
+	{
+		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+		when(invalidator.getSegmentFlushThreshold()).thenReturn(1);
+		doThrow(new RuntimeException("test: mid-batch flush failed")).when(invalidator).flagSegmentsForRecomputeInThreadInheritedTrx(any());
+
+		final ImmutableShipmentScheduleSegment s1 = ImmutableShipmentScheduleSegment.builder().productId(1).bpartnerId(2).locatorId(3).build();
+		final ImmutableShipmentScheduleSegment s2 = ImmutableShipmentScheduleSegment.builder().productId(2).bpartnerId(2).locatorId(3).build();
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final String trxName = trxManager.createTrxName("test", true);
+		final String previousTrxName = trxManager.setThreadInheritedTrxName(trxName);
+		try
+		{
+			final ITrx trx = trxManager.getTrx(trxName);
+			trx.start();
+			final ShipmentScheduleSegmentChangedProcessor processor = ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator);
+			assertThat(processor).isNotNull();
+
+			processor.addSegment(s1); // active trx -> in-trx flush -> fails -> mid-batch flush disabled
+			// registered after the processor's own listener: runs after its commit flush (succeeds -> re-enabled), while the trx is
+			// committed and not restarted -> the mid-batch flush must run again, out of trx
+			trx.getTrxListenerManager()
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.registerHandlingMethod(committedTrx -> processor.addSegment(s2));
+			trx.commit(true);
+
+			@SuppressWarnings("unchecked")
+			final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
+			verify(invalidator, atLeastOnce()).flagSegmentsForRecomputeOutOfTrx(captor.capture());
+			assertThat(captor.getAllValues().stream().flatMap(Collection::stream))
+					.as("s2 must be flushed mid-batch after the commit re-enabled the mid-batch flush")
+					.contains(s2);
+		}
+		catch (final java.sql.SQLException ex)
+		{
+			throw new RuntimeException(ex);
+		}
+		finally
+		{
+			trxManager.setThreadInheritedTrxName(previousTrxName);
+		}
+	}
+
+	/** A committed transaction keeps being thread-inherited in its after-commit callbacks, but a collector on it would never be flushed again. */
+	@Test
+	void getOrCreate_committedThreadTrxInAfterCommit_returnsNull()
+	{
+		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final List<ShipmentScheduleSegmentChangedProcessor> processors = new ArrayList<>();
+		final List<ITrx> trxs = new ArrayList<>();
+		trxManager.runInThreadInheritedTrx(() -> trxManager.runAfterCommit(() -> {
+			trxs.add(trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone));
+			processors.add(ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator));
+		}));
+
+		assertThat(trxManager.isNull(trxs.get(0))).as("setup: the committed trx is still thread-inherited").isFalse();
+		assertThat(trxs.get(0).isActive()).as("setup: committed, not restarted").isFalse();
+		assertThat(processors).as("no collector on a committed trx during its post-commit dispatch").containsExactly((ShipmentScheduleSegmentChangedProcessor)null);
+	}
+
+	/** Transactions start lazily (e.g. a process trx before its first SQL statement): an unstarted trx gets a collector. */
+	@Test
+	void getOrCreate_unstartedThreadTrx_returnsProcessor()
+	{
+		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final String trxName = trxManager.createTrxName("test-unstarted", true);
+		assertThat(trxManager.getTrx(trxName).isActive()).as("setup: created, never started").isFalse();
+
+		final String previousTrxName = trxManager.setThreadInheritedTrxName(trxName);
+		try
+		{
+			assertThat(ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator))
+					.as("an unstarted trx is not committed; its collector is flushed when it commits")
+					.isNotNull();
+		}
+		finally
+		{
+			trxManager.setThreadInheritedTrxName(previousTrxName);
+		}
 	}
 
 	/**

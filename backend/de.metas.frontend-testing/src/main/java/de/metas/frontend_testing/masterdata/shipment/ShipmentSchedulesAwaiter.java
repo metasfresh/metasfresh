@@ -99,9 +99,9 @@ class ShipmentSchedulesAwaiter
 			return "some shipment schedules are flagged for recompute";
 		}
 
-		// The recompute deletes a schedule's M_ShipmentSchedule_Recompute marker in its own, already committed transaction
-		// (ShipmentScheduleUpdater -> deleteRecomputeMarkersOutOfTrx), while the recomputed QtyToDeliver is committed a moment
-		// later, with the recompute's batch. So a schedule without a marker can still have the QtyToDeliver it was created with (0).
+		// The recompute deletes a schedule's M_ShipmentSchedule_Recompute marker in the recompute batch's transaction
+		// (ShipmentScheduleUpdater -> deleteRecomputeMarkersInThreadInheritedTrx), so the marker's deletion and the recomputed QtyToDeliver
+		// commit together. A schedule that was never recomputed (no marker yet) still has the QtyToDeliver it was created with (0).
 		// We wait for at least one schedule to deliver, not for all: a line may legitimately have nothing to deliver, and shipping
 		// only needs one candidate. The schedules of one order are normally recomputed in the same batch, so they become visible together.
 		if (requirePositiveQtyToDeliver)
