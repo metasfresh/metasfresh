@@ -23,15 +23,24 @@
 package de.metas.cucumber.stepdefs.docoutbound;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import org.adempiere.archive.ArchiveId;
 import org.compiere.model.I_AD_Archive;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
 public class AD_Archive_StepDefData extends StepDefData<I_AD_Archive>
+		implements StepDefDataGetIdAware<ArchiveId, I_AD_Archive>
 {
 	public AD_Archive_StepDefData()
 	{
 		super(I_AD_Archive.class);
+	}
+
+	@Override
+	public ArchiveId extractIdFromRecord(final I_AD_Archive record)
+	{
+		return ArchiveId.ofRepoId(record.getAD_Archive_ID());
 	}
 }

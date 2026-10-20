@@ -9,9 +9,9 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.model.PlainContextAware;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +39,7 @@ public class DocOutboundDAOTest
 		final TableRecordReference document = createDocument();
 		final I_C_Doc_Outbound_Log log = createLog(document, DocStatus.Completed);
 
-		docOutboundDAO.updateLogHeaderDocStatus(record(document),document, DocStatus.InProgress);
+		docOutboundDAO.updateLogHeaderDocStatus(record(document), document, DocStatus.InProgress);
 
 		InterfaceWrapperHelper.refresh(log);
 		assertThat(log.getDocStatus()).isEqualTo(DocStatus.InProgress.getCode());
@@ -57,7 +57,7 @@ public class DocOutboundDAOTest
 		line.setDocStatus(DocStatus.Completed.getCode());
 		InterfaceWrapperHelper.saveRecord(line);
 
-		docOutboundDAO.updateLogHeaderDocStatus(record(document),document, DocStatus.InProgress);
+		docOutboundDAO.updateLogHeaderDocStatus(record(document), document, DocStatus.InProgress);
 
 		InterfaceWrapperHelper.refresh(line);
 		assertThat(line.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
@@ -81,7 +81,7 @@ public class DocOutboundDAOTest
 		final TableRecordReference document = createDocument();
 		createLog(document, DocStatus.Completed);
 
-		docOutboundDAO.updateLogHeaderDocStatus(record(document),document, DocStatus.InProgress);
+		docOutboundDAO.updateLogHeaderDocStatus(record(document), document, DocStatus.InProgress);
 
 		InterfaceWrapperHelper.refresh(otherLog);
 		assertThat(otherLog.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());

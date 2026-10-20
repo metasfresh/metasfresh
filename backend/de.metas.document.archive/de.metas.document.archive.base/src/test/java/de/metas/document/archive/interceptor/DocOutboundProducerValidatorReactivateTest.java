@@ -14,6 +14,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_Test;
 import org.compiere.model.ModelValidationEngine;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,6 +80,24 @@ public class DocOutboundProducerValidatorReactivateTest
 		InterfaceWrapperHelper.refresh(line);
 		assertThat(log.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
 		assertThat(line.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
+	}
+
+	@Test
+	public void document_of_another_table_is_not_touched()
+	{
+		final I_Test other = InterfaceWrapperHelper.newInstance(I_Test.class);
+		InterfaceWrapperHelper.saveRecord(other);
+		final TableRecordReference ref = TableRecordReference.of(other);
+		final I_C_Doc_Outbound_Log log = InterfaceWrapperHelper.newInstance(I_C_Doc_Outbound_Log.class);
+		log.setAD_Table_ID(ref.getAD_Table_ID());
+		log.setRecord_ID(ref.getRecord_ID());
+		log.setDocStatus(DocStatus.Completed.getCode());
+		InterfaceWrapperHelper.saveRecord(log);
+
+		validator.onDocumentReactivated(other);
+
+		InterfaceWrapperHelper.refresh(log);
+		assertThat(log.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
 	}
 
 	@Test

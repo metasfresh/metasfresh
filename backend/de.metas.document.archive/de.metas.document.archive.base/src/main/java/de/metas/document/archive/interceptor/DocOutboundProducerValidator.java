@@ -132,6 +132,12 @@ import org.compiere.model.PO;
 	{
 		Check.assume(isDocument(), "PO '{}' is a document", po);
 
+		if (timing == ModelValidator.TIMING_AFTER_REACTIVATE)
+		{
+			onDocumentReactivated(po); // does its own accept check
+			return null;
+		}
+
 		if (!acceptDocument(po))
 		{
 			return null;
@@ -141,11 +147,6 @@ import org.compiere.model.PO;
 				&& !Services.get(IDocumentBL.class).isReversalDocument(po))
 		{
 			createDocOutbound(po);
-		}
-
-		if (timing == ModelValidator.TIMING_AFTER_REACTIVATE)
-		{
-			onDocumentReactivated(po);
 		}
 
 		if (timing == ModelValidator.TIMING_AFTER_VOID
@@ -165,7 +166,7 @@ import org.compiere.model.PO;
 	 */
 	/* package */void onDocumentReactivated(@NonNull final Object document)
 	{
-		if (!acceptDocument(document))
+		if (!accept(document))
 		{
 			return;
 		}
