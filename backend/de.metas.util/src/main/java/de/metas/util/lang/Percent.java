@@ -196,13 +196,33 @@ public class Percent implements Comparable<Percent>
 	}
 
 	/**
-	 * @return 100 based value
+	 * @return 100 based value; same as {@link #toBigDecimalHundredBased()}
 	 */
 	@JsonValue
 	@NonNull
 	public BigDecimal toBigDecimal()
 	{
 		return value;
+	}
+
+	/**
+	 * @return 100 based value, e.g. {@code 80} for 80 %
+	 * @see #toBigDecimalFraction()
+	 */
+	@NonNull
+	public BigDecimal toBigDecimalHundredBased()
+	{
+		return value;
+	}
+
+	/**
+	 * @return the value as a fraction of one, e.g. {@code 0.8} for 80 %, {@code 1} for 100 %; use it as a multiplier
+	 * @see #toBigDecimalHundredBased()
+	 */
+	@NonNull
+	public BigDecimal toBigDecimalFraction()
+	{
+		return value.movePointLeft(2);
 	}
 
 	/**

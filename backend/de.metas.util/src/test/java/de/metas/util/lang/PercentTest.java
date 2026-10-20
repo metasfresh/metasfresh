@@ -172,4 +172,22 @@ public class PercentTest
 		assertThat(Percent.ofDelta(ONE, new BigDecimal("0.75")).toBigDecimal()).isEqualByComparingTo("-25");
 		assertThat(Percent.ofDelta(new BigDecimal("0.75"), new BigDecimal("0.750")).toBigDecimal()).isEqualByComparingTo("0");
 	}
+
+	@Test
+	public void toBigDecimalFraction()
+	{
+		assertThat(Percent.of(80).toBigDecimalFraction()).isEqualByComparingTo("0.8");
+		assertThat(Percent.of(100).toBigDecimalFraction()).isEqualByComparingTo("1");
+		assertThat(Percent.of(0).toBigDecimalFraction()).isEqualByComparingTo("0");
+		assertThat(Percent.of(new BigDecimal("12.5")).toBigDecimalFraction()).isEqualByComparingTo("0.125");
+		assertThat(Percent.of(150).toBigDecimalFraction()).isEqualByComparingTo("1.5");
+	}
+
+	@Test
+	public void toBigDecimalHundredBased()
+	{
+		assertThat(Percent.of(80).toBigDecimalHundredBased()).isEqualByComparingTo("80");
+		assertThat(Percent.of(new BigDecimal("12.5")).toBigDecimalHundredBased()).isEqualByComparingTo("12.5");
+		assertThat(Percent.of(0).toBigDecimalHundredBased()).isEqualByComparingTo("0");
+	}
 }
