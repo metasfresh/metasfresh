@@ -22,9 +22,20 @@
 
 package de.metas.event;
 
+import lombok.NonNull;
+
 public interface EventEnqueuer
 {
 	void enqueueDistributedEvent(Event event, Topic topic);
 
 	void enqueueLocalEvent(Event event, Topic topic);
+
+	/**
+	 * Runs the given code and sends the events it enqueues on this thread as one batch, in enqueue order.
+	 * A nested call joins the outer batch. By default, the events are just sent one by one.
+	 */
+	default void enqueueEventsInOneBatch(@NonNull final Runnable enqueueEvents)
+	{
+		enqueueEvents.run();
+	}
 }
