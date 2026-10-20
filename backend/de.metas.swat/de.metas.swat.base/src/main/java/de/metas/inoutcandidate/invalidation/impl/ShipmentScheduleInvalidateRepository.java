@@ -418,7 +418,8 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	/**
 	 * Builds the INSERT statements that flag the schedules matching the given segments, split so that each statement stays below
-	 * {@link #MAX_SQL_PARAMS_PER_STATEMENT} bind parameters. A single segment that exceeds the budget on its own gets its own statement (and a warning).
+	 * {@link #MAX_SQL_PARAMS_PER_STATEMENT} bind parameters. A single segment that exceeds the budget on its own is widened to a superset that fits (see {@link #widenToFitBudget}), with a warning.
+	 * The where clause of every segment is built exactly once (building it may query the DB for ASI attributes).
 	 */
 	List<StorageSegmentsInsert> buildStorageSegmentsInserts(
 			@NonNull final Collection<IShipmentScheduleSegment> storageSegments,
@@ -434,14 +435,17 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		for (final IShipmentScheduleSegment storageSegment : storageSegments)
 		{
-			final List<IShipmentScheduleSegment> segmentsToAdd = fitsBudget(storageSegment)
-					? ImmutableList.of(storageSegment)
-					: widenToFitBudget(storageSegment);
-
-			for (final IShipmentScheduleSegment segmentToAdd : segmentsToAdd)
+			final BuiltSegment built = buildSegment(storageSegment);
+			if (built.sqlWhereClause == null)
 			{
-				final List<Object> segmentParams = new ArrayList<>();
-				final String sqlWhereClause_Segment = buildShipmentScheduleWhereClause(SS_ALIAS, segmentToAdd, segmentParams);
+				continue; // invalid segment, nothing to flag
+			}
+			final List<BuiltSegment> builtSegmentsToAdd = built.fitsBudget() ? ImmutableList.of(built) : widenToFitBudget(built);
+
+			for (final BuiltSegment segmentToAdd : builtSegmentsToAdd)
+			{
+				final String sqlWhereClause_Segment = segmentToAdd.sqlWhereClause;
+				final List<Object> segmentParams = segmentToAdd.sqlParams;
 				if (sqlWhereClause_Segment == null)
 				{
 					continue;
@@ -462,7 +466,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				}
 				chunkSqlAllSegments.append("(").append(sqlWhereClause_Segment).append(")");
 				chunkSegmentParams.addAll(segmentParams);
-				chunkSegments.add(segmentToAdd);
+				chunkSegments.add(segmentToAdd.segment);
 			}
 		}
 
@@ -475,12 +479,31 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	private static final String SS_ALIAS = I_M_ShipmentSchedule.Table_Name + ".";
 
-	/** @return true if the segment alone fits into one statement; a segment without a where clause (invalid) fits. */
-	private boolean fitsBudget(@NonNull final IShipmentScheduleSegment segment)
+	/** A segment with its where clause and bind parameters, built once. */
+	private static final class BuiltSegment
+	{
+		final IShipmentScheduleSegment segment;
+		@Nullable final String sqlWhereClause; // null = invalid segment
+		final List<Object> sqlParams;
+
+		BuiltSegment(final IShipmentScheduleSegment segment, @Nullable final String sqlWhereClause, final List<Object> sqlParams)
+		{
+			this.segment = segment;
+			this.sqlWhereClause = sqlWhereClause;
+			this.sqlParams = sqlParams;
+		}
+
+		boolean fitsBudget()
+		{
+			return SQL_PARAMS_PER_STATEMENT_OVERHEAD + sqlParams.size() <= MAX_SQL_PARAMS_PER_STATEMENT;
+		}
+	}
+
+	private BuiltSegment buildSegment(@NonNull final IShipmentScheduleSegment segment)
 	{
 		final List<Object> params = new ArrayList<>();
-		buildShipmentScheduleWhereClause(SS_ALIAS, segment, params);
-		return SQL_PARAMS_PER_STATEMENT_OVERHEAD + params.size() <= MAX_SQL_PARAMS_PER_STATEMENT;
+		final String sqlWhereClause = buildShipmentScheduleWhereClause(SS_ALIAS, segment, params);
+		return new BuiltSegment(segment, sqlWhereClause, params);
 	}
 
 	/**
@@ -489,10 +512,14 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * first it loses its locator and attribute restriction; if that is still too big, it keeps only its products
 	 * (partitioned into several segments if even those are too many).
 	 */
-	private List<IShipmentScheduleSegment> widenToFitBudget(@NonNull final IShipmentScheduleSegment segment)
+	private List<BuiltSegment> widenToFitBudget(@NonNull final BuiltSegment oversized)
 	{
-		logger.warn("Segment needs more bind parameters than the budget of {}; widening it (dropping restrictions, i.e. over-invalidating) instead: {}",
-				MAX_SQL_PARAMS_PER_STATEMENT, segment);
+		final IShipmentScheduleSegment segment = oversized.segment;
+		logger.warn("Segment needs {} bind parameters, more than the budget of {}; widening it (dropping restrictions, i.e. over-invalidating) instead."
+						+ " products={}, bpartners={}, billBPartners={}, locators={}, warehouses={}, attributes={}",
+				oversized.sqlParams.size(), MAX_SQL_PARAMS_PER_STATEMENT,
+				segment.getProductIds().size(), segment.getBpartnerIds().size(), segment.getBillBPartnerIds().size(),
+				segment.getLocatorIds().size(), segment.getWarehouseIds().size(), segment.getAttributes().size());
 
 		final ImmutableShipmentScheduleSegment.ImmutableShipmentScheduleSegmentBuilder withoutLocatorsAndAttributes = ImmutableShipmentScheduleSegment.builder()
 				.productIds(segment.getProductIds())
@@ -506,20 +533,20 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		{
 			withoutLocatorsAndAttributes.anyLocator();
 		}
-		final ImmutableShipmentScheduleSegment widened = withoutLocatorsAndAttributes.build();
-		if (fitsBudget(widened))
+		final BuiltSegment widened = buildSegment(withoutLocatorsAndAttributes.build());
+		if (widened.fitsBudget())
 		{
 			return ImmutableList.of(widened);
 		}
 
-		final ImmutableList.Builder<IShipmentScheduleSegment> productOnlySegments = ImmutableList.builder();
+		final ImmutableList.Builder<BuiltSegment> productOnlySegments = ImmutableList.builder();
 		for (final List<Integer> productIdsChunk : Iterables.partition(segment.getProductIds(), MAX_SQL_PARAMS_PER_STATEMENT / 2))
 		{
-			productOnlySegments.add(ImmutableShipmentScheduleSegment.builder()
+			productOnlySegments.add(buildSegment(ImmutableShipmentScheduleSegment.builder()
 					.productIds(productIdsChunk)
 					.anyBPartner()
 					.anyLocator()
-					.build());
+					.build()));
 		}
 		return productOnlySegments.build();
 	}
@@ -562,7 +589,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * @param sqlParams output SQL parameters
 	 * @return where clause or <code>null</code>
 	 */
-	private String buildShipmentScheduleWhereClause(
+	String buildShipmentScheduleWhereClause(
 			final String ssAlias,
 			final IShipmentScheduleSegment segment,
 			final List<Object> sqlParams)

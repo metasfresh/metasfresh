@@ -370,6 +370,51 @@ class ShipmentScheduleSegmentChangedProcessorTest
 	}
 
 	/**
+	 * The processor lives as long as the ITrx, which can commit several times: a mid-batch failure disables the mid-batch flush only
+	 * until the next successful commit flush.
+	 */
+	@Test
+	void midBatchFlushDisabledByFailure_isReEnabledByTheNextCommit()
+	{
+		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+		when(invalidator.getSegmentFlushThreshold()).thenReturn(1);
+		doThrow(new RuntimeException("test: mid-batch flush failed")).when(invalidator).flagSegmentsForRecomputeInThreadInheritedTrx(any());
+
+		final ImmutableShipmentScheduleSegment s1 = ImmutableShipmentScheduleSegment.builder().productId(1).bpartnerId(2).locatorId(3).build();
+		final ImmutableShipmentScheduleSegment s2 = ImmutableShipmentScheduleSegment.builder().productId(2).bpartnerId(2).locatorId(3).build();
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final String trxName = trxManager.createTrxName("test", true);
+		final String previousTrxName = trxManager.setThreadInheritedTrxName(trxName);
+		try
+		{
+			final ITrx trx = trxManager.getTrx(trxName);
+			trx.start();
+			final ShipmentScheduleSegmentChangedProcessor processor = ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator);
+			assertThat(processor).isNotNull();
+
+			processor.addSegment(s1); // active trx -> in-trx flush -> fails -> mid-batch flush disabled
+			trx.commit(true); // commit flush succeeds -> re-enabled
+			processor.addSegment(s2); // trx is committed (inactive) -> mid-batch flush must run again, out of trx
+
+			@SuppressWarnings("unchecked")
+			final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
+			verify(invalidator, atLeastOnce()).flagSegmentsForRecomputeOutOfTrx(captor.capture());
+			assertThat(captor.getAllValues().stream().flatMap(Collection::stream))
+					.as("s2 must be flushed mid-batch after the commit re-enabled the mid-batch flush")
+					.contains(s2);
+		}
+		catch (final java.sql.SQLException ex)
+		{
+			throw new RuntimeException(ex);
+		}
+		finally
+		{
+			trxManager.setThreadInheritedTrxName(previousTrxName);
+		}
+	}
+
+	/**
 	 * Minimal {@link IShipmentScheduleSegment} using Object (identity) equals/hashCode — models the HU-derived
 	 * segments ({@code ShipmentScheduleSegmentFromHU}/{@code -Storage}/{@code -Attribute}), none of which override
 	 * equals/hashCode.

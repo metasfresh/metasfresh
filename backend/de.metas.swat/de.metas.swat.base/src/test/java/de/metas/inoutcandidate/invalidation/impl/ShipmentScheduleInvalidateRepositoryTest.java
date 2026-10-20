@@ -274,7 +274,7 @@ public class ShipmentScheduleInvalidateRepositoryTest
 		assertThat(covered).as("every segment must be in exactly one statement").isEqualTo(segments.size());
 		for (final IShipmentScheduleSegment segment : segments)
 		{
-			assertThat(allParams).as("the locators of every segment must be bound").containsAll(segment.getLocatorIds());
+			assertThat(new java.util.HashSet<>(allParams).containsAll(segment.getLocatorIds())).as("the locators of every segment must be bound").isTrue();
 		}
 	}
 
@@ -306,8 +306,8 @@ public class ShipmentScheduleInvalidateRepositoryTest
 			allParams.addAll(insert.getSqlParams());
 		}
 		assertThat(allParams).as("the widened segment must still be flagged by its product").contains(1);
-		assertThat(allParams).as("the locator restriction of the oversized segment is dropped").doesNotContain(1_000_001 + 20_000);
-		assertThat(allParams).as("the small segment is untouched").containsAll(small.getLocatorIds());
+		assertThat(new java.util.HashSet<>(allParams).contains(1_000_001 + 20_000)).as("the locator restriction of the oversized segment is dropped").isFalse();
+		assertThat(new java.util.HashSet<>(allParams).containsAll(small.getLocatorIds())).as("the small segment is untouched").isTrue();
 	}
 
 	@Test
@@ -330,7 +330,7 @@ public class ShipmentScheduleInvalidateRepositoryTest
 			allParams.addAll(insert.getSqlParams());
 		}
 		assertThat(inserts).hasSizeGreaterThan(1);
-		assertThat(allParams).containsAll(productIds);
+		assertThat(new java.util.HashSet<>(allParams).containsAll(productIds)).isTrue();
 	}
 
 	@Test
@@ -360,5 +360,65 @@ public class ShipmentScheduleInvalidateRepositoryTest
 				.hasMessageContaining("chunk 2 failed");
 
 		org.mockito.Mockito.verify(spy, org.mockito.Mockito.never()).enqueueShipmentScheduleRecompute(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+	}
+
+	@Test
+	public void storageSegmentInserts_oversizedBPartnerDimension_isWidened_withinBudget()
+	{
+		final List<Integer> bpartnerIds = new ArrayList<>();
+		for (int i = 1; i <= 33_000; i++)
+		{
+			bpartnerIds.add(i);
+		}
+		final IShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder().productId(7).bpartnerIds(bpartnerIds).locatorId(3).build();
+
+		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(java.util.Collections.singletonList(segment));
+
+		assertThat(inserts).isNotEmpty();
+		final java.util.Set<Object> allParams = new java.util.HashSet<>();
+		for (final ShipmentScheduleInvalidateRepository.StorageSegmentsInsert insert : inserts)
+		{
+			assertThat(insert.getSqlParams().size()).isLessThanOrEqualTo(ShipmentScheduleInvalidateRepository.MAX_SQL_PARAMS_PER_STATEMENT);
+			allParams.addAll(insert.getSqlParams());
+		}
+		assertThat(allParams.contains(7)).as("still flagged by its product").isTrue();
+	}
+
+	@Test
+	public void storageSegmentInserts_oversizedWarehouseDimension_isWidened_withinBudget()
+	{
+		final List<Integer> warehouseIds = new ArrayList<>();
+		for (int i = 1; i <= 33_000; i++)
+		{
+			warehouseIds.add(i);
+		}
+		final IShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder().productId(7).bpartnerId(2).warehouseIds(warehouseIds).build();
+
+		final List<ShipmentScheduleInvalidateRepository.StorageSegmentsInsert> inserts = buildInserts(java.util.Collections.singletonList(segment));
+
+		assertThat(inserts).isNotEmpty();
+		final java.util.Set<Object> allParams = new java.util.HashSet<>();
+		for (final ShipmentScheduleInvalidateRepository.StorageSegmentsInsert insert : inserts)
+		{
+			assertThat(insert.getSqlParams().size()).isLessThanOrEqualTo(ShipmentScheduleInvalidateRepository.MAX_SQL_PARAMS_PER_STATEMENT);
+			allParams.addAll(insert.getSqlParams());
+		}
+		assertThat(allParams.contains(7)).as("still flagged by its product").isTrue();
+	}
+
+	@Test
+	public void storageSegmentInserts_buildsTheWhereClauseOncePerInBudgetSegment()
+	{
+		final ShipmentScheduleInvalidateRepository spy = org.mockito.Mockito.spy(new ShipmentScheduleInvalidateRepository());
+		final List<IShipmentScheduleSegment> segments = new ArrayList<>();
+		for (int productId = 1; productId <= 5; productId++)
+		{
+			segments.add(segmentWithLocators(productId, 3));
+		}
+
+		spy.buildStorageSegmentsInserts(segments, null, "chunk-uuid", "true");
+
+		org.mockito.Mockito.verify(spy, org.mockito.Mockito.times(5)).buildShipmentScheduleWhereClause(
+				org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyList());
 	}
 }

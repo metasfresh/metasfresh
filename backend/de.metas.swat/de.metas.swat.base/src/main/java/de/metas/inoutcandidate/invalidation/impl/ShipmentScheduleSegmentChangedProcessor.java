@@ -116,22 +116,23 @@ final class ShipmentScheduleSegmentChangedProcessor
 	 */
 	private void flushAfterCommit()
 	{
-		if (segments.isEmpty())
+		if (!segments.isEmpty())
 		{
-			return;
+			final List<IShipmentScheduleSegment> segmentsCopy = new ArrayList<>(segments);
+
+			// Flag FIRST, clear AFTER: if flagging throws, the segments stay accumulated instead of being lost.
+			// Flagging is idempotent (it only marks schedules as "needs recompute"), so a retry is a harmless no-op.
+			shipmentScheduleInvalidator.flagSegmentsForRecomputeOutOfTrx(segmentsCopy);
+			segments.clear();
 		}
 
-		final List<IShipmentScheduleSegment> segmentsCopy = new ArrayList<>(segments);
-
-		// Flag FIRST, clear AFTER: if flagging throws, the segments stay accumulated instead of being lost.
-		// Flagging is idempotent (it only marks schedules as "needs recompute"), so a retry is a harmless no-op.
-		shipmentScheduleInvalidator.flagSegmentsForRecomputeOutOfTrx(segmentsCopy);
-		segments.clear();
+		// the processor lives as long as the ITrx, which can commit several times: every successful commit-flush re-enables the mid-batch flush
+		midBatchFlushDisabled = false;
 	}
 
 	/**
 	 * Set after the first failed mid-batch flush: the remaining segments are left to {@link #flushAfterCommit()} instead of
-	 * retrying (and warning about) the full accumulator on every further {@link #addSegment}.
+	 * retrying (and warning about) the full accumulator on every further {@link #addSegment}. Re-enabled by the next successful {@link #flushAfterCommit()}.
 	 */
 	private boolean midBatchFlushDisabled = false;
 
@@ -191,7 +192,7 @@ final class ShipmentScheduleSegmentChangedProcessor
 		this.segments.add(ImmutableShipmentScheduleSegment.copyOf(segment));
 
 		// Bound the accumulator during a long-running batch: flush mid-batch once it reaches the configured threshold
-		// (a threshold <= 0 disables this). The flush runs in the business transaction behind a savepoint; see flushMidBatch().
+		// (a threshold <= 0 disables this). In an active trx the flush runs in it behind a savepoint, otherwise out of trx; see flushMidBatch().
 		if (flushThreshold > 0 && segments.size() >= flushThreshold)
 		{
 			flushMidBatch();
