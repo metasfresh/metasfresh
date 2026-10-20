@@ -9,6 +9,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.esr.api.IESRImportDAO;
@@ -162,6 +163,7 @@ public class ESRImportCamt54V08MatchingTest extends ESRTestBase
 		invoice.setDocumentNo("INV-1");
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
 		invoice.setC_Currency_ID(chf.getRepoId());
+		invoice.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		invoice.setIsSOTrx(true);
 		invoice.setDocStatus(IDocument.STATUS_Completed);
 		invoice.setProcessed(true);
