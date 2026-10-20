@@ -18,7 +18,7 @@ public interface I_ESR_ImportLine
 
 
 	/**
-	 * Set Buchungsdatum.
+	 * Set Date Posted.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -27,7 +27,7 @@ public interface I_ESR_ImportLine
 	void setAccountingDate (@Nullable java.sql.Timestamp AccountingDate);
 
 	/**
-	 * Get Buchungsdatum.
+	 * Get Date Posted.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -39,8 +39,8 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_AccountingDate = "AccountingDate";
 
 	/**
-	 * Set Konto-Nr..
-	 * Kontonummer
+	 * Set Account No.
+	 * Account Number
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -49,8 +49,8 @@ public interface I_ESR_ImportLine
 	void setAccountNo (@Nullable java.lang.String AccountNo);
 
 	/**
-	 * Get Konto-Nr..
-	 * Kontonummer
+	 * Get Account No.
+	 * Account Number
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -119,8 +119,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_Amount = "Amount";
 
 	/**
-	 * Set Geschäftspartner-Schlüssel.
-	 * Suchschlüssel für den Geschäftspartner
+	 * Set Business Partner No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -129,8 +128,7 @@ public interface I_ESR_ImportLine
 	void setBPartner_Value (@Nullable java.lang.String BPartner_Value);
 
 	/**
-	 * Get Geschäftspartner-Schlüssel.
-	 * Suchschlüssel für den Geschäftspartner
+	 * Get Business Partner No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -274,7 +272,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
-	 * Set Payments.
+	 * Set Payment.
 	 * Payment identifier
 	 *
 	 * <br>Type: Search
@@ -284,7 +282,7 @@ public interface I_ESR_ImportLine
 	void setC_Payment_ID (int C_Payment_ID);
 
 	/**
-	 * Get Payments.
+	 * Get Payment.
 	 * Payment identifier
 	 *
 	 * <br>Type: Search
@@ -321,7 +319,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Reference No.
+	 * Set Reference.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -330,7 +328,7 @@ public interface I_ESR_ImportLine
 	void setC_ReferenceNo_ID (int C_ReferenceNo_ID);
 
 	/**
-	 * Get Reference No.
+	 * Get Reference.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -363,7 +361,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Bereits zugeordnet.
+	 * Set Allocated.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -374,7 +372,7 @@ public interface I_ESR_ImportLine
 	void setESR_Amount_Balance (@Nullable BigDecimal ESR_Amount_Balance);
 
 	/**
-	 * Get Bereits zugeordnet.
+	 * Get Allocated.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -386,8 +384,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_ESR_Amount_Balance = "ESR_Amount_Balance";
 
 	/**
-	 * Set ESR Rechnungsnummer.
-	 * Belegnummer der zugeordneten Rechnung
+	 * Set ESR Invoice No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -396,8 +393,7 @@ public interface I_ESR_ImportLine
 	void setESR_DocumentNo (@Nullable java.lang.String ESR_DocumentNo);
 
 	/**
-	 * Get ESR Rechnungsnummer.
-	 * Belegnummer der zugeordneten Rechnung
+	 * Get ESR Invoice No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -409,7 +405,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_ESR_DocumentNo = "ESR_DocumentNo";
 
 	/**
-	 * Set Importstatus.
+	 * Set Status Import.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -418,7 +414,7 @@ public interface I_ESR_ImportLine
 	void setESR_Document_Status (java.lang.String ESR_Document_Status);
 
 	/**
-	 * Get Importstatus.
+	 * Get Status Import.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -503,7 +499,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_ESR_Import_ID = "ESR_Import_ID";
 
 	/**
-	 * Set ESR_ImportLine.
+	 * Set ESR Import Line.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -512,7 +508,7 @@ public interface I_ESR_ImportLine
 	void setESR_ImportLine_ID (int ESR_ImportLine_ID);
 
 	/**
-	 * Get ESR_ImportLine.
+	 * Get ESR Import Line.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -524,8 +520,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_ESR_ImportLine_ID = "ESR_ImportLine_ID";
 
 	/**
-	 * Set Rechnungsbetrag.
-	 * Gesamtbetrag der zugeordneten Rechnung
+	 * Set Invoice Grandtotal.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -534,8 +529,7 @@ public interface I_ESR_ImportLine
 	void setESR_Invoice_Grandtotal (@Nullable BigDecimal ESR_Invoice_Grandtotal);
 
 	/**
-	 * Get Rechnungsbetrag.
-	 * Gesamtbetrag der zugeordneten Rechnung
+	 * Get Invoice Grandtotal.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -547,8 +541,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_ESR_Invoice_Grandtotal = "ESR_Invoice_Grandtotal";
 
 	/**
-	 * Set Offener Rechnungsbetrag.
-	 * Noch offener Betrag der zugeordneten Rechnung, Abzüglich der ESR-Zahlbeträge aus der/den Zeile(n) der vorliegenden Import-Datei.
+	 * Set Open Amount.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -557,8 +550,7 @@ public interface I_ESR_ImportLine
 	void setESR_Invoice_Openamt (@Nullable BigDecimal ESR_Invoice_Openamt);
 
 	/**
-	 * Get Offener Rechnungsbetrag.
-	 * Noch offener Betrag der zugeordneten Rechnung, Abzüglich der ESR-Zahlbeträge aus der/den Zeile(n) der vorliegenden Import-Datei.
+	 * Get Open Amount.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -570,7 +562,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_ESR_Invoice_Openamt = "ESR_Invoice_Openamt";
 
 	/**
-	 * Set Extern erstellte ESR-Referenz.
+	 * Set Manual Reference No..
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -579,7 +571,7 @@ public interface I_ESR_ImportLine
 	void setESR_IsManual_ReferenceNo (boolean ESR_IsManual_ReferenceNo);
 
 	/**
-	 * Get Extern erstellte ESR-Referenz.
+	 * Get Manual Reference No..
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -591,8 +583,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_ESR_IsManual_ReferenceNo = "ESR_IsManual_ReferenceNo";
 
 	/**
-	 * Set Importierte ESR-Zeile.
-	 * ESR complete line text
+	 * Set Imported ESR Record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -601,8 +592,7 @@ public interface I_ESR_ImportLine
 	void setESRLineText (java.lang.String ESRLineText);
 
 	/**
-	 * Get Importierte ESR-Zeile.
-	 * ESR complete line text
+	 * Get Imported ESR Record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -614,7 +604,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_ESRLineText = "ESRLineText";
 
 	/**
-	 * Set ESR_Payment_Action.
+	 * Set Action.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -623,7 +613,7 @@ public interface I_ESR_ImportLine
 	void setESR_Payment_Action (@Nullable java.lang.String ESR_Payment_Action);
 
 	/**
-	 * Get ESR_Payment_Action.
+	 * Get Action.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -635,8 +625,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_ESR_Payment_Action = "ESR_Payment_Action";
 
 	/**
-	 * Set Post-Teilnehmernummer.
-	 * Post-Teilnehmernummer
+	 * Set Port Finance Member No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -645,8 +634,7 @@ public interface I_ESR_ImportLine
 	void setESRPostParticipantNumber (@Nullable java.lang.String ESRPostParticipantNumber);
 
 	/**
-	 * Get Post-Teilnehmernummer.
-	 * Post-Teilnehmernummer
+	 * Get Port Finance Member No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -658,8 +646,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_ESRPostParticipantNumber = "ESRPostParticipantNumber";
 
 	/**
-	 * Set ESR Referenznummer.
-	 * Referenznummer der jeweiligen Rechnung
+	 * Set ESR Reference No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -668,8 +655,7 @@ public interface I_ESR_ImportLine
 	void setESRReferenceNumber (@Nullable java.lang.String ESRReferenceNumber);
 
 	/**
-	 * Get ESR Referenznummer.
-	 * Referenznummer der jeweiligen Rechnung
+	 * Get ESR Reference No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -681,7 +667,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_ESRReferenceNumber = "ESRReferenceNumber";
 
 	/**
-	 * Set Transaktionsart.
+	 * Set Transaction Type.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -690,7 +676,7 @@ public interface I_ESR_ImportLine
 	void setESRTrxType (@Nullable java.lang.String ESRTrxType);
 
 	/**
-	 * Get Transaktionsart.
+	 * Get Transaction Type.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -700,6 +686,31 @@ public interface I_ESR_ImportLine
 
 	ModelColumn<I_ESR_ImportLine, Object> COLUMN_ESRTrxType = new ModelColumn<>(I_ESR_ImportLine.class, "ESRTrxType", null);
 	String COLUMNNAME_ESRTrxType = "ESRTrxType";
+
+	/**
+	 * Set File Name.
+	 * Name of the local file or URL
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setFileName (@Nullable java.lang.String FileName);
+
+	/**
+	 * Get File Name.
+	 * Name of the local file or URL
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getFileName();
+
+	ModelColumn<I_ESR_ImportLine, Object> COLUMN_FileName = new ModelColumn<>(I_ESR_ImportLine.class, "FileName", null);
+	String COLUMNNAME_FileName = "FileName";
 
 	/**
 	 * Set Error Message.
@@ -748,7 +759,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Manuell.
+	 * Set Invoice manually allocated.
 	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
@@ -758,7 +769,7 @@ public interface I_ESR_ImportLine
 	void setIsManual (boolean IsManual);
 
 	/**
-	 * Get Manuell.
+	 * Get Invoice manually allocated.
 	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
@@ -817,8 +828,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_LineNo = "LineNo";
 
 	/**
-	 * Set Zuordnungsfehler.
-	 * Fehler beim Zuordnen der Daten, z.B. fehlende Rechnung für eine eingelesene Referenznummer
+	 * Set Allocation Error.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -827,8 +837,7 @@ public interface I_ESR_ImportLine
 	void setMatchErrorMsg (@Nullable java.lang.String MatchErrorMsg);
 
 	/**
-	 * Get Zuordnungsfehler.
-	 * Fehler beim Zuordnen der Daten, z.B. fehlende Rechnung für eine eingelesene Referenznummer
+	 * Get Allocation Error.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -860,7 +869,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_Org_ID = "Org_ID";
 
 	/**
-	 * Set Zahldatum.
+	 * Set Date Payment.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -869,7 +878,7 @@ public interface I_ESR_ImportLine
 	void setPaymentDate (@Nullable java.sql.Timestamp PaymentDate);
 
 	/**
-	 * Get Zahldatum.
+	 * Get Date Payment.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -902,7 +911,7 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set ESR Sektion.
+	 * Set ESR Organisation.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -911,7 +920,7 @@ public interface I_ESR_ImportLine
 	void setSektionNo (@Nullable java.lang.String SektionNo);
 
 	/**
-	 * Get ESR Sektion.
+	 * Get ESR Organisation.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
