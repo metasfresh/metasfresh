@@ -198,10 +198,10 @@ class C_OrderLineTest
 		}
 
 		@Test
-		void lineWithoutRuleAndBase_isRefused()
+		void lineWithoutRuleAndBase_isNoOp()
 		{
 			final I_C_OrderLine line = uncalibratedLine(true);
-			assertThatThrownBy(() -> typeFactor(line, "0.8")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorNotCalibrated").matches(AdempiereException::isUserValidationError, "user validation error");
+			typeFactor(line, "0.8");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("5");
 		}
 
@@ -215,10 +215,19 @@ class C_OrderLineTest
 		}
 
 		@Test
-		void newManualLine_factorTyped_isRefused()
+		void newManualLine_factorTyped_isNoOp()
 		{
 			final I_C_OrderLine line = uncalibratedLine(false);
-			assertThatThrownBy(() -> typeFactor(line, "0.8")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorNotCalibrated").matches(AdempiereException::isUserValidationError, "user validation error");
+			typeFactor(line, "0.8");
+			assertThat(line.getQtyEntered()).isEqualByComparingTo("5");
+		}
+
+		@Test
+		void lineWithoutBase_negativeFactorTyped_isNoOp()
+		{
+			final I_C_OrderLine line = uncalibratedLine(true);
+			typeFactor(line, "-0.5");
+			assertThat(line.getQtyEntered()).isEqualByComparingTo("5");
 		}
 
 		@Test

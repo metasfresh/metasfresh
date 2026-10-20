@@ -61,7 +61,6 @@ public class C_OrderLine
 {
 	private static final AdMessageKey MSG_FactorMandatory = AdMessageKey.of("C_OrderLine_CalibrationFactorMandatory");
 	private static final AdMessageKey MSG_NegativeFactor = AdMessageKey.of("C_CompensationGroup_CalibrationRule_NegativeFactor");
-	private static final AdMessageKey MSG_LineNotCalibrated = AdMessageKey.of("C_OrderLine_CalibrationFactorNotCalibrated");
 
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
@@ -74,13 +73,12 @@ public class C_OrderLine
 	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor, skipIfCopying = true)
 	public void onCalibrationFactorChanged(@NonNull final I_C_OrderLine orderLine)
 	{
-		final Percent factor = OrderGroupRepository.getCalibrationFactor(orderLine);
 		final BigDecimal qtyUncalibrated = getQtyUncalibratedOrNull(orderLine);
-
-		if (factor == null && qtyUncalibrated == null)
+		if (qtyUncalibrated == null)
 		{
 			return;
 		}
+		final Percent factor = OrderGroupRepository.getCalibrationFactor(orderLine);
 		if (factor == null)
 		{
 			throw new AdempiereException(MSG_FactorMandatory);
@@ -88,10 +86,6 @@ public class C_OrderLine
 		if (factor.signum() < 0)
 		{
 			throw new AdempiereException(MSG_NegativeFactor);
-		}
-		if (qtyUncalibrated == null)
-		{
-			throw new AdempiereException(MSG_LineNotCalibrated);
 		}
 		final Quantity qtyCalibrated = Quantitys.of(qtyUncalibrated, UomId.ofRepoId(orderLine.getC_UOM_ID())).multiply(factor);
 		orderLine.setQtyEntered(qtyCalibrated.toBigDecimal());
