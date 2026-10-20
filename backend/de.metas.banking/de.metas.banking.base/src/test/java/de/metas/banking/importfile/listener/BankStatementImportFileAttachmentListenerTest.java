@@ -168,4 +168,29 @@ class BankStatementImportFileAttachmentListenerTest
 				.extracting(AttachmentEntry::getFilename)
 				.containsExactly("statement1.xml");
 	}
+
+	@Test
+	void linkingToSeveralRecords_oneRefused_noneIsLinked()
+	{
+		attachmentService.createNewAttachment(importFileRecord, "statement1.xml", "<a/>".getBytes(StandardCharsets.UTF_8));
+
+		final I_C_BankStatement_Import_File otherImportFileRecord = newInstance(I_C_BankStatement_Import_File.class);
+		saveRecord(otherImportFileRecord);
+		final AttachmentEntry otherEntry = attachmentService.createNewAttachment(otherImportFileRecord, "statement2.xml", "<b/>".getBytes(StandardCharsets.UTF_8));
+
+		final I_C_BankStatement_Import_File emptyImportFileRecord = newInstance(I_C_BankStatement_Import_File.class);
+		saveRecord(emptyImportFileRecord);
+
+		final AttachmentLinksRequest linkToEmptyAndFirstRecord = AttachmentLinksRequest.builder()
+				.attachmentEntryId(otherEntry.getIdNonNull())
+				.linksToAdd(ImmutableList.of(TableRecordReference.of(emptyImportFileRecord), TableRecordReference.of(importFileRecord)))
+				.build();
+		assertThatThrownBy(() -> attachmentService.handleAttachmentLinks(linkToEmptyAndFirstRecord))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(MSG_MULTIPLE_ATTACHMENTS_NOT_ALLOWED);
+
+		assertThat(attachmentService.getByReferencedRecord(emptyImportFileRecord)).isEmpty();
+		refresh(emptyImportFileRecord);
+		assertThat(emptyImportFileRecord.getFileName()).isNull();
+	}
 }
