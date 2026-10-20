@@ -94,4 +94,9 @@ public class InvoiceToAllocate
 
 	@Nullable
 	CurrencyConversionTypeId currencyConversionTypeId;
+	
+	public boolean grantDiscount(@NonNull final Amount amountToAllocate)
+	{
+		return openAmountConverted.subtract(discountAmountConverted).equals(amountToAllocate);
+	}
 }

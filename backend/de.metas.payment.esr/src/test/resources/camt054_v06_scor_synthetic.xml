@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic camt.054.001.06 test file, hand-written after the structure of the PostFinance camt.054 samples; no real account, party or reference. One credit of CHF 250.00 with an ISO 11649 creditor reference (Cd=SCOR, the ISO 11649 example reference RF18539007547034). -->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.06" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:camt.054.001.06 camt.054.001.06.xsd">
+	<BkToCstmrDbtCdtNtfctn>
+		<GrpHdr>
+			<MsgId>SYNTHETIC-MSG-SCOR-1</MsgId>
+			<CreDtTm>2026-10-19T23:00:00</CreDtTm>
+		</GrpHdr>
+		<Ntfctn>
+			<Id>SYNTHETIC-NTFCTN-SCOR-1</Id>
+			<CreDtTm>2026-10-19T23:00:00</CreDtTm>
+			<Acct>
+				<Id>
+					<IBAN>CH9300762011623852957</IBAN>
+				</Id>
+				<Ownr>
+					<Nm>Muster AG</Nm>
+				</Ownr>
+			</Acct>
+			<Ntry>
+				<NtryRef>SYNTHETIC-NTRY-SCOR-1</NtryRef>
+				<Amt Ccy="CHF">250.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<RvslInd>false</RvslInd>
+				<Sts>BOOK</Sts>
+				<BookgDt>
+					<Dt>2026-10-19</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2026-10-20</Dt>
+				</ValDt>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>RCDT</Cd>
+							<SubFmlyCd>VCOM</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+					</Btch>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>SYNTHETIC-TX-SCOR-1</AcctSvcrRef>
+						</Refs>
+						<Amt Ccy="CHF">250.00</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<BkTxCd>
+							<Domn>
+								<Cd>PMNT</Cd>
+								<Fmly>
+									<Cd>RCDT</Cd>
+									<SubFmlyCd>AUTT</SubFmlyCd>
+								</Fmly>
+							</Domn>
+						</BkTxCd>
+						<RmtInf>
+							<Strd>
+								<CdtrRefInf>
+									<Tp>
+										<CdOrPrtry>
+											<Cd>SCOR</Cd>
+										</CdOrPrtry>
+									</Tp>
+									<Ref>RF18539007547034</Ref>
+								</CdtrRefInf>
+							</Strd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Ntfctn>
+	</BkToCstmrDbtCdtNtfctn>
+</Document>
