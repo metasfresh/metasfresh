@@ -280,7 +280,7 @@ Feature: Bonus that the customer deducts when paying an invoice
       | Identifier   | C_Invoice_ID   | M_Product_ID | QtyInvoiced | C_Project_ID |
       | goodsLineP1  | projectInvoice | goodsProduct | 6 PCE       | project1     |
       | goodsLineP2  | projectInvoice | goodsProduct | 4 PCE       | project2     |
-      | crateLinePx  | projectInvoice | crateProduct | 5 PCE       | null         |
+      | crateLine    | projectInvoice | crateProduct | 5 PCE       | null         |
     And the invoice identified by projectInvoice is completed
 
     # the goods bonus: 5.2 % of the 100.00 goods = 5.20 + 7 % VAT 0.36 = 5.56; split by base share: 3.12 on project 1 (60.00), 2.08 on project 2 (40.00)
