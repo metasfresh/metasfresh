@@ -25,12 +25,14 @@ package de.metas.cucumber.stepdefs.shipment;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.QueueWorkPackageId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.receipt.JsonCreateReceiptsResponse;
-import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -93,22 +95,31 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.logging.LogManager;
 import de.metas.material.MovementType;
 import de.metas.order.OrderLineId;
+import de.metas.lock.api.ILockManager;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -129,13 +140,23 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -191,6 +212,16 @@ public class M_InOut_StepDef
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final ILockManager lockManager = Services.get(ILockManager.class);
+	private final int shipmentScheduleTableId = InterfaceWrapperHelper.getTableId(I_M_ShipmentSchedule.class);
+
+	private static final String LOCK_BLOCKER_OWNER = "test-blocker";
+	private static final int LOCK_GAP_TIMEOUT_SECONDS = 60;
+
+	@Nullable private GenerateShipmentsRun lastGenerateShipmentsRun;
+	@Nullable private CompletableFuture<Boolean> lockBlockerCommit;
+	@Nullable private Thread lockBlockerThread;
 
 	/**
 	 * Validate M_InOut records (shipments or material receipts).
@@ -406,24 +437,449 @@ public class M_InOut_StepDef
 				}
 		);
 
-		final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, schedIdsToEnqueue);
-
-		final ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleWorkPackageParameters.builder()
-				.adPInstanceId(pinstanceDAO.createSelectionId())
-				// NOTE: keep in sync with de.metas.handlingunits.shipmentschedule.process.M_ShipmentSchedule_EnqueueSelection.createShipmentSchedulesQueryFilters
-				.queryFilters(shipmentService.createShipmentScheduleEnqueuerQueryFilters(queryFilter, Env.getZonedDateTime().toInstant()))
+		final ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = newGenerateShipmentsParameters(
+				pinstanceDAO.createSelectionId(),
+				schedIdsToEnqueue,
+				M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType),
+				isCompleteShipments,
+				isShipToday)
 				.qtysToDeliverOverride(QtyToDeliverMap.ofMap(qtysToDeliverOverride.build()))
-				.quantityType(M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType))
-				.completeShipments(StringUtils.toBoolean(isCompleteShipments))
-				.isShipmentDateToday(StringUtils.toBoolean(isShipToday))
 				.onTheFlyPickToPackingInstructions(isOnTheFlyPickToPackingInstructions);
 
 		final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance()
 				.createWorkpackages(workPackageParametersBuilder.build());
 
 		assertThat(result.getEnqueuedPackagesCount()).isGreaterThanOrEqualTo(1);
+	}
+
+	/**
+	 * The "generate shipments" parameters for the given shipment schedules, with the selection filters the process uses.
+	 */
+	@NonNull
+	private ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder newGenerateShipmentsParameters(
+			@NonNull final PInstanceId pinstanceId,
+			@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityType,
+			final boolean isCompleteShipments,
+			final boolean isShipToday)
+	{
+		final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds);
+
+		return ShipmentScheduleWorkPackageParameters.builder()
+				.adPInstanceId(pinstanceId)
+				// NOTE: keep in sync with de.metas.handlingunits.shipmentschedule.process.M_ShipmentSchedule_EnqueueSelection.createShipmentSchedulesQueryFilters
+				.queryFilters(shipmentService.createShipmentScheduleEnqueuerQueryFilters(queryFilter, Env.getZonedDateTime().toInstant()))
+				.quantityType(quantityType)
+				.completeShipments(isCompleteShipments)
+				.isShipmentDateToday(isShipToday);
+	}
+
+	/**
+	 * Generates shipments for the given shipment schedules, like the "generate shipments" process
+	 * ({@code M_ShipmentSchedule_EnqueueSelection}) does in its process transaction: QuantityType=D, IsCompleteShipments=true, IsShipToday=false.
+	 * The outcome (the failure, or the enqueued workpackages with the locks of their elements, as seen right before the commit) is kept for the
+	 * {@code 'generate shipments' ended without error} and {@code ... shipment workpackage(s) ...} assertion steps.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.params <b>shipmentScheduleIdentifiers</b> -- comma-separated identifiers from M_ShipmentSchedule_StepDefData
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When 'generate shipments' is invoked for "s_a1,s_a2,s_b1"
+	 * </pre>
+	 */
+	@When("'generate shipments' is invoked for {string}")
+	public void generateShipmentsKeepingTheOutcome(@NonNull final String shipmentScheduleIdentifiers)
+	{
+		lastGenerateShipmentsRun = runGenerateShipmentsInProcessTrx(Env.copyCtx(Env.getCtx()), resolveShipmentScheduleIds(shipmentScheduleIdentifiers));
+	}
+
+	/**
+	 * Stands in for "generate shipments" running while the recompute commits a schedule's quantity to deliver: the second schedule becomes eligible
+	 * after "generate shipments" locked its selection, but before it re-reads that selection.
+	 * <ol>
+	 * <li>A blocker thread opens a transaction, inserts a {@code T_Lock} row for the first given schedule (owner {@value #LOCK_BLOCKER_OWNER},
+	 * {@code IsAllowMultipleOwners='N'}, like the selection lock) and writes the second schedule's {@code QtyToDeliver} (its {@code QtyOrdered}),
+	 * both uncommitted.</li>
+	 * <li>Another thread generates shipments for all given schedules (see {@code 'generate shipments' is invoked for {string}}).
+	 * Its selection lock statement then waits for the blocker's row (unique index {@code t_lock_reference_singleowner}); the step waits until
+	 * {@code pg_stat_activity} shows that statement blocked by the blocker's backend.</li>
+	 * <li>The blocker deletes its row and commits; the lock statement locks what matched when it started, so the second schedule is not locked.</li>
+	 * </ol>
+	 * The raw {@code T_Lock} row and the raw {@code QtyToDeliver} write are the documented exemption for a deterministic interleave:
+	 * {@code QtyToDeliver} is the column the real recompute commits. The blocker's transaction is rolled back if the step fails midway, also by an
+	 * {@code @After} hook. Pause the recompute queues before, so that no recompute rewrites {@code QtyToDeliver} meanwhile.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.params <b>shipmentScheduleIdentifiers</b> -- comma-separated identifiers of the schedules that are eligible when the selection is locked;
+	 * the first one gets the blocker row<br>
+	 * <b>becomingEligibleIdentifier</b> -- the schedule that becomes eligible after the selection was locked
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData<br>
+	 * Given the shipment schedule recompute queues are paused
+	 * @cucumber.example
+	 * <pre>
+	 * When 'generate shipments' is invoked for "s0" while "s1" becomes eligible after the selection was locked
+	 * </pre>
+	 */
+	@When("'generate shipments' is invoked for {string} while {string} becomes eligible after the selection was locked")
+	public void generateShipmentsWhileAScheduleBecomesEligibleAfterLocking(
+			@NonNull final String shipmentScheduleIdentifiers,
+			@NonNull final String becomingEligibleIdentifier) throws Exception
+	{
+		final ImmutableList<ShipmentScheduleId> eligibleIds = resolveShipmentScheduleIds(shipmentScheduleIdentifiers);
+		final I_M_ShipmentSchedule becomingEligible = InterfaceWrapperHelper.loadOutOfTrx(
+				resolveShipmentScheduleIds(becomingEligibleIdentifier).get(0), I_M_ShipmentSchedule.class);
+		final ShipmentScheduleId blockedId = eligibleIds.get(0);
+		final ImmutableList<ShipmentScheduleId> allIds = ImmutableList.<ShipmentScheduleId>builder()
+				.addAll(eligibleIds)
+				.add(ShipmentScheduleId.ofRepoId(becomingEligible.getM_ShipmentSchedule_ID()))
+				.build();
+		final Properties ctx = Env.copyCtx(Env.getCtx());
+
+		final CountDownLatch blockerReady = new CountDownLatch(1);
+		final AtomicInteger blockerBackendPid = new AtomicInteger(-1);
+		final AtomicReference<Throwable> blockerFailure = new AtomicReference<>();
+		final CompletableFuture<Boolean> blockerCommit = new CompletableFuture<>();
+		this.lockBlockerCommit = blockerCommit;
+		final Thread blockerThread = new Thread(
+				() -> {
+					try (final IAutoCloseable ignored = Env.switchContext(ctx))
+					{
+						trxManager.callInThreadInheritedTrx(() -> {
+							DB.executeUpdateAndThrowExceptionOnFail(
+									"INSERT INTO T_Lock (AD_Table_ID, Record_ID, Owner, IsAutoCleanup, IsAllowMultipleOwners) VALUES (?, ?, ?, 'N', 'N')",
+									new Object[] { shipmentScheduleTableId, blockedId.getRepoId(), LOCK_BLOCKER_OWNER },
+									ITrx.TRXNAME_ThreadInherited);
+							DB.executeUpdateAndThrowExceptionOnFail(
+									"UPDATE M_ShipmentSchedule SET QtyToDeliver=? WHERE M_ShipmentSchedule_ID=?",
+									new Object[] { becomingEligible.getQtyOrdered(), becomingEligible.getM_ShipmentSchedule_ID() },
+									ITrx.TRXNAME_ThreadInherited);
+							blockerBackendPid.set(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, "SELECT pg_backend_pid()"));
+							blockerReady.countDown();
+
+							if (!blockerCommit.get(LOCK_GAP_TIMEOUT_SECONDS, TimeUnit.SECONDS))
+							{
+								throw new AdempiereException("Rolling back the lock blocker's transaction");
+							}
+							DB.executeUpdateAndThrowExceptionOnFail(
+									"DELETE FROM T_Lock WHERE Owner=? AND AD_Table_ID=? AND Record_ID=?",
+									new Object[] { LOCK_BLOCKER_OWNER, shipmentScheduleTableId, blockedId.getRepoId() },
+									ITrx.TRXNAME_ThreadInherited);
+							return null;
+						});
+					}
+					catch (final Throwable t)
+					{
+						blockerFailure.set(t);
+					}
+					finally
+					{
+						blockerReady.countDown();
+					}
+				},
+				"generate-shipments-lock-blocker");
+		blockerThread.setDaemon(true);
+		this.lockBlockerThread = blockerThread;
+
+		final AtomicReference<GenerateShipmentsRun> run = new AtomicReference<>();
+		final Thread generateShipmentsThread = new Thread(
+				() -> run.set(runGenerateShipmentsInProcessTrx(ctx, allIds)),
+				"generate-shipments-during-lock-gap");
+		generateShipmentsThread.setDaemon(true);
+
+		try
+		{
+			blockerThread.start();
+			assertThat(blockerReady.await(LOCK_GAP_TIMEOUT_SECONDS, TimeUnit.SECONDS)).as("The lock blocker reached its uncommitted state").isTrue();
+			assertThat(blockerFailure.get()).as("Failure of the lock blocker").isNull();
+
+			generateShipmentsThread.start();
+			waitUntilSelectionLockIsBlockedBy(blockerBackendPid.get(), generateShipmentsThread, run);
+
+			blockerCommit.complete(true);
+			blockerThread.join(TimeUnit.SECONDS.toMillis(LOCK_GAP_TIMEOUT_SECONDS));
+			assertThat(blockerThread.isAlive()).as("The lock blocker's thread is still running").isFalse();
+			assertThat(blockerFailure.get()).as("Failure of the lock blocker").isNull();
+		}
+		finally
+		{
+			rollBackLockBlocker();
+			generateShipmentsThread.join(TimeUnit.SECONDS.toMillis(LOCK_GAP_TIMEOUT_SECONDS));
+		}
+
+		assertThat(generateShipmentsThread.isAlive()).as("'generate shipments' is still running").isFalse();
+		lastGenerateShipmentsRun = run.get();
+		assertThat(lastGenerateShipmentsRun).as("Outcome of 'generate shipments'").isNotNull();
+	}
+
+	/**
+	 * Safety net for {@code ... becomes eligible after the selection was locked}: rolls back the lock blocker's transaction if the step failed midway,
+	 * so that no uncommitted blocker row holds back later lock statements.
+	 */
+	@After
+	public void rollBackLockBlockerAfterScenario() throws InterruptedException
+	{
+		rollBackLockBlocker();
+	}
+
+	private void rollBackLockBlocker() throws InterruptedException
+	{
+		final CompletableFuture<Boolean> blockerCommit = this.lockBlockerCommit;
+		if (blockerCommit != null)
+		{
+			blockerCommit.complete(false); // no-op if it was told to commit already
+		}
+		final Thread blockerThread = this.lockBlockerThread;
+		if (blockerThread != null)
+		{
+			blockerThread.join(TimeUnit.SECONDS.toMillis(LOCK_GAP_TIMEOUT_SECONDS));
+		}
+	}
+
+	private void waitUntilSelectionLockIsBlockedBy(
+			final int blockerBackendPid,
+			@NonNull final Thread generateShipmentsThread,
+			@NonNull final AtomicReference<GenerateShipmentsRun> run) throws InterruptedException
+	{
+		final long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(LOCK_GAP_TIMEOUT_SECONDS);
+		while (true)
+		{
+			if (!generateShipmentsThread.isAlive())
+			{
+				throw new AdempiereException("'generate shipments' ended before its selection lock waited for the blocker: " + run.get());
+			}
+
+			final int countBlocked = DB.getSQLValueEx(ITrx.TRXNAME_None,
+					"SELECT COUNT(1) FROM pg_stat_activity WHERE wait_event_type='Lock' AND query ILIKE 'INSERT INTO T_Lock%' AND ?=ANY(pg_blocking_pids(pid))",
+					blockerBackendPid);
+			if (countBlocked > 0)
+			{
+				return;
+			}
+
+			if (System.currentTimeMillis() > deadline)
+			{
+				throw new AdempiereException("The selection lock of 'generate shipments' did not wait for the blocker within " + LOCK_GAP_TIMEOUT_SECONDS + "s");
+			}
+			Thread.sleep(50);
+		}
+	}
+
+	/**
+	 * Runs the enqueuer like the "generate shipments" process does (in its process transaction), and records the outcome right before the commit.
+	 */
+	@NonNull
+	private GenerateShipmentsRun runGenerateShipmentsInProcessTrx(@NonNull final Properties ctx, @NonNull final ImmutableList<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		final PInstanceId pinstanceId = pinstanceDAO.createSelectionId();
+		final GenerateShipmentsRun.GenerateShipmentsRunBuilder run = GenerateShipmentsRun.builder()
+				.pinstanceId(pinstanceId)
+				.shipmentScheduleIds(ImmutableSet.copyOf(shipmentScheduleIds));
+		try (final IAutoCloseable ignored = Env.switchContext(ctx))
+		{
+			final ShipmentScheduleWorkPackageParameters workPackageParameters = newGenerateShipmentsParameters(
+					pinstanceId,
+					shipmentScheduleIds,
+					M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER,
+					true,
+					false)
+					.build();
+
+			trxManager.callInThreadInheritedTrx(() -> {
+				final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance(ctx, ITrx.TRXNAME_ThreadInherited).createWorkpackages(workPackageParameters);
+				recordEnqueuedWorkPackagesAndLocks(run, pinstanceId, result, shipmentScheduleIds);
+				return null;
+			});
+		}
+		catch (final Throwable t)
+		{
+			run.failure(t);
+		}
+		return run.build();
+	}
+
+	private void recordEnqueuedWorkPackagesAndLocks(
+			@NonNull final GenerateShipmentsRun.GenerateShipmentsRunBuilder run,
+			@NonNull final PInstanceId pinstanceId,
+			@NonNull final ShipmentScheduleEnqueuer.Result result,
+			@NonNull final ImmutableList<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		// every enqueued workpackage is listed, also one without shipment schedule elements
+		final ImmutableListMultimap.Builder<Integer, ShipmentScheduleId> scheduleIdsByWorkPackageId = ImmutableListMultimap.builder();
+		final ImmutableSet<Integer> workPackageIds = result.getEnqueuedPackageIds().stream()
+				.map(QueueWorkPackageId::getRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		run.workPackageIds(workPackageIds);
+		// the workpackages are not committed yet, so their elements are read in the process transaction
+		queryBL.createQueryBuilder(I_C_Queue_Element.class)
+				.addInArrayFilter(I_C_Queue_Element.COLUMNNAME_C_Queue_WorkPackage_ID, workPackageIds)
+				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, shipmentScheduleTableId)
+				.orderBy(I_C_Queue_Element.COLUMNNAME_C_Queue_Element_ID)
+				.create()
+				.stream()
+				.forEach(element -> scheduleIdsByWorkPackageId.put(element.getC_Queue_WorkPackage_ID(), ShipmentScheduleId.ofRepoId(element.getRecord_ID())));
+		run.scheduleIdsByWorkPackageId(scheduleIdsByWorkPackageId.build());
+
+		// T_Lock is written out of transaction.
+		// Raw SQL: ILockManager can tell whether a record is locked (by an owner), but cannot list the owners of a record's locks.
+		final ImmutableMap.Builder<ShipmentScheduleId, String> lockOwnerByScheduleId = ImmutableMap.builder();
+		for (final ShipmentScheduleId shipmentScheduleId : shipmentScheduleIds)
+		{
+			final String owner = DB.getSQLValueStringEx(ITrx.TRXNAME_None,
+					"SELECT string_agg(Owner, ',' ORDER BY Owner) FROM T_Lock WHERE AD_Table_ID=? AND Record_ID=?",
+					shipmentScheduleTableId, shipmentScheduleId.getRepoId());
+			if (owner != null)
+			{
+				lockOwnerByScheduleId.put(shipmentScheduleId, owner);
+			}
+		}
+		run.lockOwnerByScheduleId(lockOwnerByScheduleId.build());
+		run.selectionLockCount(DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT COUNT(1) FROM T_Lock WHERE Owner=? AND AD_Table_ID=? AND Record_ID IN ("
+						+ shipmentScheduleIds.stream().map(id -> String.valueOf(id.getRepoId())).collect(Collectors.joining(",")) + ")",
+				"ShipmentScheduleEnqueuer_" + pinstanceId.getRepoId(),
+				shipmentScheduleTableId));
+	}
+
+	@NonNull
+	private ImmutableList<ShipmentScheduleId> resolveShipmentScheduleIds(@NonNull final String commaSeparatedIdentifiers)
+	{
+		return StepDefUtil.extractIdentifiers(commaSeparatedIdentifiers)
+				.stream()
+				.map(identifier -> ShipmentScheduleId.ofRepoId(shipmentScheduleTable.get(identifier).getM_ShipmentSchedule_ID()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private GenerateShipmentsRun getLastGenerateShipmentsRun()
+	{
+		assertThat(lastGenerateShipmentsRun).as("Outcome of a previous 'generate shipments' step of this scenario").isNotNull();
+		return lastGenerateShipmentsRun;
+	}
+
+	/**
+	 * Asserts that the last {@code 'generate shipments' is invoked for ...} step ended without any error, e.g. without a
+	 * {@code LockFailedException} when moving the schedules' locks from the selection to the workpackages; the failure message includes the error's.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then 'generate shipments' ended without error
+	 * </pre>
+	 */
+	@Then("'generate shipments' ended without error")
+	public void assertGenerateShipmentsEndedWithoutError()
+	{
+		final Throwable failure = getLastGenerateShipmentsRun().getFailure();
+		if (failure != null)
+		{
+			throw new AssertionError("'generate shipments' failed: " + failure.getMessage(), failure);
+		}
+	}
+
+	/**
+	 * Asserts the workpackages that the last {@code 'generate shipments' is invoked for ...} step enqueued (scoped to its AD_PInstance_ID),
+	 * and that together they contain exactly the given shipment schedules.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.params <b>expectedCount</b> -- number of enqueued workpackages<br>
+	 * <b>shipmentScheduleIdentifiers</b> -- comma-separated identifiers of all shipment schedules in those workpackages
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And exactly 1 shipment workpackage was enqueued containing "s0"
+	 * </pre>
+	 */
+	@Then("exactly {int} shipment workpackage(s) was/were enqueued containing {string}")
+	public void assertEnqueuedShipmentWorkPackages(final int expectedCount, @NonNull final String shipmentScheduleIdentifiers)
+	{
+		final GenerateShipmentsRun run = getLastGenerateShipmentsRun();
+		assertThat(run.getWorkPackageIds()).as("Enqueued shipment workpackages of %s", run).hasSize(expectedCount);
+		assertThat(run.getScheduleIdsByWorkPackageId().values())
+				.as("Shipment schedules in the enqueued workpackages of %s", run)
+				.containsExactlyInAnyOrderElementsOf(resolveShipmentScheduleIds(shipmentScheduleIdentifiers));
+	}
+
+	/**
+	 * Asserts on the last {@code 'generate shipments' is invoked for ...} step, right before its commit: each enqueued workpackage contains the
+	 * shipment schedules of one header aggregation key and owns their locks ({@code ShipmentScheds_<HeaderAggregationKey>_...}),
+	 * and no lock is left with the selection ({@code ShipmentScheduleEnqueuer_<AD_PInstance_ID>}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And each enqueued shipment workpackage owns the locks of its shipment schedules of one header aggregation key, and the selection lock is released
+	 * </pre>
+	 */
+	@Then("each enqueued shipment workpackage owns the locks of its shipment schedules of one header aggregation key, and the selection lock is released")
+	public void assertWorkPackagesOwnTheirLocks()
+	{
+		final GenerateShipmentsRun run = getLastGenerateShipmentsRun();
+		final SoftAssertions softly = new SoftAssertions();
+		final Set<String> headerAggregationKeys = new HashSet<>();
+		final Set<String> lockOwners = new HashSet<>();
+		for (final Integer workPackageId : run.getWorkPackageIds())
+		{
+			final ImmutableList<ShipmentScheduleId> scheduleIds = run.getScheduleIdsByWorkPackageId().get(workPackageId);
+			if (scheduleIds.isEmpty())
+			{
+				softly.fail("Workpackage %s contains no shipment schedule", workPackageId);
+				continue;
+			}
+			final Set<String> keysOfWorkPackage = scheduleIds.stream()
+					.map(scheduleId -> InterfaceWrapperHelper.loadOutOfTrx(scheduleId, I_M_ShipmentSchedule.class).getHeaderAggregationKey())
+					.collect(Collectors.toSet());
+			softly.assertThat(keysOfWorkPackage).as("Header aggregation keys in workpackage %s", workPackageId).hasSize(1);
+			final String headerAggregationKey = keysOfWorkPackage.iterator().next();
+			softly.assertThat(headerAggregationKeys.add(headerAggregationKey)).as("Header aggregation key %s only in workpackage %s", headerAggregationKey, workPackageId).isTrue();
+
+			final Set<String> ownersOfWorkPackage = scheduleIds.stream()
+					.map(scheduleId -> run.getLockOwnerByScheduleId().get(scheduleId))
+					.collect(Collectors.toSet());
+			softly.assertThat(ownersOfWorkPackage).as("Lock owners of the shipment schedules in workpackage %s", workPackageId)
+					.hasSize(1)
+					.allSatisfy(owner -> assertThat(owner).startsWith("ShipmentScheds_" + headerAggregationKey + "_"));
+			softly.assertThat(lockOwners.addAll(ownersOfWorkPackage)).as("Lock owner of workpackage %s is its own", workPackageId).isTrue();
+		}
+		softly.assertThat(run.getSelectionLockCount()).as("Locks left with the selection of %s", run).isZero();
+		softly.assertAll();
+	}
+
+	/**
+	 * Asserts that no lock exists for the given shipment schedule.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.params <b>shipmentScheduleIdentifier</b> -- identifier from M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the shipment schedule "s1" is not locked
+	 * </pre>
+	 */
+	@Then("the shipment schedule {string} is not locked")
+	public void assertShipmentScheduleNotLocked(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final ShipmentScheduleId shipmentScheduleId = resolveShipmentScheduleIds(shipmentScheduleIdentifier).get(0);
+		assertThat(lockManager.isLocked(I_M_ShipmentSchedule.class, shipmentScheduleId.getRepoId()))
+				.as("Shipment schedule %s is locked", shipmentScheduleIdentifier)
+				.isFalse();
+	}
+
+	/**
+	 * Outcome of a {@code 'generate shipments' is invoked for ...} step; the workpackages and locks as seen right before its commit.
+	 */
+	@Value
+	@Builder
+	private static class GenerateShipmentsRun
+	{
+		@NonNull PInstanceId pinstanceId;
+		@NonNull ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
+		@Nullable Throwable failure;
+		@NonNull @Builder.Default ImmutableSet<Integer> workPackageIds = ImmutableSet.of();
+		@NonNull @Builder.Default ImmutableListMultimap<Integer, ShipmentScheduleId> scheduleIdsByWorkPackageId = ImmutableListMultimap.of();
+		@NonNull @Builder.Default ImmutableMap<ShipmentScheduleId, String> lockOwnerByScheduleId = ImmutableMap.of();
+		@Builder.Default int selectionLockCount = -1;
 	}
 
 	/**
