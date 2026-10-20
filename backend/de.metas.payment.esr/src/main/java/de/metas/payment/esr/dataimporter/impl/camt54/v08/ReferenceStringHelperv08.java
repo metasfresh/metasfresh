@@ -8,8 +8,10 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.dataimporter.ESRType;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -127,19 +129,38 @@ public class ReferenceStringHelperv08
 		return streamStrd(txDtls)
 				.map(StructuredRemittanceInformation16::getCdtrRefInf)
 				.filter(ReferenceStringHelperv08::isSupportedESRType)
-				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
-				.map(ESRType::ofNullableCode)
+				.map(ReferenceStringHelperv08::extractESRType)
+				.filter(Objects::nonNull)
 				.findFirst();
 
 	}
 
-	private static boolean isSupportedESRType(de.metas.payment.camt054_001_08.CreditorReferenceInformation2 cdtrRefInf)
+	private static boolean isSupportedESRType(final de.metas.payment.camt054_001_08.CreditorReferenceInformation2 cdtrRefInf)
 	{
-		return cdtrRefInf != null
-				&& cdtrRefInf.getTp() != null
-				&& cdtrRefInf.getTp().getCdOrPrtry() != null
-				&& (ESRType.TYPE_ESR.getCode().equals(cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
-				|| ESRType.TYPE_QRR.getCode().equals(cdtrRefInf.getTp().getCdOrPrtry().getPrtry()));
+		if (cdtrRefInf == null || cdtrRefInf.getTp() == null || cdtrRefInf.getTp().getCdOrPrtry() == null)
+		{
+			return false;
+		}
+
+		final de.metas.payment.camt054_001_08.CreditorReferenceType1Choice cdOrPrtry = cdtrRefInf.getTp().getCdOrPrtry();
+
+		// Check both getCd() (enum) and getPrtry() (string)
+		return isSupportedDocumentType(cdOrPrtry.getCd()) || isESRorQRRType(cdOrPrtry.getPrtry());
+	}
+
+	private static boolean isSupportedDocumentType(@Nullable final de.metas.payment.camt054_001_08.DocumentType3Code cd)
+	{
+		if (cd == null)
+		{
+			return false;
+		}
+		return de.metas.payment.camt054_001_08.DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
+	}
+
+	private static boolean isESRorQRRType(@Nullable final String value)
+	{
+		return ESRType.TYPE_ESR.getCode().equals(value)
+				|| ESRType.TYPE_QRR.getCode().equals(value);
 	}
 
 	/**
@@ -149,5 +170,42 @@ public class ReferenceStringHelperv08
 	private static Stream<StructuredRemittanceInformation16> streamStrd(@NonNull final EntryTransaction10 txDtls)
 	{
 		return txDtls.getRmtInf() != null ? txDtls.getRmtInf().getStrd().stream() : Stream.empty();
+	}
+
+	@Nullable
+	private static ESRType extractESRType(@NonNull final de.metas.payment.camt054_001_08.CreditorReferenceInformation2 cdtrRefInf)
+	{
+		final String code = Optional.ofNullable(cdtrRefInf.getTp())
+				.map(de.metas.payment.camt054_001_08.CreditorReferenceType2::getCdOrPrtry)
+				.map(cdOrPrtry -> {
+					if (cdOrPrtry.getCd() != null)
+					{
+						return cdOrPrtry.getCd().value(); // Check the enum (DocumentType3Code)
+					}
+					else
+					{
+						return cdOrPrtry.getPrtry(); // Check the string (Prtry)
+					}
+				})
+				.orElse(null);
+
+		if (code == null)
+		{
+			return null;
+		}
+
+		final ESRType esrType = ESRType.ofNullableCode(code);
+		validateESRType(esrType, code); // Validate the extracted ESRType
+		return esrType;
+	}
+
+	private static void validateESRType(@Nullable final ESRType esrType, final String rawCode)
+	{
+		if (esrType == null ||
+				!(esrType == ESRType.TYPE_ESR || esrType == ESRType.TYPE_QRR || esrType == ESRType.TYPE_SCOR))
+		{
+			final String errorMsg = String.format("Invalid ESRType: '%s'. Accepted types are: ESR, QRR, SCOR.", rawCode);
+			throw new AdempiereException(errorMsg);
+		}
 	}
 }
