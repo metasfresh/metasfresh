@@ -89,3 +89,33 @@ If subsequent test runs fail unexpectedly or use data from a previous run, the l
 ### Shutting Down
 
 To cleanly shut down the server and exit the runner, type `exit` at the `>>>` prompt and hit `ENTER`.
+
+## Asserting on the rendered PDF of an archived document
+
+`AD_Archive_StepDef` lets a scenario assert against the **actual PDF** metasfresh rendered and archived
+for a document - not against the report's SQL, and not against a mock. Use it whenever the thing under
+test is what the customer or the warehouse will physically read. The steps resolve the record through the
+normal identifier mechanism, so they work for any record that archives a PDF.
+
+Run the document's jasper process first; `The jasper process is run` renders the real report through
+`LocalReportServer` and archives it. The `Value` is the `AD_Process.Value`:
+
+```gherkin
+When the order identified by order is completed
+And The jasper process is run
+  | Value            | Record_ID |
+  | Auftrag (Jasper) | order     |
+
+Then an AD_Archive exists for the record identified by "order"
+And the PDF archived for the record identified by "order" contains text "AlphaItem"
+And the PDF archived for the record identified by "order" does not contain text "Sortimentsware"
+```
+
+The steps read the newest archive of the record (highest `AD_Archive_ID`) through `IArchiveBL`, so both
+`AD_Client.StoreArchiveOnFileSystem` settings work. Text is extracted with PDFBox (`PDFTextStripper`,
+`setSortByPosition(true)`) as one entry per rendered visual line, so **pick single distinctive words as
+needles**: a multi-word needle stops matching as soon as the layout wraps between two of its words.
+Every PDF a scenario asserts against is attached to that scenario's Allure report (once per archive).
+
+PDFBox is pinned to 2.0.27 in this module's `pom.xml` on purpose: `PDDocument.load(byte[])` exists in
+PDFBox 2 but not in 3, and this module skips the enforcer.
