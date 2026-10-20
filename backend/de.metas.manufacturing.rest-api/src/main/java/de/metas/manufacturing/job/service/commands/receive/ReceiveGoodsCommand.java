@@ -3,11 +3,14 @@ package de.metas.manufacturing.job.service.commands.receive;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
@@ -41,6 +44,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -61,6 +65,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ReceiveGoodsCommand
@@ -81,6 +86,8 @@ public class ReceiveGoodsCommand
 	@NonNull private final IPPOrderBOMBL ppOrderBOMBL;
 	@NonNull private final ManufacturingJobService jobService;
 	@NonNull private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
 	//
 	// Parameters
@@ -331,12 +338,15 @@ public class ReceiveGoodsCommand
 	{
 		assertMixingDifferentProductsAllowed(existingTU);
 
-		if (isFillCurrentTUPieceByPiece() && isFull(existingTU))
+		if (isFillCurrentTUPieceByPiece())
 		{
-			// the TU is full per its packing => start a new TU of the same packing; it becomes the current TU
-			final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoId(existingTU.getM_HU_PI_Item_Product_ID());
-			final I_M_HU newTU = CollectionUtils.singleElement(receiveTUs(tuPIItemProductId));
-			return ReceivingTarget.ofExistingTU(newTU);
+			final HUPIItemProduct tuPIItemProduct = getTUPIItemProduct(existingTU).orElse(null);
+			if (tuPIItemProduct != null && isFull(existingTU, tuPIItemProduct))
+			{
+				// the TU is full per its packing => start a new TU of the same packing; it becomes the current TU
+				final I_M_HU newTU = CollectionUtils.singleElement(receiveTUs(tuPIItemProduct.getId()));
+				return ReceivingTarget.ofExistingTU(newTU);
+			}
 		}
 
 		final I_M_HU vhu = retrieveSingleVHU();
@@ -503,20 +513,35 @@ public class ReceiveGoodsCommand
 		return handlingUnitsBL.retrieveIncludedHUs(lu)
 				.stream()
 				.filter(handlingUnitsBL::isTransportUnit)
-				.filter(tu -> tu.getM_HU_PI_Item_Product_ID() == tuPIItemProductId.getRepoId())
-				.filter(tu -> !isFull(tu))
+				.filter(tu -> getTUPIItemProduct(tu)
+						.filter(tuPIItemProduct -> HUPIItemProductId.equals(tuPIItemProduct.getId(), tuPIItemProductId))
+						.filter(tuPIItemProduct -> !isFull(tu, tuPIItemProduct))
+						.isPresent())
 				.max(Comparator.comparing(I_M_HU::getM_HU_ID));
 	}
 
-	private boolean isFull(@NonNull final I_M_HU tu)
+	/**
+	 * @return the packing (CU-TU association) of the given TU. The TU record itself does not always carry it
+	 * (e.g. a TU received here), so it is taken from the TU's material item.
+	 */
+	private Optional<HUPIItemProduct> getTUPIItemProduct(@NonNull final I_M_HU tu)
 	{
 		final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(tu.getM_HU_PI_Item_Product_ID());
-		if (tuPIItemProductId == null)
+		if (tuPIItemProductId != null)
 		{
-			return false; // packing (hence capacity) unknown
+			return Optional.of(loadingAndSavingSupportServices.getTUPIItemProduct(tuPIItemProductId));
 		}
 
-		final HUPIItemProduct tuPIItemProduct = loadingAndSavingSupportServices.getTUPIItemProduct(tuPIItemProductId);
+		return handlingUnitsDAO.retrieveItems(tu, HUItemType.Material)
+				.stream()
+				.map(materialItem -> huPIItemProductDAO.retrievePIMaterialItemProduct(materialItem, getProductId(), date))
+				.filter(Objects::nonNull)
+				.findFirst()
+				.map(record -> loadingAndSavingSupportServices.getTUPIItemProduct(HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())));
+	}
+
+	private boolean isFull(@NonNull final I_M_HU tu, @NonNull final HUPIItemProduct tuPIItemProduct)
+	{
 		if (tuPIItemProduct.isInfiniteCapacity())
 		{
 			return false;
