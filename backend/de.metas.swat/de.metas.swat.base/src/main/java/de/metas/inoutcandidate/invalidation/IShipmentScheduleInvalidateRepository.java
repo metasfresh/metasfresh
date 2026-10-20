@@ -112,9 +112,10 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	boolean existsUntaggedRecomputeMarkers();
 
 	/**
-	 * Delete M_ShipmentSchedule_Recompute records for given tag
+	 * Delete M_ShipmentSchedule_Recompute records for given tag, in the thread-inherited transaction (so the delete commits or
+	 * rolls back together with the recompute's own changes).
 	 */
-	void deleteRecomputeMarkersOutOfTrx(PInstanceId adPInstanceId);
+	void deleteRecomputeMarkersInThreadInheritedTrx(@NonNull PInstanceId adPInstanceId);
 
 	/**
 	 * Deletes every M_ShipmentSchedule_Recompute record of the given schedule, including tagged ones -- once the
@@ -126,6 +127,15 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	 * Untag M_ShipmentSchedule_Recompute records which were tagged with given tag
 	 */
 	void releaseRecomputeMarkerOutOfTrx(PInstanceId adPInstanceId);
+
+	/**
+	 * Untags the records tagged with the given tag once the thread-inherited transaction ends (commit or rollback), so the
+	 * release never waits on that transaction's own row locks. Without an open thread-inherited transaction, releases immediately.
+	 * <p>
+	 * The release also runs after the trx is closed, for a trx that ends without a commit or rollback event (failed commit or failed rollback).
+	 * Trade-off: trx listeners only log a failing handler (they never throw), so a failing release is logged, not propagated as the immediate release was.
+	 */
+	void releaseRecomputeMarkersAfterTrxEnd(@NonNull PInstanceId adPInstanceId);
 
 	IQueryFilter<I_M_ShipmentSchedule> createInvalidShipmentSchedulesQueryFilter(PInstanceId pinstanceId);
 

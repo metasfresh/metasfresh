@@ -215,7 +215,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			updateSchedules(request.getCtx(), olsAndScheds);
 
 			// cleanup the marker/pointer tables
-			invalidSchedulesRepo.deleteRecomputeMarkersOutOfTrx(selectionId);
+			invalidSchedulesRepo.deleteRecomputeMarkersInThreadInheritedTrx(selectionId);
 
 			// NOTE: deliberately NOT "olsAndScheds.size() >= maxToProcess" -- the tag unit is a whole product
 			// (see markAllToRecomputeOutOfTrx), so a bounded pass can retrieve fewer, exactly as many, or MORE
@@ -233,9 +233,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		{
 			try
 			{
-				// Make sure the recompute tag is released, just in case any error occurs.
-				// Usually zero records will be released because, if everything goes fine, the tagged recompute records were already deleted.
-				invalidSchedulesRepo.releaseRecomputeMarkerOutOfTrx(selectionId);
+				// Leftover tagged flags are released once the batch transaction ends (commit, rollback or close), so the release never waits on the batch's own row locks.
+				// Trade-off: a failing release inside the trx listener is only logged, not thrown.
+				invalidSchedulesRepo.releaseRecomputeMarkersAfterTrxEnd(selectionId);
 			}
 			finally
 			{

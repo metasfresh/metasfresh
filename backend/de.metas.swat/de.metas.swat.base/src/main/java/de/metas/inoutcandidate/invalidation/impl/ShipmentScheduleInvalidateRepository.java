@@ -29,8 +29,10 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -50,6 +52,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
@@ -913,7 +916,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
-	public void deleteRecomputeMarkersOutOfTrx(@NonNull final PInstanceId pinstanceId)
+	public void deleteRecomputeMarkersInThreadInheritedTrx(@NonNull final PInstanceId pinstanceId)
 	{
 		final String sql = "DELETE FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_Pinstance_ID=? RETURNING M_ShipmentSchedule_ID";
 
@@ -922,7 +925,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		DB.executeUpdateAndThrowExceptionOnFail(
 				sql,
 				param,
-				ITrx.TRXNAME_None,
+				ITrx.TRXNAME_ThreadInherited,
 				-1 /* timeout */,
 				rs -> shipmentScheduleIds.getValue().add(rs.getInt("M_ShipmentSchedule_ID")) /* updateReturnProcessor */
 		);
@@ -952,6 +955,37 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		final int result = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_None);
 		logger.debug("Updated {} {} entries for AD_Pinstance_ID={} and released the marker.", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, pinstanceId);
+	}
+
+	@Override
+	public void releaseRecomputeMarkersAfterTrxEnd(@NonNull final PInstanceId pinstanceId)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (!ThreadInheritedTrxState.isThreadTrxOpenForWrites(threadTrx))
+		{
+			releaseRecomputeMarkerOutOfTrx(pinstanceId);
+			return;
+		}
+
+		// not trxManager.getTrxListenerManagerOrAutoCommit(): it treats a not yet started (inactive) trx as "no trx"; AbstractTrx.commit/rollback fire the listeners of such a trx too.
+		// AFTER_CLOSE is the backstop for a trx that ends without AFTER_COMMIT/AFTER_ROLLBACK: a failed commit (JavaProcess.endTrx never rolls back) or a failed rollback.
+		// close() returns the connection to the pool, which resets it (rollback); once that is done no row lock is held (a brief wait is possible, a deadlock is not).
+		// The guard is set only after a successful release: a release that failed after the commit/rollback is retried at close, a successful one is not repeated.
+		final AtomicBoolean released = new AtomicBoolean(false);
+		final ITrxListenerManager listenerManager = threadTrx.getTrxListenerManager();
+		for (final TrxEventTiming timing : new TrxEventTiming[] { TrxEventTiming.AFTER_COMMIT, TrxEventTiming.AFTER_ROLLBACK, TrxEventTiming.AFTER_CLOSE })
+		{
+			listenerManager.newEventListener(timing)
+					.invokeMethodJustOnce(true)
+					.registerHandlingMethod(trx -> {
+						if (!released.get())
+						{
+							releaseRecomputeMarkerOutOfTrx(pinstanceId);
+							released.set(true);
+						}
+					});
+		}
 	}
 
 	@Override
