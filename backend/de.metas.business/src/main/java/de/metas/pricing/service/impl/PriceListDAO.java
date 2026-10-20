@@ -919,7 +919,9 @@ public class PriceListDAO implements IPriceListDAO
 				+ I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID
 				+ " = v."
 				+ I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID
-				+ ") ";
+				+ " AND v."
+				+ I_M_PriceList_Version.COLUMNNAME_IsActive
+				+ " = 'Y') ";
 		final IQueryFilter<I_M_PriceList_Version> maxValidFromFilter = TypedSqlQueryFilter.of(maxValidFromTypedFilter);
 
 		final IQuery<I_C_BPartner> customerQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
@@ -931,11 +933,19 @@ public class PriceListDAO implements IPriceListDAO
 
 		final I_M_PriceList basePriceList = getById(basePriceListId);
 
-		return queryBL.createQueryBuilder(I_M_PriceList.class)
-
+		final IQueryBuilder<I_M_PriceList> derivativeListsQuery = queryBL.createQueryBuilder(I_M_PriceList.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, true)
 				.addEqualsFilter(I_M_PriceList.COLUMN_BasePriceList_ID, basePriceListId)
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, basePriceList.getC_Country_ID())
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Currency_ID, basePriceList.getC_Currency_ID())
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Currency_ID, basePriceList.getC_Currency_ID());
+
+		// a base price list without country does not restrict by country
+		if (basePriceList.getC_Country_ID() > 0)
+		{
+			derivativeListsQuery.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, basePriceList.getC_Country_ID());
+		}
+
+		return derivativeListsQuery
 
 				.addInSubQueryFilter()
 				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
