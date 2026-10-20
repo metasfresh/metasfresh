@@ -798,11 +798,20 @@ Feature: Derivative price lists
     When the 'apply to derivative price lists' process is invoked for M_PriceList_Version dpl_tc13_base_v2
 
     Then M_PriceList dpl_tc13_active has 2 M_PriceList_Versions
-    And the M_ProductPrices of M_PriceList_Version dpl_tc13_active_v1 are:
+    And the latest M_PriceList_Version of M_PriceList dpl_tc13_active is:
+      | Identifier         | ValidFrom  | Name                       | M_DiscountSchema_ID | M_Pricelist_Version_Base_ID |
+      | dpl_tc13_active_v2 | 2104-03-01 | dpl_tc13_active 2104-03-01 | dpl_tc13_ds         | dpl_tc13_active_v1          |
+    And the M_ProductPrices of M_PriceList_Version dpl_tc13_active_v2 are:
+      | M_Product_ID  | PriceStd |
+      | dpl_tc13_prod | 3.50     |
+    And M_PriceList dpl_tc13_inact has 1 M_PriceList_Versions
+    And the M_ProductPrices of M_PriceList_Version dpl_tc13_inact_v1 are:
       | M_Product_ID  | PriceStd |
       | dpl_tc13_prod | 2.00     |
-    And M_PriceList dpl_tc13_inact has 1 M_PriceList_Versions
     And M_PriceList dpl_tc13_purch has 1 M_PriceList_Versions
+    And the M_ProductPrices of M_PriceList_Version dpl_tc13_purch_v1 are:
+      | M_Product_ID  | PriceStd |
+      | dpl_tc13_prod | 2.00     |
 
   # The first run creates the version (2.00 + 1.50 = 3.50); a second run on the same base version creates nothing
   # and reports the derivative as skipped.
@@ -971,12 +980,14 @@ Feature: Derivative price lists
 
     Then the 'apply to derivative price lists' result text contains "no derivative price list qualifies"
 
-  # A season-fixed customer price is not transformed by the matching schema line (2.00 stays) and keeps its flag.
+  # A season-fixed customer price is not transformed by the matching schema line (2.00 stays) and keeps its flag; a
+  # normal customer price of the same version is transformed (2.00 + 1.50 = 3.50), proving the schema line applies.
   @Id:S32970_TC18
   Scenario: TC18 a season-fixed customer price keeps its price and flag although a schema line matches
     Given metasfresh contains M_Products:
-      | Identifier    |
-      | dpl_tc18_prod |
+      | Identifier     |
+      | dpl_tc18_prod  |
+      | dpl_tc18_prod2 |
     And metasfresh contains M_PricingSystems
       | Identifier    |
       | dpl_tc18_ps_b |
@@ -992,8 +1003,9 @@ Feature: Derivative price lists
       | dpl_tc18_base_v1 | dpl_tc18_base  | 2109-01-10 |
       | dpl_tc18_cust_v1 | dpl_tc18_cust  | 2109-01-10 |
     And metasfresh contains M_ProductPrices
-      | Identifier     | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | IsSeasonFixedPrice |
-      | dpl_tc18_pp_v1 | dpl_tc18_cust_v1       | dpl_tc18_prod | 2.00     | PCE               | true               |
+      | Identifier      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID.X12DE355 | IsSeasonFixedPrice |
+      | dpl_tc18_pp_v1  | dpl_tc18_cust_v1       | dpl_tc18_prod  | 2.00     | PCE               | true               |
+      | dpl_tc18_pp2_v1 | dpl_tc18_cust_v1       | dpl_tc18_prod2 | 2.00     | PCE               | false              |
     And metasfresh contains C_BPartners:
       | Identifier  | Name        | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
       | dpl_tc18_bp | dpl_tc18_bp | Y          | dpl_tc18_ps_c      | Y                    |
@@ -1001,8 +1013,9 @@ Feature: Derivative price lists
       | Identifier  | DiscountType | Name        | ValidFrom  |
       | dpl_tc18_ds | P            | dpl_tc18_ds | 2109-01-01 |
     And metasfresh contains M_DiscountSchemaLines:
-      | M_DiscountSchema_ID | SeqNo | M_Product_ID  | Std_AddAmt |
-      | dpl_tc18_ds         | 10    | dpl_tc18_prod | 1.50       |
+      | M_DiscountSchema_ID | SeqNo | M_Product_ID   | Std_AddAmt |
+      | dpl_tc18_ds         | 10    | dpl_tc18_prod  | 1.50       |
+      | dpl_tc18_ds         | 20    | dpl_tc18_prod2 | 1.50       |
     And metasfresh contains new M_PriceList_Versions:
       | Identifier       | M_PriceList_ID | ValidFrom  | M_DiscountSchema_ID |
       | dpl_tc18_base_v2 | dpl_tc18_base  | 2109-03-01 | dpl_tc18_ds         |
@@ -1014,5 +1027,6 @@ Feature: Derivative price lists
       | Identifier       | ValidFrom  |
       | dpl_tc18_cust_v2 | 2109-03-01 |
     And the M_ProductPrices of M_PriceList_Version dpl_tc18_cust_v2 are:
-      | M_Product_ID  | PriceStd | IsSeasonFixedPrice |
-      | dpl_tc18_prod | 2.00     | true               |
+      | M_Product_ID   | PriceStd | IsSeasonFixedPrice |
+      | dpl_tc18_prod  | 2.00     | true               |
+      | dpl_tc18_prod2 | 3.50     | false              |

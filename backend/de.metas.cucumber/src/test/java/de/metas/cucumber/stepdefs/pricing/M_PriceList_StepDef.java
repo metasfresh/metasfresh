@@ -379,9 +379,9 @@ public class M_PriceList_StepDef
 	 * exactly the given rows, so a product that must not get a price is asserted by leaving it out.
 	 * <p>
 	 * Columns: {@code M_Product_ID} (identifier), {@code PriceStd}; optional {@code M_AttributeSetInstance_ID}
-	 * (identifier; the price must carry the same attribute values), {@code IsSeasonFixedPrice} (Y/N), {@code CopyOf_M_ProductPrice_ID} (identifier of a
-	 * price registered earlier; asserts the price has its <b>own</b> attribute set instance, i.e. not the same ID as
-	 * that earlier price's).
+	 * (identifier; the price must carry the same attribute values), {@code IsSeasonFixedPrice} (Y/N),
+	 * {@code CopyOf_M_ProductPrice_ID} (identifier of a price registered earlier; asserts the price has its
+	 * <b>own</b> attribute set instance, i.e. not the same ID as that earlier price's).
 	 */
 	@Then("the M_ProductPrices of M_PriceList_Version {word} are:")
 	public void validate_M_ProductPrices_of_version(@NonNull final String priceListVersionIdentifier, @NonNull final DataTable dataTable)
