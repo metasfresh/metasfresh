@@ -13,8 +13,10 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
 import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -246,7 +248,7 @@ class AssertSalesOrderExpectationsCommand
 		}
 
 		// the generated getters map a NULL decimal to zero, so the nullable calibration columns are read as stored
-		final BigDecimal actualFactor = InterfaceWrapperHelper.getValueAsBigDecimalOrNull(actual, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor);
+		final BigDecimal actualFactor = Percent.toBigDecimalOrNull(OrderGroupRepository.getCalibrationFactor(actual));
 		final BigDecimal actualQtyUncalibrated = InterfaceWrapperHelper.getValueAsBigDecimalOrNull(actual, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated);
 
 		assertDecimal("QtyEntered of " + lineDescription, actual.getQtyEntered(), expectation.getQtyEntered());
