@@ -52,11 +52,10 @@ import de.metas.order.compensationGroup.calibration.CalibrationRule;
 import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
 import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationRuleRepository;
 import de.metas.order.compensationGroup.calibration.GroupCalibrations;
-import de.metas.organization.OrgId;
 import de.metas.order.model.I_C_CompensationGroup_CalibrationRule;
-import de.metas.util.lang.Percent;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.limit.PriceLimitRuleResult;
@@ -67,6 +66,7 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import de.metas.util.lang.RepoIdAware;
 
 /*
