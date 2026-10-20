@@ -921,7 +921,7 @@ public class OrderGroupRepositoryTest
 		// 0.375 -> 0.38 (precision 2), 0.38 x 120 % = 0.456 -> 0.46
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.46");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0.38");
-		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("120");
+		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("120");
 		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(7);
 	}
 
@@ -934,7 +934,7 @@ public class OrderGroupRepositoryTest
 		// mock case: 1500 x 0.25 LTR x 80 % = 300
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
-		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("80");
+		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
 	}
 
 	@Test
@@ -984,7 +984,7 @@ public class OrderGroupRepositoryTest
 
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("6");
-		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("0");
+		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("0");
 		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(7);
 	}
 
@@ -997,7 +997,7 @@ public class OrderGroupRepositoryTest
 
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0");
-		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("100");
+		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("100");
 	}
 
 	@Test

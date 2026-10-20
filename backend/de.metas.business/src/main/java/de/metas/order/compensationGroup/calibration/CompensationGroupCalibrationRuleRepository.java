@@ -75,7 +75,7 @@ public class CompensationGroupCalibrationRuleRepository
 	@NonNull
 	public static Percent getCalibrationFactor(@NonNull final I_C_CompensationGroup_CalibrationRule record)
 	{
-		return Percent.ofFraction(record.getGroupCompensationCalibrationFactor());
+		return Percent.ofNullableFraction(record.getGroupCompensationCalibrationFactor());
 	}
 
 	/**
@@ -83,6 +83,6 @@ public class CompensationGroupCalibrationRuleRepository
 	 */
 	public static void setCalibrationFactor(@NonNull final I_C_CompensationGroup_CalibrationRule record, @NonNull final Percent factor)
 	{
-		record.setGroupCompensationCalibrationFactor(factor.toFraction());
+		record.setGroupCompensationCalibrationFactor(factor.toFractionBigDecimal());
 	}
 }

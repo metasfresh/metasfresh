@@ -1234,8 +1234,7 @@ public class OrderGroupRepository implements GroupRepository
 	@Nullable
 	public static Percent getCalibrationFactor(@NonNull final I_C_OrderLine orderLine)
 	{
-		final BigDecimal fraction = InterfaceWrapperHelper.getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor);
-		return fraction != null ? Percent.ofFraction(fraction) : null;
+		return Percent.ofNullableFraction(InterfaceWrapperHelper.getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor));
 	}
 
 	/**
@@ -1243,7 +1242,7 @@ public class OrderGroupRepository implements GroupRepository
 	 */
 	public static void setCalibrationFactor(@NonNull final I_C_OrderLine orderLine, @Nullable final Percent factor)
 	{
-		orderLine.setGroupCompensationCalibrationFactor(factor != null ? factor.toFraction() : null);
+		orderLine.setGroupCompensationCalibrationFactor(Percent.toFractionBigDecimalOrNull(factor));
 	}
 
 	public I_C_OrderLine createRegularLineFromTemplate(

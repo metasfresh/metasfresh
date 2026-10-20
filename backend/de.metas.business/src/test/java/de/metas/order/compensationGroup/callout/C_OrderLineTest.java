@@ -8,6 +8,7 @@ import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstance;
@@ -35,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Calibration factor editable on the order line: factor -> QtyEntered and QtyEntered -> factor,
  * in any window.
  * <p>
- * Example line: uncalibrated (base) qty 375 LTR, rule factor 80, Qty 300.
+ * Example line: uncalibrated (base) qty 375 LTR, factor 0.8 (80 %), Qty 300. Factors are given as stored and typed: a fraction.
  */
 class C_OrderLineTest
 {
@@ -73,7 +74,7 @@ class C_OrderLineTest
 		line.setC_CompensationGroup_Schema_TemplateLine_ID(templateLine(ltr));
 		line.setC_CompensationGroup_CalibrationRule_ID(10);
 		line.setGroupCompensationQtyEnteredUncalibrated(new BigDecimal(base));
-		OrderGroupRepository.setCalibrationFactor(line, Percent.of(factor));
+		OrderGroupRepository.setCalibrationFactor(line, Percent.ofNullableFraction(new BigDecimal(factor)));
 		line.setQtyEntered(new BigDecimal(qty));
 		saveRecord(line);
 		return line;
@@ -82,7 +83,7 @@ class C_OrderLineTest
 
 	/**
 	 * A calibrated line whose UOM is a bucket (1 bucket = 25 LTR for the product), the template line / base being in LTR:
-	 * base 375 LTR = 15 buckets, factor 80, Qty 12 buckets.
+	 * base 375 LTR = 15 buckets, factor 0.8, Qty 12 buckets.
 	 */
 	private I_C_OrderLine calibratedLineInBuckets()
 	{
@@ -100,7 +101,7 @@ class C_OrderLineTest
 				.fromToMultiplier(new BigDecimal(ltrPerBucket))
 				.build());
 
-		final I_C_OrderLine line = calibratedLine(baseLtr, "80", "300");
+		final I_C_OrderLine line = calibratedLine(baseLtr, "0.8", "300");
 		line.setM_Product_ID(product.getM_Product_ID());
 		line.setC_UOM_ID(bucket.getC_UOM_ID());
 		line.setQtyEntered(new BigDecimal("12"));
@@ -125,7 +126,7 @@ class C_OrderLineTest
 
 	private void typeFactor(final I_C_OrderLine line, @Nullable final String factor)
 	{
-		OrderGroupRepository.setCalibrationFactor(line, factor != null ? Percent.of(factor) : null);
+		OrderGroupRepository.setCalibrationFactor(line, Percent.ofNullableFraction(NumberUtils.asBigDecimal(factor)));
 		callout.onCalibrationFactorChanged(line);
 	}
 
@@ -141,8 +142,8 @@ class C_OrderLineTest
 		@Test
 		void factor100_givesTheBase()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			typeFactor(line, "100");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
+			typeFactor(line, "1");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("375");
 			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
 			assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(10);
@@ -151,7 +152,7 @@ class C_OrderLineTest
 		@Test
 		void factor0_givesQty0()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
 			typeFactor(line, "0");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
 		}
@@ -160,38 +161,38 @@ class C_OrderLineTest
 		void decimalFactor_roundsUpToTheUomPrecision()
 		{
 			// 375 x 93.33 % = 349.9875
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			typeFactor(line, "93.33");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
+			typeFactor(line, "0.9333");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("350");
 
 			ltr.setStdPrecision(2);
 			saveRecord(ltr);
-			final I_C_OrderLine line2 = calibratedLine("375", "80", "300");
-			typeFactor(line2, "93.33");
+			final I_C_OrderLine line2 = calibratedLine("375", "0.8", "300");
+			typeFactor(line2, "0.9333");
 			assertThat(line2.getQtyEntered()).isEqualByComparingTo("349.99");
 		}
 
 		@Test
 		void base0_givesQty0()
 		{
-			final I_C_OrderLine line = calibratedLine("0", "50", "0");
+			final I_C_OrderLine line = calibratedLine("0", "0.5", "0");
 			line.setQtyEntered(new BigDecimal("3"));
-			typeFactor(line, "100");
+			typeFactor(line, "1");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
 		}
 
 		@Test
 		void negativeFactor_isRefused()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
-			assertThatThrownBy(() -> typeFactor(line, "-1")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_CompensationGroup_CalibrationRule_NegativeFactor").matches(AdempiereException::isUserValidationError, "user validation error");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
+			assertThatThrownBy(() -> typeFactor(line, "-0.01")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_CompensationGroup_CalibrationRule_NegativeFactor").matches(AdempiereException::isUserValidationError, "user validation error");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		}
 
 		@Test
 		void emptyFactor_isRefused()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
 			assertThatThrownBy(() -> typeFactor(line, null)).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorMandatory").matches(AdempiereException::isUserValidationError, "user validation error");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		}
@@ -200,16 +201,16 @@ class C_OrderLineTest
 		void lineWithoutRuleAndBase_isRefused()
 		{
 			final I_C_OrderLine line = uncalibratedLine(true);
-			assertThatThrownBy(() -> typeFactor(line, "80")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorNotCalibrated").matches(AdempiereException::isUserValidationError, "user validation error");
+			assertThatThrownBy(() -> typeFactor(line, "0.8")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorNotCalibrated").matches(AdempiereException::isUserValidationError, "user validation error");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("5");
 		}
 
 		@Test
 		void lineWithBaseButWithoutRule_factorTyped_computesQty()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
 			line.setC_CompensationGroup_CalibrationRule_ID(0);
-			typeFactor(line, "100");
+			typeFactor(line, "1");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("375");
 		}
 
@@ -217,7 +218,7 @@ class C_OrderLineTest
 		void newManualLine_factorTyped_isRefused()
 		{
 			final I_C_OrderLine line = uncalibratedLine(false);
-			assertThatThrownBy(() -> typeFactor(line, "80")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorNotCalibrated").matches(AdempiereException::isUserValidationError, "user validation error");
+			assertThatThrownBy(() -> typeFactor(line, "0.8")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorNotCalibrated").matches(AdempiereException::isUserValidationError, "user validation error");
 		}
 
 		@Test
@@ -233,7 +234,7 @@ class C_OrderLineTest
 		void lineUomConvertibleFromTemplateLineUom_baseIsConverted()
 		{
 			final I_C_OrderLine line = calibratedLineInBuckets();
-			typeFactor(line, "100");
+			typeFactor(line, "1");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("15"); // 375 LTR = 15 buckets
 			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
 		}
@@ -242,7 +243,7 @@ class C_OrderLineTest
 		void convertedBase15Buckets_factor80_gives12()
 		{
 			final I_C_OrderLine line = calibratedLineInBuckets();
-			typeFactor(line, "80");
+			typeFactor(line, "0.8");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("12");
 		}
 
@@ -251,7 +252,7 @@ class C_OrderLineTest
 		{
 			// 100 LTR = 3.333333 buckets (1 bucket = 30 LTR); bucket precision 0; x 100 % = 3.333333 -> 4
 			final I_C_OrderLine line = calibratedLineInBuckets("100", "30");
-			typeFactor(line, "100");
+			typeFactor(line, "1");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("4");
 		}
 
@@ -260,16 +261,16 @@ class C_OrderLineTest
 		{
 			// 100 LTR = 12.5 buckets (1 bucket = 8 LTR), precision 0; x 40 % = 5 exactly (rounding the base to 13 first would give 5.2 -> 6)
 			final I_C_OrderLine line = calibratedLineInBuckets("100", "8");
-			typeFactor(line, "40");
+			typeFactor(line, "0.4");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("5");
 		}
 
 		@Test
 		void lineUomWithoutConversion_isRefused()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
 			line.setC_UOM_ID(ml.getC_UOM_ID());
-			assertThatThrownBy(() -> typeFactor(line, "100")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorUOMChanged").matches(AdempiereException::isUserValidationError, "user validation error");
+			assertThatThrownBy(() -> typeFactor(line, "1")).isInstanceOf(AdempiereException.class).hasMessageContaining("C_OrderLine_CalibrationFactorUOMChanged").matches(AdempiereException::isUserValidationError, "user validation error");
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		}
 
@@ -281,9 +282,9 @@ class C_OrderLineTest
 		@Test
 		void qty350_givesFactor93_33()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
 			typeQty(line, "350");
-			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("93.33");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("93.33");
 			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
 			assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(10);
 		}
@@ -291,45 +292,45 @@ class C_OrderLineTest
 		@Test
 		void qty375_givesFactor100()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
 			typeQty(line, "375");
-			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("100");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("100");
 		}
 
 		@Test
 		void factorIsRoundedHalfUpTo2Decimals()
 		{
 			// 1 / 3 x 100 = 33.333..; 2 / 3 x 100 = 66.666..
-			final I_C_OrderLine line = calibratedLine("3", "100", "3");
+			final I_C_OrderLine line = calibratedLine("3", "1", "3");
 			typeQty(line, "1");
-			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("33.33");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("33.33");
 			typeQty(line, "2");
-			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("66.67");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("66.67");
 		}
 
 		@Test
 		void base0_leavesFactor()
 		{
-			final I_C_OrderLine line = calibratedLine("0", "50", "0");
+			final I_C_OrderLine line = calibratedLine("0", "0.5", "0");
 			typeQty(line, "2");
-			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("50");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("50");
 		}
 
 		@Test
 		void emptyQty_leavesFactor()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
 			line.setQtyEntered(null);
 			callout.onQtyEnteredChanged(line);
-			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("80");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
 		}
 
 		@Test
 		void negativeQty_leavesFactor()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
 			typeQty(line, "-10");
-			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("80");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
 		}
 
 		@Test
@@ -337,27 +338,27 @@ class C_OrderLineTest
 		{
 			final I_C_OrderLine line = calibratedLineInBuckets();
 			typeQty(line, "12"); // 12 of 15 buckets
-			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("80");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
 			typeQty(line, "15");
-			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("100");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("100");
 		}
 
 		@Test
 		void lineWithFactorButWithoutRule_qtyEdit_updatesFactor()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
 			line.setC_CompensationGroup_CalibrationRule_ID(0);
 			typeQty(line, "375");
-			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("100");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("100");
 		}
 
 		@Test
 		void lineUomWithoutConversion_leavesFactor()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
 			line.setC_UOM_ID(ml.getC_UOM_ID());
 			typeQty(line, "375");
-			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("80");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimalOneHundredBased()).isEqualByComparingTo("80");
 		}
 
 		@Test
@@ -378,7 +379,7 @@ class C_OrderLineTest
 		@Test
 		void typedFraction0_8_onBase375_gives300()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "100", "375");
+			final I_C_OrderLine line = calibratedLine("375", "1", "375");
 			line.setGroupCompensationCalibrationFactor(new BigDecimal("0.8"));
 			callout.onCalibrationFactorChanged(line);
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
@@ -387,7 +388,7 @@ class C_OrderLineTest
 		@Test
 		void qty350_storesFraction0_9333()
 		{
-			final I_C_OrderLine line = calibratedLine("375", "80", "300");
+			final I_C_OrderLine line = calibratedLine("375", "0.8", "300");
 			typeQty(line, "350");
 			// 350 / 375 = 0.93333.. -> 93.33 % -> 0.9333
 			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.9333");

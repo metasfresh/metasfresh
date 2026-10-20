@@ -123,7 +123,7 @@ public class C_OrderLine
 
 		final Quantity base = Quantitys.of(baseInLineUom, UomId.ofRepoId(orderLine.getC_UOM_ID()));
 		// exactly base x factor (80 % = x 0.8), rounded once to the UOM precision (like at line creation, see CalibrationRule#computeQtyCalibrated)
-		final Quantity qtyCalibrated = base.multiply(factor.toFraction()).roundToUOMPrecision();
+		final Quantity qtyCalibrated = base.multiply(factor.toFractionBigDecimal()).roundToUOMPrecision();
 		orderLine.setQtyEntered(qtyCalibrated.toBigDecimal());
 	}
 

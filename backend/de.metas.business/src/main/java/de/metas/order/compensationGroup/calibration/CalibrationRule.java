@@ -88,7 +88,7 @@ public class CalibrationRule
 	public Quantity computeQtyCalibrated(@NonNull final Quantity qtyEnteredUncalibrated)
 	{
 		return qtyEnteredUncalibrated
-				.multiply(getFactor().toFraction())
+				.multiply(getFactor().toFractionBigDecimal())
 				.roundToUOMPrecision();
 	}
 }

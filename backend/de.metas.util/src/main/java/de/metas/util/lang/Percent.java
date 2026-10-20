@@ -82,12 +82,13 @@ public class Percent implements Comparable<Percent>
 	}
 
 	/**
-	 * @param fraction 1 based value, e.g. {@code 0.8} for 80 %
+	 * @param fraction value as a fraction of one, e.g. {@code 0.8} for 80 %, {@code 1} for 100 %
+	 * @return the percent, or null if the given fraction is null
 	 */
-	@NonNull
-	public static Percent ofFraction(@NonNull final BigDecimal fraction)
+	@Nullable
+	public static Percent ofNullableFraction(@Nullable final BigDecimal fraction)
 	{
-		return of(fraction.movePointRight(2));
+		return fraction != null ? of(fraction.movePointRight(2)) : null;
 	}
 
 	/**
@@ -170,12 +171,13 @@ public class Percent implements Comparable<Percent>
 	}
 
 	/**
-	 * @return the 1 based value (e.g. {@code 0.8} for 80 %), or null if the given percent is null
+	 * @return the value as a fraction of one (e.g. {@code 0.8} for 80 %), or null if the given percent is null
+	 * @see #toFractionBigDecimal()
 	 */
 	@Nullable
-	public static BigDecimal toFractionOrNull(@Nullable final Percent percent)
+	public static BigDecimal toFractionBigDecimalOrNull(@Nullable final Percent percent)
 	{
-		return percent != null ? percent.toFraction() : null;
+		return percent != null ? percent.toFractionBigDecimal() : null;
 	}
 
 	@NonNull
@@ -214,7 +216,7 @@ public class Percent implements Comparable<Percent>
 	}
 
 	/**
-	 * @return 100 based value
+	 * @return 100 based value; same as {@link #toBigDecimalOneHundredBased()}, kept as the JSON value
 	 */
 	@JsonValue
 	@NonNull
@@ -224,10 +226,19 @@ public class Percent implements Comparable<Percent>
 	}
 
 	/**
-	 * @return 1 based value, e.g. {@code 0.8} for 80 %
+	 * @return the 100 based value, e.g. {@code 80} for 80 %
 	 */
 	@NonNull
-	public BigDecimal toFraction()
+	public BigDecimal toBigDecimalOneHundredBased()
+	{
+		return value;
+	}
+
+	/**
+	 * @return the value as a fraction of one, e.g. {@code 0.8} for 80 %, {@code 1} for 100 %
+	 */
+	@NonNull
+	public BigDecimal toFractionBigDecimal()
 	{
 		return NumberUtils.stripTrailingDecimalZeros(value.movePointLeft(2));
 	}
