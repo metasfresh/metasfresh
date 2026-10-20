@@ -31,8 +31,8 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepositor
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.material.event.commons.OrderLineDescriptor;
-import de.metas.process.PInstanceId;
 import de.metas.order.DeliveryRule;
+import de.metas.process.PInstanceId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 

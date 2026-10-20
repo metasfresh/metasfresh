@@ -61,7 +61,6 @@ public final class PPOrderDeletedHandler
 		return ImmutableList.of(PPOrderDeletedEvent.class);
 	}
 
-	// no MRP_Exclude guard: handler only operates on already-existing candidates loaded by ID; if creation was skipped due to MRP_Exclude, the load returns nothing and this is a no-op.
 	/**
 	 * Deletes all (non-simulated) candidates of the event's PP_Order: the header supply and every BOM-line candidate.
 	 * <p>
@@ -69,6 +68,7 @@ public final class PPOrderDeletedHandler
 	 * If that event is handled before this one, the line candidates already point to the new BOM-line IDs, i.e. this event's (pre-void) BOM-line IDs no longer match them.
 	 * That's why we select the candidates by PP_Order_ID and not by BOM-line ID.
 	 */
+	// no MRP_Exclude guard: handler only operates on already-existing candidates loaded by ID; if creation was skipped due to MRP_Exclude, the load returns nothing and this is a no-op.
 	@Override
 	public void handleEvent(@NonNull final PPOrderDeletedEvent event)
 	{
