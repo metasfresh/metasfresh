@@ -104,7 +104,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 						candidatesToUpdate,
 						event.getNewDocStatus(),
 						event.getPpOrderLineChanges()));
-		// TODO: handle delete and creation of new lines
+		// TODO: handle delete and creation of new lines; note that the distribution candidates of a deleted line (one without a new line) still reference the deleted PP_Order_BOMLine
 
 		moveDistributionCandidatesToNewBOMLines(event.getPpOrderLineChanges());
 
