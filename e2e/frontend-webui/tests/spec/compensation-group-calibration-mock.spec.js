@@ -35,7 +35,7 @@ import {
  *   - the menu line's Menge 1.500 -> 1.600 leaves Rice_Pudding untouched (no automatic rescale)
  *   - a manually added line has no calibration group; no calibration column in the grid
  *   - the clerk types the factor in the advanced edit: 0,5 -> Menge 187,5; 0 -> Menge 0, the line is kept;
- *     an empty factor is refused with an error notification; rule 10 and uncalibrated 375 stay
+ *     an empty or a negative factor is refused with an error notification; rule 10 and uncalibrated 375 stay
  *   - the clerk picks the Gebinde (25 LTR per TU) and types the Gebindemenge 10: Menge follows to 250 (10 x 25), the
  *     factor follows that Menge (250 / 375 = 0,6667; on purpose not the rule's 0,8)
  *   - the clerk types the factor 1 -> Menge 375
@@ -61,7 +61,7 @@ test.describe('Compensation group calibration - mock case', () => {
         allure.story('TC2 mock case: calibrated component, per-order override, factor edit, uncalibrated menu and manual lines, completed order');
         allure.severity('critical');
 
-        // masterdata + 1 order with quick input, 2 line edits, a manual line, 4 factor edits, Gebinde + Gebindemenge edit, completion, 6 advanced edit checks
+        // masterdata + 1 order with quick input, 2 line edits, a manual line, 5 factor edits, Gebinde + Gebindemenge edit, completion, 6 advanced edit checks
         test.setTimeout(600000);
 
         // ============================================================
@@ -236,6 +236,21 @@ test.describe('Compensation group calibration - mock case', () => {
 
             await Backend.expect({
                 title: 'Mock case: empty factor refused, stored line unchanged',
+                salesOrders: {
+                    [orderId]: {
+                        lines: [{ product: 'RICE_PUDDING', qtyEntered: 0, calibrationFactor: 0, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
+                    },
+                },
+            });
+        });
+
+        await test.step('advanced edit: a negative factor is refused with an error notification; factor 0 and Menge 0 stay', async () => {
+            await setCalibrationFactor(page, rice, -0.5, { rejected: true });
+
+            await expectLineQty(page, rice, 0);
+
+            await Backend.expect({
+                title: 'Mock case: negative factor refused, stored line unchanged',
                 salesOrders: {
                     [orderId]: {
                         lines: [{ product: 'RICE_PUDDING', qtyEntered: 0, calibrationFactor: 0, calibrationRule: 'RULE10', qtyEnteredUncalibrated: 375 }],
