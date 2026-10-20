@@ -7,14 +7,15 @@ import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/M
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
+import { receiptDayPlusDays } from '../../utils/receiptDay';
 
-// Piece-goods finished product (no catch weight): the receive dialog pre-fills the best-before date
-// with "receipt day + the product's total shelf life (BestBeforeDays)"; both best-before date and
-// lot number stay editable. The lot number is only pre-filled when the BOM has a lot-number sequence;
-// this BOM has none, so the lot field starts empty.
+// Piece-goods finished product (no catch weight): the receive dialog pre-fills the best-before date with
+// "receipt day + the product's total shelf life (BestBeforeDays)". It pre-fills the lot number only when
+// the BOM's lot-number sequence can be shown without consuming it (a purely date-based sequence);
+// otherwise the lot field starts empty and the lot is generated at receipt. Both fields stay editable.
 const BEST_BEFORE_DAYS = 10;
 
-const createMasterdata = async ({ bestBeforeDays } = {}) => {
+const createMasterdata = async ({ bestBeforeDays, lotNoSequence } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
@@ -25,7 +26,7 @@ const createMasterdata = async ({ bestBeforeDays } = {}) => {
                 'COMP1': {},
                 'BOM': {
                     bestBeforeDays,
-                    bom: { lines: [{ product: 'COMP1', qty: 1 }] },
+                    bom: { lines: [{ product: 'COMP1', qty: 1 }], lotNoSequence },
                 },
             },
             packingInstructions: {
@@ -46,15 +47,21 @@ const createMasterdata = async ({ bestBeforeDays } = {}) => {
     });
 };
 
-// The receipt day is "today" in the organisation's time zone; the test organisation has none set, so the
-// app server's zone applies, which is Europe/Berlin (see TZ in docker-builds/Dockerfile.backend.app).
-const receiptDayPlusDays = (days) => {
-    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' }); // YYYY-MM-DD
-    const date = new Date(`${today}T00:00:00Z`);
-    date.setUTCDate(date.getUTCDate() + days);
-    const iso = date.toISOString().substring(0, 10);
-    const [year, month, day] = iso.split('-');
-    return { iso, displayed: `${day}.${month}.${year}` };
+// A run can cross midnight between opening the job and confirming the receipt, so the receipt day is
+// either of the two days seen before and after the receipt.
+const distinct = (values) => [...new Set(values)];
+
+const expectReceivedHU = async ({ bestBeforeDatesIso, expectation }) => {
+    const candidates = distinct(bestBeforeDatesIso);
+    for (let i = 0; i < candidates.length; i++) {
+        try {
+            return await Backend.expect(expectation(candidates[i]));
+        } catch (error) {
+            if (i === candidates.length - 1) {
+                throw error;
+            }
+        }
+    }
 };
 
 const startReceiveFlow = async (masterdata) => {
@@ -79,14 +86,15 @@ test('Best-before date is pre-filled from the shelf life; edited best-before dat
     allure.severity('critical');
 
     const masterdata = await createMasterdata({ bestBeforeDays: BEST_BEFORE_DAYS });
+    const defaultBefore = receiptDayPlusDays(BEST_BEFORE_DAYS);
     const { jobId } = await startReceiveFlow(masterdata);
 
-    const defaultBestBeforeDate = receiptDayPlusDays(BEST_BEFORE_DAYS);
     const editedBestBeforeDate = receiptDayPlusDays(BEST_BEFORE_DAYS + 5);
     const editedLotNo = `LOT-${Date.now()}`;
 
     await MaterialReceiptLineScreen.clickReceiveQtyButton();
-    await GetQuantityDialog.expectBestBeforeDate(defaultBestBeforeDate.displayed);
+    await GetQuantityDialog.expectNoScanOffered();
+    await GetQuantityDialog.expectBestBeforeDateOneOf(distinct([defaultBefore.displayed, receiptDayPlusDays(BEST_BEFORE_DAYS).displayed]));
     await GetQuantityDialog.expectLotNo('');
     await GetQuantityDialog.fillAndPressDone({
         expectQtyEntered: '4',
@@ -127,37 +135,40 @@ test('Best-before date and lot left as pre-filled are received as receipt day + 
     allure.severity('critical');
 
     const masterdata = await createMasterdata({ bestBeforeDays: BEST_BEFORE_DAYS });
+    const before = receiptDayPlusDays(BEST_BEFORE_DAYS);
     const { jobId } = await startReceiveFlow(masterdata);
-
-    const defaultBestBeforeDate = receiptDayPlusDays(BEST_BEFORE_DAYS);
 
     // The operator confirms without touching the fields; the best-before date is set at receipt.
     await MaterialReceiptLineScreen.clickReceiveQtyButton();
-    await GetQuantityDialog.expectBestBeforeDate(defaultBestBeforeDate.displayed);
+    await GetQuantityDialog.expectBestBeforeDateOneOf(distinct([before.displayed, receiptDayPlusDays(BEST_BEFORE_DAYS).displayed]));
     await GetQuantityDialog.expectLotNo('');
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
     await ManufacturingJobScreen.waitForScreen();
     await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '4 Stk', qtyReceived: '4 Stk' });
+    const after = receiptDayPlusDays(BEST_BEFORE_DAYS);
 
     await ManufacturingJobScreen.complete();
 
-    await Backend.expect({
-        title: 'Produced LU and TU carry receipt day + shelf life as best-before date',
-        manufacturings: {
-            [jobId]: {
-                receivedHUs: [{ lu: 'lu1', qty: '4 PCE' }],
+    await expectReceivedHU({
+        bestBeforeDatesIso: [after.iso, before.iso],
+        expectation: (bestBeforeDateIso) => ({
+            title: 'Produced LU and TU carry receipt day + shelf life as best-before date',
+            manufacturings: {
+                [jobId]: {
+                    receivedHUs: [{ lu: 'lu1', qty: '4 PCE' }],
+                },
             },
-        },
-        hus: {
-            'lu1': {
-                storages: { 'BOM': '4 PCE' },
-                // no lot-number sequence on the BOM: a lot left blank stays blank
-                attributes: { 'HU_BestBeforeDate': defaultBestBeforeDate.iso, 'Lot-Nummer': null },
-                tus: [
-                    { attributes: { 'HU_BestBeforeDate': defaultBestBeforeDate.iso } },
-                ],
+            hus: {
+                'lu1': {
+                    storages: { 'BOM': '4 PCE' },
+                    // no lot-number sequence on the BOM: a lot left blank stays blank
+                    attributes: { 'HU_BestBeforeDate': bestBeforeDateIso, 'Lot-Nummer': null },
+                    tus: [
+                        { attributes: { 'HU_BestBeforeDate': bestBeforeDateIso } },
+                    ],
+                },
             },
-        },
+        }),
     });
 });
 
@@ -192,6 +203,84 @@ test('Product without shelf life — best-before date is not pre-filled', async 
             'lu1': {
                 storages: { 'BOM': '4 PCE' },
                 attributes: { 'HU_BestBeforeDate': null },
+            },
+        },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Date-based lot-number sequence — the lot is pre-filled and received as shown', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');
+    allure.story('Pre-filled best-before date and lot number on the receive dialog');
+    allure.severity('critical');
+
+    // The lot number is the receipt day, formatted as the instance-wide date-sequence setting says.
+    const lotPrefix = `D${Date.now()}-`;
+    const masterdata = await createMasterdata({
+        bestBeforeDays: BEST_BEFORE_DAYS,
+        lotNoSequence: { prefix: lotPrefix, dateBased: true },
+    });
+    const { jobId } = await startReceiveFlow(masterdata);
+
+    await MaterialReceiptLineScreen.clickReceiveQtyButton();
+    const shownLotNo = await GetQuantityDialog.expectLotNoMatching(new RegExp(`^${lotPrefix}.+$`));
+    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
+    await ManufacturingJobScreen.waitForScreen();
+
+    await ManufacturingJobScreen.complete();
+
+    await Backend.expect({
+        title: 'Produced HU carries the lot that was shown',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [{ lu: 'lu1', qty: '4 PCE' }],
+            },
+        },
+        hus: {
+            'lu1': {
+                storages: { 'BOM': '4 PCE' },
+                attributes: { 'Lot-Nummer': shownLotNo },
+            },
+        },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Counter lot-number sequence — the lot is not pre-filled and is generated at receipt', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');
+    allure.story('Pre-filled best-before date and lot number on the receive dialog');
+    allure.severity('critical');
+
+    // Showing a counter-based lot would mean consuming a number, so the field stays empty.
+    const lotPrefix = `C${Date.now()}-`;
+    const masterdata = await createMasterdata({
+        bestBeforeDays: BEST_BEFORE_DAYS,
+        lotNoSequence: { prefix: lotPrefix, currentNext: 1 },
+    });
+    const { jobId } = await startReceiveFlow(masterdata);
+
+    await MaterialReceiptLineScreen.clickReceiveQtyButton();
+    await GetQuantityDialog.expectLotNo('');
+    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
+    await ManufacturingJobScreen.waitForScreen();
+
+    await ManufacturingJobScreen.complete();
+
+    await Backend.expect({
+        title: 'Produced HU carries the first lot of the sequence',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [{ lu: 'lu1', qty: '4 PCE' }],
+            },
+        },
+        hus: {
+            'lu1': {
+                storages: { 'BOM': '4 PCE' },
+                attributes: { 'Lot-Nummer': `${lotPrefix}1` },
             },
         },
     });

@@ -98,6 +98,20 @@ public class JsonCreateProductRequest
 	public static class BOM
 	{
 		@NonNull List<BOMLine> lines;
+		/** optional lot-number sequence of the BOM (PP_Product_BOM.LotNo_Sequence_ID) */
+		@Nullable LotNoSequence lotNoSequence;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class LotNoSequence
+	{
+		@Nullable String prefix;
+		/** the lot number is the receipt date (DateSequenceProvider, date format from sysconfig), followed by the counter if a decimal pattern is set */
+		boolean dateBased;
+		@Nullable String decimalPattern;
+		@Nullable Integer currentNext;
 	}
 
 	@Value

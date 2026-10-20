@@ -7,12 +7,16 @@ import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/M
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
+import { receiptDayPlusDays } from '../../utils/receiptDay';
 
-// Catch-weight main finished good. With "Finished goods: require catch-weight scan" switched on, the
-// receive dialog only offers the L+M scan; the scan fills quantity 1, weight, lot and best-before date
-// for review, the operator may edit all of them (e.g. receive 3 pieces with their total weight) and confirms with Done. With the setting off (the default),
-// each scan receives one piece right away.
+// Catch-weight main finished good with a total shelf life, so the receive dialog has a pre-filled
+// best-before date that the scanned one must replace.
+// With "Finished goods: require catch-weight scan" switched on, the dialog only offers the L+M scan. The
+// scan fills quantity 1, weight, lot and best-before date for review; the operator may edit all of them
+// (e.g. receive 3 pieces with their total weight) and confirms with Done.
+// With the setting off (the default), each scan receives one piece right away.
 const L_M_CODE = 'LMQ#1#0.101#08.11.2025#500';
+const BEST_BEFORE_DAYS = 70;
 
 const createMasterdata = async ({ isFinishedGoodsCatchWeightScanRequired }) => {
     return await Backend.createMasterdata({
@@ -27,6 +31,7 @@ const createMasterdata = async ({ isFinishedGoodsCatchWeightScanRequired }) => {
                 'COMP1': {},
                 'BOM': {
                     uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
+                    bestBeforeDays: BEST_BEFORE_DAYS,
                     bom: { lines: [{ product: 'COMP1', qty: 1 }] },
                 },
             },
@@ -87,7 +92,7 @@ test('Scan required: the scan fills the fields for review; the entered quantity 
     // The operator receives as many pieces as they say, with their total weight.
     await GetQuantityDialog.typeQtyEntered('3');
     await GetQuantityDialog.typeCatchWeight('0.350');
-    await GetQuantityDialog.replaceLotNo(editedLotNo);
+    await GetQuantityDialog.typeLotNo(editedLotNo);
     await GetQuantityDialog.clickDone();
     await ManufacturingJobScreen.waitForScreen();
     await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: '3 Stk' });
@@ -123,7 +128,7 @@ test('Scan required: codes without lot or with an invalid best-before date are r
     allure.severity('critical');
 
     const masterdata = await createMasterdata({ isFinishedGoodsCatchWeightScanRequired: true });
-    await startReceiveToNewTU(masterdata);
+    const { jobId } = await startReceiveToNewTU(masterdata);
 
     await MaterialReceiptLineScreen.clickReceiveQtyButton();
     await GetQuantityDialog.scanCatchWeightQRCodeExpectingError({
@@ -138,6 +143,13 @@ test('Scan required: codes without lot or with an invalid best-before date are r
 
     await MaterialReceiptLineScreen.goBack();
     await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: '0 Stk' });
+
+    await Backend.expect({
+        title: 'Nothing was received',
+        manufacturings: {
+            [jobId]: { receivedHUs: [] },
+        },
+    });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -151,10 +163,15 @@ test('Scan not required (default): the scan receives the piece right away', asyn
     const masterdata = await createMasterdata({ isFinishedGoodsCatchWeightScanRequired: false });
     const { jobId } = await startReceiveToNewTU(masterdata);
 
-    await MaterialReceiptLineScreen.receiveQty({
-        catchWeightQRCode: L_M_CODE,
-        expectGoBackToJob: false,
-    });
+    const before = receiptDayPlusDays(BEST_BEFORE_DAYS);
+    await MaterialReceiptLineScreen.clickReceiveQtyButton();
+    // The manual input shows the pre-filled best-before date ...
+    await GetQuantityDialog.clickManual();
+    await GetQuantityDialog.expectBestBeforeDateOneOf([...new Set([before.displayed, receiptDayPlusDays(BEST_BEFORE_DAYS).displayed])]);
+    // ... but the operator scans, and the scan receives the piece with the scanned best-before date.
+    await GetQuantityDialog.clickSwitchToQRCodeInput();
+    await GetQuantityDialog.scanCatchWeightQRCode({ qrCode: L_M_CODE, stepName: '#1/1' });
+    await GetQuantityDialog.clickCloseScanner();
     await MaterialReceiptLineScreen.goBack();
     await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: '1 Stk' });
 

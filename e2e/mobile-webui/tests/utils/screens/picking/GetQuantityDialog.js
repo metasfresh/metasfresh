@@ -61,6 +61,8 @@ export const GetQuantityDialog = {
 
     typeLotNo: async (lotNo) => await test.step(`${NAME} - Type LotNo '${lotNo}'`, async () => {
         const field = page.getByTestId('lotNo');
+        // the field may already show a pre-filled or scanned lot, and it does not select its text on focus
+        await field.fill('');
         await clickAndType(field, lotNo);
     }),
 
@@ -127,6 +129,26 @@ export const GetQuantityDialog = {
         await GetQuantityDialog.expectOnlyCatchWeightScanOffered();
     }),
 
+    // A piece-goods receipt is entered by hand: no scanner is offered, the quantity form shows right away.
+    expectNoScanOffered: async () => await test.step(`${NAME} - Expect no scan offered`, async () => {
+        await expect(page.locator('#qty-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.getByTestId('qrCode-input')).toHaveCount(0);
+        await expect(page.getByTestId('switchToQrCodeInput-button')).toHaveCount(0);
+    }),
+
+    // Back from the quantity form to the catch weight scanner.
+    clickSwitchToQRCodeInput: async () => await test.step(`${NAME} - Switch to QR code input`, async () => {
+        await page.getByTestId('switchToQrCodeInput-button').tap();
+        await expect(page.getByTestId('qrCode-input')).toBeAttached({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Returns the lot shown in the field, e.g. a pre-filled one whose exact value the test does not know upfront.
+    expectLotNoMatching: async (regex) => await test.step(`${NAME} - Expect LotNo matching ${regex}`, async () => {
+        const field = page.getByTestId('lotNo');
+        await expect(field).toHaveValue(regex);
+        return await field.inputValue();
+    }),
+
     expectLotNo: async (expected) => await test.step(`${NAME} - Expect LotNo '${expected}'`, async () => {
         await expect(page.getByTestId('lotNo')).toHaveValue(`${expected}`);
     }),
@@ -136,11 +158,10 @@ export const GetQuantityDialog = {
         await expect(page.getByTestId('bestBeforeDate')).toHaveValue(`${expected}`);
     }),
 
-    // Replaces whatever the field shows (pre-filled default or scanned value).
-    replaceLotNo: async (lotNo) => await test.step(`${NAME} - Replace LotNo with '${lotNo}'`, async () => {
-        const field = page.getByTestId('lotNo');
-        await field.tap();
-        await field.fill(lotNo);
+    // Like expectBestBeforeDate, accepting any of the given values (e.g. a receipt-day default when the run may cross midnight).
+    expectBestBeforeDateOneOf: async (expectedValues) => await test.step(`${NAME} - Expect BestBeforeDate one of ${expectedValues.join(', ')}`, async () => {
+        const anyOf = new RegExp(`^(${expectedValues.map((value) => value.replace(/\./g, '\\.')).join('|')})$`);
+        await expect(page.getByTestId('bestBeforeDate')).toHaveValue(anyOf);
     }),
 
     // The scanner view's close button: leaves the dialog without receiving anything.
