@@ -921,7 +921,7 @@ public class OrderGroupRepositoryTest
 		// 0.375 -> 0.38 (precision 2), 0.38 x 120 % = 0.456 -> 0.46
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.46");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0.38");
-		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("120");
+		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("120");
 		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(7);
 	}
 
@@ -934,7 +934,7 @@ public class OrderGroupRepositoryTest
 		// mock case: 1500 x 0.25 LTR x 80 % = 300
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("300");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
-		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
+		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("80");
 	}
 
 	@Test
@@ -946,7 +946,7 @@ public class OrderGroupRepositoryTest
 
 		// no rule matched: the line is not calibrated, exactly like an uncalibrated line; half-up: RoundingMode.UP would give 0.13
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.12");
-		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
+		assertThat(OrderGroupRepository.getCalibrationFactor(line)).isNull();
 		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).isNull();
 		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isLessThanOrEqualTo(0);
 	}
@@ -959,7 +959,7 @@ public class OrderGroupRepositoryTest
 		final I_C_OrderLine line = repo.createRegularLineFromTemplate(templateLine, order, minimalRequest());
 
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0.13");
-		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
+		assertThat(OrderGroupRepository.getCalibrationFactor(line)).isNull();
 		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).isNull();
 		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isLessThanOrEqualTo(0);
 	}
@@ -984,7 +984,7 @@ public class OrderGroupRepositoryTest
 
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("6");
-		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0");
+		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("0");
 		assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(7);
 	}
 
@@ -997,7 +997,7 @@ public class OrderGroupRepositoryTest
 
 		assertThat(line.getQtyEntered()).isEqualByComparingTo("0");
 		assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("0");
-		assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
+		assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("100");
 	}
 
 	@Test

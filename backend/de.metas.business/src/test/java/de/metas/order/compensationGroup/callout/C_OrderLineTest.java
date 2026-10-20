@@ -6,7 +6,9 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
+import de.metas.util.lang.Percent;
 import de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstance;
 import org.adempiere.ad.callout.annotations.api.impl.AnnotatedCalloutInstanceFactory;
@@ -71,7 +73,7 @@ class C_OrderLineTest
 		line.setC_CompensationGroup_Schema_TemplateLine_ID(templateLine(ltr));
 		line.setC_CompensationGroup_CalibrationRule_ID(10);
 		line.setGroupCompensationQtyEnteredUncalibrated(new BigDecimal(base));
-		line.setGroupCompensationCalibrationFactor(new BigDecimal(factor));
+		OrderGroupRepository.setCalibrationFactor(line, Percent.of(factor));
 		line.setQtyEntered(new BigDecimal(qty));
 		saveRecord(line);
 		return line;
@@ -123,7 +125,7 @@ class C_OrderLineTest
 
 	private void typeFactor(final I_C_OrderLine line, @Nullable final String factor)
 	{
-		line.setGroupCompensationCalibrationFactor(factor != null ? new BigDecimal(factor) : null);
+		OrderGroupRepository.setCalibrationFactor(line, factor != null ? Percent.of(factor) : null);
 		callout.onCalibrationFactorChanged(line);
 	}
 
@@ -224,7 +226,7 @@ class C_OrderLineTest
 			final I_C_OrderLine line = uncalibratedLine(false);
 			typeFactor(line, null);
 			assertThat(line.getQtyEntered()).isEqualByComparingTo("5");
-			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
+			assertThat(OrderGroupRepository.getCalibrationFactor(line)).isNull();
 		}
 
 		@Test
@@ -281,7 +283,7 @@ class C_OrderLineTest
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			typeQty(line, "350");
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("93.33");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("93.33");
 			assertThat(line.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
 			assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(10);
 		}
@@ -291,7 +293,7 @@ class C_OrderLineTest
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			typeQty(line, "375");
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("100");
 		}
 
 		@Test
@@ -300,9 +302,9 @@ class C_OrderLineTest
 			// 1 / 3 x 100 = 33.333..; 2 / 3 x 100 = 66.666..
 			final I_C_OrderLine line = calibratedLine("3", "100", "3");
 			typeQty(line, "1");
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("33.33");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("33.33");
 			typeQty(line, "2");
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("66.67");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("66.67");
 		}
 
 		@Test
@@ -310,7 +312,7 @@ class C_OrderLineTest
 		{
 			final I_C_OrderLine line = calibratedLine("0", "50", "0");
 			typeQty(line, "2");
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("50");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("50");
 		}
 
 		@Test
@@ -319,7 +321,7 @@ class C_OrderLineTest
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			line.setQtyEntered(null);
 			callout.onQtyEnteredChanged(line);
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("80");
 		}
 
 		@Test
@@ -327,7 +329,7 @@ class C_OrderLineTest
 		{
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			typeQty(line, "-10");
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("80");
 		}
 
 		@Test
@@ -335,9 +337,9 @@ class C_OrderLineTest
 		{
 			final I_C_OrderLine line = calibratedLineInBuckets();
 			typeQty(line, "12"); // 12 of 15 buckets
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("80");
 			typeQty(line, "15");
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("100");
 		}
 
 		@Test
@@ -346,7 +348,7 @@ class C_OrderLineTest
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			line.setC_CompensationGroup_CalibrationRule_ID(0);
 			typeQty(line, "375");
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("100");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("100");
 		}
 
 		@Test
@@ -355,7 +357,7 @@ class C_OrderLineTest
 			final I_C_OrderLine line = calibratedLine("375", "80", "300");
 			line.setC_UOM_ID(ml.getC_UOM_ID());
 			typeQty(line, "375");
-			assertThat(line.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("80");
+			assertThat(OrderGroupRepository.getCalibrationFactor(line).toBigDecimal()).isEqualByComparingTo("80");
 		}
 
 		@Test
@@ -363,7 +365,7 @@ class C_OrderLineTest
 		{
 			final I_C_OrderLine line = uncalibratedLine(true);
 			typeQty(line, "7");
-			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
+			assertThat(OrderGroupRepository.getCalibrationFactor(line)).isNull();
 		}
 	}
 

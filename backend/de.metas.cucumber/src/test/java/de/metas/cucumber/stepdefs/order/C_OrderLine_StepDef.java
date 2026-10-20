@@ -58,6 +58,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -120,6 +121,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import de.metas.util.lang.Percent;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.DataTableUtil.NULL_STRING;
@@ -1160,7 +1162,7 @@ public class C_OrderLine_StepDef
 						.isEqualTo(vendorBPartnerId.getRepoId()));
 
 		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)
-				.ifPresent(expected -> assertNullableBigDecimal(softly, InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor), expected, "GroupCompensationCalibrationFactor", identifierStr));
+				.ifPresent(expected -> assertNullableBigDecimal(softly, Optional.ofNullable(OrderGroupRepository.getCalibrationFactor(orderLine)).map(Percent::toBigDecimal).orElse(null), expected, "GroupCompensationCalibrationFactor", identifierStr));
 
 		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)
 				.ifPresent(expected -> assertNullableBigDecimal(softly, InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated), expected, "GroupCompensationQtyEnteredUncalibrated", identifierStr));
