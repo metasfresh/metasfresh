@@ -16,6 +16,11 @@ import java.util.Set;
 
 public interface IShipmentScheduleInvalidateBL extends ISingletonService
 {
+	/**
+	 * SysConfig (or system property): when {@code Y}, a recompute flag written outside its record's or data's transaction throws instead of only logging a warning.
+	 */
+	String SYSCONFIG_FailOnTrxMismatch = "de.metas.inoutcandidate.invalidation.FailOnTrxMismatch";
+
 	boolean isFlaggedForRecompute(ShipmentScheduleId shipmentScheduleId);
 
 	void flagForRecompute(ShipmentScheduleId shipmentScheduleId);

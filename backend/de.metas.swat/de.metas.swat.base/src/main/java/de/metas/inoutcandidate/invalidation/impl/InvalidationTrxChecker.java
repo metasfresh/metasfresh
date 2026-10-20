@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.invalidation.impl;
 
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -58,7 +59,7 @@ import java.util.function.Supplier;
  */
 final class InvalidationTrxChecker
 {
-	static final String SYSCONFIG_FailOnTrxMismatch = "de.metas.inoutcandidate.invalidation.FailOnTrxMismatch";
+	static final String SYSCONFIG_FailOnTrxMismatch = IShipmentScheduleInvalidateBL.SYSCONFIG_FailOnTrxMismatch;
 	private static final long WARN_INTERVAL_MILLIS = 60_000L;
 
 	private static final Logger logger = LogManager.getLogger(InvalidationTrxChecker.class);
