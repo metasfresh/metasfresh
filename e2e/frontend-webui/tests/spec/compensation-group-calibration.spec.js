@@ -276,7 +276,7 @@ test.describe('Compensation group calibration', () => {
 
             await expectNoCalibrationGridColumn(page);
 
-            // advanced edit: the calibration group shows, read-only
+            // advanced edit: the calibration group shows; factor editable, rule and uncalibrated qty read-only
             await expectCalibrationGroup(page, reis, { factor: '50', rulePrefix: '10', uncalibrated: '200' });
             await expectCalibrationGroup(page, haehnchen, { factor: '60', rulePrefix: '20', uncalibrated: '100' });
 
