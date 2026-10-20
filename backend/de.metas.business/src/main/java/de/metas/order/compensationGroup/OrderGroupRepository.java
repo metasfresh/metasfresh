@@ -1265,7 +1265,7 @@ public class OrderGroupRepository implements GroupRepository
 			final Quantity qtyEnteredUncalibrated = qtyEntered;
 			qtyEntered = calibrationRule.computeQtyCalibrated(qtyEnteredUncalibrated);
 
-			// the calibration columns are not updateable: they are only set while the line is new
+			// rule and uncalibrated qty are only set while the line is new; the factor is updateable and kept in sync with QtyEntered by callout.C_OrderLine
 			setCalibrationFactor(orderLine, calibrationRule.getFactor());
 			orderLine.setC_CompensationGroup_CalibrationRule_ID(CalibrationRuleId.toRepoId(calibrationRule.getId()));
 			orderLine.setGroupCompensationQtyEnteredUncalibrated(qtyEnteredUncalibrated.toBigDecimal());
