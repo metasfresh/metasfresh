@@ -206,6 +206,17 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		return false;
 	}
 
+	/**
+	 * Called when the collected items are processed, i.e. right away for items without a transaction, or after their transaction was committed,
+	 * so that the decision sees what that transaction wrote. This implementation never skips.
+	 *
+	 * @return true if no workpackage shall be created for the collected items
+	 */
+	protected boolean isSkipCreatingWorkpackages(@NonNull final IWorkPackageQueue workPackageQueue)
+	{
+		return false;
+	}
+
 	@Nullable
 	protected UserId extractUserInChargeOrNull(final ItemType item)
 	{
@@ -371,6 +382,10 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 			final IWorkPackageQueue workPackageQueue = Services.get(IWorkPackageQueueFactory.class)
 					.getQueueForEnqueuing(ctx, workpackageProcessorClass);
+			if (isSkipCreatingWorkpackages(workPackageQueue))
+			{
+				return;
+			}
 
 			if (isCreateOneWorkpackagePerModel())
 			{

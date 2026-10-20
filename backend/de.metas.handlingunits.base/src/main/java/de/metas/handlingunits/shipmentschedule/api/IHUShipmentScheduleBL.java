@@ -192,6 +192,9 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 
 	void flagForRecompute(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
 
+	/** See {@link de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL#flagForRecompute(Set, String)}. */
+	void flagForRecompute(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable String dataTrxName);
+
 	ShipmentScheduleLoadingCache<de.metas.handlingunits.model.I_M_ShipmentSchedule> newLoadingCache();
 
 	/**

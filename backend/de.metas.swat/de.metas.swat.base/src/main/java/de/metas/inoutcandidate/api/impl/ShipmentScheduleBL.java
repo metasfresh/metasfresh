@@ -340,7 +340,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		save(shipmentScheduleRecord);
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesService.flagForRecompute(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()));
+		invalidSchedulesService.flagForRecompute(
+				ImmutableSet.of(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID())),
+				InterfaceWrapperHelper.getTrxName(shipmentScheduleRecord));
 	}
 
 	@Override

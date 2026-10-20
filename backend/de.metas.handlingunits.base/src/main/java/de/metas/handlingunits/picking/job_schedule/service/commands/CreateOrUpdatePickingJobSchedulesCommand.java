@@ -15,6 +15,7 @@ import de.metas.util.Services;
 import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_UOM;
@@ -70,6 +71,11 @@ public class CreateOrUpdatePickingJobSchedulesCommand
 		final Set<PickingJobScheduleId> pickingJobScheduleIds = request.getShipmentScheduleAndJobScheduleIds().getJobScheduleIds();
 		final Set<ShipmentScheduleId> shipmentScheduleIds_woJobSchedule = request.getShipmentScheduleAndJobScheduleIds().getShipmentScheduleIdsWithoutJobSchedules();
 
+		// Captured before the repository call. It cannot tell which trx the repository writes in (both sides are the thread-inherited trx);
+		// it only guards a trx boundary placed between the job-schedule writes and the flag call (e.g. wrapping just the flag call in
+		// runInNewTrx), which the check catches in unit-test mode.
+		final String dataTrxName = Services.get(ITrxManager.class).getThreadInheritedTrxName();
+
 		//
 		// Update existing job schedules
 		pickingJobScheduleRepository.updateByIds(pickingJobScheduleIds, jobSchedule -> jobSchedule.toBuilder()
@@ -89,7 +95,7 @@ public class CreateOrUpdatePickingJobSchedulesCommand
 							.build());
 				});
 
-		shipmentScheduleBL.flagForRecompute(shipmentScheduleIds);
+		shipmentScheduleBL.flagForRecompute(shipmentScheduleIds, dataTrxName);
 	}
 
 	private static void assumeCarrierProductSet(@NonNull final I_M_ShipmentSchedule shipmentSchedule)

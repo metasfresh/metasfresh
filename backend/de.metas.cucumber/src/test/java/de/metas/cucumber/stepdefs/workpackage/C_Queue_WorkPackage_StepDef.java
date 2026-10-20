@@ -22,9 +22,11 @@
 
 package de.metas.cucumber.stepdefs.workpackage;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.*;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
@@ -76,6 +78,7 @@ public class C_Queue_WorkPackage_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 	private final IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
 
 	private static final String MAIL_WP_PROCESSOR_INTERNAL_NAME = "MailWorkpackageProcessor";
@@ -574,6 +577,60 @@ public class C_Queue_WorkPackage_StepDef
 		assertThat(actualCount)
 				.as("Number of pending C_Queue_WorkPackage for processor %s", processorShortName)
 				.isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Asserts that exactly one {@code C_Queue_WorkPackage} of the given processor is pending (not processed, not errored, ready for processing)
+	 * and carries the given integer parameter value (read from its persisted {@code C_Queue_WorkPackage_Param}s), and remembers it under the given identifier.
+	 * <p>
+	 * Scenario-scoped through "pending": use it after the scenario drained the processor's queue and paused it, so every pending
+	 * workpackage was enqueued by this scenario (earlier ones are processed or errored).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Queue_WorkPackage_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then there is exactly 1 pending "UpdateInvalidShipmentSchedules" workpackage with parameter RecomputeRetryGeneration = 1, identified as retryPass_1
+	 * </pre>
+	 */
+	@And("^there is exactly 1 pending \"(.*)\" workpackage with parameter (\\w+) = (\\d+), identified as (.*)$")
+	public void assert_single_pending_workpackage_with_parameter(
+			@NonNull final String processorShortName,
+			@NonNull final String parameterName,
+			final int expectedValue,
+			@NonNull final String workPackageIdentifier)
+	{
+		final ImmutableSet<Integer> packageProcessorIds = workPackageQueueUtil.resolvePackageProcessorIds(processorShortName);
+		assertThat(packageProcessorIds).as("C_Queue_PackageProcessor for %s", processorShortName).isNotEmpty();
+
+		final ImmutableList<I_C_Queue_WorkPackage> matching = workPackageQueueUtil.pendingWorkPackagesQuery(packageProcessorIds)
+				.create()
+				.stream()
+				.filter(workPackage -> workpackageParamDAO.retrieveWorkpackageParams(workPackage).getParameterAsInt(parameterName, -1) == expectedValue)
+				.collect(ImmutableList.toImmutableList());
+		assertThat(matching)
+				.as("Pending C_Queue_WorkPackage for processor %s with parameter %s = %s", processorShortName, parameterName, expectedValue)
+				.hasSize(1);
+
+		workPackageTable.putOrReplace(workPackageIdentifier, matching.get(0));
+	}
+
+	/**
+	 * Asserts that the remembered {@code C_Queue_WorkPackage} (reloaded from the DB) has {@code Processed=Y} and {@code IsError=N}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Queue_WorkPackage_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the C_Queue_WorkPackage identified as retryPass_1 is processed without error
+	 * </pre>
+	 */
+	@And("^the C_Queue_WorkPackage identified as (.*) is processed without error$")
+	public void assert_workpackage_processed_without_error(@NonNull final String workPackageIdentifier)
+	{
+		final I_C_Queue_WorkPackage workPackage = retrieveWorkPackage(QueueWorkPackageId.ofRepoId(workPackageTable.get(workPackageIdentifier).getC_Queue_WorkPackage_ID()));
+		assertThat(workPackage.isProcessed()).as("Processed of C_Queue_WorkPackage %s (ID=%s)", workPackageIdentifier, workPackage.getC_Queue_WorkPackage_ID()).isTrue();
+		assertThat(workPackage.isError()).as("IsError of C_Queue_WorkPackage %s (ID=%s)", workPackageIdentifier, workPackage.getC_Queue_WorkPackage_ID()).isFalse();
 	}
 
 	private Optional<I_C_Queue_WorkPackage> retrieveOldestPendingWorkPackage(@NonNull final String processorShortName)

@@ -11,6 +11,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.IQuery;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
@@ -70,6 +71,13 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	 */
 	void invalidateStorageSegments(Collection<IShipmentScheduleSegment> storageSegments, PInstanceId addToSelectionId);
 
+	/**
+	 * Same as {@link #invalidateStorageSegments(Collection, PInstanceId)} (no selection), but the flag rows are
+	 * written inside the caller's thread-inherited transaction, so they commit or roll back together with the change that
+	 * made the segments stale.
+	 */
+	void invalidateStorageSegmentsInThreadInheritedTrx(@Nullable Collection<IShipmentScheduleSegment> storageSegments);
+
 	void invalidateSchedulesForSelection(PInstanceId pinstanceId);
 
 	/**
@@ -104,9 +112,10 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	boolean existsUntaggedRecomputeMarkers();
 
 	/**
-	 * Delete M_ShipmentSchedule_Recompute records for given tag
+	 * Delete M_ShipmentSchedule_Recompute records for given tag, in the thread-inherited transaction (so the delete commits or
+	 * rolls back together with the recompute's own changes).
 	 */
-	void deleteRecomputeMarkersOutOfTrx(PInstanceId adPInstanceId);
+	void deleteRecomputeMarkersInThreadInheritedTrx(@NonNull PInstanceId adPInstanceId);
 
 	/**
 	 * Deletes every M_ShipmentSchedule_Recompute record of the given schedule, including tagged ones -- once the
@@ -116,8 +125,36 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 
 	/**
 	 * Untag M_ShipmentSchedule_Recompute records which were tagged with given tag
+	 *
+	 * @return the number of untagged records
 	 */
-	void releaseRecomputeMarkerOutOfTrx(PInstanceId adPInstanceId);
+	int releaseRecomputeMarkerOutOfTrx(PInstanceId adPInstanceId);
+
+	/**
+	 * Untags the records tagged with the given tag once the thread-inherited transaction ends (commit or rollback), so the
+	 * release never waits on that transaction's own row locks. Without an open thread-inherited transaction, releases immediately.
+	 * <p>
+	 * The release also runs after the trx is closed, for a trx that ends without a commit or rollback event (failed commit or failed rollback).
+	 * Trade-off: trx listeners only log a failing handler (they never throw), so a failing release is logged, not propagated as the immediate release was.
+	 * <p>
+	 * <b>Bounded retry:</b> records are released only if the batch did not commit (a successful batch deleted them in its trx). The async framework
+	 * does not retry a failed recompute workpackage, so if at least one record was released, a retry pass of generation {@code retryGeneration + 1}
+	 * is enqueued (out of trx, through the regular scheduler and its "enough workpackages queued" check) -- but only while {@code retryGeneration}
+	 * is below the cap {@code de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor.MaxRetriesAfterFailedBatch} (default 3).
+	 * Without the cap, a schedule that fails every batch would enqueue a new pass after every failure, forever. At the cap the released records stay
+	 * untagged and are picked up by the next normal pass.
+	 *
+	 * @param retryGeneration the retry generation of the batch: 0 for a normal pass and for callers outside a recompute workpackage, {@code n} for the n-th retry pass
+	 */
+	void releaseRecomputeMarkersAfterTrxEnd(@NonNull PInstanceId adPInstanceId, int retryGeneration);
+
+	/**
+	 * Startup housekeeping: re-inserts every tagged M_ShipmentSchedule_Recompute marker as untagged (the tagging pass that held it is gone),
+	 * in its own immediately committed transaction. It does NOT enqueue a recompute pass; the caller does.
+	 *
+	 * @return the number of markers reset, as reported by {@code Reset_M_ShipmentSchedule_Recompute()}
+	 */
+	int resetStaleRecomputeMarkers();
 
 	IQueryFilter<I_M_ShipmentSchedule> createInvalidShipmentSchedulesQueryFilter(PInstanceId pinstanceId);
 
