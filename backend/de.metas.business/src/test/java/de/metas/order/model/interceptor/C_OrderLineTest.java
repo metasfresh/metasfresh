@@ -156,6 +156,7 @@ public class C_OrderLineTest
 			orderLine.setQtyEntered(new BigDecimal("300"));
 			save(orderLine);
 
+			// registered after the fixture is saved, so that the pricing and qty hooks do not need a pricing fixture
 			Services.get(IModelInterceptorRegistry.class).addModelInterceptor(interceptor);
 		}
 
@@ -172,6 +173,7 @@ public class C_OrderLineTest
 		{
 			orderLine.setM_Product_ID(createProductWithUOM().getM_Product_ID());
 			save(orderLine);
+			orderLine = InterfaceWrapperHelper.load(orderLine.getC_OrderLine_ID(), I_C_OrderLine.class);
 
 			assertThat(orderLine.getC_CompensationGroup_CalibrationRule_ID()).isLessThanOrEqualTo(0);
 			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).isNull();
@@ -184,6 +186,7 @@ public class C_OrderLineTest
 		{
 			orderLine.setDescription("changed");
 			save(orderLine);
+			orderLine = InterfaceWrapperHelper.load(orderLine.getC_OrderLine_ID(), I_C_OrderLine.class);
 
 			assertThat(orderLine.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(10);
 			assertThat(orderLine.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
