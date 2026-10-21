@@ -114,6 +114,7 @@ public class BankAccountTest
 
 		assertThat(accountNoMatching).isFalse();
 	}
+
 	@Test
 	public void accountNoMatching_StoredQrIbanWithSpaces_FileValueWithoutSpaces()
 	{
@@ -140,6 +141,19 @@ public class BankAccountTest
 		final BankAccount bankAccount = bpBankAccountDAO.getById(BankAccountId.ofRepoId(bankAccountRecord.getC_BP_BankAccount_ID()));
 
 		assertThat(bankAccount.isAccountNoMatching("CH9300762011623852957")).isTrue();
+	}
+
+	@Test
+	public void accountNoMatching_StoredSepaCreditorIdentifierWithSpaces_FileValueWithoutSpaces()
+	{
+		final CurrencyId currencyCHF = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
+
+		final I_C_BP_BankAccount bankAccountRecord = createBankAccount(null, currencyCHF);
+		bankAccountRecord.setSEPA_CreditorIdentifier("CH27 ZZZ 0123 4567 8");
+		save(bankAccountRecord);
+		final BankAccount bankAccount = bpBankAccountDAO.getById(BankAccountId.ofRepoId(bankAccountRecord.getC_BP_BankAccount_ID()));
+
+		assertThat(bankAccount.isAccountNoMatching("CH27ZZZ012345678")).isTrue();
 	}
 
 	private I_C_BP_BankAccount createBankAccount(final String qr_iban, final CurrencyId currencyId)
