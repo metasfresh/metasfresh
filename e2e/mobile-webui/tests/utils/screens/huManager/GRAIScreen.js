@@ -45,7 +45,7 @@ export const GRAIScreen = {
     scanGraiBarcodesBackToBack: async ({ barcodeStrings }) => await test.step(`${NAME} - Scan ${barcodeStrings.length} GRAI barcodes back to back`, async () => {
         await GRAIScreen.expectVisible();
         for (const barcodeString of barcodeStrings) {
-            await BarcodeScannerComponent.type(barcodeString);
+            await BarcodeScannerComponent.type({ scannedCode: barcodeString, terminator: 'Enter' });
         }
     }),
 
