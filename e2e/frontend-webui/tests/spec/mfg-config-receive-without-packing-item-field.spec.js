@@ -133,7 +133,8 @@ Language under test: ${language}.
 
 Verifies that the Yes/No list on the "Mobile UI Nutzerprofil - Produktion" tab
 (AD_Window_ID = ${USER_WINDOW_ID}, AD_Tab_ID = ${USER_PROFILE_MFG_TAB_ID}) renders, can be changed,
-is saved via the standard PATCH and survives a page reload. The original value is restored at the end.
+is saved via the standard PATCH and survives a page reload. The test creates its own login user and
+profile row, so nothing shared needs restoring.
 
 Language under test: ${language}.
         `
@@ -170,13 +171,15 @@ Language under test: ${language}.
         await cell.dblclick();
         await cell.locator('.input-dropdown-container').click();
         await page.locator('.input-dropdown-list').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        // The list first shows a header-only placeholder (no data-testid) while it loads: wait for real options.
+        await page.locator('.input-dropdown-list-option[data-testid]').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       };
       const currentKey = async () => {
         // The cell shows the localized caption; map it to the language-invariant list key via the options.
         await openList();
         const selected = await cell.locator('input.js-input-field').inputValue();
         const options = await page
-          .locator('.input-dropdown-list-option')
+          .locator('.input-dropdown-list-option[data-testid]')
           .evaluateAll((els) => els.map((e) => ({ key: e.getAttribute('data-testid').replace('option-', ''), text: e.textContent })));
         await page.keyboard.press('Escape');
         const match = options.find((o) => o.text === selected);
@@ -199,26 +202,16 @@ Language under test: ${language}.
 
       const originalKey = 'N'; // set explicitly by the masterdata above
       const changedKey = 'Y';
-      try {
-        await test.step('Change the value and await the PATCH save', async () => {
-          expect(await currentKey()).toBe(originalKey);
-          await selectKey(changedKey);
-        });
 
-        await test.step('Reload and assert the changed value persisted', async () => {
-          await openProfileTab();
-          expect(await currentKey()).toBe(changedKey);
-        });
-      } finally {
-        await test.step('Restore the original value', async () => {
-          await openProfileTab();
-          if ((await currentKey()) !== originalKey) {
-            await selectKey(originalKey);
-          }
-          await openProfileTab();
-          expect(await currentKey()).toBe(originalKey);
-        });
-      }
+      await test.step('Change the value and await the PATCH save', async () => {
+        expect(await currentKey()).toBe(originalKey);
+        await selectKey(changedKey);
+      });
+
+      await test.step('Reload and assert the changed value persisted', async () => {
+        await openProfileTab();
+        expect(await currentKey()).toBe(changedKey);
+      });
     });
   });
 });
