@@ -128,7 +128,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		// it; add it here, as WEBUI_ProcessHelper#retrieveHUPIItemProductRecords(includeVirtualItem) does for the
 		// WebUI. It carries a tuPIItemProductId and has no LU parent items, so it belongs to the TU list - hence
 		// switching TU receiving off hides it too.
-		final boolean offerVirtualTUTarget = lineConfig.isAllowReceiveToTU() && lineConfig.isAllowReceiveWithoutPackingItem();
+		final boolean offerVirtualTUTarget = shallOfferVirtualTUTarget(lineConfig);
 
 		// A structure excluded by configuration comes out as an empty list WITHOUT an emptyReason: that reason is the
 		// operator-facing no-receiving-Gebinde guidance and must only ever accompany "no target at all".
@@ -212,6 +212,12 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.stream()
 				.map(allergen -> JsonAllergen.of(allergen, adLanguage))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@VisibleForTesting
+	static boolean shallOfferVirtualTUTarget(@NonNull final FinishedGoodsReceiveLineConfig lineConfig)
+	{
+		return lineConfig.isAllowReceiveToTU() && lineConfig.isAllowReceiveWithoutPackingItem();
 	}
 
 	@NonNull

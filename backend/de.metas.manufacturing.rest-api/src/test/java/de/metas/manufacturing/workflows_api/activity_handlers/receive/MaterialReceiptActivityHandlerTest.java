@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.manufacturing.config.FinishedGoodsReceiveLineConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTargetsList;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewTUTarget;
@@ -130,6 +131,38 @@ class MaterialReceiptActivityHandlerTest
 
 			assertThat(result.getValues()).isEmpty();
 			assertThat(result.getEmptyReason()).isNull();
+		}
+	}
+
+	@Nested
+	class shallOfferVirtualTUTarget
+	{
+		private FinishedGoodsReceiveLineConfig lineConfig(final boolean allowReceiveToTU, final boolean allowReceiveWithoutPackingItem)
+		{
+			return FinishedGoodsReceiveLineConfig.builder()
+					.allowReceiveToLU(true)
+					.allowReceiveToTU(allowReceiveToTU)
+					.allowReceiveWithoutPackingItem(allowReceiveWithoutPackingItem)
+					.build();
+		}
+
+		@Test
+		void tuReceivingOff_flagOn_doesNotOfferTheVirtualTarget()
+		{
+			// The virtual packing instruction belongs to the TU list, so it disappears together with TU receiving.
+			assertThat(MaterialReceiptActivityHandler.shallOfferVirtualTUTarget(lineConfig(false, true))).isFalse();
+		}
+
+		@Test
+		void tuReceivingOn_flagOn_offersTheVirtualTarget()
+		{
+			assertThat(MaterialReceiptActivityHandler.shallOfferVirtualTUTarget(lineConfig(true, true))).isTrue();
+		}
+
+		@Test
+		void tuReceivingOn_flagOff_doesNotOfferTheVirtualTarget()
+		{
+			assertThat(MaterialReceiptActivityHandler.shallOfferVirtualTUTarget(lineConfig(true, false))).isFalse();
 		}
 	}
 }
