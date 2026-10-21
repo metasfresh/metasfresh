@@ -167,6 +167,29 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsAllowIssuingAnyHU = "IsAllowIssuingAnyHU";
 
 	/**
+	 * Set Allow receiving without a packing instruction.
+	 * Offer the 'No Packing Item' packing instruction as a receiving target for the production receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowReceiveWithoutPackingItem (boolean IsAllowReceiveWithoutPackingItem);
+
+	/**
+	 * Get Allow receiving without a packing instruction.
+	 * Offer the 'No Packing Item' packing instruction as a receiving target for the production receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowReceiveWithoutPackingItem();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowReceiveWithoutPackingItem = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowReceiveWithoutPackingItem", null);
+	String COLUMNNAME_IsAllowReceiveWithoutPackingItem = "IsAllowReceiveWithoutPackingItem";
+
+	/**
 	 * Set Best Before Date editable.
 	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
 	 *
@@ -190,8 +213,8 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
 
 	/**
-	 * Set Finished goods: capture catch weight.
-	 * Capture the catch weight of a catch-weight finished good at production receipt.
+	 * Set Capture catch weight.
+	 * Capture the catch weight of a catch-weight product at production receipt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -200,8 +223,8 @@ public interface I_MobileUI_MFG_Config
 	void setIsCaptureCatchWeightAtReceipt (boolean IsCaptureCatchWeightAtReceipt);
 
 	/**
-	 * Get Finished goods: capture catch weight.
-	 * Capture the catch weight of a catch-weight finished good at production receipt.
+	 * Get Capture catch weight.
+	 * Capture the catch weight of a catch-weight product at production receipt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

@@ -41,7 +41,8 @@ class MobileUIManufacturingConfigTest
 				.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.UNKNOWN)
 				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.UNKNOWN)
 				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.UNKNOWN)
-				.isCaptureCatchWeightAtReceipt(OptionalBoolean.UNKNOWN);
+				.isCaptureCatchWeightAtReceipt(OptionalBoolean.UNKNOWN)
+				.isAllowReceiveWithoutPackingItem(OptionalBoolean.UNKNOWN);
 	}
 
 	private void createGlobalConfig(
@@ -49,6 +50,18 @@ class MobileUIManufacturingConfigTest
 			final boolean isAllowFinishedGoodsReceiveToTU,
 			final boolean isSkipFinishedGoodsReceiveTargetStep,
 			final boolean isCaptureCatchWeightAtReceipt)
+	{
+		createGlobalConfig(isAllowFinishedGoodsReceiveToLU, isAllowFinishedGoodsReceiveToTU,
+				isSkipFinishedGoodsReceiveTargetStep, isCaptureCatchWeightAtReceipt,
+				false); // the opt-in flag is off unless a test says otherwise
+	}
+
+	private void createGlobalConfig(
+			final boolean isAllowFinishedGoodsReceiveToLU,
+			final boolean isAllowFinishedGoodsReceiveToTU,
+			final boolean isSkipFinishedGoodsReceiveTargetStep,
+			final boolean isCaptureCatchWeightAtReceipt,
+			final boolean isAllowReceiveWithoutPackingItem)
 	{
 		final I_MobileUI_MFG_Config record = InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class);
 		record.setIsActive(true);
@@ -60,6 +73,7 @@ class MobileUIManufacturingConfigTest
 		record.setIsAllowFinishedGoodsReceiveToTU(isAllowFinishedGoodsReceiveToTU);
 		record.setIsSkipFinishedGoodsReceiveTargetStep(isSkipFinishedGoodsReceiveTargetStep);
 		record.setIsCaptureCatchWeightAtReceipt(isCaptureCatchWeightAtReceipt);
+		record.setIsAllowReceiveWithoutPackingItem(isAllowReceiveWithoutPackingItem);
 		InterfaceWrapperHelper.save(record);
 	}
 
@@ -69,6 +83,18 @@ class MobileUIManufacturingConfigTest
 			@Nullable final String isSkipFinishedGoodsReceiveTargetStep,
 			@Nullable final String isCaptureCatchWeightAtReceipt)
 	{
+		createUserConfig(isAllowFinishedGoodsReceiveToLU, isAllowFinishedGoodsReceiveToTU,
+				isSkipFinishedGoodsReceiveTargetStep, isCaptureCatchWeightAtReceipt,
+				null); // no per-user override for the opt-in flag unless a test sets one
+	}
+
+	private void createUserConfig(
+			@Nullable final String isAllowFinishedGoodsReceiveToLU,
+			@Nullable final String isAllowFinishedGoodsReceiveToTU,
+			@Nullable final String isSkipFinishedGoodsReceiveTargetStep,
+			@Nullable final String isCaptureCatchWeightAtReceipt,
+			@Nullable final String isAllowReceiveWithoutPackingItem)
+	{
 		final I_MobileUI_UserProfile_MFG record = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_MFG.class);
 		record.setAD_User_ID(USER_ID.getRepoId());
 		record.setIsActive(true);
@@ -76,6 +102,7 @@ class MobileUIManufacturingConfigTest
 		record.setIsAllowFinishedGoodsReceiveToTU(isAllowFinishedGoodsReceiveToTU);
 		record.setIsSkipFinishedGoodsReceiveTargetStep(isSkipFinishedGoodsReceiveTargetStep);
 		record.setIsCaptureCatchWeightAtReceipt(isCaptureCatchWeightAtReceipt);
+		record.setIsAllowReceiveWithoutPackingItem(isAllowReceiveWithoutPackingItem);
 		InterfaceWrapperHelper.save(record);
 	}
 
@@ -391,6 +418,86 @@ class MobileUIManufacturingConfigTest
 			assertThat(lineConfig.isAllowReceiveToTU()).isTrue();
 			assertThat(lineConfig.isSkipReceiveTargetStep()).isFalse();
 			assertThat(lineConfig.isCaptureCatchWeight()).isTrue();
+		}
+	}
+
+	@Nested
+	class getIsAllowReceiveWithoutPackingItemEffective
+	{
+		@Test
+		void noConfigAtAll_defaultsToFalse()
+		{
+			// opt-in: no installation may start offering the "No Packing Item" target by accident
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveWithoutPackingItemEffective()).isFalse();
+		}
+
+		@Test
+		void userValueOverridesGlobal()
+		{
+			final MobileUIManufacturingConfig user = configBuilder().isAllowReceiveWithoutPackingItem(OptionalBoolean.TRUE).build();
+			final MobileUIManufacturingConfig global = configBuilder().isAllowReceiveWithoutPackingItem(OptionalBoolean.FALSE).build();
+
+			assertThat(user.fallbackTo(global).getIsAllowReceiveWithoutPackingItemEffective()).isTrue();
+		}
+
+		@Test
+		void userUnknownInheritsGlobal()
+		{
+			final MobileUIManufacturingConfig user = configBuilder().build();
+			final MobileUIManufacturingConfig global = configBuilder().isAllowReceiveWithoutPackingItem(OptionalBoolean.TRUE).build();
+
+			assertThat(user.fallbackTo(global).getIsAllowReceiveWithoutPackingItemEffective()).isTrue();
+		}
+
+		@Test
+		void userBlankInheritsGlobalRecord()
+		{
+			createGlobalConfig(true, true, false, true, true);
+			createUserConfig("", "", "", "", "");
+
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveWithoutPackingItemEffective()).isTrue();
+		}
+
+		@Test
+		void userRecordValueOverridesGlobalRecord()
+		{
+			createGlobalConfig(true, true, false, true, false);
+			createUserConfig(null, null, null, null, "Y");
+
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveWithoutPackingItemEffective()).isTrue();
+		}
+
+		@Test
+		void saveUserConfigPersistsTheFlag()
+		{
+			createGlobalConfig(true, true, false, true, false);
+			repo.saveUserConfig(configBuilder().isAllowReceiveWithoutPackingItem(OptionalBoolean.TRUE).build(), USER_ID);
+
+			assertThat(repo.getConfig(USER_ID, clientId).getIsAllowReceiveWithoutPackingItemEffective()).isTrue();
+		}
+	}
+
+	@Nested
+	class effectiveForReceiveLine_allowReceiveWithoutPackingItem
+	{
+		@Test
+		void appliesToEveryLine_mainFinishedGoodAndCoProductAlike()
+		{
+			// Unlike the three FinishedGoods* flags, this one has no co-/by-product exemption:
+			// exempting a line would mean forcing the new target ON there, which an opt-in flag must not do.
+			final MobileUIManufacturingConfig config = configBuilder().isAllowReceiveWithoutPackingItem(OptionalBoolean.TRUE).build();
+
+			assertThat(config.effectiveForReceiveLine(true).isAllowReceiveWithoutPackingItem()).isTrue();
+			assertThat(config.effectiveForReceiveLine(false).isAllowReceiveWithoutPackingItem()).isTrue();
+		}
+
+		@Test
+		void offByDefault_forEveryLine()
+		{
+			final MobileUIManufacturingConfig config = configBuilder().build();
+
+			assertThat(config.effectiveForReceiveLine(true).isAllowReceiveWithoutPackingItem()).isFalse();
+			assertThat(config.effectiveForReceiveLine(false).isAllowReceiveWithoutPackingItem()).isFalse();
 		}
 	}
 }
