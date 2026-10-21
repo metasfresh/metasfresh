@@ -1,6 +1,41 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.handlingunits.pporder.api.impl.HUPPOrderBL_LotNumberFromSequence_Test;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.manufacturing.job.model.FinishedGoodsReceive;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
+import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.job.model.ManufacturingJobActivity;
+import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
+import de.metas.manufacturing.workflows_api.ManufacturingRestService;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonFinishedGoodsReceiveLine;
+import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
+import de.metas.material.planning.pporder.PPRoutingActivityType;
+import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
+import de.metas.workflow.rest_api.model.WFProcess;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderRoutingActivityId;
+import org.eevolution.api.PPOrderRoutingActivityStatus;
+import org.junit.jupiter.api.AfterEach;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.attribute.json.JsonAttribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -19,6 +54,7 @@ import de.metas.product.hazard_symbol.ProductHazardSymbolRepository;
 import de.metas.product.hazard_symbol.ProductHazardSymbolService;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.OptionalBoolean;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetMandatoryType;
 import org.adempiere.mm.attributes.AttributeValueType;
@@ -33,8 +69,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Covers the target OFFERING only; receiving itself is covered by the mobile Playwright suite. */
@@ -229,6 +272,148 @@ class MaterialReceiptActivityHandlerTest
 					AD_LANGUAGE);
 
 			assertThat(result).extracting(JsonAttribute::getCode).containsExactly(AttributeCode.ofString("Color2"));
+		}
+	}
+
+	/**
+	 * The receive activity of a manufacturing order with a main finished good AND a co-product: every line gets its own defaults.
+	 */
+	@Nested
+	class perLineDefaults
+	{
+		private MaterialReceiptActivityHandler handler;
+		private I_C_UOM uom;
+		private UomId catchWeightUomId;
+		private PPOrderId ppOrderId;
+
+		@BeforeEach
+		void init()
+		{
+			Services.registerService(IDocumentNoBuilderFactory.class, DocumentNoBuilderFactory.newInstanceForUnitTesting());
+			Services.get(ISysConfigBL.class).setValue("de.metas.document.seqNo.DateSequenceProvider.dateFormat", "yy-DDD", ClientId.SYSTEM, OrgId.ANY);
+			SystemTime.setFixedTimeSource(ZonedDateTime.parse("2026-10-19T12:00:00Z"));
+
+			uom = BusinessTestHelper.createUomPCE();
+			catchWeightUomId = UomId.ofRepoId(BusinessTestHelper.createUomKg().getC_UOM_ID());
+			ppOrderId = HUPPOrderBL_LotNumberFromSequence_Test.createPPOrderBOM(
+					HUPPOrderBL_LotNumberFromSequence_Test.createPPOrder(AdempiereTestHelper.createOrgWithTimeZone(ZoneId.of("UTC"))),
+					HUPPOrderBL_LotNumberFromSequence_Test.createDateLotSequence());
+
+			final MobileUIManufacturingConfig config = MobileUIManufacturingConfig.builder()
+					.isScanResourceRequired(OptionalBoolean.UNKNOWN)
+					.isAllowIssuingAnyHU(OptionalBoolean.UNKNOWN)
+					.editableAttributeCodesInOrder(ImmutableList.of(AttributeConstants.ATTR_BestBeforeDate, AttributeConstants.ATTR_LotNumber))
+					.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.UNKNOWN)
+					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.UNKNOWN)
+					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.UNKNOWN)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.UNKNOWN)
+					.isAllowReceiveWithoutPackingItem(OptionalBoolean.UNKNOWN)
+					.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.TRUE)
+					.build();
+
+			// A plain subclass instead of a mock: see the outer class's beforeEach.
+			final MobileUIManufacturingConfigRepository configRepository = new MobileUIManufacturingConfigRepository()
+			{
+				@Override
+				public MobileUIManufacturingConfig getConfig(@Nullable final UserId userId, @NonNull final ClientId clientId) {return config;}
+			};
+
+			handler = new MaterialReceiptActivityHandler(
+					HUQRCodesService.newInstanceForUnitTesting(),
+					new ProductHazardSymbolService(new ProductHazardSymbolRepository(), new HazardSymbolRepository()),
+					new ProductAllergensService(new ProductAllergensRepository(), new AllergenRepository()),
+					ScannableCodeFormatService.newInstanceForUnitTesting(),
+					configRepository,
+					new MaterialReceiptEditableAttributes());
+		}
+
+		@AfterEach
+		void afterEach()
+		{
+			SystemTime.resetTimeSource();
+		}
+
+		// Both products are catch weight: the scan requirement differs per line only because one is a co-product.
+		@Test
+		void mainFinishedGoodAndCoProduct_perLineDefaults()
+		{
+			final ProductId mainProductId = createProductWithBestBeforeDays("main", 10);
+			final ProductId coProductId = createProductWithBestBeforeDays("co", 3);
+			final WFProcess wfProcess = ManufacturingRestService.toWFProcess(createJob(
+					receiveLine(mainProductId, null),
+					receiveLine(coProductId, PPOrderBOMLineId.ofRepoId(1))));
+
+			final List<JsonFinishedGoodsReceiveLine> lines = getLines(wfProcess);
+
+			assertThat(lines).hasSize(2);
+			final JsonFinishedGoodsReceiveLine mainLine = lines.get(0);
+			assertThat(mainLine.isCoproduct()).isFalse();
+			assertThat(mainLine.getDefaultBestBeforeDate()).isEqualTo(LocalDate.of(2026, 10, 29)); // 2026-10-19 + 10 days
+			assertThat(mainLine.isCatchWeightScanRequired()).isTrue();
+			assertThat(mainLine.getDefaultLotNo()).isEqualTo("26-292");
+
+			final JsonFinishedGoodsReceiveLine coProductLine = lines.get(1);
+			assertThat(coProductLine.isCoproduct()).isTrue();
+			assertThat(coProductLine.getDefaultBestBeforeDate()).isEqualTo(LocalDate.of(2026, 10, 22)); // 2026-10-19 + 3 days
+			assertThat(coProductLine.isCatchWeightScanRequired()).isFalse();
+			assertThat(coProductLine.getDefaultLotNo()).isEqualTo("26-292"); // the lot is per order, not per line
+		}
+
+		@SuppressWarnings("unchecked")
+		private List<JsonFinishedGoodsReceiveLine> getLines(final WFProcess wfProcess)
+		{
+			return (List<JsonFinishedGoodsReceiveLine>)handler.getUIComponent(wfProcess, wfProcess.getActivities().get(0), JsonOpts.ofAdLanguage(AD_LANGUAGE))
+					.getProperties()
+					.getParameterAsObject("lines");
+		}
+
+		private ManufacturingJob createJob(final FinishedGoodsReceiveLine... lines)
+		{
+			final ImmutableMap.Builder<FinishedGoodsReceiveLineId, FinishedGoodsReceiveLine> linesById = ImmutableMap.builder();
+			for (final FinishedGoodsReceiveLine line : lines)
+			{
+				linesById.put(line.getId(), line);
+			}
+
+			final PPOrderRoutingActivityId routingActivityId = PPOrderRoutingActivityId.ofRepoId(ppOrderId, 1);
+			return ManufacturingJob.builder()
+					.ppOrderId(ppOrderId)
+					.documentNo("PP1")
+					.dateStartSchedule(SystemTime.asZonedDateTime())
+					.warehouseId(WarehouseId.ofRepoId(1))
+					.activities(ImmutableList.of(ManufacturingJobActivity.builder()
+							.id(ManufacturingJobActivityId.of(routingActivityId))
+							.name("Receive")
+							.type(PPRoutingActivityType.MaterialReceipt)
+							.finishedGoodsReceive(FinishedGoodsReceive.builder().linesById(linesById.build()).build())
+							.orderRoutingActivityId(routingActivityId)
+							.routingActivityStatus(PPOrderRoutingActivityStatus.NOT_STARTED)
+							.alwaysAvailableToUser(PPAlwaysAvailableToUser.DEFAULT)
+							.build()))
+					.build();
+		}
+
+		private FinishedGoodsReceiveLine receiveLine(final ProductId productId, @Nullable final PPOrderBOMLineId coProductBOMLineId)
+		{
+			return FinishedGoodsReceiveLine.builder()
+					.productId(productId)
+					.productName(TranslatableStrings.anyLanguage("product"))
+					.productValue("P")
+					.attributes(ImmutableAttributeSet.EMPTY)
+					.qtyToReceive(Quantity.of(BigDecimal.TEN, uom))
+					.qtyReceived(Quantity.zero(uom))
+					.coProductBOMLineId(coProductBOMLineId)
+					.catchWeightUOMId(catchWeightUomId)
+					.build();
+		}
+
+		private ProductId createProductWithBestBeforeDays(final String name, final int bestBeforeDays)
+		{
+			final ProductId productId = BusinessTestHelper.createProductId(name, uom);
+			final I_M_Product product = load(productId, I_M_Product.class);
+			product.setBestBeforeDays(bestBeforeDays);
+			saveRecord(product);
+			return productId;
 		}
 	}
 }

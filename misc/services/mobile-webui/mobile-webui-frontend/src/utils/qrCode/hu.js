@@ -207,6 +207,7 @@ export const parseQRCodeString = (param1_string, param2_returnFalseOnError) => {
     result.error = trl('error.qrCode.invalid');
     delete result.errorDetail;
     result.errorCause = errorToString(error);
+    result.errorCode = error?.code;
   }
 
   //
@@ -349,12 +350,26 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   return result;
 };
 
+// Machine-readable reason of a parse failure: set as `code` on the thrown error, exposed as `errorCode` in the
+// context of the error thrown by parseQRCodeString.
+export const QRCODE_ERROR_CODE_INVALID_BEST_BEFORE_DATE = 'INVALID_BEST_BEFORE_DATE';
+
+const newInvalidBestBeforeDateError = (message) => {
+  const error = new Error(message);
+  error.code = QRCODE_ERROR_CODE_INVALID_BEST_BEFORE_DATE;
+  return error;
+};
+
 const parseLMQBestBeforeDate = (string) => {
   const parts = LMQ_BEST_BEFORE_DATE_FORMAT.exec(string);
-  if (!parts) throw new Error(`Invalid Best Before date: ${string}`);
+  if (!parts) throw newInvalidBestBeforeDateError(`Invalid Best Before date: ${string}`);
 
   const [, day, month, year] = parts;
-  return toLocalDateString({ year, month, day });
+  try {
+    return toLocalDateString({ year, month, day });
+  } catch (cause) {
+    throw newInvalidBestBeforeDateError(`Invalid Best Before date: ${string} (${cause})`);
+  }
 };
 
 export const isKnownQRCodeFormat = (qrCodeString) => {

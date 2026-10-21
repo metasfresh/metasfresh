@@ -167,6 +167,10 @@ const translations = {
       qrcode: {
         missingQty: 'The scanned QR contains no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',
+        invalidQRCode: 'The scanned QR code is not readable!',
+        missingLotNo: 'The scanned QR code contains no lot number!',
+        missingBestBeforeDate: 'The scanned QR code contains no best-before date!',
+        invalidBestBeforeDate: 'The scanned QR code contains an invalid best-before date!',
         differentProduct: 'The scanned QR Product does not match',
       },
       pickingTarget: {

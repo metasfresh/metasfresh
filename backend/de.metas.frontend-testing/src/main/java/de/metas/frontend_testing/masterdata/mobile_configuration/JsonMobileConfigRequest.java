@@ -152,5 +152,6 @@ public class JsonMobileConfigRequest
 		// Client-level (MobileUI_MFG_Config), not per-user: see MobileConfigManufacturingCommand.
 		@Nullable Boolean isAllowEmptyingHUs;
 		@Nullable Boolean isConfirmEmptyingHU;
+		@Nullable Boolean isFinishedGoodsCatchWeightScanRequired;
 	}
 }
