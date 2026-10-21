@@ -145,6 +145,99 @@ public class AD_Archive_StepDef
 	}
 
 	/**
+	 * Verifies that, in the visual (top-to-bottom, left-to-right) reading order of the archived PDF, exactly
+	 * {@code linesBetween} other text lines separate {@code earlierText} from {@code laterText} — no more,
+	 * no fewer. Pass 0 to pin adjacency: the two texts then sit on consecutive lines, so nothing was printed
+	 * between them.
+	 * <p>
+	 * Both anchors should be text you control, so that a failure names the two rows it happened between.
+	 * A non-zero expected count means the anchors have something unidentified between them, which makes the
+	 * assertion composite — prefer moving the anchors over raising the count.
+	 * <p>
+	 * Limitation: text extraction sees glyphs, not layout. This proves no extra TEXT was printed; it says
+	 * nothing about empty vertical space, which carries no text of its own.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "BetaItem"
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, exactly {int} lines appear between text {string} and text {string}")
+	public void assert_archived_pdf_exactly_lines_between(
+			@NonNull final String recordIdentifier,
+			final int linesBetween,
+			@NonNull final String earlierText,
+			@NonNull final String laterText)
+	{
+		final List<PdfLine> lines = extractPdfVisualLines(recordIdentifier);
+		assertLinesBetween(lines, earlierText, laterText, linesBetween, linesBetween);
+	}
+
+	/**
+	 * Verifies that at least {@code minLinesBetween} other visual lines separate {@code earlierText} from
+	 * {@code laterText} in the archived PDF — used to prove a long value actually wrapped onto several visual
+	 * lines rather than being clipped onto (or squeezed into) a single one. The exact number of wrapped lines
+	 * depends on font metrics, so it is deliberately not pinned.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order", at least 2 lines appear between text "Diese Position" and text "BetaItem"
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, at least {int} lines appear between text {string} and text {string}")
+	public void assert_archived_pdf_at_least_lines_between(
+			@NonNull final String recordIdentifier,
+			final int minLinesBetween,
+			@NonNull final String earlierText,
+			@NonNull final String laterText)
+	{
+		final List<PdfLine> lines = extractPdfVisualLines(recordIdentifier);
+		assertLinesBetween(lines, earlierText, laterText, minLinesBetween, Integer.MAX_VALUE);
+	}
+
+	private static void assertLinesBetween(
+			@NonNull final List<PdfLine> lines,
+			@NonNull final String earlierText,
+			@NonNull final String laterText,
+			final int minLinesBetween,
+			final int maxLinesBetween)
+	{
+		final int earlierIdx = indexOfLineContaining(lines, earlierText, 0);
+		assertThat(earlierIdx)
+				.as("Line containing '%s' in extracted PDF text %s", earlierText, textsOf(lines))
+				.isGreaterThanOrEqualTo(0);
+
+		final int laterIdx = indexOfLineContaining(lines, laterText, earlierIdx + 1);
+		assertThat(laterIdx)
+				.as("Line containing '%s' after '%s' in extracted PDF text %s", laterText, earlierText, textsOf(lines))
+				.isGreaterThanOrEqualTo(0);
+
+		final int linesBetween = laterIdx - earlierIdx - 1;
+		assertThat(linesBetween)
+				.as("Lines between '%s' and '%s' in extracted PDF text %s", earlierText, laterText, textsOf(lines))
+				.isBetween(minLinesBetween, maxLinesBetween);
+	}
+
+	private static int indexOfLineContaining(@NonNull final List<PdfLine> lines, @NonNull final String needle, final int fromIndex)
+	{
+		for (int i = fromIndex; i < lines.size(); i++)
+		{
+			if (lines.get(i).getText().contains(needle))
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	private static List<String> textsOf(@NonNull final List<PdfLine> lines)
+	{
+		return lines.stream().map(PdfLine::getText).collect(Collectors.toList());
+	}
+
+	/**
 	 * Extracts the most recently archived PDF for the given record as an ordered list of visual text lines
 	 * (top-to-bottom, left-to-right) — the order a human reads on the page, which is what a reviewer would
 	 * check by eye — each carrying the page it sits on and its vertical position.
