@@ -4,10 +4,13 @@ import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { HUManagerScreen } from './HUManagerScreen';
+import { waitForNoInFlightXhr } from '../../inFlightXhr';
 
 const NAME = 'GRAIScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#GRAIScreen');
+const SEND_URL_PATTERN = /\/grai$/;
+const isSendRequest = (request) => SEND_URL_PATTERN.test(request.url()) && request.method() === 'PUT';
 
 export const GRAIScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -33,6 +36,17 @@ export const GRAIScreen = {
         // Use typeBatch with a single code so Enter is dispatched after the barcode,
         // triggering immediate processing instead of relying on the interval timer flush.
         await BarcodeScannerComponent.typeBatch({ codes: [barcodeString] });
+        // Wait until the scanner component has consumed the code, so the next scan starts on an empty reader.
+        await BarcodeScannerComponent.waitForInputFieldToGetEmpty();
+    }),
+
+    // Scans the GRAIs one after the other as separate scans (each one ends with Enter), as fast as an
+    // operator can trigger them: no waiting in between for the previous scan to be consumed.
+    scanGraiBarcodesBackToBack: async ({ barcodeStrings }) => await test.step(`${NAME} - Scan ${barcodeStrings.length} GRAI barcodes back to back`, async () => {
+        await GRAIScreen.expectVisible();
+        for (const barcodeString of barcodeStrings) {
+            await BarcodeScannerComponent.type({ scannedCode: barcodeString, terminator: 'Enter' });
+        }
     }),
 
     expectGraiChipWithText: async ({ text }) => await test.step(`${NAME} - Expect GRAI chip containing "${text}"`, async () => {
@@ -96,7 +110,45 @@ export const GRAIScreen = {
         );
         await page.getByTestId('grai-send-button').tap();
         await syncDone;
+        // The response reaching the browser does not mean the app has handled it yet: wait for that too.
+        await GRAIScreen.waitForSendResponseHandled();
         await expect(page.getByTestId('grai-send-button')).toBeDisabled({timeout: FAST_ACTION_TIMEOUT});
+    }),
+
+    /**
+     * Keep the backend's answer to the next Send (PUT .../grai) away from the app until `release()` is called,
+     * like a slow network. The request itself reaches the backend right away.
+     * Call it right before the Send tap: the route stays armed until a Send happens.
+     * @returns {Promise<{ sentGraiCodes: Promise<string[]>, release: () => void }>}
+     */
+    holdNextSendResponse: async () => await test.step(`${NAME} - Hold the backend answer to the next Send`, async () => {
+        let release;
+        const released = new Promise((resolve) => { release = resolve; });
+        let sent;
+        const sentGraiCodes = new Promise((resolve) => { sent = resolve; });
+        let held = false;
+        const handler = async (route) => {
+            if (held || !isSendRequest(route.request())) return route.fallback();
+            held = true; // only the next Send; not unrouted here, as unrouting continues the in-flight route
+            sent(route.request().postDataJSON().graiCodes);
+            const response = await route.fetch();
+            await released;
+            await route.fulfill({ response });
+            await page.unroute(SEND_URL_PATTERN, handler);
+        };
+        await page.route(SEND_URL_PATTERN, handler);
+        return { sentGraiCodes, release };
+    }),
+
+    /** Tap Send and go on while the request is still in flight, like a user who does not wait. */
+    tapSendButtonWithoutWaiting: async () => await test.step(`${NAME} - Tap Send without waiting for the answer`, async () => {
+        await expect(page.getByTestId('grai-send-button')).toBeEnabled();
+        await page.getByTestId('grai-send-button').tap();
+        await expect(page.getByTestId('grai-send-button')).toBeDisabled({ timeout: FAST_ACTION_TIMEOUT }); // sending
+    }),
+
+    waitForSendResponseHandled: async () => await test.step(`${NAME} - Wait until the app has handled the Send answer`, async () => {
+        await waitForNoInFlightXhr(page, { urlPattern: SEND_URL_PATTERN, timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectSendButtonEnabled: async () => await test.step(`${NAME} - Expect Send button enabled`, async () => {
@@ -105,6 +157,10 @@ export const GRAIScreen = {
 
     expectSendButtonDisabled: async () => await test.step(`${NAME} - Expect Send button disabled`, async () => {
         await expect(page.getByTestId('grai-send-button')).toBeDisabled({timeout: FAST_ACTION_TIMEOUT});
+    }),
+
+    expectUndoButtonEnabled: async () => await test.step(`${NAME} - Expect Undo button enabled`, async () => {
+        await expect(page.getByTestId('grai-undo-button')).toBeEnabled({ timeout: FAST_ACTION_TIMEOUT });
     }),
 
     tapUndoButton: async () => await test.step(`${NAME} - Tap Undo button (reload from backend)`, async () => {
