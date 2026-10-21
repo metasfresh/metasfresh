@@ -26,7 +26,6 @@ import org.eevolution.api.PPOrderId;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Objects;
 
 @Value
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
@@ -134,18 +133,16 @@ public class DDOrderCandidateData
 
 	public DDOrderCandidateData withPPOrderId(@Nullable final PPOrderId forwardPPOrderIdNew)
 	{
-		final PPOrderRef forwardPPOrderRefNew = PPOrderRef.withPPOrderId(forwardPPOrderRef, forwardPPOrderIdNew);
-		if (PPOrderRef.equals(this.forwardPPOrderRef, forwardPPOrderRefNew))
-		{
-			return this;
-		}
-
-		return toBuilder().forwardPPOrderRef(forwardPPOrderRefNew).build();
+		return withForwardPPOrderRef(PPOrderRef.withPPOrderId(forwardPPOrderRef, forwardPPOrderIdNew));
 	}
 
 	public DDOrderCandidateData withPPOrderAndBOMLineId(@Nullable final PPOrderAndBOMLineId forwardPPOrderAndBOMLineIdNew)
 	{
-		final PPOrderRef forwardPPOrderRefNew = PPOrderRef.withPPOrderAndBOMLineId(forwardPPOrderRef, forwardPPOrderAndBOMLineIdNew);
+		return withForwardPPOrderRef(PPOrderRef.withPPOrderAndBOMLineId(forwardPPOrderRef, forwardPPOrderAndBOMLineIdNew));
+	}
+
+	private DDOrderCandidateData withForwardPPOrderRef(@Nullable final PPOrderRef forwardPPOrderRefNew)
+	{
 		if (PPOrderRef.equals(this.forwardPPOrderRef, forwardPPOrderRefNew))
 		{
 			return this;

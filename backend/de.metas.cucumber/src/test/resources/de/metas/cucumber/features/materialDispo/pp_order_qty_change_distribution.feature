@@ -1,6 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
+@allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
 @ghActions:run_on_executor6
 Feature: Distribution for a manufacturing order's component follows the order's quantity change
 ## F5100: Material Disposition
@@ -72,6 +73,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
+  @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_10
   Scenario: manually created PP_Order; change its qty right away and complete it -> the DD_Order_Candidates supply the re-created BOM line with the new qty
     When create PP_Order:

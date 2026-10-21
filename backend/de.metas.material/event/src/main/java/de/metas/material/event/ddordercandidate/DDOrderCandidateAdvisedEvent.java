@@ -59,11 +59,11 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 	private final boolean pickIfFeasible;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	public DDOrderCandidateAdvisedEvent(
-			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("ddOrderCandidate") final DDOrderCandidateData ddOrderCandidate,
-			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@JsonProperty("eventDescriptor") @Builder.ObtainVia(method = "getEventDescriptor") final EventDescriptor eventDescriptor,
+			@JsonProperty("ddOrderCandidate") @Builder.ObtainVia(method = "getDdOrderCandidate") final DDOrderCandidateData ddOrderCandidate,
+			@JsonProperty("supplyRequiredDescriptor") @Builder.ObtainVia(method = "getSupplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@JsonProperty("advisedToCreateDDOrderCandidate") final boolean advisedToCreateDDOrder,
 			@JsonProperty("pickIfFeasible") final boolean pickIfFeasible)
 	{
@@ -85,13 +85,7 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 			return this;
 		}
 
-		return new DDOrderCandidateAdvisedEvent(
-				getEventDescriptor(),
-				getDdOrderCandidate().withPPOrderAndBOMLineId(newPPOrderAndBOMLineId),
-				getSupplyRequiredDescriptorNotNull(),
-				advisedToCreateDDOrder,
-				pickIfFeasible
-		);
+		return toBuilder().ddOrderCandidate(getDdOrderCandidate().withPPOrderAndBOMLineId(newPPOrderAndBOMLineId)).build();
 	}
 
 	@Nullable
@@ -108,13 +102,7 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 			return this;
 		}
 
-		return new DDOrderCandidateAdvisedEvent(
-				getEventDescriptor(),
-				getDdOrderCandidate().withPPOrderId(newPPOrderId),
-				getSupplyRequiredDescriptorNotNull(),
-				advisedToCreateDDOrder,
-				pickIfFeasible
-		);
+		return toBuilder().ddOrderCandidate(getDdOrderCandidate().withPPOrderId(newPPOrderId)).build();
 	}
 
 	@Nullable

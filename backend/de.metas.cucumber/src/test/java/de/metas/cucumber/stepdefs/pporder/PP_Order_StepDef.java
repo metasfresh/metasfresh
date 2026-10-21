@@ -205,7 +205,7 @@ public class PP_Order_StepDef
 	 *   <b>PP_Product_Planning_ID</b> — (optional, identifier-ref) the product planning<br>
 	 *   <b>DateOrdered</b>, <b>DatePromised</b>, <b>DateStartSchedule</b> — (required) ISO-8601 instants, e.g. 2021-04-11T21:00:00Z<br>
 	 *   <b>completeDocument</b> — (optional) default N<br>
-	 *   Column names are also accepted with the legacy {@code OPT.} prefix and {@code .Identifier} suffix.
+	 *   Column names may also carry the {@code OPT.} prefix and the {@code .Identifier} suffix.
 	 * @cucumber.depends StepDefData: S_Resource_StepDefData, M_Product_StepDefData, M_Warehouse_StepDefData, PP_Product_Planning_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -305,7 +305,7 @@ public class PP_Order_StepDef
 	 *   <b>PP_Order_ID</b> — (required, identifier-ref) the PP_Order to update<br>
 	 *   <b>QtyEntered</b> — (optional) new qty entered (also sets QtyOrdered)<br>
 	 *   <b>DatePromised</b> — (optional) new date promised, ISO-8601 with zone, e.g. 2021-04-16T21:00:00Z<br>
-	 *   Column names are also accepted with the legacy {@code OPT.} prefix and {@code .Identifier} suffix.
+	 *   Column names may also carry the {@code OPT.} prefix and the {@code .Identifier} suffix.
 	 * @cucumber.depends StepDefData: PP_Order_StepDefData
 	 * @cucumber.example
 	 * <pre>

@@ -290,10 +290,21 @@ public class DD_Order_Candidate_StepDef
 	 * the ONLY DD_Order_Candidate records for the product(s) referenced in the table are exactly the listed rows - no more, no fewer.
 	 * Each row must match a distinct record: candidates already matched by earlier rows are excluded,
 	 * so that two identical candidates are asserted one-to-one.
+	 * Rows are matched in table order, so a row that is less specific than a later row (fewer optional columns) must come after it.
 	 * Drains the rabbitMQ queues first, so that the candidate set is settled before it is compared.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns same as "following DD_Order_Candidates are found".
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (optional) stores the matched candidate; if already known, the row is matched to that candidate<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the distributed product<br>
+	 *   <b>M_Warehouse_From_ID</b> — (required, identifier-ref) the source warehouse<br>
+	 *   <b>M_WarehouseTo_ID</b> — (required, identifier-ref) the target warehouse<br>
+	 *   <b>Qty</b> — (optional) qty entered with UOM, e.g. "10 PCE"<br>
+	 *   <b>QtyProcessed</b>, <b>QtyToProcess</b> — (optional) with UOM<br>
+	 *   <b>Processed</b>, <b>IsSimulated</b> — (optional) Y/N<br>
+	 *   <b>C_OrderSO_ID</b>, <b>C_OrderLineSO_ID</b> — (optional, identifier-ref) the sales order / line<br>
+	 *   <b>Forward_PP_Order_Candidate_ID</b>, <b>Forward_PP_OrderLine_Candidate_ID</b> — (optional, identifier-ref)<br>
+	 *   <b>Forward_PP_Order_ID</b>, <b>Forward_PP_Order_BOMLine_ID</b> — (optional, identifier-ref) the supplied PP_Order / BOM line<br>
 	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_Warehouse_StepDefData, PP_Order_StepDefData, PP_Order_BOMLine_StepDefData
 	 * @cucumber.example
 	 * <pre>
