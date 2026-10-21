@@ -246,13 +246,11 @@ class CreateSEPAExportFromPaySelectionCommand
 		// QR-IBAN (QRR) payments carry a per-invoice QR reference and cannot be aggregated;
 		// export each such line individually, exactly as if grouping were off.
 		// Order lines are already exported individually by handleOrderPaySelectionLines.
-		final List<I_C_PaySelectionLine> qrIbanLines = paySelectionLines.stream()
+		final Map<Boolean, ImmutableList<I_C_PaySelectionLine>> invoiceLinesByHasQrIban = paySelectionLines.stream()
 				.filter(this::isInvoicePaySelectionLine)
-				.filter(this::hasQrIban)
-				.collect(ImmutableList.toImmutableList());
-		final List<I_C_PaySelectionLine> groupableLines = paySelectionLines.stream()
-				.filter(line -> !hasQrIban(line))
-				.collect(ImmutableList.toImmutableList());
+				.collect(Collectors.partitioningBy(this::hasQrIban, ImmutableList.toImmutableList()));
+		final List<I_C_PaySelectionLine> qrIbanLines = invoiceLinesByHasQrIban.get(true);
+		final List<I_C_PaySelectionLine> groupableLines = invoiceLinesByHasQrIban.get(false);
 
 		handleUngroupedPaySelectionLines(qrIbanLines, header);
 
