@@ -104,6 +104,12 @@ public class AttachmentEntry
 		return name.endsWith(".gif") || name.endsWith(".jpg") || name.endsWith(".png");
 	}
 
+	public boolean isXML()
+	{
+		final String name = getName().trim().toLowerCase();
+		return name.endsWith(".xml");
+	}
+	
 	public AttachmentEntry withAdditionalTag(@NonNull final String tagName, @NonNull final String tagValue)
 	{
 		return toBuilder()

@@ -1,161 +1,145 @@
 package de.metas.payment.sepa.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for SEPA_Export
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_SEPA_Export 
 {
 
-    /** TableName=SEPA_Export */
-    public static final String Table_Name = "SEPA_Export";
+	String Table_Name = "SEPA_Export";
 
-    /** AD_Table_ID=540603 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540603 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set DB-Tabelle.
+	 * Set Table.
 	 * Database Table information
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Table_ID (int AD_Table_ID);
+	void setAD_Table_ID (int AD_Table_ID);
 
 	/**
-	 * Get DB-Tabelle.
+	 * Get Table.
 	 * Database Table information
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Table_ID();
+	int getAD_Table_ID();
 
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_Created = new ModelColumn<>(I_SEPA_Export.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_Description = new ModelColumn<>(I_SEPA_Export.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Nr..
+	 * Set Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocumentNo (java.lang.String DocumentNo);
+	void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Nr..
+	 * Get Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocumentNo();
+	java.lang.String getDocumentNo();
 
-    /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "DocumentNo", null);
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_DocumentNo = new ModelColumn<>(I_SEPA_Export.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set IBAN.
@@ -165,7 +149,7 @@ public interface I_SEPA_Export
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIBAN (java.lang.String IBAN);
+	void setIBAN (java.lang.String IBAN);
 
 	/**
 	 * Get IBAN.
@@ -175,37 +159,33 @@ public interface I_SEPA_Export
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIBAN();
+	java.lang.String getIBAN();
 
-    /** Column definition for IBAN */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_IBAN = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "IBAN", null);
-    /** Column name IBAN */
-    public static final String COLUMNNAME_IBAN = "IBAN";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_IBAN = new ModelColumn<>(I_SEPA_Export.class, "IBAN", null);
+	String COLUMNNAME_IBAN = "IBAN";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_IsActive = new ModelColumn<>(I_SEPA_Export.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Sammelbuchungen exportieren.
@@ -214,7 +194,7 @@ public interface I_SEPA_Export
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsExportBatchBookings (boolean IsExportBatchBookings);
+	void setIsExportBatchBookings (boolean IsExportBatchBookings);
 
 	/**
 	 * Get Sammelbuchungen exportieren.
@@ -223,131 +203,117 @@ public interface I_SEPA_Export
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isExportBatchBookings();
+	boolean isExportBatchBookings();
 
-    /** Column definition for IsExportBatchBookings */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_IsExportBatchBookings = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "IsExportBatchBookings", null);
-    /** Column name IsExportBatchBookings */
-    public static final String COLUMNNAME_IsExportBatchBookings = "IsExportBatchBookings";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_IsExportBatchBookings = new ModelColumn<>(I_SEPA_Export.class, "IsExportBatchBookings", null);
+	String COLUMNNAME_IsExportBatchBookings = "IsExportBatchBookings";
 
 	/**
-	 * Set Zahldatum.
+	 * Set Date Payment.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPaymentDate (java.sql.Timestamp PaymentDate);
+	void setPaymentDate (java.sql.Timestamp PaymentDate);
 
 	/**
-	 * Get Zahldatum.
+	 * Get Date Payment.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPaymentDate();
+	java.sql.Timestamp getPaymentDate();
 
-    /** Column definition for PaymentDate */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_PaymentDate = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "PaymentDate", null);
-    /** Column name PaymentDate */
-    public static final String COLUMNNAME_PaymentDate = "PaymentDate";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_PaymentDate = new ModelColumn<>(I_SEPA_Export.class, "PaymentDate", null);
+	String COLUMNNAME_PaymentDate = "PaymentDate";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_Processed = new ModelColumn<>(I_SEPA_Export.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Datensatz-ID.
+	 * Set Record ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRecord_ID (int Record_ID);
+	void setRecord_ID (int Record_ID);
 
 	/**
-	 * Get Datensatz-ID.
+	 * Get Record ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getRecord_ID();
+	int getRecord_ID();
 
-    /** Column definition for Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "Record_ID", null);
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_Record_ID = new ModelColumn<>(I_SEPA_Export.class, "Record_ID", null);
+	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
-	 * Set Gläubiger-Identifikationsnummer.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setSEPA_CreditorIdentifier (java.lang.String SEPA_CreditorIdentifier);
-
-	/**
-	 * Get Gläubiger-Identifikationsnummer.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getSEPA_CreditorIdentifier();
-
-    /** Column definition for SEPA_CreditorIdentifier */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_SEPA_CreditorIdentifier = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "SEPA_CreditorIdentifier", null);
-    /** Column name SEPA_CreditorIdentifier */
-    public static final String COLUMNNAME_SEPA_CreditorIdentifier = "SEPA_CreditorIdentifier";
-
-	/**
-	 * Set Gläubigername.
+	 * Set SEPA Creditor Identifier.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSEPA_CreditorName (java.lang.String SEPA_CreditorName);
+	void setSEPA_CreditorIdentifier (@Nullable java.lang.String SEPA_CreditorIdentifier);
 
 	/**
-	 * Get Gläubigername.
+	 * Get SEPA Creditor Identifier.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getSEPA_CreditorName();
+	@Nullable java.lang.String getSEPA_CreditorIdentifier();
 
-    /** Column definition for SEPA_CreditorName */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_SEPA_CreditorName = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "SEPA_CreditorName", null);
-    /** Column name SEPA_CreditorName */
-    public static final String COLUMNNAME_SEPA_CreditorName = "SEPA_CreditorName";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_SEPA_CreditorIdentifier = new ModelColumn<>(I_SEPA_Export.class, "SEPA_CreditorIdentifier", null);
+	String COLUMNNAME_SEPA_CreditorIdentifier = "SEPA_CreditorIdentifier";
+
+	/**
+	 * Set Creditor name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSEPA_CreditorName (java.lang.String SEPA_CreditorName);
+
+	/**
+	 * Get Creditor name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getSEPA_CreditorName();
+
+	ModelColumn<I_SEPA_Export, Object> COLUMN_SEPA_CreditorName = new ModelColumn<>(I_SEPA_Export.class, "SEPA_CreditorName", null);
+	String COLUMNNAME_SEPA_CreditorName = "SEPA_CreditorName";
 
 	/**
 	 * Set SEPA Export.
@@ -356,7 +322,7 @@ public interface I_SEPA_Export
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSEPA_Export_ID (int SEPA_Export_ID);
+	void setSEPA_Export_ID (int SEPA_Export_ID);
 
 	/**
 	 * Get SEPA Export.
@@ -365,35 +331,33 @@ public interface I_SEPA_Export
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getSEPA_Export_ID();
+	int getSEPA_Export_ID();
 
-    /** Column definition for SEPA_Export_ID */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_SEPA_Export_ID = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "SEPA_Export_ID", null);
-    /** Column name SEPA_Export_ID */
-    public static final String COLUMNNAME_SEPA_Export_ID = "SEPA_Export_ID";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_SEPA_Export_ID = new ModelColumn<>(I_SEPA_Export.class, "SEPA_Export_ID", null);
+	String COLUMNNAME_SEPA_Export_ID = "SEPA_Export_ID";
 
 	/**
 	 * Set SEPA Protocol.
+	 * Version of the pain.001 credit-transfer file. Direct debit always uses pain.008.003.02.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSEPA_Protocol (java.lang.String SEPA_Protocol);
+	void setSEPA_Protocol (java.lang.String SEPA_Protocol);
 
 	/**
 	 * Get SEPA Protocol.
+	 * Version of the pain.001 credit-transfer file. Direct debit always uses pain.008.003.02.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getSEPA_Protocol();
+	java.lang.String getSEPA_Protocol();
 
-    /** Column definition for SEPA_Protocol */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_SEPA_Protocol = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "SEPA_Protocol", null);
-    /** Column name SEPA_Protocol */
-    public static final String COLUMNNAME_SEPA_Protocol = "SEPA_Protocol";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_SEPA_Protocol = new ModelColumn<>(I_SEPA_Export.class, "SEPA_Protocol", null);
+	String COLUMNNAME_SEPA_Protocol = "SEPA_Protocol";
 
 	/**
 	 * Set Swift code.
@@ -403,7 +367,7 @@ public interface I_SEPA_Export
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSwiftCode (java.lang.String SwiftCode);
+	void setSwiftCode (java.lang.String SwiftCode);
 
 	/**
 	 * Get Swift code.
@@ -413,38 +377,33 @@ public interface I_SEPA_Export
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getSwiftCode();
+	java.lang.String getSwiftCode();
 
-    /** Column definition for SwiftCode */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_SwiftCode = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "SwiftCode", null);
-    /** Column name SwiftCode */
-    public static final String COLUMNNAME_SwiftCode = "SwiftCode";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_SwiftCode = new ModelColumn<>(I_SEPA_Export.class, "SwiftCode", null);
+	String COLUMNNAME_SwiftCode = "SwiftCode";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_SEPA_Export, Object> COLUMN_Updated = new ModelColumn<>(I_SEPA_Export.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

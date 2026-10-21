@@ -30,8 +30,21 @@ public class MultiVersionStreamReaderDelegate extends StreamReaderDelegate
 	@Override
 	public String getNamespaceURI()
 	{
-		final String namespaceURI = super.getNamespaceURI();
-		if ( Objects.equal("urn:iso:std:iso:20022:tech:xsd:camt.054.001.04", namespaceURI)
+		return normalize(super.getNamespaceURI());
+	}
+
+	/**
+	 * Same rewrite for the indexed overload, which is what the namespace-declaration lookup in {@link ESRDataImporterCamt54} uses.
+	 */
+	@Override
+	public String getNamespaceURI(final int index)
+	{
+		return normalize(super.getNamespaceURI(index));
+	}
+
+	private static String normalize(final String namespaceURI)
+	{
+		if (Objects.equal("urn:iso:std:iso:20022:tech:xsd:camt.054.001.04", namespaceURI)
 				|| Objects.equal("urn:iso:std:iso:20022:tech:xsd:camt.054.001.05", namespaceURI))
 		{
 			// listing those two URNs that we replace is not elegant, but simple & easy. that's why I do it.
@@ -40,6 +53,5 @@ public class MultiVersionStreamReaderDelegate extends StreamReaderDelegate
 
 		return namespaceURI;
 	}
-	
 }
 

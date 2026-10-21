@@ -261,6 +261,11 @@ public class AttachmentService
 
 		referencesToSave.addAll(additionalRefs);
 
+		for (final AttachmentReference attachmentReference : referencesToSave)
+		{
+			tableAttachmentListenerService.fireBeforeRecordLinked(newEntry, attachmentReference);
+		}
+
 		attachmentReferenceRepository.saveAll(referencesToSave);
 
 		for (final AttachmentReference attachmentReference : referencesToSave)
@@ -296,12 +301,18 @@ public class AttachmentService
 
 		if (!Check.isEmpty(attachmentLinksRequest.getLinksToAdd()))
 		{
-			for (final TableRecordReference linkToAdd : attachmentLinksRequest.getLinksToAdd())
+			final ImmutableList<AttachmentReference> referencesToAdd = createAttachmentLinksDontSave(
+					ImmutableList.of(attachmentLinksRequest.getAttachmentEntryId()),
+					attachmentLinksRequest.getLinksToAdd());
+
+			// all listeners get their veto before the first link is saved
+			for (final AttachmentReference attachmentReference : referencesToAdd)
 			{
-				final AttachmentReference attachmentReference = AttachmentReference.builder()
-						.attachmentEntryId(attachmentLinksRequest.getAttachmentEntryId())
-						.recordRef(linkToAdd)
-						.build();
+				tableAttachmentListenerService.fireBeforeRecordLinked(entry, attachmentReference);
+			}
+
+			for (final AttachmentReference attachmentReference : referencesToAdd)
+			{
 				attachmentReferenceRepository.save(attachmentReference);
 				tableAttachmentListenerService.fireAfterRecordLinked(entry, attachmentReference);
 			}

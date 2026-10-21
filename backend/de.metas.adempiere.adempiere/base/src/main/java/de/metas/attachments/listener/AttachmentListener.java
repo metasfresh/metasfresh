@@ -35,4 +35,12 @@ import org.compiere.model.I_AD_Table_AttachmentListener;
 public interface AttachmentListener
 {
 	ListenerWorkStatus afterRecordLinked(@NonNull AttachmentEntry entry, @NonNull AttachmentReference reference);
+
+	/**
+	 * Called before the given reference is saved. Returning {@link ListenerWorkStatus#FAILURE} vetoes the link: the reference is not saved and a user validation error is thrown.
+	 */
+	default ListenerWorkStatus beforeRecordLinked(@NonNull final AttachmentEntry entry, @NonNull final AttachmentReference reference)
+	{
+		return ListenerWorkStatus.NOT_APPLIED;
+	}
 }
