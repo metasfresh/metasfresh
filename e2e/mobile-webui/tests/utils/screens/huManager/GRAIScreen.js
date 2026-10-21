@@ -44,8 +44,10 @@ export const GRAIScreen = {
     // operator can trigger them: no waiting in between for the previous scan to be consumed.
     scanGraiBarcodesBackToBack: async ({ barcodeStrings }) => await test.step(`${NAME} - Scan ${barcodeStrings.length} GRAI barcodes back to back`, async () => {
         await GRAIScreen.expectVisible();
+        // Each scan ends with the Enter suffix of a DataWedge-configured scanner: without a terminator,
+        // codes typed back to back with no real gap between them are one keystroke burst to the reader.
         for (const barcodeString of barcodeStrings) {
-            await BarcodeScannerComponent.type(barcodeString);
+            await BarcodeScannerComponent.type({ scannedCode: barcodeString, terminator: 'Enter' });
         }
     }),
 
