@@ -20,6 +20,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
@@ -134,6 +135,17 @@ public class DDOrderCandidateData
 	public DDOrderCandidateData withPPOrderId(@Nullable final PPOrderId forwardPPOrderIdNew)
 	{
 		final PPOrderRef forwardPPOrderRefNew = PPOrderRef.withPPOrderId(forwardPPOrderRef, forwardPPOrderIdNew);
+		if (Objects.equals(this.forwardPPOrderRef, forwardPPOrderRefNew))
+		{
+			return this;
+		}
+
+		return toBuilder().forwardPPOrderRef(forwardPPOrderRefNew).build();
+	}
+
+	public DDOrderCandidateData withPPOrderAndBOMLineId(@Nullable final PPOrderAndBOMLineId forwardPPOrderAndBOMLineIdNew)
+	{
+		final PPOrderRef forwardPPOrderRefNew = PPOrderRef.withPPOrderAndBOMLineId(forwardPPOrderRef, forwardPPOrderAndBOMLineIdNew);
 		if (Objects.equals(this.forwardPPOrderRef, forwardPPOrderRefNew))
 		{
 			return this;

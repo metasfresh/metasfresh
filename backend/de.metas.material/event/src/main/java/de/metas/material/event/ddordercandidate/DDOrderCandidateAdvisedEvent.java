@@ -12,6 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
@@ -75,6 +76,23 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 	public static DDOrderCandidateAdvisedEvent cast(@NonNull final AbstractDDOrderCandidateEvent event)
 	{
 		return (DDOrderCandidateAdvisedEvent)event;
+	}
+
+	public DDOrderCandidateAdvisedEvent withPPOrderAndBOMLineId(@Nullable final PPOrderAndBOMLineId newPPOrderAndBOMLineId)
+	{
+		final DDOrderCandidateData ddOrderCandidateNew = getDdOrderCandidate().withPPOrderAndBOMLineId(newPPOrderAndBOMLineId);
+		if (ddOrderCandidateNew == getDdOrderCandidate())
+		{
+			return this;
+		}
+
+		return new DDOrderCandidateAdvisedEvent(
+				getEventDescriptor(),
+				ddOrderCandidateNew,
+				getSupplyRequiredDescriptorNotNull(),
+				advisedToCreateDDOrder,
+				pickIfFeasible
+		);
 	}
 
 	public DDOrderCandidateAdvisedEvent withPPOrderId(@Nullable final PPOrderId newPPOrderId)

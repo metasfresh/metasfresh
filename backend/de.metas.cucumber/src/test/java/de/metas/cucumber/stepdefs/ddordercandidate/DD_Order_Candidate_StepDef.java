@@ -14,6 +14,7 @@ import de.metas.cucumber.stepdefs.pporder.PP_OrderLine_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
@@ -59,6 +60,7 @@ public class DD_Order_Candidate_StepDef
 	@NonNull private final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
+	@NonNull private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	@And("^after not more than (.*)s, following DD_Order_Candidates are found$")
 	public void validateDDOrderLineCandidates(final int timeoutSec, @NonNull final DataTable dataTable)
@@ -280,6 +282,61 @@ public class DD_Order_Candidate_StepDef
 				.targetWarehouseId(row.getAsIdentifier(I_DD_Order_Candidate.COLUMNNAME_M_WarehouseTo_ID).lookupIdIn(warehouseTable))
 				.processed(row.getAsOptionalBoolean(I_DD_Order_Candidate.COLUMNNAME_Processed).toBooleanOrNull())
 				.build();
+	}
+
+	/**
+	 * Waits until the DD_Order_Candidates which supply the given PP_Order with the given product add up to the given qty, and each of them references the given BOM line.
+	 * How the qty is split between several candidates is not asserted.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Forward_PP_Order_ID</b> — (required, identifier-ref) the PP_Order which the candidates supply<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the distributed product<br>
+	 *   <b>Qty</b> — (required) expected total qty with UOM (e.g. "20 PCE")<br>
+	 *   <b>Forward_PP_Order_BOMLine_ID</b> — (required, identifier-ref) the PP_Order_BOMLine which each candidate must reference<br>
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData, M_Product_StepDefData, PP_Order_BOMLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 60s, the DD_Order_Candidates of the following PP_Orders add up to
+	 *   | Forward_PP_Order_ID | M_Product_ID | Qty    | Forward_PP_Order_BOMLine_ID |
+	 *   | ppOrder             | component    | 20 PCE | ppOrderBOMLine              |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, the DD_Order_Candidates of the following PP_Orders add up to$")
+	public void validateDDOrderCandidatesTotalPerPPOrder(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		rabbitMQStepDef.wait_empty_material_queue();
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final PPOrderId ppOrderId = row.getAsIdentifier(I_DD_Order_Candidate.COLUMNNAME_Forward_PP_Order_ID).lookupIdIn(ppOrderTable);
+			final ProductId productId = row.getAsIdentifier(I_DD_Order_Candidate.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
+			final Quantity expectedTotalQty = row.getAsQuantity("Qty", null, uomDAO::getByX12DE355);
+			final PPOrderBOMLineId expectedBOMLineId = row.getAsIdentifier(I_DD_Order_Candidate.COLUMNNAME_Forward_PP_Order_BOMLine_ID).lookupIdIn(ppOrderBOMLineTable);
+
+			StepDefUtil.<Boolean>tryAndWaitForItem()
+					.worker(() -> {
+						final List<DDOrderCandidate> candidates = ddOrderCandidateService.list(DDOrderCandidateQuery.builder().productId(productId).build())
+								.stream()
+								.filter(candidate -> candidate.getForwardPPOrderRef() != null && PPOrderId.equals(candidate.getForwardPPOrderRef().getPpOrderId(), ppOrderId))
+								.collect(Collectors.toList());
+
+						final Quantity actualTotalQty = candidates.stream()
+								.map(DDOrderCandidate::getQtyEntered)
+								.reduce(expectedTotalQty.toZero(), Quantity::add);
+						final boolean allReferenceExpectedBOMLine = candidates.stream()
+								.allMatch(candidate -> PPOrderBOMLineId.equals(candidate.getForwardPPOrderRef().getPpOrderBOMLineId(), expectedBOMLineId));
+
+						if (actualTotalQty.compareTo(expectedTotalQty) != 0 || !allReferenceExpectedBOMLine)
+						{
+							return ItemProvider.ProviderResult.resultWasNotFound("Expected total " + expectedTotalQty + ", all referencing " + expectedBOMLineId
+									+ ", but found total " + actualTotalQty
+									+ "\n\tcandidates=" + candidates);
+						}
+						return ItemProvider.ProviderResult.resultWasFound(true);
+					})
+					.maxWaitSeconds(timeoutSec)
+					.execute();
+		});
 	}
 
 	@And("^no DD_Order_Candidates found for product (.*)$")

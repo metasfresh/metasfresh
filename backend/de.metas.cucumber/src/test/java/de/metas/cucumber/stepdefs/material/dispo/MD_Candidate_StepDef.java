@@ -44,6 +44,7 @@ import de.metas.cucumber.stepdefs.pporder.PP_OrderLine_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.SimulatedCandidateService;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -52,8 +53,10 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
@@ -63,6 +66,7 @@ import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
@@ -90,6 +94,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
@@ -138,6 +144,7 @@ public class MD_Candidate_StepDef
 	@NonNull private final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 
 	@When("metasfresh initially has this MD_Candidate data")
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table) throws Throwable
@@ -413,6 +420,80 @@ public class MD_Candidate_StepDef
 				})
 				.maxWaitSeconds(timeoutSec)
 				.execute();
+	}
+
+	/**
+	 * Waits until the DISTRIBUTION candidates of the given type, product and warehouse which supply the given PP_Order add up to the given qty,
+	 * and each of them references the given BOM line. How the qty is split between several candidates is not asserted.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>MD_Candidate_Type</b> — (required) SUPPLY or DEMAND<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the distributed product<br>
+	 *   <b>M_Warehouse_ID</b> — (required, identifier-ref) the candidates' warehouse<br>
+	 *   <b>Forward_PP_Order_ID</b> — (required, identifier-ref) the PP_Order which the distribution supplies<br>
+	 *   <b>Qty</b> — (required) expected total qty (positive)<br>
+	 *   <b>Forward_PP_Order_BOMLine_ID</b> — (required, identifier-ref) the PP_Order_BOMLine which each candidate must reference<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_Warehouse_StepDefData, PP_Order_StepDefData, PP_Order_BOMLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, the distribution MD_Candidates of the following PP_Orders add up to
+	 *   | MD_Candidate_Type | M_Product_ID | M_Warehouse_ID | Forward_PP_Order_ID | Qty | Forward_PP_Order_BOMLine_ID |
+	 *   | SUPPLY            | component    | production_WH  | ppOrder             | 20  | ppOrderBOMLine              |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, the distribution MD_Candidates of the following PP_Orders add up to$")
+	public void validateDistributionCandidatesTotalPerPPOrder(final int timeoutSec, @NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final CandidateType type = row.getAsEnum(COLUMNNAME_MD_Candidate_Type, CandidateType.class);
+			final ProductId productId = row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
+			final WarehouseId warehouseId = row.getAsIdentifier(I_MD_Candidate.COLUMNNAME_M_Warehouse_ID).lookupIdIn(warehouseTable);
+			final PPOrderId ppOrderId = row.getAsIdentifier("Forward_PP_Order_ID").lookupIdIn(ppOrderTable);
+			final BigDecimal expectedTotalQty = row.getAsBigDecimal(COLUMNNAME_Qty);
+			final PPOrderBOMLineId expectedBOMLineId = row.getAsIdentifier("Forward_PP_Order_BOMLine_ID").lookupIdIn(ppOrderBOMLineTable);
+
+			final CandidatesQuery query = CandidatesQuery.builder()
+					.type(type)
+					.businessCase(CandidateBusinessCase.DISTRIBUTION)
+					.materialDescriptorQuery(MaterialDescriptorQuery.builder()
+							.productId(productId.getRepoId())
+							.warehouseId(warehouseId)
+							.build())
+					.build();
+
+			StepDefUtil.<Boolean>tryAndWaitForItem()
+					.worker(() -> {
+						final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query)
+								.stream()
+								.filter(candidate -> extractForwardPPOrderRef(candidate) != null && PPOrderId.equals(extractForwardPPOrderRef(candidate).getPpOrderId(), ppOrderId))
+								.collect(ImmutableList.toImmutableList());
+
+						final BigDecimal actualTotalQty = candidates.stream()
+								.map(candidate -> candidate.getQuantity().abs())
+								.reduce(BigDecimal.ZERO, BigDecimal::add);
+						final boolean allReferenceExpectedBOMLine = candidates.stream()
+								.allMatch(candidate -> PPOrderBOMLineId.equals(extractForwardPPOrderRef(candidate).getPpOrderBOMLineId(), expectedBOMLineId));
+
+						if (actualTotalQty.compareTo(expectedTotalQty) != 0 || !allReferenceExpectedBOMLine)
+						{
+							return ProviderResult.resultWasNotFound("Expected total " + expectedTotalQty + ", all referencing " + expectedBOMLineId
+									+ ", but found total " + actualTotalQty
+									+ "\n\tcandidates=" + candidates);
+						}
+						return ProviderResult.resultWasFound(true);
+					})
+					.maxWaitSeconds(timeoutSec)
+					.execute();
+		});
+	}
+
+	@Nullable
+	private static PPOrderRef extractForwardPPOrderRef(@NonNull final Candidate candidate)
+	{
+		return candidate.getBusinessCaseDetail(DistributionDetail.class)
+				.map(DistributionDetail::getForwardPPOrderRef)
+				.orElse(null);
 	}
 
 	@And("^after not more than (.*)s, MD_Candidates are found$")
