@@ -290,7 +290,7 @@ public class DD_Order_Candidate_StepDef
 	 * the ONLY DD_Order_Candidate records for the product(s) referenced in the table are exactly the listed rows - no more, no fewer.
 	 * Each row must match a distinct record: candidates already matched by earlier rows are excluded,
 	 * so that two identical candidates are asserted one-to-one.
-	 * Rows are matched in table order, so a row that is less specific than a later row (fewer optional columns) must come after it.
+	 * Rows are matched in table order, so a more specific row (more optional columns) must come before a less specific one.
 	 * Drains the rabbitMQ queues first, so that the candidate set is settled before it is compared.
 	 *
 	 * @cucumber.stepdef
