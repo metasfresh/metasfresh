@@ -287,6 +287,7 @@ public class DD_Order_Candidate_StepDef
 	/**
 	 * Waits until the DD_Order_Candidates which supply the given PP_Order with the given product add up to the given qty, and each of them references the given BOM line.
 	 * How the qty is split between several candidates is not asserted.
+	 * Before polling, the step waits until the material event queue is empty (up to its own timeout), so that the total is checked after all pending material events were handled.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

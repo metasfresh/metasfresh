@@ -122,6 +122,9 @@ import static org.assertj.core.api.Assertions.fail;
 @RequiredArgsConstructor
 public class MD_Candidate_StepDef
 {
+	private static final String COLUMN_Forward_PP_Order_ID = "Forward_PP_Order_ID";
+	private static final String COLUMN_Forward_PP_Order_BOMLine_ID = "Forward_PP_Order_BOMLine_ID";
+
 	@NonNull private final static Logger logger = LogManager.getLogger(MD_Candidate_StepDef.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final PostMaterialEventService postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
@@ -449,9 +452,9 @@ public class MD_Candidate_StepDef
 			final CandidateType type = row.getAsEnum(COLUMNNAME_MD_Candidate_Type, CandidateType.class);
 			final ProductId productId = row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
 			final WarehouseId warehouseId = row.getAsIdentifier(I_MD_Candidate.COLUMNNAME_M_Warehouse_ID).lookupIdIn(warehouseTable);
-			final PPOrderId ppOrderId = row.getAsIdentifier("Forward_PP_Order_ID").lookupIdIn(ppOrderTable);
+			final PPOrderId ppOrderId = row.getAsIdentifier(COLUMN_Forward_PP_Order_ID).lookupIdIn(ppOrderTable);
 			final BigDecimal expectedTotalQty = row.getAsBigDecimal(COLUMNNAME_Qty);
-			final PPOrderBOMLineId expectedBOMLineId = row.getAsIdentifier("Forward_PP_Order_BOMLine_ID").lookupIdIn(ppOrderBOMLineTable);
+			final PPOrderBOMLineId expectedBOMLineId = row.getAsIdentifier(COLUMN_Forward_PP_Order_BOMLine_ID).lookupIdIn(ppOrderBOMLineTable);
 
 			final CandidatesQuery query = CandidatesQuery.builder()
 					.type(type)
