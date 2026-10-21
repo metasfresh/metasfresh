@@ -441,7 +441,7 @@ public class C_OrderLine
 	}
 
 	/**
-	 * The calibration (rule, factor, uncalibrated qty) belongs to the product it was created for; QtyEntered is kept.
+	 * A calibration belongs to the product it was created for.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_M_Product_ID)
 	public void clearCalibrationOnProductChange(@NonNull final I_C_OrderLine orderLine)

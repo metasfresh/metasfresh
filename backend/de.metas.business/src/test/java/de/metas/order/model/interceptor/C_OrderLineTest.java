@@ -24,17 +24,24 @@ package de.metas.order.model.interceptor;
 
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
+import de.metas.business.BusinessTestHelper;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_Order;
 import org.compiere.model.X_M_Product;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -51,7 +58,7 @@ import static org.mockito.Mockito.mock;
  * status must block selling a Gesperrt product on a sales-order line and purchasing an Auslauf/Gesperrt
  * product on a purchase-order line. The guard is self-gating (O/null => no-op) and fires independently
  * of the {@code M_Product_EnforcePurchaseSalesFlags} SysConfig (which is off by default in this test).
- * Also tests {@link C_OrderLine#clearCalibrationOnProductChange(I_C_OrderLine)}.
+ * Also tests {@link C_OrderLine#clearCalibrationOnProductChange(I_C_OrderLine)} through a save with the interceptor registered.
  */
 public class C_OrderLineTest
 {
@@ -124,22 +131,63 @@ public class C_OrderLineTest
 		assertDoesNotThrow(() -> interceptor.validateProductIsPurchasedOrSold(orderLine));
 	}
 
-	@Test
-	public void productChange_calibratedLine_clearsCalibration_keepsQty()
+	@Nested
+	class ClearCalibrationOnProductChange
 	{
-		final I_C_OrderLine orderLine = newOrderLine(true, createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_OK));
-		orderLine.setC_CompensationGroup_CalibrationRule_ID(10);
-		orderLine.setGroupCompensationQtyEnteredUncalibrated(new BigDecimal("375"));
-		orderLine.setGroupCompensationCalibrationFactor(new BigDecimal("0.8"));
-		orderLine.setQtyEntered(new BigDecimal("300"));
-		save(orderLine);
+		private I_C_UOM uom;
+		private I_C_OrderLine orderLine;
 
-		orderLine.setM_Product_ID(createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_OK).getM_Product_ID());
-		interceptor.clearCalibrationOnProductChange(orderLine);
+		@BeforeEach
+		void beforeEach()
+		{
+			uom = BusinessTestHelper.createUomEach();
+			orderLine = newOrderLine(true, createProductWithUOM());
+			orderLine.setC_UOM_ID(uom.getC_UOM_ID());
 
-		assertThat(orderLine.getC_CompensationGroup_CalibrationRule_ID()).isLessThanOrEqualTo(0);
-		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).isNull();
-		assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
-		assertThat(orderLine.getQtyEntered()).isEqualByComparingTo("300");
+			final I_C_BPartner customer = newInstance(I_C_BPartner.class);
+			save(customer);
+			final I_C_Order order = orderLine.getC_Order();
+			order.setC_BPartner_ID(customer.getC_BPartner_ID());
+			order.setDocStatus(X_C_Order.DOCSTATUS_Drafted);
+			save(order);
+			orderLine.setC_CompensationGroup_CalibrationRule_ID(10);
+			orderLine.setGroupCompensationQtyEnteredUncalibrated(new BigDecimal("375"));
+			orderLine.setGroupCompensationCalibrationFactor(new BigDecimal("0.8"));
+			orderLine.setQtyEntered(new BigDecimal("300"));
+			save(orderLine);
+
+			Services.get(IModelInterceptorRegistry.class).addModelInterceptor(interceptor);
+		}
+
+		private I_M_Product createProductWithUOM()
+		{
+			final I_M_Product product = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_OK);
+			product.setC_UOM_ID(uom.getC_UOM_ID());
+			save(product);
+			return product;
+		}
+
+		@Test
+		void productChanged_clearsCalibration_keepsQty()
+		{
+			orderLine.setM_Product_ID(createProductWithUOM().getM_Product_ID());
+			save(orderLine);
+
+			assertThat(orderLine.getC_CompensationGroup_CalibrationRule_ID()).isLessThanOrEqualTo(0);
+			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).isNull();
+			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).isNull();
+			assertThat(orderLine.getQtyEntered()).isEqualByComparingTo("300");
+		}
+
+		@Test
+		void otherColumnChanged_keepsCalibration()
+		{
+			orderLine.setDescription("changed");
+			save(orderLine);
+
+			assertThat(orderLine.getC_CompensationGroup_CalibrationRule_ID()).isEqualTo(10);
+			assertThat(orderLine.getGroupCompensationQtyEnteredUncalibrated()).isEqualByComparingTo("375");
+			assertThat(orderLine.getGroupCompensationCalibrationFactor()).isEqualByComparingTo("0.8");
+		}
 	}
 }
