@@ -9,7 +9,6 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
@@ -114,7 +113,6 @@ public class PPOrderChangedHandlerTest
 
 		final PPOrderChangedHandler ppOrderDocStatusChangedHandler = new PPOrderChangedHandler(
 				candidateRepositoryRetrieval,
-				Mockito.mock(CandidateRepositoryWriteService.class),
 				candidateChangeService);
 
 		//
