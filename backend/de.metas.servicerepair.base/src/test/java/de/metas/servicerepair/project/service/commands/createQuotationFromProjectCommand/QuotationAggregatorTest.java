@@ -62,6 +62,7 @@ import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskStatus;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -155,7 +156,7 @@ class QuotationAggregatorTest
 		rule.setSeqNo(10);
 		rule.setC_BPartner_ID(customerId.getRepoId());
 		rule.setM_Product_ID(productId.getRepoId());
-		rule.setGroupCompensationCalibrationFactor(new BigDecimal("80"));
+		CompensationGroupCalibrationRuleRepository.setCalibrationFactor(rule, Percent.of(80));
 		rule.setIsActive(true);
 		saveRecord(rule);
 	}
@@ -243,7 +244,7 @@ class QuotationAggregatorTest
 		assertThat(quotationLines).hasSize(1);
 		assertThat(quotationLines).allSatisfy(line -> {
 			assertThat(line.getC_CompensationGroup_CalibrationRule_ID()).as("no calibration rule stored").isLessThanOrEqualTo(0);
-			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor)).as("no calibration factor stored").isNull();
+			assertThat(OrderGroupRepository.getCalibrationFactor(line)).as("no calibration factor stored").isNull();
 			assertThat(InterfaceWrapperHelper.<BigDecimal>getValueOrNull(line, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated)).as("no uncalibrated qty stored").isNull();
 		});
 

@@ -106,6 +106,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Component
 public class OrderGroupRepository implements GroupRepository
 {
+	private static final int CALIBRATION_FACTOR_PERCENT_PRECISION = 2;
+
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -1227,6 +1229,41 @@ public class OrderGroupRepository implements GroupRepository
 				.firstIdOnly(GroupTemplateId::ofRepoIdOrNull);
 	}
 
+	/**
+	 * @return null if none is stored (the generated getter would return 0)
+	 */
+	@Nullable
+	public static Percent getCalibrationFactor(@NonNull final I_C_OrderLine orderLine)
+	{
+		return Percent.ofNullableFraction(InterfaceWrapperHelper.getValueOrNull(orderLine, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor));
+	}
+
+	public static void setCalibrationFactor(@NonNull final I_C_OrderLine orderLine, @Nullable final Percent factor)
+	{
+		orderLine.setGroupCompensationCalibrationFactor(Percent.toFractionBigDecimalOrNull(factor));
+	}
+
+	/**
+	 * Makes the line uncalibrated: no rule, no factor, no uncalibrated qty. QtyEntered is kept.
+	 */
+	public static void clearCalibration(@NonNull final I_C_OrderLine orderLine)
+	{
+		orderLine.setC_CompensationGroup_CalibrationRule_ID(-1);
+		setCalibrationFactor(orderLine, null);
+		orderLine.setGroupCompensationQtyEnteredUncalibrated(null);
+	}
+
+	/**
+	 * Rounded half-up to 2 decimals of the percent: 350 / 375 = 93.33 % = 0.9333.
+	 */
+	public static void setCalibrationFactorFromQty(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final BigDecimal qtyEntered,
+			@NonNull final BigDecimal qtyUncalibrated)
+	{
+		setCalibrationFactor(orderLine, Percent.of(qtyEntered, qtyUncalibrated, CALIBRATION_FACTOR_PERCENT_PRECISION));
+	}
+
 	public I_C_OrderLine createRegularLineFromTemplate(
 			@NonNull final GroupTemplateRegularLine from,
 			@NonNull final I_C_Order targetOrder,
@@ -1250,8 +1287,8 @@ public class OrderGroupRepository implements GroupRepository
 			final Quantity qtyEnteredUncalibrated = qtyEntered;
 			qtyEntered = calibrationRule.computeQtyCalibrated(qtyEnteredUncalibrated);
 
-			// the calibration columns are not updateable: they are only set while the line is new
-			orderLine.setGroupCompensationCalibrationFactor(calibrationRule.getFactor().toBigDecimal());
+			// the factor is kept in sync with QtyEntered by callout.C_OrderLine
+			setCalibrationFactor(orderLine, calibrationRule.getFactor());
 			orderLine.setC_CompensationGroup_CalibrationRule_ID(CalibrationRuleId.toRepoId(calibrationRule.getId()));
 			orderLine.setGroupCompensationQtyEnteredUncalibrated(qtyEnteredUncalibrated.toBigDecimal());
 		}

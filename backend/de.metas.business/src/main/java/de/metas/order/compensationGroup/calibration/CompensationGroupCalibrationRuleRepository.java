@@ -64,7 +64,21 @@ public class CompensationGroupCalibrationRuleRepository
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
 				.schemaId(GroupTemplateId.ofRepoIdOrNull(record.getC_CompensationGroup_Schema_ID()))
-				.factor(Percent.of(record.getGroupCompensationCalibrationFactor()))
+				.factor(getCalibrationFactor(record))
 				.build();
+	}
+
+	/**
+	 * @return 0 if unset (mandatory column, like the generated getter)
+	 */
+	@NonNull
+	public static Percent getCalibrationFactor(@NonNull final I_C_CompensationGroup_CalibrationRule record)
+	{
+		return Percent.ofFraction(record.getGroupCompensationCalibrationFactor());
+	}
+
+	public static void setCalibrationFactor(@NonNull final I_C_CompensationGroup_CalibrationRule record, @NonNull final Percent factor)
+	{
+		record.setGroupCompensationCalibrationFactor(factor.toFractionBigDecimal());
 	}
 }

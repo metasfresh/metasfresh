@@ -36,7 +36,6 @@ public class CalibrationRule
 	@Nullable ProductId productId;
 	@Nullable ProductCategoryId productCategoryId;
 	@Nullable GroupTemplateId schemaId;
-	/** 100-based percent the base qty is scaled by: 80 = 80 %, 100 = unchanged, 0 = zero */
 	@NonNull Percent factor;
 
 	@Builder
@@ -83,12 +82,10 @@ public class CalibrationRule
 
 	/**
 	 * @param qtyEnteredUncalibrated the base qty (template qty x menu qty), already rounded to its UOM precision
-	 * @return the base qty x {@link #factor} (a 100-based percent: 80 = 80 %, 100 = unchanged, 0 = zero), rounded to the UOM precision
+	 * @return the base qty x {@link #factor}, rounded UP to the UOM precision
 	 */
 	public Quantity computeQtyCalibrated(@NonNull final Quantity qtyEnteredUncalibrated)
 	{
-		return qtyEnteredUncalibrated
-				.multiply(getFactor().toBigDecimal().movePointLeft(2))
-				.roundToUOMPrecision();
+		return qtyEnteredUncalibrated.multiply(getFactor());
 	}
 }

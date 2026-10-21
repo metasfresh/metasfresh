@@ -5,8 +5,11 @@ import de.metas.frontend_testing.expectations.request.JsonOrderLineExpectation;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
 import de.metas.product.ProductId;
+import de.metas.util.NumberUtils;
+import de.metas.util.lang.Percent;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -71,7 +74,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	private static I_C_OrderLine line(
 			final ProductId productId,
 			final String qtyEntered,
-			@Nullable final String factor,
+			@Nullable final String factor, // as stored: a fraction (0.8 = 80 %)
 			@Nullable final CalibrationRuleId ruleId,
 			@Nullable final String uncalibrated)
 	{
@@ -79,7 +82,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 		line.setC_Order_ID(ORDER_ID.getRepoId());
 		line.setM_Product_ID(productId.getRepoId());
 		line.setQtyEntered(new BigDecimal(qtyEntered));
-		line.setGroupCompensationCalibrationFactor(factor == null ? null : new BigDecimal(factor));
+		OrderGroupRepository.setCalibrationFactor(line, Percent.ofNullableFraction(NumberUtils.asBigDecimal(factor)));
 		line.setC_CompensationGroup_CalibrationRule_ID(ruleId == null ? 0 : ruleId.getRepoId());
 		line.setGroupCompensationQtyEnteredUncalibrated(uncalibrated == null ? null : new BigDecimal(uncalibrated));
 		InterfaceWrapperHelper.saveRecord(line);
@@ -99,11 +102,11 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	@Test
 	void aCalibratedLine_matchesOnAllFields_regardlessOfScale()
 	{
-		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15.0", "150.00", RULE_1, "10"));
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15.0", "1.50", RULE_1, "10"));
 
 		assertThatCode(() -> assertLines(actual, expect("P1")
 				.qtyEntered(new BigDecimal("15"))
-				.calibrationFactor(new BigDecimal("150"))
+				.calibrationFactor(new BigDecimal("1.5"))
 				.calibrationRule(Identifier.ofString("R1"))
 				.qtyEnteredUncalibrated(new BigDecimal("10.00"))
 				.build()))
@@ -124,7 +127,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	@Test
 	void nullExpectedFieldsAreNotAsserted()
 	{
-		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15", "150", RULE_1, "10"));
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15", "1.5", RULE_1, "10"));
 
 		assertThatCode(() -> assertLines(actual, expect("P1").build())).doesNotThrowAnyException();
 	}
@@ -142,9 +145,9 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	@Test
 	void anotherFactor_fails()
 	{
-		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15", "150", RULE_1, "10"));
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15", "1.5", RULE_1, "10"));
 
-		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrationFactor(new BigDecimal("200")).build()))
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrationFactor(new BigDecimal("2")).build()))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("GroupCompensationCalibrationFactor");
 	}
@@ -154,7 +157,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	{
 		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15", null, null, null));
 
-		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrationFactor(new BigDecimal("100")).build()))
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrationFactor(new BigDecimal("1")).build()))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("GroupCompensationCalibrationFactor");
 	}
@@ -162,7 +165,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	@Test
 	void anotherRule_fails()
 	{
-		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15", "150", RULE_1, "10"));
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15", "1.5", RULE_1, "10"));
 
 		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrationRule(Identifier.ofString("R2")).build()))
 				.isInstanceOf(AdempiereException.class)
@@ -172,7 +175,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	@Test
 	void anotherUncalibratedQty_fails()
 	{
-		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15", "150", RULE_1, "10"));
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "15", "1.5", RULE_1, "10"));
 
 		assertThatThrownBy(() -> assertLines(actual, expect("P1").qtyEnteredUncalibrated(new BigDecimal("11")).build()))
 				.isInstanceOf(AdempiereException.class)
@@ -213,7 +216,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	@Test
 	void notCalibrated_failsOnALineWithFactor100AndNoRule()
 	{
-		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "100", null, "200"));
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "1", null, "200"));
 
 		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrated(false).build()))
 				.isInstanceOf(AdempiereException.class)
@@ -234,7 +237,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	@Test
 	void calibrated_matchesALineWithFactorAndUncalibratedQty_withoutRule()
 	{
-		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "100", null, "200"));
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "1", null, "200"));
 
 		assertThatCode(() -> assertLines(actual, expect("P1").calibrated(true).build()))
 				.doesNotThrowAnyException();
@@ -256,7 +259,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	{
 		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", null, null, null));
 
-		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrated(false).calibrationFactor(new BigDecimal("100")).build()))
+		assertThatThrownBy(() -> assertLines(actual, expect("P1").calibrated(false).calibrationFactor(new BigDecimal("1")).build()))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("calibrated=false cannot be combined");
 	}
@@ -274,11 +277,11 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	@Test
 	void noRuleApplied_matchesACalibratedLineWithFactor100AndNoRule()
 	{
-		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "100", null, "200"));
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "1", null, "200"));
 
 		assertThatCode(() -> assertLines(actual, expect("P1")
 				.qtyEntered(new BigDecimal("200"))
-				.calibrationFactor(new BigDecimal("100"))
+				.calibrationFactor(new BigDecimal("1"))
 				.qtyEnteredUncalibrated(new BigDecimal("200"))
 				.hasCalibrationRule(false)
 				.build()))
@@ -288,7 +291,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	@Test
 	void noRuleApplied_failsOnALineCarryingARule()
 	{
-		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "100", "50", RULE_1, "200"));
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "100", "0.5", RULE_1, "200"));
 
 		assertThatThrownBy(() -> assertLines(actual, expect("P1").hasCalibrationRule(false).build()))
 				.isInstanceOf(AdempiereException.class)
@@ -298,7 +301,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	@Test
 	void ruleApplied_failsOnALineWithoutRule()
 	{
-		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "100", null, "200"));
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "1", null, "200"));
 
 		assertThatThrownBy(() -> assertLines(actual, expect("P1").hasCalibrationRule(true).build()))
 				.isInstanceOf(AdempiereException.class)
@@ -308,7 +311,7 @@ class AssertSalesOrderExpectationsCommandLinesTest
 	@Test
 	void noRuleApplied_togetherWithAnExpectedRule_isRejected()
 	{
-		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "100", null, "200"));
+		final List<I_C_OrderLine> actual = ImmutableList.of(line(PRODUCT_1, "200", "1", null, "200"));
 
 		assertThatThrownBy(() -> assertLines(actual, expect("P1").hasCalibrationRule(false).calibrationRule(Identifier.ofString("R1")).build()))
 				.isInstanceOf(AdempiereException.class)

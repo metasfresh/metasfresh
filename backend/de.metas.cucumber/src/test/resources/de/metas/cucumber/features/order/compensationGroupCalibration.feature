@@ -5,7 +5,7 @@
 Feature: Compensation group calibration
 
   Components of a compensation group created from a schema scale with the first matching calibration rule.
-  - The factor is a 100-based percent: 80 = 80 %, 100 = unchanged, 0 = Qty 0.
+  - The factor is stored as a fraction: 0.8 = 80 %, 1 = unchanged, 0 = Qty 0.
   - Qty = (template Qty x menu Qty, rounded half-up to the UOM precision) x factor %, rounded up (away from zero) to the UOM precision.
   - A positive factor never rounds a non-zero base to 0; a factor of 0 creates the component line with Qty 0.
   - The menu line (a product that carries a schema) is never calibrated.
@@ -85,13 +85,13 @@ Feature: Compensation group calibration
       | tl_kaese   | schema_base                   | kaese        | 25   | GRM      | 30    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | M_Product_ID | GroupCompensationCalibrationFactor |
-      | r10        | 10    | cust_x        | kraft        | 40                                 |
-      | r20        | 20    | cust_x        | tomate       | 64.3                               |
-      | r30        | 30    | cust_x        | kaese        | 80                                 |
+      | r10        | 10    | cust_x        | kraft        | 0.4                                |
+      | r20        | 20    | cust_x        | tomate       | 0.643                              |
+      | r30        | 30    | cust_x        | kaese        | 0.8                                |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BP_Group_ID | M_Product_ID | GroupCompensationCalibrationFactor |
-      | r40        | 40    | grp_a         | kraft        | 66.7                               |
-      | r50        | 50    | grp_a         | tomate       | 71.4                               |
+      | r40        | 40    | grp_a         | kraft        | 0.667                              |
+      | r50        | 50    | grp_a         | tomate       | 0.714                              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -114,8 +114,8 @@ Feature: Compensation group calibration
       | order_y    | schema_base                   | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_kraft | kraft        | 0.11           | 66.7                                   | 0.15                                        | r40                                        |
-      | schema_ol_tomate | tomate      | 0.10           | 71.4                                   | 0.14                                        | r50                                        |
+      | schema_ol_kraft | kraft        | 0.11           | 0.667                                  | 0.15                                        | r40                                        |
+      | schema_ol_tomate | tomate      | 0.10           | 0.714                                  | 0.14                                        | r50                                        |
       | schema_ol_kaese | kaese        | 25             | null                                   | null                                        | null                                       |
 
     # customer with own rules: customer rules come before the group rules
@@ -124,9 +124,9 @@ Feature: Compensation group calibration
       | order_x    | schema_base                   | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_kraft | kraft        | 0.06           | 40                                     | 0.15                                        | r10                                        |
-      | schema_ol_tomate | tomate      | 0.10           | 64.3                                   | 0.14                                        | r20                                        |
-      | schema_ol_kaese | kaese        | 20             | 80                                     | 25                                          | r30                                        |
+      | schema_ol_kraft | kraft        | 0.06           | 0.4                                    | 0.15                                        | r10                                        |
+      | schema_ol_tomate | tomate      | 0.10           | 0.643                                  | 0.14                                        | r20                                        |
+      | schema_ol_kaese | kaese        | 20             | 0.8                                    | 25                                          | r30                                        |
 
 
   # ##########################################################################################
@@ -142,10 +142,10 @@ Feature: Compensation group calibration
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | r10        | 10    | cust_x        | 70                                 |
+      | r10        | 10    | cust_x        | 0.7                                |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BP_Group_ID | GroupCompensationCalibrationFactor |
-      | r20        | 20    | grp_a         | 50                                 |
+      | r20        | 20    | grp_a         | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType |
       | order_x    | true    | cust_x        | 2026-10-07  | SOO         | SO         |
@@ -157,19 +157,19 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 140            | 70                                     | 200                                         | r10                                        |
+      | schema_ol_reis | reis         | 140            | 0.7                                    | 200                                         | r10                                        |
     When create compensation group from schema template:
       | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
       | order_y    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 100            | 50                                     | 200                                         | r20                                        |
+      | schema_ol_reis | reis         | 100            | 0.5                                    | 200                                         | r20                                        |
     When create compensation group from schema template:
       | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
       | quote_x    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 140            | 70                                     | 200                                         | r10                                        |
+      | schema_ol_reis | reis         | 140            | 0.7                                    | 200                                         | r10                                        |
 
 
   # ##########################################################################################
@@ -185,8 +185,8 @@ Feature: Compensation group calibration
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier  | SeqNo | C_BPartner_ID | M_Product_ID | GroupCompensationCalibrationFactor |
-      | rule_first  | 30    | cust_x        | reis         | 90                                 |
-      | rule_second | 30    | cust_x        | reis         | 40                                 |
+      | rule_first  | 30    | cust_x        | reis         | 0.9                                |
+      | rule_second | 30    | cust_x        | reis         | 0.4                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -196,7 +196,7 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 180            | 90                                     | 200                                         | rule_first                                 |
+      | schema_ol_reis | reis         | 180            | 0.9                                    | 200                                         | rule_first                                 |
 
 
   # ##########################################################################################
@@ -212,7 +212,7 @@ Feature: Compensation group calibration
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier    | SeqNo | C_BPartner_ID | C_BP_Group_ID | GroupCompensationCalibrationFactor |
-      | rule_mismatch | 10    | cust_x        | grp_b         | 50                                 |
+      | rule_mismatch | 10    | cust_x        | grp_b         | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -245,8 +245,8 @@ Feature: Compensation group calibration
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | AD_Org_ID | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_org_a | 10    | org_a     | cust_x        | 50                                 |
-      | rule_any   | 20    | org_any   | cust_x        | 80                                 |
+      | rule_org_a | 10    | org_a     | cust_x        | 0.5                                |
+      | rule_any   | 20    | org_any   | cust_x        | 0.8                                |
     And metasfresh contains M_Warehouse:
       | Identifier |
       | wh         |
@@ -260,13 +260,13 @@ Feature: Compensation group calibration
       | order_a    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 100            | 50                                     | rule_org_a                                 |
+      | schema_ol_reis | reis         | 100            | 0.5                                    | rule_org_a                                 |
     When create compensation group from schema template:
       | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
       | order_b    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 160            | 80                                     | rule_any                                   |
+      | schema_ol_reis | reis         | 160            | 0.8                                    | rule_any                                   |
 
 
   # ##########################################################################################
@@ -282,10 +282,10 @@ Feature: Compensation group calibration
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier   | SeqNo | C_BP_Group_ID | GroupCompensationCalibrationFactor |
-      | rule_general | 10    | grp_a         | 80                                 |
+      | rule_general | 10    | grp_a         | 0.8                                |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier   | SeqNo | C_BP_Group_ID | M_Product_ID | GroupCompensationCalibrationFactor |
-      | rule_special | 20    | grp_a         | reis         | 50                                 |
+      | rule_special | 20    | grp_a         | reis         | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -295,7 +295,7 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 160            | 80                                     | 200                                         | rule_general                               |
+      | schema_ol_reis | reis         | 160            | 0.8                                    | 200                                         | rule_general                               |
 
 
   # ##########################################################################################
@@ -332,7 +332,7 @@ Feature: Compensation group calibration
       | tl_child   | schema_1                      | in_child     | 100 | GRM      | 30    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BP_Group_ID | M_Product_Category_ID | GroupCompensationCalibrationFactor |
-      | rule_cat   | 10    | grp_a         | cat_side              | 50                                 |
+      | rule_cat   | 10    | grp_a         | cat_side              | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -342,7 +342,7 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID    | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_in_side | in_side      | 50             | 50                                     | rule_cat                                   |
+      | schema_ol_in_side | in_side      | 50             | 0.5                                    | rule_cat                                   |
       | schema_ol_in_other| in_other     | 100            | null                                   | null                                       |
       | schema_ol_in_child| in_child     | 100            | null                                   | null                                       |
 
@@ -362,7 +362,7 @@ Feature: Compensation group calibration
       | tl_reis_2  | schema_2                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier  | SeqNo | C_BP_Group_ID | C_CompensationGroup_Schema_ID | GroupCompensationCalibrationFactor |
-      | rule_schema | 10    | grp_a         | schema_1                      | 80                                 |
+      | rule_schema | 10    | grp_a         | schema_1                      | 0.8                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -372,7 +372,7 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 160            | 80                                     | rule_schema                                |
+      | schema_ol_reis | reis         | 160            | 0.8                                    | rule_schema                                |
     When create compensation group from schema template:
       | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
       | order_x    | schema_2                      | 1   | Y          | Product         |
@@ -395,7 +395,7 @@ Feature: Compensation group calibration
       | tl_kraft   | schema_1                      | kraft        | 0.004 | LTR      | 20    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier  | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_other  | 10    | cust_y        | 50                                 |
+      | rule_other  | 10    | cust_y        | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -426,11 +426,11 @@ Feature: Compensation group calibration
       | tl_gram    | schema_1                      | gram         | 0.01 | GRM      | 50    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | M_Product_ID | GroupCompensationCalibrationFactor |
-      | r_pce_a    | 10    | cust_x        | pce_a        | 50                                 |
-      | r_pce_b    | 20    | cust_x        | pce_b        | 30                                 |
-      | r_fisch    | 30    | cust_x        | fisch        | 40                                 |
-      | r_kraft    | 40    | cust_x        | kraft        | 66.7                               |
-      | r_gram     | 50    | cust_x        | gram         | 40                                 |
+      | r_pce_a    | 10    | cust_x        | pce_a        | 0.5                                |
+      | r_pce_b    | 20    | cust_x        | pce_b        | 0.3                                |
+      | r_fisch    | 30    | cust_x        | fisch        | 0.4                                |
+      | r_kraft    | 40    | cust_x        | kraft        | 0.667                              |
+      | r_gram     | 50    | cust_x        | gram         | 0.4                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_1    | true    | cust_x        | 2026-10-07  |
@@ -441,17 +441,17 @@ Feature: Compensation group calibration
       | order_1    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated |
-      | schema_ol_pce_a | pce_a        | 2              | 50                                     | 3                                           |
-      | schema_ol_pce_b | pce_b        | 2              | 30                                     | 4                                           |
-      | schema_ol_fisch | fisch        | 1              | 40                                     | 1                                           |
-      | schema_ol_kraft | kraft        | 0.11           | 66.7                                   | 0.15                                        |
-      | schema_ol_gram  | gram         | 0.01           | 40                                     | 0.01                                        |
+      | schema_ol_pce_a | pce_a        | 2              | 0.5                                    | 3                                           |
+      | schema_ol_pce_b | pce_b        | 2              | 0.3                                    | 4                                           |
+      | schema_ol_fisch | fisch        | 1              | 0.4                                    | 1                                           |
+      | schema_ol_kraft | kraft        | 0.11           | 0.667                                  | 0.15                                        |
+      | schema_ol_gram  | gram         | 0.01           | 0.4                                    | 0.01                                        |
     When create compensation group from schema template:
       | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
       | order_10   | schema_1                      | 10  | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated |
-      | schema_ol_fisch | fisch        | 4              | 40                                     | 10                                          |
+      | schema_ol_fisch | fisch        | 4              | 0.4                                    | 10                                          |
 
 
   # ##########################################################################################
@@ -467,7 +467,7 @@ Feature: Compensation group calibration
       | tl_kraft   | schema_1                      | kraft        | 0.004 | LTR      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_half  | 10    | cust_x        | 50                                 |
+      | rule_half  | 10    | cust_x        | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -477,7 +477,7 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_kraft | kraft        | 0              | 50                                     | 0                                           | rule_half                                  |
+      | schema_ol_kraft | kraft        | 0              | 0.5                                    | 0                                           | rule_half                                  |
 
 
   # ##########################################################################################
@@ -495,7 +495,7 @@ Feature: Compensation group calibration
       | tl_pce_a   | schema_1                      | pce_a        | 1   | PCE      | 20    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_half  | 10    | cust_x        | 50                                 |
+      | rule_half  | 10    | cust_x        | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -505,8 +505,8 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 2.5 | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis  | reis         | 250            | 50                                     | 500                                         | rule_half                                  |
-      | schema_ol_pce_a | pce_a        | 2              | 50                                     | 3                                           | rule_half                                  |
+      | schema_ol_reis  | reis         | 250            | 0.5                                    | 500                                         | rule_half                                  |
+      | schema_ol_pce_a | pce_a        | 2              | 0.5                                    | 3                                           | rule_half                                  |
 
 
   # ##########################################################################################
@@ -522,7 +522,7 @@ Feature: Compensation group calibration
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_half  | 10    | cust_x        | 50                                 |
+      | rule_half  | 10    | cust_x        | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -532,13 +532,13 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 100            | 50                                     | rule_half                                  |
+      | schema_ol_reis | reis         | 100            | 0.5                                    | rule_half                                  |
     When create compensation group from schema template:
       | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
       | order_x    | schema_1                      | 3   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 300            | 50                                     | rule_half                                  |
+      | schema_ol_reis | reis         | 300            | 0.5                                    | rule_half                                  |
 
 
   # ##########################################################################################
@@ -565,13 +565,13 @@ Feature: Compensation group calibration
 
     When metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_later | 10    | cust_x        | 50                                 |
+      | rule_later | 10    | cust_x        | 0.5                                |
     And create compensation group from schema template:
       | C_Order_ID | C_CompensationGroup_Schema_ID | Qty | Calibrated | IdentifyLinesBy |
       | order_2    | schema_1                      | 1   | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 100            | 50                                     | rule_later                                 |
+      | schema_ol_reis | reis         | 100            | 0.5                                    | rule_later                                 |
 
 
   # ##########################################################################################
@@ -587,7 +587,7 @@ Feature: Compensation group calibration
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_off   | 10    | cust_x        | 70                                 |
+      | rule_off   | 10    | cust_x        | 0.7                                |
     And deactivate C_CompensationGroup_CalibrationRule:
       | Identifier |
       | rule_off   |
@@ -616,7 +616,7 @@ Feature: Compensation group calibration
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_10    | 10    | cust_x        | 70                                 |
+      | rule_10    | 10    | cust_x        | 0.7                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_1    | true    | cust_x        | 2026-10-07  |
@@ -626,7 +626,7 @@ Feature: Compensation group calibration
       | order_1    | schema_1                      | 1   | Y          | Product         |
     And validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 140            | 70                                     | 200                                         | rule_10                                    |
+      | schema_ol_reis | reis         | 140            | 0.7                                    | 200                                         | rule_10                                    |
 
     When deactivate C_CompensationGroup_CalibrationRule:
       | Identifier |
@@ -635,7 +635,7 @@ Feature: Compensation group calibration
     # the existing line keeps the rule and the factor
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 140            | 70                                     | 200                                         | rule_10                                    |
+      | schema_ol_reis | reis         | 140            | 0.7                                    | 200                                         | rule_10                                    |
 
     # a new order of the same customer does not match the deactivated rule
     When create compensation group from schema template:
@@ -663,7 +663,7 @@ Feature: Compensation group calibration
       | sl_disc    | schema_1                      | discount     | 10                        | 30        |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | M_Product_ID | GroupCompensationCalibrationFactor |
-      | rule_10    | 10    | cust_x        | reis         | 50                                 |
+      | rule_10    | 10    | cust_x        | reis         | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -673,7 +673,7 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 10  | Y          | Product         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 1000           | 50                                     | 2000                                        | rule_10                                    |
+      | schema_ol_reis | reis         | 1000           | 0.5                                    | 2000                                        | rule_10                                    |
       | schema_ol_fisch | fisch       | 10             | null                                   | null                                        | null                                       |
     # 10 % of the net of the regular lines: 10 PCE x 5 EUR + 1000 GRM x 1 EUR = 1050 EUR
     And validate C_OrderLine:
@@ -693,7 +693,7 @@ Feature: Compensation group calibration
     # 10 % of 10 PCE x 5 EUR + 1200 GRM x 1 EUR = 1250 EUR; factor, rule and uncalibrated quantity stay
     Then validate C_OrderLine:
       | C_OrderLine_ID  | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis  | reis         | 1200           | 50                                     | 2000                                        | rule_10                                    |
+      | schema_ol_reis  | reis         | 1200           | 0.5                                    | 2000                                        | rule_10                                    |
       | schema_ol_fisch | fisch        | 10             | null                                   | null                                        | null                                       |
     And validate C_OrderLine:
       | C_OrderLine_ID       | M_Product_ID | OPT.IsGroupCompensationLine | OPT.price |
@@ -847,7 +847,7 @@ Feature: Compensation group calibration
       | tl_milch   | schema_1                      | milch        | 0.25| LTR      | 20    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_cust  | 10    | cust_x        | 80                                 |
+      | rule_cust  | 10    | cust_x        | 0.8                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -880,7 +880,7 @@ Feature: Compensation group calibration
       | tl_menu_2  | schema_1                      | menu_2       | 2   | PCE      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | M_Product_ID | GroupCompensationCalibrationFactor |
-      | rule_menu  | 10    | cust_x        | menu_2       | 50                                 |
+      | rule_menu  | 10    | cust_x        | menu_2       | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -921,7 +921,7 @@ Feature: Compensation group calibration
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | rule_cust  | 10    | both          | 50                                 |
+      | rule_cust  | 10    | both          | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID |
       | po_1       | false   | both          | 2026-10-07  | ps_po              |
@@ -947,8 +947,8 @@ Feature: Compensation group calibration
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | r10        | 10    | cust_x        | 50                                 |
-      | r20        | 20    | cust_y        | 80                                 |
+      | r10        | 10    | cust_x        | 0.5                                |
+      | r20        | 20    | cust_y        | 0.8                                |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | location_y | 0130456809028 | cust_y        | Y                   | Y                   |
@@ -960,18 +960,18 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         |
     And validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 100            | 50                                     | 200                                         | r10                                        |
+      | schema_ol_reis | reis         | 100            | 0.5                                    | 200                                         | r10                                        |
 
     # the rule's factor is changed
     When update C_CompensationGroup_CalibrationRule:
       | Identifier | GroupCompensationCalibrationFactor |
-      | r10        | 90                                 |
+      | r10        | 0.9                                |
     And load C_OrderLines from C_Order:
       | C_Order_ID | C_OrderLine_ID | M_Product_ID |
       | order_x    | schema_ol_reis | reis         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 100            | 50                                     | 200                                         | r10                                        |
+      | schema_ol_reis | reis         | 100            | 0.5                                    | 200                                         | r10                                        |
 
     # the order's customer is changed to one with another rule, together with its location
     When update order
@@ -982,7 +982,7 @@ Feature: Compensation group calibration
       | order_x    | schema_ol_reis | reis         |
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | schema_ol_reis | reis         | 100            | 50                                     | 200                                         | r10                                        |
+      | schema_ol_reis | reis         | 100            | 0.5                                    | 200                                         | r10                                        |
 
 
   # ##########################################################################################
@@ -998,7 +998,7 @@ Feature: Compensation group calibration
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | r10        | 10    | cust_x        | 50                                 |
+      | r10        | 10    | cust_x        | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |
@@ -1007,7 +1007,7 @@ Feature: Compensation group calibration
       | order_x    | schema_1                      | 1   | Y          | Product         |
     And update C_CompensationGroup_CalibrationRule:
       | Identifier | GroupCompensationCalibrationFactor |
-      | r10        | 90                                 |
+      | r10        | 0.9                                |
 
     When C_Order is cloned
       | C_Order_ID.Identifier | ClonedOrder.C_Order_ID.Identifier |
@@ -1018,7 +1018,7 @@ Feature: Compensation group calibration
     # the copy takes over 100 / 50 / 200 / r10, not the 180 a new match with the changed rule would give
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | copy_ol_reis   | reis         | 100            | 50                                     | 200                                         | r10                                        |
+      | copy_ol_reis   | reis         | 100            | 0.5                                    | 200                                         | r10                                        |
 
 
   # ##########################################################################################
@@ -1034,7 +1034,7 @@ Feature: Compensation group calibration
       | tl_reis    | schema_1                      | reis         | 200 | GRM      | 10    |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | r10        | 10    | cust_x        | 50                                 |
+      | r10        | 10    | cust_x        | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType |
       | quote_x    | true    | cust_x        | 2026-10-07  | SOO         | ON         |
@@ -1044,7 +1044,7 @@ Feature: Compensation group calibration
     And the order identified by quote_x is completed
     And update C_CompensationGroup_CalibrationRule:
       | Identifier | GroupCompensationCalibrationFactor |
-      | r10        | 90                                 |
+      | r10        | 0.9                                |
 
     When sales order is created from proposal:
       | C_Order_ID | SalesOrder.C_Order_ID |
@@ -1055,7 +1055,7 @@ Feature: Compensation group calibration
     # 100 / 50 / 200 / r10 as quoted, not the 180 a new match with the changed rule would give
     Then validate C_OrderLine:
       | C_OrderLine_ID | M_Product_ID | OPT.QtyEntered | OPT.GroupCompensationCalibrationFactor | OPT.GroupCompensationQtyEnteredUncalibrated | OPT.C_CompensationGroup_CalibrationRule_ID |
-      | order_ol_reis  | reis         | 100            | 50                                     | 200                                         | r10                                        |
+      | order_ol_reis  | reis         | 100            | 0.5                                    | 200                                         | r10                                        |
 
 
   # ##########################################################################################
@@ -1085,7 +1085,7 @@ Feature: Compensation group calibration
       | pp_menu_b  | plv_sales              | menu_b       | 1        | Normal                        | PCE               |
     And metasfresh contains C_CompensationGroup_CalibrationRule:
       | Identifier | SeqNo | C_BPartner_ID | GroupCompensationCalibrationFactor |
-      | r10        | 10    | cust_x        | 50                                 |
+      | r10        | 10    | cust_x        | 0.5                                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_x    | true    | cust_x        | 2026-10-07  |

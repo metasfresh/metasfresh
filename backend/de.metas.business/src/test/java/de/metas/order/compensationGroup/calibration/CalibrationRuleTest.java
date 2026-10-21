@@ -16,7 +16,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The factor is a 100-based percent: 80 = 80 %, 100 = unchanged, 0 = Qty 0.
  * The calibrated qty is rounded UP (away from zero) to the UOM precision.
  */
 class CalibrationRuleTest
@@ -70,6 +69,16 @@ class CalibrationRuleTest
 	{
 		// 0.15 x 66.7 % = 0.10005; half-up would give 0.10
 		assertThat(computeQtyCalibrated("0.15", 2, "66.7")).isEqualByComparingTo("0.11");
+	}
+
+	@Test
+	void factorWithTwoDecimals_roundsOnceAtTheEnd()
+	{
+		// 375 x 93.33 % = 349.9875: rounded once, at the end
+		assertThat(computeQtyCalibrated("375", 2, "93.33")).isEqualByComparingTo("349.99");
+		assertThat(computeQtyCalibrated("375", 0, "93.33")).isEqualByComparingTo("350");
+		// 0.15 x 66.67 % = 0.100005
+		assertThat(computeQtyCalibrated("0.15", 2, "66.67")).isEqualByComparingTo("0.11");
 	}
 
 	@Test
