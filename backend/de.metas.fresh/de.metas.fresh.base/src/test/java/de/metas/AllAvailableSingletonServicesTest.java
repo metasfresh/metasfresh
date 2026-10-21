@@ -1,6 +1,7 @@
 package de.metas;
 
 import com.google.common.base.Stopwatch;
+import de.metas.banking.api.BankAccountService;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.util.ISingletonService;
@@ -95,6 +96,7 @@ public class AllAvailableSingletonServicesTest
 
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+		SpringContextHolder.registerJUnitBean(BankAccountService.newInstanceForUnitTesting());
 	}
 
 	@ParameterizedTest
