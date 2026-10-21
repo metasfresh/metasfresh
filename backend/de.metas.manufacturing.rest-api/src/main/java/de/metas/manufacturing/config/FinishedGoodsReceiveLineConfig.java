@@ -12,4 +12,9 @@ public class FinishedGoodsReceiveLineConfig
 	boolean skipReceiveTargetStep;
 	boolean captureCatchWeight;
 	boolean allowReceiveWithoutPackingItem;
+
+	/**
+	 * Catch-weight scan required, effective: setting on AND main finished good AND catch-weight product AND catch weight captured at receipt.
+	 */
+	boolean catchWeightScanRequired;
 }

@@ -11,8 +11,11 @@ import { trl } from '../../utils/translations';
  * Backend contract: `de.metas.handlingunits.attribute.json.JsonAttribute` — `code`, `caption`,
  * `valueType` (STRING/NUMBER/DATE/LIST), and, for LIST, `listValues: [{ value, caption }]`.
  *
- * Inputs always start empty (no pre-fill from `attribute.value`) — attributes are optional, so an
- * untouched/cleared field is simply absent from the emitted map.
+ * Inputs start with the caller's `initialValuesByCode` (e.g. a pre-filled lot number or best-before
+ * date), otherwise empty (no pre-fill from `attribute.value`). `onFieldChange` fires only on an edit,
+ * so a pre-filled value the operator never touches reaches the caller only together with another
+ * edit; the caller decides whether an unchanged pre-filled value is sent. Attributes are optional, so
+ * a cleared field is simply absent from the emitted map.
  *
  * DATE fields: the legacy `DateInput` fires on every keystroke, so while the typed text isn't yet
  * a valid date it reports the raw display text with `isValid: false`. That raw/partial text is
@@ -30,8 +33,8 @@ import { trl } from '../../utils/translations';
  * the operator's in-progress values must survive that transient — clobbering them to blank would
  * post the receive with a blank value.
  */
-const EditableAttributesSection = ({ attributes, disabled, onFieldChange }) => {
-  const [valuesByCode, setValuesByCode] = useState({});
+const EditableAttributesSection = ({ attributes, initialValuesByCode, disabled, onFieldChange }) => {
+  const [valuesByCode, setValuesByCode] = useState(() => withoutEmptyValues(initialValuesByCode));
   const [invalidCodes, setInvalidCodes] = useState({});
 
   const attributeCodesKey = (attributes ?? []).map(({ code }) => code).join('|');
@@ -108,6 +111,11 @@ const EditableAttributesSection = ({ attributes, disabled, onFieldChange }) => {
     </table>
   );
 };
+const withoutEmptyValues = (valuesByCode) =>
+  Object.fromEntries(
+    Object.entries(valuesByCode ?? {}).filter(([, value]) => value !== '' && value !== null && value !== undefined)
+  );
+
 EditableAttributesSection.propTypes = {
   attributes: PropTypes.arrayOf(
     PropTypes.shape({
@@ -123,6 +131,8 @@ EditableAttributesSection.propTypes = {
       ),
     })
   ),
+  // { [attributeCode]: value } the inputs start with; read on mount only
+  initialValuesByCode: PropTypes.object,
   disabled: PropTypes.bool,
   onFieldChange: PropTypes.func,
 };

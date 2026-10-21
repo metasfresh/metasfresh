@@ -48,6 +48,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
 import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
