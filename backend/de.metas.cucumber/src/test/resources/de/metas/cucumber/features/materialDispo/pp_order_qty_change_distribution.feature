@@ -12,8 +12,6 @@ Feature: Distribution for a manufacturing order's component follows the order's 
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And set sys config boolean value false for sys config DDOrder_isCreateMovementOnComplete
-    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
     And metasfresh contains M_Products:
       | Identifier   |
@@ -77,30 +75,31 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @Id:S28916_10
   Scenario: manually created PP_Order; change its qty right away and complete it -> the DD_Order_Candidates supply the re-created BOM line with the new qty
     When create PP_Order:
-      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
-      | ppOrder                | MOP         | finishedGood            | 10         | plant                    | production_WH                 | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
+      | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
+      | ppOrder     | MOP         | finishedGood | 10         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
 
     # The qty is changed right after creation, before material dispo has finished planning the distribution.
     # Changing the qty deletes the BOM line of qty 10 and creates a new one
     When update PP_Order:
-      | PP_Order_ID.Identifier | OPT.QtyEntered |
-      | ppOrder                | 20             |
+      | PP_Order_ID | QtyEntered |
+      | ppOrder     | 20         |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
       | newBOMLine          | ppOrder     | component    | 20 PCE       | CO            |
     And the manufacturing order identified by ppOrder is completed
 
-    # Required component qty: 1 (BOM QtyBatch) x 20 (new PP_Order qty) - 0 (no component stock in production_WH) = 20
-    # The 20 may be split into several candidates, depending on the order in which material dispo processes its events.
-    Then after not more than 60s, the DD_Order_Candidates of the following PP_Orders add up to
-      | Forward_PP_Order_ID | M_Product_ID | Qty    | Forward_PP_Order_BOMLine_ID |
-      | ppOrder             | component    | 20 PCE | newBOMLine                  |
-    And after not more than 60s, the distribution MD_Candidates of the following PP_Orders add up to
-      | MD_Candidate_Type | M_Product_ID | M_Warehouse_ID  | Forward_PP_Order_ID | Qty | Forward_PP_Order_BOMLine_ID |
-      | SUPPLY            | component    | production_WH   | ppOrder             | 20  | newBOMLine                  |
-      | DEMAND            | component    | rawMaterials_WH | ppOrder             | 20  | newBOMLine                  |
-    And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | DateProjected_LocalTimeZone | Qty | ATP | M_Warehouse_ID  | PP_Order_ID | PP_Order_BOMLine_ID |
-      | stock      | INVENTORY_UP      |                           | component    |                      | 2021-04-12T00:00:00         | 100 | 100 | rawMaterials_WH | -           | -                   |
-      | supply     | SUPPLY            | PRODUCTION                | finishedGood | 2021-04-16T21:00:00Z |                             | 20  | 20  | production_WH   | ppOrder     | -                   |
-      | demand     | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z |                             | -20 | -20 | production_WH   | ppOrder     | newBOMLine          |
+    # Required component qty: 1 (BOM QtyBatch) x 20 (new PP_Order qty) - 0 (no component stock in production_WH) = 20,
+    # distributed by two DD_Order_Candidates of 10 each, both supplying the new BOM line.
+    Then after not more than 60s, the DD_Order_Candidate table has only the following records
+      | Identifier        | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
+      | ddOrderCandidate1 | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | newBOMLine                  |
+      | ddOrderCandidate2 | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | newBOMLine                  |
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier  | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | DateProjected_LocalTimeZone | Qty | ATP | M_Warehouse_ID  | PP_Order_ID | PP_Order_BOMLine_ID | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
+      | stock       | INVENTORY_UP      |                           | component    |                      | 2021-04-12T00:00:00         | 100 | 100 | rawMaterials_WH | -           | -                   | -                   | -                           |
+      | supply      | SUPPLY            | PRODUCTION                | finishedGood | 2021-04-16T21:00:00Z |                             | 20  | 20  | production_WH   | ppOrder     | -                   | -                   | -                           |
+      | demand      | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z |                             | -20 | -20 | production_WH   | ppOrder     | newBOMLine          | -                   | -                           |
+      | distSupply1 | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z |                             | 10  | -10 | production_WH   | -           | -                   | ppOrder             | newBOMLine                  |
+      | distSupply2 | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z |                             | 10  | 0   | production_WH   | -           | -                   | ppOrder             | newBOMLine                  |
+      | distDemand1 | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z |                             | -10 | 90  | rawMaterials_WH | -           | -                   | ppOrder             | newBOMLine                  |
+      | distDemand2 | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z |                             | -10 | 80  | rawMaterials_WH | -           | -                   | ppOrder             | newBOMLine                  |

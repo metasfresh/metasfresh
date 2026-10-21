@@ -80,19 +80,25 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 
 	public DDOrderCandidateAdvisedEvent withPPOrderAndBOMLineId(@Nullable final PPOrderAndBOMLineId newPPOrderAndBOMLineId)
 	{
-		final DDOrderCandidateData ddOrderCandidateNew = getDdOrderCandidate().withPPOrderAndBOMLineId(newPPOrderAndBOMLineId);
-		if (ddOrderCandidateNew == getDdOrderCandidate())
+		if (PPOrderAndBOMLineId.equals(getPPOrderAndBOMLineId(), newPPOrderAndBOMLineId))
 		{
 			return this;
 		}
 
 		return new DDOrderCandidateAdvisedEvent(
 				getEventDescriptor(),
-				ddOrderCandidateNew,
+				getDdOrderCandidate().withPPOrderAndBOMLineId(newPPOrderAndBOMLineId),
 				getSupplyRequiredDescriptorNotNull(),
 				advisedToCreateDDOrder,
 				pickIfFeasible
 		);
+	}
+
+	@Nullable
+	private PPOrderAndBOMLineId getPPOrderAndBOMLineId()
+	{
+		final PPOrderRef forwardPPOrderRef = getForwardPPOrderRef();
+		return forwardPPOrderRef != null ? forwardPPOrderRef.getPpOrderAndBOMLineId() : null;
 	}
 
 	public DDOrderCandidateAdvisedEvent withPPOrderId(@Nullable final PPOrderId newPPOrderId)

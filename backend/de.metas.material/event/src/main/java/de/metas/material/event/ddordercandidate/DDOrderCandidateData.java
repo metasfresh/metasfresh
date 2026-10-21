@@ -135,7 +135,7 @@ public class DDOrderCandidateData
 	public DDOrderCandidateData withPPOrderId(@Nullable final PPOrderId forwardPPOrderIdNew)
 	{
 		final PPOrderRef forwardPPOrderRefNew = PPOrderRef.withPPOrderId(forwardPPOrderRef, forwardPPOrderIdNew);
-		if (Objects.equals(this.forwardPPOrderRef, forwardPPOrderRefNew))
+		if (PPOrderRef.equals(this.forwardPPOrderRef, forwardPPOrderRefNew))
 		{
 			return this;
 		}
@@ -146,7 +146,7 @@ public class DDOrderCandidateData
 	public DDOrderCandidateData withPPOrderAndBOMLineId(@Nullable final PPOrderAndBOMLineId forwardPPOrderAndBOMLineIdNew)
 	{
 		final PPOrderRef forwardPPOrderRefNew = PPOrderRef.withPPOrderAndBOMLineId(forwardPPOrderRef, forwardPPOrderAndBOMLineIdNew);
-		if (Objects.equals(this.forwardPPOrderRef, forwardPPOrderRefNew))
+		if (PPOrderRef.equals(this.forwardPPOrderRef, forwardPPOrderRefNew))
 		{
 			return this;
 		}
