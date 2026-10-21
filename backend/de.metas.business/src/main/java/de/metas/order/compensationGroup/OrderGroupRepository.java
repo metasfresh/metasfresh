@@ -1244,6 +1244,16 @@ public class OrderGroupRepository implements GroupRepository
 	}
 
 	/**
+	 * Makes the line uncalibrated: no rule, no factor, no uncalibrated qty. QtyEntered is kept.
+	 */
+	public static void clearCalibration(@NonNull final I_C_OrderLine orderLine)
+	{
+		orderLine.setC_CompensationGroup_CalibrationRule_ID(-1);
+		setCalibrationFactor(orderLine, null);
+		orderLine.setGroupCompensationQtyEnteredUncalibrated(null);
+	}
+
+	/**
 	 * Rounded half-up to 2 decimals of the percent: 350 / 375 = 93.33 % = 0.9333.
 	 */
 	public static void setCalibrationFactorFromQty(

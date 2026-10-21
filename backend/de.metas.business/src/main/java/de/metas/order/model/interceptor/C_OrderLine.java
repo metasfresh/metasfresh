@@ -17,6 +17,7 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -437,6 +438,15 @@ public class C_OrderLine
 			logger.debug("Making sure {} has a M_Shipper_ID", orderLine);
 			orderLineBL.setShipper(orderLine);
 		}
+	}
+
+	/**
+	 * The calibration (rule, factor, uncalibrated qty) belongs to the product it was created for; QtyEntered is kept.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_M_Product_ID)
+	public void clearCalibrationOnProductChange(@NonNull final I_C_OrderLine orderLine)
+	{
+		OrderGroupRepository.clearCalibration(orderLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
