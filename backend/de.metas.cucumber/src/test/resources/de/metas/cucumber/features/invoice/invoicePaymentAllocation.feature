@@ -3667,3 +3667,185 @@ Feature: invoice payment allocation
 
 
 
+
+
+
+
+
+
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0465_CMA_180
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00700_Invoicing
+  @allure.label.epic:E0225_Accounting
+  @allure.label.feature:F01010_Automatic_Accounting
+  @allure.label.feature:F01010.5_Customer_Invoice_and_Credit_Memo
+  @F00700
+  Scenario: discounted sales credit memo allocated against partially settled sales invoice - receivable cleared at net amount, nothing on suspense
+    # Documents (VAT 2.6%, payment term 3% within 10 days):
+    # - sales invoice (ARI): net 820.00 + VAT 21.32 = 841.32
+    # - sales credit memo (ARC): net 396.70 + VAT 10.31 = 407.01
+    # Allocation without payment:
+    # - invoice line: 419.22, over/underpayment 422.10 => the invoice stays partially open
+    # - credit memo line: -419.22, discount 12.21
+    # Expected posting:
+    # - invoice receivable CR 419.22
+    # - credit memo receivable DR 407.01 (allocated amount minus its own discount)
+    # - discount DR 12.21; tax correction 0.31 (CR on discount account, DR on tax account)
+    # - nothing on the suspense-balancing account
+    Given metasfresh contains C_TaxCategory
+      | Identifier    |
+      | taxCategory26 |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax26      | taxCategory26    | 2.6  | DE                       | DE                        |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory26    |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier       | IsCustomer | IsVendor | M_PricingSystem_ID | C_PaymentTerm_ID.Value                 |
+      | discountCustomer | Y          | N        | pricingSystem      | 10 Tage 3 %, 30 Tage 2%, 60 Tage netto |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier               | C_BPartner_ID    | IsShipToDefault | IsBillToDefault |
+      | discountCustomerLocation | discountCustomer | Y               | Y               |
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID    | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | discountCustomer | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
+      | invoice      | product      | 1 PCE       | 820.00 | tax26        |
+    And the invoice identified by invoice is completed
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID    | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | creditMemo | discountCustomer | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
+      | creditMemo   | product      | 1 PCE       | 396.70 | tax26        |
+    And the invoice identified by creditMemo is completed
+
+    And validate created invoices
+      | C_Invoice_ID | TotalLines | GrandTotal |
+      | invoice      | 820.00     | 841.32 EUR |
+      | creditMemo   | 396.70     | 407.01 EUR |
+
+    And create and complete manual payment allocations
+      | C_AllocationHdr_ID | C_BPartner_ID    | C_Invoice_ID | Amount      | DiscountAmt | OverUnderAmt |
+      | alloc              | discountCustomer | invoice      | 419.22 EUR  | 0 EUR       | 422.10 EUR   |
+      | alloc              | discountCustomer | creditMemo   | -419.22 EUR | 12.21 EUR   | 0 EUR        |
+
+    # Allocation balance in source currency: a residual would be pushed onto the suspense-balancing account.
+    # Balance = debit - credit.
+    And Fact_Acct records balances for documents alloc are matching
+      | AccountConceptualName  | SourceBalance |
+      | C_Receivable_Acct      | -12.21 EUR    |
+      | SuspenseBalancing_Acct | 0.00 EUR      |
+
+    # Receivable per invoice: the invoice is cleared for the whole allocated amount, the credit memo only for its net amount.
+    And Fact_Acct records balances for documents alloc are matching
+      | AccountConceptualName | C_Invoice_ID | SourceBalance |
+      | C_Receivable_Acct     | invoice      | -419.22 EUR   |
+      | C_Receivable_Acct     | creditMemo   | 407.01 EUR    |
+
+    # Discount DR 12.21 less tax correction CR 0.31 = 11.90 on the discount account; tax correction DR 0.31 on the tax account.
+    And Fact_Acct records balances for documents alloc are matching
+      | AccountConceptualName  | C_Tax_ID | SourceBalance |
+      | T_PayDiscount_Rev_Acct | tax26    | 11.90 EUR     |
+      | T_Due_Acct             | tax26    | 0.31 EUR      |
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0465_CMA_190
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00700_Invoicing
+  @allure.label.epic:E0225_Accounting
+  @allure.label.feature:F01010_Automatic_Accounting
+  @allure.label.feature:F01010.5_Customer_Invoice_and_Credit_Memo
+  @F00700
+  Scenario: sales credit memo allocated against sales invoice with a discount larger than the allocated amount - nothing on suspense
+    # Documents (VAT 2.6%, payment term 3% within 10 days):
+    # - sales invoice (ARI): net 440.00 + VAT 11.44 = 451.44
+    # - sales credit memo (ARC): net 558.60 + VAT 14.52 = 573.12
+    # Allocation without payment:
+    # - invoice line: 15.07, over/underpayment 436.37
+    # - credit memo line: -15.07, discount 17.19 (3% of the full credit memo total, more than the allocated 15.07)
+    # Expected posting:
+    # - invoice receivable CR 15.07
+    # - credit memo receivable net -2.12 (allocated amount minus its own discount), i.e. CR 2.12
+    # - discount DR 17.19; tax correction 0.44 (CR on discount account, DR on tax account)
+    # - nothing on the suspense-balancing account
+    Given metasfresh contains C_TaxCategory
+      | Identifier    |
+      | taxCategory26 |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax26      | taxCategory26    | 2.6  | DE                       | DE                        |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory26    |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier       | IsCustomer | IsVendor | M_PricingSystem_ID | C_PaymentTerm_ID.Value                 |
+      | discountCustomer | Y          | N        | pricingSystem      | 10 Tage 3 %, 30 Tage 2%, 60 Tage netto |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier               | C_BPartner_ID    | IsShipToDefault | IsBillToDefault |
+      | discountCustomerLocation | discountCustomer | Y               | Y               |
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID    | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | discountCustomer | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
+      | invoice      | product      | 1 PCE       | 440.00 | tax26        |
+    And the invoice identified by invoice is completed
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID    | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | creditMemo | discountCustomer | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
+      | creditMemo   | product      | 1 PCE       | 558.60 | tax26        |
+    And the invoice identified by creditMemo is completed
+
+    And validate created invoices
+      | C_Invoice_ID | TotalLines | GrandTotal |
+      | invoice      | 440.00     | 451.44 EUR |
+      | creditMemo   | 558.60     | 573.12 EUR |
+
+    And create and complete manual payment allocations
+      | C_AllocationHdr_ID | C_BPartner_ID    | C_Invoice_ID | Amount     | DiscountAmt | OverUnderAmt |
+      | alloc              | discountCustomer | invoice      | 15.07 EUR  | 0 EUR       | 436.37 EUR   |
+      | alloc              | discountCustomer | creditMemo   | -15.07 EUR | 17.19 EUR   | 0 EUR        |
+
+    # Allocation balance in source currency: a residual would be pushed onto the suspense-balancing account.
+    # Balance = debit - credit.
+    And Fact_Acct records balances for documents alloc are matching
+      | AccountConceptualName  | SourceBalance |
+      | C_Receivable_Acct      | -17.19 EUR    |
+      | SuspenseBalancing_Acct | 0.00 EUR      |
+
+    # Receivable per invoice: the invoice is cleared for the allocated amount, the credit memo for its net amount (a credit of 2.12).
+    And Fact_Acct records balances for documents alloc are matching
+      | AccountConceptualName | C_Invoice_ID | SourceBalance |
+      | C_Receivable_Acct     | invoice      | -15.07 EUR    |
+      | C_Receivable_Acct     | creditMemo   | -2.12 EUR     |
+
+    # Discount DR 17.19 less tax correction CR 0.44 = 16.75 on the discount account; tax correction DR 0.44 on the tax account.
+    And Fact_Acct records balances for documents alloc are matching
+      | AccountConceptualName  | C_Tax_ID | SourceBalance |
+      | T_PayDiscount_Rev_Acct | tax26    | 16.75 EUR     |
+      | T_Due_Acct             | tax26    | 0.44 EUR      |
