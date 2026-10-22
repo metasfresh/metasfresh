@@ -19,6 +19,7 @@ import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SepaMarshallerException;
+import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.AccountIdentification4ChoiceCH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ActiveOrHistoricCurrencyAndAmount;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.AmountType3Choice;
@@ -971,7 +972,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		if (line.getC_BP_BankAccount_ID() > 0)
 		{
 			sb.append(" @C_BP_BankAccount_ID@ ");
-			sb.append(line.getC_BP_BankAccount().getDescription());
+			sb.append(SepaUtils.escapeAtSignsForParseTranslation(SepaUtils.getBankAccountLabel(line.getC_BP_BankAccount())));
 		}
 		return Services.get(IMsgBL.class).parseTranslation(InterfaceWrapperHelper.getCtx(line), sb.toString());
 	}

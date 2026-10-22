@@ -6,10 +6,14 @@ import de.metas.i18n.Msg;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -145,5 +149,49 @@ class SepaUtilsTest
 	{
 		assertThat(SepaUtils.getFirstNonEmpty(() -> null, () -> " ", () -> " name ", () -> "other")).isEqualTo("name");
 		assertThat(SepaUtils.getFirstNonEmpty(() -> null, () -> " ")).isNull();
+	}
+
+	private static I_SEPA_Export_Line sepaLine(final String description, final String name, final String iban, final String qrIban, final String accountNo)
+	{
+		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setDescription(description);
+		bankAccount.setName(name);
+		bankAccount.setIBAN(iban);
+		bankAccount.setQR_IBAN(qrIban);
+		bankAccount.setAccountNo(accountNo);
+		save(bankAccount);
+
+		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);
+		line.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
+		save(line);
+		return line;
+	}
+
+	@Test
+	void createInfo_bankAccountLabel()
+	{
+		// Description wins
+		assertThat(SepaUtils.createInfo(sepaLine("my desc", "my name", "CH93 0076 2011 6238 5295 7", null, null))).endsWith("my desc");
+		// no Description: Name
+		assertThat(SepaUtils.createInfo(sepaLine(null, "my name", "CH93 0076 2011 6238 5295 7", null, null))).endsWith("my name");
+		assertThat(SepaUtils.createInfo(sepaLine(" ", " my name ", null, null, null))).endsWith("my name");
+		// no Description, no Name: IBAN, then QR-IBAN, then account no
+		assertThat(SepaUtils.createInfo(sepaLine(null, null, "CH93 0076 2011 6238 5295 7", "CH44 3199 9123 0008 8901 2", "123"))).endsWith("CH93 0076 2011 6238 5295 7");
+		assertThat(SepaUtils.createInfo(sepaLine(null, null, null, "CH44 3199 9123 0008 8901 2", "123"))).endsWith("CH44 3199 9123 0008 8901 2");
+		assertThat(SepaUtils.createInfo(sepaLine(null, null, null, null, "123"))).endsWith("123");
+	}
+
+	@Test
+	void createInfo_bankAccountWithoutAnyLabelShowsId()
+	{
+		final I_SEPA_Export_Line line = sepaLine(null, null, null, null, null);
+		final String info = SepaUtils.createInfo(line);
+		assertThat(info).doesNotContain("null").endsWith("ID " + line.getC_BP_BankAccount_ID());
+	}
+
+	@Test
+	void createInfo_bankAccountLabelEscapesAtSigns()
+	{
+		assertThat(SepaUtils.createInfo(sepaLine("a@b", null, null, null, null))).endsWith("a@@b");
 	}
 }
