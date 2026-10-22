@@ -71,6 +71,9 @@ BEGIN
                                          SUM(ciline.qtyinvoiced) AS invoiced_qty
                                   FROM delivery_lines dl
                                            INNER JOIN c_invoiceline ciline ON ciline.m_inoutline_id = dl.m_inoutline_id
+                                                      AND ciline.isactive = 'Y'
+                                           INNER JOIN c_invoice i ON i.c_invoice_id = ciline.c_invoice_id
+                                                      AND i.docstatus IN ('CO', 'CL')
                                   GROUP BY dl.m_inoutline_id),
 
              -- Open (not-yet-invoiced) portion per delivery line = IC per-unit price x open qty.
@@ -81,6 +84,14 @@ BEGIN
              -- Also NOT C_InvoiceCandidate_InOutLine.QtyInvoiced, which stays 0 even after the IC is fully
              -- invoiced (that column tracks a different concern).
              -- Rounded to currency precision at this grain (quantity coverage, not cent-reconstruction).
+             --
+             -- Open-qty delivered term uses the IC-level C_Invoice_Candidate.QtyDelivered (not the per-link
+             -- C_InvoiceCandidate_InOutLine.QtyDelivered) for two reasons: (i) ordinary sales delivery lines
+             -- each get a dedicated 1:1 invoice candidate, so the two are numerically equal, and (ii) the
+             -- IC-level column carries the correct negative sign for customer-return lines, which the
+             -- per-link column does not. Packaging-material lines (one IC aggregated across several
+             -- M_InOutLines) are out of scope for this report (REQUIREMENTS section 3-5) and would need
+             -- revisiting here if ever required.
              open_portion AS (SELECT dl.m_inoutline_id,
                                      SUM(ROUND(COALESCE(ic.priceactual, 0)
                                                    * (ic.qtydelivered - COALESCE(ip.invoiced_qty, 0)), 2)) AS open_net
@@ -90,6 +101,7 @@ BEGIN
                                                       AND cic_iol.isactive = 'Y'
                                        INNER JOIN c_invoice_candidate ic
                                                   ON ic.c_invoice_candidate_id = cic_iol.c_invoice_candidate_id
+                                                      AND ic.isactive = 'Y'
                                        LEFT JOIN invoiced_portion ip ON ip.m_inoutline_id = dl.m_inoutline_id
                               WHERE (ic.qtydelivered - COALESCE(ip.invoiced_qty, 0)) <> 0
                               GROUP BY dl.m_inoutline_id),
@@ -136,9 +148,13 @@ $$
 COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.Docs_Daily_Delivery_Revenue_Report(numeric, numeric, timestamp, timestamp) IS
     'Returns a daily delivery-revenue report ("Tagesumsatz auf Basis Lieferung"), aggregated by M_InOut.MovementDate.
     For each completed sales delivery line (M_InOut IsSOTrx=Y, DocStatus CO/CL), the line''s net value is:
-      invoiced portion (sum of matched C_InvoiceLine.LineNetAmt/QtyInvoiced via C_InvoiceLine.M_InOutLine_ID)
-      + open portion (C_Invoice_Candidate.PriceActual x (QtyDelivered - invoiced qty), rounded to currency
-        precision). The open qty is derived from C_InvoiceLine.QtyInvoiced (settled synchronously at invoice
+      invoiced portion (sum of matched, active C_InvoiceLine.LineNetAmt/QtyInvoiced via
+        C_InvoiceLine.M_InOutLine_ID, for invoices with DocStatus CO/CL only -- reversed/drafted invoices
+        are excluded)
+      + open portion (C_Invoice_Candidate.PriceActual x (C_Invoice_Candidate.QtyDelivered - invoiced qty),
+        rounded to currency precision; the IC-level QtyDelivered is used because each ordinary sales delivery
+        line gets a dedicated 1:1 invoice candidate and the IC-level column carries the correct negative sign
+        for returns). The open qty is derived from C_InvoiceLine.QtyInvoiced (settled synchronously at invoice
         creation), not from C_Invoice_Candidate.QtyInvoiced (only brought current by a later recompute pass).
     Each delivered unit is counted exactly once (invoiced-qty + open-qty = delivered-qty); the two portions are
     rounded independently at their own grain, so the line total may differ by a cent from a theoretical
