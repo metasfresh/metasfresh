@@ -30,13 +30,21 @@ const BEST_BEFORE_DAYS = 70;
 
 // isTUMode: the line is received in TUs (receive unit type TU); the PP order then carries the two-piece TU packing.
 // isCaptureCatchWeightAtReceipt: undefined = the default (captured)
-const createMasterdata = async ({ isFinishedGoodsCatchWeightScanRequired, isTUMode = false, isCaptureCatchWeightAtReceipt }) => {
+const createMasterdata = async ({
+    isFinishedGoodsCatchWeightScanRequired,
+    isTUMode = false,
+    isCaptureCatchWeightAtReceipt,
+}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
             login: { user: { language: 'en_US' } },
             mobileConfig: {
-                manufacturing: { isFinishedGoodsCatchWeightScanRequired, isCaptureCatchWeightAtReceipt, receiveUnitType: isTUMode ? 'TU' : 'CU' },
+                manufacturing: {
+                    isFinishedGoodsCatchWeightScanRequired,
+                    isCaptureCatchWeightAtReceipt,
+                    receiveUnitType: isTUMode ? 'TU' : 'CU',
+                },
             },
             warehouses: { 'wh': {} },
             products: {

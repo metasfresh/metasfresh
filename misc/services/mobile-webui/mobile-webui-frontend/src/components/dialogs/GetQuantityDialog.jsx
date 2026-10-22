@@ -552,6 +552,18 @@ const GetQuantityDialog = ({
                       </td>
                     </tr>
                   )}
+                  {isScanForReview && !useCatchWeight && (
+                    <tr>
+                      <td colSpan={2}>
+                        {/* without a weight row the rescan is offered on its own, e.g. after scanning a wrong label */}
+                        <DialogButton
+                          captionKey="activities.picking.switchToQrCodeInput"
+                          className="button"
+                          onClick={() => setShowCatchWeightQRCodeReader(true)}
+                        />
+                      </td>
+                    </tr>
+                  )}
                   {qtyRejected > 0 && (
                     <>
                       <tr>
@@ -656,7 +668,7 @@ GetQuantityDialog.propTypes = {
   customQRCodeFormats: PropTypes.array,
   // Catch-weight only: an L&M QR code must be scanned; the scan fills the fields for review instead of confirming.
   // With catchWeightUom the scan also fills the weight; without it only Lot-Nr and MHD.
-  // Pass the backend's effective flag as is (it implies a catch weight captured at receipt); the dialog does not re-derive it.
+  // Pass the backend's effective flag as is (it does not imply a weight to capture; see catchWeightUom); the dialog does not re-derive it.
   isCatchWeightScanMandatory: PropTypes.bool,
 
   // Callbacks

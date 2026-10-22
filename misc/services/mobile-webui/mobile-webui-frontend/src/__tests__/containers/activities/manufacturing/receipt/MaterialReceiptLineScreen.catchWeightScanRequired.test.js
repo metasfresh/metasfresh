@@ -302,6 +302,25 @@ describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)',
     expect(screen.getByTestId('bestBeforeDate')).toHaveValue('2025-11-08');
   });
 
+  // Without a weight row the rescan control must still be offered: a wrong label can be replaced by scanning again.
+  it('offers a rescan after a scan, and the next scan replaces Lot-Nr and MHD', async () => {
+    renderScreen(lineWithoutWeight());
+    await openDialog();
+    await scan(LMQ_CODE);
+    await act(async () => {
+      fireEvent.click(screen.getByText(/activities\.picking\.switchToQrCodeInput$/));
+    });
+    expect(screen.getByTestId('fake-scanner')).toBeInTheDocument();
+
+    await scan('LMQ#1##15.11.2025#501');
+    await confirm();
+
+    expect(postManufacturingReceiveEventThunk).toHaveBeenCalledTimes(1);
+    expect(postManufacturingReceiveEventThunk.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ qtyReceived: 1, lotNo: '501', bestBeforeDate: '2025-11-15' })
+    );
+  });
+
   it.each([
     ['an unparseable code', 'this-is-not-a-qr-code', 'activities.picking.qrcode.invalidQRCode'],
     ['a code without a best-before date', 'LMQ#1#0.101', 'activities.picking.qrcode.missingBestBeforeDate'],
