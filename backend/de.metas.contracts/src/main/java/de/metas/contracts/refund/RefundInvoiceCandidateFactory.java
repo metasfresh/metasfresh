@@ -27,6 +27,7 @@ import de.metas.money.Money;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
@@ -156,6 +157,11 @@ public class RefundInvoiceCandidateFactory
 
 		// an amount per unit is refunded in the config's currency, whatever the currency of the sales
 		refundInvoiceCandidateRecord.setC_Currency_ID(refundContract.getRefundCurrencyId(assignableCandidate.getCurrencyId()).getRepoId());
+		if (refundContract.isFlat())
+		{
+			// one refund candidate per project; for a non-flat contract keep the dimension splitCandidate copied
+			refundInvoiceCandidateRecord.setC_Project_ID(ProjectId.toRepoId(assignableCandidate.getProjectId()));
+		}
 		refundInvoiceCandidateRecord.setPriceActual(ZERO);
 		refundInvoiceCandidateRecord.setPriceEntered(ZERO);
 

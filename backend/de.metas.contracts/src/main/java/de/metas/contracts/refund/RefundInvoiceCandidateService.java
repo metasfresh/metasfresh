@@ -161,12 +161,16 @@ public class RefundInvoiceCandidateService
 			@NonNull final AssignableInvoiceCandidate assignableCandidate,
 			@NonNull final RefundContract refundContract)
 	{
+		// a flat refund is keyed per project; a tiered/exceeding-qty one stays a single candidate whatever the project
+		final boolean keyByProject = refundContract.isFlat();
 		final RefundInvoiceCandidateQuery refundCandidateQuery = RefundInvoiceCandidateQuery
 				.builder()
 				.refundContract(refundContract)
 				.invoicableFrom(assignableCandidate.getInvoiceableFrom())
 				.soTrx(assignableCandidate.getSoTrx())
 				.currencyId(refundContract.getRefundCurrencyId(assignableCandidate.getCurrencyId()))
+				.keyByProject(keyByProject)
+				.projectId(keyByProject ? assignableCandidate.getProjectId() : null)
 				.build();
 
 		final List<RefundInvoiceCandidate> existingCandidates = refundInvoiceCandidateRepository.getRefundInvoiceCandidates(refundCandidateQuery);
