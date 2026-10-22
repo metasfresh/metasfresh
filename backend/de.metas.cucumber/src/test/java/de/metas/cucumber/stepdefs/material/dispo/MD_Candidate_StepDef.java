@@ -437,6 +437,78 @@ public class MD_Candidate_StepDef
 		logger.info("All candidates were created after {}", stopwatch);
 	}
 
+	/**
+	 * Asserts that, within the given timeout, an active {@code MD_Candidate} exists for each row's
+	 * {@code M_Product_ID} + {@code MD_Candidate_Type}.
+	 * <p>
+	 * Unlike {@code MD_Candidates are found}, this step is deliberately date- and ATP-independent: it matches only on
+	 * product, type and (optionally) {@code Qty} (absolute value) and the storage-attributes key derived from
+	 * {@code M_AttributeSetInstance_ID}. Use it to assert candidates whose {@code DateProjected} is a runtime timestamp
+	 * that cannot be spelled out in the feature - e.g. the {@code ATTRIBUTES_CHANGED_FROM}/{@code ATTRIBUTES_CHANGED_TO}
+	 * pair produced by an HU attribute change, whose date is the {@code M_HU_Attribute.Updated} instant.
+	 * <p>
+	 * Required columns: {@code M_Product_ID.Identifier}, {@code MD_Candidate_Type}.<br>
+	 * Optional columns: {@code Qty} (matched on absolute value, since a decreasing-stock candidate is stored negative),
+	 * {@code OPT.M_AttributeSetInstance_ID.Identifier} (matched on the resulting storage-attributes key).
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * Then after not more than 60s, MD_Candidate records exist for product
+	 *   | M_Product_ID.Identifier | MD_Candidate_Type       | Qty | OPT.M_AttributeSetInstance_ID.Identifier |
+	 *   | rekeyProduct            | ATTRIBUTES_CHANGED_FROM | 10  | asiA                                     |
+	 *   | rekeyProduct            | ATTRIBUTES_CHANGED_TO   | 10  | asiB                                     |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, MD_Candidate records exist for product$")
+	public void md_candidate_records_exist_for_product(final int timeoutSec, @NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> assertMDCandidateExists(timeoutSec, row));
+	}
+
+	private void assertMDCandidateExists(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
+	{
+		final ProductId productId = productTable.getId(row.getAsIdentifier(COLUMNNAME_M_Product_ID));
+		final CandidateType type = row.getAsEnum(COLUMNNAME_MD_Candidate_Type, CandidateType.class);
+		final BigDecimal expectedQtyAbs = row.getAsOptionalBigDecimal(COLUMNNAME_Qty).map(BigDecimal::abs).orElse(null);
+		final AttributesKey expectedAttributesKey = row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
+				.map(attributeSetInstanceTable::getId)
+				.map(asiId -> AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE))
+				.orElse(null);
+
+		StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> {
+			final List<I_MD_Candidate> candidates = queryBL.createQueryBuilder(I_MD_Candidate.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, productId)
+					.addEqualsFilter(COLUMNNAME_MD_Candidate_Type, type)
+					.create()
+					.list();
+
+			for (final I_MD_Candidate candidate : candidates)
+			{
+				if (expectedQtyAbs != null && candidate.getQty().abs().compareTo(expectedQtyAbs) != 0)
+				{
+					continue;
+				}
+				if (expectedAttributesKey != null)
+				{
+					final AttributeSetInstanceId candidateAsiId = AttributeSetInstanceId.ofRepoIdOrNone(candidate.getM_AttributeSetInstance_ID());
+					final AttributesKey candidateAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(candidateAsiId).orElse(AttributesKey.NONE);
+					if (!candidateAttributesKey.equals(expectedAttributesKey))
+					{
+						continue;
+					}
+				}
+				return ProviderResult.resultWasFound(candidate);
+			}
+
+			return ProviderResult.resultWasNotFound("No active MD_Candidate found for product=" + productId.getRepoId()
+					+ ", type=" + type
+					+ (expectedQtyAbs != null ? ", |Qty|=" + expectedQtyAbs : "")
+					+ (expectedAttributesKey != null ? ", attributesKey=" + expectedAttributesKey : "")
+					+ "; candidates present for that product+type=" + candidates);
+		});
+	}
+
 	private void validate_md_candidate(final MaterialDispoTableRow expected, final MaterialDispoDataItem actual)
 	{
 		newValidator().validate(expected, actual);
