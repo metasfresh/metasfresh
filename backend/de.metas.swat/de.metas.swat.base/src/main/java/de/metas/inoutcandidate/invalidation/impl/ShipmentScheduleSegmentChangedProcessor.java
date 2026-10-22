@@ -16,7 +16,9 @@ import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.AccessLevel;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /*
@@ -42,6 +44,7 @@ import lombok.ToString;
  */
 
 @ToString(of = "segments")
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 final class ShipmentScheduleSegmentChangedProcessor
 {
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleSegmentChangedProcessor.class);
@@ -96,7 +99,7 @@ final class ShipmentScheduleSegmentChangedProcessor
 	}
 
 	private final Set<IShipmentScheduleSegment> segments = new LinkedHashSet<>();
-	private final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator;
+	@NonNull private final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator;
 
 	/**
 	 * Mid-batch flush threshold, obtained from the owning {@link ShipmentScheduleInvalidateBL} by the factory when
@@ -105,14 +108,6 @@ final class ShipmentScheduleSegmentChangedProcessor
 	 * AFTER_COMMIT listener flushes then.
 	 */
 	private final int flushThreshold;
-
-	private ShipmentScheduleSegmentChangedProcessor(
-			@NonNull final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator,
-			final int flushThreshold)
-	{
-		this.shipmentScheduleInvalidator = shipmentScheduleInvalidator;
-		this.flushThreshold = flushThreshold;
-	}
 
 	private void process()
 	{

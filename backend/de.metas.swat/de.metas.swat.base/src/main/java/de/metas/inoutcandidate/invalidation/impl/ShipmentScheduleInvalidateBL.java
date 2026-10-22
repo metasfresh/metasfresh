@@ -22,6 +22,7 @@ package de.metas.inoutcandidate.invalidation.impl;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inout.IInOutDAO;
@@ -323,7 +324,8 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		}
 	}
 
-	private Stream<IShipmentScheduleSegment> explodeByPickingBOMs(final IShipmentScheduleSegment segment)
+	@VisibleForTesting
+	Stream<IShipmentScheduleSegment> explodeByPickingBOMs(final IShipmentScheduleSegment segment)
 	{
 		if (segment.isAnyProduct())
 		{
@@ -342,6 +344,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 				.productIds(ProductId.toRepoIds(pickingBOMProductIds))
 				.anyBPartner()
 				.locatorIds(segment.getLocatorIds())
+				.warehouseIds(segment.getWarehouseIds())
 				.build();
 
 		return Stream.of(segment, pickingBOMsSegment);
