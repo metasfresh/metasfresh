@@ -18,11 +18,14 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -76,7 +79,6 @@ public class SEPATestHelper
 	{
 		currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code(CurrencyCode.USD.toThreeLetterCode());
-		currency.setDescription(CurrencyCode.USD.toThreeLetterCode());
 		save(currency);
 
 		final I_C_Country country = newInstance(I_C_Country.class);
@@ -407,7 +409,6 @@ public class SEPATestHelper
 	{
 		final I_C_Currency chfCurrency = newInstance(I_C_Currency.class);
 		chfCurrency.setISO_Code(CurrencyCode.CHF.toThreeLetterCode());
-		chfCurrency.setDescription(CurrencyCode.CHF.toThreeLetterCode());
 		save(chfCurrency);
 
 		final I_C_Country country = newInstance(I_C_Country.class);
@@ -485,6 +486,41 @@ public class SEPATestHelper
 		qrIbanSecondPaySelectionLine.setC_BPartner_ID(qrIbanPartner.getC_BPartner_ID());
 		qrIbanSecondPaySelectionLine.setReference(QR_REFERENCE_2);
 		save(qrIbanSecondPaySelectionLine);
+	}
+
+	/**
+	 * Adds to the pay selection of {@link #createQrIbanMockData()} a third line that pays an order (not an invoice) via the same QR-IBAN bank account.
+	 */
+	public void createQrIbanOrderPaySelectionLine()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(qrIbanPartner.getC_BPartner_ID());
+		order.setDescription("qrIbanOrderDescription");
+		order.setPOReference("qrIbanOrderPOReference");
+		save(order);
+
+		final I_C_PaySelectionLine orderPaySelectionLine = newInstance(I_C_PaySelectionLine.class);
+		orderPaySelectionLine.setC_PaySelection_ID(qrIbanPaySelection.getC_PaySelection_ID());
+		orderPaySelectionLine.setAD_Org_ID(1000000);
+		orderPaySelectionLine.setC_Order_ID(order.getC_Order_ID());
+		orderPaySelectionLine.setC_BP_BankAccount_ID(qrIbanBankAccount.getC_BP_BankAccount_ID());
+		orderPaySelectionLine.setPayAmt(BigDecimal.ONE);
+		orderPaySelectionLine.setC_BPartner_ID(qrIbanPartner.getC_BPartner_ID());
+		save(orderPaySelectionLine);
+	}
+
+	/**
+	 * Asserts that the export has exactly {@code expectedLineCount} lines and no pay-selection line was exported twice.
+	 */
+	public void assertEachPaySelectionLineExportedOnce(@NonNull final I_SEPA_Export sepaExport, final int expectedLineCount)
+	{
+		final List<I_SEPA_Export_Line> lines = sepaDocumentDAO.retrieveLines(sepaExport);
+		assertThat(lines).hasSize(expectedLineCount);
+
+		final Set<Integer> exportedPaySelectionLineIds = lines.stream()
+				.map(I_SEPA_Export_Line::getRecord_ID)
+				.collect(Collectors.toSet());
+		assertThat(exportedPaySelectionLineIds).hasSize(expectedLineCount);
 	}
 
 	/**

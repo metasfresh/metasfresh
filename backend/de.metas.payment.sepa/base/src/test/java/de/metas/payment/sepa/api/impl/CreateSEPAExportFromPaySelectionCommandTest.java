@@ -12,7 +12,9 @@ import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
+import de.metas.payment.sepa.sepamarshaller.impl.SEPAMarshaler;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
+import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -81,55 +83,6 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 	}
 
 	@Test
-	public void commandGroupsQrIbanLinesIndividually()
-	{
-		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
-		sepaTestHelper.createQrIbanMockData();
-		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		sepaTestHelper.assertQrIbanLinesNotGrouped(command.run());
-	}
-
-	@Test
-	public void marshalQrIbanGroupedExport_doesNotThrow() throws Exception
-	{
-		final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
-		final BankAccountService bankAccountService = new BankAccountService(bankRepository, new CurrencyRepository());
-		SpringContextHolder.registerJUnitBean(bankAccountService);
-
-		final SEPAExportContext exportContext = SEPAExportContext.builder()
-				.referenceAsEndToEndId(false)
-				.build();
-		final SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 marshaler =
-				new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext, bankAccountService);
-
-		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
-		sepaTestHelper.createQrIbanMockData();
-
-		// sanity check: each QR reference is valid on its own (grouping OFF, so no aggregation happens) - proves the
-		// fixtures are trustworthy before reproducing the grouped-export bug below. `isInvalidQRReference(..)` itself
-		// is package-private to de.metas.payment.sepa.sepamarshaller.impl, so it is exercised here through the public
-		// marshal(..) entry point instead. Running the command twice on the same C_PaySelection is safe - run() only
-		// reads the pay-selection lines, it never mutates them.
-		final I_SEPA_Export ungroupedExport = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run();
-		assertThatCode(() -> marshaler.marshal(ungroupedExport, new ByteArrayOutputStream()))
-				.as("each individual QR reference must be valid before we reproduce the grouping bug")
-				.doesNotThrowAnyException();
-
-		// reproduce the bug: grouping ON aggregates both QR-IBAN lines into one comma-joined, truncated reference
-		// that is no longer a valid 27-digit QRR reference.
-		final I_SEPA_Export groupedExport = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run();
-
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		assertThatCode(() -> marshaler.marshal(groupedExport, out))
-				.as("grouping QR-IBAN lines must not corrupt the QRR reference")
-				.doesNotThrowAnyException();
-
-		final String xml = out.toString(StandardCharsets.UTF_8.name());
-		assertThat(xml).contains(SEPATestHelper.QR_REFERENCE_1);
-		assertThat(xml).contains(SEPATestHelper.QR_REFERENCE_2);
-	}
-
-	@Test
 	void creditTransfer_exportedWith_pain_001_001_03_ch_02()
 	{
 		final I_SEPA_Export export = new CreateSEPAExportFromPaySelectionCommand(createCreditTransferPaySelection(), false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run();
@@ -176,5 +129,87 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		paySelection.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
 		save(paySelection);
 		return paySelection;
+	}
+
+	@Test
+	public void commandGroupsQrIbanLinesIndividually()
+	{
+		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
+		sepaTestHelper.createQrIbanMockData();
+		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), true, null);
+		sepaTestHelper.assertQrIbanLinesNotGrouped(command.run());
+	}
+
+	/**
+	 * An order pay-selection line is already exported individually by the order-line handling;
+	 * with grouping ON it must not be exported a second time just because its bank account has a QR-IBAN.
+	 */
+	@Test
+	public void groupingOn_qrIbanOrderLine_exportedExactlyOnce()
+	{
+		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
+		sepaTestHelper.createQrIbanMockData();
+		sepaTestHelper.createQrIbanOrderPaySelectionLine();
+
+		final I_SEPA_Export export = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), true, null).run();
+
+		sepaTestHelper.assertEachPaySelectionLineExportedOnce(export, 3);
+	}
+
+	@Test
+	public void marshalQrIbanGroupedExport_pain_001_001_03_ch_02_doesNotThrow()
+	{
+		final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
+		final BankAccountService bankAccountService = new BankAccountService(bankRepository, new CurrencyRepository());
+		SpringContextHolder.registerJUnitBean(bankAccountService);
+
+		assertQrIbanGroupedExportMarshals(new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, newExportContext(), bankAccountService));
+	}
+
+	@Test
+	public void marshalQrIbanGroupedExport_pain_001_001_09_ch_03_doesNotThrow()
+	{
+		final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
+		final BankAccountService bankAccountService = new BankAccountService(bankRepository, new CurrencyRepository());
+		SpringContextHolder.registerJUnitBean(bankAccountService);
+
+		assertQrIbanGroupedExportMarshals(new SEPAVendorCreditTransferMarshaler_Pain_001_001_09_CH_03(bankRepository, newExportContext(), bankAccountService));
+	}
+
+	private static SEPAExportContext newExportContext()
+	{
+		return SEPAExportContext.builder()
+				.referenceAsEndToEndId(false)
+				.build();
+	}
+
+	/**
+	 * Vendor with two QR-bills, "group transactions" ON: both QR references must reach the file as two payments and the export must not fail.
+	 */
+	private static void assertQrIbanGroupedExportMarshals(final SEPAMarshaler marshaler)
+	{
+		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
+		sepaTestHelper.createQrIbanMockData();
+
+		// sanity check: each QR reference is valid on its own (grouping OFF, so no aggregation happens) - proves the
+		// fixtures are trustworthy before reproducing the grouped-export bug below.
+		// Running the command twice on the same C_PaySelection is safe - run() only reads the pay-selection lines, it never mutates them.
+		final I_SEPA_Export ungroupedExport = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), false, null).run();
+		assertThatCode(() -> marshaler.marshal(ungroupedExport, new ByteArrayOutputStream()))
+				.as("each individual QR reference must be valid before we reproduce the grouping bug")
+				.doesNotThrowAnyException();
+
+		// reproduce the bug: grouping ON aggregates both QR-IBAN lines into one comma-joined, truncated reference
+		// that is no longer a valid 27-digit QRR reference.
+		final I_SEPA_Export groupedExport = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), true, null).run();
+
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		assertThatCode(() -> marshaler.marshal(groupedExport, out))
+				.as("grouping QR-IBAN lines must not corrupt the QRR reference")
+				.doesNotThrowAnyException();
+
+		final String xml = new String(out.toByteArray(), StandardCharsets.UTF_8);
+		assertThat(xml).contains(SEPATestHelper.QR_REFERENCE_1);
+		assertThat(xml).contains(SEPATestHelper.QR_REFERENCE_2);
 	}
 }
