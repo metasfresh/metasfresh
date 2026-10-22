@@ -1,6 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0170_Contract_Management
 @allure.label.feature:F00970_Flatrate_Contract
+@allure.label.feature:F2000_Contract_Management
 @ghActions:run_on_executor3
 Feature: Refund credit memo lines per project
 ## A flat refund (percentage or amount per unit) is issued as one credit memo with one line per project of the refunded sales, plus one line for the sales without project.
@@ -53,6 +54,7 @@ Feature: Refund credit memo lines per project
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
+  @allure.label.feature:F2000_Contract_Management
   @Id:refundProjectAttribution_TC1
   Scenario: A flat percentage refund is split into one credit memo line per project by the money of its sales
     Given metasfresh contains C_Flatrate_Conditions:
@@ -110,6 +112,7 @@ Feature: Refund credit memo lines per project
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
+  @allure.label.feature:F2000_Contract_Management
   @Id:refundProjectAttribution_TC2
   Scenario: A flat refund of 2 CHF per unit is split into one credit memo line per project by the quantity of its sales
     Given metasfresh contains C_Flatrate_Conditions:
@@ -167,6 +170,7 @@ Feature: Refund credit memo lines per project
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
+  @allure.label.feature:F2000_Contract_Management
   @Id:refundProjectAttribution_TC3
   Scenario: A refund of sales without project stays one credit memo line without project
     Given metasfresh contains C_Flatrate_Conditions:
@@ -217,6 +221,7 @@ Feature: Refund credit memo lines per project
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
+  @allure.label.feature:F2000_Contract_Management
   @Id:refundProjectAttribution_TC4
   Scenario: A refund of sales with and without project has one credit memo line per project and one line without project
     Given metasfresh contains C_Flatrate_Conditions:
@@ -279,6 +284,7 @@ Feature: Refund credit memo lines per project
   @from:cucumber
   @allure.label.epic:E0170_Contract_Management
   @allure.label.feature:F00970_Flatrate_Contract
+  @allure.label.feature:F2000_Contract_Management
   @Id:refundProjectAttribution_TC5
   Scenario: A scaled refund over two projects is not split: the scale applies to the whole base and stays one credit memo line
     Given metasfresh contains C_Flatrate_Conditions:

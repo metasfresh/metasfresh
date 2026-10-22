@@ -52,6 +52,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -207,8 +208,8 @@ public class C_Invoice_Candidate_Assignment_StepDef
 			StepDefUtil.tryAndWait(timeoutSec, POLL_INTERVAL_MS, () -> {
 				lastMismatch.setLength(0);
 				final List<I_C_Invoice_Candidate> candidates = queryBuilder.create().list().stream()
-						.sorted(java.util.Comparator.comparingInt(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID))
-						.collect(com.google.common.collect.ImmutableList.toImmutableList());
+						.sorted(Comparator.comparingInt(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID))
+						.collect(ImmutableList.toImmutableList());
 				if (!onePerProject && candidates.size() != 1)
 				{
 					lastMismatch.append("expected exactly 1 refund invoice candidate of C_Flatrate_Term_ID=").append(term.getC_Flatrate_Term_ID()).append(" but found ").append(candidates.size());
