@@ -163,6 +163,16 @@ public class RefundContract
 		return RefundConfigs.extractRefundMode(refundConfigs);
 	}
 
+	/**
+	 * @return {@code true} if this contract is not tiered: it is not {@link RefundMode#APPLY_TO_EXCEEDING_QTY} and none of its configs has a {@code minQty > 0}.
+	 *         {@code true} implies the refund is linear in its base, so splitting the base per project preserves the total - it is safe to key the refund candidate by project.
+	 */
+	public boolean isFlat()
+	{
+		return extractRefundMode() != RefundMode.APPLY_TO_EXCEEDING_QTY
+				&& refundConfigs.stream().allMatch(config -> config.getMinQty().signum() <= 0);
+	}
+
 	public Optional<RefundConfig> getRefundConfigToUseProfitCalculation()
 	{
 		return getRefundConfigs()
@@ -179,6 +189,10 @@ public class RefundContract
 	 */
 	public NextInvoiceDate computeNextInvoiceDate(@NonNull final LocalDate currentDate)
 	{
+		// a contract deducted at payment has no invoice schedule (its bonus is booked at the payment allocation, never invoiced), so it has no refund periods;
+		// the caller must have short-circuited it (see RefundInvoiceCandidateInvalidator) — fail fast rather than crash on the missing schedule
+		Check.assume(!isDeductedAtPayment(), "computeNextInvoiceDate may not be called for a contract deducted at payment (it has no invoice schedule); this={}", this);
+
 		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
 
 		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()))
@@ -208,6 +222,9 @@ public class RefundContract
 	 */
 	public LocalDate computeCurrentPeriodStart(@NonNull final LocalDate date)
 	{
+		// a contract deducted at payment has no invoice schedule, hence no refund periods; the caller must have short-circuited it. Fail fast rather than crash on the missing schedule.
+		Check.assume(!isDeductedAtPayment(), "computeCurrentPeriodStart may not be called for a contract deducted at payment (it has no invoice schedule); this={}", this);
+
 		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
 		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()))
 		{

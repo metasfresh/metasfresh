@@ -114,6 +114,14 @@ public class C_Flatrate_RefundConfig
 			return;
 		}
 
+		// a config NOT deducted at payment is invoiced by the refund engine, which needs its invoice schedule. The DB no longer enforces it
+		// (the column is optional for a config deducted at payment), and the UI MandatoryLogic does not cover REST/import, so reject it here.
+		// Checked on the record before ofRecord, which would otherwise reject a null schedule with a generic (non-user) message.
+		if (!configRecord.isDeductedAtPayment() && configRecord.getC_InvoiceSchedule_ID() <= 0)
+		{
+			throw new AdempiereException(RefundConfigs.MSG_REFUND_CONFIG_INVOICE_SCHEDULE_REQUIRED).markAsUserValidationError();
+		}
+
 		final RefundConfig newRefundConfig = refundConfigRepository.ofRecord(configRecord);
 		RefundConfigs.assertRefundProductIsKnown(newRefundConfig);
 		RefundConfigs.assertInvoiceDistanceDividesTheYear(newRefundConfig);
