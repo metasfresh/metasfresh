@@ -52,6 +52,17 @@ class SepaExportMessagesMigrationTest
 		assertThat(keysWithoutMigration).as("message keys without an AD_Message migration").isEmpty();
 	}
 
+	/**
+	 * The invalid-reference message is raised by the new pain.001.001.09.ch.03 export, so (like the other new error messages) it must carry an ErrorCode.
+	 */
+	@Test
+	void invalidReferenceMessageHasAnErrorCode() throws IOException
+	{
+		final String allMigrations = readAll(MODULE_DIR.resolve("src/main/sql"), ".sql");
+		final Pattern errorCodeUpdate = Pattern.compile("UPDATE\\s+AD_Message\\s+SET\\s+ErrorCode\\s*=\\s*'[A-Z_]+'[^;]*Value\\s*=\\s*'de\\.metas\\.payment\\.sepa\\.SEPA_Export_InvalidReference'", Pattern.CASE_INSENSITIVE);
+		assertThat(errorCodeUpdate.matcher(allMigrations).find()).as("a migration that sets AD_Message.ErrorCode of SEPA_Export_InvalidReference").isTrue();
+	}
+
 	private static String readAll(final Path dir, final String suffix) throws IOException
 	{
 		try (final Stream<Path> files = Files.walk(dir))
