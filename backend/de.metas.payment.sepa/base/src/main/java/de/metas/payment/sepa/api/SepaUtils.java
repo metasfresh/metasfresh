@@ -39,6 +39,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeFactory;
@@ -325,9 +326,23 @@ public class SepaUtils
 		if (line.getC_BP_BankAccount_ID() > 0)
 		{
 			sb.append(" ").append(msgBL.translate(ctx, I_SEPA_Export_Line.COLUMNNAME_C_BP_BankAccount_ID)).append(" ");
-			sb.append(line.getC_BP_BankAccount().getDescription());
+			sb.append(getBankAccountLabel(line.getC_BP_BankAccount()));
 		}
 		return escapeAtSignsForParseTranslation(sb.toString());
+	}
+
+	/**
+	 * @return the first of description, name, IBAN, QR-IBAN and account number that is set (trimmed), or "ID id" if none is; never "null". The text is not escaped.
+	 */
+	public static String getBankAccountLabel(@NonNull final I_C_BP_BankAccount bankAccount)
+	{
+		final String label = getFirstNonEmpty(
+				bankAccount::getDescription,
+				bankAccount::getName,
+				bankAccount::getIBAN,
+				bankAccount::getQR_IBAN,
+				bankAccount::getAccountNo);
+		return label != null ? label : "ID " + bankAccount.getC_BP_BankAccount_ID();
 	}
 
 	public static String getBPartnerNameById(final int bpartnerRepoId)
