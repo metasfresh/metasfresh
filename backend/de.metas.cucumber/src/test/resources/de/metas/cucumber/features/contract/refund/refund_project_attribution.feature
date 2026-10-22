@@ -85,11 +85,11 @@ Feature: Refund credit memo lines per project
 
     # 10 % of 1000
     And after not more than 60s, refund C_Invoice_Candidates are found:
-      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | DocBaseType | DocSubType |
-      | refundIC               | refundTerm         | 100             | ARC         | RI         |
+      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | DocBaseType | DocSubType | OnePerProject |
+      | refundIC               | refundTerm         | 100             | ARC         | RI         | Y             |
     When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
-      | C_Invoice_Candidate_ID.Identifier | IgnoreInvoiceSchedule |
-      | refundIC                          | Y                     |
+      | C_Invoice_Candidate_ID.Identifier | IgnoreInvoiceSchedule | IncludeSameRecordCandidates |
+      | refundIC                          | Y                     | Y                           |
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | refundInvoice           | refundIC                          |
@@ -142,11 +142,11 @@ Feature: Refund credit memo lines per project
 
     # 10 units x 2 CHF
     And after not more than 60s, refund C_Invoice_Candidates are found:
-      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | C_Currency.ISO_Code | IsError | NetAmtToInvoice |
-      | refundIC               | termPerUnit        | CHF                 | false   | 20              |
+      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | C_Currency.ISO_Code | IsError | NetAmtToInvoice | OnePerProject |
+      | refundIC               | termPerUnit        | CHF                 | false   | 20              | Y             |
     When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
-      | C_Invoice_Candidate_ID.Identifier | IgnoreInvoiceSchedule |
-      | refundIC                          | Y                     |
+      | C_Invoice_Candidate_ID.Identifier | IgnoreInvoiceSchedule | IncludeSameRecordCandidates |
+      | refundIC                          | Y                     | Y                           |
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | refundInvoice           | refundIC                          |
@@ -253,11 +253,11 @@ Feature: Refund credit memo lines per project
 
     # 10 % of 1000
     And after not more than 60s, refund C_Invoice_Candidates are found:
-      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | DocBaseType | DocSubType |
-      | refundIC               | refundTerm         | 100             | ARC         | RI         |
+      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | DocBaseType | DocSubType | OnePerProject |
+      | refundIC               | refundTerm         | 100             | ARC         | RI         | Y             |
     When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
-      | C_Invoice_Candidate_ID.Identifier | IgnoreInvoiceSchedule |
-      | refundIC                          | Y                     |
+      | C_Invoice_Candidate_ID.Identifier | IgnoreInvoiceSchedule | IncludeSameRecordCandidates |
+      | refundIC                          | Y                     | Y                           |
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | refundInvoice           | refundIC                          |
