@@ -104,17 +104,41 @@ Feature: Daily Revenue based on Delivery
 
 
   # ##########################################################################
-  # TC2 -- a customer return on the same day nets the day's total down
+  # TC2 -- a return today of goods delivered on a PRIOR day nets today's total down
   # ##########################################################################
   @from:cucumber
   @Id:S26873_TC2
   @allure.label.epic:E0220_Financial
   @allure.label.feature:F00969.2_Umsatzreport_Jasper
   Scenario: A customer return on the delivery's day nets that day's total down
-    Given metasfresh has date and time 2026-05-05T09:00:00+01:00[Europe/Berlin]
+    # Delivery C: qty 2 @ 5.00 = 10.00, dated the day BEFORE D -- its return (below) will land on D,
+    # but delivery C's own +10.00 stays on D-1, outside the report's [D,D] scope.
+    Given metasfresh has date and time 2026-05-04T09:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_Warehouse:
       | Identifier    | IsQualityReturnWarehouse |
       | warehouse_tc2 | Y                        |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | order_tc2c | true    | customer_ddr             | 2026-05-04  |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_tc2c | order_tc2c            | product_ddr             | 2          |
+    And the order identified by order_tc2c is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID.Identifier | IsToRecompute |
+      | schedule_tc2c | orderLine_tc2c            | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | schedule_tc2c                    | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | schedule_tc2c                    | shipment_tc2c         |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | NetAmtToInvoice |
+      | ic_tc2c                           | orderLine_tc2c            | 2            | 10.00           |
+
+    # Day D starts here.
+    Given metasfresh has date and time 2026-05-05T09:00:00+01:00[Europe/Berlin]
 
     # Delivery A: qty 10 @ 5.00 = 50.00, unbilled
     And metasfresh contains C_Orders:
@@ -161,16 +185,24 @@ Feature: Daily Revenue based on Delivery
       | C_Invoice_Candidate_ID.Identifier |
       | ic_tc2b                           |
 
-    # Customer return of qty 2 @ 5.00 = 10.00, from delivery A, landing on the same day D.
+    # Customer return TODAY (day D) of delivery C's full qty 2 @ 5.00 = -10.00. The return mechanism
+    # always copies the full source shipment (no partial-qty parameter) -- so the returned source is
+    # delivery C (qty 2, entirely returned), not delivery A (which stays untouched at qty 10).
     And generate customer return from shipment
       | M_InOut_ID.Identifier | CustomerReturn_ID |
-      | shipment_tc2a         | return_tc2        |
+      | shipment_tc2c         | return_tc2        |
     And update M_InOut:
       | M_InOut_ID | MovementDate |
       | return_tc2 | 2026-05-05   |
     And the return inOut identified by return_tc2 is completed
+    # Wait for the return's own negated C_Invoice_Candidate to be found+committed before reading the
+    # report -- it is created by an async workpackage, racing the report assertion otherwise.
+    And after not more than 60s, credit memo candidates are found:
+      | M_InOut_ID.Identifier | C_Invoice_Candidate_ID.Identifier | OPT.M_Product_ID.Identifier |
+      | return_tc2            | ic_return_tc2                     | product_ddr                 |
 
-    # Day total: 50.00 (open A) + 20.00 (invoiced B) - 10.00 (return) = 60.00
+    # Day D total: 50.00 (open A) + 20.00 (invoiced B) - 10.00 (return of C) = 60.00.
+    # Delivery C's own +10.00 is on D-1, outside this [D,D] scope.
     Then Docs_Daily_Delivery_Revenue_Report for C_BPartner "customer_ddr" between "2026-05-05" and "2026-05-05" returns:
       | Day        | DeliveryRevenueNet |
       | 2026-05-05 | 60.00              |
