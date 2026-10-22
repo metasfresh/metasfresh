@@ -114,6 +114,48 @@ public class BankAccountTest
 
 		assertThat(accountNoMatching).isFalse();
 	}
+
+	@Test
+	public void accountNoMatching_StoredQrIbanWithSpaces_FileValueWithoutSpaces()
+	{
+		final CurrencyId currencyCHF = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
+
+		final I_C_BP_BankAccount bankAccountRecord = createBankAccount("CH76 3570 0118 7543 2512", currencyCHF);
+		final BankAccountId bankAccountId = BankAccountId.ofRepoId(bankAccountRecord.getC_BP_BankAccount_ID());
+		final BankAccount bankAccount = bpBankAccountDAO.getById(bankAccountId);
+
+		assertThat(bankAccount.isAccountNoMatching("CH763570011875432512")).isTrue();
+		assertThat(bankAccount.isAccountNoMatching("CH763570011875432512/942")).isTrue();
+		assertThat(bankAccount.isAccountNoMatching("CH76 3570 0118 7543 2512")).isTrue();
+		assertThat(bankAccount.isAccountNoMatching("CH763570011875132512")).isFalse();
+	}
+
+	@Test
+	public void accountNoMatching_StoredIbanWithSpaces_FileValueWithoutSpaces()
+	{
+		final CurrencyId currencyCHF = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
+
+		final I_C_BP_BankAccount bankAccountRecord = createBankAccount(null, currencyCHF);
+		bankAccountRecord.setIBAN("CH93 0076 2011 6238 5295 7");
+		save(bankAccountRecord);
+		final BankAccount bankAccount = bpBankAccountDAO.getById(BankAccountId.ofRepoId(bankAccountRecord.getC_BP_BankAccount_ID()));
+
+		assertThat(bankAccount.isAccountNoMatching("CH9300762011623852957")).isTrue();
+	}
+
+	@Test
+	public void accountNoMatching_StoredSepaCreditorIdentifierWithSpaces_FileValueWithoutSpaces()
+	{
+		final CurrencyId currencyCHF = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
+
+		final I_C_BP_BankAccount bankAccountRecord = createBankAccount(null, currencyCHF);
+		bankAccountRecord.setSEPA_CreditorIdentifier("CH27 ZZZ 0123 4567 8");
+		save(bankAccountRecord);
+		final BankAccount bankAccount = bpBankAccountDAO.getById(BankAccountId.ofRepoId(bankAccountRecord.getC_BP_BankAccount_ID()));
+
+		assertThat(bankAccount.isAccountNoMatching("CH27ZZZ012345678")).isTrue();
+	}
+
 	private I_C_BP_BankAccount createBankAccount(final String qr_iban, final CurrencyId currencyId)
 	{
 		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
