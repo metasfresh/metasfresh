@@ -16,6 +16,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -87,6 +88,10 @@ public class AssignableInvoiceCandidate
 	 */
 	boolean contractCompensationLine;
 
+	/** The {@code C_Project_ID} of the underlying record; {@code null} if it has none. */
+	@Nullable
+	ProjectId projectId;
+
 	/** i there is more than one, they are ordered by their refund candidates' configs' minQty, ascending. */
 	List<AssignmentToRefundCandidate> assignmentsToRefundCandidates;
 
@@ -103,6 +108,7 @@ public class AssignableInvoiceCandidate
 			@NonNull final Quantity quantity,
 			@Nullable final Quantity quantityOld,
 			final boolean contractCompensationLine,
+			@Nullable final ProjectId projectId,
 			@Singular("assignmentToRefundCandidate") final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates)
 	{
 		this.id = id;
@@ -116,6 +122,7 @@ public class AssignableInvoiceCandidate
 		this.quantity = quantity;
 		this.quantityOld = coalesce(quantityOld, quantity);
 		this.contractCompensationLine = contractCompensationLine;
+		this.projectId = projectId;
 
 		this.assignmentsToRefundCandidates = assignmentsToRefundCandidates;
 	}
