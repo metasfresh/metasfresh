@@ -20,6 +20,7 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -37,7 +38,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /**
  * Creates the internal sales credit memo (document sub type "Zahlungsbonus-Gutschrift") that books the bonus a customer deducted when paying a sales invoice.
- * The credit memo has one line per bonus product, with the bonus product's tax; the VAT comes on top of the net bonus.
+ * The credit memo has one line per bonus product and project, with the bonus product's tax; the VAT comes on top of the net bonus.
  * It references the sales invoice, so its completion allocates it against the invoice (like every credit memo that references an invoice).
  * There is at most one completed such credit memo per sales invoice.
  */
@@ -136,7 +137,7 @@ public class PaymentBonusCreditMemoService
 		invoiceDAO.save(creditMemo);
 
 		//
-		// One line per bonus product; the line is booked on the bonus product's accounts, with its tax
+		// One line per bonus product and project; the line is booked on the bonus product's accounts, with its tax
 		for (final PaymentBonusDeductionLine deductionLine : deduction.getLines())
 		{
 			final I_C_InvoiceLine creditMemoLine = newInstance(I_C_InvoiceLine.class);
@@ -150,6 +151,7 @@ public class PaymentBonusCreditMemoService
 			creditMemoLine.setPriceActual(deductionLine.getNetAmt().toBigDecimal());
 			creditMemoLine.setC_TaxCategory_ID(deductionLine.getTax().getTaxCategoryId().getRepoId());
 			creditMemoLine.setC_Tax_ID(deductionLine.getTax().getTaxId().getRepoId());
+			creditMemoLine.setC_Project_ID(ProjectId.toRepoId(deductionLine.getProjectId()));
 			invoiceDAO.save(creditMemoLine);
 		}
 
