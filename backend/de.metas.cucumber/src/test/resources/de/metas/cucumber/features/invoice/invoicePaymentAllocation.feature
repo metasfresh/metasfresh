@@ -3649,32 +3649,6 @@ Feature: invoice payment allocation
       | V_Liability_Acct      | reversalCM              | -238.00 EUR | -238.00 EUR | 0 EUR         |
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -3748,26 +3722,6 @@ Feature: invoice payment allocation
       | AccountConceptualName  | SourceBalance |
       | C_Receivable_Acct      | -1.00 EUR     |
       | SuspenseBalancing_Acct | 0.00 EUR      |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # ############################################################################################################################################
@@ -3854,7 +3808,7 @@ Feature: invoice payment allocation
     # Discount DR 12.21 less tax correction CR 0.31 = 11.90 on the discount account; tax correction DR 0.31 on the tax account.
     And Fact_Acct records balances for documents alloc are matching
       | AccountConceptualName  | C_Tax_ID | SourceBalance |
-      | T_PayDiscount_Rev_Acct | tax26    | 11.90 EUR     |
+      | PayDiscount_Rev_Acct   | tax26    | 11.90 EUR     |
       | T_Due_Acct             | tax26    | 0.31 EUR      |
 
 
@@ -3942,5 +3896,5 @@ Feature: invoice payment allocation
     # Discount DR 17.19 less tax correction CR 0.44 = 16.75 on the discount account; tax correction DR 0.44 on the tax account.
     And Fact_Acct records balances for documents alloc are matching
       | AccountConceptualName  | C_Tax_ID | SourceBalance |
-      | T_PayDiscount_Rev_Acct | tax26    | 16.75 EUR     |
+      | PayDiscount_Rev_Acct   | tax26    | 16.75 EUR     |
       | T_Due_Acct             | tax26    | 0.44 EUR      |
