@@ -1237,6 +1237,8 @@ public class C_Invoice_Candidate_StepDef
 	 *   <li>{@code OPT.IsCompleteInvoices} – {@code Y}/{@code N}. Default: {@code Y} (complete the invoice).</li>
 	 *   <li>{@code OPT.QtyInvoiced} – if set, waits until the candidate's {@code QtyInvoiced} reaches this value
 	 *       instead of waiting for {@code Processed=true}.</li>
+	 *   <li>{@code IncludeSameRecordCandidates} – {@code Y}: also enqueues, in the same selection, the other unprocessed candidates
+	 *       of the same record and currency (e.g. the refund candidates of one term, one per project), so they are invoiced together. Default: {@code N}.</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -1260,7 +1262,21 @@ public class C_Invoice_Candidate_StepDef
 
 					final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 
-					final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), Trx.TRXNAME_None);
+					final ImmutableList.Builder<Integer> selectedIds = ImmutableList.<Integer>builder().add(invoiceCandidateId.getRepoId());
+					if (row.getAsOptionalBoolean("IncludeSameRecordCandidates").orElse(false))
+					{
+						queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+								.addOnlyActiveRecordsFilter()
+								.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, invoiceCandidate.getAD_Table_ID())
+								.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, invoiceCandidate.getRecord_ID())
+								.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID, invoiceCandidate.getC_Currency_ID())
+								.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
+								.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidate.getC_Invoice_Candidate_ID())
+								.create()
+								.listIds()
+								.forEach(selectedIds::add);
+					}
+					final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(selectedIds.build(), Trx.TRXNAME_None);
 
 					final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 					invoicingParams.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule);

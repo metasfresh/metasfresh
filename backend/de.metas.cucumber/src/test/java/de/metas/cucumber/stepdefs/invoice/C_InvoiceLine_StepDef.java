@@ -67,8 +67,10 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Invoice;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -196,6 +198,10 @@ public class C_InvoiceLine_StepDef
 				.map(inOutLineTable::getId)
 				.ifPresent(inOutLineId -> queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLineId.getRepoId()));
 
+		// ...or the same product and qty on lines of different projects
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
+				.ifPresent(projectIdentifier -> queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Project_ID, extractExpectedProjectId(projectIdentifier)));
+
 		final List<I_C_InvoiceLine> invoiceLineRecords = queryBuilder.create().list(I_C_InvoiceLine.class);
 		if (invoiceLineRecords.isEmpty())
 		{
@@ -226,6 +232,25 @@ public class C_InvoiceLine_StepDef
 		}
 	}
 
+	/**
+	 * Finds, per DataTable row, the one line of the given invoice matching product + quantity (+ project) and validates it.
+	 * The row count must equal the number of lines on the invoice.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>C_InvoiceLine_ID</b> — (optional) alias to store the found line under, in C_InvoiceLine_StepDefData<br>
+	 * <b>M_Product_ID</b> — (required, identifier-ref or id) filter and assertion: the line's product<br>
+	 * <b>QtyInvoiced</b> — (required) filter and assertion: the line's invoiced quantity<br>
+	 * <b>C_Project_ID</b> — (optional, identifier-ref or id) filter and assertion: the line's project; {@code null} selects the project-less line<br>
+	 * plus the same optional assertion columns as {@code validate created invoice lines} (QtyEntered, PriceEntered, PriceActual, LineNetAmt, Discount, C_Tax_ID, …)
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, M_Product_StepDefData, C_Project_StepDefData
+	 * @cucumber.example <pre>
+	 * And validate invoice lines for bonusCreditMemo:
+	 *   | M_Product_ID | QtyInvoiced | C_Project_ID | LineNetAmt |
+	 *   | bonusWare    | 1           | project1     | 3.12       |
+	 *   | bonusWare    | 1           | project2     | 2.08       |
+	 *   | bonusPack    | 1           | null         | 0.40       |
+	 * </pre>
+	 */
 	@And("^validate invoice lines for (.*):$")
 	public void validate_invoice_lines(@NonNull final String invoiceIdentifier, @NonNull final DataTable table)
 	{
@@ -262,10 +287,27 @@ public class C_InvoiceLine_StepDef
 			final I_C_InvoiceLine currentInvoiceLine = Check.singleElement(invoiceLines.stream()
 					.filter(line -> line.getM_Product_ID() == productId.getRepoId())
 					.filter(line -> line.getQtyInvoiced().equals(qtyInvoiced))
+					.filter(line -> isOfExpectedProject(line, row))
 					.collect(ImmutableList.toImmutableList()));
 
 			validateInvoiceLine(currentInvoiceLine, invoiceRecord, row);
 		});
+	}
+
+	private boolean isOfExpectedProject(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final DataTableRow row)
+	{
+		return row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
+				.map(projectIdentifier -> Objects.equals(ProjectId.ofRepoIdOrNull(invoiceLine.getC_Project_ID()), extractExpectedProjectId(projectIdentifier)))
+				.orElse(true);
+	}
+
+	/** @return the identified project, or {@code null} for the {@code null} placeholder (expects no project) */
+	@Nullable
+	private ProjectId extractExpectedProjectId(@NonNull final StepDefDataIdentifier projectIdentifier)
+	{
+		return projectIdentifier.isNullPlaceholder()
+				? null
+				: projectTable.getIdOptional(projectIdentifier).orElseGet(() -> projectIdentifier.getAsId(ProjectId.class));
 	}
 
 	private ProductId getProductId(final DataTableRow row)
@@ -383,9 +425,7 @@ public class C_InvoiceLine_StepDef
 		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
 				.ifPresent(projectIdentifier -> softly.assertThat(ProjectId.ofRepoIdOrNull(invoiceLine.getC_Project_ID()))
 						.as(I_C_InvoiceLine.COLUMNNAME_C_Project_ID)
-						.isEqualTo(projectIdentifier.isNullPlaceholder()
-								? null
-								: projectTable.getIdOptional(projectIdentifier).orElseGet(() -> projectIdentifier.getAsId(ProjectId.class))));
+						.isEqualTo(extractExpectedProjectId(projectIdentifier)));
 
 		final String costCenterIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(costCenterIdentifier))

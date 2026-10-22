@@ -52,6 +52,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -100,6 +101,9 @@ public class C_Invoice_Candidate_Assignment_StepDef
 	 *   <b>ErrorMsg.AD_Message</b> — (optional) AD_Message value of the error message, in any of the system languages<br>
 	 *   <b>ErrorMsg.Params</b> — (optional, with ErrorMsg.AD_Message) the message's parameters, comma separated; {@code *} matches any value<br>
 	 *   <b>C_Currency.ISO_Code</b> — (optional) selects the refund invoice candidate in this currency<br>
+	 *   <b>OnePerProject</b> — (optional, Y) the selection is not one refund invoice candidate but one per project (a flat refund is keyed by C_Project_ID):
+	 *   there must be several, each of a different project; <b>PriceActual</b> and <b>NetAmtToInvoice</b> are then checked against their sum,
+	 *   all other columns against each of them, and the alias is registered for the first one (use {@code IncludeSameRecordCandidates} to process them together)<br>
 	 * @cucumber.depends StepDefData: C_Flatrate_Term_StepDefData, M_Product_StepDefData, C_BPartner_StepDefData, C_Invoice_Candidate_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -196,19 +200,37 @@ public class C_Invoice_Candidate_Assignment_StepDef
 		row.getAsOptionalCurrencyCode()
 				.ifPresent(currencyCode -> queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID, currencyBL.getByCurrencyCode(currencyCode).getId()));
 
+		final boolean onePerProject = row.getAsOptionalBoolean("OnePerProject").orElse(false);
+
 		final StringBuilder lastMismatch = new StringBuilder();
 		try
 		{
 			StepDefUtil.tryAndWait(timeoutSec, POLL_INTERVAL_MS, () -> {
 				lastMismatch.setLength(0);
-				final List<I_C_Invoice_Candidate> candidates = queryBuilder.create().list();
-				if (candidates.size() != 1)
+				final List<I_C_Invoice_Candidate> candidates = queryBuilder.create().list().stream()
+						.sorted(Comparator.comparingInt(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID))
+						.collect(ImmutableList.toImmutableList());
+				if (!onePerProject && candidates.size() != 1)
 				{
 					lastMismatch.append("expected exactly 1 refund invoice candidate of C_Flatrate_Term_ID=").append(term.getC_Flatrate_Term_ID()).append(" but found ").append(candidates.size());
 					return false;
 				}
+				if (onePerProject)
+				{
+					final long projectCount = candidates.stream().map(I_C_Invoice_Candidate::getC_Project_ID).distinct().count();
+					if (candidates.size() < 2 || projectCount != candidates.size())
+					{
+						lastMismatch.append("expected one refund invoice candidate per project (at least 2) of C_Flatrate_Term_ID=").append(term.getC_Flatrate_Term_ID())
+								.append(" but found ").append(candidates.size()).append(" candidates of ").append(projectCount).append(" distinct projects");
+						return false;
+					}
+					lastMismatch.append(findSumMismatch(row, candidates));
+				}
 				final I_C_Invoice_Candidate candidate = candidates.get(0);
-				lastMismatch.append(findMismatch(row, candidate));
+				for (final I_C_Invoice_Candidate c : candidates)
+				{
+					lastMismatch.append(findMismatch(row, c, !onePerProject));
+				}
 				if (lastMismatch.length() > 0)
 				{
 					return false;
@@ -254,19 +276,44 @@ public class C_Invoice_Candidate_Assignment_StepDef
 		return regex.toString();
 	}
 
-	/** @return empty string if the candidate matches the row's expectations */
+	/** The amounts of the row are the sum over the refund invoice candidates of all projects. @return empty string if they match */
 	@NonNull
-	private String findMismatch(@NonNull final DataTableRow row, @NonNull final I_C_Invoice_Candidate candidate)
+	private static String findSumMismatch(@NonNull final DataTableRow row, @NonNull final List<I_C_Invoice_Candidate> candidates)
 	{
 		final StringBuilder mismatch = new StringBuilder();
 
+		final BigDecimal priceActualSum = candidates.stream().map(I_C_Invoice_Candidate::getPriceActual).reduce(BigDecimal.ZERO, BigDecimal::add);
 		row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_PriceActual)
-				.filter(expected -> candidate.getPriceActual().compareTo(expected) != 0)
-				.ifPresent(expected -> mismatch.append("PriceActual expected=").append(expected).append(" actual=").append(candidate.getPriceActual()).append("; "));
+				.filter(expected -> priceActualSum.compareTo(expected) != 0)
+				.ifPresent(expected -> mismatch.append("PriceActual sum expected=").append(expected).append(" actual=").append(priceActualSum).append("; "));
 
+		final BigDecimal netAmtSum = candidates.stream().map(I_C_Invoice_Candidate::getNetAmtToInvoice).reduce(BigDecimal.ZERO, BigDecimal::add);
 		row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice)
-				.filter(expected -> candidate.getNetAmtToInvoice().compareTo(expected) != 0)
-				.ifPresent(expected -> mismatch.append("NetAmtToInvoice expected=").append(expected).append(" actual=").append(candidate.getNetAmtToInvoice()).append("; "));
+				.filter(expected -> netAmtSum.compareTo(expected) != 0)
+				.ifPresent(expected -> mismatch.append("NetAmtToInvoice sum expected=").append(expected).append(" actual=").append(netAmtSum).append("; "));
+
+		return mismatch.toString();
+	}
+
+	/**
+	 * @param checkAmounts {@code false} if the amounts are checked against the sum of several candidates, see {@link #findSumMismatch}
+	 * @return empty string if the candidate matches the row's expectations
+	 */
+	@NonNull
+	private String findMismatch(@NonNull final DataTableRow row, @NonNull final I_C_Invoice_Candidate candidate, final boolean checkAmounts)
+	{
+		final StringBuilder mismatch = new StringBuilder();
+
+		if (checkAmounts)
+		{
+			row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_PriceActual)
+					.filter(expected -> candidate.getPriceActual().compareTo(expected) != 0)
+					.ifPresent(expected -> mismatch.append("PriceActual expected=").append(expected).append(" actual=").append(candidate.getPriceActual()).append("; "));
+
+			row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice)
+					.filter(expected -> candidate.getNetAmtToInvoice().compareTo(expected) != 0)
+					.ifPresent(expected -> mismatch.append("NetAmtToInvoice expected=").append(expected).append(" actual=").append(candidate.getNetAmtToInvoice()).append("; "));
+		}
 
 		row.getAsOptionalLocalDate(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice)
 				.filter(expected -> !expected.equals(TimeUtil.asLocalDate(candidate.getDateToInvoice())))
