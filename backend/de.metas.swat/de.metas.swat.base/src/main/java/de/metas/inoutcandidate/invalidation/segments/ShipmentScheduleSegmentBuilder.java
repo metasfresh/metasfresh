@@ -22,7 +22,6 @@ package de.metas.inoutcandidate.invalidation.segments;
  * #L%
  */
 
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
