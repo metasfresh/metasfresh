@@ -164,6 +164,30 @@ public class RefundContractTest
 		assertThat(result).isEqualTo(refundConfig2);
 	}
 
+	@Test
+	public void isFlat_singleZeroMinQtyApplyToAllQties_isTrue()
+	{
+		final RefundContract flat = refundContract.toBuilder().clearRefundConfigs().refundConfig(refundConfig1).build();
+
+		assertThat(flat.isFlat()).isTrue();
+	}
+
+	@Test
+	public void isFlat_applyToExceedingQty_isFalse()
+	{
+		final RefundConfig tiered = refundConfig1.toBuilder().refundMode(RefundMode.APPLY_TO_EXCEEDING_QTY).build();
+		final RefundContract contract = refundContract.toBuilder().clearRefundConfigs().refundConfig(tiered).build();
+
+		assertThat(contract.isFlat()).isFalse();
+	}
+
+	@Test
+	public void isFlat_applyToAllQtiesWithPositiveMinQtyScale_isFalse()
+	{
+		// refundContract has the minQty=0 and the minQty=5 config, both APPLY_TO_ALL_QTIES
+		assertThat(refundContract.isFlat()).isFalse();
+	}
+
 	/**
 	 * A per-unit refund is issued in the currency of its config, whatever the currency of the sales; a percentage refund in the currency of the sales.
 	 */
