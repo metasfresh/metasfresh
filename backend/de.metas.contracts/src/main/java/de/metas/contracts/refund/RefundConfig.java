@@ -153,8 +153,9 @@ public class RefundConfig
 		Check.errorIf(minQty.signum() < 0, "Parameter 'minQty' may not be negative; minQty={}", minQty);
 		this.minQty = minQty;
 
-		Check.errorIf(invoiceSchedule == null && !isZeroConfig(),
-				"Parameter invoiceSchedule may not be null, unless both amount, percent and minQty are null/zero");
+		// a config deducted at payment carries no invoice schedule: its bonus is booked at the payment allocation, never invoiced by the refund engine
+		Check.errorIf(invoiceSchedule == null && !isZeroConfig() && !deductedAtPayment,
+				"Parameter invoiceSchedule may not be null, unless both amount, percent and minQty are null/zero, or the config is deducted at payment");
 	}
 
 	public boolean isAmountPerUnit()

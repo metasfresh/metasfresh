@@ -179,6 +179,10 @@ public class RefundContract
 	 */
 	public NextInvoiceDate computeNextInvoiceDate(@NonNull final LocalDate currentDate)
 	{
+		// a contract deducted at payment has no invoice schedule (its bonus is booked at the payment allocation, never invoiced), so it has no refund periods;
+		// the caller must have short-circuited it (see RefundInvoiceCandidateInvalidator) — fail fast rather than crash on the missing schedule
+		Check.assume(!isDeductedAtPayment(), "computeNextInvoiceDate may not be called for a contract deducted at payment (it has no invoice schedule); this={}", this);
+
 		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
 
 		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()))
@@ -208,6 +212,9 @@ public class RefundContract
 	 */
 	public LocalDate computeCurrentPeriodStart(@NonNull final LocalDate date)
 	{
+		// a contract deducted at payment has no invoice schedule, hence no refund periods; the caller must have short-circuited it. Fail fast rather than crash on the missing schedule.
+		Check.assume(!isDeductedAtPayment(), "computeCurrentPeriodStart may not be called for a contract deducted at payment (it has no invoice schedule); this={}", this);
+
 		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
 		if (Frequency.MONTLY.equals(invoiceSchedule.getFrequency()))
 		{
