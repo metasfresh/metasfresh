@@ -4072,7 +4072,7 @@ Feature: invoice payment allocation
     # Balance = debit - credit.
     And Fact_Acct records balances for documents alloc are matching
       | AccountConceptualName  | SourceBalance |
-      | C_Receivable_Acct      | -5.00 EUR    |
+      | C_Receivable_Acct      | -5.00 EUR     |
       | SuspenseBalancing_Acct | 0.00 EUR      |
 
     # Receivable per invoice: the invoice is cleared for the allocated amount, the credit memo only for its net amount.
@@ -4081,6 +4081,7 @@ Feature: invoice payment allocation
       | C_Receivable_Acct     | invoice      | -412.01 EUR   |
       | C_Receivable_Acct     | creditMemo   | 407.01 EUR    |
 
+    # Regression guard only: the write-off and its VAT correction are posted as before this fix (the tax pair follows the credit memo's own tax direction); this scenario pins that behaviour, it does not assert it is the right VAT treatment.
     # Write-off leg DR 5.00 (no tax code) plus its VAT correction (2.6% included in 5.00 = 0.13): DR 0.13 on the write-off account, CR 0.13 on the tax account.
     And Fact_Acct records balances for documents alloc are matching
       | AccountConceptualName | SourceBalance |
@@ -4171,6 +4172,7 @@ Feature: invoice payment allocation
       | C_Receivable_Acct     | creditMemo   | 407.01 EUR    |
 
     # Discount DR 12.21 less VAT correction 0.31 = 11.90 on the discount account; its VAT correction DR 0.31 on the tax account.
+    # Regression guard only: the write-off and its VAT correction are posted as before this fix (the tax pair follows the credit memo's own tax direction); this scenario pins that behaviour, it does not assert it is the right VAT treatment.
     # Write-off DR 5.00 (no tax code) plus its VAT correction: DR 0.13 on the write-off account, CR 0.13 on the tax account.
     And Fact_Acct records balances for documents alloc are matching
       | AccountConceptualName | SourceBalance |
