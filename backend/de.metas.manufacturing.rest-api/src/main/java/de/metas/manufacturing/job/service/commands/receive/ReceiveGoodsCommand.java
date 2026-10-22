@@ -103,7 +103,7 @@ public class ReceiveGoodsCommand
 	@Nullable private final HUPIItemProductId tuPIItemProductIdForTUMode;
 	/**
 	 * The effective "catch-weight scan required" of the line (see {@link de.metas.manufacturing.config.FinishedGoodsReceiveLineConfig#isCatchWeightScanRequired()}).
-	 * Then every receipt is exactly one piece carrying its own scanned weight, lot and best-before date, whatever the receive unit type;
+	 * Then every receipt is exactly one piece carrying its own scanned lot and best-before date (and weight, if captured at receipt), whatever the receive unit type;
 	 * in TU mode those pieces fill the current TU up to its packing capacity.
 	 */
 	private final boolean catchWeightScanRequired;
@@ -474,7 +474,7 @@ public class ReceiveGoodsCommand
 		if (catchWeightScanRequired)
 		{
 			// One receipt = one piece in every receive mode: the qty counts pieces, it is never converted from TUs,
-			// else the one scanned weight, lot and best-before date would land on the packing's N pieces.
+			// else the one scanned lot and best-before date (and weight) would land on the packing's N pieces.
 			final Quantity qtyPieces = Quantitys.of(qtyToReceiveBD, fallbackUomId);
 			if (!qtyPieces.isOne())
 			{

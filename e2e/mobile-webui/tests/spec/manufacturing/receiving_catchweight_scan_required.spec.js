@@ -17,21 +17,34 @@ import { receiptDayPlusDays } from '../../utils/receiptDay';
 // receipt is one piece carrying its own scanned weight, lot and best-before date - whatever the receive target
 // (new TU, new LU, the LU received onto before, or an HU picked by scanning its QR code).
 // With the setting off (the default), each scan receives one piece right away.
+// The scan does not depend on "Capture catch weight": with it switched off (weight captured later, at picking) the
+// scan fills only lot and best-before date, no weight is shown or received, and it is still one piece per scan.
 const L_M_CODE = 'LMQ#1#0.101#08.11.2025#500';
 // A second piece from another lot, with its own weight and best-before date.
 const L_M_CODE_2 = 'LMQ#1#0.093#15.11.2025#501';
 // A third piece, from yet another lot.
 const L_M_CODE_3 = 'LMQ#1#0.097#22.11.2025#502';
+// A label whose weight segment is empty: fine when no weight is captured at receipt.
+const L_M_CODE_WITHOUT_WEIGHT = 'LMQ#1##15.11.2025#501';
 const BEST_BEFORE_DAYS = 70;
 
 // isTUMode: the line is received in TUs (receive unit type TU); the PP order then carries the two-piece TU packing.
-const createMasterdata = async ({ isFinishedGoodsCatchWeightScanRequired, isTUMode = false }) => {
+// isCaptureCatchWeightAtReceipt: undefined = the default (captured)
+const createMasterdata = async ({
+    isFinishedGoodsCatchWeightScanRequired,
+    isTUMode = false,
+    isCaptureCatchWeightAtReceipt,
+}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
             login: { user: { language: 'en_US' } },
             mobileConfig: {
-                manufacturing: { isFinishedGoodsCatchWeightScanRequired, receiveUnitType: isTUMode ? 'TU' : 'CU' },
+                manufacturing: {
+                    isFinishedGoodsCatchWeightScanRequired,
+                    isCaptureCatchWeightAtReceipt,
+                    receiveUnitType: isTUMode ? 'TU' : 'CU',
+                },
             },
             warehouses: { 'wh': {} },
             products: {
@@ -90,6 +103,20 @@ const receiveOneScannedPiece = async ({ qrCode, expectedCatchWeight, expectedLot
     await GetQuantityDialog.scanCatchWeightQRCodeForReview({ qrCode });
     await GetQuantityDialog.expectQtyEnteredFixedAt('1');
     await GetQuantityDialog.expectCatchWeight(expectedCatchWeight);
+    await GetQuantityDialog.expectLotNo(expectedLotNo);
+    await GetQuantityDialog.expectBestBeforeDate(expectedBestBeforeDate);
+    await GetQuantityDialog.clickDone();
+    await ManufacturingJobScreen.waitForScreen();
+    await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: qtyReceivedAfter });
+};
+
+// Weight not captured at receipt: like receiveOneScannedPiece, but the scan fills only lot and best-before date.
+const receiveOneScannedPieceWithoutWeight = async ({ qrCode, expectedLotNo, expectedBestBeforeDate, qtyReceivedAfter }) => {
+    await MaterialReceiptLineScreen.clickReceiveQtyButton();
+    await GetQuantityDialog.expectOnlyCatchWeightScanOffered();
+    await GetQuantityDialog.scanCatchWeightQRCodeForReview({ qrCode });
+    await GetQuantityDialog.expectQtyEnteredFixedAt('1');
+    await GetQuantityDialog.expectCatchWeightNotVisible();
     await GetQuantityDialog.expectLotNo(expectedLotNo);
     await GetQuantityDialog.expectBestBeforeDate(expectedBestBeforeDate);
     await GetQuantityDialog.clickDone();
@@ -507,4 +534,122 @@ test('Scan not required (default): the scan receives the piece right away', asyn
     });
 
     await ManufacturingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan required, weight not captured at receipt, new TU: the scan fills lot and best-before date only; one piece is received without a weight', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');
+    allure.story('Mandatory catch-weight scan on finished goods receipt');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata({ isFinishedGoodsCatchWeightScanRequired: true, isCaptureCatchWeightAtReceipt: false });
+    const { jobId } = await startReceiveToNewTU(masterdata);
+
+    // The scan is still mandatory: nothing can be confirmed or typed in manually before it.
+    await receiveOneScannedPieceWithoutWeight({ qrCode: L_M_CODE, expectedLotNo: '500', expectedBestBeforeDate: '08.11.2025', qtyReceivedAfter: '1 Stk' });
+
+    // No weight is captured at receipt: the WeightNet attribute stays at zero (it is captured later, at picking),
+    // while lot and best-before date are the scanned ones.
+    await Backend.expect({
+        title: 'Produced TU carries one piece with the scanned lot and best-before date and no weight',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [{ tu: 'tu1', qty: '1 PCE' }],
+            },
+        },
+        hus: {
+            'tu1': {
+                storages: { 'BOM': '1 PCE' },
+                attributes: { 'WeightNet': '0.000', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' },
+                cus: [
+                    { qty: '1 PCE', attributes: { 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+                ],
+            },
+        },
+    });
+
+    await ManufacturingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan required, weight not captured at receipt, TU mode: each scan adds one piece to the current TU, also from a label without a weight', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');
+    allure.story('Mandatory catch-weight scan on finished goods receipt');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata({ isFinishedGoodsCatchWeightScanRequired: true, isTUMode: true, isCaptureCatchWeightAtReceipt: false });
+    const { jobId } = await startJob(masterdata);
+
+    // Every receipt is one piece, so the line counts pieces, not TUs.
+    await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: '0 Stk' });
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 }); // i.e., main product
+    await MaterialReceiptLineScreen.selectNewTUTarget({ tuPIItemProductTestId: masterdata.packingInstructions.BOM_PI_2PCE.tuPIItemProductTestId });
+
+    // first piece: starts the TU
+    await receiveOneScannedPieceWithoutWeight({ qrCode: L_M_CODE, expectedLotNo: '500', expectedBestBeforeDate: '08.11.2025', qtyReceivedAfter: '1 Stk' });
+    // second piece, from a label with an empty weight segment: goes into the same TU, which is then full
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+    await receiveOneScannedPieceWithoutWeight({ qrCode: L_M_CODE_WITHOUT_WEIGHT, expectedLotNo: '501', expectedBestBeforeDate: '15.11.2025', qtyReceivedAfter: '2 Stk' });
+
+    await Backend.expect({
+        title: 'The TU holds two pieces, each with its own scanned lot and best-before date, and no weight',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [
+                    { tu: 'tu1', qty: '1 PCE' },
+                    { tu: 'tu1', qty: '1 PCE' },
+                ],
+            },
+        },
+        hus: {
+            'tu1': {
+                storages: { 'BOM': '2 PCE' },
+                attributes: { 'WeightNet': '0.000' },
+                cus: [
+                    { qty: '1 PCE', attributes: { 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+                    { qty: '1 PCE', attributes: { 'Lot-Nummer': '501', 'HU_BestBeforeDate': '2025-11-15' } },
+                ],
+            },
+        },
+    });
+
+    await ManufacturingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan required, weight not captured at receipt: codes without lot or with an invalid best-before date are rejected and nothing is received', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');
+    allure.story('Mandatory catch-weight scan on finished goods receipt');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata({ isFinishedGoodsCatchWeightScanRequired: true, isCaptureCatchWeightAtReceipt: false });
+    const { jobId } = await startReceiveToNewTU(masterdata);
+
+    await MaterialReceiptLineScreen.clickReceiveQtyButton();
+    await GetQuantityDialog.expectOnlyCatchWeightScanOffered();
+    await GetQuantityDialog.scanCatchWeightQRCodeExpectingError({
+        qrCode: 'LMQ#1#0.101#08.11.2025',
+        expectedError: 'The scanned QR code contains no lot number!',
+    });
+    await GetQuantityDialog.scanCatchWeightQRCodeExpectingError({
+        qrCode: 'LMQ#1##00.00.0000#500',
+        expectedError: 'The scanned QR code contains an invalid best-before date!',
+    });
+    await GetQuantityDialog.clickCloseScanner();
+
+    await MaterialReceiptLineScreen.goBack();
+    await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: '0 Stk' });
+
+    await Backend.expect({
+        title: 'Nothing was received',
+        manufacturings: {
+            [jobId]: { receivedHUs: [] },
+        },
+    });
 });
