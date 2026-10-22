@@ -21,6 +21,7 @@
 -- 4) AD_Field 785693 (window Nutzer 108, tab 546679 mobile UI user profile - manufacturing) + _Trl: via propagation;
 --    base Help set directly; NO DisplayLogic - in the user profile an empty value means "inherit", so the field stays always visible.
 -- 5) AD_UI_Element 655049 / 655050: Name/Description/Help set directly (no _Trl table, not covered by propagation).
+-- 6) NOT AFFECTED: nothing else - the element has no AD_Menu, AD_Tab, AD_Window, AD_Process_Para or AD_PrintFormatItem usage.
 
 -- ============================================================================
 -- DisplayLogic on the global configuration field only
