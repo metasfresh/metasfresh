@@ -511,11 +511,28 @@ class MobileUIManufacturingConfigTest
 					.effectiveForReceiveLine(true, false).isCatchWeightScanRequired()).isFalse();
 		}
 
+		/**
+		 * The scan does not depend on capturing the weight at receipt: without it the scan still takes over the
+		 * lot and best-before date, and the weight is captured later at picking.
+		 */
 		@Test
-		void catchWeightScanRequired_catchWeightNotCapturedAtReceipt_isNotRequired()
+		void catchWeightScanRequired_catchWeightNotCapturedAtReceipt_isStillRequired_withoutWeight()
+		{
+			final FinishedGoodsReceiveLineConfig lineConfig = configBuilder()
+					.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.TRUE)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE)
+					.build()
+					.effectiveForReceiveLine(true, true);
+
+			assertThat(lineConfig.isCatchWeightScanRequired()).isTrue();
+			assertThat(lineConfig.isCaptureCatchWeight()).isFalse();
+		}
+
+		@Test
+		void catchWeightScanRequired_catchWeightNotCapturedAtReceipt_settingOff_isNotRequired()
 		{
 			assertThat(configBuilder()
-					.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.TRUE)
+					.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.FALSE)
 					.isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE)
 					.build()
 					.effectiveForReceiveLine(true, true).isCatchWeightScanRequired()).isFalse();

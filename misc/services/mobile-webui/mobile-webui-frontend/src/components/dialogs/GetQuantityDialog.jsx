@@ -58,7 +58,7 @@ const assertLotNoAndBestBeforeDateScanned = (qrCode) => {
 };
 
 // Catch weight with a mandatory scan is received one piece at a time: the fixed qty of every such receipt,
-// so each piece carries its own scanned weight, lot and best-before date.
+// so each piece carries its own scanned lot and best-before date (and weight, if captured at receipt).
 const QTY_PER_CATCH_WEIGHT_RECEIPT = 1;
 
 const GetQuantityDialog = ({
@@ -108,7 +108,8 @@ const GetQuantityDialog = ({
 
   const useCatchWeight = !scaleDevice && catchWeightUom;
   // Mandatory scan: the operator cannot leave the scanner without a scan, and the scan only fills the fields for review.
-  // The caller passes the backend's effective flag, which already implies a catch weight to capture.
+  // The caller passes the backend's effective flag. It does not imply a weight to capture: without a catch-weight UOM
+  // (weight captured later, at picking) the scan fills only Lot-Nr and MHD, and no weight is shown or sent.
   const isScanForReview = isCatchWeightScanMandatory;
 
   const [qtyInfo, setQtyInfo] = useState(
@@ -122,7 +123,7 @@ const GetQuantityDialog = ({
   const [catchWeight, setCatchWeight] = useState(
     qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : catchWeightParam)
   );
-  const [showCatchWeightQRCodeReader, setShowCatchWeightQRCodeReader] = useState(useCatchWeight);
+  const [showCatchWeightQRCodeReader, setShowCatchWeightQRCodeReader] = useState(!!useCatchWeight || isScanForReview);
   const [scannedQRCodeInfo, setScannedQRCodeInfo] = useState(null);
 
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
@@ -228,7 +229,9 @@ const GetQuantityDialog = ({
   // Overwrites the pre-filled values with the scanned ones and shows them for review; the operator confirms.
   const fillFieldsFromScannedQRCode = ({ qrCode, scannedBarcode }) => {
     setQtyInfo(qtyInfos.invalidOfNumber(QTY_PER_CATCH_WEIGHT_RECEIPT));
-    setCatchWeight(qtyInfos.invalidOfNumber(qrCode.weightNet));
+    if (useCatchWeight) {
+      setCatchWeight(qtyInfos.invalidOfNumber(qrCode.weightNet));
+    }
     if (qrCode.lotNo != null) {
       setLotNo(qrCode.lotNo);
     }
@@ -250,11 +253,15 @@ const GetQuantityDialog = ({
       const qrCode = isScanForReview
         ? parseQRCodeForReview({ string: result.scannedBarcode, customQRCodeFormats })
         : parseQRCodeString({ string: result.scannedBarcode, customQRCodeFormats });
-      if (!qrCode.weightNet || !qrCode.weightNetUOM) {
-        throw { messageKey: 'activities.picking.qrcode.missingQty' };
-      }
-      if (qrCode.weightNetUOM !== catchWeightUom) {
-        throw { messageKey: 'activities.picking.qrcode.differentUOM' };
+      // Without a weight to capture the label's weight is ignored, so a label is not rejected for it.
+      const isWeightRequired = !isScanForReview || !!useCatchWeight;
+      if (isWeightRequired) {
+        if (!qrCode.weightNet || !qrCode.weightNetUOM) {
+          throw { messageKey: 'activities.picking.qrcode.missingQty' };
+        }
+        if (qrCode.weightNetUOM !== catchWeightUom) {
+          throw { messageKey: 'activities.picking.qrcode.differentUOM' };
+        }
       }
 
       if (isScanForReview) {
@@ -290,7 +297,7 @@ const GetQuantityDialog = ({
       // console.log('readQtyFromQrCode', { qrCode, result, catchWeightUom });
       fireOnQtyChange(onQtyChangePayload);
     },
-    [catchWeightUom, fireOnQtyChange, isScanForReview]
+    [catchWeightUom, fireOnQtyChange, isScanForReview, useCatchWeight]
   );
 
   const wsClientRef = useRef(null);
@@ -648,6 +655,7 @@ GetQuantityDialog.propTypes = {
   isShowCloseTargetButton: PropTypes.bool,
   customQRCodeFormats: PropTypes.array,
   // Catch-weight only: an L&M QR code must be scanned; the scan fills the fields for review instead of confirming.
+  // With catchWeightUom the scan also fills the weight; without it only Lot-Nr and MHD.
   // Pass the backend's effective flag as is (it implies a catch weight captured at receipt); the dialog does not re-derive it.
   isCatchWeightScanMandatory: PropTypes.bool,
 

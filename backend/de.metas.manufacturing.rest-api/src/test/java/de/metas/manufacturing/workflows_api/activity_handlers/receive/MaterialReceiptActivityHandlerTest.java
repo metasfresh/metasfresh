@@ -69,6 +69,8 @@ class MaterialReceiptActivityHandlerTest
 	private I_C_UOM uom;
 	private UomId catchWeightUomId;
 	private PPOrderId ppOrderId;
+	private MobileUIManufacturingConfigRepository configRepository;
+	private MobileUIManufacturingConfig config;
 
 	@BeforeEach
 	void init()
@@ -84,8 +86,8 @@ class MaterialReceiptActivityHandlerTest
 				HUPPOrderBL_LotNumberFromSequence_Test.createPPOrder(AdempiereTestHelper.createOrgWithTimeZone(ZoneId.of("UTC"))),
 				HUPPOrderBL_LotNumberFromSequence_Test.createDateLotSequence());
 
-		final MobileUIManufacturingConfigRepository configRepository = mock(MobileUIManufacturingConfigRepository.class);
-		when(configRepository.getConfig(any(), any())).thenReturn(MobileUIManufacturingConfig.builder()
+		configRepository = mock(MobileUIManufacturingConfigRepository.class);
+		config = MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(OptionalBoolean.UNKNOWN)
 				.isAllowIssuingAnyHU(OptionalBoolean.UNKNOWN)
 				.isBestBeforeDateEditable(OptionalBoolean.TRUE)
@@ -95,7 +97,8 @@ class MaterialReceiptActivityHandlerTest
 				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.UNKNOWN)
 				.isCaptureCatchWeightAtReceipt(OptionalBoolean.UNKNOWN)
 				.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.TRUE)
-				.build());
+				.build();
+		when(configRepository.getConfig(any(), any())).thenReturn(config);
 
 		handler = new MaterialReceiptActivityHandler(
 				mock(HUQRCodesService.class),
@@ -135,6 +138,33 @@ class MaterialReceiptActivityHandlerTest
 		assertThat(coProductLine.getDefaultBestBeforeDate()).isEqualTo(LocalDate.of(2026, 10, 22)); // 2026-10-19 + 3 days
 		assertThat(coProductLine.isCatchWeightScanRequired()).isFalse();
 		assertThat(coProductLine.getDefaultLotNo()).isEqualTo("26-292"); // the lot is per order, not per line
+	}
+
+	/**
+	 * Weight captured at picking, not at receipt: the main finished good still requires the scan (for lot and best-before date),
+	 * but no weight UOM is sent, so the client neither shows nor sends a weight.
+	 */
+	@Test
+	void catchWeightNotCapturedAtReceipt_scanStillRequired_noWeightUom()
+	{
+		when(configRepository.getConfig(any(), any())).thenReturn(config.toBuilder()
+				.isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE)
+				.build());
+		final ProductId mainProductId = createProduct("main", 10);
+		final ProductId coProductId = createProduct("co", 3);
+		final WFProcess wfProcess = ManufacturingRestService.toWFProcess(createJob(
+				receiveLine(mainProductId, null),
+				receiveLine(coProductId, PPOrderBOMLineId.ofRepoId(1))));
+
+		final List<JsonFinishedGoodsReceiveLine> lines = getLines(wfProcess);
+
+		final JsonFinishedGoodsReceiveLine mainLine = lines.get(0);
+		assertThat(mainLine.isCatchWeightScanRequired()).isTrue();
+		assertThat(mainLine.getCatchWeightUomSymbol()).isNull();
+
+		final JsonFinishedGoodsReceiveLine coProductLine = lines.get(1);
+		assertThat(coProductLine.isCatchWeightScanRequired()).isFalse();
+		assertThat(coProductLine.getCatchWeightUomSymbol()).isNull();
 	}
 
 	@SuppressWarnings("unchecked")

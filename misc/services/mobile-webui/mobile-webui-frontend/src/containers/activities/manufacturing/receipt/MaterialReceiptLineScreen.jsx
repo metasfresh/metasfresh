@@ -201,7 +201,7 @@ const MaterialReceiptLineScreen = () => {
           readAttributes={readAttributes}
           defaultLotNo={defaultLotNo}
           defaultBestBeforeDate={defaultBestBeforeDate}
-          // the backend's effective flag: setting on, main finished good, catch-weight product, weight captured at receipt
+          // the backend's effective flag: setting on, main finished good, catch-weight product (weight captured at receipt or not)
           isCatchWeightScanMandatory={!!catchWeightScanRequired}
         />
         {noGebindeReason && (
