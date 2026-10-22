@@ -324,6 +324,22 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	}
 
 	@Test
+	public void createDocument_errorTextShowsBankAccountLabel_notNull()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport("org", "12345", "INGBNL2A");
+		// a Swiss IBAN that is too short makes extractBCFromIban fail, and its error text names the line via createInfo
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, "001", "CH12", "INGBNL2A", new BigDecimal("100"), chf);
+		final I_C_BP_BankAccount bankAccount = (I_C_BP_BankAccount)line.getC_BP_BankAccount();
+		bankAccount.setDescription(null);
+		bankAccount.setName("my account label");
+		save(bankAccount);
+
+		assertThatThrownBy(() -> xmlGenerator.createDocument(sepaExport))
+				.hasMessageContaining("my account label")
+				.hasMessageNotContaining("null");
+	}
+
+	@Test
 	public void testReplaceForbiddenChars()
 	{
 		assertReplaceForbiddenCharsWorks("(1020739<-) | (1026@313<-)", "(1020739<-) _ (1026@313<-)");
