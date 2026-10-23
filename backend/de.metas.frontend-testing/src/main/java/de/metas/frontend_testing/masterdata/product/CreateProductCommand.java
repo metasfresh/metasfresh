@@ -360,9 +360,9 @@ public class CreateProductCommand
 		sequence.setCurrentNextSys(currentNext);
 		sequence.setPrefix(request.getPrefix());
 		sequence.setDecimalPattern(request.getDecimalPattern());
-		sequence.setDateFormat(request.getDateFormat());
 		if (request.isDateBased())
 		{
+			sequence.setDateFormat(request.getDateFormat());
 			sequence.setDateColumn("MovementDate"); // LotNumberBL passes the receipt date under the sequence's DateColumn
 			sequence.setCustomSequenceNoProvider_JavaClass_ID(getDateSequenceProviderJavaClassId());
 		}

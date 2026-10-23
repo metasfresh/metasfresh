@@ -60,15 +60,36 @@ class DateSequenceProviderTest
 				.isEqualTo("26-296");
 	}
 
+	/**
+	 * The per-sequence date format is optional: when it is missing, the global sysconfig applies exactly as before.
+	 */
 	@Test
-	void sequenceDateFormatEmpty_globalApplies_withCounter()
+	void sequenceDateFormatMissing_globalApplies_withCounter()
 	{
 		setGlobalFormat("yyMMdd");
 
 		assertThat(provider.provideSequenceNo(movementDate(LocalDate.of(2026, 10, 23)), sequence(null, "0000"), "17"))
 				.isEqualTo("2610230017");
+	}
+
+	@Test
+	void sequenceDateFormatEmpty_globalApplies()
+	{
+		setGlobalFormat("yyMMdd");
+
+		assertThat(provider.provideSequenceNo(movementDate(LocalDate.of(2026, 10, 23)), sequence("", "0000"), "17"))
+				.isEqualTo("2610230017");
+	}
+
+	@Test
+	void sequenceDateFormatBlank_globalApplies()
+	{
+		setGlobalFormat("yyMMdd");
+
 		assertThat(provider.provideSequenceNo(movementDate(LocalDate.of(2026, 10, 23)), sequence(" ", null), null))
 				.isEqualTo("261023");
+		assertThat(provider.provideSequenceNo(movementDate(LocalDate.of(2026, 10, 23)), sequence(" \t ", "0000"), "17"))
+				.isEqualTo("2610230017");
 	}
 
 	@Test
