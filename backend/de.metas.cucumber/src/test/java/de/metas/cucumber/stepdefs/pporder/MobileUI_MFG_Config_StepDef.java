@@ -1,6 +1,6 @@
 package de.metas.cucumber.stepdefs.pporder;
 
-import de.metas.cache.CacheMgt;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
@@ -11,6 +11,7 @@ import org.compiere.model.I_MobileUI_MFG_Config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -18,8 +19,20 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
- * Global {@code MobileUI_MFG_Config} flags. They are shared by every scenario on the executor, so each change made here
- * is recorded and put back by the {@code @After} hook, also when the scenario fails part-way.
+ * Steps that change the global {@code MobileUI_MFG_Config} flags.
+ * <p>
+ * A step changes every active {@code MobileUI_MFG_Config} record, or creates one if there is none.
+ * These records are shared by every scenario on the executor, so each change is recorded and put back by the {@code @After} hook,
+ * also when the scenario fails part-way.
+ * <p>
+ * Flag values are {@code 'Y'} or {@code 'N'}. Example:
+ * <pre>
+ * Background:
+ *   And set MobileUI_MFG_Config IsFinishedGoodsCatchWeightScanRequired to 'N' and IsCaptureCatchWeightAtReceipt to 'Y'
+ *
+ * Scenario: ...
+ *   And set MobileUI_MFG_Config IsAllowIssuingAnyHU to 'Y'
+ * </pre>
  */
 public class MobileUI_MFG_Config_StepDef
 {
@@ -27,8 +40,42 @@ public class MobileUI_MFG_Config_StepDef
 
 	private final List<ConfigOverride> overrides = new ArrayList<>();
 
+	/**
+	 * Sets {@code IsAllowIssuingAnyHU} on the global config(s); put back after the scenario.
+	 *
+	 * @see #restoreConfigOverrides()
+	 */
+	@And("set MobileUI_MFG_Config IsAllowIssuingAnyHU to {string}")
+	public void setIsAllowIssuingAnyHU(@NonNull final String value)
+	{
+		final boolean isAllow = toBoolean(value);
+		changeGlobalConfigs(config -> config.setIsAllowIssuingAnyHU(isAllow));
+	}
+
+	/**
+	 * Sets {@code IsFinishedGoodsCatchWeightScanRequired} and {@code IsCaptureCatchWeightAtReceipt} on the global config(s);
+	 * put back after the scenario.
+	 *
+	 * @see #restoreConfigOverrides()
+	 */
 	@And("set MobileUI_MFG_Config IsFinishedGoodsCatchWeightScanRequired to {string} and IsCaptureCatchWeightAtReceipt to {string}")
 	public void setFinishedGoodsCatchWeightFlags(@NonNull final String scanRequired, @NonNull final String captureAtReceipt)
+	{
+		final boolean isScanRequired = toBoolean(scanRequired);
+		final boolean isCaptureAtReceipt = toBoolean(captureAtReceipt);
+		changeGlobalConfigs(config -> {
+			config.setIsFinishedGoodsCatchWeightScanRequired(isScanRequired);
+			config.setIsCaptureCatchWeightAtReceipt(isCaptureAtReceipt);
+		});
+	}
+
+	private static boolean toBoolean(@NonNull final String value)
+	{
+		Check.assume("Y".equals(value) || "N".equals(value), "Expected 'Y' or 'N' but got {}", value);
+		return "Y".equals(value);
+	}
+
+	private void changeGlobalConfigs(@NonNull final Consumer<I_MobileUI_MFG_Config> change)
 	{
 		final List<I_MobileUI_MFG_Config> configs = queryBL.createQueryBuilder(I_MobileUI_MFG_Config.class)
 				.addOnlyActiveRecordsFilter()
@@ -37,7 +84,8 @@ public class MobileUI_MFG_Config_StepDef
 		if (configs.isEmpty())
 		{
 			final I_MobileUI_MFG_Config newConfig = newInstance(I_MobileUI_MFG_Config.class);
-			setFlags(newConfig, scanRequired, captureAtReceipt);
+			change.accept(newConfig);
+			saveRecord(newConfig);
 			overrides.add(ConfigOverride.created(newConfig.getMobileUI_MFG_Config_ID()));
 		}
 		else
@@ -45,19 +93,10 @@ public class MobileUI_MFG_Config_StepDef
 			for (final I_MobileUI_MFG_Config config : configs)
 			{
 				overrides.add(ConfigOverride.updated(config));
-				setFlags(config, scanRequired, captureAtReceipt);
+				change.accept(config);
+				saveRecord(config);
 			}
 		}
-
-		// the global config cache is not invalidated by MobileUI_MFG_Config changes
-		CacheMgt.get().reset();
-	}
-
-	private static void setFlags(@NonNull final I_MobileUI_MFG_Config config, @NonNull final String scanRequired, @NonNull final String captureAtReceipt)
-	{
-		config.setIsFinishedGoodsCatchWeightScanRequired("Y".equals(scanRequired));
-		config.setIsCaptureCatchWeightAtReceipt("Y".equals(captureAtReceipt));
-		saveRecord(config);
 	}
 
 	/**
@@ -66,11 +105,6 @@ public class MobileUI_MFG_Config_StepDef
 	@After
 	public void restoreConfigOverrides()
 	{
-		if (overrides.isEmpty())
-		{
-			return;
-		}
-
 		for (int i = overrides.size() - 1; i >= 0; i--)
 		{
 			final ConfigOverride override = overrides.get(i);
@@ -85,13 +119,13 @@ public class MobileUI_MFG_Config_StepDef
 			}
 			else
 			{
+				config.setIsAllowIssuingAnyHU(override.isAllowIssuingAnyHUBefore());
 				config.setIsFinishedGoodsCatchWeightScanRequired(override.isScanRequiredBefore());
 				config.setIsCaptureCatchWeightAtReceipt(override.isCaptureAtReceiptBefore());
 				saveRecord(config);
 			}
 		}
 		overrides.clear();
-		CacheMgt.get().reset();
 	}
 
 	@Value
@@ -99,17 +133,23 @@ public class MobileUI_MFG_Config_StepDef
 	{
 		int configId;
 		boolean created;
+		boolean allowIssuingAnyHUBefore;
 		boolean scanRequiredBefore;
 		boolean captureAtReceiptBefore;
 
 		static ConfigOverride created(final int configId)
 		{
-			return new ConfigOverride(configId, true, false, false);
+			return new ConfigOverride(configId, true, false, false, false);
 		}
 
 		static ConfigOverride updated(@NonNull final I_MobileUI_MFG_Config config)
 		{
-			return new ConfigOverride(config.getMobileUI_MFG_Config_ID(), false, config.isFinishedGoodsCatchWeightScanRequired(), config.isCaptureCatchWeightAtReceipt());
+			return new ConfigOverride(
+					config.getMobileUI_MFG_Config_ID(),
+					false,
+					config.isAllowIssuingAnyHU(),
+					config.isFinishedGoodsCatchWeightScanRequired(),
+					config.isCaptureCatchWeightAtReceipt());
 		}
 	}
 }

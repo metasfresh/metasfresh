@@ -44,8 +44,8 @@ test.describe('Sequence window — per-sequence date format field', () => {
       page,
     }) => {
       allure.epic('E0160: Manufacturing Execution');
-      allure.tag('F8030: MobileUI Manufacturing');
-      allure.tag('F8030');
+      allure.tag('F8041: Automatic Lot Number');
+      allure.tag('F8041');
       allure.story('Per-sequence date format for date-based lot number sequences');
       allure.severity('normal');
 
@@ -96,10 +96,7 @@ test.describe('Sequence window — per-sequence date format field', () => {
           .first()
           .click();
         await page.locator(DATE_SEQUENCE_PROVIDER_OPTION).first().click();
-        await page
-          .locator('.input-dropdown-list')
-          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-          .catch(() => {});
+        await expect(page.locator('.input-dropdown-list')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
       });
 
       await test.step('Date format appears and takes a format', async () => {

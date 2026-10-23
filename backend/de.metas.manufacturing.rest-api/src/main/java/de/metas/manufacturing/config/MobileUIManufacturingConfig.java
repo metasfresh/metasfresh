@@ -118,9 +118,8 @@ public class MobileUIManufacturingConfig
 	}
 
 	/**
-	 * Attributes shown on the receipt but not editable; the receipt itself sets them.
-	 * The lot number, when not editable, is shown read-only and generated at receipt (e.g. piece goods: lot number read-only,
-	 * best-before date editable). The best-before date only follows {@link #getEditableAttributes()}.
+	 * @return the receipt attributes the operator cannot edit and the receipt sets itself: {@link PickAttribute#LotNo} if the
+	 * lot number is not editable ({@code IsLotNumberEditable} not {@code Y}), else empty. The best-before date is never in this set.
 	 */
 	public Set<PickAttribute> getReadOnlyAttributes()
 	{

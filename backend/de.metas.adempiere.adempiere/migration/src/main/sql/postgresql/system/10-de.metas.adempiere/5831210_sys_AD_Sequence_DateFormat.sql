@@ -86,3 +86,11 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=785695
 -- 2026-10-23 11:05:00
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,785695,0,146,540411,655053 /*From ID Server*/,'F',TO_TIMESTAMP('2026-10-23 11:05:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','N','N','Datumsformat',35,0,0,TO_TIMESTAMP('2026-10-23 11:05:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
+
+-- ============================================================================
+-- AD_JavaClass DateSequenceProvider (540073): description names the new column first, the sysconfig as fallback
+-- ============================================================================
+
+-- 2026-10-23 11:06:00
+UPDATE AD_JavaClass SET Description='This class is applicable if the respective document model has a Date column, otherwise it uses the system date. It returns a formatted prefix for the sequence number. The formatting is based on the sequence''s "Date format" (AD_Sequence.DateFormat); if that is empty, on the "de.metas.document.seqNo.DateSequenceProvider.dateFormat" sysconfig.', Updated=TO_TIMESTAMP('2026-10-23 11:06:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_JavaClass_ID=540073
+;
