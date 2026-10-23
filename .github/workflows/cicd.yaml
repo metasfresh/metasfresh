@@ -2700,6 +2700,9 @@ jobs:
           # mktemp gives a unique name, so two new_dawn_uat builds publishing at once cannot collide on it.
           # mktemp on the RUNNER too: a self-hosted runner can host concurrent jobs,
           # and a fixed /tmp name would let two branches' builds clobber each other.
+          # The inlining runs on every branch, not only on new_dawn_uat, so a branch that
+          # breaks it (see the needle check) fails this step (visible, non-blocking: the step
+          # is continue-on-error) before reaching new_dawn_uat.
           INLINED=$(mktemp)
           python3 - "$DIR" > "$INLINED" <<'INLINEEOF'
           import re, sys, pathlib
@@ -2747,9 +2750,9 @@ jobs:
           fi
           rm -f "$INLINED"
           echo "Permalinks: https://test-reports.metasfresh.com/branches/${BRANCH}/permalink.html?feature=Fxxxx"
-          # Print the coverage URL only if the page is known to be served: published by this
-          # build, or (other branches) left to the new_dawn_uat deploy by design. A failed
-          # new_dawn_uat deploy prints no banner -- a banner either way would be unverified.
+          # On new_dawn_uat, print the coverage URL only if this build actually published the
+          # page: a banner that prints either way is a claim the step has not verified. Other
+          # branches print it unverified, assuming the page that new_dawn_uat deployed is served.
           if [ -n "$COVERAGE_OK" ]; then
             echo "Coverage:   https://test-reports.metasfresh.com/coverage.html?branch=${BRANCH}"
           fi
