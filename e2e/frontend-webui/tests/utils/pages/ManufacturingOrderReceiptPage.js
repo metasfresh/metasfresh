@@ -162,8 +162,10 @@ export class ManufacturingOrderReceiptPage {
   static async start() {
     return await test.step('ManufacturingOrderReceiptPage - Start', async () => {
       const page = getPage();
-      await page.getByTestId('process-modal-start-button').click();
-      await this.#field('QtyTU').waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      const startButton = page.getByTestId('process-modal-start-button');
+      await startButton.click();
+      // the dialog is gone when its start button is: the form fields re-render transiently on validation errors
+      await startButton.waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
       await this.#settle();
     });
   }

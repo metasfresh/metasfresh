@@ -75,6 +75,14 @@ public class PPOrderCommand
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 		context.putIdentifier(identifier, ppOrderId);
 
+		if (request.getLutuConfigurationTU() == null
+				&& (request.getLutuConfigurationLU() != null
+				|| request.getLutuConfigurationQtyCUsPerTU() != null
+				|| request.getLutuConfigurationQtyTUs() != null))
+		{
+			throw new AdempiereException("lutuConfigurationLU / lutuConfigurationQtyCUsPerTU / lutuConfigurationQtyTUs require lutuConfigurationTU: " + request);
+		}
+
 		if (request.getLutuConfigurationTU() != null)
 		{
 			setLUTUConfiguration(ppOrder, productId, quantity.getUomId());

@@ -26,7 +26,7 @@ public class JsonPPOrderRequest
 
 	/**
 	 * Overrides {@code M_HU_LUTU_Configuration.QtyCUsPerTU} of the configuration created for {@link #lutuConfigurationTU}
-	 * — to store a quantity per TU that differs from the packing instruction, as operators produce it.
+	 * (requires {@code lutuConfigurationTU}) — to store a quantity per TU that differs from the packing instruction, as operators produce it.
 	 */
 	@Nullable BigDecimal lutuConfigurationQtyCUsPerTU;
 	/**
