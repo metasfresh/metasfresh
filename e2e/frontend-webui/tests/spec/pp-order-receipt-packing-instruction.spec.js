@@ -28,22 +28,22 @@ const TARGET_QTY = 45; // what the operators want to receive
 const TUS_PER_PALLET_USED = 3;
 const LUS_USED = 2;
 
-// TC3: switching the packing instruction
+// switching the packing instruction
 const QTY_PER_TU_B = 10; // packing instruction "x 10 Stk"
 const PALLET_CAPACITY_B = 6; // its first pallet takes 6 TUs
 const PALLET_CAPACITY_UNLIMITED = 7; // pallet of the unlimited-capacity packing instruction
 const TUS_BEFORE_SWITCH = 3; // changed by hand before the switch, so the recalculated total differs from the opening one
-// TC4 / TC5 / TC9: unlimited capacity, loose CUs
+// unlimited capacity, loose CUs
 const QTY_UNLIMITED = 37;
 const QTY_LOOSE = 23;
 const QTY_COPRODUCT = 29;
-// TC10: individual serial-numbered CUs
+// individual serial-numbered CUs
 const QTY_INDIVIDUAL_CUS = 3;
 
 const ORDER_DATE = '2025-03-01T00:00:00.000+02:00';
 const COPRODUCT_ROW_INDEX = 1; // lines view of the co-product order: main product, co-product, component
 
-// The label is part of the requirement (AC8), so it is the one place that compares localized text.
+// The label is part of the requirement, so it is the one place that compares localized text.
 const LANGUAGES = [
   { language: 'de_DE', label: 'German', quantityLabel: 'Menge', quantityCULabel: 'Menge CU' },
   { language: 'en_US', label: 'English', quantityLabel: 'Quantity', quantityCULabel: 'Quantity CU' },
@@ -224,7 +224,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
   for (const { language, label, quantityLabel, quantityCULabel } of LANGUAGES) {
     // `page` is not referenced, but the config's page fixture must run (publishes global.currentPage).
     // eslint-disable-next-line no-unused-vars
-    test(`TC1 pallet of ${PALLET_CAPACITY}, packing instruction x ${QTY_PER_TU}, wrong stored configuration (${label})`, async ({ page }) => {
+    test(`pallet of ${PALLET_CAPACITY}, packing instruction x ${QTY_PER_TU}, wrong stored configuration (${label})`, async ({ page }) => {
       const masterdata = await createFixture(language);
 
       // --- order 1: opening state, operators' habit, refusal, acceptance
@@ -284,7 +284,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
     });
 
     // eslint-disable-next-line no-unused-vars
-    test(`TC2 no pallet, packing instruction x ${QTY_PER_TU}, TU count gives the total (${label})`, async ({ page }) => {
+    test(`no pallet, packing instruction x ${QTY_PER_TU}, TU count gives the total (${label})`, async ({ page }) => {
       const masterdata = await createFixture(language);
       await openDialog(masterdata, 'PP_PLAIN');
 
@@ -317,7 +317,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
     });
 
     // eslint-disable-next-line no-unused-vars
-    test(`TC3 switching the packing instruction resets pallet, counts and total (${label})`, async ({ page }) => {
+    test(`switching the packing instruction resets pallet, counts and total (${label})`, async ({ page }) => {
       const masterdata = await createSwitchFixture(language);
       await openDialog(masterdata, 'PP_SWITCH');
 
@@ -385,7 +385,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
     });
 
     // eslint-disable-next-line no-unused-vars
-    test(`TC4 unlimited capacity: one TU, Menge entered, pallet keeps 1 / 1 (${label})`, async ({ page }) => {
+    test(`unlimited capacity: one TU, Menge entered, pallet keeps 1 / 1 (${label})`, async ({ page }) => {
       const masterdata = await createUnlimitedFixture(language);
       await openDialog(masterdata, 'PP_UNL');
 
@@ -424,7 +424,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
     });
 
     // eslint-disable-next-line no-unused-vars
-    test(`TC5 "No Packing Item" shows only Menge CU and builds no pallet (${label})`, async ({ page }) => {
+    test(`"No Packing Item" shows only Menge CU and builds no pallet (${label})`, async ({ page }) => {
       const masterdata = await createFixture(language);
       await openDialog(masterdata, 'PP_PALLET_1');
 
@@ -457,7 +457,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
     });
 
     // eslint-disable-next-line no-unused-vars
-    test(`TC9 co-product line with unlimited-capacity packing instruction (${label})`, async ({ page }) => {
+    test(`co-product line with unlimited-capacity packing instruction (${label})`, async ({ page }) => {
       const masterdata = await createCoProductFixture(language);
       await LoginPage.goto();
       await LoginPage.login(masterdata.login.user);
@@ -480,7 +480,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
     });
 
     // eslint-disable-next-line no-unused-vars
-    test(`TC10 individual serial-numbered CUs are unchanged (${label})`, async ({ page }) => {
+    test(`individual serial-numbered CUs are unchanged (${label})`, async ({ page }) => {
       const masterdata = await createSerialFixture(language);
       await openDialog(masterdata, 'PP_SERIAL');
 
@@ -504,7 +504,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
   }
 
   // eslint-disable-next-line no-unused-vars
-  test('TC11 refusal is shown right after the UI login, without a page reload', async ({ page }) => {
+  test('refusal is shown right after the UI login, without a page reload', async ({ page }) => {
     const { language, quantityLabel } = LANGUAGES[1];
     const masterdata = await createFixture(language);
 

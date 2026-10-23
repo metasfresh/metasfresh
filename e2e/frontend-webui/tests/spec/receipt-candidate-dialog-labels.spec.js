@@ -65,7 +65,7 @@ const openReceiptCandidateOfNewPurchaseOrder = async (language) => {
 
 LANGUAGES.forEach(({ language, label, qtyPerTULabel, qtyCULabel }) => {
   test.describe(`Purchase receipt dialog captions (${label})`, () => {
-    test(`TC7 "HUs annehmen" with LU/TU configuration still labels the quantity per TU (${label} UI)`, async ({ page }) => { // `page` must be requested: it initialises the shared page that getPage() returns
+    test(`"HUs annehmen" with LU/TU configuration still labels the quantity per TU (${label} UI)`, async ({ page }) => { // `page` must be requested: it initialises the shared page that getPage() returns
       allure.epic('E0140: Purchasing');
       allure.tag('F65010: Material Receipt Candidates');
       allure.tag('F65010');
@@ -85,7 +85,7 @@ LANGUAGES.forEach(({ language, label, qtyPerTULabel, qtyCULabel }) => {
       await ReceiptCandidatesPage.cancelProcessDialog();
     });
 
-    test(`TC8 "CUs annehmen mit Menge" labels the quantity "Menge CU" and still receives loose CUs (${label} UI)`, async ({ page }) => { // `page` must be requested: it initialises the shared page that getPage() returns
+    test(`"CUs annehmen mit Menge" labels the quantity "Menge CU" and still receives loose CUs (${label} UI)`, async ({ page }) => { // `page` must be requested: it initialises the shared page that getPage() returns
       allure.epic('E0140: Purchasing');
       allure.tag('F65010: Material Receipt Candidates');
       allure.tag('F65010');
