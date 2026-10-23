@@ -24,6 +24,6 @@ SELECT l.AD_Language,t.AD_Message_ID,t.MsgText,t.MsgTip,'N',t.AD_Client_ID,t.AD_
 FROM AD_Language l, AD_Message t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=545966
   AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID);
-UPDATE AD_Message_Trl SET MsgText='The number of TUs ({1}) exceeds the capacity of the pallet ({0} TUs). Raise the number of LUs for more.',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-10-23 10:00:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545966;
+UPDATE AD_Message_Trl SET MsgText='Number of TUs ({1}) exceeds the pallet capacity ({0} TUs). Raise the number of LUs for more.',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-10-23 10:00:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545966;
 UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-10-23 10:00:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545966;
 UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-10-23 10:00:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545966;
