@@ -236,4 +236,26 @@ export class ReceiptCandidatesPage {
       await expect(quickActionButton).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     });
   }
+
+  /**
+   * The localized caption of a field of the open process dialog, addressed by its language-independent ColumnName.
+   *
+   * @param {string} columnName - ColumnName of the process parameter (e.g. "QtyCUsPerTU")
+   */
+  static async getProcessFieldLabel(columnName) {
+    return await test.step(`ReceiptCandidatesPage - Read label of process field ${columnName}`, async () => {
+      const label = getPage().locator(`.panel-modal-content .form-field-${columnName} label`).first();
+      await label.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      return (await label.textContent()).trim();
+    });
+  }
+
+  /** Cancel the open process dialog without starting it. */
+  static async cancelProcessDialog() {
+    return await test.step('ReceiptCandidatesPage - Cancel process dialog', async () => {
+      const page = getPage();
+      await page.getByTestId('process-modal-cancel-button').click();
+      await page.getByTestId('process-modal-start-button').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    });
+  }
 }
