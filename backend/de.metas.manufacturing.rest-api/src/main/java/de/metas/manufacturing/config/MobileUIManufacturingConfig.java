@@ -108,10 +108,10 @@ public class MobileUIManufacturingConfig
 				.skipReceiveTargetStep(isMainFinishedGood && getIsSkipFinishedGoodsReceiveTargetStepEffective())
 				.allowReceiveWithoutPackingItem(getIsAllowReceiveWithoutPackingItemEffective())
 				// Main finished good only: co-/by-product lines keep receive-on-scan and manual input.
-				// Without a catch-weight UOM or with catch weight not captured at receipt there is no weight to scan.
+				// Independent of capturing the weight at receipt: without it the scan takes over lot and best-before date
+				// only, and the weight is captured later at picking. Each scan is one piece in both cases.
 				.catchWeightScanRequired(isMainFinishedGood
 						&& isCatchWeightProduct
-						&& getIsCaptureCatchWeightAtReceiptEffective()
 						&& getIsFinishedGoodsCatchWeightScanRequiredEffective())
 				.build();
 	}
