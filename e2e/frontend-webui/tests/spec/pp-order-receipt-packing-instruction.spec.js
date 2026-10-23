@@ -363,6 +363,18 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       await ReceiptDialog.expectNumber('QtyTU', TUS_BEFORE_SWITCH);
       await ReceiptDialog.expectNumber('QtyTotalReceived', TUS_BEFORE_SWITCH * QTY_PER_TU);
 
+      // pallet change in the open dialog (fixed capacity): without pallet Menge ignores "LU Anzahl"; choosing it again keeps the counts
+      await ReceiptDialog.setNumber('QtyLU', LUS_USED);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', TUS_BEFORE_SWITCH * LUS_USED * QTY_PER_TU);
+      await ReceiptDialog.clearOption('M_HU_PI_Item_ID');
+      await ReceiptDialog.expectNumber('QtyTotalReceived', TUS_BEFORE_SWITCH * QTY_PER_TU);
+      await ReceiptDialog.selectOption('M_HU_PI_Item_ID', `(${PALLET_CAPACITY} x `);
+      await ReceiptDialog.expectNumber('QtyTU', TUS_BEFORE_SWITCH);
+      await ReceiptDialog.expectNumber('QtyLU', LUS_USED);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', TUS_BEFORE_SWITCH * LUS_USED * QTY_PER_TU);
+      await ReceiptDialog.setNumber('QtyLU', 1);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', TUS_BEFORE_SWITCH * QTY_PER_TU);
+
       // the switched dialog still receives correctly: 3 TUs x 15 on a pallet
       await ReceiptDialog.start();
       const qty = `${TUS_BEFORE_SWITCH * QTY_PER_TU} PCE`;
@@ -393,6 +405,15 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
       await ReceiptDialog.expectNumber('QtyTotalReceived', QTY_UNLIMITED);
 
+      // removing and choosing the pallet again changes nothing: TU / LU stay 1 and read-only, Menge stays
+      await ReceiptDialog.clearOption('M_HU_PI_Item_ID');
+      await ReceiptDialog.selectOption('M_HU_PI_Item_ID', `(${PALLET_CAPACITY_UNLIMITED} x `);
+      await ReceiptDialog.expectNumber('QtyTU', 1);
+      await ReceiptDialog.expectNumber('QtyLU', 1);
+      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
+      expect(await ReceiptDialog.isReadOnly('QtyLU')).toBe(true);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', QTY_UNLIMITED);
+
       // one pallet with one TU holding the entered quantity
       await ReceiptDialog.start();
       const qty = `${QTY_UNLIMITED} PCE`;
@@ -417,6 +438,15 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       for (const hidden of ['QtyTotalReceived', 'QtyTU', 'QtyLU', 'M_HU_PI_Item_ID', 'QtyCUsPerTU']) {
         expect(await ReceiptDialog.isFieldVisible(hidden), `${hidden} is hidden for "No Packing Item"`).toBe(false);
       }
+
+      // back to the packing instruction: pallet and counts come back as defaults (4 TUs, 1 LU, 60), then "No Packing Item" again
+      await ReceiptDialog.selectOption('M_HU_PI_Item_Product_ID', `x ${QTY_PER_TU}`);
+      expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID')).toContain(`(${PALLET_CAPACITY} x `);
+      await ReceiptDialog.expectNumber('QtyTU', PALLET_CAPACITY);
+      await ReceiptDialog.expectNumber('QtyLU', 1);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', PALLET_CAPACITY * QTY_PER_TU);
+      await ReceiptDialog.selectNoPackingItem();
+      expect(await ReceiptDialog.isFieldVisible('M_HU_PI_Item_ID')).toBe(false);
 
       await ReceiptDialog.setNumber('QtyCUsReceived', QTY_LOOSE);
       await ReceiptDialog.start();

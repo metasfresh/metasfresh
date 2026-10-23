@@ -23,6 +23,7 @@
 package de.metas.ui.web.pporder.process;
 
 import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -111,8 +112,8 @@ public class WEBUI_PP_Order_Receipt
 	private boolean isReceiveIndividualCUs;
 
 	private transient PackingInfoProcessParams _packingInfoParams;
-	// 0 until the first packing instruction value was seen
-	private int lastSeenPackingInstructionId;
+	// null until the first packing instruction value was seen
+	@Nullable private HUPIItemProductId lastSeenPackingInstructionId;
 
 	/**
 	 * Makes sure that an instance exists and is in sync with this processe's parameters.
@@ -252,16 +253,16 @@ public class WEBUI_PP_Order_Receipt
 	 */
 	private void onPackingInstructionChanged()
 	{
-		final int newPackingInstructionId = p_M_HU_PI_Item_Product != null ? p_M_HU_PI_Item_Product.getM_HU_PI_Item_Product_ID() : 0;
-		final int lastSeenPackingInstructionId = this.lastSeenPackingInstructionId;
+		final HUPIItemProductId newPackingInstructionId = p_M_HU_PI_Item_Product != null ? HUPIItemProductId.ofRepoIdOrNull(p_M_HU_PI_Item_Product.getM_HU_PI_Item_Product_ID()) : null;
+		final HUPIItemProductId lastSeenPackingInstructionId = this.lastSeenPackingInstructionId;
 		this.lastSeenPackingInstructionId = newPackingInstructionId;
-		if (lastSeenPackingInstructionId <= 0 || lastSeenPackingInstructionId == newPackingInstructionId)
+		if (lastSeenPackingInstructionId == null || HUPIItemProductId.equals(lastSeenPackingInstructionId, newPackingInstructionId))
 		{
 			return;
 		}
 
 		final PackingInfoProcessParams params = getPackingInfoParams();
-		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(newPackingInstructionId);
+		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(HUPIItemProductId.toRepoId(newPackingInstructionId));
 		p_IsPIPUnlimitedCapacity = PackingInfoProcessParams.isUnlimitedCapacity(pip);
 
 		if (pip == null) // "No Packing Item": no pallet, or the hidden pallet would still be submitted and build one

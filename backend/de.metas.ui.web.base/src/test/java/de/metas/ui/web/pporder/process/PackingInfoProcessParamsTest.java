@@ -13,9 +13,12 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -57,20 +60,12 @@ public class PackingInfoProcessParamsTest
 		params.setTU_HU_PI_Item_Product_ID(fixedCapacityPIP.getM_HU_PI_Item_Product_ID());
 	}
 
-	@Test
-	public void fixedCapacity_withoutTUCount_isRefused()
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(strings = "0")
+	public void fixedCapacity_withoutPositiveTUCount_isRefused(@Nullable final String qtyTU)
 	{
-		params.setQtyTU(null);
-
-		assertThatThrownBy(() -> params.createAndSaveNewLUTUConfig())
-				.isInstanceOf(FillMandatoryException.class)
-				.hasMessageContaining(PackingInfoProcessParams.PARAM_QtyTU);
-	}
-
-	@Test
-	public void fixedCapacity_withTUCountZero_isRefused()
-	{
-		params.setQtyTU(BigDecimal.ZERO);
+		params.setQtyTU(qtyTU != null ? new BigDecimal(qtyTU) : null);
 
 		assertThatThrownBy(() -> params.createAndSaveNewLUTUConfig())
 				.isInstanceOf(FillMandatoryException.class)

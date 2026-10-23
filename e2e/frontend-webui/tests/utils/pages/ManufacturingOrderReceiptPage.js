@@ -152,7 +152,13 @@ export class ManufacturingOrderReceiptPage {
         })
         .catch(() => {});
       await this.#field('M_HU_PI_Item_Product_ID').locator('.input-dropdown').click();
-      await page.locator('.input-dropdown-list-option').and(page.locator('[data-test-id^="101"]')).first().click();
+      // data-test-id is the ID followed by the caption: match exactly ID 101, not e.g. 1010001
+      const options = page.locator('.input-dropdown-list-option[data-test-id]');
+      await options.first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const testIds = await options.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-test-id')));
+      const index = testIds.findIndex((testId) => /^101\D/.test(testId));
+      expect(index, `"No Packing Item" (ID 101) among ${testIds}`).toBeGreaterThanOrEqual(0);
+      await options.nth(index).click();
       await answered;
       await this.#settle();
     });

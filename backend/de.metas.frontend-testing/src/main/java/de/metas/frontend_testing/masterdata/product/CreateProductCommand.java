@@ -352,32 +352,30 @@ public class CreateProductCommand
 
 	private DocSequenceId createSerialNoSequence(@NonNull final I_M_Product productRecord)
 	{
-		final I_AD_Sequence sequence = newInstance(I_AD_Sequence.class);
-		sequence.setAD_Org_ID(OrgId.ANY.getRepoId());
-		sequence.setName("SerialNo_" + productRecord.getValue());
-		sequence.setIsAutoSequence(true);
-		sequence.setIsTableID(false);
-		sequence.setIncrementNo(1);
-		sequence.setStartNo(1);
-		sequence.setCurrentNext(1);
-		sequence.setCurrentNextSys(1);
+		final I_AD_Sequence sequence = newAutoSequence("SerialNo_" + productRecord.getValue(), 1);
 		saveRecord(sequence);
 		return DocSequenceId.ofRepoId(sequence.getAD_Sequence_ID());
 	}
 
-	private DocSequenceId createLotNoSequence(@NonNull final JsonCreateProductRequest.LotNoSequence request, @NonNull final I_M_Product productRecord)
+	private static I_AD_Sequence newAutoSequence(@NonNull final String name, final int currentNext)
 	{
-		final int currentNext = request.getCurrentNext() != null ? request.getCurrentNext() : 1;
-
 		final I_AD_Sequence sequence = newInstance(I_AD_Sequence.class);
 		sequence.setAD_Org_ID(OrgId.ANY.getRepoId());
-		sequence.setName("LotNo_" + productRecord.getValue());
+		sequence.setName(name);
 		sequence.setIsAutoSequence(true);
 		sequence.setIsTableID(false);
 		sequence.setIncrementNo(1);
 		sequence.setStartNo(currentNext);
 		sequence.setCurrentNext(currentNext);
 		sequence.setCurrentNextSys(currentNext);
+		return sequence;
+	}
+
+	private DocSequenceId createLotNoSequence(@NonNull final JsonCreateProductRequest.LotNoSequence request, @NonNull final I_M_Product productRecord)
+	{
+		final int currentNext = request.getCurrentNext() != null ? request.getCurrentNext() : 1;
+
+		final I_AD_Sequence sequence = newAutoSequence("LotNo_" + productRecord.getValue(), currentNext);
 		sequence.setPrefix(request.getPrefix());
 		sequence.setDecimalPattern(request.getDecimalPattern());
 		if (request.isDateBased())
