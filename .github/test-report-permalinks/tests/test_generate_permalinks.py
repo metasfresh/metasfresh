@@ -164,9 +164,9 @@ def test_an_unrecognised_suffix_is_dropped_not_folded_into_the_parent():
     2026-09-12, no F-code tag in build 5.175-intensive-care-release.43783
     carries a non-numeric suffix (2182 tag occurrences across the three
     suites), and no test annotation on `new_dawn_uat`,
-    `intensive_care_release` or `intensive_care_hotfix` uses the form. It IS a
-    real identifier in another namespace -- it names doc issues, e.g.
-    `F00652_zz000` -- so it is pinned here as the generic unrecognised-suffix
+    `intensive_care_release` or `intensive_care_hotfix` uses the form. Such
+    suffixed codes exist as identifiers in other namespaces, e.g.
+    `F00652_zz000`, so it is pinned here as the generic unrecognised-suffix
     case, to fix
     the behaviour if the form ever appears: the tag is skipped, so nothing is
     silently credited to `F00138`. Folding it into the parent would be the
