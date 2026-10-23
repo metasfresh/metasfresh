@@ -586,14 +586,22 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
               data: { windowId: String(MATERIAL_RECEIPT_WINDOW_ID), viewType: 'grid' },
             })
           ).json();
-          const receiptsPage = await (
-            await request.get(
-              `${REST}/documentView/${MATERIAL_RECEIPT_WINDOW_ID}/${view.viewId}?firstRow=0&pageLength=200&orderBy=-M_InOut_ID`
-            )
-          ).json();
-          const ownReceipts = (receiptsPage.result || []).filter(
-            (row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)
-          );
+          // page through the whole view: other tests create receipts on the same DB concurrently
+          const ownReceipts = [];
+          for (let firstRow = 0; ; firstRow += 200) {
+            const receiptsPage = await (
+              await request.get(
+                `${REST}/documentView/${MATERIAL_RECEIPT_WINDOW_ID}/${view.viewId}?firstRow=${firstRow}&pageLength=200&orderBy=-M_InOut_ID`
+              )
+            ).json();
+            const rows = receiptsPage.result || [];
+            ownReceipts.push(
+              ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId))
+            );
+            if (rows.length < 200) {
+              break;
+            }
+          }
           const lines = [];
           for (const receipt of ownReceipts) {
             const linesResponse = await request.get(
