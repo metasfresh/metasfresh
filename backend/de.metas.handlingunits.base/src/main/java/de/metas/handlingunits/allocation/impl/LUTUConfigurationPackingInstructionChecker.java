@@ -1,0 +1,96 @@
+package de.metas.handlingunits.allocation.impl;
+
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductBL;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.i18n.AdMessageKey;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+
+/**
+ * Refuses LU/TU configurations that contradict the packing instruction (M_HU_PI_Item_Product) they are based on.
+ * <p>
+ * Rules (the check is skipped for "No Packing Item" and for packing instructions without a finite capacity):
+ * <ul>
+ *     <li>the quantity per TU must be the packing instruction's quantity</li>
+ *     <li>the number of TUs per LU must not exceed the LU's capacity (M_HU_PI_Item.Qty), unless that capacity is <= 0</li>
+ * </ul>
+ */
+@Service
+public class LUTUConfigurationPackingInstructionChecker
+{
+	private static final AdMessageKey MSG_QtyCUsPerTU_NotMatchingPackingInstruction = AdMessageKey.of("M_HU_LUTU_Configuration_QtyCUsPerTU_NotMatchingPackingInstruction");
+	private static final AdMessageKey MSG_QtyTU_ExceedsLUCapacity = AdMessageKey.of("M_HU_LUTU_Configuration_QtyTU_ExceedsLUCapacity");
+
+	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+	public void assertLUTUConfigurationMatchesPackingInstruction(@NonNull final I_M_HU_LUTU_Configuration lutuConfig)
+	{
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(lutuConfig.getM_HU_PI_Item_Product_ID());
+		if (piItemProductId == null || piItemProductId.isVirtualHU())
+		{
+			return; // "No Packing Item"
+		}
+
+		final HUPIItemProduct piItemProduct = huPIItemProductBL.getById(piItemProductId);
+		if (!piItemProduct.isFiniteTU())
+		{
+			return;
+		}
+
+		assertQtyCUsPerTUMatches(lutuConfig, piItemProduct);
+		assertQtyTUWithinLUCapacity(lutuConfig);
+	}
+
+	private void assertQtyCUsPerTUMatches(@NonNull final I_M_HU_LUTU_Configuration lutuConfig, @NonNull final HUPIItemProduct piItemProduct)
+	{
+		if (lutuConfig.isInfiniteQtyCU())
+		{
+			return;
+		}
+
+		final Quantity piQty = piItemProduct.getQtyCUsPerTU();
+		final UomId configUomId = UomId.ofRepoIdOrNull(lutuConfig.getC_UOM_ID());
+		final Quantity configQty = Quantitys.of(lutuConfig.getQtyCUsPerTU(), configUomId != null ? configUomId : piQty.getUomId());
+		final Quantity configQtyInPiUom = configQty.getUomId().equals(piQty.getUomId())
+				? configQty
+				: uomConversionBL.convertQuantityTo(configQty, ProductId.ofRepoId(lutuConfig.getM_Product_ID()), piQty.getUomId());
+
+		if (configQtyInPiUom.toBigDecimal().compareTo(piQty.toBigDecimal()) != 0)
+		{
+			throw new AdempiereException(MSG_QtyCUsPerTU_NotMatchingPackingInstruction, format(piQty.toBigDecimal()), format(configQtyInPiUom.toBigDecimal()));
+		}
+	}
+
+	private static void assertQtyTUWithinLUCapacity(@NonNull final I_M_HU_LUTU_Configuration lutuConfig)
+	{
+		final I_M_HU_PI_Item luPIItem = lutuConfig.getM_LU_HU_PI_Item();
+		if (luPIItem == null || lutuConfig.isInfiniteQtyTU())
+		{
+			return;
+		}
+
+		final BigDecimal luCapacity = luPIItem.getQty();
+		if (luCapacity.signum() > 0 && lutuConfig.getQtyTU().compareTo(luCapacity) > 0)
+		{
+			throw new AdempiereException(MSG_QtyTU_ExceedsLUCapacity, format(luCapacity), format(lutuConfig.getQtyTU()));
+		}
+	}
+
+	private static String format(final BigDecimal qty)
+	{
+		return qty.stripTrailingZeros().toPlainString();
+	}
+}
