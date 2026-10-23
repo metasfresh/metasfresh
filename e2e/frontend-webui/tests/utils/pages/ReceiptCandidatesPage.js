@@ -276,7 +276,6 @@ export class ReceiptCandidatesPage {
       await input.blur();
       await acknowledged;
       await getPage().waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-      await getPage().locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
       await expect(input).toHaveValue(new RegExp(`^${value}([.,]0+)?$`));
     });
   }

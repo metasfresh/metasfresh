@@ -86,14 +86,10 @@ export class ManufacturingOrderReceiptPage {
     });
   }
 
-  /** Wait for the pending-request indicators of the dialog to go away. */
+  /** Wait for the dialog's pending requests to finish. */
   static async #settle() {
     const page = getPage();
     await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-    await page
-      .locator('.rotating, .indicator-pending')
-      .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-      .catch(() => {});
   }
 
   /**
