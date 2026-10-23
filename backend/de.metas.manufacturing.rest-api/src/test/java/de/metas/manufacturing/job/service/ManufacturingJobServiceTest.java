@@ -31,6 +31,7 @@ import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_MobileUI_UserProfile_MFG;
 import org.eevolution.api.PPOrderId;
@@ -44,7 +45,9 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 class ManufacturingJobServiceTest
 {
@@ -140,32 +143,39 @@ class ManufacturingJobServiceTest
 		}
 
 		/**
-		 * Weight captured at picking, not at receipt: the scan is still required and the receipt is still one piece, without a weight.
+		 * Weight captured at picking, not at receipt: the operator enters the number of blocks and scans the last block's label,
+		 * whose lot and best-before date apply to the whole receipt. So a qty of N is a normal receipt, not rejected as "one at a time".
 		 */
 		@Test
-		void receiveGoods_catchWeightNotCapturedAtReceipt_rejectsMoreThanOnePiece()
+		void receiveGoods_catchWeightNotCapturedAtReceipt_acceptsMoreThanOnePiece()
 		{
 			final UserId responsibleId = UserId.ofRepoId(1236);
 			userConfig(responsibleId, null, false);
 			final FinishedGoodsReceiveLine line = receiveLine();
 			final ManufacturingJob job = job(line, responsibleId);
 
-			assertThatThrownBy(() -> manufacturingJobService.receiveGoods(receiveFromWithoutWeight(line, "2"), job, SystemTime.asZonedDateTime()))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining(ReceiveGoodsCommand.MSG_CatchWeightReceiveOneAtATime.toAD_Message());
+			assertNotRejectedAsOneAtATime(() -> manufacturingJobService.receiveGoods(receiveFromWithoutWeight(line, "2"), job, SystemTime.asZonedDateTime()));
 		}
 
 		@Test
-		void receiveGoods_TUMode_catchWeightNotCapturedAtReceipt_rejectsMoreThanOnePiece()
+		void receiveGoods_TUMode_catchWeightNotCapturedAtReceipt_acceptsMoreThanOnePiece()
 		{
 			final UserId responsibleId = UserId.ofRepoId(1237);
 			userConfig(responsibleId, ReceiveUnitType.TU, false);
 			final FinishedGoodsReceiveLine line = receiveLine();
 			final ManufacturingJob job = job(line, responsibleId);
 
-			assertThatThrownBy(() -> manufacturingJobService.receiveGoods(receiveFromWithoutWeight(line, "2"), job, SystemTime.asZonedDateTime()))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining(ReceiveGoodsCommand.MSG_CatchWeightReceiveOneAtATime.toAD_Message());
+			assertNotRejectedAsOneAtATime(() -> manufacturingJobService.receiveGoods(receiveFromWithoutWeight(line, "2"), job, SystemTime.asZonedDateTime()));
+		}
+
+		private void assertNotRejectedAsOneAtATime(final ThrowingCallable receive)
+		{
+			// The receipt itself may fail later on this minimal fixture (no HU masterdata); only the one-piece guard matters here.
+			final Throwable thrown = catchThrowable(receive);
+			if (thrown != null)
+			{
+				assertThat(thrown).hasMessageNotContaining(ReceiveGoodsCommand.MSG_CatchWeightReceiveOneAtATime.toAD_Message());
+			}
 		}
 
 		private void userConfig(final UserId responsibleId, @Nullable final ReceiveUnitType receiveUnitType)

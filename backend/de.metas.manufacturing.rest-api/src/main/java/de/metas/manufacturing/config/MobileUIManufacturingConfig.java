@@ -90,7 +90,8 @@ public class MobileUIManufacturingConfig
 				.skipReceiveTargetStep(isMainFinishedGood && getIsSkipFinishedGoodsReceiveTargetStepEffective())
 				// Main finished good only: co-/by-product lines keep receive-on-scan and manual input.
 				// Independent of capturing the weight at receipt: without it the scan takes over lot and best-before date
-				// only, and the weight is captured later at picking. Each scan is one piece in both cases.
+				// only, and the weight is captured later at picking. One piece per scan only with the weight: see
+				// FinishedGoodsReceiveLineConfig#isReceiveOnePiecePerScan.
 				.catchWeightScanRequired(isMainFinishedGood
 						&& isCatchWeightProduct
 						&& getIsFinishedGoodsCatchWeightScanRequiredEffective())

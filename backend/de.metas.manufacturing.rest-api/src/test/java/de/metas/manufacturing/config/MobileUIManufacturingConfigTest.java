@@ -537,5 +537,45 @@ class MobileUIManufacturingConfigTest
 					.build()
 					.effectiveForReceiveLine(true, true).isCatchWeightScanRequired()).isFalse();
 		}
+
+		/**
+		 * With the weight captured at receipt the scanned weight belongs to one block, so each receipt is one piece.
+		 */
+		@Test
+		void receiveOnePiecePerScan_scanRequired_catchWeightCapturedAtReceipt()
+		{
+			assertThat(configBuilder()
+					.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.TRUE)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
+					.build()
+					.effectiveForReceiveLine(true, true).isReceiveOnePiecePerScan()).isTrue();
+		}
+
+		/**
+		 * Without the weight at receipt the operator enters the number of blocks and scans the last block's label,
+		 * whose lot and best-before date apply to the whole receipt: a normal receipt of N, not one piece per scan.
+		 */
+		@Test
+		void receiveOnePiecePerScan_scanRequired_catchWeightNotCapturedAtReceipt_isFalse()
+		{
+			final FinishedGoodsReceiveLineConfig lineConfig = configBuilder()
+					.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.TRUE)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE)
+					.build()
+					.effectiveForReceiveLine(true, true);
+
+			assertThat(lineConfig.isCatchWeightScanRequired()).isTrue();
+			assertThat(lineConfig.isReceiveOnePiecePerScan()).isFalse();
+		}
+
+		@Test
+		void receiveOnePiecePerScan_scanNotRequired_isFalse()
+		{
+			assertThat(configBuilder()
+					.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.FALSE)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
+					.build()
+					.effectiveForReceiveLine(true, true).isReceiveOnePiecePerScan()).isFalse();
+		}
 	}
 }

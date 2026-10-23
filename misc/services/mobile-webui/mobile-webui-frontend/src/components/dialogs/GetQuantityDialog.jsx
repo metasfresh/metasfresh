@@ -57,8 +57,8 @@ const assertLotNoAndBestBeforeDateScanned = (qrCode) => {
   }
 };
 
-// Catch weight with a mandatory scan is received one piece at a time: the fixed qty of every such receipt,
-// so each piece carries its own scanned lot and best-before date (and weight, if captured at receipt).
+// Catch weight with a mandatory scan AND the weight captured at receipt is received one piece at a time: the fixed qty
+// of every such receipt, so each piece carries its own scanned weight, lot and best-before date.
 const QTY_PER_CATCH_WEIGHT_RECEIPT = 1;
 
 const GetQuantityDialog = ({
@@ -111,10 +111,15 @@ const GetQuantityDialog = ({
   // The caller passes the backend's effective flag. It does not imply a weight to capture: without a catch-weight UOM
   // (weight captured later, at picking) the scan fills only Lot-Nr and MHD, and no weight is shown or sent.
   const isScanForReview = isCatchWeightScanMandatory;
+  // One piece per scan only when the scan also fills the weight: that weight belongs to one block.
+  // Without a weight the operator enters the number of blocks as in a normal receipt and scans the label of the last
+  // block; its Lot-Nr and MHD overwrite the defaults for the whole receipt (customer rule: the last block must be
+  // scanned, and the lot number and best-before date from its QR code overwrite the initially set values).
+  const isOnePiecePerScan = isScanForReview && !!useCatchWeight;
 
   const [qtyInfo, setQtyInfo] = useState(
     qtyInfos.invalidOfNumber(
-      isScanForReview ? QTY_PER_CATCH_WEIGHT_RECEIPT : (useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget
+      isOnePiecePerScan ? QTY_PER_CATCH_WEIGHT_RECEIPT : (useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget
     )
   );
   const [rejectedReason, setRejectedReason] = useState(computeDefaultQtyRejectedReason(qtyRejectedReasons));
@@ -183,7 +188,7 @@ const GetQuantityDialog = ({
     if (isProcessing) return;
 
     if (allValid) {
-      const inputQtyEnteredAndValidated = isScanForReview
+      const inputQtyEnteredAndValidated = isOnePiecePerScan
         ? QTY_PER_CATCH_WEIGHT_RECEIPT
         : qtyInfos.toNumberOrString(qtyInfo);
 
@@ -227,9 +232,10 @@ const GetQuantityDialog = ({
   });
 
   // Overwrites the pre-filled values with the scanned ones and shows them for review; the operator confirms.
+  // Without one piece per scan the entered quantity is kept: the scanned label only sets Lot-Nr and MHD.
   const fillFieldsFromScannedQRCode = ({ qrCode, scannedBarcode }) => {
-    setQtyInfo(qtyInfos.invalidOfNumber(QTY_PER_CATCH_WEIGHT_RECEIPT));
-    if (useCatchWeight) {
+    if (isOnePiecePerScan) {
+      setQtyInfo(qtyInfos.invalidOfNumber(QTY_PER_CATCH_WEIGHT_RECEIPT));
       setCatchWeight(qtyInfos.invalidOfNumber(qrCode.weightNet));
     }
     if (qrCode.lotNo != null) {
@@ -453,7 +459,7 @@ const GetQuantityDialog = ({
                           qty={qtyInfos.toNumberOrString(qtyInfo)}
                           uom={uom}
                           validateQtyEntered={validateQtyEntered}
-                          readonly={useScaleDevice || isScanForReview || readOnly}
+                          readonly={useScaleDevice || isOnePiecePerScan || readOnly}
                           onQtyChange={onQtyEntered}
                           isRequestFocus={true}
                         />
@@ -667,7 +673,8 @@ GetQuantityDialog.propTypes = {
   isShowCloseTargetButton: PropTypes.bool,
   customQRCodeFormats: PropTypes.array,
   // Catch-weight only: an L&M QR code must be scanned; the scan fills the fields for review instead of confirming.
-  // With catchWeightUom the scan also fills the weight; without it only Lot-Nr and MHD.
+  // With catchWeightUom the scan also fills the weight and each receipt is one piece; without it only Lot-Nr and MHD,
+  // and the quantity (number of blocks) stays editable.
   // Pass the backend's effective flag as is (it does not imply a weight to capture; see catchWeightUom); the dialog does not re-derive it.
   isCatchWeightScanMandatory: PropTypes.bool,
 

@@ -245,10 +245,17 @@ it('keeps receive-on-scan and manual input for a co-product line (backend sends 
 });
 
 // Weight captured at picking, not at receipt: the backend sends no catch-weight UOM, but the scan is still required.
-// The scan takes over the Lot-Nr and MHD only; no weight is shown or sent, and each receipt is still one piece.
+// The operator enters the number of blocks as in a normal receipt and scans the label of the last block: its Lot-Nr and
+// MHD overwrite the defaults for the whole receipt. No weight is shown or sent.
 describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)', () => {
   const lineWithoutWeight = () =>
     catchWeightMainFinishedGood({ catchWeightUomSymbol: undefined, catchWeightScanRequired: true });
+  const qtyInput = () => document.getElementById('qty-input');
+  const typeQty = async (qty) => {
+    await act(async () => {
+      fireEvent.change(qtyInput(), { target: { value: `${qty}` } });
+    });
+  };
   const confirm = async () => {
     await act(async () => {
       fireEvent.click(screen.getByText(CONFIRM_CAPTION));
@@ -264,7 +271,7 @@ describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)',
     expect(screen.queryByText(CONFIRM_CAPTION)).not.toBeInTheDocument();
   });
 
-  it('fills Lot-Nr and MHD for review, shows no weight, and fixes the quantity at 1', async () => {
+  it('fills Lot-Nr and MHD for review, shows no weight, and leaves the quantity editable with the open quantity', async () => {
     renderScreen(lineWithoutWeight());
     await openDialog();
     await scan(LMQ_CODE);
@@ -273,23 +280,42 @@ describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)',
     expect(screen.getByTestId('lotNo')).toHaveValue('500');
     expect(screen.getByTestId('bestBeforeDate')).toHaveValue('2025-11-08');
     expect(document.getElementById('catch-weight')).not.toBeInTheDocument();
-    expect(document.getElementById('qty-input')).toHaveValue(1);
-    expect(document.getElementById('qty-input')).toBeDisabled();
+    expect(qtyInput()).toHaveValue(5);
+    expect(qtyInput()).toBeEnabled();
   });
 
-  it('receives one piece with the scanned Lot-Nr and MHD and no weight', async () => {
+  it('receives the entered number of blocks with the scanned Lot-Nr and MHD and no weight', async () => {
     renderScreen(lineWithoutWeight());
     await openDialog();
     await scan(LMQ_CODE);
+    await typeQty(3);
     await confirm();
 
     expect(postManufacturingReceiveEventThunk).toHaveBeenCalledTimes(1);
     const posted = postManufacturingReceiveEventThunk.mock.calls[0][0];
     expect(posted).toEqual(
-      expect.objectContaining({ qtyReceived: 1, lotNo: '500', bestBeforeDate: '2025-11-08', barcode: LMQ_CODE })
+      expect.objectContaining({ qtyReceived: 3, lotNo: '500', bestBeforeDate: '2025-11-08', barcode: LMQ_CODE })
     );
     expect(posted.catchWeight).toBeFalsy();
     expect(posted.catchWeightUom).toBeFalsy();
+  });
+
+  it('keeps Lot-Nr and MHD editable after the scan; the edited values are received', async () => {
+    renderScreen(lineWithoutWeight());
+    await openDialog();
+    await scan(LMQ_CODE);
+
+    expect(screen.getByTestId('lotNo')).toBeEnabled();
+    expect(screen.getByTestId('bestBeforeDate')).toBeEnabled();
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('lotNo'), { target: { value: '777' } });
+    });
+    await typeQty(2);
+    await confirm();
+
+    expect(postManufacturingReceiveEventThunk.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ qtyReceived: 2, lotNo: '777', bestBeforeDate: '2025-11-08' })
+    );
   });
 
   it('accepts a label with an empty weight segment, since no weight is needed', async () => {
@@ -303,10 +329,11 @@ describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)',
   });
 
   // Without a weight row the rescan control must still be offered: a wrong label can be replaced by scanning again.
-  it('offers a rescan after a scan, and the next scan replaces Lot-Nr and MHD', async () => {
+  it('offers a rescan; the next scan replaces Lot-Nr and MHD and keeps the entered quantity', async () => {
     renderScreen(lineWithoutWeight());
     await openDialog();
     await scan(LMQ_CODE);
+    await typeQty(3);
     await act(async () => {
       fireEvent.click(screen.getByText(/activities\.picking\.switchToQrCodeInput$/));
     });
@@ -317,7 +344,7 @@ describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)',
 
     expect(postManufacturingReceiveEventThunk).toHaveBeenCalledTimes(1);
     expect(postManufacturingReceiveEventThunk.mock.calls[0][0]).toEqual(
-      expect.objectContaining({ qtyReceived: 1, lotNo: '501', bestBeforeDate: '2025-11-15' })
+      expect.objectContaining({ qtyReceived: 3, lotNo: '501', bestBeforeDate: '2025-11-15' })
     );
   });
 

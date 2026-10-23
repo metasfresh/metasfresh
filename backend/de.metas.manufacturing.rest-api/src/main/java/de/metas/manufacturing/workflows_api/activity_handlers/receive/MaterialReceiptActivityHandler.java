@@ -152,8 +152,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final java.math.BigDecimal qtyToReceive;
 		final java.math.BigDecimal qtyReceived;
 
-		// With the mandatory catch-weight scan every receipt is one piece, also in TU mode, so the line counts pieces.
-		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null && !lineConfig.isCatchWeightScanRequired())
+		// With one piece per scan (weight captured at receipt) every receipt is one piece, also in TU mode, so the line counts pieces.
+		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null && !lineConfig.isReceiveOnePiecePerScan())
 		{
 			final HUPIItemProduct huPIItemProduct = huPIItemProductDAO.getById(line.getTuPIItemProductId());
 			final QtyTU qtyToReceiveTU = huPIItemProduct.computeQtyTUsOfTotalCUs(line.getQtyToReceive(), line.getProductId());
