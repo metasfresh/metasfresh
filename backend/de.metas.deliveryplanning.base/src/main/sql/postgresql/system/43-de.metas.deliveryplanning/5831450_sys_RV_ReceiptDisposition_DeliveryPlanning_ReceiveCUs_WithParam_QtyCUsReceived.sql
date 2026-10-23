@@ -4,22 +4,28 @@
 -- (QtyCUsReceived, AD_Element 585563) - the element the receipt-schedule window's counterpart (AD_Process 540765)
 -- uses. The Java process reads only QtyCUsReceived.
 --
--- AD_Element 585563 is created by the migration 5831320_sys_PP_Order_Receipt_follows_packing_instruction.sql
--- (module de.metas.ui.web.base) as a plain INSERT, so this script must not create it as well: whichever of the two
--- ran second would fail on the duplicate primary key. It therefore requires the element to exist already.
+-- AD_Element 585563 is also created by 5831320_sys_PP_Order_Receipt_follows_packing_instruction.sql (module
+-- de.metas.ui.web.base), whose INSERT is guarded by WHERE NOT EXISTS. So this script creates it, with exactly the
+-- same values, only if it is missing: either script may run first.
 --
--- Idempotent: every statement sets absolute values, so it is a no-op on a database where 543304 is already moved.
+-- Idempotent: the element/translation inserts are guarded and the UPDATEs only touch rows that differ.
 -- AD_Process_Para.ColumnName / Name are not synced from the element, hence set explicitly.
 
-DO
-$$
-    BEGIN
-        IF NOT EXISTS(SELECT 1 FROM AD_Element WHERE AD_Element_ID = 585563 AND ColumnName = 'QtyCUsReceived') THEN
-            RAISE EXCEPTION 'AD_Element 585563 (QtyCUsReceived, "Menge CU") is missing: apply 5831320_sys_PP_Order_Receipt_follows_packing_instruction.sql first';
-        END IF;
-    END
-$$
-;
+INSERT INTO AD_Element (AD_Element_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,ColumnName,EntityType,Name,PrintName)
+SELECT 585563 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-10-23 10:00:01','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-10-23 10:00:01','YYYY-MM-DD HH24:MI:SS'),100,'QtyCUsReceived','de.metas.ui.web','Menge CU','Menge CU'
+WHERE NOT EXISTS (SELECT 1 FROM AD_Element WHERE AD_Element_ID=585563);
+
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID,Name,PrintName,IsTranslated,AD_Client_ID,AD_Org_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive,IsUseCustomization)
+SELECT l.AD_Language,t.AD_Element_ID,t.Name,t.PrintName,'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.CreatedBy,t.Updated,t.UpdatedBy,'Y','N'
+FROM AD_Language l, AD_Element t
+WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Element_ID=585563
+AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID);
+
+UPDATE AD_Element_Trl SET Name='Menge CU',PrintName='Menge CU',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-10-23 10:00:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
+WHERE AD_Element_ID=585563 AND AD_Language IN ('de_DE','de_CH') AND (Name IS DISTINCT FROM 'Menge CU' OR PrintName IS DISTINCT FROM 'Menge CU' OR IsTranslated IS DISTINCT FROM 'Y');
+
+UPDATE AD_Element_Trl SET Name='Quantity CU',PrintName='Quantity CU',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-10-23 10:00:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
+WHERE AD_Element_ID=585563 AND AD_Language='en_US' AND (Name IS DISTINCT FROM 'Quantity CU' OR PrintName IS DISTINCT FROM 'Quantity CU' OR IsTranslated IS DISTINCT FROM 'Y');
 
 UPDATE AD_Process_Para
 SET AD_Element_ID=585563,
