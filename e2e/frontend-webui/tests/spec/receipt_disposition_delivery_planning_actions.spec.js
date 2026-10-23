@@ -14,14 +14,14 @@ const MATERIAL_RECEIPT_WINDOW_ID = 184;
 const MATERIAL_RECEIPT_LINE_TAB_ID = 'AD_Tab-297';
 
 /**
- * Selects a grid row and waits until the grid shows it selected. A click that lands while the freshly opened view
- * is still re-rendering is lost without any error, and the quick actions then stay "No items selected".
+ * Selects a grid row. The grid auto-selects its first row on load and a click on a selected row DESELECTS it, so
+ * click only when the row is not selected yet, then assert it is.
  */
 const selectRow = async (row) => {
-  await expect(async () => {
+  if (!/row-selected/.test((await row.getAttribute('class')) || '')) {
     await row.click();
-    await expect(row).toHaveClass(/row-selected/, { timeout: 2000 });
-  }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
+  }
+  await expect(row).toHaveClass(/row-selected/);
 };
 
 /**
@@ -50,7 +50,7 @@ const openWindowOnOwnRows = async (page, rowIds) => {
       rest: WEBAPI_BASE_URL,
       windowId: RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID,
       ids: rowIds.map(Number),
-    }
+    },
   );
   await page.goto(`${FRONTEND_BASE_URL}/window/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}?viewId=${viewId}`);
 };
@@ -164,16 +164,16 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     // Taken from the masterdata response, never hard-coded (every run creates a fresh row). The response exposes
     // that id in exactly one place: `tuPIItemProductTestId`, of the form `tuPIItemProduct-<id>`.
     const packedPackingInstructionsId = Number(
-      String(masterdata.packingInstructions.RL_TU.tuPIItemProductTestId).replace(/^tuPIItemProduct-/, '')
+      String(masterdata.packingInstructions.RL_TU.tuPIItemProductTestId).replace(/^tuPIItemProduct-/, ''),
     );
     expect(
       packedPackingInstructionsId,
-      'the M_HU_PI_Item_Product id of the packed product\'s packing instruction, parsed out of the ' +
-        'masterdata response\'s tuPIItemProductTestId'
+      "the M_HU_PI_Item_Product id of the packed product's packing instruction, parsed out of the " +
+        "masterdata response's tuPIItemProductTestId",
     ).toBeGreaterThan(0);
     expect(
       packedPackingInstructionsId,
-      'the created packing instruction is a real one, not the virtual "No Packing Item" row'
+      'the created packing instruction is a real one, not the virtual "No Packing Item" row',
     ).not.toBe(NO_PACKING_ITEM_ID);
 
     const REST = WEBAPI_BASE_URL;
@@ -242,13 +242,13 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       const lineRows = (
         await (
           await request.get(
-            `${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}/${PURCHASE_ORDER_LINE_TAB_ID}`
+            `${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}/${PURCHASE_ORDER_LINE_TAB_ID}`,
           )
         ).json()
       ).result;
       expect(
         lineRows.map((row) => String(row.fieldsByName.M_Product_ID.value.key)).sort(),
-        'the products of the created purchase order lines'
+        'the products of the created purchase order lines',
       ).toEqual([String(packedProductId), String(unpackedProductId)].sort());
       for (const lineRow of lineRows) {
         expect(lineRow.saveStatus && lineRow.saveStatus.saved, `order line ${lineRow.rowId} is saved`).toBe(true);
@@ -261,23 +261,23 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
         lineRows.map((row) => [
           String(row.fieldsByName.M_Product_ID.value.key),
           Number(row.fieldsByName.M_HU_PI_Item_Product_ID.value.key),
-        ])
+        ]),
       );
       expect(
         packingInstructionIdByProductId.get(String(packedProductId)),
-        'the packed order line carries the packing instruction created for its product'
+        'the packed order line carries the packing instruction created for its product',
       ).toBe(packedPackingInstructionsId);
       expect(
         packingInstructionIdByProductId.get(String(unpackedProductId)),
         'the unpacked order line carries no packing instruction — the virtual "No Packing Item" row, which ' +
-          'is what makes its HU-defaults receive reject'
+          'is what makes its HU-defaults receive reject',
       ).toBe(NO_PACKING_ITEM_ID);
 
       await patchDocument(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, null, null, [
         { op: 'replace', path: 'DocAction', value: 'CO' },
       ]);
       const completed = firstDocument(
-        await (await request.get(`${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}`)).json()
+        await (await request.get(`${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}`)).json(),
       );
       expect(completed.fieldsByName.DocStatus.value.key, 'purchase order DocStatus').toBe('CO');
     });
@@ -302,12 +302,12 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
         const rowsPage = await (
           await request.get(
             `${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}/${view.viewId}` +
-              `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID`
+              `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID`,
           )
         ).json();
         const rows = rowsPage.result || [];
         ownRows.push(
-          ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId))
+          ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)),
         );
         if (rows.length < PAGE_LENGTH) {
           return ownRows;
@@ -339,7 +339,7 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     // page reliably reaches, and swallowing its timeout hid whatever else went wrong at navigation.
     await openWindowOnOwnRows(
       page,
-      (await ownReceiptDispositionRows()).map((ownRow) => ownRow.id)
+      (await ownReceiptDispositionRows()).map((ownRow) => ownRow.id),
     );
 
     const rowForProduct = (productName) => page.locator(`table tbody tr:has-text("${productName}")`).first();
@@ -417,10 +417,7 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       const actionsToggle = page.locator('.meta-icon-more').first();
       await actionsToggle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await actionsToggle.click();
-      await page
-        .locator('.subheader-container')
-        .first()
-        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await page.locator('.subheader-container').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await expect(page.locator(`[data-testid="action-${MULTI_ROW_RECEIVE_INTERNAL_NAME}"]`)).toBeVisible();
     });
   });
@@ -528,7 +525,7 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
           { op: 'replace', path: 'DocAction', value: 'CO' },
         ]);
         const completed = firstDocument(
-          await (await request.get(`${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}`)).json()
+          await (await request.get(`${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}`)).json(),
         );
         expect(completed.fieldsByName.DocStatus.value.key, 'purchase order DocStatus').toBe('CO');
       });
@@ -547,11 +544,13 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
           const rowsPage = await (
             await request.get(
               `${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}/${view.viewId}` +
-                `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID`
+                `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID`,
             )
           ).json();
           const rows = rowsPage.result || [];
-          own.push(...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)));
+          own.push(
+            ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)),
+          );
           if (rows.length < PAGE_LENGTH) {
             return own;
           }
@@ -576,7 +575,7 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
 
       await openWindowOnOwnRows(
         page,
-        (await ownRows()).map((ownRow) => ownRow.id)
+        (await ownRows()).map((ownRow) => ownRow.id),
       );
 
       const row = page.locator(`table tbody tr:has-text("${productName}")`).first();
@@ -611,7 +610,7 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
       });
 
       // Read back from the server: an unplanned row's "actual discharge quantity" is the receipt schedule's QtyMoved.
-      await test.step('the server booked the typed quantity on the order\'s receipt-schedule row', async () => {
+      await test.step("the server booked the typed quantity on the order's receipt-schedule row", async () => {
         await expect
           .poll(
             async () => {
@@ -622,7 +621,7 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
               message: `the receipt-schedule row of purchase order ${purchaseOrderId} reports ${QTY_RECEIVED} received (ActualDischargeQuantity)`,
               timeout: 60000,
               intervals: [1000, 2000],
-            }
+            },
           )
           .toBe(QTY_RECEIVED);
       });
@@ -641,12 +640,12 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
           for (let firstRow = 0; ; firstRow += 200) {
             const receiptsPage = await (
               await request.get(
-                `${REST}/documentView/${MATERIAL_RECEIPT_WINDOW_ID}/${view.viewId}?firstRow=${firstRow}&pageLength=200&orderBy=-M_InOut_ID`
+                `${REST}/documentView/${MATERIAL_RECEIPT_WINDOW_ID}/${view.viewId}?firstRow=${firstRow}&pageLength=200&orderBy=-M_InOut_ID`,
               )
             ).json();
             const rows = receiptsPage.result || [];
             ownReceipts.push(
-              ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId))
+              ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)),
             );
             if (rows.length < 200) {
               break;
@@ -655,7 +654,7 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
           const lines = [];
           for (const receipt of ownReceipts) {
             const linesResponse = await request.get(
-              `${REST}/window/${MATERIAL_RECEIPT_WINDOW_ID}/${receipt.id}/${MATERIAL_RECEIPT_LINE_TAB_ID}`
+              `${REST}/window/${MATERIAL_RECEIPT_WINDOW_ID}/${receipt.id}/${MATERIAL_RECEIPT_LINE_TAB_ID}`,
             );
             // the tab rows come back as { result: [...documents], missingIds, orderBys }, not as a bare array
             const linesBody = linesResponse.ok() ? await linesResponse.json() : {};
@@ -675,10 +674,11 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
         const [line] = await receiptLines();
         const fields = line.fieldsByName || {};
         expect(Number(fields.QtyEntered?.value), 'received quantity on the receipt line').toBe(QTY_RECEIVED);
-        // Loose CUs are received into ONE virtual HU ("No Packing Item", unit type V - observed on the receipt this
-        // flow creates), which the packing-aware receipt line counts as a single TU. So QtyEnteredTU is 1 here, never
-        // the number of real TUs; the line carries the typed quantity and NO packing instruction item.
-        expect(Number(fields.QtyEnteredTU?.value) || 0, 'TUs on the receipt line (the one virtual HU at most)').toBeLessThanOrEqual(1);
+        // Loose CUs are received into ONE virtual HU ("No Packing Item", unit type V - read from the DB on the receipt
+        // this flow creates), which the packing-aware receipt line counts as a single TU: QtyEnteredTU is exactly 1,
+        // and the line carries the typed quantity and NO packing instruction item. The HU itself is not readable via
+        // the receipt window's REST tab (it exposes no HU fields), so its virtual type is not asserted here.
+        expect(Number(fields.QtyEnteredTU?.value), 'TUs on the receipt line (the one virtual HU)').toBe(1);
         expect(fields.M_HU_PI_Item_Product_ID?.value ?? null, 'packing instruction on the receipt line').toBeNull();
       });
     });
