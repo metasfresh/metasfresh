@@ -22,7 +22,8 @@ import { MANUFACTURING_ORDER_WINDOW_ID } from '../WindowIds';
  */
 export class ManufacturingOrderReceiptPage {
   static #field(columnName) {
-    return getPage().locator(`.form-field-${columnName}`);
+    // scoped to the dialog's content: the order window behind it renders some of the same columns (e.g. M_HU_PI_Item_Product_ID) too
+    return getPage().locator(`.panel-modal-content .form-field-${columnName}`);
   }
 
   static #input(columnName) {
@@ -79,7 +80,8 @@ export class ManufacturingOrderReceiptPage {
       await receiveAction.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await receiveAction.click();
 
-      await this.#field('QtyTU').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      // not QtyTU: it is hidden for "No Packing Item" and for individual CUs
+      await page.getByTestId('process-modal-start-button').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
       await this.#settle();
     });
   }
@@ -118,6 +120,57 @@ export class ManufacturingOrderReceiptPage {
     await input.blur();
     await answered;
     await this.#settle();
+  }
+
+  /**
+   * Choose an entry of a dropdown field (packing instruction, pallet) and wait for the server's answer.
+   * @param {string} columnName
+   * @param {string|RegExp} option - text (or pattern) of the entry
+   */
+  static async selectOption(columnName, option) {
+    return await test.step(`ManufacturingOrderReceiptPage - Select ${option} in ${columnName}`, async () => {
+      const page = getPage();
+      const answered = page
+        .waitForResponse((response) => response.request().method() === 'PATCH' && response.url().includes('/process/'), {
+          timeout: SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {});
+      await this.#field(columnName).locator('.input-dropdown').click();
+      await page.locator('.input-dropdown-list-option').filter({ hasText: option }).first().click();
+      await answered;
+      await this.#settle();
+    });
+  }
+
+  /** Choose "No Packing Item" in the packing instruction dropdown (its name depends on the language, its ID 101 does not). */
+  static async selectNoPackingItem() {
+    return await test.step('ManufacturingOrderReceiptPage - Select "No Packing Item"', async () => {
+      const page = getPage();
+      const answered = page
+        .waitForResponse((response) => response.request().method() === 'PATCH' && response.url().includes('/process/'), {
+          timeout: SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {});
+      await this.#field('M_HU_PI_Item_Product_ID').locator('.input-dropdown').click();
+      await page.locator('.input-dropdown-list-option').and(page.locator('[data-test-id^="101"]')).first().click();
+      await answered;
+      await this.#settle();
+    });
+  }
+
+  /** Empty a dropdown field (pallet) by its clear icon and wait for the server's answer. */
+  static async clearOption(columnName) {
+    return await test.step(`ManufacturingOrderReceiptPage - Clear ${columnName}`, async () => {
+      const answered = getPage()
+        .waitForResponse((response) => response.request().method() === 'PATCH' && response.url().includes('/process/'), {
+          timeout: SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {});
+      await this.#field(columnName).locator('.input-dropdown').hover();
+      await this.#field(columnName).locator('.input-icon').click();
+      await answered;
+      await this.#settle();
+    });
   }
 
   /** Is the dialog field rendered at all? (hidden parameters are not rendered) */
@@ -201,7 +254,7 @@ export class ManufacturingOrderReceiptPage {
     return await test.step('ManufacturingOrderReceiptPage - Cancel dialog', async () => {
       const page = getPage();
       await page.getByTestId('process-modal-cancel-button').click();
-      await this.#field('QtyTU').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+      await page.getByTestId('process-modal-start-button').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     });
   }
 

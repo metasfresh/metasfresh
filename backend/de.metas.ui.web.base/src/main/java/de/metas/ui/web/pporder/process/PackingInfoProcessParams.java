@@ -266,6 +266,16 @@ public class PackingInfoProcessParams
 				.collect(LookupValuesList.collect());
 	}
 
+	/**
+	 * @return the first pallet (LU packing instruction item) offered for the given packing instruction, or {@code null} if none is offered
+	 */
+	@Nullable
+	public I_M_HU_PI_Item getFirstAvailableLuPIItemOrNull(@NonNull final I_M_HU_PI_Item_Product pip)
+	{
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, ILUTUConfigurationFactory.extractBPartnerIdOrNull(getDefaultLUTUConfig()));
+		return luPIItems.isEmpty() ? null : luPIItems.get(0);
+	}
+
 	private List<I_M_HU_PI_Item> getAvailableLuPIItems(
 			@NonNull final I_M_HU_PI_Item_Product pip,
 			@Nullable final BPartnerId bpartnerId)

@@ -100,6 +100,8 @@ public class JsonCreateProductRequest
 		@NonNull List<BOMLine> lines;
 		/** optional lot-number sequence of the BOM (PP_Product_BOM.LotNo_Sequence_ID) */
 		@Nullable LotNoSequence lotNoSequence;
+		/** if true, the BOM gets a serial-number sequence (PP_Product_BOM.SerialNo_Sequence_ID): the product is received as individual serial-numbered CUs */
+		boolean serialNoSequence;
 	}
 
 	@Value

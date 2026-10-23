@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.pporder.process;
 
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -31,7 +32,6 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.process.IProcessDefaultParameter;
-import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
@@ -111,6 +111,8 @@ public class WEBUI_PP_Order_Receipt
 	private boolean isReceiveIndividualCUs;
 
 	private transient PackingInfoProcessParams _packingInfoParams;
+	// 0 until the first packing instruction value was seen
+	private int lastSeenPackingInstructionId;
 
 	/**
 	 * Makes sure that an instance exists and is in sync with this processe's parameters.
@@ -226,11 +228,72 @@ public class WEBUI_PP_Order_Receipt
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
-		if (PackingInfoProcessParams.PARAM_QtyTU.equals(parameterName)
-				|| PackingInfoProcessParams.PARAM_QtyLU.equals(parameterName))
+		switch (parameterName)
 		{
-			updateQtyTotalReceived();
+			case PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID:
+				onPackingInstructionChanged();
+				break;
+			case PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID:
+				onPalletChanged();
+				break;
+			case PackingInfoProcessParams.PARAM_QtyTU:
+			case PackingInfoProcessParams.PARAM_QtyLU:
+				updateQtyTotalReceived();
+				break;
+			default:
+				break;
 		}
+	}
+
+	/**
+	 * Resets pallet and counts to the new packing instruction's defaults, but only on a real change:
+	 * the callout also fires while the dialog is built (the first value only records the ID, so the opening defaults stay),
+	 * and again when the write-back sets the parameter to the value it already has.
+	 */
+	private void onPackingInstructionChanged()
+	{
+		final int newPackingInstructionId = p_M_HU_PI_Item_Product != null ? p_M_HU_PI_Item_Product.getM_HU_PI_Item_Product_ID() : 0;
+		final int lastSeenPackingInstructionId = this.lastSeenPackingInstructionId;
+		this.lastSeenPackingInstructionId = newPackingInstructionId;
+		if (lastSeenPackingInstructionId <= 0 || lastSeenPackingInstructionId == newPackingInstructionId)
+		{
+			return;
+		}
+
+		final PackingInfoProcessParams params = getPackingInfoParams();
+		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(newPackingInstructionId);
+		p_IsPIPUnlimitedCapacity = PackingInfoProcessParams.isUnlimitedCapacity(pip);
+
+		if (pip == null) // "No Packing Item": no pallet, or the hidden pallet would still be submitted and build one
+		{
+			p_M_HU_PI_Item = null;
+			p_QtyTU = BigDecimal.ONE;
+			p_QtyLU = BigDecimal.ONE;
+			return;
+		}
+
+		final I_M_HU_PI_Item pallet = params.getFirstAvailableLuPIItemOrNull(p_M_HU_PI_Item_Product);
+		p_M_HU_PI_Item = pallet;
+		p_QtyTU = !p_IsPIPUnlimitedCapacity && pallet != null && pallet.getQty().signum() > 0 ? pallet.getQty() : BigDecimal.ONE;
+		p_QtyLU = BigDecimal.ONE;
+		updateQtyTotalReceived();
+	}
+
+	private void onPalletChanged()
+	{
+		if (p_IsPIPUnlimitedCapacity)
+		{
+			p_QtyTU = BigDecimal.ONE;
+			p_QtyLU = BigDecimal.ONE;
+			return;
+		}
+
+		// "TU Anzahl" is deliberately not clamped to the pallet's capacity: a too high count is refused on start
+		if (p_QtyLU == null || p_QtyLU.signum() <= 0)
+		{
+			p_QtyLU = BigDecimal.ONE;
+		}
+		updateQtyTotalReceived();
 	}
 
 	/**

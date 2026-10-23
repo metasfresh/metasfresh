@@ -336,6 +336,11 @@ public class CreateProductCommand
 			bomRecord.setLotNo_Sequence_ID(createLotNoSequence(bom.getLotNoSequence(), productRecord).getRepoId());
 			saveRecord(bomRecord);
 		}
+		if (bom.isSerialNoSequence())
+		{
+			bomRecord.setSerialNo_Sequence_ID(createSerialNoSequence(productRecord).getRepoId());
+			saveRecord(bomRecord);
+		}
 		bomLines.forEach(bomLine -> createPP_Product_BOMLine(bomLine, bomRecord));
 		bomRecord.setDocAction(IDocument.ACTION_Complete);
 		documentBL.processEx(bomRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
@@ -343,6 +348,21 @@ public class CreateProductCommand
 		productRecord.setIsBOM(true);
 		productRecord.setIsVerified(true);
 		saveRecord(productRecord);
+	}
+
+	private DocSequenceId createSerialNoSequence(@NonNull final I_M_Product productRecord)
+	{
+		final I_AD_Sequence sequence = newInstance(I_AD_Sequence.class);
+		sequence.setAD_Org_ID(OrgId.ANY.getRepoId());
+		sequence.setName("SerialNo_" + productRecord.getValue());
+		sequence.setIsAutoSequence(true);
+		sequence.setIsTableID(false);
+		sequence.setIncrementNo(1);
+		sequence.setStartNo(1);
+		sequence.setCurrentNext(1);
+		sequence.setCurrentNextSys(1);
+		saveRecord(sequence);
+		return DocSequenceId.ofRepoId(sequence.getAD_Sequence_ID());
 	}
 
 	private DocSequenceId createLotNoSequence(@NonNull final JsonCreateProductRequest.LotNoSequence request, @NonNull final I_M_Product productRecord)

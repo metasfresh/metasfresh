@@ -28,10 +28,25 @@ const TARGET_QTY = 45; // what the operators want to receive
 const TUS_PER_PALLET_USED = 3;
 const LUS_USED = 2;
 
+// TC3: switching the packing instruction
+const QTY_PER_TU_B = 10; // packing instruction "x 10 Stk"
+const PALLET_CAPACITY_B = 6; // its first pallet takes 6 TUs
+const PALLET_CAPACITY_UNLIMITED = 7; // pallet of the unlimited-capacity packing instruction
+const TUS_BEFORE_SWITCH = 3; // changed by hand before the switch, so the recalculated total differs from the opening one
+// TC4 / TC5 / TC9: unlimited capacity, loose CUs
+const QTY_UNLIMITED = 37;
+const QTY_LOOSE = 23;
+const QTY_COPRODUCT = 29;
+// TC10: individual serial-numbered CUs
+const QTY_INDIVIDUAL_CUS = 3;
+
+const ORDER_DATE = '2025-03-01T00:00:00.000+02:00';
+const COPRODUCT_ROW_INDEX = 1; // lines view of the co-product order: main product, co-product, component
+
 // The label is part of the requirement (AC8), so it is the one place that compares localized text.
 const LANGUAGES = [
-  { language: 'de_DE', label: 'German', quantityLabel: 'Menge' },
-  { language: 'en_US', label: 'English', quantityLabel: 'Quantity' },
+  { language: 'de_DE', label: 'German', quantityLabel: 'Menge', quantityCULabel: 'Menge CU' },
+  { language: 'en_US', label: 'English', quantityLabel: 'Quantity', quantityCULabel: 'Quantity CU' },
 ];
 
 const createFixture = async (language) =>
@@ -64,6 +79,108 @@ const createFixture = async (language) =>
           piItemProduct: 'TU_PLAIN',
           datePromised: '2025-03-01T00:00:00.000+02:00',
         },
+      },
+    },
+  });
+
+// one product, three packing instructions: "x 15" (pallet 4), "x 10" (pallet 6), unlimited capacity (pallet 7)
+const createSwitchFixture = async (language) =>
+  Backend.createMasterdata({
+    language,
+    request: {
+      login: { user: { language } },
+      bpartners: { BP1: {} },
+      warehouses: { wh: {} },
+      products: {
+        COMP1: {},
+        PROD_SWITCH: { prices: [{ price: 1 }], bom: { lines: [{ product: 'COMP1', qty: 1 }] } },
+      },
+      packingInstructions: {
+        PI_A: { lu: 'LU_A', qtyTUsPerLU: PALLET_CAPACITY, tu: 'TU_A', product: 'PROD_SWITCH', qtyCUsPerTU: QTY_PER_TU },
+        PI_B: { lu: 'LU_B', qtyTUsPerLU: PALLET_CAPACITY_B, tu: 'TU_B', product: 'PROD_SWITCH', qtyCUsPerTU: QTY_PER_TU_B },
+        PI_UNL: { lu: 'LU_UNL', qtyTUsPerLU: PALLET_CAPACITY_UNLIMITED, tu: 'TU_UNL', product: 'PROD_SWITCH' },
+      },
+      manufacturingOrders: {
+        PP_SWITCH: {
+          warehouse: 'wh',
+          product: 'PROD_SWITCH',
+          qty: 200,
+          lutuConfigurationTU: 'TU_A',
+          lutuConfigurationLU: 'PI_A',
+          piItemProduct: 'TU_A',
+          datePromised: ORDER_DATE,
+        },
+      },
+    },
+  });
+
+// unlimited-capacity packing instruction: with a pallet (7 TUs) and without
+const createUnlimitedFixture = async (language) =>
+  Backend.createMasterdata({
+    language,
+    request: {
+      login: { user: { language } },
+      bpartners: { BP1: {} },
+      warehouses: { wh: {} },
+      products: {
+        COMP1: {},
+        PROD_UNL: { prices: [{ price: 1 }], bom: { lines: [{ product: 'COMP1', qty: 1 }] } },
+      },
+      packingInstructions: {
+        PI_UNL: { lu: 'LU_UNL', qtyTUsPerLU: PALLET_CAPACITY_UNLIMITED, tu: 'TU_UNL', product: 'PROD_UNL' },
+      },
+      manufacturingOrders: {
+        PP_UNL: {
+          warehouse: 'wh',
+          product: 'PROD_UNL',
+          qty: 200,
+          lutuConfigurationTU: 'TU_UNL',
+          piItemProduct: 'TU_UNL',
+          datePromised: ORDER_DATE,
+        },
+      },
+    },
+  });
+
+// the main product has no packing instruction of its own; the co-product has an unlimited-capacity one (edge pieces)
+const createCoProductFixture = async (language) =>
+  Backend.createMasterdata({
+    language,
+    request: {
+      login: { user: { language } },
+      bpartners: { BP1: {} },
+      warehouses: { wh: {} },
+      products: {
+        COMP1: {},
+        COPROD: { prices: [{ price: 1 }] },
+        PROD_MAIN: {
+          prices: [{ price: 1 }],
+          bom: { lines: [{ product: 'COMP1', qty: 1 }, { product: 'COPROD', qty: -10, percentage: true, componentType: 'BY' }] },
+        },
+      },
+      packingInstructions: {
+        PI_EDGE: { tu: 'TU_EDGE', product: 'COPROD' },
+      },
+      manufacturingOrders: {
+        PP_COPROD: { warehouse: 'wh', product: 'PROD_MAIN', qty: 200, datePromised: ORDER_DATE },
+      },
+    },
+  });
+
+// product received as individual serial-numbered CUs
+const createSerialFixture = async (language) =>
+  Backend.createMasterdata({
+    language,
+    request: {
+      login: { user: { language } },
+      bpartners: { BP1: {} },
+      warehouses: { wh: {} },
+      products: {
+        COMP1: {},
+        PROD_SERIAL: { prices: [{ price: 1 }], bom: { lines: [{ product: 'COMP1', qty: 1 }], serialNoSequence: true } },
+      },
+      manufacturingOrders: {
+        PP_SERIAL: { warehouse: 'wh', product: 'PROD_SERIAL', qty: 200, datePromised: ORDER_DATE },
       },
     },
   });
@@ -104,7 +221,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
     allure.story('Production receipt dialog follows the packing instruction');
   });
 
-  for (const { language, label, quantityLabel } of LANGUAGES) {
+  for (const { language, label, quantityLabel, quantityCULabel } of LANGUAGES) {
     // `page` is not referenced, but the config's page fixture must run (publishes global.currentPage).
     // eslint-disable-next-line no-unused-vars
     test(`TC1 pallet of ${PALLET_CAPACITY}, packing instruction x ${QTY_PER_TU}, wrong stored configuration (${label})`, async ({ page }) => {
@@ -194,6 +311,162 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
               { tu: 'tu_2', qty: `${QTY_PER_TU} PCE` },
               { tu: 'tu_3', qty: `${QTY_PER_TU} PCE` },
             ],
+          },
+        },
+      });
+    });
+
+    // eslint-disable-next-line no-unused-vars
+    test(`TC3 switching the packing instruction resets pallet, counts and total (${label})`, async ({ page }) => {
+      const masterdata = await createSwitchFixture(language);
+      await openDialog(masterdata, 'PP_SWITCH');
+
+      // "x 15" on a pallet of 4: opens at 4 TUs / 1 LU / 60, Menge follows the counts
+      await ReceiptDialog.expectNumber('QtyTU', PALLET_CAPACITY);
+      await ReceiptDialog.setNumber('QtyTU', TUS_BEFORE_SWITCH);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', TUS_BEFORE_SWITCH * QTY_PER_TU);
+
+      // -> "x 10": first pallet holds 6 -> pallet reset to it, TU 6, LU 1, Menge 6 x 10 = 60 (from 45)
+      await ReceiptDialog.selectOption('M_HU_PI_Item_Product_ID', 'x 10');
+      expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID'), 'pallet of the new packing instruction').toContain(`(${PALLET_CAPACITY_B} x `);
+      await ReceiptDialog.expectNumber('QtyTU', PALLET_CAPACITY_B);
+      await ReceiptDialog.expectNumber('QtyLU', 1);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', PALLET_CAPACITY_B * QTY_PER_TU_B);
+      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(true);
+      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(false);
+
+      // after a switch a changed "TU Anzahl" is kept (no repeated reset) and Menge follows
+      await ReceiptDialog.setNumber('QtyTU', TUS_BEFORE_SWITCH);
+      await ReceiptDialog.expectNumber('QtyTU', TUS_BEFORE_SWITCH);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', TUS_BEFORE_SWITCH * QTY_PER_TU_B);
+
+      // -> unlimited capacity, with its pallet: TU / LU 1 and read-only, Menge editable
+      await ReceiptDialog.selectOption('M_HU_PI_Item_Product_ID', 'TU_UNL');
+      expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID'), 'pallet of the unlimited packing instruction').toContain(`(${PALLET_CAPACITY_UNLIMITED} x `);
+      await ReceiptDialog.expectNumber('QtyTU', 1);
+      await ReceiptDialog.expectNumber('QtyLU', 1);
+      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
+      expect(await ReceiptDialog.isReadOnly('QtyLU')).toBe(true);
+      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
+      await ReceiptDialog.setNumber('QtyTotalReceived', QTY_UNLIMITED);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', QTY_UNLIMITED);
+
+      // -> back to "x 15": counts editable again, Menge read-only and derived from the pallet of 4 again
+      await ReceiptDialog.selectOption('M_HU_PI_Item_Product_ID', 'x 15');
+      await ReceiptDialog.expectNumber('QtyTU', PALLET_CAPACITY);
+      await ReceiptDialog.expectNumber('QtyLU', 1);
+      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(false);
+      expect(await ReceiptDialog.isReadOnly('QtyLU')).toBe(false);
+      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(true);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', PALLET_CAPACITY * QTY_PER_TU);
+      await ReceiptDialog.setNumber('QtyTU', TUS_BEFORE_SWITCH);
+      await ReceiptDialog.expectNumber('QtyTU', TUS_BEFORE_SWITCH);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', TUS_BEFORE_SWITCH * QTY_PER_TU);
+
+      // the switched dialog still receives correctly: 3 TUs x 15 on a pallet
+      await ReceiptDialog.start();
+      const qty = `${TUS_BEFORE_SWITCH * QTY_PER_TU} PCE`;
+      await Backend.expect({
+        manufacturings: { [orderId(masterdata, 'PP_SWITCH')]: { receivedHUs: [{ lu: 'lu_1', qty }] } },
+        hus: { lu_1: { storages: { PROD_SWITCH: qty }, tus: [{ qtyTUs: TUS_BEFORE_SWITCH, storages: { PROD_SWITCH: qty } }] } },
+      });
+    });
+
+    // eslint-disable-next-line no-unused-vars
+    test(`TC4 unlimited capacity: one TU, Menge entered, pallet keeps 1 / 1 (${label})`, async ({ page }) => {
+      const masterdata = await createUnlimitedFixture(language);
+      await openDialog(masterdata, 'PP_UNL');
+
+      // no pallet yet: TU 1 read-only, Menge editable
+      await ReceiptDialog.expectNumber('QtyTU', 1);
+      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
+      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
+      await ReceiptDialog.setNumber('QtyTotalReceived', QTY_UNLIMITED);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', QTY_UNLIMITED);
+
+      // selecting the pallet keeps TU and LU at 1, read-only, and the entered Menge
+      await ReceiptDialog.selectOption('M_HU_PI_Item_ID', `(${PALLET_CAPACITY_UNLIMITED} x `);
+      await ReceiptDialog.expectNumber('QtyTU', 1);
+      await ReceiptDialog.expectNumber('QtyLU', 1);
+      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
+      expect(await ReceiptDialog.isReadOnly('QtyLU')).toBe(true);
+      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
+      await ReceiptDialog.expectNumber('QtyTotalReceived', QTY_UNLIMITED);
+
+      // one pallet with one TU holding the entered quantity
+      await ReceiptDialog.start();
+      const qty = `${QTY_UNLIMITED} PCE`;
+      await Backend.expect({
+        manufacturings: { [orderId(masterdata, 'PP_UNL')]: { receivedHUs: [{ lu: 'lu_1', qty }] } },
+        hus: { lu_1: { storages: { PROD_UNL: qty }, tus: [{ qtyTUs: 1, storages: { PROD_UNL: qty } }] } },
+      });
+    });
+
+    // eslint-disable-next-line no-unused-vars
+    test(`TC5 "No Packing Item" shows only Menge CU and builds no pallet (${label})`, async ({ page }) => {
+      const masterdata = await createFixture(language);
+      await openDialog(masterdata, 'PP_PALLET_1');
+
+      // opens with the packing instruction and the pallet
+      expect(await ReceiptDialog.isFieldVisible('QtyTotalReceived')).toBe(true);
+      expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID')).not.toBe('');
+
+      await ReceiptDialog.selectNoPackingItem();
+      expect(await ReceiptDialog.isFieldVisible('QtyCUsReceived'), 'Menge CU').toBe(true);
+      expect(await ReceiptDialog.getLabel('QtyCUsReceived')).toBe(quantityCULabel);
+      for (const hidden of ['QtyTotalReceived', 'QtyTU', 'QtyLU', 'M_HU_PI_Item_ID', 'QtyCUsPerTU']) {
+        expect(await ReceiptDialog.isFieldVisible(hidden), `${hidden} is hidden for "No Packing Item"`).toBe(false);
+      }
+
+      await ReceiptDialog.setNumber('QtyCUsReceived', QTY_LOOSE);
+      await ReceiptDialog.start();
+      // loose CUs holding the entered quantity, neither on a pallet nor in a TU
+      await Backend.expect({
+        manufacturings: { [orderId(masterdata, 'PP_PALLET_1')]: { receivedHUs: [{ loose: true, qty: `${QTY_LOOSE} PCE` }] } },
+      });
+    });
+
+    // eslint-disable-next-line no-unused-vars
+    test(`TC9 co-product line with unlimited-capacity packing instruction (${label})`, async ({ page }) => {
+      const masterdata = await createCoProductFixture(language);
+      await LoginPage.goto();
+      await LoginPage.login(masterdata.login.user);
+      await ReceiptDialog.openLinesView({ ppOrderId: masterdata.manufacturingOrders.PP_COPROD.ppOrderId });
+      await ReceiptDialog.openReceiptDialog({ rowIndex: COPRODUCT_ROW_INDEX });
+
+      // the co-product line has no packing instruction yet: "No Packing Item" -> only Menge CU
+      expect(await ReceiptDialog.isFieldVisible('QtyCUsReceived')).toBe(true);
+      await ReceiptDialog.selectOption('M_HU_PI_Item_Product_ID', 'TU_EDGE');
+
+      await ReceiptDialog.expectNumber('QtyTU', 1);
+      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
+      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
+      await ReceiptDialog.setNumber('QtyTotalReceived', QTY_COPRODUCT);
+
+      await ReceiptDialog.start();
+      await Backend.expect({
+        manufacturings: { [orderId(masterdata, 'PP_COPROD')]: { receivedCoProductHUs: [{ tu: 'tu_1', qty: `${QTY_COPRODUCT} PCE` }] } },
+      });
+    });
+
+    // eslint-disable-next-line no-unused-vars
+    test(`TC10 individual serial-numbered CUs are unchanged (${label})`, async ({ page }) => {
+      const masterdata = await createSerialFixture(language);
+      await openDialog(masterdata, 'PP_SERIAL');
+
+      for (const hidden of ['QtyTU', 'QtyLU', 'QtyTotalReceived', 'QtyCUsReceived', 'M_HU_PI_Item_Product_ID', 'M_HU_PI_Item_ID', 'QtyCUsPerTU']) {
+        expect(await ReceiptDialog.isFieldVisible(hidden), `${hidden} is hidden for individual CUs`).toBe(false);
+      }
+      expect(await ReceiptDialog.isFieldVisible('NumberOfCUs')).toBe(true);
+
+      // the value survives the dialog's parameter-change round trip and is received
+      await ReceiptDialog.setNumber('NumberOfCUs', QTY_INDIVIDUAL_CUS);
+      await ReceiptDialog.expectNumber('NumberOfCUs', QTY_INDIVIDUAL_CUS);
+      await ReceiptDialog.start();
+      await Backend.expect({
+        manufacturings: {
+          [orderId(masterdata, 'PP_SERIAL')]: {
+            receivedHUs: Array.from({ length: QTY_INDIVIDUAL_CUS }, () => ({ loose: true, qty: '1 PCE' })),
           },
         },
       });
