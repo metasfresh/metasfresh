@@ -34,13 +34,8 @@ import java.util.stream.Stream;
 public class WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam extends WEBUI_M_ReceiptSchedule_ReceiveCUs implements IProcessDefaultParametersProvider
 {
 	private static final String PARAM_QtyCUsReceived = "QtyCUsReceived";
-	@Param(parameterName = PARAM_QtyCUsReceived, mandatory = false)
+	@Param(parameterName = PARAM_QtyCUsReceived, mandatory = true)
 	private BigDecimal p_QtyCUsReceived;
-
-	/** The parameter's former name; still read for the dialogs that were not migrated to {@link #PARAM_QtyCUsReceived} yet. */
-	private static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
-	@Param(parameterName = PARAM_QtyCUsPerTU, mandatory = false)
-	private BigDecimal p_QtyCUsPerTU;
 
 	public WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam()
 	{
@@ -55,7 +50,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam extends WEBUI_M_Receip
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
 		final String columnName = parameter.getColumnName();
-		if (PARAM_QtyCUsReceived.equals(columnName) || PARAM_QtyCUsPerTU.equals(columnName))
+		if (PARAM_QtyCUsReceived.equals(columnName))
 		{
 			final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
 			return getDefaultAvailableQtyToReceive(receiptSchedule);
@@ -80,7 +75,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam extends WEBUI_M_Receip
 	@Override
 	protected BigDecimal getEffectiveQtyToReceive(I_M_ReceiptSchedule rs)
 	{
-		final BigDecimal qty = p_QtyCUsReceived != null ? p_QtyCUsReceived : p_QtyCUsPerTU;
+		final BigDecimal qty = p_QtyCUsReceived;
 		if (qty == null || qty.signum() <= 0)
 		{
 			throw new FillMandatoryException(PARAM_QtyCUsReceived);
