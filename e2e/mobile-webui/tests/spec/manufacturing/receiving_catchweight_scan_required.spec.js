@@ -135,8 +135,8 @@ const receiveOneScannedPieceWithoutWeight = async ({ qrCode, expectedLotNo, expe
     await GetQuantityDialog.expectCatchWeightNotVisible();
     await GetQuantityDialog.expectLotNo(expectedLotNo);
     await GetQuantityDialog.expectBestBeforeDate(expectedBestBeforeDate);
-    await GetQuantityDialog.expectEditableAttributeNotVisible(LOT_NO);
-    await GetQuantityDialog.expectEditableAttributeNotVisible(BEST_BEFORE_DATE);
+    await GetQuantityDialog.expectEditableAttributeNotPresent(LOT_NO);
+    await GetQuantityDialog.expectEditableAttributeNotPresent(BEST_BEFORE_DATE);
     await GetQuantityDialog.clickDone();
     await ManufacturingJobScreen.waitForScreen();
     await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: qtyReceivedAfter });
