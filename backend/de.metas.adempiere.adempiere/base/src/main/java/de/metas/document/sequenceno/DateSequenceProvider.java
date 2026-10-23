@@ -42,14 +42,10 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 	private static final Logger logger = LogManager.getLogger(DateSequenceProvider.class);
 
 	/**
-	 * Global date format (a {@link java.text.SimpleDateFormat} pattern). Use {@code yy} for the year: {@code YY} is the week-based year.
+	 * Global date format (a {@link java.text.SimpleDateFormat} pattern), used when the sequence has no own {@code AD_Sequence.DateFormat}.
+	 * Use {@code yy} for the year: {@code YY} is the week-based year.
 	 */
 	private static final String SYSCONFIG_DATE_FORMAT = "de.metas.document.seqNo.DateSequenceProvider.dateFormat";
-	/**
-	 * Optional per-sequence date format: {@value #SYSCONFIG_DATE_FORMAT} + {@code ".<AD_Sequence_ID>"}; falls back to {@value #SYSCONFIG_DATE_FORMAT}.
-	 * Lets one sequence (e.g. a date-only production lot {@code yy-DDD}) differ from the others that use this provider.
-	 */
-	private static final String SYSCONFIG_DATE_FORMAT_PER_SEQUENCE_PREFIX = SYSCONFIG_DATE_FORMAT + ".";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -105,21 +101,14 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 	}
 
 	/**
-	 * @return the name of the sysconfig with the given sequence's own date format
+	 * @return the sequence's own {@code AD_Sequence.DateFormat} (e.g. {@code yy-DDD} for a date-only lot), else the global {@link #SYSCONFIG_DATE_FORMAT}
 	 */
-	public static String getDateFormatSysConfigName(final int adSequenceId)
-	{
-		return SYSCONFIG_DATE_FORMAT_PER_SEQUENCE_PREFIX + adSequenceId;
-	}
-
 	private String getDateFormat(@NonNull final DocumentSequenceInfo docSeqInfo)
 	{
-		final String perSequenceDateFormat = docSeqInfo.getAdSequenceId() > 0
-				? sysConfigBL.getValue(getDateFormatSysConfigName(docSeqInfo.getAdSequenceId()))
-				: null;
-		if (Check.isNotBlank(perSequenceDateFormat))
+		final String sequenceDateFormat = docSeqInfo.getDateFormat();
+		if (sequenceDateFormat != null)
 		{
-			return perSequenceDateFormat;
+			return sequenceDateFormat;
 		}
 
 		final String dateFormat = sysConfigBL.getValue(SYSCONFIG_DATE_FORMAT);

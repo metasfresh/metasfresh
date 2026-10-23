@@ -42,7 +42,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
@@ -73,7 +72,6 @@ public class CreateProductCommand
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(CreateProductCommand.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
@@ -362,16 +360,13 @@ public class CreateProductCommand
 		sequence.setCurrentNextSys(currentNext);
 		sequence.setPrefix(request.getPrefix());
 		sequence.setDecimalPattern(request.getDecimalPattern());
+		sequence.setDateFormat(request.getDateFormat());
 		if (request.isDateBased())
 		{
 			sequence.setDateColumn("MovementDate"); // LotNumberBL passes the receipt date under the sequence's DateColumn
 			sequence.setCustomSequenceNoProvider_JavaClass_ID(getDateSequenceProviderJavaClassId());
 		}
 		saveRecord(sequence);
-		if (request.isDateBased() && request.getDateFormat() != null)
-		{
-			sysConfigBL.setValue(DateSequenceProvider.getDateFormatSysConfigName(sequence.getAD_Sequence_ID()), request.getDateFormat(), ClientId.SYSTEM, OrgId.ANY);
-		}
 		return DocSequenceId.ofRepoId(sequence.getAD_Sequence_ID());
 	}
 

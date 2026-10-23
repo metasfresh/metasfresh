@@ -112,7 +112,7 @@ public class JsonCreateProductRequest
 		boolean dateBased;
 		@Nullable String decimalPattern;
 		@Nullable Integer currentNext;
-		/** dateBased only: this sequence's own date format (per-sequence sysconfig), instead of the global one */
+		/** dateBased only: this sequence's own date format (AD_Sequence.DateFormat), instead of the global one */
 		@Nullable String dateFormat;
 	}
 
