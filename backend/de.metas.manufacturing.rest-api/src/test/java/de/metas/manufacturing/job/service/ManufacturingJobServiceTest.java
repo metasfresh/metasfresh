@@ -139,11 +139,45 @@ class ManufacturingJobServiceTest
 					.hasMessageContaining(ReceiveGoodsCommand.MSG_CatchWeightReceiveOneAtATime.toAD_Message());
 		}
 
+		/**
+		 * Weight captured at picking, not at receipt: the scan is still required and the receipt is still one piece, without a weight.
+		 */
+		@Test
+		void receiveGoods_catchWeightNotCapturedAtReceipt_rejectsMoreThanOnePiece()
+		{
+			final UserId responsibleId = UserId.ofRepoId(1236);
+			userConfig(responsibleId, null, false);
+			final FinishedGoodsReceiveLine line = receiveLine();
+			final ManufacturingJob job = job(line, responsibleId);
+
+			assertThatThrownBy(() -> manufacturingJobService.receiveGoods(receiveFromWithoutWeight(line, "2"), job, SystemTime.asZonedDateTime()))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(ReceiveGoodsCommand.MSG_CatchWeightReceiveOneAtATime.toAD_Message());
+		}
+
+		@Test
+		void receiveGoods_TUMode_catchWeightNotCapturedAtReceipt_rejectsMoreThanOnePiece()
+		{
+			final UserId responsibleId = UserId.ofRepoId(1237);
+			userConfig(responsibleId, ReceiveUnitType.TU, false);
+			final FinishedGoodsReceiveLine line = receiveLine();
+			final ManufacturingJob job = job(line, responsibleId);
+
+			assertThatThrownBy(() -> manufacturingJobService.receiveGoods(receiveFromWithoutWeight(line, "2"), job, SystemTime.asZonedDateTime()))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(ReceiveGoodsCommand.MSG_CatchWeightReceiveOneAtATime.toAD_Message());
+		}
+
 		private void userConfig(final UserId responsibleId, @Nullable final ReceiveUnitType receiveUnitType)
+		{
+			userConfig(responsibleId, receiveUnitType, true);
+		}
+
+		private void userConfig(final UserId responsibleId, @Nullable final ReceiveUnitType receiveUnitType, final boolean isCaptureCatchWeightAtReceipt)
 		{
 			final I_MobileUI_UserProfile_MFG userConfig = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_MFG.class);
 			userConfig.setAD_User_ID(responsibleId.getRepoId());
-			userConfig.setIsCaptureCatchWeightAtReceipt("Y");
+			userConfig.setIsCaptureCatchWeightAtReceipt(isCaptureCatchWeightAtReceipt ? "Y" : "N");
 			userConfig.setIsFinishedGoodsCatchWeightScanRequired("Y");
 			if (receiveUnitType != null)
 			{
@@ -202,6 +236,17 @@ class ManufacturingJobServiceTest
 							.build())
 					.catchWeight(new BigDecimal("0.101"))
 					.catchWeightUomSymbol("kg")
+					.build();
+		}
+
+		private JsonManufacturingOrderEvent.ReceiveFrom receiveFromWithoutWeight(final FinishedGoodsReceiveLine line, final String qty)
+		{
+			return JsonManufacturingOrderEvent.ReceiveFrom.builder()
+					.lineId(line.getId().toJson())
+					.qtyReceived(new BigDecimal(qty))
+					.aggregateToTU(JsonTUReceivingTarget.builder()
+							.newTU(JsonNewTUTarget.builder().tuPIItemProductId(HUPIItemProductId.ofRepoId(1000)).build())
+							.build())
 					.build();
 		}
 	}
