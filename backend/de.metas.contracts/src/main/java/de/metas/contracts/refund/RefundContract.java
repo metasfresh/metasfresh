@@ -164,13 +164,15 @@ public class RefundContract
 	}
 
 	/**
-	 * @return {@code true} if this contract is not tiered: it is not {@link RefundMode#APPLY_TO_EXCEEDING_QTY} and none of its configs has a {@code minQty > 0}.
+	 * @return {@code true} if this contract is not tiered: none of its configs has a {@code minQty > 0}, whatever the {@link RefundMode}.
 	 *         {@code true} implies the refund is linear in its base, so splitting the base per project preserves the total - it is safe to key the refund candidate by project.
 	 */
 	public boolean isFlat()
 	{
-		return extractRefundMode() != RefundMode.APPLY_TO_EXCEEDING_QTY
-				&& refundConfigs.stream().allMatch(config -> config.getMinQty().signum() <= 0);
+		// flat = no positive-minQty tier, regardless of RefundMode: a single Min-0 'T'/exceeding-qty tier
+		// applies the rate to the full base (computeAssignableQuantity -> no next tier -> infinite), so it is
+		// economically identical to an 'A'/all-qties flat config and is likewise split per project.
+		return refundConfigs.stream().allMatch(config -> config.getMinQty().signum() <= 0);
 	}
 
 	public Optional<RefundConfig> getRefundConfigToUseProfitCalculation()
