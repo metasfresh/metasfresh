@@ -173,10 +173,20 @@ public class RefundContractTest
 	}
 
 	@Test
-	public void isFlat_applyToExceedingQty_isFalse()
+	public void isFlat_applyToExceedingQtyWithSingleZeroMinQty_isTrue()
 	{
 		final RefundConfig tiered = refundConfig1.toBuilder().refundMode(RefundMode.APPLY_TO_EXCEEDING_QTY).build();
 		final RefundContract contract = refundContract.toBuilder().clearRefundConfigs().refundConfig(tiered).build();
+
+		assertThat(contract.isFlat()).isTrue();
+	}
+
+	@Test
+	public void isFlat_applyToExceedingQtyWithPositiveMinQtyTier_isFalse()
+	{
+		final RefundConfig zero = refundConfig1.toBuilder().refundMode(RefundMode.APPLY_TO_EXCEEDING_QTY).build();
+		final RefundConfig five = refundConfig2.toBuilder().refundMode(RefundMode.APPLY_TO_EXCEEDING_QTY).build();
+		final RefundContract contract = refundContract.toBuilder().clearRefundConfigs().refundConfig(zero).refundConfig(five).build();
 
 		assertThat(contract.isFlat()).isFalse();
 	}

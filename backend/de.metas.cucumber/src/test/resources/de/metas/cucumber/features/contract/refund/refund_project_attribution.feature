@@ -278,6 +278,64 @@ Feature: Refund credit memo lines per project
       | goodsProduct | 1           | null         | 20.00      |
 
   # ##############################################################################################
+  # A single Min-0 config in tiered mode (RefundMode T, the field default in the UI) is flat: the rate applies to the full base, so it is split like a flat 'A' config
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F00970_Flatrate_Contract
+  @allure.label.feature:F2000_Contract_Management
+  @Id:refundProjectAttribution_TC6
+  Scenario: A tiered-mode (RefundMode T) refund with a single Min-0 config is split into one credit memo line per project like a flat refund
+    Given metasfresh contains C_Flatrate_Conditions:
+      | Identifier       | Type_Conditions |
+      | refundConditions | Refund          |
+    And metasfresh contains C_Flatrate_RefundConfigs:
+      | Identifier   | C_Flatrate_Conditions_ID | C_InvoiceSchedule_ID | RefundPercent | M_Product_ID | RefundMode | MinQty |
+      | refundConfig | refundConditions         | monthlySchedule      | 10            | goodsProduct | T          | 0      |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | StartDate  | EndDate    |
+      | refundTerm | refundConditions                    | customerBP                  | goodsProduct                | 2026-07-01 | 2026-12-31 |
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | project1   |
+      | project2   |
+
+    # project 1: 6 x 100 = 600; project 2: 8 x 50 = 400
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | InvoiceRule |
+      | order1     | true    | customerBP               | 2026-07-01  | I           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | Price | C_Project_ID |
+      | olP1       | order1                | goodsProduct            | 6          | 100   | project1     |
+      | olP2       | order1                | goodsProduct            | 8          | 50    | project2     |
+    And the order identified by order1 is completed
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID | C_Invoice_Candidate_ID |
+      | olP1           | salesICP1              |
+      | olP2           | salesICP2              |
+
+    # 10 % of 1000
+    And after not more than 60s, refund C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID | C_Flatrate_Term_ID | NetAmtToInvoice | DocBaseType | DocSubType | OnePerProject |
+      | refundIC               | refundTerm         | 100             | ARC         | RI         | Y             |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IgnoreInvoiceSchedule | IncludeSameRecordCandidates |
+      | refundIC                          | Y                     | Y                           |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | refundInvoice           | refundIC                          |
+
+    # 10 % of 600 on project 1 and 10 % of 400 on project 2; the total stays 100 net + 19 % tax
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | DocBaseType | GrandTotal | DocStatus |
+      | refundInvoice           | ARC         | 119.00 EUR | CO        |
+    And validate invoice lines for refundInvoice:
+      | M_Product_ID | QtyInvoiced | C_Project_ID | LineNetAmt |
+      | goodsProduct | 1           | project1     | 60.00      |
+      | goodsProduct | 1           | project2     | 40.00      |
+
+  # ##############################################################################################
   # A scaled refund over the sales of two projects: the scale is reached on the whole base, so it stays one line
   # ##############################################################################################
 
