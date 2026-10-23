@@ -24,6 +24,7 @@ package de.metas.ui.web.pporder.process;
 
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -81,10 +82,6 @@ public class WEBUI_PP_Order_Receipt
 
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID)
 	private I_M_HU_PI_Item p_M_HU_PI_Item;
-
-	// hidden since the quantity per TU follows the packing instruction; kept so that other callers of the process still work
-	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyCUsPerTU)
-	private BigDecimal p_QtyCU;
 
 	// not mandatory here: one of "Menge" / "Menge CU" is always hidden and may be empty (the AD flag makes the visible one required)
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyTotalReceived)
@@ -146,7 +143,6 @@ public class WEBUI_PP_Order_Receipt
 
 		_packingInfoParams.setQtyLU(p_QtyLU);
 		_packingInfoParams.setQtyTU(p_QtyTU);
-		_packingInfoParams.setQtyCUsPerTU(p_QtyCU);
 		_packingInfoParams.setQtyTotalReceived(p_QtyTotalReceived);
 		_packingInfoParams.setQtyCUsReceived(p_QtyCUsReceived);
 
@@ -262,7 +258,7 @@ public class WEBUI_PP_Order_Receipt
 		}
 
 		final PackingInfoProcessParams params = getPackingInfoParams();
-		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(HUPIItemProductId.toRepoId(newPackingInstructionId));
+		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(newPackingInstructionId);
 		p_IsPIPUnlimitedCapacity = PackingInfoProcessParams.isUnlimitedCapacity(pip);
 
 		if (pip == null) // "No Packing Item": no pallet, or the hidden pallet would still be submitted and build one
@@ -275,7 +271,7 @@ public class WEBUI_PP_Order_Receipt
 
 		final I_M_HU_PI_Item pallet = params.getFirstAvailableLuPIItemOrNull(p_M_HU_PI_Item_Product);
 		p_M_HU_PI_Item = pallet;
-		p_QtyTU = !p_IsPIPUnlimitedCapacity && pallet != null && pallet.getQty().signum() > 0 ? pallet.getQty() : BigDecimal.ONE;
+		p_QtyTU = p_IsPIPUnlimitedCapacity ? BigDecimal.ONE : LUTUConfigurationPackingInstructionChecker.getLUCapacityLimit(pallet).orElse(BigDecimal.ONE);
 		p_QtyLU = BigDecimal.ONE;
 		updateQtyTotalReceived();
 	}
@@ -297,13 +293,13 @@ public class WEBUI_PP_Order_Receipt
 	private void updateQtyTotalReceived()
 	{
 		final PackingInfoProcessParams params = getPackingInfoParams();
-		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(p_M_HU_PI_Item_Product != null ? p_M_HU_PI_Item_Product.getM_HU_PI_Item_Product_ID() : 0);
+		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(p_M_HU_PI_Item_Product != null ? HUPIItemProductId.ofRepoIdOrNull(p_M_HU_PI_Item_Product.getM_HU_PI_Item_Product_ID()) : null);
 		if (pip == null || PackingInfoProcessParams.isUnlimitedCapacity(pip))
 		{
 			return;
 		}
 
-		p_QtyTotalReceived = PackingInfoProcessParams.computeQtyTotal(pip, p_QtyTU, p_QtyLU, p_M_HU_PI_Item != null);
+		p_QtyTotalReceived = PackingInfoProcessParams.computeQtyTotal(params.getQtyCUsPerTUInConfigUom(pip), p_QtyTU, p_QtyLU, p_M_HU_PI_Item != null);
 	}
 
 	/**

@@ -16,7 +16,9 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 /**
  * Refuses LU/TU configurations that contradict the packing instruction (M_HU_PI_Item_Product) they are based on.
@@ -63,9 +65,7 @@ public class LUTUConfigurationPackingInstructionChecker
 		final Quantity piQty = piItemProduct.getQtyCUsPerTU();
 		final UomId configUomId = UomId.ofRepoIdOrNull(lutuConfig.getC_UOM_ID());
 		final Quantity configQty = Quantitys.of(lutuConfig.getQtyCUsPerTU(), configUomId != null ? configUomId : piQty.getUomId());
-		final Quantity configQtyInPiUom = configQty.getUomId().equals(piQty.getUomId())
-				? configQty
-				: uomConversionBL.convertQuantityTo(configQty, ProductId.ofRepoId(lutuConfig.getM_Product_ID()), piQty.getUomId());
+		final Quantity configQtyInPiUom = convertTo(configQty, ProductId.ofRepoId(lutuConfig.getM_Product_ID()), piQty.getUomId());
 
 		if (configQtyInPiUom.toBigDecimal().compareTo(piQty.toBigDecimal()) != 0)
 		{
@@ -73,16 +73,51 @@ public class LUTUConfigurationPackingInstructionChecker
 		}
 	}
 
+	/**
+	 * @return the packing instruction's quantity per TU, expressed in the given UOM (e.g. the UOM of an LU/TU configuration);
+	 * the number the {@link #assertLUTUConfigurationMatchesPackingInstruction(I_M_HU_LUTU_Configuration)} check expects for a finite-capacity packing instruction.
+	 * @param targetUomId {@code null} means the packing instruction's own UOM
+	 */
+	public BigDecimal getQtyCUsPerTUInUom(
+			@NonNull final HUPIItemProduct piItemProduct,
+			@NonNull final ProductId productId,
+			@Nullable final UomId targetUomId)
+	{
+		final Quantity piQty = piItemProduct.getQtyCUsPerTU();
+		return targetUomId != null
+				? convertTo(piQty, productId, targetUomId).toBigDecimal()
+				: piQty.toBigDecimal();
+	}
+
+	private Quantity convertTo(@NonNull final Quantity qty, @NonNull final ProductId productId, @NonNull final UomId targetUomId)
+	{
+		return qty.getUomId().equals(targetUomId)
+				? qty
+				: uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
+	}
+
+	/**
+	 * @return the maximum number of TUs the given LU (pallet) holds; empty if the LU is unknown or has no capacity limit (capacity <= 0)
+	 */
+	public static Optional<BigDecimal> getLUCapacityLimit(@Nullable final I_M_HU_PI_Item luPIItem)
+	{
+		if (luPIItem == null)
+		{
+			return Optional.empty();
+		}
+		final BigDecimal luCapacity = luPIItem.getQty();
+		return luCapacity.signum() > 0 ? Optional.of(luCapacity) : Optional.empty();
+	}
+
 	private static void assertQtyTUWithinLUCapacity(@NonNull final I_M_HU_LUTU_Configuration lutuConfig)
 	{
-		final I_M_HU_PI_Item luPIItem = lutuConfig.getM_LU_HU_PI_Item();
-		if (luPIItem == null || lutuConfig.isInfiniteQtyTU())
+		if (lutuConfig.isInfiniteQtyTU())
 		{
 			return;
 		}
 
-		final BigDecimal luCapacity = luPIItem.getQty();
-		if (luCapacity.signum() > 0 && lutuConfig.getQtyTU().compareTo(luCapacity) > 0)
+		final BigDecimal luCapacity = getLUCapacityLimit(lutuConfig.getM_LU_HU_PI_Item()).orElse(null);
+		if (luCapacity != null && lutuConfig.getQtyTU().compareTo(luCapacity) > 0)
 		{
 			throw new AdempiereException(MSG_QtyTU_ExceedsLUCapacity, format(luCapacity), format(lutuConfig.getQtyTU()));
 		}
