@@ -9,5 +9,6 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonPPOrderResponse
 {
+	int ppOrderId;
 	String documentNo;
 }
