@@ -14,7 +14,8 @@ public class FinishedGoodsReceiveLineConfig
 	boolean allowReceiveWithoutPackingItem;
 
 	/**
-	 * Catch-weight scan required, effective: setting on AND main finished good AND catch-weight product AND catch weight captured at receipt.
+	 * Catch-weight scan required, effective: setting on AND main finished good AND catch-weight product.
+	 * Does not depend on {@link #captureCatchWeight}: without it the scan fills lot and best-before date only.
 	 */
 	boolean catchWeightScanRequired;
 }
