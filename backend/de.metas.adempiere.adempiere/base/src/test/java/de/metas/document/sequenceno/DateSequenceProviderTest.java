@@ -98,6 +98,25 @@ class DateSequenceProviderTest
 	}
 
 	@Test
+	void perSequenceFormatBlank_fallsBackToGlobal()
+	{
+		setGlobalFormat("yy-DDD");
+		setSequenceFormat(SEQUENCE_ID, " ");
+
+		assertThat(provider.provideSequenceNo(movementDate(LocalDate.of(2026, 10, 23)), sequence(SEQUENCE_ID, null), null))
+				.isEqualTo("26-296");
+	}
+
+	@Test
+	void noSequenceId_usesGlobal()
+	{
+		setGlobalFormat("yy-DDD");
+
+		assertThat(provider.provideSequenceNo(movementDate(LocalDate.of(2026, 10, 23)), sequence(0, null), null))
+				.isEqualTo("26-296");
+	}
+
+	@Test
 	void dateOnlySequence_isIndependentOfIncrement()
 	{
 		assertThat(provider.isSequenceNoIndependentOfIncrement(sequence(SEQUENCE_ID, null))).isTrue();

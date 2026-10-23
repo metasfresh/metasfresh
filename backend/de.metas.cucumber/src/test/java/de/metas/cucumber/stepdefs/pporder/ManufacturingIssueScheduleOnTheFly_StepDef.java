@@ -85,34 +85,6 @@ public class ManufacturingIssueScheduleOnTheFly_StepDef
 	}
 
 	/**
-	 * Sets the global finished-goods catch-weight flags of {@code MobileUI_MFG_Config} on all active records.
-	 * Creates a config record if none exists.
-	 */
-	@And("set MobileUI_MFG_Config IsFinishedGoodsCatchWeightScanRequired to {string} and IsCaptureCatchWeightAtReceipt to {string}")
-	public void setFinishedGoodsCatchWeightFlags(@NonNull final String scanRequired, @NonNull final String captureAtReceipt)
-	{
-		final boolean isScanRequired = "Y".equals(scanRequired);
-		final boolean isCaptureAtReceipt = "Y".equals(captureAtReceipt);
-
-		final java.util.List<I_MobileUI_MFG_Config> configs = queryBL.createQueryBuilder(I_MobileUI_MFG_Config.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
-		final java.util.List<I_MobileUI_MFG_Config> toUpdate = configs.isEmpty()
-				? java.util.Collections.singletonList(org.adempiere.model.InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class))
-				: configs;
-		for (final I_MobileUI_MFG_Config config : toUpdate)
-		{
-			config.setIsFinishedGoodsCatchWeightScanRequired(isScanRequired);
-			config.setIsCaptureCatchWeightAtReceipt(isCaptureAtReceipt);
-			org.adempiere.model.InterfaceWrapperHelper.save(config);
-		}
-
-		// see setIsAllowIssuingAnyHU: the global config cache is not invalidated by MobileUI_MFG_Config changes
-		CacheMgt.get().reset();
-	}
-
-	/**
 	 * Sets the HUStatus of an M_HU record via {@link IHUStatusBL}.
 	 */
 	@And("set M_HU status:")

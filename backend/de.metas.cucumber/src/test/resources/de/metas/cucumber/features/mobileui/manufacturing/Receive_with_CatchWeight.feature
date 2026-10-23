@@ -165,6 +165,3 @@ Feature: mobileUI Picking - Pick mixed lines
       | M_HU_ID       | M_Attribute_ID.Value | ValueNumber | ValueDate  | Value        |
       | Produced_LU_2 | HU_BestBeforeDate    |             | 2025-11-08 |              |
       | Produced_LU_2 | Lot-Nummer           |             |            | LastBlockLot |
-
-    # back to the defaults, for the features that run after this one
-    And set MobileUI_MFG_Config IsFinishedGoodsCatchWeightScanRequired to 'N' and IsCaptureCatchWeightAtReceipt to 'Y'

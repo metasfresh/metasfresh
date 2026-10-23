@@ -1,7 +1,6 @@
 package de.metas.manufacturing.config;
 
 import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
-
 import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
 import org.adempiere.model.InterfaceWrapperHelper;

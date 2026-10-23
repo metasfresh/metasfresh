@@ -44,6 +44,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -147,7 +148,7 @@ class ManufacturingJobServiceTest
 		 * whose lot and best-before date apply to the whole receipt. So a qty of N is a normal receipt, not rejected as "one at a time".
 		 */
 		@Test
-		void receiveGoods_catchWeightNotCapturedAtReceipt_acceptsMoreThanOnePiece()
+		void receiveGoods_catchWeightNotCapturedAtReceipt_moreThanOnePieceNotRejectedAsOneAtATime()
 		{
 			final UserId responsibleId = UserId.ofRepoId(1236);
 			userConfig(responsibleId, null, false);
@@ -158,7 +159,7 @@ class ManufacturingJobServiceTest
 		}
 
 		@Test
-		void receiveGoods_TUMode_catchWeightNotCapturedAtReceipt_acceptsMoreThanOnePiece()
+		void receiveGoods_TUMode_catchWeightNotCapturedAtReceipt_moreThanOnePieceNotRejectedAsOneAtATime()
 		{
 			final UserId responsibleId = UserId.ofRepoId(1237);
 			userConfig(responsibleId, ReceiveUnitType.TU, false);
@@ -171,11 +172,9 @@ class ManufacturingJobServiceTest
 		private void assertNotRejectedAsOneAtATime(final ThrowingCallable receive)
 		{
 			// The receipt itself may fail later on this minimal fixture (no HU masterdata); only the one-piece guard matters here.
-			final Throwable thrown = catchThrowable(receive);
-			if (thrown != null)
-			{
-				assertThat(thrown).hasMessageNotContaining(ReceiveGoodsCommand.MSG_CatchWeightReceiveOneAtATime.toAD_Message());
-			}
+			// The qty of a receipt of N is unit-tested in ReceiveGoodsCommandTest.
+			final String errorMessage = Optional.ofNullable(catchThrowable(receive)).map(Throwable::getMessage).orElse("");
+			assertThat(errorMessage).doesNotContain(ReceiveGoodsCommand.MSG_CatchWeightReceiveOneAtATime.toAD_Message());
 		}
 
 		private void userConfig(final UserId responsibleId, @Nullable final ReceiveUnitType receiveUnitType)

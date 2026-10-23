@@ -471,4 +471,20 @@ describe('lot number not editable', () => {
       expect.objectContaining({ qtyReceived: 1, lotNo: '500' })
     );
   });
+
+  // The best-before date keeps following its own editable flag, also with the mandatory scan:
+  // not editable means not shown and not sent, so the receipt sets its default.
+  it('catch weight with the mandatory scan, best-before date not editable: the scanned lot is sent, the best-before date is not', async () => {
+    mockReadAttributes = [];
+    renderScreen(catchWeightMainFinishedGood({ catchWeightUomSymbol: undefined, catchWeightScanRequired: true }));
+    await openDialog();
+    await scan(LMQ_CODE);
+
+    expect(screen.queryByTestId('bestBeforeDate')).not.toBeInTheDocument();
+    await confirm();
+
+    expect(postManufacturingReceiveEventThunk.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ lotNo: '500', bestBeforeDate: null })
+    );
+  });
 });

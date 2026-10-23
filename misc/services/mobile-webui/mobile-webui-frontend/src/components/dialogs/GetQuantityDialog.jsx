@@ -679,7 +679,7 @@ GetQuantityDialog.propTypes = {
   customQRCodeFormats: PropTypes.array,
   // Catch-weight only: an L&M QR code must be scanned; the scan fills the fields for review instead of confirming.
   // With catchWeightUom the scan also fills the weight; without it only Lot-Nr and MHD.
-  // Pass the backend's effective flag as is (it does not imply a weight to capture; see catchWeightUom); the dialog does not re-derive it.
+  // The backend's effective flag; it does not imply a weight to capture (see catchWeightUom).
   isCatchWeightScanMandatory: PropTypes.bool,
   // The backend's flag (scan required AND weight captured at receipt): each receipt is one piece, qty fixed at 1.
   // Otherwise the qty (e.g. the number of blocks) stays editable and one scan of the last block sets Lot-Nr and MHD.

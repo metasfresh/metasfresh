@@ -20,7 +20,8 @@ import java.util.Set;
  * for a receipt today in the order's org time zone.
  * <p>
  * The best-before date default is only computed if the operator can edit it. The lot number is always previewed:
- * if it is not editable it is still shown, read-only.
+ * if it is not editable it is still shown, read-only. A preview, so the receipt may generate a different lot,
+ * e.g. if it happens on the next day.
  * Nothing is written to the database: the lot number is a preview that does not consume the lot-number sequence.
  */
 final class FinishedGoodsReceiptDefaults

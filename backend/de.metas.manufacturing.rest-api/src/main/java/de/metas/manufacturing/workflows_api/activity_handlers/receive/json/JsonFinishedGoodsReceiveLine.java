@@ -28,7 +28,7 @@ public class JsonFinishedGoodsReceiveLine
 	boolean catchWeightScanRequired;
 	/**
 	 * {@code true} if each receipt of this line is exactly one piece (scan required AND weight captured at receipt);
-	 * otherwise the operator enters any qty. The client uses it as is.
+	 * otherwise any qty is received.
 	 */
 	boolean receiveOnePiecePerScan;
 	@NonNull String productName;
