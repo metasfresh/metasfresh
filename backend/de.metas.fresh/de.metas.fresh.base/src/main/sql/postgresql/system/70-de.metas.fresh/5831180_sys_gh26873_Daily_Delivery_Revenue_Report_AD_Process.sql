@@ -15,7 +15,7 @@ INSERT INTO AD_Process (
     TO_TIMESTAMP('2026-10-22 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     'Tagesübersicht des Netto-Lieferumsatzes: Wert der an diesem Tag ausgelieferten Ware, bereits fakturiert oder noch als Rechnungskandidat offen.',
     'D', 'Y', 'N', 'N', 'N', 'Y', 'N', 'N', 'N', 'Y', 'Y', 'N', 'Y',
-    '@PREFIX@de/metas/docs/sales/daily_delivery_revenue/report.jasper', 0, 'Tagesumsatz (auf Basis Lieferung)',
+    '@PREFIX@de/metas/reports/daily_delivery_revenue/report.jasper', 0, 'Tagesumsatz (auf Basis Lieferung)',
     'json', 'N', 'N', 'xls', 'JasperReportsSQL',
     TO_TIMESTAMP('2026-10-22 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Docs_Daily_Delivery_Revenue_Report'
 )

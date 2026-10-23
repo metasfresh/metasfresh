@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Daily_Delivery_Revenue_Report(
+DROP FUNCTION IF EXISTS report.Docs_Daily_Delivery_Revenue_Report(
     numeric,
     numeric,
     timestamp,
@@ -6,7 +6,7 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Daily_Delivery_R
 )
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Daily_Delivery_Revenue_Report(
+CREATE OR REPLACE FUNCTION report.Docs_Daily_Delivery_Revenue_Report(
     p_bpartner_id numeric DEFAULT NULL,
     p_bp_group_id numeric DEFAULT NULL,
     p_date_from   timestamp DEFAULT NULL,
@@ -174,7 +174,7 @@ $$
     STABLE
 ;
 
-COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.Docs_Daily_Delivery_Revenue_Report(numeric, numeric, timestamp, timestamp) IS
+COMMENT ON FUNCTION report.Docs_Daily_Delivery_Revenue_Report(numeric, numeric, timestamp, timestamp) IS
     'Returns a daily delivery-revenue report ("Tagesumsatz auf Basis Lieferung"), aggregated by M_InOut.MovementDate.
     For each completed sales delivery line (M_InOut IsSOTrx=Y, DocStatus CO/CL), the line''s net value is:
       invoiced portion (sum of matched, active C_InvoiceLine.LineNetAmt/QtyInvoiced via
