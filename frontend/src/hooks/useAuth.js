@@ -158,7 +158,9 @@ function useProvideAuth() {
    * @summary run the logout request on the backend
    */
   const logout = () => {
-    if (isLoggedIn) {
+    // `isLoggedIn` is stale for a reference captured before a no-reload login,
+    // so also consult the live redux state
+    if (isLoggedIn || store.getState().appHandler.isLogged) {
       setAuthRequestPending(true);
 
       return logoutRequest().finally(() => _logoutSuccess());
