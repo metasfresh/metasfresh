@@ -131,6 +131,23 @@ public class HUPPOrderBL_LotNumberFromSequence_Test
 		assertThat(huPPOrderBL.previewLotNumberFromSequence(ppOrderId, LocalDate.of(2026, 10, 19))).isEmpty();
 	}
 
+	/**
+	 * The lot sequence has its own date format (AD_Sequence.DateFormat), while the global one (used by other date sequences, e.g. with a counter) differs.
+	 */
+	@Test
+	public void sequenceDateFormat_previewAndReceiptUseIt()
+	{
+		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_DATE_FORMAT, "yyMMdd", ClientId.SYSTEM, OrgId.ANY);
+		final DocSequenceId lotSequenceId = createDateLotSequence();
+		final I_AD_Sequence sequence = load(lotSequenceId, I_AD_Sequence.class);
+		sequence.setDateFormat("yy-DDD");
+		saveRecord(sequence);
+		final PPOrderId ppOrderId = createPPOrderBOM(lotSequenceId);
+
+		assertThat(huPPOrderBL.previewLotNumberFromSequence(ppOrderId, LocalDate.of(2026, 10, 23))).contains("26-296");
+		assertThat(receiptLotNumberFromSequence(ppOrderId, LocalDate.of(2026, 10, 23).atStartOfDay(ZoneId.systemDefault()))).isEqualTo("26-296");
+	}
+
 	@Test
 	public void preview_noLotSequenceConfigured_empty()
 	{

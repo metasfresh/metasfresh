@@ -2,10 +2,13 @@ package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.pporder.api.impl.HUPPOrderBL_LotNumberFromSequence_Test;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.manufacturing.job.model.FinishedGoodsReceive;
@@ -42,6 +45,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
+import de.metas.manufacturing.config.ReceiveUnitType;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTargetsList;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewTUTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewTUTargetList;
@@ -77,6 +81,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -385,6 +390,100 @@ class MaterialReceiptActivityHandlerTest
 			final JsonFinishedGoodsReceiveLine coProductLine = lines.get(1);
 			assertThat(coProductLine.isCatchWeightScanRequired()).isFalse();
 			assertThat(coProductLine.getCatchWeightUomSymbol()).isNull();
+		}
+
+		/**
+		 * TU receive mode, weight not captured at receipt: the operator enters the number of TUs (blocks are packed as usual)
+		 * and scans the last block's label for lot and best-before date, so the line shows TUs like a normal receipt.
+		 */
+		@Test
+		void tuMode_catchWeightNotCapturedAtReceipt_scanRequired_lineCountsTUs()
+		{
+			config = config.toBuilder()
+					.receiveUnitType(ReceiveUnitType.TU)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE)
+					.build();
+			final ProductId mainProductId = createProductWithBestBeforeDays("main", 10);
+
+			final JsonFinishedGoodsReceiveLine mainLine = getLines(ManufacturingRestService.toWFProcess(createJob(
+					receiveLineWithTUPacking(mainProductId, 5)))).get(0);
+
+			assertThat(mainLine.isCatchWeightScanRequired()).isTrue();
+			assertThat(mainLine.isReceiveOnePiecePerScan()).isFalse();
+			assertThat(mainLine.getUom()).isEqualTo("TU");
+			assertThat(mainLine.getQtyToReceive()).isEqualByComparingTo("2"); // 10 pieces, 5 per TU
+		}
+
+		/**
+		 * TU receive mode, weight captured at receipt: each scan is one piece with its own weight, so the line counts pieces.
+		 */
+		@Test
+		void tuMode_catchWeightCapturedAtReceipt_scanRequired_lineCountsPieces()
+		{
+			config = config.toBuilder()
+					.receiveUnitType(ReceiveUnitType.TU)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
+					.build();
+			final ProductId mainProductId = createProductWithBestBeforeDays("main", 10);
+
+			final JsonFinishedGoodsReceiveLine mainLine = getLines(ManufacturingRestService.toWFProcess(createJob(
+					receiveLineWithTUPacking(mainProductId, 5)))).get(0);
+
+			assertThat(mainLine.isCatchWeightScanRequired()).isTrue();
+			assertThat(mainLine.isReceiveOnePiecePerScan()).isTrue();
+			assertThat(mainLine.getUom()).isEqualTo(uom.getUOMSymbol());
+			assertThat(mainLine.getQtyToReceive()).isEqualByComparingTo("10");
+		}
+
+		private FinishedGoodsReceiveLine receiveLineWithTUPacking(final ProductId productId, final int qtyCUsPerTU)
+		{
+			final I_M_HU_PI_Item piItem = newInstance(I_M_HU_PI_Item.class);
+			saveRecord(piItem);
+			final I_M_HU_PI_Item_Product piItemProduct = newInstance(I_M_HU_PI_Item_Product.class);
+			piItemProduct.setM_HU_PI_Item_ID(piItem.getM_HU_PI_Item_ID());
+			piItemProduct.setM_Product_ID(productId.getRepoId());
+			piItemProduct.setQty(BigDecimal.valueOf(qtyCUsPerTU));
+			piItemProduct.setC_UOM_ID(uom.getC_UOM_ID());
+			saveRecord(piItemProduct);
+
+			return receiveLine(productId, null).toBuilder()
+					.tuPIItemProductId(HUPIItemProductId.ofRepoId(piItemProduct.getM_HU_PI_Item_Product_ID()))
+					.build();
+		}
+
+		/**
+		 * Lot number not editable (not one of the editable attributes): it is still previewed and sent, flagged read-only,
+		 * so the client shows it disabled and the receipt generates it. The best-before date keeps following its own config.
+		 */
+		@Test
+		void lotNotEditable_isPreviewedAndReadOnly()
+		{
+			config = config.toBuilder()
+					.editableAttributeCodesInOrder(ImmutableList.of(AttributeConstants.ATTR_BestBeforeDate))
+					.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.FALSE)
+					.build();
+			final WFProcess wfProcess = ManufacturingRestService.toWFProcess(createJob(receiveLine(createProductWithBestBeforeDays("main", 10), null)));
+
+			assertThat(getProperty(wfProcess, "readOnlyAttributes")).isEqualTo(ImmutableSet.of(PickAttribute.LotNo));
+			final JsonFinishedGoodsReceiveLine mainLine = getLines(wfProcess).get(0);
+			assertThat(mainLine.getDefaultLotNo()).isEqualTo("26-292");
+			assertThat(mainLine.getDefaultBestBeforeDate()).isEqualTo(LocalDate.of(2026, 10, 29));
+		}
+
+		@Test
+		void lotEditable_nothingReadOnly()
+		{
+			final WFProcess wfProcess = ManufacturingRestService.toWFProcess(createJob(receiveLine(createProductWithBestBeforeDays("main", 10), null)));
+
+			assertThat(getProperty(wfProcess, "readOnlyAttributes")).isEqualTo(ImmutableSet.of());
+			assertThat(getLines(wfProcess).get(0).getDefaultLotNo()).isEqualTo("26-292");
+		}
+
+		private Object getProperty(final WFProcess wfProcess, final String name)
+		{
+			return handler.getUIComponent(wfProcess, wfProcess.getActivities().get(0), JsonOpts.ofAdLanguage(AD_LANGUAGE))
+					.getProperties()
+					.getParameterAsObject(name);
 		}
 
 		@SuppressWarnings("unchecked")

@@ -43,6 +43,13 @@ export const GetQuantityDialog = {
         await expect(qtyInput).toBeDisabled();
     }),
 
+    // The quantity is pre-filled and the operator can change it.
+    expectQtyEnteredEditable: async (expected) => await test.step(`${NAME} - Expect QtyEntered '${expected}' and editable`, async () => {
+        const qtyInput = page.locator('#qty-input');
+        await expect(qtyInput).toHaveValue(`${expected}`, { timeout: SLOW_ACTION_TIMEOUT });
+        await expect(qtyInput).toBeEnabled();
+    }),
+
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
         await page.locator('#qty-input').fill(`${qty}`);
     }),
@@ -318,6 +325,16 @@ export const GetQuantityDialog = {
 
     expectLotNo: async (expected) => await test.step(`${NAME} - Expect LotNo '${expected}'`, async () => {
         await expect(page.getByTestId('lotNo')).toHaveValue(`${expected}`);
+    }),
+
+    // shown read-only: the receipt generates the lot
+    expectLotNoDisabled: async () => await test.step(`${NAME} - Expect LotNo shown but not editable`, async () => {
+        await expect(page.getByTestId('lotNo')).toBeVisible();
+        await expect(page.getByTestId('lotNo')).toBeDisabled();
+    }),
+
+    expectLotNoEditable: async () => await test.step(`${NAME} - Expect LotNo editable`, async () => {
+        await expect(page.getByTestId('lotNo')).toBeEnabled();
     }),
 
     // expected in the displayed format DD.MM.YYYY, or '' for empty
