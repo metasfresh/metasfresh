@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/daily_delivery_revenue/report" uuid="7a2e1f44-9c6b-4a3d-8e52-1b6c4d9a7f20">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/daily_delivery_revenue/report" uuid="7a2e1f44-9c6b-4a3d-8e52-1b6c4d9a7f20">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.100000000000001"/>
@@ -213,10 +213,10 @@
 		</band>
 	</pageHeader>
 	<columnHeader>
-		<band height="32" splitType="Stretch">
+		<band height="42" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement key="textField-19" x="34" y="4" width="58" height="24" forecolor="#000000" uuid="b997edea-6a46-41e4-972f-cd7ce15123cb">
+				<reportElement key="textField-19" x="34" y="4" width="58" height="34" forecolor="#000000" uuid="b997edea-6a46-41e4-972f-cd7ce15123cb">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Bottom" markup="none">
@@ -225,7 +225,7 @@
 				<textFieldExpression><![CDATA[$R{Day}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="96" y="4" width="90" height="24" forecolor="#000000" uuid="c9ff0c1e-7dc8-4676-a0ea-603b3ffc1490">
+				<reportElement key="textField-20" x="96" y="4" width="90" height="34" forecolor="#000000" uuid="c9ff0c1e-7dc8-4676-a0ea-603b3ffc1490">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -235,7 +235,7 @@
 				<textFieldExpression><![CDATA[$R{DailyDeliveryRevenue}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement key="textField-invoiced-header" x="192" y="4" width="90" height="24" forecolor="#000000" uuid="2c9f1a3e-8b4d-4e6a-9c1f-6a7b8c9d0e1f">
+				<reportElement key="textField-invoiced-header" x="192" y="4" width="90" height="34" forecolor="#000000" uuid="2c9f1a3e-8b4d-4e6a-9c1f-6a7b8c9d0e1f">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -245,7 +245,7 @@
 				<textFieldExpression><![CDATA[$R{Invoiced}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement key="textField-open-header" x="288" y="4" width="90" height="24" forecolor="#000000" uuid="3d0f2b4e-9c5e-4f7b-8d2e-7b8c9d0e1f2a">
+				<reportElement key="textField-open-header" x="288" y="4" width="90" height="34" forecolor="#000000" uuid="3d0f2b4e-9c5e-4f7b-8d2e-7b8c9d0e1f2a">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -255,7 +255,7 @@
 				<textFieldExpression><![CDATA[$R{Open}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement key="textField-count-header" x="388" y="4" width="90" height="24" forecolor="#000000" uuid="4e1a3c5f-ad6f-4a8c-9e3f-8c9d0e1f2a3b">
+				<reportElement key="textField-count-header" x="388" y="4" width="90" height="34" forecolor="#000000" uuid="4e1a3c5f-ad6f-4a8c-9e3f-8c9d0e1f2a3b">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -270,7 +270,7 @@
 				</reportElement>
 			</line>
 			<line>
-				<reportElement x="34" y="31" width="545" height="1" uuid="62e76dff-5a83-4140-900e-6ec9b7d86989">
+				<reportElement x="34" y="41" width="545" height="1" uuid="62e76dff-5a83-4140-900e-6ec9b7d86989">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 			</line>

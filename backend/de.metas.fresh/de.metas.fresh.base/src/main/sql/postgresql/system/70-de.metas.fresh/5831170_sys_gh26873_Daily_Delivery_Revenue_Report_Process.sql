@@ -1,4 +1,6 @@
 -- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Docs_Daily_Delivery_Revenue_Report.sql
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Daily_Delivery_Revenue_Report(numeric, numeric, timestamp, timestamp);
+
 DROP FUNCTION IF EXISTS report.Docs_Daily_Delivery_Revenue_Report(
     numeric,
     numeric,
