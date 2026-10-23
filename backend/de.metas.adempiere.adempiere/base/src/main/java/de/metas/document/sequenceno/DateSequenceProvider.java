@@ -104,10 +104,18 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 		return Check.isEmpty(docSeqInfo.getDecimalPattern());
 	}
 
+	/**
+	 * @return the name of the sysconfig with the given sequence's own date format
+	 */
+	public static String getDateFormatSysConfigName(final int adSequenceId)
+	{
+		return SYSCONFIG_DATE_FORMAT_PER_SEQUENCE_PREFIX + adSequenceId;
+	}
+
 	private String getDateFormat(@NonNull final DocumentSequenceInfo docSeqInfo)
 	{
 		final String perSequenceDateFormat = docSeqInfo.getAdSequenceId() > 0
-				? sysConfigBL.getValue(SYSCONFIG_DATE_FORMAT_PER_SEQUENCE_PREFIX + docSeqInfo.getAdSequenceId())
+				? sysConfigBL.getValue(getDateFormatSysConfigName(docSeqInfo.getAdSequenceId()))
 				: null;
 		if (Check.isNotBlank(perSequenceDateFormat))
 		{
