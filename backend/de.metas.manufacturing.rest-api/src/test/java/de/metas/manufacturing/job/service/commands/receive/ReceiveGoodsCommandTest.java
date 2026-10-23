@@ -145,6 +145,25 @@ class ReceiveGoodsCommandTest
 		assertThat(result.toBigDecimal()).isEqualByComparingTo("4");
 	}
 
+	/**
+	 * Scan required but weight not captured at receipt: a normal receipt of N, e.g. 3 blocks with the last block's lot and best-before date.
+	 */
+	@Test
+	void notOnePiecePerScan_CUMode_qtyIsPieces()
+	{
+		final Quantity result = ReceiveGoodsCommand.computeQtyToReceive(BigDecimal.valueOf(3), uomKgId, null, false);
+
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("3");
+	}
+
+	@Test
+	void notOnePiecePerScan_TUMode_twoTUs()
+	{
+		final Quantity result = ReceiveGoodsCommand.computeQtyToReceive(BigDecimal.valueOf(2), uomKgId, finiteHUPIItemProduct(4), false);
+
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("8");
+	}
+
 	@Test
 	void isFull_belowCapacity()
 	{

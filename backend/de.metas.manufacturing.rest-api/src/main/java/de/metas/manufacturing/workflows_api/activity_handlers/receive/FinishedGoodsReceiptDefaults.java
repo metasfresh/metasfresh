@@ -19,7 +19,8 @@ import java.util.Set;
  * Default best-before date (MHD) and lot number pre-filled on the mobile finished-goods receipt of one manufacturing order,
  * for a receipt today in the order's org time zone.
  * <p>
- * A default is only computed for an attribute the operator can edit on the receipt.
+ * The best-before date default is only computed if the operator can edit it. The lot number is always previewed:
+ * if it is not editable it is still shown, read-only.
  * Nothing is written to the database: the lot number is a preview that does not consume the lot-number sequence.
  */
 final class FinishedGoodsReceiptDefaults
@@ -39,9 +40,7 @@ final class FinishedGoodsReceiptDefaults
 		this.isBestBeforeDateEditable = editableAttributes.contains(PickAttribute.BestBeforeDate);
 		// same day as the receipt itself uses for its lot number and production date (movement date in the org time zone)
 		this.receiptDate = SystemTime.asLocalDate(orgDAO.getTimeZone(orgId));
-		this.lotNo = editableAttributes.contains(PickAttribute.LotNo)
-				? huPPOrderBL.previewLotNumberFromSequence(ppOrderId, receiptDate).orElse(null)
-				: null;
+		this.lotNo = huPPOrderBL.previewLotNumberFromSequence(ppOrderId, receiptDate).orElse(null);
 	}
 
 	static FinishedGoodsReceiptDefaults of(@NonNull final PPOrderId ppOrderId, @NonNull final Set<PickAttribute> editableAttributes)
@@ -61,7 +60,7 @@ final class FinishedGoodsReceiptDefaults
 	}
 
 	/**
-	 * @return the lot number the order's BOM lot-number sequence yields for the receipt date, or {@code null} if the lot number is not editable,
+	 * @return the lot number the order's BOM lot-number sequence yields for the receipt date, or {@code null} if
 	 * there is no such sequence, or its value cannot be previewed (see {@link IHUPPOrderBL#previewLotNumberFromSequence})
 	 */
 	@Nullable

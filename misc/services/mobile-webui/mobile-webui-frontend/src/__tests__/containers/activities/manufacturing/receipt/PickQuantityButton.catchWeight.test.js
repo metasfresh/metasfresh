@@ -63,6 +63,8 @@ const renderCatchWeightButton = ({ isCatchWeightScanMandatory = true } = {}) => 
         defaultLotNo={DEFAULT_LOT_NO}
         defaultBestBeforeDate={DEFAULT_BEST_BEFORE_DATE}
         isCatchWeightScanMandatory={isCatchWeightScanMandatory}
+        // weight captured at receipt (catchWeightUom set): the backend then also sends one piece per scan
+        isOnePiecePerScan={isCatchWeightScanMandatory}
         onClick={onClick}
       />
     </Provider>

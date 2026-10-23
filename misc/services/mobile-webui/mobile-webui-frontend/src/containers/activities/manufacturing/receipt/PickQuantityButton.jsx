@@ -14,9 +14,11 @@ const PickQuantityButton = ({
   isDisabled,
   customQRCodeFormats,
   readAttributes,
+  readOnlyAttributes,
   defaultLotNo,
   defaultBestBeforeDate,
   isCatchWeightScanMandatory = false,
+  isOnePiecePerScan = false,
   onClick,
 }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
@@ -78,7 +80,9 @@ const PickQuantityButton = ({
           catchWeightUom={catchWeightUom}
           customQRCodeFormats={customQRCodeFormats}
           isCatchWeightScanMandatory={isCatchWeightScanMandatory}
+          isOnePiecePerScan={isOnePiecePerScan}
           readAttributes={readAttributes}
+          readOnlyAttributes={readOnlyAttributes}
           lotNo={defaultLotNo}
           bestBeforeDate={defaultBestBeforeDate}
           validateQtyEntered={validateQtyEntered}
@@ -100,10 +104,13 @@ PickQuantityButton.propTypes = {
   onClick: PropTypes.func.isRequired,
   customQRCodeFormats: PropTypes.array,
   readAttributes: PropTypes.array,
+  readOnlyAttributes: PropTypes.array,
   defaultLotNo: PropTypes.string,
   defaultBestBeforeDate: PropTypes.string,
   // Catch-weight only: the L&M QR code must be scanned and the scan fills the fields for review
   isCatchWeightScanMandatory: PropTypes.bool,
+  // the backend's flag: each receipt is one piece (qty fixed at 1)
+  isOnePiecePerScan: PropTypes.bool,
 };
 
 export default PickQuantityButton;

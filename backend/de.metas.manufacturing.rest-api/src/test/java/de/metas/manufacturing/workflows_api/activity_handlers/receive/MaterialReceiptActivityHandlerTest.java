@@ -2,6 +2,8 @@ package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -189,6 +191,7 @@ class MaterialReceiptActivityHandlerTest
 				receiveLineWithTUPacking(mainProductId, 5)))).get(0);
 
 		assertThat(mainLine.isCatchWeightScanRequired()).isTrue();
+		assertThat(mainLine.isReceiveOnePiecePerScan()).isFalse();
 		assertThat(mainLine.getUom()).isEqualTo("TU");
 		assertThat(mainLine.getQtyToReceive()).isEqualByComparingTo("2"); // 10 pieces, 5 per TU
 	}
@@ -209,6 +212,7 @@ class MaterialReceiptActivityHandlerTest
 				receiveLineWithTUPacking(mainProductId, 5)))).get(0);
 
 		assertThat(mainLine.isCatchWeightScanRequired()).isTrue();
+		assertThat(mainLine.isReceiveOnePiecePerScan()).isTrue();
 		assertThat(mainLine.getUom()).isEqualTo(uom.getUOMSymbol());
 		assertThat(mainLine.getQtyToReceive()).isEqualByComparingTo("10");
 	}
@@ -227,6 +231,39 @@ class MaterialReceiptActivityHandlerTest
 		return receiveLine(productId, null).toBuilder()
 				.tuPIItemProductId(HUPIItemProductId.ofRepoId(piItemProduct.getM_HU_PI_Item_Product_ID()))
 				.build();
+	}
+
+	/**
+	 * Lot number not editable: it is still previewed and sent, flagged read-only, so the client shows it disabled
+	 * and the receipt generates it. The best-before date keeps following its own editable flag.
+	 */
+	@Test
+	void lotNotEditable_isPreviewedAndReadOnly()
+	{
+		when(configRepository.getConfig(any(), any())).thenReturn(config.toBuilder()
+				.isLotNumberEditable(OptionalBoolean.FALSE)
+				.build());
+		final WFProcess wfProcess = ManufacturingRestService.toWFProcess(createJob(receiveLine(createProduct("main", 10), null)));
+
+		assertThat(getProperty(wfProcess, "readAttributes")).isEqualTo(ImmutableSet.of(PickAttribute.BestBeforeDate));
+		assertThat(getProperty(wfProcess, "readOnlyAttributes")).isEqualTo(ImmutableSet.of(PickAttribute.LotNo));
+		assertThat(getLines(wfProcess).get(0).getDefaultLotNo()).isEqualTo("26-292");
+	}
+
+	@Test
+	void lotEditable_nothingReadOnly()
+	{
+		final WFProcess wfProcess = ManufacturingRestService.toWFProcess(createJob(receiveLine(createProduct("main", 10), null)));
+
+		assertThat(getProperty(wfProcess, "readOnlyAttributes")).isEqualTo(ImmutableSet.of());
+		assertThat(getLines(wfProcess).get(0).getDefaultLotNo()).isEqualTo("26-292");
+	}
+
+	private Object getProperty(final WFProcess wfProcess, final String name)
+	{
+		return handler.getUIComponent(wfProcess, wfProcess.getActivities().get(0), JsonOpts.ofAdLanguage("en_US"))
+				.getProperties()
+				.getParameterAsObject(name);
 	}
 
 	@SuppressWarnings("unchecked")

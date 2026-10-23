@@ -102,6 +102,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.properties(Params.builder()
 						.valueObj("lines", lines)
 						.valueObj("readAttributes", config.getEditableAttributes())
+						.valueObj("readOnlyAttributes", config.getReadOnlyAttributes())
 						.valueObj(PROP_customQRCodeFormats, JsonScannableCodeFormat.ofCollection(scannableCodeFormatService.getAll()))
 						.build())
 				.build();
@@ -181,6 +182,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.coproduct(!line.isMainFinishedGood())
 				.skipReceiveTargetStep(lineConfig.isSkipReceiveTargetStep())
 				.catchWeightScanRequired(lineConfig.isCatchWeightScanRequired())
+				.receiveOnePiecePerScan(lineConfig.isReceiveOnePiecePerScan())
 				.productName(line.getProductValueAndProductName().translate(adLanguage))
 				.uom(uom)
 				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), adLanguage))
