@@ -139,7 +139,13 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       await ReceiptDialog.start();
       await Backend.expect({
         manufacturings: { [orderId(masterdata, 'PP_PALLET_1')]: { receivedHUs: [{ lu: 'lu_1', qty: `${PALLET_CAPACITY * QTY_PER_TU} PCE` }] } },
-        hus: { lu_1: { qtyTUs: PALLET_CAPACITY, storages: { PROD_PALLET: `${PALLET_CAPACITY * QTY_PER_TU} PCE` } } },
+        // the pallet carries its TUs as one aggregate HU: 4 TUs holding 60 = 4 x 15
+        hus: {
+          lu_1: {
+            storages: { PROD_PALLET: `${PALLET_CAPACITY * QTY_PER_TU} PCE` },
+            tus: [{ qtyTUs: PALLET_CAPACITY, storages: { PROD_PALLET: `${PALLET_CAPACITY * QTY_PER_TU} PCE` } }],
+          },
+        },
       });
 
       // --- order 2: 3 TUs on 2 pallets -> Menge 90 -> 2 pallets x 3 TUs x 15
@@ -153,8 +159,9 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       await Backend.expect({
         manufacturings: { [orderId(masterdata, 'PP_PALLET_2')]: { receivedHUs: [{ lu: 'lu_2', qty: palletQty }, { lu: 'lu_3', qty: palletQty }] } },
         hus: {
-          lu_2: { qtyTUs: TUS_PER_PALLET_USED, storages: { PROD_PALLET: palletQty } }, // 3 TUs holding 45 = 3 x 15
-          lu_3: { qtyTUs: TUS_PER_PALLET_USED, storages: { PROD_PALLET: palletQty } },
+          // each pallet: one aggregate HU of 3 TUs holding 45 = 3 x 15
+          lu_2: { storages: { PROD_PALLET: palletQty }, tus: [{ qtyTUs: TUS_PER_PALLET_USED, storages: { PROD_PALLET: palletQty } }] },
+          lu_3: { storages: { PROD_PALLET: palletQty }, tus: [{ qtyTUs: TUS_PER_PALLET_USED, storages: { PROD_PALLET: palletQty } }] },
         },
       });
     });
@@ -171,10 +178,10 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       await ReceiptDialog.expectNumber('QtyTotalReceived', TUS_PER_PALLET_USED * QTY_PER_TU);
       expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(true);
 
-      // no TU count: no total, and Start is refused
+      // no TU count: no total, and the dialog does not let the user start
       await ReceiptDialog.clear('QtyTU');
       expect(await ReceiptDialog.getValue('QtyTotalReceived'), 'Menge is empty without TU Anzahl').toBe('');
-      await ReceiptDialog.startExpectingRefusal();
+      expect(await ReceiptDialog.isStartDisabled(), 'Start is disabled while TU Anzahl is empty').toBe(true);
       await Backend.expect({ manufacturings: { [orderId(masterdata, 'PP_PLAIN')]: { receivedHUs: [] } } });
 
       await ReceiptDialog.setNumber('QtyTU', TUS_PER_PALLET_USED);

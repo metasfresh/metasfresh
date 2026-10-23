@@ -116,6 +116,7 @@ public class PPOrderCommand
 				uomId,
 				null,
 				true);
+		lutuConfiguration.setM_Locator_ID(ppOrder.getM_Locator_ID()); // like PPOrderDocumentLUTUConfigurationHandler: receive onto the order's locator
 		applyLUTUConfigurationOverrides(lutuConfiguration);
 		lutuConfigurationFactory.save(lutuConfiguration);
 

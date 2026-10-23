@@ -7,7 +7,6 @@ import {
   SLOW_ACTION_TIMEOUT,
   VERY_SLOW_ACTION_TIMEOUT,
 } from '../common';
-import { ErrorToast } from '../components/ErrorToast';
 import { MANUFACTURING_ORDER_WINDOW_ID } from '../WindowIds';
 
 /**
@@ -95,6 +94,32 @@ export class ManufacturingOrderReceiptPage {
       .catch(() => {});
   }
 
+  /**
+   * Fill a field, leave it and wait for the server's answer to the change (the PATCH that carries the recomputed
+   * dependent fields). Without waiting for that response the dependent fields are read before they are updated.
+   * No PATCH is sent when the value did not change, hence the swallowed timeout.
+   */
+  static async #fillAndWaitForRecompute(columnName, text) {
+    const page = getPage();
+    const input = this.#input(columnName);
+    const answered = page
+      .waitForResponse((response) => response.request().method() === 'PATCH' && response.url().includes('/process/'), {
+        timeout: SLOW_ACTION_TIMEOUT,
+      })
+      .catch(() => {});
+    await input.click();
+    await input.press('Control+a');
+    if (text === '') {
+      await input.press('Backspace'); // a real key press: the widget does not report an emptied field after fill('')
+    }
+    else {
+      await input.pressSequentially(text);
+    }
+    await input.blur();
+    await answered;
+    await this.#settle();
+  }
+
   /** Is the dialog field rendered at all? (hidden parameters are not rendered) */
   static async isFieldVisible(columnName) {
     return (await this.#field(columnName).count()) > 0;
@@ -125,20 +150,14 @@ export class ManufacturingOrderReceiptPage {
   /** Type a number into a field and wait until the dependent fields are recomputed. */
   static async setNumber(columnName, value) {
     return await test.step(`ManufacturingOrderReceiptPage - Set ${columnName} = ${value}`, async () => {
-      const input = this.#input(columnName);
-      await input.fill(String(value));
-      await input.blur();
-      await this.#settle();
+      await this.#fillAndWaitForRecompute(columnName, String(value));
     });
   }
 
   /** Empty a field and wait until the dependent fields are recomputed. */
   static async clear(columnName) {
     return await test.step(`ManufacturingOrderReceiptPage - Clear ${columnName}`, async () => {
-      const input = this.#input(columnName);
-      await input.fill('');
-      await input.blur();
-      await this.#settle();
+      await this.#fillAndWaitForRecompute(columnName, '');
     });
   }
 
@@ -149,13 +168,20 @@ export class ManufacturingOrderReceiptPage {
   static async startExpectingRefusal() {
     return await test.step('ManufacturingOrderReceiptPage - Start (expect refusal)', async () => {
       const page = getPage();
-      const toast = page.locator('.Toastify div[role="alert"].Toastify__toast-body').first();
+      // process errors are shown as a notification (frontend Notification component), not as a Toastify toast
+      const toast = page.locator('.notification-item.error .notification-content').first();
       await page.getByTestId('process-modal-start-button').click();
       await toast.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       const text = await toast.textContent();
-      await ErrorToast.closePopup().catch(() => {});
+      await page.locator('.notification-item.error .notification-header i').first().click();
+      await toast.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
       return text ?? '';
     });
+  }
+
+  /** True when the dialog does not let the user press "Start" (a mandatory field is empty). */
+  static async isStartDisabled() {
+    return await getPage().getByTestId('process-modal-start-button').isDisabled();
   }
 
   /** Press "Start" and wait for the dialog to close (the receipt was created). */
