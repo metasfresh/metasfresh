@@ -106,6 +106,8 @@ export class ManufacturingOrderReceiptPage {
       })
       .catch(() => {});
     await input.click();
+    // the widget registers the focus one tick after the DOM focus; a blur before that is ignored and sends no PATCH
+    await this.#field(columnName).locator('.input-body-container.focused').waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     await input.press('Control+a');
     if (text === '') {
       await input.press('Backspace'); // a real key press: the widget does not report an emptied field after fill('')

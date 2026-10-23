@@ -271,6 +271,8 @@ export class ReceiptCandidatesPage {
         { timeout: SLOW_ACTION_TIMEOUT }
       ).catch(() => {});
       await input.click();
+      // the widget registers the focus one tick after the DOM focus; a blur before that is ignored and sends no PATCH
+      await getPage().locator(`.panel-modal-content .form-field-${columnName} .input-body-container.focused`).waitFor({ timeout: SLOW_ACTION_TIMEOUT });
       await input.press('Control+a');
       await input.pressSequentially(String(value));
       await input.blur();
