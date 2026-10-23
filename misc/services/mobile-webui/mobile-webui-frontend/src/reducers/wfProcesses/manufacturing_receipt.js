@@ -174,6 +174,7 @@ registerHandler({
     draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
     draftActivityDataStored.customQRCodeFormats = fromActivity.componentProps.customQRCodeFormats;
     draftActivityDataStored.readAttributes = fromActivity.componentProps.readAttributes ?? [];
+    draftActivityDataStored.readOnlyAttributes = fromActivity.componentProps.readOnlyAttributes ?? [];
     return draftActivityDataStored;
   },
 });

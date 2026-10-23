@@ -90,7 +90,7 @@ public class MobileUIManufacturingConfig
 				.skipReceiveTargetStep(isMainFinishedGood && getIsSkipFinishedGoodsReceiveTargetStepEffective())
 				// Main finished good only: co-/by-product lines keep receive-on-scan and manual input.
 				// Independent of capturing the weight at receipt: without it the scan takes over lot and best-before date
-				// only, and the weight is captured later at picking. Each scan is one piece in both cases.
+				// only, and the weight is captured later at picking.
 				.catchWeightScanRequired(isMainFinishedGood
 						&& isCatchWeightProduct
 						&& getIsFinishedGoodsCatchWeightScanRequiredEffective())
@@ -115,6 +115,17 @@ public class MobileUIManufacturingConfig
 			result.add(PickAttribute.LotNo);
 		}
 		return result.build();
+	}
+
+	/**
+	 * @return the receipt attributes the operator cannot edit and the receipt sets itself: {@link PickAttribute#LotNo} if the
+	 * lot number is not editable ({@code IsLotNumberEditable} not {@code Y}), else empty. The best-before date is never in this set.
+	 */
+	public Set<PickAttribute> getReadOnlyAttributes()
+	{
+		return isLotNumberEditable.isTrue()
+				? ImmutableSet.of()
+				: ImmutableSet.of(PickAttribute.LotNo);
 	}
 
 	public MobileUIManufacturingConfig fallbackTo(@NonNull final MobileUIManufacturingConfig other)

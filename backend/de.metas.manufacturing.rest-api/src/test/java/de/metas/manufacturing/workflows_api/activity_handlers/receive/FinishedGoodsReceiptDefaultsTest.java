@@ -69,13 +69,16 @@ class FinishedGoodsReceiptDefaultsTest
 		assertThat(defaults.getBestBeforeDate(createProductWithBestBeforeDays(0))).isNull();
 	}
 
+	/**
+	 * A lot number that is not editable is still shown (read-only), so its preview is computed anyway.
+	 */
 	@Test
-	void attributesNotEditable_noDefaults()
+	void attributesNotEditable_noBestBeforeDefault_butLotPreview()
 	{
 		final FinishedGoodsReceiptDefaults defaults = FinishedGoodsReceiptDefaults.of(ppOrderId, ImmutableSet.of());
 
 		assertThat(defaults.getBestBeforeDate(createProductWithBestBeforeDays(10))).isNull();
-		assertThat(defaults.getLotNo()).isNull();
+		assertThat(defaults.getLotNo()).isEqualTo("26-293");
 	}
 
 	private static ProductId createProductWithBestBeforeDays(final int bestBeforeDays)

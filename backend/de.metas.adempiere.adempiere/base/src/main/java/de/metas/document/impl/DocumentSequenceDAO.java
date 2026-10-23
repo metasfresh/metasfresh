@@ -130,6 +130,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 				.autoSequence(record.isAutoSequence())
 				.restartFrequency(SequenceRestartFrequencyEnum.ofNullableCode(record.getRestartFrequency()))
 				.dateColumn(record.getDateColumn())
+				.dateFormat(record.getDateFormat())
 				//
 				.customSequenceNoProvider(createCustomSequenceNoProviderOrNull(record))
 				//

@@ -1,5 +1,6 @@
 package de.metas.manufacturing.config;
 
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -536,6 +537,77 @@ class MobileUIManufacturingConfigTest
 					.isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE)
 					.build()
 					.effectiveForReceiveLine(true, true).isCatchWeightScanRequired()).isFalse();
+		}
+
+		/**
+		 * With the weight captured at receipt the scanned weight belongs to one block, so each receipt is one piece.
+		 */
+		@Test
+		void receiveOnePiecePerScan_scanRequired_catchWeightCapturedAtReceipt()
+		{
+			assertThat(configBuilder()
+					.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.TRUE)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
+					.build()
+					.effectiveForReceiveLine(true, true).isReceiveOnePiecePerScan()).isTrue();
+		}
+
+		/**
+		 * Without the weight at receipt the operator enters the number of blocks and scans the last block's label,
+		 * whose lot and best-before date apply to the whole receipt: a normal receipt of N, not one piece per scan.
+		 */
+		@Test
+		void receiveOnePiecePerScan_scanRequired_catchWeightNotCapturedAtReceipt_isFalse()
+		{
+			final FinishedGoodsReceiveLineConfig lineConfig = configBuilder()
+					.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.TRUE)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.FALSE)
+					.build()
+					.effectiveForReceiveLine(true, true);
+
+			assertThat(lineConfig.isCatchWeightScanRequired()).isTrue();
+			assertThat(lineConfig.isReceiveOnePiecePerScan()).isFalse();
+		}
+
+		@Test
+		void receiveOnePiecePerScan_scanNotRequired_isFalse()
+		{
+			assertThat(configBuilder()
+					.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.FALSE)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
+					.build()
+					.effectiveForReceiveLine(true, true).isReceiveOnePiecePerScan()).isFalse();
+		}
+	}
+
+	/**
+	 * A lot number that is not editable is shown read-only and generated at receipt (e.g. piece goods: lot read-only, best-before date editable).
+	 */
+	@Nested
+	class getReadOnlyAttributes
+	{
+		@Test
+		void lotNotEditable_lotIsReadOnly()
+		{
+			assertThat(configBuilder().isLotNumberEditable(OptionalBoolean.FALSE).build().getReadOnlyAttributes())
+					.containsExactly(PickAttribute.LotNo);
+			assertThat(configBuilder().isLotNumberEditable(OptionalBoolean.UNKNOWN).build().getReadOnlyAttributes())
+					.containsExactly(PickAttribute.LotNo);
+		}
+
+		@Test
+		void lotEditable_nothingReadOnly()
+		{
+			assertThat(configBuilder().isLotNumberEditable(OptionalBoolean.TRUE).build().getReadOnlyAttributes()).isEmpty();
+		}
+
+		@Test
+		void bestBeforeDateNotEditable_isNotReadOnly_itKeepsFollowingItsFlag()
+		{
+			assertThat(configBuilder()
+					.isLotNumberEditable(OptionalBoolean.TRUE)
+					.isBestBeforeDateEditable(OptionalBoolean.FALSE)
+					.build().getReadOnlyAttributes()).isEmpty();
 		}
 	}
 }

@@ -102,6 +102,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.properties(Params.builder()
 						.valueObj("lines", lines)
 						.valueObj("readAttributes", config.getEditableAttributes())
+						.valueObj("readOnlyAttributes", config.getReadOnlyAttributes())
 						.valueObj(PROP_customQRCodeFormats, JsonScannableCodeFormat.ofCollection(scannableCodeFormatService.getAll()))
 						.build())
 				.build();
@@ -152,8 +153,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final java.math.BigDecimal qtyToReceive;
 		final java.math.BigDecimal qtyReceived;
 
-		// With the mandatory catch-weight scan every receipt is one piece, also in TU mode, so the line counts pieces.
-		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null && !lineConfig.isCatchWeightScanRequired())
+		// With one piece per scan (weight captured at receipt) every receipt is one piece, also in TU mode, so the line counts pieces.
+		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null && !lineConfig.isReceiveOnePiecePerScan())
 		{
 			final HUPIItemProduct huPIItemProduct = huPIItemProductDAO.getById(line.getTuPIItemProductId());
 			final QtyTU qtyToReceiveTU = huPIItemProduct.computeQtyTUsOfTotalCUs(line.getQtyToReceive(), line.getProductId());
@@ -181,6 +182,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.coproduct(!line.isMainFinishedGood())
 				.skipReceiveTargetStep(lineConfig.isSkipReceiveTargetStep())
 				.catchWeightScanRequired(lineConfig.isCatchWeightScanRequired())
+				.receiveOnePiecePerScan(lineConfig.isReceiveOnePiecePerScan())
 				.productName(line.getProductValueAndProductName().translate(adLanguage))
 				.uom(uom)
 				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), adLanguage))

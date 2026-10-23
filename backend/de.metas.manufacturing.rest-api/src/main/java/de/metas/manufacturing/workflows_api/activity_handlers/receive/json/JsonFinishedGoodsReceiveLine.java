@@ -26,6 +26,11 @@ public class JsonFinishedGoodsReceiveLine
 	 * {@code true} if a catch-weight line can only be received by scanning a code that the operator then confirms (no manual input)
 	 */
 	boolean catchWeightScanRequired;
+	/**
+	 * {@code true} if each receipt of this line is exactly one piece (scan required AND weight captured at receipt);
+	 * otherwise any qty is received.
+	 */
+	boolean receiveOnePiecePerScan;
 	@NonNull String productName;
 	@NonNull String uom;
 	@Nullable String catchWeightUomSymbol;
