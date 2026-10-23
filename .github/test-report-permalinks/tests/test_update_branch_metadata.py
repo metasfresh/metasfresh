@@ -88,8 +88,8 @@ def test_never_more_than_one_deleter(tmp_path):
         # stands in for a deleter that is still running. Blocking: the v1..v3 publishes each started a
         # real deleter, and one of them may hold the lock right now.
         fcntl.flock(held, fcntl.LOCK_EX)
-        # Those deleters may also have finished already and written a status file; only one written
-        # from here on, while the lock is held, would be a second deleter.
+        # Those deleters may also have finished already and written a status file; only a status file
+        # written after this point, while the lock is held, means a second deleter ran.
         (tmp_path / "_trash" / ".last-sweep.json").unlink(missing_ok=True)
         _publish(tmp_path, "v4")
         time.sleep(1.5)
