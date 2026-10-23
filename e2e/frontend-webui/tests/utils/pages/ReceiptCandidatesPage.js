@@ -258,4 +258,37 @@ export class ReceiptCandidatesPage {
       await page.getByTestId('process-modal-start-button').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     });
   }
+
+  /** Type a number into a field of the open process dialog (addressed by ColumnName). */
+  static async setProcessNumberField(columnName, value) {
+    return await test.step(`ReceiptCandidatesPage - Set process field ${columnName} = ${value}`, async () => {
+      const input = getPage().locator(`.panel-modal-content .form-field-${columnName} input.input-field`);
+      await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await input.click();
+      await input.press('Control+a');
+      await input.pressSequentially(String(value));
+      await input.blur();
+    });
+  }
+
+  /** Press "Start" of the open process dialog. */
+  static async startProcess() {
+    return await test.step('ReceiptCandidatesPage - Start process', async () => {
+      const startButton = getPage().getByTestId('process-modal-start-button');
+      await expect(startButton).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+      await startButton.click();
+    });
+  }
+
+  /**
+   * The rows of the HU editor view that opens after a receipt, one text per row (all cells joined).
+   * Rows are read from the view as the server delivered it.
+   */
+  static async readHUEditorRows() {
+    return await test.step('ReceiptCandidatesPage - Read HU editor rows', async () => {
+      const rows = getPage().locator('.panel-modal .table tbody tr');
+      await rows.first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      return (await rows.allTextContents()).map((text) => text.trim());
+    });
+  }
 }
