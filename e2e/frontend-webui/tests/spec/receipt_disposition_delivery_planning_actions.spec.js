@@ -6,6 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { PURCHASE_ORDER_WINDOW_ID, RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID } from '../utils/WindowIds';
+import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /** AD_Tab_ID of "Bestellposition" (purchase order line) in the purchase order window. */
 const PURCHASE_ORDER_LINE_TAB_ID = 'AD_Tab-293';
@@ -133,7 +134,7 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       'the created packing instruction is a real one, not the virtual "No Packing Item" row'
     ).not.toBe(NO_PACKING_ITEM_ID);
 
-    const REST = FRONTEND_BASE_URL.replace(/:3000$/, ':8080') + '/rest/api';
+    const REST = WEBAPI_BASE_URL;
 
     const firstDocument = (body) => (Array.isArray(body) ? body : body.documents || [body])[0];
     const patchDocument = async (windowId, documentId, tabId, rowId, changes) => {
@@ -441,7 +442,7 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
       expect(productId).toBeTruthy();
       expect(productName).toBeTruthy();
 
-      const REST = FRONTEND_BASE_URL.replace(/:3000$/, ':8080') + '/rest/api';
+      const REST = WEBAPI_BASE_URL;
       const firstDocument = (body) => (Array.isArray(body) ? body : body.documents || [body])[0];
       const patchDocument = async (windowId, documentId, tabId, rowId, changes) => {
         const path = tabId
