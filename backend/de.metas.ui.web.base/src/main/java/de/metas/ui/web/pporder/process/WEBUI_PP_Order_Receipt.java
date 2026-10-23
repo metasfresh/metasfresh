@@ -282,13 +282,6 @@ public class WEBUI_PP_Order_Receipt
 
 	private void onPalletChanged()
 	{
-		if (p_IsPIPUnlimitedCapacity)
-		{
-			p_QtyTU = BigDecimal.ONE;
-			p_QtyLU = BigDecimal.ONE;
-			return;
-		}
-
 		// "TU Anzahl" is deliberately not clamped to the pallet's capacity: a too high count is refused on start
 		if (p_QtyLU == null || p_QtyLU.signum() <= 0)
 		{
