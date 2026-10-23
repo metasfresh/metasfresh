@@ -14,8 +14,10 @@ UPDATE AD_Element_Trl SET Name='Menge',PrintName='Menge',IsTranslated='Y',Update
 
 UPDATE AD_Element_Trl SET Name='Quantity',PrintName='Quantity',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-10-23 10:00:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585562 AND AD_Language='en_US';
 
+-- guarded: a release-branch migration may have created this element (same ID and values) before this script runs
 INSERT INTO AD_Element (AD_Element_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,ColumnName,EntityType,Name,PrintName)
-VALUES (585563 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-10-23 10:00:01','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-10-23 10:00:01','YYYY-MM-DD HH24:MI:SS'),100,'QtyCUsReceived','de.metas.ui.web','Menge CU','Menge CU');
+SELECT 585563 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-10-23 10:00:01','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-10-23 10:00:01','YYYY-MM-DD HH24:MI:SS'),100,'QtyCUsReceived','de.metas.ui.web','Menge CU','Menge CU'
+WHERE NOT EXISTS (SELECT 1 FROM AD_Element e WHERE e.AD_Element_ID=585563);
 
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID,Name,PrintName,IsTranslated,AD_Client_ID,AD_Org_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive,IsUseCustomization)
 SELECT l.AD_Language,t.AD_Element_ID,t.Name,t.PrintName,'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.CreatedBy,t.Updated,t.UpdatedBy,'Y','N'
