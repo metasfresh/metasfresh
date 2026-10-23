@@ -99,6 +99,12 @@ export const GetQuantityDialog = {
         await expect(page.getByTestId(`attr-${code}-field`)).not.toBeVisible();
     }),
 
+    // Stricter than expectEditableAttributeNotVisible: the row is not rendered at all (not merely hidden).
+    expectEditableAttributeNotPresent: async (codeOrIdentifier) => await test.step(`${NAME} - Expect editable attribute '${codeOrIdentifier}' not present`, async () => {
+        const code = resolveAttributeCode(codeOrIdentifier);
+        await expect(page.getByTestId(`attr-${code}-field`)).toHaveCount(0);
+    }),
+
     typeEditableAttribute: async (codeOrIdentifier, value) => await test.step(`${NAME} - Type editable attribute '${codeOrIdentifier}' = '${value}'`, async () => {
         const field = page.getByTestId(`attr-${resolveAttributeCode(codeOrIdentifier)}-field`);
         // the field may already show a pre-filled value, and it does not select its text on focus
