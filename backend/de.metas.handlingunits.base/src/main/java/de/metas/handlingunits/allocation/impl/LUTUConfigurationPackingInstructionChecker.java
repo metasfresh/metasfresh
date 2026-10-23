@@ -21,9 +21,9 @@ import java.math.BigDecimal;
 /**
  * Refuses LU/TU configurations that contradict the packing instruction (M_HU_PI_Item_Product) they are based on.
  * <p>
- * Rules (the check is skipped for "No Packing Item" and for packing instructions without a finite capacity):
+ * Rules (the check is skipped for "No Packing Item"):
  * <ul>
- *     <li>the quantity per TU must be the packing instruction's quantity</li>
+ *     <li>with a finite-capacity packing instruction, the quantity per TU must be the packing instruction's quantity</li>
  *     <li>the number of TUs per LU must not exceed the LU's capacity (M_HU_PI_Item.Qty), unless that capacity is <= 0</li>
  * </ul>
  */
@@ -33,8 +33,8 @@ public class LUTUConfigurationPackingInstructionChecker
 	private static final AdMessageKey MSG_QtyCUsPerTU_NotMatchingPackingInstruction = AdMessageKey.of("M_HU_LUTU_Configuration_QtyCUsPerTU_NotMatchingPackingInstruction");
 	private static final AdMessageKey MSG_QtyTU_ExceedsLUCapacity = AdMessageKey.of("M_HU_LUTU_Configuration_QtyTU_ExceedsLUCapacity");
 
-	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public void assertLUTUConfigurationMatchesPackingInstruction(@NonNull final I_M_HU_LUTU_Configuration lutuConfig)
 	{
@@ -45,12 +45,11 @@ public class LUTUConfigurationPackingInstructionChecker
 		}
 
 		final HUPIItemProduct piItemProduct = huPIItemProductBL.getById(piItemProductId);
-		if (!piItemProduct.isFiniteTU())
+		if (piItemProduct.isFiniteTU())
 		{
-			return;
+			assertQtyCUsPerTUMatches(lutuConfig, piItemProduct);
 		}
 
-		assertQtyCUsPerTUMatches(lutuConfig, piItemProduct);
 		assertQtyTUWithinLUCapacity(lutuConfig);
 	}
 

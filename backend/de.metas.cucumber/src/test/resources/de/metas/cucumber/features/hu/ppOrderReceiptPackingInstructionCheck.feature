@@ -195,3 +195,27 @@ Feature: Manufacturing order receipt follows the packing instruction
     Then validate M_HUs:
       | M_HU_ID.Identifier | OPT.M_HU_Parent | OPT.M_Product_ID | OPT.Qty |
       | looseCUs           | null            | receiptProduct   | 9 PCE   |
+
+
+  ##############################################################################################
+  ##############################################################################################
+  Scenario: Receipt is refused when there are more TUs per pallet than the pallet capacity, also for an unlimited-capacity packing instruction
+    # written by SQL: quantity 0 = unlimited capacity; own TU/LU packing instructions (pallet capacity 6), so it does not overlap pipMain
+    Given metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier |
+      | huPackingTUUnlimited  |
+      | huPackingLUUnlimited  |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID  | M_HU_PI_ID           | HU_UnitType | IsCurrent |
+      | packingVersionTUUnl | huPackingTUUnlimited | TU          | Y         |
+      | packingVersionLUUnl | huPackingLUUnlimited | LU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID  | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
+      | huPiItemTUUnl   | packingVersionTUUnl | 0   | MI       |                                  |
+      | huPiItemLUUnl   | packingVersionLUUnl | 6   | HU       | huPackingTUUnlimited             |
+    And metasfresh contains M_HU_PI_Item_Product with quantity 0 and no infinite capacity, inserted by SQL:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID   |
+      | pipUnlimited            | huPiItemTUUnl   | receiptProduct |
+    When receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID    | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID        | OPT.ErrorMessage_AD_Message                     | OPT.ErrorMessage_Contains |
+      | ppOrderReceipt | N               | 1     | N               | 9     | N               | 7           | pipUnlimited            | huPackingLUUnlimited | M_HU_LUTU_Configuration_QtyTU_ExceedsLUCapacity | 6                         |
