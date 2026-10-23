@@ -155,7 +155,7 @@ const App = () => {
         } else if (error.response.status == 503) {
           dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
         } else if (error.response.status != 404) {
-          if (auth.isLoggedIn) {
+          if (auth.isLoggedIn || store.getState().appHandler.isLogged) {
             const errorMessenger = (code) => {
               switch (code) {
                 case 500:

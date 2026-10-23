@@ -34,11 +34,21 @@ export class ManufacturingOrderReceiptPage {
    * Open the manufacturing order and its issue/receipt lines view ("Produzieren").
    * @param {Object} options
    * @param {number} options.ppOrderId - PP_Order_ID (from the masterdata response)
+   * @param {boolean} [options.reload=true] - false: navigate inside the running SPA (history API, no page load),
+   *   like a user who just logged in and clicks on - the app is not re-booted
    */
-  static async openLinesView({ ppOrderId }) {
+  static async openLinesView({ ppOrderId, reload = true }) {
     return await test.step(`ManufacturingOrderReceiptPage - Open lines view of order ${ppOrderId}`, async () => {
       const page = getPage();
-      await page.goto(`${FRONTEND_BASE_URL}/window/${MANUFACTURING_ORDER_WINDOW_ID}/${ppOrderId}`);
+      const path = `/window/${MANUFACTURING_ORDER_WINDOW_ID}/${ppOrderId}`;
+      if (reload) {
+        await page.goto(`${FRONTEND_BASE_URL}${path}`);
+      } else {
+        await page.evaluate((target) => {
+          window.history.pushState({}, '', target);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }, path);
+      }
       await page.getByTestId('status-button').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
       // Actions menu (Alt+1), then the language-independent action by its internal name

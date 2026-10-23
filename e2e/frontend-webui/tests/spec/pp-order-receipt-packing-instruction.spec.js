@@ -502,4 +502,21 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       });
     });
   }
+
+  // eslint-disable-next-line no-unused-vars
+  test('TC11 refusal is shown right after the UI login, without a page reload', async ({ page }) => {
+    const { language, quantityLabel } = LANGUAGES[1];
+    const masterdata = await createFixture(language);
+
+    // login through the form and stay in the running SPA: the app booted on /login, before the login completed
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await ReceiptDialog.openLinesView({ ppOrderId: masterdata.manufacturingOrders.PP_PALLET_1.ppOrderId, reload: false });
+    await ReceiptDialog.openReceiptDialog();
+
+    expect(await ReceiptDialog.getLabel('QtyTotalReceived')).toBe(quantityLabel);
+    await ReceiptDialog.setNumber('QtyTU', PALLET_CAPACITY + 1);
+    const refusal = await ReceiptDialog.startExpectingRefusal();
+    expect(refusal, 'refusal names the pallet capacity').toMatch(new RegExp(`\\(${PALLET_CAPACITY} TUs?\\)`));
+  });
 });
