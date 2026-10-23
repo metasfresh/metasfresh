@@ -45,6 +45,7 @@ import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -89,6 +90,8 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.SpringContextHolder;
+import org.compiere.SpringContextHolder.Lazy;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -125,6 +128,7 @@ import java.util.Optional;
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
+	@NonNull private final Lazy<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker = SpringContextHolder.lazyBean(LUTUConfigurationPackingInstructionChecker.class);
 
 	// Parameters
 	private final PPOrderId ppOrderId;
@@ -174,6 +178,7 @@ import java.util.Optional;
 	{
 		return trxManager.callInNewTrx(() -> {
 			final I_M_HU_LUTU_Configuration lutuConfig = getCreateLUTUConfiguration();
+			packingInstructionChecker.get().assertLUTUConfigurationMatchesPackingInstruction(lutuConfig); // before any HU is built
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfig);
 			if (qtyCUsTotal.isZero())
 			{

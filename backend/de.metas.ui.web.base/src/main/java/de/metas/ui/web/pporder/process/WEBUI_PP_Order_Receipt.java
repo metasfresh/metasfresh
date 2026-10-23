@@ -22,6 +22,9 @@
 
 package de.metas.ui.web.pporder.process;
 
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -32,6 +35,7 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -60,7 +64,7 @@ import java.time.LocalDate;
 
 public class WEBUI_PP_Order_Receipt
 		extends WEBUI_PP_Order_Template
-		implements IProcessPrecondition, IProcessDefaultParametersProvider
+		implements IProcessPrecondition, IProcessDefaultParametersProvider, IProcessParametersCallout
 {
 	// services
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
@@ -79,10 +83,19 @@ public class WEBUI_PP_Order_Receipt
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID)
 	private I_M_HU_PI_Item p_M_HU_PI_Item;
 
-	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyCUsPerTU, mandatory = true)
-	private BigDecimal p_QtyCU;
+	// not mandatory here: one of "Menge" / "Menge CU" is always hidden and may be empty (the AD flag makes the visible one required)
+	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyTotalReceived)
+	private BigDecimal p_QtyTotalReceived;
 
-	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyTU, mandatory = true)
+	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyCUsReceived)
+	private BigDecimal p_QtyCUsReceived;
+
+	@Param(parameterName = PackingInfoProcessParams.PARAM_IsPIPUnlimitedCapacity)
+	private boolean p_IsPIPUnlimitedCapacity;
+
+	// not mandatory here: a mandatory @Param keeps its old value when the user empties the field, so "Menge" could not follow;
+	// the AD flag still makes the field required in the dialog and the start checks it (PackingInfoProcessParams#createAndSaveNewLUTUConfig)
+	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyTU)
 	private BigDecimal p_QtyTU;
 
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyLU)
@@ -96,6 +109,8 @@ public class WEBUI_PP_Order_Receipt
 	private boolean isReceiveIndividualCUs;
 
 	private transient PackingInfoProcessParams _packingInfoParams;
+	// null until the first packing instruction value was seen
+	@Nullable private HUPIItemProductId lastSeenPackingInstructionId;
 
 	/**
 	 * Makes sure that an instance exists and is in sync with this processe's parameters.
@@ -128,7 +143,8 @@ public class WEBUI_PP_Order_Receipt
 
 		_packingInfoParams.setQtyLU(p_QtyLU);
 		_packingInfoParams.setQtyTU(p_QtyTU);
-		_packingInfoParams.setQtyCUsPerTU(p_QtyCU);
+		_packingInfoParams.setQtyTotalReceived(p_QtyTotalReceived);
+		_packingInfoParams.setQtyCUsReceived(p_QtyCUsReceived);
 
 		return _packingInfoParams;
 	}
@@ -204,6 +220,86 @@ public class WEBUI_PP_Order_Receipt
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
 		return getPackingInfoParams().getParameterDefaultValue(parameter.getColumnName());
+	}
+
+	@Override
+	public void onParameterChanged(final String parameterName)
+	{
+		switch (parameterName)
+		{
+			case PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID:
+				onPackingInstructionChanged();
+				break;
+			case PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID:
+				onPalletChanged();
+				break;
+			case PackingInfoProcessParams.PARAM_QtyTU:
+			case PackingInfoProcessParams.PARAM_QtyLU:
+				updateQtyTotalReceived();
+				break;
+			default:
+				break;
+		}
+	}
+
+	/**
+	 * Resets pallet and counts to the new packing instruction's defaults, but only on a real change:
+	 * the callout also fires while the dialog is built (the first value only records the ID, so the opening defaults stay),
+	 * and again when the write-back sets the parameter to the value it already has.
+	 */
+	private void onPackingInstructionChanged()
+	{
+		final HUPIItemProductId newPackingInstructionId = p_M_HU_PI_Item_Product != null ? HUPIItemProductId.ofRepoIdOrNull(p_M_HU_PI_Item_Product.getM_HU_PI_Item_Product_ID()) : null;
+		final HUPIItemProductId lastSeenPackingInstructionId = this.lastSeenPackingInstructionId;
+		this.lastSeenPackingInstructionId = newPackingInstructionId;
+		if (lastSeenPackingInstructionId == null || HUPIItemProductId.equals(lastSeenPackingInstructionId, newPackingInstructionId))
+		{
+			return;
+		}
+
+		final PackingInfoProcessParams params = getPackingInfoParams();
+		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(newPackingInstructionId);
+		p_IsPIPUnlimitedCapacity = PackingInfoProcessParams.isUnlimitedCapacity(pip);
+
+		if (pip == null) // "No Packing Item": no pallet, or the hidden pallet would still be submitted and build one
+		{
+			p_M_HU_PI_Item = null;
+			p_QtyTU = BigDecimal.ONE;
+			p_QtyLU = BigDecimal.ONE;
+			return;
+		}
+
+		final I_M_HU_PI_Item pallet = params.getFirstAvailableLuPIItemOrNull(p_M_HU_PI_Item_Product);
+		p_M_HU_PI_Item = pallet;
+		p_QtyTU = p_IsPIPUnlimitedCapacity ? BigDecimal.ONE : LUTUConfigurationPackingInstructionChecker.getLUCapacityLimit(pallet).orElse(BigDecimal.ONE);
+		p_QtyLU = BigDecimal.ONE;
+		updateQtyTotalReceived();
+	}
+
+	private void onPalletChanged()
+	{
+		// "TU Anzahl" is deliberately not clamped to the pallet's capacity: a too high count is refused on start
+		if (p_QtyLU == null || p_QtyLU.signum() <= 0)
+		{
+			p_QtyLU = BigDecimal.ONE;
+		}
+		updateQtyTotalReceived();
+	}
+
+	/**
+	 * Fixed capacity only: "Menge" = packing instruction quantity x "TU Anzahl" (x "LU Anzahl" with a pallet).
+	 * For unlimited capacity "Menge" is entered by the user.
+	 */
+	private void updateQtyTotalReceived()
+	{
+		final PackingInfoProcessParams params = getPackingInfoParams();
+		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(p_M_HU_PI_Item_Product != null ? HUPIItemProductId.ofRepoIdOrNull(p_M_HU_PI_Item_Product.getM_HU_PI_Item_Product_ID()) : null);
+		if (pip == null || PackingInfoProcessParams.isUnlimitedCapacity(pip))
+		{
+			return;
+		}
+
+		p_QtyTotalReceived = PackingInfoProcessParams.computeQtyTotal(params.getQtyCUsPerTUInConfigUom(pip), p_QtyTU, p_QtyLU, p_M_HU_PI_Item != null);
 	}
 
 	/**

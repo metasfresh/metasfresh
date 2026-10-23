@@ -23,6 +23,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -30,7 +31,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -109,6 +112,15 @@ public class AssertExpectationsCommandServices
 	public List<I_PP_Order_Qty> getPPOrderQtyForFinishedGoodsReceive(@NonNull final PPOrderId ppOrderId)
 	{
 		return huPPOrderQtyDAO.retrieveOrderQtyForFinishedGoodsReceive(ppOrderId);
+	}
+
+	public List<I_PP_Order_Qty> getPPOrderQtyForCoProductReceive(@NonNull final PPOrderId ppOrderId)
+	{
+		return huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
+				.stream()
+				.filter(candidate -> candidate.getPP_Order_BOMLine_ID() > 0
+						&& PPOrderUtil.isReceipt(InterfaceWrapperHelper.load(candidate.getPP_Order_BOMLine_ID(), I_PP_Order_BOMLine.class)))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public List<I_PP_Order_Qty> getPPOrderQtyForComponentIssue(@NonNull final PPOrderId ppOrderId)

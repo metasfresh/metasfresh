@@ -105,3 +105,14 @@ export const SALES_INVOICE_WINDOW_ID = 167;
  * Description: Wareneingangsdisposition verwalten
  */
 export const RECEIPT_CANDIDATES_WINDOW_ID = 540196;
+
+// ============================================================================
+// MANUFACTURING WINDOWS
+// ============================================================================
+
+/**
+ * Manufacturing Order window (Produktionsauftrag)
+ * Table: PP_Order
+ * Window ID: 53009
+ */
+export const MANUFACTURING_ORDER_WINDOW_ID = 53009;

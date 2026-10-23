@@ -1,10 +1,13 @@
 package de.metas.ui.web.pporder.process;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
+import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -14,6 +17,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
@@ -24,9 +28,12 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.SpringContextHolder.Lazy;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -62,6 +69,8 @@ public class PackingInfoProcessParams
 {
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+	private final transient IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final transient Lazy<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker = SpringContextHolder.lazyBean(LUTUConfigurationPackingInstructionChecker.class);
 
 	public static final String PARAM_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID)
@@ -71,10 +80,6 @@ public class PackingInfoProcessParams
 	@Param(parameterName = PARAM_M_HU_PI_Item_ID)
 	private int lu_PI_Item_ID;
 	//
-	public static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
-	@Getter @Param(parameterName = PARAM_QtyCUsPerTU)
-	private BigDecimal qtyCUsPerTU;
-	//
 	public static final String PARAM_QtyTU = "QtyTU";
 	@Param(parameterName = PARAM_QtyTU)
 	private BigDecimal qtyTU;
@@ -82,6 +87,12 @@ public class PackingInfoProcessParams
 	public static final String PARAM_QtyLU = "QtyLU";
 	@Getter @Param(parameterName = PARAM_QtyLU)
 	private BigDecimal qtyLU;
+
+	public static final String PARAM_QtyTotalReceived = "QtyTotalReceived";
+	public static final String PARAM_QtyCUsReceived = "QtyCUsReceived";
+	public static final String PARAM_IsPIPUnlimitedCapacity = "IsPIPUnlimitedCapacity";
+	@Setter @Nullable private BigDecimal qtyTotalReceived;
+	@Setter @Nullable private BigDecimal qtyCUsReceived;
 
 	public static final String PARAM_IsReceiveIndividualCUs = "IsReceiveIndividualCUs";
 	private Boolean isReceiveIndividualCUs;
@@ -121,17 +132,125 @@ public class PackingInfoProcessParams
 				return defaultLUTUConfig.getM_HU_PI_Item_Product_ID();
 			case PARAM_M_HU_PI_Item_ID:
 				return defaultLUTUConfig.getM_LU_HU_PI_Item_ID();
-			case PARAM_QtyCUsPerTU:
-				return defaultLUTUConfig.getQtyCUsPerTU();
 			case PARAM_QtyTU:
-				return defaultLUTUConfig.getQtyTU();
+				return getDefaultQtyTU(defaultLUTUConfig);
 			case PARAM_QtyLU:
-				return defaultLUTUConfig.getQtyLU();
+				return getDefaultQtyLU(defaultLUTUConfig);
+			case PARAM_QtyTotalReceived:
+				return getDefaultQtyTotalReceived(defaultLUTUConfig);
+			case PARAM_QtyCUsReceived:
+				return defaultLUTUConfig.getQtyCUsPerTU();
+			case PARAM_IsPIPUnlimitedCapacity:
+				return isUnlimitedCapacity(getPackingInstructionOrNull(defaultLUTUConfig));
 			case PARAM_IsReceiveIndividualCUs:
 				return getIsReceiveIndividualCUs();
 			default:
 				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 		}
+	}
+
+	/**
+	 * @return the packing instruction with the given ID, or {@code null} for "No Packing Item" / no packing instruction
+	 */
+	@Nullable
+	public HUPIItemProduct getRegularPackingInstructionOrNull(@Nullable final HUPIItemProductId piItemProductId)
+	{
+		return HUPIItemProductId.isRegular(piItemProductId) ? huPIItemProductBL.getById(piItemProductId) : null;
+	}
+
+	@Nullable
+	private HUPIItemProduct getPackingInstructionOrNull(@NonNull final I_M_HU_LUTU_Configuration lutuConfig)
+	{
+		return getRegularPackingInstructionOrNull(HUPIItemProductId.ofRepoIdOrNull(lutuConfig.getM_HU_PI_Item_Product_ID()));
+	}
+
+	/**
+	 * @return {@code true} if the given packing instruction is of unlimited capacity or has a quantity <= 0
+	 */
+	public static boolean isUnlimitedCapacity(@Nullable final HUPIItemProduct pip)
+	{
+		return pip != null && pip.isInfiniteCapacity();
+	}
+
+	@Nullable
+	private BigDecimal getDefaultQtyTU(@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig)
+	{
+		final HUPIItemProduct pip = getPackingInstructionOrNull(defaultLUTUConfig);
+		if (isUnlimitedCapacity(pip))
+		{
+			return BigDecimal.ONE;
+		}
+
+		final BigDecimal storedQtyTU = defaultLUTUConfig.getQtyTU();
+		final BigDecimal luCapacity = LUTUConfigurationPackingInstructionChecker.getLUCapacityLimit(defaultLUTUConfig.getM_LU_HU_PI_Item()).orElse(null);
+		if (luCapacity != null && storedQtyTU.compareTo(luCapacity) > 0)
+		{
+			return luCapacity; // never open above the pallet's capacity
+		}
+		return storedQtyTU;
+	}
+
+	@Nullable
+	private BigDecimal getDefaultQtyLU(@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig)
+	{
+		final HUPIItemProduct pip = getPackingInstructionOrNull(defaultLUTUConfig);
+		if (isUnlimitedCapacity(pip))
+		{
+			return BigDecimal.ONE;
+		}
+
+		// a configuration with infinite LUs stores 0 here; with a pallet the dialog opens at one LU
+		final BigDecimal storedQtyLU = defaultLUTUConfig.getQtyLU();
+		final boolean withPallet = defaultLUTUConfig.getM_LU_HU_PI_Item_ID() > 0;
+		return withPallet && (storedQtyLU == null || storedQtyLU.signum() <= 0) ? BigDecimal.ONE : storedQtyLU;
+	}
+
+	@Nullable
+	private BigDecimal getDefaultQtyTotalReceived(@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig)
+	{
+		final HUPIItemProduct pip = getPackingInstructionOrNull(defaultLUTUConfig);
+		if (pip == null)
+		{
+			return null; // "No Packing Item" uses "Menge CU"
+		}
+		if (isUnlimitedCapacity(pip))
+		{
+			return defaultLUTUConfig.getQtyCUsPerTU();
+		}
+
+		return computeQtyTotal(getQtyCUsPerTUInConfigUom(pip), getDefaultQtyTU(defaultLUTUConfig), getDefaultQtyLU(defaultLUTUConfig), defaultLUTUConfig.getM_LU_HU_PI_Item_ID() > 0);
+	}
+
+	/**
+	 * @return the packing instruction's quantity per TU in the UOM of the LU/TU configuration (the order's UOM), which is also the UOM of "Menge"
+	 */
+	public BigDecimal getQtyCUsPerTUInConfigUom(@NonNull final HUPIItemProduct pip)
+	{
+		final I_M_HU_LUTU_Configuration defaultLUTUConfig = getDefaultLUTUConfig();
+		return packingInstructionChecker.get().getQtyCUsPerTUInUom(
+				pip,
+				ProductId.ofRepoId(defaultLUTUConfig.getM_Product_ID()),
+				UomId.ofRepoIdOrNull(defaultLUTUConfig.getC_UOM_ID()));
+	}
+
+	/**
+	 * @param qtyPerTU quantity per TU, in the UOM of "Menge"; see {@link #getQtyCUsPerTUInConfigUom(HUPIItemProduct)}
+	 * @return quantity per TU x TUs (x LUs with a pallet), or {@code null} if a needed count is missing
+	 */
+	@Nullable
+	public static BigDecimal computeQtyTotal(
+			@NonNull final BigDecimal qtyPerTU,
+			@Nullable final BigDecimal qtyTU,
+			@Nullable final BigDecimal qtyLU,
+			final boolean withPallet)
+	{
+		if (qtyTU == null || (withPallet && qtyLU == null))
+		{
+			return null;
+		}
+
+		final BigDecimal total = qtyPerTU.multiply(qtyTU);
+		return withPallet ? total.multiply(qtyLU) : total;
 	}
 
 	/**
@@ -161,6 +280,16 @@ public class PackingInfoProcessParams
 		return luPIItems.stream()
 				.map(luPIItem -> IntegerLookupValue.of(luPIItem.getM_HU_PI_Item_ID(), WEBUI_ProcessHelper.buildHUPIItemString(luPIItem)))
 				.collect(LookupValuesList.collect());
+	}
+
+	/**
+	 * @return the first pallet (LU packing instruction item) offered for the given packing instruction, or {@code null} if none is offered
+	 */
+	@Nullable
+	public I_M_HU_PI_Item getFirstAvailableLuPIItemOrNull(@NonNull final I_M_HU_PI_Item_Product pip)
+	{
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, ILUTUConfigurationFactory.extractBPartnerIdOrNull(getDefaultLUTUConfig()));
+		return luPIItems.isEmpty() ? null : luPIItems.get(0);
 	}
 
 	private List<I_M_HU_PI_Item> getAvailableLuPIItems(
@@ -338,17 +467,41 @@ public class PackingInfoProcessParams
 		// Validate parameters
 		final int lu_PI_Item_ID = getLuPiItemId(); // not mandatory
 		final HUPIItemProductId M_HU_PI_Item_Product_ID = getTU_HU_PI_Item_Product_ID();
-		final BigDecimal qtyCU = getQtyCUsPerTU();
+		final HUPIItemProduct pip = getRegularPackingInstructionOrNull(M_HU_PI_Item_Product_ID);
 
-		final BigDecimal qtyTU = M_HU_PI_Item_Product_ID.isVirtualHU() ? BigDecimal.ONE : this.qtyTU;
-
-		if (qtyCU == null || qtyCU.signum() <= 0)
+		// quantity per TU: never taken from the (hidden) parameter; "No Packing Item" holds the loose CUs
+		final BigDecimal qtyCU;
+		final BigDecimal qtyTU;
+		final BigDecimal qtyLU;
+		if (pip == null)
 		{
-			throw new FillMandatoryException(PARAM_QtyCUsPerTU);
+			qtyCU = qtyCUsReceived;
+			qtyTU = BigDecimal.ONE;
+			qtyLU = getQtyLU();
+			if (qtyCU == null || qtyCU.signum() <= 0)
+			{
+				throw new FillMandatoryException(PARAM_QtyCUsReceived);
+			}
 		}
-		if (qtyTU == null || qtyTU.signum() <= 0)
+		else if (isUnlimitedCapacity(pip))
 		{
-			throw new FillMandatoryException(PARAM_QtyTU);
+			qtyCU = qtyTotalReceived;
+			qtyTU = BigDecimal.ONE;
+			qtyLU = BigDecimal.ONE;
+			if (qtyCU == null || qtyCU.signum() <= 0)
+			{
+				throw new FillMandatoryException(PARAM_QtyTotalReceived);
+			}
+		}
+		else
+		{
+			qtyCU = getQtyCUsPerTUInConfigUom(pip);
+			qtyTU = this.qtyTU;
+			qtyLU = getQtyLU();
+			if (qtyTU == null || qtyTU.signum() <= 0)
+			{
+				throw new FillMandatoryException(PARAM_QtyTU);
+			}
 		}
 
 		final I_M_HU_LUTU_Configuration lutuConfigNew = InterfaceWrapperHelper.copy()
@@ -363,7 +516,7 @@ public class PackingInfoProcessParams
 		configureLUTUConfigTU(lutuConfigNew, M_HU_PI_Item_Product_ID, qtyTU);
 
 		// LU
-		configureLUTUConfigLU(lutuConfigNew, lu_PI_Item_ID, getQtyLU());
+		configureLUTUConfigLU(lutuConfigNew, lu_PI_Item_ID, qtyLU);
 
 		lutuConfigurationFactory.save(lutuConfigNew);
 		return lutuConfigNew;
@@ -432,16 +585,6 @@ public class PackingInfoProcessParams
 	public void setTU_HU_PI_Item_Product_ID(final int tu_HU_PI_Item_Product_ID)
 	{
 		this.tu_HU_PI_Item_Product_ID = tu_HU_PI_Item_Product_ID;
-	}
-
-	public BigDecimal getQtyCUsPerTU()
-	{
-		return qtyCUsPerTU;
-	}
-
-	public void setQtyCUsPerTU(final BigDecimal qtyCU)
-	{
-		this.qtyCUsPerTU = qtyCU;
 	}
 
 	/**
