@@ -9,7 +9,7 @@
 -- same values, only if it is missing: either script may run first.
 --
 -- Idempotent: the element/translation inserts are guarded and the UPDATEs only touch rows that differ.
--- AD_Process_Para.ColumnName / Name are not synced from the element, hence set explicitly.
+-- AD_Process_Para.ColumnName / Name are not synced from the element, hence set explicitly; the translations use the standard element propagation.
 
 INSERT INTO AD_Element (AD_Element_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,ColumnName,EntityType,Name,PrintName)
 SELECT 585563 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-10-23 10:00:01','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-10-23 10:00:01','YYYY-MM-DD HH24:MI:SS'),100,'QtyCUsReceived','de.metas.ui.web','Menge CU','Menge CU'
@@ -42,14 +42,14 @@ WHERE AD_Process_Para_ID = 543304
     OR IsMandatory IS DISTINCT FROM 'Y')
 ;
 
-UPDATE AD_Process_Para_Trl t
-SET Name=et.Name,
-    IsTranslated=et.IsTranslated,
-    Updated=TO_TIMESTAMP('2026-10-23 17:00:01', 'YYYY-MM-DD HH24:MI:SS'),
-    UpdatedBy=100
-FROM AD_Element_Trl et
-WHERE t.AD_Process_Para_ID = 543304
-  AND et.AD_Element_ID = 585563
-  AND et.AD_Language = t.AD_Language
-  AND (t.Name IS DISTINCT FROM et.Name OR t.IsTranslated IS DISTINCT FROM et.IsTranslated)
+-- Description / Help of the parameter come from the element too (the UPDATE above sets Name only).
+UPDATE AD_Process_Para pp
+SET Description=e.Description, Help=e.Help,
+    Updated=TO_TIMESTAMP('2026-10-23 17:00:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+FROM AD_Element e
+WHERE pp.AD_Process_Para_ID = 543304 AND e.AD_Element_ID = 585563
+  AND (pp.Description IS DISTINCT FROM e.Description OR pp.Help IS DISTINCT FROM e.Help)
 ;
+
+-- Translations of the parameter (Name, Description, Help) from the element, as in 5831440
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585563);

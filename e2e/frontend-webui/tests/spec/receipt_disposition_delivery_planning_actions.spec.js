@@ -9,6 +9,8 @@ import { PURCHASE_ORDER_WINDOW_ID, RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_
 
 /** AD_Tab_ID of "Bestellposition" (purchase order line) in the purchase order window. */
 const PURCHASE_ORDER_LINE_TAB_ID = 'AD_Tab-293';
+const MATERIAL_RECEIPT_WINDOW_ID = 184;
+const MATERIAL_RECEIPT_LINE_TAB_ID = 'AD_Tab-297';
 
 /**
  * AD_Process.Value of the receipt-disposition delivery-planning window's default quick action and its fallback
@@ -573,6 +575,49 @@ CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
             }
           )
           .toBe(QTY_RECEIVED);
+      });
+
+      // Loose CUs: the receipt of THIS purchase order carries the quantity on one line that has no TU / packing
+      // instruction. Read from the server (fresh view of the Material Receipt window, scoped to the order id).
+      await test.step('the receipt of this order is loose CUs - no TU, no LU, no packing instruction', async () => {
+        const receiptLines = async () => {
+          const view = await (
+            await request.post(`${REST}/documentView/${MATERIAL_RECEIPT_WINDOW_ID}`, {
+              data: { windowId: String(MATERIAL_RECEIPT_WINDOW_ID), viewType: 'grid' },
+            })
+          ).json();
+          const receiptsPage = await (
+            await request.get(
+              `${REST}/documentView/${MATERIAL_RECEIPT_WINDOW_ID}/${view.viewId}?firstRow=0&pageLength=200&orderBy=-M_InOut_ID`
+            )
+          ).json();
+          const ownReceipts = (receiptsPage.result || []).filter(
+            (row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)
+          );
+          const lines = [];
+          for (const receipt of ownReceipts) {
+            const linesResponse = await request.get(
+              `${REST}/window/${MATERIAL_RECEIPT_WINDOW_ID}/${receipt.id}/${MATERIAL_RECEIPT_LINE_TAB_ID}`
+            );
+            lines.push(...(linesResponse.ok() ? await linesResponse.json() : []));
+          }
+          return lines;
+        };
+
+        await expect
+          .poll(async () => (await receiptLines()).length, {
+            message: `the material receipt of purchase order ${purchaseOrderId} has a line`,
+            timeout: 60000,
+            intervals: [1000, 2000],
+          })
+          .toBe(1);
+
+        const [line] = await receiptLines();
+        const fields = line.fieldsByName || {};
+        expect(Number(fields.QtyEntered?.value), 'received quantity on the receipt line').toBe(QTY_RECEIVED);
+        // absent / null / 0 all mean "not packed"
+        expect(Number(fields.QtyEnteredTU?.value) || 0, 'TUs on the receipt line').toBe(0);
+        expect(fields.M_HU_PI_Item_Product_ID?.value ?? null, 'packing instruction on the receipt line').toBeNull();
       });
     });
   });
