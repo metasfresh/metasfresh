@@ -27,6 +27,7 @@ import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
 import { APPLICATION_ID_Picking } from '../../../../apps/picking';
 import { attributesMapToArray } from '../../../../reducers/wfProcesses/manufacturing_receipt';
+import { getReadOnlyAttributesFromActivity } from '../../../../reducers/wfProcesses/picking/getReadAttributesFromActivity';
 
 const MaterialReceiptLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -51,11 +52,13 @@ const MaterialReceiptLineScreen = () => {
       skipReceiveTargetStep,
       editableAttributes,
       catchWeightScanRequired,
+      receiveOnePiecePerScan,
       defaultLotNo,
       defaultBestBeforeDate,
     },
     pickTo,
     customQRCodeFormats,
+    readOnlyAttributes,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
   const [showSpinner, setShowSpinner] = useState(false);
 
@@ -201,10 +204,12 @@ const MaterialReceiptLineScreen = () => {
           caption={trl('activities.mfg.receipts.btnReceiveProducts')}
           customQRCodeFormats={customQRCodeFormats}
           editableAttributes={editableAttributes}
+          readOnlyAttributes={readOnlyAttributes}
           defaultLotNo={defaultLotNo}
           defaultBestBeforeDate={defaultBestBeforeDate}
           // the backend's effective flag: setting on, main finished good, catch-weight product (weight captured at receipt or not)
           isCatchWeightScanMandatory={!!catchWeightScanRequired}
+          isOnePiecePerScan={!!receiveOnePiecePerScan}
         />
         {noGebindeReason && (
           <p className="help is-danger" data-testid="receive-no-gebinde-hint">
@@ -229,6 +234,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     lineProps,
     pickTo: getPickTo({ wfProcess }),
     customQRCodeFormats,
+    readOnlyAttributes: getReadOnlyAttributesFromActivity({ activity }),
   };
 };
 

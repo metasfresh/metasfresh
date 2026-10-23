@@ -20,8 +20,11 @@ import { receiptDayPlusDays } from '../../utils/receiptDay';
 const BEST_BEFORE_DAYS = 10;
 const LOT_NO = 'Lot-Nummer';
 const BEST_BEFORE_DATE = 'HU_BestBeforeDate';
+// The default pair: the editable-attribute list is global, other specs rely on it.
+const DEFAULT_EDITABLE_ATTRIBUTES = [LOT_NO, BEST_BEFORE_DATE];
 
-const createMasterdata = async ({ bestBeforeDays, lotNoSequence } = {}) => {
+// editableAttributes: the global editable-attribute list of the mobile manufacturing config, e.g. [BEST_BEFORE_DATE] for a lot number that is not editable
+const createMasterdata = async ({ bestBeforeDays, lotNoSequence, editableAttributes = DEFAULT_EDITABLE_ATTRIBUTES } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
@@ -32,7 +35,7 @@ const createMasterdata = async ({ bestBeforeDays, lotNoSequence } = {}) => {
                 'bestBeforeDateAttr': { value: BEST_BEFORE_DATE, attributeSetNames: ['mfgAttrSet'] },
             },
             mobileConfig: {
-                manufacturing: { editableAttributes: [LOT_NO, BEST_BEFORE_DATE] }, // the default pair: the list is global, other specs rely on it
+                manufacturing: { editableAttributes },
             },
             warehouses: { 'wh': {} },
             products: {
@@ -77,6 +80,18 @@ const expectReceivedHU = async ({ bestBeforeDatesIso, expectation }) => {
         }
     }
 };
+
+// A test that narrows the global editable-attribute list puts the default pair back, also if it fails part-way.
+let isEditableAttributesChanged = false;
+test.afterEach(async () => {
+    if (isEditableAttributesChanged) {
+        await Backend.createMasterdata({
+            language: 'en_US',
+            request: { mobileConfig: { manufacturing: { editableAttributes: DEFAULT_EDITABLE_ATTRIBUTES } } },
+        });
+        isEditableAttributesChanged = false;
+    }
+});
 
 const startReceiveFlow = async (masterdata) => {
     await LoginScreen.login(masterdata.login.user);
@@ -296,6 +311,69 @@ test('Counter lot-number sequence — the lot is not pre-filled and is generated
             'lu1': {
                 storages: { 'BOM': '4 PCE' },
                 attributes: { 'Lot-Nummer': `${lotPrefix}1` },
+            },
+        },
+    });
+});
+
+// The receipt day as a date-only lot number with the date format yy-DDD (two-digit calendar year, day of the year).
+const toLotNoYYDDD = (iso) => {
+    const date = new Date(`${iso}T00:00:00Z`);
+    const dayOfYear = Math.round((date - Date.UTC(date.getUTCFullYear(), 0, 1)) / 86400000) + 1;
+    return `${iso.substring(2, 4)}-${String(dayOfYear).padStart(3, '0')}`;
+};
+
+// noinspection JSUnusedLocalSymbols
+test('Lot number not editable, date-only lot sequence (own format yy-DDD): the lot is shown read-only and generated at receipt; the best-before date stays editable', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');
+    allure.story('Pre-filled best-before date and lot number on the receive dialog');
+    allure.severity('critical');
+
+    // The lot sequence has its own date format, independent of the instance-wide date-sequence setting.
+    // The lot number is not editable: it is not one of the editable attributes.
+    isEditableAttributesChanged = true;
+    const masterdata = await createMasterdata({
+        bestBeforeDays: BEST_BEFORE_DAYS,
+        lotNoSequence: { dateBased: true, dateFormat: 'yy-DDD' },
+        editableAttributes: [BEST_BEFORE_DATE],
+    });
+    const receiptDayBefore = receiptDayPlusDays(0).iso;
+    const { jobId } = await startReceiveFlow(masterdata);
+    const editedBestBeforeDate = receiptDayPlusDays(BEST_BEFORE_DAYS + 5);
+
+    await MaterialReceiptLineScreen.clickReceiveQtyButton();
+    await GetQuantityDialog.expectNoScanOffered();
+    const shownLotNo = await GetQuantityDialog.expectLotNoMatching(/^\d{2}-\d{3}$/);
+    await GetQuantityDialog.expectLotNoDisabled();
+    await GetQuantityDialog.expectEditableAttributeNotPresent(LOT_NO);
+    await GetQuantityDialog.typeEditableAttributeDate(BEST_BEFORE_DATE, editedBestBeforeDate.displayed);
+    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
+    await ManufacturingJobScreen.waitForScreen();
+    const receiptDayAfter = receiptDayPlusDays(0).iso;
+
+    await ManufacturingJobScreen.complete();
+
+    // The shown lot is the receipt day as yy-DDD; the receipt generates the same lot (unless the run crossed midnight).
+    const expectedLotNos = distinct([toLotNoYYDDD(receiptDayBefore), toLotNoYYDDD(receiptDayAfter)]);
+    if (!expectedLotNos.includes(shownLotNo)) {
+        throw new Error(`Shown lot ${shownLotNo} is not the receipt day as yy-DDD: ${expectedLotNos}`);
+    }
+    await Backend.expect({
+        title: 'Produced HU carries the generated lot that was shown and the edited best-before date',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [{ lu: 'lu1', qty: '4 PCE' }],
+            },
+        },
+        hus: {
+            'lu1': {
+                storages: { 'BOM': '4 PCE' },
+                attributes: {
+                    'Lot-Nummer': receiptDayBefore === receiptDayAfter ? shownLotNo : toLotNoYYDDD(receiptDayAfter),
+                    'HU_BestBeforeDate': editedBestBeforeDate.iso,
+                },
             },
         },
     });

@@ -74,8 +74,8 @@ public class MobileUIManufacturingConfig_StepDef
 		final MobileUIManufacturingConfigRepository repository = SpringContextHolder.instance.getBean(MobileUIManufacturingConfigRepository.class);
 		repository.saveGlobalEditableAttributeCodesInOrder(ClientId.METASFRESH, attributeCodesInOrder);
 
-		// The repository's global config cache is keyed on the wrong table name (a known quirk, see the
-		// IsAllowIssuingAnyHU step def), so the MobileUI_MFG_Config write does not auto-invalidate it. Force a reset.
+		// The global config cache is invalidated by MobileUI_MFG_Config and MobileUI_MFG_Config_Attribute changes;
+		// the full reset additionally makes sure no other cache still holds the previous list.
 		CacheMgt.get().reset();
 	}
 }
