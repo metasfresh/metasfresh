@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -41,6 +42,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.impl.PPOrderDocumentLUTUConfigurationHandlerTestHelper;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
@@ -56,15 +58,19 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class M_HU_LUTU_Configuration_StepDef
 {
@@ -81,6 +87,7 @@ public class M_HU_LUTU_Configuration_StepDef
 	private final M_HU_StepDefData huTable;
 	private final M_HU_List_StepDefData huListTable;
 	private final PP_Order_StepDefData ppOrderTable;
+	private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
 
 	public M_HU_LUTU_Configuration_StepDef(
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
@@ -89,6 +96,7 @@ public class M_HU_LUTU_Configuration_StepDef
 			@NonNull final M_HU_LUTU_Configuration_StepDefData huLutuConfigurationTable,
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final PP_Order_StepDefData ppOrderTable,
+			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable,
 			@NonNull final M_HU_List_StepDefData huListTable)
 	{
 		this.huPiItemProductTable = huPiItemProductTable;
@@ -97,9 +105,29 @@ public class M_HU_LUTU_Configuration_StepDef
 		this.huLutuConfigurationTable = huLutuConfigurationTable;
 		this.huTable = huTable;
 		this.ppOrderTable = ppOrderTable;
+		this.ppOrderBOMLineTable = ppOrderBOMLineTable;
 		this.huListTable = huListTable;
 	}
 
+	/**
+	 * Receives the main product (or, with {@code PP_Order_BOMLine_ID}, a co-product line) of a manufacturing order using the given LU/TU configuration.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PP_Order_ID</b> — (required, identifier-ref) the manufacturing order<br>
+	 *   <b>M_HU_PI_Item_Product_ID</b> — (required, identifier-ref) the TU packing instruction<br>
+	 *   <b>M_HU_ID.Identifier</b> — (required unless ErrorMessage is given) alias of the first received HU<br>
+	 *   <b>PP_Order_BOMLine_ID</b> — (optional, identifier-ref) receive this co-product line instead of the main product<br>
+	 *   <b>ExpectedHUCount</b> — (optional) expected number of received top-level HUs; defaults to 1<br>
+	 *   <b>ErrorMessage</b> — (optional) the receipt must be refused with an error containing this text and create no HU<br>
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData, PP_Order_BOMLine_StepDefData, M_HU_PI_Item_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+	 *   | PP_Order_ID | M_HU_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | ExpectedHUCount |
+	 *   | ppOrder     | receivedLU         | 2     | 3     | 15          | huPIP                   | 2               |
+	 * </pre>
+	 */
 	@And("receive HUs for PP_Order with M_HU_LUTU_Configuration:")
 	public void create_M_HU_LUTU_Configuration_for_pp_order(@NonNull final DataTable dataTable)
 	{
@@ -114,11 +142,31 @@ public class M_HU_LUTU_Configuration_StepDef
 
 					final I_M_HU_LUTU_Configuration lutuConfig = computeLUTUConfiguration(lutuConfiguration, tableRow);
 
-					final List<I_M_HU> hus = huPPOrderBL.receivingMainProduct(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
-							.packUsingLUTUConfiguration(lutuConfig)
-							.createDraftReceiptCandidatesAndPlanningHUs();
+					final PPOrderBOMLineId coProductBOMLineId = tableRow.getAsOptionalIdentifier(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID)
+							.map(bomLineIdentifier -> bomLineIdentifier.lookupNotNullIdIn(ppOrderBOMLineTable))
+							.orElse(null);
 
-					assertThat(hus).hasSize(1);
+					final Supplier<List<I_M_HU>> receiveHUs = () -> {
+						final IPPOrderReceiptHUProducer huProducer = coProductBOMLineId != null
+								? huPPOrderBL.receivingByOrCoProduct(coProductBOMLineId)
+								: huPPOrderBL.receivingMainProduct(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
+						return huProducer
+								.packUsingLUTUConfiguration(lutuConfig)
+								.createDraftReceiptCandidatesAndPlanningHUs();
+					};
+
+					final String expectedErrorMessage = tableRow.getAsOptionalString("ErrorMessage").orElse(null);
+					if (expectedErrorMessage != null)
+					{
+						assertThatThrownBy(receiveHUs::get)
+								.as("receipt refused")
+								.hasMessageContaining(expectedErrorMessage);
+						return;
+					}
+
+					final List<I_M_HU> hus = receiveHUs.get();
+
+					assertThat(hus).hasSize(tableRow.getAsOptionalInt("ExpectedHUCount").orElse(1));
 
 					final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 					huTable.putOrReplace(huIdentifier, hus.get(0));

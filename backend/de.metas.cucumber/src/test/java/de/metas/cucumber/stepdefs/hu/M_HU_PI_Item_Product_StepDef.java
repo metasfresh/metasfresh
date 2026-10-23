@@ -48,8 +48,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -168,6 +171,54 @@ public class M_HU_PI_Item_Product_StepDef
 
 		final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoId(huPiItemProductRecord.getM_HU_PI_Item_Product_ID());
 		restTestContext.setIdVariableFromRow(tableRow, () -> hupiItemProductId);
+	}
+
+	/**
+	 * Inserts a fixed-capacity packing instruction with quantity 0 and without the "infinite capacity" flag by SQL,
+	 * the way a script or an import writes it, bypassing the model validation that rejects it on save.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_HU_PI_Item_Product_ID</b> — (required) alias for cross-step reference<br>
+	 *   <b>M_HU_PI_Item_ID</b> — (required, identifier-ref) the TU item<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the packed product<br>
+	 *   <b>ValidFrom</b> — (optional) defaults to the cucumber default valid-from date<br>
+	 * @cucumber.depends StepDefData: M_HU_PI_Item_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains M_HU_PI_Item_Product with quantity 0 and no infinite capacity, inserted by SQL:
+	 *   | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID |
+	 *   | huPIP_zero              | huPiItemTU      | product_1    |
+	 * </pre>
+	 */
+	@Given("metasfresh contains M_HU_PI_Item_Product with quantity 0 and no infinite capacity, inserted by SQL:")
+	public void metasfresh_contains_m_hu_pi_item_product_with_quantity_0_inserted_by_sql(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.forEach(this::insertHUPIItemProductWithZeroQtyBySql);
+	}
+
+	private void insertHUPIItemProductWithZeroQtyBySql(@NonNull final DataTableRow tableRow)
+	{
+		final I_M_Product product = tableRow.getAsIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
+		final StepDefDataIdentifier huPiItemIdentifier = tableRow.getAsIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID);
+		final HuPackingInstructionsItemId huPiItemId = huPiItemTable.getIdOptional(huPiItemIdentifier)
+				.orElseGet(() -> huPiItemIdentifier.getAsId(HuPackingInstructionsItemId.class));
+		final LocalDate validFrom = tableRow.getAsOptionalLocalDate(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom).orElse(DEFAULT_ValidFrom);
+
+		final int clientId = product.getAD_Client_ID();
+		final int huPiItemProductId = DB.getNextID(clientId, I_M_HU_PI_Item_Product.Table_Name);
+
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"INSERT INTO M_HU_PI_Item_Product (M_HU_PI_Item_Product_ID, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive,"
+						+ " M_HU_PI_Item_ID, M_Product_ID, Qty, C_UOM_ID, ValidFrom, IsInfiniteCapacity)"
+						+ " VALUES (?, ?, 0, now(), 100, now(), 100, 'Y', ?, ?, 0, ?, ?, 'N')",
+				new Object[] { huPiItemProductId, clientId, huPiItemId.getRepoId(), product.getM_Product_ID(), product.getC_UOM_ID(), TimeUtil.asTimestamp(validFrom) },
+				ITrx.TRXNAME_None);
+
+		final I_M_HU_PI_Item_Product huPiItemProductRecord = InterfaceWrapperHelper.loadOutOfTrx(huPiItemProductId, I_M_HU_PI_Item_Product.class);
+		tableRow.getAsIdentifier().putOrReplace(huPiItemProductTable, huPiItemProductRecord);
 	}
 
 	@And("update M_HU_PI_Item_Product:")
