@@ -15,12 +15,13 @@ import { receiptDayPlusDays } from '../../utils/receiptDay';
 // otherwise the lot field starts empty and the lot is generated at receipt. Both fields stay editable.
 const BEST_BEFORE_DAYS = 10;
 
-const createMasterdata = async ({ bestBeforeDays, lotNoSequence } = {}) => {
+// manufacturingConfig: the user's mobile manufacturing settings, e.g. { isLotNumberEditable: false }
+const createMasterdata = async ({ bestBeforeDays, lotNoSequence, manufacturingConfig } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
             login: { user: { language: 'en_US' } },
-            mobileConfig: {},
+            mobileConfig: manufacturingConfig ? { manufacturing: manufacturingConfig } : {},
             warehouses: { 'wh': {} },
             products: {
                 'COMP1': {},
@@ -285,6 +286,69 @@ test('Counter lot-number sequence — the lot is not pre-filled and is generated
             'lu1': {
                 storages: { 'BOM': '4 PCE' },
                 attributes: { 'Lot-Nummer': `${lotPrefix}1` },
+            },
+        },
+    });
+});
+
+// The receipt day as a date-only lot number with the date format yy-DDD (two-digit calendar year, day of the year).
+const toLotNoYYDDD = (iso) => {
+    const date = new Date(`${iso}T00:00:00Z`);
+    const dayOfYear = Math.round((date - Date.UTC(date.getUTCFullYear(), 0, 1)) / 86400000) + 1;
+    return `${iso.substring(2, 4)}-${String(dayOfYear).padStart(3, '0')}`;
+};
+
+// noinspection JSUnusedLocalSymbols
+test('Lot number not editable, date-only lot sequence (own format yy-DDD): the lot is shown read-only and generated at receipt; the best-before date stays editable', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');
+    allure.story('Pre-filled best-before date and lot number on the receive dialog');
+    allure.severity('critical');
+
+    // The lot sequence has its own date format, independent of the instance-wide date-sequence setting.
+    const masterdata = await createMasterdata({
+        bestBeforeDays: BEST_BEFORE_DAYS,
+        lotNoSequence: { dateBased: true, dateFormat: 'yy-DDD' },
+        manufacturingConfig: { isLotNumberEditable: false },
+    });
+    const receiptDayBefore = receiptDayPlusDays(0).iso;
+    const { jobId } = await startReceiveFlow(masterdata);
+    const editedBestBeforeDate = receiptDayPlusDays(BEST_BEFORE_DAYS + 5);
+
+    await MaterialReceiptLineScreen.clickReceiveQtyButton();
+    await GetQuantityDialog.expectNoScanOffered();
+    const shownLotNo = await GetQuantityDialog.expectLotNoMatching(/^\d{2}-\d{3}$/);
+    await GetQuantityDialog.expectLotNoDisabled();
+    await GetQuantityDialog.fillAndPressDone({
+        expectQtyEntered: '4',
+        qtyEntered: '4',
+        bestBeforeDate: editedBestBeforeDate.displayed,
+    });
+    await ManufacturingJobScreen.waitForScreen();
+    const receiptDayAfter = receiptDayPlusDays(0).iso;
+
+    await ManufacturingJobScreen.complete();
+
+    // The shown lot is the receipt day as yy-DDD; the receipt generates the same lot (unless the run crossed midnight).
+    const expectedLotNos = distinct([toLotNoYYDDD(receiptDayBefore), toLotNoYYDDD(receiptDayAfter)]);
+    if (!expectedLotNos.includes(shownLotNo)) {
+        throw new Error(`Shown lot ${shownLotNo} is not the receipt day as yy-DDD: ${expectedLotNos}`);
+    }
+    await Backend.expect({
+        title: 'Produced HU carries the generated lot that was shown and the edited best-before date',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [{ lu: 'lu1', qty: '4 PCE' }],
+            },
+        },
+        hus: {
+            'lu1': {
+                storages: { 'BOM': '4 PCE' },
+                attributes: {
+                    'Lot-Nummer': receiptDayBefore === receiptDayAfter ? shownLotNo : toLotNoYYDDD(receiptDayAfter),
+                    'HU_BestBeforeDate': editedBestBeforeDate.iso,
+                },
             },
         },
     });

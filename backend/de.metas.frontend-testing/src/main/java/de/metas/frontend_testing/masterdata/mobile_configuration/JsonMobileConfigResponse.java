@@ -86,5 +86,6 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean isSkipFinishedGoodsReceiveTargetStep;
 		@Nullable Boolean isCaptureCatchWeightAtReceipt;
 		@Nullable Boolean isFinishedGoodsCatchWeightScanRequired;
+		@Nullable Boolean isLotNumberEditable;
 	}
 }
