@@ -85,7 +85,12 @@ def test_never_more_than_one_deleter(tmp_path):
         _publish(tmp_path, v)
     (tmp_path / "_trash").mkdir(exist_ok=True)
     with open(tmp_path / "_trash" / ".sweep.lock", "w") as held:
-        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)  # stands in for a deleter that is still running
+        # stands in for a deleter that is still running. Blocking: the v1..v3 publishes each started a
+        # real deleter, and one of them may hold the lock right now.
+        fcntl.flock(held, fcntl.LOCK_EX)
+        # Those deleters may also have finished already and written a status file; only one written
+        # from here on, while the lock is held, would be a second deleter.
+        (tmp_path / "_trash" / ".last-sweep.json").unlink(missing_ok=True)
         _publish(tmp_path, "v4")
         time.sleep(1.5)
         assert len(_trash_entries(tmp_path)) == 1, "a second deleter ran while one held the lock"
