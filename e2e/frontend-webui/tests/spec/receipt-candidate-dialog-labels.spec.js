@@ -65,7 +65,7 @@ const openReceiptCandidateOfNewPurchaseOrder = async (language) => {
 
 LANGUAGES.forEach(({ language, label, qtyPerTULabel, qtyCULabel }) => {
   test.describe(`Purchase receipt dialog captions (${label})`, () => {
-    test(`TC7 "HUs annehmen" with LU/TU configuration still labels the quantity per TU (${label} UI)`, async ({ page }) => {
+    test(`TC7 "HUs annehmen" with LU/TU configuration still labels the quantity per TU (${label} UI)`, async ({ page }) => { // `page` must be requested: it initialises the shared page that getPage() returns
       allure.epic('E0140: Purchasing');
       allure.tag('F65010: Material Receipt Candidates');
       allure.tag('F65010');
@@ -85,7 +85,7 @@ LANGUAGES.forEach(({ language, label, qtyPerTULabel, qtyCULabel }) => {
       await ReceiptCandidatesPage.cancelProcessDialog();
     });
 
-    test(`TC8 "CUs annehmen mit Menge" labels the quantity "Menge CU" and still receives loose CUs (${label} UI)`, async ({ page }) => {
+    test(`TC8 "CUs annehmen mit Menge" labels the quantity "Menge CU" and still receives loose CUs (${label} UI)`, async ({ page }) => { // `page` must be requested: it initialises the shared page that getPage() returns
       allure.epic('E0140: Purchasing');
       allure.tag('F65010: Material Receipt Candidates');
       allure.tag('F65010');
@@ -109,7 +109,9 @@ LANGUAGES.forEach(({ language, label, qtyPerTULabel, qtyCULabel }) => {
       // the received HU, read back from the server's HU editor view
       const receivedHUs = await ReceiptCandidatesPage.readHUEditorRows();
       expect(receivedHUs.length, 'one loose-CU HU received').toBe(1);
-      expect(receivedHUs[0], 'quantity of the received HU').toContain(String(QTY_LOOSE_CUS));
+      // a whole cell is the quantity (e.g. "37" or "37.000"); HU code / date cells cannot match by digits inside them
+      const quantityCells = receivedHUs[0].filter((cell) => new RegExp(`^${QTY_LOOSE_CUS}([.,]0+)?$`).test(cell));
+      expect(quantityCells.length, `a quantity cell of ${QTY_LOOSE_CUS} in ${JSON.stringify(receivedHUs[0])}`).toBeGreaterThan(0);
 
       await ReceiptCandidatesPage.closeHUEditorModal();
     });

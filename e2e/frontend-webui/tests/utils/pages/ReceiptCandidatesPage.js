@@ -264,10 +264,20 @@ export class ReceiptCandidatesPage {
     return await test.step(`ReceiptCandidatesPage - Set process field ${columnName} = ${value}`, async () => {
       const input = getPage().locator(`.panel-modal-content .form-field-${columnName} input.input-field`);
       await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      // wait for the server to acknowledge the change (PATCH of the process parameters); no PATCH is sent when the
+      // value did not change, hence the swallowed timeout - the receipt's quantity is asserted by the caller
+      const acknowledged = getPage().waitForResponse(
+        (response) => response.request().method() === 'PATCH' && response.url().includes('/process/'),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      ).catch(() => {});
       await input.click();
       await input.press('Control+a');
       await input.pressSequentially(String(value));
       await input.blur();
+      await acknowledged;
+      await getPage().waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      await getPage().locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      await expect(input).toHaveValue(new RegExp(`^${value}([.,]0+)?$`));
     });
   }
 
@@ -281,14 +291,16 @@ export class ReceiptCandidatesPage {
   }
 
   /**
-   * The rows of the HU editor view that opens after a receipt, one text per row (all cells joined).
+   * The rows of the HU editor view that opens after a receipt, one array of trimmed cell texts per row.
    * Rows are read from the view as the server delivered it.
    */
   static async readHUEditorRows() {
     return await test.step('ReceiptCandidatesPage - Read HU editor rows', async () => {
       const rows = getPage().locator('.panel-modal .table tbody tr');
       await rows.first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-      return (await rows.allTextContents()).map((text) => text.trim());
+      return await rows.evaluateAll((trs) =>
+        trs.map((tr) => Array.from(tr.querySelectorAll('td')).map((td) => td.textContent.trim()))
+      );
     });
   }
 }
