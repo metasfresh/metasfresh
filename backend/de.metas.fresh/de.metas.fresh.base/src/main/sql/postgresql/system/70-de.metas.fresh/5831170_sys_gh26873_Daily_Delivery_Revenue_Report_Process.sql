@@ -19,6 +19,9 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Daily_Deliver
                 bpartner               text,
                 bpartner_group         character varying(60),
                 delivery_revenue_net   numeric,
+                invoiced_net           numeric,
+                open_net               numeric,
+                delivery_count         integer,
                 cursymbol              character varying
             )
 AS
@@ -107,19 +110,32 @@ BEGIN
                               WHERE (ic.qtydelivered - COALESCE(ip.invoiced_qty, 0)) <> 0
                               GROUP BY dl.m_inoutline_id),
 
-             -- Per-line net value = invoiced portion + open portion (each rounded independently at its own
-             -- grain -- quantity coverage, not cent-reconstruction; see CONCEPT.md).
+             -- Per-line invoiced/open portions (each rounded independently at its own grain --
+             -- quantity coverage, not cent-reconstruction; see CONCEPT.md). Kept separate (not
+             -- pre-summed into a single line_net) so the day-level invoiced_net and open_net can
+             -- each be converted via currencyBase() on their own -- delivery_revenue_net is then
+             -- derived as their sum (see daily_revenue below), never computed independently, to
+             -- guarantee delivery_revenue_net = invoiced_net + open_net exactly even under
+             -- multi-currency rounding.
              line_values AS (SELECT dl.m_inoutline_id,
+                                    dl.m_inout_id,
                                     dl.day,
                                     dl.AD_Client_ID,
                                     dl.AD_Org_ID,
-                                    COALESCE(ip.invoiced_net, 0) + COALESCE(op.open_net, 0) AS line_net
+                                    COALESCE(ip.invoiced_net, 0) AS line_invoiced_net,
+                                    COALESCE(op.open_net, 0)     AS line_open_net
                              FROM delivery_lines dl
                                       LEFT JOIN invoiced_portion ip ON ip.m_inoutline_id = dl.m_inoutline_id
                                       LEFT JOIN open_portion op ON op.m_inoutline_id = dl.m_inoutline_id),
 
-             daily_revenue AS (SELECT lv.day                                     AS day,
-                                      SUM(currencyBase(lv.line_net,
+             -- Day-level invoiced_net and open_net are each converted to accounting currency
+             -- independently; delivery_revenue_net is their sum, not an independent conversion of
+             -- the combined line value -- this is what guarantees the invariant
+             -- delivery_revenue_net = invoiced_net + open_net exactly (a multi-currency rounding
+             -- cent could otherwise break it). delivery_count counts the distinct contributing
+             -- deliveries (M_InOut), including returns.
+             daily_revenue AS (SELECT lv.day                                                    AS day,
+                                      SUM(currencyBase(lv.line_invoiced_net,
                                                         (SELECT ac.c_currency_id
                                                          FROM C_AcctSchema ac
                                                          WHERE ac.isaccrual = 'Y'
@@ -127,15 +143,28 @@ BEGIN
                                                          LIMIT 1),
                                                         lv.day::timestamp,
                                                         lv.AD_Client_ID,
-                                                        lv.AD_Org_ID))              AS revenue_net
+                                                        lv.AD_Org_ID))                             AS invoiced_net,
+                                      SUM(currencyBase(lv.line_open_net,
+                                                        (SELECT ac.c_currency_id
+                                                         FROM C_AcctSchema ac
+                                                         WHERE ac.isaccrual = 'Y'
+                                                           AND ac.AD_Client_ID = lv.AD_Client_ID
+                                                         LIMIT 1),
+                                                        lv.day::timestamp,
+                                                        lv.AD_Client_ID,
+                                                        lv.AD_Org_ID))                             AS open_net,
+                                      COUNT(DISTINCT lv.m_inout_id)                               AS delivery_count
                                FROM line_values lv
                                GROUP BY lv.day)
 
         SELECT dr.day,
                p.bpartner_name,
                p.bpartner_group_name,
-               dr.revenue_net AS delivery_revenue_net,
-               v_cursymbol    AS cursymbol
+               dr.invoiced_net + dr.open_net AS delivery_revenue_net,
+               dr.invoiced_net,
+               dr.open_net,
+               dr.delivery_count::integer,
+               v_cursymbol                   AS cursymbol
         FROM daily_revenue dr
                  CROSS JOIN params p
         ORDER BY dr.day DESC;
@@ -163,6 +192,17 @@ COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.Docs_Daily_Delivery_Reven
     A customer return is its own M_InOutLine (negative MovementQty) carrying its own negated invoice candidate,
     so it nets its own day down without touching the original delivery''s valuation.
     Amounts are converted to accounting currency via currencyBase().
+    Additional per-day columns:
+      invoiced_net   – the day''s already-invoiced portion ("davon berechnet"), i.e. the invoiced
+        portion of delivery_revenue_net, converted to accounting currency via currencyBase()
+      open_net       – the day''s not-yet-invoiced portion ("davon offen"), i.e. the open portion of
+        delivery_revenue_net, converted to accounting currency via currencyBase()
+      delivery_count – COUNT(DISTINCT M_InOut_ID) of the day''s contributing deliveries ("Anzahl
+        Lieferungen"), including returns
+    delivery_revenue_net is always exactly invoiced_net + open_net: each is converted to accounting
+    currency independently and delivery_revenue_net is derived as their sum (never computed as an
+    independent conversion of the combined line value), so the invariant holds even under
+    multi-currency rounding.
     Parameters:
       p_bpartner_id – filter by business partner
       p_bp_group_id – filter by partner group
