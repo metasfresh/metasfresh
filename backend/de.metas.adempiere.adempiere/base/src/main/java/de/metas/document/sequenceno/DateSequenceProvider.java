@@ -41,6 +41,10 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 {
 	private static final Logger logger = LogManager.getLogger(DateSequenceProvider.class);
 
+	/**
+	 * Global date format (a {@link java.text.SimpleDateFormat} pattern), used when the sequence has no own {@code AD_Sequence.DateFormat}.
+	 * Use {@code yy} for the year: {@code YY} is the week-based year.
+	 */
 	private static final String SYSCONFIG_DATE_FORMAT = "de.metas.document.seqNo.DateSequenceProvider.dateFormat";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -67,8 +71,7 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 		final Date date = getDateOrNull(context, docSeqInfo);
 		Check.assumeNotNull(date, "The given context needs to have a non-empty Date value; context={}", context);
 
-		final String dateFormatToUse = sysConfigBL.getValue(SYSCONFIG_DATE_FORMAT);
-		Check.assumeNotEmpty(dateFormatToUse, "{} sysconfig has not been defined", SYSCONFIG_DATE_FORMAT);
+		final String dateFormatToUse = getDateFormat(docSeqInfo);
 		final String result = TimeUtil.formatDate(TimeUtil.asTimestamp(date), dateFormatToUse);
 
 		if (Check.isNotBlank(autoIncrementedSeqNumber))
@@ -95,6 +98,22 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 	public boolean isSequenceNoIndependentOfIncrement(@NonNull final DocumentSequenceInfo docSeqInfo)
 	{
 		return Check.isEmpty(docSeqInfo.getDecimalPattern());
+	}
+
+	/**
+	 * @return the sequence's own {@code AD_Sequence.DateFormat} (e.g. {@code yy-DDD} for a date-only lot), else the global {@link #SYSCONFIG_DATE_FORMAT}
+	 */
+	private String getDateFormat(@NonNull final DocumentSequenceInfo docSeqInfo)
+	{
+		final String sequenceDateFormat = docSeqInfo.getDateFormat();
+		if (sequenceDateFormat != null)
+		{
+			return sequenceDateFormat;
+		}
+
+		final String dateFormat = sysConfigBL.getValue(SYSCONFIG_DATE_FORMAT);
+		Check.assumeNotEmpty(dateFormat, "{} sysconfig has not been defined", SYSCONFIG_DATE_FORMAT);
+		return dateFormat;
 	}
 
 	@Nullable

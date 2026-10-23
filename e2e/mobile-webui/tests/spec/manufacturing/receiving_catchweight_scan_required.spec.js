@@ -18,7 +18,8 @@ import { receiptDayPlusDays } from '../../utils/receiptDay';
 // (new TU, new LU, the LU received onto before, or an HU picked by scanning its QR code).
 // With the setting off (the default), each scan receives one piece right away.
 // The scan does not depend on "Capture catch weight": with it switched off (weight captured later, at picking) the
-// scan fills only lot and best-before date, no weight is shown or received, and it is still one piece per scan.
+// operator enters the number of blocks as in a normal receipt and scans the label of the LAST block; its lot and
+// best-before date apply to the whole receipt. No weight is shown or received.
 const L_M_CODE = 'LMQ#1#0.101#08.11.2025#500';
 // A second piece from another lot, with its own weight and best-before date.
 const L_M_CODE_2 = 'LMQ#1#0.093#15.11.2025#501';
@@ -34,12 +35,16 @@ const BEST_BEFORE_DAYS = 70;
 // as editable and are instance attributes of the attribute set of the product's category.
 // isTUMode: the line is received in TUs (receive unit type TU); the PP order then carries the two-piece TU packing.
 // isCaptureCatchWeightAtReceipt: undefined = the default (captured)
+// editableAttributes: the global editable-attribute list; without LOT_NO the lot number is not editable
 const LOT_NO = 'Lot-Nummer';
 const BEST_BEFORE_DATE = 'HU_BestBeforeDate';
+// the default pair (the editable-attribute list is global, so other specs rely on it)
+const DEFAULT_EDITABLE_ATTRIBUTES = [LOT_NO, BEST_BEFORE_DATE];
 const createMasterdata = async ({
     isFinishedGoodsCatchWeightScanRequired,
     isTUMode = false,
     isCaptureCatchWeightAtReceipt,
+    editableAttributes = DEFAULT_EDITABLE_ATTRIBUTES,
 }) => {
     return await Backend.createMasterdata({
         language: 'en_US',
@@ -55,8 +60,7 @@ const createMasterdata = async ({
                     isFinishedGoodsCatchWeightScanRequired,
                     isCaptureCatchWeightAtReceipt,
                     receiveUnitType: isTUMode ? 'TU' : 'CU',
-                    // the default pair (the editable-attribute list is global, so other specs rely on it)
-                    editableAttributes: [LOT_NO, BEST_BEFORE_DATE],
+                    editableAttributes,
                 },
             },
             warehouses: { 'wh': {} },
@@ -124,23 +128,39 @@ const receiveOneScannedPiece = async ({ qrCode, expectedCatchWeight, expectedLot
     await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: qtyReceivedAfter });
 };
 
-// Weight not captured at receipt: like receiveOneScannedPiece, but the scan fills only lot and best-before date.
-// As with the weight, they are shown in the dialog's own lot / best-before rows, not in the editable-attribute rows
-// (configured as editable here), so each value is shown once.
-const receiveOneScannedPieceWithoutWeight = async ({ qrCode, expectedLotNo, expectedBestBeforeDate, qtyReceivedAfter }) => {
+// Weight not captured at receipt: one scan of the last block's label fills lot and best-before date (editable),
+// no weight is shown, and the operator enters the number of blocks.
+// As with the weight, lot and best-before date are shown in the dialog's own lot / best-before rows, not in the
+// editable-attribute rows (configured as editable or not), so each value is shown once.
+const receiveBlocksWithLastBlockScan = async ({ qrCode, expectedQtyBefore, qty, expectedLotNo, expectedBestBeforeDate, qtyToReceive, qtyReceivedAfter }) => {
     await MaterialReceiptLineScreen.clickReceiveQtyButton();
+    // The scan is still mandatory: nothing can be confirmed or typed in manually before it.
     await GetQuantityDialog.expectOnlyCatchWeightScanOffered();
     await GetQuantityDialog.scanCatchWeightQRCodeForReview({ qrCode });
-    await GetQuantityDialog.expectQtyEnteredFixedAt('1');
     await GetQuantityDialog.expectCatchWeightNotVisible();
     await GetQuantityDialog.expectLotNo(expectedLotNo);
+    await GetQuantityDialog.expectLotNoEditable();
     await GetQuantityDialog.expectBestBeforeDate(expectedBestBeforeDate);
     await GetQuantityDialog.expectEditableAttributeNotPresent(LOT_NO);
     await GetQuantityDialog.expectEditableAttributeNotPresent(BEST_BEFORE_DATE);
+    await GetQuantityDialog.expectQtyEnteredEditable(expectedQtyBefore);
+    await GetQuantityDialog.typeQtyEntered(qty);
     await GetQuantityDialog.clickDone();
     await ManufacturingJobScreen.waitForScreen();
-    await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: qtyReceivedAfter });
+    await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive, qtyReceived: qtyReceivedAfter });
 };
+
+// A test that narrows the global editable-attribute list puts the default pair back, also if it fails part-way.
+let isEditableAttributesChanged = false;
+test.afterEach(async () => {
+    if (isEditableAttributesChanged) {
+        await Backend.createMasterdata({
+            language: 'en_US',
+            request: { mobileConfig: { manufacturing: { editableAttributes: DEFAULT_EDITABLE_ATTRIBUTES } } },
+        });
+        isEditableAttributesChanged = false;
+    }
+});
 
 // noinspection JSUnusedLocalSymbols
 test('Scan required, new TU: the scan fills the fields for review; one piece is received with the edited weight and lot and the scanned best-before date', async ({ page }) => {
@@ -554,36 +574,43 @@ test('Scan not required (default): the scan receives the piece right away', asyn
     await ManufacturingJobScreen.complete();
 });
 
-// noinspection JSUnusedLocalSymbols
-test('Scan required, weight not captured at receipt, new TU: the scan fills lot and best-before date only; one piece is received without a weight', async ({ page }) => {
+const lastBlockScanStory = () => {
     allure.epic('E0160: Manufacturing Execution');
     allure.tag('F8030: MobileUI Manufacturing');
     allure.tag('F8030');
     allure.story('Mandatory catch-weight scan on finished goods receipt');
     allure.severity('critical');
+};
+
+// noinspection JSUnusedLocalSymbols
+test('Scan required, weight not captured at receipt, new TU: 3 blocks received with one scan of the last block; all carry its lot and best-before date', async ({ page }) => {
+    lastBlockScanStory();
 
     const masterdata = await createMasterdata({ isFinishedGoodsCatchWeightScanRequired: true, isCaptureCatchWeightAtReceipt: false });
     const { jobId } = await startReceiveToNewTU(masterdata);
 
-    // The scan is still mandatory: nothing can be confirmed or typed in manually before it.
-    await receiveOneScannedPieceWithoutWeight({ qrCode: L_M_CODE, expectedLotNo: '500', expectedBestBeforeDate: '08.11.2025', qtyReceivedAfter: '1 Stk' });
+    await receiveBlocksWithLastBlockScan({
+        qrCode: L_M_CODE,
+        expectedQtyBefore: '100',
+        qty: '3',
+        expectedLotNo: '500',
+        expectedBestBeforeDate: '08.11.2025',
+        qtyToReceive: '100 Stk',
+        qtyReceivedAfter: '3 Stk',
+    });
 
-    // No weight is captured at receipt: the WeightNet attribute stays at zero (it is captured later, at picking),
-    // while lot and best-before date are the scanned ones.
+    // No weight is captured at receipt: WeightNet stays at zero (it is captured later, at picking).
     await Backend.expect({
-        title: 'Produced TU carries one piece with the scanned lot and best-before date and no weight',
+        title: 'One TU with the 3 blocks, all with the scanned lot and best-before date and no weight',
         manufacturings: {
             [jobId]: {
-                receivedHUs: [{ tu: 'tu1', qty: '1 PCE' }],
+                receivedHUs: [{ tu: 'tu1', qty: '3 PCE' }],
             },
         },
         hus: {
             'tu1': {
-                storages: { 'BOM': '1 PCE' },
+                storages: { 'BOM': '3 PCE' },
                 attributes: { 'WeightNet': '0.000', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' },
-                cus: [
-                    { qty: '1 PCE', attributes: { 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-                ],
             },
         },
     });
@@ -592,45 +619,116 @@ test('Scan required, weight not captured at receipt, new TU: the scan fills lot 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan required, weight not captured at receipt, TU mode: each scan adds one piece to the current TU, also from a label without a weight', async ({ page }) => {
-    allure.epic('E0160: Manufacturing Execution');
-    allure.tag('F8030: MobileUI Manufacturing');
-    allure.tag('F8030');
-    allure.story('Mandatory catch-weight scan on finished goods receipt');
-    allure.severity('critical');
+test('Scan required, weight not captured at receipt, new LU: 3 blocks received with one scan of the last block; the LU carries its lot and best-before date', async ({ page }) => {
+    lastBlockScanStory();
+
+    const masterdata = await createMasterdata({ isFinishedGoodsCatchWeightScanRequired: true, isCaptureCatchWeightAtReceipt: false });
+    const { jobId } = await startJob(masterdata);
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 }); // i.e., main product
+    await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.BOM_PI_1PCE.luPIItemTestId });
+
+    await receiveBlocksWithLastBlockScan({
+        qrCode: L_M_CODE_WITHOUT_WEIGHT,
+        expectedQtyBefore: '100',
+        qty: '3',
+        expectedLotNo: '501',
+        expectedBestBeforeDate: '15.11.2025',
+        qtyToReceive: '100 Stk',
+        qtyReceivedAfter: '3 Stk',
+    });
+
+    await Backend.expect({
+        title: 'One LU with the 3 blocks, carrying the scanned lot and best-before date',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [{ lu: 'lu1', qty: '3 PCE' }],
+            },
+        },
+        hus: {
+            'lu1': {
+                storages: { 'BOM': '3 PCE' },
+                attributes: { 'Lot-Nummer': '501', 'HU_BestBeforeDate': '2025-11-15' },
+            },
+        },
+    });
+
+    await ManufacturingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan required, weight not captured at receipt, TU mode: 2 TUs received with one scan of the last block; the line counts TUs', async ({ page }) => {
+    lastBlockScanStory();
 
     const masterdata = await createMasterdata({ isFinishedGoodsCatchWeightScanRequired: true, isTUMode: true, isCaptureCatchWeightAtReceipt: false });
     const { jobId } = await startJob(masterdata);
 
-    // Every receipt is one piece, so the line counts pieces, not TUs.
-    await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: '0 Stk' });
+    // A normal TU receipt: the line counts TUs (100 pieces, 2 per TU).
+    await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '50 TU', qtyReceived: '0 TU' });
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 }); // i.e., main product
     await MaterialReceiptLineScreen.selectNewTUTarget({ tuPIItemProductTestId: masterdata.packingInstructions.BOM_PI_2PCE.tuPIItemProductTestId });
 
-    // first piece: starts the TU
-    await receiveOneScannedPieceWithoutWeight({ qrCode: L_M_CODE, expectedLotNo: '500', expectedBestBeforeDate: '08.11.2025', qtyReceivedAfter: '1 Stk' });
-    // second piece, from a label with an empty weight segment: goes into the same TU, which is then full
-    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
-    await receiveOneScannedPieceWithoutWeight({ qrCode: L_M_CODE_WITHOUT_WEIGHT, expectedLotNo: '501', expectedBestBeforeDate: '15.11.2025', qtyReceivedAfter: '2 Stk' });
+    await receiveBlocksWithLastBlockScan({
+        qrCode: L_M_CODE,
+        expectedQtyBefore: '50',
+        qty: '2',
+        expectedLotNo: '500',
+        expectedBestBeforeDate: '08.11.2025',
+        qtyToReceive: '50 TU',
+        qtyReceivedAfter: '2 TU',
+    });
 
     await Backend.expect({
-        title: 'The TU holds two pieces, each with its own scanned lot and best-before date, and no weight',
+        title: '2 TUs of 2 blocks each, all with the scanned lot and best-before date and no weight',
         manufacturings: {
             [jobId]: {
                 receivedHUs: [
-                    { tu: 'tu1', qty: '1 PCE' },
-                    { tu: 'tu1', qty: '1 PCE' },
+                    { tu: 'tu1', qty: '2 PCE' },
+                    { tu: 'tu2', qty: '2 PCE' },
                 ],
+            },
+        },
+        hus: {
+            'tu1': { storages: { 'BOM': '2 PCE' }, attributes: { 'WeightNet': '0.000', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            'tu2': { storages: { 'BOM': '2 PCE' }, attributes: { 'WeightNet': '0.000', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+        },
+    });
+
+    await ManufacturingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan required, weight not captured at receipt, lot number not editable: the scanned lot is shown, editable, and lands on the HU', async ({ page }) => {
+    lastBlockScanStory();
+
+    isEditableAttributesChanged = true;
+    const masterdata = await createMasterdata({
+        isFinishedGoodsCatchWeightScanRequired: true,
+        isCaptureCatchWeightAtReceipt: false,
+        editableAttributes: [BEST_BEFORE_DATE],
+    });
+    const { jobId } = await startReceiveToNewTU(masterdata);
+
+    await receiveBlocksWithLastBlockScan({
+        qrCode: L_M_CODE,
+        expectedQtyBefore: '100',
+        qty: '2',
+        expectedLotNo: '500',
+        expectedBestBeforeDate: '08.11.2025',
+        qtyToReceive: '100 Stk',
+        qtyReceivedAfter: '2 Stk',
+    });
+
+    await Backend.expect({
+        title: 'The TU carries the scanned lot, although the lot number is not editable',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [{ tu: 'tu1', qty: '2 PCE' }],
             },
         },
         hus: {
             'tu1': {
                 storages: { 'BOM': '2 PCE' },
-                attributes: { 'WeightNet': '0.000' },
-                cus: [
-                    { qty: '1 PCE', attributes: { 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-                    { qty: '1 PCE', attributes: { 'Lot-Nummer': '501', 'HU_BestBeforeDate': '2025-11-15' } },
-                ],
+                attributes: { 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' },
             },
         },
     });

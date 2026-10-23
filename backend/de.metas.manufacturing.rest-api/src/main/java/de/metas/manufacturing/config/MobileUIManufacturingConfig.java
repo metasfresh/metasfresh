@@ -1,15 +1,19 @@
 package de.metas.manufacturing.config;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 @Value
 @Builder(toBuilder = true)
@@ -109,11 +113,23 @@ public class MobileUIManufacturingConfig
 				.allowReceiveWithoutPackingItem(getIsAllowReceiveWithoutPackingItemEffective())
 				// Main finished good only: co-/by-product lines keep receive-on-scan and manual input.
 				// Independent of capturing the weight at receipt: without it the scan takes over lot and best-before date
-				// only, and the weight is captured later at picking. Each scan is one piece in both cases.
+				// only, and the weight is captured later at picking.
 				.catchWeightScanRequired(isMainFinishedGood
 						&& isCatchWeightProduct
 						&& getIsFinishedGoodsCatchWeightScanRequiredEffective())
 				.build();
+	}
+
+	/**
+	 * @return the receipt attributes the operator cannot edit and the receipt sets itself: {@link PickAttribute#LotNo} if the
+	 * lot number ({@code Lot-Nummer}) is not one of the {@link #editableAttributeCodesInOrder}, else empty. The best-before date is never in this set.
+	 */
+	@NonNull
+	public Set<PickAttribute> getReadOnlyAttributes()
+	{
+		return editableAttributeCodesInOrder.contains(AttributeConstants.ATTR_LotNumber)
+				? ImmutableSet.of()
+				: ImmutableSet.of(PickAttribute.LotNo);
 	}
 
 	public MobileUIManufacturingConfig fallbackTo(@NonNull final MobileUIManufacturingConfig other)
