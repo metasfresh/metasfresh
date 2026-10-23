@@ -38,6 +38,7 @@ class LotNoSequenceRepository
 		sequence.setDecimalPattern(request.getDecimalPattern());
 		if (request.isDateBased())
 		{
+			sequence.setDateFormat(request.getDateFormat());
 			sequence.setDateColumn("MovementDate"); // LotNumberBL passes the receipt date under the sequence's DateColumn
 			sequence.setCustomSequenceNoProvider_JavaClass_ID(getDateSequenceProviderJavaClassId());
 		}

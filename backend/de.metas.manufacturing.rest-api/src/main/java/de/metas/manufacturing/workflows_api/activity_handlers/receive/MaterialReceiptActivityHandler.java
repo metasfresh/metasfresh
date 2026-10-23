@@ -18,6 +18,7 @@ import de.metas.handlingunits.attribute.json.JsonAttributeValueType;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -113,6 +114,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.valueObj("lines", lines)
+						.valueObj("readOnlyAttributes", config.getReadOnlyAttributes())
 						.valueObj(PROP_customQRCodeFormats, JsonScannableCodeFormat.ofCollection(scannableCodeFormatService.getAll()))
 						.build())
 				.build();
@@ -120,7 +122,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 
 	/**
 	 * The attribute codes whose default is pre-filled: the configured editable attributes, plus lot number and best-before date
-	 * if a line requires the catch-weight scan, because the scanned lot number and best-before date are always shown there for review.
+	 * if a line requires the catch-weight scan, because the scanned lot number and best-before date are always shown there for review,
+	 * plus the lot number if it is not editable, because it is then shown read-only (see {@link MobileUIManufacturingConfig#getReadOnlyAttributes()}).
 	 */
 	@NonNull
 	private static ImmutableSet<AttributeCode> getAttributeCodesToPreFill(
@@ -135,6 +138,10 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		if (isAnyLineCatchWeightScanRequired)
 		{
 			result.add(AttributeConstants.ATTR_LotNumber, AttributeConstants.ATTR_BestBeforeDate);
+		}
+		if (config.getReadOnlyAttributes().contains(PickAttribute.LotNo))
+		{
+			result.add(AttributeConstants.ATTR_LotNumber);
 		}
 
 		return result.build();
@@ -191,8 +198,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final java.math.BigDecimal qtyToReceive;
 		final java.math.BigDecimal qtyReceived;
 
-		// With the mandatory catch-weight scan every receipt is one piece, also in TU mode, so the line counts pieces.
-		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null && !lineConfig.isCatchWeightScanRequired())
+		// With one piece per scan (weight captured at receipt) every receipt is one piece, also in TU mode, so the line counts pieces.
+		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null && !lineConfig.isReceiveOnePiecePerScan())
 		{
 			final HUPIItemProduct huPIItemProduct = huPIItemProductDAO.getById(line.getTuPIItemProductId());
 			final QtyTU qtyToReceiveTU = huPIItemProduct.computeQtyTUsOfTotalCUs(line.getQtyToReceive(), line.getProductId());
@@ -220,6 +227,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.coproduct(!line.isMainFinishedGood())
 				.skipReceiveTargetStep(lineConfig.isSkipReceiveTargetStep())
 				.catchWeightScanRequired(lineConfig.isCatchWeightScanRequired())
+				.receiveOnePiecePerScan(lineConfig.isReceiveOnePiecePerScan())
 				.productName(line.getProductValueAndProductName().translate(adLanguage))
 				.uom(uom)
 				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), adLanguage))

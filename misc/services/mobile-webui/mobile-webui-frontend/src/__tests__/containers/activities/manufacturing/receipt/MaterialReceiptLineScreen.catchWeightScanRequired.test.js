@@ -56,6 +56,12 @@ jest.mock('../../../../../reducers/wfProcesses', () => ({
   getLineByIdFromActivity: () => mockLine,
   getCustomQRCodeFormats: () => undefined,
 }));
+// read-only attributes (readOnlyAttributes) as the backend sends them; set per test.
+// The editable ones come per line (editableAttributes).
+let mockReadOnlyAttributes = [];
+jest.mock('../../../../../reducers/wfProcesses/picking/getReadAttributesFromActivity', () => ({
+  getReadOnlyAttributesFromActivity: () => mockReadOnlyAttributes,
+}));
 jest.mock('../../../../../actions/ManufacturingActions', () => ({
   postManufacturingReceiveEventThunk: jest.fn(),
   updateManufacturingLUReceiptTarget: jest.fn(() => ({ type: 'test/updateManufacturingLUReceiptTarget' })),
@@ -113,6 +119,7 @@ beforeEach(() => {
   // set here, not in the jest.mock factory: the CRA jest config resets mock implementations before each test
   postManufacturingReceiveEventThunk.mockImplementation(() => () => Promise.resolve());
   mockToast.mockClear();
+  mockReadOnlyAttributes = [];
 });
 
 describe('setting off (the backend does not send catchWeightScanRequired)', () => {
@@ -142,7 +149,7 @@ describe('setting off (the backend does not send catchWeightScanRequired)', () =
 
 describe('setting on (catchWeightScanRequired = true)', () => {
   it('hides manual input and only fills the scanned values in for review', async () => {
-    renderScreen(catchWeightMainFinishedGood({ catchWeightScanRequired: true }));
+    renderScreen(catchWeightMainFinishedGood({ catchWeightScanRequired: true, receiveOnePiecePerScan: true }));
     await openDialog();
 
     expect(screen.queryByTestId('switchToManualInput-button')).not.toBeInTheDocument();
@@ -156,7 +163,7 @@ describe('setting on (catchWeightScanRequired = true)', () => {
   });
 
   it('rejects a code without a lot number', async () => {
-    renderScreen(catchWeightMainFinishedGood({ catchWeightScanRequired: true }));
+    renderScreen(catchWeightMainFinishedGood({ catchWeightScanRequired: true, receiveOnePiecePerScan: true }));
     await openDialog();
     await scan(LMQ_CODE_WITHOUT_LOT);
 
@@ -180,7 +187,7 @@ describe('quantity per receipt', () => {
   };
 
   it('setting on: the quantity is fixed at 1 and read-only, while lot, best-before date and weight stay editable', async () => {
-    renderScreen(catchWeightMainFinishedGood({ catchWeightScanRequired: true }));
+    renderScreen(catchWeightMainFinishedGood({ catchWeightScanRequired: true, receiveOnePiecePerScan: true }));
     await openDialog();
     await scan(LMQ_CODE);
 
@@ -192,7 +199,7 @@ describe('quantity per receipt', () => {
   });
 
   it('setting on: the receipt is posted with quantity 1, even if a quantity change reaches the field', async () => {
-    renderScreen(catchWeightMainFinishedGood({ catchWeightScanRequired: true }));
+    renderScreen(catchWeightMainFinishedGood({ catchWeightScanRequired: true, receiveOnePiecePerScan: true }));
     await openDialog();
     await scan(LMQ_CODE);
 
@@ -228,6 +235,23 @@ describe('quantity per receipt', () => {
   });
 });
 
+// One piece per scan is the backend's decision (weight captured at receipt), not re-derived from the weight UOM:
+// e.g. with a scale device the dialog shows no weight field, yet the backend still accepts only one piece per receipt.
+it('fixes the quantity at 1 when the backend sends receiveOnePiecePerScan, even without a weight UOM', async () => {
+  renderScreen(
+    catchWeightMainFinishedGood({
+      catchWeightUomSymbol: undefined,
+      catchWeightScanRequired: true,
+      receiveOnePiecePerScan: true,
+    })
+  );
+  await openDialog();
+  await scan(LMQ_CODE);
+
+  expect(document.getElementById('qty-input')).toHaveValue(1);
+  expect(document.getElementById('qty-input')).toBeDisabled();
+});
+
 // With the setting on, the backend still sends catchWeightScanRequired=false for a co-/by-product line.
 it('keeps receive-on-scan and manual input for a co-product line (backend sends no scan requirement)', async () => {
   renderScreen(catchWeightMainFinishedGood({ coproduct: true, catchWeightScanRequired: false }));
@@ -242,10 +266,17 @@ it('keeps receive-on-scan and manual input for a co-product line (backend sends 
 });
 
 // Weight captured at picking, not at receipt: the backend sends no catch-weight UOM, but the scan is still required.
-// The scan takes over the Lot-Nr and MHD only; no weight is shown or sent, and each receipt is still one piece.
+// The operator enters the number of blocks as in a normal receipt and scans the label of the last block: its Lot-Nr and
+// MHD overwrite the defaults for the whole receipt. No weight is shown or sent.
 describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)', () => {
   const lineWithoutWeight = () =>
     catchWeightMainFinishedGood({ catchWeightUomSymbol: undefined, catchWeightScanRequired: true });
+  const qtyInput = () => document.getElementById('qty-input');
+  const typeQty = async (qty) => {
+    await act(async () => {
+      fireEvent.change(qtyInput(), { target: { value: `${qty}` } });
+    });
+  };
   const confirm = async () => {
     await act(async () => {
       fireEvent.click(screen.getByText(CONFIRM_CAPTION));
@@ -261,7 +292,7 @@ describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)',
     expect(screen.queryByText(CONFIRM_CAPTION)).not.toBeInTheDocument();
   });
 
-  it('fills Lot-Nr and MHD for review, shows no weight, and fixes the quantity at 1', async () => {
+  it('fills Lot-Nr and MHD for review, shows no weight, and leaves the quantity editable with the open quantity', async () => {
     renderScreen(lineWithoutWeight());
     await openDialog();
     await scan(LMQ_CODE);
@@ -270,23 +301,42 @@ describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)',
     expect(screen.getByTestId('lotNo')).toHaveValue('500');
     expect(screen.getByTestId('bestBeforeDate')).toHaveValue('2025-11-08');
     expect(document.getElementById('catch-weight')).not.toBeInTheDocument();
-    expect(document.getElementById('qty-input')).toHaveValue(1);
-    expect(document.getElementById('qty-input')).toBeDisabled();
+    expect(qtyInput()).toHaveValue(5);
+    expect(qtyInput()).toBeEnabled();
   });
 
-  it('receives one piece with the scanned Lot-Nr and MHD and no weight', async () => {
+  it('receives the entered number of blocks with the scanned Lot-Nr and MHD and no weight', async () => {
     renderScreen(lineWithoutWeight());
     await openDialog();
     await scan(LMQ_CODE);
+    await typeQty(3);
     await confirm();
 
     expect(postManufacturingReceiveEventThunk).toHaveBeenCalledTimes(1);
     const posted = postManufacturingReceiveEventThunk.mock.calls[0][0];
     expect(posted).toEqual(
-      expect.objectContaining({ qtyReceived: 1, lotNo: '500', bestBeforeDate: '2025-11-08', barcode: LMQ_CODE })
+      expect.objectContaining({ qtyReceived: 3, lotNo: '500', bestBeforeDate: '2025-11-08', barcode: LMQ_CODE })
     );
     expect(posted.catchWeight).toBeFalsy();
     expect(posted.catchWeightUom).toBeFalsy();
+  });
+
+  it('keeps Lot-Nr and MHD editable after the scan; the edited values are received', async () => {
+    renderScreen(lineWithoutWeight());
+    await openDialog();
+    await scan(LMQ_CODE);
+
+    expect(screen.getByTestId('lotNo')).toBeEnabled();
+    expect(screen.getByTestId('bestBeforeDate')).toBeEnabled();
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('lotNo'), { target: { value: '777' } });
+    });
+    await typeQty(2);
+    await confirm();
+
+    expect(postManufacturingReceiveEventThunk.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ qtyReceived: 2, lotNo: '777', bestBeforeDate: '2025-11-08' })
+    );
   });
 
   it('accepts a label with an empty weight segment, since no weight is needed', async () => {
@@ -300,10 +350,11 @@ describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)',
   });
 
   // Without a weight row the rescan control must still be offered: a wrong label can be replaced by scanning again.
-  it('offers a rescan after a scan, and the next scan replaces Lot-Nr and MHD', async () => {
+  it('offers a rescan; the next scan replaces Lot-Nr and MHD and keeps the entered quantity', async () => {
     renderScreen(lineWithoutWeight());
     await openDialog();
     await scan(LMQ_CODE);
+    await typeQty(3);
     await act(async () => {
       fireEvent.click(screen.getByText(/activities\.picking\.switchToQrCodeInput$/));
     });
@@ -314,7 +365,7 @@ describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)',
 
     expect(postManufacturingReceiveEventThunk).toHaveBeenCalledTimes(1);
     expect(postManufacturingReceiveEventThunk.mock.calls[0][0]).toEqual(
-      expect.objectContaining({ qtyReceived: 1, lotNo: '501', bestBeforeDate: '2025-11-15' })
+      expect.objectContaining({ qtyReceived: 3, lotNo: '501', bestBeforeDate: '2025-11-15' })
     );
   });
 
@@ -336,5 +387,93 @@ describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)',
     expect(screen.getByTestId('fake-scanner')).toBeInTheDocument();
     expect(screen.queryByText(CONFIRM_CAPTION)).not.toBeInTheDocument();
     expect(postManufacturingReceiveEventThunk).not.toHaveBeenCalled();
+  });
+});
+
+// Lot number not editable (backend: in readOnlyAttributes, Lot-Nummer not one of the line's editableAttributes),
+// best-before date editable.
+describe('lot number not editable', () => {
+  const BEST_BEFORE_DATE_ATTRIBUTE = { code: 'HU_BestBeforeDate', caption: 'Best before', valueType: 'DATE' };
+  const confirm = async () => {
+    await act(async () => {
+      fireEvent.click(screen.getByText(CONFIRM_CAPTION));
+    });
+  };
+  beforeEach(() => {
+    mockReadOnlyAttributes = ['LotNo'];
+  });
+
+  // piece goods: the lot is shown read-only and generated by the receipt; the best-before date stays editable
+  it('piece goods: shows the lot disabled, keeps the best-before date editable, and lets the receipt generate the lot', async () => {
+    renderScreen(
+      catchWeightMainFinishedGood({
+        catchWeightUomSymbol: undefined,
+        catchWeightScanRequired: false,
+        editableAttributes: [BEST_BEFORE_DATE_ATTRIBUTE],
+      })
+    );
+    await openDialog();
+
+    expect(screen.getByTestId('lotNo')).toHaveValue('26-0042');
+    expect(screen.getByTestId('lotNo')).toBeDisabled();
+    expect(screen.getByTestId('attr-HU_BestBeforeDate-field')).toBeEnabled();
+
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('attr-HU_BestBeforeDate-field'), { target: { value: '2027-01-15' } });
+    });
+    await confirm();
+
+    expect(postManufacturingReceiveEventThunk).toHaveBeenCalledTimes(1);
+    expect(postManufacturingReceiveEventThunk.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ lotNo: null, attributes: [{ code: 'HU_BestBeforeDate', value: '2027-01-15' }] })
+    );
+  });
+
+  it('piece goods without a lot preview: no lot row', async () => {
+    renderScreen(
+      catchWeightMainFinishedGood({
+        catchWeightUomSymbol: undefined,
+        catchWeightScanRequired: false,
+        defaultLotNo: null,
+      })
+    );
+    await openDialog();
+
+    expect(screen.queryByTestId('lotNo')).not.toBeInTheDocument();
+  });
+
+  // the scanned label's lot is taken over and stays editable, whatever the lot-number setting
+  it('catch weight with the mandatory scan: shows the scanned lot editable and sends it', async () => {
+    renderScreen(catchWeightMainFinishedGood({ catchWeightUomSymbol: undefined, catchWeightScanRequired: true }));
+    await openDialog();
+    await scan(LMQ_CODE);
+
+    expect(screen.getByTestId('lotNo')).toHaveValue('500');
+    expect(screen.getByTestId('lotNo')).toBeEnabled();
+
+    await act(async () => {
+      fireEvent.change(document.getElementById('qty-input'), { target: { value: '3' } });
+    });
+    await confirm();
+
+    expect(postManufacturingReceiveEventThunk.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ qtyReceived: 3, lotNo: '500', bestBeforeDate: '2025-11-08' })
+    );
+  });
+
+  it('catch weight with the mandatory scan, lot not even read-only: the scanned lot is still shown and sent', async () => {
+    mockReadOnlyAttributes = [];
+    renderScreen(
+      catchWeightMainFinishedGood({ catchWeightScanRequired: true, receiveOnePiecePerScan: true, defaultLotNo: null })
+    );
+    await openDialog();
+    await scan(LMQ_CODE);
+
+    expect(screen.getByTestId('lotNo')).toHaveValue('500');
+    await confirm();
+
+    expect(postManufacturingReceiveEventThunk.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ qtyReceived: 1, lotNo: '500' })
+    );
   });
 });

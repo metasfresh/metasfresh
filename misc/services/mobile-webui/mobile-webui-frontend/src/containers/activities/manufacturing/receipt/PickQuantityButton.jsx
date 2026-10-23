@@ -26,12 +26,17 @@ const PickQuantityButton = ({
   isDisabled,
   customQRCodeFormats,
   editableAttributes,
+  readOnlyAttributes = [],
   defaultLotNo,
   defaultBestBeforeDate,
   isCatchWeightScanMandatory = false,
+  isOnePiecePerScan = false,
   onClick,
 }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
+
+  // A lot number that is not editable is still shown, read-only, with its preview (the receipt generates it).
+  const isLotNoReadOnly = readOnlyAttributes.includes(PickAttribute.LotNo);
 
   const dialogEditableAttributes = isCatchWeightScanMandatory
     ? (editableAttributes ?? []).filter(({ code }) => !SCAN_FOR_REVIEW_ATTRIBUTE_CODES.includes(code))
@@ -115,8 +120,10 @@ const PickQuantityButton = ({
           catchWeightUom={catchWeightUom}
           customQRCodeFormats={customQRCodeFormats}
           isCatchWeightScanMandatory={isCatchWeightScanMandatory}
+          isOnePiecePerScan={isOnePiecePerScan}
           readAttributes={isCatchWeightScanMandatory ? SCAN_FOR_REVIEW_READ_ATTRIBUTES : []}
-          lotNo={isCatchWeightScanMandatory ? defaultLotNo : undefined}
+          readOnlyAttributes={readOnlyAttributes}
+          lotNo={isCatchWeightScanMandatory || isLotNoReadOnly ? defaultLotNo : undefined}
           bestBeforeDate={isCatchWeightScanMandatory ? defaultBestBeforeDate : undefined}
           editableAttributes={dialogEditableAttributes}
           editableAttributesInitialValues={editableAttributesDefaultValues}
@@ -139,10 +146,14 @@ PickQuantityButton.propTypes = {
   onClick: PropTypes.func.isRequired,
   customQRCodeFormats: PropTypes.array,
   editableAttributes: PropTypes.array,
+  // shown but not editable (set by the receipt); only LotNo is supported
+  readOnlyAttributes: PropTypes.array,
   defaultLotNo: PropTypes.string,
   defaultBestBeforeDate: PropTypes.string,
   // Catch-weight only: the L&M QR code must be scanned and the scan fills the fields for review
   isCatchWeightScanMandatory: PropTypes.bool,
+  // the backend's flag: each receipt is one piece (qty fixed at 1)
+  isOnePiecePerScan: PropTypes.bool,
 };
 
 export default PickQuantityButton;

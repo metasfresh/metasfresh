@@ -118,11 +118,13 @@ public class ReceiveGoodsCommand
 	/** Required when {@link #receiveUnitType} is TU. If null in TU mode, falls back to CU qty calculation. */
 	@Nullable private final HUPIItemProductId tuPIItemProductIdForTUMode;
 	/**
-	 * The effective "catch-weight scan required" of the line (see {@link de.metas.manufacturing.config.FinishedGoodsReceiveLineConfig#isCatchWeightScanRequired()}).
-	 * Then every receipt is exactly one piece carrying its own scanned lot and best-before date (and weight, if captured at receipt), whatever the receive unit type;
+	 * The line's {@link de.metas.manufacturing.config.FinishedGoodsReceiveLineConfig#isReceiveOnePiecePerScan()}:
+	 * mandatory catch-weight scan with the weight captured at receipt.
+	 * Then every receipt is exactly one piece carrying its own scanned weight, lot and best-before date, whatever the receive unit type;
 	 * in TU mode those pieces fill the current TU up to its packing capacity.
+	 * Without the weight at receipt the scan only sets lot and best-before date for a normal receipt of N, so this is false.
 	 */
-	private final boolean catchWeightScanRequired;
+	private final boolean receiveOnePiecePerScan;
 
 	//
 	// State
@@ -159,7 +161,7 @@ public class ReceiveGoodsCommand
 			@Nullable final ScannedCode barcode,
 			@Nullable final ReceiveUnitType receiveUnitType,
 			@Nullable final HUPIItemProductId tuPIItemProductIdForTUMode,
-			final boolean catchWeightScanRequired)
+			final boolean receiveOnePiecePerScan)
 	{
 		this.trxManager = trxManager;
 		this.handlingUnitsBL = handlingUnitsBL;
@@ -198,7 +200,7 @@ public class ReceiveGoodsCommand
 		this.barcode = barcode;
 		this.receiveUnitType = receiveUnitType != null ? receiveUnitType : ReceiveUnitType.CU;
 		this.tuPIItemProductIdForTUMode = tuPIItemProductIdForTUMode;
-		this.catchWeightScanRequired = catchWeightScanRequired;
+		this.receiveOnePiecePerScan = receiveOnePiecePerScan;
 
 		// state
 		this.job = job;
@@ -497,7 +499,7 @@ public class ReceiveGoodsCommand
 				? loadingAndSavingSupportServices.getTUPIItemProduct(tuPIItemProductIdForTUMode)
 				: null;
 
-		return computeQtyToReceive(qtyToReceiveBD, fallbackUomId, tuPIItemProductForTUMode, catchWeightScanRequired);
+		return computeQtyToReceive(qtyToReceiveBD, fallbackUomId, tuPIItemProductForTUMode, receiveOnePiecePerScan);
 	}
 
 	@VisibleForTesting
@@ -505,12 +507,12 @@ public class ReceiveGoodsCommand
 			@NonNull final BigDecimal qtyToReceiveBD,
 			@NonNull final UomId fallbackUomId,
 			@Nullable final HUPIItemProduct tuPIItemProductForTUMode,
-			final boolean catchWeightScanRequired)
+			final boolean receiveOnePiecePerScan)
 	{
-		if (catchWeightScanRequired)
+		if (receiveOnePiecePerScan)
 		{
 			// One receipt = one piece in every receive mode: the qty counts pieces, it is never converted from TUs,
-			// else the one scanned lot and best-before date (and weight) would land on the packing's N pieces.
+			// else the one scanned weight would land on the packing's N pieces.
 			final Quantity qtyPieces = Quantitys.of(qtyToReceiveBD, fallbackUomId);
 			if (!qtyPieces.isOne())
 			{
@@ -529,12 +531,12 @@ public class ReceiveGoodsCommand
 	}
 
 	/**
-	 * TU receive mode with the mandatory catch-weight scan: each receipt adds one piece to the current TU;
+	 * TU receive mode with one piece per scan (see {@link #receiveOnePiecePerScan}): each receipt adds one piece to the current TU;
 	 * a full TU (per its packing capacity) is followed by a new one. LU aggregation of those TUs is unchanged.
 	 */
 	private boolean isFillCurrentTUPieceByPiece()
 	{
-		return catchWeightScanRequired && receiveUnitType.isTU();
+		return receiveOnePiecePerScan && receiveUnitType.isTU();
 	}
 
 	/**

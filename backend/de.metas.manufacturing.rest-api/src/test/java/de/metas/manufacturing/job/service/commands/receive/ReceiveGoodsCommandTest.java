@@ -84,12 +84,12 @@ class ReceiveGoodsCommandTest
 	}
 
 	/**
-	 * Catch weight with a mandatory scan: one receipt = one piece carrying its own scanned weight, lot and best-before date.
+	 * One piece per scan (mandatory catch-weight scan with the weight captured at receipt): one receipt = one piece carrying its own scanned weight, lot and best-before date.
 	 * In TU receive mode the qty must NOT be converted from TUs to the packing's N pieces,
 	 * else one scanned weight would land on N pieces.
 	 */
 	@Test
-	void catchWeightScanRequired_TUMode_finitePacking_receivesOnePiece()
+	void onePiecePerScan_TUMode_finitePacking_receivesOnePiece()
 	{
 		final HUPIItemProduct fourPiecesPerTU = finiteHUPIItemProduct(4);
 
@@ -104,7 +104,7 @@ class ReceiveGoodsCommandTest
 	}
 
 	@Test
-	void catchWeightScanRequired_TUMode_twoPieces_rejected()
+	void onePiecePerScan_TUMode_twoPieces_rejected()
 	{
 		// counts pieces, not TUs: 2 is two pieces even though the TU packing would hold them
 		assertThatThrownBy(() -> ReceiveGoodsCommand.computeQtyToReceive(BigDecimal.valueOf(2), uomKgId, finiteHUPIItemProduct(4), true))
@@ -113,7 +113,7 @@ class ReceiveGoodsCommandTest
 	}
 
 	@Test
-	void catchWeightScanRequired_moreThanOnePiece_rejected()
+	void onePiecePerScan_moreThanOnePiece_rejected()
 	{
 		assertThatThrownBy(() -> ReceiveGoodsCommand.computeQtyToReceive(BigDecimal.valueOf(2), uomKgId, null, true))
 				.isInstanceOf(AdempiereException.class)
@@ -121,7 +121,7 @@ class ReceiveGoodsCommandTest
 	}
 
 	@Test
-	void catchWeightScanRequired_fractionOfAPiece_rejected()
+	void onePiecePerScan_fractionOfAPiece_rejected()
 	{
 		assertThatThrownBy(() -> ReceiveGoodsCommand.computeQtyToReceive(new BigDecimal("0.5"), uomKgId, null, true))
 				.isInstanceOf(AdempiereException.class)
@@ -129,7 +129,7 @@ class ReceiveGoodsCommandTest
 	}
 
 	@Test
-	void catchWeightScanRequired_onePiece_accepted()
+	void onePiecePerScan_onePiece_accepted()
 	{
 		final Quantity result = ReceiveGoodsCommand.computeQtyToReceive(new BigDecimal("1.000"), uomKgId, null, true);
 
@@ -137,12 +137,31 @@ class ReceiveGoodsCommandTest
 	}
 
 	@Test
-	void catchWeightScanNotRequired_TUMode_qtyIsTUs()
+	void notOnePiecePerScan_TUMode_qtyIsTUs()
 	{
 		// setting off: TU mode behaviour unchanged, 1 TU = the packing's 4 pieces
 		final Quantity result = ReceiveGoodsCommand.computeQtyToReceive(BigDecimal.ONE, uomKgId, finiteHUPIItemProduct(4), false);
 
 		assertThat(result.toBigDecimal()).isEqualByComparingTo("4");
+	}
+
+	/**
+	 * Scan required but weight not captured at receipt: a normal receipt of N, e.g. 3 blocks with the last block's lot and best-before date.
+	 */
+	@Test
+	void notOnePiecePerScan_CUMode_qtyIsPieces()
+	{
+		final Quantity result = ReceiveGoodsCommand.computeQtyToReceive(BigDecimal.valueOf(3), uomKgId, null, false);
+
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("3");
+	}
+
+	@Test
+	void notOnePiecePerScan_TUMode_twoTUs()
+	{
+		final Quantity result = ReceiveGoodsCommand.computeQtyToReceive(BigDecimal.valueOf(2), uomKgId, finiteHUPIItemProduct(4), false);
+
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("8");
 	}
 
 	@Test
