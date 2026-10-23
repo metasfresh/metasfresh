@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -65,6 +66,11 @@ public class LUTUConfigurationPackingInstructionCheckerTest
 					final Quantity qty = invocation.getArgument(0);
 					return Quantitys.of(qty.toBigDecimal().divide(new BigDecimal("1000")), piUom);
 				});
+		Mockito.when(uomConversionBL.convertQuantityTo(Mockito.any(Quantity.class), Mockito.any(ProductId.class), Mockito.eq(configUom)))
+				.thenAnswer(invocation -> {
+					final Quantity qty = invocation.getArgument(0);
+					return Quantitys.of(qty.toBigDecimal().multiply(new BigDecimal("1000")), configUom);
+				});
 		Services.registerService(IUOMConversionBL.class, uomConversionBL);
 
 		checker = new LUTUConfigurationPackingInstructionChecker();
@@ -102,13 +108,34 @@ public class LUTUConfigurationPackingInstructionCheckerTest
 				.satisfies(e -> assertThat(((AdempiereException)e).getMessage()).contains("M_HU_LUTU_Configuration_QtyCUsPerTU_NotMatchingPackingInstruction"));
 	}
 
+	/**
+	 * 1 config-UOM = 0.4 PI-UOM; the config-UOM has precision 0, the PI-UOM precision 1.
+	 * The dialog stores 15 PI-UOM as 37.5 -> 38 config-UOM; converting 38 back gives 15.2 PI-UOM, which must not make the check refuse the receipt.
+	 */
+	@Test
+	public void qtyRoundedInConfigUOM_equalToConvertedPackingQty_accepted()
+	{
+		final HUPIItemProduct pip15 = HUPIItemProduct.builder()
+				.id(HUPIItemProductId.ofRepoId(1000))
+				.name(TranslatableStrings.anyLanguage("pip"))
+				.piItemId(HuPackingInstructionsItemId.ofRepoId(1001))
+				.qtyCUsPerTU(Quantitys.of(new BigDecimal("15"), piUom))
+				.build();
+		Mockito.when(huPIItemProductBL.getById(pip15.getId())).thenReturn(pip15);
+		Mockito.when(uomConversionBL.convertQuantityTo(Mockito.any(Quantity.class), Mockito.any(ProductId.class), Mockito.eq(configUom)))
+				.thenAnswer(invocation -> Quantitys.of(((Quantity)invocation.getArgument(0)).toBigDecimal().divide(new BigDecimal("0.4"), 0, RoundingMode.HALF_UP), configUom));
+		Mockito.when(uomConversionBL.convertQuantityTo(Mockito.any(Quantity.class), Mockito.any(ProductId.class), Mockito.eq(piUom)))
+				.thenAnswer(invocation -> Quantitys.of(((Quantity)invocation.getArgument(0)).toBigDecimal().multiply(new BigDecimal("0.4")).setScale(1, RoundingMode.HALF_UP), piUom));
+
+		assertThatCode(() -> checker.assertLUTUConfigurationMatchesPackingInstruction(config("38"))).doesNotThrowAnyException();
+		assertThatThrownBy(() -> checker.assertLUTUConfigurationMatchesPackingInstruction(config("37")))
+				.isInstanceOf(AdempiereException.class);
+	}
+
 	@Test
 	public void packingQty_expressedInConfigUOM()
 	{
 		final HUPIItemProduct pip = huPIItemProductBL.getById(HUPIItemProductId.ofRepoId(1000));
-		Mockito.when(uomConversionBL.convertQuantityTo(Mockito.any(Quantity.class), Mockito.any(ProductId.class), Mockito.eq(configUom)))
-				.thenAnswer(invocation -> Quantitys.of(((Quantity)invocation.getArgument(0)).toBigDecimal().multiply(new BigDecimal("1000")), configUom));
-
 		assertThat(checker.getQtyCUsPerTUInUom(pip, PRODUCT_ID, configUom)).isEqualByComparingTo("2000");
 		assertThat(checker.getQtyCUsPerTUInUom(pip, PRODUCT_ID, piUom)).isEqualByComparingTo("2");
 		assertThat(checker.getQtyCUsPerTUInUom(pip, PRODUCT_ID, null)).isEqualByComparingTo("2");

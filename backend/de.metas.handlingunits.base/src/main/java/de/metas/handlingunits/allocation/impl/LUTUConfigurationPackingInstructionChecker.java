@@ -8,7 +8,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -62,14 +61,14 @@ public class LUTUConfigurationPackingInstructionChecker
 			return;
 		}
 
-		final Quantity piQty = piItemProduct.getQtyCUsPerTU();
+		final ProductId productId = ProductId.ofRepoId(lutuConfig.getM_Product_ID());
 		final UomId configUomId = UomId.ofRepoIdOrNull(lutuConfig.getC_UOM_ID());
-		final Quantity configQty = Quantitys.of(lutuConfig.getQtyCUsPerTU(), configUomId != null ? configUomId : piQty.getUomId());
-		final Quantity configQtyInPiUom = convertTo(configQty, ProductId.ofRepoId(lutuConfig.getM_Product_ID()), piQty.getUomId());
 
-		if (configQtyInPiUom.toBigDecimal().compareTo(piQty.toBigDecimal()) != 0)
+		// compare in the configuration's UOM (rounded to that UOM's precision), the same number the receipt dialog stores
+		final BigDecimal expectedQty = getQtyCUsPerTUInUom(piItemProduct, productId, configUomId);
+		if (lutuConfig.getQtyCUsPerTU().compareTo(expectedQty) != 0)
 		{
-			throw new AdempiereException(MSG_QtyCUsPerTU_NotMatchingPackingInstruction, format(piQty.toBigDecimal()), format(configQtyInPiUom.toBigDecimal()));
+			throw new AdempiereException(MSG_QtyCUsPerTU_NotMatchingPackingInstruction, format(expectedQty), format(lutuConfig.getQtyCUsPerTU()));
 		}
 	}
 
