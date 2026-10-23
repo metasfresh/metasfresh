@@ -30,7 +30,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * One row returned by {@code de_metas_endcustomer_fresh_reports.Docs_Daily_Delivery_Revenue_Report(...)}.
+ * One row returned by {@code report.Docs_Daily_Delivery_Revenue_Report(...)}.
  */
 @Value
 @Builder
@@ -40,5 +40,8 @@ class DailyDeliveryRevenueReportRow
 	@Nullable String bpartner;
 	@Nullable String bpartnerGroup;
 	@Nullable BigDecimal deliveryRevenueNet;
+	@Nullable BigDecimal invoicedNet;
+	@Nullable BigDecimal openNet;
+	@Nullable Integer deliveryCount;
 	@Nullable String currencySymbol;
 }

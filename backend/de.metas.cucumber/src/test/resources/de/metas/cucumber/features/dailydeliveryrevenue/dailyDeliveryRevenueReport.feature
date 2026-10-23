@@ -99,8 +99,8 @@ Feature: Daily Revenue based on Delivery
 
     # The function under test does not exist yet -- this call fails (TDD RED).
     Then Docs_Daily_Delivery_Revenue_Report for C_BPartner "customer_ddr" between "2026-05-04" and "2026-05-04" returns:
-      | Day        | DeliveryRevenueNet |
-      | 2026-05-04 | 70.00              |
+      | Day        | DeliveryRevenueNet | InvoicedNet | OpenNet | DeliveryCount |
+      | 2026-05-04 | 70.00              | 20.00       | 50.00   | 2             |
 
 
   # ##########################################################################
@@ -203,9 +203,11 @@ Feature: Daily Revenue based on Delivery
 
     # Day D total: 50.00 (open A) + 20.00 (invoiced B) - 10.00 (return of C) = 60.00.
     # Delivery C's own +10.00 is on D-1, outside this [D,D] scope.
+    # Berechnet (invoiced) = 20.00 (delivery B only); Offen (open) = 50.00 (A) - 10.00 (return, never invoiced) = 40.00.
+    # DeliveryCount = 3 distinct M_InOut on day D: shipment_tc2a, shipment_tc2b, return_tc2.
     Then Docs_Daily_Delivery_Revenue_Report for C_BPartner "customer_ddr" between "2026-05-05" and "2026-05-05" returns:
-      | Day        | DeliveryRevenueNet |
-      | 2026-05-05 | 60.00              |
+      | Day        | DeliveryRevenueNet | InvoicedNet | OpenNet | DeliveryCount |
+      | 2026-05-05 | 60.00              | 20.00       | 40.00   | 3             |
 
 
   # ##########################################################################
@@ -260,9 +262,10 @@ Feature: Daily Revenue based on Delivery
       | ic_tc3                            | orderLine_tc3             | 4            | 20.00           |
 
     # Day total: 30.00 (invoiced) + 20.00 (open) = 50.00 -- no double count, no gap.
+    # DeliveryCount = 1 (a single M_InOut, shipment_tc3).
     Then Docs_Daily_Delivery_Revenue_Report for C_BPartner "customer_ddr" between "2026-05-06" and "2026-05-06" returns:
-      | Day        | DeliveryRevenueNet |
-      | 2026-05-06 | 50.00              |
+      | Day        | DeliveryRevenueNet | InvoicedNet | OpenNet | DeliveryCount |
+      | 2026-05-06 | 50.00              | 30.00       | 20.00   | 1             |
 
 
   # ##########################################################################
@@ -319,9 +322,10 @@ Feature: Daily Revenue based on Delivery
       | invoice_tc3b            | product_ddr             | 5           | 1.67       |
 
     # Day total: 1.67 (actual invoiced net) + 0.67 (round(0.333 x 2) open) = 2.34
+    # DeliveryCount = 1 (a single M_InOut, shipment_tc3b).
     Then Docs_Daily_Delivery_Revenue_Report for C_BPartner "customer_ddr" between "2026-05-07" and "2026-05-07" returns:
-      | Day        | DeliveryRevenueNet |
-      | 2026-05-07 | 2.34               |
+      | Day        | DeliveryRevenueNet | InvoicedNet | OpenNet | DeliveryCount |
+      | 2026-05-07 | 2.34               | 1.67        | 0.67    | 1             |
 
 
   # ##########################################################################
@@ -382,15 +386,15 @@ Feature: Daily Revenue based on Delivery
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | NetAmtToInvoice |
       | ic_tc4b                           | orderLine_tc4b            | 20           | 100.00          |
 
-    # Filtered to partner A: only the 50.00 delivery, not partner B's 100.00.
+    # Filtered to partner A: only the 50.00 delivery, not partner B's 100.00. Fully unbilled -- all open.
     Then Docs_Daily_Delivery_Revenue_Report for C_BPartner "customer_ddr" between "2026-05-08" and "2026-05-08" returns:
-      | Day        | DeliveryRevenueNet |
-      | 2026-05-08 | 50.00              |
+      | Day        | DeliveryRevenueNet | InvoicedNet | OpenNet | DeliveryCount |
+      | 2026-05-08 | 50.00              | 0.00        | 50.00   | 1             |
 
-    # Filtered to partner B: only its own 100.00.
+    # Filtered to partner B: only its own 100.00. Fully unbilled -- all open.
     Then Docs_Daily_Delivery_Revenue_Report for C_BPartner "customer_tc4b" between "2026-05-08" and "2026-05-08" returns:
-      | Day        | DeliveryRevenueNet |
-      | 2026-05-08 | 100.00             |
+      | Day        | DeliveryRevenueNet | InvoicedNet | OpenNet | DeliveryCount |
+      | 2026-05-08 | 100.00             | 0.00        | 100.00  | 1             |
 
     # A date range excluding day D returns no row for D.
     Then Docs_Daily_Delivery_Revenue_Report between "2026-05-09" and "2026-05-09" returns:

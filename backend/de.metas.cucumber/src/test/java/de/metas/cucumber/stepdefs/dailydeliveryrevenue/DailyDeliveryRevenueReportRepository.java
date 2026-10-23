@@ -33,7 +33,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 
 /**
- * Thin wrapper around {@code de_metas_endcustomer_fresh_reports.Docs_Daily_Delivery_Revenue_Report(...)} — a
+ * Thin wrapper around {@code report.Docs_Daily_Delivery_Revenue_Report(...)} — a
  * PostgreSQL {@code RETURNS TABLE} function. Raw SQL is unavoidable here (the function cannot be called via
  * {@code IQueryBL} or any DAO), which is why this repository uses {@link DB#retrieveRowsOutOfTrx}.
  * A narrow exception to the "avoid direct SQL in step defs" rule.
@@ -46,8 +46,8 @@ public class DailyDeliveryRevenueReportRepository
 			@NonNull final LocalDate dateFrom,
 			@NonNull final LocalDate dateTo)
 	{
-		final String sql = "SELECT day, bpartner, bpartner_group, delivery_revenue_net, cursymbol"
-				+ " FROM de_metas_endcustomer_fresh_reports.Docs_Daily_Delivery_Revenue_Report("
+		final String sql = "SELECT day, bpartner, bpartner_group, delivery_revenue_net, invoiced_net, open_net, delivery_count, cursymbol"
+				+ " FROM report.Docs_Daily_Delivery_Revenue_Report("
 				+ "      p_bpartner_id   => ?,"
 				+ "      p_bp_group_id   => ?,"
 				+ "      p_date_from     => ?::date,"
@@ -67,6 +67,9 @@ public class DailyDeliveryRevenueReportRepository
 				.bpartner(rs.getString("bpartner"))
 				.bpartnerGroup(rs.getString("bpartner_group"))
 				.deliveryRevenueNet(rs.getBigDecimal("delivery_revenue_net"))
+				.invoicedNet(rs.getBigDecimal("invoiced_net"))
+				.openNet(rs.getBigDecimal("open_net"))
+				.deliveryCount(rs.getObject("delivery_count", Integer.class))
 				.currencySymbol(rs.getString("cursymbol"))
 				.build();
 	}

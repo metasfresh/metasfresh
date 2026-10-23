@@ -51,7 +51,7 @@ public class DailyDeliveryRevenueReport_StepDef
 	@NonNull private final DailyDeliveryRevenueReportRepository dailyDeliveryRevenueReportRepository;
 
 	/**
-	 * Asserts the output of {@code de_metas_endcustomer_fresh_reports.Docs_Daily_Delivery_Revenue_Report(...)} —
+	 * Asserts the output of {@code report.Docs_Daily_Delivery_Revenue_Report(...)} —
 	 * the SQL function backing the "Tagesumsatz (auf Basis Lieferung)" Jasper report.
 	 *
 	 * <p>The optional {@code C_BPartner_ID} filters the function call by {@code p_bpartner_id}; the optional
@@ -62,16 +62,20 @@ public class DailyDeliveryRevenueReport_StepDef
 	 * <ul>
 	 *     <li>{@code Day} — (required) the expected day, ISO local date</li>
 	 *     <li>{@code DeliveryRevenueNet} — (required) the expected day total</li>
+	 *     <li>{@code InvoicedNet} — (required) the expected "davon berechnet" (already-invoiced) portion</li>
+	 *     <li>{@code OpenNet} — (required) the expected "davon offen" (not-yet-invoiced) portion</li>
+	 *     <li>{@code DeliveryCount} — (required) the expected count of distinct contributing {@code M_InOut}, incl. returns</li>
 	 * </ul>
 	 *
 	 * <p><b>Matching philosophy</b>: exact row count, matched by {@code Day} (one row per day is the
-	 * report's own invariant — AC2).
+	 * report's own invariant — AC2). For every matched row, also asserts the invariant
+	 * {@code DeliveryRevenueNet = InvoicedNet + OpenNet} holds on the actual row.
 	 *
 	 * <p><b>Gherkin usage example</b>:
 	 * <pre>{@code
 	 * Then Docs_Daily_Delivery_Revenue_Report for C_BPartner "customer" between "2026-05-04" and "2026-05-04" returns:
-	 *   | Day        | DeliveryRevenueNet |
-	 *   | 2026-05-04 | 70.00               |
+	 *   | Day        | DeliveryRevenueNet | InvoicedNet | OpenNet | DeliveryCount |
+	 *   | 2026-05-04 | 70.00              | 20.00       | 50.00   | 2             |
 	 * }</pre>
 	 */
 	@Then("Docs_Daily_Delivery_Revenue_Report for C_BPartner {string} between {string} and {string} returns:")
@@ -102,8 +106,8 @@ public class DailyDeliveryRevenueReport_StepDef
 	 * @cucumber.example
 	 * <pre>{@code
 	 * Then Docs_Daily_Delivery_Revenue_Report between "2026-05-04" and "2026-05-04" returns:
-	 *   | Day        | DeliveryRevenueNet |
-	 *   | 2026-05-04 | 70.00               |
+	 *   | Day        | DeliveryRevenueNet | InvoicedNet | OpenNet | DeliveryCount |
+	 *   | 2026-05-04 | 70.00              | 20.00       | 50.00   | 2             |
 	 * }</pre>
 	 */
 	@Then("Docs_Daily_Delivery_Revenue_Report between {string} and {string} returns:")
@@ -141,6 +145,9 @@ public class DailyDeliveryRevenueReport_StepDef
 		{
 			final LocalDate expectedDay = expected.getAsLocalDate("Day");
 			final BigDecimal expectedRevenue = expected.getAsBigDecimal("DeliveryRevenueNet");
+			final BigDecimal expectedInvoicedNet = expected.getAsBigDecimal("InvoicedNet");
+			final BigDecimal expectedOpenNet = expected.getAsBigDecimal("OpenNet");
+			final int expectedDeliveryCount = expected.getAsInt("DeliveryCount");
 
 			final Optional<DailyDeliveryRevenueReportRow> actualRow = actualRows.stream()
 					.filter(row -> expectedDay.equals(row.getDay()))
@@ -150,9 +157,30 @@ public class DailyDeliveryRevenueReport_StepDef
 					.as("Docs_Daily_Delivery_Revenue_Report: no row for day %s\n    all actual rows:\n%s", expectedDay, actualRowsDump)
 					.isPresent();
 
-			actualRow.ifPresent(row -> softly.assertThat(row.getDeliveryRevenueNet())
-					.as("Docs_Daily_Delivery_Revenue_Report: DeliveryRevenueNet for day %s", expectedDay)
-					.isEqualByComparingTo(expectedRevenue));
+			actualRow.ifPresent(row -> {
+				softly.assertThat(row.getDeliveryRevenueNet())
+						.as("Docs_Daily_Delivery_Revenue_Report: DeliveryRevenueNet for day %s", expectedDay)
+						.isEqualByComparingTo(expectedRevenue);
+
+				softly.assertThat(row.getInvoicedNet())
+						.as("Docs_Daily_Delivery_Revenue_Report: InvoicedNet (davon berechnet) for day %s", expectedDay)
+						.isEqualByComparingTo(expectedInvoicedNet);
+
+				softly.assertThat(row.getOpenNet())
+						.as("Docs_Daily_Delivery_Revenue_Report: OpenNet (davon offen) for day %s", expectedDay)
+						.isEqualByComparingTo(expectedOpenNet);
+
+				softly.assertThat(row.getDeliveryCount())
+						.as("Docs_Daily_Delivery_Revenue_Report: DeliveryCount for day %s", expectedDay)
+						.isEqualTo(expectedDeliveryCount);
+
+				final BigDecimal actualSplitSum = (row.getInvoicedNet() != null && row.getOpenNet() != null)
+						? row.getInvoicedNet().add(row.getOpenNet())
+						: null;
+				softly.assertThat(actualSplitSum)
+						.as("Docs_Daily_Delivery_Revenue_Report: invariant DeliveryRevenueNet = InvoicedNet + OpenNet for day %s", expectedDay)
+						.isEqualByComparingTo(row.getDeliveryRevenueNet());
+			});
 		}
 
 		softly.assertAll();
