@@ -36,6 +36,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -70,9 +71,11 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -170,7 +173,7 @@ public class M_HU_LUTU_Configuration_StepDef
 					final AdMessageKey expectedErrorAdMessage = tableRow.getAsOptionalString("ErrorMessage_AD_Message").map(AdMessageKey::of).orElse(null);
 					if (expectedErrorAdMessage != null)
 					{
-						final long husBefore = countHUs();
+						final Set<Integer> husBefore = retrieveHuIdsOfOrder(ppOrder);
 						final long receiptCandidatesBefore = countReceiptCandidates(ppOrder);
 
 						final Throwable thrown = catchThrowable(receiveHUs::get);
@@ -181,7 +184,7 @@ public class M_HU_LUTU_Configuration_StepDef
 						tableRow.getAsOptionalString("ErrorMessage_Contains")
 								.ifPresent(text -> assertThat(refusal.getMessage()).contains(text));
 
-						assertThat(countHUs()).as("HUs created by the refused receipt").isEqualTo(husBefore);
+						assertThat(retrieveHuIdsOfOrder(ppOrder)).as("HUs assigned to / received for the order by the refused receipt").isEqualTo(husBefore);
 						assertThat(countReceiptCandidates(ppOrder)).as("receipt candidates created by the refused receipt").isEqualTo(receiptCandidatesBefore);
 						return;
 					}
@@ -355,9 +358,40 @@ public class M_HU_LUTU_Configuration_StepDef
 		return hus;
 	}
 
-	private long countHUs()
+	/**
+	 * The HUs that belong to the given order: the ones referenced by its receipt candidates ({@code PP_Order_Qty.M_HU_ID})
+	 * and the ones assigned to the order or to one of its BOM lines ({@code M_HU_Assignment}, which
+	 * {@code AbstractPPOrderReceiptHUProducer#addAssignedHUs} fills for the main product / co-product receipt).
+	 * Scoped to the order so that HUs created concurrently by other scenarios do not matter.
+	 */
+	private Set<Integer> retrieveHuIdsOfOrder(@NonNull final I_PP_Order ppOrder)
 	{
-		return queryBL.createQueryBuilder(I_M_HU.class).create().count();
+		final Set<Integer> huIds = new HashSet<>();
+
+		queryBL.createQueryBuilder(I_PP_Order_Qty.class)
+				.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.create()
+				.list(I_PP_Order_Qty.class)
+				.forEach(qty -> huIds.add(qty.getM_HU_ID()));
+
+		addAssignedHuIds(huIds, I_PP_Order.class, ppOrder.getPP_Order_ID());
+		queryBL.createQueryBuilder(I_PP_Order_BOMLine.class)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.create()
+				.list(I_PP_Order_BOMLine.class)
+				.forEach(bomLine -> addAssignedHuIds(huIds, I_PP_Order_BOMLine.class, bomLine.getPP_Order_BOMLine_ID()));
+
+		return huIds;
+	}
+
+	private void addAssignedHuIds(@NonNull final Set<Integer> huIds, @NonNull final Class<?> modelClass, final int recordId)
+	{
+		queryBL.createQueryBuilder(I_M_HU_Assignment.class)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(modelClass))
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
+				.create()
+				.list(I_M_HU_Assignment.class)
+				.forEach(assignment -> huIds.add(assignment.getM_HU_ID()));
 	}
 
 	private long countReceiptCandidates(@NonNull final I_PP_Order ppOrder)
