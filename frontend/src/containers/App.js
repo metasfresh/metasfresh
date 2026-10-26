@@ -1,6 +1,6 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 
 import '../assets/css/styles.scss';
@@ -61,10 +61,6 @@ const computeTitleFromState = (state) => {
 const App = () => {
   // const [pluginsLoading, setPluginsLoading] = useState(!!APP_PLUGINS.length);
   const auth = useAuth();
-  // the axios interceptor below is registered once, so it must read the
-  // current auth object (and its login state) through a ref
-  const authRef = useRef(auth);
-  authRef.current = auth;
   const dispatch = useDispatch();
   const store = useStore();
   const language = useSelector((state) => state.appHandler.me.language);
@@ -108,19 +104,16 @@ const App = () => {
         if (error.response.status == 401) {
           if (
             !location.pathname.includes('login') &&
-            !authRef.current.authRequestPending()
+            !auth.authRequestPending()
           ) {
             dispatch(setProcessSaved());
 
-            authRef.current.setRedirectRoute(location.pathname);
+            auth.setRedirectRoute(location.pathname);
 
             // we got not authenticated error, but locally still have the authenticated flag truthy
             // (ie user logged out in another window, or session timed out)
-            if (
-              authRef.current.isLoggedIn ||
-              store.getState().appHandler.isLogged
-            ) {
-              authRef.current.logout().finally(() => {
+            if (auth.isLoggedIn || store.getState().appHandler.isLogged) {
+              auth.logout().finally(() => {
                 history.push('/login');
               });
             } else {
@@ -150,24 +143,19 @@ const App = () => {
           }
 
           //if not logged in
-          if (
-            !authRef.current.isLoggedIn &&
-            !store.getState().appHandler.isLogged
-          ) {
-            return authRef.current
-              .checkAuthentication()
-              .then((authenticated) => {
-                if (authenticated) {
-                  history.push(location.pathname);
-                }
-              });
+          if (!auth.isLoggedIn && !store.getState().appHandler.isLogged) {
+            return auth.checkAuthentication().then((authenticated) => {
+              if (authenticated) {
+                history.push(location.pathname);
+              }
+            });
           }
         } else if (error.response.status == 502) {
           return; // silent error for 502 bad gateway (otherwise we will get a bunch of notif from the retries)
         } else if (error.response.status == 503) {
           dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
         } else if (error.response.status != 404) {
-          if (authRef.current.isLoggedIn) {
+          if (auth.isLoggedIn) {
             const errorMessenger = (code) => {
               switch (code) {
                 case 500:
