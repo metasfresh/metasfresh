@@ -25,6 +25,42 @@
     msg.appendChild(codeEl);
     msg.appendChild(document.createTextNode(' on this branch’s newest build.'));
   }
+  // Individual test links, for the two cases where the Behaviours node cannot
+  // stand in for them: there is no node at all, or the node covers fewer tests
+  // than carry the F-code. Without this the page could only say "no linkable
+  // node" — 83 feature/suite pairs on new-dawn-release, covering 339 tests.
+  function testList(version, s) {
+    if (!s.tests || !s.tests.length) { return null; }
+    var wrap = document.createElement('div');
+    var cap = document.createElement('div');
+    cap.style.cssText = 'margin:4px 0 2px;font-size:90%;color:#555';
+    var total = s.attributed || s.tests.length;
+    cap.textContent = s.tests.length < total
+      ? 'showing ' + s.tests.length + ' of ' + total + ' tests:'
+      : (s.tests.length === 1 ? 'the test:' : 'all ' + s.tests.length + ' tests:');
+    wrap.appendChild(cap);
+    var ul = document.createElement('ul');
+    ul.style.cssText = 'margin:0 0 8px';
+    s.tests.forEach(function (t) {
+      var href = Permalink.buildTestUrl(version, s.suite, t.uid);
+      if (!href) { return; }   // nothing to link at -> no entry, never href="null"
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = href;
+      a.textContent = t.name || t.uid;
+      li.appendChild(a);
+      if (t.status) {
+        var st = document.createElement('span');
+        st.style.cssText = 'margin-left:6px;font-size:85%;color:'
+          + (t.status === 'passed' ? '#2e7d32' : (t.status === 'failed' || t.status === 'broken' ? '#c62828' : '#777'));
+        st.textContent = t.status;
+        li.appendChild(st);
+      }
+      ul.appendChild(li);
+    });
+    wrap.appendChild(ul);
+    return wrap;
+  }
   function chooser(version, entry, suites) {
     msg.textContent = '';
     var h = document.createElement('p');
@@ -32,15 +68,27 @@
     var codeEl = document.createElement('code');
     codeEl.textContent = key;
     h.appendChild(codeEl);
-    h.appendChild(document.createTextNode(' has tests in ' + suites.length + ' suites — pick one:'));
+    h.appendChild(document.createTextNode(suites.length === 1
+      ? ' — tests in 1 suite:'
+      : ' has tests in ' + suites.length + ' suites — pick one:'));
     msg.appendChild(h);
     var ul = document.createElement('ul');
+    // "(most)" marks the suite with the most tests CARRYING the feature -- it
+    // used to mark whichever sorted first, which ranks on the node's leaf count.
+    var most = Permalink.mostCovered(suites);
     suites.forEach(function (s, i) {
       var li = document.createElement('li');
       var a = document.createElement('a');
-      a.href = Permalink.buildRedirectUrl(version, kind, entry, s.suite);
-      a.textContent = s.suite + ' — ' + s.count + (s.count === 1 ? ' test' : ' tests') + (i === 0 ? ' (most)' : '');
-      li.appendChild(a);
+      var label = Permalink.suiteLabel(s);
+      if (s.uid) {
+        a.href = Permalink.buildRedirectUrl(version, kind, entry, s.suite);
+        a.textContent = label + (s.suite === most ? ' (most)' : '');
+        li.appendChild(a);
+      } else {
+        li.appendChild(document.createTextNode(label + (s.suite === most ? ' (most)' : '')));
+      }
+      var tl = testList(version, s);
+      if (tl) { li.appendChild(tl); }
       ul.appendChild(li);
     });
     msg.appendChild(ul);
@@ -50,17 +98,10 @@
     .then(function (data) {
       var entry = Permalink.lookup(data, kind, key);
       if (!entry) { notFound(); return; }
-      var suites = Permalink.suitesByCount(entry);
-      // explicit &suite= override, or 0/1 suite -> go straight there (a 0-suite entry can't
-      // happen from the generator, but <=1 keeps it falling to notFound() rather than a 0-item chooser)
-      if (suite || suites.length <= 1) {
-        var url = Permalink.buildRedirectUrl(data.version, kind, entry, suite);
-        if (!url) { notFound(); return; }  // e.g. an &suite= value with no tests for this key, or an empty entry
-        location.replace(url);
-        return;
-      }
-      // multi-suite, no override -> surface the alternatives instead of silently redirecting
-      chooser(data.version, entry, suites);
+      var route = Permalink.decideRoute(data.version, kind, entry, suite);
+      if (route.action === 'notFound') { notFound(); return; }
+      if (route.action === 'redirect') { location.replace(route.url); return; }
+      chooser(data.version, entry, route.suites);
     })
     .catch(function (e) { msg.textContent = 'Could not resolve permalink: ' + e.message; });
 })();
