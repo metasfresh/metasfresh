@@ -624,7 +624,8 @@ public class HUTestHelper
 	/**
 	 * {@link IAggregationKeyRegistry} keeps its handlers in static state that {@link AdempiereTestHelper#init()} does not reset,
 	 * so the handlers registered by this helper would otherwise leak into every later test class of the same JVM.
-	 * This helper is not a JUnit class and can't have an {@code @AfterEach}, so the handlers are cleared when the next test calls {@link AdempiereTestHelper#init()}.
+	 * This helper is not a JUnit class and can't have an {@code @AfterEach}, so the handlers are cleared when the next test calls {@link AdempiereTestHelper#init()}
+	 * (same mechanism as in {@code HUPricingTestHelper}).
 	 */
 	private static void clearAggregationKeyHandlersOnNextInit(@NonNull final String registrationKey)
 	{

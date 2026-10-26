@@ -30,7 +30,7 @@ class HUTestHelperAggregationKeyHandlersCleanupTest
 	@Test
 	void inOutScheduleHandlers_areClearedByNextInit()
 	{
-		new HUTestHelper();
+		new HUTestHelper(); // default setup, with a transaction, as used by most tests
 		assertHandlersRegistered(ReceiptScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY);
 		assertHandlersRegistered(ShipmentScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY);
 
