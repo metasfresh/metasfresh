@@ -399,3 +399,77 @@ Feature: Daily Revenue based on Delivery
     # A date range excluding day D returns no row for D.
     Then Docs_Daily_Delivery_Revenue_Report between "2026-05-09" and "2026-05-09" returns:
       | Day | DeliveryRevenueNet |
+
+
+  # ##########################################################################
+  # TC5 -- a fully-credited customer return nets the day down by the credit memo
+  # ##########################################################################
+  @from:cucumber
+  @Id:S26873_TC5
+  @allure.label.epic:E0220_Financial
+  @allure.label.feature:F00969.2_Umsatzreport_Jasper
+  Scenario: A fully-credited customer return contributes a negative invoiced portion and no open portion
+    # Delivery C: qty 2 @ 5.00 = 10.00, dated the day BEFORE D -- its return (below) will land on D,
+    # but delivery C's own +10.00 stays on D-1, outside the report's [D,D] scope.
+    Given metasfresh has date and time 2026-05-10T09:00:00+01:00[Europe/Berlin]
+    And metasfresh contains M_Warehouse:
+      | Identifier    | IsQualityReturnWarehouse |
+      | warehouse_tc5 | Y                        |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | order_tc5c | true    | customer_ddr             | 2026-05-10  |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_tc5c | order_tc5c            | product_ddr             | 2          |
+    And the order identified by order_tc5c is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID.Identifier | IsToRecompute |
+      | schedule_tc5c | orderLine_tc5c            | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | schedule_tc5c                    | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | schedule_tc5c                    | shipment_tc5c         |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | NetAmtToInvoice |
+      | ic_tc5c                           | orderLine_tc5c            | 2            | 10.00           |
+
+    # Day D starts here.
+    Given metasfresh has date and time 2026-05-11T09:00:00+01:00[Europe/Berlin]
+
+    # Customer return TODAY (day D) of delivery C's full qty 2 @ 5.00. Its negated invoice candidate
+    # carries QtyDelivered = -2, PriceActual = 5.00.
+    And generate customer return from shipment
+      | M_InOut_ID.Identifier | CustomerReturn_ID |
+      | shipment_tc5c         | return_tc5        |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | return_tc5 | 2026-05-11   |
+    And the return inOut identified by return_tc5 is completed
+    # Wait for the return's own negated C_Invoice_Candidate to be found+committed before invoicing it.
+    And after not more than 60s, credit memo candidates are found:
+      | M_InOut_ID.Identifier | C_Invoice_Candidate_ID.Identifier | OPT.M_Product_ID.Identifier |
+      | return_tc5            | ic_return_tc5                     | product_ddr                 |
+
+    # Fully credit the return: process its IC into a COMPLETED credit memo (Gutschrift, DocBaseType ARC).
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_return_tc5                     |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic_return_tc5                     | creditMemo_tc5          |
+    # The credit memo stores its line amount POSITIVE (+10.00); the DocBaseType ARC carries the credit sign.
+    And validate created invoice lines
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | LineNetAmt |
+      | creditMemo_tc5          | product_ddr             | 2           | 10.00      |
+
+    # Day D: the only contributing delivery is the return. Fully credited, so there is NO open portion;
+    # the invoiced portion is the credit memo net NEGATED (a credited return reduces revenue).
+    #   davon offen      = 0.00   (nothing left uninvoiced)
+    #   davon berechnet  = -10.00 (credit memo net 10.00, negated)
+    #   Tagesumsatz      = -10.00
+    #   Anzahl Lieferungen = 1    (the single return M_InOut)
+    Then Docs_Daily_Delivery_Revenue_Report for C_BPartner "customer_ddr" between "2026-05-11" and "2026-05-11" returns:
+      | Day        | DeliveryRevenueNet | InvoicedNet | OpenNet | DeliveryCount |
+      | 2026-05-11 | -10.00             | -10.00      | 0.00    | 1             |
