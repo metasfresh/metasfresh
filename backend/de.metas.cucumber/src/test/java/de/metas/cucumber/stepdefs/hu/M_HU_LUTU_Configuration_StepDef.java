@@ -29,9 +29,9 @@ import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -400,7 +400,7 @@ public class M_HU_LUTU_Configuration_StepDef
 	private long countReceiptCandidates(@NonNull final I_PP_Order ppOrder)
 	{
 		return queryBL.createQueryBuilder(I_PP_Order_Qty.class)
-				.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID, PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
 				.create()
 				.count();
 	}
