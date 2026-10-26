@@ -44,7 +44,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class PackingInfoProcessParamsTest
 {
 	private static final BigDecimal QTY_PER_TU = new BigDecimal("15");
-	/** 1 packing-instruction UOM = 6 order UOM */
 	private static final BigDecimal ORDER_UOM_PER_PIP_UOM = new BigDecimal("6");
 	private static final ProductId PRODUCT_ID = ProductId.ofRepoId(103);
 
@@ -115,7 +114,6 @@ public class PackingInfoProcessParamsTest
 		assertThat(config.getC_UOM_ID()).isEqualTo(defaultConfig.getC_UOM_ID());
 		assertThat(config.getQtyTU()).isEqualByComparingTo("4");
 
-		// "Menge" opens with the TU count x quantity per TU, in the same (order) UOM
 		assertThat((BigDecimal)params.getParameterDefaultValue(PackingInfoProcessParams.PARAM_QtyTotalReceived)).isEqualByComparingTo("630"); // 90 x 7
 	}
 

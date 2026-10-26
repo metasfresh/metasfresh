@@ -361,9 +361,8 @@ public class M_HU_LUTU_Configuration_StepDef
 	}
 
 	/**
-	 * The HUs that belong to the given order: the ones referenced by its receipt candidates ({@code PP_Order_Qty.M_HU_ID})
-	 * and the ones assigned to the order or to one of its BOM lines ({@code M_HU_Assignment}, which
-	 * {@code AbstractPPOrderReceiptHUProducer#addAssignedHUs} fills for the main product / co-product receipt).
+	 * Receipt candidates' HUs ({@code PP_Order_Qty.M_HU_ID}) plus the HUs assigned to the order or its BOM lines
+	 * ({@code M_HU_Assignment}, filled by {@code AbstractPPOrderReceiptHUProducer#addAssignedHUs}).
 	 * Scoped to the order so that HUs created concurrently by other scenarios do not matter.
 	 */
 	private Set<HuId> retrieveHuIdsOfOrder(@NonNull final I_PP_Order ppOrder)
@@ -418,9 +417,6 @@ public class M_HU_LUTU_Configuration_StepDef
 		return null;
 	}
 
-	/**
-	 * Asserts the received LU: number of TUs (aggregated TUs counted) and quantity per TU, derived from the LU's storage.
-	 */
 	private void assertLUStructure(@NonNull final I_M_HU lu, @NonNull final DataTableRow tableRow)
 	{
 		final Optional<Integer> expectedTUsPerLU = tableRow.getAsOptionalInt("ExpectedTUsPerLU");

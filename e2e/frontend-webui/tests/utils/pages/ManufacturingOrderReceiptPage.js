@@ -30,18 +30,13 @@ export class ManufacturingOrderReceiptPage {
     return this.#field(columnName).locator('input.input-field');
   }
 
-  /**
-   * Open the manufacturing order and its issue/receipt lines view ("Produzieren").
-   * @param {Object} options
-   * @param {number} options.ppOrderId - PP_Order_ID (from the masterdata response)
-   */
   static async openLinesView({ ppOrderId }) {
     return await test.step(`ManufacturingOrderReceiptPage - Open lines view of order ${ppOrderId}`, async () => {
       const page = getPage();
       await page.goto(`${FRONTEND_BASE_URL}/window/${MANUFACTURING_ORDER_WINDOW_ID}/${ppOrderId}`);
       await page.getByTestId('status-button').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
-      // Actions menu (Alt+1), then the language-independent action by its internal name
+      // Actions menu (Alt+1); the action is addressed by its internal name, which is language-independent
       await page.keyboard.press('Alt+1');
       const launcher = page.getByTestId('action-WEBUI_PP_Order_IssueReceipt_Launcher');
       await launcher.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -52,11 +47,8 @@ export class ManufacturingOrderReceiptPage {
   }
 
   /**
-   * Open the "Empfangen" dialog on a line of the lines view: the main product line (row 0) by default,
-   * or e.g. a co-product line. The action is chosen explicitly by its internal name - the default quick
-   * action depends on the order (it can be another action, e.g. completing the planning).
-   * @param {Object} options
-   * @param {number} [options.rowIndex=0] - row of the lines view to receive on
+   * The action is chosen by its internal name: the default quick action depends on the order (it can be e.g. completing the planning).
+   * @param {number} [options.rowIndex=0] - row of the lines view to receive on: the main product line (0) or e.g. a co-product line
    */
   static async openReceiptDialog({ rowIndex = 0 } = {}) {
     return await test.step('ManufacturingOrderReceiptPage - Open receipt dialog', async () => {
@@ -80,22 +72,20 @@ export class ManufacturingOrderReceiptPage {
       await receiveAction.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await receiveAction.click();
 
-      // not QtyTU: it is hidden for "No Packing Item" and for individual CUs
+      // waits for the start button, not for QtyTU: that is hidden for "No Packing Item" and for individual CUs
       await page.getByTestId('process-modal-start-button').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
       await this.#settle();
     });
   }
 
-  /** Wait for the dialog's pending requests to finish. */
   static async #settle() {
     const page = getPage();
     await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
   }
 
   /**
-   * Run the action that triggers a dialog parameter change and wait for the server's answer (the PATCH that carries
-   * the recomputed dependent fields). The wait is registered before the action. If the action throws, its error is
-   * the one reported; there is no fallback: when the expected PATCH does not come, the wait times out and the test fails.
+   * The wait for the server's PATCH (it carries the recomputed dependent fields) is registered before the action.
+   * No fallback: when the PATCH does not come, the wait times out and the test fails.
    */
   static async #actAndAwaitParameterChange(action) {
     await Promise.all([
@@ -108,16 +98,15 @@ export class ManufacturingOrderReceiptPage {
   }
 
   /**
-   * Fill a field, leave it and wait for the server's answer to the change. Without waiting for that response the
-   * dependent fields are read before they are updated. The frontend sends no PATCH when the value did not change,
-   * so a value that is already shown is only asserted, never waited for.
+   * Without waiting for the server's answer the dependent fields are read before they are updated.
+   * The frontend sends no PATCH when the value did not change, so an already shown value is never waited for.
    */
   static async #fillAndWaitForRecompute(columnName, text) {
     const input = this.#input(columnName);
     const current = await this.getValue(columnName);
     const unchanged = text === '' ? current === '' : current !== '' && Number(current) === Number(text);
     if (unchanged) {
-      return; // nothing to change; the value is already what was asked for
+      return;
     }
     await input.click();
     // the widget registers the focus one tick after the DOM focus; a blur before that is ignored and sends no PATCH
@@ -136,8 +125,7 @@ export class ManufacturingOrderReceiptPage {
   }
 
   /**
-   * Click an entry of the dropdown opened on the given field. If the entry is the one the field already shows,
-   * nothing changes and no PATCH is sent: the list is closed again and that is all.
+   * If the entry is the one the field already shows, no PATCH is sent: the list is just closed again.
    * @returns {Promise<boolean>} true when the value was changed (and the server answered), false when it was already selected
    */
   static async #chooseOption(columnName, optionLocator) {
@@ -156,12 +144,7 @@ export class ManufacturingOrderReceiptPage {
     return true;
   }
 
-  /**
-   * Choose an entry of a dropdown field (packing instruction, pallet) and wait for the server's answer.
-   * An entry that is already selected is only checked (the field keeps showing it), not re-chosen.
-   * @param {string} columnName
-   * @param {string|RegExp} option - text (or pattern) of the entry
-   */
+  /** An entry that is already selected is only checked (the field keeps showing it), not re-chosen. */
   static async selectOption(columnName, option) {
     return await test.step(`ManufacturingOrderReceiptPage - Select ${option} in ${columnName}`, async () => {
       const page = getPage();
@@ -185,7 +168,6 @@ export class ManufacturingOrderReceiptPage {
     });
   }
 
-  /** Empty a dropdown field (pallet) by its clear icon and wait for the server's answer. An already empty field is left as it is. */
   static async clearOption(columnName) {
     return await test.step(`ManufacturingOrderReceiptPage - Clear ${columnName}`, async () => {
       if ((await this.getValue(columnName)) === '') {
@@ -199,12 +181,11 @@ export class ManufacturingOrderReceiptPage {
     });
   }
 
-  /** Is the dialog field rendered at all? (hidden parameters are not rendered) */
+  /** Hidden parameters are not rendered. */
   static async isFieldVisible(columnName) {
     return (await this.#field(columnName).count()) > 0;
   }
 
-  /** The localized caption of the field. */
   static async getLabel(columnName) {
     return (await this.#field(columnName).locator('label').first().textContent()).trim();
   }
@@ -220,30 +201,24 @@ export class ManufacturingOrderReceiptPage {
     return value === '' ? null : Number(value);
   }
 
-  /** True when the user cannot type into the field. */
   static async isReadOnly(columnName) {
     const input = this.#input(columnName);
     return (await input.isDisabled()) || (await input.getAttribute('readonly')) !== null;
   }
 
-  /** Type a number into a field and wait until the dependent fields are recomputed. */
   static async setNumber(columnName, value) {
     return await test.step(`ManufacturingOrderReceiptPage - Set ${columnName} = ${value}`, async () => {
       await this.#fillAndWaitForRecompute(columnName, String(value));
     });
   }
 
-  /** Empty a field and wait until the dependent fields are recomputed. */
   static async clear(columnName) {
     return await test.step(`ManufacturingOrderReceiptPage - Clear ${columnName}`, async () => {
       await this.#fillAndWaitForRecompute(columnName, '');
     });
   }
 
-  /**
-   * Press "Start" and expect the process to be refused with an error toast. The dialog stays open.
-   * @returns {Promise<string>} the text of the error toast
-   */
+  /** @returns {Promise<string>} the text of the error toast; the dialog stays open */
   static async startExpectingRefusal() {
     return await test.step('ManufacturingOrderReceiptPage - Start (expect refusal)', async () => {
       const page = getPage();
@@ -258,12 +233,10 @@ export class ManufacturingOrderReceiptPage {
     });
   }
 
-  /** True when the dialog does not let the user press "Start" (a mandatory field is empty). */
   static async isStartDisabled() {
     return await getPage().getByTestId('process-modal-start-button').isDisabled();
   }
 
-  /** Press "Start" and wait for the dialog to close (the receipt was created). */
   static async start() {
     return await test.step('ManufacturingOrderReceiptPage - Start', async () => {
       const page = getPage();
@@ -275,7 +248,6 @@ export class ManufacturingOrderReceiptPage {
     });
   }
 
-  /** Cancel the dialog without starting. */
   static async cancel() {
     return await test.step('ManufacturingOrderReceiptPage - Cancel dialog', async () => {
       const page = getPage();
@@ -284,7 +256,6 @@ export class ManufacturingOrderReceiptPage {
     });
   }
 
-  /** Assert a numeric dialog field. */
   static async expectNumber(columnName, expected) {
     expect(await this.getNumber(columnName), `${columnName} in the receipt dialog`).toBe(expected);
   }

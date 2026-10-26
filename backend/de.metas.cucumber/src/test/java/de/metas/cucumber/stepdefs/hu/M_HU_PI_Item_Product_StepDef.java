@@ -36,6 +36,8 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.generichumodel.PackagingCodeId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -48,11 +50,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -68,12 +69,15 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_IsO
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 @RequiredArgsConstructor
 public class M_HU_PI_Item_Product_StepDef
 {
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull private final M_HU_PI_Item_StepDefData huPiItemTable;
 	@NonNull private final M_Product_StepDefData productTable;
@@ -82,6 +86,32 @@ public class M_HU_PI_Item_Product_StepDef
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final TestContext restTestContext;
 
+	/**
+	 * Creates packing instructions (CU per TU), or updates the one already referenced by the row's identifier or matching product, TU item and capacity.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_HU_PI_Item_Product_ID</b> — (required) alias for cross-step reference<br>
+	 *   <b>M_HU_PI_Item_ID</b> — (required, identifier-ref or ID) the TU item<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the packed product<br>
+	 *   <b>Qty</b> — (required unless IsInfiniteCapacity=Y) quantity per TU<br>
+	 *   <b>C_UOM_ID.X12DE355</b> — (optional) UOM of Qty, default PCE<br>
+	 *   <b>IsInfiniteCapacity</b> — (optional) default N<br>
+	 *   <b>ValidFrom</b>, <b>IsAllowAnyProduct</b>, <b>IsDefaultForProduct</b>, <b>IsActive</b>, <b>Name</b>, <b>GTIN</b>, <b>UPC</b>, <b>IsOrderInTuUomWhenMatched</b>,
+	 *   <b>M_HU_PackagingCode_LU_Fallback_ID</b>, <b>GTIN_LU_PackingMaterial_Fallback</b>, <b>C_BPartner_ID</b> — (optional) set on the record<br>
+	 *   <b>ErrorMessage_AD_Message</b> — (optional, new records only) saving must be refused with this AD_Message's text; nothing is stored<br>
+	 * @cucumber.depends StepDefData: M_HU_PI_Item_StepDefData, M_Product_StepDefData, C_BPartner_StepDefData, M_HU_PackagingCode_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains M_HU_PI_Item_Product:
+	 *   | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | IsInfiniteCapacity |
+	 *   | huPIP                   | huPiItemTU      | product_1    | 10  | N                  |
+	 *   | huPIP_unlimited         | huPiItemTU2     | product_1    | 0   | Y                  |
+	 * And metasfresh contains M_HU_PI_Item_Product:
+	 *   | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | IsInfiniteCapacity | ErrorMessage_AD_Message                |
+	 *   | huPIP_zero              | huPiItemTU3     | product_1    | 0   | N                  | de.metas.handlingunits.InvalidQuantity |
+	 * </pre>
+	 */
 	@Given("metasfresh contains M_HU_PI_Item_Product:")
 	public void metasfresh_contains_m_hu_pi_item_product(@NonNull final DataTable dataTable)
 	{
@@ -165,6 +195,13 @@ public class M_HU_PI_Item_Product_StepDef
 
 		tableRow.getAsOptionalString(I_M_HU_PI_Item_Product.COLUMNNAME_UPC).ifPresent(huPiItemProductRecord::setUPC);
 
+		final AdMessageKey expectedErrorAdMessage = tableRow.getAsOptionalString("ErrorMessage_AD_Message").map(AdMessageKey::of).orElse(null);
+		if (expectedErrorAdMessage != null)
+		{
+			assertSaveRefused(huPiItemProductRecord, expectedErrorAdMessage);
+			return;
+		}
+
 		saveRecord(huPiItemProductRecord);
 
 		identifier.putOrReplace(huPiItemProductTable, huPiItemProductRecord);
@@ -173,52 +210,23 @@ public class M_HU_PI_Item_Product_StepDef
 		restTestContext.setIdVariableFromRow(tableRow, () -> hupiItemProductId);
 	}
 
-	/**
-	 * Inserts a fixed-capacity packing instruction with quantity 0 and without the "infinite capacity" flag by SQL,
-	 * the way a script or an import writes it, bypassing the model validation that rejects it on save.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_HU_PI_Item_Product_ID</b> — (required) alias for cross-step reference<br>
-	 *   <b>M_HU_PI_Item_ID</b> — (required, identifier-ref) the TU item<br>
-	 *   <b>M_Product_ID</b> — (required, identifier-ref) the packed product<br>
-	 *   <b>ValidFrom</b> — (optional) defaults to the cucumber default valid-from date<br>
-	 * @cucumber.depends StepDefData: M_HU_PI_Item_StepDefData, M_Product_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * And metasfresh contains M_HU_PI_Item_Product with quantity 0 and no infinite capacity, inserted by SQL:
-	 *   | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID |
-	 *   | huPIP_zero              | huPiItemTU      | product_1    |
-	 * </pre>
-	 */
-	@Given("metasfresh contains M_HU_PI_Item_Product with quantity 0 and no infinite capacity, inserted by SQL:")
-	public void metasfresh_contains_m_hu_pi_item_product_with_quantity_0_inserted_by_sql(@NonNull final DataTable dataTable)
+	private void assertSaveRefused(@NonNull final I_M_HU_PI_Item_Product huPiItemProductRecord, @NonNull final AdMessageKey expectedErrorAdMessage)
 	{
-		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID)
-				.forEach(this::insertHUPIItemProductWithZeroQtyBySql);
-	}
+		assertThat(InterfaceWrapperHelper.isNew(huPiItemProductRecord)).as("ErrorMessage_AD_Message is supported for new packing instructions only").isTrue();
 
-	private void insertHUPIItemProductWithZeroQtyBySql(@NonNull final DataTableRow tableRow)
-	{
-		final I_M_Product product = tableRow.getAsIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
-		final StepDefDataIdentifier huPiItemIdentifier = tableRow.getAsIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID);
-		final HuPackingInstructionsItemId huPiItemId = huPiItemTable.getIdOptional(huPiItemIdentifier)
-				.orElseGet(() -> huPiItemIdentifier.getAsId(HuPackingInstructionsItemId.class));
-		final LocalDate validFrom = tableRow.getAsOptionalLocalDate(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom).orElse(DEFAULT_ValidFrom);
+		final Throwable thrown = catchThrowable(() -> saveRecord(huPiItemProductRecord));
 
-		final int clientId = product.getAD_Client_ID();
-		final int huPiItemProductId = DB.getNextID(clientId, I_M_HU_PI_Item_Product.Table_Name);
-
-		DB.executeUpdateAndThrowExceptionOnFail(
-				"INSERT INTO M_HU_PI_Item_Product (M_HU_PI_Item_Product_ID, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive,"
-						+ " M_HU_PI_Item_ID, M_Product_ID, Qty, C_UOM_ID, ValidFrom, IsInfiniteCapacity)"
-						+ " VALUES (?, ?, 0, now(), 100, now(), 100, 'Y', ?, ?, 0, ?, ?, 'N')",
-				new Object[] { huPiItemProductId, clientId, huPiItemId.getRepoId(), product.getM_Product_ID(), product.getC_UOM_ID(), TimeUtil.asTimestamp(validFrom) },
-				ITrx.TRXNAME_None);
-
-		final I_M_HU_PI_Item_Product huPiItemProductRecord = InterfaceWrapperHelper.loadOutOfTrx(huPiItemProductId, I_M_HU_PI_Item_Product.class);
-		tableRow.getAsIdentifier().putOrReplace(huPiItemProductTable, huPiItemProductRecord);
+		assertThat(thrown)
+				.as("saving the packing instruction is refused")
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(msgBL.getMsg(Env.getCtx(), expectedErrorAdMessage));
+		assertThat(queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, huPiItemProductRecord.getM_HU_PI_Item_ID())
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, huPiItemProductRecord.getM_Product_ID())
+				.create()
+				.anyMatch())
+				.as("refused packing instruction is not stored")
+				.isFalse();
 	}
 
 	@And("update M_HU_PI_Item_Product:")

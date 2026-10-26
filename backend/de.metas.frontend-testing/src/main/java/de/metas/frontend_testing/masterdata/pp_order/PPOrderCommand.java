@@ -2,12 +2,10 @@ package de.metas.frontend_testing.masterdata.pp_order;
 
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
-import de.metas.frontend_testing.masterdata.hu.PackingInstructions;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
@@ -15,7 +13,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -31,7 +28,6 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Map;
@@ -75,14 +71,6 @@ public class PPOrderCommand
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 		context.putIdentifier(identifier, ppOrderId);
 
-		if (request.getLutuConfigurationTU() == null
-				&& (request.getLutuConfigurationLU() != null
-				|| request.getLutuConfigurationQtyCUsPerTU() != null
-				|| request.getLutuConfigurationQtyTUs() != null))
-		{
-			throw new AdempiereException("lutuConfigurationLU / lutuConfigurationQtyCUsPerTU / lutuConfigurationQtyTUs require lutuConfigurationTU: " + request);
-		}
-
 		if (request.getLutuConfigurationTU() != null)
 		{
 			setLUTUConfiguration(ppOrder, productId, quantity.getUomId());
@@ -116,39 +104,11 @@ public class PPOrderCommand
 				uomId,
 				null,
 				true);
-		lutuConfiguration.setM_Locator_ID(ppOrder.getM_Locator_ID()); // like PPOrderDocumentLUTUConfigurationHandler: receive onto the order's locator
-		applyLUTUConfigurationOverrides(lutuConfiguration);
 		lutuConfigurationFactory.save(lutuConfiguration);
 
 		final de.metas.handlingunits.model.I_PP_Order huPPOrder = InterfaceWrapperHelper.create(ppOrder, de.metas.handlingunits.model.I_PP_Order.class);
 		huPPOrder.setM_HU_LUTU_Configuration(lutuConfiguration);
 		InterfaceWrapperHelper.save(huPPOrder);
-	}
-
-	private void applyLUTUConfigurationOverrides(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
-	{
-		if (request.getLutuConfigurationLU() != null)
-		{
-			final PackingInstructions packingInstructions = context.<PackingInstructions>getObject(request.getLutuConfigurationLU())
-					.orElseThrow(() -> new AdempiereException("No packing instructions found for " + request.getLutuConfigurationLU()));
-			final I_M_HU_PI_Item luPIItem = Check.assumeNotNull(packingInstructions.getLuPIItem(), "packing instructions {} must have an LU", request.getLutuConfigurationLU());
-			lutuConfiguration.setM_LU_HU_PI_ID(luPIItem.getM_HU_PI_Version().getM_HU_PI_ID());
-			lutuConfiguration.setM_LU_HU_PI_Item(luPIItem);
-			lutuConfiguration.setIsInfiniteQtyLU(true);
-			lutuConfiguration.setQtyLU(BigDecimal.ZERO);
-			lutuConfiguration.setIsInfiniteQtyTU(false);
-			lutuConfiguration.setQtyTU(luPIItem.getQty());
-		}
-		if (request.getLutuConfigurationQtyCUsPerTU() != null)
-		{
-			lutuConfiguration.setIsInfiniteQtyCU(false);
-			lutuConfiguration.setQtyCUsPerTU(request.getLutuConfigurationQtyCUsPerTU());
-		}
-		if (request.getLutuConfigurationQtyTUs() != null)
-		{
-			lutuConfiguration.setIsInfiniteQtyTU(false);
-			lutuConfiguration.setQtyTU(BigDecimal.valueOf(request.getLutuConfigurationQtyTUs()));
-		}
 	}
 
 	private void setPIItemProduct(@NonNull final I_PP_Order ppOrder)

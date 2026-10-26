@@ -164,9 +164,6 @@ public class PackingInfoProcessParams
 		return getRegularPackingInstructionOrNull(HUPIItemProductId.ofRepoIdOrNull(lutuConfig.getM_HU_PI_Item_Product_ID()));
 	}
 
-	/**
-	 * @return {@code true} if the given packing instruction is of unlimited capacity or has a quantity <= 0
-	 */
 	public static boolean isUnlimitedCapacity(@Nullable final HUPIItemProduct pip)
 	{
 		return pip != null && pip.isInfiniteCapacity();
@@ -185,7 +182,7 @@ public class PackingInfoProcessParams
 		final BigDecimal luCapacity = LUTUConfigurationPackingInstructionChecker.getLUCapacityLimit(defaultLUTUConfig.getM_LU_HU_PI_Item()).orElse(null);
 		if (luCapacity != null && storedQtyTU.compareTo(luCapacity) > 0)
 		{
-			return luCapacity; // never open above the pallet's capacity
+			return luCapacity;
 		}
 		return storedQtyTU;
 	}
@@ -222,7 +219,7 @@ public class PackingInfoProcessParams
 	}
 
 	/**
-	 * @return the packing instruction's quantity per TU in the UOM of the LU/TU configuration (the order's UOM), which is also the UOM of "Menge"
+	 * @return the packing instruction's quantity per TU in the UOM of the LU/TU configuration, which is also the UOM of "Menge"
 	 */
 	public BigDecimal getQtyCUsPerTUInConfigUom(@NonNull final HUPIItemProduct pip)
 	{
@@ -234,8 +231,7 @@ public class PackingInfoProcessParams
 	}
 
 	/**
-	 * @param qtyPerTU quantity per TU, in the UOM of "Menge"; see {@link #getQtyCUsPerTUInConfigUom(HUPIItemProduct)}
-	 * @return quantity per TU x TUs (x LUs with a pallet), or {@code null} if a needed count is missing
+	 * @return {@code null} if a needed count is missing
 	 */
 	@Nullable
 	public static BigDecimal computeQtyTotal(
@@ -282,9 +278,6 @@ public class PackingInfoProcessParams
 				.collect(LookupValuesList.collect());
 	}
 
-	/**
-	 * @return the first pallet (LU packing instruction item) offered for the given packing instruction, or {@code null} if none is offered
-	 */
 	@Nullable
 	public I_M_HU_PI_Item getFirstAvailableLuPIItemOrNull(@NonNull final I_M_HU_PI_Item_Product pip)
 	{

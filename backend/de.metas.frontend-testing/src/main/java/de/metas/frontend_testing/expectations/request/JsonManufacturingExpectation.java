@@ -15,7 +15,6 @@ import java.util.Map;
 public class JsonManufacturingExpectation
 {
 	@Nullable List<ReceivedHU> receivedHUs;
-	/** HUs received on co-product / by-product lines (the main product's are {@link #receivedHUs}) */
 	@Nullable List<ReceivedHU> receivedCoProductHUs;
 	@Nullable List<IssuedHU> issuedHUs;
 
@@ -31,8 +30,7 @@ public class JsonManufacturingExpectation
 		@Nullable Identifier lu;
 		@Nullable Identifier tu;
 		@Nullable QtyAndUOMString qty;
-		/** true: received as loose CUs, i.e. neither on an LU nor in a TU */
-		@Nullable Boolean loose;
+		@Nullable Boolean looseCUs;
 	}
 
 	/**

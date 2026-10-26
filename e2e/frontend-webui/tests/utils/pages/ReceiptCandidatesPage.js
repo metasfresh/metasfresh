@@ -237,11 +237,7 @@ export class ReceiptCandidatesPage {
     });
   }
 
-  /**
-   * The localized caption of a field of the open process dialog, addressed by its language-independent ColumnName.
-   *
-   * @param {string} columnName - ColumnName of the process parameter (e.g. "QtyCUsPerTU")
-   */
+  /** @param {string} columnName - language-independent ColumnName of the process parameter (e.g. "QtyCUsPerTU") */
   static async getProcessFieldLabel(columnName) {
     return await test.step(`ReceiptCandidatesPage - Read label of process field ${columnName}`, async () => {
       const label = getPage().locator(`.panel-modal-content .form-field-${columnName} label`).first();
@@ -250,7 +246,6 @@ export class ReceiptCandidatesPage {
     });
   }
 
-  /** Cancel the open process dialog without starting it. */
   static async cancelProcessDialog() {
     return await test.step('ReceiptCandidatesPage - Cancel process dialog', async () => {
       const page = getPage();
@@ -259,7 +254,6 @@ export class ReceiptCandidatesPage {
     });
   }
 
-  /** Type a number into a field of the open process dialog (addressed by ColumnName). */
   static async setProcessNumberField(columnName, value) {
     return await test.step(`ReceiptCandidatesPage - Set process field ${columnName} = ${value}`, async () => {
       const input = getPage().locator(`.panel-modal-content .form-field-${columnName} input.input-field`);
@@ -282,7 +276,6 @@ export class ReceiptCandidatesPage {
     });
   }
 
-  /** Press "Start" of the open process dialog. */
   static async startProcess() {
     return await test.step('ReceiptCandidatesPage - Start process', async () => {
       const startButton = getPage().getByTestId('process-modal-start-button');
@@ -291,10 +284,7 @@ export class ReceiptCandidatesPage {
     });
   }
 
-  /**
-   * The rows of the HU editor view that opens after a receipt, one array of trimmed cell texts per row.
-   * Rows are read from the view as the server delivered it.
-   */
+  /** One array of trimmed cell texts per row of the HU editor view that opens after a receipt. */
   static async readHUEditorRows() {
     return await test.step('ReceiptCandidatesPage - Read HU editor rows', async () => {
       const rows = getPage().locator('.panel-modal .table tbody tr');

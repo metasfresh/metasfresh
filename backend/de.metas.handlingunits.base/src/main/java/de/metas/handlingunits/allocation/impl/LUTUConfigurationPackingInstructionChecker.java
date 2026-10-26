@@ -73,8 +73,7 @@ public class LUTUConfigurationPackingInstructionChecker
 	}
 
 	/**
-	 * @return the packing instruction's quantity per TU, expressed in the given UOM (e.g. the UOM of an LU/TU configuration);
-	 * the number the {@link #assertLUTUConfigurationMatchesPackingInstruction(I_M_HU_LUTU_Configuration)} check expects for a finite-capacity packing instruction.
+	 * @return the packing instruction's quantity per TU, expressed in the given UOM
 	 * @param targetUomId {@code null} means the packing instruction's own UOM
 	 */
 	public BigDecimal getQtyCUsPerTUInUom(

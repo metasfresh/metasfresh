@@ -153,7 +153,7 @@ public class AssertManufacturingExpectationsCommand
 				context.putSameOrMissingId("tu", expectation.getTu(), tuId, HuId.class);
 			}
 
-			if (Boolean.TRUE.equals(expectation.getLoose()))
+			if (Boolean.TRUE.equals(expectation.getLooseCUs()))
 			{
 				assertThat(getLuId(actual)).as("loose CUs are not on an LU").isNull();
 				assertThat(getTuId(actual)).as("loose CUs are not in a TU").isNull();

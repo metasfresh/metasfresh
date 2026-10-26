@@ -22,7 +22,7 @@ import { ReceiptCandidatesPage } from '../utils/pages/ReceiptCandidatesPage';
  */
 
 const QTY_PER_TU = 15; // packing instruction "x 15 Stk"
-const PALLET_CAPACITY = 4; // TUs per pallet
+const PALLET_CAPACITY = 4;
 const PO_QTY = '60';
 const QTY_LOOSE_CUS = 37; // received loose; differs from the order quantity and from the packing instruction quantity
 
@@ -34,7 +34,6 @@ const LANGUAGES = [
   { language: 'en_US', label: 'English', qtyPerTULabel: 'Qty CU per TU', qtyCULabel: 'Quantity CU' },
 ];
 
-/** Purchase order for a product that has a packing instruction, completed; opens its receipt candidate. */
 const openReceiptCandidateOfNewPurchaseOrder = async (language) => {
   const masterdata = await Backend.createMasterdata({
     language,
@@ -106,7 +105,6 @@ LANGUAGES.forEach(({ language, label, qtyPerTULabel, qtyCULabel }) => {
       await ReceiptCandidatesPage.startProcess();
       await ReceiptCandidatesPage.waitForReceiptCreation();
 
-      // the received HU, read back from the server's HU editor view
       const receivedHUs = await ReceiptCandidatesPage.readHUEditorRows();
       expect(receivedHUs.length, 'one loose-CU HU received').toBe(1);
       // a whole cell is the quantity (e.g. "37" or "37.000"); HU code / date cells cannot match by digits inside them

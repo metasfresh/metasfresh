@@ -94,7 +94,7 @@ public class WEBUI_PP_Order_Receipt
 	private boolean p_IsPIPUnlimitedCapacity;
 
 	// not mandatory here: a mandatory @Param keeps its old value when the user empties the field, so "Menge" could not follow;
-	// the AD flag still makes the field required in the dialog and the start checks it (PackingInfoProcessParams#createAndSaveNewLUTUConfig)
+	// the AD flag and PackingInfoProcessParams#createAndSaveNewLUTUConfig still require it
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyTU)
 	private BigDecimal p_QtyTU;
 
@@ -109,7 +109,6 @@ public class WEBUI_PP_Order_Receipt
 	private boolean isReceiveIndividualCUs;
 
 	private transient PackingInfoProcessParams _packingInfoParams;
-	// null until the first packing instruction value was seen
 	@Nullable private HUPIItemProductId lastSeenPackingInstructionId;
 
 	/**
@@ -286,10 +285,7 @@ public class WEBUI_PP_Order_Receipt
 		updateQtyTotalReceived();
 	}
 
-	/**
-	 * Fixed capacity only: "Menge" = packing instruction quantity x "TU Anzahl" (x "LU Anzahl" with a pallet).
-	 * For unlimited capacity "Menge" is entered by the user.
-	 */
+	/** Unlimited capacity: "Menge" is entered by the user, so it is not derived. */
 	private void updateQtyTotalReceived()
 	{
 		final PackingInfoProcessParams params = getPackingInfoParams();
