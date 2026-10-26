@@ -69,6 +69,51 @@ const playBeep = () => {
   }
 };
 
+const NON_TEXT_INPUT_TYPES = [
+  'checkbox',
+  'radio',
+  'button',
+  'submit',
+  'reset',
+  'hidden',
+  'image',
+  'file',
+];
+
+/**
+ * @returns true if the element is a field the user can type in: an editable text input, textarea, select or contenteditable
+ */
+const isTextEntryElement = (element) => {
+  if (!element) {
+    return false;
+  }
+  if (element.isContentEditable) {
+    return true;
+  }
+  const tagName = element.tagName ? element.tagName.toLowerCase() : '';
+  if (tagName === 'select') {
+    return !element.disabled;
+  }
+  if (tagName === 'textarea') {
+    return !element.readOnly && !element.disabled;
+  }
+  if (tagName === 'input') {
+    const type = (element.type || 'text').toLowerCase();
+    return (
+      !NON_TEXT_INPUT_TYPES.includes(type) &&
+      !element.readOnly &&
+      !element.disabled
+    );
+  }
+  return false;
+};
+
+/**
+ * @returns true if the dataId is the id of a saved document (not empty and not 'NEW')
+ */
+const isDocumentId = (dataId) =>
+  !!dataId && String(dataId).toUpperCase() !== 'NEW';
+
 /**
  * Simple lookup field, part of a composed lookup field (see Lookup.js).
  */
@@ -90,6 +135,8 @@ export class RawLookup extends Component {
     const debounceTime = props.item.lookupSearchStartDelayMillis || 100;
     //this.minQueryLength = props.item.lookupSearchStringMinLength || 0;
 
+    this.isFocusArmedBySwitchToAnotherDocument = false;
+
     this.typeaheadRequest = this.typeaheadRequest.bind(this);
     this.autocompleteSearchDebounced = debounce(
       debounceTime,
@@ -110,7 +157,7 @@ export class RawLookup extends Component {
       this.inputSearch.value = computeInputTextFromSelectedItem(defaultValue);
     }
     if (initialFocus && !this.inputSearch.value) {
-      this.focus();
+      this.focus({ shouldYieldToFocusedField: this.isDocumentHeaderLookup() });
     }
   }
 
@@ -144,14 +191,30 @@ export class RawLookup extends Component {
       !this.props.isModal &&
       this.props.subentity !== 'quickInput' &&
       prevProps.dataId !== this.props.dataId &&
+      !!this.props.dataId && // no document yet (e.g. briefly while the window reloads): nothing to arm for
       !shouldBeFocused &&
       !this.inputSearch.value
     ) {
+      // Leaving a saved document (Alt+N or "New" from an existing document) takes the focus even
+      // from a field of the previous document, whether the widget sees the next saved id directly
+      // (the usual case: createWindow redirects a NEW document to its id before its data is shown)
+      // or 'NEW' first. Only a NEW (or not yet known) document getting its id is the same document:
+      // there the user may already be typing in another field.
+      this.isFocusArmedBySwitchToAnotherDocument = isDocumentId(
+        prevProps.dataId
+      );
       this.setState({ shouldBeFocused: true });
     }
 
     if (autoFocus && !this.inputSearch.value && shouldBeFocused) {
-      this.focus();
+      // On mount, and when the same document arrives again (it got its id, or the window reloaded it
+      // after a websocket "document changed" event), do not take the focus from another field.
+      this.focus({
+        shouldYieldToFocusedField:
+          this.isDocumentHeaderLookup() &&
+          !this.isFocusArmedBySwitchToAnotherDocument,
+      });
+      this.isFocusArmedBySwitchToAnotherDocument = false;
       this.setState({ shouldBeFocused: false });
     }
 
@@ -914,13 +977,35 @@ export class RawLookup extends Component {
   };
 
   /**
+   * @returns true for a lookup of a document window's header: not in a modal (process parameters, overlays, "New" from
+   *   a lookup) and not in a quick-input row, where the widget is opened from another field and must take the focus
+   */
+  isDocumentHeaderLookup = () =>
+    !this.props.isModal && this.props.subentity !== 'quickInput';
+
+  /**
    * @method focus
    * @summary this is a method called from a top level component to focus the widget field
+   * @param {boolean} [shouldYieldToFocusedField] for the automatic focus of a document header's first field (on mount,
+   *   or when the document gets its id or is reloaded after a websocket "document changed" event): do not take the
+   *   focus from another field the user is already typing in
    */
-  focus = () => {
+  focus = ({ shouldYieldToFocusedField = false } = {}) => {
     // Because we want to make sure the focus() function is called after the component is rendered and displayed,
     // we just enqueue a request to be executed after this one
-    setTimeout(() => this.inputSearch && this.inputSearch.focus(), 0);
+    setTimeout(() => {
+      if (!this.inputSearch) {
+        return;
+      }
+      if (
+        shouldYieldToFocusedField &&
+        isTextEntryElement(document.activeElement) &&
+        document.activeElement !== this.inputSearch
+      ) {
+        return;
+      }
+      this.inputSearch.focus();
+    }, 0);
   };
 
   render() {
