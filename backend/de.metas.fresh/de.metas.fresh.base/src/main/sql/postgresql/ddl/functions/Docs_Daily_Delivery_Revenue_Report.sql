@@ -71,14 +71,24 @@ BEGIN
              -- synchronously when the invoice is created -- unlike C_Invoice_Candidate.QtyInvoiced, which is
              -- only brought current by a later, separate recompute pass (see open_portion note below) -- so
              -- this is the authoritative, already-settled source for "how much of this line is invoiced".
+             --
+             -- Sign: a customer credit memo (Gutschrift, DocBaseType 'ARC') stores its C_InvoiceLine.LineNetAmt
+             -- and QtyInvoiced POSITIVE -- the "credit" semantic is carried by the DocBaseType, not the sign.
+             -- A credited customer return must REDUCE revenue, so negate both for 'ARC' lines (ordinary AR
+             -- invoices 'ARI' keep their sign). This keeps the invoiced side consistent with the IC-level
+             -- QtyDelivered, which already carries the correct negative sign for return lines (see open_portion),
+             -- so the open qty of a fully-credited return nets to zero instead of inventing a phantom open qty.
              invoiced_portion AS (SELECT dl.m_inoutline_id,
-                                         SUM(ciline.linenetamt)  AS invoiced_net,
-                                         SUM(ciline.qtyinvoiced) AS invoiced_qty
+                                         SUM(ciline.linenetamt
+                                                 * CASE WHEN dt.docbasetype = 'ARC' THEN -1 ELSE 1 END)  AS invoiced_net,
+                                         SUM(ciline.qtyinvoiced
+                                                 * CASE WHEN dt.docbasetype = 'ARC' THEN -1 ELSE 1 END) AS invoiced_qty
                                   FROM delivery_lines dl
                                            INNER JOIN c_invoiceline ciline ON ciline.m_inoutline_id = dl.m_inoutline_id
                                                       AND ciline.isactive = 'Y'
                                            INNER JOIN c_invoice i ON i.c_invoice_id = ciline.c_invoice_id
                                                       AND i.docstatus IN ('CO', 'CL')
+                                           INNER JOIN c_doctype dt ON dt.c_doctype_id = i.c_doctype_id
                                   GROUP BY dl.m_inoutline_id),
 
              -- Open (not-yet-invoiced) portion per delivery line = IC per-unit price x open qty.
@@ -181,7 +191,8 @@ COMMENT ON FUNCTION report.Docs_Daily_Delivery_Revenue_Report(numeric, numeric, 
     For each completed sales delivery line (M_InOut IsSOTrx=Y, DocStatus CO/CL), the line''s net value is:
       invoiced portion (sum of matched, active C_InvoiceLine.LineNetAmt/QtyInvoiced via
         C_InvoiceLine.M_InOutLine_ID, for invoices with DocStatus CO/CL only -- reversed/drafted invoices
-        are excluded)
+        are excluded; a customer credit memo (DocBaseType ''ARC'') stores LineNetAmt/QtyInvoiced positive
+        and is negated here so a credited return reduces revenue)
       + open portion (C_Invoice_Candidate.PriceActual x (C_Invoice_Candidate.QtyDelivered - invoiced qty),
         rounded to currency precision; the IC-level QtyDelivered is used because each ordinary sales delivery
         line gets a dedicated 1:1 invoice candidate and the IC-level column carries the correct negative sign
