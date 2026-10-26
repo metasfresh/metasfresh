@@ -26,6 +26,23 @@ const DATE_FORMAT = 'yy-DDD';
 
 const dateFormatField = (page) => page.locator('.form-field-DateFormat');
 
+// Each field edit is saved by a PATCH on the record. Start waiting BEFORE the action that commits the
+// field, await it before the next action: a next field edit sent while the previous save is still in
+// flight can reach the backend before that save completed (seen as a 404 DocumentNotFound on the next PATCH).
+const waitForFieldPatch = (page, recordId, columnName) =>
+  page.waitForResponse(
+    (resp) =>
+      new RegExp(`/rest/api/window/${SEQUENCE_WINDOW_ID}/${recordId}$`).test(resp.url().split('?')[0]) &&
+      resp.request().method() === 'PATCH' &&
+      (resp.request().postData() || '').includes(`"${columnName}"`),
+    { timeout: SLOW_ACTION_TIMEOUT }
+  );
+
+const expectPatchOk = async (patchPromise, columnName) => {
+  const patch = await patchPromise;
+  expect(patch.ok(), `PATCH of ${columnName} must succeed (HTTP ${patch.status()})`).toBeTruthy();
+};
+
 // A Table-reference widget renders its options at document level, each carrying the record id as key.
 // SelectionDropdown puts that key under `data-testid` = `option-${key}` on one branch line and
 // `data-test-id` = `${key}${caption}` on another, so match both (language-invariant either way).
@@ -74,11 +91,15 @@ test.describe('Sequence window — per-sequence date format field', () => {
           timeout: SLOW_ACTION_TIMEOUT,
         });
         await nameInput.fill(`DateFormatField_${Date.now()}`);
+        const nameSaved = waitForFieldPatch(page, recordId, 'Name');
         await page.keyboard.press('Tab');
+        await expectPatchOk(nameSaved, 'Name');
 
         const isAutoSequence = page.locator('.form-field-IsAutoSequence input[type="checkbox"]');
         if (!(await isAutoSequence.isChecked())) {
+          const isAutoSequenceSaved = waitForFieldPatch(page, recordId, 'IsAutoSequence');
           await page.locator('.form-field-IsAutoSequence label.input-checkbox').click();
+          await expectPatchOk(isAutoSequenceSaved, 'IsAutoSequence');
         }
         await expect(isAutoSequence).toBeChecked();
       });
@@ -95,7 +116,9 @@ test.describe('Sequence window — per-sequence date format field', () => {
           .locator('.form-field-CustomSequenceNoProvider_JavaClass_ID .input-dropdown-container')
           .first()
           .click();
+        const providerSaved = waitForFieldPatch(page, recordId, 'CustomSequenceNoProvider_JavaClass_ID');
         await page.locator(DATE_SEQUENCE_PROVIDER_OPTION).first().click();
+        await expectPatchOk(providerSaved, 'CustomSequenceNoProvider_JavaClass_ID');
         await expect(page.locator('.input-dropdown-list')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
       });
 
@@ -107,7 +130,9 @@ test.describe('Sequence window — per-sequence date format field', () => {
         const input = dateFormatField(page).locator('input');
         await expect(input).toBeEditable();
         await input.fill(DATE_FORMAT);
+        const dateFormatSaved = waitForFieldPatch(page, recordId, 'DateFormat');
         await page.keyboard.press('Tab');
+        await expectPatchOk(dateFormatSaved, 'DateFormat');
       });
 
       await test.step('The format persists', async () => {
