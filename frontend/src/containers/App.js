@@ -64,6 +64,7 @@ const App = () => {
   // the axios interceptor below is registered once, so it must read the
   // current auth object (and its login state) through a ref
   const authRef = useRef(auth);
+  // assigned during render on purpose: an effect would lag one commit behind the login state
   authRef.current = auth;
   const dispatch = useDispatch();
   const store = useStore();
@@ -139,7 +140,7 @@ const App = () => {
           // if user types in incorrect token, there's no way for us to tell if he's
           // already authenticated or not. So it's safest to reset the login process
           if (error.response.data.message.includes('Invalid token')) {
-            return auth
+            return authRef.current
               .logout()
               .then(() => {
                 history.push('/login');

@@ -171,7 +171,9 @@ function useProvideAuth() {
       return logoutRequest().finally(() => _logoutSuccess());
     }
 
-    return Promise.resolve(() => _logoutSuccess());
+    _logoutSuccess();
+
+    return Promise.resolve();
   };
 
   return {

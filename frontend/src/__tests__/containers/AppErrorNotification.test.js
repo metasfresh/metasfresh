@@ -65,6 +65,7 @@ jest.mock('../../routes', () => ({
 
 const { addNotification } = require('../../actions/AppActions');
 const { logoutRequest } = require('../../api/login');
+const history = require('../../services/History');
 
 const userFriendlyError = () => ({
   response: {
@@ -108,6 +109,7 @@ describe('App: server error notifications follow the current login state', () =>
   beforeEach(() => {
     localStorage.clear();
     logoutRequest.mockClear();
+    history.push.mockClear();
     useSpy = jest.spyOn(axios.interceptors.response, 'use');
   });
 
@@ -144,5 +146,52 @@ describe('App: server error notifications follow the current login state', () =>
     });
     await failWithUserFriendlyError();
     expect(addNotification).toHaveBeenCalledTimes(1);
+  });
+
+  it('handles a 401 after a logout without page reload as logged out: no second logout request, redirect to login', async () => {
+    localStorage.setItem('isLogged', 'true');
+    boot();
+
+    await act(async () => {
+      await mockAuthHolder.auth.logout();
+    });
+    expect(logoutRequest).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await Promise.resolve(
+        onRejected({
+          response: {
+            status: 401,
+            data: {},
+            request: { responseURL: 'http://localhost/rest/api/window' },
+          },
+        })
+      ).catch(() => {});
+    });
+
+    expect(logoutRequest).toHaveBeenCalledTimes(1);
+    expect(history.push).toHaveBeenCalledWith('/login');
+  });
+
+  it('logs out through the current auth on an invalid token, after a login without page reload', async () => {
+    boot();
+
+    await act(async () => {
+      await mockAuthHolder.auth.login();
+    });
+    expect(localStorage.getItem('isLogged')).toBe('true');
+
+    await act(async () => {
+      await onRejected({
+        response: {
+          status: 500,
+          data: { path: '/rest/api/authenticate', message: 'Invalid token' },
+        },
+      });
+    });
+
+    expect(logoutRequest).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem('isLogged')).toBeNull();
+    expect(history.push).toHaveBeenCalledWith('/login');
   });
 });

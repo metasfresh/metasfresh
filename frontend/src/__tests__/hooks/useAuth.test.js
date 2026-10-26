@@ -77,4 +77,38 @@ describe('useAuth', () => {
 
     expect(logoutRequest).toHaveBeenCalledTimes(1);
   });
+
+  it('logout() while logged out resets the login state without a backend request', async () => {
+    const store = createStore(
+      combineReducers({ appHandler }),
+      applyMiddleware(thunk)
+    );
+    const authRefs = [];
+    const Consumer = () => {
+      authRefs.push(useAuth());
+
+      return null;
+    };
+
+    render(
+      <Provider store={store}>
+        <ProvideAuth>
+          <Consumer />
+        </ProvideAuth>
+      </Provider>
+    );
+    // the store still says logged in, e.g. a stale flag
+    store.dispatch({ type: 'LOGIN_SUCCESS' });
+    expect(store.getState().appHandler.isLogged).toBe(true);
+
+    let result;
+    await act(async () => {
+      result = await authRefs[authRefs.length - 1].logout();
+    });
+
+    expect(result).toBeUndefined();
+    expect(logoutRequest).not.toHaveBeenCalled();
+    expect(localStorage.getItem('isLogged')).toBeNull();
+    expect(store.getState().appHandler.isLogged).toBe(false);
+  });
 });
