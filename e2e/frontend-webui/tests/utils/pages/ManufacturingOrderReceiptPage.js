@@ -93,22 +93,34 @@ export class ManufacturingOrderReceiptPage {
   }
 
   /**
-   * Fill a field, leave it and wait for the server's answer to the change (the PATCH that carries the recomputed
-   * dependent fields). Without waiting for that response the dependent fields are read before they are updated.
-   * No PATCH is sent when the value did not change, hence the swallowed timeout.
+   * Register the wait for the server's answer to a dialog parameter change (the PATCH that carries the recomputed
+   * dependent fields). Call it BEFORE the action that triggers the change, and await the result after it.
+   * There is no fallback: when the expected PATCH does not come, the wait times out and the test fails.
+   */
+  static #expectParameterChangeResponse() {
+    return getPage().waitForResponse(
+      (response) => response.request().method() === 'PATCH' && response.url().includes('/process/'),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+  }
+
+  /**
+   * Fill a field, leave it and wait for the server's answer to the change. Without waiting for that response the
+   * dependent fields are read before they are updated. The frontend sends no PATCH when the value did not change,
+   * so a value that is already shown is only asserted, never waited for.
    */
   static async #fillAndWaitForRecompute(columnName, text) {
-    const page = getPage();
     const input = this.#input(columnName);
-    const answered = page
-      .waitForResponse((response) => response.request().method() === 'PATCH' && response.url().includes('/process/'), {
-        timeout: SLOW_ACTION_TIMEOUT,
-      })
-      .catch(() => {});
+    const current = await this.getValue(columnName);
+    const unchanged = text === '' ? current === '' : current !== '' && Number(current) === Number(text);
+    if (unchanged) {
+      return; // nothing to change; the value is already what was asked for
+    }
     await input.click();
     // the widget registers the focus one tick after the DOM focus; a blur before that is ignored and sends no PATCH
     await this.#field(columnName).locator('.input-body-container.focused').waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     await input.press('Control+a');
+    const answered = this.#expectParameterChangeResponse();
     if (text === '') {
       await input.press('Backspace'); // a real key press: the widget does not report an emptied field after fill('')
     }
@@ -121,22 +133,38 @@ export class ManufacturingOrderReceiptPage {
   }
 
   /**
+   * Click an entry of the dropdown opened on the given field. If the entry is the one the field already shows,
+   * nothing changes and no PATCH is sent: the list is closed again and that is all.
+   * @returns {Promise<boolean>} true when the value was changed (and the server answered), false when it was already selected
+   */
+  static async #chooseOption(columnName, optionLocator) {
+    const page = getPage();
+    await optionLocator.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const wanted = ((await optionLocator.textContent()) ?? '').trim();
+    const current = await this.getValue(columnName);
+    if (current !== '' && (current === wanted || current.includes(wanted) || wanted.includes(current))) {
+      await page.keyboard.press('Escape');
+      await optionLocator.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
+      return false;
+    }
+    const answered = this.#expectParameterChangeResponse();
+    await optionLocator.click();
+    await answered;
+    await this.#settle();
+    return true;
+  }
+
+  /**
    * Choose an entry of a dropdown field (packing instruction, pallet) and wait for the server's answer.
+   * An entry that is already selected is only checked (the field keeps showing it), not re-chosen.
    * @param {string} columnName
    * @param {string|RegExp} option - text (or pattern) of the entry
    */
   static async selectOption(columnName, option) {
     return await test.step(`ManufacturingOrderReceiptPage - Select ${option} in ${columnName}`, async () => {
       const page = getPage();
-      const answered = page
-        .waitForResponse((response) => response.request().method() === 'PATCH' && response.url().includes('/process/'), {
-          timeout: SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {});
       await this.#field(columnName).locator('.input-dropdown').click();
-      await page.locator('.input-dropdown-list-option').filter({ hasText: option }).first().click();
-      await answered;
-      await this.#settle();
+      await this.#chooseOption(columnName, page.locator('.input-dropdown-list-option').filter({ hasText: option }).first());
     });
   }
 
@@ -144,11 +172,6 @@ export class ManufacturingOrderReceiptPage {
   static async selectNoPackingItem() {
     return await test.step('ManufacturingOrderReceiptPage - Select "No Packing Item"', async () => {
       const page = getPage();
-      const answered = page
-        .waitForResponse((response) => response.request().method() === 'PATCH' && response.url().includes('/process/'), {
-          timeout: SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {});
       await this.#field('M_HU_PI_Item_Product_ID').locator('.input-dropdown').click();
       // data-test-id is the ID followed by the caption: match exactly ID 101, not e.g. 1010001
       const options = page.locator('.input-dropdown-list-option[data-test-id]');
@@ -156,20 +179,17 @@ export class ManufacturingOrderReceiptPage {
       const testIds = await options.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-test-id')));
       const index = testIds.findIndex((testId) => /^101\D/.test(testId));
       expect(index, `"No Packing Item" (ID 101) among ${testIds}`).toBeGreaterThanOrEqual(0);
-      await options.nth(index).click();
-      await answered;
-      await this.#settle();
+      await this.#chooseOption('M_HU_PI_Item_Product_ID', options.nth(index));
     });
   }
 
-  /** Empty a dropdown field (pallet) by its clear icon and wait for the server's answer. */
+  /** Empty a dropdown field (pallet) by its clear icon and wait for the server's answer. An already empty field is left as it is. */
   static async clearOption(columnName) {
     return await test.step(`ManufacturingOrderReceiptPage - Clear ${columnName}`, async () => {
-      const answered = getPage()
-        .waitForResponse((response) => response.request().method() === 'PATCH' && response.url().includes('/process/'), {
-          timeout: SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {});
+      if ((await this.getValue(columnName)) === '') {
+        return;
+      }
+      const answered = this.#expectParameterChangeResponse();
       await this.#field(columnName).locator('.input-dropdown').hover();
       await this.#field(columnName).locator('.input-icon').click();
       await answered;
