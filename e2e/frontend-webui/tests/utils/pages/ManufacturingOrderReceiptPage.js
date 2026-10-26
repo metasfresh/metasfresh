@@ -93,15 +93,18 @@ export class ManufacturingOrderReceiptPage {
   }
 
   /**
-   * Register the wait for the server's answer to a dialog parameter change (the PATCH that carries the recomputed
-   * dependent fields). Call it BEFORE the action that triggers the change, and await the result after it.
-   * There is no fallback: when the expected PATCH does not come, the wait times out and the test fails.
+   * Run the action that triggers a dialog parameter change and wait for the server's answer (the PATCH that carries
+   * the recomputed dependent fields). The wait is registered before the action. If the action throws, its error is
+   * the one reported; there is no fallback: when the expected PATCH does not come, the wait times out and the test fails.
    */
-  static #expectParameterChangeResponse() {
-    return getPage().waitForResponse(
-      (response) => response.request().method() === 'PATCH' && response.url().includes('/process/'),
-      { timeout: SLOW_ACTION_TIMEOUT }
-    );
+  static async #actAndAwaitParameterChange(action) {
+    await Promise.all([
+      getPage().waitForResponse(
+        (response) => response.request().method() === 'PATCH' && response.url().includes('/process/'),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      ),
+      action(),
+    ]);
   }
 
   /**
@@ -120,15 +123,15 @@ export class ManufacturingOrderReceiptPage {
     // the widget registers the focus one tick after the DOM focus; a blur before that is ignored and sends no PATCH
     await this.#field(columnName).locator('.input-body-container.focused').waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     await input.press('Control+a');
-    const answered = this.#expectParameterChangeResponse();
-    if (text === '') {
-      await input.press('Backspace'); // a real key press: the widget does not report an emptied field after fill('')
-    }
-    else {
-      await input.pressSequentially(text);
-    }
-    await input.blur();
-    await answered;
+    await this.#actAndAwaitParameterChange(async () => {
+      if (text === '') {
+        await input.press('Backspace'); // a real key press: the widget does not report an emptied field after fill('')
+      }
+      else {
+        await input.pressSequentially(text);
+      }
+      await input.blur();
+    });
     await this.#settle();
   }
 
@@ -142,14 +145,13 @@ export class ManufacturingOrderReceiptPage {
     await optionLocator.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     const wanted = ((await optionLocator.textContent()) ?? '').trim();
     const current = await this.getValue(columnName);
-    if (current !== '' && (current === wanted || current.includes(wanted) || wanted.includes(current))) {
+    if (current !== '' && current === wanted) {
+      expect(current, `${columnName} keeps the already selected option`).toBe(wanted);
       await page.keyboard.press('Escape');
       await optionLocator.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
       return false;
     }
-    const answered = this.#expectParameterChangeResponse();
-    await optionLocator.click();
-    await answered;
+    await this.#actAndAwaitParameterChange(() => optionLocator.click());
     await this.#settle();
     return true;
   }
@@ -189,10 +191,10 @@ export class ManufacturingOrderReceiptPage {
       if ((await this.getValue(columnName)) === '') {
         return;
       }
-      const answered = this.#expectParameterChangeResponse();
-      await this.#field(columnName).locator('.input-dropdown').hover();
-      await this.#field(columnName).locator('.input-icon').click();
-      await answered;
+      await this.#actAndAwaitParameterChange(async () => {
+        await this.#field(columnName).locator('.input-dropdown').hover();
+        await this.#field(columnName).locator('.input-icon').click();
+      });
       await this.#settle();
     });
   }
