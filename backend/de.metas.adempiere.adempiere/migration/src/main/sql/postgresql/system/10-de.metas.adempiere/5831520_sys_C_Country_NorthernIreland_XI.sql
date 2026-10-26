@@ -4,10 +4,11 @@
 -- Not assigned to the EU country area => tax destination type is "outside country area", same as GB.
 INSERT INTO C_Country (AD_Client_ID, AD_Language, AD_Org_ID, AllowCitiesOutOfList, C_Country_ID, C_Currency_ID, CountryCode, CountryCode_3digit, Created, CreatedBy, Description, DisplaySequence, DisplaySequenceLocal, CaptureSequence, HasPostal_Add, HasRegion, IsActive, IsAddressLinesLocalReverse, IsAddressLinesReverse, Name, Updated, UpdatedBy,
                        BankCodeCharType, BranchCodeCharType, AccountNumberLength, BranchCodeLength, BankCodeLength, AccountNumberCharType, BankCodeSeqNo, BranchCodeSeqNo, AccountNumberSeqNo)
-SELECT 0, gb.AD_Language, 0, gb.AllowCitiesOutOfList, 540018, gb.C_Currency_ID, 'XI', gb.CountryCode_3digit, TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Northern Ireland, United Kingdom', gb.DisplaySequence, gb.DisplaySequenceLocal, gb.CaptureSequence, gb.HasPostal_Add, 'N', 'Y', gb.IsAddressLinesLocalReverse, gb.IsAddressLinesReverse, 'Northern Ireland', TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+SELECT 0, gb.AD_Language, 0, gb.AllowCitiesOutOfList, 540018 /*From ID Server*/, gb.C_Currency_ID, 'XI', gb.CountryCode_3digit, TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Northern Ireland, United Kingdom', gb.DisplaySequence, gb.DisplaySequenceLocal, gb.CaptureSequence, gb.HasPostal_Add, 'N', 'Y', gb.IsAddressLinesLocalReverse, gb.IsAddressLinesReverse, 'Northern Ireland', TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
        gb.BankCodeCharType, gb.BranchCodeCharType, gb.AccountNumberLength, gb.BranchCodeLength, gb.BankCodeLength, gb.AccountNumberCharType, gb.BankCodeSeqNo, gb.BranchCodeSeqNo, gb.AccountNumberSeqNo
 FROM C_Country gb
 WHERE gb.CountryCode = 'GB'
+  AND NOT EXISTS (SELECT 1 FROM C_Country c WHERE c.CountryCode = 'XI') -- XI may already exist, e.g. entered via UI; c_countrycode is unique
 ON CONFLICT (C_Country_ID) DO NOTHING
 ;
 
@@ -39,7 +40,7 @@ WHERE C_Country_ID = 540018
 -- 2026-10-26T12:00:00Z
 -- Country-of-origin attribute value, as the C_Country interceptor creates it when a country is entered in the UI (value = CountryCode, name = Name)
 INSERT INTO M_AttributeValue (AD_Client_ID, AD_Org_ID, Created, CreatedBy, IsActive, M_Attribute_ID, M_AttributeValue_ID, Name, Updated, UpdatedBy, Value)
-SELECT 0, 0, TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y', sc.Value::numeric, 540276, 'Northern Ireland', TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'XI'
+SELECT 0, 0, TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y', sc.Value::numeric, 540276 /*From ID Server*/, 'Northern Ireland', TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'XI'
 FROM AD_SysConfig sc
 WHERE sc.Name = 'de.metas.swat.CountryAttribute'
   AND sc.AD_Client_ID = 0
