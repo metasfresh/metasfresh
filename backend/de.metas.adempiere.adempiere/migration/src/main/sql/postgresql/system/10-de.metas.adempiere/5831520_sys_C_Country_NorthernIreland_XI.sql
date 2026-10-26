@@ -48,3 +48,17 @@ WHERE sc.Name = 'de.metas.swat.CountryAttribute'
   AND NOT EXISTS (SELECT 1 FROM M_AttributeValue av WHERE av.M_Attribute_ID = sc.Value::numeric AND av.Value = 'XI')
 ON CONFLICT (M_AttributeValue_ID) DO NOTHING
 ;
+
+-- 2026-10-26T12:00:00Z
+-- Northern Ireland in the EU country area: for goods it follows EU VAT rules since 2021-01-01 (Windsor Framework),
+-- so e.g. a delivery DE -> XI is an intra-community supply. Starts when GB's EU assignment ends (2020-12-31).
+INSERT INTO C_CountryArea_Assign (AD_Client_ID, AD_Org_ID, C_Country_ID, C_CountryArea_Assign_ID, C_CountryArea_ID, Created, CreatedBy, IsActive, Updated, UpdatedBy, ValidFrom)
+SELECT 0, 0, c.C_Country_ID, 540085 /*From ID Server*/, ca.C_CountryArea_ID, TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y', TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2021-01-01', 'YYYY-MM-DD')
+FROM C_Country c,
+     C_CountryArea ca
+WHERE c.CountryCode = 'XI'
+  AND ca.Value = 'EU'
+  AND ca.AD_Client_ID = 0
+  AND NOT EXISTS (SELECT 1 FROM C_CountryArea_Assign a WHERE a.C_CountryArea_ID = ca.C_CountryArea_ID AND a.C_Country_ID = c.C_Country_ID)
+ON CONFLICT (C_CountryArea_Assign_ID) DO NOTHING
+;
