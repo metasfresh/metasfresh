@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -63,6 +64,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -173,7 +175,7 @@ public class M_HU_LUTU_Configuration_StepDef
 					final AdMessageKey expectedErrorAdMessage = tableRow.getAsOptionalString("ErrorMessage_AD_Message").map(AdMessageKey::of).orElse(null);
 					if (expectedErrorAdMessage != null)
 					{
-						final Set<Integer> husBefore = retrieveHuIdsOfOrder(ppOrder);
+						final Set<HuId> husBefore = retrieveHuIdsOfOrder(ppOrder);
 						final long receiptCandidatesBefore = countReceiptCandidates(ppOrder);
 
 						final Throwable thrown = catchThrowable(receiveHUs::get);
@@ -364,34 +366,35 @@ public class M_HU_LUTU_Configuration_StepDef
 	 * {@code AbstractPPOrderReceiptHUProducer#addAssignedHUs} fills for the main product / co-product receipt).
 	 * Scoped to the order so that HUs created concurrently by other scenarios do not matter.
 	 */
-	private Set<Integer> retrieveHuIdsOfOrder(@NonNull final I_PP_Order ppOrder)
+	private Set<HuId> retrieveHuIdsOfOrder(@NonNull final I_PP_Order ppOrder)
 	{
-		final Set<Integer> huIds = new HashSet<>();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		final Set<HuId> huIds = new HashSet<>();
 
 		queryBL.createQueryBuilder(I_PP_Order_Qty.class)
-				.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID, ppOrderId)
 				.create()
 				.list(I_PP_Order_Qty.class)
-				.forEach(qty -> huIds.add(qty.getM_HU_ID()));
+				.forEach(qty -> huIds.add(HuId.ofRepoId(qty.getM_HU_ID())));
 
-		addAssignedHuIds(huIds, I_PP_Order.class, ppOrder.getPP_Order_ID());
+		addAssignedHuIds(huIds, TableRecordReference.of(I_PP_Order.Table_Name, ppOrderId));
 		queryBL.createQueryBuilder(I_PP_Order_BOMLine.class)
-				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, ppOrderId)
 				.create()
-				.list(I_PP_Order_BOMLine.class)
-				.forEach(bomLine -> addAssignedHuIds(huIds, I_PP_Order_BOMLine.class, bomLine.getPP_Order_BOMLine_ID()));
+				.idsAsSet(PPOrderBOMLineId::ofRepoId)
+				.forEach(bomLineId -> addAssignedHuIds(huIds, TableRecordReference.of(I_PP_Order_BOMLine.Table_Name, bomLineId)));
 
 		return huIds;
 	}
 
-	private void addAssignedHuIds(@NonNull final Set<Integer> huIds, @NonNull final Class<?> modelClass, final int recordId)
+	private void addAssignedHuIds(@NonNull final Set<HuId> huIds, @NonNull final TableRecordReference recordRef)
 	{
 		queryBL.createQueryBuilder(I_M_HU_Assignment.class)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(modelClass))
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
 				.create()
 				.list(I_M_HU_Assignment.class)
-				.forEach(assignment -> huIds.add(assignment.getM_HU_ID()));
+				.forEach(assignment -> huIds.add(HuId.ofRepoId(assignment.getM_HU_ID())));
 	}
 
 	private long countReceiptCandidates(@NonNull final I_PP_Order ppOrder)
