@@ -15,6 +15,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
 import de.metas.document.dimension.DimensionFactory;
@@ -53,6 +54,7 @@ import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.location.CountryId;
+import de.metas.money.MoneyService;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
@@ -179,6 +181,8 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 
 		final I_AD_Client client = InterfaceWrapperHelper.newInstance(I_AD_Client.class);
 		saveRecord(client);
