@@ -1319,6 +1319,7 @@ Feature: Product Statistics Year Comparison - reference replay
     ## 2026-02-28T23:59 Europe/Berlin and takes the clock as its MovementDate (the 'update M_InOut' step knows dates only). Note: MovementDate is a
     ## date column of the application, the save truncates the time (stored 2026-02-28 00:00:00, checked in the DB), so a 23:59 value cannot be
     ## produced through the application; the boundary covered here is: documents dated the LAST day of the month count in that month, not in March.
+    ## Month assignment uses the date part (::date) of MovementDate / DateAcct, so any time part of a date-time value is irrelevant: last-day dates count in that month.
     ## rf3Prev: the same construction in 2025 (January 5, February 2 - 5 = -3 = previous-year month), and 6 shipped in February 2026 -> deviation
     ## (6 / -3 - 1) * 100 = -300.00 (computed as is, AC9). January: previous 5, current none -> -100.00.
     And metasfresh contains M_Products:
