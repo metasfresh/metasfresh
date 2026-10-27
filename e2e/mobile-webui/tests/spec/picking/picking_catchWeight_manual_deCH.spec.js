@@ -99,8 +99,7 @@ const startPickingAndOpenManualDialog = async (masterdata) => {
 };
 
 const expectCatchWeight1222Committed = async ({ masterdata, pickingJobId }) => {
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '7 Stk', qtyPickedCatchWeight: '1.222 kg' });
-    // the value committed to the backend (what went over the wire), not only what is shown on screen
+    // Make-or-break, asserted FIRST: the value committed to the backend (what went over the wire).
     await Backend.expect({
         pickings: {
             [pickingJobId]: {
@@ -114,6 +113,8 @@ const expectCatchWeight1222Committed = async ({ masterdata, pickingJobId }) => {
             }
         },
     });
+    // on-screen echo, only after the wire value is proven (its formatting depends on the browser locale)
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '7 Stk', qtyPickedCatchWeight: '1.222 kg' });
 };
 
 // noinspection JSUnusedLocalSymbols
@@ -129,12 +130,6 @@ test('Manual catch weight typed with decimal POINT on a Swiss-German browser', a
     const { pickingJobId } = await startPickingAndOpenManualDialog(masterdata);
 
     await GetQuantityDialog.typeQtyEntered('7');
-    await GetQuantityDialog.typeCatchWeightKeystrokes('1.222');
-
-    // an emptied weight cannot be confirmed
-    await GetQuantityDialog.clearCatchWeight();
-    await GetQuantityDialog.expectDoneDisabled();
-
     await GetQuantityDialog.typeCatchWeightKeystrokes('1.222');
     await GetQuantityDialog.expectDoneEnabled();
     await GetQuantityDialog.clickDone();
@@ -162,4 +157,22 @@ test('Manual catch weight typed with decimal COMMA on a Swiss-German browser', a
     await PickingJobScreen.waitForScreen();
 
     await expectCatchWeight1222Committed({ masterdata, pickingJobId });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Emptied catch weight cannot be confirmed on a Swiss-German browser', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Catch weight picking - Manual input, de-CH, empty weight (AC3)');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata();
+    await startPickingAndOpenManualDialog(masterdata);
+
+    await GetQuantityDialog.typeQtyEntered('7');
+    await GetQuantityDialog.typeCatchWeightKeystrokes('1.222');
+    await GetQuantityDialog.clearCatchWeight();
+    await GetQuantityDialog.expectDoneDisabled();
 });
