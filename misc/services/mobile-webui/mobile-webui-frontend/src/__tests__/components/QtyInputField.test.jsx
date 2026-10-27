@@ -120,43 +120,53 @@ describe('QtyInputField', () => {
     });
   });
 
-  it('selects the whole prefilled value on focus so typing replaces it (not appends)', () => {
-    // Regression guard: the type="text" input needed for locale-aware decimals appends on
-    // focus-then-type, where the former type="number" replaced. Without select-on-focus a prefilled
-    // field (e.g. generateHUQRCodes numberOfHUs="1") becomes "11" when typed over, posting a wrong
-    // count. See QtyInputField.handleFocus. (jsdom cannot model selection-replace, so this asserts
-    // the select-on-focus is wired; the real replace behaviour is covered by the mobile E2E suite.)
-    jest.useFakeTimers();
-    const selectSpy = jest.spyOn(HTMLInputElement.prototype, 'select');
-    try {
-      renderField({ qty: '1', integerValuesOnly: true });
-      selectSpy.mockClear();
-      getInput().focus(); // real focus so the field is document.activeElement when the deferred select runs
-      jest.runOnlyPendingTimers();
-      expect(selectSpy).toHaveBeenCalledTimes(1);
-    } finally {
-      selectSpy.mockRestore();
-      jest.useRealTimers();
-    }
-  });
-
-  it('does NOT re-select once the field has lost focus (prevents the focus-steal loop)', () => {
-    // Guard for the regression introduced by the first select-on-focus fix: input.select() re-focuses a
-    // blurred input, so an unguarded deferred select on a field that already lost focus steals focus back.
-    // With two auto-focus QtyInputFields (generateHUQRCodes numberOfHUs + numberOfCopies) that ping-pongs
-    // focus forever and drops the next typed value. The deferred select must fire only while still focused.
-    jest.useFakeTimers();
+  it('replaces the prefilled value on the first typed character (selects on first keydown, not append)', () => {
+    // Regression guard: the type="text" input needed for locale-aware decimals appends on focus-then-type,
+    // where the former type="number" replaced. The first character typed must select the whole prefilled
+    // value first, so it replaces instead of appending (e.g. generateHUQRCodes numberOfHUs="25" + "1" must
+    // become "1", not "125"/"251"). Selecting in keydown (synchronous, before the browser inserts the char)
+    // is why it is race-free; jsdom asserts the select is wired, the real replace is covered by the E2E.
     const selectSpy = jest.spyOn(HTMLInputElement.prototype, 'select');
     try {
       renderField({ qty: '25', integerValuesOnly: true });
+      getInput().focus();
       selectSpy.mockClear();
-      getInput().focus(); // schedules the deferred select
-      getInput().blur(); // ...but focus is gone before it runs
-      jest.runOnlyPendingTimers();
+      fireEvent.keyDown(getInput(), { key: '1' });
+      expect(selectSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      selectSpy.mockRestore();
+    }
+  });
+
+  it('selects only on the first character since focus; later keystrokes edit normally, refocus replaces again', () => {
+    const selectSpy = jest.spyOn(HTMLInputElement.prototype, 'select');
+    try {
+      renderField({ qty: '25', integerValuesOnly: true });
+      getInput().focus();
+      fireEvent.keyDown(getInput(), { key: '1' }); // first char selects+replaces
+      selectSpy.mockClear();
+      fireEvent.keyDown(getInput(), { key: '2' }); // second char must NOT re-select (append within the edit)
+      expect(selectSpy).not.toHaveBeenCalled();
+      getInput().blur();
+      getInput().focus(); // refocus resets pristine
+      fireEvent.keyDown(getInput(), { key: '9' }); // first char after refocus selects+replaces again
+      expect(selectSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      selectSpy.mockRestore();
+    }
+  });
+
+  it('a non-character key (navigation/delete) does not trigger a replace-select', () => {
+    const selectSpy = jest.spyOn(HTMLInputElement.prototype, 'select');
+    try {
+      renderField({ qty: '25', integerValuesOnly: true });
+      getInput().focus();
+      selectSpy.mockClear();
+      fireEvent.keyDown(getInput(), { key: 'Backspace' });
+      fireEvent.keyDown(getInput(), { key: 'ArrowLeft' });
       expect(selectSpy).not.toHaveBeenCalled();
     } finally {
       selectSpy.mockRestore();
-      jest.useRealTimers();
     }
   });
 });

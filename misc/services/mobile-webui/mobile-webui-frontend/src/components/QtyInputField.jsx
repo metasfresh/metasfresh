@@ -97,19 +97,25 @@ const QtyInputField = ({
   // locale-aware decimals appends instead, which silently inflates a prefilled field (e.g. the
   // generateHUQRCodes numberOfHUs="1" becoming "11"). Deferred to a macrotask so the selection
   // survives the caret the browser/driver places right after focus (a synchronous select is undone).
+  // "Pristine" = the field still shows a value the user has not edited since (re)focusing it. The first
+  // character typed then REPLACES the whole value (restoring the old type="number" behaviour), instead of
+  // inserting at the caret and appending to the prefilled qty.
+  const pristineSinceFocusRef = useRef(true);
+
   const handleFocus = () => {
-    const el = qtyInputRef.current;
-    if (el) {
-      setTimeout(() => {
-        // Only (re)select while the field is still focused. input.select() re-focuses a blurred
-        // input, so an unguarded deferred select on a field that already lost focus steals focus
-        // back. When two QtyInputFields both auto-focus (isRequestFocus, e.g. the generateHUQRCodes
-        // numberOfHUs + numberOfCopies fields), their deferred selects ping-pong focus endlessly,
-        // and keystrokes aimed at either field never land, so the prefilled qty is submitted unchanged.
-        if (qtyInputRef.current === el && document.activeElement === el) {
-          el.select();
-        }
-      }, 0);
+    pristineSinceFocusRef.current = true;
+  };
+
+  const handleKeyDown = (e) => {
+    // Select the whole value synchronously, right before the FIRST character is inserted, so the character
+    // replaces the prefilled value rather than appending. Doing it in keydown (ordered before the browser's
+    // own text insertion, in the same synchronous event) makes replace-on-type immune to the re-render and
+    // macrotask timing that made a deferred select() unreliable: a type="text" input appends on focus-then-
+    // type where type="number" replaced, and under app load the deferred select lost the race, so a
+    // prefilled field (e.g. generateHUQRCodes numberOfHUs="25") became "125" and posted a wrong count.
+    if (pristineSinceFocusRef.current && e.key && e.key.length === 1) {
+      e.currentTarget.select();
+      pristineSinceFocusRef.current = false;
     }
   };
 
@@ -132,6 +138,7 @@ const QtyInputField = ({
           onBeforeInput={handleBeforeInput}
           onChange={handleQtyEntered}
           onFocus={handleFocus}
+          onKeyDown={handleKeyDown}
           onClick={() => qtyInputRef.current.select()}
         />
         {uom && <span className="icon is-small is-right">{uom}</span>}
