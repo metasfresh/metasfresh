@@ -705,3 +705,271 @@ Feature: Product Statistics Year Comparison - reference replay
     Then the product statistics year comparison report for org "-", year "yearN", product "psycRef" returns:
       | M_Product_ID | Qty_01 | Qty_02 | Qty_03 | Qty_04 | Qty_05 | Qty_06 | Qty_07 | Qty_08 | Qty_09 | Qty_10 | Qty_11 | Qty_12 | Qty_Total | Amt_01    | Amt_02    | Amt_03    | Amt_04    | Amt_05    | Amt_06    | Amt_07    | Amt_08    | Amt_09 | Amt_10 | Amt_11 | Amt_12 | Amt_Total  | PrevQty_01 | PrevQty_02 | PrevQty_03 | PrevQty_04 | PrevQty_05 | PrevQty_06 | PrevQty_07 | PrevQty_08 | PrevQty_09 | PrevQty_10 | PrevQty_11 | PrevQty_12 | PrevQty_Total | PrevAmt_01 | PrevAmt_02 | PrevAmt_03 | PrevAmt_04 | PrevAmt_05 | PrevAmt_06 | PrevAmt_07 | PrevAmt_08 | PrevAmt_09 | PrevAmt_10 | PrevAmt_11 | PrevAmt_12 | PrevAmt_Total | Dev_01 | Dev_02 | Dev_03 | Dev_04 | Dev_05 | Dev_06 | Dev_07 | Dev_08 | Dev_09  | Dev_10  | Dev_11  | Dev_12  | Currency |
       | psycRef      | 6837   | 8994   | 13616  | 11258  | 12819  | 13291  | 14861  | 11665  |        |        |        |        | 93341     | 112686.46 | 147013.42 | 222918.41 | 181886.58 | 205993.68 | 213655.02 | 238201.95 | 187158.12 |        |        |        |        | 1509513.64 | 7095       | 9085       | 10252      | 14602      | 11729      | 14826      | 13709      | 14171      | 13750      | 10608      | 8454       | 16654      | 144935        | 116991.65  | 148717.36  | 166529.58  | 237589.25  | 188683.65  | 237174.51  | 220377.41  | 227864.84  | 220653.64  | 173311.59  | 138884.82  | 284978.08  | 2361756.38    | -3.64  | -1.00  | 32.81  | -22.90 | 9.29   | -10.35 | 8.40   | -17.68 | -100.00 | -100.00 | -100.00 | -100.00 | CHF |
+
+  @from:cucumber
+  Scenario: TC2 shipments, returns and credit notes count; drafts, reversals, vendor documents, repair/empties receipts and pallets do not
+    ## One product, one month (2026-03). Counted: shipments 8 + 2 + 1 (sample, never invoiced), minus the 2 pcs returned by the customer
+    ## (real customer-return flow) = quantity 9. Amount: invoice 10 x 10.00 = 100.00, minus the credit memo of the return (2 x 10.00 = 20.00),
+    ## minus a price-correction credit note 5.00 = 75.00. Not counted: a draft shipment (created last), a reversed shipment, a vendor receipt,
+    ## a draft, a voided, a reversed and a purchase invoice, C+ receipts with doc subtype SR (repair) and EC (empties correction), and a line
+    ## with IsPackagingMaterial=Y on a shipment of the same product. A pallet product (own product category, which this scenario
+    ## temporarily sets as the packing material category) is on order, shipment and invoice; the report step ignores unlisted rows,
+    ## so its absence is not asserted here (see the report).
+    Given metasfresh has date and time 2026-03-10T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains M_Product_Categories:
+      | Identifier   |
+      | tc2PalletCat |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | tc2Prod    |
+    And metasfresh contains M_Products:
+      | Identifier | M_Product_Category_ID |
+      | tc2Pallet  | tc2PalletCat          |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded |
+      | psycPLPO   | psycPS             | DE           | CHF           | false | false         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | psycPLVPO  | psycPLPO       |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | psycPLV                | tc2Prod      | 10.00    | PCE      | psycTaxCat       |
+      | psycPLV                | tc2Pallet    | 3.00     | PCE      | psycTaxCat       |
+      | psycPLVPO              | tc2Prod      | 6.00     | PCE      | psycTaxCat       |
+    And temporarily set sys config 'PackingMaterialProductCategoryID' to the M_Product_Category identified by 'tc2PalletCat'
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | invTc2Prod     | invTc2Prod_l1      | 2026-03-01   | warehouseStd   | tc2Prod      | 0       | 200      | PCE          |
+      | invTc2Pallet   | invTc2Pallet_l1    | 2026-03-01   | warehouseStd   | tc2Pallet    | 0       | 200      | PCE          |
+    And load M_Locator:
+      | Identifier | M_Warehouse_ID | Value      |
+      | tc2Locator | warehouseStd   | Hauptlager |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier   | Name        | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | psycVendor   | PSYC vendor | Y        | N          | psycPS             |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier      | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
+      | psycVendorLoc   | psycVendor    | DE           | Y               | Y               |
+
+    # Shipments 8 and 2, invoiced together 100.00
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_A | Y       | psycBP        | 2026-03-10  | psycPS             | warehouseStd   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_A_l1 | so_A | tc2Prod | 8 |
+    And the order identified by so_A is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sched_A | so_A_l1 | N | 8 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sched_A | D | false | false | 8 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sched_A | ship_A |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | ship_A | 2026-03-10 |
+    And the shipment identified by ship_A is completed
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_B | Y       | psycBP        | 2026-03-10  | psycPS             | warehouseStd   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_B_l1 | so_B | tc2Prod | 2 |
+    And the order identified by so_B is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sched_B | so_B_l1 | N | 2 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sched_B | D | false | false | 2 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sched_B | ship_B |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | ship_B | 2026-03-10 |
+    And the shipment identified by ship_B is completed
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_main | psycBP | 2026-03-10 | true | CHF | psycPL |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_main_l1 | inv_main | tc2Prod | 10 PCE | 10.00 | psycTax19 |
+    And the invoice identified by inv_main is completed
+    # Price-correction credit note 5.00 (10 x 0.50), no return
+    And create credit memo for C_Invoice
+      | CreditMemo | C_Invoice_ID | CreditMemo.PriceEntered |
+      | cm_price   | inv_main     | 0.50                    |
+    And the invoice identified by cm_price is completed
+
+    # The 2 pcs of shipment B are returned by the customer (real flow) and credited through the return's credit memo candidate 20.00
+    And metasfresh has date and time 2026-03-12T10:00:00+01:00[Europe/Berlin]
+    And generate customer return from shipment
+      | M_InOut_ID | CustomerReturn_ID |
+      | ship_B     | ret_B             |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | ret_B      | 2026-03-12   |
+    And the return inOut identified by ret_B is completed
+    And after not more than 60s, credit memo candidates are found:
+      | M_InOut_ID.Identifier | C_Invoice_Candidate_ID.Identifier | OPT.M_Product_ID.Identifier |
+      | ret_B                 | ic_ret_B                          | tc2Prod                     |
+    # DateInvoiced is given, because the process otherwise dates the invoice by the real current date (DateAcct decides the report month)
+    And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.DateInvoiced |
+      | ic_ret_B                          | 2026-03-12       |
+
+    # Sample shipment of 1 pc, never invoiced; a packaging-material line of the same product is added while it is still a draft
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_S | Y       | psycBP        | 2026-03-10  | psycPS             | warehouseStd   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_S_l1 | so_S | tc2Prod | 1 |
+    And the order identified by so_S is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sched_S | so_S_l1 | N | 1 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sched_S | D | false | false | 1 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sched_S | ship_S |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | ship_S | 2026-03-10 |
+    And metasfresh contains M_InOutLine
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
+      | ship_S_pack               | ship_S                | tc2Prod                     | 7          | tc2Locator                  | PCE     | true                    | 7           |
+    And the shipment identified by ship_S is completed
+
+    # Excluded: a reversed shipment
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_R | Y       | psycBP        | 2026-03-10  | psycPS             | warehouseStd   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_R_l1 | so_R | tc2Prod | 4 |
+    And the order identified by so_R is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sched_R | so_R_l1 | N | 4 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sched_R | D | false | false | 4 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sched_R | ship_R |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | ship_R | 2026-03-10 |
+    And the shipment identified by ship_R is completed
+    And the shipment identified by ship_R is reversed
+
+    # Pallet product on order, shipment and invoice (own category = packing material category)
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_P | Y       | psycBP        | 2026-03-10  | psycPS             | warehouseStd   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_P_l1 | so_P | tc2Pallet | 3 |
+    And the order identified by so_P is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sched_P | so_P_l1 | N | 3 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sched_P | D | false | false | 3 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sched_P | ship_P |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | ship_P | 2026-03-10 |
+    And the shipment identified by ship_P is completed
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_pallet | psycBP | 2026-03-10 | true | CHF | psycPL |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_pallet_l1 | inv_pallet | tc2Pallet | 3 PCE | 3.00 | psycTax19 |
+    And the invoice identified by inv_pallet is completed
+
+    # Excluded: C+ receipts that are no returns (service repair SR, empties correction EC) and a vendor receipt
+    And metasfresh contains M_InOut:
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
+      | recv_SR               | psycBP                   | psycBPLoc                         | true    | F            | S               | I               | warehouseStd              | 2026-03-10   | C+           | 5            | MMR             | SR             |
+      | recv_EC               | psycBP                   | psycBPLoc                         | true    | F            | S               | I               | warehouseStd              | 2026-03-10   | C+           | 5            | MMR             | EC             |
+      | recv_vendor           | psycVendor               | psycVendorLoc                     | false   | F            | S               | I               | warehouseStd              | 2026-03-10   | V+           | 5            | MMR             | MR             |
+    And metasfresh contains M_InOutLine
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | MovementQty |
+      | recv_SR_l1                | recv_SR               | tc2Prod                     | 11         | tc2Locator                  | PCE     | 11          |
+      | recv_EC_l1                | recv_EC               | tc2Prod                     | 13         | tc2Locator                  | PCE     | 13          |
+      | recv_vendor_l1            | recv_vendor           | tc2Prod                     | 17         | tc2Locator                  | PCE     | 17          |
+    And the return inOut identified by recv_SR is completed
+    And the return inOut identified by recv_EC is completed
+    And the material receipt identified by recv_vendor is completed
+
+    # Excluded invoices: reversed, draft, voided, purchase
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_rev | psycBP | 2026-03-10 | true | CHF | psycPL |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_rev_l1 | inv_rev | tc2Prod | 1 PCE | 50.00 | psycTax19 |
+    And the invoice identified by inv_rev is completed
+    And the invoice identified by inv_rev is reversed
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_draft | psycBP | 2026-03-10 | true | CHF | psycPL |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_draft_l1 | inv_draft | tc2Prod | 1 PCE | 40.00 | psycTax19 |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_void | psycBP | 2026-03-10 | true | CHF | psycPL |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_void_l1 | inv_void | tc2Prod | 1 PCE | 60.00 | psycTax19 |
+    And the invoice identified by inv_void is voided
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_purchase | psycVendor | 2026-03-10 | false | CHF | psycPLPO |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_purchase_l1 | inv_purchase | tc2Prod | 1 PCE | 30.00 | psycTax19 |
+    And the invoice identified by inv_purchase is completed
+
+    # One shipment (A) is closed after completion
+    And the shipment identified by ship_A is closed
+
+    # Excluded: a draft shipment, created last
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_D | Y       | psycBP        | 2026-03-10  | psycPS             | warehouseStd   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_D_l1 | so_D | tc2Prod | 6 |
+    And the order identified by so_D is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sched_D | so_D_l1 | N | 6 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sched_D | D | false | false | 6 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sched_D | ship_D |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | ship_D | 2026-03-10 |
+
+    And metasfresh has date and time 2026-10-27T10:00:00+01:00[Europe/Berlin]
+
+    Then the product statistics year comparison report for org "-", year "yearN", product "tc2Prod" returns:
+      | M_Product_ID | Qty_01 | Qty_02 | Qty_03 | Qty_04 | Qty_05 | Qty_06 | Qty_07 | Qty_08 | Qty_09 | Qty_10 | Qty_11 | Qty_12 | Qty_Total | Amt_01 | Amt_02 | Amt_03 | Amt_04 | Amt_05 | Amt_06 | Amt_07 | Amt_08 | Amt_09 | Amt_10 | Amt_11 | Amt_12 | Amt_Total | PrevQty_Total | PrevAmt_Total | Currency |
+      | tc2Prod      |        |        | 9      |        |        |        |        |        |        |        |        |        | 9         |        |        | 75.00  |        |        |        |        |        |        |        |        |        | 75.00     |               |               | CHF      |
