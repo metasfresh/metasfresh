@@ -980,3 +980,447 @@ Feature: Product Statistics Year Comparison - reference replay
     And the product statistics year comparison report for org "-", year "yearN", product "-" contains no rows for products:
       | M_Product_ID |
       | tc2Pallet    |
+
+  @from:cucumber
+  Scenario: TC3 deviation edge cases and TC4 all-products run (product sold only in the previous year, order by value)
+    ## Three products, shipments only (quantity), 2025 and 2026. Month A/B/C/D of tc3aEdge: Jan 2026 4 vs none -> 100.00; Feb 9 vs 9 -> blank;
+    ## Mar none vs 5 -> -100.00; Apr none vs none -> blank. tc3bNoPrev has no previous-year sale at all (its previous-year cells stay empty although
+    ## the previous C_Year exists, and the row is still returned). tc3cPrevOnly was sold only in 2025 (appears in the all-products run, -100.00).
+    ## Order by value: the generated product value is <identifier>_<timestamp>, so the identifier prefix decides the sort order of the run-unique values:
+    ## tc3a < tc3b < tc3c. The products are created in the reverse order (c, b, a), so M_Product_ID order is the opposite of value order and the
+    ## step's relative-order check (expected rows are listed a, b, c) fails if the report sorted by M_Product_ID or in any other way than by value.
+    And metasfresh contains M_Products:
+      | Identifier |
+      | tc3cPrevOnly |
+      | tc3bNoPrev |
+      | tc3aEdge |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | psycPLV | tc3cPrevOnly | 10.00 | PCE | psycTaxCat |
+      | psycPLV | tc3bNoPrev | 10.00 | PCE | psycTaxCat |
+      | psycPLV | tc3aEdge | 10.00 | PCE | psycTaxCat |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_tc3cPrevOnly | inv_tc3cPrevOnly_l1 | 2025-01-02 | warehouseStd | tc3cPrevOnly | 0 | 100 | PCE |
+      | inv_tc3bNoPrev | inv_tc3bNoPrev_l1 | 2025-01-02 | warehouseStd | tc3bNoPrev | 0 | 100 | PCE |
+      | inv_tc3aEdge | inv_tc3aEdge_l1 | 2025-01-02 | warehouseStd | tc3aEdge | 0 | 100 | PCE |
+    And metasfresh has date and time 2025-09-15T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_e2502 | Y | psycBP | 2025-02-10 | psycPS | warehouseStd |
+      | so_e2503 | Y | psycBP | 2025-03-05 | psycPS | warehouseStd |
+      | so_p2506 | Y | psycBP | 2025-06-10 | psycPS | warehouseStd |
+      | so_p2509 | Y | psycBP | 2025-09-10 | psycPS | warehouseStd |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_e2502_l1 | so_e2502 | tc3aEdge | 9 |
+      | so_e2503_l1 | so_e2503 | tc3aEdge | 5 |
+      | so_p2506_l1 | so_p2506 | tc3cPrevOnly | 6 |
+      | so_p2509_l1 | so_p2509 | tc3cPrevOnly | 2 |
+    And the order identified by so_e2502 is completed
+    And the order identified by so_e2503 is completed
+    And the order identified by so_p2506 is completed
+    And the order identified by so_p2509 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sch_e2502 | so_e2502_l1 | N | 9 |
+      | sch_e2503 | so_e2503_l1 | N | 5 |
+      | sch_p2506 | so_p2506_l1 | N | 6 |
+      | sch_p2509 | so_p2509_l1 | N | 2 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sch_e2502 | D | false | false | 9 |
+      | sch_e2503 | D | false | false | 5 |
+      | sch_p2506 | D | false | false | 6 |
+      | sch_p2509 | D | false | false | 2 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_e2502 | sh_e2502 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_e2503 | sh_e2503 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_p2506 | sh_p2506 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_p2509 | sh_p2509 |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | sh_e2502 | 2025-02-10 |
+      | sh_e2503 | 2025-03-05 |
+      | sh_p2506 | 2025-06-10 |
+      | sh_p2509 | 2025-09-10 |
+    And the shipment identified by sh_e2502 is completed
+    And the shipment identified by sh_e2503 is completed
+    And the shipment identified by sh_p2506 is completed
+    And the shipment identified by sh_p2509 is completed
+    And metasfresh has date and time 2026-02-15T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_e2601 | Y | psycBP | 2026-01-04 | psycPS | warehouseStd |
+      | so_e2602 | Y | psycBP | 2026-02-10 | psycPS | warehouseStd |
+      | so_n2602 | Y | psycBP | 2026-02-07 | psycPS | warehouseStd |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_e2601_l1 | so_e2601 | tc3aEdge | 4 |
+      | so_e2602_l1 | so_e2602 | tc3aEdge | 9 |
+      | so_n2602_l1 | so_n2602 | tc3bNoPrev | 7 |
+    And the order identified by so_e2601 is completed
+    And the order identified by so_e2602 is completed
+    And the order identified by so_n2602 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sch_e2601 | so_e2601_l1 | N | 4 |
+      | sch_e2602 | so_e2602_l1 | N | 9 |
+      | sch_n2602 | so_n2602_l1 | N | 7 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sch_e2601 | D | false | false | 4 |
+      | sch_e2602 | D | false | false | 9 |
+      | sch_n2602 | D | false | false | 7 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_e2601 | sh_e2601 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_e2602 | sh_e2602 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_n2602 | sh_n2602 |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | sh_e2601 | 2026-01-04 |
+      | sh_e2602 | 2026-02-10 |
+      | sh_n2602 | 2026-02-07 |
+    And the shipment identified by sh_e2601 is completed
+    And the shipment identified by sh_e2602 is completed
+    And the shipment identified by sh_n2602 is completed
+
+    # TC3: A 4 vs none = 100.00, B 9 vs 9 = blank, C none vs 5 = -100.00, D none vs none = blank
+    Then the product statistics year comparison report for org "-", year "yearN", product "tc3aEdge" returns:
+      | M_Product_ID | Qty_01 | Qty_02 | Qty_03 | Qty_04 | Qty_Total | Amt_Total | PrevQty_01 | PrevQty_02 | PrevQty_03 | PrevQty_Total | Dev_01 | Dev_02 | Dev_03 | Dev_04 |
+      | tc3aEdge | 4 | 9 |  |  | 13 |  |  | 9 | 5 | 14 | 100.00 |  | -100.00 |  |
+    # TC3: no previous-year sales: all previous-year cells empty, the row is returned; deviation 100.00 where there is a current quantity
+    Then the product statistics year comparison report for org "-", year "yearN", product "tc3bNoPrev" returns:
+      | M_Product_ID | Qty_02 | Qty_Total | PrevQty_01 | PrevQty_02 | PrevQty_03 | PrevQty_04 | PrevQty_05 | PrevQty_06 | PrevQty_07 | PrevQty_08 | PrevQty_09 | PrevQty_10 | PrevQty_11 | PrevQty_12 | PrevQty_Total | PrevAmt_Total | Dev_01 | Dev_02 |
+      | tc3bNoPrev | 7 | 7 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 100.00 |
+
+    # TC4: all-products run: tc3cPrevOnly appears with empty current-year cells and -100.00 in each month with previous-year sales; rows ordered by value (a, b, c)
+    Then the product statistics year comparison report for org "-", year "yearN", product "-" returns:
+      | M_Product_ID | Qty_06 | Qty_09 | Qty_Total | PrevQty_06 | PrevQty_09 | PrevQty_Total | Dev_01 | Dev_06 | Dev_09 |
+      | tc3aEdge |  |  | 13 |  |  | 14 | 100.00 |  |  |
+      | tc3bNoPrev |  |  | 7 |  |  |  |  |  |  |
+      | tc3cPrevOnly |  |  |  | 6 | 2 | 8 |  | -100.00 | -100.00 |
+
+  @from:cucumber
+  Scenario: TC8 shipped and invoiced in different months; invoiced-only and shipped-only products
+    ## TC8: tc8Prod is shipped on 2026-11-30 and invoiced with accounting date 2026-12-02: the quantity counts in November, the amount in December.
+    ## The invoice's DateAcct is the pinned clock date, so the clock is pinned to 2026-12-02 before the invoice is created.
+    ## Invoiced but never shipped (rf4Invoiced): amount set, quantity blank. Only shipped, never invoiced (rf4Sample): quantity set, amount blank.
+    And metasfresh contains M_Products:
+      | Identifier |
+      | tc8Prod |
+      | rf4Invoiced |
+      | rf4Sample |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | psycPLV | tc8Prod | 10.00 | PCE | psycTaxCat |
+      | psycPLV | rf4Invoiced | 10.00 | PCE | psycTaxCat |
+      | psycPLV | rf4Sample | 10.00 | PCE | psycTaxCat |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_tc8Prod | inv_tc8Prod_l1 | 2025-01-02 | warehouseStd | tc8Prod | 0 | 100 | PCE |
+      | inv_rf4Sample | inv_rf4Sample_l1 | 2025-01-02 | warehouseStd | rf4Sample | 0 | 100 | PCE |
+    And metasfresh has date and time 2026-03-15T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_s03 | Y | psycBP | 2026-03-15 | psycPS | warehouseStd |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_s03_l1 | so_s03 | rf4Sample | 4 |
+    And the order identified by so_s03 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sch_s03 | so_s03_l1 | N | 4 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sch_s03 | D | false | false | 4 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_s03 | sh_s03 |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | sh_s03 | 2026-03-15 |
+    And the shipment identified by sh_s03 is completed
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_rf4 | psycBP | 2026-03-15 | true | CHF | psycPL |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_rf4_l1 | inv_rf4 | rf4Invoiced | 3 PCE | 10.00 | psycTax19 |
+    And the invoice identified by inv_rf4 is completed
+    And metasfresh has date and time 2026-11-30T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_t11 | Y | psycBP | 2026-11-30 | psycPS | warehouseStd |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_t11_l1 | so_t11 | tc8Prod | 5 |
+    And the order identified by so_t11 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sch_t11 | so_t11_l1 | N | 5 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sch_t11 | D | false | false | 5 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_t11 | sh_t11 |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | sh_t11 | 2026-11-30 |
+    And the shipment identified by sh_t11 is completed
+    And metasfresh has date and time 2026-12-02T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_t12 | psycBP | 2026-12-02 | true | CHF | psycPL |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_t12_l1 | inv_t12 | tc8Prod | 5 PCE | 10.00 | psycTax19 |
+    And the invoice identified by inv_t12 is completed
+
+    Then the product statistics year comparison report for org "-", year "yearN", product "tc8Prod" returns:
+      | M_Product_ID | Qty_11 | Qty_12 | Qty_Total | Amt_11 | Amt_12 | Amt_Total |
+      | tc8Prod | 5 |  | 5 |  | 50.00 | 50.00 |
+    # Invoiced but never shipped: amount 3 x 10.00, quantity blank
+    And the product statistics year comparison report for org "-", year "yearN", product "rf4Invoiced" returns:
+      | M_Product_ID | Qty_03 | Qty_Total | Amt_03 | Amt_Total |
+      | rf4Invoiced |  |  | 30.00 | 30.00 |
+    # Only shipped (sample), never invoiced: quantity 4, amount blank
+    And the product statistics year comparison report for org "-", year "yearN", product "rf4Sample" returns:
+      | M_Product_ID | Qty_03 | Qty_Total | Amt_03 | Amt_Total |
+      | rf4Sample | 4 | 4 |  |  |
+
+  @from:cucumber
+  Scenario: A year without a previous C_Year in its calendar has an empty previous year, although the product has documents in the year before
+    ## The product has a shipment and an invoice in 2025 (they exist in the org's calendar) and in 2026. A separate test calendar holds ONLY 2026, so the
+    ## chosen C_Year has no previous year: PrevQty_*/PrevAmt_* are NULL and Dev_* is 100.00 where the current quantity is > 0 (2025 is NOT taken by date).
+    ## Contrast: the same product reported for the Background calendar (2025 and 2026) shows the 2025 figures as previous year.
+    And metasfresh contains C_Calendar "PSYC_Calendar_single" with fiscal years:
+      | C_Year_ID  | FiscalYear |
+      | yearSingle | 2026       |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | tcSingle |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | psycPLV | tcSingle | 10.00 | PCE | psycTaxCat |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_tcSingle | inv_tcSingle_l1 | 2025-01-02 | warehouseStd | tcSingle | 0 | 100 | PCE |
+    And metasfresh has date and time 2025-06-15T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_g2506 | Y | psycBP | 2025-06-15 | psycPS | warehouseStd |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_g2506_l1 | so_g2506 | tcSingle | 8 |
+    And the order identified by so_g2506 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sch_g2506 | so_g2506_l1 | N | 8 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sch_g2506 | D | false | false | 8 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_g2506 | sh_g2506 |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | sh_g2506 | 2025-06-15 |
+    And the shipment identified by sh_g2506 is completed
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_g2506 | psycBP | 2025-06-15 | true | CHF | psycPL |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_g2506_l1 | inv_g2506 | tcSingle | 8 PCE | 10.00 | psycTax19 |
+    And the invoice identified by inv_g2506 is completed
+    And metasfresh has date and time 2026-03-15T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_g2603 | Y | psycBP | 2026-03-15 | psycPS | warehouseStd |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_g2603_l1 | so_g2603 | tcSingle | 6 |
+    And the order identified by so_g2603 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sch_g2603 | so_g2603_l1 | N | 6 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sch_g2603 | D | false | false | 6 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_g2603 | sh_g2603 |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | sh_g2603 | 2026-03-15 |
+    And the shipment identified by sh_g2603 is completed
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_g2603 | psycBP | 2026-03-15 | true | CHF | psycPL |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_g2603_l1 | inv_g2603 | tcSingle | 6 PCE | 10.00 | psycTax19 |
+    And the invoice identified by inv_g2603 is completed
+    And metasfresh has date and time 2026-08-15T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_g2608 | Y | psycBP | 2026-08-15 | psycPS | warehouseStd |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_g2608_l1 | so_g2608 | tcSingle | 2 |
+    And the order identified by so_g2608 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sch_g2608 | so_g2608_l1 | N | 2 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sch_g2608 | D | false | false | 2 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_g2608 | sh_g2608 |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | sh_g2608 | 2026-08-15 |
+    And the shipment identified by sh_g2608 is completed
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_g2608 | psycBP | 2026-08-15 | true | CHF | psycPL |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_g2608_l1 | inv_g2608 | tcSingle | 2 PCE | 10.00 | psycTax19 |
+    And the invoice identified by inv_g2608 is completed
+
+    Then the product statistics year comparison report for org "-", year "yearSingle", product "tcSingle" returns:
+      | M_Product_ID | Qty_03 | Qty_08 | Qty_Total | Amt_03 | Amt_08 | Amt_Total | PrevQty_01 | PrevQty_02 | PrevQty_03 | PrevQty_04 | PrevQty_05 | PrevQty_06 | PrevQty_07 | PrevQty_08 | PrevQty_09 | PrevQty_10 | PrevQty_11 | PrevQty_12 | PrevQty_Total | PrevAmt_03 | PrevAmt_06 | PrevAmt_08 | PrevAmt_Total | Dev_03 | Dev_06 | Dev_08 |
+      | tcSingle | 6 | 2 | 8 | 60.00 | 20.00 | 80.00 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 100.00 |  | 100.00 |
+    # Same product, calendar with the previous year: 2025 is the previous year
+    And the product statistics year comparison report for org "-", year "yearN", product "tcSingle" returns:
+      | M_Product_ID | Qty_03 | Qty_08 | Qty_Total | Amt_03 | Amt_08 | Amt_Total | PrevQty_06 | PrevQty_Total | PrevAmt_06 | PrevAmt_Total | Dev_03 | Dev_06 | Dev_08 |
+      | tcSingle | 6 | 2 | 8 | 60.00 | 20.00 | 80.00 | 8 | 8 | 80.00 | 80.00 | 100.00 | -100.00 | 100.00 |
+
+  @from:cucumber
+  Scenario: Month boundary at 23:59, shipment and larger return in one month, negative previous-year month
+    ## rf3Cur (2026): ship 5 in January; ship 2 in February (movement date = last day, 2026-02-28); the 5 are returned by the customer in February
+    ## (customer return of the January shipment) -> February = 2 - 5 = -3, January = 5. The return is created while the clock is pinned to
+    ## 2026-02-28T23:59 Europe/Berlin and takes the clock as its MovementDate (the 'update M_InOut' step knows dates only). Note: MovementDate is a
+    ## date column of the application, the save truncates the time (stored 2026-02-28 00:00:00, checked in the DB), so a 23:59 value cannot be
+    ## produced through the application; the boundary covered here is: documents dated the LAST day of the month count in that month, not in March.
+    ## rf3Prev: the same construction in 2025 (January 5, February 2 - 5 = -3 = previous-year month), and 6 shipped in February 2026 -> deviation
+    ## (6 / -3 - 1) * 100 = -300.00 (computed as is, AC9). January: previous 5, current none -> -100.00.
+    And metasfresh contains M_Products:
+      | Identifier |
+      | rf3Cur |
+      | rf3Prev |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | psycPLV | rf3Cur | 10.00 | PCE | psycTaxCat |
+      | psycPLV | rf3Prev | 10.00 | PCE | psycTaxCat |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_rf3Cur | inv_rf3Cur_l1 | 2025-01-02 | warehouseStd | rf3Cur | 0 | 100 | PCE |
+      | inv_rf3Prev | inv_rf3Prev_l1 | 2025-01-02 | warehouseStd | rf3Prev | 0 | 100 | PCE |
+    And metasfresh has date and time 2025-02-20T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_p2501 | Y | psycBP | 2025-01-10 | psycPS | warehouseStd |
+      | so_p2502 | Y | psycBP | 2025-02-10 | psycPS | warehouseStd |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_p2501_l1 | so_p2501 | rf3Prev | 5 |
+      | so_p2502_l1 | so_p2502 | rf3Prev | 2 |
+    And the order identified by so_p2501 is completed
+    And the order identified by so_p2502 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sch_p2501 | so_p2501_l1 | N | 5 |
+      | sch_p2502 | so_p2502_l1 | N | 2 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sch_p2501 | D | false | false | 5 |
+      | sch_p2502 | D | false | false | 2 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_p2501 | sh_p2501 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_p2502 | sh_p2502 |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | sh_p2501 | 2025-01-10 |
+      | sh_p2502 | 2025-02-10 |
+    And the shipment identified by sh_p2501 is completed
+    And the shipment identified by sh_p2502 is completed
+    # rf3Prev: the 5 of January 2025 are returned in February 2025 (movement date = clock 2025-02-20)
+    And generate customer return from shipment
+      | M_InOut_ID | CustomerReturn_ID |
+      | sh_p2501 | ret_p2502 |
+    And the return inOut identified by ret_p2502 is completed
+    And metasfresh has date and time 2026-02-20T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_c2601 | Y | psycBP | 2026-01-10 | psycPS | warehouseStd |
+      | so_c2602 | Y | psycBP | 2026-02-28 | psycPS | warehouseStd |
+      | so_p2602 | Y | psycBP | 2026-02-10 | psycPS | warehouseStd |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_c2601_l1 | so_c2601 | rf3Cur | 5 |
+      | so_c2602_l1 | so_c2602 | rf3Cur | 2 |
+      | so_p2602_l1 | so_p2602 | rf3Prev | 6 |
+    And the order identified by so_c2601 is completed
+    And the order identified by so_c2602 is completed
+    And the order identified by so_p2602 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sch_c2601 | so_c2601_l1 | N | 5 |
+      | sch_c2602 | so_c2602_l1 | N | 2 |
+      | sch_p2602 | so_p2602_l1 | N | 6 |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sch_c2601 | D | false | false | 5 |
+      | sch_c2602 | D | false | false | 2 |
+      | sch_p2602 | D | false | false | 6 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_c2601 | sh_c2601 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_c2602 | sh_c2602 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_p2602 | sh_p2602 |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | sh_c2601 | 2026-01-10 |
+      | sh_c2602 | 2026-02-28 |
+      | sh_p2602 | 2026-02-10 |
+    And the shipment identified by sh_c2601 is completed
+    And the shipment identified by sh_c2602 is completed
+    And the shipment identified by sh_p2602 is completed
+    # Clock = 23:59 local on the last day of February 2026: the return's MovementDate
+    And metasfresh has date and time 2026-02-28T23:59:00+01:00[Europe/Berlin]
+    And generate customer return from shipment
+      | M_InOut_ID | CustomerReturn_ID |
+      | sh_c2601 | ret_c2602 |
+    And the return inOut identified by ret_c2602 is completed
+
+    Then the product statistics year comparison report for org "-", year "yearN", product "rf3Cur" returns:
+      | M_Product_ID | Qty_01 | Qty_02 | Qty_03 | Qty_Total | PrevQty_Total |
+      | rf3Cur | 5 | -3 |  | 2 |  |
+    # Negative previous-year month: previous -3, current 6 -> -300.00
+    And the product statistics year comparison report for org "-", year "yearN", product "rf3Prev" returns:
+      | M_Product_ID | Qty_01 | Qty_02 | Qty_Total | PrevQty_01 | PrevQty_02 | PrevQty_Total | Dev_01 | Dev_02 |
+      | rf3Prev |  | 6 | 6 | 5 | -3 | 2 | -100.00 | -300.00 |
