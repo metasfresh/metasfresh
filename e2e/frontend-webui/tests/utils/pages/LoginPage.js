@@ -79,6 +79,22 @@ export class LoginPage {
   }
 
   /**
+   * Log out through the user menu (avatar -> Logout), staying in the running SPA.
+   * Waits for the login page.
+   */
+  static async logout() {
+    return await test.step('LoginPage - Logout via user menu', async () => {
+      const page = getPage();
+
+      await page.locator('.avatar-container').click();
+      await page
+        .locator('.user-dropdown-item', { has: page.locator('.meta-icon-logout') })
+        .click();
+      await this.waitForPage();
+    });
+  }
+
+  /**
    * Verify that the user is logged in (not on login page).
    */
   static async expectLoggedIn() {
