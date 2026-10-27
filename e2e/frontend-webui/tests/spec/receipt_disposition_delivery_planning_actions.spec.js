@@ -6,9 +6,54 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { PURCHASE_ORDER_WINDOW_ID, RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID } from '../utils/WindowIds';
+import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /** AD_Tab_ID of "Bestellposition" (purchase order line) in the purchase order window. */
 const PURCHASE_ORDER_LINE_TAB_ID = 'AD_Tab-293';
+const MATERIAL_RECEIPT_WINDOW_ID = 184;
+const MATERIAL_RECEIPT_LINE_TAB_ID = 'AD_Tab-297';
+
+/**
+ * Selects a grid row. The grid auto-selects its first row on load and a click on a selected row DESELECTS it, so
+ * click only when the row is not selected yet, then assert it is.
+ */
+const selectRow = async (row) => {
+  if (!/row-selected/.test((await row.getAttribute('class')) || '')) {
+    await row.click();
+  }
+  await expect(row).toHaveClass(/row-selected/);
+};
+
+/**
+ * Opens the receipt-disposition delivery-planning window on a view scoped to exactly the given row ids
+ * (JSONCreateViewRequest.filterOnlyIds), created in the browser's own session so the UI can open it via ?viewId=.
+ *
+ * The window has no filter field, and its unfiltered list is paged (20 rows) and holds every other run's rows on a
+ * shared DB (CI shards, repeated runs) - so a test's own rows may not be on the first page. Scoping the view to
+ * the test's own ids makes the lookup independent of how many other rows exist.
+ */
+const openWindowOnOwnRows = async (page, rowIds) => {
+  const viewId = await page.evaluate(
+    async ({ rest, windowId, ids }) => {
+      const created = await fetch(`${rest}/documentView/${windowId}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ windowId: String(windowId), viewType: 'grid', filterOnlyIds: ids }),
+      });
+      if (!created.ok) {
+        throw new Error(`view scoped to the own rows failed: HTTP ${created.status}`);
+      }
+      return (await created.json()).viewId;
+    },
+    {
+      rest: WEBAPI_BASE_URL,
+      windowId: RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID,
+      ids: rowIds.map(Number),
+    },
+  );
+  await page.goto(`${FRONTEND_BASE_URL}/window/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}?viewId=${viewId}`);
+};
 
 /**
  * AD_Process.Value of the receipt-disposition delivery-planning window's default quick action and its fallback
@@ -119,19 +164,19 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     // Taken from the masterdata response, never hard-coded (every run creates a fresh row). The response exposes
     // that id in exactly one place: `tuPIItemProductTestId`, of the form `tuPIItemProduct-<id>`.
     const packedPackingInstructionsId = Number(
-      String(masterdata.packingInstructions.RL_TU.tuPIItemProductTestId).replace(/^tuPIItemProduct-/, '')
+      String(masterdata.packingInstructions.RL_TU.tuPIItemProductTestId).replace(/^tuPIItemProduct-/, ''),
     );
     expect(
       packedPackingInstructionsId,
-      'the M_HU_PI_Item_Product id of the packed product\'s packing instruction, parsed out of the ' +
-        'masterdata response\'s tuPIItemProductTestId'
+      "the M_HU_PI_Item_Product id of the packed product's packing instruction, parsed out of the " +
+        "masterdata response's tuPIItemProductTestId",
     ).toBeGreaterThan(0);
     expect(
       packedPackingInstructionsId,
-      'the created packing instruction is a real one, not the virtual "No Packing Item" row'
+      'the created packing instruction is a real one, not the virtual "No Packing Item" row',
     ).not.toBe(NO_PACKING_ITEM_ID);
 
-    const REST = FRONTEND_BASE_URL.replace(/:3000$/, ':8080') + '/rest/api';
+    const REST = WEBAPI_BASE_URL;
 
     const firstDocument = (body) => (Array.isArray(body) ? body : body.documents || [body])[0];
     const patchDocument = async (windowId, documentId, tabId, rowId, changes) => {
@@ -197,13 +242,13 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       const lineRows = (
         await (
           await request.get(
-            `${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}/${PURCHASE_ORDER_LINE_TAB_ID}`
+            `${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}/${PURCHASE_ORDER_LINE_TAB_ID}`,
           )
         ).json()
       ).result;
       expect(
         lineRows.map((row) => String(row.fieldsByName.M_Product_ID.value.key)).sort(),
-        'the products of the created purchase order lines'
+        'the products of the created purchase order lines',
       ).toEqual([String(packedProductId), String(unpackedProductId)].sort());
       for (const lineRow of lineRows) {
         expect(lineRow.saveStatus && lineRow.saveStatus.saved, `order line ${lineRow.rowId} is saved`).toBe(true);
@@ -216,23 +261,23 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
         lineRows.map((row) => [
           String(row.fieldsByName.M_Product_ID.value.key),
           Number(row.fieldsByName.M_HU_PI_Item_Product_ID.value.key),
-        ])
+        ]),
       );
       expect(
         packingInstructionIdByProductId.get(String(packedProductId)),
-        'the packed order line carries the packing instruction created for its product'
+        'the packed order line carries the packing instruction created for its product',
       ).toBe(packedPackingInstructionsId);
       expect(
         packingInstructionIdByProductId.get(String(unpackedProductId)),
         'the unpacked order line carries no packing instruction — the virtual "No Packing Item" row, which ' +
-          'is what makes its HU-defaults receive reject'
+          'is what makes its HU-defaults receive reject',
       ).toBe(NO_PACKING_ITEM_ID);
 
       await patchDocument(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, null, null, [
         { op: 'replace', path: 'DocAction', value: 'CO' },
       ]);
       const completed = firstDocument(
-        await (await request.get(`${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}`)).json()
+        await (await request.get(`${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}`)).json(),
       );
       expect(completed.fieldsByName.DocStatus.value.key, 'purchase order DocStatus').toBe('CO');
     });
@@ -244,7 +289,7 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     //
     // Polled through the window's own view because the tab carries no filter field at all: a fresh view per
     // attempt, NEWEST FIRST via ?orderBy=, paged to the end, matched on THIS order's C_Order_ID.
-    const ownReceiptDispositionRowCount = async () => {
+    const ownReceiptDispositionRows = async () => {
       const view = await (
         await request.post(`${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}`, {
           data: { windowId: String(RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID), viewType: 'grid' },
@@ -252,18 +297,18 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       ).json();
 
       const PAGE_LENGTH = 500;
-      let ownRows = 0;
+      const ownRows = [];
       for (let firstRow = 0; ; firstRow += PAGE_LENGTH) {
         const rowsPage = await (
           await request.get(
             `${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}/${view.viewId}` +
-              `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID`
+              `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID`,
           )
         ).json();
         const rows = rowsPage.result || [];
-        ownRows += rows.filter(
-          (row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)
-        ).length;
+        ownRows.push(
+          ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)),
+        );
         if (rows.length < PAGE_LENGTH) {
           return ownRows;
         }
@@ -272,7 +317,7 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
 
     await test.step('wait for the two receipt-schedule rows the completion creates asynchronously', async () => {
       await expect
-        .poll(ownReceiptDispositionRowCount, {
+        .poll(async () => (await ownReceiptDispositionRows()).length, {
           message:
             `both receipt-schedule rows of purchase order ${purchaseOrderId} show up on window ` +
             `${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}. Fewer than two means the async ` +
@@ -292,14 +337,17 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
 
     // No waitForLoadState('networkidle') here: the SPA holds a websocket open, so networkidle is not a state this
     // page reliably reaches, and swallowing its timeout hid whatever else went wrong at navigation.
-    await page.goto(`${FRONTEND_BASE_URL}/window/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}`);
+    await openWindowOnOwnRows(
+      page,
+      (await ownReceiptDispositionRows()).map((ownRow) => ownRow.id),
+    );
 
     const rowForProduct = (productName) => page.locator(`table tbody tr:has-text("${productName}")`).first();
 
     await test.step('the packed-product row defaults to the HU receive, captioned with the configuration it resolved', async () => {
       const row = rowForProduct(packedProductName);
       await row.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-      await row.click();
+      await selectRow(row);
 
       const quickActionButton = page.locator('[data-testid="quick-action-button"]');
       await expect(quickActionButton).toBeVisible();
@@ -315,7 +363,7 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
 
     await test.step('the unpacked-product row keeps the HU default, captioned by the bare quantity', async () => {
       const row = rowForProduct(unpackedProductName);
-      await row.click();
+      await selectRow(row);
 
       const quickActionButton = page.locator('[data-testid="quick-action-button"]');
       await expect(quickActionButton).toBeVisible();
@@ -369,11 +417,270 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       const actionsToggle = page.locator('.meta-icon-more').first();
       await actionsToggle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await actionsToggle.click();
-      await page
-        .locator('.subheader-container')
-        .first()
-        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await page.locator('.subheader-container').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await expect(page.locator(`[data-testid="action-${MULTI_ROW_RECEIVE_INTERNAL_NAME}"]`)).toBeVisible();
+    });
+  });
+});
+
+/** AD_Process.Value of "CUs annehmen mit Menge" - receives loose CUs in the quantity the operator types. */
+const CUS_WITH_QTY_INTERNAL_NAME = 'WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs_WithParam';
+
+const QTY_ORDERED = 5;
+const QTY_RECEIVED = 3; // differs from the ordered quantity, so a receipt of the default (the whole line) cannot pass
+
+const CU_QTY_LANGUAGES = [
+  { language: 'de_DE', label: 'German', qtyLabel: 'Menge CU' },
+  { language: 'en_US', label: 'English', qtyLabel: 'Quantity CU' },
+];
+
+/**
+ * "CUs annehmen mit Menge" labels its quantity "Menge CU" - it is no quantity per TU, there is no TU - and still
+ * receives loose CUs in the typed quantity.
+ *
+ * One purchase order with one line of a product WITHOUT a packing instruction; its receipt-schedule row is
+ * unplanned. Every record the test reads back belongs to that order.
+ */
+CU_QTY_LANGUAGES.forEach(({ language, label, qtyLabel }) => {
+  test.describe(`Receipt-disposition delivery-planning — "CUs annehmen mit Menge" (${label} UI)`, () => {
+    test(`labels the quantity "${qtyLabel}" and receives the typed quantity of loose CUs (${label} UI)`, async ({
+      page,
+      request,
+    }) => {
+      allure.epic('E0360: Transport (Extralogistik)');
+      allure.tag('F29050: Delivery Planning');
+      allure.story('Receipt-disposition delivery-planning receive CUs with quantity');
+      allure.severity('normal');
+      allure.parameter('Language', language);
+      allure.tag(language);
+
+      test.setTimeout(180000);
+
+      const masterdata = await Backend.createMasterdata({
+        language,
+        request: {
+          login: { user: { language } },
+          bpartners: {
+            VENDOR: {
+              name: `RL cu-qty vendor ${Date.now()}`,
+              isVendor: true,
+              isCustomer: false,
+              isSoPriceList: false,
+            },
+          },
+          products: {
+            LOOSE: {
+              name: `RL cu-qty product ${Date.now()}`,
+              type: 'Item',
+              prices: [{ price: 10.0, currencyCode: 'EUR' }],
+            },
+          },
+        },
+      });
+      const vendorId = masterdata.bpartners.VENDOR.id;
+      const productId = masterdata.products.LOOSE.id;
+      const productName = masterdata.products.LOOSE.productName;
+      expect(vendorId).toBeTruthy();
+      expect(productId).toBeTruthy();
+      expect(productName).toBeTruthy();
+
+      const REST = WEBAPI_BASE_URL;
+      const firstDocument = (body) => (Array.isArray(body) ? body : body.documents || [body])[0];
+      const patchDocument = async (windowId, documentId, tabId, rowId, changes) => {
+        const path = tabId
+          ? `${REST}/window/${windowId}/${documentId}/${tabId}/${rowId}`
+          : `${REST}/window/${windowId}/${documentId}`;
+        const response = await request.patch(path, { data: changes });
+        if (!response.ok()) {
+          throw new Error(`PATCH ${path} failed: HTTP ${response.status()} ${await response.text()}`);
+        }
+        return firstDocument(await response.json());
+      };
+
+      // The setup session goes through the `request` fixture, never `page.request` (see the first test of this file).
+      await test.step('Authenticate the REST setup session', async () => {
+        const sessionBody = await (await request.get(`${REST}/userSession`)).json().catch(() => ({}));
+        if (!sessionBody.loggedIn) {
+          const authResponse = await request.post(`${REST}/login/authenticate`, {
+            data: { username: 'metasfresh', password: 'metasfresh' },
+          });
+          const authBody = await authResponse.json();
+          if (authBody.loginComplete === false && authBody.roles && authBody.roles.length > 0) {
+            await request.post(`${REST}/login/loginComplete`, { data: authBody.roles[0] });
+          }
+        }
+      });
+
+      let purchaseOrderId;
+      await test.step('Create and complete a purchase order with one unpacked line', async () => {
+        purchaseOrderId = (await patchDocument(PURCHASE_ORDER_WINDOW_ID, 'NEW', null, null, [])).id;
+        await patchDocument(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, null, null, [
+          { op: 'replace', path: 'C_BPartner_ID', value: Number(vendorId) },
+        ]);
+        await patchDocument(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID, 'NEW', [
+          { op: 'replace', path: 'M_Product_ID', value: Number(productId) },
+          { op: 'replace', path: 'QtyEntered', value: QTY_ORDERED },
+        ]);
+        await patchDocument(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, null, null, [
+          { op: 'replace', path: 'DocAction', value: 'CO' },
+        ]);
+        const completed = firstDocument(
+          await (await request.get(`${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}`)).json(),
+        );
+        expect(completed.fieldsByName.DocStatus.value.key, 'purchase order DocStatus').toBe('CO');
+      });
+
+      // The rows of THIS purchase order on the window, read from a fresh view of the server (newest first, paged to
+      // the end - the tab has no filter field), so neither the grid's cached state nor other records are involved.
+      const ownRows = async () => {
+        const view = await (
+          await request.post(`${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}`, {
+            data: { windowId: String(RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID), viewType: 'grid' },
+          })
+        ).json();
+        const PAGE_LENGTH = 500;
+        const own = [];
+        for (let firstRow = 0; ; firstRow += PAGE_LENGTH) {
+          const rowsPage = await (
+            await request.get(
+              `${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}/${view.viewId}` +
+                `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID`,
+            )
+          ).json();
+          const rows = rowsPage.result || [];
+          own.push(
+            ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)),
+          );
+          if (rows.length < PAGE_LENGTH) {
+            return own;
+          }
+        }
+      };
+
+      await test.step('wait for the receipt-schedule row the completion creates asynchronously', async () => {
+        await expect
+          .poll(async () => (await ownRows()).length, {
+            message:
+              `the receipt-schedule row of purchase order ${purchaseOrderId} shows up on window ` +
+              `${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID} (the completion only enqueues its creation)`,
+            timeout: 90000,
+            intervals: [1000, 2000],
+          })
+          .toBe(1);
+      });
+
+      await LoginPage.goto();
+      await LoginPage.login(masterdata.login.user);
+      await DashboardPage.expectVisible();
+
+      await openWindowOnOwnRows(
+        page,
+        (await ownRows()).map((ownRow) => ownRow.id),
+      );
+
+      const row = page.locator(`table tbody tr:has-text("${productName}")`).first();
+      await row.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      await selectRow(row);
+
+      await test.step('the dialog of "CUs annehmen mit Menge" labels the quantity "Menge CU"', async () => {
+        await page.locator('[data-testid="quick-action-dropdown-toggle"]').click();
+        await page.locator(`[data-testid="quick-action-${CUS_WITH_QTY_INTERNAL_NAME}"]`).click();
+
+        // addressed by the parameter's ColumnName, the language-independent handle of the field
+        const label = page.locator('.panel-modal-content .form-field-QtyCUsReceived label').first();
+        await label.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        expect((await label.textContent()).trim()).toBe(qtyLabel);
+      });
+
+      await test.step('typing a quantity receives exactly that many loose CUs', async () => {
+        const input = page.locator('.panel-modal-content .form-field-QtyCUsReceived input.input-field');
+        await input.click();
+        await page
+          .locator('.panel-modal-content .form-field-QtyCUsReceived .input-body-container.focused')
+          .waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await input.press('Control+a');
+        await input.pressSequentially(String(QTY_RECEIVED));
+        await input.blur();
+        await expect(input).toHaveValue(new RegExp(`^${QTY_RECEIVED}([.,]0+)?$`));
+
+        const startButton = page.getByTestId('process-modal-start-button');
+        await expect(startButton).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+        await startButton.click();
+        await startButton.waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      });
+
+      // Read back from the server: an unplanned row's "actual discharge quantity" is the receipt schedule's QtyMoved.
+      await test.step("the server booked the typed quantity on the order's receipt-schedule row", async () => {
+        await expect
+          .poll(
+            async () => {
+              const rows = await ownRows();
+              return rows.length === 1 ? Number(rows[0].fieldsByName?.ActualDischargeQuantity?.value) : null;
+            },
+            {
+              message: `the receipt-schedule row of purchase order ${purchaseOrderId} reports ${QTY_RECEIVED} received (ActualDischargeQuantity)`,
+              timeout: 60000,
+              intervals: [1000, 2000],
+            },
+          )
+          .toBe(QTY_RECEIVED);
+      });
+
+      // Loose CUs: the receipt of THIS purchase order carries the quantity on one line that has no TU / packing
+      // instruction. Read from the server (fresh view of the Material Receipt window, scoped to the order id).
+      await test.step('the receipt of this order is loose CUs - no TU, no LU, no packing instruction', async () => {
+        const receiptLines = async () => {
+          const view = await (
+            await request.post(`${REST}/documentView/${MATERIAL_RECEIPT_WINDOW_ID}`, {
+              data: { windowId: String(MATERIAL_RECEIPT_WINDOW_ID), viewType: 'grid' },
+            })
+          ).json();
+          // page through the whole view: other tests create receipts on the same DB concurrently
+          const ownReceipts = [];
+          for (let firstRow = 0; ; firstRow += 200) {
+            const receiptsPage = await (
+              await request.get(
+                `${REST}/documentView/${MATERIAL_RECEIPT_WINDOW_ID}/${view.viewId}?firstRow=${firstRow}&pageLength=200&orderBy=-M_InOut_ID`,
+              )
+            ).json();
+            const rows = receiptsPage.result || [];
+            ownReceipts.push(
+              ...rows.filter((row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)),
+            );
+            if (rows.length < 200) {
+              break;
+            }
+          }
+          const lines = [];
+          for (const receipt of ownReceipts) {
+            const linesResponse = await request.get(
+              `${REST}/window/${MATERIAL_RECEIPT_WINDOW_ID}/${receipt.id}/${MATERIAL_RECEIPT_LINE_TAB_ID}`,
+            );
+            // the tab rows come back as { result: [...documents], missingIds, orderBys }, not as a bare array
+            const linesBody = linesResponse.ok() ? await linesResponse.json() : {};
+            lines.push(...(Array.isArray(linesBody) ? linesBody : linesBody.result || []));
+          }
+          return lines;
+        };
+
+        await expect
+          .poll(async () => (await receiptLines()).length, {
+            message: `the material receipt of purchase order ${purchaseOrderId} has a line`,
+            timeout: 60000,
+            intervals: [1000, 2000],
+          })
+          .toBe(1);
+
+        const [line] = await receiptLines();
+        const fields = line.fieldsByName || {};
+        expect(Number(fields.QtyEntered?.value), 'received quantity on the receipt line').toBe(QTY_RECEIVED);
+        // Loose CUs are received into ONE virtual HU ("No Packing Item", unit type V - read from the DB on the receipt
+        // this flow creates), which the packing-aware receipt line counts as a single TU: QtyEnteredTU is exactly 1,
+        // and the line carries the typed quantity and NO packing instruction item. The HU itself is not readable via
+        // the receipt window's REST tab (it exposes no HU fields), so its virtual type is not asserted here.
+        expect(Number(fields.QtyEnteredTU?.value), 'TUs on the receipt line (the one virtual HU)').toBe(1);
+        expect(fields.M_HU_PI_Item_Product_ID?.value ?? null, 'packing instruction on the receipt line').toBeNull();
+      });
     });
   });
 });
