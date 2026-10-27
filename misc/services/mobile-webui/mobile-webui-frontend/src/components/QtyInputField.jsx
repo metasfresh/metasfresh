@@ -92,6 +92,22 @@ const QtyInputField = ({
     }
   };
 
+  // Select the whole value on focus so typing replaces the prefilled value instead of appending to
+  // it. A type="number" input replaced its value on type; the type="text" input needed for
+  // locale-aware decimals appends instead, which silently inflates a prefilled field (e.g. the
+  // generateHUQRCodes numberOfHUs="1" becoming "11"). Deferred to a macrotask so the selection
+  // survives the caret the browser/driver places right after focus (a synchronous select is undone).
+  const handleFocus = () => {
+    const el = qtyInputRef.current;
+    if (el) {
+      setTimeout(() => {
+        if (qtyInputRef.current === el) {
+          el.select();
+        }
+      }, 0);
+    }
+  };
+
   const forwardQtyInfoToParent = (qtyInfoToForward) => {
     onQtyChange(qtyInfoToForward);
   };
@@ -110,6 +126,7 @@ const QtyInputField = ({
           disabled={!!readonly}
           onBeforeInput={handleBeforeInput}
           onChange={handleQtyEntered}
+          onFocus={handleFocus}
           onClick={() => qtyInputRef.current.select()}
         />
         {uom && <span className="icon is-small is-right">{uom}</span>}

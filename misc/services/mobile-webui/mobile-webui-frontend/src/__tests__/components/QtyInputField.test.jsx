@@ -119,4 +119,24 @@ describe('QtyInputField', () => {
       expect(qtyInfos.toNumberOrString(lastPayload(onPayload))).toBe('1.222');
     });
   });
+
+  it('selects the whole prefilled value on focus so typing replaces it (not appends)', () => {
+    // Regression guard: the type="text" input needed for locale-aware decimals appends on
+    // focus-then-type, where the former type="number" replaced. Without select-on-focus a prefilled
+    // field (e.g. generateHUQRCodes numberOfHUs="1") becomes "11" when typed over, posting a wrong
+    // count. See QtyInputField.handleFocus. (jsdom cannot model selection-replace, so this asserts
+    // the select-on-focus is wired; the real replace behaviour is covered by the mobile E2E suite.)
+    jest.useFakeTimers();
+    const selectSpy = jest.spyOn(HTMLInputElement.prototype, 'select');
+    try {
+      renderField({ qty: '1', integerValuesOnly: true });
+      selectSpy.mockClear();
+      fireEvent.focus(getInput());
+      jest.runOnlyPendingTimers();
+      expect(selectSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      selectSpy.mockRestore();
+      jest.useRealTimers();
+    }
+  });
 });
