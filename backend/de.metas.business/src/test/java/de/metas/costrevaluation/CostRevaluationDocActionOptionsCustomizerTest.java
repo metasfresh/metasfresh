@@ -111,7 +111,7 @@ public class CostRevaluationDocActionOptionsCustomizerTest
 	/** The single place that builds the customizer under test. */
 	private CostRevaluationDocActionOptionsCustomizer newCustomizer()
 	{
-		return new CostRevaluationDocActionOptionsCustomizer();
+		return new CostRevaluationDocActionOptionsCustomizer(costRevaluationService);
 	}
 
 	private static DocActionOptionsContext optionsContext(final String docStatus, final IValidationContext validationContext)
