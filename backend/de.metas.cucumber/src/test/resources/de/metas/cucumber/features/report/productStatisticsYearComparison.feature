@@ -713,8 +713,10 @@ Feature: Product Statistics Year Comparison - reference replay
     ## minus a price-correction credit note 5.00 = 75.00. Not counted: a draft shipment (created last), a reversed shipment, a vendor receipt,
     ## a draft, a voided, a reversed and a purchase invoice, C+ receipts with doc subtype SR (repair) and EC (empties correction), and a line
     ## with IsPackagingMaterial=Y on a shipment of the same product. A pallet product (own product category, which this scenario
-    ## temporarily sets as the packing material category) is on order, shipment and invoice; the report step ignores unlisted rows,
-    ## so its absence is not asserted here (see the report).
+    ## temporarily sets as the packing material category) is on order, shipment and invoice; an all-products run must contain no row for it.
+    ## One shipment (A) and the invoice of the 8 + 2 pcs are closed (CL) after completion and still count.
+    ## Test setup: the credit memo candidate of the return is processed with an explicit DateInvoiced, because the process would otherwise
+    ## date the invoice by the real current date (the report month follows DateAcct).
     Given metasfresh has date and time 2026-03-10T10:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_Product_Categories:
       | Identifier   |
@@ -944,8 +946,9 @@ Feature: Product Statistics Year Comparison - reference replay
       | inv_purchase_l1 | inv_purchase | tc2Prod | 1 PCE | 30.00 | psycTax19 |
     And the invoice identified by inv_purchase is completed
 
-    # One shipment (A) is closed after completion
+    # One shipment (A) and the invoice of the 8 + 2 pcs are closed after completion
     And the shipment identified by ship_A is closed
+    And the invoice identified by inv_main is closed
 
     # Excluded: a draft shipment, created last
     And metasfresh contains C_Orders:
@@ -973,3 +976,7 @@ Feature: Product Statistics Year Comparison - reference replay
     Then the product statistics year comparison report for org "-", year "yearN", product "tc2Prod" returns:
       | M_Product_ID | Qty_01 | Qty_02 | Qty_03 | Qty_04 | Qty_05 | Qty_06 | Qty_07 | Qty_08 | Qty_09 | Qty_10 | Qty_11 | Qty_12 | Qty_Total | Amt_01 | Amt_02 | Amt_03 | Amt_04 | Amt_05 | Amt_06 | Amt_07 | Amt_08 | Amt_09 | Amt_10 | Amt_11 | Amt_12 | Amt_Total | PrevQty_Total | PrevAmt_Total | Currency |
       | tc2Prod      |        |        | 9      |        |        |        |        |        |        |        |        |        | 9         |        |        | 75.00  |        |        |        |        |        |        |        |        |        | 75.00     |               |               | CHF      |
+
+    And the product statistics year comparison report for org "-", year "yearN", product "-" contains no rows for products:
+      | M_Product_ID |
+      | tc2Pallet    |
