@@ -1182,9 +1182,10 @@ Feature: Product Statistics Year Comparison - reference replay
       | sh_t11 | 2026-11-30 |
     And the shipment identified by sh_t11 is completed
     And metasfresh has date and time 2026-12-02T10:00:00+01:00[Europe/Berlin]
+    # DateInvoiced (11-28) deliberately differs from DateAcct (12-02, the pinned clock): the amount counts by the accounting date, so it must land in December
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv_t12 | psycBP | 2026-12-02 | true | CHF | psycPL |
+      | inv_t12 | psycBP | 2026-11-28 | true | CHF | psycPL |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
       | inv_t12_l1 | inv_t12 | tc8Prod | 5 PCE | 10.00 | psycTax19 |
