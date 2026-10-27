@@ -105,9 +105,9 @@ export class ManufacturingOrderReceiptPage {
   /**
    * Waits until the dialog shows the recomputed dependent fields.
    * The response alone is not enough: it resolves with the response headers, and the frontend applies the body
-   * some milliseconds later. The dialog's indicator bar leaves "pending" after the body is applied.
-   * It then shows "saved", or "error" when the dialog is not saved (e.g. no pallet chosen). A not saved dialog shows
-   * "error" also while pending, so there the bar gives no signal; the specs' reads retry for that case.
+   * some milliseconds later. When the dialog was saved before the change, its indicator bar shows "pending" until the
+   * body is applied, then "saved" or "error" (e.g. no pallet chosen). When the dialog was not saved before the change,
+   * the bar shows "error" also while pending and gives no signal; the specs' reads retry for that case.
    * The wait for the server's PATCH is registered before the action.
    * No fallback: when the PATCH does not come, the wait times out and the test fails.
    */
