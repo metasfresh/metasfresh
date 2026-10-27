@@ -117,6 +117,7 @@ export class ManufacturingOrderReceiptPage {
       ),
       action(),
     ]);
+    // the lines view behind the dialog has an indicator bar too: take the one of the panel with the start button
     const indicatorBar = getPage().locator('.panel-modal:has([data-testid="process-modal-start-button"]) .window-indicator-container .bar');
     await expect(indicatorBar).toHaveClass(/\bsaved\b/, { timeout: SLOW_ACTION_TIMEOUT });
   }
