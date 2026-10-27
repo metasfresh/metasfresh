@@ -44,6 +44,26 @@ export class SalesOrderPage {
   }
 
   /**
+   * Navigate to the Sales Order window inside the running SPA (history API, no page load), like a user
+   * clicking through the menu right after logging in: the app is not re-booted.
+   * @param {string} [recordId] - open this order instead of the list
+   */
+  static async gotoWithoutReload(recordId) {
+    return await test.step('SalesOrderPage - Navigate to Sales Order window without page reload', async () => {
+      const page = getPage();
+      const path = `/window/${SALES_ORDER_WINDOW_ID}${recordId ? `/${recordId}` : ''}`;
+      await page.evaluate((target) => {
+        window.history.pushState({}, '', target);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      }, path);
+
+      await page
+        .locator(recordId ? '[data-testid="status-button"]' : '.document-list-wrapper, .document-list')
+        .waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+    });
+  }
+
+  /**
    * Create a new sales order using Alt+N keyboard shortcut.
    */
   static async clickNew() {
