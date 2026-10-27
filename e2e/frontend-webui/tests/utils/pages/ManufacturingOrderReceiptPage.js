@@ -103,7 +103,10 @@ export class ManufacturingOrderReceiptPage {
   }
 
   /**
-   * The wait for the server's PATCH (it carries the recomputed dependent fields) is registered before the action.
+   * Waits until the dialog shows the recomputed dependent fields.
+   * The response alone is not enough: it resolves with the response headers, and the frontend applies the body
+   * some milliseconds later. The dialog's indicator bar switches from "pending" to "saved" after the body is applied.
+   * The wait for the server's PATCH is registered before the action.
    * No fallback: when the PATCH does not come, the wait times out and the test fails.
    */
   static async #actAndAwaitParameterChange(action) {
@@ -114,12 +117,11 @@ export class ManufacturingOrderReceiptPage {
       ),
       action(),
     ]);
+    const indicatorBar = getPage().locator('.panel-modal:has([data-testid="process-modal-start-button"]) .window-indicator-container .bar');
+    await expect(indicatorBar).toHaveClass(/\bsaved\b/, { timeout: SLOW_ACTION_TIMEOUT });
   }
 
   /**
-   * Waits for the server's answer, so the next action does not overlap this PATCH.
-   * The frontend shows the recomputed dependent fields only some milliseconds after that answer arrived:
-   * read them with a retrying assertion (expectNumber, expect.poll), never with a one-time read.
    * The frontend sends no PATCH when the value did not change, so an already shown value is never waited for.
    */
   static async #fillAndWaitForRecompute(columnName, text) {
