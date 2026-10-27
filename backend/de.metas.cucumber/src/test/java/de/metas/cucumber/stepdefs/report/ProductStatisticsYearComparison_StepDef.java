@@ -112,16 +112,6 @@ public class ProductStatisticsYearComparison_StepDef
 			@NonNull final String productIdentifier,
 			@NonNull final DataTable dataTable)
 	{
-		assertFunctionExists();
-
-		final int orgId = "-".equals(orgIdentifier)
-				? StepDefConstants.ORG_ID.getRepoId()
-				: orgTable.get(StepDefDataIdentifier.ofString(orgIdentifier)).getAD_Org_ID();
-		final int yearId = yearTable.get(StepDefDataIdentifier.ofString(yearIdentifier)).getC_Year_ID();
-		final Integer productId = "-".equals(productIdentifier)
-				? null
-				: productTable.get(StepDefDataIdentifier.ofString(productIdentifier)).getM_Product_ID();
-
 		// validate columns (typo protection)
 		final Map<String, String> canonicalByLower = new HashMap<>();
 		canonicalByLower.put(COLUMN_M_Product_ID.toLowerCase(), COLUMN_M_Product_ID);
@@ -139,10 +129,7 @@ public class ProductStatisticsYearComparison_StepDef
 			throw new AssertionError("Expected table needs the column " + COLUMN_M_Product_ID);
 		}
 
-		final List<Map<String, Object>> actualRows = DB.retrieveRowsOutOfTrx(
-				"SELECT * FROM " + FUNCTION + "(p_AD_Org_ID => ?::numeric, p_C_Year_ID => ?::numeric, p_M_Product_ID => ?::numeric)",
-				Arrays.<Object>asList(orgId, yearId, productId),
-				ProductStatisticsYearComparison_StepDef::toRow);
+		final List<Map<String, Object>> actualRows = retrieveReportRows(orgIdentifier, yearIdentifier, productIdentifier);
 
 		final SoftAssertions softly = new SoftAssertions();
 		int lastActualIndex = -1;
@@ -178,6 +165,12 @@ public class ProductStatisticsYearComparison_StepDef
 			lastActualIndex = Math.max(lastActualIndex, actualIndex);
 			lastProductIdentifier = rowProductIdentifier;
 
+			final long rowCount = actualRows.stream().filter(r -> rowProductId == ((BigDecimal)r.get(COLUMN_M_Product_ID.toLowerCase())).intValue()).count();
+			if (rowCount > 1)
+			{
+				softly.fail("Product " + rowProductIdentifier + " (M_Product_ID=" + rowProductId + "): expected exactly one row but " + FUNCTION + " returned " + rowCount);
+			}
+
 			final Map<String, Object> actual = actualRows.get(actualIndex);
 			for (final Map.Entry<String, String> e : expected.entrySet())
 			{
@@ -186,6 +179,77 @@ public class ProductStatisticsYearComparison_StepDef
 					continue;
 				}
 				compareCell(softly, rowProductIdentifier, e.getKey(), e.getValue(), actual.get(e.getKey().toLowerCase()));
+			}
+		}
+		softly.assertAll();
+	}
+
+	private List<Map<String, Object>> retrieveReportRows(
+			@NonNull final String orgIdentifier,
+			@NonNull final String yearIdentifier,
+			@NonNull final String productIdentifier)
+	{
+		assertFunctionExists();
+
+		final int orgId = "-".equals(orgIdentifier)
+				? StepDefConstants.ORG_ID.getRepoId()
+				: orgTable.get(StepDefDataIdentifier.ofString(orgIdentifier)).getAD_Org_ID();
+		final int yearId = yearTable.get(StepDefDataIdentifier.ofString(yearIdentifier)).getC_Year_ID();
+		final Integer productId = "-".equals(productIdentifier)
+				? null
+				: productTable.get(StepDefDataIdentifier.ofString(productIdentifier)).getM_Product_ID();
+
+		return DB.retrieveRowsOutOfTrx(
+				"SELECT * FROM " + FUNCTION + "(p_AD_Org_ID => ?::numeric, p_C_Year_ID => ?::numeric, p_M_Product_ID => ?::numeric)",
+				Arrays.<Object>asList(orgId, yearId, productId),
+				ProductStatisticsYearComparison_StepDef::toRow);
+	}
+
+	/**
+	 * Calls {@code report.Product_Statistics_Year_Comparison} and fails if the result contains a row for any of the listed products.
+	 *
+	 * @param orgIdentifier     {@code AD_Org} identifier, or {@code -} for the standard org
+	 * @param yearIdentifier    {@code C_Year} identifier (never the FiscalYear text)
+	 * @param productIdentifier {@code M_Product} identifier, or {@code -} for all products
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: AD_Org_StepDefData, C_Year_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the product statistics year comparison report for org "-", year "y2026", product "-" contains no rows for products:
+	 *   | M_Product_ID |
+	 *   | pallet       |
+	 * </pre>
+	 */
+	@Then("the product statistics year comparison report for org {string}, year {string}, product {string} contains no rows for products:")
+	public void expect_no_rows_for_products(
+			@NonNull final String orgIdentifier,
+			@NonNull final String yearIdentifier,
+			@NonNull final String productIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		if (!dataTable.row(0).stream().anyMatch(COLUMN_M_Product_ID::equalsIgnoreCase) || dataTable.row(0).size() != 1)
+		{
+			throw new AssertionError("The table needs exactly one column " + COLUMN_M_Product_ID);
+		}
+		final List<String> productIdentifiers = dataTable.asList().subList(1, dataTable.asList().size());
+		if (productIdentifiers.isEmpty())
+		{
+			throw new AssertionError("The table needs at least one product row");
+		}
+
+		final List<Map<String, Object>> actualRows = retrieveReportRows(orgIdentifier, yearIdentifier, productIdentifier);
+
+		final SoftAssertions softly = new SoftAssertions();
+		for (final String listedIdentifier : productIdentifiers)
+		{
+			final int listedProductId = productTable.get(StepDefDataIdentifier.ofString(listedIdentifier)).getM_Product_ID();
+			final long rowCount = actualRows.stream()
+					.filter(r -> listedProductId == ((BigDecimal)r.get(COLUMN_M_Product_ID.toLowerCase())).intValue())
+					.count();
+			if (rowCount > 0)
+			{
+				softly.fail("Product " + listedIdentifier + " (M_Product_ID=" + listedProductId + ") is expected to be absent but " + FUNCTION
+						+ " returned " + rowCount + " row(s) for it");
 			}
 		}
 		softly.assertAll();

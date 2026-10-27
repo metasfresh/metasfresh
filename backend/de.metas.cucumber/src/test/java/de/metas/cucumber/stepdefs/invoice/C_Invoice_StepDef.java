@@ -223,7 +223,7 @@ public class C_Invoice_StepDef
 				.forEach(this::validateInvoice);
 	}
 
-	@And("^the invoice identified by (.*) is (completed|reversed|voided)$")
+	@And("^the invoice identified by (.*) is (completed|reversed|voided|closed)$")
 	public void invoice_action(@NonNull final String invoiceIdentifier, @NonNull final String action)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
@@ -240,6 +240,9 @@ public class C_Invoice_StepDef
 				break;
 			case voided:
 				documentBL.processEx(invoice, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				break;
+			case closed:
+				documentBL.processEx(invoice, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled C_Invoice action")
