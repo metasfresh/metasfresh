@@ -52,6 +52,7 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -410,8 +411,50 @@ public class ConversionRate_StepDef
 		createdRateKeys.add(key);
 		createdRateKeys.add(key.getReverseKey());
 
-		createRate(spotTypeId, fromId, toId, validFrom, validTo);
-		createRate(spotTypeId, toId, fromId, validFrom, validTo);
+		createRate(spotTypeId, fromId, toId, validFrom, validTo, BigDecimal.ONE, BigDecimal.ONE);
+		createRate(spotTypeId, toId, fromId, validFrom, validTo, BigDecimal.ONE, BigDecimal.ONE);
+	}
+
+	/**
+	 * Forces a spot conversion rate of {@code rate} between two ISO currency codes for the given date range:
+	 * 1 {@code from} = {@code rate} {@code to}. The reciprocal rate is written for the reverse direction.
+	 * Both rows are removed again after the scenario.
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * And a 0.90 "USD" -> "CHF" conversion rate is in place between "2024-01-01" and "2024-01-31"
+	 * }</pre>
+	 */
+	@And("a {bigdecimal} {string} -> {string} conversion rate is in place between {string} and {string}")
+	public void insert_rate(
+			@NonNull final BigDecimal rate,
+			@NonNull final String fromIsoCode,
+			@NonNull final String toIsoCode,
+			@NonNull final String validFromStr,
+			@NonNull final String validToStr)
+	{
+		assertThat(rate).as("rate must be positive").isGreaterThan(BigDecimal.ZERO);
+
+		final CurrencyConversionTypeId spotTypeId = currencyDAO.getConversionTypeId(ConversionTypeMethod.Spot);
+		final CurrencyId fromId = currencyId(fromIsoCode);
+		final CurrencyId toId = currencyId(toIsoCode);
+		final LocalDate validFromDate = LocalDate.parse(validFromStr);
+		final Timestamp validFrom = Timestamp.valueOf(validFromDate.atStartOfDay());
+		final Timestamp validTo = Timestamp.valueOf(LocalDate.parse(validToStr).atStartOfDay());
+
+		final ConversionRateKey key = ConversionRateKey.builder()
+				.orgId(OrgId.ANY)
+				.fromCurrencyId(fromId)
+				.toCurrencyId(toId)
+				.conversionTypeId(spotTypeId)
+				.validFrom(validFromDate)
+				.build();
+		createdRateKeys.add(key);
+		createdRateKeys.add(key.getReverseKey());
+
+		final BigDecimal reciprocal = BigDecimal.ONE.divide(rate, 12, RoundingMode.HALF_UP);
+		createRate(spotTypeId, fromId, toId, validFrom, validTo, rate, reciprocal);
+		createRate(spotTypeId, toId, fromId, validFrom, validTo, reciprocal, rate);
 	}
 
 	private static void createRate(
@@ -419,7 +462,9 @@ public class ConversionRate_StepDef
 			@NonNull final CurrencyId fromId,
 			@NonNull final CurrencyId toId,
 			@NonNull final Timestamp validFrom,
-			@NonNull final Timestamp validTo)
+			@NonNull final Timestamp validTo,
+			@NonNull final BigDecimal multiplyRate,
+			@NonNull final BigDecimal divideRate)
 	{
 		final I_C_Conversion_Rate rate = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
 		rate.setAD_Org_ID(OrgId.ANY.getRepoId());
@@ -428,8 +473,8 @@ public class ConversionRate_StepDef
 		rate.setC_Currency_ID_To(toId.getRepoId());
 		rate.setValidFrom(validFrom);
 		rate.setValidTo(validTo);
-		rate.setMultiplyRate(BigDecimal.ONE);
-		rate.setDivideRate(BigDecimal.ONE);
+		rate.setMultiplyRate(multiplyRate);
+		rate.setDivideRate(divideRate);
 		InterfaceWrapperHelper.saveRecord(rate);
 	}
 }
