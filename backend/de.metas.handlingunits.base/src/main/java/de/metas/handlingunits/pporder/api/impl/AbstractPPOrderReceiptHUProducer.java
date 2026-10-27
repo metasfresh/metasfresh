@@ -127,6 +127,7 @@ import java.util.function.Supplier;
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
+	// a Supplier, so that receipts which never reach the LU/TU check (e.g. individual CUs) need no Spring bean
 	@NonNull private final Supplier<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker;
 
 	// Parameters

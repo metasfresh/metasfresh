@@ -144,7 +144,7 @@ public class M_HU_LUTU_Configuration_StepDef
 	 *   <b>ExpectedQtyCUsPerTU</b> — (optional) every received LU holds this quantity per TU (LU quantity = TUs x this)<br>
 	 *   <b>ErrorMessage_AD_Message</b> — (optional) the receipt must be refused with an AdempiereException carrying this AD_Message key; no HU or receipt candidate is created<br>
 	 *   <b>ErrorMessage_Contains</b> — (optional, with ErrorMessage_AD_Message) text the error message must contain, e.g. the capacity named in it<br>
-	 * @cucumber.depends StepDefData: PP_Order_StepDefData, PP_Order_BOMLine_StepDefData, M_HU_PI_Item_Product_StepDefData
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData, PP_Order_BOMLine_StepDefData, M_HU_PI_Item_Product_StepDefData, M_HU_PI_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And receive HUs for PP_Order with M_HU_LUTU_Configuration:
