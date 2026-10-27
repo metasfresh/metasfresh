@@ -65,12 +65,12 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       await ReceiptDialog.openForOrder(masterdata, 'PP_COPROD', { rowIndex: COPRODUCT_ROW_INDEX });
 
       // the co-product line has no packing instruction yet: "No Packing Item" -> only Menge CU
-      expect(await ReceiptDialog.isFieldVisible('QtyCUsReceived')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isFieldVisible('QtyCUsReceived')).toBe(true);
       await ReceiptDialog.selectOption('M_HU_PI_Item_Product_ID', 'TU_EDGE');
 
       await ReceiptDialog.expectNumber('QtyTU', 1);
-      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
-      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
       await ReceiptDialog.setNumber('QtyTotalReceived', QTY_COPRODUCT);
 
       await ReceiptDialog.start();

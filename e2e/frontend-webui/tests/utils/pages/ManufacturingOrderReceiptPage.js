@@ -117,7 +117,9 @@ export class ManufacturingOrderReceiptPage {
   }
 
   /**
-   * Without waiting for the server's answer the dependent fields are read before they are updated.
+   * Waits for the server's answer, so the next action does not overlap this PATCH.
+   * The frontend shows the recomputed dependent fields only some milliseconds after that answer arrived:
+   * read them with a retrying assertion (expectNumber, expect.poll), never with a one-time read.
    * The frontend sends no PATCH when the value did not change, so an already shown value is never waited for.
    */
   static async #fillAndWaitForRecompute(columnName, text) {
@@ -265,6 +267,6 @@ export class ManufacturingOrderReceiptPage {
   }
 
   static async expectNumber(columnName, expected) {
-    expect(await this.getNumber(columnName), `${columnName} in the receipt dialog`).toBe(expected);
+    await expect.poll(() => this.getNumber(columnName), { message: `${columnName} in the receipt dialog` }).toBe(expected);
   }
 }
