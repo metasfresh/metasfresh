@@ -511,6 +511,7 @@ public class PackingInfoProcessParams
 		// LU
 		configureLUTUConfigLU(lutuConfigNew, lu_PI_Item_ID, qtyLU);
 
+		packingInstructionChecker.get().assertLUTUConfigurationMatchesPackingInstruction(lutuConfigNew);
 		lutuConfigurationFactory.save(lutuConfigNew);
 		return lutuConfigNew;
 	}

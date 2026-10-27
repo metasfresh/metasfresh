@@ -15,6 +15,8 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -48,6 +50,7 @@ public class PackingInfoProcessParamsTest
 	private static final ProductId PRODUCT_ID = ProductId.ofRepoId(103);
 
 	private PackingInfoProcessParams params;
+	private I_M_HU_PI_Item_Product fixedCapacityPIP;
 	private I_M_HU_LUTU_Configuration defaultConfig;
 
 	@BeforeEach
@@ -69,7 +72,7 @@ public class PackingInfoProcessParamsTest
 		Services.registerService(IUOMConversionBL.class, uomConversionBL);
 		SpringContextHolder.registerJUnitBean(new LUTUConfigurationPackingInstructionChecker());
 
-		final I_M_HU_PI_Item_Product fixedCapacityPIP = createPackingInstruction(pipUom, QTY_PER_TU);
+		fixedCapacityPIP = createPackingInstruction(pipUom, QTY_PER_TU);
 
 		// like the order's default configuration: expressed in the order's UOM
 		defaultConfig = newInstance(I_M_HU_LUTU_Configuration.class);
@@ -115,6 +118,38 @@ public class PackingInfoProcessParamsTest
 		assertThat(config.getQtyTU()).isEqualByComparingTo("4");
 
 		assertThat((BigDecimal)params.getParameterDefaultValue(PackingInfoProcessParams.PARAM_QtyTotalReceived)).isEqualByComparingTo("630"); // 90 x 7
+	}
+
+	@Test
+	public void moreTUsThanThePalletHolds_isRefusedWithoutStoringAConfiguration()
+	{
+		params.setLuPiItemId(createPallet(new BigDecimal("4")).getM_HU_PI_Item_ID());
+		params.setQtyLU(new BigDecimal("2"));
+		params.setQtyTU(new BigDecimal("5"));
+
+		assertThatThrownBy(() -> params.createAndSaveNewLUTUConfig())
+				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.getErrorCode()).isEqualTo("M_HU_LUTU_Configuration_QtyTU_ExceedsLUCapacity"));
+		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_LUTU_Configuration.class).create().count()).isZero();
+	}
+
+	private I_M_HU_PI_Item createPallet(final BigDecimal tuCapacity)
+	{
+		final I_M_HU_PI palletPI = newInstance(I_M_HU_PI.class);
+		palletPI.setName("Pallet");
+		saveRecord(palletPI);
+
+		final I_M_HU_PI_Version palletPIVersion = newInstance(I_M_HU_PI_Version.class);
+		palletPIVersion.setM_HU_PI_ID(palletPI.getM_HU_PI_ID());
+		palletPIVersion.setIsCurrent(true);
+		saveRecord(palletPIVersion);
+
+		final I_M_HU_PI_Item palletItem = newInstance(I_M_HU_PI_Item.class);
+		palletItem.setM_HU_PI_Version_ID(palletPIVersion.getM_HU_PI_Version_ID());
+		palletItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
+		palletItem.setIncluded_HU_PI_ID(fixedCapacityPIP.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
+		palletItem.setQty(tuCapacity);
+		saveRecord(palletItem);
+		return palletItem;
 	}
 
 	private static I_M_HU_PI_Item_Product createPackingInstruction(final I_C_UOM uom, final BigDecimal qtyPerTU)
