@@ -59,17 +59,17 @@ public class LUTUConfigurationPackingInstructionCheckerTest
 		Mockito.when(huPIItemProductBL.getById(piItemProduct.getId())).thenReturn(piItemProduct);
 		Services.registerService(IHUPIItemProductBL.class, huPIItemProductBL);
 
-		// 1 PI-UOM = 1000 config-UOM
+		// 1 PI-UOM = 1000 config-UOM; like UOMConversionBL, a quantity already in the target UOM is returned unchanged
 		uomConversionBL = Mockito.mock(IUOMConversionBL.class);
 		Mockito.when(uomConversionBL.convertQuantityTo(Mockito.any(Quantity.class), Mockito.any(ProductId.class), Mockito.eq(piUom)))
 				.thenAnswer(invocation -> {
 					final Quantity qty = invocation.getArgument(0);
-					return Quantitys.of(qty.toBigDecimal().divide(new BigDecimal("1000")), piUom);
+					return qty.getUomId().equals(piUom) ? qty : Quantitys.of(qty.toBigDecimal().divide(new BigDecimal("1000")), piUom);
 				});
 		Mockito.when(uomConversionBL.convertQuantityTo(Mockito.any(Quantity.class), Mockito.any(ProductId.class), Mockito.eq(configUom)))
 				.thenAnswer(invocation -> {
 					final Quantity qty = invocation.getArgument(0);
-					return Quantitys.of(qty.toBigDecimal().multiply(new BigDecimal("1000")), configUom);
+					return qty.getUomId().equals(configUom) ? qty : Quantitys.of(qty.toBigDecimal().multiply(new BigDecimal("1000")), configUom);
 				});
 		Services.registerService(IUOMConversionBL.class, uomConversionBL);
 

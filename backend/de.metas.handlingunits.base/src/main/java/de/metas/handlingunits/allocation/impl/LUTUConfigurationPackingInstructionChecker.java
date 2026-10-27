@@ -83,15 +83,8 @@ public class LUTUConfigurationPackingInstructionChecker
 	{
 		final Quantity piQty = piItemProduct.getQtyCUsPerTU();
 		return targetUomId != null
-				? convertTo(piQty, productId, targetUomId).toBigDecimal()
+				? uomConversionBL.convertQuantityTo(piQty, productId, targetUomId).toBigDecimal()
 				: piQty.toBigDecimal();
-	}
-
-	private Quantity convertTo(@NonNull final Quantity qty, @NonNull final ProductId productId, @NonNull final UomId targetUomId)
-	{
-		return qty.getUomId().equals(targetUomId)
-				? qty
-				: uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
 	}
 
 	/**
