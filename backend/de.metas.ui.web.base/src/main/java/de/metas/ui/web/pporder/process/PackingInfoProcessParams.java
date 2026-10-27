@@ -5,7 +5,6 @@ import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
@@ -167,11 +166,6 @@ public class PackingInfoProcessParams
 		return pip != null && pip.isInfiniteCapacity();
 	}
 
-	private static boolean hasPallet(@NonNull final I_M_HU_LUTU_Configuration lutuConfig)
-	{
-		return HuPackingInstructionsItemId.ofRepoIdOrNull(lutuConfig.getM_LU_HU_PI_Item_ID()) != null;
-	}
-
 	@Nullable
 	private BigDecimal getDefaultQtyTU(@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig)
 	{
@@ -201,7 +195,7 @@ public class PackingInfoProcessParams
 
 		// nothing left to produce: the computed default has 0 LUs, but with a pallet the dialog still opens at one LU
 		final BigDecimal storedQtyLU = defaultLUTUConfig.getQtyLU();
-		final boolean withPallet = hasPallet(defaultLUTUConfig);
+		final boolean withPallet = !lutuConfigurationFactory.isNoLU(defaultLUTUConfig);
 		return withPallet && (storedQtyLU == null || storedQtyLU.signum() <= 0) ? BigDecimal.ONE : storedQtyLU;
 	}
 
@@ -218,7 +212,7 @@ public class PackingInfoProcessParams
 			return defaultLUTUConfig.getQtyCUsPerTU();
 		}
 
-		return computeQtyTotal(getQtyCUsPerTUInConfigUom(pip), getDefaultQtyTU(defaultLUTUConfig), getDefaultQtyLU(defaultLUTUConfig), hasPallet(defaultLUTUConfig));
+		return computeQtyTotal(getQtyCUsPerTUInConfigUom(pip), getDefaultQtyTU(defaultLUTUConfig), getDefaultQtyLU(defaultLUTUConfig), !lutuConfigurationFactory.isNoLU(defaultLUTUConfig));
 	}
 
 	/**

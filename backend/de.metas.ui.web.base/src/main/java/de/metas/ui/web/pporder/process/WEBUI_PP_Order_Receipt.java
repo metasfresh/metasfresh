@@ -297,7 +297,7 @@ public class WEBUI_PP_Order_Receipt
 		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(getSelectedPackingInstructionId());
 		if (pip == null || PackingInfoProcessParams.isUnlimitedCapacity(pip))
 		{
-			return; // unlimited capacity: "Menge" is entered by the user, so it is not derived
+			return; // "No Packing Item" or unlimited capacity: the user enters "Menge", so it is not derived
 		}
 
 		p_QtyTotalReceived = PackingInfoProcessParams.computeQtyTotal(params.getQtyCUsPerTUInConfigUom(pip), p_QtyTU, p_QtyLU, p_M_HU_PI_Item != null);

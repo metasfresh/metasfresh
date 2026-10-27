@@ -129,7 +129,7 @@ public class M_HU_LUTU_Configuration_StepDef
 	 * @cucumber.columns
 	 *   <b>PP_Order_ID</b> — (required, identifier-ref) the manufacturing order<br>
 	 *   <b>M_HU_PI_Item_Product_ID</b> — (required, identifier-ref) the TU packing instruction<br>
-	 *   <b>M_HU_ID.Identifier</b> — (required unless ErrorMessage is given) alias of the first received HU<br>
+	 *   <b>M_HU_ID</b> — (required unless ErrorMessage is given) alias of the first received HU<br>
 	 *   <b>PP_Order_BOMLine_ID</b> — (optional, identifier-ref) receive this co-product line instead of the main product<br>
 	 *   <b>ExpectedHUCount</b> — (optional) expected number of received top-level HUs; defaults to 1<br>
 	 *   <b>ExpectedTUsPerLU</b> — (optional) every received LU holds this many TUs<br>
@@ -191,8 +191,7 @@ public class M_HU_LUTU_Configuration_StepDef
 					assertThat(hus).hasSize(tableRow.getAsOptionalInt("ExpectedHUCount").orElse(1));
 					hus.forEach(hu -> assertLUStructure(hu, tableRow));
 
-					final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-					huTable.putOrReplace(huIdentifier, hus.get(0));
+					huTable.putOrReplace(tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID), hus.get(0));
 				});
 	}
 
