@@ -66,8 +66,6 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.Language;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.IInOutDAO;
@@ -126,6 +124,7 @@ import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
@@ -163,7 +162,6 @@ public class M_InOut_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 	@And("^validate the created (shipments|material receipt)$")
@@ -256,20 +254,11 @@ public class M_InOut_StepDef
 					final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 
-					final String errorMessage = DataTableUtil.extractStringForColumnName(tableRow, "AD_Message.Value");
+					final AdMessageKey expectedErrorMessage = AdMessageKey.of(DataTableUtil.extractStringForColumnName(tableRow, "AD_Message.Value"));
 
-					try
-					{
-						invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, DataTableRows.ofRows(ImmutableList.of(tableRow)));
-
-						assertThat(errorMessage).as("An error message should had been thrown!").isNull();
-					}
-					catch (final Exception e)
-					{
-						final AdMessageKey expectedErrorMessage = AdMessageKey.of("de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords");
-						StepDefUtil.validateErrorMessage(e, msgBL.getTranslatableMsgText(expectedErrorMessage).translate(Optional.ofNullable(Env.getAD_Language())
-								.orElse(Language.getBaseAD_Language())));
-					}
+					StepDefUtil.assertThrowsWithAdMessage(
+							() -> invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, DataTableRows.ofRows(ImmutableList.of(tableRow))),
+							expectedErrorMessage);
 				}
 		);
 	}
@@ -804,26 +793,16 @@ public class M_InOut_StepDef
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
 
-		boolean errorThrown = false;
-
-		try
+		final String errorMessageIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (errorMessageIdentifier != null)
 		{
-			processInOut(model_UNUSED, shipmentIdentifier, action);
+			final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+			StepDefUtil.assertThrowsWithAdMessage(() -> processInOut(model_UNUSED, shipmentIdentifier, action), AdMessageKey.of(errorMessage.getValue()));
 		}
-		catch (final Exception e)
+		else
 		{
-			errorThrown = true;
-
-			final String errorMessageIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			if (errorMessageIdentifier != null)
-			{
-				final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
-				assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
-			}
+			assertThat(catchThrowable(() -> processInOut(model_UNUSED, shipmentIdentifier, action))).as("error expected").isInstanceOf(Exception.class);
 		}
-
-		assertThat(errorThrown).isTrue();
 	}
 
 	@And("^after not more than (.*)s, locate reversal M_InOut$")

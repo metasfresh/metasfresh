@@ -45,6 +45,7 @@ import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -107,6 +108,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /* package */abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProducer
 {
@@ -125,6 +127,8 @@ import java.util.Optional;
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
+	// a Supplier, so that receipts which never reach the LU/TU check (e.g. individual CUs) need no Spring bean
+	@NonNull private final Supplier<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker;
 
 	// Parameters
 	private final PPOrderId ppOrderId;
@@ -159,9 +163,12 @@ import java.util.Optional;
 	protected abstract void addAssignedHUs(final Collection<I_M_HU> hus);
 	// @formatter:on
 
-	public AbstractPPOrderReceiptHUProducer(@NonNull final PPOrderId ppOrderId)
+	public AbstractPPOrderReceiptHUProducer(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final Supplier<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker)
 	{
 		this.ppOrderId = ppOrderId;
+		this.packingInstructionChecker = packingInstructionChecker;
 	}
 
 	private PPOrderId getPpOrderId()
@@ -174,6 +181,7 @@ import java.util.Optional;
 	{
 		return trxManager.callInNewTrx(() -> {
 			final I_M_HU_LUTU_Configuration lutuConfig = getCreateLUTUConfiguration();
+			packingInstructionChecker.get().assertLUTUConfigurationMatchesPackingInstruction(lutuConfig);
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfig);
 			if (qtyCUsTotal.isZero())
 			{

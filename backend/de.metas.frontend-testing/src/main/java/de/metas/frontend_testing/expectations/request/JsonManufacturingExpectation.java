@@ -15,6 +15,7 @@ import java.util.Map;
 public class JsonManufacturingExpectation
 {
 	@Nullable List<ReceivedHU> receivedHUs;
+	@Nullable List<ReceivedHU> receivedCoProductHUs;
 	@Nullable List<IssuedHU> issuedHUs;
 
 	//
@@ -29,6 +30,7 @@ public class JsonManufacturingExpectation
 		@Nullable Identifier lu;
 		@Nullable Identifier tu;
 		@Nullable QtyAndUOMString qty;
+		@Nullable Boolean looseCUs;
 	}
 
 	/**

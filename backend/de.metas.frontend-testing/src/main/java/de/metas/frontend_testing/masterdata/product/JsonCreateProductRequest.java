@@ -100,6 +100,7 @@ public class JsonCreateProductRequest
 		@NonNull List<BOMLine> lines;
 		/** optional lot-number sequence of the BOM (PP_Product_BOM.LotNo_Sequence_ID) */
 		@Nullable LotNoSequence lotNoSequence;
+		boolean serialNoSequence;
 	}
 
 	@Value
