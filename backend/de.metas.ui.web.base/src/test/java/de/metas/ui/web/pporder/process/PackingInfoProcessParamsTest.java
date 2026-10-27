@@ -7,6 +7,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -122,7 +123,7 @@ public class PackingInfoProcessParamsTest
 	@Test
 	public void moreTUsThanThePalletHolds_isRefusedWithoutStoringAConfiguration()
 	{
-		params.setLuPiItemId(createPallet(new BigDecimal("4")).getM_HU_PI_Item_ID());
+		params.setLuPiItemId(createParentItem("Pallet", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, new BigDecimal("4")).getM_HU_PI_Item_ID());
 		params.setQtyLU(new BigDecimal("2"));
 		params.setQtyTU(new BigDecimal("5"));
 		final int configurationsBefore = countLUTUConfigurations();
@@ -132,19 +133,45 @@ public class PackingInfoProcessParamsTest
 		assertThat(countLUTUConfigurations()).isEqualTo(configurationsBefore);
 	}
 
+	/**
+	 * The TU is also included in a TU-type packing instruction (like "Offen"); building a pallet from that fails on start, so only the LU is offered.
+	 */
+	@Test
+	public void tuIncludedInLUAndInTUTypeParent_onlyTheLUIsOfferedAsPallet()
+	{
+		createParentItem("Offen", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, new BigDecimal("9"));
+		final I_M_HU_PI_Item luItem = createParentItem("Pallet", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, new BigDecimal("12"));
+
+		assertThat(params.getM_HU_PI_Item_IDs(fixedCapacityPIP).getKeysAsInt()).containsExactly(luItem.getM_HU_PI_Item_ID());
+		final I_M_HU_PI_Item defaultPallet = params.getFirstAvailableLuPIItemOrNull(fixedCapacityPIP);
+		assertThat(defaultPallet).isNotNull();
+		assertThat(defaultPallet.getM_HU_PI_Item_ID()).isEqualTo(luItem.getM_HU_PI_Item_ID());
+	}
+
+	@Test
+	public void tuIncludedOnlyInTUTypeParent_noPalletIsOffered()
+	{
+		createParentItem("Offen", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, new BigDecimal("9"));
+
+		assertThat(params.getM_HU_PI_Item_IDs(fixedCapacityPIP).isEmpty()).isTrue();
+		assertThat(params.getFirstAvailableLuPIItemOrNull(fixedCapacityPIP)).isNull();
+	}
+
 	private static int countLUTUConfigurations()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_LUTU_Configuration.class).create().count();
 	}
 
-	private I_M_HU_PI_Item createPallet(final BigDecimal tuCapacity)
+	private I_M_HU_PI_Item createParentItem(final String name, final String huUnitType, final BigDecimal tuCapacity)
 	{
 		final I_M_HU_PI palletPI = newInstance(I_M_HU_PI.class);
-		palletPI.setName("Pallet");
+		palletPI.setName(name);
 		saveRecord(palletPI);
 
 		final I_M_HU_PI_Version palletPIVersion = newInstance(I_M_HU_PI_Version.class);
 		palletPIVersion.setM_HU_PI_ID(palletPI.getM_HU_PI_ID());
+		palletPIVersion.setName(name);
+		palletPIVersion.setHU_UnitType(huUnitType);
 		palletPIVersion.setIsCurrent(true);
 		saveRecord(palletPIVersion);
 
@@ -165,6 +192,7 @@ public class PackingInfoProcessParamsTest
 
 		final I_M_HU_PI_Version huPIVersion = newInstance(I_M_HU_PI_Version.class);
 		huPIVersion.setM_HU_PI_ID(huPI.getM_HU_PI_ID());
+		huPIVersion.setHU_UnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		huPIVersion.setIsCurrent(true);
 		saveRecord(huPIVersion);
 

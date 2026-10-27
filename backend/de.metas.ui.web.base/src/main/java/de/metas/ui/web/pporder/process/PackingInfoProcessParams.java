@@ -13,6 +13,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
@@ -292,7 +293,7 @@ public class PackingInfoProcessParams
 		final I_M_HU_PI piOfCurrentPip = pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 
 		return handlingUnitsDAO.retrieveParentPIItemsForParentPI(piOfCurrentPip,
-				null, // huUnitType
+				X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
 				bpartnerId);
 	}
 
