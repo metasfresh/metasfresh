@@ -114,6 +114,18 @@ public class CostRevaluationDocActionOptionsCustomizerTest
 		return new CostRevaluationDocActionOptionsCustomizer(costRevaluationService);
 	}
 
+	/**
+	 * Input actions of a completed document: besides Re-Activate and Close also Reverse-Correct and Reverse-Accrual,
+	 * so the tests pin that Storno is never offered, even if the defaults offer it.
+	 */
+	private static final ImmutableSet<String> COMPLETED_INPUT_ACTIONS = ImmutableSet.of(
+			IDocument.ACTION_ReActivate,
+			IDocument.ACTION_Close,
+			IDocument.ACTION_Reverse_Correct,
+			IDocument.ACTION_Reverse_Accrual);
+
+	private static final ImmutableSet<String> DRAFTED_INPUT_ACTIONS = ImmutableSet.of(IDocument.ACTION_ReActivate, IDocument.ACTION_Close);
+
 	private static DocActionOptionsContext optionsContext(final String docStatus, final IValidationContext validationContext)
 	{
 		return DocActionOptionsContext.builder()
@@ -121,7 +133,7 @@ public class CostRevaluationDocActionOptionsCustomizerTest
 				.tableName(I_M_CostRevaluation.Table_Name)
 				.docStatus(docStatus)
 				.soTrx(SOTrx.PURCHASE)
-				.docActions(ImmutableSet.of(IDocument.ACTION_ReActivate, IDocument.ACTION_Close))
+				.docActions(IDocument.STATUS_Completed.equals(docStatus) ? COMPLETED_INPUT_ACTIONS : DRAFTED_INPUT_ACTIONS)
 				.validationContext(validationContext)
 				.build();
 	}
@@ -209,7 +221,7 @@ public class CostRevaluationDocActionOptionsCustomizerTest
 
 		final DocActionOptionsContext optionsCtx = customize(IDocument.STATUS_Drafted, validationContext(revaluation, false));
 
-		assertThat(optionsCtx.getDocActions()).containsExactlyInAnyOrder(IDocument.ACTION_ReActivate, IDocument.ACTION_Close);
+		assertThat(optionsCtx.getDocActions()).isEqualTo(DRAFTED_INPUT_ACTIONS);
 	}
 
 	@Test

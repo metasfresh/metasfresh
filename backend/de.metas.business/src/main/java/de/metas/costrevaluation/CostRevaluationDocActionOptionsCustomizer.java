@@ -39,6 +39,7 @@ import java.util.Set;
  * Status menu of a completed cost revaluation ("Kosten Neubewertung"):
  * <ul>
  * <li>never Re-Activate;</li>
+ * <li>never Reverse-Correct or Reverse-Accrual (Storno): reversing a posted revaluation would reset the product's cost;</li>
  * <li>Void only for a {@link RevaluationSource#Manual} revaluation where nothing was booked yet,
  * i.e. no line has its revaluation {@code M_CostDetail} (see {@link CostRevaluationDocumentHandler#voidIt});</li>
  * <li>Close stays as offered by the defaults.</li>
@@ -82,6 +83,8 @@ public class CostRevaluationDocActionOptionsCustomizer implements IDocActionOpti
 
 		final Set<String> docActions = new LinkedHashSet<>(optionsCtx.getDocActions());
 		docActions.remove(IDocument.ACTION_ReActivate);
+		docActions.remove(IDocument.ACTION_Reverse_Correct);
+		docActions.remove(IDocument.ACTION_Reverse_Accrual);
 		docActions.remove(IDocument.ACTION_Void);
 		if (isVoidAllowed(optionsCtx))
 		{
