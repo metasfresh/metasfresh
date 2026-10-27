@@ -52,6 +52,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -361,7 +362,8 @@ public class StepDefUtil
 	 * An exception counts as raised for {@code adMessage} if it was created with that {@link AdMessageKey} (matched via its error code),
 	 * or if it was created from the message's text, as in {@code new AdempiereException(msgBL.getMsg(ctx, key))}.
 	 *
-	 * @return the matching exception, e.g. to check the parameters rendered into its message
+	 * @return the outermost matching exception, e.g. to check the parameters rendered into its message.
+	 * This can be a wrapper that inherited the error code of the exception it wraps.
 	 */
 	@NonNull
 	public AdempiereException assertThrowsWithAdMessage(@NonNull final ThrowingCallable action, @NonNull final AdMessageKey adMessage)
@@ -370,14 +372,14 @@ public class StepDefUtil
 		assertThat(thrown).as("expected a failure with AD_Message %s", adMessage).isNotNull();
 
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		final String expectedErrorCode = Optional.ofNullable(msgBL.getErrorCode(adMessage)).orElseGet(adMessage::toAD_Message);
+		final String expectedErrorCode = coalesce(msgBL.getErrorCode(adMessage), adMessage.toAD_Message());
 		final String messageText = msgBL.getMsg(Env.getCtx(), adMessage);
-		for (Throwable t = thrown; t != null; t = t.getCause())
+		for (Throwable cause = thrown; cause != null; cause = cause.getCause())
 		{
-			if (t instanceof AdempiereException
-					&& (expectedErrorCode.equals(((AdempiereException)t).getErrorCode()) || t.getMessage().contains(messageText)))
+			if (cause instanceof AdempiereException
+					&& (expectedErrorCode.equals(((AdempiereException)cause).getErrorCode()) || cause.getMessage().contains(messageText)))
 			{
-				return (AdempiereException)t;
+				return (AdempiereException)cause;
 			}
 		}
 		throw new AssertionError("expected a failure with AD_Message " + adMessage + ", but was: " + thrown, thrown);
