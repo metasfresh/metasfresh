@@ -502,7 +502,7 @@ public class WebuiHUTransformParametersFiller
 
 		return handlingUnitsDAO.retrieveParentPIItemsForParentPI(
 				effectivePIVersion.getM_HU_PI(),
-				(HuUnitType)null,
+				HuUnitType.LU,
 				IHandlingUnitsBL.extractBPartnerIdOrNull(tuHU));
 	}
 
