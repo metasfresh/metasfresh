@@ -14,7 +14,9 @@ import { VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
  *    its line shows the values recalculated from the first one's posted cost price;
  *  - a second quick-input line for the same product is refused with a message naming the product, not framed as "Server error";
  *  - a revaluation with a past posting date completes; its line shows qty on hand x (new - old);
- *  - the status menu of a completed manual revaluation offers Stornieren only until it is posted, then only Schliessen.
+ *  - the status menu of a completed manual revaluation offers Stornieren only until it is posted, then only Schliessen;
+ *  - the status menu of a completed manual revaluation whose posting failed before anything was booked offers
+ *    Schliessen and Stornieren.
  *
  * Runs at the accounting schema's costing level (organization level on the standard test DB);
  * the client level of the customer is pinned by the cucumber feature `cost_revaluation.feature:36-38`.
@@ -42,6 +44,12 @@ const addDays = (isoDate, days) => {
   date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().substring(0, 10);
 };
+
+/**
+ * An Accounting Date for which no accounting period (C_Period) exists, so posting fails with "Period closed" before
+ * anything is booked (Doc.postLogic checks the period before it creates the facts and the cost details).
+ */
+const DATE_ACCT_WITHOUT_PERIOD = '2099-01-15';
 
 /** @returns {string} the key of a list field's value (e.g. Posted 'Y'), or the plain value */
 const fieldKey = (field) => (field.value && typeof field.value === 'object' ? field.value.key : field.value);
@@ -267,6 +275,53 @@ second one proves the menu follows the posting instead of serving the cached ans
       const keys = await getStatusMenuKeys(page, recordId);
       console.log(`[INFO] posted: status menu=${JSON.stringify(keys)}`);
       expect(keys).toEqual(['CL']);
+    });
+  });
+
+  // eslint-disable-next-line no-unused-vars
+  test(`The status menu of a completed manual revaluation whose posting failed before booking offers Close and Void (${label})`, async ({ page }) => {
+    test.setTimeout(240000);
+    allureTags('Status menu: a completed Kosten Neubewertung that booked nothing can still be voided');
+    allure.description(`
+## F1500: Costing — status menu of a completed Kosten Neubewertung that booked nothing
+
+A stocked product (10 on hand) gets a Kosten Neubewertung (source Manual) whose Accounting Date lies in a year for
+which no accounting period exists (${DATE_ACCT_WITHOUT_PERIOD}), and it is completed. Its posting fails with
+"Period closed" before the line is booked: no cost detail is created and Posted ends as p (Period closed).
+
+The status menu then offers exactly Schliessen (Close) and Stornieren (Void): nothing was booked, so voiding is allowed;
+Reaktivieren is never offered. This proves the document's id, source and posting status reach the status menu logic:
+without them it offers only Schliessen.
+    `);
+
+    const md = await createStockedMasterdata(language, 'CR_STATUS_MENU_NOT_BOOKED');
+    const productCode = md.products.PSTK.productCode;
+    await login(md);
+
+    const recordId = await CostRevaluationPage.createHeader();
+    await test.step(`Accounting Date ${DATE_ACCT_WITHOUT_PERIOD}: no accounting period exists for it`, async () => {
+      await CostRevaluationPage.typeHeaderDate(recordId, 'DateAcct', DATE_ACCT_WITHOUT_PERIOD);
+      expect(await getDate(recordId, 'DateAcct')).toBe(DATE_ACCT_WITHOUT_PERIOD);
+    });
+    await CostRevaluationPage.expectQuickInputOpened();
+    await CostRevaluationPage.addLine(productCode, '10');
+    await CostRevaluationPage.complete();
+    expect((await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'DocStatus')).value.key).toBe('CO');
+
+    await test.step('The posting fails with Period closed, nothing is booked', async () => {
+      // Posting runs asynchronously; it ends with Posted = p (Period closed), set after the failed posting rolled back.
+      await expect
+        .poll(async () => fieldKey(await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'Posted')), {
+          message: `Kosten Neubewertung ${recordId}: posting has failed with Posted = p (Period closed)`,
+          timeout: 2 * VERY_SLOW_ACTION_TIMEOUT,
+        })
+        .toBe('p');
+    });
+
+    await test.step('The status menu offers exactly Schliessen and Stornieren', async () => {
+      const keys = await getStatusMenuKeys(page, recordId);
+      console.log(`[INFO] posting failed: status menu=${JSON.stringify(keys)}`);
+      expect(keys).toEqual(['CL', 'VO']);
     });
   });
 });
