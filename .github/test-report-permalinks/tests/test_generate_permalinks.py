@@ -160,20 +160,20 @@ def test_the_underscore_and_dot_subfeature_spellings_index_as_one():
 
 
 def test_an_unrecognised_suffix_is_dropped_not_folded_into_the_parent():
-    """An `F00138_se203`-shaped tag is NOT a known convention: measured
+    """An `F00138_zz000`-shaped tag is NOT a known convention: measured
     2026-09-12, no F-code tag in build 5.175-intensive-care-release.43783
     carries a non-numeric suffix (2182 tag occurrences across the three
     suites), and no test annotation on `new_dawn_uat`,
-    `intensive_care_release` or `intensive_care_hotfix` uses the form. It IS a
-    real identifier in another namespace -- it names doc issues, e.g.
-    `F00652_se203` -- so it is pinned here as the generic unrecognised-suffix
+    `intensive_care_release` or `intensive_care_hotfix` uses the form. Such
+    suffixed codes exist as identifiers in other namespaces, e.g.
+    `F00652_zz000`, so it is pinned here as the generic unrecognised-suffix
     case, to fix
     the behaviour if the form ever appears: the tag is skipped, so nothing is
     silently credited to `F00138`. Folding it into the parent would be the
     subfeature-rollup defect in a new place; dropping it is the safe default
     because it under-reports visibly rather than over-reporting invisibly."""
     root = {"children": [{"name": "g", "uid": "s".ljust(32, "0"), "children": [
-        _leaf("a".ljust(32, "0"), "F00138_se203")]}]}
+        _leaf("a".ljust(32, "0"), "F00138_zz000")]}]}
     assert gp.extract_tagged_features(root) == {}
 
 
@@ -215,7 +215,7 @@ def test_canonical_fcode_rewrites_only_a_numeric_subfeature_separator():
     r"""Pins `_canonical_fcode` DIRECTLY.
 
     `test_an_unrecognised_suffix_is_dropped_not_folded_into_the_parent` above
-    goes through TAG_FCODE_RE, which rejects `F00138_se203` before this
+    goes through TAG_FCODE_RE, which rejects `F00138_zz000` before this
     function is reached — so it passes even if this guard is deleted. Without
     this test the guard is unpinned, which is how a defence quietly stops
     defending.
@@ -250,8 +250,8 @@ def test_canonical_fcode_rewrites_only_a_numeric_subfeature_separator():
     assert gp._canonical_fcode("F5001_1") == "F5001.1"
     assert gp._canonical_fcode("F5001.1") == "F5001.1"
     assert gp._canonical_fcode("F5001") == "F5001"
-    assert gp._canonical_fcode("F00138_se203") == "F00138_se203"
-    assert gp._canonical_fcode("F00762.1_is184") == "F00762.1_is184"
+    assert gp._canonical_fcode("F00138_zz000") == "F00138_zz000"
+    assert gp._canonical_fcode("F00762.1_zz001") == "F00762.1_zz001"
 
 
 # --- the coverage answer: same semantics as the Knowledge Map recipe --------
