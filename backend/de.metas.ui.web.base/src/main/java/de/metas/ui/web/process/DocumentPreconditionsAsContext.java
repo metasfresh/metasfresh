@@ -2,6 +2,8 @@ package de.metas.ui.web.process;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -103,8 +105,15 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 	@Override
 	public <T> List<T> getSelectedModels(final Class<T> modelClass)
 	{
-		final T model = getSelectedModel(modelClass);
-		return ImmutableList.of(model);
+		return streamSelectedModels(modelClass)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	@Override
+	public <T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass)
+	{
+		return Stream.of(getSelectedModel(modelClass));
 	}
 
 	@Override
