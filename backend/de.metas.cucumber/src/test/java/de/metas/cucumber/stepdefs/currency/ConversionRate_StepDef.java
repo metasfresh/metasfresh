@@ -394,25 +394,7 @@ public class ConversionRate_StepDef
 			@NonNull final String validFromStr,
 			@NonNull final String validToStr)
 	{
-		final CurrencyConversionTypeId spotTypeId = currencyDAO.getConversionTypeId(ConversionTypeMethod.Spot);
-		final CurrencyId fromId = currencyId(fromIsoCode);
-		final CurrencyId toId = currencyId(toIsoCode);
-		final LocalDate validFromDate = LocalDate.parse(validFromStr);
-		final Timestamp validFrom = Timestamp.valueOf(validFromDate.atStartOfDay());
-		final Timestamp validTo = Timestamp.valueOf(LocalDate.parse(validToStr).atStartOfDay());
-
-		final ConversionRateKey key = ConversionRateKey.builder()
-				.orgId(OrgId.ANY)
-				.fromCurrencyId(fromId)
-				.toCurrencyId(toId)
-				.conversionTypeId(spotTypeId)
-				.validFrom(validFromDate)
-				.build();
-		createdRateKeys.add(key);
-		createdRateKeys.add(key.getReverseKey());
-
-		createRate(spotTypeId, fromId, toId, validFrom, validTo, BigDecimal.ONE, BigDecimal.ONE);
-		createRate(spotTypeId, toId, fromId, validFrom, validTo, BigDecimal.ONE, BigDecimal.ONE);
+		upsertSpotRatePair(BigDecimal.ONE, fromIsoCode, toIsoCode, validFromStr, validToStr);
 	}
 
 	/**
@@ -434,7 +416,17 @@ public class ConversionRate_StepDef
 			@NonNull final String validToStr)
 	{
 		assertThat(rate).as("rate must be positive").isGreaterThan(BigDecimal.ZERO);
+		upsertSpotRatePair(rate, fromIsoCode, toIsoCode, validFromStr, validToStr);
+	}
 
+	/** Writes the Spot rate {@code from -> to} = {@code rate} and its reciprocal, and registers both keys for cleanup. */
+	private void upsertSpotRatePair(
+			@NonNull final BigDecimal rate,
+			@NonNull final String fromIsoCode,
+			@NonNull final String toIsoCode,
+			@NonNull final String validFromStr,
+			@NonNull final String validToStr)
+	{
 		final CurrencyConversionTypeId spotTypeId = currencyDAO.getConversionTypeId(ConversionTypeMethod.Spot);
 		final CurrencyId fromId = currencyId(fromIsoCode);
 		final CurrencyId toId = currencyId(toIsoCode);
