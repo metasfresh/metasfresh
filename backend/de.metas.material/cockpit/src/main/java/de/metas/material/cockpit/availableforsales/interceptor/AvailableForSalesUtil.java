@@ -350,14 +350,18 @@ public class AvailableForSalesUtil
 		final Runnable runnable = () -> trxManager.runInNewTrx(() -> retrieveDataAndUpdateOrderLines(requests, config, orgId));
 
 		final ExecutorService executor = Executors.newSingleThreadExecutor();
-		final Future<?> future = executor.submit(runnable);
 		try
 		{
+			final Future<?> future = executor.submit(runnable);
 			future.get(config.getAsyncTimeoutMillis(), TimeUnit.MILLISECONDS);
 		}
 		catch (final InterruptedException | ExecutionException | TimeoutException ex)
 		{
 			handleAsyncException(errorNotificationRecipient, ex);
+		}
+		finally
+		{
+			executor.shutdown();
 		}
 	}
 
