@@ -1,15 +1,5 @@
 package de.metas.inoutcandidate.process;
 
-import java.util.Iterator;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.util.TrxRunnable;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -19,6 +9,15 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.util.TrxRunnable;
+
+import java.util.Iterator;
 
 /*
  * #%L
@@ -60,8 +59,8 @@ public class M_ShipmentSchedule_OpenProcessed extends JavaProcess implements IPr
 		}
 
 		// Make sure at least one shipment schedule is processed
-		final boolean someSchedsAreProcessed = context.getSelectedModels(I_M_ShipmentSchedule.class).stream()
-				.anyMatch(shipmentSchedule -> shipmentSchedule.isProcessed());
+		final boolean someSchedsAreProcessed = context.streamSelectedModels(I_M_ShipmentSchedule.class)
+				.anyMatch(I_M_ShipmentSchedule::isProcessed);
 
 		if (!someSchedsAreProcessed)
 		{
