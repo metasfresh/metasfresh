@@ -2302,55 +2302,7 @@ jobs:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
         run: |
-          ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" <<'PYEOF'
-          import json, sys, os, shutil
-          from datetime import datetime, timezone
-
-          MAX_BUILDS_PER_BRANCH = 3
-
-          branch = sys.argv[1]
-          version = sys.argv[2]
-          metadata_dir = "/var/www/test-reports/_metadata"
-          metadata_file = os.path.join(metadata_dir, f"{branch}.json")
-          builds_dir = f"/var/www/test-reports/branches/{branch}/builds"
-
-          os.makedirs(metadata_dir, exist_ok=True)
-
-          # Read existing metadata or create new
-          if os.path.exists(metadata_file):
-              with open(metadata_file, "r") as f:
-                  try:
-                      data = json.load(f)
-                  except json.JSONDecodeError:
-                      data = {"branch": branch, "builds": []}
-          else:
-              data = {"branch": branch, "builds": []}
-
-          # Deduplicate: remove existing entry for this version
-          data["builds"] = [b for b in data["builds"] if b.get("version") != version]
-
-          # Prepend new build
-          data["builds"].insert(0, {
-              "version": version,
-              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-          })
-
-          # Cap metadata and collect evicted versions
-          evicted = [b["version"] for b in data["builds"][MAX_BUILDS_PER_BRANCH:]]
-          data["builds"] = data["builds"][:MAX_BUILDS_PER_BRANCH]
-
-          with open(metadata_file, "w") as f:
-              json.dump(data, f, indent=2)
-
-          # Delete build directories for evicted versions
-          for ver in evicted:
-              build_path = os.path.join(builds_dir, ver)
-              if os.path.isdir(build_path):
-                  shutil.rmtree(build_path)
-                  print(f"Pruned old build: {branch}/{ver}")
-
-          print(f"Kept {len(data['builds'])} build(s), pruned {len(evicted)} old build(s)")
-          PYEOF
+          ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" < .github/test-report-permalinks/update_branch_metadata.py
 
       - name: Generate feature/spec permalinks
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
@@ -2358,6 +2310,7 @@ jobs:
         env:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
+          GIT_REF: ${{ github.ref }}
         run: |
           DIR=.github/test-report-permalinks
           # build the feature/spec -> uid map from the just-published build's trees (server-side)
@@ -2365,7 +2318,79 @@ jobs:
           # deploy the static resolver (identical content per branch)
           ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.js"   < "$DIR/permalink.js"
           ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.html" < "$DIR/permalink.html"
+          # The coverage page answers for ANY branch from ONE URL, so it is deployed to the
+          # server ROOT rather than per branch: it takes ?branch= and reads that branch's
+          # permalinks.json. Only new_dawn_uat builds deploy it: every branch carries its own
+          # copy of the page source, so if every build deployed it, a branch with an older copy
+          # would overwrite a newer page. Other branches still publish their permalinks.json
+          # above, which the shared page reads via ?branch=.
+          # Ship ONE self-contained file. coverage.js stays a separate source file so node can
+          # unit-test it, but it is inlined here for two reasons:
+          #   1. this host serves .js as `public, immutable, max-age=604800` (verified 2026-09-12)
+          #      while .html carries no cache header -- so a separate script would freeze for a
+          #      week and could pair a stale script with a fresh page;
+          #   2. one file is one atomic rename. Two files have a window where the page and its
+          #      script disagree, which matters more here than for the per-branch resolver
+          #      because this one root page serves the readers of every branch.
+          # mktemp gives a unique name, so two new_dawn_uat builds publishing at once cannot collide on it.
+          # mktemp on the RUNNER too: a self-hosted runner can host concurrent jobs,
+          # and a fixed /tmp name would let two branches' builds clobber each other.
+          # The inlining runs on every branch, not only on new_dawn_uat, so a branch that
+          # breaks it (see the needle check) fails this step (visible, non-blocking: the step
+          # is continue-on-error) before reaching new_dawn_uat.
+          INLINED=$(mktemp)
+          python3 - "$DIR" > "$INLINED" <<'INLINEEOF'
+          import re, sys, pathlib
+          d = pathlib.Path(sys.argv[1])
+          js = (d / "coverage.js").read_text(encoding="utf-8")
+          html = (d / "coverage.html").read_text(encoding="utf-8")
+          needle = '<script src="coverage.js"></script>'
+          if needle not in html:
+              sys.exit("coverage.html no longer loads coverage.js by that exact tag; inlining aborted")
+          # No user data flows through here -- both files are repo content -- but a literal
+          # </script> inside the JS would still close the tag early.
+          # Escape anything the HTML tokenizer treats as ending or nesting a script
+          # element: </script in any case or with trailing space/slash, and <!-- / <script
+          # (which put the tokenizer in a state where a later </script> does NOT close).
+          safe = re.sub(r"(?i)<(/?script|!--)", r"<\\\g<1>", js)
+          sys.stdout.write(html.replace(needle, "<script>\n" + safe + "\n</script>"))
+          INLINEEOF
+          # The `find -mmin +60` sweeps temp files left by an interrupted earlier deploy
+          # (this whole step is continue-on-error, so a half-write is silent). The age
+          # bound is what keeps it from deleting a CONCURRENT publish's in-flight temp.
+          # `coverage.js` is removed because it was briefly deployed as a separate file
+          # and nothing references it any more; leaving it would serve week-cached dead code.
+          # The size check is the load-bearing guard, not the rename. `cat` cannot tell
+          # "stdin ended" from "stdin was cut": on a mid-transfer disconnect it exits 0,
+          # chmod succeeds, and the rename atomically publishes a TRUNCATED page --
+          # verified locally, a 4000-byte cut of a 12847-byte page published with the
+          # whole chain reporting success. Inlining makes that worse, because the cut
+          # now lands inside the page's own <script>. Compare byte counts before renaming.
+          SIZE=$(wc -c < "$INLINED")
+          # Compare the full ref, not the sanitized BRANCH: sanitizing maps several branch
+          # names onto one value (e.g. `new-dawn-uat` would match too).
+          if [ "$GIT_REF" = "refs/heads/new_dawn_uat" ]; then
+            ssh reports-server "
+              find /var/www/test-reports -maxdepth 1 -name '.coverage.*' -mmin +60 -delete 2>/dev/null
+              T=\$(mktemp /var/www/test-reports/.coverage.XXXXXX) &&
+              cat > \"\$T\" && chmod 644 \"\$T\" &&
+              [ \"\$(wc -c < \"\$T\")\" -eq $SIZE ] &&
+              mv \"\$T\" /var/www/test-reports/coverage.html &&
+              rm -f /var/www/test-reports/coverage.js ||
+              { rm -f \"\$T\"; echo 'coverage deploy FAILED (incomplete transfer)' >&2; exit 1; }
+            " < "$INLINED" && COVERAGE_OK=1 || echo "::warning::coverage.html was not updated this build"
+          else
+            echo "Shared coverage page not deployed: only new_dawn_uat builds deploy /coverage.html (this branch's permalinks.json is published)."
+            COVERAGE_OK=1
+          fi
+          rm -f "$INLINED"
           echo "Permalinks: https://test-reports.metasfresh.com/branches/${BRANCH}/permalink.html?feature=Fxxxx"
+          # On new_dawn_uat, print the coverage URL only if this build actually published the
+          # page: a banner that prints either way is a claim the step has not verified. Other
+          # branches print it unverified, assuming the page that new_dawn_uat deployed is served.
+          if [ -n "$COVERAGE_OK" ]; then
+            echo "Coverage:   https://test-reports.metasfresh.com/coverage.html?branch=${BRANCH}"
+          fi
 
       - name: Update landing page
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
@@ -2397,6 +2422,7 @@ jobs:
           <body>
               <div class="container">
                   <h1>📊 Test Reports</h1>
+                  <p><a href="coverage.html">Automated test coverage by feature</a> — which tests cover a feature on a given branch, and did they pass.</p>
                   <div id="branches"><p class="loading">Loading reports...</p></div>
               </div>
               <script>
