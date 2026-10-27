@@ -52,11 +52,14 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 	private I_C_SubscriptionProgress firstRecord;
 	private I_C_SubscriptionProgress secondRecord;
 	private I_M_Product secondProduct;
+	private I_C_Flatrate_Term secondTerm;
+	private ISysConfigBL sysConfigBL;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		sysConfigBL = Services.get(ISysConfigBL.class);
 
 		final I_M_Product firstProduct = newInstance(I_M_Product.class);
 		firstProduct.setProductType(X_M_Product.PRODUCTTYPE_Item);
@@ -77,7 +80,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 		secondProduct.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		save(secondProduct);
 
-		final I_C_Flatrate_Term secondTerm = newInstance(I_C_Flatrate_Term.class);
+		secondTerm = newInstance(I_C_Flatrate_Term.class);
 		secondTerm.setM_Product_ID(secondProduct.getM_Product_ID());
 		save(secondTerm);
 
@@ -98,8 +101,6 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 	@Test
 	public void retrieveModelsWithMissingCandidates_Different_Advance_Days_Values()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 		// guard
 		{
 			sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 3, ClientId.SYSTEM, OrgId.ANY);
@@ -120,12 +121,23 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 	public void retrieveModelsWithMissingCandidates_Service_Product()
 	{
 		// taken from another test; i don't really care, i just need a setup that returns both records
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, ClientId.SYSTEM, OrgId.ANY);
 		assertBothRecordsAreReturned(); // guard
 
 		secondProduct.setProductType(X_M_Product.PRODUCTTYPE_Service);
 		save(secondProduct);
+
+		assertOnlyFirstRecordIsReturned();
+	}
+
+	@Test
+	public void retrieveModelsWithMissingCandidates_Inactive_Term()
+	{
+		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, ClientId.SYSTEM, OrgId.ANY);
+		assertBothRecordsAreReturned(); // guard
+
+		secondTerm.setIsActive(false);
+		save(secondTerm);
 
 		assertOnlyFirstRecordIsReturned();
 	}
