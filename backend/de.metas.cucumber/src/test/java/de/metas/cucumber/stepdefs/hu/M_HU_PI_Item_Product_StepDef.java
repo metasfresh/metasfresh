@@ -31,13 +31,13 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.generichumodel.PackagingCodeId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -50,10 +50,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -70,14 +68,12 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_H
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 @RequiredArgsConstructor
 public class M_HU_PI_Item_Product_StepDef
 {
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull private final M_HU_PI_Item_StepDefData huPiItemTable;
 	@NonNull private final M_Product_StepDefData productTable;
@@ -214,12 +210,8 @@ public class M_HU_PI_Item_Product_StepDef
 	{
 		assertThat(InterfaceWrapperHelper.isNew(huPiItemProductRecord)).as("ErrorMessage_AD_Message is supported for new packing instructions only").isTrue();
 
-		final Throwable thrown = catchThrowable(() -> saveRecord(huPiItemProductRecord));
+		StepDefUtil.assertThrowsWithAdMessage(() -> saveRecord(huPiItemProductRecord), expectedErrorAdMessage);
 
-		assertThat(thrown)
-				.as("saving the packing instruction is refused")
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(msgBL.getMsg(Env.getCtx(), expectedErrorAdMessage));
 		assertThat(queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, huPiItemProductRecord.getM_HU_PI_Item_ID())
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, huPiItemProductRecord.getM_Product_ID())

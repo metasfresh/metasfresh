@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.handlingunits.HuId;
@@ -71,7 +72,6 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
@@ -82,7 +82,6 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 public class M_HU_LUTU_Configuration_StepDef
 {
@@ -178,11 +177,7 @@ public class M_HU_LUTU_Configuration_StepDef
 						final Set<HuId> husBefore = retrieveHuIdsOfOrder(ppOrder);
 						final long receiptCandidatesBefore = countReceiptCandidates(ppOrder);
 
-						final Throwable thrown = catchThrowable(receiveHUs::get);
-
-						assertThat(thrown).as("receipt refused").isNotNull();
-						final AdempiereException refusal = extractAdempiereExceptionWithAdMessage(thrown, expectedErrorAdMessage);
-						assertThat(refusal).as("refusal with AD_Message " + expectedErrorAdMessage + ", but was: " + thrown).isNotNull();
+						final AdempiereException refusal = StepDefUtil.assertThrowsWithAdMessage(receiveHUs::get, expectedErrorAdMessage);
 						tableRow.getAsOptionalString("ErrorMessage_Contains")
 								.ifPresent(text -> assertThat(refusal.getMessage()).contains(text));
 
@@ -402,19 +397,6 @@ public class M_HU_LUTU_Configuration_StepDef
 				.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID, PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
 				.create()
 				.count();
-	}
-
-	@Nullable
-	private static AdempiereException extractAdempiereExceptionWithAdMessage(@NonNull final Throwable throwable, @NonNull final AdMessageKey adMessage)
-	{
-		for (Throwable t = throwable; t != null; t = t.getCause())
-		{
-			if (t instanceof AdempiereException && adMessage.equals(((AdempiereException)t).getParameter("AD_Message")))
-			{
-				return (AdempiereException)t;
-			}
-		}
-		return null;
 	}
 
 	private void assertLUStructure(@NonNull final I_M_HU lu, @NonNull final DataTableRow tableRow)
