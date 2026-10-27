@@ -41,14 +41,14 @@ Feature: Product Statistics Year Comparison - reference replay
       | Identifier |
       | psycPS     |
     And metasfresh contains M_PriceLists
-      | Identifier | Name         | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded |
-      | psycPL     | PSYC_PL_net  | psycPS             | DE           | EUR           | true  | false         |
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded |
+      | psycPL     | psycPS             | DE           | CHF           | true  | false         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID |
       | psycPLV    | psycPL         |
     And metasfresh contains M_Products:
-      | Identifier | Value    | Name              |
-      | psycRef    | PSYC_Ref | Reference product |
+      | Identifier |
+      | psycRef    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | psycPLV                | psycRef      | 10.00    | PCE      | psycTaxCat       |
@@ -89,7 +89,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202501 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202501    | psycBP        | 2025-01-15   | true    | EUR           | psycPL         |
+      | inv202501    | psycBP        | 2025-01-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202501_l1 | inv202501      | psycRef      | 1 PCE       | 116991.65 | psycTax19    |
@@ -119,7 +119,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202502 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202502    | psycBP        | 2025-02-15   | true    | EUR           | psycPL         |
+      | inv202502    | psycBP        | 2025-02-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202502_l1 | inv202502      | psycRef      | 1 PCE       | 148717.36 | psycTax19    |
@@ -150,7 +150,7 @@ Feature: Product Statistics Year Comparison - reference replay
     # Special month (credit note): the amount 166529.58 is an invoice of 170000.00 minus a price-correction credit note of 3470.42.
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202503    | psycBP        | 2025-03-15   | true    | EUR           | psycPL         |
+      | inv202503    | psycBP        | 2025-03-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202503_l1 | inv202503      | psycRef      | 1 PCE       | 170000.00 | psycTax19    |
@@ -184,7 +184,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202504 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202504    | psycBP        | 2025-04-15   | true    | EUR           | psycPL         |
+      | inv202504    | psycBP        | 2025-04-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202504_l1 | inv202504      | psycRef      | 1 PCE       | 237589.25 | psycTax19    |
@@ -214,7 +214,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202505 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202505    | psycBP        | 2025-05-15   | true    | EUR           | psycPL         |
+      | inv202505    | psycBP        | 2025-05-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202505_l1 | inv202505      | psycRef      | 1 PCE       | 188683.65 | psycTax19    |
@@ -244,7 +244,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202506 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202506    | psycBP        | 2025-06-15   | true    | EUR           | psycPL         |
+      | inv202506    | psycBP        | 2025-06-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202506_l1 | inv202506      | psycRef      | 1 PCE       | 237174.51 | psycTax19    |
@@ -274,7 +274,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202507 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202507    | psycBP        | 2025-07-15   | true    | EUR           | psycPL         |
+      | inv202507    | psycBP        | 2025-07-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202507_l1 | inv202507      | psycRef      | 1 PCE       | 220377.41 | psycTax19    |
@@ -304,7 +304,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202508 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202508    | psycBP        | 2025-08-15   | true    | EUR           | psycPL         |
+      | inv202508    | psycBP        | 2025-08-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202508_l1 | inv202508      | psycRef      | 1 PCE       | 227864.84 | psycTax19    |
@@ -334,7 +334,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202509 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202509    | psycBP        | 2025-09-15   | true    | EUR           | psycPL         |
+      | inv202509    | psycBP        | 2025-09-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202509_l1 | inv202509      | psycRef      | 1 PCE       | 220653.64 | psycTax19    |
@@ -364,7 +364,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202510 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202510    | psycBP        | 2025-10-15   | true    | EUR           | psycPL         |
+      | inv202510    | psycBP        | 2025-10-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202510_l1 | inv202510      | psycRef      | 1 PCE       | 173311.59 | psycTax19    |
@@ -394,7 +394,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202511 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202511    | psycBP        | 2025-11-15   | true    | EUR           | psycPL         |
+      | inv202511    | psycBP        | 2025-11-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202511_l1 | inv202511      | psycRef      | 1 PCE       | 138884.82 | psycTax19    |
@@ -424,7 +424,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202512 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202512    | psycBP        | 2025-12-15   | true    | EUR           | psycPL         |
+      | inv202512    | psycBP        | 2025-12-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202512_l1 | inv202512      | psycRef      | 1 PCE       | 284978.08 | psycTax19    |
@@ -454,7 +454,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202601 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202601    | psycBP        | 2026-01-15   | true    | EUR           | psycPL         |
+      | inv202601    | psycBP        | 2026-01-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202601_l1 | inv202601      | psycRef      | 1 PCE       | 112686.46 | psycTax19    |
@@ -513,7 +513,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the return inOut identified by ret202602x is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202602    | psycBP        | 2026-02-15   | true    | EUR           | psycPL         |
+      | inv202602    | psycBP        | 2026-02-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202602_l1 | inv202602      | psycRef      | 1 PCE       | 147013.42 | psycTax19    |
@@ -543,7 +543,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202603 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202603    | psycBP        | 2026-03-15   | true    | EUR           | psycPL         |
+      | inv202603    | psycBP        | 2026-03-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202603_l1 | inv202603      | psycRef      | 1 PCE       | 222918.41 | psycTax19    |
@@ -573,7 +573,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202604 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202604    | psycBP        | 2026-04-15   | true    | EUR           | psycPL         |
+      | inv202604    | psycBP        | 2026-04-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202604_l1 | inv202604      | psycRef      | 1 PCE       | 181886.58 | psycTax19    |
@@ -603,7 +603,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202605 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202605    | psycBP        | 2026-05-15   | true    | EUR           | psycPL         |
+      | inv202605    | psycBP        | 2026-05-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202605_l1 | inv202605      | psycRef      | 1 PCE       | 205993.68 | psycTax19    |
@@ -633,7 +633,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202606 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202606    | psycBP        | 2026-06-15   | true    | EUR           | psycPL         |
+      | inv202606    | psycBP        | 2026-06-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202606_l1 | inv202606      | psycRef      | 1 PCE       | 213655.02 | psycTax19    |
@@ -663,7 +663,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202607 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202607    | psycBP        | 2026-07-15   | true    | EUR           | psycPL         |
+      | inv202607    | psycBP        | 2026-07-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202607_l1 | inv202607      | psycRef      | 1 PCE       | 238201.95 | psycTax19    |
@@ -693,7 +693,7 @@ Feature: Product Statistics Year Comparison - reference replay
     And the shipment identified by ship202608 is completed
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
-      | inv202608    | psycBP        | 2026-08-15   | true    | EUR           | psycPL         |
+      | inv202608    | psycBP        | 2026-08-15   | true    | CHF           | psycPL         |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
       | inv202608_l1 | inv202608      | psycRef      | 1 PCE       | 187158.12 | psycTax19    |
@@ -703,5 +703,5 @@ Feature: Product Statistics Year Comparison - reference replay
     And metasfresh has date and time 2026-10-27T10:00:00+01:00[Europe/Berlin]
 
     Then the product statistics year comparison report for org "-", year "yearN", product "psycRef" returns:
-      | M_Product_ID | Qty_01 | Qty_02 | Qty_03 | Qty_04 | Qty_05 | Qty_06 | Qty_07 | Qty_08 | Qty_09 | Qty_10 | Qty_11 | Qty_12 | Qty_Total | Amt_01    | Amt_02    | Amt_03    | Amt_04    | Amt_05    | Amt_06    | Amt_07    | Amt_08    | Amt_09 | Amt_10 | Amt_11 | Amt_12 | Amt_Total  | PrevQty_01 | PrevQty_02 | PrevQty_03 | PrevQty_04 | PrevQty_05 | PrevQty_06 | PrevQty_07 | PrevQty_08 | PrevQty_09 | PrevQty_10 | PrevQty_11 | PrevQty_12 | PrevQty_Total | PrevAmt_01 | PrevAmt_02 | PrevAmt_03 | PrevAmt_04 | PrevAmt_05 | PrevAmt_06 | PrevAmt_07 | PrevAmt_08 | PrevAmt_09 | PrevAmt_10 | PrevAmt_11 | PrevAmt_12 | PrevAmt_Total | Dev_01 | Dev_02 | Dev_03 | Dev_04 | Dev_05 | Dev_06 | Dev_07 | Dev_08 | Dev_09  | Dev_10  | Dev_11  | Dev_12  |
-      | psycRef      | 6837   | 8994   | 13616  | 11258  | 12819  | 13291  | 14861  | 11665  |        |        |        |        | 93341     | 112686.46 | 147013.42 | 222918.41 | 181886.58 | 205993.68 | 213655.02 | 238201.95 | 187158.12 |        |        |        |        | 1509513.64 | 7095       | 9085       | 10252      | 14602      | 11729      | 14826      | 13709      | 14171      | 13750      | 10608      | 8454       | 16654      | 144935        | 116991.65  | 148717.36  | 166529.58  | 237589.25  | 188683.65  | 237174.51  | 220377.41  | 227864.84  | 220653.64  | 173311.59  | 138884.82  | 284978.08  | 2361756.38    | -3.64  | -1.00  | 32.81  | -22.90 | 9.29   | -10.35 | 8.40   | -17.68 | -100.00 | -100.00 | -100.00 | -100.00 |
+      | M_Product_ID | Qty_01 | Qty_02 | Qty_03 | Qty_04 | Qty_05 | Qty_06 | Qty_07 | Qty_08 | Qty_09 | Qty_10 | Qty_11 | Qty_12 | Qty_Total | Amt_01    | Amt_02    | Amt_03    | Amt_04    | Amt_05    | Amt_06    | Amt_07    | Amt_08    | Amt_09 | Amt_10 | Amt_11 | Amt_12 | Amt_Total  | PrevQty_01 | PrevQty_02 | PrevQty_03 | PrevQty_04 | PrevQty_05 | PrevQty_06 | PrevQty_07 | PrevQty_08 | PrevQty_09 | PrevQty_10 | PrevQty_11 | PrevQty_12 | PrevQty_Total | PrevAmt_01 | PrevAmt_02 | PrevAmt_03 | PrevAmt_04 | PrevAmt_05 | PrevAmt_06 | PrevAmt_07 | PrevAmt_08 | PrevAmt_09 | PrevAmt_10 | PrevAmt_11 | PrevAmt_12 | PrevAmt_Total | Dev_01 | Dev_02 | Dev_03 | Dev_04 | Dev_05 | Dev_06 | Dev_07 | Dev_08 | Dev_09  | Dev_10  | Dev_11  | Dev_12  | Currency |
+      | psycRef      | 6837   | 8994   | 13616  | 11258  | 12819  | 13291  | 14861  | 11665  |        |        |        |        | 93341     | 112686.46 | 147013.42 | 222918.41 | 181886.58 | 205993.68 | 213655.02 | 238201.95 | 187158.12 |        |        |        |        | 1509513.64 | 7095       | 9085       | 10252      | 14602      | 11729      | 14826      | 13709      | 14171      | 13750      | 10608      | 8454       | 16654      | 144935        | 116991.65  | 148717.36  | 166529.58  | 237589.25  | 188683.65  | 237174.51  | 220377.41  | 227864.84  | 220653.64  | 173311.59  | 138884.82  | 284978.08  | 2361756.38    | -3.64  | -1.00  | 32.81  | -22.90 | 9.29   | -10.35 | 8.40   | -17.68 | -100.00 | -100.00 | -100.00 | -100.00 | CHF |
