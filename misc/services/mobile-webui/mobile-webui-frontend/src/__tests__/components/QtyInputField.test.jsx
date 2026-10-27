@@ -131,9 +131,29 @@ describe('QtyInputField', () => {
     try {
       renderField({ qty: '1', integerValuesOnly: true });
       selectSpy.mockClear();
-      fireEvent.focus(getInput());
+      getInput().focus(); // real focus so the field is document.activeElement when the deferred select runs
       jest.runOnlyPendingTimers();
       expect(selectSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      selectSpy.mockRestore();
+      jest.useRealTimers();
+    }
+  });
+
+  it('does NOT re-select once the field has lost focus (prevents the focus-steal loop)', () => {
+    // Guard for the regression introduced by the first select-on-focus fix: input.select() re-focuses a
+    // blurred input, so an unguarded deferred select on a field that already lost focus steals focus back.
+    // With two auto-focus QtyInputFields (generateHUQRCodes numberOfHUs + numberOfCopies) that ping-pongs
+    // focus forever and drops the next typed value. The deferred select must fire only while still focused.
+    jest.useFakeTimers();
+    const selectSpy = jest.spyOn(HTMLInputElement.prototype, 'select');
+    try {
+      renderField({ qty: '25', integerValuesOnly: true });
+      selectSpy.mockClear();
+      getInput().focus(); // schedules the deferred select
+      getInput().blur(); // ...but focus is gone before it runs
+      jest.runOnlyPendingTimers();
+      expect(selectSpy).not.toHaveBeenCalled();
     } finally {
       selectSpy.mockRestore();
       jest.useRealTimers();

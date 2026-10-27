@@ -101,7 +101,12 @@ const QtyInputField = ({
     const el = qtyInputRef.current;
     if (el) {
       setTimeout(() => {
-        if (qtyInputRef.current === el) {
+        // Only (re)select while the field is still focused. input.select() re-focuses a blurred
+        // input, so an unguarded deferred select on a field that already lost focus steals focus
+        // back. When two QtyInputFields both auto-focus (isRequestFocus, e.g. the generateHUQRCodes
+        // numberOfHUs + numberOfCopies fields), their deferred selects ping-pong focus endlessly,
+        // and keystrokes aimed at either field never land, so the prefilled qty is submitted unchanged.
+        if (qtyInputRef.current === el && document.activeElement === el) {
           el.select();
         }
       }, 0);
