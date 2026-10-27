@@ -1118,6 +1118,64 @@ export class ReceiptCandidatesPage {
       await this.downloadAndValidatePdf(expectedData);
     });
   }
+
+  /** @param {string} columnName - language-independent ColumnName of the process parameter (e.g. "QtyCUsPerTU") */
+  static async getProcessFieldLabel(columnName) {
+    return await test.step(`ReceiptCandidatesPage - Read label of process field ${columnName}`, async () => {
+      const label = getPage().locator(`.panel-modal-content .form-field-${columnName} label`).first();
+      await label.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      return (await label.textContent()).trim();
+    });
+  }
+
+  static async cancelProcessDialog() {
+    return await test.step('ReceiptCandidatesPage - Cancel process dialog', async () => {
+      const page = getPage();
+      await page.getByTestId('process-modal-cancel-button').click();
+      await page.getByTestId('process-modal-start-button').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    });
+  }
+
+  static async setProcessNumberField(columnName, value) {
+    return await test.step(`ReceiptCandidatesPage - Set process field ${columnName} = ${value}`, async () => {
+      const input = getPage().locator(`.panel-modal-content .form-field-${columnName} input.input-field`);
+      await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      // wait for the server to acknowledge the change (PATCH of the process parameters); no PATCH is sent when the
+      // value did not change, hence the swallowed timeout - the receipt's quantity is asserted by the caller
+      const acknowledged = getPage().waitForResponse(
+        (response) => response.request().method() === 'PATCH' && response.url().includes('/process/'),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      ).catch(() => {});
+      await input.click();
+      // the widget registers the focus one tick after the DOM focus; a blur before that is ignored and sends no PATCH
+      await getPage().locator(`.panel-modal-content .form-field-${columnName} .input-body-container.focused`).waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+      await input.press('Control+a');
+      await input.pressSequentially(String(value));
+      await input.blur();
+      await acknowledged;
+      await getPage().waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      await expect(input).toHaveValue(new RegExp(`^${value}([.,]0+)?$`));
+    });
+  }
+
+  static async startProcess() {
+    return await test.step('ReceiptCandidatesPage - Start process', async () => {
+      const startButton = getPage().getByTestId('process-modal-start-button');
+      await expect(startButton).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+      await startButton.click();
+    });
+  }
+
+  /** One array of trimmed cell texts per row of the HU editor view that opens after a receipt. */
+  static async readHUEditorRows() {
+    return await test.step('ReceiptCandidatesPage - Read HU editor rows', async () => {
+      const rows = getPage().locator('.panel-modal .table tbody tr');
+      await rows.first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      return await rows.evaluateAll((trs) =>
+        trs.map((tr) => Array.from(tr.querySelectorAll('td')).map((td) => td.textContent.trim()))
+      );
+    });
+  }
 }
 
 /** True for `POST /process/{processId}`, which creates a process instance. */

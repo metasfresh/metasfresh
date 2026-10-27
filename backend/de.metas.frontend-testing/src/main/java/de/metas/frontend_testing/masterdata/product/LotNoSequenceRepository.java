@@ -14,7 +14,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
- * Persists the lot-number sequence of a test BOM.
+ * Persists the lot-number and serial-number sequences of a test BOM.
  */
 class LotNoSequenceRepository
 {
@@ -25,15 +25,7 @@ class LotNoSequenceRepository
 	{
 		final int currentNext = request.getCurrentNext() != null ? request.getCurrentNext() : 1;
 
-		final I_AD_Sequence sequence = newInstance(I_AD_Sequence.class);
-		sequence.setAD_Org_ID(OrgId.ANY.getRepoId());
-		sequence.setName("LotNo_" + productValue);
-		sequence.setIsAutoSequence(true);
-		sequence.setIsTableID(false);
-		sequence.setIncrementNo(1);
-		sequence.setStartNo(currentNext);
-		sequence.setCurrentNext(currentNext);
-		sequence.setCurrentNextSys(currentNext);
+		final I_AD_Sequence sequence = newAutoSequence("LotNo_" + productValue, currentNext);
 		sequence.setPrefix(request.getPrefix());
 		sequence.setDecimalPattern(request.getDecimalPattern());
 		if (request.isDateBased())
@@ -44,6 +36,31 @@ class LotNoSequenceRepository
 		}
 		saveRecord(sequence);
 		return DocSequenceId.ofRepoId(sequence.getAD_Sequence_ID());
+	}
+
+	/**
+	 * Creates the serial-number sequence of a test BOM ({@code PP_Product_BOM.SerialNo_Sequence_ID}), starting at 1.
+	 */
+	@NonNull
+	DocSequenceId createSerialNoSequence(@NonNull final String productValue)
+	{
+		final I_AD_Sequence sequence = newAutoSequence("SerialNo_" + productValue, 1);
+		saveRecord(sequence);
+		return DocSequenceId.ofRepoId(sequence.getAD_Sequence_ID());
+	}
+
+	private static I_AD_Sequence newAutoSequence(@NonNull final String name, final int currentNext)
+	{
+		final I_AD_Sequence sequence = newInstance(I_AD_Sequence.class);
+		sequence.setAD_Org_ID(OrgId.ANY.getRepoId());
+		sequence.setName(name);
+		sequence.setIsAutoSequence(true);
+		sequence.setIsTableID(false);
+		sequence.setIncrementNo(1);
+		sequence.setStartNo(currentNext);
+		sequence.setCurrentNext(currentNext);
+		sequence.setCurrentNextSys(currentNext);
+		return sequence;
 	}
 
 	private int getDateSequenceProviderJavaClassId()
