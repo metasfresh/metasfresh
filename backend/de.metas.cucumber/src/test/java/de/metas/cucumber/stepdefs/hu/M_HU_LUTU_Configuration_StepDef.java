@@ -55,6 +55,7 @@ import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -90,6 +91,7 @@ public class M_HU_LUTU_Configuration_StepDef
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 
@@ -162,13 +164,16 @@ public class M_HU_LUTU_Configuration_StepDef
 
 					final de.metas.handlingunits.model.I_PP_Order huPPOrder = InterfaceWrapperHelper.load(ppOrder.getPP_Order_ID(), de.metas.handlingunits.model.I_PP_Order.class);
 
-					final I_M_HU_LUTU_Configuration lutuConfiguration = PPOrderDocumentLUTUConfigurationHandlerTestHelper.createNewLUTUConfiguration(huPPOrder);
-
-					final I_M_HU_LUTU_Configuration lutuConfig = computeLUTUConfiguration(lutuConfiguration, tableRow);
-
 					final PPOrderBOMLineId coProductBOMLineId = tableRow.getAsOptionalIdentifier(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID)
 							.map(bomLineIdentifier -> bomLineIdentifier.lookupNotNullIdIn(ppOrderBOMLineTable))
 							.orElse(null);
+
+					// Like WEBUI_PP_Order_Receipt: a co-product receipt starts from the BOM line's configuration, so the configuration's product is the co-product.
+					final I_M_HU_LUTU_Configuration lutuConfiguration = coProductBOMLineId != null
+							? huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrderBOMDAO.getOrderBOMLineById(coProductBOMLineId)).getCreateLUTUConfiguration()
+							: PPOrderDocumentLUTUConfigurationHandlerTestHelper.createNewLUTUConfiguration(huPPOrder);
+
+					final I_M_HU_LUTU_Configuration lutuConfig = computeLUTUConfiguration(lutuConfiguration, tableRow);
 
 					final Supplier<List<I_M_HU>> receiveHUs = () -> {
 						final IPPOrderReceiptHUProducer huProducer = coProductBOMLineId != null
