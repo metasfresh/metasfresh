@@ -126,10 +126,16 @@ public class PackingInfoProcessParamsTest
 		params.setLuPiItemId(createPallet(new BigDecimal("4")).getM_HU_PI_Item_ID());
 		params.setQtyLU(new BigDecimal("2"));
 		params.setQtyTU(new BigDecimal("5"));
+		final int configurationsBefore = countLUTUConfigurations();
 
 		assertThatThrownBy(() -> params.createAndSaveNewLUTUConfig())
 				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.getErrorCode()).isEqualTo("M_HU_LUTU_Configuration_QtyTU_ExceedsLUCapacity"));
-		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_LUTU_Configuration.class).create().count()).isZero();
+		assertThat(countLUTUConfigurations()).isEqualTo(configurationsBefore);
+	}
+
+	private static int countLUTUConfigurations()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_LUTU_Configuration.class).create().count();
 	}
 
 	private I_M_HU_PI_Item createPallet(final BigDecimal tuCapacity)

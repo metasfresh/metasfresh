@@ -514,6 +514,7 @@ public class PackingInfoProcessParams
 		// LU
 		configureLUTUConfigLU(lutuConfigNew, lu_PI_Item_ID, qtyLU);
 
+		// the receipt producer checks again, but only after this process (running out of transaction) has stored the configuration
 		packingInstructionChecker.get().assertLUTUConfigurationMatchesPackingInstruction(lutuConfigNew);
 		lutuConfigurationFactory.save(lutuConfigNew);
 		return lutuConfigNew;
