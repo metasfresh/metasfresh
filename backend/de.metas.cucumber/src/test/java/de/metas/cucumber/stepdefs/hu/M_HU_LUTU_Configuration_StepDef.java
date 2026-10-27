@@ -140,8 +140,8 @@ public class M_HU_LUTU_Configuration_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-	 *   | PP_Order_ID | M_HU_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | ExpectedHUCount |
-	 *   | ppOrder     | receivedLU         | 2     | 3     | 15          | huPIP                   | 2               |
+	 *   | PP_Order_ID | M_HU_ID    | QtyLU | QtyTU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | ExpectedHUCount |
+	 *   | ppOrder     | receivedLU | 2     | 3     | 15          | huPIP                   | 2               |
 	 * </pre>
 	 */
 	@And("receive HUs for PP_Order with M_HU_LUTU_Configuration:")
