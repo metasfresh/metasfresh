@@ -96,6 +96,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Tab Model.
@@ -4394,10 +4396,17 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		public <T> List<T> getSelectedModels(final Class<T> modelClass)
 		{
 			// backward compatibility
-			final T model = getSelectedModel(modelClass);
-			return ImmutableList.of(model);
+			return streamSelectedModels(modelClass)
+					.collect(ImmutableList.toImmutableList());
 		}
 
+		@NonNull
+		@Override
+		public <T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass)
+		{
+			return Stream.of(getSelectedModel(modelClass));
+		}
+		
 		@Override
 		public int getSingleSelectedRecordId()
 		{
