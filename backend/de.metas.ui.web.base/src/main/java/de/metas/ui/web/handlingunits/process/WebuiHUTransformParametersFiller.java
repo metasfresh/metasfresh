@@ -5,6 +5,7 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -501,7 +502,7 @@ public class WebuiHUTransformParametersFiller
 
 		return handlingUnitsDAO.retrieveParentPIItemsForParentPI(
 				effectivePIVersion.getM_HU_PI(),
-				null,
+				(HuUnitType)null,
 				IHandlingUnitsBL.extractBPartnerIdOrNull(tuHU));
 	}
 

@@ -42,6 +42,7 @@ import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuPackingMaterialId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -1340,7 +1341,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			@Nullable final String huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
-		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(packingInstructionsId, huUnitType, bpartnerId);
+		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(packingInstructionsId, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
 	}
 
 	@Override
@@ -1439,7 +1440,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			@Nullable final String huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
-		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
+		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
 	}
 
 	@Override
