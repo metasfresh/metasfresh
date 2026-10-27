@@ -1338,10 +1338,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
-			@Nullable final String huUnitType,
+			@Nullable final HuUnitType huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
-		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(packingInstructionsId, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
+		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(packingInstructionsId, huUnitType, bpartnerId);
 	}
 
 	@Override
@@ -1437,10 +1437,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull final I_M_HU_PI huPI,
-			@Nullable final String huUnitType,
+			@Nullable final HuUnitType huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
-		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
+		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
 	}
 
 	@Override

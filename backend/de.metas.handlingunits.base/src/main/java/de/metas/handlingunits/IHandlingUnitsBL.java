@@ -302,8 +302,20 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull HuPackingInstructionsId packingInstructionsId,
-			@Nullable String huUnitType,
+			@Nullable HuUnitType huUnitType,
 			@Nullable BPartnerId bpartnerId);
+
+	/**
+	 * @deprecated use {@link #retrieveParentPIItemsForParentPI(HuPackingInstructionsId, HuUnitType, BPartnerId)}
+	 */
+	@Deprecated
+	default List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final HuPackingInstructionsId packingInstructionsId,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return retrieveParentPIItemsForParentPI(packingInstructionsId, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
+	}
 
 	I_M_HU_PI_Item getPackingInstructionItemById(HuPackingInstructionsItemId piItemId);
 
@@ -311,8 +323,20 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull I_M_HU_PI huPI,
-			@Nullable String huUnitType,
+			@Nullable HuUnitType huUnitType,
 			@Nullable BPartnerId bpartnerId);
+
+	/**
+	 * @deprecated use {@link #retrieveParentPIItemsForParentPI(I_M_HU_PI, HuUnitType, BPartnerId)}
+	 */
+	@Deprecated
+	default List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return retrieveParentPIItemsForParentPI(huPI, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
+	}
 
 	void reactivateDestroyedHU(@NonNull I_M_HU hu, @NonNull IContextAware contextProvider);
 
