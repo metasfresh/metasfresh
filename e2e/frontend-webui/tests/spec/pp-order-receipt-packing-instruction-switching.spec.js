@@ -2,18 +2,12 @@ import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
-import { LoginPage } from '../utils/pages/LoginPage';
 import { ManufacturingOrderReceiptPage as ReceiptDialog } from '../utils/pages/ManufacturingOrderReceiptPage';
 
 /**
  * Features:
  * - F8020: Manufacturing Order
  * - F5001: Packing Instruction
- *
- * Production receipt dialog ("Empfangen") of a manufacturing order follows the packing instruction:
- * the quantity per TU is the packing instruction's (no input field), the dialog shows the derived
- * total ("Menge" / "Quantity"), and configurations that contradict the packing instruction or the
- * pallet capacity are refused.
  *
  * This file: one product with three packing instructions ("x 15 Stk" on a pallet of 4, "x 10 Stk" on a pallet of 6,
  * and one with unlimited capacity on a pallet of 7). Covers switching the packing instruction and the pallet in the open dialog.
@@ -66,20 +60,6 @@ const createSwitchFixture = async (language) =>
     },
   });
 
-// Backend.expect addresses manufacturing orders by the numeric PP_Order_ID (not registered as an identifier)
-const orderId = (masterdata, orderIdentifier) => masterdata.manufacturingOrders[orderIdentifier].ppOrderId;
-
-const openDialogOnCurrentSession = async (masterdata, orderIdentifier) => {
-  await ReceiptDialog.openLinesView({ ppOrderId: masterdata.manufacturingOrders[orderIdentifier].ppOrderId });
-  await ReceiptDialog.openReceiptDialog();
-};
-
-const openDialog = async (masterdata, orderIdentifier) => {
-  await LoginPage.goto();
-  await LoginPage.login(masterdata.login.user);
-  await openDialogOnCurrentSession(masterdata, orderIdentifier);
-};
-
 test.describe('PP_Order receipt - dialog follows the packing instruction', () => {
   test.beforeEach(() => {
     allure.epic('E0160: Manufacturing Execution');
@@ -94,7 +74,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
     // eslint-disable-next-line no-unused-vars
     test(`switching the packing instruction resets pallet, counts and total (${label})`, async ({ page }) => {
       const masterdata = await createSwitchFixture(language);
-      await openDialog(masterdata, 'PP_SWITCH');
+      await ReceiptDialog.openForOrder(masterdata, 'PP_SWITCH');
 
       // "x 15" on a pallet of 4: opens at 4 TUs / 8 LUs, Menge follows the counts
       await ReceiptDialog.expectNumber('QtyTU', PALLET_CAPACITY);
@@ -154,7 +134,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       await ReceiptDialog.start();
       const qty = `${TUS_BEFORE_SWITCH * QTY_PER_TU} PCE`;
       await Backend.expect({
-        manufacturings: { [orderId(masterdata, 'PP_SWITCH')]: { receivedHUs: [{ lu: 'lu_1', qty }] } },
+        manufacturings: { [ReceiptDialog.orderId(masterdata, 'PP_SWITCH')]: { receivedHUs: [{ lu: 'lu_1', qty }] } },
         hus: { lu_1: { storages: { PROD_SWITCH: qty }, tus: [{ qtyTUs: TUS_BEFORE_SWITCH, storages: { PROD_SWITCH: qty } }] } },
       });
     });

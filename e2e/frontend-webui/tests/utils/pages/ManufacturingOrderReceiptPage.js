@@ -8,6 +8,7 @@ import {
   VERY_SLOW_ACTION_TIMEOUT,
 } from '../common';
 import { MANUFACTURING_ORDER_WINDOW_ID } from '../WindowIds';
+import { LoginPage } from './LoginPage';
 
 /**
  * Page object for the production receipt dialog ("Empfangen", process WEBUI_PP_Order_Receipt)
@@ -28,6 +29,24 @@ export class ManufacturingOrderReceiptPage {
 
   static #input(columnName) {
     return this.#field(columnName).locator('input.input-field');
+  }
+
+  /** Backend.expect addresses manufacturing orders by the numeric PP_Order_ID (not registered as an identifier). */
+  static orderId(masterdata, orderIdentifier) {
+    return masterdata.manufacturingOrders[orderIdentifier].ppOrderId;
+  }
+
+  /** Opens the receipt dialog of the order in the already logged-in session. */
+  static async openForOrderOnCurrentSession(masterdata, orderIdentifier, { rowIndex } = {}) {
+    await this.openLinesView({ ppOrderId: this.orderId(masterdata, orderIdentifier) });
+    await this.openReceiptDialog({ rowIndex });
+  }
+
+  /** Logs in as the masterdata's user, then opens the receipt dialog of the order. */
+  static async openForOrder(masterdata, orderIdentifier, options) {
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await this.openForOrderOnCurrentSession(masterdata, orderIdentifier, options);
   }
 
   static async openLinesView({ ppOrderId }) {
@@ -126,7 +145,6 @@ export class ManufacturingOrderReceiptPage {
 
   /**
    * If the entry is the one the field already shows, no PATCH is sent: the list is just closed again.
-   * @returns {Promise<boolean>} true when the value was changed (and the server answered), false when it was already selected
    */
   static async #chooseOption(columnName, optionLocator) {
     const page = getPage();
@@ -136,14 +154,13 @@ export class ManufacturingOrderReceiptPage {
     if (current !== '' && current === wanted) {
       await page.keyboard.press('Escape');
       await optionLocator.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
-      return false;
+      return;
     }
     await this.#actAndAwaitParameterChange(() => optionLocator.click());
     await this.#settle();
-    return true;
   }
 
-  /** An entry that is already selected is only checked (the field keeps showing it), not re-chosen. */
+  /** An entry that is already selected is not re-chosen: the list is just closed. */
   static async selectOption(columnName, option) {
     return await test.step(`ManufacturingOrderReceiptPage - Select ${option} in ${columnName}`, async () => {
       const page = getPage();

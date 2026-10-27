@@ -2,18 +2,12 @@ import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
-import { LoginPage } from '../utils/pages/LoginPage';
 import { ManufacturingOrderReceiptPage as ReceiptDialog } from '../utils/pages/ManufacturingOrderReceiptPage';
 
 /**
  * Features:
  * - F8020: Manufacturing Order
  * - F5001: Packing Instruction
- *
- * Production receipt dialog ("Empfangen") of a manufacturing order follows the packing instruction:
- * the quantity per TU is the packing instruction's (no input field), the dialog shows the derived
- * total ("Menge" / "Quantity"), and configurations that contradict the packing instruction or the
- * pallet capacity are refused.
  *
  * This file: one product whose packing instruction has unlimited capacity, with a pallet of 7.
  * Covers receiving one TU with the entered Menge, with and without the pallet.
@@ -55,20 +49,6 @@ const createUnlimitedFixture = async (language) =>
     },
   });
 
-// Backend.expect addresses manufacturing orders by the numeric PP_Order_ID (not registered as an identifier)
-const orderId = (masterdata, orderIdentifier) => masterdata.manufacturingOrders[orderIdentifier].ppOrderId;
-
-const openDialogOnCurrentSession = async (masterdata, orderIdentifier) => {
-  await ReceiptDialog.openLinesView({ ppOrderId: masterdata.manufacturingOrders[orderIdentifier].ppOrderId });
-  await ReceiptDialog.openReceiptDialog();
-};
-
-const openDialog = async (masterdata, orderIdentifier) => {
-  await LoginPage.goto();
-  await LoginPage.login(masterdata.login.user);
-  await openDialogOnCurrentSession(masterdata, orderIdentifier);
-};
-
 test.describe('PP_Order receipt - dialog follows the packing instruction', () => {
   test.beforeEach(() => {
     allure.epic('E0160: Manufacturing Execution');
@@ -83,7 +63,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
     // eslint-disable-next-line no-unused-vars
     test(`unlimited capacity: one TU, Menge entered, pallet keeps 1 / 1 (${label})`, async ({ page }) => {
       const masterdata = await createUnlimitedFixture(language);
-      await openDialog(masterdata, 'PP_UNL');
+      await ReceiptDialog.openForOrder(masterdata, 'PP_UNL');
 
       expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID'), 'preselected pallet').toContain(`(${PALLET_CAPACITY_UNLIMITED} x `);
 
@@ -118,7 +98,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       await ReceiptDialog.start();
       const qty = `${QTY_UNLIMITED} PCE`;
       await Backend.expect({
-        manufacturings: { [orderId(masterdata, 'PP_UNL')]: { receivedHUs: [{ lu: 'lu_1', qty }] } },
+        manufacturings: { [ReceiptDialog.orderId(masterdata, 'PP_UNL')]: { receivedHUs: [{ lu: 'lu_1', qty }] } },
         hus: { lu_1: { storages: { PROD_UNL: qty }, tus: [{ qtyTUs: 1, storages: { PROD_UNL: qty } }] } },
       });
     });

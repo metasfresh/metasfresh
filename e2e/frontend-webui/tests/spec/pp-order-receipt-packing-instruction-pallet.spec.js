@@ -2,18 +2,12 @@ import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
-import { LoginPage } from '../utils/pages/LoginPage';
 import { ManufacturingOrderReceiptPage as ReceiptDialog } from '../utils/pages/ManufacturingOrderReceiptPage';
 
 /**
  * Features:
  * - F8020: Manufacturing Order
  * - F5001: Packing Instruction
- *
- * Production receipt dialog ("Empfangen") of a manufacturing order follows the packing instruction:
- * the quantity per TU is the packing instruction's (no input field), the dialog shows the derived
- * total ("Menge" / "Quantity"), and configurations that contradict the packing instruction or the
- * pallet capacity are refused.
  *
  * This file: one product with a pallet packing instruction, one without pallet; both "x 15 Stk".
  * Covers the pallet and no-pallet receipts and "No Packing Item".
@@ -76,20 +70,6 @@ const palletOrder = () => ({
   datePromised: '2025-03-01T00:00:00.000+02:00',
 });
 
-// Backend.expect addresses manufacturing orders by the numeric PP_Order_ID (not registered as an identifier)
-const orderId = (masterdata, orderIdentifier) => masterdata.manufacturingOrders[orderIdentifier].ppOrderId;
-
-const openDialogOnCurrentSession = async (masterdata, orderIdentifier) => {
-  await ReceiptDialog.openLinesView({ ppOrderId: masterdata.manufacturingOrders[orderIdentifier].ppOrderId });
-  await ReceiptDialog.openReceiptDialog();
-};
-
-const openDialog = async (masterdata, orderIdentifier) => {
-  await LoginPage.goto();
-  await LoginPage.login(masterdata.login.user);
-  await openDialogOnCurrentSession(masterdata, orderIdentifier);
-};
-
 test.describe('PP_Order receipt - dialog follows the packing instruction', () => {
   test.beforeEach(() => {
     allure.epic('E0160: Manufacturing Execution');
@@ -107,7 +87,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       const masterdata = await createFixture(language);
 
       // --- order 1: opening state, operators' habit, refusal, acceptance
-      await openDialog(masterdata, 'PP_PALLET_1');
+      await ReceiptDialog.openForOrder(masterdata, 'PP_PALLET_1');
 
       expect(await ReceiptDialog.getLabel('QtyTotalReceived')).toBe(quantityLabel);
       expect(await ReceiptDialog.isFieldVisible('QtyCUsPerTU'), 'no input field for the quantity per TU').toBe(false);
@@ -133,13 +113,13 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       const refusal = await ReceiptDialog.startExpectingRefusal();
       // AD_Message M_HU_LUTU_Configuration_QtyTU_ExceedsLUCapacity: "... (5) ... Kapazität der Palette (4 TU) ..." / "... (5) ... capacity ({4} TUs) ..."
       expect(refusal, 'refusal names the pallet capacity').toMatch(new RegExp(`\\(${PALLET_CAPACITY} TUs?\\)`));
-      await Backend.expect({ manufacturings: { [orderId(masterdata, 'PP_PALLET_1')]: { receivedHUs: [] } } });
+      await Backend.expect({ manufacturings: { [ReceiptDialog.orderId(masterdata, 'PP_PALLET_1')]: { receivedHUs: [] } } });
 
       // exactly the pallet capacity: accepted -> one pallet with 4 TUs of 15
       await ReceiptDialog.setNumber('QtyTU', PALLET_CAPACITY);
       await ReceiptDialog.start();
       await Backend.expect({
-        manufacturings: { [orderId(masterdata, 'PP_PALLET_1')]: { receivedHUs: [{ lu: 'lu_1', qty: `${PALLET_CAPACITY * QTY_PER_TU} PCE` }] } },
+        manufacturings: { [ReceiptDialog.orderId(masterdata, 'PP_PALLET_1')]: { receivedHUs: [{ lu: 'lu_1', qty: `${PALLET_CAPACITY * QTY_PER_TU} PCE` }] } },
         // the pallet carries its TUs as one aggregate HU: 4 TUs holding 60 = 4 x 15
         hus: {
           lu_1: {
@@ -150,13 +130,13 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       });
 
       // --- order 2: 3 TUs on 2 pallets -> Menge 90 -> 2 pallets x 3 TUs x 15
-      await openDialogOnCurrentSession(masterdata, 'PP_PALLET_2');
+      await ReceiptDialog.openForOrderOnCurrentSession(masterdata, 'PP_PALLET_2');
       await ReceiptDialog.setNumber('QtyTU', TUS_PER_PALLET_USED);
 
       // pallet selected, "LU Anzahl" 0: refused, nothing created
       await ReceiptDialog.setNumber('QtyLU', 0);
       expect(await ReceiptDialog.startExpectingRefusal(), 'refusal for 0 pallets').not.toBe('');
-      await Backend.expect({ manufacturings: { [orderId(masterdata, 'PP_PALLET_2')]: { receivedHUs: [] } } });
+      await Backend.expect({ manufacturings: { [ReceiptDialog.orderId(masterdata, 'PP_PALLET_2')]: { receivedHUs: [] } } });
 
       await ReceiptDialog.setNumber('QtyLU', LUS_USED);
       await ReceiptDialog.expectNumber('QtyTotalReceived', TUS_PER_PALLET_USED * LUS_USED * QTY_PER_TU);
@@ -164,7 +144,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
 
       const palletQty = `${TUS_PER_PALLET_USED * QTY_PER_TU} PCE`;
       await Backend.expect({
-        manufacturings: { [orderId(masterdata, 'PP_PALLET_2')]: { receivedHUs: [{ lu: 'lu_2', qty: palletQty }, { lu: 'lu_3', qty: palletQty }] } },
+        manufacturings: { [ReceiptDialog.orderId(masterdata, 'PP_PALLET_2')]: { receivedHUs: [{ lu: 'lu_2', qty: palletQty }, { lu: 'lu_3', qty: palletQty }] } },
         hus: {
           // each pallet: one aggregate HU of 3 TUs holding 45 = 3 x 15
           lu_2: { storages: { PROD_PALLET: palletQty }, tus: [{ qtyTUs: TUS_PER_PALLET_USED, storages: { PROD_PALLET: palletQty } }] },
@@ -176,7 +156,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
     // eslint-disable-next-line no-unused-vars
     test(`no pallet, packing instruction x ${QTY_PER_TU}, TU count gives the total (${label})`, async ({ page }) => {
       const masterdata = await createFixture(language);
-      await openDialog(masterdata, 'PP_PLAIN');
+      await ReceiptDialog.openForOrder(masterdata, 'PP_PLAIN');
 
       expect(await ReceiptDialog.getLabel('QtyTotalReceived')).toBe(quantityLabel);
       expect(await ReceiptDialog.isFieldVisible('QtyCUsPerTU')).toBe(false);
@@ -188,13 +168,13 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       await ReceiptDialog.clear('QtyTU');
       expect(await ReceiptDialog.getValue('QtyTotalReceived'), 'Menge is empty without TU Anzahl').toBe('');
       expect(await ReceiptDialog.isStartDisabled(), 'Start is disabled while TU Anzahl is empty').toBe(true);
-      await Backend.expect({ manufacturings: { [orderId(masterdata, 'PP_PLAIN')]: { receivedHUs: [] } } });
+      await Backend.expect({ manufacturings: { [ReceiptDialog.orderId(masterdata, 'PP_PLAIN')]: { receivedHUs: [] } } });
 
       await ReceiptDialog.setNumber('QtyTU', TUS_PER_PALLET_USED);
       await ReceiptDialog.start();
       await Backend.expect({
         manufacturings: {
-          [orderId(masterdata, 'PP_PLAIN')]: {
+          [ReceiptDialog.orderId(masterdata, 'PP_PLAIN')]: {
             receivedHUs: [
               { tu: 'tu_1', qty: `${QTY_PER_TU} PCE` },
               { tu: 'tu_2', qty: `${QTY_PER_TU} PCE` },
@@ -208,7 +188,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
     // eslint-disable-next-line no-unused-vars
     test(`"No Packing Item" shows only Menge CU and builds no pallet (${label})`, async ({ page }) => {
       const masterdata = await createFixture(language);
-      await openDialog(masterdata, 'PP_PALLET_1');
+      await ReceiptDialog.openForOrder(masterdata, 'PP_PALLET_1');
 
       expect(await ReceiptDialog.isFieldVisible('QtyTotalReceived')).toBe(true);
       expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID')).not.toBe('');
@@ -232,7 +212,7 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       await ReceiptDialog.setNumber('QtyCUsReceived', QTY_LOOSE);
       await ReceiptDialog.start();
       await Backend.expect({
-        manufacturings: { [orderId(masterdata, 'PP_PALLET_1')]: { receivedHUs: [{ looseCUs: true, qty: `${QTY_LOOSE} PCE` }] } },
+        manufacturings: { [ReceiptDialog.orderId(masterdata, 'PP_PALLET_1')]: { receivedHUs: [{ looseCUs: true, qty: `${QTY_LOOSE} PCE` }] } },
       });
     });
   }
