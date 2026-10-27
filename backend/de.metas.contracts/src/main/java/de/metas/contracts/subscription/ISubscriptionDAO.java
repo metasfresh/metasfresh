@@ -23,8 +23,11 @@ package de.metas.contracts.subscription;
  */
 
 import java.sql.Timestamp;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+
+import org.adempiere.ad.dao.IQueryBuilder;
 
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -90,17 +93,17 @@ public interface ISubscriptionDAO extends ISingletonService
 	}
 
 	/**
-	 * Loads all {@link I_C_SubscriptionProgress} records that have event type
-	 * {@link X_C_SubscriptionProgress#EVENTTYPE_Lieferung} and status {@link X_C_SubscriptionProgress#STATUS_Geplant}
-	 * or {@link X_C_SubscriptionProgress#STATUS_Verzoegert}, ordered by
-	 * {@link I_C_SubscriptionProgress#COLUMNNAME_EventDate} and {@link I_C_SubscriptionProgress#COLUMNNAME_SeqNo}.
-	 * 
-	 * @param date
-	 *            the records' event date is before or equal.
-	 * @param trxName
-	 * @return
+	 * Iterates the delivery {@link I_C_SubscriptionProgress} records of {@code ctx}'s client with status {@link X_C_SubscriptionProgress#STATUS_Planned}
+	 * or {@link X_C_SubscriptionProgress#STATUS_Delayed} and an event date before or equal to {@code date}, of terms whose product is an Item,
+	 * ordered by {@code EventDate}, {@code C_Flatrate_Term_ID}, {@code SeqNo}, loading {@code pageSize} records at a time.
+	 * The caller must close the iterator.
 	 */
-	List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(Properties ctx, Timestamp date, String trxName);
+	Iterator<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(Properties ctx, Timestamp date, String trxName, int pageSize);
+
+	/**
+	 * @return query builder for the terms whose product is an Item
+	 */
+	IQueryBuilder<I_C_Flatrate_Term> queryTermsWithItemProduct(Properties ctx, String trxName);
 
 	/**
 	 * 
