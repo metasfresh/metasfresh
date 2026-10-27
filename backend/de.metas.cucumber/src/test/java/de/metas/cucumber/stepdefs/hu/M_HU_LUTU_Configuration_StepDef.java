@@ -182,16 +182,20 @@ public class M_HU_LUTU_Configuration_StepDef
 
 					final de.metas.handlingunits.model.I_PP_Order huPPOrder = InterfaceWrapperHelper.load(ppOrder.getPP_Order_ID(), de.metas.handlingunits.model.I_PP_Order.class);
 
-					final I_M_HU_LUTU_Configuration lutuConfiguration = PPOrderDocumentLUTUConfigurationHandlerTestHelper.createNewLUTUConfiguration(huPPOrder);
-
-					final I_M_HU_LUTU_Configuration lutuConfig = computeLUTUConfiguration(lutuConfiguration, tableRow);
-
 					final StepDefDataIdentifier bomLineIdentifier = tableRow
 							.getAsOptionalIdentifier(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID)
 							.filter(StepDefDataIdentifier::isNotNullPlaceholder)
 							.orElse(null);
+					final I_PP_Order_BOMLine receivedBOMLine = bomLineIdentifier != null ? getReceivableBOMLine(bomLineIdentifier) : null;
 
-					final Supplier<List<I_M_HU>> receiveHUs = () -> createReceiptProducer(ppOrder, bomLineIdentifier)
+					// Like WEBUI_PP_Order_Receipt: a co-product receipt starts from the BOM line's configuration, so the configuration's product is the co-product.
+					final I_M_HU_LUTU_Configuration lutuConfiguration = receivedBOMLine != null
+							? huPPOrderBL.createReceiptLUTUConfigurationManager(receivedBOMLine).getCreateLUTUConfiguration()
+							: PPOrderDocumentLUTUConfigurationHandlerTestHelper.createNewLUTUConfiguration(huPPOrder);
+
+					final I_M_HU_LUTU_Configuration lutuConfig = computeLUTUConfiguration(lutuConfiguration, tableRow);
+
+					final Supplier<List<I_M_HU>> receiveHUs = () -> createReceiptProducer(ppOrder, receivedBOMLine)
 							.packUsingLUTUConfiguration(lutuConfig)
 							.createDraftReceiptCandidatesAndPlanningHUs();
 
@@ -241,40 +245,37 @@ public class M_HU_LUTU_Configuration_StepDef
 
 	/**
 	 * Selects the real production receipt BL for this row: the co/by-product receipt
-	 * ({@link IHUPPOrderBL#receivingByOrCoProduct(PPOrderBOMLineId)}) when a BOM-line reference is given,
+	 * ({@link IHUPPOrderBL#receivingByOrCoProduct(PPOrderBOMLineId)}) when a BOM line is received,
 	 * else the main-product receipt ({@link IHUPPOrderBL#receivingMainProduct(PPOrderId)}).
-	 * <p>
-	 * The co/by-vs-main decision is resolved unambiguously from the referenced line's {@code ComponentType}:
-	 * only a co-product ({@code CP}) or by-product ({@code BY}) line is a receivable output, so a reference to
-	 * any other (issue) line fails loud instead of being received against the wrong BL.
 	 */
 	@NonNull
 	private IPPOrderReceiptHUProducer createReceiptProducer(
 			@NonNull final I_PP_Order ppOrder,
-			@Nullable final StepDefDataIdentifier bomLineIdentifier)
+			@Nullable final I_PP_Order_BOMLine receivedBOMLine)
 	{
-		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		return receivedBOMLine != null
+				? huPPOrderBL.receivingByOrCoProduct(PPOrderBOMLineId.ofRepoId(receivedBOMLine.getPP_Order_BOMLine_ID()))
+				: huPPOrderBL.receivingMainProduct(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
+	}
 
-		// No BOM-line reference -> main (finished-good) product receipt. Backward-compatible default.
-		if (bomLineIdentifier == null)
+	/**
+	 * Only a co-product ({@code CP}) or by-product ({@code BY}) line is a receivable output, so a reference to
+	 * any other (issue) line fails loud instead of being received against the wrong BL.
+	 */
+	@NonNull
+	private I_PP_Order_BOMLine getReceivableBOMLine(@NonNull final StepDefDataIdentifier bomLineIdentifier)
+	{
+		final I_PP_Order_BOMLine bomLine = ppOrderBOMLineTable.get(bomLineIdentifier);
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		if (!componentType.isByOrCoProduct())
 		{
-			return huPPOrderBL.receivingMainProduct(ppOrderId);
+			throw new AdempiereException("Cannot receive PP_Order_BOMLine " + bomLineIdentifier
+					+ " (M_Product_ID=" + bomLine.getM_Product_ID() + ") as a co/by-product receipt:"
+					+ " its ComponentType is " + componentType + " (" + bomLine.getComponentType() + "),"
+					+ " which is an issue line, not a receivable output."
+					+ " Only a co-product (CP) or by-product (BY) BOM line can be received via receivingByOrCoProduct.");
 		}
-		else
-		{
-			final I_PP_Order_BOMLine bomLine = ppOrderBOMLineTable.get(bomLineIdentifier);
-			final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
-			if (!componentType.isByOrCoProduct())
-			{
-				throw new AdempiereException("Cannot receive PP_Order_BOMLine " + bomLineIdentifier
-						+ " (M_Product_ID=" + bomLine.getM_Product_ID() + ") as a co/by-product receipt:"
-						+ " its ComponentType is " + componentType + " (" + bomLine.getComponentType() + "),"
-						+ " which is an issue line, not a receivable output."
-						+ " Only a co-product (CP) or by-product (BY) BOM line can be received via receivingByOrCoProduct.");
-			}
-
-			return huPPOrderBL.receivingByOrCoProduct(PPOrderBOMLineId.ofRepoId(bomLine.getPP_Order_BOMLine_ID()));
-		}
+		return bomLine;
 	}
 
 	@And("create M_HU_LUTU_Configuration for M_ReceiptSchedule:")
