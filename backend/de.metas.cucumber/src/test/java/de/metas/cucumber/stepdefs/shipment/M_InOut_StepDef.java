@@ -801,7 +801,7 @@ public class M_InOut_StepDef
 		}
 		else
 		{
-			assertThat(catchThrowable(() -> processInOut(model_UNUSED, shipmentIdentifier, action))).as("error expected").isNotNull();
+			assertThat(catchThrowable(() -> processInOut(model_UNUSED, shipmentIdentifier, action))).as("error expected").isInstanceOf(Exception.class);
 		}
 	}
 
