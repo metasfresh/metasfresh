@@ -130,7 +130,7 @@ public class M_HU_LUTU_Configuration_StepDef
 	 *   <b>IsInfiniteQtyLU</b> — (optional) defaults to false<br>
 	 *   <b>M_HU_LUTU_Configuration_ID</b> — (optional, identifier) stores the created LU/TU configuration under this alias<br>
 	 *   <b>M_HU_ID</b> — (required unless ErrorMessage_AD_Message is given) one or several comma-separated identifiers of the received HUs, see below<br>
-	 *   <b>PP_Order_BOMLine_ID</b> — (optional, identifier-ref) receive this co-product / by-product line instead of the main product, see below<br>
+	 *   <b>PP_Order_BOMLine_ID</b> — (optional, identifier-ref) receive this co-product / by-product line instead of the main product, see below; as in production, the default LU/TU configuration is then built from this BOM line (the co-/by-product), not from the PP_Order<br>
 	 *   <b>ExpectedHUCount</b> — (optional) expected number of received top-level HUs; defaults to the number of identifiers in M_HU_ID<br>
 	 *   <b>ExpectedTUsPerLU</b> — (optional) every received LU holds this many TUs<br>
 	 *   <b>ExpectedQtyCUsPerTU</b> — (optional) every received LU holds this quantity per TU (LU quantity = TUs x this)<br>
@@ -190,7 +190,7 @@ public class M_HU_LUTU_Configuration_StepDef
 
 					// Like WEBUI_PP_Order_Receipt: a co-product receipt starts from the BOM line's configuration, so the configuration's product is the co-product.
 					final I_M_HU_LUTU_Configuration lutuConfiguration = receivedBOMLine != null
-							? huPPOrderBL.createReceiptLUTUConfigurationManager(receivedBOMLine).getCreateLUTUConfiguration()
+							? PPOrderDocumentLUTUConfigurationHandlerTestHelper.createNewLUTUConfiguration(receivedBOMLine)
 							: PPOrderDocumentLUTUConfigurationHandlerTestHelper.createNewLUTUConfiguration(huPPOrder);
 
 					final I_M_HU_LUTU_Configuration lutuConfig = computeLUTUConfiguration(lutuConfiguration, tableRow);
