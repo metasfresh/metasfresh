@@ -591,49 +591,18 @@ export class ReceiptCandidatesPage {
       await actionItem.click();
 
       // Step 3: Wait for parameter dialog to appear
-      // The dialog contains a form field for QtyCUsPerTU
+      // The dialog contains the form field QtyCUsReceived ("Menge CU"), which holds the quantity to receive
       await page.locator('.panel-modal, .modal-content').waitFor({
         state: 'visible',
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
-      // Step 4: Find and fill the quantity field
-      // Language-independent: Use field name selector (QtyCUsPerTU)
-      // Try multiple selector patterns for the quantity input
-      const quantityInput = page.locator(
-        '.form-field-QtyCUsPerTU input, ' +
-        'input[name="QtyCUsPerTU"], ' +
-        '.panel-modal .input-number input, ' +
-        '.modal-content .input-number input'
-      ).first();
+      // Step 4: Enter the quantity into QtyCUsReceived (language-independent: by ColumnName);
+      // waits for the server to acknowledge the parameter change and checks the field's value
+      await this.setProcessNumberField('QtyCUsReceived', quantity);
 
-      await quantityInput.waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      // Clear existing value and enter new quantity
-      await quantityInput.clear();
-      await quantityInput.fill(String(quantity));
-
-      // Wait for input to have the expected value (React state update)
-      await expect(quantityInput).toHaveValue(String(quantity), { timeout: 5000 });
-
-      // Step 5: Submit the parameter dialog by clicking the Start button
-      // Language-independent: Use data-testid for modal buttons
-      // Note: Process modals use "process-modal-start-button" (see Modal.js)
-      const submitButton = page.getByTestId('process-modal-start-button').or(
-        page.getByTestId('modal-start')
-      ).or(
-        page.getByTestId('modal-done')
-      );
-
-      await submitButton.waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await submitButton.click();
+      // Step 5: Submit the parameter dialog by clicking the Start button (process-modal-start-button, see Modal.js)
+      await this.startProcess();
 
       // Step 6: Wait for HU Editor to appear
       // The process opens an HU Editor modal where we need to create the receipt
