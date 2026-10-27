@@ -19,7 +19,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * The start of the production receipt dialog derives the quantity per TU from the packing instruction; "TU Anzahl" is then the only
- * count that cannot be derived. The dialog does not let the user start with it empty, so this path is reached only by other callers.
+ * count that cannot be derived. The dialog does not let the user start with TU Anzahl empty; the method still refuses it.
  */
 public class PackingInfoProcessParamsTest
 {
@@ -70,7 +69,6 @@ public class PackingInfoProcessParamsTest
 					return Quantitys.of(qty.toBigDecimal().multiply(ORDER_UOM_PER_PIP_UOM), UomId.ofRepoId(orderUom.getC_UOM_ID()));
 				});
 		Services.registerService(IUOMConversionBL.class, uomConversionBL);
-		SpringContextHolder.registerJUnitBean(new LUTUConfigurationPackingInstructionChecker());
 
 		fixedCapacityPIP = createPackingInstruction(pipUom, QTY_PER_TU);
 
@@ -85,6 +83,7 @@ public class PackingInfoProcessParamsTest
 		Mockito.when(configManager.getCreateLUTUConfiguration()).thenReturn(defaultConfig);
 
 		params = PackingInfoProcessParams.builder()
+				.packingInstructionChecker(new LUTUConfigurationPackingInstructionChecker())
 				.defaultLUTUConfigManager(configManager)
 				.selectedRow(Mockito.mock(PPOrderLineRow.class))
 				.build();

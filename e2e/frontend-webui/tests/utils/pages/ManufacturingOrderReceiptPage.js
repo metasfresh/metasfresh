@@ -134,7 +134,6 @@ export class ManufacturingOrderReceiptPage {
     const wanted = ((await optionLocator.textContent()) ?? '').trim();
     const current = await this.getValue(columnName);
     if (current !== '' && current === wanted) {
-      expect(current, `${columnName} keeps the already selected option`).toBe(wanted);
       await page.keyboard.press('Escape');
       await optionLocator.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
       return false;
@@ -245,14 +244,6 @@ export class ManufacturingOrderReceiptPage {
       // the dialog is gone when its start button is: the form fields re-render transiently on validation errors
       await startButton.waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
       await this.#settle();
-    });
-  }
-
-  static async cancel() {
-    return await test.step('ManufacturingOrderReceiptPage - Cancel dialog', async () => {
-      const page = getPage();
-      await page.getByTestId('process-modal-cancel-button').click();
-      await page.getByTestId('process-modal-start-button').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     });
   }
 

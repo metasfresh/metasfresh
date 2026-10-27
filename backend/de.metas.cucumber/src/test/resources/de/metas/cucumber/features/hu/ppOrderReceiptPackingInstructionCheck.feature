@@ -1,6 +1,8 @@
 @from:cucumber
 @allure.label.epic:E0370_Intralogistic_HUs
 @allure.label.feature:F5000_Handling_Unit
+@allure.label.feature:F5001_Packing_Instruction
+@allure.label.feature:F8020_Manufacturing_Order
 @F5000
 @ghActions:run_on_executor5
 Feature: Manufacturing order receipt follows the packing instruction

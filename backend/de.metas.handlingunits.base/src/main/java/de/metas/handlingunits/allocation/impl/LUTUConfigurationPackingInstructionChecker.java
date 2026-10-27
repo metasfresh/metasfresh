@@ -65,10 +65,10 @@ public class LUTUConfigurationPackingInstructionChecker
 		final UomId configUomId = UomId.ofRepoIdOrNull(lutuConfig.getC_UOM_ID());
 
 		// compare in the configuration's UOM (rounded to that UOM's precision), the same number the receipt dialog stores
-		final BigDecimal expectedQty = getQtyCUsPerTUInUom(piItemProduct, productId, configUomId);
-		if (lutuConfig.getQtyCUsPerTU().compareTo(expectedQty) != 0)
+		final BigDecimal expectedQtyBD = getQtyCUsPerTUInUom(piItemProduct, productId, configUomId).toBigDecimal();
+		if (lutuConfig.getQtyCUsPerTU().compareTo(expectedQtyBD) != 0)
 		{
-			throw new AdempiereException(MSG_QtyCUsPerTU_NotMatchingPackingInstruction, format(expectedQty), format(lutuConfig.getQtyCUsPerTU()));
+			throw new AdempiereException(MSG_QtyCUsPerTU_NotMatchingPackingInstruction, format(expectedQtyBD), format(lutuConfig.getQtyCUsPerTU()));
 		}
 	}
 
@@ -76,15 +76,15 @@ public class LUTUConfigurationPackingInstructionChecker
 	 * @return the packing instruction's quantity per TU, expressed in the given UOM
 	 * @param targetUomId {@code null} means the packing instruction's own UOM
 	 */
-	public BigDecimal getQtyCUsPerTUInUom(
+	public Quantity getQtyCUsPerTUInUom(
 			@NonNull final HUPIItemProduct piItemProduct,
 			@NonNull final ProductId productId,
 			@Nullable final UomId targetUomId)
 	{
 		final Quantity piQty = piItemProduct.getQtyCUsPerTU();
 		return targetUomId != null
-				? uomConversionBL.convertQuantityTo(piQty, productId, targetUomId).toBigDecimal()
-				: piQty.toBigDecimal();
+				? uomConversionBL.convertQuantityTo(piQty, productId, targetUomId)
+				: piQty;
 	}
 
 	/**

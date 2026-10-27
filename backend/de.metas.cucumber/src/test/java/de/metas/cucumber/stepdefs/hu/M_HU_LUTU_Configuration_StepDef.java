@@ -128,8 +128,16 @@ public class M_HU_LUTU_Configuration_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>PP_Order_ID</b> — (required, identifier-ref) the manufacturing order<br>
-	 *   <b>M_HU_PI_Item_Product_ID</b> — (required, identifier-ref) the TU packing instruction<br>
-	 *   <b>M_HU_ID</b> — (required unless ErrorMessage is given) alias of the first received HU<br>
+	 *   <b>M_HU_PI_Item_Product_ID</b> — (required, identifier-ref or plain ID) the TU packing instruction<br>
+	 *   <b>QtyCUsPerTU</b> — (optional) quantity per TU; defaults to 1<br>
+	 *   <b>IsInfiniteQtyCU</b> — (optional) defaults to false<br>
+	 *   <b>QtyTU</b> — (optional) number of TUs (per LU, if there is an LU); defaults to 1<br>
+	 *   <b>IsInfiniteQtyTU</b> — (optional) defaults to false<br>
+	 *   <b>QtyLU</b> — (optional) number of LUs; defaults to 1; 0 means receive without LU<br>
+	 *   <b>IsInfiniteQtyLU</b> — (optional) defaults to false<br>
+	 *   <b>M_LU_HU_PI_ID</b> — (required if QtyLU &gt; 0, also when QtyLU is omitted; identifier-ref or plain ID) the LU packing instruction; the TU must be loadable onto it<br>
+	 *   <b>M_HU_LUTU_Configuration_ID</b> — (optional, identifier) stores the created LU/TU configuration under this alias<br>
+	 *   <b>M_HU_ID</b> — (required unless ErrorMessage_AD_Message is given) alias of the first received HU<br>
 	 *   <b>PP_Order_BOMLine_ID</b> — (optional, identifier-ref) receive this co-product line instead of the main product<br>
 	 *   <b>ExpectedHUCount</b> — (optional) expected number of received top-level HUs; defaults to 1<br>
 	 *   <b>ExpectedTUsPerLU</b> — (optional) every received LU holds this many TUs<br>
@@ -140,8 +148,8 @@ public class M_HU_LUTU_Configuration_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-	 *   | PP_Order_ID | M_HU_ID    | QtyLU | QtyTU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | ExpectedHUCount |
-	 *   | ppOrder     | receivedLU | 2     | 3     | 15          | huPIP                   | 2               |
+	 *   | PP_Order_ID | M_HU_ID    | QtyLU | QtyTU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | ExpectedHUCount |
+	 *   | ppOrder     | receivedLU | 2     | 3     | 15          | huPIP                   | huPI_LU       | 2               |
 	 * </pre>
 	 */
 	@And("receive HUs for PP_Order with M_HU_LUTU_Configuration:")

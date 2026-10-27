@@ -32,8 +32,6 @@ import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.SpringContextHolder.Lazy;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -70,7 +68,7 @@ public class PackingInfoProcessParams
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
-	private final transient Lazy<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker = SpringContextHolder.lazyBean(LUTUConfigurationPackingInstructionChecker.class);
+	@NonNull private final transient LUTUConfigurationPackingInstructionChecker packingInstructionChecker;
 
 	public static final String PARAM_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID)
@@ -109,12 +107,14 @@ public class PackingInfoProcessParams
 
 	@Builder
 	public PackingInfoProcessParams(
+			@NonNull final LUTUConfigurationPackingInstructionChecker packingInstructionChecker,
 			@NonNull final IDocumentLUTUConfigurationManager defaultLUTUConfigManager,
 			@Nullable final BigDecimal enforceAvailableQtyTU,
 			final boolean enforceOneLUorTU,
 			final boolean enforcePhysicalTU,
 			@NonNull final PPOrderLineRow selectedRow)
 	{
+		this.packingInstructionChecker = packingInstructionChecker;
 		this.enforcePhysicalTU = enforcePhysicalTU;
 		this.defaultLUTUConfigManager = defaultLUTUConfigManager;
 		this.enforceAvailableQtyTU = enforceAvailableQtyTU;
@@ -221,10 +221,11 @@ public class PackingInfoProcessParams
 	public BigDecimal getQtyCUsPerTUInConfigUom(@NonNull final HUPIItemProduct pip)
 	{
 		final I_M_HU_LUTU_Configuration defaultLUTUConfig = getDefaultLUTUConfig();
-		return packingInstructionChecker.get().getQtyCUsPerTUInUom(
-				pip,
-				ProductId.ofRepoId(defaultLUTUConfig.getM_Product_ID()),
-				UomId.ofRepoIdOrNull(defaultLUTUConfig.getC_UOM_ID()));
+		return packingInstructionChecker.getQtyCUsPerTUInUom(
+						pip,
+						ProductId.ofRepoId(defaultLUTUConfig.getM_Product_ID()),
+						UomId.ofRepoIdOrNull(defaultLUTUConfig.getC_UOM_ID()))
+				.toBigDecimal();
 	}
 
 	/**
@@ -509,7 +510,7 @@ public class PackingInfoProcessParams
 		configureLUTUConfigLU(lutuConfigNew, lu_PI_Item_ID, qtyLU);
 
 		// the receipt producer checks again, but only after this process (running out of transaction) has stored the configuration
-		packingInstructionChecker.get().assertLUTUConfigurationMatchesPackingInstruction(lutuConfigNew);
+		packingInstructionChecker.assertLUTUConfigurationMatchesPackingInstruction(lutuConfigNew);
 		lutuConfigurationFactory.save(lutuConfigNew);
 		return lutuConfigNew;
 	}

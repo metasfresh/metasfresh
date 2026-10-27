@@ -90,8 +90,6 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.SpringContextHolder;
-import org.compiere.SpringContextHolder.Lazy;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -110,6 +108,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /* package */abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProducer
 {
@@ -128,7 +127,7 @@ import java.util.Optional;
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
-	@NonNull private final Lazy<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker = SpringContextHolder.lazyBean(LUTUConfigurationPackingInstructionChecker.class);
+	@NonNull private final Supplier<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker;
 
 	// Parameters
 	private final PPOrderId ppOrderId;
@@ -163,9 +162,12 @@ import java.util.Optional;
 	protected abstract void addAssignedHUs(final Collection<I_M_HU> hus);
 	// @formatter:on
 
-	public AbstractPPOrderReceiptHUProducer(@NonNull final PPOrderId ppOrderId)
+	public AbstractPPOrderReceiptHUProducer(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final Supplier<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker)
 	{
 		this.ppOrderId = ppOrderId;
+		this.packingInstructionChecker = packingInstructionChecker;
 	}
 
 	private PPOrderId getPpOrderId()

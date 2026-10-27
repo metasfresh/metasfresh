@@ -53,6 +53,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -72,6 +73,7 @@ public class WEBUI_PP_Order_Receipt
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IHUAttributesBL attributesBL = Services.get(IHUAttributesBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final LUTUConfigurationPackingInstructionChecker packingInstructionChecker = SpringContextHolder.instance.getBean(LUTUConfigurationPackingInstructionChecker.class);
 
 	private static final String SYSCONFIG_OverrideCaptionWithPackingInfo =
 			"de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.OverrideCaptionWithPackingInfo";
@@ -119,6 +121,7 @@ public class WEBUI_PP_Order_Receipt
 		if (_packingInfoParams == null)
 		{
 			_packingInfoParams = PackingInfoProcessParams.builder()
+					.packingInstructionChecker(packingInstructionChecker)
 					.defaultLUTUConfigManager(createDefaultLUTUConfigManager(getSingleSelectedRow()))
 					.enforcePhysicalTU(false) // allow to to produce just the CU, without a TU etc..maybe later we'll add a sysconfig for this
 					.selectedRow(getSingleSelectedRow())
@@ -297,7 +300,7 @@ public class WEBUI_PP_Order_Receipt
 		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(getSelectedPackingInstructionId());
 		if (pip == null || PackingInfoProcessParams.isUnlimitedCapacity(pip))
 		{
-			return; // "No Packing Item" or unlimited capacity: the user enters "Menge", so it is not derived
+			return; // "No Packing Item" or unlimited capacity: Menge is not derived from the TU / LU counts
 		}
 
 		p_QtyTotalReceived = PackingInfoProcessParams.computeQtyTotal(params.getQtyCUsPerTUInConfigUom(pip), p_QtyTU, p_QtyLU, p_M_HU_PI_Item != null);

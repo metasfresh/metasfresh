@@ -136,9 +136,9 @@ public class LUTUConfigurationPackingInstructionCheckerTest
 	public void packingQty_expressedInConfigUOM()
 	{
 		final HUPIItemProduct pip = huPIItemProductBL.getById(HUPIItemProductId.ofRepoId(1000));
-		assertThat(checker.getQtyCUsPerTUInUom(pip, PRODUCT_ID, configUom)).isEqualByComparingTo("2000");
-		assertThat(checker.getQtyCUsPerTUInUom(pip, PRODUCT_ID, piUom)).isEqualByComparingTo("2");
-		assertThat(checker.getQtyCUsPerTUInUom(pip, PRODUCT_ID, null)).isEqualByComparingTo("2");
+		assertThat(checker.getQtyCUsPerTUInUom(pip, PRODUCT_ID, configUom).toBigDecimal()).isEqualByComparingTo("2000");
+		assertThat(checker.getQtyCUsPerTUInUom(pip, PRODUCT_ID, piUom).toBigDecimal()).isEqualByComparingTo("2");
+		assertThat(checker.getQtyCUsPerTUInUom(pip, PRODUCT_ID, null).toBigDecimal()).isEqualByComparingTo("2");
 	}
 
 	@Test

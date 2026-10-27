@@ -3,6 +3,7 @@ package de.metas.handlingunits.pporder.api.impl;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.document.sequenceno.DateSequenceProvider;
 import de.metas.javaclasses.model.I_AD_JavaClass;
@@ -205,7 +206,7 @@ public class HUPPOrderBL_LotNumberFromSequence_Test
 
 	private static AbstractPPOrderReceiptHUProducer newReceiptProducer(@NonNull final PPOrderId ppOrderId, @NonNull final ZonedDateTime movementDate)
 	{
-		final AbstractPPOrderReceiptHUProducer producer = new CostCollectorCandidateFinishedGoodsHUProducer(load(ppOrderId, I_PP_Order.class));
+		final AbstractPPOrderReceiptHUProducer producer = new CostCollectorCandidateFinishedGoodsHUProducer(load(ppOrderId, I_PP_Order.class), LUTUConfigurationPackingInstructionChecker::new);
 		producer.movementDate(movementDate);
 		return producer;
 	}
