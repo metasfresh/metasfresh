@@ -1425,3 +1425,158 @@ Feature: Product Statistics Year Comparison - reference replay
     And the product statistics year comparison report for org "-", year "yearN", product "rf3Prev" returns:
       | M_Product_ID | Qty_01 | Qty_02 | Qty_Total | PrevQty_01 | PrevQty_02 | PrevQty_Total | Dev_01 | Dev_02 |
       | rf3Prev |  | 6 | 6 | 5 | -3 | 2 | -100.00 | -300.00 |
+
+  @from:cucumber
+  Scenario: TC5 quantity in the stock UoM when ordered in another UoM
+    ## Stock UoM = PCE, conversion 1 PCE = 0.25 KGM. Ordered as 2.5 KGM (= 10 PCE) and shipped: the report shows 10 (PCE), not 2.5.
+    And metasfresh contains M_Products:
+      | Identifier |
+      | tc5Uom     |
+    And metasfresh contains C_UOM_Conversions
+      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
+      | tc5Uom                  | PCE                    | KGM                  | 0.25         |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | psycPLV                | tc5Uom       | 40.00    | KGM      | psycTaxCat       |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_tc5Uom     | inv_tc5Uom_l1      | 2025-01-02   | warehouseStd   | tc5Uom       | 0       | 100      | PCE          |
+    And metasfresh has date and time 2026-03-15T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | M_Warehouse_ID |
+      | so_u03     | Y       | psycBP        | 2026-03-15  | psycPS             | warehouseStd   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | OPT.C_UOM_ID.X12DE355 |
+      | so_u03_l1  | so_u03     | tc5Uom       | 2.5        | KGM                   |
+    And the order identified by so_u03 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sch_u03    | so_u03_l1      | N             | 10           |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | sch_u03               | D            | false               | false       | 10                                              |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | sch_u03               | sh_u03     |
+    And update M_InOut:
+      | M_InOut_ID | MovementDate |
+      | sh_u03     | 2026-03-15   |
+    And the shipment identified by sh_u03 is completed
+
+    Then the product statistics year comparison report for org "-", year "yearN", product "tc5Uom" returns:
+      | M_Product_ID | Qty_03 | Qty_Total |
+      | tc5Uom       | 10     | 10        |
+
+  @from:cucumber
+  Scenario: TC5 foreign-currency invoice with a rate is converted into the accounting-schema currency (CHF) and a tax-included invoice reports net
+    ## The accounting-schema currency of the client is CHF. 100.00 USD at the rate 1 USD = 0.90 CHF -> 90.00 CHF.
+    ## Tax-included: gross 119.00 at 19 % -> net 100.00 (LineNetAmt is gross on a tax-included price list, the function deducts the tax).
+    ## Each foreign / tax-included invoice has its own pricing system and partner, because the invoice takes the price list of its partner.
+    And the following currencies are active:
+      | ISO_Code |
+      | USD      |
+    And a 0.90 "USD" -> "CHF" conversion rate is in place between "2026-01-01" and "2026-12-31"
+    And metasfresh contains M_Products:
+      | Identifier |
+      | tc5Usd     |
+      | tc5Incl    |
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | tc5PSUsd   |
+      | tc5PSIncl  |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded |
+      | tc5PLUsd   | tc5PSUsd           | DE           | USD           | true  | false         |
+      | tc5PLIncl  | tc5PSIncl          | DE           | CHF           | true  | true          |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | tc5PLVUsd  | tc5PLUsd       |
+      | tc5PLVIncl | tc5PLIncl      |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | tc5PLVUsd              | tc5Usd       | 100.00   | PCE      | psycTaxCat       |
+      | tc5PLVIncl             | tc5Incl      | 119.00   | PCE      | psycTaxCat       |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | Name              | IsCustomer | M_PricingSystem_ID | AllowConsolidateInOut |
+      | tc5BPUsd   | PSYC TC5 USD cust | Y          | tc5PSUsd           | N                     |
+      | tc5BPIncl  | PSYC TC5 incl cust| Y          | tc5PSIncl          | N                     |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier  | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
+      | tc5BPLUsd   | tc5BPUsd      | DE           | Y               | Y               |
+      | tc5BPLIncl  | tc5BPIncl     | DE           | Y               | Y               |
+    And metasfresh has date and time 2026-03-15T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_u_usd  | tc5BPUsd      | 2026-03-15   | true    | USD           | tc5PLUsd       |
+      | inv_u_incl | tc5BPIncl     | 2026-03-15   | true    | CHF           | tc5PLIncl      |
+    And metasfresh contains C_InvoiceLines
+      | Identifier   | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
+      | inv_u_usd_l1 | inv_u_usd    | tc5Usd       | 1 PCE       | 100.00 | psycTax19    |
+      | inv_u_incl_l1| inv_u_incl   | tc5Incl      | 1 PCE       | 119.00 | psycTax19    |
+    And the invoice identified by inv_u_usd is completed
+    And the invoice identified by inv_u_incl is completed
+
+    Then the product statistics year comparison report for org "-", year "yearN", product "tc5Usd" returns:
+      | M_Product_ID | Amt_03 | Amt_Total | Currency | RateMissing_Count | RateMissing_Months |
+      | tc5Usd       | 90.00  | 90.00     | CHF      | 0                 |                    |
+    And the product statistics year comparison report for org "-", year "yearN", product "tc5Incl" returns:
+      | M_Product_ID | Amt_03 | Amt_Total | Currency | RateMissing_Count |
+      | tc5Incl      | 100.00 | 100.00    | CHF      | 0                 |
+
+  @from:cucumber
+  Scenario: TC5 invoices without a currency rate add nothing to the amount and are counted with their months (this and previous year)
+    ## SEK has no rate into CHF (asserted first; no other feature writes a SEK rate). One month holds a 1000.00 CHF invoice and a SEK invoice with two lines,
+    ## the previous year holds a SEK invoice: Amt 1000.00, RateMissing_Count 2 (invoices, not lines), months "2025-06, 2026-03" ascending.
+    And the following currencies are active:
+      | ISO_Code |
+      | SEK      |
+    And no C_Conversion_Rate exists:
+      | FromCurrency | ToCurrency | ConversionType | ValidFrom  |
+      | SEK          | CHF        | S              | 2026-01-01 |
+      | CHF          | SEK        | S              | 2026-01-01 |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | tc5Mix     |
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | tc5PSSek   |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded |
+      | tc5PLSek   | tc5PSSek           | DE           | SEK           | true  | false         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | tc5PLVSek  | tc5PLSek       |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | psycPLV                | tc5Mix       | 1000.00  | PCE      | psycTaxCat       |
+      | tc5PLVSek              | tc5Mix       | 50.00    | PCE      | psycTaxCat       |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | Name              | IsCustomer | M_PricingSystem_ID | AllowConsolidateInOut |
+      | tc5BPSek   | PSYC TC5 SEK cust | Y          | tc5PSSek           | N                     |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
+      | tc5BPLSek  | tc5BPSek      | DE           | Y               | Y               |
+    And metasfresh has date and time 2025-06-15T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_m2506  | tc5BPSek      | 2025-06-15   | true    | SEK           | tc5PLSek       |
+    And metasfresh contains C_InvoiceLines
+      | Identifier   | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_m2506_l1 | inv_m2506    | tc5Mix       | 1 PCE       | 50.00 | psycTax19    |
+    And the invoice identified by inv_m2506 is completed
+    And metasfresh has date and time 2026-03-15T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_m2603c | psycBP        | 2026-03-15   | true    | CHF           | psycPL         |
+      | inv_m2603s | tc5BPSek      | 2026-03-15   | true    | SEK           | tc5PLSek       |
+    And metasfresh contains C_InvoiceLines
+      | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price   | C_Tax_ID$set |
+      | inv_m2603c_l1 | inv_m2603c   | tc5Mix       | 1 PCE       | 1000.00 | psycTax19    |
+      | inv_m2603s_l1 | inv_m2603s   | tc5Mix       | 1 PCE       | 50.00   | psycTax19    |
+      | inv_m2603s_l2 | inv_m2603s   | tc5Mix       | 2 PCE       | 50.00   | psycTax19    |
+    And the invoice identified by inv_m2603c is completed
+    And the invoice identified by inv_m2603s is completed
+
+    Then the product statistics year comparison report for org "-", year "yearN", product "tc5Mix" returns:
+      | M_Product_ID | Amt_03  | Amt_Total | Currency | RateMissing_Count | RateMissing_Months |
+      | tc5Mix       | 1000.00 | 1000.00   | CHF      | 2                 | 2025-06, 2026-03   |
