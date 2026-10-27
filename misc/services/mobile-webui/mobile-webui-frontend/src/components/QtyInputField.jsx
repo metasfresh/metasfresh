@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { qtyInfos } from '../utils/qtyInfos';
+import { isValidDecimalNumberString, normalizeDecimalNumberString } from '../utils/decimalInput';
 
 const QtyInputField = ({
   id,
@@ -14,21 +15,32 @@ const QtyInputField = ({
   validateQtyEntered,
   onQtyChange,
 }) => {
+  const initialString = qtyInitial != null ? `${qtyInitial}` : '';
+
   //
   // QtyInfo lifecycle:
+  // - rawText is what the user sees/typed (e.g. "1,"); it is never rewritten while typing
+  // - qtyInfo.qtyStr is the NORMALIZED dot-decimal which is forwarded to the parent (qtyInfos.toNumberOrString)
+  const [rawText, setRawText] = useState(initialString);
   const [qtyInfo, setQtyInfo] = useState(
     computeQtyInfoFromString({
-      qtyInputString: qtyInitial != null ? `${qtyInitial}` : '',
+      qtyInputString: initialString,
       integerValuesOnly,
       prevQtyInfo: null,
       validateQtyEntered,
       uom,
     })
   );
+  // the value this field last forwarded; the parent echoes it back as qtyInitial
+  const lastForwardedQtyStrRef = useRef(initialString);
 
   useEffect(() => {
+    // skip the echo of what the user is typing, so the raw text (e.g. "1,") is not overwritten
+    if (initialString === lastForwardedQtyStrRef.current) {
+      return;
+    }
     const newQtyInfo = computeQtyInfoFromString({
-      qtyInputString: qtyInitial != null ? `${qtyInitial}` : '',
+      qtyInputString: initialString,
       integerValuesOnly,
       prevQtyInfo: {
         qty: qtyInfo?.qty ?? 0,
@@ -37,8 +49,10 @@ const QtyInputField = ({
       validateQtyEntered,
       uom,
     });
+    lastForwardedQtyStrRef.current = newQtyInfo.qtyStr;
+    setRawText(initialString);
     setQtyInfo(newQtyInfo);
-  }, [qtyInitial, integerValuesOnly, qtyInfo?.qty, qtyInfo?.notValidMessage, qtyInfo?.isQtyValid]);
+  }, [initialString, integerValuesOnly]);
 
   //
   // Inform parent about initial value
@@ -55,15 +69,17 @@ const QtyInputField = ({
   }, [isRequestFocus, readonly]);
 
   const handleQtyEntered = (e) => {
-    const qtyInputString = e.target.value ? e.target.value : '0';
+    const rawInput = e.target.value;
     const newQtyInfo = computeQtyInfoFromString({
-      qtyInputString,
+      qtyInputString: rawInput,
       integerValuesOnly,
       prevQtyInfo: qtyInfo,
       validateQtyEntered,
       uom,
     });
 
+    lastForwardedQtyStrRef.current = newQtyInfo.qtyStr;
+    setRawText(rawInput);
     setQtyInfo(newQtyInfo);
     forwardQtyInfoToParent(newQtyInfo);
   };
@@ -80,8 +96,9 @@ const QtyInputField = ({
           data-testid={testId}
           ref={qtyInputRef}
           className="input"
-          type="number"
-          value={qtyInfo.qtyStr}
+          type="text"
+          inputMode="decimal"
+          value={rawText}
           disabled={!!readonly}
           onChange={handleQtyEntered}
           onClick={() => qtyInputRef.current.select()}
@@ -109,11 +126,14 @@ QtyInputField.propTypes = {
 };
 
 const computeQtyInfoFromString = ({ qtyInputString, integerValuesOnly, prevQtyInfo, validateQtyEntered, uom }) => {
-  let qty = parseFloat(qtyInputString);
+  // The user may type the decimal separator as ',' or '.'; forward the dot-decimal.
+  const normalized = isValidDecimalNumberString(qtyInputString) ? normalizeDecimalNumberString(qtyInputString) : null;
+  let qty = normalized ? parseFloat(normalized) : NaN;
 
   if (isNaN(qty)) {
+    // empty / partial / unparseable: not valid, and never forwarded as 0
     return qtyInfos.invalidOf({
-      qtyInputString,
+      qtyInputString: normalized ?? qtyInputString,
       prevQtyInfo,
     });
   } else {
@@ -123,7 +143,7 @@ const computeQtyInfoFromString = ({ qtyInputString, integerValuesOnly, prevQtyIn
 
     const notValidMessage = validateQtyEntered ? validateQtyEntered(qty, uom) : null;
 
-    return qtyInfos.of({ qty, qtyStr: qtyInputString, notValidMessage });
+    return qtyInfos.of({ qty, qtyStr: normalized, notValidMessage });
   }
 };
 
