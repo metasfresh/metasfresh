@@ -5,7 +5,7 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
-import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
+import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 
 // Swiss-German operator (me03#33141): the browser's UI language is de-CH. The context locale alone does not
@@ -130,6 +130,8 @@ test('Manual catch weight typed with decimal POINT on a Swiss-German browser', a
     const { pickingJobId } = await startPickingAndOpenManualDialog(masterdata);
 
     await GetQuantityDialog.typeQtyEntered('7');
+    // The job needs 12; picking 7 leaves 5 rejected, which requires a reason before the pick can be confirmed.
+    await GetQuantityDialog.clickQtyNotFoundReason({ reason: QTY_NOT_FOUND_REASON_NOT_FOUND });
     await GetQuantityDialog.typeCatchWeightKeystrokes('1.222');
     await GetQuantityDialog.expectDoneEnabled();
     await GetQuantityDialog.clickDone();
@@ -151,6 +153,8 @@ test('Manual catch weight typed with decimal COMMA on a Swiss-German browser', a
     const { pickingJobId } = await startPickingAndOpenManualDialog(masterdata);
 
     await GetQuantityDialog.typeQtyEntered('7');
+    // The job needs 12; picking 7 leaves 5 rejected, which requires a reason before the pick can be confirmed.
+    await GetQuantityDialog.clickQtyNotFoundReason({ reason: QTY_NOT_FOUND_REASON_NOT_FOUND });
     await GetQuantityDialog.typeCatchWeightKeystrokes('1,222');
     await GetQuantityDialog.expectDoneEnabled();
     await GetQuantityDialog.clickDone();
@@ -160,19 +164,25 @@ test('Manual catch weight typed with decimal COMMA on a Swiss-German browser', a
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Emptied catch weight cannot be confirmed on a Swiss-German browser', async ({ page }) => {
+test('Emptied catch weight blocks confirming on a Swiss-German browser', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
-    allure.story('Catch weight picking - Manual input, de-CH, empty weight (AC3)');
+    allure.story('Catch weight picking - Manual input, de-CH, empty weight blocks confirm (AC3)');
     allure.severity('critical');
 
     const masterdata = await createMasterdata();
     await startPickingAndOpenManualDialog(masterdata);
 
+    // AC3: with qty + rejection reason valid, the catch weight is the only remaining gate.
+    // A valid typed weight enables Done; clearing the field (which must read empty, NEVER the
+    // literal "0" the old type="number" code substituted - clearCatchWeight() asserts toHaveValue(''))
+    // makes the catch weight invalid again and must block confirming (Done disabled).
     await GetQuantityDialog.typeQtyEntered('7');
+    await GetQuantityDialog.clickQtyNotFoundReason({ reason: QTY_NOT_FOUND_REASON_NOT_FOUND });
     await GetQuantityDialog.typeCatchWeightKeystrokes('1.222');
+    await GetQuantityDialog.expectDoneEnabled();
     await GetQuantityDialog.clearCatchWeight();
     await GetQuantityDialog.expectDoneDisabled();
 });
