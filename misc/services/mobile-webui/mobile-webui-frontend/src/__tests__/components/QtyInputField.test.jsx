@@ -19,6 +19,13 @@ const renderField = (props = {}) => {
 };
 
 describe('QtyInputField', () => {
+  it('blocks a letter keystroke but lets a digit through', () => {
+    renderField();
+    // React derives onBeforeInput from keypress in jsdom; fireEvent returns false when default was prevented
+    expect(fireEvent.keyPress(getInput(), { key: 'a', charCode: 97, which: 97 })).toBe(false);
+    expect(fireEvent.keyPress(getInput(), { key: '5', charCode: 53, which: 53 })).toBe(true);
+  });
+
   it('is a text input with a decimal keypad, not a locale-bound number input', () => {
     renderField();
     expect(getInput()).toHaveAttribute('type', 'text');

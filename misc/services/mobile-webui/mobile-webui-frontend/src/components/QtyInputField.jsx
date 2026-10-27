@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { qtyInfos } from '../utils/qtyInfos';
 import { isValidDecimalNumberString, normalizeDecimalNumberString } from '../utils/decimalInput';
+import { isAllowedDecimalInput } from '../utils/decimalKeystroke';
 
 const QtyInputField = ({
   id,
@@ -84,6 +85,13 @@ const QtyInputField = ({
     forwardQtyInfoToParent(newQtyInfo);
   };
 
+  // block keystrokes the decimal parser would reject (desktop parity: CostPrice.handleBeforeInput)
+  const handleBeforeInput = (e) => {
+    if (!isAllowedDecimalInput(e.data)) {
+      e.preventDefault();
+    }
+  };
+
   const forwardQtyInfoToParent = (qtyInfoToForward) => {
     onQtyChange(qtyInfoToForward);
   };
@@ -100,6 +108,7 @@ const QtyInputField = ({
           inputMode="decimal"
           value={rawText}
           disabled={!!readonly}
+          onBeforeInput={handleBeforeInput}
           onChange={handleQtyEntered}
           onClick={() => qtyInputRef.current.select()}
         />
