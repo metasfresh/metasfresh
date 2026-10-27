@@ -75,11 +75,10 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam extends WEBUI_M_Receip
 	@Override
 	protected BigDecimal getEffectiveQtyToReceive(I_M_ReceiptSchedule rs)
 	{
-		final BigDecimal qty = p_QtyCUsReceived;
-		if (qty == null || qty.signum() <= 0)
+		if (p_QtyCUsReceived == null || p_QtyCUsReceived.signum() <= 0)
 		{
 			throw new FillMandatoryException(PARAM_QtyCUsReceived);
 		}
-		return qty;
+		return p_QtyCUsReceived;
 	}
 }

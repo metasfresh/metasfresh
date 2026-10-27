@@ -248,7 +248,7 @@ public class WEBUI_PP_Order_Receipt
 	 */
 	private void onPackingInstructionChanged()
 	{
-		final HUPIItemProductId newPackingInstructionId = p_M_HU_PI_Item_Product != null ? HUPIItemProductId.ofRepoIdOrNull(p_M_HU_PI_Item_Product.getM_HU_PI_Item_Product_ID()) : null;
+		final HUPIItemProductId newPackingInstructionId = getSelectedPackingInstructionId();
 		final HUPIItemProductId lastSeenPackingInstructionId = this.lastSeenPackingInstructionId;
 		this.lastSeenPackingInstructionId = newPackingInstructionId;
 		if (lastSeenPackingInstructionId == null || HUPIItemProductId.equals(lastSeenPackingInstructionId, newPackingInstructionId))
@@ -285,14 +285,19 @@ public class WEBUI_PP_Order_Receipt
 		updateQtyTotalReceived();
 	}
 
-	/** Unlimited capacity: "Menge" is entered by the user, so it is not derived. */
+	@Nullable
+	private HUPIItemProductId getSelectedPackingInstructionId()
+	{
+		return p_M_HU_PI_Item_Product != null ? HUPIItemProductId.ofRepoIdOrNull(p_M_HU_PI_Item_Product.getM_HU_PI_Item_Product_ID()) : null;
+	}
+
 	private void updateQtyTotalReceived()
 	{
 		final PackingInfoProcessParams params = getPackingInfoParams();
-		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(p_M_HU_PI_Item_Product != null ? HUPIItemProductId.ofRepoIdOrNull(p_M_HU_PI_Item_Product.getM_HU_PI_Item_Product_ID()) : null);
+		final HUPIItemProduct pip = params.getRegularPackingInstructionOrNull(getSelectedPackingInstructionId());
 		if (pip == null || PackingInfoProcessParams.isUnlimitedCapacity(pip))
 		{
-			return;
+			return; // unlimited capacity: "Menge" is entered by the user, so it is not derived
 		}
 
 		p_QtyTotalReceived = PackingInfoProcessParams.computeQtyTotal(params.getQtyCUsPerTUInConfigUom(pip), p_QtyTU, p_QtyLU, p_M_HU_PI_Item != null);

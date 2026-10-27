@@ -178,7 +178,7 @@ import java.util.Optional;
 	{
 		return trxManager.callInNewTrx(() -> {
 			final I_M_HU_LUTU_Configuration lutuConfig = getCreateLUTUConfiguration();
-			packingInstructionChecker.get().assertLUTUConfigurationMatchesPackingInstruction(lutuConfig); // before any HU is built
+			packingInstructionChecker.get().assertLUTUConfigurationMatchesPackingInstruction(lutuConfig);
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfig);
 			if (qtyCUsTotal.isZero())
 			{

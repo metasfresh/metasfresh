@@ -20,7 +20,7 @@ Feature: Manufacturing order receipt follows the packing instruction
       | receiptCoProduct |
 
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier |
+      | M_HU_PI_ID            |
       | huPackingTU           |
       | huPackingLU           |
       | huPackingLUNoCapacity |
@@ -30,7 +30,7 @@ Feature: Manufacturing order receipt follows the packing instruction
       | packingVersionLU   | huPackingLU           | LU          | Y         |
       | packingVersionLU0  | huPackingLUNoCapacity | LU          | Y         |
     And metasfresh contains M_HU_PI_Item:
-      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID.Identifier |
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID            |
       | huPiItemTU      | packingVersionTU   | 0   | MI       |                              |
       | huPiItemLU      | packingVersionLU   | 4   | HU       | huPackingTU                  |
       | huPiItemLU0     | packingVersionLU0  | 0   | HU       | huPackingTU                  |
@@ -164,7 +164,7 @@ Feature: Manufacturing order receipt follows the packing instruction
   Scenario: Packing instruction with quantity 0 and no unlimited capacity cannot be saved
     # so quantity 0 always means unlimited capacity; own TU item, so it does not overlap pipMain
     Given metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier |
+      | M_HU_PI_ID            |
       | huPackingTUQty0       |
     And metasfresh contains M_HU_PI_Version:
       | M_HU_PI_Version_ID | M_HU_PI_ID      | HU_UnitType | IsCurrent |
@@ -195,7 +195,7 @@ Feature: Manufacturing order receipt follows the packing instruction
   Scenario: Receipt is refused when there are more TUs per pallet than the pallet capacity, also for an unlimited-capacity packing instruction
     # own TU/LU packing instructions (pallet capacity 6), so it does not overlap pipMain
     Given metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier |
+      | M_HU_PI_ID            |
       | huPackingTUUnlimited  |
       | huPackingLUUnlimited  |
     And metasfresh contains M_HU_PI_Version:
@@ -203,7 +203,7 @@ Feature: Manufacturing order receipt follows the packing instruction
       | packingVersionTUUnl | huPackingTUUnlimited | TU          | Y         |
       | packingVersionLUUnl | huPackingLUUnlimited | LU          | Y         |
     And metasfresh contains M_HU_PI_Item:
-      | M_HU_PI_Item_ID | M_HU_PI_Version_ID  | Qty | ItemType | Included_HU_PI_ID.Identifier |
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID  | Qty | ItemType | Included_HU_PI_ID            |
       | huPiItemTUUnl   | packingVersionTUUnl | 0   | MI       |                              |
       | huPiItemLUUnl   | packingVersionLUUnl | 6   | HU       | huPackingTUUnlimited         |
     And metasfresh contains M_HU_PI_Item_Product:
