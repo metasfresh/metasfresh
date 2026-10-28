@@ -23,6 +23,7 @@ package org.adempiere.server.rpl.exceptions;
  */
 
 import lombok.Getter;
+import lombok.Value;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
 import org.compiere.model.PO;
 
@@ -54,9 +55,27 @@ public final class DuplicateLookupObjectException extends ReplicationException
 		this(adMessage, null, null, false);
 	}
 
+	/** Set if the lookup was retried with its lenient lines unset (see EXP_FormatLine.IsImportLenient) and still matched more than one record. */
+	@Getter
+	private final LenientContext lenientContext;
+
+	@Value
+	public static class LenientContext
+	{
+		String lookupValues;
+		String label;
+		int matchedCount;
+	}
+
 	public DuplicateLookupObjectException(final String adMessage, final List<PO> lookedUpPOs, final I_EXP_ReplicationTrxLine trxLineDraft, final boolean doLookup)
 	{
+		this(adMessage, lookedUpPOs, trxLineDraft, doLookup, null);
+	}
+
+	public DuplicateLookupObjectException(final String adMessage, final List<PO> lookedUpPOs, final I_EXP_ReplicationTrxLine trxLineDraft, final boolean doLookup, final LenientContext lenientContext)
+	{
 		super(adMessage);
+		this.lenientContext = lenientContext;
 		this.lookedUpPOs = lookedUpPOs;
 		this.trxLineDraft = trxLineDraft;
 		this.doLookup = doLookup;

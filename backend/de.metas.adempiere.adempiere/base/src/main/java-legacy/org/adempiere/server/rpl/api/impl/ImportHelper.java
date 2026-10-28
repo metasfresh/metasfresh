@@ -110,11 +110,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.adempiere.server.rpl.api.impl.ReplicationHelper.setReplicationCtx;
 
@@ -149,6 +152,7 @@ public class ImportHelper implements IImportHelper
 	private static final String MSG_EXPObjectFormatNotResolved = "EXPObjectFormatNotResolved";
 	private static final String MSG_EXPFormatLineDuplicatedObject = "FormatLineDuplicatedObject";
 	private static final String MSG_EXPFormatLineDuplicatedDefaultObject = "FormatLineDuplicatedDefaultObject";
+	private static final String MSG_EDIBPartnerLookupAmbiguousNoDefault = "EDI_BPartnerLookup_AmbiguousNoDefault";
 	private static final String MSG_EXPFormatLineNoDefaultFallbackObject = "FormatLineNoDefaultFallbackObject";
 
 	private static final String MSG_CantImport = "CantImport";
@@ -488,6 +492,7 @@ public class ImportHelper implements IImportHelper
 		boolean isLookupTableReplicationTrxSupported;
 		PO po;
 		I_EXP_ReplicationTrxLine replicationTrxLine;
+		boolean lenientMatch = false;
 		try
 		{
 			//
@@ -504,6 +509,7 @@ public class ImportHelper implements IImportHelper
 			isLookupTableReplicationTrxSupported = isLookupTableReplicationTrxSupported(draft.isDoLookup(), masterExpFormat);
 			po = draft.getPODraft();
 			replicationTrxLine = draft.getTrxLineDraftOrNull();
+			lenientMatch = draft.isLenientMatch();
 		}
 		catch (final DuplicateLookupObjectException dloe)
 		{
@@ -518,8 +524,26 @@ public class ImportHelper implements IImportHelper
 			//
 			// Those POs might belong to a lookup table, i.e. might not necessarily be POs of the table that our current po references
 			final List<PO> lookedUpPOs = dloe.getLookedUpPOs();
-			po = getSingleDefaultPO(lookedUpPOs, masterExpFormatLine);
+			try
+			{
+				po = getSingleDefaultPO(lookedUpPOs, masterExpFormatLine);
+			}
+			catch (final DuplicateLookupObjectException e)
+			{
+				throw e;
+			}
+			catch (final ReplicationException e)
+			{
+				final DuplicateLookupObjectException.LenientContext lenientContext = dloe.getLenientContext();
+				if (lenientContext != null)
+				{
+					throw new ReplicationException(MSG_EDIBPartnerLookupAmbiguousNoDefault, e)
+							.setAdMessageParameters(lenientContext.getLookupValues(), lenientContext.getLabel(), lenientContext.getMatchedCount());
+				}
+				throw e;
+			}
 			replicationTrxLine = dloe.getTrxLineDraftOrNull();
+			lenientMatch = dloe.getLenientContext() != null;
 		}
 		catch (final Exception e)
 		{
@@ -567,6 +591,10 @@ public class ImportHelper implements IImportHelper
 		// and set value of column
 		for (final I_EXP_FormatLine formatLine : formatLines)
 		{
+			if (lenientMatch && formatLine.isImportLenient())
+			{
+				continue;
+			}
 			try
 			{
 				log.debug("formatLine: [" + formatLine.toString() + "]");
@@ -1036,6 +1064,9 @@ public class ImportHelper implements IImportHelper
 		final Object[] cols = new Object[uniqueFormatLines.size()];
 		final List<Object> params = new ArrayList<>();
 		final StringBuilder whereClause = new StringBuilder();
+		// lenient lines' inlined ILIKE fragment -> the "IS NULL" condition that replaces it in the retry
+		final Map<String, String> lenientFragments = new LinkedHashMap<>();
+		final List<Object> lenientValues = new ArrayList<>();
 		int col = 0;
 		final StringBuilder formatLines = new StringBuilder();
 
@@ -1220,7 +1251,13 @@ public class ImportHelper implements IImportHelper
 				}
 				else if (X_EXP_FormatLine.FILTEROPERATOR_Like.equals(filterOperator))
 				{
-					whereClause.append(columnSQL).append(" ILIKE '%").append(paramSQL).append("%' ");
+					final String likeFragment = columnSQL + " ILIKE '%" + paramSQL + "%' ";
+					whereClause.append(likeFragment);
+					if (uniqueFormatLine.isImportLenient())
+					{
+						lenientFragments.put(likeFragment, columnSQL + " IS NULL ");
+						lenientValues.add(paramSQL);
+					}
 				}
 				else
 				{
@@ -1230,6 +1267,10 @@ public class ImportHelper implements IImportHelper
 			}
 			col++;
 		}
+
+		// the equality values (i.e. not the lenient ones), e.g. the GLN
+		final String otherConditionValues = params.stream().map(String::valueOf).collect(Collectors.joining(", "));
+		final String lenientLabels = lenientValues.stream().map(String::valueOf).collect(Collectors.joining(", "));
 
 		final String linkColumnName;
 		final int linkId;
@@ -1251,6 +1292,7 @@ public class ImportHelper implements IImportHelper
 		final String lookupTableName = lookupTable.getTableName();
 
 		final List<PO> lookupValues = new ArrayList<>();
+		boolean lenientRetried = false;
 		if (doLookup)
 		{
 			final List<PO> list = new Query(ctx, lookupTableName, whereClause.toString(), trxName)
@@ -1258,6 +1300,20 @@ public class ImportHelper implements IImportHelper
 					.setParameters(params)
 					.list(PO.class);
 			lookupValues.addAll(list);
+
+			if (lookupValues.isEmpty() && !lenientFragments.isEmpty())
+			{
+				String lenientWhereClause = whereClause.toString();
+				for (final Map.Entry<String, String> lenientFragment : lenientFragments.entrySet())
+				{
+					lenientWhereClause = lenientWhereClause.replace(lenientFragment.getKey(), lenientFragment.getValue());
+				}
+				lookupValues.addAll(new Query(ctx, lookupTableName, lenientWhereClause, trxName)
+						.setOnlyActiveRecords(true)
+						.setParameters(params)
+						.list(PO.class));
+				lenientRetried = true;
+			}
 		}
 
 		//
@@ -1295,6 +1351,7 @@ public class ImportHelper implements IImportHelper
 			}
 		}
 
+		final boolean lenientMatch = lenientRetried && lookupValues.size() == 1;
 		final PO po;
 		if (lookupValues.size() > 1) // The Return Object must be always one
 		{
@@ -1303,7 +1360,10 @@ public class ImportHelper implements IImportHelper
 
 			// further up, this exception might be caught and resolved by getSingleDefaultPO()
 			final String lookupExMsg = MSG_EXPFormatLineDuplicatedObject + " : " + expFormat.getName() + "(" + formatLines + ")";
-			throw new DuplicateLookupObjectException(lookupExMsg, lookupValues, replicationTrxLine, doLookup)
+			final DuplicateLookupObjectException.LenientContext lenientContext = lenientRetried
+					? new DuplicateLookupObjectException.LenientContext(otherConditionValues, lenientLabels, lookupValues.size())
+					: null;
+			throw new DuplicateLookupObjectException(lookupExMsg, lookupValues, replicationTrxLine, doLookup, lenientContext)
 					.setParameter("WhereClause", whereClause.toString())
 					.setParameter("Parameters", params)
 					.setParameter("Value", lookupValues)
@@ -1354,11 +1414,11 @@ public class ImportHelper implements IImportHelper
 		final POReplicationTrxLineDraft draftResult;
 		if (isLookupTableAcceptedInReplicationTrxHandling)
 		{
-			draftResult = new POReplicationTrxLineDraft(po, replicationTrxLine, doLookup);
+			draftResult = new POReplicationTrxLineDraft(po, replicationTrxLine, doLookup, lenientMatch);
 		}
 		else
 		{
-			draftResult = new POReplicationTrxLineDraft(po);
+			draftResult = new POReplicationTrxLineDraft(po, lenientMatch);
 		}
 
 		return draftResult;
