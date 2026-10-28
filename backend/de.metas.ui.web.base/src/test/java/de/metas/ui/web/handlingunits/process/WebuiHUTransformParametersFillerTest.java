@@ -39,7 +39,7 @@ public class WebuiHUTransformParametersFillerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		tuPI = createPI("SBB Rahmen");
+		tuPI = createPI("Crate");
 		final I_M_HU_PI_Version tuPIVersion = createPIVersion(tuPI, HuUnitType.TU);
 
 		final I_M_HU tuHU = newInstance(I_M_HU.class);
