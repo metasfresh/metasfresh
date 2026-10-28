@@ -254,19 +254,22 @@ export class SalesOrderPage {
    * used to read a defaulted field. Keeping it as the single implementation means both callers get the
    * same spinner handling rather than two copies drifting apart.
    *
-   * Returns only after the server answered the product selection: that answer carries the product
-   * callout's defaults, so a fixed sleep would let a slow answer arrive after the caller already read
-   * the form.
+   * By default returns only after the server answered the product selection: that answer carries the
+   * product callout's defaults, so a fixed sleep would let a slow answer arrive after the caller already
+   * read the form.
    *
    * @param {Object} params
    * @param {string} params.product - Product code or name
    * @param {string} params.recordId - Optional record ID (extracted from the URL if not provided)
-   * @returns {Promise<{packingInstruction: string}>} what the server defaulted for the packing
+   * @param {boolean} [params.awaitProductPatch=true] - false returns right after the product is clicked,
+   *   without waiting for the server's answer: the user who types on at once (e.g. a spec that holds that
+   *   answer back to test Enter while it is in flight).
+   * @returns {Promise<{packingInstruction: string}|undefined>} what the server defaulted for the packing
    *   instruction (`M_HU_PI_Item_Product_ID`) in its answer: its caption, or '' when it set none.
    *   The DOM may lag that answer by a few ms; use {@link expectQuickEntryPackingInstruction} to
-   *   check what the form shows.
+   *   check what the form shows. undefined when `awaitProductPatch` is false.
    */
-  static async openQuickEntryAndSelectProduct({ product, recordId }) {
+  static async openQuickEntryAndSelectProduct({ product, recordId, awaitProductPatch = true }) {
     return await test.step(`SalesOrderPage - Open quick entry and select: ${product}`, async () => {
       const page = getPage();
 
@@ -334,6 +337,14 @@ export class SalesOrderPage {
       // Wait for dropdown to populate
       await page.waitForTimeout(300);
 
+      // Click the option by text - finds element containing the product code
+      // This avoids clicking on "Search for more..." or other non-record options
+      const productOption = page.locator('.input-dropdown-list-option').getByText(product).first();
+      if (!awaitProductPatch) {
+        await productOption.click();
+        return undefined;
+      }
+
       // The product callout runs server-side: selecting the option PATCHes the quick-input document
       // with M_Product_ID, and the answer carries the fields it defaulted. Listen before clicking.
       const productPatchResponse = page.waitForResponse(
@@ -342,9 +353,7 @@ export class SalesOrderPage {
       );
       productPatchResponse.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
 
-      // Click the option by text - finds element containing the product code
-      // This avoids clicking on "Search for more..." or other non-record options
-      await page.locator('.input-dropdown-list-option').getByText(product).first().click();
+      await productOption.click();
 
       const response = await productPatchResponse;
       expect(response.ok(), `quick-input product PATCH failed: HTTP ${response.status()}`).toBe(true);

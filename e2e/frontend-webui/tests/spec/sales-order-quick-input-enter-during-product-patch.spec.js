@@ -65,8 +65,8 @@ test.describe('Sales order quick entry - Enter while the product PATCH is in fli
       }
     });
 
-    // Picks the product and returns while its PATCH is still held back (the helper waits only 1.5 s).
-    await SalesOrderPage.openQuickEntryAndSelectProduct({ product, recordId });
+    // Picks the product and returns while its PATCH is still held back: the user types on at once.
+    await SalesOrderPage.openQuickEntryAndSelectProduct({ product, recordId, awaitProductPatch: false });
     expect(productPatchAnsweredAt, 'product PATCH must still be in flight').toBeNull();
 
     const completed = page.waitForResponse(
