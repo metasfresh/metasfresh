@@ -110,8 +110,9 @@ const expectCatchWeight1222Committed = async ({ masterdata, pickingJobId }) => {
             }
         },
     });
-    // on-screen echo, only after the wire value is proven (its formatting depends on the browser locale)
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '7 Stk', qtyPickedCatchWeight: '1.222 kg' });
+    // on-screen echo, only after the wire value is proven. The display is formatted per the app
+    // language (de_DE), which renders the decimal as a comma: the stored 1.222 kg shows as "1,222 kg".
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '7 Stk', qtyPickedCatchWeight: '1,222 kg' });
 };
 
 // noinspection JSUnusedLocalSymbols
