@@ -1,6 +1,7 @@
 package de.metas.dunning.process;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
@@ -72,13 +73,23 @@ public class C_DunningDoc_JasperWithInvoicePDFsStrategy implements ExecuteReport
 			return ExecuteReportResult.of(outputType, dunningDocData);
 		}
 
+		final Resource data = appendDunnedInvoicePdfs(dunningDocData, dunningDocId);
+
+		return ExecuteReportResult.of(outputType, data);
+	}
+
+	/**
+	 * Appends the last archived PDF of every dunned invoice to the given dunning doc PDF.
+	 * Invoices without an archive are skipped.
+	 */
+	@VisibleForTesting
+	Resource appendDunnedInvoicePdfs(@NonNull final Resource dunningDocData, @NonNull final DunningDocId dunningDocId)
+	{
 		final DunningService dunningService = SpringContextHolder.instance.getBean(DunningService.class);
 		final List<I_C_Invoice> dunnedInvoices = dunningService.retrieveDunnedInvoices(dunningDocId);
 
 		final List<PdfDataProvider> additionalDataItemsToAttach = retrieveAdditionalDataItems(dunnedInvoices);
-		final Resource data = ExecuteReportStrategyUtil.concatenatePDF(dunningDocData, additionalDataItemsToAttach);
-
-		return ExecuteReportResult.of(outputType, data);
+		return ExecuteReportStrategyUtil.concatenatePDF(dunningDocData, additionalDataItemsToAttach);
 	}
 
 	private List<PdfDataProvider> retrieveAdditionalDataItems(@NonNull final List<I_C_Invoice> dunnedInvoices)
