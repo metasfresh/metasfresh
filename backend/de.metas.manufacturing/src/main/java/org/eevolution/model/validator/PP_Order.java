@@ -75,7 +75,6 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -274,23 +273,23 @@ public class PP_Order
 		InterfaceWrapperHelper.setDynAttribute(ppOrderRecord, DYNATTR_Voiding, null);
 
 		// the move needs a trx: the records are re-pointed after the old BOM lines were deleted, which is FK-safe only because the FKs are deferred
-		final String trxName = InterfaceWrapperHelper.getTrxName(ppOrderRecord);
+		final ITrx trx = trxManager.get(InterfaceWrapperHelper.getTrxName(ppOrderRecord), OnTrxMissingPolicy.ReturnTrxNone);
 		final boolean moveDistributionSupply = !voiding
 				&& InterfaceWrapperHelper.isValueChanged(ppOrderRecord, I_PP_Order.COLUMNNAME_QtyEntered)
-				&& !trxManager.isNull(trxName);
+				&& !trxManager.isNull(trx); // OnTrxMissingPolicy.ReturnTrxNone returns ITrx.TRX_None, which is null
 		if (moveDistributionSupply)
 		{
 			final DistributionSupplyMover distributionSupplyMover = new DistributionSupplyMover(orderId);
 			distributionSupplyMover.collect();
 
-			setMovingDistributionSupply(orderId, trxName, true);
+			setMovingDistributionSupply(orderId, trx, true);
 			try
 			{
 				deleteWorkflowAndBOM(orderId);
 			}
 			finally
 			{
-				setMovingDistributionSupply(orderId, trxName, false);
+				setMovingDistributionSupply(orderId, trx, false);
 			}
 			createWorkflowAndBOM(ppOrderRecord);
 
@@ -332,13 +331,8 @@ public class PP_Order
 		return PP_Order.class.getName() + "#movingDistributionSupply#" + ppOrderId.getRepoId();
 	}
 
-	private void setMovingDistributionSupply(@NonNull final PPOrderId ppOrderId, @Nullable final String trxName, final boolean moving)
+	private static void setMovingDistributionSupply(@NonNull final PPOrderId ppOrderId, @NonNull final ITrx trx, final boolean moving)
 	{
-		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
-		if (trxManager.isNull(trx)) // OnTrxMissingPolicy.ReturnTrxNone returns ITrx.TRX_None, which is null
-		{
-			throw new AdempiereException("Moving the distribution supply requires a transaction");
-		}
 		trx.setProperty(movingDistributionSupplyTrxProperty(ppOrderId), moving ? Boolean.TRUE : null);
 	}
 
