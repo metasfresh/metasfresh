@@ -237,6 +237,43 @@ describe('TableQuickInput - submit while a field PATCH is pending', () => {
     expect(api.completeQuickInput).not.toHaveBeenCalled();
   });
 
+  it('re-sends a failed field PATCH on the next Enter and adds the line once it succeeds', async () => {
+    productPatch.resolve({
+      data: [{ fieldsByName: { M_Product_ID: { value: PRODUCT } } }],
+    });
+    pickProduct();
+    await flushPromises();
+    wrapper.update();
+
+    // the first Qty PATCH fails (e.g. a temporary server error), the retry succeeds
+    api.patchQuickInput.mockImplementationOnce(() =>
+      Promise.reject(new Error('temporary server error'))
+    );
+
+    typeQtyAndPressEnter('10');
+    await flushPromises();
+    await flushPromises();
+    expect(api.completeQuickInput).not.toHaveBeenCalled();
+
+    // Enter again without editing the field
+    wrapper.find('form.quick-input-container').simulate('submit');
+    await flushPromises();
+    await flushPromises();
+
+    expect(
+      api.patchQuickInput.mock.calls.map(([{ fieldName, fieldValue }]) => [
+        fieldName,
+        fieldValue,
+      ])
+    ).toEqual([
+      ['M_Product_ID', PRODUCT],
+      ['Qty', '10'],
+      ['Qty', '10'],
+    ]);
+    expect(addNotification).toHaveBeenCalledTimes(1); // only for the first, failed attempt
+    expect(api.completeQuickInput).toHaveBeenCalledTimes(1);
+  });
+
   it('still refuses to submit when a mandatory field is really empty', async () => {
     typeQtyAndPressEnter('10');
     await flushPromises();

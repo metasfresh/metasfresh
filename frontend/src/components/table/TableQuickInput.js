@@ -16,8 +16,9 @@ import WidgetWrapper from '../../containers/WidgetWrapper';
 class TableQuickInput extends PureComponent {
   // promise with patching for queuing form submission after patch is done
   patchPromise;
-  // fields whose last PATCH failed; the line is not completed while there are any
-  failedPatchFields = new Set();
+  // fieldName -> value of the fields whose last PATCH failed; they are re-sent on submit
+  // and the line is not completed while any of them still fails
+  failedPatches = new Map();
   // widgets refs
   rawWidgets = [];
   rawWidgetsByFieldName = {};
@@ -71,6 +72,8 @@ class TableQuickInput extends PureComponent {
       fetchQuickInputLayout,
     } = this.props;
 
+    this.failedPatches.clear();
+
     await fetchQuickInputData({
       windowId,
       docId,
@@ -117,7 +120,7 @@ class TableQuickInput extends PureComponent {
    * Sends a field PATCH. PATCHes are queued: each one is sent only after the
    * previous one was answered, so none is dropped or overtaken while another
    * is in flight. `this.patchPromise` settles (never rejects) after the last
-   * queued PATCH; fields whose last PATCH failed are kept in `failedPatchFields`.
+   * queued PATCH; fields whose last PATCH failed are kept in `failedPatches`.
    *
    * @returns {Promise} settles when this PATCH was answered
    */
@@ -129,13 +132,13 @@ class TableQuickInput extends PureComponent {
       .then(() => patchQuickInput({ windowId, docId, tabId, prop, value }))
       .then(
         () => {
-          this.failedPatchFields.delete(prop);
+          this.failedPatches.delete(prop);
           if (callback) {
             callback();
           }
         },
         // the error itself was already shown by the global axios error handler (App.js)
-        () => this.failedPatchFields.add(prop)
+        () => this.failedPatches.set(prop, value)
       );
 
     return this.patchPromise;
@@ -156,6 +159,11 @@ class TableQuickInput extends PureComponent {
     activeElement.blur();
 
     this.setState({ isSubmitPending: true });
+
+    // Re-send the fields whose PATCH failed before: the widget does not send an unchanged value again.
+    this.failedPatches.forEach((value, fieldName) =>
+      this.handlePatch(fieldName, value)
+    );
 
     // Validate and complete only after every queued field PATCH was answered.
     // Until then the store still has the values from before the PATCH
@@ -189,9 +197,9 @@ class TableQuickInput extends PureComponent {
   validateForm = () => {
     const { data } = this.props;
 
-    if (this.failedPatchFields.size > 0) {
+    if (this.failedPatches.size > 0) {
       return {
-        fieldName: [...this.failedPatchFields][0],
+        fieldName: [...this.failedPatches.keys()][0],
         error: 'Some changes could not be saved! Please correct them.',
       };
     }
