@@ -158,7 +158,7 @@ describe('setting on (catchWeightScanRequired = true)', () => {
 
     expect(postManufacturingReceiveEventThunk).not.toHaveBeenCalled();
     expect(screen.getByTestId('lotNo')).toHaveValue('500');
-    expect(document.getElementById('catch-weight')).toHaveValue(0.101);
+    expect(document.getElementById('catch-weight')).toHaveValue('0.101');
     expect(screen.getByText(CONFIRM_CAPTION)).toBeEnabled();
   });
 
@@ -191,7 +191,7 @@ describe('quantity per receipt', () => {
     await openDialog();
     await scan(LMQ_CODE);
 
-    expect(qtyInput()).toHaveValue(1);
+    expect(qtyInput()).toHaveValue('1');
     expect(qtyInput()).toBeDisabled();
     expect(screen.getByTestId('lotNo')).toBeEnabled();
     expect(screen.getByTestId('bestBeforeDate')).toBeEnabled();
@@ -248,7 +248,7 @@ it('fixes the quantity at 1 when the backend sends receiveOnePiecePerScan, even 
   await openDialog();
   await scan(LMQ_CODE);
 
-  expect(document.getElementById('qty-input')).toHaveValue(1);
+  expect(document.getElementById('qty-input')).toHaveValue('1');
   expect(document.getElementById('qty-input')).toBeDisabled();
 });
 
@@ -301,7 +301,7 @@ describe('setting on, weight not captured at receipt (no catchWeightUomSymbol)',
     expect(screen.getByTestId('lotNo')).toHaveValue('500');
     expect(screen.getByTestId('bestBeforeDate')).toHaveValue('2025-11-08');
     expect(document.getElementById('catch-weight')).not.toBeInTheDocument();
-    expect(qtyInput()).toHaveValue(5);
+    expect(qtyInput()).toHaveValue('5');
     expect(qtyInput()).toBeEnabled();
   });
 
