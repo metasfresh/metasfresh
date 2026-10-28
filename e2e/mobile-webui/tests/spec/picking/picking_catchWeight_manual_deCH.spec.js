@@ -25,10 +25,14 @@ test.use({
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
-        language: "en_US",
+        // A Swiss-German operator runs metasfresh in German (de_DE) on a Swiss-German device. de_DE is
+        // the app/UI language (metasfresh ships no de_CH translations); the Swiss regional behaviour
+        // that actually triggers the bug is the browser locale --lang=de-CH set in test.use above. So
+        // this is the real customer setup, not a mixed-language one.
+        language: "de_DE",
         request: {
             login: {
-                user: { language: "en_US" },
+                user: { language: "de_DE" },
             },
             mobileConfig: {
                 picking: {
