@@ -1,14 +1,22 @@
 package de.metas.contracts.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.process.FlatrateTermCreator.FlatrateTermCreatorBuilder;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.process.JavaProcess;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.util.List;
 
 /*
  * #%L
@@ -71,16 +79,47 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 		builder.isCompleteDocument(isCompleteDocument);
 	}
 
+	/** Max number of failed partners listed in the error; the process log lists all of them. */
+	@VisibleForTesting
+	static final int MAX_FAILURES_SHOWN = 20;
+
+	static final AdMessageKey MSG_PartnersFailed = AdMessageKey.of("C_Flatrate_Term_Create_PartnersFailed");
+	static final AdMessageKey MSG_AndNMore = AdMessageKey.of("C_Flatrate_Term_Create_AndNMore");
+
 	@Override
 	public String doIt() throws Exception
 	{
-		builder
+		final FlatrateTermCreator.CreationResult result = builder
 				.ctx(getCtx())
 				.bPartners(getBPartners())
 				.build()
-				.createTermsForBPartners();
+				.createTerms();
+
+		if (!result.getFailures().isEmpty())
+		{
+			// the successfully created terms stay; the failed partners were rolled back individually
+			throw new AdempiereException(buildFailuresMessage(result.getFailures())).markAsUserValidationError();
+		}
 
 		return MSG_OK;
+	}
+
+	@VisibleForTesting
+	static ITranslatableString buildFailuresMessage(@NonNull final List<FlatrateTermCreator.PartnerFailure> failures)
+	{
+		final TranslatableStringBuilder message = TranslatableStrings.builder()
+				.appendADMessage(MSG_PartnersFailed, failures.size());
+
+		failures.stream()
+				.limit(MAX_FAILURES_SHOWN)
+				.forEach(failure -> message.append("\n").append(failure.getReason() == null ? failure.getPartner() : failure.getPartner() + ": " + failure.getReason()));
+
+		final int notShown = failures.size() - MAX_FAILURES_SHOWN;
+		if (notShown > 0)
+		{
+			message.append("\n").appendADMessage(MSG_AndNMore, notShown);
+		}
+		return message.build();
 	}
 
 	/**

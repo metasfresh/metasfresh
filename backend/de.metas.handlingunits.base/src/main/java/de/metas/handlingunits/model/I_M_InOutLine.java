@@ -78,6 +78,12 @@ public interface I_M_InOutLine extends de.metas.materialtracking.model.I_M_InOut
 	// @formatter:on
 
 	// @formatter:off
+	public static final String COLUMNNAME_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
+	public void setM_Delivery_Planning_ID(int M_Delivery_Planning_ID);
+	public int getM_Delivery_Planning_ID();
+	// @formatter:on
+
+	// @formatter:off
 		public static final String COLUMNNAME_M_HU_LUTU_Configuration_ID = "M_HU_LUTU_Configuration_ID";
 		public void setM_HU_LUTU_Configuration_ID(int M_HU_LUTU_Configuration_ID);
 		public void setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration M_HU_LUTU_Configuration);

@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.warehouse;
 
+import de.metas.frontend_testing.masterdata.Identifier;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -17,11 +18,74 @@ public class JsonWarehouseRequest
 	@Nullable String locatorCode;
 	@Nullable Map<String, Locator> locators;
 
+	/**
+	 * Optional identifier of an {@code M_Warehouse_PickingGroup} this warehouse belongs to.
+	 * All warehouses in the same masterdata request that name the same {@code pickingGroup} value are
+	 * assigned to a single, shared {@code M_Warehouse_PickingGroup} (created once, looked up afterwards).
+	 * <p>
+	 * Warehouses sharing a picking group are treated as one picking scope: a picker working at a workplace in
+	 * one warehouse of the group may pick demand and stock located in any warehouse of the same group.
+	 */
+	@Nullable String pickingGroup;
+
+	/**
+	 * Sets {@code M_Warehouse.IsAutoDistributionOrder}. The picking-replenishment service plans DD_Orders only for
+	 * demand whose warehouse carries this flag, so a spec exercising that path must set it on the demand's warehouse.
+	 */
+	boolean autoDistributionOrder;
+
+	/**
+	 * Marks this warehouse as THE quality-return warehouse ({@code M_Warehouse.IsQualityReturnWarehouse}) —
+	 * where a POS/customer return receives goods (see {@code ReturnedGoodsWarehouseType.QUALITY_ISSUE},
+	 * resolved DB-wide, not per-org, by {@code IHUWarehouseDAO#retrieveFirstQualityReturnWarehouseId()}).
+	 * Since that resolution is DB-wide and takes the lowest {@code M_Warehouse_ID}, this is a find-or-create: if an active
+	 * quality-return warehouse already exists (from an earlier run against the same shared DB), THAT one is
+	 * reused under this request's identifier instead of creating a second one — a second one would leave the
+	 * production code still resolving the original, while this request's identifier pointed at a warehouse the
+	 * return never actually uses. A reused warehouse is left untouched: its default locator keeps its code and
+	 * {@link #pickingGroup} is not applied to it.
+	 */
+	boolean isQualityReturnWarehouse;
+
+	/**
+	 * Makes this warehouse the target of its own {@code DD_NetworkDistribution}, carrying a single line whose source is
+	 * {@link Replenishment#getFromWarehouse()} — this is how the picking-replenishment service resolves the warehouse to
+	 * pick from. Applied after the {@code shippers} and {@code warehouses} sections, both of which it references.
+	 */
+	@Nullable Replenishment replenishment;
+
+	/**
+	 * Packing material emptied/issued in THIS warehouse is moved to {@link Empties#getToWarehouse()}: adds a line
+	 * (this warehouse -> {@code toWarehouse}, {@link Empties#getShipper()}) to the client's single empties
+	 * distribution network ({@code DD_NetworkDistribution.IsHUDestroyed}), creating that network if the client has
+	 * none. Applied after {@code shippers} and all {@code warehouses}.
+	 */
+	@Nullable Empties empties;
+
 	//
 	//
 	//
 	//
 	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Replenishment
+	{
+		@NonNull Identifier fromWarehouse;
+		/** Mandatory on {@code DD_NetworkDistributionLine}, irrelevant to the replenishment itself. */
+		@NonNull Identifier shipper;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Empties
+	{
+		@NonNull Identifier toWarehouse;
+		@NonNull Identifier shipper;
+	}
 
 	@Value
 	@Builder
@@ -32,5 +96,7 @@ public class JsonWarehouseRequest
 		@Nullable String y;
 		@Nullable String z;
 		@Nullable String x1;
+		@Nullable Integer priorityNo;
+		@Nullable Boolean isGroundLocator;
 	}
 }

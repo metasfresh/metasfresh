@@ -31,6 +31,7 @@ import lombok.NonNull;
 import org.compiere.model.X_C_Workplace;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -43,6 +44,15 @@ public enum PriorityRule implements ReferenceListAwareEnum
 	Minor(X_C_Workplace.PRIORITYRULE_Minor);
 
 	public static final int AD_REFERENCE_ID = X_C_Workplace.PRIORITYRULE_AD_Reference_ID;
+
+	/**
+	 * Most urgent first: {@code Urgent, High, Medium, Low, Minor}.
+	 * <p>
+	 * The ranking is the {@link #getCode()} order ({@code Urgent="1"} … {@code Minor="9"}), which is what the database
+	 * sorts by too ({@code ORDER BY PriorityRule}). The DECLARATION order of the constants is NOT the ranking, so
+	 * {@link Enum#compareTo(Enum)} / {@link Enum#ordinal()} must not be used to rank priorities.
+	 */
+	public static final Comparator<PriorityRule> HIGH_TO_LOW = Comparator.comparing(PriorityRule::getCode);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<PriorityRule> index = ReferenceListAwareEnums.index(values());
 

@@ -28,6 +28,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IEnqueueResult;
+import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.eventbus.AsyncBatchEventBusService;
 import de.metas.async.eventbus.AsyncBatchNotifyRequest;
 import de.metas.async.model.I_C_Async_Batch;
@@ -57,6 +58,7 @@ public class AsyncBatchService
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IWorkpackageProcessorContextFactory workpackageProcessorContextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
 
 	private final AsyncBatchObserver asyncBatchObserver;
 	private final AsyncBatchEventBusService asyncBatchEventBusService;
@@ -135,17 +137,41 @@ public class AsyncBatchService
 	 */
 	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> workPackageEnqueuer, @NonNull final AsyncBatchId asyncBatchId)
 	{
+		final AsyncBatchId enclosingWorkpackageAsyncBatchId = workpackageProcessorContextFactory.getThreadInheritedWorkpackageAsyncBatch();
+		if (enclosingWorkpackageAsyncBatchId != null)
+		{
+			// dev-note: not thrown, because callers doing exactly this exist today (for example the OLCand
+			// auto-processing chain). Deliberately WARN and not DEBUG: waiting here holds a queue-processor thread
+			// for up to WaitTimeOutMS, which is how a processor runs out of permits in the first place - it must
+			// stay visible until the call sites are reworked.
+			Loggables.withLogger(logger, Level.WARN).addLog(
+					"*** executeBatch: waiting for C_Async_Batch_ID: {} from a thread that is itself processing workpackage-batch {}."
+							+ " This blocks a queue-processor thread until the batch completes or times out.",
+					asyncBatchId.getRepoId(),
+					enclosingWorkpackageAsyncBatchId.getRepoId());
+		}
+
+		// dev-note: remove only our own registration, and exactly once.
+		// Removal is keyed by asyncBatchId. That is safe only because, from a successful observeOn until our own removal,
+		// we hold the per-async-batch lock (see AsyncBatchObserver.lockBatch), so no other caller can register on this id meanwhile.
+		// Once our registration is removed, that lock is released and another caller may register; removing again by id would then
+		// remove that other caller's registration and release its lock.
+		// So: observeOn stays outside the try - if it fails, we registered nothing and must remove nothing;
+		// and waitToBeProcessed already removes our registration itself, also when it fails.
+		//
+		// dev-note: the observer re-confirms a notified "all processed" with the current count; a foreign workpackage of the same
+		// async batch might have notified it before our own workpackages were committed
+		asyncBatchObserver.observeOn(asyncBatchId, () -> retrieveCurrentProgress(asyncBatchId));
+
 		final T result;
+		boolean registrationRemovedByWait = false;
 		try
 		{
-			// dev-note: the observer re-confirms a notified "all processed" with the current count; a foreign workpackage of the same
-			// async batch might have notified it before our own workpackages were committed
-			asyncBatchObserver.observeOn(asyncBatchId, () -> retrieveCurrentProgress(asyncBatchId));
-
 			result = trxManager.callInNewTrx(workPackageEnqueuer::get); // let the workPackageEnqueuer enqueue its workpackages
 
 			if (result.getWorkpackageEnqueuedCount() > 0)
 			{
+				registrationRemovedByWait = true;
 				asyncBatchObserver.waitToBeProcessed(asyncBatchId);
 			}
 			else
@@ -155,7 +181,10 @@ public class AsyncBatchService
 		}
 		finally
 		{
-			asyncBatchObserver.removeObserver(asyncBatchId);
+			if (!registrationRemovedByWait)
+			{
+				asyncBatchObserver.removeObserver(asyncBatchId);
+			}
 		}
 
 		return result;

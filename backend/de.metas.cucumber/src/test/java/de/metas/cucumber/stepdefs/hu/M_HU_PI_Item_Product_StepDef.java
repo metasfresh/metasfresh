@@ -83,21 +83,37 @@ public class M_HU_PI_Item_Product_StepDef
 	@NonNull private final TestContext restTestContext;
 
 	/**
-	 * Creates packing instructions (CU per TU), or updates the one already referenced by the row's identifier or matching product, TU item and capacity.
+	 * Creates or updates {@link I_M_HU_PI_Item_Product} records.
+	 * Looks up an existing record by (M_Product_ID, M_HU_PI_Item_ID, IsActive, Qty/UOM) before creating a new one.
 	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_HU_PI_Item_Product_ID</b> — (required) alias for cross-step reference<br>
-	 *   <b>M_HU_PI_Item_ID</b> — (required, identifier-ref or ID) the TU item<br>
-	 *   <b>M_Product_ID</b> — (required, identifier-ref) the packed product<br>
-	 *   <b>Qty</b> — (required unless IsInfiniteCapacity=Y) quantity per TU<br>
-	 *   <b>C_UOM_ID.X12DE355</b> — (optional) UOM of Qty, default PCE<br>
-	 *   <b>IsInfiniteCapacity</b> — (optional) default N<br>
-	 *   <b>ValidFrom</b>, <b>IsAllowAnyProduct</b>, <b>IsDefaultForProduct</b>, <b>IsActive</b>, <b>Name</b>, <b>GTIN</b>, <b>UPC</b>, <b>IsOrderInTuUomWhenMatched</b>,
-	 *   <b>M_HU_PackagingCode_LU_Fallback_ID</b>, <b>GTIN_LU_PackingMaterial_Fallback</b>, <b>C_BPartner_ID</b> — (optional) set on the record<br>
-	 *   <b>ErrorMessage_AD_Message</b> — (optional, new records only) saving must be refused with this AD_Message's text; nothing is stored<br>
-	 * @cucumber.depends StepDefData: M_HU_PI_Item_StepDefData, M_Product_StepDefData, C_BPartner_StepDefData, M_HU_PackagingCode_StepDefData
-	 * @cucumber.example
+	 * <h3>Required columns:</h3>
+	 * <ul>
+	 *   <li>{@code Identifier} — step-def identifier for cross-step references</li>
+	 *   <li>{@code M_Product_ID} — product identifier (references M_Product_StepDefData)</li>
+	 *   <li>{@code M_HU_PI_Item_ID} — packing instruction item identifier (references M_HU_PI_Item_StepDefData, or raw ID)</li>
+	 *   <li>{@code Qty} + {@code C_UOM_ID.X12DE355} — quantity per TU and UOM (required unless IsInfiniteCapacity=true)</li>
+	 * </ul>
+	 *
+	 * <h3>Optional columns:</h3>
+	 * <ul>
+	 *   <li>{@code GTIN} — Global Trade Item Number</li>
+	 *   <li>{@code EAN_TU} — EAN code of the TU</li>
+	 *   <li>{@code UPC} — Universal Product Code</li>
+	 *   <li>{@code C_BPartner_ID} — business partner identifier (references C_BPartner_StepDefData)</li>
+	 *   <li>{@code ValidFrom} — valid-from date (default: {@link StepDefConstants#DEFAULT_ValidFrom})</li>
+	 *   <li>{@code ValidTo} — valid-to date</li>
+	 *   <li>{@code IsActive} — active flag (default: true)</li>
+	 *   <li>{@code IsAllowAnyProduct} — allow any product flag (default: false)</li>
+	 *   <li>{@code IsDefaultForProduct} — default for product flag (default: false)</li>
+	 *   <li>{@code IsInfiniteCapacity} — infinite capacity flag (default: false); when true, Qty is set to 0</li>
+	 *   <li>{@code IsOrderInTuUomWhenMatched} — order in TU UOM when matched</li>
+	 *   <li>{@code Name} — display name</li>
+	 *   <li>{@code M_HU_PackagingCode_LU_Fallback_ID} — fallback LU packaging code (references M_HU_PackagingCode_StepDefData)</li>
+	 *   <li>{@code GTIN_LU_PackingMaterial_Fallback} — fallback GTIN for LU packing material</li>
+	 *   <li>{@code ErrorMessage_AD_Message} — (new records only) saving must be refused with this AD_Message's text; nothing is stored</li>
+	 * </ul>
+	 *
+	 * <h3>Example:</h3>
 	 * <pre>
 	 * And metasfresh contains M_HU_PI_Item_Product:
 	 *   | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | IsInfiniteCapacity |
@@ -134,12 +150,23 @@ public class M_HU_PI_Item_Product_StepDef
 				: null;
 
 		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier();
+		final Integer bpartnerIdFilter = tableRow.getAsOptionalIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID)
+				.map(bpIdentifier -> bpIdentifier.lookupNotNullIdIn(bpartnerTable).getRepoId())
+				.orElse(null);
 		final I_M_HU_PI_Item_Product huPiItemProductRecord = huPiItemProductTable.getOptional(identifier)
 				.orElseGet(() -> {
 					final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 							.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, productId)
 							.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, huPiItemId)
 							.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsActive, active);
+					if (bpartnerIdFilter != null)
+					{
+						queryBuilder.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, bpartnerIdFilter);
+					}
+					else
+					{
+						queryBuilder.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, null);
+					}
 					if (isInfiniteCapacity)
 					{
 						queryBuilder.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsInfiniteCapacity, true);
@@ -161,7 +188,10 @@ public class M_HU_PI_Item_Product_StepDef
 		huPiItemProductRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
 		huPiItemProductRecord.setIsActive(active);
 		tableRow.getAsOptionalString(COLUMNNAME_GTIN).ifPresent(huPiItemProductRecord::setGTIN);
+		tableRow.getAsOptionalString(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU).ifPresent(huPiItemProductRecord::setEAN_TU);
 		tableRow.getAsOptionalBoolean(COLUMNNAME_IsOrderInTuUomWhenMatched).ifPresent(huPiItemProductRecord::setIsOrderInTuUomWhenMatched);
+		tableRow.getAsOptionalLocalDate(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo)
+				.ifPresent(validTo -> huPiItemProductRecord.setValidTo(TimeUtil.asTimestamp(validTo)));
 
 		huPiItemProductRecord.setIsInfiniteCapacity(isInfiniteCapacity);
 		if (isInfiniteCapacity)

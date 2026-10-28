@@ -71,6 +71,7 @@ public class PriceListBLTest
 	{
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code(code);
+		currency.setDescription(code);
 		currency.setStdPrecision(precision);
 		saveRecord(currency);
 		return CurrencyId.ofRepoId(currency.getC_Currency_ID());

@@ -1,6 +1,8 @@
 package de.metas.contracts.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -16,6 +18,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -63,6 +66,7 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 	private final RefundConfigRepository refundConfigRepository = SpringContextHolder.instance.getBean(RefundConfigRepository.class);
 	private final CommissionProductService commissionProductService = SpringContextHolder.instance.getBean(CommissionProductService.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private static final String PARAM_C_FLATRATE_CONDITIONS_ID = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID;
@@ -100,6 +104,31 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(p_flatrateconditionsID);
 		setConditions(conditions);
 
+		getTermProducts(conditions).forEach(this::addProduct);
+
+		if (p_adUserInChargeId > 0)
+		{
+			final I_AD_User userInCharge = loadOutOfTrx(p_adUserInChargeId, I_AD_User.class);
+			setUserInCharge(userInCharge);
+		}
+		setStartDate(p_startDate);
+		setEndDate(flatrateBL.getEndDateToApply(conditions, para.getParameterAsTimestamp(I_C_Flatrate_Term.COLUMNNAME_EndDate)));
+
+		//so far via this process, only commission type contracts can be created as a `Simulation`.
+		if(TYPE_CONDITIONS_Commission.equals(conditions.getType_Conditions()))
+		{
+			setIsSimulation(StringUtils.toBoolean(isSimulation));
+		}
+	}
+
+	/**
+	 * @return the products to create one term each for; a {@code null} entry stands for one product-less term, an empty list creates no term.
+	 */
+	@VisibleForTesting
+	List<I_M_Product> getTermProducts(@NonNull final I_C_Flatrate_Conditions conditions)
+	{
+		final List<I_M_Product> products = new ArrayList<>();
+
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID());
 
 		final TypeConditions typeConditions = TypeConditions.ofCode(conditions.getType_Conditions());
@@ -108,7 +137,7 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 		{
 			case FLAT_FEE:
 				final I_M_Product flatFeeProduct = loadOutOfTrx(conditions.getM_Product_Flatrate_ID(), I_M_Product.class);
-				addProduct(flatFeeProduct);
+				products.add(flatFeeProduct);
 				break;
 			case REFUND:
 				final RefundConfigQuery query = RefundConfigQuery.builder()
@@ -125,12 +154,12 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 				{
 					if (productId == null)
 					{
-						addProduct(null);
+						products.add(null);
 					}
 					else
 					{
 						final I_M_Product refundProduct = loadOutOfTrx(productId, I_M_Product.class);
-						addProduct(refundProduct);
+						products.add(refundProduct);
 					}
 				}
 				break;
@@ -139,10 +168,11 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 			case MARGIN_COMMISSION:
 			case LICENSE_FEE:
 				final I_M_Product commissionProductRecord = loadOutOfTrx(commissionProductService.getCommissionProduct(conditionsId), I_M_Product.class);
-				addProduct(commissionProductRecord);
+				products.add(commissionProductRecord);
 				break;
 			case REFUNDABLE:
-				addProduct(null);
+			case COMPENSATION_GROUP:
+				products.add(null);
 				break;
 			default:
 				final List<I_C_Flatrate_Matching> matchings = flatrateDAO.retrieveFlatrateMatchings(conditions);
@@ -150,22 +180,10 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 				{
 					// this is the case for quality-based contracts
 					final I_M_Product productRecord = productDAO.getById(matchings.get(0).getM_Product_ID());
-					addProduct(productRecord);
+					products.add(productRecord);
 				}
 		}
-
-		if (p_adUserInChargeId > 0)
-		{
-			final I_AD_User userInCharge = loadOutOfTrx(p_adUserInChargeId, I_AD_User.class);
-			setUserInCharge(userInCharge);
-		}
-		setStartDate(p_startDate);
-
-		//so far via this process, only commission type contracts can be created as a `Simulation`.
-		if(TYPE_CONDITIONS_Commission.equals(conditions.getType_Conditions()))
-		{
-			setIsSimulation(StringUtils.toBoolean(isSimulation));
-		}
+		return products;
 	}
 
 	@Override

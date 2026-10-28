@@ -15,6 +15,7 @@ public enum HUManagerAction
 	BulkActions("bulkActions"),
 	ChangeQty("changeQty"),
 	PrintLabels("printLabels"),
+	ScanGRAI("scanGRAI"),
 	;
 
 	@NonNull private final String internalName;

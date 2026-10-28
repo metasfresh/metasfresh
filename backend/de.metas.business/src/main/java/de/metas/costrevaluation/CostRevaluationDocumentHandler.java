@@ -26,6 +26,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -39,6 +40,10 @@ import java.time.LocalDate;
 
 class CostRevaluationDocumentHandler implements DocumentHandler
 {
+	static final AdMessageKey MSG_CannotVoidBookedRevaluation = AdMessageKey.of("M_CostRevaluation.CannotVoidBookedRevaluation");
+	static final AdMessageKey MSG_CopyFromCostElementCannotBeVoided = AdMessageKey.of("M_CostRevaluation.CopyFromCostElementCannotBeVoided");
+	static final AdMessageKey MSG_VoidInvalidDocStatus = AdMessageKey.of("M_CostRevaluation.VoidInvalidDocStatus");
+
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final CostRevaluationService costRevaluationService;
 
@@ -95,11 +100,41 @@ class CostRevaluationDocumentHandler implements DocumentHandler
 			throw new AdempiereException("@NoLines@");
 		}
 
-		// Make sure all lines are evaluated
-		costRevaluationService.createDetails(costRevaluationId);
+		// Evaluate all lines again, also those already evaluated by "Run": the stock, the current cost price or the new cost price may have changed since then
+		costRevaluationService.reevaluateAllLines(costRevaluationId);
 
 		costRevaluation.setDocAction(IDocument.ACTION_None);
 		return DocStatus.Completed.getCode();
+	}
+
+	/**
+	 * Voids a {@code Manual} revaluation none of whose lines has its revaluation cost detail (nothing was booked, e.g. its posting failed).
+	 * A {@code CopyFromCostElement} revaluation cannot be voided; it is corrected by Reverse.
+	 */
+	@Override
+	public void voidIt(final DocumentTableFields docFields)
+	{
+		final I_M_CostRevaluation costRevaluation = extractRecord(docFields);
+		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(costRevaluation.getM_CostRevaluation_ID());
+		if (!costRevaluationService.getById(costRevaluationId).getRevaluationSource().isManual())
+		{
+			throw new AdempiereException(MSG_CopyFromCostElementCannotBeVoided);
+		}
+
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(costRevaluation.getDocStatus());
+		if (docStatus.isClosedReversedOrVoided())
+		{
+			throw new AdempiereException(MSG_VoidInvalidDocStatus)
+					.setParameter("docStatus", docStatus);
+		}
+
+		if (costRevaluationService.hasAnyLineWithCostDetail(costRevaluationId))
+		{
+			throw new AdempiereException(MSG_CannotVoidBookedRevaluation);
+		}
+
+		costRevaluation.setProcessed(true);
+		costRevaluation.setDocAction(IDocument.ACTION_None);
 	}
 
 	@Override

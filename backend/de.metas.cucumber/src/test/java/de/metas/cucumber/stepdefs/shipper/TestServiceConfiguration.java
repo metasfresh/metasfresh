@@ -22,8 +22,8 @@
 
 package de.metas.cucumber.stepdefs.shipper;
 
-import de.metas.shipper.client.nshift.NShiftShipAdvisorService;
-import de.metas.shipper.client.nshift.NShiftShipmentService;
+import de.metas.shipper.gateway.nshift.client.ShipAdvisorService;
+import de.metas.shipper.gateway.nshift.client.ShipmentDispatchService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,17 +32,29 @@ import org.springframework.context.annotation.Primary;
 @Configuration
 public class TestServiceConfiguration
 {
+	/**
+	 * Stub advise at the gateway boundary ({@link ShipAdvisorService}) instead of the underlying
+	 * client service, so the cucumber advise stub stays independent of which advise endpoint the
+	 * client layer routes to (a switch between endpoints can be added below this seam).
+	 * Bean name differs from the scanned {@code @Service} ({@code shipAdvisorService}) so both
+	 * coexist; {@code @Primary} makes this mock the one injected.
+	 */
 	@Bean
 	@Primary
-	public NShiftShipAdvisorService nShiftShipAdvisorService()
+	public ShipAdvisorService shipAdvisorServiceMock()
 	{
-		return Mockito.mock(NShiftShipAdvisorService.class);
+		return Mockito.mock(ShipAdvisorService.class);
 	}
 
+	/**
+	 * Stub ship at the gateway boundary ({@link ShipmentDispatchService}) instead of the underlying
+	 * client service, so the cucumber ship stub stays independent of which ship endpoint the
+	 * {@code ShipType} switch routes to (createShipment vs createShipmentViaOrderAdvice). Mirrors the advise stub above.
+	 */
 	@Bean
 	@Primary
-	public NShiftShipmentService nShiftShipmentService()
+	public ShipmentDispatchService shipmentDispatchServiceMock()
 	{
-		return Mockito.mock(NShiftShipmentService.class);
+		return Mockito.mock(ShipmentDispatchService.class);
 	}
 }

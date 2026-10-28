@@ -13,6 +13,7 @@ import de.metas.process.SelectionSize;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
+import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
@@ -57,6 +58,8 @@ public class M_ShipperTransportation_SendDerKurierEMail
 	private final transient DerKurierDeliveryOrderEmailer //
 			derKurierDeliveryOrderEmailer = SpringContextHolder.instance.getBean(DerKurierDeliveryOrderEmailer.class);
 
+	@NonNull private final ShipperTransportationDocSubTypeGuard docSubTypeGuard = SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class);
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -75,6 +78,7 @@ public class M_ShipperTransportation_SendDerKurierEMail
 		final boolean atLeastOneRecordHasEmail = context
 				.streamSelectedModels(I_M_ShipperTransportation.class)
 				.filter(this::isCompleted)
+				.filter(this::isNotDeliveryInstruction) // cheap, table-cached check before the per-shipper config lookup below
 				.anyMatch(this::hasDerKurierMailAddress);
 		if (!atLeastOneRecordHasEmail)
 		{
@@ -111,6 +115,7 @@ public class M_ShipperTransportation_SendDerKurierEMail
 				.create()
 				.iterateAndStream()
 				.filter(this::isCompleted)
+				.filter(this::isNotDeliveryInstruction)
 				.filter(this::hasDerKurierMailAddress)
 				.map(I_M_ShipperTransportation::getM_ShipperTransportation_ID)
 				.map(ShipperTransportationId::ofRepoId)
@@ -122,6 +127,11 @@ public class M_ShipperTransportation_SendDerKurierEMail
 	private boolean isCompleted(@NonNull final I_M_ShipperTransportation shipperTransportationRecord)
 	{
 		return documentBL.isDocumentCompleted(shipperTransportationRecord);
+	}
+
+	private boolean isNotDeliveryInstruction(@NonNull final I_M_ShipperTransportation shipperTransportationRecord)
+	{
+		return !docSubTypeGuard.isDeliveryInstruction(shipperTransportationRecord);
 	}
 
 	private boolean hasDerKurierMailAddress(@NonNull final I_M_ShipperTransportation shipperTransportationRecord)

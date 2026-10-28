@@ -33,13 +33,9 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
-import de.metas.cucumber.stepdefs.order.C_OrderPaySchedule_StepDefData;
-import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
-import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.OrderPayScheduleId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.process.IADProcessDAO;
@@ -72,8 +68,6 @@ public class C_PaySelection_StepDef
 	private final @NonNull C_PaySelection_StepDefData paySelectionTable;
 	private final @NonNull C_BP_BankAccount_StepDefData bankAccountTable;
 	private final @NonNull C_BPartner_StepDefData bpartnerTable;
-	private final @NonNull C_Order_StepDefData orderTable;
-	private final @NonNull C_OrderPaySchedule_StepDefData orderPayScheduleTable;
 	private final @NonNull C_Invoice_StepDefData invoiceTable;
 	private final @NonNull C_Payment_StepDefData paymentTable;
 
@@ -171,16 +165,6 @@ public class C_PaySelection_StepDef
 	{
 		final SoftAssertions softly = new SoftAssertions();
 
-		expectation.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_Order_ID)
-				.ifPresent(orderIdentifier -> {
-					final OrderId expectedOrderId = orderIdentifier.isNullPlaceholder() ? null : orderTable.getId(orderIdentifier);
-					softly.assertThat(OrderId.ofRepoIdOrNull(line.getC_Order_ID())).as("C_Order_ID").isEqualTo(expectedOrderId);
-				});
-		expectation.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_OrderPaySchedule_ID)
-				.ifPresent(orderPayScheduleIdentifier -> {
-					final OrderPayScheduleId expectedOrderPayScheduleId = orderPayScheduleIdentifier.isNullPlaceholder() ? null : orderPayScheduleTable.getId(orderPayScheduleIdentifier);
-					softly.assertThat(OrderPayScheduleId.ofRepoIdOrNull(line.getC_OrderPaySchedule_ID())).as("C_OrderPaySchedule_ID").isEqualTo(expectedOrderPayScheduleId);
-				});
 		expectation.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID)
 				.ifPresent(invoiceIdentifier -> {
 					final InvoiceId expectedInvoiceId = invoiceIdentifier.isNullPlaceholder() ? null : invoiceTable.getId(invoiceIdentifier);

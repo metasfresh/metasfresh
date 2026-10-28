@@ -1757,9 +1757,25 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	/** Get VAT Code.
 		@return VAT Code	  */
 	@Override
-	public java.lang.String getVATCode () 
+	public java.lang.String getVATCode ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_VATCode);
+	}
+
+	/** Set VAT Code Amount Type.
+		@param VATCodeAmountType VAT Code Amount Type	  */
+	@Override
+	public void setVATCodeAmountType (java.lang.String VATCodeAmountType)
+	{
+		set_Value (COLUMNNAME_VATCodeAmountType, VATCodeAmountType);
+	}
+
+	/** Get VAT Code Amount Type.
+		@return VAT Code Amount Type	  */
+	@Override
+	public java.lang.String getVATCodeAmountType ()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_VATCodeAmountType);
 	}
 
 	@Override

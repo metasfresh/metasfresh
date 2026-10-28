@@ -53,7 +53,8 @@ public class DistributionJobQueries
 				.workplacePickFromLocatorId(query.getWorkplacePickFromLocatorId())
 				.warehouseFromIds(activeFacetIds.getWarehouseFromIds())
 				.warehouseToIds(extractWarehouseToIds(query))
-				.salesOrderIds(activeFacetIds.getSalesOrderIds())
+				.excludeLocatorToIds(query.getExcludeLocatorToIds())
+				// sales-order facet is missing here on purpose: it is carried by DDOrderLineDemandSqlHelper#bySalesOrderIds
 				.manufacturingOrderIds(activeFacetIds.getManufacturingOrderIds())
 				.datesPromised(activeFacetIds.getDatesPromised())
 				.productIds(activeFacetIds.getProductIds())

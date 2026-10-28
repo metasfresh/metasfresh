@@ -1,5 +1,9 @@
 package de.metas.frontend_testing.masterdata.product;
 
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.impl.CostElementRepository;
+import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.GTIN;
@@ -11,6 +15,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,6 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CreateProductCommandTest
 {
 	private ProductRepository productRepository;
+	private ICurrentCostsRepository currentCostsRepository;
 	private MasterdataContext context;
 
 	@BeforeEach
@@ -46,6 +54,7 @@ public class CreateProductCommandTest
 	{
 		AdempiereTestHelper.get().init();
 		productRepository = new ProductRepository();
+		currentCostsRepository = new CurrentCostsRepository(new CostElementRepository(ADReferenceService.newMocked()));
 		context = new MasterdataContext();
 	}
 
@@ -60,6 +69,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("product1"))
@@ -95,6 +105,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("product2"))
@@ -119,6 +130,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("product3"))
@@ -144,6 +156,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("productDefault"))
@@ -173,6 +186,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("contextProduct"))
@@ -193,6 +207,7 @@ public class CreateProductCommandTest
 		// given & when
 		final JsonCreateProductResponse response1 = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(JsonCreateProductRequest.builder()
 						.value("UNIQUE_PROD_001")
@@ -204,6 +219,7 @@ public class CreateProductCommandTest
 
 		final JsonCreateProductResponse response2 = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(JsonCreateProductRequest.builder()
 						.value("UNIQUE_PROD_002")
@@ -233,6 +249,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("autoValueProduct"))
@@ -264,6 +281,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("gtinProduct"))
@@ -292,6 +310,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("ean13Product"))
@@ -319,6 +338,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("pricesProduct"))
@@ -344,6 +364,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("minimalProduct"))
@@ -359,5 +380,63 @@ public class CreateProductCommandTest
 
 		final I_M_Product product = InterfaceWrapperHelper.load(response.getId(), I_M_Product.class);
 		assertThat(product).isNotNull();
+	}
+
+	@Test
+	public void execute_withSkipDefaultCosts_shouldDeleteTheProductCosts()
+	{
+		final RecordingCurrentCostsRepository costsRepository = new RecordingCurrentCostsRepository();
+
+		final JsonCreateProductResponse response = CreateProductCommand.builder()
+				.productRepository(productRepository)
+				.currentCostsRepository(costsRepository)
+				.context(context)
+				.request(JsonCreateProductRequest.builder()
+						.value("PROD_NO_COSTS")
+						.isSkipDefaultCosts(true)
+						.build())
+				.identifier(Identifier.ofString("noCostsProduct"))
+				.build()
+				.execute();
+
+		assertThat(costsRepository.deletedForProductIds).containsExactly(response.getId().getRepoId());
+	}
+
+	@Test
+	public void execute_withoutSkipDefaultCosts_shouldKeepTheProductCosts()
+	{
+		final RecordingCurrentCostsRepository costsRepository = new RecordingCurrentCostsRepository();
+
+		CreateProductCommand.builder()
+				.productRepository(productRepository)
+				.currentCostsRepository(costsRepository)
+				.context(context)
+				.request(JsonCreateProductRequest.builder()
+						.value("PROD_WITH_COSTS")
+						.build())
+				.identifier(Identifier.ofString("withCostsProduct"))
+				.build()
+				.execute();
+
+		assertThat(costsRepository.deletedForProductIds).isEmpty();
+	}
+
+	/**
+	 * Records for which products the command asked to delete the cost rows.
+	 */
+	private static class RecordingCurrentCostsRepository extends CurrentCostsRepository
+	{
+		private final List<Integer> deletedForProductIds = new ArrayList<>();
+
+		RecordingCurrentCostsRepository()
+		{
+			super(new CostElementRepository(ADReferenceService.newMocked()));
+		}
+
+		@Override
+		public void deleteForProduct(final I_M_Product product)
+		{
+			deletedForProductIds.add(product.getM_Product_ID());
+		}
 	}
 }

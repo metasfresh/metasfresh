@@ -5,7 +5,7 @@ import de.metas.inventory.mobileui.deps.products.ProductInfo;
 import de.metas.inventory.mobileui.deps.products.ProductsLoadingCache;
 import de.metas.inventory.mobileui.deps.warehouse.WarehousesLoadingCache;
 import de.metas.inventory.mobileui.job.qrcode.ResolveHUResponse;
-import de.metas.inventory.mobileui.rest_api.json.JsonAttribute;
+import de.metas.inventory.mobileui.rest_api.json.JsonAttributeConverter;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveHUResponse;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -37,7 +37,7 @@ public class JsonResolveHUResponseMapper
 				.qtyBooked(response.getQtyBooked().toBigDecimal())
 				.counted(response.isCounted())
 				.qtyCount(response.getQtyCount() != null ? response.getQtyCount().toBigDecimal() : null)
-				.attributes(JsonAttribute.of(response.getAttributes(), adLanguage))
+				.attributes(JsonAttributeConverter.of(response.getAttributes(), adLanguage))
 				.build();
 	}
 }

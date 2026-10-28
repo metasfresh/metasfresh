@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.external.salesorder;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -32,5 +33,12 @@ public class PickingJobSalesOrderService
 	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
 	{
 		return orderDAO.getOrderLineById(orderAndLineId).getLine();
+	}
+
+	public Map<OrderAndLineId, Integer> getSalesOrderLineSeqNos(@NonNull final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		return orderDAO.getOrderLinesByIds(orderAndLineIds)
+				.entrySet().stream()
+				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, entry -> entry.getValue().getLine()));
 	}
 }

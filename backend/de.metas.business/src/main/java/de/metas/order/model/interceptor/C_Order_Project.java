@@ -50,6 +50,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -115,10 +116,25 @@ public class C_Order_Project
 		populateProjectIfNeeded(order);
 	}
 
+	/**
+	 * Core logic for project creation/promotion.
+	 */
 	private void populateProjectIfNeeded(final @NonNull I_C_Order purchaseOrder)
 	{
 		final ProjectId projectId = ProjectId.ofRepoIdOrNull(purchaseOrder.getC_Project_ID());
-		if (purchaseOrder.isSOTrx() || projectId != null)
+		if (projectId != null)
+		{
+			// Header already has a project; make sure each line carries it too. This covers the
+			// dropship-PO path: the aggregator (CreatePOFromSOsAggregator.createPurchaseOrder line ~338)
+			// copies C_Project_ID to the PO header but not to the PO lines, so without this propagation
+			// the lines would stay NULL even though the header is set. setProjectIdToOrderLines already
+			// skips lines that already have a project, so this is a no-op for the normal "everything
+			// already aligned" case.
+			final List<I_C_OrderLine> lines = orderBL.getLinesByOrderIds(Collections.singleton(OrderId.ofRepoId(purchaseOrder.getC_Order_ID())));
+			setProjectIdToOrderLines(projectId, lines);
+			return;
+		}
+		if (purchaseOrder.isSOTrx())
 		{
 			return;
 		}
@@ -187,6 +203,7 @@ public class C_Order_Project
 		eventDispatcher.fireProjectCreatedEvent(ProjectCreatedEvent.builder()
 				.projectId(newProjectId)
 				.purchaseOrderLineIds(ImmutableSet.copyOf(poLinesUpdated.keySet()))
+				.byUserId(Env.getLoggedUserId())
 				.build());
 	}
 }

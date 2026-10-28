@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import de.metas.order.PurchaseOrderProjectListener.ProjectCreatedEvent;
 import de.metas.project.ProjectId;
+import de.metas.user.UserId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +27,7 @@ class ProjectCreatedEventTest
 	{
 		testSerializeDeserialize(ProjectCreatedEvent.builder()
 				.projectId(ProjectId.ofRepoId(123))
+				.byUserId(UserId.METASFRESH)
 				.purchaseOrderLineIds(ImmutableSet.of(
 						OrderAndLineId.ofRepoIds(1, 2),
 						OrderAndLineId.ofRepoIds(1, 3),

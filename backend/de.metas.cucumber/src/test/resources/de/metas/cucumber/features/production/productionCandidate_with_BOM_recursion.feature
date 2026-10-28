@@ -2,7 +2,7 @@
 @allure.label.epic:E0160_Manufacturing_Execution
 @allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
 @F8033
-@ghActions:run_on_executor6
+@ghActions:run_on_executor10
 Feature: Production dispo scenarios with BOMs whose components have their own BOMs in turn.
 ## F8033: Production
 
@@ -197,6 +197,8 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | 11/d_3_1_S0460_20 | DEMAND            | PRODUCTION                | product_3_1_S0460_20 | 2024-09-22T21:00:00Z | 100 | -100 | WH_S0460       |                       | ppo_2_S0460_20 |
 
     And the PP_Order ppo_1_S0460_20 is voided
+
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Orders are found
       | Identifier     | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyOrdered | C_BPartner_ID     | DatePromised         | DocStatus |
@@ -472,7 +474,7 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1_S0460_40             | 1              |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     When the order identified by o_1_S0460_40 is completed
 
@@ -600,7 +602,7 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1_S0460_50             | 7              |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     When the order identified by o_1_S0460_50 is completed
 

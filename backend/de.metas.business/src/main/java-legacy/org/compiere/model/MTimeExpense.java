@@ -285,6 +285,14 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}	//	processIt
 
+	@Override
+	public void resetEngineStateForRetry()
+	{
+		m_justPrepared = false;
+		m_processMsg = null;
+		m_lines = null;
+	}
+
 	/**	Process Message 			*/
 	private String		m_processMsg = null;
 	/**	Just Prepared Flag			*/
@@ -396,6 +404,18 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 	 */
 	@Override
 	public String completeIt()
+	{
+		try
+		{
+			return completeIt0();
+		}
+		finally
+		{
+			m_justPrepared = false; // consumed; a later completion of this instance has to prepare again
+		}
+	}
+
+	private String completeIt0()
 	{
 		//	Re-Check
 		if (!m_justPrepared)
@@ -526,6 +546,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 	@Override
 	public boolean reActivateIt()
 	{
+		m_justPrepared = false; // a reactivated document has to be prepared again when it is completed
 		log.info("reActivateIt - " + toString());
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);

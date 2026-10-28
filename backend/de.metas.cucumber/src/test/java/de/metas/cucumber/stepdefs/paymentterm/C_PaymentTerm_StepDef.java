@@ -60,6 +60,21 @@ public class C_PaymentTerm_StepDef
 	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
 	@NonNull private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
 
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> - (optional) alias for cross-step reference<br>
+	 *   <b>NetDays</b> - (optional) days until the invoice is due<br>
+	 *   <b>IsAllowOverrideDueDate</b> - (optional)<br>
+	 *   <b>Discount</b> - (optional) Skonto in percent<br>
+	 *   <b>DiscountDays</b> - (optional) days within which the Skonto applies<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_PaymentTerm
+	 *   | Identifier | NetDays | Discount | DiscountDays |
+	 *   | skonto2    | 30      | 2        | 10           |
+	 * </pre>
+	 */
 	@And("metasfresh contains C_PaymentTerm")
 	public void createPaymentTerms(@NonNull final DataTable dataTable)
 	{
@@ -94,6 +109,11 @@ public class C_PaymentTerm_StepDef
 
 		paymentTermRecord.setValue(valueAndName.getValue());
 		paymentTermRecord.setName(valueAndName.getName());
+
+		row.getAsOptionalInt(I_C_PaymentTerm.COLUMNNAME_NetDays).ifPresent(paymentTermRecord::setNetDays);
+		row.getAsOptionalBoolean(I_C_PaymentTerm.COLUMNNAME_IsAllowOverrideDueDate).ifPresent(paymentTermRecord::setIsAllowOverrideDueDate);
+		row.getAsOptionalBigDecimal(I_C_PaymentTerm.COLUMNNAME_Discount).ifPresent(paymentTermRecord::setDiscount);
+		row.getAsOptionalInt(I_C_PaymentTerm.COLUMNNAME_DiscountDays).ifPresent(paymentTermRecord::setDiscountDays);
 
 		saveRecord(paymentTermRecord);
 

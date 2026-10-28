@@ -26,6 +26,8 @@ import de.metas.async.api.IEnqueueResult;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 
+import com.google.common.collect.ImmutableList;
+
 import java.math.BigDecimal;
 import java.util.Properties;
 
@@ -41,6 +43,12 @@ public interface IInvoiceCandidateEnqueueResult extends IEnqueueResult
 
 	/** @return how many invoice candidates were enqueued */
 	int getInvoiceCandidateEnqueuedCount();
+
+	/** @return how many of the selected invoice candidates were skipped, i.e. never enqueued */
+	int getInvoiceCandidateSkippedCount();
+
+	/** @return one translated reason per skipped candidate, in selection order; empty when nothing was skipped */
+	ImmutableList<String> getSkipReasons();
 
 	/** @return how many workpackages were enqueued */
 	int getWorkpackageEnqueuedCount();

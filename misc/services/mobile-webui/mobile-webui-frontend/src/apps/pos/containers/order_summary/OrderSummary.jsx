@@ -54,7 +54,7 @@ const OrderSummary = () => {
   };
 
   return (
-    <div className="modal is-active order-summary-modal">
+    <div className="modal is-active order-summary-modal" data-testid="pos-order-summary-modal">
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">

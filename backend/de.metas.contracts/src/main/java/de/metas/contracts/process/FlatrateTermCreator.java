@@ -75,13 +75,25 @@ public class FlatrateTermCreator
 	boolean isCompleteDocument;
 
 	/**
-	 * create terms for all the BPartners iterated from the subclass, each of them in its own transaction
+	 * Creates terms for all the BPartners, each of them in its own transaction. A failing partner does not stop the run;
+	 * its failure is only logged.
+	 * Use {@link #createTerms()} to get the failures too.
 	 */
 	public ImmutableList<I_C_Flatrate_Term> createTermsForBPartners()
+	{
+		return createTerms().getTerms();
+	}
+
+	/**
+	 * Creates terms for all the BPartners, each of them in its own transaction.
+	 * A failing partner is rolled back, logged and collected in the result; the remaining partners are still processed.
+	 */
+	public CreationResult createTerms()
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		final ImmutableList.Builder<I_C_Flatrate_Term> flatrateTermsCollector = ImmutableList.builder();
+		final ImmutableList.Builder<PartnerFailure> failuresCollector = ImmutableList.builder();
 
 		for (final I_C_BPartner partner : bPartners)
 		{
@@ -98,21 +110,36 @@ public class FlatrateTermCreator
 						logger.debug("Created contract(s) for {}", partner);
 					}
 
-					// note for future developer: this swallows the user exception so it's no longer shown in webui, but as a "bell notification".
-					// Please consult with mark or torby if we want to swallow or throw.
-					// Please remember that this can be run for 10000 Partners when proposing this idea.
+					// Swallowing the exception here keeps one failing partner from blocking the others (the run can cover 10000 partners).
+					// The failure is logged and collected, so that the caller can report it at the end.
 					@Override
 					public boolean doCatch(final Throwable ex)
 					{
-						Loggables.addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
+						final String reason = ex.getLocalizedMessage();
+						Loggables.addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + reason);
 						logger.debug("Failed creating contract for {}", partner, ex);
+						failuresCollector.add(PartnerFailure.of(partner.getValue() + "_" + partner.getName(), reason));
 						return true; // rollback
 					}
 				});
 			}
 		}
 
-		return flatrateTermsCollector.build();
+		return new CreationResult(flatrateTermsCollector.build(), failuresCollector.build());
+	}
+
+	@Value(staticConstructor = "of")
+	public static class PartnerFailure
+	{
+		@NonNull String partner;
+		@Nullable String reason;
+	}
+
+	@Value
+	public static class CreationResult
+	{
+		@NonNull ImmutableList<I_C_Flatrate_Term> terms;
+		@NonNull ImmutableList<PartnerFailure> failures;
 	}
 
 	private void createTerm(@NonNull final I_C_BPartner partner, @NonNull final ImmutableList.Builder<I_C_Flatrate_Term> flatrateTermCollector)

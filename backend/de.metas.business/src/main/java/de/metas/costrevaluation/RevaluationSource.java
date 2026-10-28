@@ -40,8 +40,8 @@ import java.util.Objects;
 @AllArgsConstructor
 public enum RevaluationSource implements ReferenceListAwareEnum
 {
-	/** Cost is recalculated for this revaluation (default, existing behaviour). */
-	Calculated(X_M_CostRevaluation.REVALUATIONSOURCE_Calculated),
+	/** The new cost price is entered manually; nothing is recalculated (default). */
+	Manual(X_M_CostRevaluation.REVALUATIONSOURCE_Manual),
 	/** Cost is copied unchanged from the cost element selected under CopyFrom_M_CostElement_ID (value-neutral). */
 	CopyFromCostElement(X_M_CostRevaluation.REVALUATIONSOURCE_CopyFromCostElement),
 	;
@@ -64,6 +64,8 @@ public enum RevaluationSource implements ReferenceListAwareEnum
 	public static String toCodeOrNull(@Nullable final RevaluationSource source) {return source != null ? source.getCode() : null;}
 
 	public static boolean equals(@Nullable final RevaluationSource o1, @Nullable final RevaluationSource o2) {return Objects.equals(o1, o2);}
+
+	public boolean isManual() {return this == Manual;}
 
 	public boolean isCopyFromCostElement() {return this == CopyFromCostElement;}
 }

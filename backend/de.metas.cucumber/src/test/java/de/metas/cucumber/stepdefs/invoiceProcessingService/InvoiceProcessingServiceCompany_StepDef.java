@@ -46,6 +46,27 @@ public class InvoiceProcessingServiceCompany_StepDef
 	private final M_Product_StepDefData productTable;
 	private final InvoiceProcessingServiceCompany_StepDefData invoiceProcessingServiceCompanyTable;
 
+	/**
+	 * Creates an {@code InvoiceProcessingServiceCompany} configuration: the service company that handles a customer's
+	 * payment processing, the product that labels its fee and the doc type of the service invoice it raises.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code ServiceCompany_BPartner_ID} — required, identifier-ref, the service company business partner</li>
+	 *     <li>{@code ServiceFee_Product_ID} — required, identifier-ref, the product whose name labels the fee</li>
+	 *     <li>{@code ServiceInvoice_DocType_ID} — required, identifier-ref, the service-invoice doc type</li>
+	 *     <li>{@code ValidFrom} — optional, the date from which the configuration is valid (e.g. {@code 2026-01-01})</li>
+	 *     <li>{@code Identifier} — optional, alias for cross-step reference</li>
+	 *   </ul>
+	 * @cucumber.depends StepDefData: C_BPartner_StepDefData, M_Product_StepDefData, C_DocType_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains InvoiceProcessingServiceCompany
+	 *   | Identifier | ServiceCompany_BPartner_ID | ServiceFee_Product_ID | ServiceInvoice_DocType_ID | ValidFrom  |
+	 *   | config     | serviceProvider            | serviceFeeProduct     | serviceFeeDocType         | 2026-01-01 |
+	 * </pre>
+	 */
 	@And("metasfresh contains InvoiceProcessingServiceCompany")
 	public void metasfreshContainsInvoiceProcessingServiceCompany(@NonNull final DataTable dataTable)
 	{
@@ -71,12 +92,34 @@ public class InvoiceProcessingServiceCompany_StepDef
 				.lookupNotNullIdIn(docTypeTable);
 		record.setServiceInvoice_DocType_ID(docTypeId.getRepoId());
 
+		dataTableRow.getAsOptionalLocalDateTimestamp(I_InvoiceProcessingServiceCompany.COLUMNNAME_ValidFrom)
+				.ifPresent(record::setValidFrom);
+
 		InterfaceWrapperHelper.saveRecord(record);
 		dataTableRow
 				.getAsOptionalIdentifier()
 				.ifPresent(identifier -> invoiceProcessingServiceCompanyTable.putOrReplace(identifier, record));
 	}
 
+	/**
+	 * Assigns a business partner (the customer) to an {@code InvoiceProcessingServiceCompany} with its fee percentage.
+	 * The doc type is left unset, i.e. the assignment is the customer's doc-type-null default fee.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code InvoiceProcessingServiceCompany_ID} — required, identifier-ref, the service-company configuration</li>
+	 *     <li>{@code C_BPartner_ID} — required, identifier-ref, the assigned customer</li>
+	 *     <li>{@code FeePercentageOfGrandTotal} — optional, the fee percent (e.g. {@code 2})</li>
+	 *   </ul>
+	 * @cucumber.depends StepDefData: InvoiceProcessingServiceCompany_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains InvoiceProcessingServiceCompany_BPartnerAssignment
+	 *   | InvoiceProcessingServiceCompany_ID | C_BPartner_ID | FeePercentageOfGrandTotal |
+	 *   | config                             | customer      | 2                         |
+	 * </pre>
+	 */
 	@And("metasfresh contains InvoiceProcessingServiceCompany_BPartnerAssignment")
 	public void metasfreshContainsInvoiceProcessingServiceCompany_BPartnerAssignment(@NonNull final DataTable dataTable)
 	{

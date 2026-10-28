@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_DD_Sort extends org.compiere.model.PO implements I_MobileUI_UserProfile_DD_Sort, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1425903597L;
+	private static final long serialVersionUID = 1298770598L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_DD_Sort (final Properties ctx, final int MobileUI_UserProfile_DD_Sort_ID, @Nullable final String trxName)
@@ -45,6 +45,8 @@ public class X_MobileUI_UserProfile_DD_Sort extends org.compiere.model.PO implem
 	public static final String FIELDNAME_DatePromised = "DatePromised";
 	/** SeqNo = SeqNo */
 	public static final String FIELDNAME_SeqNo = "SeqNo";
+	/** LocatorPriority = LocatorPriority */
+	public static final String FIELDNAME_LocatorPriority = "LocatorPriority";
 	@Override
 	public void setFieldName (final @Nullable java.lang.String FieldName)
 	{

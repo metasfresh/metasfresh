@@ -50,6 +50,8 @@ public class User
 
 	String lastName;
 
+	@Nullable String department;
+
 	String emailAddress;
 
 	LocalDate birthday;
@@ -83,6 +85,7 @@ public class User
 			@NonNull final String name,
 			@Nullable final String firstName,
 			@Nullable final String lastName,
+			@Nullable final String department,
 			@Nullable final String emailAddress,
 			@Nullable final LocalDate birthday,
 			@Nullable final String phone,
@@ -97,6 +100,7 @@ public class User
 		this.name = name;
 		this.firstName = firstName;
 		this.lastName = lastName;
+		this.department = department;
 		this.emailAddress = emailAddress;
 		this.birthday = birthday;
 		this.phone = phone;

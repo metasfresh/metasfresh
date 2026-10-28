@@ -1,22 +1,18 @@
 package de.metas.contracts.refund.interceptor;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.contracts.refund.RefundInvoiceCandidateInvalidator;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.model.IQuery;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -44,15 +40,24 @@ import lombok.NonNull;
 @Component
 public class C_Flatrate_Term
 {
-	private final RefundInvoiceCandidateRepository invoiceCandidateRepository;
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final RefundContractRepository refundContractRepository;
+	@NonNull private final RefundInvoiceCandidateInvalidator refundInvoiceCandidateInvalidator;
 
-	private C_Flatrate_Term(@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository)
+	/* package */ C_Flatrate_Term(
+			@NonNull final RefundContractRepository refundContractRepository,
+			@NonNull final RefundInvoiceCandidateInvalidator refundInvoiceCandidateInvalidator)
 	{
-		this.invoiceCandidateRepository = refundInvoiceCandidateRepository;
+		this.refundContractRepository = refundContractRepository;
+		this.refundInvoiceCandidateInvalidator = refundInvoiceCandidateInvalidator;
 	}
 
 	/**
 	 * Note: this method corresponds with the sysconfig setting {@code de.metas.contracts.C_Flatrate_Term.allow_reactivate_Refund = 'Y'}
+	 * <p>
+	 * The reactivated term must also leave the refund contract caches, like a completed term enters them (see {@link RefundInvoiceCandidateInvalidator}).
+	 * (Voiding and closing are prohibited for all terms, see {@code de.metas.contracts.interceptor.C_Flatrate_Term#prohibitVoidingAndClosing}.)
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void deleteRefundInvoiceCandidates(@NonNull final I_C_Flatrate_Term flatrateTerm)
@@ -61,7 +66,12 @@ public class C_Flatrate_Term
 		{
 			return; // this MI only deals with "refund" terms
 		}
-		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(flatrateTerm);
+		invoiceCandDAO.deleteAllReferencingInvoiceCandidates(flatrateTerm);
+
+		trxManager
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> refundContractRepository.resetCaches());
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -72,30 +82,7 @@ public class C_Flatrate_Term
 			return; // this MI only deals with "refund" terms
 		}
 
-		final IQuery<I_C_Invoice_Candidate> query = createInvoiceCandidatesToInvalidQuery(flatrateTerm);
-
-		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(trx -> Services.get(IInvoiceCandDAO.class).invalidateCandsFor(query));
-	}
-
-	private IQuery<I_C_Invoice_Candidate> createInvoiceCandidatesToInvalidQuery(
-			@NonNull final I_C_Flatrate_Term flatrateTerm)
-	{
-		final IQueryFilter<I_C_Invoice_Candidate> dateToInvoiceEffectiveFilter = invoiceCandidateRepository
-				.createDateToInvoiceEffectiveFilter(
-						flatrateTerm.getStartDate(),
-						flatrateTerm.getEndDate());
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, flatrateTerm.getM_Product_ID())
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, flatrateTerm.getBill_BPartner_ID())
-				.filter(dateToInvoiceEffectiveFilter)
-				.create();
+		refundInvoiceCandidateInvalidator.invalidateCandidatesOfContractAfterCommit(refundContractRepository.ofRecord(flatrateTerm));
 	}
 
 	private boolean isNoRefundTerm(@NonNull final I_C_Flatrate_Term flatrateTerm)

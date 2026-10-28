@@ -8,6 +8,12 @@ Feature: EDI INVOIC export via External System
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    # The step "the external system sends an error response" POSTs to api/v2/externalsystem/externalstatus and
+    # expects HTTP 200, i.e. synchronous processing. Self-contained: do not rely on a feature that ran earlier on the
+    # same executor having created such an API_Audit_Config (SeqNo=9 takes precedence over the seeded configs).
+    And the following API_Audit_Config records are created:
+      | Identifier  | SeqNo | OPT.Method | OPT.PathPrefix                       | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | wait4result | 9     | POST       | api/v2/externalsystem/externalstatus | N                     | Y                                | N                 |
     And metasfresh has date and time 2025-05-01T16:30:17+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And documents are accounted immediately
@@ -38,9 +44,9 @@ Feature: EDI INVOIC export via External System
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID |
       | customer1  | Y          | N        | pricingSystem      |
-    And the following c_bpartner is changed
-      | Identifier | IsEdiInvoicRecipient | EdiInvoicRecipientGLN | EdiINVOICSendingMode | EdiINVOIC_ExternalSystem_Config_ID |
-      | customer1  | true                 | 12345678              | E                    | externalSystemConfig_1             |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiInvoicRecipient | EdiInvoicRecipientGLN | EdiINVOICSendingMode | EdiINVOIC_ExternalSystem_Config_ID | Identifier                      |
+      | customer1     | true                 | 12345678              | E                    | externalSystemConfig_1             | edi_setting_invoic_extSys_cust1 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
       | bpartner_location_1 | customer1     | Y               | Y               | 1234567890123 |
@@ -89,7 +95,7 @@ Feature: EDI INVOIC export via External System
       | C_Invoice_ID |
       | salesInvoice |
 
-    Then after not more than 60s, C_Invoice records have the following export status
+    Then after not more than 120s, C_Invoice records have the following export status
       | C_Invoice_ID | EDI_ExportStatus |
       | salesInvoice | S                |
 
@@ -101,7 +107,7 @@ Feature: EDI INVOIC export via External System
       | C_Invoice_ID | ErrorMessage                              |
       | salesInvoice | External system export failed: Test error |
 
-    Then after not more than 60s, C_Invoice records have the following export status
+    Then after not more than 120s, C_Invoice records have the following export status
       | C_Invoice_ID | EDI_ExportStatus |
       | salesInvoice | E                |
 

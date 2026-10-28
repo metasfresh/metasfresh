@@ -36,13 +36,13 @@ import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.IRoleDAO;
-import de.metas.security.Role;
+import de.metas.security.RoleId;
 import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.security.UserAuthTokenFilter;
@@ -61,6 +61,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.compiere.model.I_AD_Issue;
@@ -92,41 +93,49 @@ public class RESTUtil
 {
 	private static final Logger logger = LogManager.getLogger(RESTUtil.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 
 	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
-		final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
-
-		final UserId userId = userDAO.retrieveUserIdByLogin(userLogin);
-		if (userId == null)
-		{
-			throw new AdempiereException("Missing AD_User with login " + userLogin);
-		}
-		final Role role = roleDAO
-				.getUserRoles(userId)
-				.stream()
-				.filter(r -> r.getName().equals(roleName))
-				.findAny()
-				.orElseThrow(() -> new AdempiereException("User with login=" + userLogin + " and AD_User_ID=" + userId.getRepoId() + " has no role with name " + roleName));
+		final UserId userId = StepDefUtil.getUserIdByLogin(userLogin);
+		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, userLogin, roleName);
 
 		final I_AD_User_AuthToken userAuthTokenRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_User_AuthToken.class);
 		userAuthTokenRecord.setAD_User_ID(userId.getRepoId());
-		userAuthTokenRecord.setAD_Role_ID(role.getId().getRepoId());
+		userAuthTokenRecord.setAD_Role_ID(roleId.getRepoId());
 		userAuthTokenRecord.setAD_Org_ID(1000000);
 		InterfaceWrapperHelper.saveRecord(userAuthTokenRecord);
 
 		Env.setLoggedUserId(Env.getCtx(), userId);
 		Env.setOrgId(Env.getCtx(), OrgId.ofRepoId(1000000));
+		// Establish the role + client on the test thread so DIRECT (non-HTTP) service calls in step defs run
+		// under this role's UserRolePermissions. The token alone only authorises HTTP requests (via the
+		// UserAuthTokenFilter); an in-process call would otherwise have no role permissions, so an
+		// Access.READ-guarded lookup (e.g. OrgDAO.retrieveOrgIdBy) could not see orgs outside the context org.
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Role_ID, roleId.getRepoId());
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID,
+				roleDAO.getById(roleId).getClientId().getRepoId());
 
 		return userAuthTokenRecord.getAuthToken();
 	}
+
+	private static final int HTTP_CONNECT_TIMEOUT_MS = 30_000; // 30s
+	private static final int HTTP_SOCKET_TIMEOUT_MS = 120_000; // 120s
+	private static final int HTTP_CONNECTION_REQUEST_TIMEOUT_MS = 10_000; // 10s
 
 	public APIResponse performHTTPRequest(@NonNull final APIRequest apiRequest) throws IOException
 	{
 		final HttpRequestBase httpRequest = createHttpRequest(apiRequest);
 
-		try (final CloseableHttpClient httpClient = HttpClients.createDefault())
+		final RequestConfig requestConfig = RequestConfig.custom()
+				.setConnectTimeout(HTTP_CONNECT_TIMEOUT_MS)
+				.setSocketTimeout(HTTP_SOCKET_TIMEOUT_MS)
+				.setConnectionRequestTimeout(HTTP_CONNECTION_REQUEST_TIMEOUT_MS)
+				.build();
+
+		try (final CloseableHttpClient httpClient = HttpClients.custom()
+				.setDefaultRequestConfig(requestConfig)
+				.build())
 		{
 			final HttpResponse httpResponse = httpClient.execute(httpRequest);
 			final APIResponse apiResponse = extractAPIResponse(httpResponse, apiRequest);
@@ -254,8 +263,9 @@ public class RESTUtil
 		}
 
 		final String expectErrorContaining = apiRequest.getExpectedErrorMessageContaining();
+		final String expectErrorCode = apiRequest.getExpectedErrorCode();
 		final Boolean expectErrorUserFriendly = apiRequest.getExpectErrorUserFriendly();
-		final boolean isExpectError = expectErrorContaining != null || expectErrorUserFriendly != null;
+		final boolean isExpectError = expectErrorContaining != null || expectErrorCode != null || expectErrorUserFriendly != null;
 		if (isExpectError)
 		{
 			final JsonError jsonError = apiResponse.getContentAs(JsonError.class);
@@ -266,6 +276,12 @@ public class RESTUtil
 				assertThat(jsonErrorItem.getMessage())
 						.as(() -> "Error Message of " + jsonError)
 						.contains(expectErrorContaining);
+			}
+			if (expectErrorCode != null)
+			{
+				assertThat(jsonErrorItem.getErrorCode())
+						.as(() -> "ErrorCode of " + jsonError)
+						.isEqualTo(expectErrorCode);
 			}
 			if (expectErrorUserFriendly != null)
 			{

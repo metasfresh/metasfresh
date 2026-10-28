@@ -67,6 +67,25 @@ public class C_UOM_Conversion_StepDef
 		this.conversionTable = conversionTable;
 	}
 
+	/**
+	 * Create UOM conversions for a product.
+	 * <p>
+	 * NOTE: this step uses legacy {@link DataTableUtil} with explicit column suffixes.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Product_ID.Identifier</b> — (required, identifier-ref) product alias from M_Product_StepDefData<br>
+	 *   <b>FROM_C_UOM_ID.X12DE355</b> — (required) source UOM X12DE355 code (e.g. "PCE", "KGM")<br>
+	 *   <b>TO_C_UOM_ID.X12DE355</b> — (required) target UOM X12DE355 code<br>
+	 *   <b>MultiplyRate</b> — (required) conversion multiplier (from → to)<br>
+	 *   <b>OPT.IsCatchUOMForProduct</b> — (optional, default false) catch UOM flag<br>
+	 * @cucumber.example
+	 * <pre>{@code
+	 * And metasfresh contains C_UOM_Conversions
+	 *   | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
+	 *   | product_1               | PCE                     | KGM                   | 0.5          |
+	 * }</pre>
+	 */
 	@And("metasfresh contains C_UOM_Conversions")
 	public void add_C_UOM_Conversions(@NonNull final DataTable dataTable)
 	{

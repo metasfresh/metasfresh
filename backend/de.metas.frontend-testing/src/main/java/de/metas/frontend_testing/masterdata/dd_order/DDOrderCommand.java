@@ -25,7 +25,7 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
-import de.metas.handlingunits.QtyTU;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -155,6 +155,13 @@ public class DDOrderCommand
 		ddOrderLine.setM_Locator_ID(fromLocatorId.getRepoId());
 		ddOrderLine.setM_LocatorTo_ID(toLocatorId.getRepoId());
 		ddOrderLine.setIsInvoiced(false);
+
+		if (line.getSalesOrderLine() != null)
+		{
+			final OrderLineId salesOrderLineId = context.getId(line.getSalesOrderLine(), OrderLineId.class);
+			ddOrderLine.setC_OrderLineSO_ID(salesOrderLineId.getRepoId());
+		}
+
 		saveRecord(ddOrderLine);
 
 		final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(I_DD_OrderLine.Table_Name);
@@ -163,8 +170,7 @@ public class DDOrderCommand
 		final IHUPackingAware packingAware = new DDOrderLineHUPackingAware(InterfaceWrapperHelper.create(ddOrderLine, de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine.class));
 		huPackingAwareBL.setQtyTU(packingAware);
 
-		final QtyTU qtyPacks = QtyTU.ofBigDecimal(packingAware.getQtyTU());
-		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyPacks.toInt());
+		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 
 		saveRecord(ddOrderLine);
 	}

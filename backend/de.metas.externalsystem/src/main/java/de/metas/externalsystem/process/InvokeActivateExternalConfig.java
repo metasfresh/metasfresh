@@ -23,7 +23,7 @@
 package de.metas.externalsystem.process;
 
 import de.metas.externalsystem.ExternalSystemConfigQuery;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemProcesses;
@@ -54,7 +54,7 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 	private final static AdMessageKey MSG_ERR_MULTIPLE_EXTERNAL_SELECTION = AdMessageKey.of("MultipleExternalSelection");
 	private final static AdMessageKey MSG_ERR_EXTERNAL_SYSTEM_CONFIG_ACTIVE = AdMessageKey.of("MSG_ERR_ExternalSystemConfigActive");
 
-	protected final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	protected final ExternalSystemConfigRepository externalSystemConfigRepository = SpringContextHolder.instance.getBean(ExternalSystemConfigRepository.class);
 	protected final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	@Override
@@ -110,7 +110,7 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 				.parentConfigId(externalSystemParentConfigId)
 				.build();
 
-		return externalSystemConfigRepo.getByQuery(getExternalSystemType(), query);
+		return externalSystemConfigRepository.getByQuery(getExternalSystemType(), query);
 	}
 
 	protected abstract void activateRecord();

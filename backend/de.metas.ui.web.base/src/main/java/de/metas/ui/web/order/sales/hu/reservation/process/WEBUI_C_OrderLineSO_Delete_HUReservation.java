@@ -2,9 +2,13 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.RetrieveHUsQtyRequest;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
@@ -12,9 +16,16 @@ import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+
+import java.math.BigDecimal;
+import java.util.Objects;
 
 /*
  * #%L
@@ -40,21 +51,28 @@ import org.compiere.SpringContextHolder;
 
 public class WEBUI_C_OrderLineSO_Delete_HUReservation
 		extends HUEditorProcessTemplate
-		implements IProcessPrecondition
+		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	private final HUReservationService huReservationService = SpringContextHolder.instance.getBean(HUReservationService.class);
 	private final SalesOrderLineRepository salesOrderLineRepository = SpringContextHolder.instance.getBean(SalesOrderLineRepository.class);
+
+	private static final String PARAM_QtyCU_Reserved = "QtyCU_Reserved";
+	@Param(parameterName = PARAM_QtyCU_Reserved)
+	private BigDecimal p_QtyCU_Reserved;
+
+	private static final String PARAM_QtyAvailableCU = "QtyAvailableCU";
+	@Param(parameterName = PARAM_QtyAvailableCU)
+	private BigDecimal p_QtyAvailableCU;
+
+	private static final String PARAM_QtyToUnreserve = "QtyToUnreserve";
+	@Param(parameterName = PARAM_QtyToUnreserve, mandatory = true)
+	private BigDecimal p_QtyToUnreserve;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository)
-				.orElse(null);
-		if (salesOrderLine == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No sales order was set");
-		}
-
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
 		final ProductId productId = salesOrderLine.getProductId();
 		final Quantity unreservableQty = retrieveUnreservableQuantity(productId);
 		if (unreservableQty.signum() <= 0)
@@ -65,21 +83,60 @@ public class WEBUI_C_OrderLineSO_Delete_HUReservation
 		return ProcessPreconditionsResolution.accept();
 	}
 
+	@Override
+	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
+	{
+		final String parameterName = parameter.getColumnName();
+
+		if (PARAM_QtyToUnreserve.equals(parameterName) || PARAM_QtyCU_Reserved.equals(parameterName))
+		{
+			final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
+			return retrieveUnreservableQuantity(salesOrderLine.getProductId()).toBigDecimal();
+		}
+		else if (PARAM_QtyAvailableCU.equals(parameterName))
+		{
+			return streamSelectedRows(HUEditorRowFilter.select(Select.ALL))
+					.map(HUEditorRow::getQtyCU)
+					.filter(Objects::nonNull)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+		}
+		else
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
+	}
+
 	private Quantity retrieveUnreservableQuantity(final ProductId productId)
 	{
 		final RetrieveHUsQtyRequest request = WEBUI_C_OrderLineSO_Util.createHuQuantityRequest(
 				streamSelectedHUIds(Select.ALL), productId);
-		return huReservationService.retrieveUnreservableQty(request);
+		return huReservationService.retrieveActualReservedQty(request);
 	}
 
 	@Override
 	@RunOutOfTrx // the service we invoke creates its own transaction
 	protected String doIt()
 	{
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
+
 		final ImmutableSet<HuId> selectedReservedHUs = streamSelectedHUIds(HUEditorRowFilter.ALL)
 				.collect(ImmutableSet.toImmutableSet());
 
-		huReservationService.deleteReservationsByVHUIds(selectedReservedHUs);
+		// reversible = total currently reserved CU of the selected HUs (an HU reservation has no partial-delivery concept)
+		final Quantity reversibleQty = retrieveUnreservableQuantity(salesOrderLine.getProductId());
+		if (p_QtyToUnreserve == null || p_QtyToUnreserve.signum() <= 0)
+		{
+			throw new AdempiereException("@QtyToUnreserve@ <= 0");
+		}
+		final Quantity qtyToUnreserve = Quantity.of(p_QtyToUnreserve, reversibleQty.getUOM());
+		if (qtyToUnreserve.compareTo(reversibleQty) > 0)
+		{
+			throw new AdempiereException("@QtyToUnreserve@ > " + reversibleQty);
+		}
+
+		huReservationService.reduceReservation(selectedReservedHUs, qtyToUnreserve);
+
+		huOrderBL.updateOrderLineFromReservations(salesOrderLine.getId());
 
 		return MSG_OK;
 	}

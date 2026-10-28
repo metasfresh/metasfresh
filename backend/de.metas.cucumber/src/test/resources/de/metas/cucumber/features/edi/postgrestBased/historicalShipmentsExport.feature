@@ -670,6 +670,10 @@ Feature: Shipments export via postgREST
     {
       "name": "Limit",
       "value": "1"
+    },
+    {
+      "name": "Offset",
+      "value": "1"
     }
   ]
 }
@@ -767,7 +771,7 @@ Feature: Shipments export via postgREST
     },
     {
       "name": "Offset",
-      "value": "1"
+      "value": "0"
     }
   ]
 }

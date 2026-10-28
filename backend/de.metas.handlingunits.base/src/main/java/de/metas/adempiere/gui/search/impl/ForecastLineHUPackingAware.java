@@ -23,6 +23,7 @@ package de.metas.adempiere.gui.search.impl;
  */
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
@@ -92,11 +93,16 @@ public class ForecastLineHUPackingAware implements IHUPackingAware
 	@Override
 	public void setQty(final BigDecimal qty)
 	{
-		forecastLine.setQty(qty);
-
-		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
 		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(getC_UOM_ID());
-		final BigDecimal qtyCalculated = Services.get(IUOMConversionBL.class).convertToProductUOM(productId, uom, qty);
+
+		// Round Qty up (CEILING) to UOM precision — forecasts should not predict fractional indivisible units
+		final BigDecimal qtyRounded = qty.setScale(uom.getStdPrecision(), RoundingMode.CEILING);
+		forecastLine.setQty(qtyRounded);
+
+		// Convert rounded Qty to product UOM for QtyCalculated
+		// (UOM conversion internally rounds UP, which equals CEILING for positive quantities)
+		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
+		final BigDecimal qtyCalculated = Services.get(IUOMConversionBL.class).convertToProductUOM(productId, uom, qtyRounded);
 		forecastLine.setQtyCalculated(qtyCalculated);
 	}
 

@@ -1,4 +1,5 @@
 import { test } from '../../playwright.config';
+import { expect } from '@playwright/test';
 import { ErrorScreen } from './screens/ErrorScreen';
 import { ErrorToast } from './dialogs/ErrorToast';
 
@@ -6,15 +7,75 @@ export const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://localh
 
 export const VERY_FAST_ACTION_TIMEOUT = 1000; // 1sec
 export const FAST_ACTION_TIMEOUT = 5000; // 5sec
+// Window for the keyboard barcode-reader hook to flush a scanned barcode (rateMs default 300ms).
+// Used only for the negative dedup assertion (count must NOT change), where there's no new DOM to poll.
+export const BARCODE_HOOK_FLUSH_MS = 500;
 export const SLOW_ACTION_TIMEOUT = 20000; // 20sec
 export const VERY_SLOW_ACTION_TIMEOUT = 40000; //40sec
 export const ID_BACK_BUTTON = '#Back-button';
 
 export let page = null;
 
+// Browser-console recording. Some app code paths are invisible on screen but log a diagnostic before
+// falling back to a state that looks exactly like the normal one; the logged line is then the only
+// observable that tells the two apart (see
+// DistributionLinePickFromScreen.expectHUScanNotCausedByFailedHULookup). Recording is armed with the
+// page fixture, so no spec has to set anything up and a normal run pays no timing cost.
+//
+// Cap on the messages one test keeps, so a chatty page cannot grow the buffer without bound. Anything
+// past the cap is counted, not kept — see expectNoConsoleMessageMatching for why the count matters.
+const MAX_RECORDED_CONSOLE_MESSAGES = 5000;
+
+// The recorder of the CURRENT test, or null before the page fixture armed one.
+let consoleRecorder = null;
+
+// Each recorder owns its OWN buffer and counters, closed over by its handler — never a module-level
+// binding. A handler that closed over the *binding* would keep writing into whatever buffer is current,
+// so a page still emitting after the next test started would pollute that test's buffer and produce a
+// RED attributed to the wrong test.
+const startConsoleRecorder = (currentPage) => {
+    const messages = [];
+    let droppedMessageCount = 0;
+    const handler = (message) => {
+        if (messages.length < MAX_RECORDED_CONSOLE_MESSAGES) {
+            messages.push(`${message.type()}: ${message.text()}`);
+        } else {
+            droppedMessageCount++;
+        }
+    };
+    currentPage.on('console', handler);
+    return {
+        messages,
+        getDroppedMessageCount: () => droppedMessageCount,
+        stop: () => currentPage.off('console', handler),
+    };
+};
+
 export const setCurrentPage = (currentPage) => {
+    // Stop the previous test's recorder so its page cannot go on feeding a listener we no longer read.
+    consoleRecorder?.stop();
     page = currentPage;
+    consoleRecorder = startConsoleRecorder(currentPage);
 }
+
+/**
+ * Assert the app did NOT log a console message matching `pattern` so far in this test.
+ * Not a polling assertion: use it only for a message the app would have logged *before* a state you
+ * have already awaited (otherwise it can pass simply because the log has not happened yet).
+ */
+export const expectNoConsoleMessageMatching = ({ pattern, because }) => {
+    // A NEGATIVE assertion must never pass by omission. Two ways this one could:
+    //  - no recorder armed at all (the page fixture did not run) -> the buffer is trivially empty;
+    //  - the recorder hit its cap -> a matching message may have been dropped rather than never logged.
+    expect(consoleRecorder, 'no console recorder is armed, so the absence of a message proves nothing').not.toBeNull();
+    expect(
+        consoleRecorder.getDroppedMessageCount(),
+        `the console recorder hit its ${MAX_RECORDED_CONSOLE_MESSAGES}-message cap, so a matching message may have been`
+        + ` dropped rather than never logged - the absence assertion below would be vacuous`
+    ).toEqual(0);
+
+    expect(consoleRecorder.messages.filter((message) => pattern.test(message)), because).toEqual([]);
+};
 
 // Capture mode — OFF by default. When the env flag UAT_CAPTURE is set, the run is a deliberate
 // recording run for a UAT/documentation video; otherwise this is a no-op and the test runs at
@@ -71,6 +132,78 @@ export const revealForCaptureIfEnabled = async (locator) => {
 };
 
 export const step = async (title, func) => await test.step(title, async () => await runAndWatchForErrors(func));
+
+/**
+ * Simulate a device / browser Back button press (the hardware Back key on a handheld, or the browser
+ * Back). This is a pure NO-OP in the app — useDeviceBackButton absorbs it, so the screen does not change
+ * and the operator stays where they are. It explicitly does NOT behave like the on-screen footer Back
+ * button. Use this to assert the no-op contract; for real Back navigation use a screen object's
+ * goBack() (e.g. PickingJobScreen.goBack() / SelectPickTargetLUScreen.goBack()).
+ */
+export const pressDeviceBack = async () => await step(`Press device/browser Back button`, async () => {
+    await page.goBack({ timeout: SLOW_ACTION_TIMEOUT });
+});
+
+// Simulates the operator mashing the hardware/browser Back button rapidly: several back traversals
+// dispatched within a single event-loop tick (the worst case — exactly what happens on a busy handheld
+// when queued hardware-Back presses are delivered in a burst before the page can react). page.goBack()
+// awaits each navigation and so cannot reproduce this; firing window.history.back() synchronously can.
+export const mashDeviceBack = async (times = 12) => await step(`Mash device/browser Back ${times}x rapidly`, async () => {
+    await page.evaluate((n) => {
+        for (let i = 0; i < n; i++) window.history.back();
+    }, times);
+    await page.waitForTimeout(FAST_ACTION_TIMEOUT);
+});
+
+// How long an already-painted result screen is held so the video recorder samples it. Playwright's
+// screencast samples at ~40ms, so 500ms yields a dozen-odd frames — about 2s at the 0.25x playback
+// speed someone uses when checking what a test actually did.
+const RESULT_HOLD_MS = 500;
+
+// How long to let a refetch finish before freezing. Deliberately NOT FAST_ACTION_TIMEOUT: this waits
+// out a brief post-assertion flicker (the observed refetches settle in ~110-170ms), not a general
+// action, and it multiplies into the suite's worst case — so it is sized for the flicker.
+const RESULT_SETTLE_TIMEOUT_MS = 1500;
+
+/**
+ * Hold the painted screen so the recording shows the result the screen exists to display.
+ *
+ * This runs on EVERY run, CI included, and that is the point. A result list is asserted and left
+ * behind within ~110-170ms (measured off a CI trace), which at the screencast's ~40ms sampling is
+ * two or three frames out of the ~400 in a 16s recording — present in principle, unfindable in
+ * practice. It used to be opt-in behind UAT_CAPTURE, which meant exactly the runs nobody watches
+ * live — CI — were the ones whose recording showed nothing.
+ *
+ * Cost: one hold per assertion of a settled result list, across 38 call sites in the distribution
+ * specs. Typical is the 500ms hold itself, ~19s over a full run — the suite measured 2.1m before and
+ * 2.3m after, granularity too coarse to pin the delta more exactly. The WORST case is larger and
+ * worth stating: each call can also spend up to RESULT_SETTLE_TIMEOUT_MS twice before giving up, so
+ * ~4s per call and ~2.5min over 38 of them if nothing ever settles. Nothing upstream rules that out:
+ * the launcher renders its buttons from the last loaded list and paints the spinner ALONGSIDE them
+ * (WFLaunchersScreen.jsx), so the caller's assertions pass on the stale-but-correct list while a
+ * refetch is still in flight — a refetch that then hangs is invisible to them. The warn below is the
+ * safety net for that, not the assertions above.
+ *
+ * Why no assertion can substitute, and why this may only be called from a screen object and never
+ * from a spec: e2e/mobile-webui/CLAUDE.md § "Test scenarios read like a real-life workflow".
+ */
+export const holdForVideo = async () => {
+    // Freezing blindly is not enough: the launcher list can go back into a spinner right after the
+    // assertions pass (a refetch lands), and then the held frames record a loading indicator instead
+    // of the result. Settle first, and re-settle if a refetch starts during the freeze, so the frames
+    // the recorder takes are of the painted result. Bounded to two attempts -- this only shapes the
+    // recording and must never turn into an open-ended wait.
+    for (let attempt = 0; attempt < 2; attempt++) {
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: RESULT_SETTLE_TIMEOUT_MS }).catch(() => {});
+        await page.waitForTimeout(RESULT_HOLD_MS);
+        if ((await page.locator('.loading').count()) === 0) {
+            return;
+        }
+    }
+    // Never fail a test that has already passed for a recording concern — but do say so, otherwise a
+    // creeping refetch latency shows up only as recordings that quietly stop being usable.
+    console.warn('[holdForVideo] screen still loading after both settle attempts — this frame will show a spinner');
+};
 
 let nextErrorWatcherId = 101;
 let currentErrorWatcherId = 0;

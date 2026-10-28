@@ -204,7 +204,7 @@ public interface I_M_Shipper_Mapping_Config
 	String COLUMNNAME_MappingAttributeValue = "MappingAttributeValue";
 
 	/**
-	 * Set Mapping Group Key.
+	 * Set Group Key.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -213,7 +213,7 @@ public interface I_M_Shipper_Mapping_Config
 	void setMappingGroupKey (@Nullable java.lang.String MappingGroupKey);
 
 	/**
-	 * Get Mapping Group Key.
+	 * Get Group Key.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

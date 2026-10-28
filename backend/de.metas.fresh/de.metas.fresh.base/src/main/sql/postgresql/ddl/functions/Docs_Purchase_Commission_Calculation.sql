@@ -51,7 +51,8 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Commission_Calc
                 pointssum_settled     numeric,
                 percentofbasepoints   numeric,
                 documentno            character varying,
-                poreference           character varying
+                poreference           character varying,
+                configuredpercentofbasepoints numeric
             )
     STABLE
     LANGUAGE sql
@@ -74,7 +75,8 @@ SELECT c.c_invoice_commission_id           AS C_Invoice_id,
        c.pointssum_settled,
        c.percentofbasepoints,
        o.documentno,
-       o.poreference
+       o.poreference,
+       c.configuredpercentofbasepoints
 FROM C_Commission_Overview_V c
          JOIN c_bpartner bp ON bp.c_bpartner_id = c.Bill_Bpartner_ID
          JOIN c_invoiceline il ON il.c_invoiceline_id = c.c_invoiceline_commission_id

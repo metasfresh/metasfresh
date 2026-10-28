@@ -26,10 +26,8 @@ import Spinner from '../../../../components/Spinner';
 import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
 import { APPLICATION_ID_Picking } from '../../../../apps/picking';
-import {
-  getReadAttributesFromActivity,
-  getReadOnlyAttributesFromActivity,
-} from '../../../../reducers/wfProcesses/picking/getReadAttributesFromActivity';
+import { attributesMapToArray } from '../../../../reducers/wfProcesses/manufacturing_receipt';
+import { getReadOnlyAttributesFromActivity } from '../../../../reducers/wfProcesses/picking/getReadAttributesFromActivity';
 
 const MaterialReceiptLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -52,6 +50,7 @@ const MaterialReceiptLineScreen = () => {
       qtyReceived,
       qtyToReceive,
       skipReceiveTargetStep,
+      editableAttributes,
       catchWeightScanRequired,
       receiveOnePiecePerScan,
       defaultLotNo,
@@ -59,7 +58,6 @@ const MaterialReceiptLineScreen = () => {
     },
     pickTo,
     customQRCodeFormats,
-    readAttributes,
     readOnlyAttributes,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
   const [showSpinner, setShowSpinner] = useState(false);
@@ -104,6 +102,7 @@ const MaterialReceiptLineScreen = () => {
     bestBeforeDate,
     productionDate,
     lotNo,
+    attributeValues, // { [attributeCode]: value } map from EditableAttributesSection, via GetQuantityDialog
     barcode, // i.e. the catch weight QR code
     isDone = true,
   }) => {
@@ -126,6 +125,7 @@ const MaterialReceiptLineScreen = () => {
         bestBeforeDate,
         productionDate,
         lotNo,
+        attributes: attributesMapToArray(attributeValues),
         barcode,
       })
     )
@@ -203,7 +203,7 @@ const MaterialReceiptLineScreen = () => {
           uom={uom}
           caption={trl('activities.mfg.receipts.btnReceiveProducts')}
           customQRCodeFormats={customQRCodeFormats}
-          readAttributes={readAttributes}
+          editableAttributes={editableAttributes}
           readOnlyAttributes={readOnlyAttributes}
           defaultLotNo={defaultLotNo}
           defaultBestBeforeDate={defaultBestBeforeDate}
@@ -234,7 +234,6 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     lineProps,
     pickTo: getPickTo({ wfProcess }),
     customQRCodeFormats,
-    readAttributes: getReadAttributesFromActivity({ activity }),
     readOnlyAttributes: getReadOnlyAttributesFromActivity({ activity }),
   };
 };

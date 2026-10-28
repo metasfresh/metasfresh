@@ -18,6 +18,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -26,20 +27,30 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_CostRevaluation;
+import org.compiere.model.I_M_CostRevaluationLine;
+import org.compiere.model.I_M_CostRevaluation_Detail;
+import org.compiere.model.X_M_CostRevaluation;
 import org.compiere.util.Env;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -58,6 +69,7 @@ public class M_CostRevaluation_StepDef
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final M_CostRevaluation_StepDefData costRevaluationTable;
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
@@ -71,12 +83,13 @@ public class M_CostRevaluation_StepDef
 	 * @cucumber.columns
 	 *   <b>Identifier</b> — (required) alias for later reference<br>
 	 *   <b>C_AcctSchema_ID</b> — (required, identifier-ref) accounting schema<br>
-	 *   <b>M_CostElement_ID</b> — (required) target cost element (costing-method name, e.g. MovingAverageInvoice)<br>
-	 *   <b>RevaluationSource</b> — (required) e.g. CopyFromCostElement<br>
+	 *   <b>M_CostElement_ID</b> — (required) target cost element (costing-method name/code resolving to a single material cost element, e.g. AveragePO, MovingAverageInvoice)<br>
+	 *   <b>RevaluationSource</b> — (optional, default {@code Manual}) e.g. CopyFromCostElement<br>
 	 *   <b>CopyFrom_M_CostElement_ID</b> — (optional) source cost element (costing-method name, e.g. AveragePO)<br>
-	 *   <b>EvaluationStartDate</b> — (required) revaluation cut-off date<br>
-	 *   <b>DateAcct</b> — (required) accounting date<br>
-	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData, C_AcctSchema_StepDefData, M_CostElement_StepDefData
+	 *   <b>EvaluationStartDate</b> — (optional) revaluation cut-off date; when the column is omitted, the header's
+	 *   {@code beforeNew} interceptor defaults it to {@code DateAcct}<br>
+	 *   <b>DateAcct</b> — (required) posting date<br>
+	 * @cucumber.depends StepDefData: C_AcctSchema_StepDefData, M_CostElement_StepDefData, M_CostRevaluation_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains M_CostRevaluation:
@@ -108,16 +121,20 @@ public class M_CostRevaluation_StepDef
 		record.setC_DocType_ID(docTypeId.getRepoId());
 		record.setC_AcctSchema_ID(acctSchemaId.getRepoId());
 		record.setM_CostElement_ID(targetCostElementId.getRepoId());
-		record.setRevaluationSource(row.getAsString(I_M_CostRevaluation.COLUMNNAME_RevaluationSource));
+		record.setRevaluationSource(row.getAsOptionalString(I_M_CostRevaluation.COLUMNNAME_RevaluationSource)
+				.orElse(X_M_CostRevaluation.REVALUATIONSOURCE_Manual));
 
 		row.getAsOptionalString(I_M_CostRevaluation.COLUMNNAME_CopyFrom_M_CostElement_ID)
 				.map(costElementTable::getSingleId)
 				.ifPresent(sourceCostElementId -> record.setCopyFrom_M_CostElement_ID(sourceCostElementId.getRepoId()));
 
-		record.setEvaluationStartDate(row.getAsLocalDateTimestamp(I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate));
 		record.setDateAcct(row.getAsLocalDateTimestamp(I_M_CostRevaluation.COLUMNNAME_DateAcct));
+		row.getAsOptionalLocalDateTimestamp(I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate)
+				.ifPresent(record::setEvaluationStartDate);
+		record.setDocumentNo(StepDefDataIdentifier.nextUnnamed("costRevaluation").getAsString());
 		record.setDocStatus(IDocument.STATUS_Drafted);
 		record.setDocAction(IDocument.ACTION_Complete);
+		record.setProcessed(false);
 
 		InterfaceWrapperHelper.save(record);
 
@@ -148,7 +165,7 @@ public class M_CostRevaluation_StepDef
 
 	/**
 	 * Completes the cost-revaluation document via the real DocAction pipeline
-	 * ({@code completeIt} → {@code createDetails} → seed target cost).
+	 * ({@code completeIt} → {@code reevaluateAllLines}; for {@code CopyFromCostElement} this seeds the target cost).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
@@ -158,11 +175,256 @@ public class M_CostRevaluation_StepDef
 	 * </pre>
 	 */
 	@And("^the cost revaluation identified by (.*) is completed$")
-	public void costRevaluation_is_completed(@NonNull final String identifier)
+	public void complete(@NonNull final String identifier)
 	{
-		final I_M_CostRevaluation record = costRevaluationTable.get(identifier);
-		record.setDocAction(IDocument.ACTION_Complete);
-		documentBL.processEx(record, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
+		header.setDocAction(IDocument.ACTION_Complete);
+		documentBL.processEx(header, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		InterfaceWrapperHelper.refresh(header);
+		costRevaluationTable.putOrReplace(StepDefDataIdentifier.ofString(identifier), header);
+	}
+
+	/**
+	 * Sets the target {@code NewCostPrice} on the generated line of each listed product, then deactivates every
+	 * other generated line on those headers — mirroring the real single-product "Kosten Neubewertung" workflow
+	 * (Create Lines generates a line per stocked product; the user keeps only the target lines active).
+	 * <p>
+	 * This is required for shared-executor isolation: {@code createLines()} consumes EVERY stocked product of the
+	 * client, so a sibling scenario's product would otherwise leak into the document and post extra Fact_Acct rows.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_CostRevaluation_ID</b> — (required, identifier-ref) the header whose line to update<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product whose line to keep active and update<br>
+	 *   <b>NewCostPrice</b> — (required) the target cost price<br>
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_CostRevaluationLine:
+	 *   | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
+	 *   | revaluation          | product      | 15           |
+	 * </pre>
+	 */
+	@And("^update M_CostRevaluationLine:$")
+	public void updateCostRevaluationLines(@NonNull final DataTable dataTable)
+	{
+		final Map<Integer, Set<Integer>> targetProductIdsByHeaderId = new HashMap<>();
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_CostRevaluation header = row.getAsIdentifier(I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID).lookupNotNullIn(costRevaluationTable);
+			final ProductId productId = row.getAsIdentifier(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
+
+			// Test-side lookup of the line generated by createLines(); kept here so no production query has to be added.
+			final I_M_CostRevaluationLine line = queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
+					.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID, header.getM_CostRevaluation_ID())
+					.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+					.create()
+					.firstOnlyNotNull(I_M_CostRevaluationLine.class);
+
+			line.setNewCostPrice(row.getAsBigDecimal(I_M_CostRevaluationLine.COLUMNNAME_NewCostPrice));
+			InterfaceWrapperHelper.save(line);
+
+			targetProductIdsByHeaderId.computeIfAbsent(header.getM_CostRevaluation_ID(), k -> new HashSet<>()).add(productId.getRepoId());
+		});
+
+		targetProductIdsByHeaderId.forEach(this::deactivateNonTargetLines);
+	}
+
+	private void deactivateNonTargetLines(final int costRevaluationId, @NonNull final Set<Integer> targetProductIds)
+	{
+		final List<I_M_CostRevaluationLine> otherLines = queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID, costRevaluationId)
+				.addOnlyActiveRecordsFilter()
+				.addNotInArrayFilter(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID, targetProductIds)
+				.create()
+				.list(I_M_CostRevaluationLine.class);
+
+		for (final I_M_CostRevaluationLine otherLine : otherLines)
+		{
+			otherLine.setIsActive(false);
+			InterfaceWrapperHelper.save(otherLine);
+		}
+	}
+
+	/**
+	 * Adds one {@code M_CostRevaluationLine} for the given product, as the quick-input does.
+	 * A stocked product with no {@code M_Cost} row gets one at quantity 0.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_CostRevaluation_ID</b> — (required, identifier-ref) the header to add the line to<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product to revalue<br>
+	 *   <b>NewCostPrice</b> — (required) the target cost price the operator types<br>
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And quick-input cost revaluation line:
+	 *   | M_CostRevaluation_ID | M_Product_ID  | NewCostPrice |
+	 *   | revaluation          | productNoCost | 12           |
+	 * </pre>
+	 */
+	@And("quick-input cost revaluation line:")
+	public void quickInputCostRevaluationLine(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_CostRevaluation header = row.getAsIdentifier(I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID).lookupNotNullIn(costRevaluationTable);
+			final ProductId productId = row.getAsIdentifier(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
+			final BigDecimal newCostPrice = row.getAsBigDecimal(I_M_CostRevaluationLine.COLUMNNAME_NewCostPrice);
+
+			costRevaluationService.createLineForProduct(
+					CostRevaluationId.ofRepoId(header.getM_CostRevaluation_ID()),
+					productId,
+					newCostPrice);
+		});
+	}
+
+	/**
+	 * Evaluates the draft {@code M_CostRevaluation} through the service method the "Run" process delegates to ({@code runRevaluation}):
+	 * creates the details of its not yet evaluated lines; for {@code CopyFromCostElement} it writes nothing (Run only previews).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the cost revaluation identified by revaluation is evaluated
+	 * </pre>
+	 */
+	@And("^the cost revaluation identified by (.*) is evaluated$")
+	public void evaluate(@NonNull final String identifier)
+	{
+		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
+		costRevaluationService.runRevaluation(CostRevaluationId.ofRepoId(header.getM_CostRevaluation_ID()));
+	}
+
+	/**
+	 * Voids the cost-revaluation document via the real DocAction pipeline ({@code voidIt}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the cost revaluation identified by revaluation is voided
+	 * </pre>
+	 */
+	@And("^the cost revaluation identified by (.*) is voided$")
+	public void costRevaluation_is_voided(@NonNull final String identifier)
+	{
+		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
+		header.setDocAction(IDocument.ACTION_Void);
+		documentBL.processEx(header, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+		InterfaceWrapperHelper.refresh(header);
+		costRevaluationTable.putOrReplace(StepDefDataIdentifier.ofString(identifier), header);
+	}
+
+	/**
+	 * Asserts that no line of the cost revaluation has a {@code M_CostDetail}, i.e. nothing was booked.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the cost revaluation identified by revaluation has no M_CostDetails
+	 * </pre>
+	 */
+	@And("^the cost revaluation identified by (.*) has no M_CostDetails$")
+	public void assertNoCostDetails(@NonNull final String identifier)
+	{
+		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
+		final int count = queryBL.createQueryBuilder(I_M_CostDetail.class)
+				.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_CostRevaluation_ID, header.getM_CostRevaluation_ID())
+				.create()
+				.count();
+		assertThat(count).as("M_CostDetail count of %s", identifier).isZero();
+	}
+
+	/**
+	 * Validates the header document state (e.g. DocStatus, Processed) after completion.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required, identifier-ref) the header to validate<br>
+	 *   <b>DocStatus</b> — (optional) expected DocStatus code (e.g. CO)<br>
+	 *   <b>Processed</b> — (optional) expected Processed flag<br>
+	 *   <b>EvaluationStartDate</b> — (optional) expected date (e.g. to confirm the forward-only default was applied)<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And validate M_CostRevaluation:
+	 *   | Identifier  | DocStatus | Processed | Posted |
+	 *   | revaluation | CO        | true      | true   |
+	 * </pre>
+	 */
+	@And("^validate M_CostRevaluation:$")
+	public void validateCostRevaluations(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_CostRevaluation header = row.getAsIdentifier().lookupNotNullIn(costRevaluationTable);
+			InterfaceWrapperHelper.refresh(header);
+
+			row.getAsOptionalString(I_M_CostRevaluation.COLUMNNAME_DocStatus)
+					.ifPresent(expected -> assertThat(header.getDocStatus()).as("DocStatus").isEqualTo(expected));
+			row.getAsOptionalString(I_M_CostRevaluation.COLUMNNAME_Processed)
+					.ifPresent(expected -> assertThat(header.isProcessed()).as("Processed").isEqualTo(StringUtils.toBoolean(expected)));
+			row.getAsOptionalString(I_M_CostRevaluation.COLUMNNAME_Posted)
+					.ifPresent(expected -> assertThat(header.isPosted()).as("Posted").isEqualTo(StringUtils.toBoolean(expected)));
+			row.getAsOptionalLocalDate(I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate)
+					.ifPresent(expected -> assertThat(header.getEvaluationStartDate().toLocalDateTime().toLocalDate()).as("EvaluationStartDate").isEqualTo(expected));
+		});
+	}
+
+	/**
+	 * Validates the active line of a product: the stock on hand, the current cost price and the value difference it shows;
+	 * for an evaluated line also that the value difference equals the sum of its detail rows.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_CostRevaluation_ID</b> — (required, identifier-ref) the header<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the line's product<br>
+	 *   <b>CurrentQty</b> — (optional) expected stock on hand<br>
+	 *   <b>CurrentCostPrice</b> — (optional) expected current cost price<br>
+	 *   <b>DeltaAmt</b> — (optional) expected value difference<br>
+	 *   <b>IsRevaluated</b> — (optional) expected "evaluated" flag; {@code true} also requires the detail rows to add up to the value difference<br>
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate M_CostRevaluationLine:
+	 *   | M_CostRevaluation_ID | M_Product_ID | CurrentQty | CurrentCostPrice | DeltaAmt |
+	 *   | revaluation          | product      | 80         | 10               | 400      |
+	 * </pre>
+	 */
+	@And("^validate M_CostRevaluationLine:$")
+	public void validateCostRevaluationLines(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_CostRevaluation header = row.getAsIdentifier(I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID).lookupNotNullIn(costRevaluationTable);
+			final ProductId productId = row.getAsIdentifier(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
+
+			final I_M_CostRevaluationLine line = queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
+					.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID, header.getM_CostRevaluation_ID())
+					.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstOnlyNotNull(I_M_CostRevaluationLine.class);
+
+			row.getAsOptionalBigDecimal(I_M_CostRevaluationLine.COLUMNNAME_CurrentQty)
+					.ifPresent(expected -> assertThat(line.getCurrentQty()).as("CurrentQty").isEqualByComparingTo(expected));
+			row.getAsOptionalBigDecimal(I_M_CostRevaluationLine.COLUMNNAME_CurrentCostPrice)
+					.ifPresent(expected -> assertThat(line.getCurrentCostPrice()).as("CurrentCostPrice").isEqualByComparingTo(expected));
+			row.getAsOptionalBigDecimal(I_M_CostRevaluationLine.COLUMNNAME_DeltaAmt)
+					.ifPresent(expected -> assertThat(line.getDeltaAmt()).as("DeltaAmt").isEqualByComparingTo(expected));
+			row.getAsOptionalBoolean(I_M_CostRevaluationLine.COLUMNNAME_IsRevaluated)
+					.ifPresent(expected -> assertThat(line.isRevaluated()).as("IsRevaluated").isEqualTo(expected));
+
+			if (line.isRevaluated())
+			{
+				final BigDecimal detailsDeltaAmt = queryBL.createQueryBuilder(I_M_CostRevaluation_Detail.class)
+						.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluationLine_ID, line.getM_CostRevaluationLine_ID())
+						.create()
+						.stream()
+						.map(I_M_CostRevaluation_Detail::getDeltaAmt)
+						.reduce(BigDecimal.ZERO, BigDecimal::add);
+				assertThat(line.getDeltaAmt()).as("DeltaAmt = sum of the line's detail DeltaAmt").isEqualByComparingTo(detailsDeltaAmt);
+			}
+		});
 	}
 
 	/**

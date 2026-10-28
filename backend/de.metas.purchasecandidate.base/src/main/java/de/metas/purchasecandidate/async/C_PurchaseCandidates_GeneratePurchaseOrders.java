@@ -62,13 +62,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 /**
  * Aggregates enqueued {@link PurchaseCandidate}s and generates purchase orders.
  * <p>
- * Also, {@link #enqueue(Collection)} method is used to enqueue purchase candidates.
+ * Use {@link #enqueue(Collection)}, {@link #enqueue(Collection, DocTypeId)}, or
+ * {@link #enqueue(Collection, DocTypeId, boolean)} to enqueue purchase candidates.
+ * The {@code isCompleteDoc} flag (default {@code true}) controls whether the generated
+ * {@code C_Order} is immediately completed (DocStatus=CO) or left as a draft (DocStatus=DR).
  *
  * @author metas-dev <dev@metasfresh.com>
  */
 public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProcessorAdapter
 {
 	public static final String DOC_TYPE_ID = "C_Doctype_Target_ID";
+	public static final String IS_COMPLETE_DOC = "IsCompleteDoc";
 	private final PurchaseCandidateRepository purchaseCandidateRepo = SpringContextHolder.instance.getBean(PurchaseCandidateRepository.class);
 	private final VendorGatewayInvokerFactory vendorGatewayInvokerFactory = SpringContextHolder.instance.getBean(VendorGatewayInvokerFactory.class);
 
@@ -78,6 +82,21 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 	}
 
 	public static void enqueue(@NonNull final Collection<PurchaseCandidateId> purchaseCandidateIds, @Nullable final DocTypeId docTypeId)
+	{
+		enqueue(purchaseCandidateIds, docTypeId, /* isCompleteDoc= */ true);
+	}
+
+	/**
+	 * Enqueues the given purchase candidates for asynchronous purchase order generation.
+	 *
+	 * @param isCompleteDoc if {@code true}, the generated C_Order will be completed (DocStatus=CO);
+	 *                      if {@code false}, only a draft C_Order is created (DocStatus=DR).
+	 *                      Maps to {@code PP_Product_Planning.IsDocComplete}.
+	 */
+	public static void enqueue(
+			@NonNull final Collection<PurchaseCandidateId> purchaseCandidateIds,
+			@Nullable final DocTypeId docTypeId,
+			final boolean isCompleteDoc)
 	{
 		final Multimap<Integer, I_C_PurchaseCandidate> vendorId2purchaseCandidate = //
 				loadByIds(PurchaseCandidateId.toIntSet(purchaseCandidateIds), I_C_PurchaseCandidate.class)
@@ -110,6 +129,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 					.addElements(candidateRecordReferences)
 					.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 					.parameter(DOC_TYPE_ID, docTypeId)
+					.parameter(IS_COMPLETE_DOC, isCompleteDoc)
 					.buildAndEnqueue();
 		}
 	}
@@ -119,8 +139,10 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 	{
 		final BigDecimal docTypeRepoId = getParameters().getParameterAsBigDecimal(DOC_TYPE_ID);
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(docTypeRepoId != null ? docTypeRepoId.intValue() : 0);
+		// Default true for backward compatibility: work packages enqueued via the UI (before this parameter existed) should still complete the order
+		final boolean isCompleteDoc = getParameters().getParameterAsBoolean(IS_COMPLETE_DOC, true);
 		final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator = //
-				PurchaseOrderFromItemsAggregator.newInstance(docTypeId);
+				PurchaseOrderFromItemsAggregator.newInstance(docTypeId, isCompleteDoc);
 
 		PurchaseCandidateToOrderWorkflow.builder()
 				.purchaseCandidateRepo(purchaseCandidateRepo)

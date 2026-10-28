@@ -11,7 +11,7 @@ import { getCachedFilter, getEntityRelatedId } from '../reducers/filters';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
 
-const DEFAULT_PAGE_LENGTH = 20;
+const DEFAULT_PAGE_LENGTH = 15;
 
 /**
  * @typedef {object} Props Component props
@@ -54,6 +54,9 @@ const DLpropTypes = {
   updateRawModal: PropTypes.func.isRequired,
   deselectTableRows: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
+  listSelectedRow: PropTypes.object,
+  setListSelected: PropTypes.func.isRequired,
+  updateTableSelection: PropTypes.func.isRequired,
 };
 
 /**
@@ -147,6 +150,7 @@ const DLmapStateToProps = (state, props) => {
     rawModalVisible: state.windowHandler.rawModal.visible,
     filters,
     filterId,
+    listSelectedRow: state.listHandler.selectedRow || null,
   };
 };
 

@@ -23,8 +23,6 @@ package de.metas.inoutcandidate.agg.key.impl;
  */
 
 import de.metas.bpartner.BPartnerContactId;
-import de.metas.inoutcandidate.CarrierGoodsTypeId;
-import de.metas.shipping.CarrierProductId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
@@ -75,19 +73,10 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 
 		if (ShipperId.ofRepoIdOrNull(sched.getM_Shipper_ID()) != null)
 		{
+			// Only the carrier *company* is part of the aggregation key. Carrier product and goods-type
+			// intentionally are NOT — that split is handled at the delivery-order (Carrier_ShipmentOrder)
+			// level, sourced from the picking-job line. Do not add them here (it would re-split M_InOut).
 			values.add(sched.getM_Shipper_ID());
-
-			final CarrierGoodsTypeId carrierGoodsTypeId = CarrierGoodsTypeId.ofRepoIdOrNull(sched.getCarrier_Goods_Type_ID());
-			if (carrierGoodsTypeId != null)
-			{
-				values.add("cgt:" + carrierGoodsTypeId.getRepoId());
-			}
-
-			final CarrierProductId carrierProductId = CarrierProductId.ofRepoIdOrNull(sched.getCarrier_Product_ID());
-			if (carrierProductId != null)
-			{
-				values.add("cpr:" + carrierProductId.getRepoId());
-			}
 		}
 
 		if (sched.getC_Async_Batch_ID() > 0)

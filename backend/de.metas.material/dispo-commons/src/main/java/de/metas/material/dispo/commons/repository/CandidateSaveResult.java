@@ -91,21 +91,12 @@ public class CandidateSaveResult
 				.build();
 	}
 
-	/**
-	 * Convenience method that returns a new instance with negated candidate quantity and previousQty
-	 */
-	public CandidateSaveResult withNegatedQuantity()
-	{
-		return toBuilder()
-				.candidate(candidate.withNegatedQuantity())
-				.previousQty(previousQty == null ? null : previousQty.negate())
-				.build();
-	}
-
 	public CandidateSaveResult withParentId(@Nullable final CandidateId parentId)
 	{
 		return toBuilder()
 				.candidate(candidate.withParentId(parentId))
 				.build();
 	}
+
+	public boolean isNew() {return getPreviousQty() == null;}
 }

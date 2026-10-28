@@ -29,7 +29,7 @@ import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.IExternalSystemChildConfig;
@@ -69,11 +69,11 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 	protected ExportHUToExternalSystemService(
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
+			@NonNull final ExternalSystemConfigRepository externalSystemConfigRepository,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
 			@NonNull final ExternalSystemConfigService externalSystemConfigService)
 	{
-		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepo, externalSystemMessageSender);
+		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepository, externalSystemMessageSender);
 
 		this.externalSystemConfigService = externalSystemConfigService;
 
@@ -88,7 +88,7 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 
 	public void enqueueHUExport(@NonNull final ExportHUCandidate exportHUCandidate)
 	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("exportHUCandidate: {} enqueued to be synced.", exportHUCandidate);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("ExportHUToExternalSystemService - exportHUCandidate: {} enqueued to be synced.", exportHUCandidate);
 
 		syncHuDebouncer.add(exportHUCandidate);
 	}
@@ -100,7 +100,7 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 			@NonNull final TableRecordReference huRecordReference,
 			@Nullable final PInstanceId pInstanceId)
 	{
-		final ExternalSystemParentConfig config = externalSystemConfigRepo.getById(externalSystemChildConfigId);
+		final ExternalSystemParentConfig config = externalSystemConfigRepository.getById(externalSystemChildConfigId);
 
 		if (!config.isActive())
 		{
@@ -143,7 +143,7 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 			return;
 		}
 
-		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
+		if (!externalSystemConfigRepository.isAnyConfigActive(getExternalSystemType()))
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No active config found for external system type: {}! No action is performed!", getExternalSystemType());
 			return; // nothing to do

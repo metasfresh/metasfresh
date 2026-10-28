@@ -144,6 +144,9 @@ const GlobalContextShortcuts = ({
 
       handleNewDocument();
     },
+    // `standardActionsAllowed` is the enabled state, not mere presence in the payload: an action the
+    // server transmits but marks disabled (e.g. the role may not create records) is filtered out of
+    // it, so the shortcut follows the greyed menu item without deciding the permission again.
     enabled: standardActionsAllowed.includes(DocumentAction.NEW_DOCUMENT),
   });
   useShortcut({

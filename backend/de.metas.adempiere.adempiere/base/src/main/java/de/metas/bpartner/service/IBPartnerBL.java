@@ -22,6 +22,7 @@
 
 package de.metas.bpartner.service;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -32,6 +33,7 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -197,6 +199,28 @@ public interface IBPartnerBL extends ISingletonService
 
 	List<I_C_BPartner_Location> getBPartnerLocationsByIds(Set<BPartnerLocationId> ids);
 
+	@Nullable
+	I_AD_User retrieveContact(
+			Properties ctx,
+			int bpartnerId,
+			boolean isSOTrx,
+			String trxName);
+
+	@Nullable
+	I_C_BPartner_Location retrieveBPartnerLocation(@NonNull IBPartnerDAO.BPartnerLocationQuery query);
+
+	@Nullable
+	I_C_BPartner_Location getBPartnerLocationById(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	@Nullable
+	I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	@Nullable
+	String getContactLocationEmail(@Nullable BPartnerContactId contactId);
+
+	@Nullable
+	PricingSystemId retrievePricingSystemIdOrNull(@NonNull BPartnerId bpartnerId, SOTrx soTrx);
+
 	@Value
 	@Builder
 	class RetrieveContactRequest
@@ -280,4 +304,15 @@ public interface IBPartnerBL extends ISingletonService
 	 */
 	@NonNull
 	Optional<VATIdentifier> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	/**
+	 * @return the raw {@code VATaxIDStatus} column of whichever record supplied
+	 * {@link #getVATTaxId(BPartnerLocationId)}'s value — same resolution, so the status always belongs to
+	 * the VAT-ID actually in use. Raw code, not the enum, which lives in a module depending on this one.
+	 *
+	 * <p>Empty both when no VAT-ID was found and when one was found whose status column is {@code null}, so
+	 * "empty" is not proof that no VAT-ID exists.
+	 */
+	@NonNull
+	Optional<String> getVATaxIDStatusCode(@NonNull BPartnerLocationId bpartnerLocationId);
 }

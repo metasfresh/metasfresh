@@ -17,6 +17,7 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.OnMaterialReceiptWithDestWarehouse;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -77,14 +78,26 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 	private final static OnMaterialReceiptWithDestWarehouse DEFAULT_OnMaterialReceiptWithDestWarehouse = OnMaterialReceiptWithDestWarehouse.CREATE_MOVEMENT;
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
 	{
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
+		if (isNonItemProduct(orderLine))
+		{
+			return Collections.emptyList();
+		}
+
 		final boolean createReceiptScheduleIfNotExists = true;
 		final I_M_ReceiptSchedule receiptSchedule = createOrReceiptScheduleFromOrderLine(orderLine, createReceiptScheduleIfNotExists);
 		return Collections.singletonList(receiptSchedule);
+	}
+
+	private boolean isNonItemProduct(final I_C_OrderLine orderLine)
+	{
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		return productId != null && !productBL.isItemType(productId);
 	}
 
 	@Override
@@ -116,6 +129,14 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			}
 
 			receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class, line);
+		}
+		else if (receiptScheduleBL.isClosed(receiptSchedule))
+		{
+			// Don't update a closed receipt schedule (e.g., closed due to PO reactivation/void).
+			// It will be properly reopened when the order is re-completed (via reopenReceiptSchedules).
+			// Updating it here would change the M_AttributeSetInstance_ID (via cloneOrCreateASI),
+			// causing cockpit quantities to shift to a different storageAttributesKey bucket.
+			return null;
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
@@ -162,7 +183,14 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		receiptSchedule.setC_BPartner_Location_ID(line.getC_BPartner_Location_ID());
 		final I_C_Order order = line.getC_Order();
 		receiptSchedule.setAD_User_ID(order.getAD_User_ID());
-		receiptSchedule.setPOReference(order.getPOReference());
+		if (isNewReceiptSchedule || Check.isBlank(receiptSchedule.getPOReference()))
+		{
+			// Set POReference from the order when:
+			// - creating a new receipt schedule, OR
+			// - the receipt schedule's POReference is blank (no manual changes)
+			// When the user has manually set a non-blank POReference, preserve it.
+			receiptSchedule.setPOReference(order.getPOReference());
+		}
 		receiptSchedule.setExternalHeaderId(order.getExternalId());
 		receiptSchedule.setExternalSystem_ID(order.getExternalSystem_ID());
 		//

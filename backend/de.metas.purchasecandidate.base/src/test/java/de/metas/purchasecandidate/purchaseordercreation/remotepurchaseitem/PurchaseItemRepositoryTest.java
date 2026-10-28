@@ -4,6 +4,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.common.util.time.SystemTime;
+import de.metas.error.AdIssueId;
 import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -107,6 +108,30 @@ public class PurchaseItemRepositoryTest
 		assertThat(record.getC_OrderLinePO_ID()).isEqualTo(purchaseOrderLine.getC_OrderLine_ID());
 		assertThat(record.getC_OrderPO_ID()).isEqualTo(50);
 		assertThat(record.getRecord_ID()).isEqualTo(30);
+	}
+
+	@Test
+	public void load_purchaseErrorItem_withoutTransactionReference()
+	{
+		// guard: PurchaseErrorItem may be persisted without a transactionReference
+		// (write path in PurchaseItemRepository.savePurchaseErrorItem skips AD_Table_ID/Record_ID when null).
+		// On reload the transactionReference must come back as null, not as TableRecordReference(0, 0).
+		final int purchaseCandidateId = 10;
+		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(purchaseCandidateId, ONE);
+
+		final I_C_PurchaseCandidate_Alloc allocRecord = newInstance(I_C_PurchaseCandidate_Alloc.class);
+		allocRecord.setC_PurchaseCandidate_ID(purchaseCandidateId);
+		allocRecord.setAD_Issue_ID(123); // > 0 so the load path treats it as an error item
+		// AD_Table_ID and Record_ID are deliberately left at their default 0
+		save(allocRecord);
+
+		// invoke the method under test
+		new PurchaseItemRepository().loadPurchaseItems(purchaseCandidate);
+
+		assertThat(purchaseCandidate.getPurchaseErrorItems()).hasSize(1);
+		final PurchaseErrorItem retrievedErrorItem = purchaseCandidate.getPurchaseErrorItems().get(0);
+		assertThat(retrievedErrorItem.getTransactionReference()).isNull();
+		assertThat(retrievedErrorItem.getAdIssueId()).isEqualTo(AdIssueId.ofRepoId(123));
 	}
 
 	@Test

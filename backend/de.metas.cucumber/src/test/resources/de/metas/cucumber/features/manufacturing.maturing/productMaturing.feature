@@ -47,7 +47,6 @@ Feature: Maturing scenarios
 @allure.label.feature:F8031_Manufacturing_Workflows
 @F8031
   @Id:S0382_100
-  @flaky
   Scenario: Happy flow, raw good product HU created via inventory, maturing candidate created and processed
     When metasfresh contains M_Inventories:
       | M_Inventory_ID | MovementDate | DocumentNo   | M_Warehouse_ID    |
@@ -85,7 +84,7 @@ Feature: Maturing scenarios
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
       | oc_1       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 10 PCE     | 10 PCE       | 0 PCE        | 2023-05-31T22:00:00Z | 2023-05-31T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_10 |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Intentionally NOT converted to the generic "AD_Process ... is run" step (unlike
     # CreateMaturingCandidates above):
@@ -126,7 +125,6 @@ Feature: Maturing scenarios
 @allure.label.feature:F8031_Manufacturing_Workflows
 @F8031
   @Id:S0382_200
-  @flaky
   Scenario: Maturing candidate created, then HU qty is adjusted. Maturing candidate is updated
     When metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | DocumentNo   | M_Warehouse_ID    |
@@ -156,7 +154,7 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID.Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | rawgood_hus_20             | rawgood_hu_20      | rawGood                 | 20  |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And the AD_Process with value 'PP_Order_Candidate_CreateMaturingCandidates' is run
 
@@ -177,7 +175,6 @@ Feature: Maturing scenarios
       | oc_2       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 15 PCE     | 15 PCE       | 0 PCE        | 2023-06-30T22:00:00Z | 2023-06-30T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_20 |
 
 
-  @flaky
   @from:cucumber
 @allure.label.epic:E0160_Manufacturing_Execution
 @allure.label.feature:F8031_Manufacturing_Workflows

@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
@@ -91,11 +92,18 @@ public class EDI_DesadvLine_StepDef
 	 * ({@code firstOnlyNotNull} throws if the DESADV has more than one line).
 	 * Use a disambiguator column whenever the DESADV has multiple lines.
 	 *
+	 * <p>Optional assertion columns (each asserted only when the column is present):
+	 * <ul>
+	 *   <li>{@code OPT.QtyEntered} – expected {@code EDI_DesadvLine.QtyEntered}</li>
+	 *   <li>{@code OPT.QtyDeliveredInUOM} – expected {@code EDI_DesadvLine.QtyDeliveredInUOM}</li>
+	 *   <li>{@code OPT.QtyDeliveredInStockingUOM} – expected {@code EDI_DesadvLine.QtyDeliveredInStockingUOM}</li>
+	 * </ul>
+	 *
 	 * <p>Example (single-line DESADV):
 	 * <pre>
 	 * Then EDI_DesadvLine records are found:
-	 *   | EDI_DesadvLine_ID | EDI_Desadv_ID |
-	 *   | desadvLine        | myDesadv      |
+	 *   | EDI_DesadvLine_ID | EDI_Desadv_ID | OPT.QtyDeliveredInStockingUOM |
+	 *   | desadvLine        | myDesadv      | 3                             |
 	 * </pre>
 	 *
 	 * <p>Example (multi-line DESADV, disambiguated by product):
@@ -133,6 +141,8 @@ public class EDI_DesadvLine_StepDef
 				.ifPresent(line -> queryBuilder.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_Line, line));
 
 		final I_EDI_DesadvLine desadvLine = queryBuilder.create().firstOnlyNotNull(I_EDI_DesadvLine.class);
+
+		assertOptionalDesadvLineQtys(row, desadvLine);
 
 		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_DesadvLine_ID);
 		desadvLineTable.putOrReplace(lineIdentifier, desadvLine);
@@ -203,6 +213,70 @@ public class EDI_DesadvLine_StepDef
 				.build();
 
 		generator.generateAndEnqueuePrinting(labelsSpec);
+	}
+
+	/**
+	 * Asserts the optional {@code QtyEntered} / {@code QtyDeliveredInUOM} /
+	 * {@code QtyDeliveredInStockingUOM} DataTable columns against the given line. A column that is
+	 * absent from the row is skipped entirely, so callers that never supply it keep today's behaviour.
+	 */
+	private static void assertOptionalDesadvLineQtys(@NonNull final DataTableRow row, @NonNull final I_EDI_DesadvLine desadvLine)
+	{
+		row.getAsOptionalBigDecimal(I_EDI_DesadvLine.COLUMNNAME_QtyEntered)
+				.ifPresent(expected -> assertThat(desadvLine.getQtyEntered())
+						.as(I_EDI_DesadvLine.COLUMNNAME_QtyEntered)
+						.isEqualByComparingTo(expected));
+
+		row.getAsOptionalBigDecimal(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM)
+				.ifPresent(expected -> assertThat(desadvLine.getQtyDeliveredInUOM())
+						.as(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM)
+						.isEqualByComparingTo(expected));
+
+		row.getAsOptionalBigDecimal(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInStockingUOM)
+				.ifPresent(expected -> assertThat(desadvLine.getQtyDeliveredInStockingUOM())
+						.as(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInStockingUOM)
+						.isEqualByComparingTo(expected));
+	}
+
+	/**
+	 * Updates fields of an EDI_DesadvLine previously registered under an identifier.
+	 *
+	 * <p>Real-world trigger: a user edits the DESADV line in the WebUI (window 540256) after the
+	 * delivery was "emptied" — e.g. zeroing the delivered quantity or deactivating the line. Such a
+	 * line drops out of the pack export and must still surface in the no-pack export section.
+	 *
+	 * <p>Required column:
+	 * <ul>
+	 *   <li>{@code EDI_DesadvLine_ID} – identifier of the line to update</li>
+	 * </ul>
+	 * At least one optional field column must be present:
+	 * <ul>
+	 *   <li>{@code IsActive} – new IsActive flag (Y/N)</li>
+	 *   <li>{@code QtyDeliveredInUOM} – new delivered quantity in the line's UOM</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then EDI_DesadvLine records are updated:
+	 *   | EDI_DesadvLine_ID | QtyDeliveredInUOM |
+	 *   | desadvLine        | 0                 |
+	 * </pre>
+	 */
+	@Then("EDI_DesadvLine records are updated:")
+	public void edi_desadv_line_records_are_updated(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::updateDesadvLine);
+	}
+
+	private void updateDesadvLine(@NonNull final DataTableRow row)
+	{
+		final I_EDI_DesadvLine desadvLine = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_DesadvLine_ID)
+				.lookupNotNullIn(desadvLineTable);
+
+		row.getAsOptionalBoolean(I_EDI_DesadvLine.COLUMNNAME_IsActive).ifPresent(desadvLine::setIsActive);
+		row.getAsOptionalBigDecimal(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM).ifPresent(desadvLine::setQtyDeliveredInUOM);
+
+		saveRecord(desadvLine);
 	}
 
 	@Then("validate created edi desadv line")

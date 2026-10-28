@@ -23,7 +23,9 @@ package de.metas.shipping.model.validator;
  */
 
 import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.document.engine.DocStatus;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -33,8 +35,11 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
+
+import java.util.Collection;
 
 @Validator(I_M_ShipperTransportation.class)
 @RequiredArgsConstructor
@@ -55,10 +60,37 @@ public class M_ShipperTransportation
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void syncOrderDates(final I_M_ShipperTransportation transportOrder)
 	{
-		if (transportOrder.getETA() != null || transportOrder.getBLDate() != null)
+		propagateDatesToOrders(transportOrder);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_M_ShipperTransportation.COLUMNNAME_BLDate, I_M_ShipperTransportation.COLUMNNAME_ETA })
+	public void syncOrderDatesOnEdit(final I_M_ShipperTransportation transportOrder)
+	{
+		final DocStatus docStatus = DocStatus.ofCode(transportOrder.getDocStatus());
+		if (!docStatus.isCompletedOrClosed())
 		{
-			shipperTransportationDAO.retrieveOrderIds(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()))
-					.forEach(orderId -> orderBL.syncDatesFromTransportOrder(orderId, transportOrder));
+			return; // tentative draft/in-progress transport-order dates must not drive the purchase order's due date
 		}
+
+		propagateDatesToOrders(transportOrder);
+	}
+
+	/**
+	 * Push the transport order's BL/ETA dates onto every linked PURCHASE order's pay-schedule due dates (no-op when
+	 * neither date is set). Sales orders can be linked to the same transport order but must never receive these dates.
+	 */
+	private void propagateDatesToOrders(@NonNull final I_M_ShipperTransportation transportOrder)
+	{
+		if (transportOrder.getETA() == null && transportOrder.getBLDate() == null)
+		{
+			return;
+		}
+
+		final Collection<OrderId> orderIds = shipperTransportationDAO.retrieveOrderIds(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()));
+		orderBL.getByIds(orderIds)
+				.stream()
+				.filter(order -> !orderBL.isSalesOrder(order))
+				.forEach(order -> orderBL.syncDatesFromTransportOrder(OrderId.ofRepoId(order.getC_Order_ID()), transportOrder));
 	}
 }

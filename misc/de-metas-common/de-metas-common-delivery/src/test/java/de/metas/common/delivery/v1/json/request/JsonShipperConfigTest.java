@@ -26,11 +26,63 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonShipperConfigTest {
+
+    private static JsonShipperConfig baseConfig(@Nullable final String existingServiceLevel)
+    {
+        final JsonShipperConfig.JsonShipperConfigBuilder b = JsonShipperConfig.builder()
+                .url("https://api.nshift.example")
+                .username("user")
+                .password("pass")
+                .clientId("cid")
+                .clientSecret("csecret")
+                .trackingUrlTemplate("https://track.example/{awb}")
+                .additionalProperty("ActorId", "ACT123");
+        if (existingServiceLevel != null)
+        {
+            b.additionalProperty("ServiceLevel", existingServiceLevel);
+        }
+        return b.build();
+    }
+
+    @Test
+    void withAdditionalProperty_overridesExistingKey()
+    {
+        final JsonShipperConfig base = baseConfig("OLD_LEVEL");
+        final JsonShipperConfig result = base.withAdditionalProperty("ServiceLevel", "NEW_LEVEL");
+
+        assertThat(result.getAdditionalProperty("ServiceLevel")).isEqualTo("NEW_LEVEL");
+        assertThat(result.getAdditionalProperty("ActorId")).isEqualTo("ACT123");
+    }
+
+    @Test
+    void withAdditionalProperty_addsNewKey()
+    {
+        final JsonShipperConfig base = baseConfig(null);
+        final JsonShipperConfig result = base.withAdditionalProperty("ServiceLevel", "EXPRESS");
+
+        assertThat(result.getAdditionalProperty("ServiceLevel")).isEqualTo("EXPRESS");
+        assertThat(result.getAdditionalProperty("ActorId")).isEqualTo("ACT123");
+    }
+
+    @Test
+    void withAdditionalProperty_preservesAllBaseFields()
+    {
+        final JsonShipperConfig base = baseConfig(null);
+        final JsonShipperConfig result = base.withAdditionalProperty("ServiceLevel", "STANDARD");
+
+        assertThat(result.getUrl()).isEqualTo(base.getUrl());
+        assertThat(result.getUsername()).isEqualTo(base.getUsername());
+        assertThat(result.getPassword()).isEqualTo(base.getPassword());
+        assertThat(result.getClientId()).isEqualTo(base.getClientId());
+        assertThat(result.getClientSecret()).isEqualTo(base.getClientSecret());
+        assertThat(result.getTrackingUrlTemplate()).isEqualTo(base.getTrackingUrlTemplate());
+    }
 
     private static ObjectMapper mapper() {
         final ObjectMapper m = new ObjectMapper();

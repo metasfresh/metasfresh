@@ -38,6 +38,42 @@ DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_report_sub
 		IN AD_Org_ID numeric,
 		IN AD_Language Character Varying (6)
 	);	
+DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_report
+	(
+		IN Base_Period_Start date,
+		IN Base_Period_End date,
+		IN Comp_Period_Start date,
+		IN Comp_Period_End date,
+		IN issotrx character varying,
+		IN C_BPartner_ID numeric,
+		IN C_Activity_ID numeric,
+		IN M_Product_ID numeric,
+		IN M_Product_Category_ID numeric,
+		IN M_AttributeSetInstance_ID numeric,
+		IN AD_Org_ID numeric,
+		IN AD_Language Character Varying (6),
+		IN C_BP_Group_ID numeric,
+		IN C_BPartner_SalesRep_ID numeric
+	);
+
+DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_report_sub
+	(
+		IN Base_Period_Start date,
+		IN Base_Period_End date,
+		IN Comp_Period_Start date,
+		IN Comp_Period_End date,
+		IN issotrx character varying,
+		IN C_BPartner_ID numeric,
+		IN C_Activity_ID numeric,
+		IN M_Product_ID numeric,
+		IN M_Product_Category_ID numeric,
+		IN M_AttributeSetInstance_ID numeric,
+		IN AD_Org_ID numeric,
+		IN AD_Language Character Varying (6),
+		IN C_BP_Group_ID numeric,
+		IN C_BPartner_SalesRep_ID numeric
+	);
+
 DROP TABLE IF EXISTS report.umsatzliste_bpartner_report;
 DROP TABLE IF EXISTS report.umsatzliste_bpartner_report_sub;
 
@@ -70,7 +106,10 @@ CREATE TABLE report.umsatzliste_bpartner_report_sub
 	param_Product_Category character varying(60),
 	Param_Attributes character varying(255),
 	currency character(3),
-	ad_org_id numeric
+	ad_org_id numeric,
+	delivery_bp_name character varying(100),
+	param_bp_group character varying(60),
+	param_salesrep character varying(100)
 )
 WITH (
 	OIDS=FALSE
@@ -89,12 +128,14 @@ CREATE FUNCTION report.umsatzliste_bpartner_report_sub
 		IN M_Product_Category_ID numeric,
 		IN M_AttributeSetInstance_ID numeric,
 		IN AD_Org_ID numeric,
-		IN AD_Language Character Varying (6)
+		IN AD_Language Character Varying (6),
+		IN C_BP_Group_ID numeric,
+		IN C_BPartner_SalesRep_ID numeric
 	) 
 	RETURNS SETOF report.umsatzliste_bpartner_report_sub AS
 $BODY$
 SELECT
-	bp.Name AS bp_name,
+	report._merge_bp_name(bp.Name, a.delivery_bp_name) AS bp_name,
 	pc.Name AS pc_name, 
 	COALESCE(pt.Name, p.Name) AS P_name,
 	SamePeriodSum,
@@ -126,7 +167,10 @@ SELECT
 	(SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $10) AS Param_Attributes,
 
 	c.iso_code AS currency,
-	a.ad_org_id
+	a.ad_org_id,
+	a.delivery_bp_name,
+	(SELECT name FROM C_BP_Group WHERE C_BP_Group_ID = $13 AND isActive = 'Y') AS param_bp_group,
+	(SELECT name FROM C_BPartner WHERE C_BPartner_ID = $14 AND isActive = 'Y') AS param_salesrep
 
 FROM
 	(
@@ -139,7 +183,11 @@ FROM
 			SUM( CASE WHEN IsInPeriod THEN 	il.qtyinvoiced ELSE 0 END ) AS SamePeriodQtySum,
 			SUM( CASE WHEN IsInCompPeriod THEN il.qtyinvoiced ELSE 0 END  ) AS CompPeriodQtySum,
 			1 AS Line_Order,
-			fa.ad_org_id
+			fa.ad_org_id,
+			COALESCE(
+				CASE WHEN ord.IsDropShip = 'Y' THEN bp_dropship.Name END,
+				bp_orderer.Name
+			) AS delivery_bp_name
 		FROM
 			(
 				SELECT 	fa.*, 
@@ -157,10 +205,19 @@ FROM
 			 * filters Fact Acct records for e.g. Taxes
 			 */  
 			INNER JOIN M_Product p ON fa.M_Product_ID = p.M_Product_ID
+
+			-- DropShip / delivery recipient joins
+			LEFT JOIN C_OrderLine ol_ds ON il.C_OrderLine_ID = ol_ds.C_OrderLine_ID AND ol_ds.isActive = 'Y'
+			LEFT JOIN C_Order ord ON ol_ds.C_Order_ID = ord.C_Order_ID AND ord.isActive = 'Y'
+			LEFT JOIN C_BPartner bp_dropship ON ord.DropShip_BPartner_ID = bp_dropship.C_BPartner_ID AND bp_dropship.isActive = 'Y'
+			LEFT JOIN C_BPartner bp_orderer ON ord.C_BPartner_ID = bp_orderer.C_BPartner_ID AND bp_orderer.isActive = 'Y'
 		WHERE
 			AD_Table_ID = ( SELECT Get_Table_ID( 'C_Invoice' ) )
 			AND ( IsInPeriod OR IsInCompPeriod )
 			AND i.IsSOtrx = $5
+			-- Sales partner: taken from the invoice DOCUMENT, not from the partner master record.
+			-- A document with no sales partner is excluded once a sales partner is selected.
+			AND ( CASE WHEN $14 IS NULL THEN TRUE ELSE i.C_BPartner_SalesRep_ID = $14 END )
 			AND ( CASE WHEN $6 IS NULL THEN TRUE ELSE fa.C_BPartner_ID = $6 END )
 			AND ( CASE WHEN $7 IS NULL THEN TRUE ELSE fa.C_Activity_ID = $7 END )
 			AND ( CASE WHEN $8 IS NULL THEN TRUE ELSE p.M_Product_ID = $8 END AND p.M_Product_ID IS NOT NULL )
@@ -193,7 +250,8 @@ FROM
 		GROUP BY
 			fa.C_BPartner_ID,
 			fa.M_Product_ID,
-			fa.ad_org_id
+			fa.ad_org_id,
+			COALESCE(CASE WHEN ord.IsDropShip = 'Y' THEN bp_dropship.Name END, bp_orderer.Name)
 	) a
 
 	INNER JOIN C_BPartner bp ON a.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
@@ -204,6 +262,10 @@ FROM
 	LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID=bp.ad_client_id AND ci.isActive = 'Y'
 	LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID AND acs.isActive = 'Y'
 	LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID AND c.isActive = 'Y'
+
+WHERE
+	-- Business partner group: C_BPartner is joined after the aggregating subquery in this report
+	( CASE WHEN $13 IS NULL THEN TRUE ELSE bp.C_BP_Group_ID = $13 END )
 	
 
 $BODY$
@@ -237,6 +299,9 @@ CREATE TABLE report.umsatzliste_bpartner_report
 	Param_Attributes character varying(255),
 	currency character(3),
 	ad_org_id numeric,
+	delivery_bp_name character varying(100),
+	param_bp_group character varying(60),
+	param_salesrep character varying(100),
 	unionorder integer
 )
 WITH (
@@ -256,7 +321,9 @@ CREATE FUNCTION report.umsatzliste_bpartner_report
 		IN M_Product_Category_ID numeric,
 		IN M_AttributeSetInstance_ID numeric,
 		IN AD_Org_ID numeric,
-		IN AD_Language Character Varying (6)
+		IN AD_Language Character Varying (6),
+		IN C_BP_Group_ID numeric,
+		IN C_BPartner_SalesRep_ID numeric
 		
 	) 
 	RETURNS SETOF report.umsatzliste_bpartner_report AS
@@ -264,7 +331,7 @@ $BODY$
 	SELECT 
 		*, 1 AS UnionOrder
 	FROM 	
-		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 UNION ALL
 	SELECT 
 		bp_name, pc_name, null AS P_name,
@@ -287,13 +354,15 @@ UNION ALL
 		
 		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, 
 		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes, currency, ad_org_id,
+		NULL::varchar(100) AS delivery_bp_name,
+		param_bp_group, param_salesrep,
 		2 AS UnionOrder
 	FROM 	
-		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 	GROUP BY
 		bp_name, pc_name, 
 		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, 
-		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes, currency, ad_org_id
+		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes, currency, ad_org_id, param_bp_group, param_salesrep
 UNION ALL
 	SELECT 
 		bp_name, null, null,
@@ -316,13 +385,15 @@ UNION ALL
 		
 		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, 
 		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes, currency, ad_org_id,
+		NULL::varchar(100) AS delivery_bp_name,
+		param_bp_group, param_salesrep,
 		3 AS UnionOrder
 	FROM 	
-		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 	GROUP BY
 		bp_name, 
 		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, 
-		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes, currency, ad_org_id
+		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes, currency, ad_org_id, param_bp_group, param_salesrep
 ORDER BY
 	bp_name, pc_name NULLS LAST, UnionOrder, p_name
 $BODY$

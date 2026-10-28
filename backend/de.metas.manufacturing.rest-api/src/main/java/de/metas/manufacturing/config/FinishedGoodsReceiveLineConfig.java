@@ -11,6 +11,8 @@ public class FinishedGoodsReceiveLineConfig
 	boolean allowReceiveToTU;
 	boolean skipReceiveTargetStep;
 	boolean captureCatchWeight;
+	boolean allowReceiveWithoutPackingItem;
+
 	/**
 	 * Catch-weight scan required, effective: setting on AND main finished good AND catch-weight product.
 	 * Does not depend on {@link #captureCatchWeight}: without it the scan fills lot and best-before date only.

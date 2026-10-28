@@ -144,7 +144,7 @@ import java.util.Set;
 
 		//
 		// Retrieve Plant of current warehouse (where our Quantitites currently are)
-		final I_M_Warehouse warehouse = locator.getM_Warehouse();
+		final I_M_Warehouse warehouse = warehouseDAO.getById(WarehouseId.ofRepoId(locator.getM_Warehouse_ID()));
 		final ResourceId warehousePlantId = productPlanningDAO.findPlantId(warehouse.getAD_Org_ID(),
 				warehouse,
 				attributeSetInstanceAware.getM_Product_ID(),

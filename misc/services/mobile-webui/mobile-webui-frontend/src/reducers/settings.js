@@ -39,6 +39,14 @@ export const useSetting = (name) => {
   return useSelector((state) => getSettingFromState(state, name));
 };
 
+// True once the backend settings response has been stored (SETTING_PUT dispatched). Lets a
+// component tell "settings not fetched yet" (all values undefined → hook defaults) apart from
+// "settings loaded, this key is genuinely absent" — needed to adopt a settings-derived default
+// exactly once, when settings first arrive.
+export const useIsSettingsLoaded = () => {
+  return useSelector((state) => state?.settings?.backend != null);
+};
+
 const getSettingFromState = (state, name) => {
   //console.log('getSettingFromState', { name, value, state });
   return state?.settings?.backend?.[name];

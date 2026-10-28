@@ -277,6 +277,27 @@ public interface I_M_DiscountSchema
 	String COLUMNNAME_IsBPartnerFlatDiscount = "IsBPartnerFlatDiscount";
 
 	/**
+	 * Set Skip Inactive Prices.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSkipInactivePrices (boolean IsSkipInactivePrices);
+
+	/**
+	 * Get Skip Inactive Prices.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSkipInactivePrices();
+
+	ModelColumn<I_M_DiscountSchema, Object> COLUMN_IsSkipInactivePrices = new ModelColumn<>(I_M_DiscountSchema.class, "IsSkipInactivePrices", null);
+	String COLUMNNAME_IsSkipInactivePrices = "IsSkipInactivePrices";
+
+	/**
 	 * Set Price Schema - Calculated Surcharge.
 	 *
 	 * <br>Type: TableDir
@@ -434,4 +455,27 @@ public interface I_M_DiscountSchema
 
 	ModelColumn<I_M_DiscountSchema, Object> COLUMN_ValidFrom = new ModelColumn<>(I_M_DiscountSchema.class, "ValidFrom", null);
 	String COLUMNNAME_ValidFrom = "ValidFrom";
+
+	/**
+	 * Set Valid to.
+	 * Valid to including this date (last day)
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setValidTo (@Nullable java.sql.Timestamp ValidTo);
+
+	/**
+	 * Get Valid to.
+	 * Valid to including this date (last day)
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getValidTo();
+
+	ModelColumn<I_M_DiscountSchema, Object> COLUMN_ValidTo = new ModelColumn<>(I_M_DiscountSchema.class, "ValidTo", null);
+	String COLUMNNAME_ValidTo = "ValidTo";
 }

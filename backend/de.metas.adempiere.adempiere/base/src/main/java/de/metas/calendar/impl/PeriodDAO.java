@@ -29,9 +29,13 @@ import de.metas.document.DocBaseType;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Properties;
 
@@ -50,5 +54,16 @@ public class PeriodDAO implements IPeriodDAO
 						record -> DocBaseType.ofCode(record.getDocBaseType()),
 						record -> record
 				));
+	}
+
+	@Override
+	public LocalDate getEndDateById(final int periodId)
+	{
+		final I_C_Period period = InterfaceWrapperHelper.load(periodId, I_C_Period.class);
+		if (period == null)
+		{
+			throw new AdempiereException("No C_Period found for C_Period_ID=" + periodId);
+		}
+		return period.getEndDate().toLocalDateTime().toLocalDate();
 	}
 }

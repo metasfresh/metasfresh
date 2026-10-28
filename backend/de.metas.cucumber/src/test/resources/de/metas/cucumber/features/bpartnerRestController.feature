@@ -118,7 +118,7 @@ Feature:bpartner get using metasfresh api
           "purchaseDefault": false,
           "subjectMatter": false,
           "invoiceEmailEnabled": null,
-          "metasfreshLocationId": null
+          "metasfreshLocationId": @BPartnerLocation_1234_ID@
         }
       ]
     }
@@ -237,7 +237,7 @@ Feature:bpartner get using metasfresh api
           "purchaseDefault": false,
           "subjectMatter": false,
           "invoiceEmailEnabled": null,
-          "metasfreshLocationId": null,
+          "metasfreshLocationId": @BPartnerLocation_by_extSystem_ID@,
           "changeInfo": {
             "createdMillis": 2461561200000,
             "createdBy": 100,

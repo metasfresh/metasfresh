@@ -94,6 +94,38 @@ public class PickingJobStepPickedTo
 		return toBuilder().actualPickedHUs(actualPickedHUsNew).build();
 	}
 
+	/**
+	 * Returns a copy with {@code huToReduce} replaced by a copy of itself carrying {@code reducedQtyPicked}.
+	 * Used by the partial (split-boundary) unpick: the boundary CU is physically split so only part of its
+	 * qty is removed; the remainder stays packed on the SAME underlying HU, so the model entry is kept but
+	 * its qty is lowered. {@code reducedQtyPicked} must be > 0 (a zero remainder means the whole HU was taken,
+	 * which is handled via {@link #removing(List)} instead).
+	 */
+	@NonNull
+	public PickingJobStepPickedTo reducingHuQty(
+			@NonNull final PickingJobStepPickedToHU huToReduce,
+			@NonNull final Quantity reducedQtyPicked)
+	{
+		if (reducedQtyPicked.signum() <= 0)
+		{
+			throw new AdempiereException("reducedQtyPicked must be > 0; got " + reducedQtyPicked
+					+ " for " + huToReduce);
+		}
+
+		final ImmutableList<PickingJobStepPickedToHU> actualPickedHUsNew = this.actualPickedHUs.stream()
+				.map(pickedHU -> Objects.equals(pickedHU, huToReduce)
+						? pickedHU.toBuilder().qtyPicked(reducedQtyPicked).build()
+						: pickedHU)
+				.collect(ImmutableList.toImmutableList());
+
+		if (actualPickedHUsNew.equals(this.actualPickedHUs))
+		{
+			throw new AdempiereException("HU to reduce was not found in pickedTo: " + huToReduce);
+		}
+
+		return toBuilder().actualPickedHUs(actualPickedHUsNew).build();
+	}
+
 	@NonNull
 	public List<HuId> getPickedHuIds()
 	{

@@ -48,7 +48,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 {
 	@NonNull private final PostMaterialEventService postMaterialEventService;
 	@NonNull private final List<SupplyRequiredAdvisor> supplyRequiredAdvisors;
-	@NonNull private final SupplyRequiredHandlerHelper helper;
+	@NonNull private final MaterialPlanningContextHelper helper;
 
 	@Override
 	public Collection<Class<? extends SupplyRequiredEvent>> getHandledEventType()
