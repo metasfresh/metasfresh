@@ -69,7 +69,7 @@ public class SEPATestHelper
 	{
 		createMockData();
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		return command.run();
+		return command.run().getSingleExport().getExport();
 	}
 	
 	public void createMockData()

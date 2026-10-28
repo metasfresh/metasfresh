@@ -12,6 +12,7 @@ import de.metas.money.CurrencyId;
 import de.metas.banking.mandate.DirectDebitMandateRepository;
 import de.metas.banking.mandate.DirectDebitMandateType;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.payment.sepa.api.CreatedSEPAExports.CreatedSEPAExport;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
@@ -60,7 +61,7 @@ public class SEPAExportFromPaySelectionChainTest
 
 	private static final String NAMESPACE_PAIN_001_001_09 = "urn:iso:std:iso:20022:tech:xsd:pain.001.001.09";
 	private static final String NAMESPACE_PAIN_001_001_03_CH_02 = "http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd";
-	private static final String NAMESPACE_PAIN_008_003_02 = "urn:iso:std:iso:20022:tech:xsd:pain.008.003.02";
+	private static final String NAMESPACE_PAIN_008_001_08 = "urn:iso:std:iso:20022:tech:xsd:pain.008.001.08";
 
 	private static final String DEBTOR_IBAN = "CH72 8000 5000 0888 7776 6";
 	private static final String DEBTOR_BIC = "RAIFCH22005";
@@ -128,7 +129,7 @@ public class SEPAExportFromPaySelectionChainTest
 	}
 
 	@Test
-	void directDebit_pain001_001_03_ch_02Chosen_exportsPain008_003_02()
+	void directDebit_pain001_001_03_ch_02Chosen_exportsPain008_001_08()
 	{
 		final I_C_PaySelection paySelection = createPaySelection(PaySelectionTrxType.DIRECT_DEBIT);
 		final I_C_BP_BankAccount vendorBankAccount = createVendorBankAccount(CREDITOR_IBAN_CH, null);
@@ -137,7 +138,7 @@ public class SEPAExportFromPaySelectionChainTest
 
 		final byte[] xml = exportAsProcessDoes(paySelection, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
 
-		assertThat(rootNamespace(xml)).isEqualTo(NAMESPACE_PAIN_008_003_02);
+		assertThat(rootNamespace(xml)).isEqualTo(NAMESPACE_PAIN_008_001_08);
 	}
 
 	/**
@@ -149,12 +150,12 @@ public class SEPAExportFromPaySelectionChainTest
 		final I_C_PaySelection paySelection = createPaySelection(PaySelectionTrxType.CREDIT_TRANSFER);
 		createPaySelectionLine(paySelection, createVendorBankAccount(null, CREDITOR_QR_IBAN), QR_REFERENCE);
 
-		final I_SEPA_Export sepaExport = createSEPAExport(paySelection, null);
-		final List<I_SEPA_Export_Line> exportLines = Services.get(ISEPADocumentBL.class).retrieveLines(sepaExport);
+		final CreatedSEPAExport createdExport = createSEPAExport(paySelection, null);
+		final List<I_SEPA_Export_Line> exportLines = Services.get(ISEPADocumentBL.class).retrieveLines(createdExport.getExport());
 		assertThat(exportLines).extracting(I_SEPA_Export_Line::getIBAN).containsExactly("CH4431999123000889012");
 		assertThat(exportLines).extracting(I_SEPA_Export_Line::getStructuredRemittanceInfo).containsExactly(QR_REFERENCE);
 
-		final byte[] xml = exportXml(sepaExport);
+		final byte[] xml = exportXml(createdExport);
 
 		assertValidAgainstXsd(xml);
 		final Document doc = parse(xml);
@@ -199,19 +200,26 @@ public class SEPAExportFromPaySelectionChainTest
 		return exportXml(createSEPAExport(paySelection, chosenProtocol));
 	}
 
-	private static I_SEPA_Export createSEPAExport(@NonNull final I_C_PaySelection paySelection, @Nullable final SEPAProtocol chosenProtocol)
+	private static CreatedSEPAExport createSEPAExport(@NonNull final I_C_PaySelection paySelection, @Nullable final SEPAProtocol chosenProtocol)
 	{
-		final I_SEPA_Export sepaExport = Services.get(ISEPADocumentBL.class).createSEPAExportFromPaySelection(paySelection, false, chosenProtocol);
+		final CreatedSEPAExport createdExport = Services.get(ISEPADocumentBL.class).createSEPAExportFromPaySelection(paySelection, false, chosenProtocol).getSingleExport();
+		final I_SEPA_Export sepaExport = createdExport.getExport();
 		// in the application, the document number comes from the SEPA_Export document sequence when the record is first saved; the in-memory test DB has no sequences
 		sepaExport.setDocumentNo("1000001");
 		save(sepaExport);
-		return sepaExport;
+		return createdExport;
 	}
 
-	private static byte[] exportXml(@NonNull final I_SEPA_Export sepaExport)
+	/**
+	 * Same export context as the process: the mandates of the created export are handed to the writer.
+	 */
+	private static byte[] exportXml(@NonNull final CreatedSEPAExport createdExport)
 	{
-		final SEPAExportContext exportContext = SEPAExportContext.builder().referenceAsEndToEndId(false).build();
-		return Services.get(ISEPADocumentBL.class).exportCreditTransferXML(sepaExport, exportContext).getContent();
+		final SEPAExportContext exportContext = SEPAExportContext.builder()
+				.referenceAsEndToEndId(false)
+				.directDebitMandates(createdExport.getMandatesBySepaExportLineId())
+				.build();
+		return Services.get(ISEPADocumentBL.class).exportCreditTransferXML(createdExport.getExport(), exportContext).getContent();
 	}
 
 	private I_C_PaySelection createPaySelection(@NonNull final PaySelectionTrxType trxType)

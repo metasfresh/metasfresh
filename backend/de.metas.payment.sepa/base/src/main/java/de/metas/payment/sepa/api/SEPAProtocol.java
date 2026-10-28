@@ -38,7 +38,11 @@ public enum SEPAProtocol implements ReferenceListAwareEnum
 {
 	CREDIT_TRANSFER_PAIN_001_001_03_CH_02(X_SEPA_Export.SEPA_PROTOCOL_CreditTransferPain00100103Ch02), //
 	CREDIT_TRANSFER_PAIN_001_001_09_CH_03(X_SEPA_Export.SEPA_PROTOCOL_CreditTransferPain00100109Ch03), //
-	DIRECT_DEBIT_PAIN_008_003_02(X_SEPA_Export.SEPA_PROTOCOL_DirectDebitPain00800302) //
+	/**
+	 * Old direct debit format; no longer chosen for new exports (see {@link #ofPaySelectionTrxType}), kept for exports created with it.
+	 */
+	DIRECT_DEBIT_PAIN_008_003_02(X_SEPA_Export.SEPA_PROTOCOL_DirectDebitPain00800302), //
+	DIRECT_DEBIT_PAIN_008_001_08(X_SEPA_Export.SEPA_PROTOCOL_DirectDebitPain00800108) //
 	;
 
 	private static final ValuesIndex<SEPAProtocol> index = ReferenceListAwareEnums.index(values());
@@ -89,7 +93,7 @@ public enum SEPAProtocol implements ReferenceListAwareEnum
 		}
 		else if (PaySelectionTrxType.DIRECT_DEBIT.equals(paySelectionTrxType))
 		{
-			return DIRECT_DEBIT_PAIN_008_003_02;
+			return DIRECT_DEBIT_PAIN_008_001_08;
 		}
 		else
 		{
