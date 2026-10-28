@@ -12,9 +12,10 @@ Feature: Dunning letter print without an archived invoice PDF
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     # no async processing, so completing the invoice does not archive its PDF
-    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And set sys config boolean value false for sys config de.metas.report.jasper.IsMockReportService
-    And set sys config String value de.metas.report.server.LocalReportServer for sys config de.metas.report.jasper.client.JRServerClass
+    And for this scenario only, set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And for this scenario only, set sys config boolean value false for sys config de.metas.report.jasper.IsMockReportService
+    # the dunning print runs the report through the report client, which would call a remote report server by default
+    And for this scenario only, set sys config String value de.metas.report.server.LocalReportServer for sys config de.metas.report.jasper.client.JRServerClass
     And reset all cache
     And metasfresh has date and time 2025-04-01T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -76,10 +77,3 @@ Feature: Dunning letter print without an archived invoice PDF
 
     Then the printed PDF of C_DunningDoc "dunningDoc" is the dunning letter only
 
-
-  ##################################################################
-  ##################################################################
-  ##################################################################
-  # dev-note: separate scenario, so that the async processing is switched back on even if the scenario above fails
-  Scenario: Re-enable async processing
-    Given set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION

@@ -180,7 +180,8 @@ public class C_DunningDoc_StepDef
 		final DunningPrintResult printResult = printResults.get(StepDefDataIdentifier.ofString(dunningDocIdentifier));
 		assertThat(printResult).as("print result of C_DunningDoc " + dunningDocIdentifier).isNotNull();
 
-		final int letterPageCount = pageTexts(printResult.getLetterOnly()).size();
+		final List<String> letterPageTexts = pageTexts(printResult.getLetterOnly());
+		final int letterPageCount = letterPageTexts.size();
 		assertThat(letterPageCount).as("page count of the dunning letter alone").isGreaterThan(0);
 
 		final List<String> expectedAttachedPageTexts = new ArrayList<>();
@@ -199,9 +200,23 @@ public class C_DunningDoc_StepDef
 		assertThat(actualPageTexts)
 				.as("page count of the printed PDF = dunning letter pages + archived invoice PDF pages")
 				.hasSize(letterPageCount + expectedAttachedPageTexts.size());
+		assertThat(actualPageTexts.subList(0, letterPageCount))
+				.as("leading pages of the printed PDF = the dunning letter")
+				.isEqualTo(letterPageTexts);
 		assertThat(actualPageTexts.subList(letterPageCount, actualPageTexts.size()))
 				.as("pages after the dunning letter = archived invoice PDF pages, in invoice order")
 				.isEqualTo(expectedAttachedPageTexts);
+
+		// the appended pages are the invoices' documents: each invoice's document number is printed on its own pages
+		int nextPage = letterPageCount;
+		for (final I_C_Invoice invoice : expectedAttachedInvoices)
+		{
+			final int invoicePageCount = pageTexts(archiveBL.getLastArchiveBinaryData(TableRecordReference.of(invoice)).get()).size();
+			assertThat(String.join("", actualPageTexts.subList(nextPage, nextPage + invoicePageCount)))
+					.as("appended pages of invoice " + invoice.getDocumentNo())
+					.contains(invoice.getDocumentNo());
+			nextPage += invoicePageCount;
+		}
 	}
 
 	private byte[] runPrintProcess(@NonNull final String processValue, @NonNull final DunningDocId dunningDocId)

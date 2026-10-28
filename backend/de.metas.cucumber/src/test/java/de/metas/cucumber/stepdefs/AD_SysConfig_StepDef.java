@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.cache.CacheMgt;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -33,6 +34,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
@@ -48,8 +50,60 @@ public class AD_SysConfig_StepDef
 		this.userTable = userTable;
 	}
 
+	/**
+	 * Sys configs set with {@link #enable_sys_config_for_this_scenario_only}, mapped to the value they had before (null = no value).
+	 * The first value seen per name wins, so that it is the one that gets restored.
+	 */
+	private final Map<String, String> sysConfigValuesToRestore = new LinkedHashMap<>();
+
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
+	{
+		setSysConfig(sysconfigType, sysconfigValue, sysConfigName);
+	}
+
+	/**
+	 * For a sys config that is global state shared by every scenario on the executor: the previous value is put back by the {@code @After} hook below, also if the scenario or its Background fails.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And for this scenario only, set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+	 * </pre>
+	 */
+	@And("^for this scenario only, set sys config (String|boolean|int) value (.*) for sys config (.*)$")
+	public void enable_sys_config_for_this_scenario_only(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
+	{
+		if (!sysConfigValuesToRestore.containsKey(sysConfigName)) // not computeIfAbsent: the previous value may be null
+		{
+			sysConfigValuesToRestore.put(sysConfigName, retrieveCurrentValue(sysConfigName));
+		}
+		setSysConfig(sysconfigType, sysconfigValue, sysConfigName);
+	}
+
+	/**
+	 * Fires for every scenario, regardless of pass/fail; no-op when nothing was set with {@link #enable_sys_config_for_this_scenario_only}.
+	 */
+	@After
+	public void restoreSysConfigs()
+	{
+		if (sysConfigValuesToRestore.isEmpty())
+		{
+			return;
+		}
+
+		sysConfigValuesToRestore.forEach((name, previousValue) -> sysConfigBL.setValue(name, previousValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM));
+		sysConfigValuesToRestore.clear();
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+		CacheMgt.get().reset(); // also drops caches derived from the sys config, e.g. the report server
+	}
+
+	private String retrieveCurrentValue(@NonNull final String sysConfigName)
+	{
+		return sysConfigBL.getValue(sysConfigName, null, ClientId.SYSTEM.getRepoId(), StepDefConstants.ORG_ID_SYSTEM.getRepoId());
+	}
+
+	private void setSysConfig(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
 		switch (sysconfigType)
 		{

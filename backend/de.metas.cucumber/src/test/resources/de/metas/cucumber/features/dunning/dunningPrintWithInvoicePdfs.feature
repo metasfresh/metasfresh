@@ -12,9 +12,10 @@ Feature: Dunning letter print with attached invoice PDFs
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And set sys config boolean value false for sys config de.metas.report.jasper.IsMockReportService
-    And set sys config String value de.metas.report.server.LocalReportServer for sys config de.metas.report.jasper.client.JRServerClass
+    And for this scenario only, set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And for this scenario only, set sys config boolean value false for sys config de.metas.report.jasper.IsMockReportService
+    # the dunning print runs the report through the report client, which would call a remote report server by default
+    And for this scenario only, set sys config String value de.metas.report.server.LocalReportServer for sys config de.metas.report.jasper.client.JRServerClass
     And reset all cache
     And metasfresh has date and time 2025-04-01T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -79,11 +80,3 @@ Feature: Dunning letter print with attached invoice PDFs
       | salesInvoice1 |
 
 
-
-  ##################################################################
-  ##################################################################
-  ##################################################################
-  # dev-note: separate scenario, so that the report server configuration is reset even if the scenario above fails
-  Scenario: Reset the report server configuration
-    Given set sys config String value null for sys config de.metas.report.jasper.client.JRServerClass
-    And reset all cache
