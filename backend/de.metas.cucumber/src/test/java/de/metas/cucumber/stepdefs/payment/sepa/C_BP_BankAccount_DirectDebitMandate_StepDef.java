@@ -53,6 +53,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Step definitions for the SEPA direct debit mandates of a debtor bank account ({@code C_BP_BankAccount_DirectDebitMandate}):
+ * creating them, validating their fields, and asserting that a business partner has none.
+ * The DataTable columns of each step are documented on its method.
+ * <pre>
+ * And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
+ *   | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring |
+ *   | mandate                                | debtorAcct          | B2B         | MREF-001         | 2013-09-23  | Y           |
+ * Then validate C_BP_BankAccount_DirectDebitMandate:
+ *   | C_BP_BankAccount_DirectDebitMandate_ID | DateLastUsed |
+ *   | mandate                                | 2026-10-20   |
+ * And C_BPartner "copiedPartner" has no C_BP_BankAccount_DirectDebitMandate
+ * </pre>
+ *
+ * @see C_BP_BankAccount_DirectDebitMandate_StepDefData
+ */
 @RequiredArgsConstructor
 public class C_BP_BankAccount_DirectDebitMandate_StepDef
 {
