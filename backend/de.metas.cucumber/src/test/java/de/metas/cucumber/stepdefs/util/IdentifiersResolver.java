@@ -22,7 +22,12 @@
 
 package de.metas.cucumber.stepdefs.util;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.payment.sepa.C_BP_BankAccount_DirectDebitMandate_StepDefData;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.allocation.api.PaymentAllocationId;
@@ -51,11 +56,12 @@ import de.metas.payment.PaymentId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_CostRevaluation;
@@ -71,7 +77,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 public class IdentifiersResolver
 {
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
@@ -88,6 +93,69 @@ public class IdentifiersResolver
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData checkupReportTable;
 	@NonNull private final SAP_GLJournal_StepDefData sapGLJournalTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final C_BP_BankAccount_StepDefData bankAccountTable;
+	@NonNull private final C_BP_BankAccount_DirectDebitMandate_StepDefData mandateTable;
+	@NonNull private final ImmutableList<StepDefData<?>> stepDefDatas;
+
+	public IdentifiersResolver(
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_Payment_StepDefData paymentTable,
+			@NonNull final C_AllocationHdr_StepDefData allocationTable,
+			@NonNull final M_MatchInv_StepDefData matchInvTable,
+			@NonNull final M_InOut_StepDefData inOutTable,
+			@NonNull final M_Inventory_StepDefData inventoryTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_DunningDoc_StepDefData dunningDocTable,
+			@NonNull final PP_Cost_Collector_StepDefData ppCostCollectorTable,
+			@NonNull final M_CostRevaluation_StepDefData costRevaluationTable,
+			@NonNull final M_ShipperTransportation_StepDefData shipperTransportationTable,
+			@NonNull final PP_Order_StepDefData ppOrderTable,
+			@NonNull final C_Order_MFGWarehouse_Report_StepDefData checkupReportTable,
+			@NonNull final SAP_GLJournal_StepDefData sapGLJournalTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BP_BankAccount_StepDefData bankAccountTable,
+			@NonNull final C_BP_BankAccount_DirectDebitMandate_StepDefData mandateTable)
+	{
+		this.invoiceTable = invoiceTable;
+		this.paymentTable = paymentTable;
+		this.allocationTable = allocationTable;
+		this.matchInvTable = matchInvTable;
+		this.inOutTable = inOutTable;
+		this.inventoryTable = inventoryTable;
+		this.orderTable = orderTable;
+		this.dunningDocTable = dunningDocTable;
+		this.ppCostCollectorTable = ppCostCollectorTable;
+		this.costRevaluationTable = costRevaluationTable;
+		this.shipperTransportationTable = shipperTransportationTable;
+		this.ppOrderTable = ppOrderTable;
+		this.checkupReportTable = checkupReportTable;
+		this.sapGLJournalTable = sapGLJournalTable;
+		this.bpartnerTable = bpartnerTable;
+		this.bankAccountTable = bankAccountTable;
+		this.mandateTable = mandateTable;
+		// checkupReportTable is not a StepDefData, so it is not part of this list
+		this.stepDefDatas = ImmutableList.of(invoiceTable, paymentTable, allocationTable, matchInvTable, inOutTable, inventoryTable, orderTable,
+				dunningDocTable, ppCostCollectorTable, costRevaluationTable, shipperTransportationTable, ppOrderTable, sapGLJournalTable,
+				bpartnerTable, bankAccountTable, mandateTable);
+	}
+
+	@NonNull
+	public StepDefData<?> getStepDefDataByTableName(@NonNull final String tableName)
+	{
+		return stepDefDatas.stream()
+				.filter(stepDefData -> tableName.equals(stepDefData.getTableName()))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No StepDefData registered for table " + tableName));
+	}
+
+	/**
+	 * Registers the record referenced by {@code recordRef} under {@code identifier}, in the StepDefData that is responsible for the record's table.
+	 */
+	public void putRecord(@NonNull final StepDefDataIdentifier identifier, @NonNull final TableRecordReference recordRef)
+	{
+		getStepDefDataByTableName(recordRef.getTableName()).putRecord(identifier, recordRef);
+	}
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -160,6 +228,15 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		sapGLJournalTable.getIdOptional(identifier)
 				.map(id -> TableRecordReference.of(I_SAP_GLJournal.Table_Name, id))
+				.ifPresent(result::add);
+		bpartnerTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_C_BPartner.Table_Name, id))
+				.ifPresent(result::add);
+		bankAccountTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_C_BP_BankAccount.Table_Name, id.getRepoId()))
+				.ifPresent(result::add);
+		mandateTable.getOptional(identifier)
+				.map(TableRecordReference::of)
 				.ifPresent(result::add);
 
 		if (result.isEmpty())
