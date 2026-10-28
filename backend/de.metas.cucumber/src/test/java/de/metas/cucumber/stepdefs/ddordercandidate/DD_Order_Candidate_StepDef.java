@@ -448,8 +448,11 @@ public class DD_Order_Candidate_StepDef
 	}
 
 	@And("^no DD_Order_Candidates found for product (.*)$")
-	public void assertNoCandidatesFoundByProduct(@NonNull final String productIdentifierStr)
+	public void assertNoCandidatesFoundByProduct(@NonNull final String productIdentifierStr) throws InterruptedException
 	{
+		// candidates are removed by asynchronous event handlers, so let them finish before looking
+		rabbitMQStepDef.wait_empty_all_queues();
+
 		final ProductId productId = StepDefDataIdentifier.ofString(productIdentifierStr).lookupIdIn(productTable);
 
 		final List<DDOrderCandidate> candidates = ddOrderCandidateService.list(DDOrderCandidateQuery.builder()

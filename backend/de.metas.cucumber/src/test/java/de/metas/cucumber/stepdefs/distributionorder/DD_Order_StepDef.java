@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.cucumber.stepdefs.ddordercandidate.DD_Order_Candidate_StepDefData;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocList;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
@@ -95,6 +96,7 @@ public class DD_Order_StepDef
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository = SpringContextHolder.instance.getBean(DDOrderCandidateAllocRepository.class);
 	@NonNull private final DD_Order_StepDefData ddOrderTable;
 	@NonNull private final DD_Order_Candidate_StepDefData ddOrderCandidateTable;
+	@NonNull private final DD_OrderLine_StepDefData ddOrderLineTable;
 	@NonNull private final S_Resource_StepDefData resourceTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
@@ -186,8 +188,9 @@ public class DD_Order_StepDef
 	 *   <b>DD_Order_Candidate_ID</b> — (required, identifier-ref) the candidate the DD_Order was generated from<br>
 	 *   <b>DocStatus</b> — (optional) expected doc status<br>
 	 *   <b>Forward_PP_Order_ID</b>, <b>Forward_PP_Order_BOMLine_ID</b>, <b>C_Order_ID</b> — (optional, identifier-ref) expected header references<br>
+	 *   <b>DD_OrderLine_ID</b> — (optional) alias under which the DD_OrderLine generated from the candidate is stored<br>
 	 *   <b>DD_OrderLine_QtyEntered_Total</b> — (optional) expected sum of the DD_Order's line quantities<br>
-	 * @cucumber.depends StepDefData: DD_Order_Candidate_StepDefData, DD_Order_StepDefData, PP_Order_StepDefData, PP_Order_BOMLine_StepDefData
+	 * @cucumber.depends StepDefData: DD_Order_Candidate_StepDefData, DD_Order_StepDefData, DD_OrderLine_StepDefData, PP_Order_StepDefData, PP_Order_BOMLine_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And after not more than 60s, DD_Orders are generated from the following DD_Order_Candidates
@@ -203,6 +206,7 @@ public class DD_Order_StepDef
 			final StepDefDataIdentifier ddOrderIdentifier = row.getAsIdentifier();
 
 			final DDOrderId[] ddOrderIdHolder = new DDOrderId[1];
+			final DDOrderLineId[] ddOrderLineIdHolder = new DDOrderLineId[1];
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> {
 				final DDOrderCandidateAllocList allocs = ddOrderCandidateAllocRepository.getByCandidateIds(Collections.singleton(candidateId));
 				if (allocs.isEmpty())
@@ -210,6 +214,7 @@ public class DD_Order_StepDef
 					return false;
 				}
 				ddOrderIdHolder[0] = allocs.getDDOrderIds().iterator().next();
+				ddOrderLineIdHolder[0] = allocs.getDDOrderLineIds().iterator().next();
 				return true;
 			});
 
@@ -233,6 +238,8 @@ public class DD_Order_StepDef
 				assertThat(actualTotal).as("Total QtyEntered of the DD_OrderLines of " + ddOrderIdentifier).isEqualByComparingTo(expectedTotal);
 			});
 			ddOrderTable.putOrReplace(ddOrderIdentifier, ddOrder);
+			row.getAsOptionalIdentifier("DD_OrderLine_ID")
+					.ifPresent(lineIdentifier -> ddOrderLineTable.putOrReplace(lineIdentifier, ddOrderService.getLineById(ddOrderLineIdHolder[0])));
 		});
 	}
 

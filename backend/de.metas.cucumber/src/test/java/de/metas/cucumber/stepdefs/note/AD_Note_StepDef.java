@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
@@ -44,6 +45,7 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_UserGroup_User_Assign;
 import org.compiere.util.DB;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,6 +64,7 @@ public class AD_Note_StepDef
 	private final AD_User_StepDefData userTable;
 	private final AD_Note_StepDefData noteTable;
 	private final IdentifiersResolver identifiersResolver;
+	private final Map<String, TableRecordReference> rememberedRecordReferences = new HashMap<>();
 
 	public AD_Note_StepDef(
 			@NonNull final AD_Message_StepDefData messageTable,
@@ -73,6 +76,22 @@ public class AD_Note_StepDef
 		this.userTable = userTable;
 		this.noteTable = noteTable;
 		this.identifiersResolver = identifiersResolver;
+	}
+
+	/**
+	 * Remembers which table and record an identifier refers to, so that AD_Notes can still be looked up by it after the record was deleted.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: the StepDefData of the referenced record
+	 * @cucumber.example
+	 * <pre>
+	 * And the record reference of ppOrder is remembered as ppOrderRef
+	 * </pre>
+	 */
+	@And("^the record reference of (.*) is remembered as (.*)$")
+	public void remember_record_reference(@NonNull final String identifier, @NonNull final String rememberedAs)
+	{
+		rememberedRecordReferences.put(rememberedAs, identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(identifier)));
 	}
 
 	@And("AD_Note table is reset")
@@ -191,7 +210,10 @@ public class AD_Note_StepDef
 	private List<I_AD_Note> retrieveNotesForReferencedRecord(@NonNull final DataTableRow row)
 	{
 		final I_AD_Message message = row.getAsIdentifier(I_AD_Note.COLUMNNAME_AD_Message_ID).lookupNotNullIn(messageTable);
-		final TableRecordReference referencedRecord = identifiersResolver.getTableRecordReference(row.getAsIdentifier(I_AD_Note.COLUMNNAME_Record_ID));
+		final StepDefDataIdentifier recordIdentifier = row.getAsIdentifier(I_AD_Note.COLUMNNAME_Record_ID);
+		final TableRecordReference referencedRecord = rememberedRecordReferences.containsKey(recordIdentifier.getAsString())
+				? rememberedRecordReferences.get(recordIdentifier.getAsString())
+				: identifiersResolver.getTableRecordReference(recordIdentifier);
 		final Optional<String> textContains = row.getAsOptionalString("TextContains").filter(Check::isNotBlank);
 
 		return queryBL.createQueryBuilder(I_AD_Note.class)

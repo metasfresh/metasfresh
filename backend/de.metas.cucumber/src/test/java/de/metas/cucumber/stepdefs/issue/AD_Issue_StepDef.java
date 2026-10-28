@@ -29,6 +29,7 @@ import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.error.AdIssueId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
@@ -63,12 +64,16 @@ public class AD_Issue_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final RabbitMQ_StepDef rabbitMQStepDef;
+
 	public AD_Issue_StepDef(
 			@NonNull final AD_Issue_StepDefData issueTable,
-			@NonNull final TestContext testContext)
+			@NonNull final TestContext testContext,
+			@NonNull final RabbitMQ_StepDef rabbitMQStepDef)
 	{
 		this.issueTable = issueTable;
 		this.testContext = testContext;
+		this.rabbitMQStepDef = rabbitMQStepDef;
 	}
 
 	@Given("I_AD_PInstance with id {int} is created")
@@ -147,12 +152,16 @@ public class AD_Issue_StepDef
 
 	/**
 	 * Asserts that no AD_Issue was created since {@code the existing AD_Issue records are remembered}.
+	 * Waits for the material and async queues to drain first, because issues are raised by asynchronous event handlers.
 	 * Accounting (posting) issues are ignored: they stem from the asynchronous posting of documents created in the scenario's background
 	 * (e.g. a completed PP_Product_BOM has no accountable document) and are unrelated to what the scenario verifies.
 	 */
 	@Then("no AD_Issue was created since the existing AD_Issue records were remembered")
-	public void no_AD_Issue_created_since_remembered()
+	public void no_AD_Issue_created_since_remembered() throws InterruptedException
 	{
+		// issues are raised by asynchronous event handlers, so let them finish before looking
+		rabbitMQStepDef.wait_empty_all_queues();
+
 		assertThat(rememberedMaxIssueId)
 				.as("Step 'the existing AD_Issue records are remembered' must run first")
 				.isNotNull();
