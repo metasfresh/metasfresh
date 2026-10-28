@@ -1,7 +1,7 @@
 -- 2026-10-26T12:00:00Z
 -- Northern Ireland as own country (code XI), so that it is printed as country on addresses (delivery note, invoice).
 -- Address format, currency and bank-code layout are copied from United Kingdom (GB); like IC / EA, the 3-letter code is the parent's.
--- Not assigned to the EU country area => tax destination type is "outside country area", same as GB.
+-- In the EU country area from 2021-01-01 (see the last statement) => tax destination type "within country area" for goods.
 INSERT INTO C_Country (AD_Client_ID, AD_Language, AD_Org_ID, AllowCitiesOutOfList, C_Country_ID, C_Currency_ID, CountryCode, CountryCode_3digit, Created, CreatedBy, Description, DisplaySequence, DisplaySequenceLocal, CaptureSequence, HasPostal_Add, HasRegion, IsActive, IsAddressLinesLocalReverse, IsAddressLinesReverse, Name, Updated, UpdatedBy,
                        BankCodeCharType, BranchCodeCharType, AccountNumberLength, BranchCodeLength, BankCodeLength, AccountNumberCharType, BankCodeSeqNo, BranchCodeSeqNo, AccountNumberSeqNo)
 SELECT 0, gb.AD_Language, 0, gb.AllowCitiesOutOfList, 540018 /*From ID Server*/, gb.C_Currency_ID, 'XI', gb.CountryCode_3digit, TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Northern Ireland, United Kingdom', gb.DisplaySequence, gb.DisplaySequenceLocal, gb.CaptureSequence, gb.HasPostal_Add, 'N', 'Y', gb.IsAddressLinesLocalReverse, gb.IsAddressLinesReverse, 'Northern Ireland', TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
@@ -51,7 +51,7 @@ ON CONFLICT (M_AttributeValue_ID) DO NOTHING
 
 -- 2026-10-26T12:00:00Z
 -- Northern Ireland in the EU country area: for goods it follows EU VAT rules since 2021-01-01 (Windsor Framework),
--- so e.g. a delivery DE -> XI is an intra-community supply. Starts when GB's EU assignment ends (2020-12-31).
+-- so e.g. a delivery DE -> XI is an intra-community supply. Starts 2021-01-01, the day after the Brexit transition period ended.
 INSERT INTO C_CountryArea_Assign (AD_Client_ID, AD_Org_ID, C_Country_ID, C_CountryArea_Assign_ID, C_CountryArea_ID, Created, CreatedBy, IsActive, Updated, UpdatedBy, ValidFrom)
 SELECT 0, 0, c.C_Country_ID, 540085 /*From ID Server*/, ca.C_CountryArea_ID, TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y', TO_TIMESTAMP('2026-10-26 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2021-01-01', 'YYYY-MM-DD')
 FROM C_Country c,
