@@ -32,7 +32,7 @@ class SEPAExportFilesZipTest
 	}
 
 	/**
-	 * Two exports are delivered as one ZIP named after the pay selection, one entry {@code <DocumentNo>_<scheme>.xml} per export,
+	 * Two files are packed into one ZIP named {@code <zipBaseName>.zip}, one entry {@code <DocumentNo>_<scheme>.xml} per file,
 	 * all names without illegal file name characters; the warnings of both files are kept.
 	 */
 	@Test
