@@ -1619,3 +1619,6 @@ Feature: Product Statistics Year Comparison - reference replay
     And the product statistics year comparison report for org "-", year "yearN", product "-" contains no rows for products:
       | M_Product_ID |
       | tcOrgOther   |
+    And the product statistics year comparison report for org "-", year "yearN", product "tcOrgOther" contains no rows for products:
+      | M_Product_ID |
+      | tcOrgOther   |
