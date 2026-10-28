@@ -158,11 +158,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		}
 
 		return CreatedSEPAExports.builder()
-				.export(CreatedSEPAExport.builder()
-						.export(header)
-						.scheme(null)
-						.mandatesBySepaExportLineId(ImmutableMap.of())
-						.build())
+				.export(CreatedSEPAExport.withoutMandates(header))
 				.build();
 	}
 
@@ -184,11 +180,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		if (linesByScheme.isEmpty())
 		{
 			// nothing to collect: one export without lines, as for a credit transfer
-			result.export(CreatedSEPAExport.builder()
-					.export(createExportHeader(source))
-					.scheme(null)
-					.mandatesBySepaExportLineId(ImmutableMap.of())
-					.build());
+			result.export(CreatedSEPAExport.withoutMandates(createExportHeader(source)));
 			return result.build();
 		}
 

@@ -31,7 +31,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -46,19 +45,6 @@ public class CreatedSEPAExports
 	@Singular
 	ImmutableList<CreatedSEPAExport> exports;
 
-	/**
-	 * @throws AdempiereException if there is not exactly one export
-	 */
-	@NonNull
-	public CreatedSEPAExport getSingleExport()
-	{
-		if (exports.size() != 1)
-		{
-			throw new AdempiereException("Expected exactly one SEPA export but got " + exports.size());
-		}
-		return exports.get(0);
-	}
-
 	@Value
 	@Builder
 	public static class CreatedSEPAExport
@@ -66,7 +52,7 @@ public class CreatedSEPAExports
 		@NonNull I_SEPA_Export export;
 
 		/**
-		 * The mandate type of all lines of this export; {@code null} for a credit transfer.
+		 * The mandate type of all lines of this export; {@code null} for a credit transfer, or for a direct debit without exportable lines.
 		 */
 		@Nullable DirectDebitMandateType scheme;
 
@@ -74,5 +60,18 @@ public class CreatedSEPAExports
 		 * The mandate of each direct debit export line; empty for a credit transfer.
 		 */
 		@NonNull ImmutableMap<SEPAExportLineId, DirectDebitMandate> mandatesBySepaExportLineId;
+
+		/**
+		 * @return an export without scheme and without mandates, i.e. a credit transfer or a direct debit without exportable lines
+		 */
+		@NonNull
+		public static CreatedSEPAExport withoutMandates(@NonNull final I_SEPA_Export export)
+		{
+			return builder()
+					.export(export)
+					.scheme(null)
+					.mandatesBySepaExportLineId(ImmutableMap.of())
+					.build();
+		}
 	}
 }

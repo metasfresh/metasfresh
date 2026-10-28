@@ -64,7 +64,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
 		sepaTestHelper.createMockData();
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getPaySelection(), true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		sepaTestHelper.creditTransferIsGroupTransactionTrue(command.run().getSingleExport().getExport());
+		sepaTestHelper.creditTransferIsGroupTransactionTrue(SEPATestHelper.getSingleExport(command.run()).getExport());
 	}
 
 	@Test
@@ -73,7 +73,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
 		sepaTestHelper.createMockData();
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getPaySelection(), false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		sepaTestHelper.creditTransferIsGroupTransactionFalse(command.run().getSingleExport().getExport());
+		sepaTestHelper.creditTransferIsGroupTransactionFalse(SEPATestHelper.getSingleExport(command.run()).getExport());
 	}
 
 	@Test
@@ -87,7 +87,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		save(paySelection);
 		createActiveMandatesOfLines(paySelection);
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		sepaTestHelper.assertCommonDebitDirectCases(command.run().getSingleExport().getExport());
+		sepaTestHelper.assertCommonDebitDirectCases(SEPATestHelper.getSingleExport(command.run()).getExport());
 	}
 
 	@Test
@@ -101,7 +101,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		save(paySelection);
 		createActiveMandatesOfLines(paySelection);
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		sepaTestHelper.assertCommonDebitDirectCases(command.run().getSingleExport().getExport());
+		sepaTestHelper.assertCommonDebitDirectCases(SEPATestHelper.getSingleExport(command.run()).getExport());
 	}
 
 	/**
@@ -199,7 +199,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
 		sepaTestHelper.createQrIbanMockData();
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		sepaTestHelper.assertQrIbanLinesNotGrouped(command.run().getSingleExport().getExport());
+		sepaTestHelper.assertQrIbanLinesNotGrouped(SEPATestHelper.getSingleExport(command.run()).getExport());
 	}
 
 	@Test
@@ -223,14 +223,14 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		// is package-private to de.metas.payment.sepa.sepamarshaller.impl, so it is exercised here through the public
 		// marshal(..) entry point instead. Running the command twice on the same C_PaySelection is safe - run() only
 		// reads the pay-selection lines, it never mutates them.
-		final I_SEPA_Export ungroupedExport = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run().getSingleExport().getExport();
+		final I_SEPA_Export ungroupedExport = SEPATestHelper.getSingleExport(new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run()).getExport();
 		assertThatCode(() -> marshaler.marshal(ungroupedExport, new ByteArrayOutputStream()))
 				.as("each individual QR reference must be valid before we reproduce the grouping bug")
 				.doesNotThrowAnyException();
 
 		// reproduce the bug: grouping ON aggregates both QR-IBAN lines into one comma-joined, truncated reference
 		// that is no longer a valid 27-digit QRR reference.
-		final I_SEPA_Export groupedExport = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run().getSingleExport().getExport();
+		final I_SEPA_Export groupedExport = SEPATestHelper.getSingleExport(new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run()).getExport();
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		assertThatCode(() -> marshaler.marshal(groupedExport, out))
@@ -245,7 +245,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 	@Test
 	void creditTransfer_exportedWith_pain_001_001_03_ch_02()
 	{
-		final I_SEPA_Export export = new CreateSEPAExportFromPaySelectionCommand(createCreditTransferPaySelection(), false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run().getSingleExport().getExport();
+		final I_SEPA_Export export = SEPATestHelper.getSingleExport(new CreateSEPAExportFromPaySelectionCommand(createCreditTransferPaySelection(), false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run()).getExport();
 
 		assertThat(export.getSEPA_Protocol()).isEqualTo("pain.001.001.03.ch.02");
 	}
@@ -253,9 +253,23 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 	@Test
 	void creditTransfer_nothingChosen_exportedWith_pain_001_001_09_ch_03()
 	{
-		final I_SEPA_Export export = new CreateSEPAExportFromPaySelectionCommand(createCreditTransferPaySelection(), false, null).run().getSingleExport().getExport();
+		final I_SEPA_Export export = SEPATestHelper.getSingleExport(new CreateSEPAExportFromPaySelectionCommand(createCreditTransferPaySelection(), false, null).run()).getExport();
 
 		assertThat(export.getSEPA_Protocol()).isEqualTo("pain.001.001.09.ch.03");
+	}
+
+	/**
+	 * A credit transfer gives exactly one export, without scheme and without mandates.
+	 */
+	@Test
+	void creditTransfer_oneExportWithoutSchemeAndMandates()
+	{
+		final CreatedSEPAExports createdExports = new CreateSEPAExportFromPaySelectionCommand(createCreditTransferPaySelection(), false, null).run();
+
+		assertThat(createdExports.getExports()).hasSize(1);
+		final CreatedSEPAExport createdExport = createdExports.getExports().get(0);
+		assertThat(createdExport.getScheme()).isNull();
+		assertThat(createdExport.getMandatesBySepaExportLineId()).isEmpty();
 	}
 
 	private static I_C_PaySelection createCreditTransferPaySelection()

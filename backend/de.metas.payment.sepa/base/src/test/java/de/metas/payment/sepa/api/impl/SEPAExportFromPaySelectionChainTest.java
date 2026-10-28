@@ -202,7 +202,7 @@ public class SEPAExportFromPaySelectionChainTest
 
 	private static CreatedSEPAExport createSEPAExport(@NonNull final I_C_PaySelection paySelection, @Nullable final SEPAProtocol chosenProtocol)
 	{
-		final CreatedSEPAExport createdExport = Services.get(ISEPADocumentBL.class).createSEPAExportFromPaySelection(paySelection, false, chosenProtocol).getSingleExport();
+		final CreatedSEPAExport createdExport = SEPATestHelper.getSingleExport(Services.get(ISEPADocumentBL.class).createSEPAExportFromPaySelection(paySelection, false, chosenProtocol));
 		final I_SEPA_Export sepaExport = createdExport.getExport();
 		// in the application, the document number comes from the SEPA_Export document sequence when the record is first saved; the in-memory test DB has no sequences
 		sepaExport.setDocumentNo("1000001");
