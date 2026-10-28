@@ -28,7 +28,6 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 
 @Value
 public class DirectDebitMandateId implements RepoIdAware
@@ -44,17 +43,6 @@ public class DirectDebitMandateId implements RepoIdAware
 	public static DirectDebitMandateId ofRepoId(final int repoId)
 	{
 		return new DirectDebitMandateId(repoId);
-	}
-
-	@Nullable
-	public static DirectDebitMandateId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new DirectDebitMandateId(repoId) : null;
-	}
-
-	public static int toRepoId(@Nullable final DirectDebitMandateId id)
-	{
-		return id != null ? id.getRepoId() : -1;
 	}
 
 	@Override

@@ -31,7 +31,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.model.X_C_BP_BankAccount_DirectDebitMandate;
 
-import javax.annotation.Nullable;
 
 /**
  * SEPA direct debit scheme of a mandate (reference list {@code C_BP_BankAccount_DirectDebitMandate.MandateType}).
@@ -51,9 +50,6 @@ public enum DirectDebitMandateType implements ReferenceListAwareEnum
 	@JsonCreator
 	@NonNull
 	public static DirectDebitMandateType ofCode(@NonNull final String code) {return index.ofCode(code);}
-
-	@Nullable
-	public static DirectDebitMandateType ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
 	@JsonValue
 	public String toJson() {return code;}

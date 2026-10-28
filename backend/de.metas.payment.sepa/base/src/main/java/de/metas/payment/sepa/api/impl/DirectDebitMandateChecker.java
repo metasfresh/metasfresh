@@ -2,6 +2,7 @@ package de.metas.payment.sepa.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.banking.mandate.DirectDebitMandate;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -56,10 +57,10 @@ class DirectDebitMandateChecker
 	private static final AdMessageKey MSG_OneOffUsed = AdMessageKey.of("de.metas.payment.sepa.DirectDebitMandateOneOffUsed");
 	private static final AdMessageKey MSG_OneOffMultipleLines = AdMessageKey.of("de.metas.payment.sepa.DirectDebitMandateOneOffMultipleLines");
 
-	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 	/** The WebUI collapses line breaks, so the problems are joined with this separator. */
 	private static final String PROBLEM_SEPARATOR = " · ";
+
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	enum ProblemType
 	{
@@ -181,7 +182,7 @@ class DirectDebitMandateChecker
 
 		// the header message's AD_Message.ErrorCode (and not the one of a problem line) identifies the failure
 		final String errorCode = msgBL.getErrorCode(MSG_CheckFailed);
-		return new AdempiereException(message.build(), errorCode != null ? errorCode : MSG_CheckFailed.toAD_Message());
+		return new AdempiereException(message.build(), CoalesceUtil.coalesceNotNull(errorCode, MSG_CheckFailed.toAD_Message()));
 	}
 
 	/** @return the partner value, followed by its name if there is one */

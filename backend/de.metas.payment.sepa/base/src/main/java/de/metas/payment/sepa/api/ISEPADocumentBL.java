@@ -47,8 +47,6 @@ public interface ISEPADocumentBL extends ISingletonService
 	 */
 	List<I_SEPA_Export_Line> retrieveLines(I_SEPA_Export sepaExport);
 
-	void save(I_SEPA_Export sepaExport);
-
 	/**
 	 * Generates the SEPA Credit Transfer xml from the given export header.
 	 */

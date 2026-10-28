@@ -65,12 +65,6 @@ public class SEPADocumentBL implements ISEPADocumentBL
 	}
 
 	@Override
-	public void save(@NonNull final I_SEPA_Export sepaExport)
-	{
-		sepaDocumentDAO.save(sepaExport);
-	}
-
-	@Override
 	public SEPACreditTransferXML exportCreditTransferXML(@NonNull final I_SEPA_Export sepaExport, @NonNull final SEPAExportContext exportContext)
 	{
 		final SEPAProtocol protocol = SEPAProtocol.ofCode(sepaExport.getSEPA_Protocol());
