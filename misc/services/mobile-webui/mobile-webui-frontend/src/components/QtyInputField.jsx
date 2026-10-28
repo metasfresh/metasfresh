@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { qtyInfos } from '../utils/qtyInfos';
-import { parseDecimalNumberString } from '../utils/decimalInput';
+import { isValidDecimalNumberString, normalizeDecimalNumberString } from '../utils/decimalInput';
 import { isAllowedDecimalInput } from '../utils/decimalKeystroke';
 
 const QtyInputField = ({
@@ -53,7 +53,7 @@ const QtyInputField = ({
     lastForwardedQtyStrRef.current = newQtyInfo.qtyStr;
     setRawText(initialString);
     setQtyInfo(newQtyInfo);
-  }, [initialString, integerValuesOnly]);
+  }, [initialString, integerValuesOnly, validateQtyEntered, uom]);
 
   //
   // Inform parent about initial value
@@ -132,6 +132,13 @@ const QtyInputField = ({
           className="input"
           type="text"
           inputMode="decimal"
+          // suppress Android/iOS text processing (autofill, autocorrect, autocapitalise) that can
+          // mutate a typed number mid-entry on a handheld -- same OS-interference class as the
+          // barcode-input attributes (see this module's CLAUDE.md)
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck="false"
           value={rawText}
           disabled={!!readonly}
           onBeforeInput={handleBeforeInput}
@@ -164,8 +171,7 @@ QtyInputField.propTypes = {
 
 const computeQtyInfoFromString = ({ qtyInputString, integerValuesOnly, prevQtyInfo, validateQtyEntered, uom }) => {
   // The user may type the decimal separator as ',' or '.'; forward the dot-decimal.
-  // parseDecimalNumberString: null = unparseable, '' = no digit typed yet, else the dot-decimal number.
-  const normalized = parseDecimalNumberString(qtyInputString);
+  const normalized = isValidDecimalNumberString(qtyInputString) ? normalizeDecimalNumberString(qtyInputString) : null;
   let qty = normalized ? parseFloat(normalized) : NaN;
 
   if (isNaN(qty)) {
