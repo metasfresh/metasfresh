@@ -1,5 +1,6 @@
 package de.metas.ui.web.pporder.process;
 
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -122,7 +123,7 @@ public class PackingInfoProcessParamsTest
 	@Test
 	public void moreTUsThanThePalletHolds_isRefusedWithoutStoringAConfiguration()
 	{
-		params.setLuPiItemId(createPallet(new BigDecimal("4")).getM_HU_PI_Item_ID());
+		params.setLuPiItemId(createParentItem("Pallet", HuUnitType.LU, new BigDecimal("4")).getM_HU_PI_Item_ID());
 		params.setQtyLU(new BigDecimal("2"));
 		params.setQtyTU(new BigDecimal("5"));
 		final int configurationsBefore = countLUTUConfigurations();
@@ -132,29 +133,55 @@ public class PackingInfoProcessParamsTest
 		assertThat(countLUTUConfigurations()).isEqualTo(configurationsBefore);
 	}
 
+	/**
+	 * The TU is also included in a TU-type packing instruction; building a pallet from that fails on start, so only the LU is offered.
+	 */
+	@Test
+	public void tuIncludedInLUAndInTUTypeParent_onlyTheLUIsOfferedAsPallet()
+	{
+		createParentItem("TU container", HuUnitType.TU, new BigDecimal("9"));
+		final I_M_HU_PI_Item luItem = createParentItem("Pallet", HuUnitType.LU, new BigDecimal("12"));
+
+		assertThat(params.getM_HU_PI_Item_IDs(fixedCapacityPIP).getKeysAsInt()).containsExactly(luItem.getM_HU_PI_Item_ID());
+		final I_M_HU_PI_Item defaultPallet = params.getFirstAvailableLuPIItemOrNull(fixedCapacityPIP);
+		assertThat(defaultPallet).isNotNull();
+		assertThat(defaultPallet.getM_HU_PI_Item_ID()).isEqualTo(luItem.getM_HU_PI_Item_ID());
+	}
+
+	@Test
+	public void tuIncludedOnlyInTUTypeParent_noPalletIsOffered()
+	{
+		createParentItem("TU container", HuUnitType.TU, new BigDecimal("9"));
+
+		assertThat(params.getM_HU_PI_Item_IDs(fixedCapacityPIP).isEmpty()).isTrue();
+		assertThat(params.getFirstAvailableLuPIItemOrNull(fixedCapacityPIP)).isNull();
+	}
+
 	private static int countLUTUConfigurations()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_LUTU_Configuration.class).create().count();
 	}
 
-	private I_M_HU_PI_Item createPallet(final BigDecimal tuCapacity)
+	private I_M_HU_PI_Item createParentItem(final String name, final HuUnitType huUnitType, final BigDecimal tuCapacity)
 	{
-		final I_M_HU_PI palletPI = newInstance(I_M_HU_PI.class);
-		palletPI.setName("Pallet");
-		saveRecord(palletPI);
+		final I_M_HU_PI parentPI = newInstance(I_M_HU_PI.class);
+		parentPI.setName(name);
+		saveRecord(parentPI);
 
-		final I_M_HU_PI_Version palletPIVersion = newInstance(I_M_HU_PI_Version.class);
-		palletPIVersion.setM_HU_PI_ID(palletPI.getM_HU_PI_ID());
-		palletPIVersion.setIsCurrent(true);
-		saveRecord(palletPIVersion);
+		final I_M_HU_PI_Version parentPIVersion = newInstance(I_M_HU_PI_Version.class);
+		parentPIVersion.setM_HU_PI_ID(parentPI.getM_HU_PI_ID());
+		parentPIVersion.setName(name);
+		parentPIVersion.setHU_UnitType(huUnitType.getCode());
+		parentPIVersion.setIsCurrent(true);
+		saveRecord(parentPIVersion);
 
-		final I_M_HU_PI_Item palletItem = newInstance(I_M_HU_PI_Item.class);
-		palletItem.setM_HU_PI_Version_ID(palletPIVersion.getM_HU_PI_Version_ID());
-		palletItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
-		palletItem.setIncluded_HU_PI_ID(fixedCapacityPIP.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
-		palletItem.setQty(tuCapacity);
-		saveRecord(palletItem);
-		return palletItem;
+		final I_M_HU_PI_Item parentItem = newInstance(I_M_HU_PI_Item.class);
+		parentItem.setM_HU_PI_Version_ID(parentPIVersion.getM_HU_PI_Version_ID());
+		parentItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
+		parentItem.setIncluded_HU_PI_ID(fixedCapacityPIP.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
+		parentItem.setQty(tuCapacity);
+		saveRecord(parentItem);
+		return parentItem;
 	}
 
 	private static I_M_HU_PI_Item_Product createPackingInstruction(final I_C_UOM uom, final BigDecimal qtyPerTU)
@@ -165,6 +192,7 @@ public class PackingInfoProcessParamsTest
 
 		final I_M_HU_PI_Version huPIVersion = newInstance(I_M_HU_PI_Version.class);
 		huPIVersion.setM_HU_PI_ID(huPI.getM_HU_PI_ID());
+		huPIVersion.setHU_UnitType(HuUnitType.TU.getCode());
 		huPIVersion.setIsCurrent(true);
 		saveRecord(huPIVersion);
 

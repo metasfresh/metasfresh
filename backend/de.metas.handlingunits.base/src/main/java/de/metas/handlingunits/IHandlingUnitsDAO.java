@@ -250,15 +250,36 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	Iterator<I_M_HU> retrieveTopLevelHUsForLocator(final LocatorId locatorId);
 
 	/**
-	 * @param huUnitType optional, may be {@code null} or empty. If given, then only return items whose {@link I_M_HU_PI_Version} has the given {@link I_M_HU_PI_Version#COLUMN_HU_UnitType}.
+	 * @param huUnitType optional. If given, then only return items whose {@link I_M_HU_PI_Version} has the given {@link I_M_HU_PI_Version#COLUMN_HU_UnitType}.
 	 * @return unique {@link I_M_HU_PI_Item}s of the selected {@link I_M_HU_PI}'s parent PI
 	 */
-	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(I_M_HU_PI huPI, String huUnitType, BPartnerId bpartnerId);
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(@NonNull I_M_HU_PI huPI, @Nullable HuUnitType huUnitType, @Nullable BPartnerId bpartnerId);
+
+	/**
+	 * @deprecated use {@link #retrieveParentPIItemsForParentPI(I_M_HU_PI, HuUnitType, BPartnerId)}
+	 */
+	@Deprecated
+	default List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(@NonNull final I_M_HU_PI huPI, @Nullable final String huUnitType, @Nullable final BPartnerId bpartnerId)
+	{
+		return retrieveParentPIItemsForParentPI(huPI, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
+	}
 
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull HuPackingInstructionsId packingInstructionsId,
-			@Nullable String huUnitType,
+			@Nullable HuUnitType huUnitType,
 			@Nullable BPartnerId bpartnerId);
+
+	/**
+	 * @deprecated use {@link #retrieveParentPIItemsForParentPI(HuPackingInstructionsId, HuUnitType, BPartnerId)}
+	 */
+	@Deprecated
+	default List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final HuPackingInstructionsId packingInstructionsId,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return retrieveParentPIItemsForParentPI(packingInstructionsId, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
+	}
 
 	/**
 	 * For the given {@code parentHU} and {@code piOfChildHU}, retrieve the PI item (with type HU) that can be used to link child and parent.

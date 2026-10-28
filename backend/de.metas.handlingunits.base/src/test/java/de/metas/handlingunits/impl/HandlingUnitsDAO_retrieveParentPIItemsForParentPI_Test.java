@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 import static de.metas.business.BusinessTestHelper.createBPartner;
 
 /**
- * Unit test for {@link HandlingUnitsDAO#retrieveParentPIItemsForParentPI(I_M_HU_PI, String, I_C_BPartner)} method.
+ * Unit test for {@link HandlingUnitsDAO#retrieveParentPIItemsForParentPI(I_M_HU_PI, de.metas.handlingunits.HuUnitType, de.metas.bpartner.BPartnerId)} method.
  *
  * @author tsa
  */

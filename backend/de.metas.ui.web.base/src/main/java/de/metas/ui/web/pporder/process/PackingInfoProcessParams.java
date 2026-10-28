@@ -3,6 +3,7 @@ package de.metas.ui.web.pporder.process;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -291,9 +292,7 @@ public class PackingInfoProcessParams
 
 		final I_M_HU_PI piOfCurrentPip = pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 
-		return handlingUnitsDAO.retrieveParentPIItemsForParentPI(piOfCurrentPip,
-				null, // huUnitType
-				bpartnerId);
+		return handlingUnitsDAO.retrieveParentPIItemsForParentPI(piOfCurrentPip, HuUnitType.LU, bpartnerId);
 	}
 
 	public I_M_HU_LUTU_Configuration getDefaultLUTUConfig()
