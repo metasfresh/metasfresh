@@ -1,6 +1,5 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
-import de.metas.banking.api.BankAccountService;
 import de.metas.banking.mandate.DirectDebitMandate;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -140,10 +139,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	@NonNull private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	@SuppressWarnings("unused")
-	public SEPACustomerDirectDebitMarshaler_Pain_008_001_08(
-			@NonNull final BankAccountService bankAccountService,
-			@NonNull final SEPAExportContext exportContext)
+	public SEPACustomerDirectDebitMarshaler_Pain_008_001_08(@NonNull final SEPAExportContext exportContext)
 	{
 		try
 		{
@@ -456,6 +452,8 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 
 	private XMLGregorianCalendar toXMLDate(@NonNull final LocalDate date)
 	{
+		// not SepaUtils.toXMLGregorianCalendarDate like the Swiss writer: that formats a Date in the JVM zone, which could shift an org-zone LocalDate by one day
+
 		return datatypeFactory.newXMLGregorianCalendar(date.toString());
 	}
 

@@ -64,7 +64,6 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 	private static final String XSD_RESOURCE = "/pain.008.001.08_GBIC_5.xsd";
 
 	private OrgId orgId;
-	private BankAccountService bankAccountService;
 	private int nextMandateId = 1;
 
 	@BeforeEach
@@ -75,8 +74,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 		orgId = AdempiereTestHelper.createOrgWithTimeZone();
 		Env.setOrgId(Env.getCtx(), orgId);
 
-		bankAccountService = new BankAccountService(new BankRepository(), new CurrencyRepository());
-		SpringContextHolder.registerJUnitBean(bankAccountService);
+		SpringContextHolder.registerJUnitBean(new BankAccountService(new BankRepository(), new CurrencyRepository()));
 	}
 
 	@Test
@@ -116,7 +114,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 		exportContext.directDebitMandate(line4.getSEPA_Export_Line_ID(), createMandate("MREF-B2B-004", true));
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		new SEPACustomerDirectDebitMarshaler_Pain_008_001_08(bankAccountService, exportContext.build()).marshal(sepaExport, out);
+		new SEPACustomerDirectDebitMarshaler_Pain_008_001_08(exportContext.build()).marshal(sepaExport, out);
 
 		assertValidAgainstXsd(out.toByteArray());
 	}
