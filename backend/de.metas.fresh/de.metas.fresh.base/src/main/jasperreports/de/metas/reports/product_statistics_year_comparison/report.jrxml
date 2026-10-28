@@ -90,7 +90,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 	<field name="printuser" class="java.lang.String"/>
 	<field name="paramproduct" class="java.lang.String"/>
 	<title>
-		<band height="68">
+		<band height="80">
 				<textField isBlankWhenNull="true" textAdjust="CutText">
 					<reportElement x="0" y="0" width="812" height="19" uuid="f32d166f-27f0-463c-9cda-e6e942c43912"/>
 					<box leftPadding="2" rightPadding="0"/>
@@ -108,7 +108,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$R{Organisation} + " " + ($F{orgname} != null ? $F{orgname} : "")]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="0" y="39" width="90" height="12" uuid="b8444f9a-2b5c-4cf3-a4ba-a415e613a060"/>
+					<reportElement x="0" y="39" width="45" height="12" uuid="b8444f9a-2b5c-4cf3-a4ba-a415e613a060"/>
 					<box leftPadding="2" rightPadding="0"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
@@ -116,7 +116,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$R{Period} + ":"]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="90" y="39" width="200" height="12" uuid="b7f7a5ac-bcce-468b-ba1f-735a697550b9"/>
+					<reportElement x="45" y="39" width="455" height="12" uuid="b7f7a5ac-bcce-468b-ba1f-735a697550b9"/>
 					<box leftPadding="2" rightPadding="0"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
@@ -124,7 +124,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{fiscalyear}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="303" y="39" width="90" height="12" uuid="7f9c423c-88d0-4247-8055-6d0a0191dd61"/>
+					<reportElement x="0" y="51" width="45" height="12" uuid="7f9c423c-88d0-4247-8055-6d0a0191dd61"/>
 					<box leftPadding="2" rightPadding="0"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
@@ -132,7 +132,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$R{Product} + ":"]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="393" y="39" width="419" height="12" uuid="230a3ca2-5b81-4862-8edd-22d2089a1882"/>
+					<reportElement x="45" y="51" width="767" height="12" uuid="230a3ca2-5b81-4862-8edd-22d2089a1882"/>
 					<box leftPadding="2" rightPadding="0"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
@@ -140,7 +140,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$P{M_Product_ID} == null ? $R{AllProducts} : ($F{paramproduct} != null ? $F{paramproduct} : $P{M_Product_ID}.toPlainString())]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="0" y="53" width="500" height="12" uuid="c8588d47-352f-448e-99d6-86e390d1176f"/>
+					<reportElement x="0" y="65" width="500" height="12" uuid="c8588d47-352f-448e-99d6-86e390d1176f"/>
 					<box leftPadding="2" rightPadding="0"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
@@ -858,7 +858,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="18">
+		<band height="30">
 			<line>
 				<reportElement x="0" y="1" width="812" height="1" uuid="6809dafb-c372-4d18-b33c-eaf42b821b2f"/>
 			</line>
@@ -871,9 +871,9 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", $P{REPORT_LOCALE}).format(new java.util.Date())]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="250" y="4" width="312" height="12" uuid="82d4f346-cff4-4f36-866d-a7a03ab72e1b"/>
+					<reportElement x="0" y="16" width="250" height="12" uuid="82d4f346-cff4-4f36-866d-a7a03ab72e1b"/>
 					<box leftPadding="2" rightPadding="0"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
+					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{printuser}]]></textFieldExpression>
