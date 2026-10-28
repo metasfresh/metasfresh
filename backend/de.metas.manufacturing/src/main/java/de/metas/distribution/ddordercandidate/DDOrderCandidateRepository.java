@@ -262,6 +262,14 @@ public class DDOrderCandidateRepository
 		{
 			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_Forward_PP_Order_BOMLine_ID, query.getPpOrderBOMLineId());
 		}
+		if (query.getPpOrderId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_Forward_PP_Order_ID, query.getPpOrderId());
+		}
+		if (query.getPpOrderBOMLineIdOrEmpty() != null)
+		{
+			queryBuilder.addInArrayFilter(I_DD_Order_Candidate.COLUMNNAME_Forward_PP_Order_BOMLine_ID, query.getPpOrderBOMLineIdOrEmpty(), null);
+		}
 
 		return queryBuilder;
 	}
