@@ -340,6 +340,7 @@ export class SalesOrderPage {
         (response) => isQuickInputPatchOf(response, SALES_ORDER_LINES_TAB_ID, 'M_Product_ID'),
         { timeout: SLOW_ACTION_TIMEOUT }
       );
+      productPatchResponse.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
 
       // Click the option by text - finds element containing the product code
       // This avoids clicking on "Search for more..." or other non-record options
