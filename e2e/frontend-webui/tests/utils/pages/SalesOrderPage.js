@@ -353,11 +353,14 @@ export class SalesOrderPage {
 
       // The product callout runs server-side: selecting the option PATCHes the quick-input document
       // with M_Product_ID, and the answer carries the fields it defaulted. Listen before clicking.
-      const productPatchResponse = page.waitForResponse(
-        (response) => isQuickInputPatchOf(response, SALES_ORDER_LINES_TAB_ID, 'M_Product_ID'),
-        { timeout: SLOW_ACTION_TIMEOUT }
-      );
-      productPatchResponse.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
+      // Not listened for when the caller does not wait for the answer.
+      const productPatchResponse = awaitProductPatchAnswer
+        ? page.waitForResponse(
+            (response) => isQuickInputPatchOf(response, SALES_ORDER_LINES_TAB_ID, 'M_Product_ID'),
+            { timeout: SLOW_ACTION_TIMEOUT }
+          )
+        : null;
+      productPatchResponse?.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
 
       // Click the option by text - finds element containing the product code
       // This avoids clicking on "Search for more..." or other non-record options
