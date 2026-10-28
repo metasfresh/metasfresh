@@ -321,6 +321,7 @@ public class C_Invoice_StepDef
 	 *   <li>{@code C_BPartner_Location_ID} — bill-to location identifier</li>
 	 *   <li>{@code M_PriceList_ID} — price list identifier</li>
 	 *   <li>{@code AD_User_ID} — contact identifier</li>
+	 *   <li>{@code Description} — invoice description (e.g. the SEPA remittance text)</li>
 	 * </ul>
 	 */
 	@And("metasfresh contains C_Invoice:")
@@ -905,6 +906,13 @@ public class C_Invoice_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_DocumentNo).ifPresent(invoice::setDocumentNo);
 		row.getAsOptionalString(COLUMNNAME_ExternalId).ifPresent(invoice::setExternalId);
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_Description)
+				.ifPresent(description -> {
+					// MInvoice.beforeSave derives a missing C_DocTypeTarget_ID and then overwrites the description
+					// with the doc type's one; resolve the doc type first so the explicit description survives the save
+					invoiceBL.setDocTypeTargetIdIfNotSet(invoice);
+					invoice.setDescription(description);
+				});
 
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID)
 				.map(dataSourceTable::getId)

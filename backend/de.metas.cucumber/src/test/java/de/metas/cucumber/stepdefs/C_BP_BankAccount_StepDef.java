@@ -226,6 +226,13 @@ public class C_BP_BankAccount_StepDef
 		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_SEPA_CreditorIdentifier)
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(bpBankAccount::setSEPA_CreditorIdentifier);
+		// optional; account holder name / city (SEPA debtor Nm / city)
+		row.getAsOptionalString(COLUMNNAME_A_Name)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(bpBankAccount::setA_Name);
+		row.getAsOptionalString(COLUMNNAME_A_City)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(bpBankAccount::setA_City);
 
 		InterfaceWrapperHelper.save(bpBankAccount);
 
