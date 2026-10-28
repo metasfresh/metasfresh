@@ -39,6 +39,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,6 +48,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.X_AD_Issue;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -54,27 +56,19 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class AD_Issue_StepDef
 {
-	private final AD_Issue_StepDefData issueTable;
-
-	private PInstanceId pInstanceId;
-	private Integer rememberedMaxIssueId;
-	private final TestContext testContext;
+	@NonNull private final AD_Issue_StepDefData issueTable;
+	@NonNull private final TestContext testContext;
+	@NonNull private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final RabbitMQ_StepDef rabbitMQStepDef;
-
-	public AD_Issue_StepDef(
-			@NonNull final AD_Issue_StepDefData issueTable,
-			@NonNull final TestContext testContext,
-			@NonNull final RabbitMQ_StepDef rabbitMQStepDef)
-	{
-		this.issueTable = issueTable;
-		this.testContext = testContext;
-		this.rabbitMQStepDef = rabbitMQStepDef;
-	}
+	private PInstanceId pInstanceId;
+	/** {@code null} if the AD_Issue table was empty when remembered */
+	@Nullable private AdIssueId rememberedMaxIssueId;
+	private boolean isExistingIssuesRemembered = false;
 
 	@Given("I_AD_PInstance with id {int} is created")
 	public void new_PInstanceId_is_created(final int pInstanceIdString)
@@ -147,7 +141,8 @@ public class AD_Issue_StepDef
 	@And("the existing AD_Issue records are remembered")
 	public void remember_existing_AD_Issues()
 	{
-		rememberedMaxIssueId = retrieveMaxIssueId();
+		rememberedMaxIssueId = retrieveMaxIssueIdOrNull();
+		isExistingIssuesRemembered = true;
 	}
 
 	/**
@@ -162,12 +157,12 @@ public class AD_Issue_StepDef
 		// issues are raised by asynchronous event handlers, so let them finish before looking
 		rabbitMQStepDef.wait_empty_all_queues();
 
-		assertThat(rememberedMaxIssueId)
+		assertThat(isExistingIssuesRemembered)
 				.as("Step 'the existing AD_Issue records are remembered' must run first")
-				.isNotNull();
+				.isTrue();
 
 		final List<String> newIssues = queryBL.createQueryBuilderOutOfTrx(I_AD_Issue.class)
-				.addCompareFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, CompareQueryFilter.Operator.GREATER, rememberedMaxIssueId)
+				.addCompareFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, CompareQueryFilter.Operator.GREATER, rememberedMaxIssueId != null ? rememberedMaxIssueId.getRepoId() : 0)
 				.addNotEqualsFilter(I_AD_Issue.COLUMNNAME_IssueCategory, X_AD_Issue.ISSUECATEGORY_Accounting)
 				.orderBy(I_AD_Issue.COLUMNNAME_AD_Issue_ID)
 				.create()
@@ -177,10 +172,12 @@ public class AD_Issue_StepDef
 		assertThat(newIssues).as("AD_Issue records created since they were remembered").isEmpty();
 	}
 
-	private int retrieveMaxIssueId()
+	@Nullable
+	private AdIssueId retrieveMaxIssueIdOrNull()
 	{
-		return queryBL.createQueryBuilderOutOfTrx(I_AD_Issue.class)
+		final int maxIssueId = queryBL.createQueryBuilderOutOfTrx(I_AD_Issue.class)
 				.create()
 				.maxInt(I_AD_Issue.COLUMNNAME_AD_Issue_ID);
+		return AdIssueId.ofRepoIdOrNull(maxIssueId);
 	}
 }

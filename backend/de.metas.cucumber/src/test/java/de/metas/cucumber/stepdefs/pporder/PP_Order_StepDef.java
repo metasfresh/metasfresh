@@ -345,23 +345,26 @@ public class PP_Order_StepDef
 	@And("update PP_Order expecting error:")
 	public void update_PP_Order_expecting_error(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final I_AD_Message expectedMessage = row.getAsIdentifier(I_AD_Message.COLUMNNAME_AD_Message_ID).lookupNotNullIn(messageTable);
-			final AdMessageKey expectedMessageKey = AdMessageKey.of(expectedMessage.getValue());
-			final I_PP_Order ppOrderRecord = ppOrderTable.get(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID));
+		DataTableRows.of(dataTable).forEach(this::assertUpdatePPOrderRejected);
+	}
 
-			final Throwable rejection = catchThrowable(() -> updatePPOrder(row));
+	private void assertUpdatePPOrderRejected(@NonNull final DataTableRow row)
+	{
+		final I_AD_Message expectedMessage = row.getAsIdentifier(I_AD_Message.COLUMNNAME_AD_Message_ID).lookupNotNullIn(messageTable);
+		final AdMessageKey expectedMessageKey = AdMessageKey.of(expectedMessage.getValue());
+		final I_PP_Order ppOrderRecord = ppOrderTable.get(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID));
 
-			// the rejected update leaves the in-memory record mutated; reload the persisted state
-			InterfaceWrapperHelper.refresh(ppOrderRecord);
+		final Throwable rejection = catchThrowable(() -> updatePPOrder(row));
 
-			assertThat(rejection)
-					.as("Expected the PP_Order update to be rejected, but it succeeded")
-					.isNotNull();
-			assertThat(isRejectedWithAdMessage(rejection, expectedMessageKey))
-					.as("Expected a rejection with AD_Message %s but got: %s", expectedMessageKey, rejection)
-					.isTrue();
-		});
+		// the rejected update leaves the in-memory record mutated; reload the persisted state
+		InterfaceWrapperHelper.refresh(ppOrderRecord);
+
+		assertThat(rejection)
+				.as("Expected the PP_Order update to be rejected, but it succeeded")
+				.isNotNull();
+		assertThat(isRejectedWithAdMessage(rejection, expectedMessageKey))
+				.as("Expected a rejection with AD_Message %s but got: %s", expectedMessageKey, rejection)
+				.isTrue();
 	}
 
 	/**
@@ -816,6 +819,13 @@ public class PP_Order_StepDef
 
 	/**
 	 * Deletes the PP_Order record, like a user deleting it in the manufacturing order window.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the PP_Order ppOrder is deleted
+	 * </pre>
 	 */
 	@And("^the PP_Order (.*) is deleted$")
 	public void deletePPOrder(@NonNull final String ppOrderIdentifier)

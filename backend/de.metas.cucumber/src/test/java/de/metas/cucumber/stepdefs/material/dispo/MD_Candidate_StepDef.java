@@ -91,12 +91,14 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,7 +177,7 @@ public class MD_Candidate_StepDef
 			{
 				mdStockCandidateRecord.setMD_Candidate_Parent_ID(mdCandidateRecord.getMD_Candidate_ID());
 			}
-			mdStockCandidateRecord.setQty(tableRow.getAtp());
+			mdStockCandidateRecord.setQty(tableRow.getAtpNotNull());
 			mdStockCandidateRecord.setDateProjected(TimeUtil.asTimestamp(tableRow.getTime()));
 			InterfaceWrapperHelper.saveRecord(mdStockCandidateRecord);
 
@@ -207,7 +209,7 @@ public class MD_Candidate_StepDef
 			assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).isEqualTo(tableRow.getProductId().getRepoId());
 			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).isEqualTo(tableRow.getTime());
 			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
-			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
+			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtpNotNull());
 
 			materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoRecord);
 		});
@@ -232,7 +234,7 @@ public class MD_Candidate_StepDef
 			assertThat(materialDispoDataItem.getBusinessCase()).isEqualTo(tableRow.getBusinessCase());
 			assertThat(materialDispoDataItem.getMaterialDescriptor().getProductId()).isEqualTo(tableRow.getProductId().getRepoId());
 			assertThat(materialDispoDataItem.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
-			assertThat(materialDispoDataItem.getAtp()).isEqualByComparingTo(tableRow.getAtp());
+			assertThat(materialDispoDataItem.getAtp()).isEqualByComparingTo(tableRow.getAtpNotNull());
 
 			materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoDataItem);
 		});
@@ -431,43 +433,64 @@ public class MD_Candidate_StepDef
 	public void assertAllDistributionCandidatesSupplyBOMLine(final int timeoutSec, @NonNull final String productIdentifierStr, @NonNull final String bomLineIdentifierStr) throws InterruptedException
 	{
 		final ProductId productId = StepDefDataIdentifier.ofString(productIdentifierStr).lookupIdIn(productTable);
-		final int expectedBOMLineId = StepDefDataIdentifier.ofString(bomLineIdentifierStr).lookupIdIn(ppOrderBOMLineTable).getRepoId();
+		final PPOrderBOMLineId expectedBOMLineId = StepDefDataIdentifier.ofString(bomLineIdentifierStr).lookupIdIn(ppOrderBOMLineTable);
 
 		StepDefUtil.<Boolean>tryAndWaitForItem()
-				.worker(() -> {
-					final List<I_MD_Candidate> candidates = queryBL.createQueryBuilder(I_MD_Candidate.class)
-							.addEqualsFilter(COLUMNNAME_M_Product_ID, productId)
-							.addEqualsFilter(COLUMNNAME_MD_Candidate_BusinessCase, X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION)
-							.orderBy(COLUMNNAME_MD_Candidate_ID)
-							.create()
-							.list();
-					if (candidates.isEmpty())
-					{
-						return ProviderResult.resultWasNotFound("No DISTRIBUTION MD_Candidate found for product " + productIdentifierStr);
-					}
-					final List<String> notSupplyingBOMLine = new java.util.ArrayList<>();
-					for (final I_MD_Candidate candidate : candidates)
-					{
-						final I_MD_Candidate_Dist_Detail detail = queryBL.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
-								.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_MD_Candidate_ID, candidate.getMD_Candidate_ID())
-								.create()
-								.firstOnly(I_MD_Candidate_Dist_Detail.class);
-						if (detail == null || detail.getPP_Order_BOMLine_ID() != expectedBOMLineId)
-						{
-							notSupplyingBOMLine.add("MD_Candidate_ID=" + candidate.getMD_Candidate_ID() + " type=" + candidate.getMD_Candidate_Type()
-									+ " qty=" + candidate.getQty() + " forwardBOMLine=" + (detail != null ? detail.getPP_Order_BOMLine_ID() : null));
-						}
-					}
-					if (!notSupplyingBOMLine.isEmpty())
-					{
-						return ProviderResult.resultWasNotFound("DISTRIBUTION MD_Candidate(s) not forwarding to PP_Order_BOMLine " + expectedBOMLineId + ": " + notSupplyingBOMLine);
-					}
-					return ProviderResult.resultWasFound(true);
-				})
+				.worker(() -> checkAllDistributionCandidatesSupplyBOMLine(productId, productIdentifierStr, expectedBOMLineId))
 				.maxWaitSeconds(timeoutSec)
 				.execute();
 	}
 
+	private ProviderResult<Boolean> checkAllDistributionCandidatesSupplyBOMLine(
+			@NonNull final ProductId productId,
+			@NonNull final String productIdentifierStr,
+			@NonNull final PPOrderBOMLineId expectedBOMLineId)
+	{
+		final List<I_MD_Candidate> candidates = queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(COLUMNNAME_MD_Candidate_BusinessCase, X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION)
+				.orderBy(COLUMNNAME_MD_Candidate_ID)
+				.create()
+				.list();
+		if (candidates.isEmpty())
+		{
+			return ProviderResult.resultWasNotFound("No DISTRIBUTION MD_Candidate found for product " + productIdentifierStr);
+		}
+
+		final List<String> notSupplyingBOMLine = new ArrayList<>();
+		for (final I_MD_Candidate candidate : candidates)
+		{
+			final I_MD_Candidate_Dist_Detail detail = queryBL.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
+					.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_MD_Candidate_ID, candidate.getMD_Candidate_ID())
+					.create()
+					.firstOnly(I_MD_Candidate_Dist_Detail.class);
+			final PPOrderBOMLineId forwardBOMLineId = detail != null ? PPOrderBOMLineId.ofRepoIdOrNull(detail.getPP_Order_BOMLine_ID()) : null;
+			if (!PPOrderBOMLineId.equals(forwardBOMLineId, expectedBOMLineId))
+			{
+				notSupplyingBOMLine.add("MD_Candidate_ID=" + candidate.getMD_Candidate_ID() + " type=" + candidate.getMD_Candidate_Type()
+						+ " qty=" + candidate.getQty() + " forwardBOMLine=" + forwardBOMLineId);
+			}
+		}
+		if (!notSupplyingBOMLine.isEmpty())
+		{
+			return ProviderResult.resultWasNotFound("DISTRIBUTION MD_Candidate(s) not forwarding to PP_Order_BOMLine " + expectedBOMLineId + ": " + notSupplyingBOMLine);
+		}
+		return ProviderResult.resultWasFound(true);
+	}
+
+	/**
+	 * Waits for each row's MD_Candidate and validates it.
+	 * The <b>ATP</b> cell may be {@code *}: the row then does not verify the ATP (otherwise a missing ATP cell means 0 and is verified).
+	 * Only this step and {@code the following MD_Candidates are validated} support {@code *}; the other MD_Candidate steps fail if a table uses it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, MD_Candidates are found
+	 *   | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  |
+	 *   | c1         | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | *   | production_WH   |
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, MD_Candidates are found$")
 	public void validate_md_candidates(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
@@ -630,7 +653,7 @@ public class MD_Candidate_StepDef
 		final ProductId productId = productTable.getId(row.getAsIdentifier(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID));
 		final String dateProjected = row.getAsString(COLUMNNAME_DateProjected);
 		final BigDecimal qty = row.getAsBigDecimal(COLUMNNAME_Qty);
-		final BigDecimal atp = MD_Candidate_StepDefTableTransformer.extractATP(row);
+		@Nullable final BigDecimal atp = MD_Candidate_StepDefTableTransformer.extractATP(row);
 		final CandidateType type = row.getAsEnum(COLUMNNAME_MD_Candidate_Type, CandidateType.class);
 
 		final MaterialDispoDataItem materialDispoDataItem = getFreshMaterialDispoItem(materialDispoDataIdentifier, qty, timeoutSec);
@@ -666,9 +689,12 @@ public class MD_Candidate_StepDef
 		softly.assertThat(materialDispoDataItem.getMaterialDescriptor().getQuantity().abs())
 				.as(description.newWithMessage("Qty.abs"))
 				.isEqualByComparingTo(qty.abs()); // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
-		softly.assertThat(materialDispoDataItem.getAtp())
-				.as(description.newWithMessage("ATP"))
-				.isEqualByComparingTo(atp);
+		if (atp != null)
+		{
+			softly.assertThat(materialDispoDataItem.getAtp())
+					.as(description.newWithMessage("ATP"))
+					.isEqualByComparingTo(atp);
+		}
 
 		final AttributeSetInstanceId expectedAsiId = row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
 				.map(attributeSetInstanceTable::getId)

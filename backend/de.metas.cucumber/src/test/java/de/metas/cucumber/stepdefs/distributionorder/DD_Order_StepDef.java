@@ -201,46 +201,53 @@ public class DD_Order_StepDef
 	@And("^after not more than (.*)s, DD_Orders are generated from the following DD_Order_Candidates$")
 	public void validateDDOrdersGeneratedFromCandidates(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final DDOrderCandidateId candidateId = row.getAsIdentifier("DD_Order_Candidate_ID").lookupIdIn(ddOrderCandidateTable);
-			final StepDefDataIdentifier ddOrderIdentifier = row.getAsIdentifier();
+		DataTableRows.of(dataTable).forEach(row -> validateDDOrderGeneratedFromCandidate(timeoutSec, row));
+	}
 
-			final DDOrderId[] ddOrderIdHolder = new DDOrderId[1];
-			final DDOrderLineId[] ddOrderLineIdHolder = new DDOrderLineId[1];
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> {
-				final DDOrderCandidateAllocList allocs = ddOrderCandidateAllocRepository.getByCandidateIds(Collections.singleton(candidateId));
-				if (allocs.isEmpty())
-				{
-					return false;
-				}
-				ddOrderIdHolder[0] = allocs.getDDOrderIds().iterator().next();
-				ddOrderLineIdHolder[0] = allocs.getDDOrderLineIds().iterator().next();
-				return true;
-			});
+	private void validateDDOrderGeneratedFromCandidate(final int timeoutSec, @NonNull final DataTableRow row)
+	{
+		final DDOrderCandidateId candidateId = row.getAsIdentifier("DD_Order_Candidate_ID").lookupIdIn(ddOrderCandidateTable);
+		final StepDefDataIdentifier ddOrderIdentifier = row.getAsIdentifier();
 
-			final DDOrderId ddOrderId = ddOrderIdHolder[0];
-			final DDOrderId knownDDOrderId = ddOrderTable.getIdOptional(ddOrderIdentifier).orElse(null);
-			if (knownDDOrderId != null)
+		final DDOrderId[] ddOrderIdHolder = new DDOrderId[1];
+		final DDOrderLineId[] ddOrderLineIdHolder = new DDOrderLineId[1];
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> {
+			final DDOrderCandidateAllocList allocs = ddOrderCandidateAllocRepository.getByCandidateIds(Collections.singleton(candidateId));
+			if (allocs.isEmpty())
 			{
-				assertThat(ddOrderId).as("DD_Order of DD_Order_Candidate " + candidateId + " vs. " + ddOrderIdentifier).isEqualTo(knownDDOrderId);
+				return false;
 			}
-
-			final I_DD_Order ddOrder = ddOrderService.getById(ddOrderId);
-			validateDDOrder(ddOrder, row);
-			row.getAsOptionalBigDecimal("DD_OrderLine_QtyEntered_Total").ifPresent(expectedTotal -> {
-				final BigDecimal actualTotal = queryBL.createQueryBuilder(I_DD_OrderLine.class)
-						.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrderId)
-						.create()
-						.list()
-						.stream()
-						.map(I_DD_OrderLine::getQtyEntered)
-						.reduce(BigDecimal.ZERO, BigDecimal::add);
-				assertThat(actualTotal).as("Total QtyEntered of the DD_OrderLines of " + ddOrderIdentifier).isEqualByComparingTo(expectedTotal);
-			});
-			ddOrderTable.putOrReplace(ddOrderIdentifier, ddOrder);
-			row.getAsOptionalIdentifier("DD_OrderLine_ID")
-					.ifPresent(lineIdentifier -> ddOrderLineTable.putOrReplace(lineIdentifier, ddOrderService.getLineById(ddOrderLineIdHolder[0])));
+			ddOrderIdHolder[0] = allocs.getDDOrderIds().iterator().next();
+			ddOrderLineIdHolder[0] = allocs.getDDOrderLineIds().iterator().next();
+			return true;
 		});
+
+		final DDOrderId ddOrderId = ddOrderIdHolder[0];
+		final DDOrderId knownDDOrderId = ddOrderTable.getIdOptional(ddOrderIdentifier).orElse(null);
+		if (knownDDOrderId != null)
+		{
+			assertThat(ddOrderId).as("DD_Order of DD_Order_Candidate " + candidateId + " vs. " + ddOrderIdentifier).isEqualTo(knownDDOrderId);
+		}
+
+		final I_DD_Order ddOrder = ddOrderService.getById(ddOrderId);
+		validateDDOrder(ddOrder, row);
+		row.getAsOptionalBigDecimal("DD_OrderLine_QtyEntered_Total")
+				.ifPresent(expectedTotal -> assertTotalLineQty(ddOrderId, ddOrderIdentifier, expectedTotal));
+		ddOrderTable.putOrReplace(ddOrderIdentifier, ddOrder);
+		row.getAsOptionalIdentifier("DD_OrderLine_ID")
+				.ifPresent(lineIdentifier -> ddOrderLineTable.putOrReplace(lineIdentifier, ddOrderService.getLineById(ddOrderLineIdHolder[0])));
+	}
+
+	private void assertTotalLineQty(@NonNull final DDOrderId ddOrderId, @NonNull final StepDefDataIdentifier ddOrderIdentifier, @NonNull final BigDecimal expectedTotal)
+	{
+		final BigDecimal actualTotal = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrderId)
+				.create()
+				.list()
+				.stream()
+				.map(I_DD_OrderLine::getQtyEntered)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		assertThat(actualTotal).as("Total QtyEntered of the DD_OrderLines of " + ddOrderIdentifier).isEqualByComparingTo(expectedTotal);
 	}
 
 	@And("^after not more than (.*)s, following DD_Orders are found$")

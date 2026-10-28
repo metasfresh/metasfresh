@@ -102,8 +102,8 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 	@Nullable
 	public static BigDecimal extractATP(final DataTableRow row)
 	{
-		final boolean atpNotVerified = row.getAsOptionalString("ATP").map(ATP_NOT_VERIFIED::equals).orElse(false);
-		if (atpNotVerified)
+		final boolean isAtpVerified = !row.getAsOptionalString("ATP").map(ATP_NOT_VERIFIED::equals).orElse(false);
+		if (!isAtpVerified)
 		{
 			return null;
 		}

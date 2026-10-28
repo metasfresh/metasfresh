@@ -324,14 +324,7 @@ public class DD_Order_Candidate_StepDef
 		final DataTableRows rows = DataTableRows.of(dataTable);
 
 		final Set<DDOrderCandidateId> alreadyMatchedIds = new HashSet<>();
-		rows.forEach(row -> {
-			final DDOrderCandidate candidate = StepDefUtil.<DDOrderCandidate>tryAndWaitForItem()
-					.worker(() -> findFirstMatchingCandidate(row, alreadyMatchedIds))
-					.maxWaitSeconds(timeoutSec)
-					.execute();
-			alreadyMatchedIds.add(candidate.getIdNotNull());
-			row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderCandidateTable.putOrReplace(identifier, candidate));
-		});
+		rows.forEach(row -> matchAndRememberCandidate(row, timeoutSec, alreadyMatchedIds));
 
 		final ImmutableSet<ProductId> productIds = rows.stream()
 				.map(row -> row.getAsIdentifier(I_DD_Order_Candidate.COLUMNNAME_M_Product_ID).lookupIdIn(productTable))
@@ -339,20 +332,33 @@ public class DD_Order_Candidate_StepDef
 		final int expectedCount = rows.toList().size();
 
 		StepDefUtil.<Boolean>tryAndWaitForItem()
-				.worker(() -> {
-					final List<DDOrderCandidate> actual = productIds.stream()
-							.flatMap(productId -> ddOrderCandidateService.list(DDOrderCandidateQuery.builder().productId(productId).build()).stream())
-							.collect(Collectors.toList());
-					if (actual.size() != expectedCount)
-					{
-						return ItemProvider.ProviderResult.resultWasNotFound("Expected " + expectedCount + " DD_Order_Candidate(s) but found " + actual.size()
-								+ " for products " + productIds
-								+ "\n\tcandidates=" + actual);
-					}
-					return ItemProvider.ProviderResult.resultWasFound(true);
-				})
+				.worker(() -> checkCandidateCount(productIds, expectedCount))
 				.maxWaitSeconds(timeoutSec)
 				.execute();
+	}
+
+	private void matchAndRememberCandidate(@NonNull final DataTableRow row, final int timeoutSec, @NonNull final Set<DDOrderCandidateId> alreadyMatchedIds)
+	{
+		final DDOrderCandidate candidate = StepDefUtil.<DDOrderCandidate>tryAndWaitForItem()
+				.worker(() -> findFirstMatchingCandidate(row, alreadyMatchedIds))
+				.maxWaitSeconds(timeoutSec)
+				.execute();
+		alreadyMatchedIds.add(candidate.getIdNotNull());
+		row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderCandidateTable.putOrReplace(identifier, candidate));
+	}
+
+	private ItemProvider.ProviderResult<Boolean> checkCandidateCount(@NonNull final Set<ProductId> productIds, final int expectedCount)
+	{
+		final List<DDOrderCandidate> actual = productIds.stream()
+				.flatMap(productId -> ddOrderCandidateService.list(DDOrderCandidateQuery.builder().productId(productId).build()).stream())
+				.collect(Collectors.toList());
+		if (actual.size() != expectedCount)
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("Expected " + expectedCount + " DD_Order_Candidate(s) but found " + actual.size()
+					+ " for products " + productIds
+					+ "\n\tcandidates=" + actual);
+		}
+		return ItemProvider.ProviderResult.resultWasFound(true);
 	}
 
 	private ItemProvider.ProviderResult<DDOrderCandidate> findFirstMatchingCandidate(@NonNull final DataTableRow row, @NonNull final Set<DDOrderCandidateId> excludeIds)
@@ -415,36 +421,43 @@ public class DD_Order_Candidate_StepDef
 		final PPOrderBOMLineId expectedBOMLineId = StepDefDataIdentifier.ofString(bomLineIdentifierStr).lookupIdIn(ppOrderBOMLineTable);
 
 		StepDefUtil.<Boolean>tryAndWaitForItem()
-				.worker(() -> {
-					final List<DDOrderCandidate> candidates = ddOrderCandidateService.list(DDOrderCandidateQuery.builder().productId(productId).build());
-					if (candidates.isEmpty())
-					{
-						return ItemProvider.ProviderResult.resultWasNotFound("No DD_Order_Candidate found for product " + productIdentifierStr);
-					}
-					final List<DDOrderCandidate> notSupplyingBOMLine = candidates.stream()
-							.filter(candidate -> candidate.getForwardPPOrderRef() == null
-									|| !PPOrderBOMLineId.equals(candidate.getForwardPPOrderRef().getPpOrderBOMLineId(), expectedBOMLineId))
-							.collect(Collectors.toList());
-					if (!notSupplyingBOMLine.isEmpty())
-					{
-						return ItemProvider.ProviderResult.resultWasNotFound("DD_Order_Candidate(s) not supplying the expected PP_Order_BOMLine " + expectedBOMLineId
-								+ "\n\tcandidates=" + notSupplyingBOMLine);
-					}
-					if (expectedTotalQty != null)
-					{
-						final BigDecimal actualTotalQty = candidates.stream()
-								.map(candidate -> candidate.getQtyEntered().toBigDecimal())
-								.reduce(BigDecimal.ZERO, BigDecimal::add);
-						if (actualTotalQty.compareTo(expectedTotalQty) != 0)
-						{
-							return ItemProvider.ProviderResult.resultWasNotFound("Expected the DD_Order_Candidates to total " + expectedTotalQty + " but they total " + actualTotalQty
-									+ "\n\tcandidates=" + candidates);
-						}
-					}
-					return ItemProvider.ProviderResult.resultWasFound(true);
-				})
+				.worker(() -> checkAllCandidatesSupplyBOMLine(productId, productIdentifierStr, expectedBOMLineId, expectedTotalQty))
 				.maxWaitSeconds(timeoutSec)
 				.execute();
+	}
+
+	private ItemProvider.ProviderResult<Boolean> checkAllCandidatesSupplyBOMLine(
+			@NonNull final ProductId productId,
+			@NonNull final String productIdentifierStr,
+			@NonNull final PPOrderBOMLineId expectedBOMLineId,
+			@Nullable final BigDecimal expectedTotalQty)
+	{
+		final List<DDOrderCandidate> candidates = ddOrderCandidateService.list(DDOrderCandidateQuery.builder().productId(productId).build());
+		if (candidates.isEmpty())
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("No DD_Order_Candidate found for product " + productIdentifierStr);
+		}
+		final List<DDOrderCandidate> notSupplyingBOMLine = candidates.stream()
+				.filter(candidate -> candidate.getForwardPPOrderRef() == null
+						|| !PPOrderBOMLineId.equals(candidate.getForwardPPOrderRef().getPpOrderBOMLineId(), expectedBOMLineId))
+				.collect(Collectors.toList());
+		if (!notSupplyingBOMLine.isEmpty())
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("DD_Order_Candidate(s) not supplying the expected PP_Order_BOMLine " + expectedBOMLineId
+					+ "\n\tcandidates=" + notSupplyingBOMLine);
+		}
+		if (expectedTotalQty != null)
+		{
+			final BigDecimal actualTotalQtyBD = candidates.stream()
+					.map(candidate -> candidate.getQtyEntered().toBigDecimal())
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+			if (actualTotalQtyBD.compareTo(expectedTotalQty) != 0)
+			{
+				return ItemProvider.ProviderResult.resultWasNotFound("Expected the DD_Order_Candidates to total " + expectedTotalQty + " but they total " + actualTotalQtyBD
+						+ "\n\tcandidates=" + candidates);
+			}
+		}
+		return ItemProvider.ProviderResult.resultWasFound(true);
 	}
 
 	@And("^no DD_Order_Candidates found for product (.*)$")

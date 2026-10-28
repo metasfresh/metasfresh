@@ -36,6 +36,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -45,10 +46,10 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_UserGroup_User_Assign;
 import org.compiere.util.DB;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -56,27 +57,16 @@ import java.util.stream.Collectors;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class AD_Note_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final AD_Message_StepDefData messageTable;
-	private final AD_User_StepDefData userTable;
-	private final AD_Note_StepDefData noteTable;
-	private final IdentifiersResolver identifiersResolver;
+	@NonNull private final AD_Message_StepDefData messageTable;
+	@NonNull private final AD_User_StepDefData userTable;
+	@NonNull private final AD_Note_StepDefData noteTable;
+	@NonNull private final IdentifiersResolver identifiersResolver;
 	private final Map<String, TableRecordReference> rememberedRecordReferences = new HashMap<>();
-
-	public AD_Note_StepDef(
-			@NonNull final AD_Message_StepDefData messageTable,
-			@NonNull final AD_User_StepDefData userTable,
-			@NonNull final AD_Note_StepDefData noteTable,
-			@NonNull final IdentifiersResolver identifiersResolver)
-	{
-		this.messageTable = messageTable;
-		this.userTable = userTable;
-		this.noteTable = noteTable;
-		this.identifiersResolver = identifiersResolver;
-	}
 
 	/**
 	 * Remembers which table and record an identifier refers to, so that AD_Notes can still be looked up by it after the record was deleted.
@@ -160,11 +150,7 @@ public class AD_Note_StepDef
 	{
 		for (final DataTableRow row : DataTableRows.of(dataTable).stream().collect(Collectors.toList()))
 		{
-			final Supplier<Boolean> noteFound = () -> {
-				final Optional<I_AD_Note> note = retrieveNotesForReferencedRecord(row).stream().findFirst();
-				note.ifPresent(n -> row.getAsOptionalIdentifier().ifPresent(id -> noteTable.putOrReplace(id, n)));
-				return note.isPresent();
-			};
+			final Supplier<Boolean> noteFound = () -> rememberFirstNoteIfFound(row);
 
 			//dev-note: tryAndWait will fail if no matching AD_Note is found
 			StepDefUtil.tryAndWait(timeoutSec, 1000, noteFound);
@@ -207,6 +193,18 @@ public class AD_Note_StepDef
 		while (System.currentTimeMillis() < deadline);
 	}
 
+	private boolean rememberFirstNoteIfFound(@NonNull final DataTableRow row)
+	{
+		final I_AD_Note note = retrieveNotesForReferencedRecord(row).stream().findFirst().orElse(null);
+		if (note == null)
+		{
+			return false;
+		}
+
+		row.getAsOptionalIdentifier().ifPresent(identifier -> noteTable.putOrReplace(identifier, note));
+		return true;
+	}
+
 	private List<I_AD_Note> retrieveNotesForReferencedRecord(@NonNull final DataTableRow row)
 	{
 		final I_AD_Message message = row.getAsIdentifier(I_AD_Note.COLUMNNAME_AD_Message_ID).lookupNotNullIn(messageTable);
@@ -214,7 +212,7 @@ public class AD_Note_StepDef
 		final TableRecordReference referencedRecord = rememberedRecordReferences.containsKey(recordIdentifier.getAsString())
 				? rememberedRecordReferences.get(recordIdentifier.getAsString())
 				: identifiersResolver.getTableRecordReference(recordIdentifier);
-		final Optional<String> textContains = row.getAsOptionalString("TextContains").filter(Check::isNotBlank);
+		@Nullable final String textContains = row.getAsOptionalString("TextContains").filter(Check::isNotBlank).orElse(null);
 
 		return queryBL.createQueryBuilder(I_AD_Note.class)
 				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Message_ID, message.getAD_Message_ID())
@@ -222,7 +220,7 @@ public class AD_Note_StepDef
 				.addEqualsFilter(I_AD_Note.COLUMNNAME_Record_ID, referencedRecord.getRecord_ID())
 				.create()
 				.stream(I_AD_Note.class)
-				.filter(note -> textContains.map(text -> containsText(note, text)).orElse(true))
+				.filter(note -> textContains == null || containsText(note, textContains))
 				.collect(Collectors.toList());
 	}
 
