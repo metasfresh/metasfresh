@@ -6,9 +6,8 @@ import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
 
 const SALES_ORDER_LINES_TAB_ID = 'AD_Tab-187';
 
-/** True for the WebUI's PATCH of the given field of a quick input of the given tab. */
-const isQuickInputPatchOf = (response, tabId, fieldName) => {
-  const request = response.request();
+/** True for the WebUI's PATCH request of the given field of a quick input of the given tab. */
+const isQuickInputPatchRequestOf = (request, tabId, fieldName) => {
   if (request.method() !== 'PATCH' || !new URL(request.url()).pathname.includes(`/${tabId}/quickInput/`)) {
     return false;
   }
@@ -20,6 +19,10 @@ const isQuickInputPatchOf = (response, tabId, fieldName) => {
   }
   return Array.isArray(body) && body.some((change) => change.path === fieldName);
 };
+
+/** True for the response to the WebUI's PATCH of the given field of a quick input of the given tab. */
+const isQuickInputPatchOf = (response, tabId, fieldName) =>
+  isQuickInputPatchRequestOf(response.request(), tabId, fieldName);
 
 /**
  * Page object for Sales Order window (ID: 143).
@@ -261,7 +264,7 @@ export class SalesOrderPage {
    * @param {Object} params
    * @param {string} params.product - Product code or name
    * @param {string} params.recordId - Optional record ID (extracted from the URL if not provided)
-   * @param {boolean} [params.awaitProductPatch=true] - false returns right after the product is clicked,
+   * @param {boolean} [params.awaitProductPatch=true] - false returns as soon as the product PATCH is sent,
    *   without waiting for the server's answer: the user who types on at once (e.g. a spec that holds that
    *   answer back to test Enter while it is in flight).
    * @returns {Promise<{packingInstruction: string}|undefined>} what the server defaulted for the packing
@@ -341,7 +344,14 @@ export class SalesOrderPage {
       // This avoids clicking on "Search for more..." or other non-record options
       const productOption = page.locator('.input-dropdown-list-option').getByText(product).first();
       if (!awaitProductPatch) {
+        // The click sends the product PATCH at once; return as soon as it is on the wire, not answered.
+        const productPatchSent = page.waitForRequest(
+          (request) => isQuickInputPatchRequestOf(request, SALES_ORDER_LINES_TAB_ID, 'M_Product_ID'),
+          { timeout: SLOW_ACTION_TIMEOUT }
+        );
+        productPatchSent.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
         await productOption.click();
+        await productPatchSent;
         return undefined;
       }
 
