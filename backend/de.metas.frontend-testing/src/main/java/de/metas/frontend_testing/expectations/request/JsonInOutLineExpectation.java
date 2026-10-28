@@ -18,6 +18,8 @@ import java.math.BigDecimal;
  * { "product": "P1", "movementQty": 8 }
  * // assert only the qty of this line, regardless of product
  * { "movementQty": 8 }
+ * // assert the catch qty (catch UOM) of this line
+ * { "product": "P1", "qtyDeliveredCatch": 2.5 }
  * </pre>
  */
 @Value
@@ -36,4 +38,10 @@ public class JsonInOutLineExpectation
 	 * When null, no qty assertion is performed on this line.
 	 */
 	@Nullable BigDecimal movementQty;
+
+	/**
+	 * Expected M_InOutLine.QtyDeliveredCatch (catch UOM).
+	 * When null, no assertion.
+	 */
+	@Nullable BigDecimal qtyDeliveredCatch;
 }
