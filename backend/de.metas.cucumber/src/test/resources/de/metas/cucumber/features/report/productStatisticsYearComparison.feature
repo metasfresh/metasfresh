@@ -1581,3 +1581,41 @@ Feature: Product Statistics Year Comparison - reference replay
     Then the product statistics year comparison report for org "-", year "yearN", product "tc5Mix" returns:
       | M_Product_ID | Amt_03  | Amt_Total | Currency | RateMissing_Count | RateMissing_Months |
       | tc5Mix       | 1000.00 | 1000.00   | CHF      | 2                 | 2025-06, 2026-03   |
+
+  @from:cucumber
+  Scenario: All-products run lists only products of the report organisation or of organisation *, also when another organisation's product is invoiced in the report organisation
+    ## The documents are all of the report organisation; only the product's own organisation differs.
+    And metasfresh contains AD_Org:
+      | AD_Org_ID.Identifier | Name            |
+      | orgOther             | PSYC other org  |
+    And load AD_Org:
+      | AD_Org_ID.Identifier | Value |
+      | orgStar              | 0     |
+    And metasfresh contains M_Products:
+      | Identifier | AD_Org_ID |
+      | tcOrgOwn   |           |
+      | tcOrgStar  | orgStar   |
+      | tcOrgOther | orgOther  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | psycPLV                | tcOrgOwn     | 10.00    | PCE      | psycTaxCat       |
+      | psycPLV                | tcOrgStar    | 20.00    | PCE      | psycTaxCat       |
+      | psycPLV                | tcOrgOther   | 30.00    | PCE      | psycTaxCat       |
+    And metasfresh has date and time 2026-04-15T10:00:00+02:00[Europe/Berlin]
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_org    | psycBP        | 2026-04-15   | true    | CHF           | psycPL         |
+    And metasfresh contains C_InvoiceLines
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_org_l1  | inv_org      | tcOrgOwn     | 1 PCE       | 10.00 | psycTax19    |
+      | inv_org_l2  | inv_org      | tcOrgStar    | 1 PCE       | 20.00 | psycTax19    |
+      | inv_org_l3  | inv_org      | tcOrgOther   | 1 PCE       | 30.00 | psycTax19    |
+    And the invoice identified by inv_org is completed
+
+    Then the product statistics year comparison report for org "-", year "yearN", product "-" returns:
+      | M_Product_ID | Amt_04 | Amt_Total | Currency |
+      | tcOrgOwn     | 10.00  | 10.00     | CHF      |
+      | tcOrgStar    | 20.00  | 20.00     | CHF      |
+    And the product statistics year comparison report for org "-", year "yearN", product "-" contains no rows for products:
+      | M_Product_ID |
+      | tcOrgOther   |

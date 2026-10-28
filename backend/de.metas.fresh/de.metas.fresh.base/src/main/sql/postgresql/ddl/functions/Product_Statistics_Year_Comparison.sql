@@ -111,6 +111,7 @@ $$
 -- (the C_Year of the same calendar with the next lower FiscalYear; NULL values when there is none) and the 12 monthly quantity deviations in percent.
 -- Totals are NULL when no month has a value. Dev_xx = ROUND(NULLIF(raw, 0), 2): blank when exactly 0; no total deviation.
 -- RateMissing_Count / RateMissing_Months: documents without currency rate in the chosen and the previous year (distinct YYYY-MM, ascending).
+-- Only products of p_AD_Org_ID or of organisation * (0), as offered by the product parameter (AD_Val_Rule 540377).
 CREATE FUNCTION report.Product_Statistics_Year_Comparison(
     p_AD_Org_ID    numeric,
     p_C_Year_ID    numeric,
@@ -312,6 +313,7 @@ BEGIN
                x.rm_months::varchar
         FROM x
                  JOIN M_Product p ON p.M_Product_ID = x.M_Product_ID
+        WHERE p.AD_Org_ID IN (p_AD_Org_ID, 0)
         ORDER BY p.Value;
 END
 $$
