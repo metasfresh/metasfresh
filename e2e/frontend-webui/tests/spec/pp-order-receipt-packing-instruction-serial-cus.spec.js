@@ -54,10 +54,10 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       const masterdata = await createSerialFixture(language);
       await ReceiptDialog.openForOrder(masterdata, 'PP_SERIAL');
 
+      await expect.poll(() => ReceiptDialog.isFieldVisible('NumberOfCUs')).toBe(true);
       for (const hidden of ['QtyTU', 'QtyLU', 'QtyTotalReceived', 'QtyCUsReceived', 'M_HU_PI_Item_Product_ID', 'M_HU_PI_Item_ID', 'QtyCUsPerTU']) {
-        expect(await ReceiptDialog.isFieldVisible(hidden), `${hidden} is hidden for individual CUs`).toBe(false);
+        await expect.poll(() => ReceiptDialog.isFieldVisible(hidden), { message: `${hidden} is hidden for individual CUs` }).toBe(false);
       }
-      expect(await ReceiptDialog.isFieldVisible('NumberOfCUs')).toBe(true);
 
       // the value survives the dialog's parameter-change round trip and is received
       await ReceiptDialog.setNumber('NumberOfCUs', QTY_INDIVIDUAL_CUS);
