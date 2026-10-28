@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Bank;
@@ -72,7 +73,7 @@ public class C_Bank_StepDef
 
 		final I_C_Bank bankRecord = InterfaceWrapperHelper.newInstance(I_C_Bank.class);
 
-		// C_DataImport_ID is optional (e.g. a bank that is only used as a SEPA debtor bank has no data import)
+		// C_DataImport_ID is optional; if omitted, the DB default applies (e.g. a bank that is only used as a SEPA debtor bank has no data import)
 		final String dataImportIdentifier = tableRow.getAsOptionalString(I_C_Bank.COLUMNNAME_C_DataImport_ID + "." + TABLECOLUMN_IDENTIFIER).orElse(null);
 		if (dataImportIdentifier != null)
 		{
@@ -84,7 +85,7 @@ public class C_Bank_StepDef
 		bankRecord.setName(name);
 		bankRecord.setRoutingNo(routingNo);
 		// SwiftCode (BIC) is optional: omit the column to create a bank without BIC
-		tableRow.getAsOptionalString(I_C_Bank.COLUMNNAME_SwiftCode).ifPresent(bankRecord::setSwiftCode);
+		bankRecord.setSwiftCode(tableRow.getAsOptionalString(I_C_Bank.COLUMNNAME_SwiftCode).map(StringUtils::trimBlankToNull).orElse(null));
 		bankRecord.setIsImportAsSingleSummaryLine(isImportAsSingleSummaryLine);
 
 		saveRecord(bankRecord);
