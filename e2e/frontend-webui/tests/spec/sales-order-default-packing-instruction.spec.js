@@ -81,12 +81,12 @@ test.describe('Sales order quick entry - default packing instruction', () => {
     await SalesOrderPage.clickNew();
     const recordId = await SalesOrderPage.selectCustomer(customer);
 
-    await SalesOrderPage.openQuickEntryAndSelectProduct({ product, recordId });
+    const defaulted = await SalesOrderPage.openQuickEntryAndSelectProduct({ product, recordId });
+    console.log(`[TC1] packing instruction defaulted by the server: "${defaulted.packingInstruction}"`);
 
     // The defect: the Standard-Packvorschrift was pre-filled here even though no price references it.
-    const packingInstruction = await SalesOrderPage.getQuickEntryPackingInstruction();
-    console.log(`[TC1] packing instruction after product select: "${packingInstruction}"`);
-    expect(packingInstruction).toBe('');
+    expect(defaulted.packingInstruction).toBe('');
+    await SalesOrderPage.expectQuickEntryPackingInstruction('');
 
     await SalesOrderPage.submitQuickEntryLine({ quantity: 1 });
 
@@ -113,13 +113,13 @@ test.describe('Sales order quick entry - default packing instruction', () => {
     await SalesOrderPage.clickNew();
     const recordId = await SalesOrderPage.selectCustomer(customer);
 
-    await SalesOrderPage.openQuickEntryAndSelectProduct({ product, recordId });
+    const defaulted = await SalesOrderPage.openQuickEntryAndSelectProduct({ product, recordId });
+    console.log(`[TC2] packing instruction defaulted by the server: "${defaulted.packingInstruction}"`);
 
     // The other half of the rule: a priced packing instruction must still be offered, otherwise the
     // fix would have stripped a legitimate default.
-    const packingInstruction = await SalesOrderPage.getQuickEntryPackingInstruction();
-    console.log(`[TC2] packing instruction after product select: "${packingInstruction}"`);
-    expect(packingInstruction).not.toBe('');
+    expect(defaulted.packingInstruction).not.toBe('');
+    await SalesOrderPage.expectQuickEntryPackingInstruction(defaulted.packingInstruction);
 
     await SalesOrderPage.submitQuickEntryLine({ quantity: 1 });
 
