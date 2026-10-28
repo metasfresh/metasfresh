@@ -7,9 +7,11 @@ import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
+import de.metas.common.util.time.SystemTime;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.util.Services;
 import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -21,7 +23,10 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
 import java.io.ByteArrayOutputStream;
+import javax.annotation.Nullable;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +67,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class C_DunningDoc_JasperWithInvoicePDFsStrategyTest
 {
+	/** The tests call {@code appendDunnedInvoicePdfs}, which does not run the Jasper process. */
+	private static final int UNUSED_JASPER_PROCESS_ID = -1;
 	private static final float DUNNING_PAGE_WIDTH = 300;
 	private static final float INVOICE1_PAGE_WIDTH = 400;
 	private static final float INVOICE2_PAGE_WIDTH = 500;
@@ -75,19 +82,22 @@ class C_DunningDoc_JasperWithInvoicePDFsStrategyTest
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(new DunningService());
 
-		strategy = new C_DunningDoc_JasperWithInvoicePDFsStrategy(-1);
+		strategy = new C_DunningDoc_JasperWithInvoicePDFsStrategy(UNUSED_JASPER_PROCESS_ID);
 	}
 
 	@Test
-	void invoicesWithArchive_arePlacedAfterTheDunningPdf_inOrderOfTheDunningDocLines() throws IOException
+	void invoicesWithArchive_areAppendedAfterTheDunningPdf() throws IOException
 	{
 		final I_C_Invoice invoice1 = createInvoiceWithArchive(INVOICE1_PAGE_WIDTH, 2);
 		final I_C_Invoice invoice2 = createInvoiceWithArchive(INVOICE2_PAGE_WIDTH, 1);
-		final DunningDocId dunningDocId = createDunningDocFor(invoice1, invoice2);
+		final DunningDocId dunningDocId = createDunningDocFor(invoice2, invoice1);
 
 		final Resource result = strategy.appendDunnedInvoicePdfs(pdf(DUNNING_PAGE_WIDTH, 1), dunningDocId);
 
-		assertThat(pageWidths(result)).containsExactly(DUNNING_PAGE_WIDTH, INVOICE1_PAGE_WIDTH, INVOICE1_PAGE_WIDTH, INVOICE2_PAGE_WIDTH);
+		// DunningService.retrieveDunnedInvoices does not define an order, so only the dunning PDF's position is pinned
+		final List<Float> pageWidths = pageWidths(result);
+		assertThat(pageWidths.get(0)).isEqualTo(DUNNING_PAGE_WIDTH);
+		assertThat(pageWidths.subList(1, pageWidths.size())).containsExactlyInAnyOrder(INVOICE1_PAGE_WIDTH, INVOICE1_PAGE_WIDTH, INVOICE2_PAGE_WIDTH);
 	}
 
 	@Test
@@ -114,6 +124,22 @@ class C_DunningDoc_JasperWithInvoicePDFsStrategyTest
 	}
 
 	@Test
+	void invoiceWithSeveralArchives_onlyTheLastArchiveIsAttached() throws IOException
+	{
+		final I_C_Invoice invoice = createInvoice();
+		final Instant now = Instant.parse("2026-10-28T10:00:00Z");
+		// the newest archive is created in the middle, so neither insertion order nor id order is "last"
+		createArchive(invoice, INVOICE2_PAGE_WIDTH, 1, now);
+		createArchive(invoice, INVOICE3_PAGE_WIDTH, 1, now.plusSeconds(60));
+		createArchive(invoice, INVOICE1_PAGE_WIDTH, 1, now.minusSeconds(60));
+		final DunningDocId dunningDocId = createDunningDocFor(invoice);
+
+		final Resource result = strategy.appendDunnedInvoicePdfs(pdf(DUNNING_PAGE_WIDTH, 1), dunningDocId);
+
+		assertThat(pageWidths(result)).containsExactly(DUNNING_PAGE_WIDTH, INVOICE3_PAGE_WIDTH);
+	}
+
+	@Test
 	void archiveOfAnInvoiceThatIsNotDunned_isNotAttached() throws IOException
 	{
 		final I_C_Invoice invoice1 = createInvoiceWithArchive(INVOICE1_PAGE_WIDTH, 1);
@@ -128,16 +154,32 @@ class C_DunningDoc_JasperWithInvoicePDFsStrategyTest
 	private static I_C_Invoice createInvoiceWithArchive(final float pageWidth, final int pages)
 	{
 		final I_C_Invoice invoice = createInvoice();
+		createArchive(invoice, pageWidth, pages, null);
+		return invoice;
+	}
 
+	/** @param created the archive's Created timestamp, or {@code null} for the default */
+	private static void createArchive(final I_C_Invoice invoice, final float pageWidth, final int pages, @Nullable final Instant created)
+	{
 		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
 		final I_AD_Archive archive = newInstance(I_AD_Archive.class);
 		archive.setAD_Table_ID(invoiceRef.getAD_Table_ID());
 		archive.setRecord_ID(invoiceRef.getRecord_ID());
 		// the DB archive storage keeps the data zipped, so let it write the data instead of setting the column directly
 		Services.get(IArchiveBL.class).setBinaryData(archive, pdf(pageWidth, pages).getByteArray());
-		saveRecord(archive);
-
-		return invoice;
+		try
+		{
+			if (created != null)
+			{
+				// the POJO DB sets Created from the system time on insert
+				SystemTime.setFixedTimeSource(created.atZone(ZoneOffset.UTC));
+			}
+			saveRecord(archive);
+		}
+		finally
+		{
+			SystemTime.resetTimeSource();
+		}
 	}
 
 	private static DunningDocId createDunningDocFor(final I_C_Invoice... invoices)
@@ -172,7 +214,7 @@ class C_DunningDoc_JasperWithInvoicePDFsStrategyTest
 		}
 		catch (final Exception e)
 		{
-			throw new RuntimeException(e);
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}
 

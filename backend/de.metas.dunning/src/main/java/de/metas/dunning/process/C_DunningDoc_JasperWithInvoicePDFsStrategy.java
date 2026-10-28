@@ -81,7 +81,6 @@ public class C_DunningDoc_JasperWithInvoicePDFsStrategy implements ExecuteReport
 	/**
 	 * Appends the last archived PDF of every dunned invoice to the given dunning doc PDF.
 	 * Invoices without an archive are skipped.
-	 * Extracted from {@link #executeReport(ProcessInfo, OutputType)} so that it can be unit-tested without running Jasper.
 	 */
 	@VisibleForTesting
 	Resource appendDunnedInvoicePdfs(@NonNull final Resource dunningDocData, @NonNull final DunningDocId dunningDocId)
