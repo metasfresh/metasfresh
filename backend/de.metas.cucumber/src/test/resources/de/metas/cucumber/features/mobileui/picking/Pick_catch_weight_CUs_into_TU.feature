@@ -115,6 +115,9 @@ Feature: mobileUI Picking - Pick catch weight CUs into a TU
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | shipmentSchedule                 | shipment              | CO            |
+    And validate the created shipment lines
+      | M_InOutLine_ID | M_InOut_ID | M_Product_ID | MovementQty |
+      | shipmentLine1  | shipment   | product      | 4           |
     And validate the created shipment lines by id
       | Identifier    | M_Product_ID | movementqty | QtyDeliveredCatch |
       | shipmentLine1 | product      | 4           | 8.000             |
@@ -158,6 +161,9 @@ Feature: mobileUI Picking - Pick catch weight CUs into a TU
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | shipmentSchedule                 | shipment              | CO            |
+    And validate the created shipment lines
+      | M_InOutLine_ID | M_InOut_ID | M_Product_ID | MovementQty |
+      | shipmentLine1  | shipment   | product      | 4           |
     And validate the created shipment lines by id
       | Identifier    | M_Product_ID | movementqty | QtyDeliveredCatch |
       | shipmentLine1 | product      | 4           | 0.400             |

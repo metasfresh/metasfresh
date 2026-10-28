@@ -103,6 +103,14 @@ class PickingJobUnpickCatchWeightTest
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = huTestHelper.handlingUnitsBL();
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
+		// needed by InOutProducerFromShipmentScheduleWithHU (shipment-line half of the unpick test)
+		org.compiere.SpringContextHolder.registerJUnitBean(new de.metas.order.impl.OrderEmailPropagationSysConfigRepository(Services.get(org.adempiere.service.ISysConfigBL.class)));
+		org.compiere.SpringContextHolder.registerJUnitBean(new de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite(com.google.common.collect.ImmutableList.of()));
+		final de.metas.document.DocBaseAndSubType shipmentDocBaseAndSubType = de.metas.document.DocBaseAndSubType.of(de.metas.document.DocBaseType.Shipment);
+		final org.compiere.model.I_C_DocType shipmentDocType = InterfaceWrapperHelper.newInstance(org.compiere.model.I_C_DocType.class);
+		shipmentDocType.setDocBaseType(shipmentDocBaseAndSubType.getDocBaseType().getCode());
+		shipmentDocType.setDocSubType(shipmentDocBaseAndSubType.getDocSubType().getCode());
+		InterfaceWrapperHelper.saveRecord(shipmentDocType);
 	}
 
 	/** A finite-capacity TU PI for the product, so it can be used as a (new-TU) picking target the CU is packed into. */
@@ -246,6 +254,7 @@ class PickingJobUnpickCatchWeightTest
 		final Packageable packageable = helper.packageable()
 				.orderAndLineId(orderAndLineId)
 				.productId(productId)
+				.catchWeightUomId(huTestHelper.uomKgId)
 				.qtyToDeliver("20")
 				.build();
 
@@ -298,6 +307,17 @@ class PickingJobUnpickCatchWeightTest
 				.catchWeight(new BigDecimal("3.900"))
 				.build());
 
+		// each pick records ITS OWN weight. With the TU's running total (the bug) the second pick would record 4.100 + 3.900,
+		// because the CU weights roll up into the TU's WeightNet.
+		final List<I_M_ShipmentSchedule_QtyPicked> recordsBeforeUnpick = Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, packageable.getShipmentScheduleId())
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
+				.create()
+				.list();
+		assertThat(recordsBeforeUnpick).as("records before unpick").hasSize(2);
+		assertThat(recordsBeforeUnpick.get(0).getQtyDeliveredCatch()).as("first pick record QtyDeliveredCatch").isEqualByComparingTo("4.100");
+		assertThat(recordsBeforeUnpick.get(1).getQtyDeliveredCatch()).as("second pick record QtyDeliveredCatch").isEqualByComparingTo("3.900");
+
 		// unpick 2 pcs of the product (LIFO => the second pick)
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 				.pickingLineId(line.getId())
@@ -318,6 +338,14 @@ class PickingJobUnpickCatchWeightTest
 		assertThat(remainingRecord.getCatch_UOM_ID()).as("remaining record Catch_UOM_ID").isEqualTo(huTestHelper.uomKgId.getRepoId());
 
 		// ... and so does the shipment line, built through the real breakdown + producer
+		// the producer resolves the schedule's handler through AD_Table_ID/Record_ID (the helper-created schedule carries none)
+		Services.get(de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL.class)
+				.registerHandler(de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler.newInstanceWithoutExtensions());
+		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentScheduleRecord = InterfaceWrapperHelper.load(packageable.getShipmentScheduleId(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+		shipmentScheduleRecord.setAD_Table_ID(Services.get(org.adempiere.ad.table.api.IADTableDAO.class).retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
+		shipmentScheduleRecord.setRecord_ID(orderAndLineId.getOrderLineRepoId());
+		shipmentScheduleRecord.setDeliveryRule(de.metas.order.DeliveryRule.AVAILABILITY.getCode());
+		InterfaceWrapperHelper.save(shipmentScheduleRecord);
 		final IHUContext huContext = huTestHelper.createMutableHUContext();
 		final List<ShipmentScheduleWithHU> candidates = Services.get(IHUShipmentScheduleBL.class)
 				.createCandidatesForQtyPicked(remainingRecord, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
