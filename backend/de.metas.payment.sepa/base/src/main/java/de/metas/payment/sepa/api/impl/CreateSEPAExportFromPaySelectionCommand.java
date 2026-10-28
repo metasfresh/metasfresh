@@ -3,6 +3,7 @@ package de.metas.payment.sepa.api.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.banking.Bank;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
@@ -261,6 +262,13 @@ class CreateSEPAExportFromPaySelectionCommand
 				.collect(ImmutableSet.toImmutableSet());
 		final DirectDebitMandatesMap mandates = mandateRepo.get().getActiveMandates(bankAccountIds, exportOrgId);
 
+		final ImmutableSet<BPartnerId> partnerIds = linesWithBankAccount.stream()
+				.map(line -> BPartnerId.ofRepoId(line.getC_BPartner_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableMap<BPartnerId, I_C_BPartner> partnersById = Maps.uniqueIndex(
+				bpartnerDAO.retrieveByIds(partnerIds),
+				partner -> BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
+
 		final ImmutableMap.Builder<PaySelectionLineId, DirectDebitMandate> mandatesByLineId = ImmutableMap.builder();
 		final ImmutableList.Builder<DirectDebitMandateChecker.LineWithMandate> linesWithMandate = ImmutableList.builder();
 		for (final I_C_PaySelectionLine line : linesWithBankAccount)
@@ -272,7 +280,7 @@ class CreateSEPAExportFromPaySelectionCommand
 				mandatesByLineId.put(toPaySelectionLineId(line), mandate);
 			}
 
-			final I_C_BPartner partner = bpartnerDAO.getById(BPartnerId.ofRepoId(line.getC_BPartner_ID()));
+			final I_C_BPartner partner = partnersById.get(BPartnerId.ofRepoId(line.getC_BPartner_ID()));
 			linesWithMandate.add(DirectDebitMandateChecker.LineWithMandate.builder()
 					.partnerValue(partner.getValue())
 					.partnerName(partner.getName())
