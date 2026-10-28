@@ -64,8 +64,8 @@ Feature: Co-product valuation via cost-distribution percent
       | packTUItem                 | packTUVersion                 | 1   | MI       |                                  |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | mainProdItem                       | packTUItem                 | mainProd                | 100 | 2022-01-01 |
-      | coProdItem                         | packTUItem                 | coProd                  | 100 | 2022-01-01 |
+      | mainProdItem                       | packTUItem                 | mainProd                | 24  | 2022-01-01 |
+      | coProdItem                         | packTUItem                 | coProd                  | 6   | 2022-01-01 |
 
     # BOM of the main product "Bloecke": one input Component (issued) and one Co-product output "Randstuecke".
     # A co-product BOM line carries a NEGATIVE QtyBOM (it is an output). Per finished good the ratios are
@@ -453,9 +453,9 @@ Feature: Co-product valuation via cost-distribution percent
 
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | mainProd4Item                      | packTUItem                 | mainProd4               | 100 | 2022-01-01 |
-      | coProdA4Item                       | packTUItem                 | coProdA4                | 100 | 2022-01-01 |
-      | coProdB4Item                       | packTUItem                 | coProdB4                | 100 | 2022-01-01 |
+      | mainProd4Item                      | packTUItem                 | mainProd4               | 24  | 2022-01-01 |
+      | coProdA4Item                       | packTUItem                 | coProdA4                | 6   | 2022-01-01 |
+      | coProdB4Item                       | packTUItem                 | coProdB4                | 6   | 2022-01-01 |
 
     And metasfresh contains PP_Product_BOM
       | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
@@ -533,6 +533,11 @@ Feature: Co-product valuation via cost-distribution percent
     # Randstuecke gets a 30% share of the 450 CHF total inbound costs (carve 135, finished good 315). The co-product is
     # deliberately received (8 PCE) in a GREATER quantity than the finished good (2 PCE) - the extra units
     # only dilute the co-product's per-unit value, they never raise its 135 CHF TOTAL claim on the total inbound costs.
+    # The receipts pack 2 resp. 8 PCE per TU, so they use packing instructions of exactly that quantity per TU.
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | mainProdItem2                      | packTUItem                 | mainProd                | 2   | 2022-01-01 |
+      | coProdItem8                        | packTUItem                 | coProd                  | 8   | 2022-01-01 |
     And update M_Product:
       | M_Product_ID.Identifier | CoProductCostDistributionPercent |
       | coProd                  | 30                               |
@@ -549,10 +554,10 @@ Feature: Co-product valuation via cost-distribution percent
 
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
       | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | ppOrder     | mainHU             | N               | 0     | N               | 1     | N               | 2           | mainProdItem                       |
+      | ppOrder     | mainHU             | N               | 0     | N               | 1     | N               | 2           | mainProdItem2                      |
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
       | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | ppOrder     | coProdBomLine       | coHU               | N               | 0     | N               | 1     | N               | 8           | coProdItem                         |
+      | ppOrder     | coProdBomLine       | coHU               | N               | 0     | N               | 1     | N               | 8           | coProdItem8                        |
 
     When complete planning for PP_Order:
       | PP_Order_ID.Identifier |
@@ -611,6 +616,10 @@ Feature: Co-product valuation via cost-distribution percent
     # current-cost x received-qty (9.9 x 3 = 29.7), so the two receipts sum to 59.4 - NOT 96 (which the old
     # full-share-per-receipt bug would have booked, 48 CHF on EACH of the two receipts). A single CC-170
     # true-up then writes the accumulated 59.4 down to the 48 CHF carve once.
+    # Each partial receipt packs 3 PCE per TU, so it uses a packing instruction of exactly 3 PCE per TU.
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | coProdItem3                        | packTUItem                 | coProd                  | 3   | 2022-01-01 |
     And update M_Product:
       | M_Product_ID.Identifier | CoProductCostDistributionPercent |
       | coProd                  | 10.666667                        |
@@ -633,10 +642,10 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder     | mainHU             | N               | 0     | N               | 1     | N               | 24          | mainProdItem                       |
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
       | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | ppOrder     | coProdBomLine       | coHU1              | N               | 0     | N               | 1     | N               | 3           | coProdItem                         |
+      | ppOrder     | coProdBomLine       | coHU1              | N               | 0     | N               | 1     | N               | 3           | coProdItem3                        |
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
       | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | ppOrder     | coProdBomLine       | coHU2              | N               | 0     | N               | 1     | N               | 3           | coProdItem                         |
+      | ppOrder     | coProdBomLine       | coHU2              | N               | 0     | N               | 1     | N               | 3           | coProdItem3                        |
 
     When complete planning for PP_Order:
       | PP_Order_ID.Identifier |
@@ -830,10 +839,10 @@ Feature: Co-product valuation via cost-distribution percent
 
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | mainProd5Item                      | packTUItem                 | mainProd5               | 100 | 2022-01-01 |
-      | coProdA5Item                       | packTUItem                 | coProdA5                | 100 | 2022-01-01 |
-      | coProdB5Item                       | packTUItem                 | coProdB5                | 100 | 2022-01-01 |
-      | byProd5Item                        | packTUItem                 | byProd5                 | 100 | 2022-01-01 |
+      | mainProd5Item                      | packTUItem                 | mainProd5               | 20  | 2022-01-01 |
+      | coProdA5Item                       | packTUItem                 | coProdA5                | 6   | 2022-01-01 |
+      | coProdB5Item                       | packTUItem                 | coProdB5                | 3   | 2022-01-01 |
+      | byProd5Item                        | packTUItem                 | byProd5                 | 2   | 2022-01-01 |
 
     And metasfresh contains PP_Product_BOM
       | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
@@ -960,10 +969,10 @@ Feature: Co-product valuation via cost-distribution percent
 
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | mainProd7aItem                     | packTUItem                 | mainProd7a              | 100 | 2022-01-01 |
-      | mainProd7bItem                     | packTUItem                 | mainProd7b              | 100 | 2022-01-01 |
-      | coProdA7Item                       | packTUItem                 | coProdA7                | 100 | 2022-01-01 |
-      | coProdB7Item                       | packTUItem                 | coProdB7                | 100 | 2022-01-01 |
+      | mainProd7aItem                     | packTUItem                 | mainProd7a              | 20  | 2022-01-01 |
+      | mainProd7bItem                     | packTUItem                 | mainProd7b              | 20  | 2022-01-01 |
+      | coProdA7Item                       | packTUItem                 | coProdA7                | 6   | 2022-01-01 |
+      | coProdB7Item                       | packTUItem                 | coProdB7                | 3   | 2022-01-01 |
 
     And metasfresh contains PP_Product_BOM
       | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
@@ -1139,7 +1148,7 @@ Feature: Co-product valuation via cost-distribution percent
 
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | mainProd8bItem                     | packTUItem                 | mainProd8b              | 100 | 2022-01-01 |
+      | mainProd8bItem                     | packTUItem                 | mainProd8b              | 24  | 2022-01-01 |
 
     And metasfresh contains single line completed inventories
       | M_Inventory_ID   | M_InventoryLine_ID   | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID   |

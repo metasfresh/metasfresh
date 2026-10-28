@@ -109,7 +109,6 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.fail;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.eevolution.model.I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID;
 
@@ -586,25 +585,18 @@ public class PP_Order_Candidate_StepDef
 
 		orderCandidateRecord.setQtyEntered(qtyEntered);
 
-		try
-		{
-			InterfaceWrapperHelper.save(orderCandidateRecord);
+		final AdempiereException adempiereException = StepDefUtil.assertThrowsWithAdMessage(() -> InterfaceWrapperHelper.save(orderCandidateRecord), MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED);
 
-			fail("InterfaceWrapperHelper.save should throw error!");
-		}
-		catch (final AdempiereException adempiereException)
-		{
-			final String adLanguage = Env.getAD_Language();
+		final String adLanguage = Env.getAD_Language();
 
-			final String qtyEnteredColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyEntered).translate(adLanguage);
-			final String qtyProcessedColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed).translate(adLanguage);
+		final String qtyEnteredColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyEntered).translate(adLanguage);
+		final String qtyProcessedColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed).translate(adLanguage);
 
-			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED,
-					qtyEnteredColumnTrl,
-					qtyProcessedColumnTrl);
+		final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED,
+				qtyEnteredColumnTrl,
+				qtyProcessedColumnTrl);
 
-			assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
-		}
+		assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
 	}
 
 	private void updateQtyToProcessAndExpectForException(@NonNull final DataTableRow row)
@@ -618,22 +610,15 @@ public class PP_Order_Candidate_StepDef
 
 		orderCandidateRecord.setQtyToProcess(qtyToProcess);
 
-		try
-		{
-			InterfaceWrapperHelper.save(orderCandidateRecord);
+		final AdempiereException adempiereException = StepDefUtil.assertThrowsWithAdMessage(() -> InterfaceWrapperHelper.save(orderCandidateRecord), MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT);
 
-			fail("InterfaceWrapperHelper.save should throw error!");
-		}
-		catch (final AdempiereException adempiereException)
-		{
-			final String adLanguage = Env.getAD_Language();
+		final String adLanguage = Env.getAD_Language();
 
-			final String qtyToProcessColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess).translate(adLanguage);
+		final String qtyToProcessColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess).translate(adLanguage);
 
-			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT, qtyToProcessColumnTrl);
+		final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT, qtyToProcessColumnTrl);
 
-			assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
-		}
+		assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
 	}
 
 	private void createPPOrderCandidate(@NonNull final Map<String, String> tableRow)
