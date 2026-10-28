@@ -65,8 +65,8 @@ test.describe('Sales order quick entry - Enter while the product PATCH is in fli
       }
     });
 
-    // Picks the product and returns while its PATCH is still held back (the helper waits only 1.5 s).
-    await SalesOrderPage.openQuickEntryAndSelectProduct({ product, recordId });
+    // Picks the product and returns while its PATCH is still held back.
+    await SalesOrderPage.openQuickEntryAndSelectProduct({ product, recordId, awaitProductPatchAnswer: false });
     expect(productPatchAnsweredAt, 'product PATCH must still be in flight').toBeNull();
 
     const completed = page.waitForResponse(
@@ -75,7 +75,8 @@ test.describe('Sales order quick entry - Enter while the product PATCH is in fli
     );
     completed.catch(() => {}); // awaited below; avoids an unhandled rejection if a step throws first
 
-    await page.getByRole('spinbutton').fill('7');
+    // the qty widget, whether it renders a number input or a decimal text input
+    await page.locator('.quick-input-container .widgetType-Quantity input').fill('7');
     await page.keyboard.press('Enter');
     const enterPressedAt = Date.now();
 
