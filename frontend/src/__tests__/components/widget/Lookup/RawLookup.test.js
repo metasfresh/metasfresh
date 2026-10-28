@@ -157,6 +157,262 @@ describe('RawLookup component', () => {
       expect(wrapper.state('shouldBeFocused')).toEqual(false);
     });
 
+    // A first field takes the focus when the window switches to another document (Alt+N or
+    // "New" from an existing one), even if a field of the previous document still holds it. But
+    // the same document can also arrive again while the user is already typing in another field:
+    // the new document getting its id (NEW -> id), a remount, or the reload a websocket "document
+    // changed" event triggers ~200 ms after the document was created. Then the first field must
+    // not take the focus away from that field.
+    describe('focus taken on a document change, in the DOM', () => {
+      let container;
+      let otherInput;
+
+      beforeEach(() => {
+        jest.useFakeTimers();
+        container = document.createElement('div');
+        document.body.appendChild(container);
+        otherInput = document.createElement('input');
+        document.body.appendChild(otherInput);
+      });
+
+      afterEach(() => {
+        jest.useRealTimers();
+        document.body.removeChild(container);
+        document.body.removeChild(otherInput);
+      });
+
+      const mountAttachedWithSpentArming = (props) => {
+        const wrapper = mount(<RawLookup {...createDummyProps(props)} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+        wrapper.setState({ shouldBeFocused: false });
+        return wrapper;
+      };
+
+      it('takes the focus on a switch to another document, even from a field of the previous document', () => {
+        const wrapper = mountAttachedWithSpentArming({ autoFocus: true, dataId: '1000001' });
+        otherInput.focus();
+
+        wrapper.setProps({ dataId: '1000002' });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+      });
+
+      it('does not take the focus from another field when the new document gets its id', () => {
+        const wrapper = mountAttachedWithSpentArming({ autoFocus: true, dataId: 'NEW' });
+        otherInput.focus();
+
+        wrapper.setProps({ dataId: '1000001' });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(otherInput);
+        wrapper.detach();
+      });
+
+      it('still focuses the first field when the new document gets its id and no other field has the focus', () => {
+        const wrapper = mountAttachedWithSpentArming({ autoFocus: true, dataId: 'NEW' });
+        document.activeElement.blur();
+        expect(document.activeElement).toBe(document.body);
+
+        wrapper.setProps({ dataId: '1000001' });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+      });
+
+      it('does not take the focus from another field when mounted with autoFocus', () => {
+        otherInput.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, dataId: '1000001' })} />, { attachTo: container });
+        wrapper.setProps({ readonly: false }); // the first update, where the mount's arming is spent
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(otherInput);
+        wrapper.detach();
+      });
+
+      it('takes the focus on a switch from a saved document to a new one (id -> NEW)', () => {
+        const wrapper = mountAttachedWithSpentArming({ autoFocus: true, dataId: '1000001' });
+        otherInput.focus();
+
+        wrapper.setProps({ dataId: 'NEW' });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+      });
+
+      it('does not take the focus from another field when a saved document briefly has no id', () => {
+        const wrapper = mountAttachedWithSpentArming({ autoFocus: true, dataId: '1000001' });
+        otherInput.focus();
+
+        wrapper.setProps({ dataId: undefined });
+        jest.runOnlyPendingTimers();
+        wrapper.setProps({ dataId: '1000001' });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(otherInput);
+        wrapper.detach();
+      });
+
+      it('takes the focus from a read-only field when the new document gets its id', () => {
+        const wrapper = mountAttachedWithSpentArming({ autoFocus: true, dataId: 'NEW' });
+        otherInput.readOnly = true;
+        otherInput.focus();
+
+        wrapper.setProps({ dataId: '1000001' });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+      });
+
+      it('takes the focus from a checkbox when the new document gets its id', () => {
+        const wrapper = mountAttachedWithSpentArming({ autoFocus: true, dataId: 'NEW' });
+        otherInput.type = 'checkbox';
+        otherInput.focus();
+
+        wrapper.setProps({ dataId: '1000001' });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+      });
+
+      // On a fresh page load the document data can arrive before the first field mounts, so no
+      // update ever reaches it: the mount itself must take the focus. It takes it from a
+      // non-text element such as a disabled composed-lookup sub-list that grabbed the caret first.
+      it('takes the focus when mounted with autoFocus and no update follows', () => {
+        const disabledSubList = document.createElement('div');
+        disabledSubList.tabIndex = 0;
+        document.body.appendChild(disabledSubList);
+        disabledSubList.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, dataId: '1000001' })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+        document.body.removeChild(disabledSubList);
+      });
+
+      it('focuses only once when mounted with autoFocus and then updated', () => {
+        const focusSpy = jest.spyOn(HTMLElement.prototype, 'focus');
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, dataId: '1000001' })} />, { attachTo: container });
+        wrapper.setProps({ readonly: false });
+        jest.runOnlyPendingTimers();
+
+        const input = wrapper.find('input').getDOMNode();
+        expect(document.activeElement).toBe(input);
+        expect(focusSpy.mock.instances.filter((element) => element === input)).toHaveLength(1);
+        focusSpy.mockRestore();
+        wrapper.detach();
+      });
+
+      it('does not take the focus from another field when mounted with autoFocus and no update follows', () => {
+        otherInput.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, dataId: '1000001' })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(otherInput);
+        wrapper.detach();
+      });
+
+      it('in a quick-input row, takes the focus from another field when mounted with autoFocus and no update follows', () => {
+        otherInput.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, subentity: 'quickInput' })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+      });
+
+      it('in a modal, takes the focus from the field that opened it when mounted with autoFocus and no update follows', () => {
+        otherInput.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, isModal: true, dataId: '1000001' })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+      });
+
+      it('focuses once on mount when both initialFocus and autoFocus are set', () => {
+        const focusSpy = jest.spyOn(HTMLElement.prototype, 'focus');
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, initialFocus: true, dataId: '1000001' })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        const input = wrapper.find('input').getDOMNode();
+        expect(document.activeElement).toBe(input);
+        expect(focusSpy.mock.instances.filter((element) => element === input)).toHaveLength(1);
+        focusSpy.mockRestore();
+        wrapper.detach();
+      });
+
+      it('does not take the focus when mounted with autoFocus and a value', () => {
+        const wrapper = mount(
+          <RawLookup
+            {...createDummyProps({
+              autoFocus: true,
+              dataId: '1000001',
+              defaultValue: { caption: 'Some partner', key: '2005577' },
+            })}
+          />,
+          { attachTo: container }
+        );
+        document.activeElement.blur();
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(document.body);
+        wrapper.detach();
+      });
+
+      it('in a modal, takes the focus from the field that opened it when mounted with initialFocus', () => {
+        otherInput.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ initialFocus: true, isModal: true })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+      });
+
+      it('in a modal, takes the focus from the field that opened it when mounted with autoFocus', () => {
+        otherInput.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ autoFocus: true, isModal: true, dataId: '1000001' })} />, { attachTo: container });
+        wrapper.setProps({ readonly: false }); // the first update, where the mount's arming is spent
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+      });
+
+      it('in a quick-input row, takes the focus from another field when mounted with initialFocus', () => {
+        otherInput.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ initialFocus: true, subentity: 'quickInput' })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(wrapper.find('input').getDOMNode());
+        wrapper.detach();
+      });
+
+      it('does not take the focus from another field when mounted with initialFocus', () => {
+        otherInput.focus();
+
+        const wrapper = mount(<RawLookup {...createDummyProps({ initialFocus: true })} />, { attachTo: container });
+        jest.runOnlyPendingTimers();
+
+        expect(document.activeElement).toBe(otherInput);
+        wrapper.detach();
+      });
+    });
+
     it('calls focus/blur handlers properly', () => {
       const dropdownListToggleSpy = jest.fn();
       const props = createDummyProps(
