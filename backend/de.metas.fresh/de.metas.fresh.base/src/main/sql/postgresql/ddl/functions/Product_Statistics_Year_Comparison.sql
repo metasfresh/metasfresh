@@ -8,6 +8,7 @@ SELECT db_drop_functions('report.product_statistics_year_comparison_aggregate')
 -- Amount: the posted amount (Fact_Acct, AmtAcctCr - AmtAcctDr, all accounts of the line) of completed/closed sales invoice and credit-note lines,
 --   in the accounting schema the organisation posts to (getC_AcctSchema_ID), by period of Fact_Acct.DateAcct; as report.fresh_statistics, no conversion.
 --   A completed/closed invoice that is not posted (yet, or its posting failed) adds nothing and is counted in NotPosted_Count (by period of C_Invoice.DateAcct).
+--   Only invoices with C_Invoice.DateAcct in the year are read (an invoice is posted on its DateAcct).
 -- Quantity: completed/closed customer shipments (C-) minus customer returns (C+, but not service repair / empties correction), by period of M_InOut.MovementDate.
 -- Both sources are aggregated separately and joined with a full outer join. Packing material is excluded (the amount side by product category only).
 -- NULL when a product has no amount (or no quantity) in a period.
@@ -61,6 +62,7 @@ BEGIN
                            WHERE i.IsSOTrx = 'Y'
                              AND i.DocStatus IN ('CO', 'CL')
                              AND i.AD_Org_ID = p_AD_Org_ID
+                             AND i.DateAcct::date BETWEEN (SELECT MIN(per.StartDate) FROM periods per) AND (SELECT MAX(per.EndDate) FROM periods per)
                              AND il.M_Product_ID IS NOT NULL
                              AND pr.M_Product_Category_ID IS DISTINCT FROM v_PackingCat),
              amt AS (SELECT l.M_Product_ID,

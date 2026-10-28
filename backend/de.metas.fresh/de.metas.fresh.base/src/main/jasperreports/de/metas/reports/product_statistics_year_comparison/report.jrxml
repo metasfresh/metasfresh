@@ -16,8 +16,7 @@ FROM (SELECT (SELECT o.Name FROM AD_Org o WHERE o.AD_Org_ID = $P{AD_Org_ID}) AS 
              (SELECT y.FiscalYear FROM C_Year y WHERE y.C_Year_ID = $P{C_Year_ID}) AS Hdr_FiscalYear,
              (SELECT c.ISO_Code
               FROM AD_Org o
-                       JOIN AD_ClientInfo ci ON ci.AD_Client_ID = o.AD_Client_ID
-                       JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
+                       JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = getC_AcctSchema_ID(o.AD_Client_ID, o.AD_Org_ID)
                        JOIN C_Currency c ON c.C_Currency_ID = acs.C_Currency_ID
               WHERE o.AD_Org_ID = $P{AD_Org_ID}) AS Hdr_Currency,
              (SELECT p.Value || ' ' || p.Name FROM M_Product p WHERE p.M_Product_ID = $P{M_Product_ID}) AS ParamProduct,
