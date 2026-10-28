@@ -145,9 +145,12 @@ Feature: customs invoice footer and detail weights
       | pip_25     | piItem_pm_F     | product_25   | 1   |
       | pip_26     | piItem_pm_A     | product_26   | 1   |
       | pip_27     | piItem_pm_A     | product_27   | 1   |
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        |
+      | wh_std                    | StdWarehouse |
     And metasfresh contains M_InOut:
-      | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | DocBaseType | DocSubType |
-      | shipment   | customer      | location               | true    | F            | S               | I               | 2026-01-15   | C-           | 5            | MMS         | MS         |
+      | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | DocBaseType | DocSubType |
+      | shipment   | customer      | location               | true    | F            | S               | I               | wh_std                    | 2026-01-15   | C-           | 5            | MMS         | MS         |
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | QtyEnteredTU | M_HU_PI_Item_Product_ID |
       | shipLine_01    | shipment              | product_01                  | 10         | 10          | PCE     | 10           | pip_01                  |
@@ -279,6 +282,12 @@ Feature: customs invoice footer and detail weights
       | line_A     | bomTop            | componentA   | 3        |
     And the PP_Product_BOM identified by bomIntermediate is completed
     And the PP_Product_BOM identified by bomTop is completed
+    # unit cost of the leaf components (cost element of the primary accounting schema, the one the report reads)
+    And update current costs
+      | M_Product_ID | CurrentCostPrice |
+      | componentA   | 5                |
+      | componentB   | 2                |
+      | componentC   | 3                |
 
     Then the BOM recursive explosion of bomTop returns:
       | Line    | cumulative_qty |
@@ -287,10 +296,11 @@ Feature: customs invoice footer and detail weights
       | 1.1.1.  | 8              |
       | 1.1.2.  | 10             |
       | 1.2.    | 3              |
+    # leaf cost = cumulative qty x unit cost (B 8 x 2, C 10 x 3, A 3 x 5); the BOM-node lines 1. and 1.1. are not asserted
     And the BOM recursive report of bomTop returns:
       | Line    | QtyBOM | Cost |
-      | 1.      | 1      | 0    |
-      | 1.1.    | 2      | 0    |
-      | 1.1.1.  | 4      | 0    |
-      | 1.1.2.  | 5      | 0    |
-      | 1.2.    | 3      | 0    |
+      | 1.      | 1      |      |
+      | 1.1.    | 2      |      |
+      | 1.1.1.  | 4      | 16   |
+      | 1.1.2.  | 5      | 30   |
+      | 1.2.    | 3      | 15   |
