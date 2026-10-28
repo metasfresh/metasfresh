@@ -186,7 +186,8 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 		save(line);
 
 		assertThatThrownBy(() -> marshal(sepaExport, SEPAExportContext.builder().build()))
-				.isInstanceOf(AdempiereException.class);
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("NoLines");
 	}
 
 	/**

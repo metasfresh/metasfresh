@@ -12,7 +12,6 @@ import de.metas.location.LocationId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
-import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAExportLineId;
 import de.metas.payment.sepa.api.SepaUtils;
@@ -134,7 +133,6 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	private final DatatypeFactory datatypeFactory;
 	@NonNull private final SEPAExportContext exportContext;
 	@NonNull private final ISEPADocumentBL sepaDocumentBL = Services.get(ISEPADocumentBL.class);
-	@NonNull private final ISEPADocumentDAO sepaDocumentDAO = Services.get(ISEPADocumentDAO.class);
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
@@ -231,7 +229,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		groupHeader.setNbOfTxs(String.valueOf(cstmrDrctDbtInitn.getPmtInf().size()));
 
 		sepaDocument.setProcessed(!cstmrDrctDbtInitn.getPmtInf().isEmpty());
-		sepaDocumentDAO.save(sepaDocument);
+		sepaDocumentBL.save(sepaDocument);
 
 		final DocumentSDD document = new DocumentSDD();
 		document.setCstmrDrctDbtInitn(cstmrDrctDbtInitn);

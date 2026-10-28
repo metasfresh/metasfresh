@@ -1,5 +1,7 @@
 package de.metas.payment.sepa.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -36,8 +38,16 @@ public class SEPAExportLineId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "SEPA_Export_Line_ID");
 	}
 
+	@JsonCreator
 	public static SEPAExportLineId ofRepoId(final int repoId)
 	{
 		return new SEPAExportLineId(repoId);
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }
