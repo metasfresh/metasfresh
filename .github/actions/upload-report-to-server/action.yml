@@ -1,0 +1,117 @@
+name: 'Upload Report to Server'
+description: 'Upload an HTML test report to test-reports.metasfresh.com via SSH/rsync'
+
+inputs:
+  report-dir:
+    description: 'Local directory containing the HTML report (must have index.html)'
+    required: true
+  report-type:
+    description: 'Server subdirectory path, e.g. allure/cucumber or junit/backend'
+    required: true
+  branch:
+    description: 'Sanitized branch name'
+    required: true
+  version:
+    description: 'Build version tag'
+    required: true
+  ssh-key:
+    description: 'SSH private key for authentication'
+    required: true
+  server-hostname:
+    description: 'Storagebox hostname'
+    required: true
+  server-user:
+    description: 'Storagebox SSH user'
+    required: true
+  server-ssh-port:
+    description: 'Storagebox SSH port'
+    required: true
+  storagebox-base-path:
+    description: 'Base path on storagebox filesystem'
+    required: true
+
+outputs:
+  skip:
+    description: 'Set to true if upload was skipped (missing key or report)'
+    value: ${{ steps.check.outputs.skip }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check prerequisites
+      id: check
+      shell: bash
+      env:
+        REPORT_DIR: ${{ inputs.report-dir }}
+        SSH_KEY: ${{ inputs.ssh-key }}
+      run: |
+        if [ -z "$SSH_KEY" ]; then
+          echo "::notice::Skipping report upload — ssh-key input is empty"
+          echo "skip=true" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        if [ ! -f "$REPORT_DIR/index.html" ]; then
+          echo "::notice::Skipping report upload — $REPORT_DIR/index.html does not exist"
+          echo "skip=true" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        echo "skip=false" >> "$GITHUB_OUTPUT"
+
+    - name: Setup SSH
+      if: steps.check.outputs.skip != 'true'
+      shell: bash
+      env:
+        SSH_KEY: ${{ inputs.ssh-key }}
+        SERVER_HOSTNAME: ${{ inputs.server-hostname }}
+        SERVER_USER: ${{ inputs.server-user }}
+        SERVER_SSH_PORT: ${{ inputs.server-ssh-port }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_KEY" > ~/.ssh/reports_key
+        chmod 600 ~/.ssh/reports_key
+
+        # Trust both the storagebox and the web server
+        ssh-keyscan -H -p "$SERVER_SSH_PORT" "$SERVER_HOSTNAME" >> ~/.ssh/known_hosts 2>/dev/null
+        ssh-keyscan -H test-reports.metasfresh.com >> ~/.ssh/known_hosts 2>/dev/null
+
+        # Write SSH config with two named hosts
+        cat >> ~/.ssh/config <<EOF
+        Host reports-storage
+          HostName $SERVER_HOSTNAME
+          User $SERVER_USER
+          Port $SERVER_SSH_PORT
+          IdentityFile ~/.ssh/reports_key
+          StrictHostKeyChecking accept-new
+
+        Host reports-server
+          HostName test-reports.metasfresh.com
+          User ci-reports
+          IdentityFile ~/.ssh/reports_key
+          StrictHostKeyChecking accept-new
+        EOF
+
+    - name: Upload report
+      if: steps.check.outputs.skip != 'true'
+      shell: bash
+      env:
+        REPORT_DIR: ${{ inputs.report-dir }}
+        REPORT_TYPE: ${{ inputs.report-type }}
+        BRANCH: ${{ inputs.branch }}
+        VERSION: ${{ inputs.version }}
+        STORAGEBOX_BASE_PATH: ${{ inputs.storagebox-base-path }}
+      run: |
+        STORAGEBOX_PATH="${STORAGEBOX_BASE_PATH}/branches/${BRANCH}/builds/${VERSION}/${REPORT_TYPE}"
+        SERVER_PATH="/var/www/test-reports/branches/${BRANCH}/builds/${VERSION}/${REPORT_TYPE}"
+
+        echo "Creating server directory: $SERVER_PATH"
+        ssh reports-server "mkdir -p '${SERVER_PATH}'"
+
+        echo "Uploading report from ${REPORT_DIR}/ to reports-storage:${STORAGEBOX_PATH}/"
+        rsync -az --delete "${REPORT_DIR}/" "reports-storage:${STORAGEBOX_PATH}/"
+
+        echo "::notice::Report uploaded to https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/${REPORT_TYPE}/"
+
+    - name: Cleanup SSH key
+      if: always() && steps.check.outputs.skip != 'true'
+      shell: bash
+      run: rm -f ~/.ssh/reports_key
