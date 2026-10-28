@@ -209,20 +209,11 @@ public class DD_Order_StepDef
 		final DDOrderCandidateId candidateId = row.getAsIdentifier("DD_Order_Candidate_ID").lookupIdIn(ddOrderCandidateTable);
 		final StepDefDataIdentifier ddOrderIdentifier = row.getAsIdentifier();
 
-		final DDOrderId[] ddOrderIdHolder = new DDOrderId[1];
-		final DDOrderLineId[] ddOrderLineIdHolder = new DDOrderLineId[1];
-		StepDefUtil.tryAndWait(timeoutSec, 500, () -> {
-			final DDOrderCandidateAllocList allocs = ddOrderCandidateAllocRepository.getByCandidateIds(Collections.singleton(candidateId));
-			if (allocs.isEmpty())
-			{
-				return false;
-			}
-			ddOrderIdHolder[0] = allocs.getDDOrderIds().iterator().next();
-			ddOrderLineIdHolder[0] = allocs.getDDOrderLineIds().iterator().next();
-			return true;
-		});
+		final DDOrderCandidateAllocList[] allocsHolder = new DDOrderCandidateAllocList[1];
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> rememberAllocsIfFound(candidateId, allocsHolder));
 
-		final DDOrderId ddOrderId = ddOrderIdHolder[0];
+		final DDOrderId ddOrderId = allocsHolder[0].getDDOrderIds().iterator().next();
+		final DDOrderLineId ddOrderLineId = allocsHolder[0].getDDOrderLineIds().iterator().next();
 		final DDOrderId knownDDOrderId = ddOrderTable.getIdOptional(ddOrderIdentifier).orElse(null);
 		if (knownDDOrderId != null)
 		{
@@ -235,7 +226,18 @@ public class DD_Order_StepDef
 				.ifPresent(expectedTotal -> assertTotalLineQty(ddOrderId, ddOrderIdentifier, expectedTotal));
 		ddOrderTable.putOrReplace(ddOrderIdentifier, ddOrder);
 		row.getAsOptionalIdentifier("DD_OrderLine_ID")
-				.ifPresent(lineIdentifier -> ddOrderLineTable.putOrReplace(lineIdentifier, ddOrderService.getLineById(ddOrderLineIdHolder[0])));
+				.ifPresent(lineIdentifier -> ddOrderLineTable.putOrReplace(lineIdentifier, ddOrderService.getLineById(ddOrderLineId)));
+	}
+
+	private boolean rememberAllocsIfFound(@NonNull final DDOrderCandidateId candidateId, @NonNull final DDOrderCandidateAllocList[] allocsHolder)
+	{
+		final DDOrderCandidateAllocList allocs = ddOrderCandidateAllocRepository.getByCandidateIds(Collections.singleton(candidateId));
+		if (allocs.isEmpty())
+		{
+			return false;
+		}
+		allocsHolder[0] = allocs;
+		return true;
 	}
 
 	private void assertTotalLineQty(@NonNull final DDOrderId ddOrderId, @NonNull final StepDefDataIdentifier ddOrderIdentifier, @NonNull final BigDecimal expectedTotal)

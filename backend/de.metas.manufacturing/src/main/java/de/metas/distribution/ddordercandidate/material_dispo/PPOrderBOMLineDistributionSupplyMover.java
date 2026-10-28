@@ -261,14 +261,23 @@ public class PPOrderBOMLineDistributionSupplyMover
 		// loads the current records and changes only the PP_Order reference
 		ddOrderCandidateRepository.updateByQuery(
 				DDOrderCandidateQuery.builder().ppOrderId(ppOrderId).build(),
-				candidate -> {
-					final PPOrderBOMLineId newBOMLineId = newBOMLineIdByOldBOMLineId.get(getDDOrderCandidateBOMLineIdOrNull(candidate));
-					return newBOMLineId == null
-							? candidate
-							: candidate.toBuilder()
-							.forwardPPOrderRef(PPOrderRef.withPPOrderAndBOMLineId(candidate.getForwardPPOrderRef(), PPOrderAndBOMLineId.of(ppOrderId, newBOMLineId)))
-							.build();
-				});
+				candidate -> repointDDOrderCandidate(candidate, ppOrderId, newBOMLineIdByOldBOMLineId));
+	}
+
+	private static DDOrderCandidate repointDDOrderCandidate(
+			@NonNull final DDOrderCandidate candidate,
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final Map<PPOrderBOMLineId, PPOrderBOMLineId> newBOMLineIdByOldBOMLineId)
+	{
+		final PPOrderBOMLineId newBOMLineId = newBOMLineIdByOldBOMLineId.get(getDDOrderCandidateBOMLineIdOrNull(candidate));
+		if (newBOMLineId == null)
+		{
+			return candidate;
+		}
+
+		return candidate.toBuilder()
+				.forwardPPOrderRef(PPOrderRef.withPPOrderAndBOMLineId(candidate.getForwardPPOrderRef(), PPOrderAndBOMLineId.of(ppOrderId, newBOMLineId)))
+				.build();
 	}
 
 	private void moveDDOrders(@NonNull final OldBOMLine oldBOMLine, @NonNull final PPOrderAndBOMLineId newPPOrderAndBOMLineId)
