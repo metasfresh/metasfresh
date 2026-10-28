@@ -130,17 +130,31 @@ public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 	{
 		final SupplyRequiredDescriptor descriptor = event.getSupplyRequiredDescriptor();
 		final PPOrderRef ppOrderRef = descriptor.getPpOrderRef();
-		if (ppOrderRef != null && ppOrderRef.getPpOrderId() != null && ppOrderRef.getPpOrderBOMLineId() != null)
-		{
-			// demand is a PP_Order BOM line: reduce only the DD candidates of that PP_Order (not those of other PP_Orders of the same component)
-			return ddOrderCandidateService.list(DDOrderCandidateQuery.builder()
-					.ppOrderId(ppOrderRef.getPpOrderId())
-					.ppOrderBOMLineIdOrEmpty(ppOrderRef.getPpOrderBOMLineId())
-					.productId(ProductId.ofRepoId(descriptor.getProductId()))
-					.targetWarehouseId(descriptor.getWarehouseId())
-					.build());
-		}
+		return isPPOrderBOMLineDemand(ppOrderRef)
+				? getDDOrderCandidatesOfPPOrderBOMLine(descriptor, ppOrderRef)
+				: getDDOrderCandidatesOfDemandSupplies(event);
+	}
 
+	private static boolean isPPOrderBOMLineDemand(@Nullable final PPOrderRef ppOrderRef)
+	{
+		return ppOrderRef != null && ppOrderRef.getPpOrderId() != null && ppOrderRef.getPpOrderBOMLineId() != null;
+	}
+
+	/**
+	 * Reduces only the DD candidates of that PP_Order (not those of other PP_Orders of the same component).
+	 */
+	private @NonNull Collection<DDOrderCandidate> getDDOrderCandidatesOfPPOrderBOMLine(final @NonNull SupplyRequiredDescriptor descriptor, final @NonNull PPOrderRef ppOrderRef)
+	{
+		return ddOrderCandidateService.list(DDOrderCandidateQuery.builder()
+				.ppOrderId(ppOrderRef.getPpOrderId())
+				.ppOrderBOMLineIdOrEmpty(ppOrderRef.getPpOrderBOMLineId())
+				.productId(ProductId.ofRepoId(descriptor.getProductId()))
+				.targetWarehouseId(descriptor.getWarehouseId())
+				.build());
+	}
+
+	private @NonNull Collection<DDOrderCandidate> getDDOrderCandidatesOfDemandSupplies(final @NonNull SupplyRequiredDecreasedEvent event)
+	{
 		final Set<DDOrderCandidateId> candidateIds = getDDOrderCandidateIds(event);
 		return candidateIds.isEmpty() ? ImmutableList.of() : ddOrderCandidateService.getByIds(candidateIds);
 	}

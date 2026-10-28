@@ -41,6 +41,10 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+/**
+ * Repository Tables: DD_Order_Candidate
+ * Repository Cluster: DDOrderCandidateRepository
+ */
 @Repository
 public class DDOrderCandidateRepository
 {

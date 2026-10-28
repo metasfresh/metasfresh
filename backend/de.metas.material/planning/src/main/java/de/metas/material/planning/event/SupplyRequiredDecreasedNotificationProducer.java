@@ -118,7 +118,8 @@ public class SupplyRequiredDecreasedNotificationProducer
 	@Nullable
 	private static I_PP_Order getNotifiablePPOrderOrNull(@NonNull final PPOrderId ppOrderId)
 	{
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class); // null if not found
+		// no PP_Order DAO is reachable from this module (IPPOrderDAO lives in de.metas.manufacturing, which depends on this module); load returns null if not found
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
 		return ppOrder == null || DocStatus.ofCode(ppOrder.getDocStatus()).isReversedOrVoided() ? null : ppOrder;
 	}
 
