@@ -208,6 +208,10 @@ describe('TableQuickInput - submit while a field PATCH is pending', () => {
       ['Qty', '10'],
     ]);
     expect(api.completeQuickInput).toHaveBeenCalledTimes(1);
+    // complete is sent only after the Qty PATCH the blur queued has been answered
+    expect(api.completeQuickInput.mock.invocationCallOrder[0]).toBeGreaterThan(
+      Math.max(...api.patchQuickInput.mock.invocationCallOrder)
+    );
   });
 
   it('tells the user when a field PATCH failed, on every Enter, and does not complete', async () => {

@@ -170,8 +170,6 @@ class TableQuickInput extends PureComponent {
     const activeElement = document.activeElement;
     activeElement.blur();
 
-    this.setState({ isSubmitPending: true });
-
     // Re-send the fields whose PATCH failed before: the widget does not send an unchanged value again.
     this.failedPatches.forEach((value, fieldName) =>
       this.handlePatch(fieldName, value)
@@ -180,7 +178,16 @@ class TableQuickInput extends PureComponent {
     // Validate and complete only after every queued field PATCH was answered.
     // Until then the store still has the values from before the PATCH
     // (e.g. a just selected product is still empty) and the server does not know them yet.
-    return (this.patchPromise || Promise.resolve())
+    //
+    // The PATCH of the field left by the blur above is NOT queued yet: RawWidget queues it in a
+    // setState callback, which React runs when it commits this event's state updates. So read the
+    // queue only in our own setState callback: it runs in that same commit, after the callbacks of
+    // the child widgets (React commits children before their parent).
+    return new Promise((resolve) =>
+      this.setState({ isSubmitPending: true }, () =>
+        resolve(this.patchPromise || Promise.resolve())
+      )
+    )
       .then(() => {
         const validationResult = this.validateForm();
         if (validationResult.error) {
