@@ -203,3 +203,109 @@ Feature: mobileUI Picking - Pick catch weight TUs
       | C_InvoiceLine_ID | C_Invoice_ID | M_Product_ID | QtyInvoiced | OPT.QtyInvoicedInPriceUOM |
       | invoiceLineA     | invoice      | productA     | 8           | 7.070                     |
       | invoiceLineB     | invoice      | productB     | 3           | 9.595                     |
+
+
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  @Id:S33252_TC2
+  Scenario: Pick a TU with a typed weight, rounded weight reaches pick record, shipment line and invoice candidate
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | InvoiceRule |
+      | SO         | true    | customer                 | 2024-03-26  | I           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | LC         | SO                    | productC                | 3          | TUx3_C                                 |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ssC        | LC                        | N             |
+
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    # one TU holding one CU of 3 Stk, the weight is typed in
+    And pick lines
+      | PickingLine.byProduct | PickFromHU    | QtyPicked | CatchWeight |
+      | productC              | pickFromTU_C1 | 1         | 5.4125      |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by ssC
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | M_TU_HU_ID    | Processed |
+      | 5.413             | KGM          | 3         | 1     | pickFromTU_C1 | N         |
+
+    And complete picking job
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | ssC                              | shipment              | CO            |
+    # pick records keep the weight after the shipment is created
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by ssC
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | Processed | M_InOutLine_ID |
+      | 5.413             | KGM          | 3         | 1     | Y         | shipmentLineC  |
+    And validate the created shipment lines by id
+      | Identifier    | M_Product_ID | movementqty | QtyDeliveredCatch |
+      | shipmentLineC | productC     | 3           | 5.413             |
+
+    And after not more than 60s locate invoice candidates by order id:
+      | C_Order_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | SO                    | icC                               |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | QtyDeliveredInUOM |
+      | icC                    | 5.413             |
+
+
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  @Id:S33252_TC2a
+  Scenario: Pick five TUs in one step with a typed total weight, weight is split over the TUs and summed on the shipment line
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | InvoiceRule |
+      | SO         | true    | customer                 | 2024-03-26  | I           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | LD         | SO                    | productD                | 20         | TUx4_D                                 |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ssD        | LD                        | N             |
+
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    # one row picks all 5 TUs, the typed weight is the total
+    And pick lines
+      | PickingLine.byProduct | PickFromHU   | QtyPicked | CatchWeight |
+      | productD              | pickFromLU_D | 5         | 39.589      |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by ssD
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | Processed |
+      | 7.918             | KGM          | 4         | 1     | N         |
+      | 7.918             | KGM          | 4         | 1     | N         |
+      | 7.918             | KGM          | 4         | 1     | N         |
+      | 7.918             | KGM          | 4         | 1     | N         |
+      | 7.917             | KGM          | 4         | 1     | N         |
+
+    And complete picking job
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | ssD                              | shipment              | CO            |
+    # pick records keep the weight after the shipment is created
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by ssD
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | Processed | M_InOutLine_ID |
+      | 7.918             | KGM          | 4         | 1     | Y         | shipmentLineD  |
+      | 7.918             | KGM          | 4         | 1     | Y         | shipmentLineD  |
+      | 7.918             | KGM          | 4         | 1     | Y         | shipmentLineD  |
+      | 7.918             | KGM          | 4         | 1     | Y         | shipmentLineD  |
+      | 7.917             | KGM          | 4         | 1     | Y         | shipmentLineD  |
+    And validate the created shipment lines by id
+      | Identifier    | M_Product_ID | movementqty | QtyDeliveredCatch |
+      | shipmentLineD | productD     | 20          | 39.589            |
+
+    And after not more than 60s locate invoice candidates by order id:
+      | C_Order_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | SO                    | icD                               |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | QtyDeliveredInUOM |
+      | icD                    | 39.589            |
