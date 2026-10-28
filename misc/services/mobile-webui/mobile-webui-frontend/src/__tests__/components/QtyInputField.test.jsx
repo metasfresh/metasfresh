@@ -140,6 +140,25 @@ describe('QtyInputField', () => {
     }
   });
 
+  it('replaces the prefilled value even when keydown carries no usable key (Android soft keyboard / IME)', () => {
+    // Android soft keyboards / IME fire keydown with key='Unidentified', so the keydown-select never runs.
+    // beforeinput fires for the insertion regardless (it is what the keystroke filter uses), so the pristine
+    // prefill is still selected and replaced -- making replace-on-type device-independent, not reliant on a
+    // physical device to verify. jsdom asserts the select is wired on the beforeinput path.
+    const selectSpy = jest.spyOn(HTMLInputElement.prototype, 'select');
+    try {
+      renderField({ qty: '25', integerValuesOnly: true });
+      getInput().focus();
+      selectSpy.mockClear();
+      fireEvent.keyDown(getInput(), { key: 'Unidentified' }); // IME: no usable key -> keydown must NOT select
+      expect(selectSpy).not.toHaveBeenCalled();
+      fireEvent.keyPress(getInput(), { key: '1', charCode: 49, which: 49 }); // beforeinput insertion -> selects
+      expect(selectSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      selectSpy.mockRestore();
+    }
+  });
+
   it('selects only on the first character since focus; later keystrokes edit normally, refocus replaces again', () => {
     const selectSpy = jest.spyOn(HTMLInputElement.prototype, 'select');
     try {

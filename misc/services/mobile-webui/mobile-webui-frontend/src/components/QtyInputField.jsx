@@ -85,36 +85,49 @@ const QtyInputField = ({
     forwardQtyInfoToParent(newQtyInfo);
   };
 
-  // block keystrokes the decimal parser would reject (desktop parity: CostPrice.handleBeforeInput)
-  const handleBeforeInput = (e) => {
-    if (!isAllowedDecimalInput(e.data)) {
-      e.preventDefault();
-    }
-  };
-
-  // Replace-on-type for a PREFILLED field. A type="number" input replaced its value when the user typed;
-  // the type="text" input needed for locale-aware decimals would instead append, silently inflating a
-  // prefilled field (e.g. generateHUQRCodes numberOfHUs="1" becoming "11"). To restore replace-on-type the
-  // whole value is selected on the first character typed since (re)focusing -- synchronously in
-  // handleKeyDown (see there), never deferred: a deferred/macrotask select raced the keystroke under CI
-  // load and was unreliable. "Pristine" = the field still shows a value the user has not edited since
-  // (re)focusing it; handleFocus arms it, the first character consumes it.
+  // Replace-on-type for a PREFILLED field. A type="number" input replaced its value when the user typed; the
+  // type="text" input needed for locale-aware decimals would instead append, silently inflating a prefilled
+  // field (e.g. generateHUQRCodes numberOfHUs="25" + "1" -> "125", a wrong count). So on the FIRST insertion
+  // since (re)focusing we select the whole value, and the inserted character then replaces it. Selecting
+  // right before the insert (never a deferred/macrotask select, which raced the keystroke under CI load)
+  // keeps it race-free. We trigger from BOTH keydown (physical keys, fires first) AND beforeinput (fires for
+  // EVERY insertion incl. Android soft keyboards / IME, which report keydown as key='Unidentified'), so
+  // replace-on-type does not depend on the device reporting an identifiable key. "Pristine" = the field still
+  // shows a value the user has not edited since (re)focusing it; handleFocus arms it, the first insertion
+  // consumes it.
   const pristineSinceFocusRef = useRef(true);
 
   const handleFocus = () => {
     pristineSinceFocusRef.current = true;
   };
 
-  const handleKeyDown = (e) => {
-    // Select the whole value synchronously, right before the FIRST character is inserted, so the character
-    // replaces the prefilled value rather than appending. Doing it in keydown (ordered before the browser's
-    // own text insertion, in the same synchronous event) makes replace-on-type immune to the re-render and
-    // macrotask timing that made a deferred select() unreliable: a type="text" input appends on focus-then-
-    // type where type="number" replaced, and under app load the deferred select lost the race, so a
-    // prefilled field (e.g. generateHUQRCodes numberOfHUs="25") became "125" and posted a wrong count.
-    if (pristineSinceFocusRef.current && e.key && e.key.length === 1) {
-      e.currentTarget.select();
+  const selectPristinePrefill = (inputEl) => {
+    if (pristineSinceFocusRef.current) {
+      inputEl.select();
       pristineSinceFocusRef.current = false;
+    }
+  };
+
+  const handleBeforeInput = (e) => {
+    // block keystrokes the decimal parser would reject (desktop parity: CostPrice.handleBeforeInput)
+    if (!isAllowedDecimalInput(e.data)) {
+      e.preventDefault();
+      return;
+    }
+    // e.data present = an actual text insertion (not deletion/navigation). This is the device-independent
+    // replace-on-type trigger: for a physical key, keydown fired first and already consumed `pristine`
+    // (no-op here); for IME / soft keyboards where keydown had no usable key, this is what selects+replaces.
+    if (e.data) {
+      selectPristinePrefill(e.currentTarget);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    // physical character key: select synchronously before the browser inserts it (keydown fires before
+    // beforeinput, so this wins for a hardware keyboard; IME keydowns carry key='Unidentified' and fall
+    // through to handleBeforeInput)
+    if (e.key && e.key.length === 1) {
+      selectPristinePrefill(e.currentTarget);
     }
   };
 
