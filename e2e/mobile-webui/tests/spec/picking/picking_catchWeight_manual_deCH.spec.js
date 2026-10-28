@@ -8,7 +8,7 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 
-// Swiss-German operator (me03#33141): the browser's UI language is de-CH. The context locale alone does not
+// Swiss-German operator: the browser's UI language is de-CH. The context locale alone does not
 // change how a number input treats the decimal separator, so Chromium itself is launched with --lang=de-CH.
 // NOTE: launchOptions is replaced as a whole, so the base args of playwright.config.js are repeated here.
 test.use({
