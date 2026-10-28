@@ -323,15 +323,22 @@ describe('TableQuickInput - submit while a field PATCH is pending', () => {
       )
       .mockImplementationOnce(() => secondQtyPatch.promise);
 
-    typeQtyAndPressEnter('10'); // submit waits for the Qty=10 PATCH
+    // Arrow up on a number field sends its PATCH right away (Qty=10), without submitting
+    qtyInput().simulate('change', { target: { value: '10' } });
+    qtyInput().simulate('keyDown', { key: 'ArrowUp', target: { value: '10' } });
     await flushPromises();
 
-    // while it is in flight, the user corrects the value
+    // while it is in flight, the user changes the value with arrow up again (Qty=20 queued)
     qtyInput().simulate('change', { target: { value: '20' } });
-    qtyInput().simulate('keyDown', { key: 'Enter', target: { value: '20' } });
+    qtyInput().simulate('keyDown', { key: 'ArrowUp', target: { value: '20' } });
 
-    firstQtyPatch.resolve(); // Qty=10 fails now, Qty=20 is queued after it
+    firstQtyPatch.resolve(); // Qty=10 fails now, while Qty=20 is still in flight
     await flushPromises();
+
+    // the user presses Enter before the Qty=20 PATCH was answered
+    typeQtyAndPressEnter('20');
+    await flushPromises();
+
     secondQtyPatch.resolve({
       data: [{ fieldsByName: { Qty: { value: '20' } } }],
     });
