@@ -24,7 +24,7 @@ package org.eevolution.model.validator;
 
 import de.metas.distribution.ddordercandidate.DDOrderCandidateQuery;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
-import de.metas.i18n.AdMessageKey;
+import de.metas.distribution.ddordercandidate.material_dispo.PPOrderBOMLineDistributionSupplyMover;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
@@ -52,7 +52,6 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 public class PP_Order_BOMLine
 {
 	private static final String DYNATTR_ExplodePhantomRunnable = PP_Order_BOMLine.class.getName() + "#explodePhantomRunnable";
-	public static final AdMessageKey DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED = AdMessageKey.of("org.eevolution.model.validator.DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED");
 
 	private final DDOrderCandidateRepository ddOrderCandidateRepository;
 
@@ -151,7 +150,7 @@ public class PP_Order_BOMLine
 		}
 		catch (final AdempiereException e)
 		{
-			throw new AdempiereException(DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED, e);
+			throw new AdempiereException(PPOrderBOMLineDistributionSupplyMover.DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED, e);
 		}
 	}
 }

@@ -19,6 +19,7 @@ import de.metas.project.ProjectId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -55,6 +56,7 @@ import java.sql.Timestamp;
 import java.util.Set;
 
 @Interceptor(I_PP_Order.class)
+@RequiredArgsConstructor
 public class PP_Order
 {
 	private static final String DYNATTR_Voiding = PP_Order.class.getName() + "#voiding";
@@ -72,28 +74,12 @@ public class PP_Order
 
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
-	private final PPOrderPojoConverter ppOrderConverter;
-	private final PostMaterialEventService materialEventService;
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
-	private final IPPOrderBOMBL ppOrderBOMBL;
-	private final ProductBOMVersionsDAO bomVersionsDAO;
+	@NonNull private final PPOrderPojoConverter ppOrderConverter;
+	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final IDocumentNoBuilderFactory documentNoBuilderFactory;
+	@NonNull private final IPPOrderBOMBL ppOrderBOMBL;
+	@NonNull private final ProductBOMVersionsDAO bomVersionsDAO;
 	@NonNull private final PPOrderBOMLineDistributionSupplyMover distributionSupplyMover;
-
-	public PP_Order(
-			@NonNull final PPOrderPojoConverter ppOrderConverter,
-			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
-			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
-			@NonNull final ProductBOMVersionsDAO bomVersionsDAO,
-			@NonNull final PPOrderBOMLineDistributionSupplyMover distributionSupplyMover)
-	{
-		this.ppOrderConverter = ppOrderConverter;
-		this.materialEventService = materialEventService;
-		this.documentNoBuilderFactory = documentNoBuilderFactory;
-		this.ppOrderBOMBL = ppOrderBOMBL;
-		this.bomVersionsDAO = bomVersionsDAO;
-		this.distributionSupplyMover = distributionSupplyMover;
-	}
 
 	@Init
 	public void registerCallouts()
