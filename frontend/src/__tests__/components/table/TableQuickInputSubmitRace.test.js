@@ -100,7 +100,13 @@ describe('TableQuickInput - submit while a field PATCH is pending', () => {
 
   const qtyInput = () => wrapper.find('.quick-input-container input').last();
 
+  /**
+   * Like a user: the qty field gets the focus before it is typed into. RawWidget relies on that -
+   * handleBlurWithParams patches the field on blur only if the widget was focused (isFocused, set
+   * by its focus handler), so an edit made without focus is never patched.
+   */
   const typeQtyAndPressEnter = (qty) => {
+    qtyInput().getDOMNode().focus();
     qtyInput().simulate('change', { target: { value: qty } });
     qtyInput().simulate('keyDown', { key: 'Enter', target: { value: qty } });
     wrapper.find('form.quick-input-container').simulate('submit');

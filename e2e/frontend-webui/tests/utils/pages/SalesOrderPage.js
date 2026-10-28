@@ -261,12 +261,14 @@ export class SalesOrderPage {
    * @param {Object} params
    * @param {string} params.product - Product code or name
    * @param {string} params.recordId - Optional record ID (extracted from the URL if not provided)
-   * @returns {Promise<{packingInstruction: string}>} what the server defaulted for the packing
+   * @param {boolean} [params.awaitProductPatchAnswer=true] - false: return right after the product
+   *   option was clicked, while its PATCH may still be in flight (for a test of that race)
+   * @returns {Promise<{packingInstruction: string}|undefined>} what the server defaulted for the packing
    *   instruction (`M_HU_PI_Item_Product_ID`) in its answer: its caption, or '' when it set none.
    *   The DOM may lag that answer by a few ms; use {@link expectQuickEntryPackingInstruction} to
-   *   check what the form shows.
+   *   check what the form shows. `undefined` when `awaitProductPatchAnswer` is false.
    */
-  static async openQuickEntryAndSelectProduct({ product, recordId }) {
+  static async openQuickEntryAndSelectProduct({ product, recordId, awaitProductPatchAnswer = true }) {
     return await test.step(`SalesOrderPage - Open quick entry and select: ${product}`, async () => {
       const page = getPage();
 
@@ -336,15 +338,22 @@ export class SalesOrderPage {
 
       // The product callout runs server-side: selecting the option PATCHes the quick-input document
       // with M_Product_ID, and the answer carries the fields it defaulted. Listen before clicking.
-      const productPatchResponse = page.waitForResponse(
-        (response) => isQuickInputPatchOf(response, SALES_ORDER_LINES_TAB_ID, 'M_Product_ID'),
-        { timeout: SLOW_ACTION_TIMEOUT }
-      );
-      productPatchResponse.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
+      // Not listened for when the caller does not wait for the answer.
+      const productPatchResponse = awaitProductPatchAnswer
+        ? page.waitForResponse(
+            (response) => isQuickInputPatchOf(response, SALES_ORDER_LINES_TAB_ID, 'M_Product_ID'),
+            { timeout: SLOW_ACTION_TIMEOUT }
+          )
+        : null;
+      productPatchResponse?.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
 
       // Click the option by text - finds element containing the product code
       // This avoids clicking on "Search for more..." or other non-record options
       await page.locator('.input-dropdown-list-option').getByText(product).first().click();
+
+      if (!awaitProductPatchAnswer) {
+        return undefined;
+      }
 
       const response = await productPatchResponse;
       expect(response.ok(), `quick-input product PATCH failed: HTTP ${response.status()}`).toBe(true);
