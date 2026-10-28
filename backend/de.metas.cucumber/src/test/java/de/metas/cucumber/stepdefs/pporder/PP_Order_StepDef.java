@@ -39,6 +39,7 @@ import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
 import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_LeichMehl_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -87,6 +88,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -118,6 +120,7 @@ import java.util.function.Supplier;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 @RequiredArgsConstructor
 public class PP_Order_StepDef
@@ -150,6 +153,7 @@ public class PP_Order_StepDef
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final AD_Message_StepDefData messageTable;
 
 
 	/**
@@ -305,6 +309,7 @@ public class PP_Order_StepDef
 	 *   <b>PP_Order_ID</b> — (required, identifier-ref) the PP_Order to update<br>
 	 *   <b>QtyEntered</b> — (optional) new qty entered (also sets QtyOrdered)<br>
 	 *   <b>DatePromised</b> — (optional) new date promised, ISO-8601 with zone, e.g. 2021-04-16T21:00:00Z<br>
+	 *   <b>DateStartSchedule</b> — (optional) new scheduled start, ISO-8601 with zone, e.g. 2021-04-16T21:00:00Z<br>
 	 *   Column names may also carry the {@code OPT.} prefix and the {@code .Identifier} suffix.
 	 * @cucumber.depends StepDefData: PP_Order_StepDefData
 	 * @cucumber.example
@@ -318,6 +323,38 @@ public class PP_Order_StepDef
 	public void update_PP_Order(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::updatePPOrder);
+	}
+
+	/**
+	 * Tries to update existing PP_Orders and asserts that the update is rejected with the given AD_Message.
+	 * Same columns as {@code update PP_Order:}, plus the expected rejection.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PP_Order_ID</b> — (required, identifier-ref) the PP_Order to update<br>
+	 *   <b>AD_Message_ID</b> — (required, identifier-ref, see {@code load AD_Message:}) the AD_Message whose text the rejection must contain<br>
+	 *   <b>QtyEntered</b>, <b>DatePromised</b>, <b>DateStartSchedule</b> — (optional) as in {@code update PP_Order:}<br>
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData, AD_Message_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update PP_Order expecting error:
+	 *   | PP_Order_ID | DateStartSchedule    | AD_Message_ID |
+	 *   | ppOrder     | 2021-04-16T21:00:00Z | msg_rejected  |
+	 * </pre>
+	 */
+	@And("update PP_Order expecting error:")
+	public void update_PP_Order_expecting_error(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_AD_Message expectedMessage = row.getAsIdentifier(I_AD_Message.COLUMNNAME_AD_Message_ID).lookupNotNullIn(messageTable);
+
+			final AdempiereException rejection = catchThrowableOfType(() -> updatePPOrder(row), AdempiereException.class);
+			assertThat(rejection)
+					.as("Expected the PP_Order update to be rejected, but it succeeded")
+					.isNotNull();
+			assertThat(rejection.getMessage())
+					.contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(expectedMessage.getValue())));
+		});
 	}
 
 	@And("^validate that after not more than (.*)s, PP_Orders are created for PP_Order_Candidate in the following order:$")
@@ -685,6 +722,11 @@ public class PP_Order_StepDef
 				.map(ZonedDateTime::parse)
 				.ifPresent(datePromised -> ppOrderRecord.setDatePromised(TimeUtil.asTimestampNotNull(datePromised)));
 
+		row.getAsOptionalString(I_PP_Order.COLUMNNAME_DateStartSchedule)
+				.filter(Check::isNotBlank)
+				.map(ZonedDateTime::parse)
+				.ifPresent(dateStartSchedule -> ppOrderRecord.setDateStartSchedule(TimeUtil.asTimestampNotNull(dateStartSchedule)));
+
 		saveRecord(ppOrderRecord);
 	}
 
@@ -717,5 +759,15 @@ public class PP_Order_StepDef
 		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
 		ppOrder.setDocAction(IDocument.ACTION_Complete);
 		documentBL.processEx(ppOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+	}
+
+	/**
+	 * Deletes the PP_Order record, like a user deleting it in the manufacturing order window.
+	 */
+	@And("^the PP_Order (.*) is deleted$")
+	public void deletePPOrder(@NonNull final String ppOrderIdentifier)
+	{
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+		InterfaceWrapperHelper.delete(ppOrder);
 	}
 }

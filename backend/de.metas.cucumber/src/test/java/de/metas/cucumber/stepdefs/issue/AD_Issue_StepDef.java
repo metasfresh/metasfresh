@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.issue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
@@ -55,6 +57,7 @@ public class AD_Issue_StepDef
 	private final AD_Issue_StepDefData issueTable;
 
 	private PInstanceId pInstanceId;
+	private ImmutableSet<AdIssueId> rememberedIssueIds;
 	private final TestContext testContext;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -128,5 +131,38 @@ public class AD_Issue_StepDef
 			final boolean containsSummary = issue.getIssueSummary().contains(issueSummary);
 			assertThat(containsSummary).isTrue();
 		}
+	}
+
+	/**
+	 * Remembers the AD_Issue records that exist now. The AD_Issue ids are remembered rather than a timestamp,
+	 * because scenarios run on a fixed {@code SystemTime}, which freezes {@code AD_Issue.Created}.
+	 */
+	@And("the existing AD_Issue records are remembered")
+	public void remember_existing_AD_Issues()
+	{
+		rememberedIssueIds = retrieveAllIssueIds();
+	}
+
+	/**
+	 * Asserts that no AD_Issue was created since {@code the existing AD_Issue records are remembered}.
+	 */
+	@Then("no AD_Issue was created since the existing AD_Issue records were remembered")
+	public void no_AD_Issue_created_since_remembered()
+	{
+		assertThat(rememberedIssueIds)
+				.as("Step 'the existing AD_Issue records are remembered' must run first")
+				.isNotNull();
+
+		final List<AdIssueId> newIssueIds = retrieveAllIssueIds().stream()
+				.filter(issueId -> !rememberedIssueIds.contains(issueId))
+				.collect(ImmutableList.toImmutableList());
+		assertThat(newIssueIds).as("AD_Issue records created since they were remembered").isEmpty();
+	}
+
+	private ImmutableSet<AdIssueId> retrieveAllIssueIds()
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_Issue.class)
+				.create()
+				.idsAsSet(AdIssueId::ofRepoId);
 	}
 }

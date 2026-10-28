@@ -25,25 +25,34 @@ package de.metas.cucumber.stepdefs.note;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
+import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_UserGroup_User_Assign;
 import org.compiere.util.DB;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AD_Note_StepDef
 {
@@ -52,15 +61,18 @@ public class AD_Note_StepDef
 	private final AD_Message_StepDefData messageTable;
 	private final AD_User_StepDefData userTable;
 	private final AD_Note_StepDefData noteTable;
+	private final IdentifiersResolver identifiersResolver;
 
 	public AD_Note_StepDef(
 			@NonNull final AD_Message_StepDefData messageTable,
 			@NonNull final AD_User_StepDefData userTable,
-			@NonNull final AD_Note_StepDefData noteTable)
+			@NonNull final AD_Note_StepDefData noteTable,
+			@NonNull final IdentifiersResolver identifiersResolver)
 	{
 		this.messageTable = messageTable;
 		this.userTable = userTable;
 		this.noteTable = noteTable;
+		this.identifiersResolver = identifiersResolver;
 	}
 
 	@And("AD_Note table is reset")
@@ -105,5 +117,85 @@ public class AD_Note_StepDef
 			//dev-note: tryAndWait will fail if ad_note record is not found
 			StepDefUtil.tryAndWait(timeoutSec, 1000, adNoteRecordFound);
 		}
+	}
+
+	/**
+	 * Waits until an AD_Note with the given message exists for the referenced record (and contains the given text, if any).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>AD_Message_ID</b> — (required, identifier-ref, see {@code load AD_Message:}) the note's AD_Message<br>
+	 *   <b>Record_ID</b> — (required, identifier-ref) the record the note refers to (AD_Table_ID + Record_ID), e.g. a PP_Order<br>
+	 *   <b>TextContains</b> — (optional) text that the note's TextMsg or message parameters must contain, e.g. a qty<br>
+	 *   <b>Identifier</b> — (optional) alias under which the found AD_Note is stored<br>
+	 * @cucumber.depends StepDefData: AD_Message_StepDefData, AD_Note_StepDefData, the StepDefData of the referenced record
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, AD_Note records exist for the referenced record:
+	 *   | AD_Message_ID | Record_ID | TextContains |
+	 *   | msg_1         | ppOrder   | 8            |
+	 * </pre>
+	 */
+	@And("after not more than {int}s, AD_Note records exist for the referenced record:")
+	public void AD_Note_records_exist_for_referenced_record(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final DataTableRow row : DataTableRows.of(dataTable).stream().collect(Collectors.toList()))
+		{
+			final Supplier<Boolean> noteFound = () -> {
+				final Optional<I_AD_Note> note = retrieveNotesForReferencedRecord(row).stream().findFirst();
+				note.ifPresent(n -> row.getAsOptionalIdentifier().ifPresent(id -> noteTable.putOrReplace(id, n)));
+				return note.isPresent();
+			};
+
+			//dev-note: tryAndWait will fail if no matching AD_Note is found
+			StepDefUtil.tryAndWait(timeoutSec, 1000, noteFound);
+		}
+	}
+
+	/**
+	 * Asserts that, right now, no AD_Note matches. Run it after a synchronization step, otherwise it can pass before the note is created.
+	 * Columns are the same as in {@code after not more than Ns, AD_Note records exist for the referenced record:}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>AD_Message_ID</b> — (required, identifier-ref) the note's AD_Message<br>
+	 *   <b>Record_ID</b> — (required, identifier-ref) the record the note refers to<br>
+	 *   <b>TextContains</b> — (optional) only notes containing this text count<br>
+	 * @cucumber.depends StepDefData: AD_Message_StepDefData, the StepDefData of the referenced record
+	 * @cucumber.example
+	 * <pre>
+	 * Then no AD_Note records exist for the referenced record:
+	 *   | AD_Message_ID | Record_ID |
+	 *   | msg_1         | ppOrder   |
+	 * </pre>
+	 */
+	@Then("no AD_Note records exist for the referenced record:")
+	public void no_AD_Note_records_exist_for_referenced_record(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> assertThat(retrieveNotesForReferencedRecord(row))
+				.as("AD_Note records for " + row.getAsString(I_AD_Note.COLUMNNAME_Record_ID))
+				.isEmpty());
+	}
+
+	private List<I_AD_Note> retrieveNotesForReferencedRecord(@NonNull final DataTableRow row)
+	{
+		final I_AD_Message message = row.getAsIdentifier(I_AD_Note.COLUMNNAME_AD_Message_ID).lookupNotNullIn(messageTable);
+		final TableRecordReference referencedRecord = identifiersResolver.getTableRecordReference(row.getAsIdentifier(I_AD_Note.COLUMNNAME_Record_ID));
+		final Optional<String> textContains = row.getAsOptionalString("TextContains").filter(Check::isNotBlank);
+
+		return queryBL.createQueryBuilder(I_AD_Note.class)
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Message_ID, message.getAD_Message_ID())
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Table_ID, referencedRecord.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_Record_ID, referencedRecord.getRecord_ID())
+				.create()
+				.stream(I_AD_Note.class)
+				.filter(note -> textContains.map(text -> containsText(note, text)).orElse(true))
+				.collect(Collectors.toList());
+	}
+
+	private static boolean containsText(@NonNull final I_AD_Note note, @NonNull final String text)
+	{
+		return (note.getTextMsg() != null && note.getTextMsg().contains(text))
+				|| (note.getAD_Message_ParamsJSON() != null && note.getAD_Message_ParamsJSON().contains(text));
 	}
 }
