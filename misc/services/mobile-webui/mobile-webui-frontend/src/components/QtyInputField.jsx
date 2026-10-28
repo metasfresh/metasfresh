@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { qtyInfos } from '../utils/qtyInfos';
-import { isValidDecimalNumberString, normalizeDecimalNumberString } from '../utils/decimalInput';
+import { parseDecimalNumberString } from '../utils/decimalInput';
 import { isAllowedDecimalInput } from '../utils/decimalKeystroke';
 
 const QtyInputField = ({
@@ -92,14 +92,13 @@ const QtyInputField = ({
     }
   };
 
-  // Select the whole value on focus so typing replaces the prefilled value instead of appending to
-  // it. A type="number" input replaced its value on type; the type="text" input needed for
-  // locale-aware decimals appends instead, which silently inflates a prefilled field (e.g. the
-  // generateHUQRCodes numberOfHUs="1" becoming "11"). Deferred to a macrotask so the selection
-  // survives the caret the browser/driver places right after focus (a synchronous select is undone).
-  // "Pristine" = the field still shows a value the user has not edited since (re)focusing it. The first
-  // character typed then REPLACES the whole value (restoring the old type="number" behaviour), instead of
-  // inserting at the caret and appending to the prefilled qty.
+  // Replace-on-type for a PREFILLED field. A type="number" input replaced its value when the user typed;
+  // the type="text" input needed for locale-aware decimals would instead append, silently inflating a
+  // prefilled field (e.g. generateHUQRCodes numberOfHUs="1" becoming "11"). To restore replace-on-type the
+  // whole value is selected on the first character typed since (re)focusing -- synchronously in
+  // handleKeyDown (see there), never deferred: a deferred/macrotask select raced the keystroke under CI
+  // load and was unreliable. "Pristine" = the field still shows a value the user has not edited since
+  // (re)focusing it; handleFocus arms it, the first character consumes it.
   const pristineSinceFocusRef = useRef(true);
 
   const handleFocus = () => {
@@ -165,7 +164,8 @@ QtyInputField.propTypes = {
 
 const computeQtyInfoFromString = ({ qtyInputString, integerValuesOnly, prevQtyInfo, validateQtyEntered, uom }) => {
   // The user may type the decimal separator as ',' or '.'; forward the dot-decimal.
-  const normalized = isValidDecimalNumberString(qtyInputString) ? normalizeDecimalNumberString(qtyInputString) : null;
+  // parseDecimalNumberString: null = unparseable, '' = no digit typed yet, else the dot-decimal number.
+  const normalized = parseDecimalNumberString(qtyInputString);
   let qty = normalized ? parseFloat(normalized) : NaN;
 
   if (isNaN(qty)) {
