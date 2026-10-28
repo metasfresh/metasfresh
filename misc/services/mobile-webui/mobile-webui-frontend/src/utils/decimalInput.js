@@ -1,7 +1,8 @@
-// Locale-robust reading of a decimal number typed by the user.
-// COPY of normalizeDecimalNumberString / isValidDecimalNumberString from the desktop frontend
-// (frontend/src/utils/locale.js). The mobile frontend is a separate build and must not import from frontend/src,
-// so keep both copies in sync; the shared test vectors are in __tests__/utils/decimalInput.test.js.
+// Locale-robust reading of a decimal number typed by the user, for the mobile-webui frontend.
+// A mobile quantity input must accept the decimal separator the operator types regardless of the device
+// browser language -- an HTML type="number" input ties the accepted separator to that language, so a typed
+// point or comma can be rejected and the entry wiped. These helpers normalize a typed value (comma or dot as
+// the decimal separator) to the dot-decimal form the backend expects. Tested in decimalInput.test.js.
 
 const BLANKS = /[\s\u00A0\u202F]/g; // any whitespace, incl. no-break and narrow no-break space (e.g. a pasted grouped number)
 
@@ -16,7 +17,8 @@ const BLANKS = /[\s\u00A0\u202F]/g; // any whitespace, incl. no-break and narrow
  *          begin with (a lone '-', ',' or '.', or blanks); null when the text is no number (a letter, a non-ASCII
  *          digit, "Infinity", ...) or would overflow to Infinity
  */
-export const parseDecimalNumberString = (text) => {
+// internal: normalize/isValid below are the module's public surface; this is not exported
+const parseDecimalNumberString = (text) => {
   const trimmed = text.trim();
   const sign = trimmed.startsWith('-') ? '-' : '';
   const unsigned = trimmed.substring(sign.length).replace(BLANKS, '');
