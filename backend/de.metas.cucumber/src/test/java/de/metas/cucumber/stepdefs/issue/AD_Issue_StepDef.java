@@ -23,8 +23,6 @@
 package de.metas.cucumber.stepdefs.issue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
@@ -41,6 +39,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_AD_Org;
@@ -57,7 +56,7 @@ public class AD_Issue_StepDef
 	private final AD_Issue_StepDefData issueTable;
 
 	private PInstanceId pInstanceId;
-	private ImmutableSet<AdIssueId> rememberedIssueIds;
+	private Integer rememberedMaxIssueId;
 	private final TestContext testContext;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -134,13 +133,14 @@ public class AD_Issue_StepDef
 	}
 
 	/**
-	 * Remembers the AD_Issue records that exist now. The AD_Issue ids are remembered rather than a timestamp,
-	 * because scenarios run on a fixed {@code SystemTime}, which freezes {@code AD_Issue.Created}.
+	 * Remembers the highest existing AD_Issue_ID. A snapshot is used instead of a timestamp because scenarios run on a
+	 * fixed {@code SystemTime}, which freezes {@code AD_Issue.Created}, so "created since" cannot be told by time.
+	 * New AD_Issue records get higher ids.
 	 */
 	@And("the existing AD_Issue records are remembered")
 	public void remember_existing_AD_Issues()
 	{
-		rememberedIssueIds = retrieveAllIssueIds();
+		rememberedMaxIssueId = retrieveMaxIssueId();
 	}
 
 	/**
@@ -149,20 +149,21 @@ public class AD_Issue_StepDef
 	@Then("no AD_Issue was created since the existing AD_Issue records were remembered")
 	public void no_AD_Issue_created_since_remembered()
 	{
-		assertThat(rememberedIssueIds)
+		assertThat(rememberedMaxIssueId)
 				.as("Step 'the existing AD_Issue records are remembered' must run first")
 				.isNotNull();
 
-		final List<AdIssueId> newIssueIds = retrieveAllIssueIds().stream()
-				.filter(issueId -> !rememberedIssueIds.contains(issueId))
-				.collect(ImmutableList.toImmutableList());
+		final List<Integer> newIssueIds = queryBL.createQueryBuilderOutOfTrx(I_AD_Issue.class)
+				.addCompareFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, CompareQueryFilter.Operator.GREATER, rememberedMaxIssueId)
+				.create()
+				.listIds();
 		assertThat(newIssueIds).as("AD_Issue records created since they were remembered").isEmpty();
 	}
 
-	private ImmutableSet<AdIssueId> retrieveAllIssueIds()
+	private int retrieveMaxIssueId()
 	{
 		return queryBL.createQueryBuilderOutOfTrx(I_AD_Issue.class)
 				.create()
-				.idsAsSet(AdIssueId::ofRepoId);
+				.maxInt(I_AD_Issue.COLUMNNAME_AD_Issue_ID);
 	}
 }

@@ -120,7 +120,7 @@ import java.util.function.Supplier;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowableOfType;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 @RequiredArgsConstructor
 public class PP_Order_StepDef
@@ -332,7 +332,7 @@ public class PP_Order_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>PP_Order_ID</b> — (required, identifier-ref) the PP_Order to update<br>
-	 *   <b>AD_Message_ID</b> — (required, identifier-ref, see {@code load AD_Message:}) the AD_Message whose text the rejection must contain<br>
+	 *   <b>AD_Message_ID</b> — (required, identifier-ref, see {@code load AD_Message:}) the AD_Message the rejection was raised with (matched by message key, not by translated text)<br>
 	 *   <b>QtyEntered</b>, <b>DatePromised</b>, <b>DateStartSchedule</b> — (optional) as in {@code update PP_Order:}<br>
 	 * @cucumber.depends StepDefData: PP_Order_StepDefData, AD_Message_StepDefData
 	 * @cucumber.example
@@ -347,14 +347,38 @@ public class PP_Order_StepDef
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_AD_Message expectedMessage = row.getAsIdentifier(I_AD_Message.COLUMNNAME_AD_Message_ID).lookupNotNullIn(messageTable);
+			final AdMessageKey expectedMessageKey = AdMessageKey.of(expectedMessage.getValue());
+			final I_PP_Order ppOrderRecord = ppOrderTable.get(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID));
 
-			final AdempiereException rejection = catchThrowableOfType(() -> updatePPOrder(row), AdempiereException.class);
+			final Throwable rejection = catchThrowable(() -> updatePPOrder(row));
+
+			// the rejected update leaves the in-memory record mutated; reload the persisted state
+			InterfaceWrapperHelper.refresh(ppOrderRecord);
+
 			assertThat(rejection)
 					.as("Expected the PP_Order update to be rejected, but it succeeded")
 					.isNotNull();
-			assertThat(rejection.getMessage())
-					.contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(expectedMessage.getValue())));
+			assertThat(isRejectedWithAdMessage(rejection, expectedMessageKey))
+					.as("Expected a rejection with AD_Message %s but got: %s", expectedMessageKey, rejection)
+					.isTrue();
 		});
+	}
+
+	/**
+	 * Checks the exception (or one of its causes) for the AD_Message it was created with, so that message
+	 * placeholders and translations do not matter.
+	 */
+	private static boolean isRejectedWithAdMessage(@NonNull final Throwable rejection, @NonNull final AdMessageKey expectedMessageKey)
+	{
+		for (Throwable t = rejection; t != null; t = t.getCause())
+		{
+			if (t instanceof AdempiereException
+					&& expectedMessageKey.equals(((AdempiereException)t).getParameter("AD_Message")))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@And("^validate that after not more than (.*)s, PP_Orders are created for PP_Order_Candidate in the following order:$")

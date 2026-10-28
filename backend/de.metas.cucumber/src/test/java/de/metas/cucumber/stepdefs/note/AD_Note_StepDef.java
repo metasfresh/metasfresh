@@ -23,10 +23,10 @@
 package de.metas.cucumber.stepdefs.note;
 
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
@@ -34,7 +34,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -49,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -126,7 +126,7 @@ public class AD_Note_StepDef
 	 * @cucumber.columns
 	 *   <b>AD_Message_ID</b> — (required, identifier-ref, see {@code load AD_Message:}) the note's AD_Message<br>
 	 *   <b>Record_ID</b> — (required, identifier-ref) the record the note refers to (AD_Table_ID + Record_ID), e.g. a PP_Order<br>
-	 *   <b>TextContains</b> — (optional) text that the note's TextMsg or message parameters must contain, e.g. a qty<br>
+	 *   <b>TextContains</b> — (optional) number/text, matched as a whole token ("10" does not match "100"), that the note's TextMsg or message parameters must contain, e.g. a qty<br>
 	 *   <b>Identifier</b> — (optional) alias under which the found AD_Note is stored<br>
 	 * @cucumber.depends StepDefData: AD_Message_StepDefData, AD_Note_StepDefData, the StepDefData of the referenced record
 	 * @cucumber.example
@@ -153,28 +153,39 @@ public class AD_Note_StepDef
 	}
 
 	/**
-	 * Asserts that, right now, no AD_Note matches. Run it after a synchronization step, otherwise it can pass before the note is created.
+	 * Asserts that no AD_Note matches during the whole given time. Notes are created asynchronously, so a single immediate
+	 * check would pass before the note could appear; this step therefore polls for the full duration and fails as soon as one shows up.
 	 * Columns are the same as in {@code after not more than Ns, AD_Note records exist for the referenced record:}.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>AD_Message_ID</b> — (required, identifier-ref) the note's AD_Message<br>
 	 *   <b>Record_ID</b> — (required, identifier-ref) the record the note refers to<br>
-	 *   <b>TextContains</b> — (optional) only notes containing this text count<br>
+	 *   <b>TextContains</b> — (optional) only notes containing this number/text count<br>
 	 * @cucumber.depends StepDefData: AD_Message_StepDefData, the StepDefData of the referenced record
 	 * @cucumber.example
 	 * <pre>
-	 * Then no AD_Note records exist for the referenced record:
+	 * And after not more than 10s, no AD_Note records exist for the referenced record:
 	 *   | AD_Message_ID | Record_ID |
 	 *   | msg_1         | ppOrder   |
 	 * </pre>
 	 */
-	@Then("no AD_Note records exist for the referenced record:")
-	public void no_AD_Note_records_exist_for_referenced_record(@NonNull final DataTable dataTable)
+	@And("after not more than {int}s, no AD_Note records exist for the referenced record:")
+	public void no_AD_Note_records_exist_for_referenced_record(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		DataTableRows.of(dataTable).forEach(row -> assertThat(retrieveNotesForReferencedRecord(row))
-				.as("AD_Note records for " + row.getAsString(I_AD_Note.COLUMNNAME_Record_ID))
-				.isEmpty());
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(Collectors.toList());
+		final long deadline = System.currentTimeMillis() + timeoutSec * 1000L;
+		do
+		{
+			for (final DataTableRow row : rows)
+			{
+				assertThat(retrieveNotesForReferencedRecord(row))
+						.as("AD_Note records for " + row.getAsString(I_AD_Note.COLUMNNAME_Record_ID))
+						.isEmpty();
+			}
+			Thread.sleep(1000);
+		}
+		while (System.currentTimeMillis() < deadline);
 	}
 
 	private List<I_AD_Note> retrieveNotesForReferencedRecord(@NonNull final DataTableRow row)
@@ -193,9 +204,17 @@ public class AD_Note_StepDef
 				.collect(Collectors.toList());
 	}
 
+	/**
+	 * Matches {@code text} as a whole number/token: "10" does not match "100", "1.10" or "10.5".
+	 */
 	private static boolean containsText(@NonNull final I_AD_Note note, @NonNull final String text)
 	{
-		return (note.getTextMsg() != null && note.getTextMsg().contains(text))
-				|| (note.getAD_Message_ParamsJSON() != null && note.getAD_Message_ParamsJSON().contains(text));
+		final Pattern wholeToken = Pattern.compile("(?<!\\d)(?<!\\d[.,])" + Pattern.quote(text) + "(?!\\d)(?![.,]\\d)");
+		return matches(wholeToken, note.getTextMsg()) || matches(wholeToken, note.getAD_Message_ParamsJSON());
+	}
+
+	private static boolean matches(@NonNull final Pattern pattern, final String value)
+	{
+		return value != null && pattern.matcher(value).find();
 	}
 }
