@@ -387,7 +387,11 @@ Feature: create distribution to balance demand
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: DD_Order_Candidate + DD_Order is created to balance the full demand of the sales order. Sales order is reactivated and qty is decreased. The qty on the PP_Order_Candidate is not changed.
-    When update existing PP_Product_Plannings
+    When AD_Note table is reset
+    And load AD_Message:
+      | Identifier | Value                                                |
+      | noteMsg    | de.metas.material.dispo.SupplyRequiredDecreaseFailed |
+    And update existing PP_Product_Plannings
       | Identifier      | IsCreatePlan |
       | productPlanning | Y            |
     And metasfresh contains C_Orders:
@@ -431,6 +435,10 @@ Feature: create distribution to balance demand
       | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 14                     | targetWH       |                       | ddOrderLine1    |
       | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |                       | ddOrderLine1    |
 
+    # The processed DD_Order_Candidate cannot be reduced; the user is told about the qty that remains to be reduced.
+    And after not more than 60s, AD_Note records exist for the referenced record:
+      | AD_Message_ID | Record_ID | TextContains |
+      | noteMsg       | SO        | 14           |
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And the order identified by SO is completed

@@ -28,7 +28,8 @@ public class MaterialDispoTableRow
 	@Nullable CandidateBusinessCase businessCase;
 	@NonNull ProductId productId;
 	@NonNull BigDecimal qty;
-	@NonNull BigDecimal atp;
+	/** {@code null} if the row does not verify the ATP (ATP cell is {@code *}) */
+	@Nullable BigDecimal atp;
 	@NonNull Instant time;
 	@Nullable StepDefDataIdentifier attributeSetInstanceId;
 	boolean simulated;

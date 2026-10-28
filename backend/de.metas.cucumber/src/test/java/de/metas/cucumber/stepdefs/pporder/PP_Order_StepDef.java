@@ -786,6 +786,35 @@ public class PP_Order_StepDef
 	}
 
 	/**
+	 * Tries to void the PP_Order and asserts that the void is rejected with the given AD_Message (matched by message key, not by translated text).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData, AD_Message_StepDefData (see {@code load AD_Message:})
+	 * @cucumber.example
+	 * <pre>
+	 * And the PP_Order ppOrder is voided expecting rejection with AD_Message msg_rejected
+	 * </pre>
+	 */
+	@And("^the PP_Order (.*) is voided expecting rejection with AD_Message (.*)$")
+	public void voidPPOrderExpectingRejection(@NonNull final String ppOrderIdentifier, @NonNull final String messageIdentifier)
+	{
+		final I_AD_Message expectedMessage = StepDefDataIdentifier.ofString(messageIdentifier).lookupNotNullIn(messageTable);
+		final AdMessageKey expectedMessageKey = AdMessageKey.of(expectedMessage.getValue());
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+
+		final Throwable rejection = catchThrowable(() -> voidPPOrder(ppOrderIdentifier));
+
+		InterfaceWrapperHelper.refresh(ppOrder);
+
+		assertThat(rejection)
+				.as("Expected voiding the PP_Order to be rejected, but it succeeded")
+				.isNotNull();
+		assertThat(isRejectedWithAdMessage(rejection, expectedMessageKey))
+				.as("Expected a rejection with AD_Message %s but got: %s", expectedMessageKey, rejection)
+				.isTrue();
+	}
+
+	/**
 	 * Deletes the PP_Order record, like a user deleting it in the manufacturing order window.
 	 */
 	@And("^the PP_Order (.*) is deleted$")

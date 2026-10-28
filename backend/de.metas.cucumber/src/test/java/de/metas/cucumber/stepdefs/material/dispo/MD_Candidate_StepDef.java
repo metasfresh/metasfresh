@@ -57,6 +57,7 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.MaterialEventObserver;
@@ -409,6 +410,58 @@ public class MD_Candidate_StepDef
 						);
 					}
 
+					return ProviderResult.resultWasFound(true);
+				})
+				.maxWaitSeconds(timeoutSec)
+				.execute();
+	}
+
+	/**
+	 * Waits until at least one DISTRIBUTION MD_Candidate exists for the product and every one of them forwards to the given PP_Order_BOMLine.
+	 * Does not pin the candidates' count or qty.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, PP_Order_BOMLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, all DISTRIBUTION MD_Candidates of product component supply PP_Order_BOMLine newBOMLine
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, all DISTRIBUTION MD_Candidates of product (\\S+) supply PP_Order_BOMLine (\\S+)$")
+	public void assertAllDistributionCandidatesSupplyBOMLine(final int timeoutSec, @NonNull final String productIdentifierStr, @NonNull final String bomLineIdentifierStr) throws InterruptedException
+	{
+		final ProductId productId = StepDefDataIdentifier.ofString(productIdentifierStr).lookupIdIn(productTable);
+		final int expectedBOMLineId = StepDefDataIdentifier.ofString(bomLineIdentifierStr).lookupIdIn(ppOrderBOMLineTable).getRepoId();
+
+		StepDefUtil.<Boolean>tryAndWaitForItem()
+				.worker(() -> {
+					final List<I_MD_Candidate> candidates = queryBL.createQueryBuilder(I_MD_Candidate.class)
+							.addEqualsFilter(COLUMNNAME_M_Product_ID, productId)
+							.addEqualsFilter(COLUMNNAME_MD_Candidate_BusinessCase, X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION)
+							.orderBy(COLUMNNAME_MD_Candidate_ID)
+							.create()
+							.list();
+					if (candidates.isEmpty())
+					{
+						return ProviderResult.resultWasNotFound("No DISTRIBUTION MD_Candidate found for product " + productIdentifierStr);
+					}
+					final List<String> notSupplyingBOMLine = new java.util.ArrayList<>();
+					for (final I_MD_Candidate candidate : candidates)
+					{
+						final I_MD_Candidate_Dist_Detail detail = queryBL.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
+								.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_MD_Candidate_ID, candidate.getMD_Candidate_ID())
+								.create()
+								.firstOnly(I_MD_Candidate_Dist_Detail.class);
+						if (detail == null || detail.getPP_Order_BOMLine_ID() != expectedBOMLineId)
+						{
+							notSupplyingBOMLine.add("MD_Candidate_ID=" + candidate.getMD_Candidate_ID() + " type=" + candidate.getMD_Candidate_Type()
+									+ " qty=" + candidate.getQty() + " forwardBOMLine=" + (detail != null ? detail.getPP_Order_BOMLine_ID() : null));
+						}
+					}
+					if (!notSupplyingBOMLine.isEmpty())
+					{
+						return ProviderResult.resultWasNotFound("DISTRIBUTION MD_Candidate(s) not forwarding to PP_Order_BOMLine " + expectedBOMLineId + ": " + notSupplyingBOMLine);
+					}
 					return ProviderResult.resultWasFound(true);
 				})
 				.maxWaitSeconds(timeoutSec)

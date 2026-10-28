@@ -44,10 +44,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.X_AD_Issue;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -145,6 +147,8 @@ public class AD_Issue_StepDef
 
 	/**
 	 * Asserts that no AD_Issue was created since {@code the existing AD_Issue records are remembered}.
+	 * Accounting (posting) issues are ignored: they stem from the asynchronous posting of documents created in the scenario's background
+	 * (e.g. a completed PP_Product_BOM has no accountable document) and are unrelated to what the scenario verifies.
 	 */
 	@Then("no AD_Issue was created since the existing AD_Issue records were remembered")
 	public void no_AD_Issue_created_since_remembered()
@@ -153,11 +157,15 @@ public class AD_Issue_StepDef
 				.as("Step 'the existing AD_Issue records are remembered' must run first")
 				.isNotNull();
 
-		final List<Integer> newIssueIds = queryBL.createQueryBuilderOutOfTrx(I_AD_Issue.class)
+		final List<String> newIssues = queryBL.createQueryBuilderOutOfTrx(I_AD_Issue.class)
 				.addCompareFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, CompareQueryFilter.Operator.GREATER, rememberedMaxIssueId)
+				.addNotEqualsFilter(I_AD_Issue.COLUMNNAME_IssueCategory, X_AD_Issue.ISSUECATEGORY_Accounting)
+				.orderBy(I_AD_Issue.COLUMNNAME_AD_Issue_ID)
 				.create()
-				.listIds();
-		assertThat(newIssueIds).as("AD_Issue records created since they were remembered").isEmpty();
+				.stream()
+				.map(issue -> issue.getAD_Issue_ID() + ": " + issue.getIssueSummary())
+				.collect(Collectors.toList());
+		assertThat(newIssues).as("AD_Issue records created since they were remembered").isEmpty();
 	}
 
 	private int retrieveMaxIssueId()
