@@ -38,11 +38,14 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMType;
@@ -54,15 +57,20 @@ import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.X_PP_Product_BOM;
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Product_Bom_StepDef
@@ -329,5 +337,116 @@ public class PP_Product_Bom_StepDef
 
 		saveRecord(bomVersionsRecord);
 		return bomVersionsRecord;
+	}
+
+	/**
+	 * Calls {@code PP_Product_BOM_Recursive(<bom>, NULL)} and compares its rows, in the order of the function's {@code path}, with the table.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Line</b> — (required) tree position, e.g. "1.2."<br>
+	 *   <b>cumulative_qty</b> — (required) expected quantity of the node per one unit of the top BOM product<br>
+	 * @cucumber.depends StepDefData: PP_Product_BOM_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the BOM recursive explosion of bom_1 returns:
+	 *   | Line | cumulative_qty |
+	 *   | 1.   | 1              |
+	 *   | 1.1. | 2              |
+	 * </pre>
+	 */
+	@Then("the BOM recursive explosion of {word} returns:")
+	public void the_BOM_recursive_explosion_returns(@NonNull final String bomIdentifier, @NonNull final DataTable dataTable)
+	{
+		final int bomId = productBOMTable.getId(bomIdentifier).getRepoId();
+		final List<String> actualLines = new ArrayList<>();
+		final List<BigDecimal> actualCumulativeQtys = new ArrayList<>();
+		runQuery("SELECT Line, cumulative_qty FROM PP_Product_BOM_Recursive(" + bomId + "::numeric, NULL::varchar) ORDER BY path",
+				rs -> {
+					actualLines.add(rs.getString(1));
+					actualCumulativeQtys.add(rs.getBigDecimal(2));
+				});
+
+		final List<String> expectedLines = new ArrayList<>();
+		final List<BigDecimal> expectedCumulativeQtys = new ArrayList<>();
+		DataTableRows.of(dataTable).forEach(row -> {
+			expectedLines.add(row.getAsString("Line"));
+			expectedCumulativeQtys.add(row.getAsBigDecimal("cumulative_qty"));
+		});
+
+		assertThat(actualLines).as("Line of PP_Product_BOM_Recursive rows of " + bomIdentifier).containsExactlyElementsOf(expectedLines);
+		for (int i = 0; i < expectedLines.size(); i++)
+		{
+			assertThat(actualCumulativeQtys.get(i)).as("cumulative_qty of line " + expectedLines.get(i)).isEqualByComparingTo(expectedCumulativeQtys.get(i));
+		}
+	}
+
+	/**
+	 * Calls {@code PP_Product_BOM_Recursive_Report(<bom>, <today>)} and compares its rows (ordered as returned) with the table.
+	 * An empty cell means "not asserted".
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Line</b> — (required) tree position, e.g. "1.2."<br>
+	 *   <b>QtyBOM</b> — (optional) expected quantity<br>
+	 *   <b>Cost</b> — (optional) expected cost<br>
+	 * @cucumber.depends StepDefData: PP_Product_BOM_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the BOM recursive report of bom_1 returns:
+	 *   | Line | QtyBOM | Cost |
+	 *   | 1.   | 1      |      |
+	 *   | 1.1. | 2      | 10   |
+	 * </pre>
+	 */
+	@Then("the BOM recursive report of {word} returns:")
+	public void the_BOM_recursive_report_returns(@NonNull final String bomIdentifier, @NonNull final DataTable dataTable)
+	{
+		final int bomId = productBOMTable.getId(bomIdentifier).getRepoId();
+		final List<String> actualLines = new ArrayList<>();
+		final List<BigDecimal> actualQtyBOMs = new ArrayList<>();
+		final List<BigDecimal> actualCosts = new ArrayList<>();
+		runQuery("SELECT Line, QtyBOM, Cost FROM PP_Product_BOM_Recursive_Report(" + bomId + "::numeric, now()::date)",
+				rs -> {
+					actualLines.add(rs.getString(1));
+					actualQtyBOMs.add(rs.getBigDecimal(2));
+					actualCosts.add(rs.getBigDecimal(3));
+				});
+
+		final List<DataTableRow> expectedRows = DataTableRows.of(dataTable).stream().collect(java.util.stream.Collectors.toList());
+
+		assertThat(actualLines).as("Line of PP_Product_BOM_Recursive_Report rows of " + bomIdentifier)
+				.containsExactlyElementsOf(expectedRows.stream().map(row -> row.getAsString("Line")).collect(java.util.stream.Collectors.toList()));
+		for (int i = 0; i < expectedRows.size(); i++)
+		{
+			final int index = i;
+			final String line = actualLines.get(i);
+			expectedRows.get(i).getAsOptionalString("QtyBOM").filter(value -> !value.trim().isEmpty()).map(BigDecimal::new)
+					.ifPresent(expected -> assertThat(actualQtyBOMs.get(index)).as("QtyBOM of line " + line).isEqualByComparingTo(expected));
+			expectedRows.get(i).getAsOptionalString("Cost").filter(value -> !value.trim().isEmpty()).map(BigDecimal::new)
+					.ifPresent(expected -> assertThat(actualCosts.get(index)).as("Cost of line " + line).isEqualByComparingTo(expected));
+		}
+	}
+
+	@FunctionalInterface
+	private interface RowConsumer
+	{
+		void accept(ResultSet rs) throws SQLException;
+	}
+
+	private static void runQuery(@NonNull final String sql, @NonNull final RowConsumer consumer)
+	{
+		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			 final ResultSet rs = pstmt.executeQuery())
+		{
+			while (rs.next())
+			{
+				consumer.accept(rs);
+			}
+		}
+		catch (final SQLException e)
+		{
+			throw new AdempiereException("Failed running: " + sql, e);
+		}
 	}
 }
