@@ -482,7 +482,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_52
-  Scenario: PP_Order with a processed and an unprocessed DD_Order_Candidate; decrease its qty below the processed candidate -> the unprocessed one is removed, the processed one stays, the user is notified (AC3, AC4)
+  Scenario: PP_Order with a processed and an unprocessed DD_Order_Candidate; decrease its qty below the processed candidate -> the unprocessed one is reduced to 0, the processed one stays, the user is notified (AC3, AC4)
     When update existing PP_Product_Plannings
       | Identifier        | IsCreatePlan |
       | componentPlanning | Y            |
@@ -521,8 +521,10 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | PP_Order_BOMLine_ID | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
       | reducedBOMLine      | ppOrder     | component    | 5 PCE        | CO            |
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
+      # AC3: the unprocessed candidate is reduced to 0 and kept (same as the sales-order decrease, distribution.feature S0171.300)
       | Identifier              | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
-      | ddOrderCandidate      | component    | rawMaterials_WH     | production_WH    | 10 PCE | Y         | ppOrder             | reducedBOMLine              |
+      | ddOrderCandidate        | component    | rawMaterials_WH     | production_WH    | 10 PCE | Y         | ppOrder             | reducedBOMLine              |
+      | unprocessedCandidate    | component    | rawMaterials_WH     | production_WH    | 0 PCE  | N         | ppOrder             | reducedBOMLine              |
     And after not more than 60s, DD_Orders are generated from the following DD_Order_Candidates
       | Identifier | DD_Order_Candidate_ID   | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
       | ddOrder    | ddOrderCandidate      | ppOrder             | reducedBOMLine              |
