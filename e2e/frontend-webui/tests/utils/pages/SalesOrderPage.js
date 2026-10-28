@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { SALES_ORDER_WINDOW_ID } from '../WindowIds';
@@ -8,6 +9,21 @@ import { openRelatedDocument, REFERENCE_DATA_CY } from '../DocumentReferences';
 
 /** Included tab of the order lines, as used in the REST path. */
 const SALES_ORDER_LINES_TAB_ID = 'AD_Tab-187';
+
+/** True for the WebUI's PATCH of the given field of a quick input of the given tab. */
+const isQuickInputPatchOf = (response, tabId, fieldName) => {
+  const request = response.request();
+  if (request.method() !== 'PATCH' || !new URL(request.url()).pathname.includes(`/${tabId}/quickInput/`)) {
+    return false;
+  }
+  let body;
+  try {
+    body = request.postDataJSON();
+  } catch {
+    return false; // not a JSON body, so not a field PATCH
+  }
+  return Array.isArray(body) && body.some((change) => change.path === fieldName);
+};
 
 /**
  * Page object for Sales Order window (ID: 143).
@@ -253,11 +269,21 @@ export class SalesOrderPage {
    *
    * {@link addOrderLine} submits and closes the form, so it cannot be used to read a defaulted field.
    *
+   * Returns only after the server answered the product selection: that answer carries the product
+   * callout's defaults, so a fixed sleep would let a slow answer arrive after the caller already read
+   * the form.
+   *
    * @param {Object} params
    * @param {string} params.product - Product code or name
    * @param {string} params.recordId - Optional record ID (extracted from the URL if not provided)
+   * @param {boolean} [params.awaitProductPatchAnswer=true] - false: return right after the product
+   *   option was clicked, while its PATCH may still be in flight (for a test of that race)
+   * @returns {Promise<{packingInstruction: string}|undefined>} what the server defaulted for the packing
+   *   instruction (`M_HU_PI_Item_Product_ID`) in its answer: its caption, or '' when it set none.
+   *   The DOM may lag that answer by a few ms; use {@link expectQuickEntryPackingInstruction} to
+   *   check what the form shows. `undefined` when `awaitProductPatchAnswer` is false.
    */
-  static async openQuickEntryAndSelectProduct({ product, recordId }) {
+  static async openQuickEntryAndSelectProduct({ product, recordId, awaitProductPatchAnswer = true }) {
     return await test.step(`SalesOrderPage - Open quick entry and select: ${product}`, async () => {
       const page = getPage();
 
@@ -266,7 +292,7 @@ export class SalesOrderPage {
 
       // Wait for tab to allow creating new records
       // Tab ID for Sales Order Lines: AD_Tab-187
-      await waitForTabAllowsNew(SALES_ORDER_WINDOW_ID, effectiveRecordId, 'AD_Tab-187', {
+      await waitForTabAllowsNew(SALES_ORDER_WINDOW_ID, effectiveRecordId, SALES_ORDER_LINES_TAB_ID, {
         maxRetries: 15,
         retryDelayMs: 1000,
       });
@@ -325,28 +351,52 @@ export class SalesOrderPage {
       // Wait for dropdown to populate
       await page.waitForTimeout(300);
 
+      // The product callout runs server-side: selecting the option PATCHes the quick-input document
+      // with M_Product_ID, and the answer carries the fields it defaulted. Listen before clicking.
+      // Not listened for when the caller does not wait for the answer.
+      const productPatchResponse = awaitProductPatchAnswer
+        ? page.waitForResponse(
+            (response) => isQuickInputPatchOf(response, SALES_ORDER_LINES_TAB_ID, 'M_Product_ID'),
+            { timeout: SLOW_ACTION_TIMEOUT }
+          )
+        : null;
+      productPatchResponse?.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
+
       // Click the option by text - finds element containing the product code
       // This avoids clicking on "Search for more..." or other non-record options
       await page.locator('.input-dropdown-list-option').getByText(product).first().click();
 
-      // The product callout runs server-side and patches the quick-input document; give it time to
-      // come back before the caller reads any field it may have defaulted.
-      await page.waitForTimeout(1500);
+      if (!awaitProductPatchAnswer) {
+        return undefined;
+      }
+
+      const response = await productPatchResponse;
+      expect(response.ok(), `quick-input product PATCH failed: HTTP ${response.status()}`).toBe(true);
+
+      // Answer shape: [{ id, fieldsByName: { M_HU_PI_Item_Product_ID: { value?: { key, caption } } } }];
+      // `value` is omitted when the server set none.
+      const documents = await response.json();
+      const packingInstructionField = documents
+        .map((document) => document.fieldsByName?.M_HU_PI_Item_Product_ID)
+        .find(Boolean);
+
+      return { packingInstruction: packingInstructionField?.value?.caption ?? '' };
     });
   }
 
   /**
-   * @returns {Promise<string>} the displayed value of the packing-instruction
-   *   (`M_HU_PI_Item_Product_ID`) field in the open quick-entry form — empty string when unset.
-   *   Call after {@link openQuickEntryAndSelectProduct}.
+   * Assert the packing-instruction (`M_HU_PI_Item_Product_ID`) field of the open quick-entry form shows
+   * `expected` (empty string = unset). Retries, because the frontend applies the server's answer a few
+   * ms after {@link openQuickEntryAndSelectProduct} received it.
+   *
+   * @param {string} expected
    */
-  static async getQuickEntryPackingInstruction() {
-    return await test.step('SalesOrderPage - Read quick-entry packing instruction', async () => {
+  static async expectQuickEntryPackingInstruction(expected) {
+    return await test.step(`SalesOrderPage - Expect quick-entry packing instruction: "${expected}"`, async () => {
       const page = getPage();
 
       const field = page.locator('.quick-input-container #lookup_M_HU_PI_Item_Product_ID input.input-field');
-      await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      return (await field.inputValue()).trim();
+      await expect(field).toHaveValue(expected, { timeout: SLOW_ACTION_TIMEOUT });
     });
   }
 
