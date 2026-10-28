@@ -14,6 +14,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAExportContext;
+import de.metas.payment.sepa.api.SEPAExportLineId;
 import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.payment.sepa.jaxb.sct.pain_008_001_08.AccountIdentification4Choice;
 import de.metas.payment.sepa.jaxb.sct.pain_008_001_08.ActiveOrHistoricCurrencyAndAmount;
@@ -116,6 +117,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	private static final String CREDITOR_SCHEME_NAME_SEPA = "SEPA";
 	private static final String CURRENCY_EUR = "EUR";
 	private static final String BIC_NOTPROVIDED = "NOTPROVIDED";
+	private static final String END_TO_END_ID_SUFFIX = "-0001";
 
 	/**
 	 * Maximum lengths of the GBIC_5 types (Max140Text_SDD for names, Max140Text, Max70Text, Max16Text, Max35Text).
@@ -257,10 +259,10 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 			@NonNull final PartyIdentification135 creditor,
 			@NonNull final XMLGregorianCalendar requestedCollectionDate)
 	{
-		final DirectDebitMandate mandate = exportContext.getDirectDebitMandate(line.getSEPA_Export_Line_ID());
+		final DirectDebitMandate mandate = exportContext.getDirectDebitMandate(SEPAExportLineId.ofRepoId(line.getSEPA_Export_Line_ID()));
 
 		final PaymentInstruction29 pmtInf = new PaymentInstruction29();
-		pmtInf.setPmtInfId(SepaDkTextConverter.toIdentifier(msgId + "-" + index));
+		pmtInf.setPmtInfId(toPmtInfId(msgId, index));
 		pmtInf.setPmtMtd(PaymentMethod2Code.DD);
 		pmtInf.setNbOfTxs("1");
 
@@ -281,7 +283,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		pmtInf.setChrgBr(ChargeBearerType1Code.SLEV);
 		pmtInf.setCdtrSchmeId(createCreditorSchemeIdOrNull(sepaHdr.getSEPA_CreditorIdentifier()));
 
-		final DirectDebitTransactionInformation23 drctDbtTxInf = createDirectDebitTransactionInformation(pmtInf.getPmtInfId(), line, mandate);
+		final DirectDebitTransactionInformation23 drctDbtTxInf = createDirectDebitTransactionInformation(pmtInf.getPmtInfId() + END_TO_END_ID_SUFFIX, line, mandate);
 		pmtInf.getDrctDbtTxInf().add(drctDbtTxInf);
 		pmtInf.setCtrlSum(drctDbtTxInf.getInstdAmt().getValue());
 
@@ -289,14 +291,14 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	}
 
 	private DirectDebitTransactionInformation23 createDirectDebitTransactionInformation(
-			@NonNull final String pmtInfId,
+			@NonNull final String endToEndId,
 			@NonNull final I_SEPA_Export_Line line,
 			@NonNull final DirectDebitMandate mandate)
 	{
 		final DirectDebitTransactionInformation23 drctDbtTxInf = new DirectDebitTransactionInformation23();
 
 		final PaymentIdentification6 pmtId = new PaymentIdentification6();
-		pmtId.setEndToEndId(SepaDkTextConverter.toIdentifier(pmtInfId + "-0001"));
+		pmtId.setEndToEndId(endToEndId);
 		drctDbtTxInf.setPmtId(pmtId);
 
 		final BigDecimal amount = line.getAmt();
@@ -333,6 +335,16 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 		}
 
 		return drctDbtTxInf;
+	}
+
+	/**
+	 * @return {@code <msgId>-<index>}, with the msgId cut so that the EndToEndId {@code <PmtInfId>-0001} still fits into 35 characters and keeps the index
+	 */
+	private static String toPmtInfId(@NonNull final String msgId, final int index)
+	{
+		final String indexSuffix = "-" + index;
+		final int maxMsgIdLength = SepaDkTextConverter.IDENTIFIER_MAX_LENGTH - indexSuffix.length() - END_TO_END_ID_SUFFIX.length();
+		return (msgId.length() <= maxMsgIdLength ? msgId : msgId.substring(0, maxMsgIdLength)) + indexSuffix;
 	}
 
 	private String toCreditorName(@NonNull final I_SEPA_Export sepaDocument)
