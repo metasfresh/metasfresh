@@ -110,8 +110,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -538,7 +536,7 @@ public class ImportHelper implements IImportHelper
 				if (lenientContext != null)
 				{
 					throw new ReplicationException(MSG_EDIBPartnerLookupAmbiguousNoDefault, e)
-							.setAdMessageParameters(lenientContext.getLookupValues(), lenientContext.getLabel(), lenientContext.getMatchedCount());
+							.setAdMessageParameters(lenientContext.getConditionValues(), lenientContext.getLabel(), lenientContext.getMatchedCount());
 				}
 				throw e;
 			}
@@ -1065,7 +1063,8 @@ public class ImportHelper implements IImportHelper
 		final List<Object> params = new ArrayList<>();
 		final StringBuilder whereClause = new StringBuilder();
 		// lenient lines' inlined ILIKE fragment -> the "IS NULL" condition that replaces it in the retry
-		final Map<String, String> lenientFragments = new LinkedHashMap<>();
+		// same as whereClause, but with every lenient line (see EXP_FormatLine.IsImportLenient) unset; used for the retry
+		final StringBuilder lenientWhereClause = new StringBuilder();
 		final List<Object> lenientValues = new ArrayList<>();
 		int col = 0;
 		final StringBuilder formatLines = new StringBuilder();
@@ -1235,11 +1234,13 @@ public class ImportHelper implements IImportHelper
 			if (col > 0)
 			{
 				whereClause.append(" AND ");
+				lenientWhereClause.append(" AND ");
 			}
 
 			if (paramSQL == null || !nodeExists)
 			{
 				whereClause.append(columnSQL).append(" IS NULL ");
+				lenientWhereClause.append(columnSQL).append(" IS NULL ");
 			}
 			else
 			{
@@ -1247,6 +1248,7 @@ public class ImportHelper implements IImportHelper
 				if(X_EXP_FormatLine.FILTEROPERATOR_Equals.equals(filterOperator))
 				{
 						whereClause.append(columnSQL).append(" = ? ");
+						lenientWhereClause.append(columnSQL).append(" = ? ");
 						params.add(paramSQL);
 				}
 				else if (X_EXP_FormatLine.FILTEROPERATOR_Like.equals(filterOperator))
@@ -1255,8 +1257,12 @@ public class ImportHelper implements IImportHelper
 					whereClause.append(likeFragment);
 					if (uniqueFormatLine.isImportLenient())
 					{
-						lenientFragments.put(likeFragment, columnSQL + " IS NULL ");
+						lenientWhereClause.append(columnSQL).append(" IS NULL ");
 						lenientValues.add(paramSQL);
+					}
+					else
+					{
+						lenientWhereClause.append(likeFragment);
 					}
 				}
 				else
@@ -1268,9 +1274,7 @@ public class ImportHelper implements IImportHelper
 			col++;
 		}
 
-		// the equality values (i.e. not the lenient ones), e.g. the GLN
-		final String otherConditionValues = params.stream().map(String::valueOf).collect(Collectors.joining(", "));
-		final String lenientLabels = lenientValues.stream().map(String::valueOf).collect(Collectors.joining(", "));
+		final int conditionParamCount = params.size(); // i.e. without the link id
 
 		final String linkColumnName;
 		final int linkId;
@@ -1280,6 +1284,7 @@ public class ImportHelper implements IImportHelper
 			linkColumnName = masterPO.get_KeyColumns()[0]; // TODO: check which is the link column
 			linkId = masterPO.get_ID();
 			whereClause.append(" AND ").append(linkColumnName).append("= ? ");
+			lenientWhereClause.append(" AND ").append(linkColumnName).append("= ? ");
 			params.add(linkId);
 		}
 		else
@@ -1293,22 +1298,19 @@ public class ImportHelper implements IImportHelper
 
 		final List<PO> lookupValues = new ArrayList<>();
 		boolean lenientRetried = false;
+		String usedWhereClause = whereClause.toString(); // the clause that produced lookupValues
 		if (doLookup)
 		{
-			final List<PO> list = new Query(ctx, lookupTableName, whereClause.toString(), trxName)
+			final List<PO> list = new Query(ctx, lookupTableName, usedWhereClause, trxName)
 					.setOnlyActiveRecords(true)
 					.setParameters(params)
 					.list(PO.class);
 			lookupValues.addAll(list);
 
-			if (lookupValues.isEmpty() && !lenientFragments.isEmpty())
+			if (lookupValues.isEmpty() && !lenientValues.isEmpty())
 			{
-				String lenientWhereClause = whereClause.toString();
-				for (final Map.Entry<String, String> lenientFragment : lenientFragments.entrySet())
-				{
-					lenientWhereClause = lenientWhereClause.replace(lenientFragment.getKey(), lenientFragment.getValue());
-				}
-				lookupValues.addAll(new Query(ctx, lookupTableName, lenientWhereClause, trxName)
+				usedWhereClause = lenientWhereClause.toString();
+				lookupValues.addAll(new Query(ctx, lookupTableName, usedWhereClause, trxName)
 						.setOnlyActiveRecords(true)
 						.setParameters(params)
 						.list(PO.class));
@@ -1361,10 +1363,10 @@ public class ImportHelper implements IImportHelper
 			// further up, this exception might be caught and resolved by getSingleDefaultPO()
 			final String lookupExMsg = MSG_EXPFormatLineDuplicatedObject + " : " + expFormat.getName() + "(" + formatLines + ")";
 			final DuplicateLookupObjectException.LenientContext lenientContext = lenientRetried
-					? new DuplicateLookupObjectException.LenientContext(otherConditionValues, lenientLabels, lookupValues.size())
+					? new DuplicateLookupObjectException.LenientContext(joinForMessage(params.subList(0, conditionParamCount)), joinForMessage(lenientValues), lookupValues.size())
 					: null;
 			throw new DuplicateLookupObjectException(lookupExMsg, lookupValues, replicationTrxLine, doLookup, lenientContext)
-					.setParameter("WhereClause", whereClause.toString())
+					.setParameter("WhereClause", usedWhereClause)
 					.setParameter("Parameters", params)
 					.setParameter("Value", lookupValues)
 					.setParameter("MasterPO", masterPO != null ? masterPO : "NULL");
@@ -1379,7 +1381,7 @@ public class ImportHelper implements IImportHelper
 				// the format definition wrongly assumed that there is already a record for the given XML data
 				throw new ReplicationException(MSG_PONotFound)
 						.setParameter(I_EXP_Format.COLUMNNAME_RplImportMode, importMode)
-						.setParameter("WhereClause", whereClause.toString())
+						.setParameter("WhereClause", usedWhereClause)
 						.setParameter("Parameters", params)
 						.setParameter("MasterPO", masterPO != null ? masterPO : "NULL");
 			}
@@ -1665,6 +1667,11 @@ public class ImportHelper implements IImportHelper
 		}
 
 		return ctx;
+	}
+
+	private static String joinForMessage(final List<?> values)
+	{
+		return values.stream().map(String::valueOf).collect(Collectors.joining(", "));
 	}
 
 	private static void updateContextFromADClientValue(final Properties ctx, final String AD_Client_Value)

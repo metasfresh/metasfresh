@@ -47,14 +47,6 @@ public final class DuplicateLookupObjectException extends ReplicationException
 	@Getter
 	private final boolean doLookup;
 
-	/**
-	 * Constructs a {@link DuplicateLookupObjectException} with <code>lookedUpPOs=null</code>, <code>trxLineDraft=null</code>, and <code>doLookup=false</code>
-	 */
-	public DuplicateLookupObjectException(final String adMessage)
-	{
-		this(adMessage, null, null, false);
-	}
-
 	/** Set if the lookup was retried with its lenient lines unset (see EXP_FormatLine.IsImportLenient) and still matched more than one record. */
 	@Getter
 	private final LenientContext lenientContext;
@@ -62,9 +54,18 @@ public final class DuplicateLookupObjectException extends ReplicationException
 	@Value
 	public static class LenientContext
 	{
-		String lookupValues;
+		/** the values of the non-lenient conditions that the retry still applied */
+		String conditionValues;
 		String label;
 		int matchedCount;
+	}
+
+	/**
+	 * Constructs a {@link DuplicateLookupObjectException} with <code>lookedUpPOs=null</code>, <code>trxLineDraft=null</code>, and <code>doLookup=false</code>
+	 */
+	public DuplicateLookupObjectException(final String adMessage)
+	{
+		this(adMessage, null, null, false);
 	}
 
 	public DuplicateLookupObjectException(final String adMessage, final List<PO> lookedUpPOs, final I_EXP_ReplicationTrxLine trxLineDraft, final boolean doLookup)
