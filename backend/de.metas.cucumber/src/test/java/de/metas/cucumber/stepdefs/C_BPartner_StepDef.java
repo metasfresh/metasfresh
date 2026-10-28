@@ -241,6 +241,12 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setName(valueAndName.getName());
 		bPartnerRecord.setValue(valueAndName.getValue());
 		row.getAsOptionalString(COLUMNNAME_Lookup_Label).ifPresent(bPartnerRecord::setLookup_Label);
+		// no generated accessor for this column
+		final Boolean isReplicationLookupDefault = row.getAsOptionalBoolean("IsReplicationLookupDefault").toBooleanOrNull();
+		if (isReplicationLookupDefault != null)
+		{
+			InterfaceWrapperHelper.setValue(bPartnerRecord, "IsReplicationLookupDefault", isReplicationLookupDefault);
+		}
 
 		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
 		bPartnerRecord.setIsVendor(row.getAsOptionalBoolean(COLUMNNAME_IsVendor).orElseFalse());
