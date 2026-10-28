@@ -199,7 +199,7 @@ public class PP_Product_Bom_StepDef
 
 		final boolean isPercentage = row.getAsOptionalBoolean(I_PP_Product_BOMLine.COLUMNNAME_IsQtyPercentage).orElseFalse();
 		final BigDecimal qty = row.getAsBigDecimal(I_PP_Product_BOMLine.COLUMNNAME_QtyBatch);
-		// the column has no DB default and is nullable; a BOM line created in the window always carries Y or N, and the report functions read QtyBOM only when it is 'N'
+		// the column is nullable with no DB/AD default; SQL functions such as PP_Product_BOM_Recursive read QtyBOM only when IsQtyPercentage = 'N', so always set the flag explicitly
 		bomLine.setIsQtyPercentage(isPercentage);
 		if (isPercentage)
 		{

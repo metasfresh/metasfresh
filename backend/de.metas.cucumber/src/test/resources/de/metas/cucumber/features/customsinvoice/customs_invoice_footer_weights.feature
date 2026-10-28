@@ -151,7 +151,7 @@ Feature: customs invoice footer and detail weights
       | M_Warehouse_ID.Identifier | Value        |
       | wh_std                    | StdWarehouse |
     And load M_Locator:
-      | Identifier | Value     | M_Warehouse_ID |
+      | Identifier | Value      | M_Warehouse_ID |
       | loc_std    | Hauptlager | wh_std         |
     And metasfresh contains M_InOut:
       | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | DocBaseType | DocSubType |
