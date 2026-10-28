@@ -5,6 +5,26 @@ import { installFakeCameraIfBrowserExposesNone } from "./tests/utils/fakeCamera"
 import { trackInFlightXhr } from "./tests/utils/inFlightXhr";
 import os from 'os';
 
+// Base Chromium launch args for the Mobile Chrome project. Exported so a spec that must add an arg
+// (e.g. --lang to reproduce a device browser language) can spread these instead of duplicating the
+// list: Playwright replaces launchOptions.args wholesale rather than merging, so without a shared
+// source every such spec would carry its own copy that silently drifts when an arg is added here.
+export const MOBILE_CHROME_LAUNCH_ARGS = [
+    '--no-sandbox', // Avoids sandboxing issues inside Docker
+    '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282,http://mobile:80,http://mobile', // Treats these as secure origins so navigator.mediaDevices (secure-context-only) is defined at http://mobile — mirrors production HTTPS
+    '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests', // Disables HSTS enforcement
+    '--disable-site-isolation-trials', // Helps disable security sandboxing
+    '--disable-web-security', // Disables web security (CORS, mixed content, etc.)
+    '--ignore-certificate-errors', // Ignores SSL certificate errors
+    '--allow-insecure-localhost', // Allows HTTP on local addresses
+    '--allow-running-insecure-content', // Allows mixed content (HTTP on HTTPS)
+    '--use-fake-ui-for-media-stream', // Suppress getUserMedia permission dialog in CI (no physical camera)
+    // Provide a synthetic camera so getUserMedia() succeeds in CI. NOTE: reachable only
+    // via navigator.mediaDevices, which plain-HTTP non-localhost origins do not expose --
+    // see tests/utils/fakeCamera.js, which fills that gap.
+    '--use-fake-device-for-media-stream',
+];
+
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
@@ -70,22 +90,7 @@ export default defineConfig({
             use: {
                 ...devices['Pixel 5'],
                 launchOptions: {
-                    args: [
-                        '--no-sandbox', // Avoids sandboxing issues inside Docker
-                        '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282,http://mobile:80,http://mobile', // Treats these as secure origins so navigator.mediaDevices (secure-context-only) is defined at http://mobile — mirrors production HTTPS
-                        '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests', // Disables HSTS enforcement
-                        '--disable-site-isolation-trials', // Helps disable security sandboxing
-                        '--disable-web-security', // Disables web security (CORS, mixed content, etc.)
-                        '--ignore-certificate-errors', // Ignores SSL certificate errors
-                        '--allow-insecure-localhost', // Allows HTTP on local addresses
-                        '--allow-running-insecure-content', // Allows mixed content (HTTP on HTTPS)
-                        // '--user-data-dir=/tmp/chrome-test-profile' // Ensures fresh profile each time (prevents stored HSTS rules)
-                        '--use-fake-ui-for-media-stream', // Suppress getUserMedia permission dialog in CI (no physical camera)
-                        // Provide a synthetic camera so getUserMedia() succeeds in CI. NOTE: reachable only
-                        // via navigator.mediaDevices, which plain-HTTP non-localhost origins do not expose —
-                        // see tests/utils/fakeCamera.js, which fills that gap.
-                        '--use-fake-device-for-media-stream',
-                    ],
+                    args: [...MOBILE_CHROME_LAUNCH_ARGS],
                 },
             },
         },

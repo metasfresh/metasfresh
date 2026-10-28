@@ -19,6 +19,7 @@ public class ReplicationException extends AdempiereException
 
 	private final String adMessage;
 	private final Throwable cause;
+	private Object[] adMessageParameters = null;
 
 	/**
 	 * Constructs a new exception with the specified detail message.
@@ -42,13 +43,21 @@ public class ReplicationException extends AdempiereException
 		this.cause = cause;
 	}
 
+	/** Parameters ({0}, {1}, ...) of the AD_Message */
+	public ReplicationException setAdMessageParameters(final Object... adMessageParameters)
+	{
+		this.adMessageParameters = adMessageParameters;
+		resetMessageBuilt();
+		return this;
+	}
+
 	@Override
 	protected ITranslatableString buildMessage()
 	{
 		final TranslatableStringBuilder message = TranslatableStrings.builder();
 		if(Check.isNotBlank(adMessage)) // avoide NPE
 		{
-			message.appendADMessage(adMessage);
+			message.appendADMessage(adMessage, adMessageParameters != null ? adMessageParameters : new Object[0]);
 			appendParameters(message);
 		}
 		
