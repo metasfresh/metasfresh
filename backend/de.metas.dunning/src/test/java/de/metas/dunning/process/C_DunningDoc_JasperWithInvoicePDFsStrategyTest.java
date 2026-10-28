@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,18 +87,21 @@ class C_DunningDoc_JasperWithInvoicePDFsStrategyTest
 	}
 
 	@Test
-	void invoicesWithArchive_areAppendedAfterTheDunningPdf() throws IOException
+	void invoicesWithArchive_areAppendedAfterTheDunningPdf_orderedByInvoiceDate() throws IOException
 	{
-		final I_C_Invoice invoice1 = createInvoiceWithArchive(INVOICE1_PAGE_WIDTH, 2);
-		final I_C_Invoice invoice2 = createInvoiceWithArchive(INVOICE2_PAGE_WIDTH, 1);
-		final DunningDocId dunningDocId = createDunningDocFor(invoice2, invoice1);
+		// invoice ids ascend in creation order, invoice dates descend, and the dunning lines come in yet another order
+		final I_C_Invoice newest = createInvoiceWithArchive(LocalDate.of(2026, 3, 1), "1", INVOICE3_PAGE_WIDTH, 1);
+		final I_C_Invoice oldest = createInvoiceWithArchive(LocalDate.of(2026, 1, 1), "3", INVOICE1_PAGE_WIDTH, 2);
+		final I_C_Invoice middle = createInvoiceWithArchive(LocalDate.of(2026, 2, 1), "2", INVOICE2_PAGE_WIDTH, 1);
+		final DunningDocId dunningDocId = createDunningDocFor(middle, newest, oldest);
 
 		final Resource result = strategy.appendDunnedInvoicePdfs(pdf(DUNNING_PAGE_WIDTH, 1), dunningDocId);
 
-		// DunningService.retrieveDunnedInvoices does not define an order, so only the dunning PDF's position is pinned
-		final List<Float> pageWidths = pageWidths(result);
-		assertThat(pageWidths.get(0)).isEqualTo(DUNNING_PAGE_WIDTH);
-		assertThat(pageWidths.subList(1, pageWidths.size())).containsExactlyInAnyOrder(INVOICE1_PAGE_WIDTH, INVOICE1_PAGE_WIDTH, INVOICE2_PAGE_WIDTH);
+		assertThat(pageWidths(result)).containsExactly(
+				DUNNING_PAGE_WIDTH,
+				INVOICE1_PAGE_WIDTH, INVOICE1_PAGE_WIDTH,
+				INVOICE2_PAGE_WIDTH,
+				INVOICE3_PAGE_WIDTH);
 	}
 
 	@Test
@@ -149,6 +153,13 @@ class C_DunningDoc_JasperWithInvoicePDFsStrategyTest
 		final Resource result = strategy.appendDunnedInvoicePdfs(pdf(DUNNING_PAGE_WIDTH, 1), dunningDocId);
 
 		assertThat(pageWidths(result)).containsExactly(DUNNING_PAGE_WIDTH, INVOICE1_PAGE_WIDTH);
+	}
+
+	private static I_C_Invoice createInvoiceWithArchive(final LocalDate dateInvoiced, final String documentNo, final float pageWidth, final int pages)
+	{
+		final I_C_Invoice invoice = createInvoice(dateInvoiced, documentNo);
+		createArchive(invoice, pageWidth, pages, null);
+		return invoice;
 	}
 
 	private static I_C_Invoice createInvoiceWithArchive(final float pageWidth, final int pages)

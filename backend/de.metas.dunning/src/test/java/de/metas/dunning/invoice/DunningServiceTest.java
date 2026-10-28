@@ -9,6 +9,8 @@ import org.compiere.model.I_C_Invoice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+
 import static de.metas.dunning.invoice.DunningDocTestFixtures.addInvoiceLine;
 import static de.metas.dunning.invoice.DunningDocTestFixtures.addLine;
 import static de.metas.dunning.invoice.DunningDocTestFixtures.createDunningDoc;
@@ -68,6 +70,37 @@ class DunningServiceTest
 		assertThat(dunningService.retrieveDunnedInvoices(DunningDocId.ofRepoId(dunningDoc.getC_DunningDoc_ID())))
 				.extracting(I_C_Invoice::getC_Invoice_ID)
 				.containsExactlyInAnyOrder(invoice1.getC_Invoice_ID(), invoice2.getC_Invoice_ID());
+	}
+
+	@Test
+	void retrieveDunnedInvoices_areOrderedByDateInvoiced_thenDocumentNo_thenId()
+	{
+		// ids ascend in creation order, which deliberately differs from the expected order
+		final I_C_Invoice latest = createInvoice(LocalDate.of(2026, 3, 1), "1000");
+		final I_C_Invoice sameDateHigherDocumentNo = createInvoice(LocalDate.of(2026, 2, 1), "B-2");
+		final I_C_Invoice earliest = createInvoice(LocalDate.of(2026, 1, 1), "9999");
+		final I_C_Invoice sameDateLowerDocumentNo = createInvoice(LocalDate.of(2026, 2, 1), "A-1");
+		final I_C_Invoice sameDateAndDocumentNoLowerId = createInvoice(LocalDate.of(2026, 2, 15), "X-1");
+		final I_C_Invoice sameDateAndDocumentNoHigherId = createInvoice(LocalDate.of(2026, 2, 15), "X-1");
+
+		// the order of the dunning doc lines must not matter
+		final I_C_DunningDoc dunningDoc = createDunningDoc();
+		addInvoiceLine(dunningDoc, sameDateAndDocumentNoHigherId);
+		addInvoiceLine(dunningDoc, latest);
+		addInvoiceLine(dunningDoc, sameDateHigherDocumentNo);
+		addInvoiceLine(dunningDoc, sameDateLowerDocumentNo);
+		addInvoiceLine(dunningDoc, earliest);
+		addInvoiceLine(dunningDoc, sameDateAndDocumentNoLowerId);
+
+		assertThat(dunningService.retrieveDunnedInvoices(DunningDocId.ofRepoId(dunningDoc.getC_DunningDoc_ID())))
+				.extracting(I_C_Invoice::getC_Invoice_ID)
+				.containsExactly(
+						earliest.getC_Invoice_ID(),
+						sameDateLowerDocumentNo.getC_Invoice_ID(),
+						sameDateHigherDocumentNo.getC_Invoice_ID(),
+						sameDateAndDocumentNoLowerId.getC_Invoice_ID(),
+						sameDateAndDocumentNoHigherId.getC_Invoice_ID(),
+						latest.getC_Invoice_ID());
 	}
 
 	@Test

@@ -6,6 +6,9 @@ import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
+
+import java.time.LocalDate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -44,6 +47,15 @@ public final class DunningDocTestFixtures
 	public static I_C_Invoice createInvoice()
 	{
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		saveRecord(invoice);
+		return invoice;
+	}
+
+	public static I_C_Invoice createInvoice(@NonNull final LocalDate dateInvoiced, @NonNull final String documentNo)
+	{
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setDateInvoiced(TimeUtil.asTimestamp(dateInvoiced));
+		invoice.setDocumentNo(documentNo);
 		saveRecord(invoice);
 		return invoice;
 	}
