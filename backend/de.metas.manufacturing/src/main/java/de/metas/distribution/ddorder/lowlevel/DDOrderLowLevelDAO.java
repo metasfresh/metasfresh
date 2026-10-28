@@ -1,6 +1,7 @@
 package de.metas.distribution.ddorder.lowlevel;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
@@ -485,12 +486,20 @@ public class DDOrderLowLevelDAO
 				});
 	}
 
-	public ImmutableSet<DDOrderId> getIdsByForwardPPOrderBOMLineId(@NonNull final PPOrderBOMLineId ppOrderBOMLineId)
+	public ImmutableSetMultimap<PPOrderBOMLineId, DDOrderId> getIdsByForwardPPOrderBOMLineIds(@NonNull final Collection<PPOrderBOMLineId> ppOrderBOMLineIds)
 	{
+		if (ppOrderBOMLineIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
 		return queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_Forward_PP_Order_BOMLine_ID, ppOrderBOMLineId)
+				.addInArrayFilter(I_DD_Order.COLUMNNAME_Forward_PP_Order_BOMLine_ID, ppOrderBOMLineIds)
 				.create()
-				.idsAsSet(DDOrderId::ofRepoId);
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						ddOrder -> PPOrderBOMLineId.ofRepoId(ddOrder.getForward_PP_Order_BOMLine_ID()),
+						ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID())));
 	}
 
 	/**

@@ -28,6 +28,7 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.lowlevel.interceptor.DDOrderLowLevelInterceptors;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
+import de.metas.distribution.ddordercandidate.material_dispo.PPOrderBOMLineDistributionSupplyMover;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
@@ -70,6 +71,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 	private final DistributionNetworkRepository distributionNetworkRepository;
 	private final ReplenishInfoRepository replenishInfoRepository;
+	private final PPOrderBOMLineDistributionSupplyMover ppOrderBOMLineDistributionSupplyMover;
 
 	public LiberoValidator()
 	{
@@ -83,7 +85,8 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 			 SpringContextHolder.instance.getBean(DDOrderCandidateRepository.class),
 			 SpringContextHolder.instance.getBean(DDOrderCandidateAllocRepository.class),
 			 SpringContextHolder.instance.getBean(DistributionNetworkRepository.class),
-			 SpringContextHolder.instance.getBean(ReplenishInfoRepository.class));
+			 SpringContextHolder.instance.getBean(ReplenishInfoRepository.class),
+			 SpringContextHolder.instance.getBean(PPOrderBOMLineDistributionSupplyMover.class));
 	}
 
 	public LiberoValidator(
@@ -97,7 +100,8 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 			@NonNull final DDOrderCandidateRepository ddOrderCandidateRepository,
 			@NonNull final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository,
 			@NonNull final DistributionNetworkRepository distributionNetworkRepository,
-			@NonNull final ReplenishInfoRepository replenishInfoRepository)
+			@NonNull final ReplenishInfoRepository replenishInfoRepository,
+			@NonNull final PPOrderBOMLineDistributionSupplyMover ppOrderBOMLineDistributionSupplyMover)
 	{
 		this.ppOrderConverter = ppOrderConverter;
 		this.materialEventService = materialEventService;
@@ -110,6 +114,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		this.ddOrderCandidateAllocRepository = ddOrderCandidateAllocRepository;
 		this.distributionNetworkRepository = distributionNetworkRepository;
 		this.replenishInfoRepository = replenishInfoRepository;
+		this.ppOrderBOMLineDistributionSupplyMover = ppOrderBOMLineDistributionSupplyMover;
 	}
 
 	@Override
@@ -127,7 +132,8 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 				materialEventService,
 				documentNoBuilderFactory,
 				ppOrderBOMBL,
-				bomVersionsDAO));
+				bomVersionsDAO,
+				ppOrderBOMLineDistributionSupplyMover));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM());
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(ddOrderCandidateRepository));

@@ -16,6 +16,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.eevolution.api.PPOrderBOMLineId;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 
 /*
  * #%L
@@ -77,7 +78,8 @@ public class DistributionDetailsQuery
 	int ddOrderLineId;
 	int ddOrderId;
 	int ppOrderCandidateId;
-	@Nullable PPOrderBOMLineId ppOrderBOMLineId;
+	/** Matches the distribution details of any of these PP_Order_BOMLines */
+	@Nullable Collection<PPOrderBOMLineId> ppOrderBOMLineIds;
 
 	/**
 	 * Convenience method that uses this instance to kickstart and return a builder.
@@ -149,9 +151,9 @@ public class DistributionDetailsQuery
 				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId);
 				doFilter = true;
 			}
-			if (ppOrderBOMLineId != null)
+			if (ppOrderBOMLineIds != null)
 			{
-				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_PP_Order_BOMLine_ID, ppOrderBOMLineId);
+				distDetailSubQueryBuilder.addInArrayFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_PP_Order_BOMLine_ID, ppOrderBOMLineIds);
 				doFilter = true;
 			}
 
