@@ -418,6 +418,10 @@ public class CreateProductCommand
 		{
 			bomRecord.setLotNo_Sequence_ID(lotNoSequenceRepository.create(lotNoSequence, productRecord.getValue()).getRepoId());
 		}
+		if (request.getBom() != null && request.getBom().isSerialNoSequence())
+		{
+			bomRecord.setSerialNo_Sequence_ID(lotNoSequenceRepository.createSerialNoSequence(productRecord.getValue()).getRepoId());
+		}
 		saveRecord(bomRecord);
 		return bomRecord;
 	}

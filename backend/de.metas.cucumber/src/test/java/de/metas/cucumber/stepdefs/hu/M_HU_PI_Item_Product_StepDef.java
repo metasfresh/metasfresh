@@ -31,11 +31,13 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.generichumodel.PackagingCodeId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -65,6 +67,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_IsO
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class M_HU_PI_Item_Product_StepDef
@@ -107,7 +110,19 @@ public class M_HU_PI_Item_Product_StepDef
 	 *   <li>{@code Name} — display name</li>
 	 *   <li>{@code M_HU_PackagingCode_LU_Fallback_ID} — fallback LU packaging code (references M_HU_PackagingCode_StepDefData)</li>
 	 *   <li>{@code GTIN_LU_PackingMaterial_Fallback} — fallback GTIN for LU packing material</li>
+	 *   <li>{@code ErrorMessage_AD_Message} — (new records only) saving must be refused with this AD_Message's text; nothing is stored</li>
 	 * </ul>
+	 *
+	 * <h3>Example:</h3>
+	 * <pre>
+	 * And metasfresh contains M_HU_PI_Item_Product:
+	 *   | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | IsInfiniteCapacity |
+	 *   | huPIP                   | huPiItemTU      | product_1    | 10  | N                  |
+	 *   | huPIP_unlimited         | huPiItemTU2     | product_1    | 0   | Y                  |
+	 * And metasfresh contains M_HU_PI_Item_Product:
+	 *   | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | IsInfiniteCapacity | ErrorMessage_AD_Message                |
+	 *   | huPIP_zero              | huPiItemTU3     | product_1    | 0   | N                  | de.metas.handlingunits.InvalidQuantity |
+	 * </pre>
 	 */
 	@Given("metasfresh contains M_HU_PI_Item_Product:")
 	public void metasfresh_contains_m_hu_pi_item_product(@NonNull final DataTable dataTable)
@@ -206,12 +221,34 @@ public class M_HU_PI_Item_Product_StepDef
 
 		tableRow.getAsOptionalString(I_M_HU_PI_Item_Product.COLUMNNAME_UPC).ifPresent(huPiItemProductRecord::setUPC);
 
+		final AdMessageKey expectedErrorAdMessage = tableRow.getAsOptionalString("ErrorMessage_AD_Message").map(AdMessageKey::of).orElse(null);
+		if (expectedErrorAdMessage != null)
+		{
+			assertSaveRefused(huPiItemProductRecord, expectedErrorAdMessage);
+			return;
+		}
+
 		saveRecord(huPiItemProductRecord);
 
 		identifier.putOrReplace(huPiItemProductTable, huPiItemProductRecord);
 
 		final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoId(huPiItemProductRecord.getM_HU_PI_Item_Product_ID());
 		restTestContext.setIdVariableFromRow(tableRow, () -> hupiItemProductId);
+	}
+
+	private void assertSaveRefused(@NonNull final I_M_HU_PI_Item_Product huPiItemProductRecord, @NonNull final AdMessageKey expectedErrorAdMessage)
+	{
+		assertThat(InterfaceWrapperHelper.isNew(huPiItemProductRecord)).as("ErrorMessage_AD_Message is supported for new packing instructions only").isTrue();
+
+		StepDefUtil.assertThrowsWithAdMessage(() -> saveRecord(huPiItemProductRecord), expectedErrorAdMessage);
+
+		assertThat(queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, huPiItemProductRecord.getM_HU_PI_Item_ID())
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, huPiItemProductRecord.getM_Product_ID())
+				.create()
+				.anyMatch())
+				.as("refused packing instruction is not stored")
+				.isFalse();
 	}
 
 	@And("update M_HU_PI_Item_Product:")

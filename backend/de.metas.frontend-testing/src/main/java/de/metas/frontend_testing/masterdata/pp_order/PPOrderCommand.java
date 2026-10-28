@@ -84,6 +84,7 @@ public class PPOrderCommand
 		checkBOMLines(ppOrderId);
 
 		return JsonPPOrderResponse.builder()
+				.ppOrderId(ppOrderId)
 				.documentNo(ppOrder.getDocumentNo())
 				.build();
 	}
