@@ -497,8 +497,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
   # Text conversion to the GBIC_5 character set, cut to the maximum length. Expected values are derived from the rules, never from the writer's output.
   #   MndtId:  Ä -> AE, & -> space, ö -> oe                 "MREF-Ä&ö/001" -> "MREF-AE oe/001"
   #   Dbtr.Nm: at most 70 chars; € -> space; umlauts, ß and & are kept; the rest over 70 chars is cut
-  #            input    = "Müller & Söhne € Großhandel " (28 chars) + 60 x X = 88 chars
-  #            expected = "Müller & Söhne   Großhandel " (28 chars; the € became a space, so 3 spaces between Söhne and Großhandel) + 42 x X = 70 chars
+  #            input    = "Bäcker & Söhne € Großhandel " (28 chars) + 60 x X = 88 chars
+  #            expected = "Bäcker & Söhne   Großhandel " (28 chars; the € became a space, so 3 spaces between Söhne and Großhandel) + 42 x X = 70 chars
   #   Ustrd:   at most 140 chars; „ and “ -> space
   #            input    = "Rechnung „Nr. 1“ " (17 chars) + 140 x Y = 157 chars
   #            expected = "Rechnung  Nr. 1  " (17 chars; 2 spaces before Nr., 2 after 1) + 123 x Y = 140 chars
@@ -508,7 +508,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
   Scenario: text conversion: mandate reference, debtor name and remittance info are converted to the GBIC_5 character set and cut to their maximum length; a name of only disallowed characters becomes one space
     Given metasfresh contains C_BPartners:
       | Identifier  | Name                                                                                     | Value        | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
-      | longDebtor  | Müller & Söhne € Großhandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | long_@Date@  | Y          | pricingSystem                 | D               |
+      | longDebtor  | Bäcker & Söhne € Großhandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | long_@Date@  | Y          | pricingSystem                 | D               |
       | emptyDebtor | € € €                                                                                    | euros_@Date@ | Y          | pricingSystem                 | D               |
     And metasfresh contains C_Bank:
       | C_Bank_ID.Identifier | Name                  | RoutingNo | SwiftCode   |
@@ -551,7 +551,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
     Then the SEPA export result is a single XML file
     And the SEPA direct debit file for scheme CORE contains exactly the transactions:
       | Dbtr.Nm                                                                | DbtrAcct.IBAN          | InstdAmt | MndtId         | DtOfSgntr  | SeqTp | Ustrd                                                                                                                                        |
-      | Müller & Söhne   Großhandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | DE89370400440532013000 | 100.00   | MREF-AE oe/001 | 2014-03-11 | RCUR  | Rechnung  Nr. 1  YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY |
+      | Bäcker & Söhne   Großhandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | DE89370400440532013000 | 100.00   | MREF-AE oe/001 | 2014-03-11 | RCUR  | Rechnung  Nr. 1  YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY |
       | <SPACE>                                                                | DE02120300000000202051 | 20.00    | MREF-TC16-002  | 2014-03-11 | RCUR  | Invoice for disallowed characters                                                                                                            |
 
   @from:cucumber

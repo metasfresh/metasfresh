@@ -97,7 +97,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08_Test
 		final SEPAExportContext.SEPAExportContextBuilder exportContext = SEPAExportContext.builder();
 
 		// no BIC; name > 70 characters; mandate reference with umlauts and "&"; description > 140 characters; one-off mandate
-		final I_SEPA_Export_Line line1 = createLine(sepaExport, "Müller & Söhne € Großhandel " + repeat("X", 60), "DE02120300000000202051", null, "Rechnung „Nr. 1“ " + repeat("Y", 140));
+		final I_SEPA_Export_Line line1 = createLine(sepaExport, "Bäcker & Söhne € Großhandel " + repeat("X", 60), "DE02120300000000202051", null, "Rechnung „Nr. 1“ " + repeat("Y", 140));
 		exportContext.directDebitMandate(lineId(line1), createMandate("MREF-Ä&ö/001", false));
 
 		// umlauts and "&" in the name; empty description; recurring

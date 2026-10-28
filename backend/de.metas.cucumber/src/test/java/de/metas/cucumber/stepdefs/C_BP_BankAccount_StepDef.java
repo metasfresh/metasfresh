@@ -264,7 +264,7 @@ public class C_BP_BankAccount_StepDef
 		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_SEPA_CreditorIdentifier)
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(bpBankAccount::setSEPA_CreditorIdentifier);
-		// optional; account holder name / city (SEPA debtor Nm / city)
+		// optional; account holder name / city (the SEPA export does not use them: the debtor name is the partner name)
 		row.getAsOptionalString(COLUMNNAME_A_Name)
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(bpBankAccount::setA_Name);
