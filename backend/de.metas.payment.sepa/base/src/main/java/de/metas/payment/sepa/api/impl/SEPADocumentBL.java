@@ -1,9 +1,11 @@
 package de.metas.payment.sepa.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.common.util.time.SystemTime;
 import de.metas.payment.sepa.api.CreatedSEPAExports;
+import de.metas.payment.sepa.api.CreatedSEPAExports.CreatedSEPAExport;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
@@ -88,6 +90,29 @@ public class SEPADocumentBL implements ISEPADocumentBL
 				.contentType(MimeType.TYPE_XML)
 				.content(out.toByteArray())
 				.warnings(marshaler.getWarnings())
+				.build();
+	}
+
+	@Override
+	public SEPACreditTransferXML exportXML(
+			@NonNull final CreatedSEPAExports createdExports,
+			final boolean referenceAsEndToEndId,
+			@NonNull final String zipBaseName)
+	{
+		final List<SEPAExportFilesZip.CreatedSEPAExportFile> files = createdExports.getExports()
+				.stream()
+				.map(createdExport -> new SEPAExportFilesZip.CreatedSEPAExportFile(createdExport, exportCreditTransferXML(createdExport.getExport(), toExportContext(createdExport, referenceAsEndToEndId))))
+				.collect(ImmutableList.toImmutableList());
+		return files.size() == 1
+				? files.get(0).getXml()
+				: SEPAExportFilesZip.zip(zipBaseName, files);
+	}
+
+	private static SEPAExportContext toExportContext(@NonNull final CreatedSEPAExport createdExport, final boolean referenceAsEndToEndId)
+	{
+		return SEPAExportContext.builder()
+				.referenceAsEndToEndId(referenceAsEndToEndId)
+				.directDebitMandates(createdExport.getMandatesBySepaExportLineId())
 				.build();
 	}
 

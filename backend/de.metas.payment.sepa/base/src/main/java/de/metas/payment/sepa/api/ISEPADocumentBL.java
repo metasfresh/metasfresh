@@ -54,4 +54,12 @@ public interface ISEPADocumentBL extends ISingletonService
 	 */
 	SEPACreditTransferXML exportCreditTransferXML(I_SEPA_Export sepaExport, SEPAExportContext exportContext);
 
+	/**
+	 * Marshals each of the given exports into its own XML file.
+	 *
+	 * @return the file of a single export as it is; for several exports one ZIP named {@code <zipBaseName>.zip},
+	 * with one entry {@code <DocumentNo>_<scheme>.xml} per export and the warnings of all files
+	 */
+	SEPACreditTransferXML exportXML(CreatedSEPAExports createdExports, boolean referenceAsEndToEndId, String zipBaseName);
+
 }
