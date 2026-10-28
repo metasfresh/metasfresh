@@ -649,9 +649,9 @@ Feature: import order candidate to metasfresh
   # ####################################################################################################
   # ####################################################################################################
   @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
   @Id:S_LenientGln_TC2
   Scenario: lenient GLN lookup — matching Lookup_Label still selects the partner by label
   _Given two C_BPartners that share a main location GLN and differ in Lookup_Label
@@ -662,18 +662,18 @@ Feature: import order candidate to metasfresh
       | Identifier           | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label |
       | bpartner_other_match | BpartnerOther_match | N            | Y              | ps_1                          | label_other      |
       | bpartner_match       | Bpartner_match      | N            | Y              | ps_1                          | label_match      |
-      | orgBPartner_match    | OrgBPartner_match   | N            | Y              | ps_1                          | label_org_match    |
+      | orgBPartner_match    | OrgBPartner_match   | N            | Y              | ps_1                          | label_org_match  |
     And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN  | OPT.IsCurrentVendor |
-      | bpartner_match          | product                 | 4000013000002 | false               |
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
+      | bpartner_match           | product                 | 4000013000002 | false               |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name           | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
-      | huItemProduct_match               | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_match x 10 PCE | PCE                   | bpartner_match              |
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name            | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
+      | huItemProduct_match                | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_match x 10 PCE | PCE                   | bpartner_match               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier              | GLN   | C_BPartner_ID.Identifier | OPT.IsShipTo |
-      | bpLocation_other_match  | 4000011000004 | bpartner_other_match    | false        |
-      | bpLocation_match        | 4000011000004 | bpartner_match          | false        |
-      | bpLocation_org_match    | 4000012000003 | orgBPartner_match       | false        |
+      | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLocation_other_match | 4000011000004 | bpartner_other_match     | false        |
+      | bpLocation_match       | 4000011000004 | bpartner_match           | false        |
+      | bpLocation_org_match   | 4000012000003 | orgBPartner_match        | false        |
 
     When send message to RabbitMQ queue defined by:impProcessor
   """
@@ -724,19 +724,19 @@ Feature: import order candidate to metasfresh
 
     Then after not more than 120s, C_OLCand is found
       | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.POReference | OPT.IMP_Processor_ID.Identifier |
-      | olCand_match          | Shopware6            | product      | bpartner_match              | 10         | PORef_match    | impProcessor                    |
+      | olCand_match           | Shopware6            | product      | bpartner_match               | 10         | PORef_match     | impProcessor                    |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
-      | olCand_match          | bpartner_match          | bpLocation_match                 | product                 | 10         | PORef_match    |
+      | olCand_match           | bpartner_match           | bpLocation_match                  | product                 | 10         | PORef_match     |
 
 
   # ####################################################################################################
   # ####################################################################################################
   @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
   @Id:S_LenientGln_TC3
   Scenario: lenient GLN lookup — absent Lookup_Label resolves by GLN
   _Given one C_BPartner with a main location GLN and a Lookup_Label
@@ -744,19 +744,19 @@ Feature: import order candidate to metasfresh
   _Then C_OLCand is created and resolved to the seeded C_BPartner and its location
 
     Given metasfresh contains C_BPartners:
-      | Identifier         | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label |
+      | Identifier          | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label    |
       | bpartner_nolabel    | Bpartner_nolabel    | N            | Y              | ps_1                          | label_in_masterdata |
-      | orgBPartner_nolabel | OrgBPartner_nolabel | N            | Y              | ps_1                          | label_org_nolabel |
+      | orgBPartner_nolabel | OrgBPartner_nolabel | N            | Y              | ps_1                          | label_org_nolabel   |
     And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN  | OPT.IsCurrentVendor |
-      | bpartner_nolabel          | product                 | 4000023000001 | false               |
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
+      | bpartner_nolabel         | product                 | 4000023000001 | false               |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name           | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
-      | huItemProduct_nolabel               | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_nolabel x 10 PCE | PCE                   | bpartner_nolabel              |
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name              | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
+      | huItemProduct_nolabel              | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_nolabel x 10 PCE | PCE                   | bpartner_nolabel             |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier           | GLN   | C_BPartner_ID.Identifier | OPT.IsShipTo |
-      | bpLocation_nolabel     | 4000021000003 | bpartner_nolabel          | false        |
-      | bpLocation_org_nolabel | 4000022000002 | orgBPartner_nolabel       | false        |
+      | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLocation_nolabel     | 4000021000003 | bpartner_nolabel         | false        |
+      | bpLocation_org_nolabel | 4000022000002 | orgBPartner_nolabel      | false        |
 
     When send message to RabbitMQ queue defined by:impProcessor
   """
@@ -805,19 +805,19 @@ Feature: import order candidate to metasfresh
 
     Then after not more than 120s, C_OLCand is found
       | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.POReference | OPT.IMP_Processor_ID.Identifier |
-      | olCand_nolabel          | Shopware6            | product      | bpartner_nolabel              | 10         | PORef_nolabel    | impProcessor                    |
+      | olCand_nolabel         | Shopware6            | product      | bpartner_nolabel             | 10         | PORef_nolabel   | impProcessor                    |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
-      | olCand_nolabel          | bpartner_nolabel          | bpLocation_nolabel                 | product                 | 10         | PORef_nolabel    |
+      | olCand_nolabel         | bpartner_nolabel         | bpLocation_nolabel                | product                 | 10         | PORef_nolabel   |
 
 
   # ####################################################################################################
   # ####################################################################################################
   @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
   @Id:S_LenientGln_TC4
   Scenario: lenient GLN lookup — import stays strict when the Lookup_Label format line is not lenient
   _Given one C_BPartner with a main location GLN and a Lookup_Label, and the Lookup_Label format line set to IsImportLenient=N
@@ -825,17 +825,17 @@ Feature: import order candidate to metasfresh
   _Then the import fails because the C_BPartner cannot be resolved from the format
 
     Given metasfresh contains C_BPartners:
-      | Identifier         | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label |
+      | Identifier         | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label    |
       | bpartner_optout    | Bpartner_optout    | N            | Y              | ps_1                          | label_in_masterdata |
-      | orgBPartner_optout | OrgBPartner_optout | N            | Y              | ps_1                          | label_org_optout |
+      | orgBPartner_optout | OrgBPartner_optout | N            | Y              | ps_1                          | label_org_optout    |
     And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN  | OPT.IsCurrentVendor |
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
       | bpartner_optout          | product                 | 4000033000000 | false               |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name           | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name             | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
       | huItemProduct_optout               | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_optout x 10 PCE | PCE                   | bpartner_optout              |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier           | GLN   | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | Identifier            | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
       | bpLocation_optout     | 4000031000002 | bpartner_optout          | false        |
       | bpLocation_org_optout | 4000032000001 | orgBPartner_optout       | false        |
     And the following EXP_FormatLines are set:
@@ -890,17 +890,18 @@ Feature: import order candidate to metasfresh
 """
 
     Then after not more than 60s, the import of import processor impProcessor failed with:
-      | Text          | AD_Message                 |
-      | 4000031000002 |                            |
-      |               | EXPObjectFormatNotResolved |
+      | Text                                               | AD_Message                 |
+      | 4000031000002                                      |                            |
+      | Lookup_Label ILIKE '%label_not_in_the_masterdata%' |                            |
+      |                                                    | EXPObjectFormatNotResolved |
 
 
   # ####################################################################################################
   # ####################################################################################################
   @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
   @Id:S_LenientGln_TC5
   Scenario: lenient GLN lookup — shared GLN without a replication-lookup default fails with the ambiguity message
   _Given two C_BPartners that share a main location GLN, neither flagged as replication-lookup default
@@ -908,15 +909,15 @@ Feature: import order candidate to metasfresh
   _Then the import fails and the error names the ambiguity (GLN, Lookup_Label, no default)
 
     Given metasfresh contains C_BPartners:
-      | Identifier          | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label | OPT.IsReplicationLookupDefault |
-      | bpartner_a_nodefault    | BpartnerA_nodefault    | N            | Y              | ps_1                          | label_a          | N |
-      | bpartner_b_nodefault    | BpartnerB_nodefault    | N            | Y              | ps_1                          | label_b          | N |
-      | orgBPartner_nodefault   | OrgBPartner_nodefault  | N            | Y              | ps_1                          | label_org_nodefault    | N |
+      | Identifier            | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label    | OPT.IsReplicationLookupDefault |
+      | bpartner_a_nodefault  | BpartnerA_nodefault   | N            | Y              | ps_1                          | label_a             | N                              |
+      | bpartner_b_nodefault  | BpartnerB_nodefault   | N            | Y              | ps_1                          | label_b             | N                              |
+      | orgBPartner_nodefault | OrgBPartner_nodefault | N            | Y              | ps_1                          | label_org_nodefault | N                              |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier            | GLN   | C_BPartner_ID.Identifier | OPT.IsShipTo |
-      | bpLocation_a_nodefault    | 4000041000001 | bpartner_a_nodefault        | false        |
-      | bpLocation_b_nodefault    | 4000041000001 | bpartner_b_nodefault        | false        |
-      | bpLocation_org_nodefault  | 4000042000000 | orgBPartner_nodefault       | false        |
+      | Identifier               | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLocation_a_nodefault   | 4000041000001 | bpartner_a_nodefault     | false        |
+      | bpLocation_b_nodefault   | 4000041000001 | bpartner_b_nodefault     | false        |
+      | bpLocation_org_nodefault | 4000042000000 | orgBPartner_nodefault    | false        |
 
     When send message to RabbitMQ queue defined by:impProcessor
   """
@@ -975,9 +976,9 @@ Feature: import order candidate to metasfresh
   # ####################################################################################################
   # ####################################################################################################
   @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
   @Id:S_LenientGln_TC6
   Scenario: lenient GLN lookup — shared GLN with one replication-lookup default resolves to the default
   _Given two C_BPartners that share a main location GLN, the second flagged as replication-lookup default
@@ -985,21 +986,21 @@ Feature: import order candidate to metasfresh
   _Then C_OLCand is created and resolved to the flagged partner and its location
 
     Given metasfresh contains C_BPartners:
-      | Identifier          | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label | OPT.IsReplicationLookupDefault |
-      | bpartner_a_default    | BpartnerA_default    | N            | Y              | ps_1                          | label_a          | N |
-      | bpartner_b_default    | BpartnerB_default    | N            | Y              | ps_1                          | label_b          | Y |
-      | orgBPartner_default   | OrgBPartner_default  | N            | Y              | ps_1                          | label_org_default    | N |
+      | Identifier          | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label  | OPT.IsReplicationLookupDefault |
+      | bpartner_a_default  | BpartnerA_default   | N            | Y              | ps_1                          | label_a           | N                              |
+      | bpartner_b_default  | BpartnerB_default   | N            | Y              | ps_1                          | label_b           | Y                              |
+      | orgBPartner_default | OrgBPartner_default | N            | Y              | ps_1                          | label_org_default | N                              |
     And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN  | OPT.IsCurrentVendor |
-      | bpartner_b_default        | product                 | 4000053000008 | false               |
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
+      | bpartner_b_default       | product                 | 4000053000008 | false               |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name             | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
-      | huItemProduct_b_default             | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_B_default x 10 PCE | PCE                   | bpartner_b_default            |
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name                | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
+      | huItemProduct_b_default            | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_B_default x 10 PCE | PCE                   | bpartner_b_default           |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier            | GLN   | C_BPartner_ID.Identifier | OPT.IsShipTo |
-      | bpLocation_a_default    | 4000051000000 | bpartner_a_default        | false        |
-      | bpLocation_b_default    | 4000051000000 | bpartner_b_default        | false        |
-      | bpLocation_org_default  | 4000052000009 | orgBPartner_default       | false        |
+      | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLocation_a_default   | 4000051000000 | bpartner_a_default       | false        |
+      | bpLocation_b_default   | 4000051000000 | bpartner_b_default       | false        |
+      | bpLocation_org_default | 4000052000009 | orgBPartner_default      | false        |
 
     When send message to RabbitMQ queue defined by:impProcessor
   """
@@ -1050,8 +1051,8 @@ Feature: import order candidate to metasfresh
 
     Then after not more than 120s, C_OLCand is found
       | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.POReference | OPT.IMP_Processor_ID.Identifier |
-      | olCand_default          | Shopware6            | product      | bpartner_b_default            | 10         | PORef_default    | impProcessor                    |
+      | olCand_default         | Shopware6            | product      | bpartner_b_default           | 10         | PORef_default   | impProcessor                    |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
-      | olCand_default          | bpartner_b_default        | bpLocation_b_default               | product                 | 10         | PORef_default    |
+      | olCand_default         | bpartner_b_default       | bpLocation_b_default              | product                 | 10         | PORef_default   |

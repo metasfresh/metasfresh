@@ -33,6 +33,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.compiere.SpringContextHolder;
@@ -61,6 +62,9 @@ public class IMP_Processor_StepDef
 	private final IMP_Processor_Type_StepDefData impProcessorTypeStepDefData;
 	private final IMP_Processor_StepDefData impProcessorTable;
 
+	/** Highest IMP_ProcessorLog_ID that existed when the import processor was started; only logs above it belong to this scenario's run. */
+	private int lastIgnoredImpProcessorLogId = 0;
+
 	public IMP_Processor_StepDef(
 			@NonNull final IMP_Processor_Type_StepDefData impProcessorTypeStepDefData,
 			@NonNull final IMP_Processor_StepDefData impProcessorTable)
@@ -87,6 +91,8 @@ public class IMP_Processor_StepDef
 
 		final AdempiereProcessor adempiereProcessor = Services.get(IIMPProcessorBL.class).asAdempiereProcessor(impProcessor);
 
+		lastIgnoredImpProcessorLogId = retrieveMaxImpProcessorLogId();
+
 		final AdempiereServerMgr adempiereServerMgr = AdempiereServerMgr.get();
 
 		if (adempiereServerMgr.getServer(adempiereProcessor.getServerID()) == null)
@@ -107,8 +113,17 @@ public class IMP_Processor_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, isProcessorStarted);
 	}
 
+	private int retrieveMaxImpProcessorLogId()
+	{
+		return Math.max(0, queryBL.createQueryBuilder(I_IMP_ProcessorLog.class)
+				.orderBy().addColumnDescending(I_IMP_ProcessorLog.COLUMNNAME_IMP_ProcessorLog_ID).endOrderBy()
+				.create()
+				.firstId());
+	}
+
 	/**
 	 * Waits until the import processor has logged a failed import whose error text contains every given fragment.
+	 * Only error logs written after the import processor was started in this scenario are considered, so a log left over from an earlier run cannot satisfy the step.
 	 * A fragment that is an AD_Message is matched by the fixed text parts of that message, in any of its translations.
 	 *
 	 * @cucumber.stepdef
@@ -135,6 +150,7 @@ public class IMP_Processor_StepDef
 			queryBL.createQueryBuilder(I_IMP_ProcessorLog.class)
 					.addEqualsFilter(I_IMP_ProcessorLog.COLUMNNAME_IMP_Processor_ID, impProcessor.getIMP_Processor_ID())
 					.addEqualsFilter(I_IMP_ProcessorLog.COLUMNNAME_IsError, true)
+					.addCompareFilter(I_IMP_ProcessorLog.COLUMNNAME_IMP_ProcessorLog_ID, CompareQueryFilter.Operator.GREATER, lastIgnoredImpProcessorLogId)
 					.create()
 					.stream()
 					.forEach(log -> errorTexts.add(log.getSummary() + "\n" + log.getTextMsg()));
