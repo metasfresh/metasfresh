@@ -10,10 +10,20 @@
 	<!-- login context key of the printing user (see Jasper parameter map), resolved to the user name in the query -->
 	<parameter name="#AD_User_ID" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT f.*,
-	(SELECT u.Name FROM AD_User u WHERE u.AD_User_ID = NULLIF($P{#AD_User_ID}, '')::numeric) AS PrintUser,
-	(SELECT p.Value || ' ' || p.Name FROM M_Product p WHERE p.M_Product_ID = $P{M_Product_ID}) AS ParamProduct
-FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{M_Product_ID}) f]]>
+		<![CDATA[-- one header row from the parameters (also when the function returns no rows), the function's rows joined to it
+SELECT f.*, h.*
+FROM (SELECT (SELECT o.Name FROM AD_Org o WHERE o.AD_Org_ID = $P{AD_Org_ID}) AS Hdr_OrgName,
+             (SELECT y.FiscalYear FROM C_Year y WHERE y.C_Year_ID = $P{C_Year_ID}) AS Hdr_FiscalYear,
+             (SELECT c.ISO_Code
+              FROM AD_Org o
+                       JOIN AD_ClientInfo ci ON ci.AD_Client_ID = o.AD_Client_ID
+                       JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
+                       JOIN C_Currency c ON c.C_Currency_ID = acs.C_Currency_ID
+              WHERE o.AD_Org_ID = $P{AD_Org_ID}) AS Hdr_Currency,
+             (SELECT p.Value || ' ' || p.Name FROM M_Product p WHERE p.M_Product_ID = $P{M_Product_ID}) AS ParamProduct,
+             (SELECT u.Name FROM AD_User u WHERE u.AD_User_ID = NULLIF($P{#AD_User_ID}, '')::numeric) AS PrintUser) h
+         LEFT JOIN report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{M_Product_ID}) f ON TRUE
+ORDER BY f.ProductValue]]>
 	</queryString>
 	<field name="m_product_id" class="java.math.BigDecimal"/>
 	<field name="productvalue" class="java.lang.String"/>
@@ -89,6 +99,9 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 	<field name="ratemissing_months" class="java.lang.String"/>
 	<field name="printuser" class="java.lang.String"/>
 	<field name="paramproduct" class="java.lang.String"/>
+	<field name="hdr_orgname" class="java.lang.String"/>
+	<field name="hdr_fiscalyear" class="java.lang.String"/>
+	<field name="hdr_currency" class="java.lang.String"/>
 	<title>
 		<band height="80">
 				<textField isBlankWhenNull="true" textAdjust="CutText">
@@ -105,7 +118,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{Organisation} + " " + ($F{orgname} != null ? $F{orgname} : "")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{Organisation} + " " + ($F{hdr_orgname} != null ? $F{hdr_orgname} : "")]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
 					<reportElement x="0" y="39" width="45" height="12" uuid="b8444f9a-2b5c-4cf3-a4ba-a415e613a060"/>
@@ -121,7 +134,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{fiscalyear}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{hdr_fiscalyear}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
 					<reportElement x="0" y="51" width="45" height="12" uuid="7f9c423c-88d0-4247-8055-6d0a0191dd61"/>
@@ -137,7 +150,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$P{M_Product_ID} == null ? $R{AllProducts} : ($F{paramproduct} != null ? $F{paramproduct} : $P{M_Product_ID}.toPlainString())]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$P{M_Product_ID} == null ? $R{AllProducts} : $F{paramproduct}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
 					<reportElement x="0" y="65" width="500" height="12" uuid="c8588d47-352f-448e-99d6-86e390d1176f"/>
@@ -145,7 +158,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{AllAmountsIn} + " " + ($F{currency} != null ? $F{currency} : "")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{AllAmountsIn} + " " + ($F{hdr_currency} != null ? $F{hdr_currency} : "")]]></textFieldExpression>
 				</textField>
 		</band>
 	</title>
@@ -273,6 +286,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 	</pageHeader>
 	<detail>
 		<band height="90" splitType="Prevent">
+			<printWhenExpression><![CDATA[$F{m_product_id} != null]]></printWhenExpression>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
 					<reportElement x="0" y="0" width="500" height="13" uuid="098e97d7-e5e8-4379-867b-45c2c90fcbcd"/>
 					<box leftPadding="2" rightPadding="0"/>
