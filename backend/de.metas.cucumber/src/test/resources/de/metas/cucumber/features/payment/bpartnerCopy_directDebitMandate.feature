@@ -22,7 +22,7 @@ Feature: Business partner copy does not copy direct debit mandates
       | Identifier | Name                | Value           | IsCustomer |
       | bp_orig    | Mandate copy origin | mandcopy_@Date@ | Y          |
     And metasfresh contains C_Bank:
-      | C_Bank_ID.Identifier | Name                    | RoutingNo | SwiftCode   |
+      | C_Bank_ID.Identifier | Name                   | RoutingNo | SwiftCode   |
       | copyBank             | Mandate copy test bank | 30000000  | TESTDEC1XXX |
     And metasfresh contains C_BP_BankAccount
       | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier |
