@@ -570,7 +570,9 @@ public class SEPA_Export_StepDef
 	@Nullable
 	private static String optionalCell(final DataTableRow row, final String column)
 	{
-		return row.asMap().containsKey(column) ? row.getAsString(column) : null;
+		// DataTableRow's own lookup (it honours the "OPT." column prefix): empty = the column is missing; for a present column it throws on an empty cell.
+		// The comma-split result is discarded, the value is read unsplit below.
+		return row.getAsOptionalCommaSeparatedString(column).isPresent() ? row.getAsString(column) : null;
 	}
 
 	private static String expectedValue(final DataTableRow row, final String column)
