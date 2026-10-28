@@ -16,6 +16,11 @@ import WidgetWrapper from '../../containers/WidgetWrapper';
 class TableQuickInput extends PureComponent {
   // promise with patching for queuing form submission after patch is done
   patchPromise;
+  // fieldName -> value of the fields whose last PATCH failed; they are re-sent on submit
+  // and the line is not completed while any of them still fails
+  failedPatches = new Map();
+  patchSeqNo = 0;
+  lastPatchSeqNoByField = {};
   // widgets refs
   rawWidgets = [];
   rawWidgetsByFieldName = {};
@@ -69,6 +74,8 @@ class TableQuickInput extends PureComponent {
       fetchQuickInputLayout,
     } = this.props;
 
+    this.failedPatches.clear();
+
     await fetchQuickInputData({
       windowId,
       docId,
@@ -111,20 +118,47 @@ class TableQuickInput extends PureComponent {
     updateQuickinputData(fieldData);
   };
 
+  /**
+   * Sends a field PATCH. PATCHes are queued: each one is sent only after the
+   * previous one was answered, so none is dropped or overtaken while another
+   * is in flight. `this.patchPromise` settles (never rejects) after the last
+   * queued PATCH; fields whose last PATCH failed are kept in `failedPatches`.
+   *
+   * @returns {Promise} settles when this PATCH was answered
+   */
   handlePatch = (prop, value, callback) => {
     const { windowId, docId, tabId, patchQuickInput } = this.props;
 
-    this.patchPromise = new Promise((resolve) => {
-      patchQuickInput({ windowId, docId, tabId, prop, value }).then(() => {
-        if (callback) {
-          callback();
+    // a newer value supersedes a remembered failed one, which must not be re-sent after it
+    this.failedPatches.delete(prop);
+    const patchSeqNo = ++this.patchSeqNo;
+    this.lastPatchSeqNoByField[prop] = patchSeqNo;
+
+    const previousPatch = this.patchPromise || Promise.resolve();
+    this.patchPromise = previousPatch
+      .then(() => patchQuickInput({ windowId, docId, tabId, prop, value }))
+      .then(
+        () => {
+          this.failedPatches.delete(prop);
+          if (callback) {
+            callback();
+          }
+        },
+        // the error itself was already shown by the global axios error handler (App.js)
+        () => {
+          // remember it only if no newer PATCH of the same field was queued meanwhile
+          if (this.lastPatchSeqNoByField[prop] === patchSeqNo) {
+            this.failedPatches.set(prop, value);
+          }
         }
-        resolve();
-      });
-    });
+      );
+
+    return this.patchPromise;
   };
 
   onSubmit = (e) => {
+    e.preventDefault();
+
     if (this.state.isSubmitPending) {
       return;
     }
@@ -132,31 +166,62 @@ class TableQuickInput extends PureComponent {
     const { windowId, docId, tabId, quickInputId, addNotification } =
       this.props;
 
-    e.preventDefault();
-
     // blur to make sure the field value is committed, events are fired, etc
     const activeElement = document.activeElement;
     activeElement.blur();
 
-    const validationResult = this.validateForm();
-    if (validationResult.error) {
-      // Focus the last active element, to allow user continuing typing.
-      activeElement.focus();
+    // Re-send the fields whose PATCH failed before: the widget does not send an unchanged value again.
+    this.failedPatches.forEach((value, fieldName) =>
+      this.handlePatch(fieldName, value)
+    );
 
-      return addNotification('Error', validationResult.error, 5000, 'error');
-    }
+    // Validate and complete only after every queued field PATCH was answered.
+    // Until then the store still has the values from before the PATCH
+    // (e.g. a just selected product is still empty) and the server does not know them yet.
+    //
+    // The PATCH of the field left by the blur above is NOT queued yet: RawWidget queues it in a
+    // setState callback, which React runs when it commits this event's state updates. So read the
+    // queue only in our own setState callback: it runs in that same commit, after the callbacks of
+    // the child widgets (React commits children before their parent).
+    return new Promise((resolve) =>
+      this.setState({ isSubmitPending: true }, () =>
+        resolve(this.patchPromise || Promise.resolve())
+      )
+    )
+      .then(() => {
+        const validationResult = this.validateForm();
+        if (validationResult.error) {
+          addNotification('Error', validationResult.error, 5000, 'error');
+          // Focus the last active element, to allow user continuing typing.
+          this.setState({ isSubmitPending: false }, () =>
+            activeElement.focus()
+          );
+          return;
+        }
 
-    this.setState({ isSubmitPending: true });
-
-    return this.patchPromise
-      .then(() => completeQuickInput({ windowId, docId, tabId, quickInputId }))
-      .then(this.initQuickInput)
-      .finally(() => this.setState({ isSubmitPending: false }));
+        return completeQuickInput({ windowId, docId, tabId, quickInputId })
+          .then(this.initQuickInput)
+          .finally(() => this.setState({ isSubmitPending: false }));
+      })
+      .catch((error) => {
+        // a failed complete was already shown by the global axios error handler (App.js);
+        // the line stays in the form so the user can correct it and press Enter again
+        // eslint-disable-next-line no-console
+        console.error('TableQuickInput: submit failed', error);
+        this.setState({ isSubmitPending: false });
+      });
   };
 
   /** Validates form data returning first error */
   validateForm = () => {
     const { data } = this.props;
+
+    if (this.failedPatches.size > 0) {
+      return {
+        fieldName: [...this.failedPatches.keys()][0],
+        error: 'Some changes could not be saved! Please correct them.',
+      };
+    }
 
     if (data) {
       for (const fieldName of Object.keys(data)) {
@@ -217,7 +282,6 @@ class TableQuickInput extends PureComponent {
       data,
       layout,
       quickInputId,
-      inProgress,
     } = this.props;
     const { isSubmitPending } = this.state;
 
@@ -244,7 +308,9 @@ class TableQuickInput extends PureComponent {
             tabId={tabId}
             subentity="quickInput"
             subentityId={quickInputId}
-            inProgress={inProgress}
+            // `inProgress` is deliberately NOT passed: RawWidget drops every PATCH while it is set,
+            // which loses a value typed while another field's PATCH is in flight.
+            // `this.handlePatch` queues the PATCHes instead.
             widgetType={item.widgetType}
             widgetSize={item.size}
             fields={item.fields}
@@ -309,13 +375,12 @@ class TableQuickInput extends PureComponent {
 }
 
 const mapStateToProps = ({ tableQuickInputHandler }) => {
-  const { quickInputId, layout, data, inProgress } = tableQuickInputHandler;
+  const { quickInputId, layout, data } = tableQuickInputHandler;
 
   return {
     layout,
     data,
     quickInputId,
-    inProgress,
   };
 };
 
@@ -346,7 +411,6 @@ TableQuickInput.propTypes = {
   layout: PropTypes.array,
   data: PropTypes.object,
   quickInputId: PropTypes.any,
-  inProgress: PropTypes.bool,
 
   //
   // mapDispatchToProps:
