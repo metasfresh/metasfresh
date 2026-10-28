@@ -702,6 +702,8 @@ Feature: Product Statistics Year Comparison - reference replay
     # Today is after the last document, inside year N
     And metasfresh has date and time 2026-10-27T10:00:00+01:00[Europe/Berlin]
 
+    # The amount is read from the accounting, so the report runs once the invoices are posted
+    And Wait until documents inv202501, inv202502, inv202503, inv202504, inv202505, inv202506, inv202507, inv202508, inv202509, inv202510, inv202511, inv202512, inv202601, inv202602, inv202603, inv202604, inv202605, inv202606, inv202607, inv202608, cm202503 are posted
     Then the product statistics year comparison report for org "-", year "yearN", product "psycRef" returns:
       | M_Product_ID | Qty_01 | Qty_02 | Qty_03 | Qty_04 | Qty_05 | Qty_06 | Qty_07 | Qty_08 | Qty_09 | Qty_10 | Qty_11 | Qty_12 | Qty_Total | Amt_01    | Amt_02    | Amt_03    | Amt_04    | Amt_05    | Amt_06    | Amt_07    | Amt_08    | Amt_09 | Amt_10 | Amt_11 | Amt_12 | Amt_Total  | PrevQty_01 | PrevQty_02 | PrevQty_03 | PrevQty_04 | PrevQty_05 | PrevQty_06 | PrevQty_07 | PrevQty_08 | PrevQty_09 | PrevQty_10 | PrevQty_11 | PrevQty_12 | PrevQty_Total | PrevAmt_01 | PrevAmt_02 | PrevAmt_03 | PrevAmt_04 | PrevAmt_05 | PrevAmt_06 | PrevAmt_07 | PrevAmt_08 | PrevAmt_09 | PrevAmt_10 | PrevAmt_11 | PrevAmt_12 | PrevAmt_Total | Dev_01 | Dev_02 | Dev_03 | Dev_04 | Dev_05 | Dev_06 | Dev_07 | Dev_08 | Dev_09  | Dev_10  | Dev_11  | Dev_12  | Currency |
       | psycRef      | 6837   | 8994   | 13616  | 11258  | 12819  | 13291  | 14861  | 11665  |        |        |        |        | 93341     | 112686.46 | 147013.42 | 222918.41 | 181886.58 | 205993.68 | 213655.02 | 238201.95 | 187158.12 |        |        |        |        | 1509513.64 | 7095       | 9085       | 10252      | 14602      | 11729      | 14826      | 13709      | 14171      | 13750      | 10608      | 8454       | 16654      | 144935        | 116991.65  | 148717.36  | 166529.58  | 237589.25  | 188683.65  | 237174.51  | 220377.41  | 227864.84  | 220653.64  | 173311.59  | 138884.82  | 284978.08  | 2361756.38    | -3.64  | -1.00  | 32.81  | -22.90 | 9.29   | -10.35 | 8.40   | -17.68 | -100.00 | -100.00 | -100.00 | -100.00 | CHF |
@@ -823,6 +825,9 @@ Feature: Product Statistics Year Comparison - reference replay
     And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.DateInvoiced |
       | ic_ret_B                          | 2026-03-12       |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
+      | ic_ret_B                          | cm_ret_B                | CO            |
 
     # Sample shipment of 1 pc, never invoiced; a packaging-material line of the same product is added while it is still a draft
     And metasfresh contains C_Orders:
@@ -973,6 +978,8 @@ Feature: Product Statistics Year Comparison - reference replay
 
     And metasfresh has date and time 2026-10-27T10:00:00+01:00[Europe/Berlin]
 
+    # The amount is read from the accounting, so the report runs once the invoices are posted
+    And Wait until documents inv_main, cm_price, cm_ret_B, inv_pallet are posted
     Then the product statistics year comparison report for org "-", year "yearN", product "tc2Prod" returns:
       | M_Product_ID | Qty_01 | Qty_02 | Qty_03 | Qty_04 | Qty_05 | Qty_06 | Qty_07 | Qty_08 | Qty_09 | Qty_10 | Qty_11 | Qty_12 | Qty_Total | Amt_01 | Amt_02 | Amt_03 | Amt_04 | Amt_05 | Amt_06 | Amt_07 | Amt_08 | Amt_09 | Amt_10 | Amt_11 | Amt_12 | Amt_Total | PrevQty_Total | PrevAmt_Total | Currency |
       | tc2Prod      |        |        | 9      |        |        |        |        |        |        |        |        |        | 9         |        |        | 75.00  |        |        |        |        |        |        |        |        |        | 75.00     |               |               | CHF      |
@@ -1191,6 +1198,8 @@ Feature: Product Statistics Year Comparison - reference replay
       | inv_t12_l1 | inv_t12 | tc8Prod | 5 PCE | 10.00 | psycTax19 |
     And the invoice identified by inv_t12 is completed
 
+    # The amount is read from the accounting, so the report runs once the invoices are posted
+    And Wait until documents inv_rf4, inv_t12 are posted
     Then the product statistics year comparison report for org "-", year "yearN", product "tc8Prod" returns:
       | M_Product_ID | Qty_11 | Qty_12 | Qty_Total | Amt_11 | Amt_12 | Amt_Total |
       | tc8Prod | 5 |  | 5 |  | 50.00 | 50.00 |
@@ -1305,6 +1314,8 @@ Feature: Product Statistics Year Comparison - reference replay
       | inv_g2608_l1 | inv_g2608 | tcSingle | 2 PCE | 10.00 | psycTax19 |
     And the invoice identified by inv_g2608 is completed
 
+    # The amount is read from the accounting, so the report runs once the invoices are posted
+    And Wait until documents inv_g2506, inv_g2603, inv_g2608 are posted
     Then the product statistics year comparison report for org "-", year "yearSingle", product "tcSingle" returns:
       | M_Product_ID | Qty_03 | Qty_08 | Qty_Total | Amt_03 | Amt_08 | Amt_Total | PrevQty_01 | PrevQty_02 | PrevQty_03 | PrevQty_04 | PrevQty_05 | PrevQty_06 | PrevQty_07 | PrevQty_08 | PrevQty_09 | PrevQty_10 | PrevQty_11 | PrevQty_12 | PrevQty_Total | PrevAmt_03 | PrevAmt_06 | PrevAmt_08 | PrevAmt_Total | Dev_03 | Dev_06 | Dev_08 |
       | tcSingle | 6 | 2 | 8 | 60.00 | 20.00 | 80.00 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 100.00 |  | 100.00 |
@@ -1469,9 +1480,9 @@ Feature: Product Statistics Year Comparison - reference replay
       | tc5Uom       | 10     | 10        |
 
   @from:cucumber
-  Scenario: TC5 foreign-currency invoice with a rate is converted into the accounting-schema currency (CHF) and a tax-included invoice reports net
+  Scenario: TC5 foreign-currency invoice with a rate is reported as posted in the accounting-schema currency (CHF) and a tax-included invoice reports net
     ## The accounting-schema currency of the client is CHF. 100.00 USD at the rate 1 USD = 0.90 CHF -> 90.00 CHF.
-    ## Tax-included: gross 119.00 at 19 % -> net 100.00 (LineNetAmt is gross on a tax-included price list, the function deducts the tax).
+    ## Tax-included: gross 119.00 at 19 % -> net 100.00 (the accounting posts the net revenue).
     ## Each foreign / tax-included invoice has its own pricing system and partner, because the invoice takes the price list of its partner.
     And the following currencies are active:
       | ISO_Code |
@@ -1517,17 +1528,68 @@ Feature: Product Statistics Year Comparison - reference replay
     And the invoice identified by inv_u_usd is completed
     And the invoice identified by inv_u_incl is completed
 
+    # The amount is read from the accounting, so the report runs once the invoices are posted
+    And Wait until documents inv_u_usd, inv_u_incl are posted
     Then the product statistics year comparison report for org "-", year "yearN", product "tc5Usd" returns:
-      | M_Product_ID | Amt_03 | Amt_Total | Currency | RateMissing_Count | RateMissing_Months |
-      | tc5Usd       | 90.00  | 90.00     | CHF      | 0                 |                    |
+      | M_Product_ID | Amt_03 | Amt_Total | Currency | NotPosted_Count | NotPosted_Months |
+      | tc5Usd       | 90.00  | 90.00     | CHF      | 0               |                  |
     And the product statistics year comparison report for org "-", year "yearN", product "tc5Incl" returns:
-      | M_Product_ID | Amt_03 | Amt_Total | Currency | RateMissing_Count |
-      | tc5Incl      | 100.00 | 100.00    | CHF      | 0                 |
+      | M_Product_ID | Amt_03 | Amt_Total | Currency | NotPosted_Count |
+      | tc5Incl      | 100.00 | 100.00    | CHF      | 0               |
 
   @from:cucumber
-  Scenario: TC5 invoices without a currency rate add nothing to the amount and are counted with their months (this and previous year)
+  Scenario: TC5 the amount is the posted amount: a rate added after posting counts only after a repost
+    ## 100.00 USD posted at 1 USD = 0.90 CHF -> 90.00 CHF in the accounting. A later rate 0.80 (newer ValidFrom, so it wins for the
+    ## invoice date) does not change the report until the invoice is reposted -> 80.00 CHF.
+    And the following currencies are active:
+      | ISO_Code |
+      | USD      |
+    And a 0.90 "USD" -> "CHF" conversion rate is in place between "2026-01-01" and "2026-12-31"
+    And metasfresh contains M_Products:
+      | Identifier |
+      | tc5Repost  |
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | tc5PSRep   |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded |
+      | tc5PLRep   | tc5PSRep           | DE           | USD           | true  | false         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | tc5PLVRep  | tc5PLRep       |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | tc5PLVRep              | tc5Repost    | 100.00   | PCE      | psycTaxCat       |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | Name              | IsCustomer | M_PricingSystem_ID | AllowConsolidateInOut |
+      | tc5BPRep   | PSYC TC5 rep cust | Y          | tc5PSRep           | N                     |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
+      | tc5BPLRep  | tc5BPRep      | DE           | Y               | Y               |
+    And metasfresh has date and time 2026-03-15T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_rep    | tc5BPRep      | 2026-03-15   | true    | USD           | tc5PLRep       |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID$set |
+      | inv_rep_l1 | inv_rep      | tc5Repost    | 1 PCE       | 100.00 | psycTax19    |
+    And the invoice identified by inv_rep is completed
+    And Wait until documents inv_rep is posted
+    And a 0.80 "USD" -> "CHF" conversion rate is in place between "2026-03-01" and "2026-12-31"
+
+    Then the product statistics year comparison report for org "-", year "yearN", product "tc5Repost" returns:
+      | M_Product_ID | Amt_03 | Amt_Total | Currency |
+      | tc5Repost    | 90.00  | 90.00     | CHF      |
+    And the documents inv_rep are reposted
+    And Wait until documents inv_rep is posted
+    And the product statistics year comparison report for org "-", year "yearN", product "tc5Repost" returns:
+      | M_Product_ID | Amt_03 | Amt_Total | Currency |
+      | tc5Repost    | 80.00  | 80.00     | CHF      |
+
+  @from:cucumber
+  Scenario: TC5 invoices that cannot be posted (no currency rate) add nothing to the amount and are counted as not posted with their months (this and previous year)
     ## SEK has no rate into CHF (asserted first; no other feature writes a SEK rate). One month holds a 1000.00 CHF invoice and a SEK invoice with two lines,
-    ## the previous year holds a SEK invoice: Amt 1000.00, RateMissing_Count 2 (invoices, not lines), months "2025-06, 2026-03" ascending.
+    ## the previous year holds a SEK invoice. The SEK invoices cannot be posted: Amt 1000.00, NotPosted_Count 2 (invoices, not lines), months "2025-06, 2026-03" ascending.
     And the following currencies are active:
       | ISO_Code |
       | SEK      |
@@ -1578,9 +1640,11 @@ Feature: Product Statistics Year Comparison - reference replay
     And the invoice identified by inv_m2603c is completed
     And the invoice identified by inv_m2603s is completed
 
+    # The amount is read from the accounting; the SEK invoices cannot be posted (no rate) and are counted as not posted
+    And Wait until documents inv_m2603c are posted
     Then the product statistics year comparison report for org "-", year "yearN", product "tc5Mix" returns:
-      | M_Product_ID | Amt_03  | Amt_Total | Currency | RateMissing_Count | RateMissing_Months |
-      | tc5Mix       | 1000.00 | 1000.00   | CHF      | 2                 | 2025-06, 2026-03   |
+      | M_Product_ID | Amt_03  | Amt_Total | Currency | NotPosted_Count | NotPosted_Months |
+      | tc5Mix       | 1000.00 | 1000.00   | CHF      | 2               | 2025-06, 2026-03 |
 
   @from:cucumber
   Scenario: All-products run lists only products of the report organisation or of organisation *, also when another organisation's product is invoiced in the report organisation
@@ -1612,6 +1676,8 @@ Feature: Product Statistics Year Comparison - reference replay
       | inv_org_l3  | inv_org      | tcOrgOther   | 1 PCE       | 30.00 | psycTax19    |
     And the invoice identified by inv_org is completed
 
+    # The amount is read from the accounting, so the report runs once the invoices are posted
+    And Wait until documents inv_org are posted
     Then the product statistics year comparison report for org "-", year "yearN", product "-" returns:
       | M_Product_ID | Amt_04 | Amt_Total | Currency |
       | tcOrgOwn     | 10.00  | 10.00     | CHF      |
