@@ -274,6 +274,81 @@ describe('TableQuickInput - submit while a field PATCH is pending', () => {
     expect(api.completeQuickInput).toHaveBeenCalledTimes(1);
   });
 
+  it('after a failed PATCH, an edited value is not overwritten by re-sending the old one', async () => {
+    productPatch.resolve({
+      data: [{ fieldsByName: { M_Product_ID: { value: PRODUCT } } }],
+    });
+    pickProduct();
+    await flushPromises();
+    wrapper.update();
+
+    api.patchQuickInput.mockImplementationOnce(() =>
+      Promise.reject(new Error('server rejected the value'))
+    );
+    typeQtyAndPressEnter('10');
+    await flushPromises();
+    await flushPromises();
+
+    // the user corrects the value and presses Enter again
+    typeQtyAndPressEnter('20');
+    await flushPromises();
+    await flushPromises();
+
+    const qtyPatches = api.patchQuickInput.mock.calls
+      .map(([{ fieldName, fieldValue }]) => [fieldName, fieldValue])
+      .filter(([fieldName]) => fieldName === 'Qty');
+    expect(qtyPatches[qtyPatches.length - 1]).toEqual(['Qty', '20']);
+    expect(qtyPatches).toEqual([
+      ['Qty', '10'],
+      ['Qty', '20'],
+    ]);
+    expect(api.completeQuickInput).toHaveBeenCalledTimes(1);
+  });
+
+  it('a failure of an older PATCH does not resurrect its value when a newer one of the same field was queued', async () => {
+    productPatch.resolve({
+      data: [{ fieldsByName: { M_Product_ID: { value: PRODUCT } } }],
+    });
+    pickProduct();
+    await flushPromises();
+    wrapper.update();
+
+    const firstQtyPatch = deferred();
+    const secondQtyPatch = deferred();
+    api.patchQuickInput
+      .mockImplementationOnce(() =>
+        firstQtyPatch.promise.then(() => {
+          throw new Error('server rejected the value');
+        })
+      )
+      .mockImplementationOnce(() => secondQtyPatch.promise);
+
+    typeQtyAndPressEnter('10'); // submit waits for the Qty=10 PATCH
+    await flushPromises();
+
+    // while it is in flight, the user corrects the value
+    qtyInput().simulate('change', { target: { value: '20' } });
+    qtyInput().simulate('keyDown', { key: 'Enter', target: { value: '20' } });
+
+    firstQtyPatch.resolve(); // Qty=10 fails now, Qty=20 is queued after it
+    await flushPromises();
+    secondQtyPatch.resolve({
+      data: [{ fieldsByName: { Qty: { value: '20' } } }],
+    });
+    await flushPromises();
+    await flushPromises();
+
+    const qtyPatches = api.patchQuickInput.mock.calls
+      .map(([{ fieldName, fieldValue }]) => [fieldName, fieldValue])
+      .filter(([fieldName]) => fieldName === 'Qty');
+    expect(qtyPatches).toEqual([
+      ['Qty', '10'],
+      ['Qty', '20'],
+    ]);
+    expect(addNotification).not.toHaveBeenCalled();
+    expect(api.completeQuickInput).toHaveBeenCalledTimes(1);
+  });
+
   it('still refuses to submit when a mandatory field is really empty', async () => {
     typeQtyAndPressEnter('10');
     await flushPromises();

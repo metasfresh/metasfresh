@@ -19,6 +19,8 @@ class TableQuickInput extends PureComponent {
   // fieldName -> value of the fields whose last PATCH failed; they are re-sent on submit
   // and the line is not completed while any of them still fails
   failedPatches = new Map();
+  patchSeqNo = 0;
+  lastPatchSeqNoByField = {};
   // widgets refs
   rawWidgets = [];
   rawWidgetsByFieldName = {};
@@ -127,6 +129,11 @@ class TableQuickInput extends PureComponent {
   handlePatch = (prop, value, callback) => {
     const { windowId, docId, tabId, patchQuickInput } = this.props;
 
+    // a newer value supersedes a remembered failed one, which must not be re-sent after it
+    this.failedPatches.delete(prop);
+    const patchSeqNo = ++this.patchSeqNo;
+    this.lastPatchSeqNoByField[prop] = patchSeqNo;
+
     const previousPatch = this.patchPromise || Promise.resolve();
     this.patchPromise = previousPatch
       .then(() => patchQuickInput({ windowId, docId, tabId, prop, value }))
@@ -138,7 +145,12 @@ class TableQuickInput extends PureComponent {
           }
         },
         // the error itself was already shown by the global axios error handler (App.js)
-        () => this.failedPatches.set(prop, value)
+        () => {
+          // remember it only if no newer PATCH of the same field was queued meanwhile
+          if (this.lastPatchSeqNoByField[prop] === patchSeqNo) {
+            this.failedPatches.set(prop, value);
+          }
+        }
       );
 
     return this.patchPromise;
