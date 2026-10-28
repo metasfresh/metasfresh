@@ -37,9 +37,7 @@ import de.metas.payment.sepa.model.I_SEPA_Export_Line_Ref;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -114,12 +112,6 @@ class CreateSEPAExportFromPaySelectionCommand
 	private final boolean isGroupTransactions;
 	@Nullable private final SEPAProtocol chosenCreditTransferProtocol;
 
-	/**
-	 * The mandate resolved for each exported direct debit pay selection line (set by {@link #run()}; empty for credit transfers).
-	 */
-	@Getter(AccessLevel.PACKAGE)
-	private ImmutableMap<PaySelectionLineId, DirectDebitMandate> mandatesByPaySelectionLineId = ImmutableMap.of();
-
 	public CreateSEPAExportFromPaySelectionCommand(
 			@NonNull final org.compiere.model.I_C_PaySelection source,
 			final boolean isGroupTransactions,
@@ -143,8 +135,8 @@ class CreateSEPAExportFromPaySelectionCommand
 		if (PaySelectionTrxType.DIRECT_DEBIT.equals(paySelectionTrxType))
 		{
 			// refuse the whole export before anything is saved
-			mandatesByPaySelectionLineId = resolveAndCheckMandates(paySelectionLines);
-			return createDirectDebitExports(paySelectionLines);
+			final ImmutableMap<PaySelectionLineId, DirectDebitMandate> mandatesByLineId = resolveAndCheckMandates(paySelectionLines);
+			return createDirectDebitExports(paySelectionLines, mandatesByLineId);
 		}
 
 		final I_SEPA_Export header = createExportHeader(source);
@@ -163,7 +155,9 @@ class CreateSEPAExportFromPaySelectionCommand
 				.build();
 	}
 
-	private CreatedSEPAExports createDirectDebitExports(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
+	private CreatedSEPAExports createDirectDebitExports(
+			@NonNull final List<I_C_PaySelectionLine> paySelectionLines,
+			@NonNull final ImmutableMap<PaySelectionLineId, DirectDebitMandate> mandatesByLineId)
 	{
 		// lines without a bank account are not exported; every other line has a checked mandate
 		final Map<DirectDebitMandateType, List<I_C_PaySelectionLine>> linesByScheme = new EnumMap<>(DirectDebitMandateType.class);
@@ -173,7 +167,7 @@ class CreateSEPAExportFromPaySelectionCommand
 			{
 				continue;
 			}
-			final DirectDebitMandate mandate = getMandate(line);
+			final DirectDebitMandate mandate = getMandate(mandatesByLineId, line);
 			linesByScheme.computeIfAbsent(mandate.getType(), scheme -> new ArrayList<>()).add(line);
 		}
 
@@ -191,7 +185,7 @@ class CreateSEPAExportFromPaySelectionCommand
 			final ImmutableMap.Builder<SEPAExportLineId, DirectDebitMandate> mandatesBySepaExportLineId = ImmutableMap.builder();
 			for (final I_C_PaySelectionLine line : lines)
 			{
-				final DirectDebitMandate mandate = getMandate(line);
+				final DirectDebitMandate mandate = getMandate(mandatesByLineId, line);
 
 				final I_SEPA_Export_Line exportLine = createExportLine(line);
 				exportLine.setSEPA_Export(header);
@@ -221,9 +215,11 @@ class CreateSEPAExportFromPaySelectionCommand
 	}
 
 	@NonNull
-	private DirectDebitMandate getMandate(@NonNull final I_C_PaySelectionLine line)
+	private static DirectDebitMandate getMandate(
+			@NonNull final ImmutableMap<PaySelectionLineId, DirectDebitMandate> mandatesByLineId,
+			@NonNull final I_C_PaySelectionLine line)
 	{
-		final DirectDebitMandate mandate = mandatesByPaySelectionLineId.get(toPaySelectionLineId(line));
+		final DirectDebitMandate mandate = mandatesByLineId.get(toPaySelectionLineId(line));
 		if (mandate == null)
 		{
 			// the mandate check refuses every line with a bank account but without a mandate
