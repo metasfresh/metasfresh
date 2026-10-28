@@ -267,7 +267,7 @@ public interface I_C_BP_BankAccount_DirectDebitMandate
 	String COLUMNNAME_MandateStatus = "MandateStatus";
 
 	/**
-	 * Set Mandate type.
+	 * Set Mandate Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -276,7 +276,7 @@ public interface I_C_BP_BankAccount_DirectDebitMandate
 	void setMandateType (java.lang.String MandateType);
 
 	/**
-	 * Get Mandate type.
+	 * Get Mandate Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

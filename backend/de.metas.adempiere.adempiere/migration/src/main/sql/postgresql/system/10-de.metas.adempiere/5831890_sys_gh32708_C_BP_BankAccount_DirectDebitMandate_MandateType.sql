@@ -50,7 +50,7 @@ FROM AD_Language l, AD_Element t
 WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=585569
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID);
 
-UPDATE AD_Element_Trl SET Name='Mandate type', PrintName='Mandate type', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-28 10:00:09','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585569 AND AD_Language='en_US';
+UPDATE AD_Element_Trl SET Name='Mandate Type', PrintName='Mandate Type', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-28 10:00:09','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585569 AND AD_Language='en_US';
 
 UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-10-28 10:00:10','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585569 AND AD_Language IN ('de_DE','de_CH');
 
@@ -66,4 +66,6 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
 
 /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585569);
 
-/* DDL */ SELECT public.db_alter_table('C_BP_BankAccount_DirectDebitMandate','ALTER TABLE public.C_BP_BankAccount_DirectDebitMandate ADD COLUMN MandateType VARCHAR(4) DEFAULT ''CORE'' CHECK (MandateType IN (''CORE'',''B2B'')) NOT NULL');
+/* DDL */ SELECT public.db_alter_table('C_BP_BankAccount_DirectDebitMandate','ALTER TABLE public.C_BP_BankAccount_DirectDebitMandate ADD COLUMN MandateType VARCHAR(4) DEFAULT ''CORE'' NOT NULL');
+
+/* DDL */ SELECT public.db_alter_table('C_BP_BankAccount_DirectDebitMandate','ALTER TABLE public.C_BP_BankAccount_DirectDebitMandate ADD CONSTRAINT MandateType_Check CHECK (MandateType IN (''CORE'',''B2B''))');
