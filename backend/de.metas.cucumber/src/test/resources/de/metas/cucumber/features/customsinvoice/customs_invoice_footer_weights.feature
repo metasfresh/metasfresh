@@ -1,4 +1,6 @@
 @from:cucumber
+@allure.label.epic:E0360_Transport_Extralogistik
+@allure.label.feature:F29098.1_Customs_Invoice
 @ghActions:run_on_executor5
 Feature: customs invoice footer and detail weights
 
