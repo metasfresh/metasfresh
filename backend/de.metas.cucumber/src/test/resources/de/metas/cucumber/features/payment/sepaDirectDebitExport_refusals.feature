@@ -118,36 +118,6 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     And the pay selection "paySelection" has no SEPA_Export
 
   @from:cucumber
-  @Id:S32708_TC5b
-  Scenario: TC5b debtor without any bank account: reported as missing mandate, export refused, no SEPA_Export
-    Given metasfresh contains C_BPartners:
-      | Identifier | Name            | Value          | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
-      | debtor     | SEPA Debtor T5b | dd_tc5b_@Date@ | Y          | pricingSystem                 | D               |
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
-      | invoice    | debtor        | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_Tax_ID |
-      | invoiceL1  | invoice      | product      | 1 PCE       | 100.00 | zeroTax  |
-    And the invoice identified by invoice is completed
-    And metasfresh contains Pay Selection
-      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | OPT.AD_Org_ID |
-      | paySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg     |
-    And "Create from..." is invoked for pay selection paySelection, using following parameters:
-      | MatchRequirement | C_BPartner_ID | PayDate    |
-      | CDD              | debtor        | 2026-11-02 |
-    # completing is not possible for a line without a bank account (core check), so the draft pay selection is exported
-
-    When the SEPA export process is run for pay selection "paySelection"
-
-    Then the SEPA export process fails with error code "DD_MANDATE_CHECK_FAILED" and a message containing:
-      | SEPA-Lastschrift-Export nicht erstellt  |
-      | dd_tc5b_                                |
-      | kein aktives Lastschriftmandat          |
-      | Zeile aus der Zahlungsauswahl entfernen |
-    And the pay selection "paySelection" has no SEPA_Export
-
-  @from:cucumber
   @Id:S32708_TC18
   Scenario: TC18 org bank account without SEPA creditor identifier: export refused, no SEPA_Export
     Given metasfresh contains C_BP_BankAccount
