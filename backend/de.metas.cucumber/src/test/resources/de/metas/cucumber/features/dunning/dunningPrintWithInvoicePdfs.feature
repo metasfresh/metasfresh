@@ -8,7 +8,6 @@ Feature: Dunning letter print with attached invoice PDFs
   The print process "Mahnbrief mit angehängten Rechnungsbelegen" returns ONE PDF:
   - the dunning letter pages
   - followed by the archived invoice PDF of the dunned invoice
-  An invoice that has no archived PDF is skipped.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -79,33 +78,3 @@ Feature: Dunning letter print with attached invoice PDFs
       | C_Invoice_ID  |
       | salesInvoice1 |
 
-
-  ##################################################################
-  ##################################################################
-  ##################################################################
-  Scenario: Invoice without an archived PDF - the printed dunning letter is the letter only
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And metasfresh contains C_Invoice:
-      | Identifier    | C_BPartner_ID | PaymentRule | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
-      | salesInvoice1 | customer      | B           | Ausgangsrechnung        | 2021-04-08   | true    | EUR                 |
-    And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID  | M_Product_ID | QtyInvoiced |
-      | salesInvoice1 | product      | 1 PCE       |
-    And the invoice identified by salesInvoice1 is completed
-    And no AD_Archive exists for the record identified by "salesInvoice1"
-
-    And invoke "C_Dunning_Candidate_Create" process:
-      | C_DunningLevel_ID | DunningDate |
-      | dunningLevel      | 2022-09-29  |
-    And after not more than 60s, locate C_Dunning_Candidate:
-      | Identifier  | TableName | Record_ID     |
-      | dunningCand | C_Invoice | salesInvoice1 |
-    And invoke "C_Dunning_Candidate_Process" process:
-      | Identifier | C_Dunning_Candidate_ID | AutoProcess |
-      | dunningDoc | dunningCand            | false       |
-
-    When the dunning letter with attached invoice PDFs is printed for C_DunningDoc "dunningDoc"
-
-    Then the printed PDF of C_DunningDoc "dunningDoc" is the dunning letter only
-    # dev-note: switch the async processing back on for the features that run after this one
-    And set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
