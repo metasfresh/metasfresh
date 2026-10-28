@@ -337,7 +337,26 @@ public class M_InOut_Line_StepDef
 						inOutLine.setIsPackagingMaterial(isPackingMaterial);
 					}
 
+					final I_M_InOutLine huInOutLine = InterfaceWrapperHelper.create(inOutLine, I_M_InOutLine.class);
+					final BigDecimal qtyEnteredTU = row.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_QtyEnteredTU).orElse(null);
+					if (qtyEnteredTU != null)
+					{
+						huInOutLine.setQtyEnteredTU(qtyEnteredTU);
+					}
+
+					row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_HU_PI_Item_Product_ID)
+							.ifPresent(huPIItemProductIdentifier -> huInOutLine.setM_HU_PI_Item_Product_ID(huPIItemProductTable.getId(huPIItemProductIdentifier).getRepoId()));
+
 					InterfaceWrapperHelper.saveRecord(inOutLine);
+
+					if (qtyEnteredTU != null)
+					{
+						// re-load to make sure no interceptor recomputed the value we've set
+						InterfaceWrapperHelper.refresh(inOutLine);
+						assertThat(InterfaceWrapperHelper.create(inOutLine, I_M_InOutLine.class).getQtyEnteredTU())
+								.as("QtyEnteredTU after save")
+								.isEqualByComparingTo(qtyEnteredTU);
+					}
 
 					row.getAsOptionalIdentifier().ifPresent(identifier -> inoutLineTable.putOrReplace(identifier, inOutLine));
 				});
