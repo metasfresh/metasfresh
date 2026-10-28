@@ -32,7 +32,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Runs a plain SELECT (e.g. calling a SQL report function) outside any transaction and hands every result row to a consumer.
+ * Runs a plain SELECT outside any transaction and hands every result row to a consumer.
+ * <p>
+ * Only for verifying database-side code that no Java business logic calls, e.g. the SQL functions behind Jasper reports.
+ * Do not use it to read or check data that metasfresh Java code (services, repositories, {@code IQueryBL}) can provide:
+ * a step must exercise that code instead, so the test covers what the application actually does.
  */
 @UtilityClass
 public class SqlQueryTestUtil
