@@ -214,7 +214,7 @@ public class AD_SysConfig_StepDef
 
 	/**
 	 * Cleanup for {@link #temporarily_set_sys_config_to_product_category}; independent of
-	 * {@link #restoreRepointedSysConfigsAfterScenario()} (own map, own hook, no ordering dependency).
+	 * {@link #restoreTemporarySysConfigsAfterScenario()} (own map, own hook, no ordering dependency).
 	 */
 	@After
 	public void restoreCategorySysConfigsAfterScenario()
