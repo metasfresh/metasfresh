@@ -41,11 +41,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -144,6 +146,30 @@ public class C_BPartner_Location_StepDef
 		assertThat(lastUpdateException)
 				.as("Expected an AdempiereException to be thrown during the last C_BPartner_Location update, but none was thrown")
 				.isNotNull();
+	}
+
+	/**
+	 * Cucumber trims data-table cells, so a GLN with trailing whitespace cannot come from a table.
+	 * This step enters the location's GLN with one trailing space (like a manual entry) and
+	 * verifies that the GLN is stored trimmed.
+	 */
+	@Given("the GLN of C_BPartner_Location {string} is entered with a trailing space")
+	public void enter_GLN_with_trailing_space(@NonNull final String bpLocationIdentifier)
+	{
+		final I_C_BPartner_Location bpLocation = bPartnerLocationTable.get(bpLocationIdentifier);
+		assertThat(bpLocation).isNotNull();
+
+		final String gln = bpLocation.getGLN();
+		assertThat(gln).as("GLN of " + bpLocationIdentifier).isNotBlank();
+
+		bpLocation.setGLN(gln + " ");
+		saveRecord(bpLocation);
+
+		final String storedGln = DB.getSQLValueStringEx(
+				ITrx.TRXNAME_None,
+				"SELECT GLN FROM C_BPartner_Location WHERE C_BPartner_Location_ID=?",
+				bpLocation.getC_BPartner_Location_ID());
+		assertThat(storedGln).as("stored GLN of " + bpLocationIdentifier).isEqualTo(gln);
 	}
 
 	@Given("update C_Location of the following C_BPartner_Location")
