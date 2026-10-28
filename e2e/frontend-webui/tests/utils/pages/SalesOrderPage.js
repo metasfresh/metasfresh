@@ -6,8 +6,9 @@ import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
 
 const SALES_ORDER_LINES_TAB_ID = 'AD_Tab-187';
 
-/** True for the WebUI's PATCH request of the given field of a quick input of the given tab. */
-const isQuickInputPatchRequestOf = (request, tabId, fieldName) => {
+/** True for the WebUI's PATCH of the given field of a quick input of the given tab. */
+const isQuickInputPatchOf = (response, tabId, fieldName) => {
+  const request = response.request();
   if (request.method() !== 'PATCH' || !new URL(request.url()).pathname.includes(`/${tabId}/quickInput/`)) {
     return false;
   }
@@ -19,10 +20,6 @@ const isQuickInputPatchRequestOf = (request, tabId, fieldName) => {
   }
   return Array.isArray(body) && body.some((change) => change.path === fieldName);
 };
-
-/** True for the response to the WebUI's PATCH of the given field of a quick input of the given tab. */
-const isQuickInputPatchOf = (response, tabId, fieldName) =>
-  isQuickInputPatchRequestOf(response.request(), tabId, fieldName);
 
 /**
  * Page object for Sales Order window (ID: 143).
@@ -257,22 +254,21 @@ export class SalesOrderPage {
    * used to read a defaulted field. Keeping it as the single implementation means both callers get the
    * same spinner handling rather than two copies drifting apart.
    *
-   * By default returns only after the server answered the product selection: that answer carries the
-   * product callout's defaults, so a fixed sleep would let a slow answer arrive after the caller already
-   * read the form.
+   * Returns only after the server answered the product selection: that answer carries the product
+   * callout's defaults, so a fixed sleep would let a slow answer arrive after the caller already read
+   * the form.
    *
    * @param {Object} params
    * @param {string} params.product - Product code or name
    * @param {string} params.recordId - Optional record ID (extracted from the URL if not provided)
-   * @param {boolean} [params.awaitProductPatch=true] - false returns as soon as the product PATCH is sent,
-   *   without waiting for the server's answer: the user who types on at once (e.g. a spec that holds that
-   *   answer back to test Enter while it is in flight).
+   * @param {boolean} [params.awaitProductPatchAnswer=true] - false: return right after the product
+   *   option was clicked, while its PATCH may still be in flight (for a test of that race)
    * @returns {Promise<{packingInstruction: string}|undefined>} what the server defaulted for the packing
    *   instruction (`M_HU_PI_Item_Product_ID`) in its answer: its caption, or '' when it set none.
    *   The DOM may lag that answer by a few ms; use {@link expectQuickEntryPackingInstruction} to
-   *   check what the form shows. undefined when `awaitProductPatch` is false.
+   *   check what the form shows. `undefined` when `awaitProductPatchAnswer` is false.
    */
-  static async openQuickEntryAndSelectProduct({ product, recordId, awaitProductPatch = true }) {
+  static async openQuickEntryAndSelectProduct({ product, recordId, awaitProductPatchAnswer = true }) {
     return await test.step(`SalesOrderPage - Open quick entry and select: ${product}`, async () => {
       const page = getPage();
 
@@ -340,30 +336,24 @@ export class SalesOrderPage {
       // Wait for dropdown to populate
       await page.waitForTimeout(300);
 
-      // Click the option by text - finds element containing the product code
-      // This avoids clicking on "Search for more..." or other non-record options
-      const productOption = page.locator('.input-dropdown-list-option').getByText(product).first();
-      if (!awaitProductPatch) {
-        // The click sends the product PATCH at once; return as soon as it is on the wire, not answered.
-        const productPatchSent = page.waitForRequest(
-          (request) => isQuickInputPatchRequestOf(request, SALES_ORDER_LINES_TAB_ID, 'M_Product_ID'),
-          { timeout: SLOW_ACTION_TIMEOUT }
-        );
-        productPatchSent.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
-        await productOption.click();
-        await productPatchSent;
-        return undefined;
-      }
-
       // The product callout runs server-side: selecting the option PATCHes the quick-input document
       // with M_Product_ID, and the answer carries the fields it defaulted. Listen before clicking.
-      const productPatchResponse = page.waitForResponse(
-        (response) => isQuickInputPatchOf(response, SALES_ORDER_LINES_TAB_ID, 'M_Product_ID'),
-        { timeout: SLOW_ACTION_TIMEOUT }
-      );
-      productPatchResponse.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
+      // Not listened for when the caller does not wait for the answer.
+      const productPatchResponse = awaitProductPatchAnswer
+        ? page.waitForResponse(
+            (response) => isQuickInputPatchOf(response, SALES_ORDER_LINES_TAB_ID, 'M_Product_ID'),
+            { timeout: SLOW_ACTION_TIMEOUT }
+          )
+        : null;
+      productPatchResponse?.catch(() => {}); // avoid an unhandled rejection if the click itself throws; awaited below
 
-      await productOption.click();
+      // Click the option by text - finds element containing the product code
+      // This avoids clicking on "Search for more..." or other non-record options
+      await page.locator('.input-dropdown-list-option').getByText(product).first().click();
+
+      if (!awaitProductPatchAnswer) {
+        return undefined;
+      }
 
       const response = await productPatchResponse;
       expect(response.ok(), `quick-input product PATCH failed: HTTP ${response.status()}`).toBe(true);
