@@ -32,8 +32,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
@@ -289,12 +287,6 @@ class PickingJobUnpickCatchWeightTest
 				.build());
 
 		final HuId tuId = pickingJob.getTuPickingTargetEffective(line.getId()).orElseThrow(() -> new AdempiereException("no TU target")).getTuIdNotNull();
-
-		// Branch probe (do not assert): the harness defines WeightNet as top-down, so the TU's own WeightNet after the first pick may differ from production
-		final IAttributeStorage tuAttributes = huTestHelper.createMutableHUContext()
-				.getHUAttributeStorageFactory()
-				.getAttributeStorage(handlingUnitsBL.getById(tuId));
-		System.out.println("TASK8-PROBE: TU WeightNet after first pick = " + tuAttributes.getValueAsBigDecimal(Weightables.ATTR_WeightNet));
 
 		// second pick: 2 pcs, 3.900 kg
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()

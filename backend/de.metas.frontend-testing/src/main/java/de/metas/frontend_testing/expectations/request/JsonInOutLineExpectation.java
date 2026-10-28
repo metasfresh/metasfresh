@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 /**
  * Expectation for a single M_InOutLine of a shipment, used inside {@link JsonInOutExpectation#getLines()}.
  *
- * <p>Both fields are opt-in: a {@code null} field is NOT asserted.
+ * <p>All fields are opt-in: a {@code null} field is NOT asserted.
  *
  * <pre>
  * // assert this line ships product P1 with MovementQty 8
