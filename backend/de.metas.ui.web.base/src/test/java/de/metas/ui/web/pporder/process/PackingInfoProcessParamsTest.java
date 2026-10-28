@@ -164,24 +164,24 @@ public class PackingInfoProcessParamsTest
 
 	private I_M_HU_PI_Item createParentItem(final String name, final HuUnitType huUnitType, final BigDecimal tuCapacity)
 	{
-		final I_M_HU_PI palletPI = newInstance(I_M_HU_PI.class);
-		palletPI.setName(name);
-		saveRecord(palletPI);
+		final I_M_HU_PI parentPI = newInstance(I_M_HU_PI.class);
+		parentPI.setName(name);
+		saveRecord(parentPI);
 
-		final I_M_HU_PI_Version palletPIVersion = newInstance(I_M_HU_PI_Version.class);
-		palletPIVersion.setM_HU_PI_ID(palletPI.getM_HU_PI_ID());
-		palletPIVersion.setName(name);
-		palletPIVersion.setHU_UnitType(huUnitType.getCode());
-		palletPIVersion.setIsCurrent(true);
-		saveRecord(palletPIVersion);
+		final I_M_HU_PI_Version parentPIVersion = newInstance(I_M_HU_PI_Version.class);
+		parentPIVersion.setM_HU_PI_ID(parentPI.getM_HU_PI_ID());
+		parentPIVersion.setName(name);
+		parentPIVersion.setHU_UnitType(huUnitType.getCode());
+		parentPIVersion.setIsCurrent(true);
+		saveRecord(parentPIVersion);
 
-		final I_M_HU_PI_Item palletItem = newInstance(I_M_HU_PI_Item.class);
-		palletItem.setM_HU_PI_Version_ID(palletPIVersion.getM_HU_PI_Version_ID());
-		palletItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
-		palletItem.setIncluded_HU_PI_ID(fixedCapacityPIP.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
-		palletItem.setQty(tuCapacity);
-		saveRecord(palletItem);
-		return palletItem;
+		final I_M_HU_PI_Item parentItem = newInstance(I_M_HU_PI_Item.class);
+		parentItem.setM_HU_PI_Version_ID(parentPIVersion.getM_HU_PI_Version_ID());
+		parentItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
+		parentItem.setIncluded_HU_PI_ID(fixedCapacityPIP.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
+		parentItem.setQty(tuCapacity);
+		saveRecord(parentItem);
+		return parentItem;
 	}
 
 	private static I_M_HU_PI_Item_Product createPackingInstruction(final I_C_UOM uom, final BigDecimal qtyPerTU)
