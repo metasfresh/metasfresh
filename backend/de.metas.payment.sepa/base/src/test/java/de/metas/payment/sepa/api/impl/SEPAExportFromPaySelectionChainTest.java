@@ -9,6 +9,8 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
+import de.metas.banking.mandate.DirectDebitMandateRepository;
+import de.metas.banking.mandate.DirectDebitMandateType;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPAExportContext;
@@ -19,6 +21,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.X_AD_OrgInfo;
+import org.compiere.model.I_C_BP_BankAccount_DirectDebitMandate;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -77,6 +82,7 @@ public class SEPAExportFromPaySelectionChainTest
 
 		bankRepository = new BankRepository();
 		SpringContextHolder.registerJUnitBean(bankRepository);
+		SpringContextHolder.registerJUnitBean(DirectDebitMandateRepository.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepository, new CurrencyRepository()));
 
 		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
@@ -125,7 +131,9 @@ public class SEPAExportFromPaySelectionChainTest
 	void directDebit_pain001_001_03_ch_02Chosen_exportsPain008_003_02()
 	{
 		final I_C_PaySelection paySelection = createPaySelection(PaySelectionTrxType.DIRECT_DEBIT);
-		createPaySelectionLine(paySelection, createVendorBankAccount(CREDITOR_IBAN_CH, null), null);
+		final I_C_BP_BankAccount vendorBankAccount = createVendorBankAccount(CREDITOR_IBAN_CH, null);
+		createActiveMandate(vendorBankAccount);
+		createPaySelectionLine(paySelection, vendorBankAccount, null);
 
 		final byte[] xml = exportAsProcessDoes(paySelection, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
 
@@ -256,6 +264,27 @@ public class SEPAExportFromPaySelectionChainTest
 		bankAccount.setIsEsrAccount(qrIban != null);
 		save(bankAccount);
 		return bankAccount;
+	}
+
+	/**
+	 * A direct debit pay selection line is exported only with an active mandate of its bank account.
+	 */
+	private static void createActiveMandate(@NonNull final I_C_BP_BankAccount bankAccount)
+	{
+		// the collection date is resolved in the time zone of the export org
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(ORG_ID);
+		orgInfo.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_Speichern);
+		save(orgInfo);
+
+		final I_C_BP_BankAccount_DirectDebitMandate mandate = newInstance(I_C_BP_BankAccount_DirectDebitMandate.class);
+		mandate.setAD_Org_ID(0);
+		mandate.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
+		mandate.setMandateType(DirectDebitMandateType.B2B.getCode());
+		mandate.setMandateReference("MREF-" + bankAccount.getC_BP_BankAccount_ID());
+		mandate.setMandateDate(Timestamp.valueOf("2026-01-10 00:00:00"));
+		mandate.setIsRecurring(true);
+		save(mandate);
 	}
 
 	private void createPaySelectionLine(

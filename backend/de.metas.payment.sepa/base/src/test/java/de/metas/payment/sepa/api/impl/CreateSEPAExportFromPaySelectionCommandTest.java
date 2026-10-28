@@ -4,6 +4,9 @@ import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
+import de.metas.banking.mandate.DirectDebitMandateRepository;
+import de.metas.banking.mandate.DirectDebitMandateType;
+import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -13,15 +16,22 @@ import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.X_AD_OrgInfo;
+import org.compiere.model.I_C_BP_BankAccount_DirectDebitMandate;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -36,6 +46,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(new BankRepository());
+		SpringContextHolder.registerJUnitBean(DirectDebitMandateRepository.newInstanceForUnitTesting());
 	}
 
 	@Test
@@ -63,7 +74,9 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		sepaTestHelper.createMockData();
 		final I_C_PaySelection paySelection = sepaTestHelper.getPaySelection();
 		paySelection.setPaySelectionTrxType(PAYSELECTIONTRXTYPE_DirectDebit);
+		paySelection.setPayDate(Timestamp.valueOf("2026-10-20 00:00:00")); // the collection date, needed for the mandate check
 		save(paySelection);
+		createActiveMandatesOfLines(paySelection);
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
 		sepaTestHelper.assertCommonDebitDirectCases(command.run());
 	}
@@ -75,9 +88,37 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		sepaTestHelper.createMockData();
 		final I_C_PaySelection paySelection = sepaTestHelper.getPaySelection();
 		paySelection.setPaySelectionTrxType(PAYSELECTIONTRXTYPE_DirectDebit);
+		paySelection.setPayDate(Timestamp.valueOf("2026-10-20 00:00:00")); // the collection date, needed for the mandate check
 		save(paySelection);
+		createActiveMandatesOfLines(paySelection);
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
 		sepaTestHelper.assertCommonDebitDirectCases(command.run());
+	}
+
+	/**
+	 * A direct debit pay selection line is exported only with an active mandate of its bank account.
+	 */
+	private static void createActiveMandatesOfLines(@NonNull final I_C_PaySelection paySelection)
+	{
+		// the collection date is resolved in the time zone of the export org
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(paySelection.getAD_Org_ID());
+		orgInfo.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_Speichern);
+		save(orgInfo);
+
+		Services.get(IPaySelectionBL.class).retrievePaySelectionLines(paySelection).stream()
+				.map(I_C_PaySelectionLine::getC_BP_BankAccount_ID)
+				.distinct()
+				.forEach(bankAccountId -> {
+					final I_C_BP_BankAccount_DirectDebitMandate mandate = newInstance(I_C_BP_BankAccount_DirectDebitMandate.class);
+					mandate.setAD_Org_ID(0);
+					mandate.setC_BP_BankAccount_ID(bankAccountId);
+					mandate.setMandateType(DirectDebitMandateType.B2B.getCode());
+					mandate.setMandateReference("MREF-" + bankAccountId);
+					mandate.setMandateDate(Timestamp.valueOf("2026-01-10 00:00:00"));
+					mandate.setIsRecurring(true);
+					save(mandate);
+				});
 	}
 
 	@Test
