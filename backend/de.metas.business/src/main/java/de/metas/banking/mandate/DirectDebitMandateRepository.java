@@ -24,7 +24,9 @@ package de.metas.banking.mandate;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.banking.BankAccountId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -37,12 +39,11 @@ import org.compiere.model.I_C_BP_BankAccount_DirectDebitMandate;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
@@ -94,26 +95,28 @@ public class DirectDebitMandateRepository
 	}
 
 	/**
-	 * Records that the mandate was used for a collection on {@code collectionDate}.
+	 * Saves the {@code DateLastUsed} of the given mandates, with ONE query to load their records.
 	 * <p>
-	 * {@code DateLastUsed} only ever moves forward: it is set only if it is null or before {@code collectionDate}
-	 * (compared as dates in the mandate record's org time zone); otherwise nothing is saved.
+	 * Each date is stored at the start of that day in the mandate's org time zone.
 	 */
-	public void updateDateLastUsed(
-			@NonNull final DirectDebitMandateId mandateId,
-			@NonNull final LocalDate collectionDate)
+	public void saveDateLastUsed(@NonNull final Collection<DirectDebitMandate> mandates)
 	{
-		final I_C_BP_BankAccount_DirectDebitMandate record = load(mandateId, I_C_BP_BankAccount_DirectDebitMandate.class);
-		final ZoneId orgZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
-
-		final LocalDate dateLastUsed = TimeUtil.asLocalDate(record.getDateLastUsed(), orgZoneId);
-		if (dateLastUsed != null && !dateLastUsed.isBefore(collectionDate))
+		if (mandates.isEmpty())
 		{
 			return;
 		}
 
-		record.setDateLastUsed(TimeUtil.asTimestamp(collectionDate, orgZoneId));
-		saveRecord(record);
+		final ImmutableMap<DirectDebitMandateId, DirectDebitMandate> mandatesById = Maps.uniqueIndex(mandates, DirectDebitMandate::getId);
+		final List<I_C_BP_BankAccount_DirectDebitMandate> records = queryBL.createQueryBuilder(I_C_BP_BankAccount_DirectDebitMandate.class)
+				.addInArrayFilter(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_C_BP_BankAccount_DirectDebitMandate_ID, mandatesById.keySet())
+				.create()
+				.list();
+		for (final I_C_BP_BankAccount_DirectDebitMandate record : records)
+		{
+			final DirectDebitMandate mandate = mandatesById.get(DirectDebitMandateId.ofRepoId(record.getC_BP_BankAccount_DirectDebitMandate_ID()));
+			record.setDateLastUsed(TimeUtil.asTimestamp(mandate.getDateLastUsed(), orgDAO.getTimeZone(mandate.getOrgId())));
+			saveRecord(record);
+		}
 	}
 
 	private static DirectDebitMandate fromRecord(

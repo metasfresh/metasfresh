@@ -30,13 +30,14 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Optional;
 
 /**
  * A direct debit mandate of a debtor's bank account.
  * The validity rules live here, so that every use case applies the same rule.
  */
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class DirectDebitMandate
 {
 	/**
@@ -76,5 +77,20 @@ public class DirectDebitMandate
 	public boolean isOneOffAlreadyUsed()
 	{
 		return !isRecurring && dateLastUsed != null;
+	}
+
+	/**
+	 * Records a use of this mandate for a collection on the given date.
+	 * The last use only ever moves forward: a mandate already used on or after {@code collectionDate} keeps its {@code dateLastUsed}.
+	 *
+	 * @return this mandate with {@code dateLastUsed = collectionDate}, or empty if its {@code dateLastUsed} does not change
+	 */
+	public Optional<DirectDebitMandate> withUsedOn(@NonNull final LocalDate collectionDate)
+	{
+		if (dateLastUsed != null && !dateLastUsed.isBefore(collectionDate))
+		{
+			return Optional.empty();
+		}
+		return Optional.of(toBuilder().dateLastUsed(collectionDate).build());
 	}
 }

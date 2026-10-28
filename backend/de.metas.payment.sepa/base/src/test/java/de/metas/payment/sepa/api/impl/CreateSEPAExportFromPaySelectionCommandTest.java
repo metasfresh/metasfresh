@@ -171,6 +171,45 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		}
 	}
 
+	/**
+	 * The last use of a mandate never moves back: a mandate whose DateLastUsed is after the collection date keeps it,
+	 * a mandate used before the collection date gets the collection date.
+	 */
+	@Test
+	public void directDebit_dateLastUsedOnlyMovesForward()
+	{
+		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
+		sepaTestHelper.createMockData();
+		final I_C_PaySelection paySelection = sepaTestHelper.getPaySelection();
+		paySelection.setPaySelectionTrxType(PAYSELECTIONTRXTYPE_DirectDebit);
+		paySelection.setPayDate(Timestamp.valueOf("2026-10-20 00:00:00")); // the collection date
+		save(paySelection);
+		createOrgInfo(paySelection);
+
+		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IPaySelectionBL.class).retrievePaySelectionLines(paySelection);
+		final int laterUsedBankAccountId = paySelectionLines.get(0).getC_BP_BankAccount_ID();
+		final Map<Integer, I_C_BP_BankAccount_DirectDebitMandate> mandatesByBankAccountId = new HashMap<>();
+		paySelectionLines.stream()
+				.map(I_C_PaySelectionLine::getC_BP_BankAccount_ID)
+				.distinct()
+				.forEach(bankAccountId -> {
+					final I_C_BP_BankAccount_DirectDebitMandate mandate = createActiveMandate(bankAccountId, DirectDebitMandateType.B2B);
+					mandate.setDateLastUsed(Timestamp.valueOf(bankAccountId == laterUsedBankAccountId ? "2026-10-25 00:00:00" : "2026-10-01 00:00:00"));
+					save(mandate);
+					mandatesByBankAccountId.put(bankAccountId, mandate);
+				});
+		assertThat(mandatesByBankAccountId).hasSize(2);
+
+		new CreateSEPAExportFromPaySelectionCommand(paySelection, false, null).run();
+
+		mandatesByBankAccountId.forEach((bankAccountId, mandateRecord) -> {
+			InterfaceWrapperHelper.refresh(mandateRecord);
+			assertThat(mandateRecord.getDateLastUsed())
+					.as("DateLastUsed of the mandate of C_BP_BankAccount_ID=%s", bankAccountId)
+					.isEqualTo(Timestamp.valueOf(bankAccountId == laterUsedBankAccountId ? "2026-10-25 00:00:00" : "2026-10-20 00:00:00"));
+		});
+	}
+
 	private static void createOrgInfo(@NonNull final I_C_PaySelection paySelection)
 	{
 		// the collection date is resolved in the time zone of the export org

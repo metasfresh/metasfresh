@@ -12,7 +12,6 @@ import de.metas.banking.PaySelectionLineId;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.mandate.DirectDebitMandate;
-import de.metas.banking.mandate.DirectDebitMandateId;
 import de.metas.banking.mandate.DirectDebitMandateRepository;
 import de.metas.banking.mandate.DirectDebitMandateType;
 import de.metas.banking.mandate.DirectDebitMandatesMap;
@@ -186,7 +185,7 @@ class CreateSEPAExportFromPaySelectionCommand
 			return result.build();
 		}
 
-		final Set<DirectDebitMandateId> usedMandateIds = new LinkedHashSet<>();
+		final Set<DirectDebitMandate> usedMandates = new LinkedHashSet<>();
 		linesByScheme.forEach((scheme, lines) -> {
 			final I_SEPA_Export header = createExportHeader(source);
 			final ImmutableMap.Builder<SEPAExportLineId, DirectDebitMandate> mandatesBySepaExportLineId = ImmutableMap.builder();
@@ -200,7 +199,7 @@ class CreateSEPAExportFromPaySelectionCommand
 				sepaDocumentDAO.save(exportLine);
 
 				mandatesBySepaExportLineId.put(SEPAExportLineId.ofRepoId(exportLine.getSEPA_Export_Line_ID()), mandate);
-				usedMandateIds.add(mandate.getId());
+				usedMandates.add(mandate);
 			}
 
 			result.export(CreatedSEPAExport.builder()
@@ -211,7 +210,12 @@ class CreateSEPAExportFromPaySelectionCommand
 		});
 
 		final LocalDate collectionDate = getCollectionDate();
-		usedMandateIds.forEach(mandateId -> mandateRepo.get().updateDateLastUsed(mandateId, collectionDate));
+		final ImmutableList<DirectDebitMandate> mandatesWithNewLastUse = usedMandates.stream()
+				.map(mandate -> mandate.withUsedOn(collectionDate))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(ImmutableList.toImmutableList());
+		mandateRepo.get().saveDateLastUsed(mandatesWithNewLastUse);
 
 		return result.build();
 	}
