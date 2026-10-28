@@ -265,7 +265,7 @@ public class SEPA_Export_StepDef
 		assertDecimal(softly, "GrpHdr/CtrlSum", new BigDecimal(text(xpath, doc, "//GrpHdr/CtrlSum")), expectedCtrlSum);
 		assertDecimal(softly, "sum of DrctDbtTxInf/InstdAmt", txSum, expectedCtrlSum);
 
-		// D3: one PmtInf per transaction, no batch booking
+		// one PmtInf per transaction, no batch booking
 		softly.assertThat(pmtInfs.getLength()).as("number of PmtInf").isEqualTo(expectedNbOfTxs);
 		softly.assertThat(nodes(xpath, doc, "//BtchBookg").getLength()).as("number of BtchBookg elements").isZero();
 

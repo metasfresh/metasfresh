@@ -78,7 +78,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
 
   @from:cucumber
   @Id:S32708_TC5
-  Scenario: TC5 debtor bank account without a mandate: export refused, no SEPA_Export
+  Scenario: debtor bank account without a mandate: export refused, no SEPA_Export
     Given metasfresh contains C_BPartners:
       | Identifier | Name           | Value         | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | debtor     | SEPA Debtor T5 | dd_tc5_@Date@ | Y          | pricingSystem                 | D               |
@@ -119,7 +119,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
 
   @from:cucumber
   @Id:S32708_TC18
-  Scenario: TC18 org bank account without SEPA creditor identifier: export refused, no SEPA_Export
+  Scenario: org bank account without SEPA creditor identifier: export refused, no SEPA_Export
     Given metasfresh contains C_BP_BankAccount
       | Identifier          | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier |
       | orgAcctNoCreditorId | creditorBP    | EUR           | DE02100100100006820101 | creditorBank         |
@@ -159,7 +159,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
 
   @from:cucumber
   @Id:S32708_TC19a
-  Scenario Outline: TC19 mandate older than 36 months before the collection date: refused (last use <DateLastUsed>, signed <MandateDate>, collection <PayDate>)
+  Scenario Outline: mandate older than 36 months before the collection date: refused (last use <DateLastUsed>, signed <MandateDate>, collection <PayDate>)
     Given metasfresh has date and time <DateInvoiced>T10:00:00+01:00[Europe/Berlin]
     And metasfresh contains C_BPartners:
       | Identifier | Name            | Value          | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
@@ -209,7 +209,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
 
   @from:cucumber
   @Id:S32708_TC19b
-  Scenario Outline: TC19 mandate exactly 36 months before the collection date: still valid, exported (last use <DateLastUsed>, collection <PayDate>)
+  Scenario Outline: mandate exactly 36 months before the collection date: still valid, exported (last use <DateLastUsed>, collection <PayDate>)
     Given metasfresh has date and time <DateInvoiced>T10:00:00+01:00[Europe/Berlin]
     And metasfresh contains C_BPartners:
       | Identifier | Name            | Value          | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
@@ -249,7 +249,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
 
   @from:cucumber
   @Id:S32708_TC21a
-  Scenario: TC21a valid B2B line and a CORE line without mandate: whole export refused, B2B mandate DateLastUsed unchanged
+  Scenario: valid B2B line and a CORE line without mandate: whole export refused, B2B mandate DateLastUsed unchanged
     Given metasfresh contains C_BPartners:
       | Identifier | Name             | Value             | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | b2bDebtor  | SEPA Debtor B2B  | dd_tc21a_b_@Date@ | Y          | pricingSystem                 | D               |
@@ -302,7 +302,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
 
   @from:cucumber
   @Id:S32708_TC21b
-  Scenario: TC21b valid B2B line and a CORE line with an expired mandate: whole export refused, B2B mandate DateLastUsed unchanged
+  Scenario: valid B2B line and a CORE line with an expired mandate: whole export refused, B2B mandate DateLastUsed unchanged
     Given metasfresh contains C_BPartners:
       | Identifier | Name             | Value             | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | b2bDebtor  | SEPA Debtor B2B  | dd_tc21b_b_@Date@ | Y          | pricingSystem                 | D               |
@@ -357,7 +357,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
 
   @from:cucumber
   @Id:S32708_TC23a
-  Scenario: TC23 three debtors with three different problems: one failure message names all three partners with their reasons
+  Scenario: three debtors with three different problems: one failure message names all three partners with their reasons
     Given metasfresh contains C_BPartners:
       | Identifier    | Name          | Value                  | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | oneOffDebtor  | SEPA Debtor 1 | dd_tc23_oneoff_@Date@  | Y          | pricingSystem                 | D               |

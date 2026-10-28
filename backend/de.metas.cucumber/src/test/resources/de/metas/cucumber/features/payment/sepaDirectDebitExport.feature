@@ -8,7 +8,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 ## The export writes pain.008.001.08, one file per scheme (CORE / B2B), taking the mandate data
 ## (reference, signature date, sequence type) from the debtor's C_BP_BankAccount_DirectDebitMandate.
 ##
-## Expected values are derived from the requirements (schema, D7 and D9 text-conversion rules), not from the writer's output.
+## Expected values are derived from the requirements (the pain.008.001.08 GBIC_5 schema and its text-conversion rules: allowed character set, maximum lengths), not from the writer's output.
 ##
 ## Data notes:
 ## - Every scenario runs in its own organization (created in the Background) with its own org BP, which is the creditor; no seed data is changed.
@@ -76,7 +76,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
   @from:cucumber
   @Id:S32708_TC1
-  Scenario: TC1 B2B recurring mandate: one B2B file with 2 transactions, mandate DateLastUsed set to the collection date
+  Scenario: B2B recurring mandate: one B2B file with 2 transactions, mandate DateLastUsed set to the collection date
     Given metasfresh contains C_BPartners:
       | Identifier | Name            | Value      | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | b2bDebtor  | SEPA Debtor B2B | b2b_@Date@ | Y          | pricingSystem                 | D               |
@@ -127,7 +127,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
   @from:cucumber
   @Id:S32708_TC2
-  Scenario: TC2 CORE recurring mandate: one CORE file with RCUR
+  Scenario: CORE recurring mandate: one CORE file with RCUR
     Given metasfresh contains C_BPartners:
       | Identifier | Name             | Value       | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | coreDebtor | SEPA Debtor CORE | core_@Date@ | Y          | pricingSystem                 | D               |
@@ -173,7 +173,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
   @from:cucumber
   @Id:S32708_TC3
-  Scenario: TC3 CORE mandate that is not recurring and was never used: sequence type OOFF
+  Scenario: CORE mandate that is not recurring and was never used: sequence type OOFF
     Given metasfresh contains C_BPartners:
       | Identifier | Name             | Value       | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | coreDebtor | SEPA Debtor CORE | core_@Date@ | Y          | pricingSystem                 | D               |
@@ -216,7 +216,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
   @from:cucumber
   @Id:S32708_TC4
-  Scenario: TC4 only the org-* mandate is active: its reference is exported, the inactive mandate of the export org is ignored
+  Scenario: only the org-* mandate is active: its reference is exported, the inactive mandate of the export org is ignored
     Given metasfresh contains C_BPartners:
       | Identifier | Name            | Value      | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | b2bDebtor  | SEPA Debtor B2B | b2b_@Date@ | Y          | pricingSystem                 | D               |
@@ -257,7 +257,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
   @from:cucumber
   @Id:S32708_TC6
-  Scenario: TC6 one pay selection with a B2B and a CORE debtor: ZIP with one file per scheme, each with its own totals
+  Scenario: one pay selection with a B2B and a CORE debtor: ZIP with one file per scheme, each with its own totals
     Given metasfresh contains C_BPartners:
       | Identifier | Name             | Value       | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | b2bDebtor  | SEPA Debtor B2B  | b2b_@Date@  | Y          | pricingSystem                 | D               |
@@ -320,11 +320,11 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | Dbtr.Nm          | DbtrAcct.IBAN          | InstdAmt | MndtId        | DtOfSgntr  | SeqTp | DbtrAgt     | Ustrd          |
       | SEPA Debtor CORE | DE02120300000000202051 | 50.00    | MREF-CORE-006 | 2014-03-11 | RCUR  | TESTDEC1XXX | Invoice CORE 1 |
 
-  # TC14: the creditor address comes from the org BP's location; the debtor bank account's holder data (A_Name, A_City) never appears as creditor.
+  # The creditor address comes from the org BP's location; the debtor bank account's holder data (A_Name, A_City) never appears as creditor.
   # The creditor BP location (GLN 4000000000129) is re-pointed to the scenario's C_Location.
   @from:cucumber
   @Id:S32708_TC14a
-  Scenario: TC14a org BP location with a city: Cdtr.PstlAdr has town and country of the org BP, not the debtor account holder's city
+  Scenario: org BP location with a city: Cdtr.PstlAdr has town and country of the org BP, not the debtor account holder's city
     Given metasfresh contains C_BPartners:
       | Identifier | Name            | Value      | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | b2bDebtor  | SEPA Debtor B2B | b2b_@Date@ | Y          | pricingSystem                 | D               |
@@ -364,7 +364,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
   @from:cucumber
   @Id:S32708_TC14b
-  Scenario: TC14b org BP location without a city: no Cdtr.PstlAdr at all
+  Scenario: org BP location without a city: no Cdtr.PstlAdr at all
     Given metasfresh contains C_BPartners:
       | Identifier | Name            | Value      | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | b2bDebtor  | SEPA Debtor B2B | b2b_@Date@ | Y          | pricingSystem                 | D               |
@@ -410,7 +410,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
   @from:cucumber
   @Id:S32708_TC14c
-  Scenario: TC14c org BP location whose city is only disallowed characters (empty after conversion): no Cdtr.PstlAdr, the export still succeeds
+  Scenario: org BP location whose city is only disallowed characters (empty after conversion): no Cdtr.PstlAdr, the export still succeeds
     Given metasfresh contains C_BPartners:
       | Identifier | Name            | Value      | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | b2bDebtor  | SEPA Debtor B2B | b2b_@Date@ | Y          | pricingSystem                 | D               |
@@ -456,7 +456,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
   @from:cucumber
   @Id:S32708_TC15
-  Scenario: TC15 debtor bank without BIC: DbtrAgt is NOTPROVIDED
+  Scenario: debtor bank without BIC: DbtrAgt is NOTPROVIDED
     Given metasfresh contains C_BPartners:
       | Identifier | Name            | Value      | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | b2bDebtor  | SEPA Debtor B2B | b2b_@Date@ | Y          | pricingSystem                 | D               |
@@ -494,7 +494,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | Dbtr.Nm         | DbtrAcct.IBAN          | InstdAmt | MndtId        | DtOfSgntr  | SeqTp | DbtrAgt     |
       | SEPA Debtor B2B | DE89370400440532013000 | 100.00   | MREF-TC15-001 | 2013-09-23 | RCUR  | NOTPROVIDED |
 
-  # TC16: text conversion (D9). Expected values are derived from the rules, never from the writer's output.
+  # Text conversion to the GBIC_5 character set, cut to the maximum length. Expected values are derived from the rules, never from the writer's output.
   #   MndtId:  Ä -> AE, & -> space, ö -> oe                 "MREF-Ä&ö/001" -> "MREF-AE oe/001"
   #   Dbtr.Nm: at most 70 chars; € -> space; umlauts, ß and & are kept; the rest over 70 chars is cut
   #            input    = "Müller & Söhne € Großhandel " (28 chars) + 60 x X = 88 chars
@@ -505,7 +505,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
   #   second debtor: Dbtr.Nm "€ € €" (only disallowed characters) -> a single space; the export succeeds
   @from:cucumber
   @Id:S32708_TC16
-  Scenario: TC16 text conversion: mandate reference, debtor name and remittance info are converted and cut according to the D9 rules; a name of only disallowed characters becomes one space
+  Scenario: text conversion: mandate reference, debtor name and remittance info are converted to the GBIC_5 character set and cut to their maximum length; a name of only disallowed characters becomes one space
     Given metasfresh contains C_BPartners:
       | Identifier  | Name                                                                                     | Value        | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | longDebtor  | Müller & Söhne € Großhandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | long_@Date@  | Y          | pricingSystem                 | D               |
@@ -556,7 +556,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
   @from:cucumber
   @Id:S32708_TC17
-  Scenario: TC17 invoice without description: no Ustrd
+  Scenario: invoice without description: no Ustrd
     Given metasfresh contains C_BPartners:
       | Identifier | Name            | Value      | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | b2bDebtor  | SEPA Debtor B2B | b2b_@Date@ | Y          | pricingSystem                 | D               |
@@ -596,7 +596,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
   @from:cucumber
   @Id:S32708_TC20
-  Scenario: TC20 mandate last used after the collection date: still exported with its own reference, DateLastUsed is not moved back
+  Scenario: mandate last used after the collection date: still exported with its own reference, DateLastUsed is not moved back
     Given metasfresh contains C_BPartners:
       | Identifier | Name            | Value      | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | b2bDebtor  | SEPA Debtor B2B | b2b_@Date@ | Y          | pricingSystem                 | D               |

@@ -118,7 +118,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 	}
 
 	/**
-	 * AC8, AC21: a pay selection with a B2B and a CORE debtor gives one export per scheme; each line carries its mandate reference,
+	 * A pay selection with a B2B and a CORE debtor gives one export per scheme; each line carries its mandate reference,
 	 * and each used mandate's DateLastUsed is the collection date.
 	 */
 	@Test

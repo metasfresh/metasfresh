@@ -17,7 +17,7 @@ Feature: Business partner copy does not copy direct debit mandates
 
   @from:cucumber
   @Id:S32708_TC11
-  Scenario: TC11 copying a business partner with a bank account and an active CORE mandate leaves the mandate with the original only
+  Scenario: copying a business partner with a bank account and an active CORE mandate leaves the mandate with the original only
     Given metasfresh contains C_BPartners:
       | Identifier | Name                | Value           | IsCustomer |
       | bp_orig    | Mandate copy origin | mandcopy_@Date@ | Y          |
