@@ -111,20 +111,33 @@ class TableQuickInput extends PureComponent {
     updateQuickinputData(fieldData);
   };
 
+  /**
+   * Sends a field PATCH. PATCHes are queued: each one is sent only after the
+   * previous one was answered, so none is dropped or overtaken while another
+   * is in flight. `this.patchPromise` always settles after the last queued PATCH.
+   *
+   * @returns {Promise} settles when this PATCH was answered
+   */
   handlePatch = (prop, value, callback) => {
     const { windowId, docId, tabId, patchQuickInput } = this.props;
 
-    this.patchPromise = new Promise((resolve) => {
-      patchQuickInput({ windowId, docId, tabId, prop, value }).then(() => {
+    const previousPatch = this.patchPromise || Promise.resolve();
+    this.patchPromise = previousPatch
+      // a failed previous PATCH must not block the following ones
+      .catch(() => {})
+      .then(() => patchQuickInput({ windowId, docId, tabId, prop, value }))
+      .then(() => {
         if (callback) {
           callback();
         }
-        resolve();
       });
-    });
+
+    return this.patchPromise;
   };
 
   onSubmit = (e) => {
+    e.preventDefault();
+
     if (this.state.isSubmitPending) {
       return;
     }
@@ -132,26 +145,38 @@ class TableQuickInput extends PureComponent {
     const { windowId, docId, tabId, quickInputId, addNotification } =
       this.props;
 
-    e.preventDefault();
-
     // blur to make sure the field value is committed, events are fired, etc
     const activeElement = document.activeElement;
     activeElement.blur();
 
-    const validationResult = this.validateForm();
-    if (validationResult.error) {
-      // Focus the last active element, to allow user continuing typing.
-      activeElement.focus();
-
-      return addNotification('Error', validationResult.error, 5000, 'error');
-    }
-
     this.setState({ isSubmitPending: true });
 
-    return this.patchPromise
-      .then(() => completeQuickInput({ windowId, docId, tabId, quickInputId }))
-      .then(this.initQuickInput)
-      .finally(() => this.setState({ isSubmitPending: false }));
+    // Validate and complete only after every queued field PATCH was answered.
+    // Until then the store still has the values from before the PATCH
+    // (e.g. a just selected product is still empty) and the server does not know them yet.
+    // The extra `.then` lets the PATCH that the blur above queues join the queue first.
+    return (
+      Promise.resolve()
+        .then(() => this.patchPromise)
+        .then(() => {
+          const validationResult = this.validateForm();
+          if (validationResult.error) {
+            addNotification('Error', validationResult.error, 5000, 'error');
+            // Focus the last active element, to allow user continuing typing.
+            this.setState({ isSubmitPending: false }, () =>
+              activeElement.focus()
+            );
+            return;
+          }
+
+          return completeQuickInput({ windowId, docId, tabId, quickInputId })
+            .then(this.initQuickInput)
+            .finally(() => this.setState({ isSubmitPending: false }));
+        })
+        // a failed PATCH or complete was already shown by the global axios error handler (App.js);
+        // keep the line in the form so the user can correct it and press Enter again
+        .catch(() => this.setState({ isSubmitPending: false }))
+    );
   };
 
   /** Validates form data returning first error */
@@ -217,7 +242,6 @@ class TableQuickInput extends PureComponent {
       data,
       layout,
       quickInputId,
-      inProgress,
     } = this.props;
     const { isSubmitPending } = this.state;
 
@@ -244,7 +268,9 @@ class TableQuickInput extends PureComponent {
             tabId={tabId}
             subentity="quickInput"
             subentityId={quickInputId}
-            inProgress={inProgress}
+            // `inProgress` is deliberately NOT passed: RawWidget drops every PATCH while it is set,
+            // which loses a value typed while another field's PATCH is in flight.
+            // `this.handlePatch` queues the PATCHes instead.
             widgetType={item.widgetType}
             widgetSize={item.size}
             fields={item.fields}
