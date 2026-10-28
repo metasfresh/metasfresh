@@ -348,15 +348,29 @@ public class M_InOut_Line_StepDef
 							.map(huPIItemProductTable::getId)
 							.orElse(null);
 
-					if (qtyEnteredTU != null || huPIItemProductIdentifier.isPresent())
+					assertThat(qtyEnteredTU != null)
+							.as("OPT.QtyEnteredTU and OPT.M_HU_PI_Item_Product_ID.Identifier must be given together (give both or neither)")
+							.isEqualTo(huPIItemProductIdentifier.isPresent());
+
+					if (qtyEnteredTU != null)
 					{
-						// The HU interceptor M_InOutLine.updateEffectiveValues overwrites QtyEnteredTU and M_HU_PI_Item_Product_ID
-						// on every non-packaging shipment line: with IsManualPackingMaterial=false from the *_Calculated columns,
-						// with IsManualPackingMaterial=true from QtyTU_Override and M_HU_PI_Item_Product_Override_ID.
-						// So we write the override columns, to make the given values survive.
-						huInOutLine.setIsManualPackingMaterial(true);
-						huInOutLine.setQtyTU_Override(qtyEnteredTU);
-						InterfaceWrapperHelper.setValue(huInOutLine, I_M_InOutLine.COLUMNNAME_M_HU_PI_Item_Product_Override_ID, huPIItemProductId != null ? huPIItemProductId.getRepoId() : null);
+						final Integer huPIItemProductRepoId = huPIItemProductId != null ? huPIItemProductId.getRepoId() : null;
+						if (Boolean.TRUE.equals(isPackingMaterial))
+						{
+							// the interceptor M_InOutLine.updateEffectiveValues skips packaging material lines, so the direct columns are kept as given
+							huInOutLine.setQtyEnteredTU(qtyEnteredTU);
+							InterfaceWrapperHelper.setValue(huInOutLine, I_M_InOutLine.COLUMNNAME_M_HU_PI_Item_Product_ID, huPIItemProductRepoId);
+						}
+						else
+						{
+							// The HU interceptor M_InOutLine.updateEffectiveValues overwrites QtyEnteredTU and M_HU_PI_Item_Product_ID
+							// on every non-packaging shipment line: with IsManualPackingMaterial=false from the *_Calculated columns,
+							// with IsManualPackingMaterial=true from QtyTU_Override and M_HU_PI_Item_Product_Override_ID.
+							// So we write the override pair (always together), to make the given values survive.
+							huInOutLine.setIsManualPackingMaterial(true);
+							huInOutLine.setQtyTU_Override(qtyEnteredTU);
+							InterfaceWrapperHelper.setValue(huInOutLine, I_M_InOutLine.COLUMNNAME_M_HU_PI_Item_Product_Override_ID, huPIItemProductRepoId);
+						}
 					}
 
 					InterfaceWrapperHelper.saveRecord(inOutLine);
