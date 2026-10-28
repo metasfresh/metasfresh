@@ -1,4 +1,4 @@
-import { test } from "../../../playwright.config";
+import { test, MOBILE_CHROME_LAUNCH_ARGS } from "../../../playwright.config";
 import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
@@ -8,25 +8,18 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 
-// Swiss-German operator: the browser's UI language is de-CH. The context locale alone does not
-// change how a number input treats the decimal separator, so Chromium itself is launched with --lang=de-CH.
-// NOTE: launchOptions is replaced as a whole, so the base args of playwright.config.js are repeated here.
+// Swiss-German operator: the browser's UI language is de-CH. The context `locale` alone does not
+// change how a number input treats the decimal separator, so Chromium itself is launched with
+// --lang=de-CH. That is the bite of this test: if QtyInputField ever reverts to <input type="number">,
+// a de-CH browser rejects the typed decimal point again and this spec goes RED.
+// Playwright replaces launchOptions.args wholesale (it does not merge), so we spread the shared base
+// args from playwright.config.js and append --lang, rather than duplicating the list here.
+// test.use() is scoped to this file, so the next spec reverts to the config default (Chromium is
+// relaunched when launchOptions differ).
 test.use({
     locale: 'de-CH',
     launchOptions: {
-        args: [
-            '--lang=de-CH',
-            '--no-sandbox',
-            '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282',
-            '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests',
-            '--disable-site-isolation-trials',
-            '--disable-web-security',
-            '--ignore-certificate-errors',
-            '--allow-insecure-localhost',
-            '--allow-running-insecure-content',
-            '--use-fake-ui-for-media-stream',
-            '--use-fake-device-for-media-stream',
-        ],
+        args: [...MOBILE_CHROME_LAUNCH_ARGS, '--lang=de-CH'],
     },
 });
 
