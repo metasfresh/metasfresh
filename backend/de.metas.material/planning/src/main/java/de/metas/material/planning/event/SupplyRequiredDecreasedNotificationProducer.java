@@ -23,9 +23,9 @@
 package de.metas.material.planning.event;
 
 import ch.qos.logback.classic.Level;
+import de.metas.document.engine.DocStatus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -75,7 +75,17 @@ public class SupplyRequiredDecreasedNotificationProducer
 
 	public void sendNotification(@Nullable final MaterialPlanningContext context, @NonNull final SupplyRequiredDescriptor descriptor, @NonNull final Quantity unhandledQty)
 	{
-		final TableRecordReference recordReference = getTableRecordReferenceFromEventDescriptor(descriptor);
+		// a PP_Order BOM-line demand (also when made for a sales order): point to the PP_Order, which is what changed
+		final PPOrderId ppOrderId = getPPOrderIdOrNull(descriptor);
+		final I_PP_Order ppOrder = ppOrderId == null ? null : getNotifiablePPOrderOrNull(ppOrderId);
+		if (ppOrderId != null && ppOrder == null)
+		{
+			return; // PP_Order deleted/voided/reversed meanwhile: nothing left to reduce, no notification
+		}
+
+		final TableRecordReference recordReference = ppOrderId != null
+				? TableRecordReference.of(I_PP_Order.Table_Name, ppOrderId)
+				: getOrderRecordReference(descriptor);
 		if (recordReference == null)
 		{
 			return;
@@ -87,40 +97,34 @@ public class SupplyRequiredDecreasedNotificationProducer
 				.contentADMessage(MSG_SUPPLY_REQUIRED_DECREASED)
 				.contentADMessageParam(unhandledQty.toString());
 
-		getRecipients(context, descriptor).forEach(userId -> {
+		getRecipients(context, descriptor, ppOrder).forEach(userId -> {
 			notificationBuilder.recipientUserId(userId);
 			notificationBL.sendAfterCommit(notificationBuilder
 					.build());
 		});
 	}
 
-	/**
-	 * @return the PP_Order the decreased demand belongs to, or {@code null} if the demand is not a PP_Order BOM-line demand
-	 * or the PP_Order is voided/reversed (then no notification is sent for it; a voided PP_Order has nothing left to reduce).
-	 */
 	@Nullable
-	private static I_PP_Order getPPOrderOrNull(@NonNull final SupplyRequiredDescriptor descriptor)
+	private static PPOrderId getPPOrderIdOrNull(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
 		final PPOrderRef ppOrderRef = descriptor.getPpOrderRef();
-		final PPOrderId ppOrderId = ppOrderRef == null ? null : ppOrderRef.getPpOrderId();
-		if (ppOrderId == null)
-		{
-			return null;
-		}
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
-		return DocStatus.ofCode(ppOrder.getDocStatus()).isReversedOrVoided() ? null : ppOrder;
+		return ppOrderRef == null ? null : ppOrderRef.getPpOrderId();
+	}
+
+	/**
+	 * @return the PP_Order, or {@code null} if it no longer exists (the handler runs async, so it may have been deleted)
+	 * or is voided/reversed.
+	 */
+	@Nullable
+	private static I_PP_Order getNotifiablePPOrderOrNull(@NonNull final PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class); // null if not found
+		return ppOrder == null || DocStatus.ofCode(ppOrder.getDocStatus()).isReversedOrVoided() ? null : ppOrder;
 	}
 
 	@Nullable
-	private TableRecordReference getTableRecordReferenceFromEventDescriptor(final SupplyRequiredDescriptor descriptor)
+	private TableRecordReference getOrderRecordReference(final SupplyRequiredDescriptor descriptor)
 	{
-		final PPOrderRef ppOrderRef = descriptor.getPpOrderRef();
-		if (ppOrderRef != null && ppOrderRef.getPpOrderId() != null)
-		{
-			// a PP_Order BOM-line demand (also when made for a sales order): point to the PP_Order, which is what changed
-			return getPPOrderOrNull(descriptor) == null ? null : TableRecordReference.of(I_PP_Order.Table_Name, ppOrderRef.getPpOrderId());
-		}
-
 		final TableRecordReference recordReference = TableRecordReference.ofNullable(I_C_Order.Table_Name, descriptor.getOrderId());
 		if (recordReference == null)
 		{
@@ -130,7 +134,7 @@ public class SupplyRequiredDecreasedNotificationProducer
 		return recordReference;
 	}
 
-	private Set<UserId> getRecipients(@Nullable final MaterialPlanningContext context, @NonNull final SupplyRequiredDescriptor descriptor)
+	private Set<UserId> getRecipients(@Nullable final MaterialPlanningContext context, @NonNull final SupplyRequiredDescriptor descriptor, @Nullable final I_PP_Order ppOrder)
 	{
 		final Set<UserId> userIds = new HashSet<>();
 		final UserId plannerId = context == null ? null : context.getProductPlanning().getPlannerId();
@@ -138,27 +142,23 @@ public class SupplyRequiredDecreasedNotificationProducer
 		{
 			userIds.add(plannerId);
 		}
-		final I_PP_Order ppOrder = getPPOrderOrNull(descriptor);
-		final OrderId orderId = OrderId.ofRepoIdOrNull(descriptor.getOrderId());
-		if (descriptor.getPpOrderRef() != null && descriptor.getPpOrderRef().getPpOrderId() != null)
+		if (ppOrder != null)
 		{
 			// the sales order (if any) did not change, so its sales rep is not notified
-			if (ppOrder != null)
+			final UserId ppOrderPlannerId = UserId.ofRepoIdOrNull(ppOrder.getPlanner_ID());
+			if (ppOrderPlannerId != null && ppOrderPlannerId.isRegularUser())
 			{
-				final UserId ppOrderPlannerId = UserId.ofRepoIdOrNull(ppOrder.getPlanner_ID());
-				if (ppOrderPlannerId != null && ppOrderPlannerId.isRegularUser())
-				{
-					userIds.add(ppOrderPlannerId);
-				}
-				final UserId updatedByUserId = UserId.ofRepoIdOrNull(InterfaceWrapperHelper.getPO(ppOrder).getUpdatedBy());
-				if (updatedByUserId != null && updatedByUserId.isRegularUser())
-				{
-					userIds.add(updatedByUserId);
-				}
+				userIds.add(ppOrderPlannerId);
+			}
+			final UserId updatedByUserId = UserId.ofRepoIdOrNull(InterfaceWrapperHelper.getPO(ppOrder).getUpdatedBy());
+			if (updatedByUserId != null && updatedByUserId.isRegularUser())
+			{
+				userIds.add(updatedByUserId);
 			}
 		}
-		else if (orderId != null)
+		else if (descriptor.getOrderId() > 0)
 		{
+			final OrderId orderId = OrderId.ofRepoId(descriptor.getOrderId());
 			final I_C_Order order = orderBL.getById(orderId);
 			final UserId salesRepUserId = UserId.ofRepoIdOrNull(order.getSalesRep_ID());
 			if (salesRepUserId != null && salesRepUserId.isRegularUser())
