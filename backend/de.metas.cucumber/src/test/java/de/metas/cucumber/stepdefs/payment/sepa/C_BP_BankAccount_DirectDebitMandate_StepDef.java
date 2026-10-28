@@ -40,6 +40,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BP_BankAccount_DirectDebitMandate;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -77,26 +78,35 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 		final BPartnerBankAccountId bankAccountId = row.getAsIdentifier(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_C_BP_BankAccount_ID)
 				.lookupNotNullIdIn(bankAccountTable);
 
-		final I_C_BP_BankAccount_DirectDebitMandate mandate = newInstance(I_C_BP_BankAccount_DirectDebitMandate.class);
-		mandate.setC_BP_BankAccount_ID(bankAccountId.getRepoId());
-		mandate.setC_BPartner_ID(bankAccountId.getBpartnerId().getRepoId());
-		mandate.setMandateType(row.getAsString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateType));
-		mandate.setMandateReference(row.getAsString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateReference));
-		mandate.setMandateDate(parseTimestampOrNull(row.getAsString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateDate), I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateDate));
-		mandate.setIsRecurring(row.getAsBoolean(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_IsRecurring));
-
-		row.getAsOptionalString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_AD_Org_ID)
-				.filter(orgStr -> !orgStr.trim().isEmpty()) // blank cell = same as absent column: PO default org
+		final String mandateReference = row.getAsString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateReference);
+		final OrgId orgId = row.getAsOptionalString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_AD_Org_ID)
+				.filter(orgStr -> !orgStr.trim().isEmpty()) // blank cell = same as absent column: login org
 				.map(this::resolveOrgId)
-				.ifPresent(orgId -> mandate.setAD_Org_ID(orgId.getRepoId()));
-		row.getAsOptionalString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed)
-				.ifPresent(str -> mandate.setDateLastUsed(parseTimestampOrNull(str, I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed)));
-		row.getAsOptionalBoolean(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_IsActive)
-				.ifPresent(mandate::setIsActive);
+				.orElseGet(Env::getOrgId);
 
-		saveRecord(mandate);
+		// upsert by the natural key (MandateReference, AD_Org_ID), so that a re-run on the same DB does not collide with the rows of the earlier run
+		final I_C_BP_BankAccount_DirectDebitMandate mandate = queryBL.createQueryBuilder(I_C_BP_BankAccount_DirectDebitMandate.class)
+				.addEqualsFilter(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateReference, mandateReference)
+				.addEqualsFilter(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.firstOnly(I_C_BP_BankAccount_DirectDebitMandate.class);
+		final I_C_BP_BankAccount_DirectDebitMandate mandateRecord = mandate != null ? mandate : newInstance(I_C_BP_BankAccount_DirectDebitMandate.class);
+		mandateRecord.setAD_Org_ID(orgId.getRepoId());
+		mandateRecord.setC_BP_BankAccount_ID(bankAccountId.getRepoId());
+		mandateRecord.setC_BPartner_ID(bankAccountId.getBpartnerId().getRepoId());
+		mandateRecord.setMandateType(row.getAsString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateType));
+		mandateRecord.setMandateReference(mandateReference);
+		mandateRecord.setMandateDate(parseTimestampOrNull(row.getAsString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateDate), I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateDate));
+		mandateRecord.setIsRecurring(row.getAsBoolean(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_IsRecurring));
+		// optional columns: an absent column resets a re-used row to the state of a new one
+		mandateRecord.setDateLastUsed(row.getAsOptionalString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed)
+				.map(str -> parseTimestampOrNull(str, I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed))
+				.orElse(null));
+		mandateRecord.setIsActive(row.getAsOptionalBoolean(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_IsActive).orElseTrue());
 
-		row.getAsIdentifier().putOrReplace(mandateTable, mandate);
+		saveRecord(mandateRecord);
+
+		row.getAsIdentifier().putOrReplace(mandateTable, mandateRecord);
 	}
 
 	@Then("validate C_BP_BankAccount_DirectDebitMandate:")

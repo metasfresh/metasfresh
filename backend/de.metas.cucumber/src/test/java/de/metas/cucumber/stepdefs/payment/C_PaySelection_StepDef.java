@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
@@ -70,7 +71,25 @@ public class C_PaySelection_StepDef
 	private final @NonNull C_BPartner_StepDefData bpartnerTable;
 	private final @NonNull C_Invoice_StepDefData invoiceTable;
 	private final @NonNull C_Payment_StepDefData paymentTable;
+	private final @NonNull AD_Org_StepDefData orgTable;
 
+	/**
+	 * Creates draft pay selections.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> - (required) identifier under which the pay selection is registered<br>
+	 *   <b>C_BP_BankAccount_ID</b> - (optional, identifier-ref) the organization bank account<br>
+	 *   <b>PaySelectionTrxType</b> - (optional) e.g. CT (credit transfer) or DD (direct debit)<br>
+	 *   <b>PayDate</b> - (optional) the pay date<br>
+	 *   <b>AD_Org_ID</b> - (optional, identifier-ref) the organization; default is the login organization
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains Pay Selection
+	 *   | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    | OPT.AD_Org_ID |
+	 *   | paySelection | orgAcct             | DD                  | 2026-11-02 | sellerOrg     |
+	 * </pre>
+	 */
 	@And("metasfresh contains Pay Selection")
 	public void addPaySelections(@NonNull final DataTable dataTable)
 	{
@@ -89,6 +108,11 @@ public class C_PaySelection_StepDef
 		row.getAsOptionalIdentifier(I_C_PaySelection.COLUMNNAME_C_BP_BankAccount_ID)
 				.map(bankAccountTable::getId)
 				.ifPresent(id -> paySelectionRecord.setC_BP_BankAccount_ID(id.getRepoId()));
+
+		// optional: the organization of the pay selection; default is the login organization
+		row.getAsOptionalIdentifier(I_C_PaySelection.COLUMNNAME_AD_Org_ID)
+				.map(orgTable::getIdAsInt)
+				.ifPresent(paySelectionRecord::setAD_Org_ID);
 
 		row.getAsOptionalInstantTimestamp(I_C_PaySelection.COLUMNNAME_PayDate)
 				.ifPresent(paySelectionRecord::setPayDate);
@@ -170,6 +194,8 @@ public class C_PaySelection_StepDef
 					final InvoiceId expectedInvoiceId = invoiceIdentifier.isNullPlaceholder() ? null : invoiceTable.getId(invoiceIdentifier);
 					softly.assertThat(InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID())).as("C_Invoice_ID").isEqualTo(expectedInvoiceId);
 				});
+		expectation.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_BP_BankAccount_ID)
+				.ifPresent(bankAccountIdentifier -> softly.assertThat(line.getC_BP_BankAccount_ID()).as("C_BP_BankAccount_ID").isEqualTo(bankAccountTable.getId(bankAccountIdentifier).getRepoId()));
 		expectation.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_Payment_ID)
 				.ifPresent(paymentIdentifier -> validatePaymentId(softly, paymentIdentifier, PaymentId.ofRepoIdOrNull(line.getC_Payment_ID())));
 		expectation.getAsOptionalBigDecimal(I_C_PaySelectionLine.COLUMNNAME_PayAmt)
