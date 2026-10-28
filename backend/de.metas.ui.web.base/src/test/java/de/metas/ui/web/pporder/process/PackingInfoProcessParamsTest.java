@@ -134,12 +134,12 @@ public class PackingInfoProcessParamsTest
 	}
 
 	/**
-	 * The TU is also included in a TU-type packing instruction (like "Offen"); building a pallet from that fails on start, so only the LU is offered.
+	 * The TU is also included in a TU-type packing instruction; building a pallet from that fails on start, so only the LU is offered.
 	 */
 	@Test
 	public void tuIncludedInLUAndInTUTypeParent_onlyTheLUIsOfferedAsPallet()
 	{
-		createParentItem("Offen", HuUnitType.TU, new BigDecimal("9"));
+		createParentItem("TU container", HuUnitType.TU, new BigDecimal("9"));
 		final I_M_HU_PI_Item luItem = createParentItem("Pallet", HuUnitType.LU, new BigDecimal("12"));
 
 		assertThat(params.getM_HU_PI_Item_IDs(fixedCapacityPIP).getKeysAsInt()).containsExactly(luItem.getM_HU_PI_Item_ID());
@@ -151,7 +151,7 @@ public class PackingInfoProcessParamsTest
 	@Test
 	public void tuIncludedOnlyInTUTypeParent_noPalletIsOffered()
 	{
-		createParentItem("Offen", HuUnitType.TU, new BigDecimal("9"));
+		createParentItem("TU container", HuUnitType.TU, new BigDecimal("9"));
 
 		assertThat(params.getM_HU_PI_Item_IDs(fixedCapacityPIP).isEmpty()).isTrue();
 		assertThat(params.getFirstAvailableLuPIItemOrNull(fixedCapacityPIP)).isNull();

@@ -27,7 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * "TU to new LUs" must offer only LU-type parent packing instructions; a TU-type parent (like "Offen") cannot be built as LU.
+ * "TU to new LUs" must offer only LU-type parent packing instructions; a TU-type parent cannot be built as LU.
  */
 public class WebuiHUTransformParametersFillerTest
 {
@@ -65,7 +65,7 @@ public class WebuiHUTransformParametersFillerTest
 	@Test
 	public void tuIncludedInTUTypeParentAndInLU_onlyTheLUIsOffered()
 	{
-		createParentItem("Offen", HuUnitType.TU);
+		createParentItem("TU container", HuUnitType.TU);
 		final I_M_HU_PI_Item luItem = createParentItem("Pallet", HuUnitType.LU);
 
 		assertThat(filler.getM_HU_PI_Item_IDs().getKeysAsInt()).containsExactly(luItem.getM_HU_PI_Item_ID());
@@ -77,7 +77,7 @@ public class WebuiHUTransformParametersFillerTest
 	@Test
 	public void tuIncludedOnlyInTUTypeParent_noLUIsOffered()
 	{
-		createParentItem("Offen", HuUnitType.TU);
+		createParentItem("TU container", HuUnitType.TU);
 
 		assertThat(filler.getM_HU_PI_Item_IDs().isEmpty()).isTrue();
 		assertThat(filler.getDefaultM_LU_PI_ItemOrNull()).isNull();
