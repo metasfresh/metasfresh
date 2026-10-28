@@ -26,6 +26,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
@@ -40,8 +41,10 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.util.DB;
 import org.springframework.context.ApplicationContext;
 
+import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -63,6 +66,21 @@ public class AD_SysConfig_StepDef
 	 * Restored by {@link #restoreTemporarySysConfigsAfterScenario()}.
 	 */
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
+
+	/**
+	 * Sysconfigs this scenario overwrote via {@link #temporarily_set_sys_config_to_product_category}, mapped to the
+	 * state of their {@code AD_Client_ID=0, AD_Org_ID=0} row from BEFORE the overwrite. Deliberately separate from
+	 * {@link #priorValueBySysConfigName}: that map only knows "null = nothing to restore", whereas here
+	 * {@code PriorSysConfigState.rowExisted} distinguishes "no row" (delete it again) from "row with NULL/empty value" (restore that).
+	 */
+	private final Map<String, PriorSysConfigState> priorStateByCategorySysConfigName = new LinkedHashMap<>();
+
+	@lombok.Value
+	private static class PriorSysConfigState
+	{
+		boolean rowExisted;
+		@Nullable String value;
+	}
 
 	/**
 	 * Sets a SYSTEM-level AD_SysConfig to the given value — permanently, for the rest of the scenario
@@ -161,6 +179,75 @@ public class AD_SysConfig_StepDef
 		rememberPriorValue(sysConfigName);
 		setSysConfigIntValue(sysConfigName, value);
 		resetSysConfigCache();
+	}
+
+	/**
+	 * Temporarily sets a sys config to the {@code M_Product_Category_ID} of a product category created in this
+	 * scenario; the original state (row absent, or its value) is restored by
+	 * {@link #restoreCategorySysConfigsAfterScenario()}, which deletes the {@code AD_Client_ID=0, AD_Org_ID=0} row again
+	 * if there was none before. Do not use the same sys config name with this step and the other temporary steps in one scenario.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And temporarily set sys config 'PackingMaterialProductCategoryID' to the M_Product_Category identified by 'pallet_category'
+	 * </pre>
+	 */
+	@And("temporarily set sys config {string} to the M_Product_Category identified by {string}")
+	public void temporarily_set_sys_config_to_product_category(@NonNull final String sysConfigName, @NonNull final String productCategoryIdentifier)
+	{
+		final I_M_Product_Category productCategory = productCategoryTable.get(productCategoryIdentifier);
+
+		if (!priorStateByCategorySysConfigName.containsKey(sysConfigName))
+		{
+			final int rowCount = DB.getSQLValueEx(ITrx.TRXNAME_None,
+					"SELECT COUNT(1) FROM AD_SysConfig WHERE Name=? AND AD_Client_ID=0 AND AD_Org_ID=0", sysConfigName);
+			final String value = rowCount > 0
+					? DB.getSQLValueStringEx(ITrx.TRXNAME_None, "SELECT Value FROM AD_SysConfig WHERE Name=? AND AD_Client_ID=0 AND AD_Org_ID=0", sysConfigName)
+					: null;
+			priorStateByCategorySysConfigName.put(sysConfigName, new PriorSysConfigState(rowCount > 0, value));
+		}
+
+		setSysConfigIntValue(sysConfigName, productCategory.getM_Product_Category_ID());
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+	}
+
+	/**
+	 * Cleanup for {@link #temporarily_set_sys_config_to_product_category}; independent of
+	 * {@link #restoreRepointedSysConfigsAfterScenario()} (own map, own hook, no ordering dependency).
+	 */
+	@After
+	public void restoreCategorySysConfigsAfterScenario()
+	{
+		if (priorStateByCategorySysConfigName.isEmpty())
+		{
+			return;
+		}
+
+		try
+		{
+			for (final Map.Entry<String, PriorSysConfigState> entry : priorStateByCategorySysConfigName.entrySet())
+			{
+				final String sysConfigName = entry.getKey();
+				final PriorSysConfigState prior = entry.getValue();
+				if (prior.isRowExisted())
+				{
+					sysConfigBL.setValue(sysConfigName, prior.getValue(), ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+				}
+				else
+				{
+					DB.executeUpdateAndThrowExceptionOnFail(
+							"DELETE FROM AD_SysConfig WHERE Name=? AND AD_Client_ID=0 AND AD_Org_ID=0",
+							new Object[] { sysConfigName },
+							ITrx.TRXNAME_None);
+				}
+			}
+		}
+		finally
+		{
+			priorStateByCategorySysConfigName.clear();
+			CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+		}
 	}
 
 	@And("update AD_SysConfig with login AD_User_ID")
@@ -303,7 +390,7 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * The only restore of the sysconfigs this scenario changed temporarily: an {@code @After} hook, so it also runs when a step failed.
+	 * Restores the sysconfigs in {@link #priorValueBySysConfigName} (the product-category step has its own {@link #restoreCategorySysConfigsAfterScenario()}): an {@code @After} hook, so it also runs when a step failed.
 	 * A sysconfig without prior value is deleted again.
 	 */
 	@After
