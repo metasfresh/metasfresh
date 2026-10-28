@@ -22,6 +22,7 @@
 
 package de.metas.banking.mandate;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
@@ -56,9 +57,11 @@ public class DirectDebitMandateRepository
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
+	@VisibleForTesting
 	public static DirectDebitMandateRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(DirectDebitMandateRepository.class, DirectDebitMandateRepository::new);
 	}
 
@@ -84,7 +87,7 @@ public class DirectDebitMandateRepository
 				.addInArrayFilter(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_AD_Org_ID, ImmutableSet.of(exportOrgId, OrgId.ANY))
 				.create()
 				.stream()
-				.map(this::fromRecord)
+				.map(record -> fromRecord(record, orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()))))
 				.collect(ImmutableList.toImmutableList());
 
 		return DirectDebitMandatesMap.ofList(mandates, exportOrgId);
@@ -113,10 +116,11 @@ public class DirectDebitMandateRepository
 		saveRecord(record);
 	}
 
-	private DirectDebitMandate fromRecord(@NonNull final I_C_BP_BankAccount_DirectDebitMandate record)
+	private static DirectDebitMandate fromRecord(
+			@NonNull final I_C_BP_BankAccount_DirectDebitMandate record,
+			@NonNull final ZoneId orgZoneId)
 	{
 		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
-		final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
 
 		return DirectDebitMandate.builder()
 				.id(DirectDebitMandateId.ofRepoId(record.getC_BP_BankAccount_DirectDebitMandate_ID()))
@@ -125,7 +129,7 @@ public class DirectDebitMandateRepository
 				.type(DirectDebitMandateType.ofCode(record.getMandateType()))
 				.reference(record.getMandateReference())
 				.mandateDate(TimeUtil.asLocalDate(record.getMandateDate(), orgZoneId))
-				.recurring(record.isRecurring())
+				.isRecurring(record.isRecurring())
 				.dateLastUsed(TimeUtil.asLocalDate(record.getDateLastUsed(), orgZoneId))
 				.build();
 	}

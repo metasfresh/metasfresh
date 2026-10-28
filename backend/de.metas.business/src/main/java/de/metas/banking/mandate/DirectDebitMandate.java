@@ -50,7 +50,7 @@ public class DirectDebitMandate
 	@NonNull DirectDebitMandateType type;
 	@NonNull String reference;
 	@NonNull LocalDate mandateDate;
-	boolean recurring;
+	boolean isRecurring;
 	@Nullable LocalDate dateLastUsed;
 
 	/**
@@ -75,6 +75,6 @@ public class DirectDebitMandate
 	 */
 	public boolean isOneOffAlreadyUsed()
 	{
-		return !recurring && dateLastUsed != null;
+		return !isRecurring && dateLastUsed != null;
 	}
 }

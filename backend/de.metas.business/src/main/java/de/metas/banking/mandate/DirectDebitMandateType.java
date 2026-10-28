@@ -22,6 +22,8 @@
 
 package de.metas.banking.mandate;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
@@ -46,9 +48,13 @@ public enum DirectDebitMandateType implements ReferenceListAwareEnum
 
 	@NonNull private final String code;
 
+	@JsonCreator
 	@NonNull
 	public static DirectDebitMandateType ofCode(@NonNull final String code) {return index.ofCode(code);}
 
 	@Nullable
 	public static DirectDebitMandateType ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
+
+	@JsonValue
+	public String toJson() {return code;}
 }
