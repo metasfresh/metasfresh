@@ -26,6 +26,8 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -34,9 +36,8 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Customs_Invoice_Line;
@@ -46,19 +47,16 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static de.metas.cucumber.stepdefs.util.SqlQueryTestUtil.queryRows;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -68,6 +66,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class C_Customs_Invoice_StepDef
 {
 	private static final String AD_LANGUAGE = "en_US";
+	private static final String DEFAULT_CURRENCY_ISO_CODE = "EUR";
+	/** The report functions hardcode this C_UOM_ID as kg, see e.g. docs_sales_customs_invoice_footer. */
+	private static final int HARDCODED_KG_UOM_ID = 540017;
+	private static final String UOM_CODE_KGM = "KGM";
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -78,6 +80,7 @@ public class C_Customs_Invoice_StepDef
 	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_InOutLine_StepDefData inoutLineTable;
+	@NonNull private final CurrencyRepository currencyRepository;
 
 	/**
 	 * Creates draft customs invoices; the document type is the active one with base type {@code CustomsInvoice}.
@@ -85,9 +88,11 @@ public class C_Customs_Invoice_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>Identifier</b> — (required) alias of the customs invoice<br>
-	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) the customer<br>
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) the customer<br>
 	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) the customer's location<br>
 	 *   <b>DateInvoiced</b> — (optional) date, e.g. 2022-05-17<br>
+	 *   <b>C_Currency_ID</b> — (optional, ISO code, default EUR) the currency<br>
+	 *   <b>DocumentNo</b> — (optional, default: "CI-" + identifier)<br>
 	 * @cucumber.depends StepDefData: C_BPartner_StepDefData, C_BPartner_Location_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -107,9 +112,10 @@ public class C_Customs_Invoice_StepDef
 			record.setDateInvoiced(row.getAsOptionalLocalDateTimestamp(I_C_Customs_Invoice.COLUMNNAME_DateInvoiced)
 					.orElseGet(() -> TimeUtil.asTimestamp(Instant.now())));
 
-			row.getAsOptionalIdentifier(I_C_Customs_Invoice.COLUMNNAME_C_BPartner_ID)
-					.map(bpartnerTable::getId)
-					.ifPresent(bpartnerId -> record.setC_BPartner_ID(bpartnerId.getRepoId()));
+			record.setC_BPartner_ID(bpartnerTable.getId(row.getAsIdentifier(I_C_Customs_Invoice.COLUMNNAME_C_BPartner_ID)).getRepoId());
+			record.setC_Currency_ID(currencyRepository.getCurrencyIdByCurrencyCode(row.getAsOptionalCurrencyCode().orElseGet(() -> CurrencyCode.ofThreeLetterCode(DEFAULT_CURRENCY_ISO_CODE))).getRepoId());
+			record.setDocumentNo(row.getAsOptionalString(I_C_Customs_Invoice.COLUMNNAME_DocumentNo)
+					.orElseGet(() -> "CI-" + row.getAsIdentifier().getAsString()));
 			row.getAsOptionalIdentifier(I_C_Customs_Invoice.COLUMNNAME_C_BPartner_Location_ID)
 					.map(identifier -> identifier.lookupNotNullIn(bpartnerLocationTable))
 					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
@@ -122,6 +128,7 @@ public class C_Customs_Invoice_StepDef
 
 	/**
 	 * Creates customs invoice lines; {@code LineNo} counts up per invoice.
+	 * Kg must be the UOM that the report functions hardcode as kg (C_UOM_ID 540017); the step fails otherwise.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -146,6 +153,11 @@ public class C_Customs_Invoice_StepDef
 			final I_C_Customs_Invoice customsInvoice = row.getAsIdentifier(I_C_Customs_Invoice_Line.COLUMNNAME_C_Customs_Invoice_ID).lookupNotNullIn(customsInvoiceTable);
 			final I_M_Product product = row.getAsIdentifier(I_C_Customs_Invoice_Line.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
 			final I_C_UOM uom = uomDAO.getByX12DE355(row.getAsUOMCode(I_C_Customs_Invoice_Line.COLUMNNAME_C_UOM_ID));
+			if (UOM_CODE_KGM.equals(uom.getX12DE355()))
+			{
+				// the report functions only take the "is kg" branch for this id; otherwise netto/brutto weights would silently be computed via the conversion branch
+				assertThat(uom.getC_UOM_ID()).as("C_UOM_ID of KGM; the customs invoice report functions hardcode the kg UOM id").isEqualTo(HARDCODED_KG_UOM_ID);
+			}
 
 			final int existingLinesCount = queryBL.createQueryBuilder(I_C_Customs_Invoice_Line.class)
 					.addEqualsFilter(I_C_Customs_Invoice_Line.COLUMNNAME_C_Customs_Invoice_ID, customsInvoice.getC_Customs_Invoice_ID())
@@ -202,7 +214,7 @@ public class C_Customs_Invoice_StepDef
 	}
 
 	/**
-	 * Calls {@code de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer} and compares its rows (ordered as returned) with the table.
+	 * Calls {@code de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer} and compares its rows with the table. Rows are ordered by nettoTotalWeight, then bruttoTotalWeight; list multi-row expectations in that order.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -223,7 +235,7 @@ public class C_Customs_Invoice_StepDef
 		final List<BigDecimal[]> actualRows = new ArrayList<>();
 		queryRows(
 				"SELECT nettoTotalWeight, bruttoTotalWeight FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer("
-						+ customsInvoiceId + "::numeric, '" + AD_LANGUAGE + "'::varchar)",
+						+ customsInvoiceId + "::numeric, '" + AD_LANGUAGE + "'::varchar) ORDER BY nettoTotalWeight, bruttoTotalWeight",
 				rs -> actualRows.add(new BigDecimal[] { rs.getBigDecimal(1), rs.getBigDecimal(2) }));
 
 		final List<BigDecimal[]> expectedRows = new ArrayList<>();
@@ -287,27 +299,5 @@ public class C_Customs_Invoice_StepDef
 			throw new AdempiereException("No active C_DocType with DocBaseType=" + X_C_DocType.DOCBASETYPE_CustomsInvoice + " found");
 		}
 		return docTypeId;
-	}
-
-	@FunctionalInterface
-	private interface RowConsumer
-	{
-		void accept(ResultSet rs) throws SQLException;
-	}
-
-	private static void queryRows(@NonNull final String sql, @NonNull final RowConsumer consumer)
-	{
-		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			 final ResultSet rs = pstmt.executeQuery())
-		{
-			while (rs.next())
-			{
-				consumer.accept(rs);
-			}
-		}
-		catch (final SQLException e)
-		{
-			throw new AdempiereException("Failed running: " + sql, e);
-		}
 	}
 }

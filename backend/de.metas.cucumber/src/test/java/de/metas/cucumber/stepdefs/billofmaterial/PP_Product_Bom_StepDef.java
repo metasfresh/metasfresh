@@ -41,11 +41,9 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMType;
@@ -57,20 +55,20 @@ import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.X_PP_Product_BOM;
 
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
+import static de.metas.cucumber.stepdefs.util.SqlQueryTestUtil.queryRows;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Product_Bom_StepDef
@@ -79,6 +77,8 @@ public class PP_Product_Bom_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
+	/** The report function rounds Cost to 6 decimals and QtyBOM derives from unrounded percentage quantities. */
+	private static final BigDecimal REPORT_TOLERANCE = new BigDecimal("0.000001");
 
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_BOM_StepDefData productBOMTable;
@@ -361,7 +361,7 @@ public class PP_Product_Bom_StepDef
 		final int bomId = productBOMTable.getId(bomIdentifier).getRepoId();
 		final List<String> actualLines = new ArrayList<>();
 		final List<BigDecimal> actualCumulativeQtys = new ArrayList<>();
-		runQuery("SELECT Line, cumulative_qty FROM PP_Product_BOM_Recursive(" + bomId + "::numeric, NULL::varchar) ORDER BY path",
+		queryRows("SELECT Line, cumulative_qty FROM PP_Product_BOM_Recursive(" + bomId + "::numeric, NULL::varchar) ORDER BY path",
 				rs -> {
 					actualLines.add(rs.getString(1));
 					actualCumulativeQtys.add(rs.getBigDecimal(2));
@@ -383,7 +383,7 @@ public class PP_Product_Bom_StepDef
 
 	/**
 	 * Calls {@code PP_Product_BOM_Recursive_Report(<bom>, <today>)} and compares its rows (ordered as returned) with the table.
-	 * An empty cell means "not asserted".
+	 * An empty cell means "not asserted"; QtyBOM and Cost match within 0.000001.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -406,47 +406,25 @@ public class PP_Product_Bom_StepDef
 		final List<String> actualLines = new ArrayList<>();
 		final List<BigDecimal> actualQtyBOMs = new ArrayList<>();
 		final List<BigDecimal> actualCosts = new ArrayList<>();
-		runQuery("SELECT Line, QtyBOM, Cost FROM PP_Product_BOM_Recursive_Report(" + bomId + "::numeric, now()::date)",
+		queryRows("SELECT Line, QtyBOM, Cost FROM PP_Product_BOM_Recursive_Report(" + bomId + "::numeric, now()::date)",
 				rs -> {
 					actualLines.add(rs.getString(1));
 					actualQtyBOMs.add(rs.getBigDecimal(2));
 					actualCosts.add(rs.getBigDecimal(3));
 				});
 
-		final List<DataTableRow> expectedRows = DataTableRows.of(dataTable).stream().collect(java.util.stream.Collectors.toList());
+		final List<DataTableRow> expectedRows = DataTableRows.of(dataTable).toList();
 
 		assertThat(actualLines).as("Line of PP_Product_BOM_Recursive_Report rows of " + bomIdentifier)
-				.containsExactlyElementsOf(expectedRows.stream().map(row -> row.getAsString("Line")).collect(java.util.stream.Collectors.toList()));
+				.containsExactlyElementsOf(expectedRows.stream().map(row -> row.getAsString("Line")).collect(Collectors.toList()));
 		for (int i = 0; i < expectedRows.size(); i++)
 		{
 			final int index = i;
 			final String line = actualLines.get(i);
-			expectedRows.get(i).getAsOptionalString("QtyBOM").filter(value -> !value.trim().isEmpty()).map(BigDecimal::new)
-					.ifPresent(expected -> assertThat(actualQtyBOMs.get(index)).as("QtyBOM of line " + line).isEqualByComparingTo(expected));
-			expectedRows.get(i).getAsOptionalString("Cost").filter(value -> !value.trim().isEmpty()).map(BigDecimal::new)
-					.ifPresent(expected -> assertThat(actualCosts.get(index)).as("Cost of line " + line).isEqualByComparingTo(expected));
-		}
-	}
-
-	@FunctionalInterface
-	private interface RowConsumer
-	{
-		void accept(ResultSet rs) throws SQLException;
-	}
-
-	private static void runQuery(@NonNull final String sql, @NonNull final RowConsumer consumer)
-	{
-		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			 final ResultSet rs = pstmt.executeQuery())
-		{
-			while (rs.next())
-			{
-				consumer.accept(rs);
-			}
-		}
-		catch (final SQLException e)
-		{
-			throw new AdempiereException("Failed running: " + sql, e);
+			expectedRows.get(i).getAsOptionalBigDecimal("QtyBOM")
+					.ifPresent(expected -> assertThat(actualQtyBOMs.get(index)).as("QtyBOM of line " + line).isCloseTo(expected, within(REPORT_TOLERANCE)));
+			expectedRows.get(i).getAsOptionalBigDecimal("Cost")
+					.ifPresent(expected -> assertThat(actualCosts.get(index)).as("Cost of line " + line).isCloseTo(expected, within(REPORT_TOLERANCE)));
 		}
 	}
 }
