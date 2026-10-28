@@ -86,7 +86,8 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 		mandate.setIsRecurring(row.getAsBoolean(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_IsRecurring));
 
 		row.getAsOptionalString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_AD_Org_ID)
-				.map(orgStr -> resolveOrgId(orgStr))
+				.filter(orgStr -> !orgStr.trim().isEmpty()) // blank cell = same as absent column: PO default org
+				.map(this::resolveOrgId)
 				.ifPresent(orgId -> mandate.setAD_Org_ID(orgId.getRepoId()));
 		row.getAsOptionalString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed)
 				.ifPresent(str -> mandate.setDateLastUsed(parseTimestampOrNull(str, I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed)));
