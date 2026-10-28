@@ -150,40 +150,43 @@ Feature: customs invoice footer and detail weights
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | wh_std                    | StdWarehouse |
+    And load M_Locator:
+      | Identifier | Value     | M_Warehouse_ID |
+      | loc_std    | Hauptlager | wh_std         |
     And metasfresh contains M_InOut:
       | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | DocBaseType | DocSubType |
       | shipment   | customer      | location               | true    | F            | S               | I               | wh_std                    | 2026-01-15   | C-           | 5            | MMS         | MS         |
     And metasfresh contains M_InOutLine
-      | M_InOutLine_ID | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | QtyEnteredTU | M_HU_PI_Item_Product_ID |
-      | shipLine_01    | shipment              | product_01                  | 10         | 10          | PCE     | 10           | pip_01                  |
-      | shipLine_02    | shipment              | product_02                  | 15         | 15          | PCE     | 1            | pip_02                  |
-      | shipLine_03    | shipment              | product_03                  | 42         | 42          | PCE     | 14           | pip_03                  |
-      | shipLine_04    | shipment              | product_04                  | 30         | 30          | PCE     | 10           | pip_04                  |
-      | shipLine_05    | shipment              | product_05                  | 16         | 16          | PCE     | 2            | pip_05                  |
-      | shipLine_06    | shipment              | product_06                  | 64         | 64          | PCE     | 8            | pip_06                  |
-      | shipLine_07    | shipment              | product_07                  | 2          | 2           | PCE     | 2            | pip_07                  |
-      | shipLine_08    | shipment              | product_08                  | 10         | 10          | PCE     | 10           | pip_08                  |
-      | shipLine_09    | shipment              | product_09                  | 6          | 6           | PCE     | 1            | pip_09                  |
-      | shipLine_10    | shipment              | product_10                  | 4          | 4           | PCE     | 1            | pip_10                  |
-      | shipLine_11    | shipment              | product_11                  | 36         | 36          | PCE     | 18           | pip_11                  |
-      | shipLine_12    | shipment              | product_12                  | 8          | 8           | PCE     | 2            | pip_12                  |
-      | shipLine_13    | shipment              | product_13                  | 2          | 2           | PCE     | 2            | pip_13                  |
-      | shipLine_14    | shipment              | product_14                  | 3          | 3           | PCE     | 3            | pip_14                  |
-      | shipLine_15    | shipment              | product_15                  | 12         | 12          | PCE     | 12           | pip_15                  |
-      | shipLine_16    | shipment              | product_16                  | 3          | 3           | PCE     | 3            | pip_16                  |
-      | shipLine_17    | shipment              | product_17                  | 4          | 4           | PCE     | 4            | pip_17                  |
-      | shipLine_18    | shipment              | product_17                  | 8          | 8           | PCE     | 8            | pip_17                  |
-      | shipLine_19    | shipment              | product_18                  | 3          | 3           | PCE     | 3            | pip_18                  |
-      | shipLine_20    | shipment              | product_19                  | 30         | 30          | PCE     | 30           | pip_19                  |
-      | shipLine_21    | shipment              | product_20                  | 30         | 30          | PCE     | 30           | pip_20                  |
-      | shipLine_22    | shipment              | product_21                  | 4          | 4           | PCE     | 4            | pip_21                  |
-      | shipLine_23    | shipment              | product_22                  | 2          | 2           | PCE     | 1            | pip_22                  |
-      | shipLine_24    | shipment              | product_23                  | 40         | 40          | PCE     | 40           | pip_23                  |
-      | shipLine_25    | shipment              | product_24                  | 12         | 12          | PCE     | 1            | pip_24                  |
-      | shipLine_26    | shipment              | product_25                  | 124        | 124         | PCE     | 31           | pip_25                  |
-      | shipLine_27    | shipment              | product_26                  | 4          | 4           | PCE     | 4            | pip_26                  |
-      | shipLine_28    | shipment              | product_27                  | 4          | 4           | PCE     | 4            | pip_27                  |
-      | shipLine_29    | shipment              | product_27                  | 1          | 1           | PCE     | 1            | pip_27                  |
+      | M_InOutLine_ID | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier | QtyEntered | MovementQty | UomCode | QtyEnteredTU | M_HU_PI_Item_Product_ID |
+      | shipLine_01    | shipment              | product_01                  | loc_std                      | 10         | 10          | PCE     | 10           | pip_01                  |
+      | shipLine_02    | shipment              | product_02                  | loc_std                      | 15         | 15          | PCE     | 1            | pip_02                  |
+      | shipLine_03    | shipment              | product_03                  | loc_std                      | 42         | 42          | PCE     | 14           | pip_03                  |
+      | shipLine_04    | shipment              | product_04                  | loc_std                      | 30         | 30          | PCE     | 10           | pip_04                  |
+      | shipLine_05    | shipment              | product_05                  | loc_std                      | 16         | 16          | PCE     | 2            | pip_05                  |
+      | shipLine_06    | shipment              | product_06                  | loc_std                      | 64         | 64          | PCE     | 8            | pip_06                  |
+      | shipLine_07    | shipment              | product_07                  | loc_std                      | 2          | 2           | PCE     | 2            | pip_07                  |
+      | shipLine_08    | shipment              | product_08                  | loc_std                      | 10         | 10          | PCE     | 10           | pip_08                  |
+      | shipLine_09    | shipment              | product_09                  | loc_std                      | 6          | 6           | PCE     | 1            | pip_09                  |
+      | shipLine_10    | shipment              | product_10                  | loc_std                      | 4          | 4           | PCE     | 1            | pip_10                  |
+      | shipLine_11    | shipment              | product_11                  | loc_std                      | 36         | 36          | PCE     | 18           | pip_11                  |
+      | shipLine_12    | shipment              | product_12                  | loc_std                      | 8          | 8           | PCE     | 2            | pip_12                  |
+      | shipLine_13    | shipment              | product_13                  | loc_std                      | 2          | 2           | PCE     | 2            | pip_13                  |
+      | shipLine_14    | shipment              | product_14                  | loc_std                      | 3          | 3           | PCE     | 3            | pip_14                  |
+      | shipLine_15    | shipment              | product_15                  | loc_std                      | 12         | 12          | PCE     | 12           | pip_15                  |
+      | shipLine_16    | shipment              | product_16                  | loc_std                      | 3          | 3           | PCE     | 3            | pip_16                  |
+      | shipLine_17    | shipment              | product_17                  | loc_std                      | 4          | 4           | PCE     | 4            | pip_17                  |
+      | shipLine_18    | shipment              | product_17                  | loc_std                      | 8          | 8           | PCE     | 8            | pip_17                  |
+      | shipLine_19    | shipment              | product_18                  | loc_std                      | 3          | 3           | PCE     | 3            | pip_18                  |
+      | shipLine_20    | shipment              | product_19                  | loc_std                      | 30         | 30          | PCE     | 30           | pip_19                  |
+      | shipLine_21    | shipment              | product_20                  | loc_std                      | 30         | 30          | PCE     | 30           | pip_20                  |
+      | shipLine_22    | shipment              | product_21                  | loc_std                      | 4          | 4           | PCE     | 4            | pip_21                  |
+      | shipLine_23    | shipment              | product_22                  | loc_std                      | 2          | 2           | PCE     | 1            | pip_22                  |
+      | shipLine_24    | shipment              | product_23                  | loc_std                      | 40         | 40          | PCE     | 40           | pip_23                  |
+      | shipLine_25    | shipment              | product_24                  | loc_std                      | 12         | 12          | PCE     | 1            | pip_24                  |
+      | shipLine_26    | shipment              | product_25                  | loc_std                      | 124        | 124         | PCE     | 31           | pip_25                  |
+      | shipLine_27    | shipment              | product_26                  | loc_std                      | 4          | 4           | PCE     | 4            | pip_26                  |
+      | shipLine_28    | shipment              | product_27                  | loc_std                      | 4          | 4           | PCE     | 4            | pip_27                  |
+      | shipLine_29    | shipment              | product_27                  | loc_std                      | 1          | 1           | PCE     | 1            | pip_27                  |
     And metasfresh contains C_Customs_Invoice:
       | Identifier | C_BPartner_ID | C_BPartner_Location_ID | DateInvoiced |
       | ci         | customer      | location               | 2026-01-16   |
