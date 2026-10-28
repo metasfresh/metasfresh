@@ -29,6 +29,7 @@ import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.costing.M_CostRevaluation_StepDefData;
+import de.metas.cucumber.stepdefs.customs.C_Customs_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_DunningDoc_StepDefData;
 import de.metas.cucumber.stepdefs.gljournal_sap.SAP_GLJournal_StepDefData;
 import de.metas.cucumber.stepdefs.inventory.M_Inventory_StepDefData;
@@ -57,6 +58,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
@@ -91,6 +93,7 @@ public class IdentifiersResolver
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData checkupReportTable;
 	@NonNull private final SAP_GLJournal_StepDefData sapGLJournalTable;
+	@NonNull private final C_Customs_Invoice_StepDefData customsInvoiceTable;
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -166,6 +169,9 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		sapGLJournalTable.getIdOptional(identifier)
 				.map(id -> TableRecordReference.of(I_SAP_GLJournal.Table_Name, id))
+				.ifPresent(result::add);
+		customsInvoiceTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_C_Customs_Invoice.Table_Name, id))
 				.ifPresent(result::add);
 
 		if (result.isEmpty())

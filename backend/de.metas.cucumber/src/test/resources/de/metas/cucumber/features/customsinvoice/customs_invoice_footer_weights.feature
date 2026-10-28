@@ -20,7 +20,13 @@ Feature: customs invoice footer and detail weights
   # ####################################################################################################
   @from:cucumber
   Scenario: the footer weights of a customs invoice count every shipment line once
-    Given metasfresh contains M_CustomsTariff:
+    # render the real jasper report; the mock report service would archive a placeholder PDF instead
+    Given set sys config boolean value false for sys config de.metas.report.jasper.IsMockReportService
+    # the PDF steps read the archive back out of the database
+    And update AD_Client
+      | Identifier | StoreArchiveOnFileSystem |
+      | 1000000    | false                    |
+    And metasfresh contains M_CustomsTariff:
       | Identifier | Value |
       | tariff_A   | CT-A  |
       | tariff_B   | CT-B  |
@@ -258,6 +264,15 @@ Feature: customs invoice footer and detail weights
     And the customs invoice details of ci sum to:
       | invoicedqty | bruttoweight |
       | 3115.030    | 3236.340     |
+    # the customer sees the printed customs invoice: its footer must show the same totals (the report language is German)
+    When The jasper process is run
+      | Value          | Record_ID |
+      | CustomsInvoice | ci        |
+    Then the visual line containing text "Gewicht netto" in the PDF archived for the record identified by "ci" is exactly "Gewicht netto: 3.115,030 kg"
+    And the visual line containing text "Gewicht brutto" in the PDF archived for the record identified by "ci" is exactly "Gewicht brutto: 3.236,340 kg"
+    # the totals when a shipment line linked to two customs lines was counted twice
+    And the PDF archived for the record identified by "ci" does not contain text "3.227,520"
+    And the PDF archived for the record identified by "ci" does not contain text "3.351,530"
 
 
   # ####################################################################################################
