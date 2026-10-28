@@ -8,10 +8,10 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
-import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.manufacturing.job.model.FinishedGoodsReceive;
@@ -102,7 +102,7 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 					.testId(toPITestId(tuPackingInstructionsId))
 					.build());
 
-			handlingUnitsBL.retrieveParentPIItemsForParentPI(tuPackingInstructionsId, HUType.LoadLogistiqueUnit.getCode(), customerId)
+			handlingUnitsBL.retrieveParentPIItemsForParentPI(tuPackingInstructionsId, HuUnitType.LU, customerId)
 					.stream()
 					.map(I_M_HU_PI_Item::getM_HU_PI_Version_ID)
 					.map(HuPackingInstructionsVersionId::ofRepoId)
