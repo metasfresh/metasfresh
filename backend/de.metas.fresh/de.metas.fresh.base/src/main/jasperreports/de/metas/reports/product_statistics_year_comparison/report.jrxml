@@ -137,7 +137,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{paramproduct} != null ? $F{paramproduct} : $R{AllProducts}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$P{M_Product_ID} == null ? $R{AllProducts} : ($F{paramproduct} != null ? $F{paramproduct} : $P{M_Product_ID}.toPlainString())]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
 					<reportElement x="0" y="53" width="500" height="12" uuid="c8588d47-352f-448e-99d6-86e390d1176f"/>
