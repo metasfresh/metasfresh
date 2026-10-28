@@ -146,8 +146,8 @@ const QtyInputField = ({
           type="text"
           inputMode="decimal"
           // suppress Android/iOS text processing (autofill, autocorrect, autocapitalise) that can
-          // mutate a typed number mid-entry on a handheld -- same OS-interference class as the
-          // barcode-input attributes (see this module's CLAUDE.md)
+          // mutate a typed number mid-entry on a handheld -- the same four attributes the barcode
+          // capture inputs set, for the same OS-interference reason
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="none"
