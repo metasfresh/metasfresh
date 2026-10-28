@@ -186,7 +186,7 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 	public static final String SEPA_PROTOCOL_DirectDebitPain00800302 = "pain.008.003.02";
 	/** Credit Transfer (pain.001.001.09.ch.03) = pain.001.001.09.ch.03 */
 	public static final String SEPA_PROTOCOL_CreditTransferPain00100109Ch03 = "pain.001.001.09.ch.03";
-	/** DirectDebitPain00800108 = pain.008.001.08 */
+	/** Direct Debit pain.008.001.08 = pain.008.001.08 */
 	public static final String SEPA_PROTOCOL_DirectDebitPain00800108 = "pain.008.001.08";
 	@Override
 	public void setSEPA_Protocol (final java.lang.String SEPA_Protocol)
