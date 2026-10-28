@@ -54,9 +54,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import static de.metas.cucumber.stepdefs.util.SqlQueryTestUtil.queryRows;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static de.metas.cucumber.stepdefs.util.SqlQueryTestUtil.queryRows;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
