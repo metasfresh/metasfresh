@@ -11,7 +11,8 @@
 	<parameter name="#AD_User_ID" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT f.*,
-	(SELECT u.Name FROM AD_User u WHERE u.AD_User_ID = NULLIF($P{#AD_User_ID}, '')::numeric) AS PrintUser
+	(SELECT u.Name FROM AD_User u WHERE u.AD_User_ID = NULLIF($P{#AD_User_ID}, '')::numeric) AS PrintUser,
+	(SELECT p.Value || ' ' || p.Name FROM M_Product p WHERE p.M_Product_ID = $P{M_Product_ID}) AS ParamProduct
 FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{M_Product_ID}) f]]>
 	</queryString>
 	<field name="m_product_id" class="java.math.BigDecimal"/>
@@ -87,177 +88,189 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 	<field name="ratemissing_count" class="java.lang.Integer"/>
 	<field name="ratemissing_months" class="java.lang.String"/>
 	<field name="printuser" class="java.lang.String"/>
-	<pageHeader>
-		<band height="58">
+	<field name="paramproduct" class="java.lang.String"/>
+	<title>
+		<band height="68">
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="0" y="0" width="500" height="14" uuid="d88b8531-9b0c-49ee-8c9f-9d04dc89ad23"/>
+					<reportElement x="0" y="0" width="812" height="19" uuid="f32d166f-27f0-463c-9cda-e6e942c43912"/>
 					<box leftPadding="2" rightPadding="0"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="11" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="14" isBold="true" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Title}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="500" y="0" width="312" height="11" uuid="132f9f42-9d7d-4624-915b-bb84576f3180"/>
-					<box leftPadding="0" rightPadding="3"/>
-					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", $P{REPORT_LOCALE}).format(new java.util.Date())]]></textFieldExpression>
-				</textField>
-				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="0" y="16" width="500" height="11" uuid="a9a25ccd-f878-448a-a472-c81b0e71cf22"/>
+					<reportElement x="0" y="22" width="812" height="12" uuid="314ed135-ecc2-4c99-bc2d-c16927304830"/>
 					<box leftPadding="2" rightPadding="0"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+						<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{Period} + ": " + ($F{fiscalyear} != null ? $F{fiscalyear} : "")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{Organisation} + " " + ($F{orgname} != null ? $F{orgname} : "")]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="500" y="16" width="312" height="11" uuid="ae80001b-c865-45e3-bfcf-904f063f4832"/>
-					<box leftPadding="0" rightPadding="3"/>
-					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Page} + " " + $V{PAGE_NUMBER}]]></textFieldExpression>
-				</textField>
-				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="0" y="28" width="500" height="11" uuid="60610e44-cfba-4a04-b1da-ac455140c8a0"/>
+					<reportElement x="0" y="39" width="90" height="12" uuid="b8444f9a-2b5c-4cf3-a4ba-a415e613a060"/>
 					<box leftPadding="2" rightPadding="0"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{orgname}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{Period} + ":"]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="500" y="28" width="312" height="11" uuid="572195e0-37b5-4684-a0dc-e629aae0fff0"/>
-					<box leftPadding="0" rightPadding="3"/>
-					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{printuser}]]></textFieldExpression>
-				</textField>
-				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="0" y="44" width="500" height="11" uuid="a5774319-098f-463b-8931-6e1a314c1dcb"/>
+					<reportElement x="90" y="39" width="200" height="12" uuid="b7f7a5ac-bcce-468b-ba1f-735a697550b9"/>
 					<box leftPadding="2" rightPadding="0"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{fiscalyear}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="303" y="39" width="90" height="12" uuid="7f9c423c-88d0-4247-8055-6d0a0191dd61"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Product} + ":"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="393" y="39" width="419" height="12" uuid="230a3ca2-5b81-4862-8edd-22d2089a1882"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{paramproduct} != null ? $F{paramproduct} : $R{AllProducts}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="53" width="500" height="12" uuid="c8588d47-352f-448e-99d6-86e390d1176f"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{AllAmountsIn} + " " + ($F{currency} != null ? $F{currency} : "")]]></textFieldExpression>
 				</textField>
 		</band>
-	</pageHeader>
-	<columnHeader>
-		<band height="24">
+	</title>
+	<pageHeader>
+		<band height="18">
+				<rectangle>
+					<reportElement x="0" y="0" width="812" height="14" backcolor="#808080" uuid="dd1a2ae8-f9c0-4f46-a63b-077e8d64b393"/>
+					<graphicElement>
+						<pen lineWidth="0.0" lineStyle="Solid"/>
+					</graphicElement>
+				</rectangle>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="170" y="8" width="48" height="12" uuid="e5679a24-0d2e-4313-8f24-f1ef31b4570a"/>
+					<reportElement x="0" y="1" width="170" height="12" forecolor="#FFFFFF" uuid="18c1c2e5-27c8-4240-8c2c-ccaa4d3cd7c6"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Product}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="170" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="e5679a24-0d2e-4313-8f24-f1ef31b4570a"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Month01}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="218" y="8" width="48" height="12" uuid="f2787663-f08c-41ff-b2f4-53bf3eacaa9b"/>
+					<reportElement x="218" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="f2787663-f08c-41ff-b2f4-53bf3eacaa9b"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Month02}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="266" y="8" width="48" height="12" uuid="5a4850cd-e20f-4afb-8a02-9e92b57d0323"/>
+					<reportElement x="266" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="5a4850cd-e20f-4afb-8a02-9e92b57d0323"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Month03}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="314" y="8" width="48" height="12" uuid="13cd7a5f-00c0-43f8-b1ce-c68023828020"/>
+					<reportElement x="314" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="13cd7a5f-00c0-43f8-b1ce-c68023828020"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Month04}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="362" y="8" width="48" height="12" uuid="123270c7-2007-4b23-9fc6-2f906c1cbcd2"/>
+					<reportElement x="362" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="123270c7-2007-4b23-9fc6-2f906c1cbcd2"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Month05}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="410" y="8" width="48" height="12" uuid="268e6582-a109-4dda-8c7c-313768663daf"/>
+					<reportElement x="410" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="268e6582-a109-4dda-8c7c-313768663daf"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Month06}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="458" y="8" width="48" height="12" uuid="2db1376a-52e2-4630-b709-c636cf58b340"/>
+					<reportElement x="458" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="2db1376a-52e2-4630-b709-c636cf58b340"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Month07}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="506" y="8" width="48" height="12" uuid="fbfc3083-7881-4112-b375-f1fa86d041cd"/>
+					<reportElement x="506" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="fbfc3083-7881-4112-b375-f1fa86d041cd"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Month08}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="554" y="8" width="48" height="12" uuid="f879f6c7-af3b-4282-9a1c-abbc1ae866b8"/>
+					<reportElement x="554" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="f879f6c7-af3b-4282-9a1c-abbc1ae866b8"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Month09}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="602" y="8" width="48" height="12" uuid="cbca3ef9-7152-48f3-98e5-5f5aa988a190"/>
+					<reportElement x="602" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="cbca3ef9-7152-48f3-98e5-5f5aa988a190"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Month10}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="650" y="8" width="48" height="12" uuid="1ff928ab-bbba-452a-a022-7aef7e011ba2"/>
+					<reportElement x="650" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="1ff928ab-bbba-452a-a022-7aef7e011ba2"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Month11}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="698" y="8" width="48" height="12" uuid="a43de13a-69e0-44a0-b764-1863482c8d03"/>
+					<reportElement x="698" y="1" width="48" height="12" forecolor="#FFFFFF" uuid="a43de13a-69e0-44a0-b764-1863482c8d03"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Month12}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement x="746" y="8" width="66" height="12" uuid="d1024f1b-1fbe-42f5-85b9-c183a4f0fccc"/>
+					<reportElement x="746" y="1" width="66" height="12" forecolor="#FFFFFF" uuid="d1024f1b-1fbe-42f5-85b9-c183a4f0fccc"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
-						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Total}]]></textFieldExpression>
 				</textField>
-				<line>
-					<reportElement x="0" y="21" width="812" height="1" uuid="650dabf3-3335-40fa-8398-67e3960f88c3"/>
-				</line>
 		</band>
-	</columnHeader>
+	</pageHeader>
 	<detail>
 		<band height="90" splitType="Prevent">
 				<textField isBlankWhenNull="true" textAdjust="CutText">
@@ -269,7 +282,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[($F{productvalue} != null ? $F{productvalue} : "") + " " + ($F{productname} != null ? $F{productname} : "")]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="0" y="13" width="170" height="11" uuid="71ac5eda-c05e-47c3-b257-9f492a6a9cd6"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="0" y="13" width="170" height="11" uuid="71ac5eda-c05e-47c3-b257-9f492a6a9cd6"/>
 					<box leftPadding="2" rightPadding="0"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -277,7 +290,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[($F{productvalue} != null ? $F{productvalue} : "") + " " + ($F{productname} != null ? $F{productname} : "")]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="170" y="13" width="48" height="11" uuid="bb56ca70-e259-4e2a-82c7-ef73587071e8"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="170" y="13" width="48" height="11" uuid="bb56ca70-e259-4e2a-82c7-ef73587071e8"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -285,7 +298,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_01}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="218" y="13" width="48" height="11" uuid="3c47e19b-5c07-411a-8fcf-ecad7752c65d"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="218" y="13" width="48" height="11" uuid="3c47e19b-5c07-411a-8fcf-ecad7752c65d"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -293,7 +306,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_02}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="266" y="13" width="48" height="11" uuid="70bbd0a3-6493-4991-9249-7e4a6674c4b1"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="266" y="13" width="48" height="11" uuid="70bbd0a3-6493-4991-9249-7e4a6674c4b1"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -301,7 +314,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_03}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="314" y="13" width="48" height="11" uuid="387e02e5-f76d-4ceb-8ae6-0ce804f90581"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="314" y="13" width="48" height="11" uuid="387e02e5-f76d-4ceb-8ae6-0ce804f90581"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -309,7 +322,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_04}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="362" y="13" width="48" height="11" uuid="431afb99-b609-439e-9688-cdc9bd7b7dbf"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="362" y="13" width="48" height="11" uuid="431afb99-b609-439e-9688-cdc9bd7b7dbf"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -317,7 +330,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_05}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="410" y="13" width="48" height="11" uuid="6887c223-8127-42cb-ab81-e14a4de6c899"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="410" y="13" width="48" height="11" uuid="6887c223-8127-42cb-ab81-e14a4de6c899"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -325,7 +338,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_06}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="458" y="13" width="48" height="11" uuid="55dae9b5-9efd-44e6-ab23-f46c6582f110"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="458" y="13" width="48" height="11" uuid="55dae9b5-9efd-44e6-ab23-f46c6582f110"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -333,7 +346,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_07}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="506" y="13" width="48" height="11" uuid="b3c08dcf-6dbd-4682-8f7f-06a86db8409d"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="506" y="13" width="48" height="11" uuid="b3c08dcf-6dbd-4682-8f7f-06a86db8409d"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -341,7 +354,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_08}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="554" y="13" width="48" height="11" uuid="0aabe902-55e5-4693-ad3e-93b6040e3246"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="554" y="13" width="48" height="11" uuid="0aabe902-55e5-4693-ad3e-93b6040e3246"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -349,7 +362,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_09}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="602" y="13" width="48" height="11" uuid="8f7d6a1e-d27c-41b0-b921-0b2e3cdddedd"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="602" y="13" width="48" height="11" uuid="8f7d6a1e-d27c-41b0-b921-0b2e3cdddedd"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -357,7 +370,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_10}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="650" y="13" width="48" height="11" uuid="58edf204-4229-4d33-809a-8138b947867a"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="650" y="13" width="48" height="11" uuid="58edf204-4229-4d33-809a-8138b947867a"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -365,7 +378,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_11}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="698" y="13" width="48" height="11" uuid="b85769d1-7d0c-4f68-99e3-64b06f0497e5"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="698" y="13" width="48" height="11" uuid="b85769d1-7d0c-4f68-99e3-64b06f0497e5"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -373,7 +386,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_12}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="746" y="13" width="66" height="11" uuid="a9f35455-24e2-47b4-9fb5-affc1e2f54ec"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="746" y="13" width="66" height="11" uuid="a9f35455-24e2-47b4-9fb5-affc1e2f54ec"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -381,7 +394,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{qty_total}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="0" y="24" width="170" height="11" uuid="1d79e908-5f8a-4ee4-b1ab-e9755e077c6a"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="0" y="24" width="170" height="11" uuid="1d79e908-5f8a-4ee4-b1ab-e9755e077c6a"/>
 					<box leftPadding="2" rightPadding="0"/>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -389,7 +402,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$R{CurrentPeriod}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="170" y="24" width="48" height="11" uuid="01a924fa-8ab3-4e57-9881-cbe654531b9e"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="170" y="24" width="48" height="11" uuid="01a924fa-8ab3-4e57-9881-cbe654531b9e"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -397,7 +410,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{amt_01}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="218" y="24" width="48" height="11" uuid="9fc755e4-4de0-418e-a72c-9396b787c95f"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="218" y="24" width="48" height="11" uuid="9fc755e4-4de0-418e-a72c-9396b787c95f"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -405,7 +418,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{amt_02}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="266" y="24" width="48" height="11" uuid="97424d3c-3d9e-4155-8532-bec8865a757c"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="266" y="24" width="48" height="11" uuid="97424d3c-3d9e-4155-8532-bec8865a757c"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -413,7 +426,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{amt_03}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="314" y="24" width="48" height="11" uuid="954025e6-1103-4829-8db4-94552de8d017"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="314" y="24" width="48" height="11" uuid="954025e6-1103-4829-8db4-94552de8d017"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -421,7 +434,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{amt_04}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="362" y="24" width="48" height="11" uuid="6e47c11c-69cf-4a37-9612-4be1cca55106"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="362" y="24" width="48" height="11" uuid="6e47c11c-69cf-4a37-9612-4be1cca55106"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -429,7 +442,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{amt_05}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="410" y="24" width="48" height="11" uuid="cf58ff3d-2b9a-483f-94d7-84660f7d4c43"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="410" y="24" width="48" height="11" uuid="cf58ff3d-2b9a-483f-94d7-84660f7d4c43"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -437,7 +450,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{amt_06}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="458" y="24" width="48" height="11" uuid="ef38e3b7-4049-4bfa-9a0f-f819db1851c9"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="458" y="24" width="48" height="11" uuid="ef38e3b7-4049-4bfa-9a0f-f819db1851c9"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -445,7 +458,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{amt_07}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="506" y="24" width="48" height="11" uuid="693be1e0-9e7f-412f-a1c8-ed84e6ec73e5"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="506" y="24" width="48" height="11" uuid="693be1e0-9e7f-412f-a1c8-ed84e6ec73e5"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -453,7 +466,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{amt_08}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="554" y="24" width="48" height="11" uuid="faf4a89a-5966-4808-8f27-d63745908cad"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="554" y="24" width="48" height="11" uuid="faf4a89a-5966-4808-8f27-d63745908cad"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -461,7 +474,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{amt_09}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="602" y="24" width="48" height="11" uuid="dad3eb36-d07d-4333-b91d-2888dd624448"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="602" y="24" width="48" height="11" uuid="dad3eb36-d07d-4333-b91d-2888dd624448"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -469,7 +482,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{amt_10}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="650" y="24" width="48" height="11" uuid="8b509285-e3d1-4265-b359-7124054a82fd"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="650" y="24" width="48" height="11" uuid="8b509285-e3d1-4265-b359-7124054a82fd"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -477,7 +490,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{amt_11}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="698" y="24" width="48" height="11" uuid="bde982fa-567f-40ed-9f22-7f881783dfd6"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="698" y="24" width="48" height="11" uuid="bde982fa-567f-40ed-9f22-7f881783dfd6"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -485,7 +498,7 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 					<textFieldExpression><![CDATA[$F{amt_12}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true" textAdjust="CutText">
-					<reportElement mode="Opaque" backcolor="#EBEBEB" x="746" y="24" width="66" height="11" uuid="1f8bf8f0-eaee-444d-8b84-309ab621ae9b"/>
+					<reportElement mode="Opaque" backcolor="#FFFFCC" x="746" y="24" width="66" height="11" uuid="1f8bf8f0-eaee-444d-8b84-309ab621ae9b"/>
 					<box leftPadding="0" rightPadding="3"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="false" isItalic="false"/>
@@ -844,4 +857,43 @@ FROM report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{
 				</textField>
 		</band>
 	</detail>
+	<pageFooter>
+		<band height="18">
+			<line>
+				<reportElement x="0" y="1" width="812" height="1" uuid="6809dafb-c372-4d18-b33c-eaf42b821b2f"/>
+			</line>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="0" y="4" width="200" height="12" uuid="6c30b104-9c80-4863-96d0-749a374c8789"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", $P{REPORT_LOCALE}).format(new java.util.Date())]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="250" y="4" width="312" height="12" uuid="82d4f346-cff4-4f36-866d-a7a03ab72e1b"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{printuser}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText">
+					<reportElement x="600" y="4" width="170" height="12" uuid="8f693817-1b39-4b17-8465-3f9e47fbf31a"/>
+					<box leftPadding="0" rightPadding="0"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Page} + " " + $V{PAGE_NUMBER} + " " + $R{Of}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true" textAdjust="CutText" evaluationTime="Report">
+					<reportElement x="770" y="4" width="42" height="12" uuid="86b6cbce-0843-4d7f-851e-5bc66ce62cb4"/>
+					<box leftPadding="2" rightPadding="0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+		</band>
+	</pageFooter>
 </jasperReport>
