@@ -61,6 +61,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -203,6 +204,20 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		if (qtyLU != null && actual.getQtyLU().compareTo(qtyLU) != 0)
 		{
 			return false;
+		}
+		final BigDecimal qtyDeliveredCatch = expected.getAsOptionalBigDecimal(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyDeliveredCatch).orElse(null);
+		if (qtyDeliveredCatch != null && (actual.getQtyDeliveredCatch() == null || actual.getQtyDeliveredCatch().compareTo(qtyDeliveredCatch) != 0))
+		{
+			return false;
+		}
+		final Optional<StepDefDataIdentifier> catchUomIdentifier = expected.getAsOptionalIdentifier(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_Catch_UOM_ID);
+		if (catchUomIdentifier.isPresent())
+		{
+			final UomId expectedCatchUomId = catchUomIdentifier.get().isNullPlaceholder() ? null : uomDAO.getUomIdByX12DE355(X12DE355.ofCode(catchUomIdentifier.get().getAsString()));
+			if (!Objects.equals(UomId.ofRepoIdOrNull(actual.getCatch_UOM_ID()), expectedCatchUomId))
+			{
+				return false;
+			}
 		}
 		return huMatches(expected, I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, actual.getVHU_ID())
 				&& huMatches(expected, I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, actual.getM_TU_HU_ID())
