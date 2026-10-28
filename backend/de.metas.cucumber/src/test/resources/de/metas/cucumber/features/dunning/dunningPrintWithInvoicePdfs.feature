@@ -78,3 +78,12 @@ Feature: Dunning letter print with attached invoice PDFs
       | C_Invoice_ID  |
       | salesInvoice1 |
 
+
+
+  ##################################################################
+  ##################################################################
+  ##################################################################
+  # dev-note: separate scenario, so that the report server configuration is reset even if the scenario above fails
+  Scenario: Reset the report server configuration
+    Given set sys config String value null for sys config de.metas.report.jasper.client.JRServerClass
+    And reset all cache

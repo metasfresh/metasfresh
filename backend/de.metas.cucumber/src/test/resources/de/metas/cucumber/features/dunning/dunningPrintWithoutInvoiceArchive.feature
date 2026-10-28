@@ -82,4 +82,4 @@ Feature: Dunning letter print without an archived invoice PDF
   ##################################################################
   # dev-note: separate scenario, so that the async processing is switched back on even if the scenario above fails
   Scenario: Re-enable async processing
-    And set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
