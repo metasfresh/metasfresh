@@ -61,7 +61,7 @@ public class ProductStatisticsYearComparison_StepDef
 	private static final String COLUMN_M_Product_ID = "M_Product_ID";
 	private static final String FUNCTION = "report.Product_Statistics_Year_Comparison";
 
-	private static final Set<String> TEXT_COLUMNS = new HashSet<>(Arrays.asList("productvalue", "productname", "currency", "orgname", "fiscalyear", "ratemissing_months"));
+	private static final Set<String> TEXT_COLUMNS = new HashSet<>(Arrays.asList("productvalue", "productname", "currency", "orgname", "fiscalyear", "notposted_months"));
 
 	/** All result columns (besides M_Product_ID) in their canonical spelling. */
 	private static final List<String> RESULT_COLUMNS = buildResultColumns();
@@ -84,7 +84,7 @@ public class ProductStatisticsYearComparison_StepDef
 				cols.add(prefix + "Total");
 			}
 		}
-		cols.addAll(Arrays.asList("Currency", "OrgName", "FiscalYear", "RateMissing_Count", "RateMissing_Months"));
+		cols.addAll(Arrays.asList("Currency", "OrgName", "FiscalYear", "NotPosted_Count", "NotPosted_Months"));
 		return cols;
 	}
 
@@ -101,7 +101,7 @@ public class ProductStatisticsYearComparison_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * Then the product statistics year comparison report for org "-", year "y2026", product "-" returns:
-	 *   | M_Product_ID | Qty_01 | Amt_01 | Currency | RateMissing_Count | RateMissing_Months |
+	 *   | M_Product_ID | Qty_01 | Amt_01 | Currency | NotPosted_Count | NotPosted_Months |
 	 *   | p1           | 10     | 100.00 | EUR      | 0                 |                    |
 	 * </pre>
 	 */
