@@ -1062,9 +1062,9 @@ public class ImportHelper implements IImportHelper
 		final Object[] cols = new Object[uniqueFormatLines.size()];
 		final List<Object> params = new ArrayList<>();
 		final StringBuilder whereClause = new StringBuilder();
-		// lenient lines' inlined ILIKE fragment -> the "IS NULL" condition that replaces it in the retry
 		// same as whereClause, but with every lenient line (see EXP_FormatLine.IsImportLenient) unset; used for the retry
 		final StringBuilder lenientWhereClause = new StringBuilder();
+		// XML values of the lenient lines; non-empty => a retry is possible
 		final List<Object> lenientValues = new ArrayList<>();
 		int col = 0;
 		final StringBuilder formatLines = new StringBuilder();
