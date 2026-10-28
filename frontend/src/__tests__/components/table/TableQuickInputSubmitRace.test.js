@@ -13,6 +13,7 @@ import quickInputData from '../../../../test_setup/fixtures/table/table_quickinp
 jest.mock('../../../api/windowQuickInput');
 
 const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
+const waitForTimers = () => new Promise((resolve) => setTimeout(resolve, 10));
 
 /** A promise the test resolves by hand, to keep a PATCH "in flight". */
 const deferred = () => {
@@ -37,6 +38,7 @@ describe('TableQuickInput - submit while a field PATCH is pending', () => {
   let wrapper;
   let addNotification;
   let productPatch;
+  let container;
 
   beforeEach(async () => {
     jest.resetAllMocks();
@@ -62,6 +64,10 @@ describe('TableQuickInput - submit while a field PATCH is pending', () => {
     store = createStore(createRootReducer(), {}, applyMiddleware(thunk));
     addNotification = jest.fn();
 
+    // attached to the document, so focus / blur behave like in the browser
+    container = document.createElement('div');
+    document.body.appendChild(container);
+
     wrapper = mount(
       <Provider store={store}>
         <ConnectedTableQuickInput
@@ -69,7 +75,8 @@ describe('TableQuickInput - submit while a field PATCH is pending', () => {
           addNotification={addNotification}
           closeBatchEntry={jest.fn()}
         />
-      </Provider>
+      </Provider>,
+      { attachTo: container }
     );
 
     await flushPromises();
@@ -78,6 +85,7 @@ describe('TableQuickInput - submit while a field PATCH is pending', () => {
 
   afterEach(() => {
     wrapper.unmount();
+    container.remove();
   });
 
   const tableQuickInput = () =>
@@ -164,6 +172,69 @@ describe('TableQuickInput - submit while a field PATCH is pending', () => {
       api.patchQuickInput.mock.calls.map(([{ fieldName }]) => fieldName)
     ).toEqual(['M_Product_ID', 'Qty']);
     expect(api.completeQuickInput).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends the typed qty from the blur on submit when Enter did not patch it', async () => {
+    pickProduct();
+    await flushPromises();
+    wrapper.update();
+
+    // the user typed into the qty field, which still has the focus
+    const qtyNode = qtyInput().getDOMNode();
+    await waitForTimers(); // the first field's initial auto-focus happens in a timer
+    qtyNode.focus();
+    await waitForTimers(); // RawWidget marks itself focused in a timer
+    expect(document.activeElement).toBe(qtyNode);
+    qtyNode.value = '10';
+    qtyInput().simulate('change', { target: { value: '10' } });
+
+    // submit without a keyDown: only the blur in onSubmit can send the qty
+    wrapper.find('form.quick-input-container').simulate('submit');
+
+    productPatch.resolve({
+      data: [{ fieldsByName: { M_Product_ID: { value: PRODUCT } } }],
+    });
+    await flushPromises();
+    await flushPromises();
+
+    expect(addNotification).not.toHaveBeenCalled();
+    expect(
+      api.patchQuickInput.mock.calls.map(([{ fieldName, fieldValue }]) => [
+        fieldName,
+        fieldValue,
+      ])
+    ).toEqual([
+      ['M_Product_ID', PRODUCT],
+      ['Qty', '10'],
+    ]);
+    expect(api.completeQuickInput).toHaveBeenCalledTimes(1);
+  });
+
+  it('tells the user when a field PATCH failed, on every Enter, and does not complete', async () => {
+    productPatch.resolve({
+      data: [{ fieldsByName: { M_Product_ID: { value: PRODUCT } } }],
+    });
+    pickProduct();
+    await flushPromises();
+    wrapper.update();
+
+    api.patchQuickInput.mockImplementation(() =>
+      Promise.reject(new Error('server rejected the value'))
+    );
+
+    typeQtyAndPressEnter('10');
+    await flushPromises();
+    await flushPromises();
+
+    // pressing Enter again without editing must not be a silent no-op
+    wrapper.find('form.quick-input-container').simulate('submit');
+    await flushPromises();
+    await flushPromises();
+
+    expect(addNotification).toHaveBeenCalledTimes(2);
+    expect(addNotification.mock.calls[0][0]).toBe('Error');
+    expect(addNotification.mock.calls[1][0]).toBe('Error');
+    expect(api.completeQuickInput).not.toHaveBeenCalled();
   });
 
   it('still refuses to submit when a mandatory field is really empty', async () => {

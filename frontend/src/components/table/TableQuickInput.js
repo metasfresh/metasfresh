@@ -16,6 +16,8 @@ import WidgetWrapper from '../../containers/WidgetWrapper';
 class TableQuickInput extends PureComponent {
   // promise with patching for queuing form submission after patch is done
   patchPromise;
+  // fields whose last PATCH failed; the line is not completed while there are any
+  failedPatchFields = new Set();
   // widgets refs
   rawWidgets = [];
   rawWidgetsByFieldName = {};
@@ -114,7 +116,8 @@ class TableQuickInput extends PureComponent {
   /**
    * Sends a field PATCH. PATCHes are queued: each one is sent only after the
    * previous one was answered, so none is dropped or overtaken while another
-   * is in flight. `this.patchPromise` always settles after the last queued PATCH.
+   * is in flight. `this.patchPromise` settles (never rejects) after the last
+   * queued PATCH; fields whose last PATCH failed are kept in `failedPatchFields`.
    *
    * @returns {Promise} settles when this PATCH was answered
    */
@@ -123,14 +126,17 @@ class TableQuickInput extends PureComponent {
 
     const previousPatch = this.patchPromise || Promise.resolve();
     this.patchPromise = previousPatch
-      // a failed previous PATCH must not block the following ones
-      .catch(() => {})
       .then(() => patchQuickInput({ windowId, docId, tabId, prop, value }))
-      .then(() => {
-        if (callback) {
-          callback();
-        }
-      });
+      .then(
+        () => {
+          this.failedPatchFields.delete(prop);
+          if (callback) {
+            callback();
+          }
+        },
+        // the error itself was already shown by the global axios error handler (App.js)
+        () => this.failedPatchFields.add(prop)
+      );
 
     return this.patchPromise;
   };
@@ -154,34 +160,41 @@ class TableQuickInput extends PureComponent {
     // Validate and complete only after every queued field PATCH was answered.
     // Until then the store still has the values from before the PATCH
     // (e.g. a just selected product is still empty) and the server does not know them yet.
-    // The extra `.then` lets the PATCH that the blur above queues join the queue first.
-    return (
-      Promise.resolve()
-        .then(() => this.patchPromise)
-        .then(() => {
-          const validationResult = this.validateForm();
-          if (validationResult.error) {
-            addNotification('Error', validationResult.error, 5000, 'error');
-            // Focus the last active element, to allow user continuing typing.
-            this.setState({ isSubmitPending: false }, () =>
-              activeElement.focus()
-            );
-            return;
-          }
+    return (this.patchPromise || Promise.resolve())
+      .then(() => {
+        const validationResult = this.validateForm();
+        if (validationResult.error) {
+          addNotification('Error', validationResult.error, 5000, 'error');
+          // Focus the last active element, to allow user continuing typing.
+          this.setState({ isSubmitPending: false }, () =>
+            activeElement.focus()
+          );
+          return;
+        }
 
-          return completeQuickInput({ windowId, docId, tabId, quickInputId })
-            .then(this.initQuickInput)
-            .finally(() => this.setState({ isSubmitPending: false }));
-        })
-        // a failed PATCH or complete was already shown by the global axios error handler (App.js);
-        // keep the line in the form so the user can correct it and press Enter again
-        .catch(() => this.setState({ isSubmitPending: false }))
-    );
+        return completeQuickInput({ windowId, docId, tabId, quickInputId })
+          .then(this.initQuickInput)
+          .finally(() => this.setState({ isSubmitPending: false }));
+      })
+      .catch((error) => {
+        // a failed complete was already shown by the global axios error handler (App.js);
+        // the line stays in the form so the user can correct it and press Enter again
+        // eslint-disable-next-line no-console
+        console.error('TableQuickInput: submit failed', error);
+        this.setState({ isSubmitPending: false });
+      });
   };
 
   /** Validates form data returning first error */
   validateForm = () => {
     const { data } = this.props;
+
+    if (this.failedPatchFields.size > 0) {
+      return {
+        fieldName: [...this.failedPatchFields][0],
+        error: 'Some changes could not be saved! Please correct them.',
+      };
+    }
 
     if (data) {
       for (const fieldName of Object.keys(data)) {
@@ -335,13 +348,12 @@ class TableQuickInput extends PureComponent {
 }
 
 const mapStateToProps = ({ tableQuickInputHandler }) => {
-  const { quickInputId, layout, data, inProgress } = tableQuickInputHandler;
+  const { quickInputId, layout, data } = tableQuickInputHandler;
 
   return {
     layout,
     data,
     quickInputId,
-    inProgress,
   };
 };
 
@@ -372,7 +384,6 @@ TableQuickInput.propTypes = {
   layout: PropTypes.array,
   data: PropTypes.object,
   quickInputId: PropTypes.any,
-  inProgress: PropTypes.bool,
 
   //
   // mapDispatchToProps:
