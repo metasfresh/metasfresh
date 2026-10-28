@@ -106,4 +106,10 @@ public class SEPADocumentDAO implements ISEPADocumentDAO
 	{
 		InterfaceWrapperHelper.save(export);
 	}
+
+	@Override
+	public void save(@NonNull final I_SEPA_Export_Line exportLine)
+	{
+		InterfaceWrapperHelper.save(exportLine);
+	}
 }

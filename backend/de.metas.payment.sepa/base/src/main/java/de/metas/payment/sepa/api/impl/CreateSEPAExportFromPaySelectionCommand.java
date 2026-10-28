@@ -29,6 +29,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.sepa.api.CreatedSEPAExports;
 import de.metas.payment.sepa.api.CreatedSEPAExports.CreatedSEPAExport;
+import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAExportLineId;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
@@ -106,6 +107,7 @@ class CreateSEPAExportFromPaySelectionCommand
 	// lazy: only direct debit exports need it, credit transfer callers need not have the bean
 	@NonNull private final SpringContextHolder.Lazy<DirectDebitMandateRepository> mandateRepo = SpringContextHolder.lazyBean(DirectDebitMandateRepository.class);
 
+	@NonNull private final ISEPADocumentDAO sepaDocumentDAO = Services.get(ISEPADocumentDAO.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
@@ -195,7 +197,7 @@ class CreateSEPAExportFromPaySelectionCommand
 				final I_SEPA_Export_Line exportLine = createExportLine(line);
 				exportLine.setSEPA_Export(header);
 				exportLine.setSEPA_MandateRefNo(mandate.getReference());
-				save(exportLine);
+				sepaDocumentDAO.save(exportLine);
 
 				mandatesBySepaExportLineId.put(SEPAExportLineId.ofRepoId(exportLine.getSEPA_Export_Line_ID()), mandate);
 				usedMandateIds.add(mandate.getId());
