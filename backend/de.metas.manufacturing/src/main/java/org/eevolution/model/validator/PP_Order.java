@@ -1,6 +1,32 @@
 package org.eevolution.model.validator;
 
 import de.metas.document.DocTypeId;
+import com.google.common.collect.ImmutableSet;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddordercandidate.DDOrderCandidate;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateQuery;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.event.pporder.PPOrderRef;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.compiere.SpringContextHolder;
+import org.eevolution.api.PPOrderAndBOMLineId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.AdMessageKey;
@@ -59,6 +85,8 @@ public class PP_Order
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+
+	private static final String DYNATTR_Voiding = PP_Order.class.getName() + "#voiding";
 
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
@@ -230,12 +258,208 @@ public class PP_Order
 		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord);
 
 		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID());
-		deleteWorkflowAndBOM(orderId);
-		createWorkflowAndBOM(ppOrderRecord);
+
+		// When voiding, QtyEntered is set to 0; the distribution supply is not moved then, but handled as before (deleted, or rejected if already processed).
+		final boolean moveDistributionSupply = !isVoiding(ppOrderRecord)
+				&& InterfaceWrapperHelper.isValueChanged(ppOrderRecord, I_PP_Order.COLUMNNAME_QtyEntered);
+		if (moveDistributionSupply)
+		{
+			final DistributionSupplyMover distributionSupplyMover = new DistributionSupplyMover(orderId);
+			distributionSupplyMover.collect();
+
+			final String trxName = InterfaceWrapperHelper.getTrxName(ppOrderRecord);
+			setMovingDistributionSupply(orderId, trxName, true);
+			try
+			{
+				deleteWorkflowAndBOM(orderId);
+			}
+			finally
+			{
+				setMovingDistributionSupply(orderId, trxName, false);
+			}
+			createWorkflowAndBOM(ppOrderRecord);
+
+			distributionSupplyMover.moveToRecreatedBOMLines();
+		}
+		else
+		{
+			deleteWorkflowAndBOM(orderId);
+			createWorkflowAndBOM(ppOrderRecord);
+		}
 
 		final PPOrderChangedEvent event = eventFactory.inspectPPOrderAfterChange();
 
 		materialEventService.enqueueEventAfterNextCommit(event);
+	}
+
+	/**
+	 * Marks the PP_Order as being voided: voiding sets QtyEntered=0, which must not move the distribution supply to the re-created BOM lines.
+	 */
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
+	public void markVoiding(@NonNull final I_PP_Order ppOrderRecord)
+	{
+		InterfaceWrapperHelper.setDynAttribute(ppOrderRecord, DYNATTR_Voiding, Boolean.TRUE);
+	}
+
+	private static boolean isVoiding(@NonNull final I_PP_Order ppOrderRecord)
+	{
+		return Boolean.TRUE.equals(InterfaceWrapperHelper.getDynAttribute(ppOrderRecord, DYNATTR_Voiding));
+	}
+
+	private static String movingDistributionSupplyTrxProperty(@NonNull final PPOrderId ppOrderId)
+	{
+		return PP_Order.class.getName() + "#movingDistributionSupply#" + ppOrderId.getRepoId();
+	}
+
+	private static void setMovingDistributionSupply(@NonNull final PPOrderId ppOrderId, @Nullable final String trxName, final boolean moving)
+	{
+		final ITrx trx = Services.get(ITrxManager.class).get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
+		trx.setProperty(movingDistributionSupplyTrxProperty(ppOrderId), moving ? Boolean.TRUE : null);
+	}
+
+	/**
+	 * @return true while {@link #updateAndPostEventOnQtyEnteredChange(I_PP_Order)} deletes the BOM lines of the given PP_Order in order to re-create them,
+	 * i.e. the distribution supply of the deleted lines is not to be deleted, but re-pointed to the re-created lines.
+	 */
+	static boolean isMovingDistributionSupply(@NonNull final PPOrderId ppOrderId, @Nullable final String trxName)
+	{
+		final ITrx trx = Services.get(ITrxManager.class).get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
+		return Boolean.TRUE.equals(trx.getProperty(movingDistributionSupplyTrxProperty(ppOrderId)));
+	}
+
+	/**
+	 * Re-points the distribution supply (MD_Candidate distribution details, DD_Order_Candidates, DD_Orders) of the BOM lines of a PP_Order
+	 * to the BOM lines which are re-created for the same PP_Product_BOMLine, following the move pattern of {@code PPOrderCandidateListeners}.
+	 */
+	private final class DistributionSupplyMover
+	{
+		private final PPOrderId ppOrderId;
+		private final Map<PPOrderBOMLineId, OldBOMLine> oldBOMLines = new LinkedHashMap<>();
+
+		private final DDOrderCandidateRepository ddOrderCandidateRepository = SpringContextHolder.instance.getBean(DDOrderCandidateRepository.class);
+		private final DDOrderLowLevelDAO ddOrderLowLevelDAO = SpringContextHolder.instance.getBean(DDOrderLowLevelDAO.class);
+		private final CandidateRepositoryWriteService candidateRepositoryWriteService = SpringContextHolder.instance.getBean(CandidateRepositoryWriteService.class);
+
+		private DistributionSupplyMover(@NonNull final PPOrderId ppOrderId)
+		{
+			this.ppOrderId = ppOrderId;
+		}
+
+		private final class OldBOMLine
+		{
+			private final int productBOMLineRepoId;
+			private final ImmutableSet<DDOrderCandidateId> ddOrderCandidateIds;
+			private final ImmutableSet<DDOrderId> ddOrderIds;
+
+			private OldBOMLine(final int productBOMLineRepoId, final PPOrderBOMLineId bomLineId)
+			{
+				this.productBOMLineRepoId = productBOMLineRepoId;
+				this.ddOrderCandidateIds = ddOrderCandidateRepository.list(DDOrderCandidateQuery.builder().ppOrderBOMLineId(bomLineId).build())
+						.stream()
+						.map(DDOrderCandidate::getIdNotNull)
+						.collect(ImmutableSet.toImmutableSet());
+				// only the DD_Orders of this BOM line; a DD_Order without or with another BOM line (e.g. shared across PP_Orders) stays untouched
+				this.ddOrderIds = ddOrderLowLevelDAO.getIdsByForwardPPOrderBOMLineId(bomLineId);
+			}
+		}
+
+		/**
+		 * To be called before the BOM lines are deleted.
+		 */
+		void collect()
+		{
+			for (final I_PP_Order_BOMLine line : ppOrderBOMDAO.retrieveOrderBOMLines(ppOrderId))
+			{
+				final PPOrderBOMLineId bomLineId = PPOrderBOMLineId.ofRepoId(line.getPP_Order_BOMLine_ID());
+				oldBOMLines.put(bomLineId, new OldBOMLine(line.getPP_Product_BOMLine_ID(), bomLineId));
+			}
+		}
+
+		/**
+		 * To be called after the BOM lines were re-created.
+		 */
+		void moveToRecreatedBOMLines()
+		{
+			final Map<Integer, PPOrderBOMLineId> newBOMLineIdsByProductBOMLine = new HashMap<>();
+			for (final I_PP_Order_BOMLine line : ppOrderBOMDAO.retrieveOrderBOMLines(ppOrderId))
+			{
+				if (line.getPP_Product_BOMLine_ID() > 0)
+				{
+					newBOMLineIdsByProductBOMLine.putIfAbsent(line.getPP_Product_BOMLine_ID(), PPOrderBOMLineId.ofRepoId(line.getPP_Order_BOMLine_ID()));
+				}
+			}
+
+			oldBOMLines.forEach((oldBOMLineId, oldBOMLine) -> {
+				final PPOrderBOMLineId newBOMLineId = newBOMLineIdsByProductBOMLine.get(oldBOMLine.productBOMLineRepoId);
+				if (newBOMLineId != null)
+				{
+					moveTo(oldBOMLineId, oldBOMLine, newBOMLineId);
+				}
+				else
+				{
+					deleteDDOrderCandidates(oldBOMLine);
+				}
+			});
+		}
+
+		private void moveTo(final PPOrderBOMLineId oldBOMLineId, final OldBOMLine oldBOMLine, final PPOrderBOMLineId newBOMLineId)
+		{
+			final PPOrderAndBOMLineId newPPOrderAndBOMLineId = PPOrderAndBOMLineId.of(ppOrderId, newBOMLineId);
+
+			candidateRepositoryWriteService.updateCandidatesByQuery(
+					CandidatesQuery.builder()
+							.businessCase(CandidateBusinessCase.DISTRIBUTION)
+							.distributionDetailsQuery(DistributionDetailsQuery.builder().ppOrderBOMLineId(oldBOMLineId).build())
+							.build(),
+					candidate -> {
+						final DistributionDetail distributionDetail = candidate.getBusinessCaseDetail(DistributionDetail.class)
+								.orElseThrow(() -> new AdempiereException("No DistributionDetail found for " + candidate));
+						return candidate.withBusinessCaseDetail(distributionDetail.toBuilder()
+								.forwardPPOrderRef(PPOrderRef.withPPOrderAndBOMLineId(distributionDetail.getForwardPPOrderRef(), newPPOrderAndBOMLineId))
+								.build());
+					});
+
+			for (final DDOrderCandidateId ddOrderCandidateId : oldBOMLine.ddOrderCandidateIds)
+			{
+				final boolean[] found = { false };
+				ddOrderCandidateRepository.updateByQuery(
+						DDOrderCandidateQuery.builder().ddOrderCandidateId(ddOrderCandidateId).build(),
+						candidate -> {
+							found[0] = true;
+							return candidate.toBuilder()
+									.forwardPPOrderRef(PPOrderRef.withPPOrderAndBOMLineId(candidate.getForwardPPOrderRef(), newPPOrderAndBOMLineId))
+									.build();
+						});
+				if (!found[0])
+				{
+					throw new AdempiereException("DD_Order_Candidate " + ddOrderCandidateId + " of the old BOM line " + oldBOMLineId + " does not exist anymore; cannot move it to the BOM line " + newBOMLineId);
+				}
+			}
+
+			final int updatedDDOrders = ddOrderLowLevelDAO.updateForwardPPOrderBOMLineByIds(oldBOMLine.ddOrderIds, newBOMLineId);
+			if (updatedDDOrders != oldBOMLine.ddOrderIds.size())
+			{
+				throw new AdempiereException("Not all DD_Orders " + oldBOMLine.ddOrderIds + " of the old BOM line " + oldBOMLineId + " exist anymore; cannot move them to the BOM line " + newBOMLineId);
+			}
+		}
+
+		/**
+		 * The BOM line has no successor (component removed from the BOM): same as before, unprocessed DD_Order_Candidates are deleted, a processed one rejects the change.
+		 */
+		private void deleteDDOrderCandidates(final OldBOMLine oldBOMLine)
+		{
+			for (final DDOrderCandidateId ddOrderCandidateId : oldBOMLine.ddOrderCandidateIds)
+			{
+				try
+				{
+					ddOrderCandidateRepository.delete(DDOrderCandidateQuery.builder().ddOrderCandidateId(ddOrderCandidateId).build());
+				}
+				catch (final AdempiereException e)
+				{
+					throw new AdempiereException(PP_Order_BOMLine.DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED, e);
+				}
+			}
+		}
 	}
 
 	private void deleteWorkflowAndBOM(final PPOrderId orderId)

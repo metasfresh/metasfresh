@@ -27,6 +27,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -480,6 +481,35 @@ public class DDOrderLowLevelDAO
 				.create()
 				.update(ddOrder -> {
 					ddOrder.setForward_PP_Order_ID(PPOrderId.toRepoId(newPPOrderId));
+					return IQueryUpdater.MODEL_UPDATED;
+				});
+	}
+
+	public ImmutableSet<DDOrderId> getIdsByForwardPPOrderBOMLineId(@NonNull final PPOrderBOMLineId ppOrderBOMLineId)
+	{
+		return queryBL.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_Forward_PP_Order_BOMLine_ID, ppOrderBOMLineId)
+				.create()
+				.idsAsSet(DDOrderId::ofRepoId);
+	}
+
+	/**
+	 * Re-points the given DD_Orders to a (re-created) PP_Order_BOMLine.
+	 *
+	 * @return number of updated DD_Orders
+	 */
+	public int updateForwardPPOrderBOMLineByIds(@NonNull final Set<DDOrderId> ddOrderIds, @NonNull final PPOrderBOMLineId newPPOrderBOMLineId)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return 0;
+		}
+
+		return queryBL.createQueryBuilder(I_DD_Order.class)
+				.addInArrayFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.create()
+				.update(ddOrder -> {
+					ddOrder.setForward_PP_Order_BOMLine_ID(newPPOrderBOMLineId.getRepoId());
 					return IQueryUpdater.MODEL_UPDATED;
 				});
 	}

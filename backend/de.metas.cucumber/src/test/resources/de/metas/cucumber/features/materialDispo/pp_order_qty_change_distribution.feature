@@ -174,7 +174,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | newBOMLine          | ppOrder     | component    | 10 PCE       | CO            |
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
       | Identifier   | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
-      | newCandidate | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | newBOMLine                  |
+      | ddOrderCandidate | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | newBOMLine                  |
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
       | distSupply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | *   | production_WH   | ppOrder             | newBOMLine                  |
@@ -261,14 +261,14 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | newBOMLine          | ppOrder     | component    | 10 PCE       | CO            |
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
       | Identifier         | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
-      | processedCandidate | component    | rawMaterials_WH     | production_WH    | 20 PCE | Y         | ppOrder             | newBOMLine                  |
+      | ddOrderCandidate   | component    | rawMaterials_WH     | production_WH    | 20 PCE | Y         | ppOrder             | newBOMLine                  |
     And after not more than 60s, DD_Orders are generated from the following DD_Order_Candidates
       | Identifier | DD_Order_Candidate_ID | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID | DD_OrderLine_ID |
-      | ddOrder    | processedCandidate    | ppOrder             | newBOMLine                  | ddOrderLine     |
+      | ddOrder    | ddOrderCandidate      | ppOrder             | newBOMLine                  | ddOrderLine     |
     And after not more than 60s, MD_Candidates are found
       | Identifier     | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  | DD_Order_Candidate_ID | DD_OrderLine_ID | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
-      | distCandSupply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | production_WH   | processedCandidate    |                 | ppOrder             | newBOMLine                  |
-      | distCandDemand | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | rawMaterials_WH | processedCandidate    |                 | ppOrder             | newBOMLine                  |
+      | distCandSupply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | production_WH   | ddOrderCandidate      |                 | ppOrder             | newBOMLine                  |
+      | distCandDemand | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | rawMaterials_WH | ddOrderCandidate      |                 | ppOrder             | newBOMLine                  |
       | distLineSupply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 20  | *   | production_WH   |                       | ddOrderLine     | ppOrder             | newBOMLine                  |
       | distLineDemand | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -20 | *   | rawMaterials_WH |                       | ddOrderLine     | ppOrder             | newBOMLine                  |
     And after not more than 60s, all DD_Order_Candidates of product component supply PP_Order_BOMLine newBOMLine
@@ -316,16 +316,16 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | newBOMLine          | ppOrder     | component    | 20 PCE       | CO            |
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
       | Identifier      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
-      | firstCandidate  | component    | rawMaterials_WH     | production_WH    | 10 PCE | Y         | ppOrder             | newBOMLine                  |
+      | ddOrderCandidate  | component    | rawMaterials_WH     | production_WH    | 10 PCE | Y         | ppOrder             | newBOMLine                  |
       | secondCandidate | component    | rawMaterials_WH     | production_WH    | 10 PCE | Y         | ppOrder             | newBOMLine                  |
     And after not more than 60s, DD_Orders are generated from the following DD_Order_Candidates
       | Identifier    | DD_Order_Candidate_ID | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID | DD_OrderLine_ID   |
-      | firstDDOrder  | firstCandidate        | ppOrder             | newBOMLine                  | firstDDOrderLine  |
+      | ddOrder  | ddOrderCandidate        | ppOrder             | newBOMLine                  | firstDDOrderLine  |
       | secondDDOrder | secondCandidate       | ppOrder             | newBOMLine                  | secondDDOrderLine |
     And after not more than 60s, MD_Candidates are found
       | Identifier       | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  | DD_Order_Candidate_ID | DD_OrderLine_ID   | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
-      | firstCandSupply  | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | production_WH   | firstCandidate        |                   | ppOrder             | newBOMLine                  |
-      | firstCandDemand  | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | rawMaterials_WH | firstCandidate        |                   | ppOrder             | newBOMLine                  |
+      | firstCandSupply  | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | production_WH   | ddOrderCandidate        |                   | ppOrder             | newBOMLine                  |
+      | firstCandDemand  | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | rawMaterials_WH | ddOrderCandidate        |                   | ppOrder             | newBOMLine                  |
       | firstLineSupply  | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | *   | production_WH   |                       | firstDDOrderLine  | ppOrder             | newBOMLine                  |
       | firstLineDemand  | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | *   | rawMaterials_WH |                       | firstDDOrderLine  | ppOrder             | newBOMLine                  |
       | secondCandSupply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | production_WH   | secondCandidate       |                   | ppOrder             | newBOMLine                  |
@@ -415,7 +415,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
     And the manufacturing order identified by ppOrder is completed
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
       | Identifier   | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
-      | newCandidate | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | newBOMLine                  |
+      | ddOrderCandidate | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | newBOMLine                  |
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
       | distSupply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | *   | production_WH   | ppOrder             | newBOMLine                  |
@@ -511,7 +511,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | increasedBOMLine    | ppOrder     | component    | 20 PCE       | CO            |
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
       | Identifier           | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
-      | processedCandidate   | component    | rawMaterials_WH     | production_WH    | 10 PCE | Y         | ppOrder             | increasedBOMLine            |
+      | ddOrderCandidate   | component    | rawMaterials_WH     | production_WH    | 10 PCE | Y         | ppOrder             | increasedBOMLine            |
       | unprocessedCandidate | component    | rawMaterials_WH     | production_WH    | 10 PCE | N         | ppOrder             | increasedBOMLine            |
 
     When update PP_Order:
@@ -522,10 +522,10 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | reducedBOMLine      | ppOrder     | component    | 5 PCE        | CO            |
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
       | Identifier              | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
-      | stillProcessedCandidate | component    | rawMaterials_WH     | production_WH    | 10 PCE | Y         | ppOrder             | reducedBOMLine              |
+      | ddOrderCandidate      | component    | rawMaterials_WH     | production_WH    | 10 PCE | Y         | ppOrder             | reducedBOMLine              |
     And after not more than 60s, DD_Orders are generated from the following DD_Order_Candidates
       | Identifier | DD_Order_Candidate_ID   | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
-      | ddOrder    | stillProcessedCandidate | ppOrder             | reducedBOMLine              |
+      | ddOrder    | ddOrderCandidate      | ppOrder             | reducedBOMLine              |
     And after not more than 60s, all DD_Order_Candidates of product component supply PP_Order_BOMLine reducedBOMLine
     And after not more than 60s, all DISTRIBUTION MD_Candidates of product component supply PP_Order_BOMLine reducedBOMLine
     And after not more than 60s, AD_Note records exist for the referenced record:
@@ -571,7 +571,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
       | Identifier    | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
       | candidateA    | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrderA            | bomLineA                    |
-      | newCandidateB | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrderB            | newBOMLineB                 |
+      | candidateB    | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrderB            | newBOMLineB                 |
     And after not more than 60s, MD_Candidates are found
       | Identifier  | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
       | distASupply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | *   | production_WH   | ppOrderA            | bomLineA                    |
@@ -639,11 +639,11 @@ Feature: Distribution for a manufacturing order's component follows the order's 
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
       | Identifier    | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
       | candidateA    | component    | rawMaterials_WH     | production_WH    | 10 PCE | Y         | ppOrderA            | bomLineA                    |
-      | newCandidateB | component    | rawMaterials_WH     | production_WH    | 20 PCE | Y         | ppOrderB            | newBOMLineB                 |
+      | candidateB    | component    | rawMaterials_WH     | production_WH    | 20 PCE | Y         | ppOrderB            | newBOMLineB                 |
     And after not more than 60s, DD_Orders are generated from the following DD_Order_Candidates
       | Identifier | DD_Order_Candidate_ID |
       | ddOrder    | candidateA            |
-      | ddOrder    | newCandidateB         |
+      | ddOrder    | candidateB            |
     And after not more than 60s, DD_Orders are generated from the following DD_Order_Candidates
       | Identifier | DD_Order_Candidate_ID | DD_OrderLine_QtyEntered_Total |
       | ddOrder    | candidateA            | 30                            |
@@ -733,14 +733,14 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | ppOrder     | 10         |
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
       | Identifier    | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID |
-      | newCandidate1 | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             |
-      | newCandidate2 | component2   | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             |
+      | candidate1    | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             |
+      | candidate2    | component2   | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             |
     And after not more than 60s, MD_Candidates are found
       | Identifier   | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  | DD_Order_Candidate_ID | DD_OrderLine_ID | Forward_PP_Order_ID |
-      | after1Supply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | *   | production_WH   |                       |                 | ppOrder             |
-      | after1Demand | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | *   | rawMaterials_WH |                       |                 | ppOrder             |
-      | after2Supply | SUPPLY            | DISTRIBUTION              | component2   | 2021-04-16T21:00:00Z | 10  | *   | production_WH   |                       |                 | ppOrder             |
-      | after2Demand | DEMAND            | DISTRIBUTION              | component2   | 2021-04-16T21:00:00Z | -10 | *   | rawMaterials_WH |                       |                 | ppOrder             |
+      | before1Supply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | *   | production_WH   |                       |                 | ppOrder             |
+      | before1Demand | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | *   | rawMaterials_WH |                       |                 | ppOrder             |
+      | before2Supply | SUPPLY            | DISTRIBUTION              | component2   | 2021-04-16T21:00:00Z | 10  | *   | production_WH   |                       |                 | ppOrder             |
+      | before2Demand | DEMAND            | DISTRIBUTION              | component2   | 2021-04-16T21:00:00Z | -10 | *   | rawMaterials_WH |                       |                 | ppOrder             |
     And after not more than 5s, no AD_Note records exist for the referenced record:
       | AD_Message_ID | Record_ID |
       | noteMsg       | ppOrder   |
@@ -887,10 +887,10 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | ddOrder    | ddOrderCandidate      | ppOrder             | ddOrderLine     |
     And after not more than 60s, MD_Candidates are found
       | Identifier      | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  | DD_Order_Candidate_ID | DD_OrderLine_ID | Forward_PP_Order_ID |
-      | afterCandSupply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | production_WH   | ddOrderCandidate      |                 | ppOrder             |
-      | afterCandDemand | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | rawMaterials_WH | ddOrderCandidate      |                 | ppOrder             |
-      | afterLineSupply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 20  | *   | production_WH   |                       | ddOrderLine     | ppOrder             |
-      | afterLineDemand | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -20 | *   | rawMaterials_WH |                       | ddOrderLine     | ppOrder             |
+      | beforeCandSupply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | production_WH   | ddOrderCandidate      |                 | ppOrder             |
+      | beforeCandDemand | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | *   | rawMaterials_WH | ddOrderCandidate      |                 | ppOrder             |
+      | beforeLineSupply | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 20  | *   | production_WH   |                       | ddOrderLine     | ppOrder             |
+      | beforeLineDemand | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -20 | *   | rawMaterials_WH |                       | ddOrderLine     | ppOrder             |
     And after not more than 60s, AD_Note records exist for the referenced record:
       | AD_Message_ID | Record_ID | TextContains |
       | noteMsg       | ppOrder   | 10           |
