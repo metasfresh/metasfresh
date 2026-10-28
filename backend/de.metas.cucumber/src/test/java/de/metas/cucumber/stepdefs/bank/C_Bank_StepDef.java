@@ -25,9 +25,9 @@ package de.metas.cucumber.stepdefs.bank;
 import de.metas.cucumber.stepdefs.C_DataImport_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Bank;
@@ -73,7 +73,7 @@ public class C_Bank_StepDef
 
 		final I_C_Bank bankRecord = InterfaceWrapperHelper.newInstance(I_C_Bank.class);
 
-		// C_DataImport_ID is optional; if omitted, the DB default applies (e.g. a bank that is only used as a SEPA debtor bank has no data import)
+		// C_DataImport_ID is optional; if omitted, the AD_Column default value applies, i.e. the Bank_Statement_Import data import (e.g. a bank that is only used as a SEPA debtor bank has no data import)
 		final String dataImportIdentifier = tableRow.getAsOptionalString(I_C_Bank.COLUMNNAME_C_DataImport_ID + "." + TABLECOLUMN_IDENTIFIER).orElse(null);
 		if (dataImportIdentifier != null)
 		{
