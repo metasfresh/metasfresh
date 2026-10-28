@@ -90,13 +90,16 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	private final I_C_PaySelection source;
 	private final boolean isGroupTransactions;
+	@Nullable private final SEPAProtocol chosenCreditTransferProtocol;
 
 	public CreateSEPAExportFromPaySelectionCommand(
 			@NonNull final org.compiere.model.I_C_PaySelection source,
-			final boolean isGroupTransactions)
+			final boolean isGroupTransactions,
+			@Nullable final SEPAProtocol chosenCreditTransferProtocol)
 	{
 		this.source = InterfaceWrapperHelper.create(source, I_C_PaySelection.class);
 		this.isGroupTransactions = isGroupTransactions;
+		this.chosenCreditTransferProtocol = chosenCreditTransferProtocol;
 	}
 
 	public I_SEPA_Export run()
@@ -184,7 +187,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		}
 
 		final I_SEPA_Export header = newInstance(I_SEPA_Export.class, paySelectionHeader);
-		final SEPAProtocol sepaProtocol = SEPAProtocol.ofPaySelectionTrxType(paySelectionTrxType);
+		final SEPAProtocol sepaProtocol = SEPAProtocol.ofPaySelectionTrxType(paySelectionTrxType, chosenCreditTransferProtocol);
 		header.setSEPA_Protocol(sepaProtocol.getCode());
 
 		//
@@ -240,7 +243,18 @@ class CreateSEPAExportFromPaySelectionCommand
 			@NonNull final List<I_C_PaySelectionLine> paySelectionLines,
 			@NonNull final I_SEPA_Export header)
 	{
-		final Map<InvoicePaySelectionLinesAggregationKey, AggregatedInvoicePaySelectionLines> keyToAggregatedPaySelectionLines = getInvoiceKeyToGroupedPaySelectionLines(paySelectionLines);
+		// QR-IBAN (QRR) payments carry a per-invoice QR reference and cannot be aggregated;
+		// export each such line individually, exactly as if grouping were off.
+		// Order lines are already exported individually by handleOrderPaySelectionLines.
+		final Map<Boolean, ImmutableList<I_C_PaySelectionLine>> invoiceLinesByHasQrIban = paySelectionLines.stream()
+				.filter(this::isInvoicePaySelectionLine)
+				.collect(Collectors.partitioningBy(this::hasQrIban, ImmutableList.toImmutableList()));
+		final List<I_C_PaySelectionLine> qrIbanLines = invoiceLinesByHasQrIban.get(true);
+		final List<I_C_PaySelectionLine> groupableLines = invoiceLinesByHasQrIban.get(false);
+
+		handleUngroupedPaySelectionLines(qrIbanLines, header);
+
+		final Map<InvoicePaySelectionLinesAggregationKey, AggregatedInvoicePaySelectionLines> keyToAggregatedPaySelectionLines = getInvoiceKeyToGroupedPaySelectionLines(groupableLines);
 		final List<I_C_PaySelectionLine> ungroupedPaySelectionLines = getUngroupedPaySelectionLines(keyToAggregatedPaySelectionLines);
 
 		handleUngroupedPaySelectionLines(ungroupedPaySelectionLines, header);
@@ -256,6 +270,16 @@ class CreateSEPAExportFromPaySelectionCommand
 				.collect(ImmutableList.toImmutableList());
 
 		handleUngroupedPaySelectionLines(orderPaySelectionLines, header);
+	}
+
+	private boolean hasQrIban(@NonNull final I_C_PaySelectionLine line)
+	{
+		final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(line.getC_BP_BankAccount_ID());
+		if (bankAccountId == null)
+		{
+			return false;
+		}
+		return Check.isNotBlank(bankAccountDAO.getById(bankAccountId).getQR_IBAN());
 	}
 
 	private void handleUngroupedPaySelectionLines(

@@ -423,25 +423,18 @@ public class PP_Order_StepDef
 	@And("export PP_Order to LeichMehl external system and expect MissingPLUConfigForProduct exception")
 	public void export_PP_Order_LeichMehl_expect_exception(@NonNull final DataTable dataTable)
 	{
-		try
-		{
-			export_PP_Order_LeichMehl(dataTable);
+		final AdempiereException adempiereException = StepDefUtil.assertThrowsWithAdMessage(() -> export_PP_Order_LeichMehl(dataTable), MISSING_PRODUCT_PLU_CONFIG);
 
-			assertThat(false).as("ExportPPOrderToLeichMehlService.buildParameters should throw error!").isTrue();
-		}
-		catch (final AdempiereException adempiereException)
-		{
-			final String adLanguage = Env.getAD_Language();
+		final String adLanguage = Env.getAD_Language();
 
-			final Map<String, String> row = dataTable.asMaps().get(0);
-			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
-			final String productName = productBL.getProductName(ProductId.ofRepoId(ppOrder.getM_Product_ID()));
+		final Map<String, String> row = dataTable.asMaps().get(0);
+		final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+		final String productName = productBL.getProductName(ProductId.ofRepoId(ppOrder.getM_Product_ID()));
 
-			final ITranslatableString message = msgBL.getTranslatableMsgText(MISSING_PRODUCT_PLU_CONFIG, productName);
+		final ITranslatableString message = msgBL.getTranslatableMsgText(MISSING_PRODUCT_PLU_CONFIG, productName);
 
-			assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
-		}
+		assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
 	}
 
 	@And("validate I_PP_Order_Qty")

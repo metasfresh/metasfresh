@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Sequence
  *  @author metasfresh (generated) 
@@ -188,6 +187,29 @@ public interface I_AD_Sequence
 
 	ModelColumn<I_AD_Sequence, Object> COLUMN_DateColumn = new ModelColumn<>(I_AD_Sequence.class, "DateColumn", null);
 	String COLUMNNAME_DateColumn = "DateColumn";
+
+	/**
+	 * Set Date Format.
+	 * Date format used in the input format
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDateFormat (@Nullable java.lang.String DateFormat);
+
+	/**
+	 * Get Date Format.
+	 * Date format used in the input format
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDateFormat();
+
+	ModelColumn<I_AD_Sequence, Object> COLUMN_DateFormat = new ModelColumn<>(I_AD_Sequence.class, "DateFormat", null);
+	String COLUMNNAME_DateFormat = "DateFormat";
 
 	/**
 	 * Set Decimal Pattern.

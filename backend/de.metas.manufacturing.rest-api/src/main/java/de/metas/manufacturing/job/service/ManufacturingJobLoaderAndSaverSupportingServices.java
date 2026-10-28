@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -57,6 +58,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -196,6 +198,29 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	public HUPIItemProduct getTUPIItemProduct(@NonNull final HUPIItemProductId id)
 	{
 		return huPIItemProductDAO.getById(id);
+	}
+
+	/**
+	 * @return the packing (CU-TU association) of the given TU for the given product.
+	 * Taken from the TU record if it carries one, else from the TU's material item (a TU received on mobile does not carry it).
+	 */
+	public Optional<HUPIItemProduct> getTUPIItemProduct(
+			@NonNull final I_M_HU tu,
+			@NonNull final ProductId productId,
+			@NonNull final ZonedDateTime date)
+	{
+		final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(tu.getM_HU_PI_Item_Product_ID());
+		if (tuPIItemProductId != null)
+		{
+			return Optional.of(getTUPIItemProduct(tuPIItemProductId));
+		}
+
+		return handlingUnitsBL.retrieveItems(tu, HUItemType.Material)
+				.stream()
+				.map(materialItem -> huPIItemProductDAO.retrievePIMaterialItemProduct(materialItem, productId, date))
+				.filter(Objects::nonNull)
+				.findFirst()
+				.map(record -> getTUPIItemProduct(HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())));
 	}
 
 	public Optional<HUPIItemProductId> getDefaultTUPIItemProductId(@NonNull final ProductId productId, @NonNull final Instant date)

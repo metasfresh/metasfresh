@@ -213,6 +213,29 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
 
 	/**
+	 * Set Finished goods: require catch-weight scan.
+	 * Receiving a catch-weight finished good at production receipt requires a scan.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFinishedGoodsCatchWeightScanRequired (boolean IsFinishedGoodsCatchWeightScanRequired);
+
+	/**
+	 * Get Finished goods: require catch-weight scan.
+	 * Receiving a catch-weight finished good at production receipt requires a scan.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFinishedGoodsCatchWeightScanRequired();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsFinishedGoodsCatchWeightScanRequired = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsFinishedGoodsCatchWeightScanRequired", null);
+	String COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired = "IsFinishedGoodsCatchWeightScanRequired";
+
+	/**
 	 * Set Lot Number editable.
 	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
 	 *

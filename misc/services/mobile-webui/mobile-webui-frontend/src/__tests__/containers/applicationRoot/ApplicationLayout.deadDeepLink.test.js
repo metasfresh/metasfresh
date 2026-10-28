@@ -66,7 +66,7 @@ jest.mock('../../../reducers/headers', () => ({
 }));
 
 // Non-fullscreen layout (the real WF screens render the #WFProcessScreen container the e2e gate waits on).
-jest.mock('../../../apps', () => ({ isApplicationFullScreen: () => false }));
+jest.mock('../../../apps', () => ({ isApplicationFullScreen: () => false, getApplicationState: () => undefined }));
 
 jest.mock('../../../utils/ui_trace/useUITraceLocationChange', () => ({
   useUITraceLocationChange: jest.fn(),

@@ -50,6 +50,14 @@ class MobileConfigManufacturingCommand
 		{
 			newConfigBuilder.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofBoolean(request.getIsCaptureCatchWeightAtReceipt()));
 		}
+		if (request.getIsFinishedGoodsCatchWeightScanRequired() != null)
+		{
+			newConfigBuilder.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.ofBoolean(request.getIsFinishedGoodsCatchWeightScanRequired()));
+		}
+		if (request.getIsLotNumberEditable() != null)
+		{
+			newConfigBuilder.isLotNumberEditable(OptionalBoolean.ofBoolean(request.getIsLotNumberEditable()));
+		}
 
 		final MobileUIManufacturingConfig newConfig = newConfigBuilder.build();
 		mobileManufacturingConfigRepository.saveUserConfig(newConfig, loginUserId);
@@ -62,6 +70,8 @@ class MobileConfigManufacturingCommand
 				.isAllowFinishedGoodsReceiveToTU(newConfig.getIsAllowFinishedGoodsReceiveToTU().toBooleanOrNull())
 				.isSkipFinishedGoodsReceiveTargetStep(newConfig.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanOrNull())
 				.isCaptureCatchWeightAtReceipt(newConfig.getIsCaptureCatchWeightAtReceipt().toBooleanOrNull())
+				.isFinishedGoodsCatchWeightScanRequired(newConfig.getIsFinishedGoodsCatchWeightScanRequired().toBooleanOrNull())
+				.isLotNumberEditable(newConfig.getIsLotNumberEditable().toBooleanOrNull())
 				.build();
 	}
 

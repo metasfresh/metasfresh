@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -369998932L;
+	private static final long serialVersionUID = 1765963509L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -68,6 +68,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getavv_no() 
 	{
 		return get_ValueAsString(COLUMNNAME_avv_no);
+	}
+
+	@Override
+	public void setBestBeforeDays (final int BestBeforeDays)
+	{
+		set_Value (COLUMNNAME_BestBeforeDays, BestBeforeDays);
+	}
+
+	@Override
+	public int getBestBeforeDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_BestBeforeDays);
 	}
 
 	/** 

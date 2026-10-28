@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_MobileUI_MFG_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1474481984L;
+	private static final long serialVersionUID = 1740766802L;
 
     /** Standard Constructor */
     public X_MobileUI_MFG_Config (final Properties ctx, final int MobileUI_MFG_Config_ID, @Nullable final String trxName)
@@ -92,6 +92,18 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	public boolean isCaptureCatchWeightAtReceipt() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCaptureCatchWeightAtReceipt);
+	}
+
+	@Override
+	public void setIsFinishedGoodsCatchWeightScanRequired (final boolean IsFinishedGoodsCatchWeightScanRequired)
+	{
+		set_Value (COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired, IsFinishedGoodsCatchWeightScanRequired);
+	}
+
+	@Override
+	public boolean isFinishedGoodsCatchWeightScanRequired() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired);
 	}
 
 	@Override
