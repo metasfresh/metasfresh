@@ -337,7 +337,7 @@ public class DD_Order_Candidate_StepDef
 				.execute();
 	}
 
-	private void matchAndRememberCandidate(@NonNull final DataTableRow row, final int timeoutSec, @NonNull final Set<DDOrderCandidateId> alreadyMatchedIds)
+	private void matchAndRememberCandidate(@NonNull final DataTableRow row, final int timeoutSec, @NonNull final Set<DDOrderCandidateId> alreadyMatchedIds) throws InterruptedException
 	{
 		final DDOrderCandidate candidate = StepDefUtil.<DDOrderCandidate>tryAndWaitForItem()
 				.worker(() -> findFirstMatchingCandidate(row, alreadyMatchedIds))

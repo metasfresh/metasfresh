@@ -204,7 +204,7 @@ public class DD_Order_StepDef
 		DataTableRows.of(dataTable).forEach(row -> validateDDOrderGeneratedFromCandidate(timeoutSec, row));
 	}
 
-	private void validateDDOrderGeneratedFromCandidate(final int timeoutSec, @NonNull final DataTableRow row)
+	private void validateDDOrderGeneratedFromCandidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
 		final DDOrderCandidateId candidateId = row.getAsIdentifier("DD_Order_Candidate_ID").lookupIdIn(ddOrderCandidateTable);
 		final StepDefDataIdentifier ddOrderIdentifier = row.getAsIdentifier();
