@@ -23,6 +23,8 @@
 
 package de.metas.cucumber.stepdefs.payment.sepa;
 
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.payment.C_PaySelection_StepDefData;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.process.C_PaySelection_SEPA_XmlExport;
@@ -43,6 +45,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.util.Env;
 import org.springframework.core.io.Resource;
+import org.springframework.util.StreamUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -56,7 +59,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -69,20 +71,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 /**
- * Runs the SEPA export process ({@code C_PaySelection_SEPA_XmlExport}) and asserts the produced XML / ZIP files.
- * <p>
- * XPath is evaluated namespace-agnostically (via {@code local-name()}), so the {@code Namespace} column of the header step is the only namespace assertion.
- * In every expected-value cell, the token {@code <SPACE>} stands for one space (Cucumber trims table cells).
- * Every exported file is dumped to {@code target/sepa-export-files/<pay selection identifier>/<filename>}.
+ * Runs the SEPA export process and asserts the produced XML / ZIP files.
+ *
+ * @see C_PaySelection_StepDefData
  */
 @RequiredArgsConstructor
 public class SEPA_Export_StepDef
@@ -91,8 +91,8 @@ public class SEPA_Export_StepDef
 	private static final String ABSENT = "-";
 	private static final String NOT_PROVIDED = "NOTPROVIDED";
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final @NonNull C_PaySelection_StepDefData paySelectionTable;
 
@@ -102,6 +102,22 @@ public class SEPA_Export_StepDef
 	private final Map<String, Document> documentsByScheme = new LinkedHashMap<>();
 	private final List<String> filenames = new ArrayList<>();
 
+	/**
+	 * Runs the AD_Process {@code C_PaySelection_SEPA_XmlExport} on the given pay selection, with the process defaults
+	 * (IsGroupTransactions=N, ReferenceAsEndToEndId=N, SEPA_Protocol unset), and stores the outcome for the following steps.
+	 * <p>
+	 * On success, the report data is read: a ZIP (PK magic or zip content type) is unpacked, every entry is parsed as XML; otherwise the single file is parsed.
+	 * Each file is stored under its scheme (the text of {@code PmtTpInf/LclInstrm/Cd}, e.g. CORE or B2B); two files with the same scheme fail the step.
+	 * Each file is also written as-is to {@code target/sepa-export-files/<pay selection identifier>/<filename>}, relative to the working directory
+	 * (the module directory under surefire).
+	 * A failing process does not fail this step; the failure steps assert it.
+	 *
+	 * @param paySelectionIdentifier identifier of a pay selection registered via {@code metasfresh contains Pay Selection}
+	 * @cucumber.example
+	 * <pre>{@code
+	 * When the SEPA export process is run for pay selection "paySelection"
+	 * }</pre>
+	 */
 	@When("the SEPA export process is run for pay selection {string}")
 	public void run(@NonNull final String paySelectionIdentifier) throws Exception
 	{
@@ -158,7 +174,7 @@ public class SEPA_Export_StepDef
 					{
 						continue;
 					}
-					final byte[] entryBytes = toBytes(zis);
+					final byte[] entryBytes = StreamUtils.copyToByteArray(zis);
 					addFile(dumpDir, entry.getName(), entryBytes);
 				}
 			}
@@ -169,6 +185,14 @@ public class SEPA_Export_StepDef
 		}
 	}
 
+	/**
+	 * Asserts that the last run succeeded and produced exactly one file, and that it is an {@code .xml} file.
+	 *
+	 * @cucumber.example
+	 * <pre>{@code
+	 * Then the SEPA export result is a single XML file
+	 * }</pre>
+	 */
 	@Then("the SEPA export result is a single XML file")
 	public void assertSingleXmlFile()
 	{
@@ -177,6 +201,15 @@ public class SEPA_Export_StepDef
 		assertThat(filenames.get(0)).as("exported file name").endsWith(".xml");
 	}
 
+	/**
+	 * Asserts that the last run succeeded and produced a ZIP with exactly the given number of entries, all of them {@code .xml} files.
+	 *
+	 * @param expectedCount the number of XML files in the ZIP
+	 * @cucumber.example
+	 * <pre>{@code
+	 * Then the SEPA export result is a ZIP with 2 XML files
+	 * }</pre>
+	 */
 	@Then("the SEPA export result is a ZIP with {int} XML files")
 	public void assertZipWithXmlFiles(final int expectedCount)
 	{
@@ -185,11 +218,33 @@ public class SEPA_Export_StepDef
 		assertThat(filenames).as("exported file names").allMatch(name -> name.endsWith(".xml"));
 	}
 
+	/**
+	 * Asserts the header data of the exported file of the given scheme. The table has exactly one row.
+	 * In every expected-value cell, {@code <SPACE>} stands for one space (Cucumber trims cells).
+	 * <ul>
+	 *   <li><b>Namespace</b> - namespace URI of the root element; the only namespace assertion, all XPaths ignore namespaces</li>
+	 *   <li><b>NbOfTxs</b> - checked against {@code GrpHdr/NbOfTxs} and the number of {@code DrctDbtTxInf}</li>
+	 *   <li><b>CtrlSum</b> - checked against {@code GrpHdr/CtrlSum} and the sum of {@code InstdAmt}; compared scale-insensitively</li>
+	 *   <li><b>Cdtr.Nm</b>, <b>CdtrSchmeId</b> ({@code CdtrSchmeId/Id/PrvtId/Othr/Id}), <b>ReqdColltnDt</b> - checked on every {@code PmtInf}</li>
+	 *   <li><b>Cdtr.PstlAdr</b> - (optional) {@code -} = the whole address is absent; any other value = it is present</li>
+	 *   <li><b>Cdtr.PstlAdr.TwnNm</b>, <b>.Ctry</b>, <b>.StrtNm</b>, <b>.PstCd</b> - (optional) {@code -} = the element is absent, otherwise its text</li>
+	 * </ul>
+	 * Always checked, without a column: the number of {@code PmtInf} = NbOfTxs; each {@code PmtInf} holds exactly one {@code DrctDbtTxInf},
+	 * has {@code NbOfTxs} = 1 and {@code CtrlSum} = its {@code InstdAmt}; there is no {@code BtchBookg} element.
+	 *
+	 * @param scheme the scheme of the file, e.g. CORE or B2B
+	 * @cucumber.example
+	 * <pre>{@code
+	 * Then the SEPA direct debit file for scheme B2B has header:
+	 *   | Namespace                                       | NbOfTxs | CtrlSum | Cdtr.Nm | CdtrSchmeId        | ReqdColltnDt | Cdtr.PstlAdr.TwnNm |
+	 *   | urn:iso:std:iso:20022:tech:xsd:pain.008.001.08  | 2       | 150.00  | Creditor | DE98ZZZ09999999999 | 2026-11-02   | -                  |
+	 * }</pre>
+	 */
 	@Then("the SEPA direct debit file for scheme {word} has header:")
 	public void assertHeader(@NonNull final String scheme, @NonNull final DataTable dataTable) throws Exception
 	{
 		final Document doc = getDocument(scheme);
-		final Map<String, String> expected = dataTable.asMaps().get(0);
+		final DataTableRow expected = DataTableRows.of(dataTable).singleRow();
 		final XPath xpath = XPathFactory.newInstance().newXPath();
 		final SoftAssertions softly = new SoftAssertions();
 
@@ -228,12 +283,12 @@ public class SEPA_Export_StepDef
 			}
 
 			softly.assertThat(text(xpath, pmtInf, "Cdtr/Nm")).as(p + "/Cdtr/Nm").isEqualTo(expectedValue(expected, "Cdtr.Nm"));
-			softly.assertThat(text(xpath, pmtInf, "CdtrSchmeId//Othr/Id")).as(p + "/CdtrSchmeId").isEqualTo(expectedValue(expected, "CdtrSchmeId"));
+			softly.assertThat(text(xpath, pmtInf, "CdtrSchmeId/Id/PrvtId/Othr/Id")).as(p + "/CdtrSchmeId").isEqualTo(expectedValue(expected, "CdtrSchmeId"));
 			softly.assertThat(text(xpath, pmtInf, "ReqdColltnDt")).as(p + "/ReqdColltnDt").isEqualTo(expectedValue(expected, "ReqdColltnDt"));
 
-			if (expected.containsKey("Cdtr.PstlAdr"))
+			final String expectedAdr = expected.getAsOptionalString("Cdtr.PstlAdr").orElse(null);
+			if (expectedAdr != null)
 			{
-				final String expectedAdr = expected.get("Cdtr.PstlAdr");
 				if (ABSENT.equals(expectedAdr))
 				{
 					softly.assertThat(nodes(xpath, pmtInf, "Cdtr/PstlAdr").getLength()).as(p + "/Cdtr/PstlAdr is absent").isZero();
@@ -252,6 +307,25 @@ public class SEPA_Export_StepDef
 		softly.assertAll();
 	}
 
+	/**
+	 * Asserts that the file of the given scheme contains exactly the given transactions: every {@code DrctDbtTxInf} must match exactly one row and vice versa.
+	 * Only the columns present in the table are compared; {@code <SPACE>} stands for one space.
+	 * <ul>
+	 *   <li><b>Dbtr.Nm</b>, <b>DbtrAcct.IBAN</b>, <b>MndtId</b>, <b>DtOfSgntr</b> - the element texts</li>
+	 *   <li><b>InstdAmt</b> - compared scale-insensitively</li>
+	 *   <li><b>SeqTp</b> - read from the enclosing {@code PmtInf}</li>
+	 *   <li><b>DbtrAgt</b> - the BIC ({@code FinInstnId/BICFI}), or {@code NOTPROVIDED} ({@code FinInstnId/Othr/Id})</li>
+	 *   <li><b>Ustrd</b> - the unstructured remittance information; {@code -} = absent</li>
+	 * </ul>
+	 *
+	 * @param scheme the scheme of the file, e.g. CORE or B2B
+	 * @cucumber.example
+	 * <pre>{@code
+	 * Then the SEPA direct debit file for scheme B2B contains exactly the transactions:
+	 *   | Dbtr.Nm  | DbtrAcct.IBAN          | InstdAmt | MndtId | DtOfSgntr  | SeqTp | DbtrAgt     | Ustrd |
+	 *   | Debtor 1 | DE89370400440532013000 | 100.00   | M-1    | 2026-01-15 | RCUR  | NOTPROVIDED | -     |
+	 * }</pre>
+	 */
 	@Then("the SEPA direct debit file for scheme {word} contains exactly the transactions:")
 	public void assertTransactions(@NonNull final String scheme, @NonNull final DataTable dataTable) throws Exception
 	{
@@ -276,10 +350,10 @@ public class SEPA_Export_StepDef
 			actualRows.add(row);
 		}
 
-		final List<Map<String, String>> expectedRows = dataTable.asMaps();
+		final List<DataTableRow> expectedRows = DataTableRows.of(dataTable).toList();
 		final List<Map<String, String>> unmatchedActual = new ArrayList<>(actualRows);
-		final List<Map<String, String>> unmatchedExpected = new ArrayList<>();
-		for (final Map<String, String> expected : expectedRows)
+		final List<DataTableRow> unmatchedExpected = new ArrayList<>();
+		for (final DataTableRow expected : expectedRows)
 		{
 			final Map<String, String> match = unmatchedActual.stream().filter(actual -> rowMatches(expected, actual)).findFirst().orElse(null);
 			if (match == null)
@@ -296,28 +370,73 @@ public class SEPA_Export_StepDef
 		assertThat(unmatchedActual).as("file transactions not matched by any expected row").isEmpty();
 	}
 
+	/**
+	 * Asserts that the last run failed, carries no report data, and that its message contains every given substring.
+	 * The table has no header row: every cell is one substring (the message is in the runtime language, de_DE); {@code <SPACE>} stands for one space.
+	 * The message is the result summary plus the exception message.
+	 *
+	 * @cucumber.example
+	 * <pre>{@code
+	 * Then the SEPA export process fails with a message containing:
+	 *   | Mandat |
+	 *   | fehlt  |
+	 * }</pre>
+	 */
 	@Then("the SEPA export process fails with a message containing:")
 	public void assertFailsWithMessage(@NonNull final DataTable dataTable)
 	{
 		assertFailure(null, dataTable);
 	}
 
+	/**
+	 * Like {@link #assertFailsWithMessage}, and additionally asserts the {@code errorCode} of the process exception
+	 * (the language-independent AD_Message ErrorCode, or the message key when the message has none).
+	 *
+	 * @param expectedErrorCode the expected {@code AdempiereException.getErrorCode()}
+	 * @cucumber.example
+	 * <pre>{@code
+	 * Then the SEPA export process fails with error code "de.metas.payment.sepa.SomeError" and a message containing:
+	 *   | Mandat |
+	 * }</pre>
+	 */
 	@Then("the SEPA export process fails with error code {string} and a message containing:")
 	public void assertFailsWithErrorCodeAndMessage(@NonNull final String expectedErrorCode, @NonNull final DataTable dataTable)
 	{
 		assertFailure(expectedErrorCode, dataTable);
 	}
 
+	/**
+	 * Asserts that no {@code SEPA_Export} record exists for the pay selection, e.g. after a failed export (everything rolled back).
+	 *
+	 * @cucumber.example
+	 * <pre>{@code
+	 * Then the pay selection "paySelection" has no SEPA_Export
+	 * }</pre>
+	 */
 	@Then("the pay selection {string} has no SEPA_Export")
 	public void assertNoSepaExport(@NonNull final String paySelectionIdentifier)
 	{
 		assertThat(retrieveSepaExports(paySelectionIdentifier)).as("SEPA_Export records of pay selection " + paySelectionIdentifier).isEmpty();
 	}
 
+	/**
+	 * Asserts the {@code SEPA_Export} records of the pay selection (matched via AD_Table_ID/Record_ID), order-independent; a duplicate record counts.
+	 * <ul>
+	 *   <li><b>SEPA_Protocol</b> - the {@code SEPA_Export.SEPA_Protocol} code</li>
+	 *   <li><b>NumberOfLines</b> - not a column of SEPA_Export: the number of its {@code SEPA_Export_Line} rows</li>
+	 * </ul>
+	 *
+	 * @cucumber.example
+	 * <pre>{@code
+	 * Then the pay selection "paySelection" has SEPA_Export records:
+	 *   | SEPA_Protocol | NumberOfLines |
+	 *   | pain.008.001.08 | 2            |
+	 * }</pre>
+	 */
 	@Then("the pay selection {string} has SEPA_Export records:")
 	public void assertSepaExports(@NonNull final String paySelectionIdentifier, @NonNull final DataTable dataTable)
 	{
-		final Set<String> actual = new TreeSet<>();
+		final List<String> actual = new ArrayList<>();
 		for (final I_SEPA_Export export : retrieveSepaExports(paySelectionIdentifier))
 		{
 			final int numberOfLines = queryBL.createQueryBuilder(I_SEPA_Export_Line.class)
@@ -327,13 +446,10 @@ public class SEPA_Export_StepDef
 			actual.add(export.getSEPA_Protocol() + "|" + numberOfLines);
 		}
 
-		final Set<String> expected = new TreeSet<>();
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			expected.add(expectedValue(row, "SEPA_Protocol") + "|" + Integer.parseInt(expectedValue(row, "NumberOfLines")));
-		}
+		final List<String> expected = new ArrayList<>();
+		DataTableRows.of(dataTable).forEach(row -> expected.add(expectedValue(row, "SEPA_Protocol") + "|" + row.getAsInt("NumberOfLines")));
 
-		assertThat(actual).as("SEPA_Export records (SEPA_Protocol|NumberOfLines) of pay selection " + paySelectionIdentifier).isEqualTo(expected);
+		assertThat(actual).as("SEPA_Export records (SEPA_Protocol|NumberOfLines) of pay selection " + paySelectionIdentifier).containsExactlyInAnyOrderElementsOf(expected);
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -369,6 +485,7 @@ public class SEPA_Export_StepDef
 		{
 			for (final String cell : row)
 			{
+				assertThat(cell).as("empty cell in the substring table").isNotNull();
 				softly.assertThat(messages.toString()).as("failure message").contains(unspace(cell));
 			}
 		}
@@ -377,9 +494,15 @@ public class SEPA_Export_StepDef
 
 	private void assertSuccess()
 	{
-		assertThat(thrown).as("the SEPA export process must not throw").isNull();
+		if (thrown != null)
+		{
+			fail("the SEPA export process must not throw: " + thrown, thrown);
+		}
 		assertThat(result).as("the SEPA export process was run").isNotNull();
-		assertThat(result.isError()).as("the SEPA export process must not fail; summary=" + result.getSummary()).isFalse();
+		if (result.isError())
+		{
+			fail("the SEPA export process must not fail; summary=" + result.getSummary(), result.getThrowable());
+		}
 	}
 
 	private Document getDocument(final String scheme)
@@ -421,27 +544,15 @@ public class SEPA_Export_StepDef
 	private static boolean isZip(final byte[] bytes, @Nullable final String contentType)
 	{
 		return (bytes.length > 1 && bytes[0] == 'P' && bytes[1] == 'K')
-				|| (contentType != null && contentType.toLowerCase().contains("zip"));
+				|| (contentType != null && contentType.toLowerCase(Locale.ROOT).contains("zip"));
 	}
 
 	private static byte[] toBytes(final Resource resource) throws IOException
 	{
 		try (final InputStream is = resource.getInputStream())
 		{
-			return toBytes(is);
+			return StreamUtils.copyToByteArray(is);
 		}
-	}
-
-	private static byte[] toBytes(final InputStream is) throws IOException
-	{
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		final byte[] buf = new byte[8192];
-		int n;
-		while ((n = is.read(buf)) > 0)
-		{
-			out.write(buf, 0, n);
-		}
-		return out.toByteArray();
 	}
 
 	private static String sanitize(final String s)
@@ -454,11 +565,9 @@ public class SEPA_Export_StepDef
 		return cell.replace(SPACE_TOKEN, " ");
 	}
 
-	private static String expectedValue(final Map<String, String> row, final String column)
+	private static String expectedValue(final DataTableRow row, final String column)
 	{
-		final String value = row.get(column);
-		assertThat(value).as("column " + column).isNotNull();
-		return unspace(value);
+		return unspace(row.getAsString(column));
 	}
 
 	private static void assertDecimal(final SoftAssertions softly, final String desc, final BigDecimal actual, final BigDecimal expected)
@@ -466,13 +575,13 @@ public class SEPA_Export_StepDef
 		softly.assertThat(actual.compareTo(expected)).as(desc + ": expected " + expected + " but was " + actual).isZero();
 	}
 
-	private static void assertOptionalElement(final SoftAssertions softly, final XPath xpath, final Node context, final String prefix, final Map<String, String> expected, final String column, final String path) throws Exception
+	private static void assertOptionalElement(final SoftAssertions softly, final XPath xpath, final Node context, final String prefix, final DataTableRow expected, final String column, final String path) throws Exception
 	{
-		if (!expected.containsKey(column))
+		final String expectedCell = expected.getAsOptionalString(column).orElse(null);
+		if (expectedCell == null)
 		{
 			return;
 		}
-		final String expectedCell = expected.get(column);
 		if (ABSENT.equals(expectedCell))
 		{
 			softly.assertThat(nodes(xpath, context, path).getLength()).as(prefix + "/" + path + " is absent").isZero();
@@ -486,7 +595,7 @@ public class SEPA_Export_StepDef
 
 	private static String extractDebtorAgent(final XPath xpath, final Node tx) throws Exception
 	{
-		for (final String path : new String[] { "DbtrAgt/FinInstnId/BICFI", "DbtrAgt/FinInstnId/BIC", "DbtrAgt/FinInstnId/Othr/Id" })
+		for (final String path : new String[] { "DbtrAgt/FinInstnId/BICFI", "DbtrAgt/FinInstnId/Othr/Id" })
 		{
 			if (nodes(xpath, tx, path).getLength() > 0)
 			{
@@ -496,12 +605,11 @@ public class SEPA_Export_StepDef
 		return ABSENT;
 	}
 
-	private static boolean rowMatches(final Map<String, String> expected, final Map<String, String> actual)
+	private static boolean rowMatches(final DataTableRow expected, final Map<String, String> actual)
 	{
-		for (final Map.Entry<String, String> e : expected.entrySet())
+		for (final String column : expected.asMap().keySet())
 		{
-			final String column = e.getKey();
-			final String expectedValue = unspace(e.getValue());
+			final String expectedValue = expectedValue(expected, column);
 			final String actualValue = actual.get(column);
 			if (actualValue == null)
 			{
