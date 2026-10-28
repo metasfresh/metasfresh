@@ -5,9 +5,9 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
+import de.metas.common.util.time.SystemTime;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
-import de.metas.common.util.time.SystemTime;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.util.Services;
 import org.adempiere.archive.api.IArchiveBL;
@@ -23,13 +23,13 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
 import java.io.ByteArrayOutputStream;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 
 import static de.metas.dunning.invoice.DunningDocTestFixtures.addInvoiceLine;
 import static de.metas.dunning.invoice.DunningDocTestFixtures.createDunningDoc;
@@ -189,7 +189,10 @@ class C_DunningDoc_JasperWithInvoicePDFsStrategyTest
 		}
 		finally
 		{
-			SystemTime.resetTimeSource();
+			if (created != null)
+			{
+				SystemTime.resetTimeSource();
+			}
 		}
 	}
 
