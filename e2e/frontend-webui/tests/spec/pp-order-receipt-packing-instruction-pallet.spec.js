@@ -89,14 +89,14 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       // --- order 1: opening state, operators' habit, refusal, acceptance
       await ReceiptDialog.openForOrder(masterdata, 'PP_PALLET_1');
 
-      expect(await ReceiptDialog.getLabel('QtyTotalReceived')).toBe(quantityLabel);
-      expect(await ReceiptDialog.isFieldVisible('QtyCUsPerTU'), 'no input field for the quantity per TU').toBe(false);
+      await expect.poll(() => ReceiptDialog.getLabel('QtyTotalReceived')).toBe(quantityLabel);
+      await expect.poll(() => ReceiptDialog.isFieldVisible('QtyCUsPerTU'), { message: 'no input field for the quantity per TU' }).toBe(false);
 
       // opens with the pallets needed for the order, each filled to the pallet capacity
       await ReceiptDialog.expectNumber('QtyTU', PALLET_CAPACITY);
       await ReceiptDialog.expectNumber('QtyLU', OPENING_LUS);
       await ReceiptDialog.expectNumber('QtyTotalReceived', PALLET_CAPACITY * OPENING_LUS * QTY_PER_TU);
-      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(true);
 
       // one pallet at a time
       await ReceiptDialog.setNumber('QtyLU', 1);
@@ -105,8 +105,8 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       // operators' habit: wanted 45 pieces, "TU Anzahl" left at 1 -> 15, and 45 cannot be entered anywhere
       await ReceiptDialog.setNumber('QtyTU', 1);
       await ReceiptDialog.expectNumber('QtyTotalReceived', QTY_PER_TU);
-      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived'), `cannot enter ${TARGET_QTY} into Menge`).toBe(true);
-      expect(await ReceiptDialog.isFieldVisible('QtyCUsPerTU')).toBe(false);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTotalReceived'), { message: `cannot enter ${TARGET_QTY} into Menge` }).toBe(true);
+      await expect.poll(() => ReceiptDialog.isFieldVisible('QtyCUsPerTU')).toBe(false);
 
       // more TUs than the pallet takes: refused, naming the capacity; nothing created
       await ReceiptDialog.setNumber('QtyTU', PALLET_CAPACITY + 1);
@@ -158,16 +158,16 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       const masterdata = await createFixture(language);
       await ReceiptDialog.openForOrder(masterdata, 'PP_PLAIN');
 
-      expect(await ReceiptDialog.getLabel('QtyTotalReceived')).toBe(quantityLabel);
-      expect(await ReceiptDialog.isFieldVisible('QtyCUsPerTU')).toBe(false);
+      await expect.poll(() => ReceiptDialog.getLabel('QtyTotalReceived')).toBe(quantityLabel);
+      await expect.poll(() => ReceiptDialog.isFieldVisible('QtyCUsPerTU')).toBe(false);
 
       await ReceiptDialog.setNumber('QtyTU', TUS_PER_PALLET_USED);
       await ReceiptDialog.expectNumber('QtyTotalReceived', TUS_PER_PALLET_USED * QTY_PER_TU);
-      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(true);
 
       await ReceiptDialog.clear('QtyTU');
-      expect(await ReceiptDialog.getValue('QtyTotalReceived'), 'Menge is empty without TU Anzahl').toBe('');
-      expect(await ReceiptDialog.isStartDisabled(), 'Start is disabled while TU Anzahl is empty').toBe(true);
+      await expect.poll(() => ReceiptDialog.getValue('QtyTotalReceived'), { message: 'Menge is empty without TU Anzahl' }).toBe('');
+      await expect.poll(() => ReceiptDialog.isStartDisabled(), { message: 'Start is disabled while TU Anzahl is empty' }).toBe(true);
       await Backend.expect({ manufacturings: { [ReceiptDialog.orderId(masterdata, 'PP_PLAIN')]: { receivedHUs: [] } } });
 
       await ReceiptDialog.setNumber('QtyTU', TUS_PER_PALLET_USED);
@@ -190,24 +190,24 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       const masterdata = await createFixture(language);
       await ReceiptDialog.openForOrder(masterdata, 'PP_PALLET_1');
 
-      expect(await ReceiptDialog.isFieldVisible('QtyTotalReceived')).toBe(true);
-      expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID')).not.toBe('');
+      await expect.poll(() => ReceiptDialog.isFieldVisible('QtyTotalReceived')).toBe(true);
+      await expect.poll(() => ReceiptDialog.getValue('M_HU_PI_Item_ID')).not.toBe('');
 
       await ReceiptDialog.selectNoPackingItem();
-      expect(await ReceiptDialog.isFieldVisible('QtyCUsReceived'), 'Menge CU').toBe(true);
-      expect(await ReceiptDialog.getLabel('QtyCUsReceived')).toBe(quantityCULabel);
+      await expect.poll(() => ReceiptDialog.isFieldVisible('QtyCUsReceived'), { message: 'Menge CU' }).toBe(true);
+      await expect.poll(() => ReceiptDialog.getLabel('QtyCUsReceived')).toBe(quantityCULabel);
       for (const hidden of ['QtyTotalReceived', 'QtyTU', 'QtyLU', 'M_HU_PI_Item_ID', 'QtyCUsPerTU']) {
-        expect(await ReceiptDialog.isFieldVisible(hidden), `${hidden} is hidden for "No Packing Item"`).toBe(false);
+        await expect.poll(() => ReceiptDialog.isFieldVisible(hidden), { message: `${hidden} is hidden for "No Packing Item"` }).toBe(false);
       }
 
       // back to the packing instruction: pallet and counts come back as defaults (4 TUs, 1 LU, 60), then "No Packing Item" again
       await ReceiptDialog.selectOption('M_HU_PI_Item_Product_ID', `x ${QTY_PER_TU}`);
-      expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID')).toContain(`(${PALLET_CAPACITY} x `);
+      await expect.poll(() => ReceiptDialog.getValue('M_HU_PI_Item_ID')).toContain(`(${PALLET_CAPACITY} x `);
       await ReceiptDialog.expectNumber('QtyTU', PALLET_CAPACITY);
       await ReceiptDialog.expectNumber('QtyLU', 1);
       await ReceiptDialog.expectNumber('QtyTotalReceived', PALLET_CAPACITY * QTY_PER_TU);
       await ReceiptDialog.selectNoPackingItem();
-      expect(await ReceiptDialog.isFieldVisible('M_HU_PI_Item_ID')).toBe(false);
+      await expect.poll(() => ReceiptDialog.isFieldVisible('M_HU_PI_Item_ID')).toBe(false);
 
       await ReceiptDialog.setNumber('QtyCUsReceived', QTY_LOOSE);
       await ReceiptDialog.start();

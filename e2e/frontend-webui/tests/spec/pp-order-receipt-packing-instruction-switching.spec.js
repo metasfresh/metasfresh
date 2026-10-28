@@ -84,12 +84,12 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
 
       // -> "x 10": first pallet holds 6 -> pallet reset to it, TU 6, LU 1, Menge 6 x 10 = 60 (from 360)
       await ReceiptDialog.selectOption('M_HU_PI_Item_Product_ID', 'x 10');
-      expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID'), 'pallet of the new packing instruction').toContain(`(${PALLET_CAPACITY_B} x `);
+      await expect.poll(() => ReceiptDialog.getValue('M_HU_PI_Item_ID'), { message: 'pallet of the new packing instruction' }).toContain(`(${PALLET_CAPACITY_B} x `);
       await ReceiptDialog.expectNumber('QtyTU', PALLET_CAPACITY_B);
       await ReceiptDialog.expectNumber('QtyLU', 1);
       await ReceiptDialog.expectNumber('QtyTotalReceived', PALLET_CAPACITY_B * QTY_PER_TU_B);
-      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(true);
-      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(false);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTU')).toBe(false);
 
       // after a switch a changed "TU Anzahl" is kept (no repeated reset) and Menge follows
       await ReceiptDialog.setNumber('QtyTU', TUS_BEFORE_SWITCH);
@@ -98,12 +98,12 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
 
       // -> unlimited capacity, with its pallet: TU / LU 1 and read-only, Menge editable
       await ReceiptDialog.selectOption('M_HU_PI_Item_Product_ID', 'TU_UNL');
-      expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID'), 'pallet of the unlimited packing instruction').toContain(`(${PALLET_CAPACITY_UNLIMITED} x `);
+      await expect.poll(() => ReceiptDialog.getValue('M_HU_PI_Item_ID'), { message: 'pallet of the unlimited packing instruction' }).toContain(`(${PALLET_CAPACITY_UNLIMITED} x `);
       await ReceiptDialog.expectNumber('QtyTU', 1);
       await ReceiptDialog.expectNumber('QtyLU', 1);
-      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
-      expect(await ReceiptDialog.isReadOnly('QtyLU')).toBe(true);
-      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyLU')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
       await ReceiptDialog.setNumber('QtyTotalReceived', QTY_UNLIMITED);
       await ReceiptDialog.expectNumber('QtyTotalReceived', QTY_UNLIMITED);
 
@@ -111,9 +111,9 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       await ReceiptDialog.selectOption('M_HU_PI_Item_Product_ID', 'x 15');
       await ReceiptDialog.expectNumber('QtyTU', PALLET_CAPACITY);
       await ReceiptDialog.expectNumber('QtyLU', 1);
-      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(false);
-      expect(await ReceiptDialog.isReadOnly('QtyLU')).toBe(false);
-      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTU')).toBe(false);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyLU')).toBe(false);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(true);
       await ReceiptDialog.expectNumber('QtyTotalReceived', PALLET_CAPACITY * QTY_PER_TU);
       await ReceiptDialog.setNumber('QtyTU', TUS_BEFORE_SWITCH);
       await ReceiptDialog.expectNumber('QtyTU', TUS_BEFORE_SWITCH);

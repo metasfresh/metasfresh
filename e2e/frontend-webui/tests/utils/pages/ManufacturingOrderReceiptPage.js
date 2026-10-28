@@ -103,7 +103,12 @@ export class ManufacturingOrderReceiptPage {
   }
 
   /**
-   * The wait for the server's PATCH (it carries the recomputed dependent fields) is registered before the action.
+   * Waits until the dialog shows the recomputed dependent fields.
+   * The response alone is not enough: it resolves with the response headers, and the frontend applies the body
+   * some milliseconds later. When the dialog was saved before the change, its indicator bar shows "pending" until the
+   * body is applied, then "saved" or "error" (e.g. no pallet chosen). When the dialog was not saved before the change,
+   * the bar shows "error" also while pending and gives no signal; the specs' reads retry for that case.
+   * The wait for the server's PATCH is registered before the action.
    * No fallback: when the PATCH does not come, the wait times out and the test fails.
    */
   static async #actAndAwaitParameterChange(action) {
@@ -114,10 +119,12 @@ export class ManufacturingOrderReceiptPage {
       ),
       action(),
     ]);
+    // the lines view behind the dialog has an indicator bar too: take the one of the panel with the start button
+    const indicatorBar = getPage().locator('.panel-modal:has([data-testid="process-modal-start-button"]) .window-indicator-container .bar');
+    await expect(indicatorBar).not.toHaveClass(/\bpending\b/, { timeout: SLOW_ACTION_TIMEOUT });
   }
 
   /**
-   * Without waiting for the server's answer the dependent fields are read before they are updated.
    * The frontend sends no PATCH when the value did not change, so an already shown value is never waited for.
    */
   static async #fillAndWaitForRecompute(columnName, text) {
@@ -265,6 +272,6 @@ export class ManufacturingOrderReceiptPage {
   }
 
   static async expectNumber(columnName, expected) {
-    expect(await this.getNumber(columnName), `${columnName} in the receipt dialog`).toBe(expected);
+    await expect.poll(() => this.getNumber(columnName), { message: `${columnName} in the receipt dialog` }).toBe(expected);
   }
 }

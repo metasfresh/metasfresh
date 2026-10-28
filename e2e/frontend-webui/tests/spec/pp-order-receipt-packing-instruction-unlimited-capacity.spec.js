@@ -65,25 +65,25 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       const masterdata = await createUnlimitedFixture(language);
       await ReceiptDialog.openForOrder(masterdata, 'PP_UNL');
 
-      expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID'), 'preselected pallet').toContain(`(${PALLET_CAPACITY_UNLIMITED} x `);
+      await expect.poll(() => ReceiptDialog.getValue('M_HU_PI_Item_ID'), { message: 'preselected pallet' }).toContain(`(${PALLET_CAPACITY_UNLIMITED} x `);
 
       // remove the pallet: no pallet, TU 1 read-only, Menge editable
       await ReceiptDialog.clearOption('M_HU_PI_Item_ID');
-      expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID'), 'pallet removed').toBe('');
+      await expect.poll(() => ReceiptDialog.getValue('M_HU_PI_Item_ID'), { message: 'pallet removed' }).toBe('');
       await ReceiptDialog.expectNumber('QtyTU', 1);
-      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
-      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
       await ReceiptDialog.setNumber('QtyTotalReceived', QTY_UNLIMITED);
       await ReceiptDialog.expectNumber('QtyTotalReceived', QTY_UNLIMITED);
 
       // selecting the pallet (a real change now) keeps TU and LU at 1, read-only, and the entered Menge
       await ReceiptDialog.selectOption('M_HU_PI_Item_ID', `(${PALLET_CAPACITY_UNLIMITED} x `);
-      expect(await ReceiptDialog.getValue('M_HU_PI_Item_ID'), 'selected pallet').toContain(`(${PALLET_CAPACITY_UNLIMITED} x `);
+      await expect.poll(() => ReceiptDialog.getValue('M_HU_PI_Item_ID'), { message: 'selected pallet' }).toContain(`(${PALLET_CAPACITY_UNLIMITED} x `);
       await ReceiptDialog.expectNumber('QtyTU', 1);
       await ReceiptDialog.expectNumber('QtyLU', 1);
-      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
-      expect(await ReceiptDialog.isReadOnly('QtyLU')).toBe(true);
-      expect(await ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyLU')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTotalReceived')).toBe(false);
       await ReceiptDialog.expectNumber('QtyTotalReceived', QTY_UNLIMITED);
 
       // removing and choosing the pallet again changes nothing: TU / LU stay 1 and read-only, Menge stays
@@ -91,8 +91,8 @@ test.describe('PP_Order receipt - dialog follows the packing instruction', () =>
       await ReceiptDialog.selectOption('M_HU_PI_Item_ID', `(${PALLET_CAPACITY_UNLIMITED} x `);
       await ReceiptDialog.expectNumber('QtyTU', 1);
       await ReceiptDialog.expectNumber('QtyLU', 1);
-      expect(await ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
-      expect(await ReceiptDialog.isReadOnly('QtyLU')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyTU')).toBe(true);
+      await expect.poll(() => ReceiptDialog.isReadOnly('QtyLU')).toBe(true);
       await ReceiptDialog.expectNumber('QtyTotalReceived', QTY_UNLIMITED);
 
       await ReceiptDialog.start();
