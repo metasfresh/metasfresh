@@ -4,6 +4,23 @@ import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEO
 import { SALES_ORDER_WINDOW_ID } from '../WindowIds';
 import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
 
+const SALES_ORDER_LINES_TAB_ID = 'AD_Tab-187';
+
+/** True for the WebUI's PATCH of the given field of a quick input of the given tab. */
+const isQuickInputPatchOf = (response, tabId, fieldName) => {
+  const request = response.request();
+  if (request.method() !== 'PATCH' || !new URL(request.url()).pathname.includes(`/${tabId}/quickInput/`)) {
+    return false;
+  }
+  let body;
+  try {
+    body = request.postDataJSON();
+  } catch {
+    return false; // not a JSON body, so not a field PATCH
+  }
+  return Array.isArray(body) && body.some((change) => change.path === fieldName);
+};
+
 /**
  * Page object for Sales Order window (ID: 143).
  * Handles creating and completing sales orders in metasfresh.
@@ -258,7 +275,7 @@ export class SalesOrderPage {
 
       // Wait for tab to allow creating new records
       // Tab ID for Sales Order Lines: AD_Tab-187
-      await waitForTabAllowsNew(SALES_ORDER_WINDOW_ID, effectiveRecordId, 'AD_Tab-187', {
+      await waitForTabAllowsNew(SALES_ORDER_WINDOW_ID, effectiveRecordId, SALES_ORDER_LINES_TAB_ID, {
         maxRetries: 15,
         retryDelayMs: 1000,
       });
@@ -320,10 +337,7 @@ export class SalesOrderPage {
       // The product callout runs server-side: selecting the option PATCHes the quick-input document
       // with M_Product_ID, and the answer carries the fields it defaulted. Listen before clicking.
       const productPatchResponse = page.waitForResponse(
-        (response) =>
-          response.url().includes('/quickInput/') &&
-          response.request().method() === 'PATCH' &&
-          (response.request().postData() || '').includes('"M_Product_ID"'),
+        (response) => isQuickInputPatchOf(response, SALES_ORDER_LINES_TAB_ID, 'M_Product_ID'),
         { timeout: SLOW_ACTION_TIMEOUT }
       );
 
