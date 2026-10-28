@@ -89,7 +89,6 @@ public class SEPA_Export_StepDef
 {
 	private static final String SPACE_TOKEN = "<SPACE>";
 	private static final String ABSENT = "-";
-	private static final String NOT_PROVIDED = "NOTPROVIDED";
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
@@ -202,7 +201,7 @@ public class SEPA_Export_StepDef
 	}
 
 	/**
-	 * Asserts that the last run succeeded and produced a ZIP with exactly the given number of entries, all of them {@code .xml} files.
+	 * Asserts that the last run succeeded and produced exactly the given number of files, all of them {@code .xml} files (a ZIP is unpacked; the step does not distinguish a ZIP from a single file).
 	 *
 	 * @param expectedCount the number of XML files in the ZIP
 	 * @cucumber.example
@@ -286,7 +285,7 @@ public class SEPA_Export_StepDef
 			softly.assertThat(text(xpath, pmtInf, "CdtrSchmeId/Id/PrvtId/Othr/Id")).as(p + "/CdtrSchmeId").isEqualTo(expectedValue(expected, "CdtrSchmeId"));
 			softly.assertThat(text(xpath, pmtInf, "ReqdColltnDt")).as(p + "/ReqdColltnDt").isEqualTo(expectedValue(expected, "ReqdColltnDt"));
 
-			final String expectedAdr = expected.getAsOptionalString("Cdtr.PstlAdr").orElse(null);
+			final String expectedAdr = optionalCell(expected, "Cdtr.PstlAdr");
 			if (expectedAdr != null)
 			{
 				if (ABSENT.equals(expectedAdr))
@@ -314,7 +313,7 @@ public class SEPA_Export_StepDef
 	 *   <li><b>Dbtr.Nm</b>, <b>DbtrAcct.IBAN</b>, <b>MndtId</b>, <b>DtOfSgntr</b> - the element texts</li>
 	 *   <li><b>InstdAmt</b> - compared scale-insensitively</li>
 	 *   <li><b>SeqTp</b> - read from the enclosing {@code PmtInf}</li>
-	 *   <li><b>DbtrAgt</b> - the BIC ({@code FinInstnId/BICFI}), or {@code NOTPROVIDED} ({@code FinInstnId/Othr/Id})</li>
+	 *   <li><b>DbtrAgt</b> - the BIC ({@code FinInstnId/BICFI}), or {@code NOTPROVIDED} ({@code FinInstnId/Othr/Id}); {@code -} if the file has neither</li>
 	 *   <li><b>Ustrd</b> - the unstructured remittance information; {@code -} = absent</li>
 	 * </ul>
 	 *
@@ -565,6 +564,15 @@ public class SEPA_Export_StepDef
 		return cell.replace(SPACE_TOKEN, " ");
 	}
 
+	/**
+	 * @return {@code null} if the table has no such column; otherwise the cell text; an empty cell fails loudly (use {@code -} for "absent")
+	 */
+	@Nullable
+	private static String optionalCell(final DataTableRow row, final String column)
+	{
+		return row.asMap().containsKey(column) ? row.getAsString(column) : null;
+	}
+
 	private static String expectedValue(final DataTableRow row, final String column)
 	{
 		return unspace(row.getAsString(column));
@@ -577,7 +585,7 @@ public class SEPA_Export_StepDef
 
 	private static void assertOptionalElement(final SoftAssertions softly, final XPath xpath, final Node context, final String prefix, final DataTableRow expected, final String column, final String path) throws Exception
 	{
-		final String expectedCell = expected.getAsOptionalString(column).orElse(null);
+		final String expectedCell = optionalCell(expected, column);
 		if (expectedCell == null)
 		{
 			return;
