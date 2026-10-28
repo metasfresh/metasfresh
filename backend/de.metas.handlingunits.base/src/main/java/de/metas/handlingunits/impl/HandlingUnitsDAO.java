@@ -41,6 +41,7 @@ import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuPackingMaterialId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -100,7 +101,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -839,7 +839,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull final I_M_HU_PI huPI,
-			@Nullable final String huUnitType,
+			@Nullable final HuUnitType huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPI);
@@ -852,7 +852,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
-			@Nullable final String huUnitType,
+			@Nullable final HuUnitType huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		return retrieveParentPIItemsForParentPI(Env.getCtx(), packingInstructionsId, huUnitType, bpartnerId, ITrx.TRXNAME_None);
@@ -861,7 +861,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@CacheCtx final Properties ctx,
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
-			@Nullable final String huUnitType,
+			@Nullable final HuUnitType huUnitType,
 			@Nullable final BPartnerId bpartnerId,
 			@CacheTrx final String trxName)
 	{
@@ -916,8 +916,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 			//
 			// Make sure the HU UnitType is matching
-			final String parentUnitType = parentVersion.getHU_UnitType();
-			if (!Check.isEmpty(huUnitType, true) && !Objects.equals(parentUnitType, huUnitType))
+			if (huUnitType != null && !huUnitType.getCode().equals(parentVersion.getHU_UnitType()))
 			{
 				// required unit type not matched
 				continue;
@@ -1177,7 +1176,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		//
 		// Fetch all eligible parent PI Items
-		final List<I_M_HU_PI_Item> parentPIItems = retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
+		final List<I_M_HU_PI_Item> parentPIItems = retrieveParentPIItemsForParentPI(huPI, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
 
 		//
 		// Case: no parent PI items found
