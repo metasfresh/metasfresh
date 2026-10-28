@@ -10,8 +10,6 @@ import { openRelatedDocument, REFERENCE_DATA_CY } from '../DocumentReferences';
 /** Included tab of the order lines, as used in the REST path. */
 const SALES_ORDER_LINES_TAB_ID = 'AD_Tab-187';
 
-const SALES_ORDER_LINES_TAB_ID = 'AD_Tab-187';
-
 /** True for the WebUI's PATCH of the given field of a quick input of the given tab. */
 const isQuickInputPatchOf = (response, tabId, fieldName) => {
   const request = response.request();
