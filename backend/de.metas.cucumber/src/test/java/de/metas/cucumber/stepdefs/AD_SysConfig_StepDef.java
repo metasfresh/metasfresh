@@ -28,12 +28,17 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 
+import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -42,6 +47,7 @@ import static org.assertj.core.api.Assertions.*;
 public class AD_SysConfig_StepDef
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final AD_User_StepDefData userTable;
 
@@ -51,10 +57,17 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * Sys configs set with {@link #enable_sys_config_for_this_scenario_only}, mapped to the value they had before (null = no value).
-	 * The first value seen per name wins, so that it is the one that gets restored.
+	 * Sys configs set with {@link #enable_sys_config_for_this_scenario_only}, mapped to the state of their AD_SysConfig row before.
+	 * The first state seen per name wins, so that it is the one that gets restored.
 	 */
-	private final Map<String, String> sysConfigValuesToRestore = new LinkedHashMap<>();
+	private final Map<String, SysConfigRowState> sysConfigRowsToRestore = new LinkedHashMap<>();
+
+	@Value
+	private static class SysConfigRowState
+	{
+		boolean existed;
+		@Nullable String value;
+	}
 
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
@@ -74,33 +87,77 @@ public class AD_SysConfig_StepDef
 	@And("^for this scenario only, set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config_for_this_scenario_only(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
-		if (!sysConfigValuesToRestore.containsKey(sysConfigName)) // not computeIfAbsent: the previous value may be null
-		{
-			sysConfigValuesToRestore.put(sysConfigName, retrieveCurrentValue(sysConfigName));
-		}
+		sysConfigRowsToRestore.computeIfAbsent(sysConfigName, this::retrieveRowState);
 		setSysConfig(sysconfigType, sysconfigValue, sysConfigName);
 	}
 
 	/**
 	 * Fires for every scenario, regardless of pass/fail; no-op when nothing was set with {@link #enable_sys_config_for_this_scenario_only}.
+	 * A row that did not exist before is deleted; an existing row gets its previous value back as it was.
+	 * Keeps restoring the remaining sys configs if one restore fails, and rethrows the first failure at the end.
 	 */
 	@After
 	public void restoreSysConfigs()
 	{
-		if (sysConfigValuesToRestore.isEmpty())
+		if (sysConfigRowsToRestore.isEmpty())
 		{
 			return;
 		}
 
-		sysConfigValuesToRestore.forEach((name, previousValue) -> sysConfigBL.setValue(name, previousValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM));
-		sysConfigValuesToRestore.clear();
+		RuntimeException failure = null;
+		for (final Map.Entry<String, SysConfigRowState> entry : sysConfigRowsToRestore.entrySet())
+		{
+			try
+			{
+				restoreRow(entry.getKey(), entry.getValue());
+			}
+			catch (final RuntimeException e)
+			{
+				failure = failure != null ? failure : e;
+			}
+		}
+		sysConfigRowsToRestore.clear();
+
 		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
 		CacheMgt.get().reset(); // also drops caches derived from the sys config, e.g. the report server
+
+		if (failure != null)
+		{
+			throw failure;
+		}
 	}
 
-	private String retrieveCurrentValue(@NonNull final String sysConfigName)
+	private IQuery<I_AD_SysConfig> systemRowQuery(@NonNull final String sysConfigName)
 	{
-		return sysConfigBL.getValue(sysConfigName, null, ClientId.SYSTEM.getRepoId(), StepDefConstants.ORG_ID_SYSTEM.getRepoId());
+		return queryBL.createQueryBuilder(I_AD_SysConfig.class)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, sysConfigName)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM.getRepoId())
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID_SYSTEM.getRepoId())
+				.create();
+	}
+
+	private SysConfigRowState retrieveRowState(@NonNull final String sysConfigName)
+	{
+		final I_AD_SysConfig row = systemRowQuery(sysConfigName).firstOnly(I_AD_SysConfig.class);
+		return row != null ? new SysConfigRowState(true, row.getValue()) : new SysConfigRowState(false, null);
+	}
+
+	private void restoreRow(@NonNull final String sysConfigName, @NonNull final SysConfigRowState state)
+	{
+		final IQuery<I_AD_SysConfig> query = systemRowQuery(sysConfigName);
+		if (!state.isExisted())
+		{
+			query.delete();
+			return;
+		}
+
+		final I_AD_SysConfig row = query.firstOnly(I_AD_SysConfig.class);
+		if (row == null) // someone deleted it meanwhile
+		{
+			throw new AdempiereException("AD_SysConfig row not found, cannot restore it").setParameter("name", sysConfigName);
+		}
+		row.setValue(state.getValue());
+		InterfaceWrapperHelper.save(row);
 	}
 
 	private void setSysConfig(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
