@@ -97,6 +97,25 @@ export const GetQuantityDialog = {
         await clickAndType(field, correctedQty);
     }),
 
+    // Types the catch weight EXACTLY as given, one real key press per character (digits and the decimal
+    // separator keystroke included), with no locale substitution: what reaches the field is what the
+    // operator's keyboard sends, whatever the browser's language is.
+    typeCatchWeightKeystrokes: async (keys) => await test.step(`${NAME} - Type CatchWeight keystrokes '${keys}'`, async () => {
+        const field = page.locator('#catch-weight');
+        // focus first, so the field selects its current text and typing overrides it
+        await field.tap();
+        await field.pressSequentially(`${keys}`);
+    }),
+
+    // Empties the catch weight the way an operator does: select all, Delete.
+    clearCatchWeight: async () => await test.step(`${NAME} - Clear CatchWeight`, async () => {
+        const field = page.locator('#catch-weight');
+        await field.tap();
+        await field.press('ControlOrMeta+a');
+        await field.press('Delete');
+        await expect(field).toHaveValue('');
+    }),
+
     scanCatchWeightQRCode: async ({ qrCode, stepName }) => await test.step(`${NAME} - Scan ${stepName}: ${qrCode}`, async () => {
         const prevQtyTarget = await page.locator('[data-testid="qty-target"]').innerText();
 
