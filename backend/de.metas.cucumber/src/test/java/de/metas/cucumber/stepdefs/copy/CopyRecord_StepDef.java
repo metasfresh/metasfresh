@@ -50,6 +50,9 @@ public class CopyRecord_StepDef
 	{
 		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(identifier));
 
+		// fail before creating the copy if the copy cannot be registered afterwards
+		identifiersResolver.getStepDefDataByTableName(recordRef.getTableName());
+
 		final PO copy = copyRecordService.copyRecord(CopyRecordRequest.builder()
 				.tableRecordReference(recordRef)
 				.build());

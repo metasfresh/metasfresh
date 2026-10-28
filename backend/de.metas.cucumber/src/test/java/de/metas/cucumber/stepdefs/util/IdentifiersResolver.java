@@ -24,13 +24,12 @@ package de.metas.cucumber.stepdefs.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
-import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.cucumber.stepdefs.payment.sepa.C_BP_BankAccount_DirectDebitMandate_StepDefData;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.costing.M_CostRevaluation_StepDefData;
@@ -42,6 +41,7 @@ import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_MFGWarehouse_Report_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.cucumber.stepdefs.payment.sepa.C_BP_BankAccount_DirectDebitMandate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
@@ -143,10 +143,18 @@ public class IdentifiersResolver
 	@NonNull
 	public StepDefData<?> getStepDefDataByTableName(@NonNull final String tableName)
 	{
-		return stepDefDatas.stream()
+		final ImmutableList<StepDefData<?>> matches = stepDefDatas.stream()
 				.filter(stepDefData -> tableName.equals(stepDefData.getTableName()))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No StepDefData registered for table " + tableName));
+				.collect(ImmutableList.toImmutableList());
+		if (matches.isEmpty())
+		{
+			throw new AdempiereException("No StepDefData registered for table " + tableName);
+		}
+		else if (matches.size() > 1)
+		{
+			throw new AdempiereException("More than one StepDefData registered for table " + tableName + ": " + matches);
+		}
+		return matches.get(0);
 	}
 
 	/**
