@@ -21,7 +21,7 @@ Feature: customs invoice footer and detail weights
   @from:cucumber
   Scenario: the footer weights of a customs invoice count every shipment line once
     # render the real jasper report; the mock report service would archive a placeholder PDF instead
-    Given set sys config boolean value false for sys config de.metas.report.jasper.IsMockReportService
+    Given temporarily set sys config boolean value false for sys config 'de.metas.report.jasper.IsMockReportService'
     # the PDF steps read the archive back out of the database
     And update AD_Client
       | Identifier | StoreArchiveOnFileSystem |
@@ -270,7 +270,7 @@ Feature: customs invoice footer and detail weights
       | CustomsInvoice | ci        |
     Then the visual line containing text "Gewicht netto" in the PDF archived for the record identified by "ci" is exactly "Gewicht netto: 3.115,030 kg"
     And the visual line containing text "Gewicht brutto" in the PDF archived for the record identified by "ci" is exactly "Gewicht brutto: 3.236,340 kg"
-    # the totals when a shipment line linked to two customs lines was counted twice
+    # the wrong totals, which count each customs invoice line linked to two shipment lines twice
     And the PDF archived for the record identified by "ci" does not contain text "3.227,520"
     And the PDF archived for the record identified by "ci" does not contain text "3.351,530"
 
