@@ -95,6 +95,8 @@ class CreateSEPAExportFromPaySelectionCommand
 	@NonNull private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	@NonNull private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
+	// lazy: only direct debit exports need it, credit transfer callers need not have the bean
+	@NonNull private final SpringContextHolder.Lazy<DirectDebitMandateRepository> mandateRepo = SpringContextHolder.lazyBean(DirectDebitMandateRepository.class);
 
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -161,8 +163,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		final Set<BankAccountId> bankAccountIds = linesWithBankAccount.stream()
 				.map(line -> BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID()))
 				.collect(ImmutableSet.toImmutableSet());
-		final DirectDebitMandateRepository mandateRepo = SpringContextHolder.instance.getBean(DirectDebitMandateRepository.class);
-		final DirectDebitMandatesMap mandates = mandateRepo.getActiveMandates(bankAccountIds, exportOrgId);
+		final DirectDebitMandatesMap mandates = mandateRepo.get().getActiveMandates(bankAccountIds, exportOrgId);
 
 		final ImmutableMap.Builder<PaySelectionLineId, DirectDebitMandate> mandatesByLineId = ImmutableMap.builder();
 		final ImmutableList.Builder<DirectDebitMandateChecker.LineWithMandate> linesWithMandate = ImmutableList.builder();

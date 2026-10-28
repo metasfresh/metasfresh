@@ -16,6 +16,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,8 @@ class DirectDebitMandateChecker
 	private static final AdMessageKey MSG_OneOffUsed = AdMessageKey.of("de.metas.payment.sepa.DirectDebitMandateOneOffUsed");
 	private static final AdMessageKey MSG_OneOffMultipleLines = AdMessageKey.of("de.metas.payment.sepa.DirectDebitMandateOneOffMultipleLines");
 
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 	/** The WebUI collapses line breaks, so the problems are joined with this separator. */
 	private static final String PROBLEM_SEPARATOR = " · ";
 
@@ -89,6 +92,19 @@ class DirectDebitMandateChecker
 		@Nullable LocalDate collectionDate;
 	}
 
+	/**
+	 * Finds the lines that cannot be collected.
+	 * <ul>
+	 * <li>One reason per line, by precedence: {@link ProblemType#MISSING}, else {@link ProblemType#EXPIRED}, else {@link ProblemType#ONE_OFF_USED}.</li>
+	 * <li>{@link ProblemType#ONE_OFF_MULTIPLE_LINES} is reported only for a one-off mandate that is not yet used and sits on more than one line
+	 * (once per mandate, with the line count). A used one-off on several lines yields {@code ONE_OFF_USED} only.</li>
+	 * <li>An identical problem (same partner, bank account and mandate, e.g. several invoices of one debtor) is reported once.</li>
+	 * <li>Order: line order, followed by the multiple-lines problems.</li>
+	 * </ul>
+	 *
+	 * @param collectionDate the date the mandates are checked against for expiry
+	 * @return the problems; empty if every line can be collected
+	 */
 	ImmutableList<DirectDebitMandateProblem> check(@NonNull final List<LineWithMandate> lines, @NonNull final LocalDate collectionDate)
 	{
 		final ImmutableList.Builder<DirectDebitMandateProblem> problems = ImmutableList.builder();
@@ -118,7 +134,7 @@ class DirectDebitMandateChecker
 			}
 			else if (!mandate.isRecurring())
 			{
-				unusedOneOffLinesByMandate.computeIfAbsent(mandate, k -> new java.util.ArrayList<>()).add(line);
+				unusedOneOffLinesByMandate.computeIfAbsent(mandate, k -> new ArrayList<>()).add(line);
 			}
 		}
 
@@ -132,7 +148,7 @@ class DirectDebitMandateChecker
 			}
 		});
 
-		return problems.build();
+		return problems.build().stream().distinct().collect(ImmutableList.toImmutableList());
 	}
 
 	private static DirectDebitMandateProblem.DirectDebitMandateProblemBuilder problem(final ProblemType type, final LineWithMandate line)
@@ -144,6 +160,9 @@ class DirectDebitMandateChecker
 				.iban(line.getIban());
 	}
 
+	/**
+	 * @return the exception to throw; its message is the header followed by all problems, its error code is the one of the header message
+	 */
 	AdempiereException toException(@NonNull final List<DirectDebitMandateProblem> problems)
 	{
 		final TranslatableStringBuilder message = TranslatableStrings.builder()
@@ -161,7 +180,6 @@ class DirectDebitMandateChecker
 		}
 
 		// the header message's AD_Message.ErrorCode (and not the one of a problem line) identifies the failure
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final String errorCode = msgBL.getErrorCode(MSG_CheckFailed);
 		return new AdempiereException(message.build(), errorCode != null ? errorCode : MSG_CheckFailed.toAD_Message());
 	}
