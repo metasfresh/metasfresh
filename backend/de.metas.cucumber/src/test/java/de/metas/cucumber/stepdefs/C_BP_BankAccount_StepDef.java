@@ -222,6 +222,10 @@ public class C_BP_BankAccount_StepDef
 		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_IBAN)
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(bpBankAccount::setIBAN);
+		// optional; needed for SEPA direct debit export (creditor = org bank account)
+		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_SEPA_CreditorIdentifier)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(bpBankAccount::setSEPA_CreditorIdentifier);
 
 		InterfaceWrapperHelper.save(bpBankAccount);
 
@@ -280,6 +284,12 @@ public class C_BP_BankAccount_StepDef
 			if (Check.isNotBlank(iban))
 			{
 				softly.assertThat(bpBankAccount.getIBAN()).as("IBAN").isEqualTo(iban);
+			}
+
+			final String sepaCreditorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_SEPA_CreditorIdentifier);
+			if (Check.isNotBlank(sepaCreditorIdentifier))
+			{
+				softly.assertThat(bpBankAccount.getSEPA_CreditorIdentifier()).as("SEPA_CreditorIdentifier").isEqualTo(sepaCreditorIdentifier);
 			}
 
 			final String qrIban = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_QR_IBAN);

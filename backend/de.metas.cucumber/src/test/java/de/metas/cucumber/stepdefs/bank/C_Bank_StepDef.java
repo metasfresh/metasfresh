@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.bank;
 
 import de.metas.cucumber.stepdefs.C_DataImport_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -63,20 +64,27 @@ public class C_Bank_StepDef
 
 	private void addBank(@NonNull final Map<String, String> row)
 	{
+		final DataTableRow tableRow = DataTableRow.singleRow(row);
+
 		final String name = DataTableUtil.extractStringForColumnName(row, I_C_Bank.COLUMNNAME_Name);
 		final String routingNo = DataTableUtil.extractStringForColumnName(row, I_C_Bank.COLUMNNAME_RoutingNo);
-		final String swiftCode = DataTableUtil.extractStringForColumnName(row, I_C_Bank.COLUMNNAME_SwiftCode);
-		final String dataImportIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Bank.COLUMNNAME_C_DataImport_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final boolean isImportAsSingleSummaryLine  = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_Bank.COLUMNNAME_IsImportAsSingleSummaryLine, false);
 
-		final I_C_DataImport dataImportRecord = dataImportTable.get(dataImportIdentifier);
-		assertThat(dataImportRecord).isNotNull();
-
 		final I_C_Bank bankRecord = InterfaceWrapperHelper.newInstance(I_C_Bank.class);
-		bankRecord.setC_DataImport_ID(dataImportRecord.getC_DataImport_ID());
+
+		// C_DataImport_ID is optional (e.g. a bank that is only used as a SEPA debtor bank has no data import)
+		final String dataImportIdentifier = tableRow.getAsOptionalString(I_C_Bank.COLUMNNAME_C_DataImport_ID + "." + TABLECOLUMN_IDENTIFIER).orElse(null);
+		if (dataImportIdentifier != null)
+		{
+			final I_C_DataImport dataImportRecord = dataImportTable.get(dataImportIdentifier);
+			assertThat(dataImportRecord).isNotNull();
+			bankRecord.setC_DataImport_ID(dataImportRecord.getC_DataImport_ID());
+		}
+
 		bankRecord.setName(name);
 		bankRecord.setRoutingNo(routingNo);
-		bankRecord.setSwiftCode(swiftCode);
+		// SwiftCode (BIC) is optional: omit the column to create a bank without BIC
+		tableRow.getAsOptionalString(I_C_Bank.COLUMNNAME_SwiftCode).ifPresent(bankRecord::setSwiftCode);
 		bankRecord.setIsImportAsSingleSummaryLine(isImportAsSingleSummaryLine);
 
 		saveRecord(bankRecord);
