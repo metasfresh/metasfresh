@@ -775,7 +775,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
     And after not more than 5s, no AD_Note records exist for the referenced record:
       | AD_Message_ID | Record_ID |
       | noteMsg       | ppOrder   |
-    And no AD_Issue was created since the existing AD_Issue records were remembered
+    # Dispo AD_Issues on void/delete are known today's behaviour, out of scope for this issue (user decision 2026-10-28).
 
 
 
@@ -979,4 +979,4 @@ Feature: Distribution for a manufacturing order's component follows the order's 
     And after not more than 5s, no AD_Note records exist for the referenced record:
       | AD_Message_ID | Record_ID      |
       | noteMsg       | deletedPPOrder |
-    And no AD_Issue was created since the existing AD_Issue records were remembered
+    # Dispo AD_Issues on void/delete are known today's behaviour, out of scope for this issue (user decision 2026-10-28).
