@@ -566,9 +566,9 @@ Feature: import order candidate to metasfresh
   # ####################################################################################################
   # ####################################################################################################
   @from:cucumber
-@allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
   @Id:S_LenientGln_TC1
   Scenario: lenient GLN lookup — non-matching Lookup_Label resolves by GLN (AC1)
   _Given one C_BPartner with a main location GLN and a Lookup_Label
@@ -1056,3 +1056,87 @@ Feature: import order candidate to metasfresh
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
       | olCand_default         | bpartner_b_default       | bpLocation_b_default              | product                 | 10         | PORef_default   |
+
+
+  # ####################################################################################################
+  # ####################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S_LenientGln_TC7
+  Scenario: lenient GLN lookup — a location GLN entered with a trailing space is stored trimmed and is matched (AC7)
+  _Given one C_BPartner whose main location GLN was entered with a trailing space (the GLN is trimmed on save)
+  _When importing OLCand via EDIImportXML whose C_BPartner selector has the same GLN (without the space) but a Lookup_Label that is not in the masterdata
+  _Then C_OLCand is created and resolved to the seeded C_BPartner and its location
+
+    Given metasfresh contains C_BPartners:
+      | Identifier        | Name             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label    |
+      | bpartner_trail    | TrailBPartner    | N            | Y              | ps_1                          | label_in_masterdata |
+      | orgBPartner_trail | TrailOrgBPartner | N            | Y              | ps_1                          | label_org           |
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
+      | bpartner_trail           | product                 | 4000073000005 | false               |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name            | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
+      | huItemProduct_trail                | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_Trail x 10 PCE | PCE                   | bpartner_trail               |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier           | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLocation_trail     | 4000071000007 | bpartner_trail           | false        |
+      | bpLocation_org_trail | 4000072000006 | orgBPartner_trail        | false        |
+    And the GLN of C_BPartner_Location "bpLocation_trail" is entered with a trailing space
+
+    When send message to RabbitMQ queue defined by:impProcessor
+  """
+<?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
+      <AD_DataDestination_ID>
+        <InternalName>DEST.de.metas.ordercandidate</InternalName>
+      </AD_DataDestination_ID>
+      <AD_Org_ID>
+      <GLN>4000072000006</GLN>
+      </AD_Org_ID>
+      <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
+      <C_BPartner_ID>
+        <GLN>4000071000007</GLN>
+        <Lookup_Label>label_not_in_the_masterdata</Lookup_Label>
+      </C_BPartner_ID>
+      <C_BPartner_Location_ID>
+        <C_BPartner_ID>
+          <GLN>4000071000007</GLN>
+          <Lookup_Label>label_not_in_the_masterdata</Lookup_Label>
+        </C_BPartner_ID>
+        <GLN>4000071000007</GLN>
+      </C_BPartner_Location_ID>
+      <C_Currency_ID>
+        <ISO_Code>EUR</ISO_Code>
+      </C_Currency_ID>
+      <C_UOM_ID>
+        <X12DE355>KGM</X12DE355>
+      </C_UOM_ID>
+      <DateCandidate>2022-10-17+03:00</DateCandidate>
+      <DeliveryRule>F</DeliveryRule>
+      <DeliveryViaRule>S</DeliveryViaRule>
+      <IsManualPrice>Y</IsManualPrice>
+      <M_Product_ID>
+        <UPC>4000073000005</UPC>
+        <GLN>4000071000007</GLN>
+      </M_Product_ID>
+      <M_HU_PI_Item_Product_ID>
+        <UPC>4000073000005</UPC>
+        <GLN>4000071000007</GLN>
+      </M_HU_PI_Item_Product_ID>
+      <PriceEntered>5</PriceEntered>
+      <QtyEntered>10</QtyEntered>
+      <POReference>PORef_trail</POReference>
+      <DatePromised>2022-11-20T23:59:59+03:00</DatePromised>
+    </EDI_Imp_C_OLCand>
+"""
+
+    Then after not more than 120s, C_OLCand is found
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.POReference | OPT.IMP_Processor_ID.Identifier |
+      | olCand_trail           | Shopware6            | product      | bpartner_trail               | 10         | PORef_trail     | impProcessor                    |
+
+    And validate C_OLCand:
+      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
+      | olCand_trail           | bpartner_trail           | bpLocation_trail                  | product                 | 10         | PORef_trail     |
