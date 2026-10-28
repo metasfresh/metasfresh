@@ -65,6 +65,30 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 	private final @NonNull C_BPartner_StepDefData bpartnerTable;
 	private final @NonNull AD_Org_StepDefData orgTable;
 
+	/**
+	 * Creates SEPA direct debit mandates of bank accounts. The record is looked up by the natural key (MandateReference, AD_Org_ID),
+	 * which is also a unique index of the table: a row that already exists with that key (e.g. of an earlier run on the same DB)
+	 * is UPDATED and re-pointed to the given bank account, it is not an error. On such a re-used row, an absent
+	 * <b>DateLastUsed</b> / <b>IsActive</b> column resets the field to the value of a new row (null / Y); other fields (e.g. MandateStatus) keep their old value.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_BP_BankAccount_DirectDebitMandate_ID</b> (or <b>Identifier</b>) - (required) identifier under which the mandate is registered<br>
+	 *   <b>C_BP_BankAccount_ID</b> - (required, identifier-ref) the debtor bank account; the partner is taken from it<br>
+	 *   <b>MandateType</b> - (required) CORE or B2B<br>
+	 *   <b>MandateReference</b> - (required) the mandate reference<br>
+	 *   <b>MandateDate</b> - (required) signature date, <code>yyyy-MM-dd</code> or <code>yyyy-MM-dd HH:mm</code>; <code>-</code> = null<br>
+	 *   <b>IsRecurring</b> - (required) Y/N<br>
+	 *   <b>AD_Org_ID</b> - (optional) AD_Org identifier, or <code>0</code> for org *; absent or blank = the login org<br>
+	 *   <b>DateLastUsed</b> - (optional) same formats; <code>-</code> or absent = null<br>
+	 *   <b>IsActive</b> - (optional) Y/N; absent = Y
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
+	 *   | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | DateLastUsed | AD_Org_ID |
+	 *   | mandate                                | debtorAcct          | B2B         | MREF-001         | 2013-09-23  | Y           | 2025-09-04   | sellerOrg |
+	 * </pre>
+	 */
 	@Given("metasfresh contains C_BP_BankAccount_DirectDebitMandate:")
 	public void metasfresh_contains_C_BP_BankAccount_DirectDebitMandate(@NonNull final DataTable dataTable)
 	{
@@ -109,6 +133,22 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 		row.getAsIdentifier().putOrReplace(mandateTable, mandateRecord);
 	}
 
+	/**
+	 * Reloads the mandate registered under the identifier and asserts the given columns; columns that are not in the table are not checked.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_BP_BankAccount_DirectDebitMandate_ID</b> (or <b>Identifier</b>) - (required) identifier of the mandate<br>
+	 *   <b>DateLastUsed</b>, <b>MandateDate</b> - (optional) expected timestamp, <code>yyyy-MM-dd</code> or <code>yyyy-MM-dd HH:mm</code>; <code>-</code> = null<br>
+	 *   <b>IsActive</b> - (optional) Y/N<br>
+	 *   <b>MandateType</b> - (optional) CORE or B2B
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate C_BP_BankAccount_DirectDebitMandate:
+	 *   | C_BP_BankAccount_DirectDebitMandate_ID | DateLastUsed |
+	 *   | mandate                                | 2026-11-02   |
+	 * </pre>
+	 */
 	@Then("validate C_BP_BankAccount_DirectDebitMandate:")
 	public void validate_C_BP_BankAccount_DirectDebitMandate(@NonNull final DataTable dataTable)
 	{
@@ -138,6 +178,15 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 				.ifPresent(type -> assertThat(mandate.getMandateType()).as(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateType).isEqualTo(type));
 	}
 
+	/**
+	 * Asserts that the partner has no mandate row at all (active or not), e.g. a copied partner must not carry over a mandate.
+	 *
+	 * @param bpartnerIdentifier identifier of a registered C_BPartner
+	 * @cucumber.example
+	 * <pre>
+	 * Then C_BPartner "copiedPartner" has no C_BP_BankAccount_DirectDebitMandate
+	 * </pre>
+	 */
 	@Then("C_BPartner {string} has no C_BP_BankAccount_DirectDebitMandate")
 	public void bpartner_has_no_C_BP_BankAccount_DirectDebitMandate(@NonNull final String bpartnerIdentifier)
 	{

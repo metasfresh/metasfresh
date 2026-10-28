@@ -45,6 +45,18 @@ public class CopyRecord_StepDef
 		this.identifiersResolver = identifiersResolver;
 	}
 
+	/**
+	 * Copies the record registered under the identifier with the standard record copy service (same as the "copy record" action) and registers the copy under the new identifier.
+	 * The table of the record is derived from the identifier by the IdentifiersResolver; the step fails before copying if the
+	 * copy could not be registered afterwards (table without step-def data) or if the identifier is unknown.
+	 *
+	 * @param identifier     identifier of an existing record
+	 * @param copyIdentifier identifier under which the copy is registered
+	 * @cucumber.example
+	 * <pre>
+	 * When the record "partner" is copied as "partnerCopy"
+	 * </pre>
+	 */
 	@When("the record {string} is copied as {string}")
 	public void copyRecord(@NonNull final String identifier, @NonNull final String copyIdentifier)
 	{

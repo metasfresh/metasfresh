@@ -171,6 +171,24 @@ public class C_PaySelection_StepDef
 		documentBL.processEx(paySelection, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
+	/**
+	 * Asserts the lines of the pay selection: the table must have exactly as many rows as the pay selection has lines, and row N is compared with line N
+	 * (ordered by Line, then C_PaySelectionLine_ID). So the order is only defined for lines that were created by different "Create from..." runs;
+	 * for several invoices of one partner the line order is not defined by the process. Only the columns present in the table are compared.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_ID</b> - (optional, identifier-ref) the invoice of the line; the null placeholder = the line has no invoice<br>
+	 *   <b>C_BP_BankAccount_ID</b> - (optional, identifier-ref) the bank account of the line<br>
+	 *   <b>C_Payment_ID</b> - (optional, identifier-ref) the payment of the line; the null placeholder = no payment; an unknown identifier is registered with the line's payment<br>
+	 *   <b>PayAmt</b>, <b>OpenAmt</b> - (optional) amounts of the line
+	 * @cucumber.example
+	 * <pre>
+	 * And the Pay selection identified by paySelection has exactly the following lines
+	 *   | C_Invoice_ID | OpenAmt | PayAmt | C_BP_BankAccount_ID |
+	 *   | invoice      | 100.00  | 100.00 | debtorAcct          |
+	 * </pre>
+	 */
 	@And("^the Pay selection identified by (.*) has exactly the following lines$")
 	public void verifyPaySelectionLines(@NonNull final String paySelectionIdentifier, @NonNull final DataTable dataTable)
 	{
