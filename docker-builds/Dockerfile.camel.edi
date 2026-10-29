@@ -7,7 +7,7 @@ ARG CACHEBUST=1
 
 FROM metasfresh/metas-mvn-camel:$REFNAME as camel
 
-FROM openjdk:17-jdk-alpine
+FROM eclipse-temurin:17-jdk-jammy
 
 RUN apk update && apk upgrade && apk add bash && apk add curl && apk add dos2unix --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
 
