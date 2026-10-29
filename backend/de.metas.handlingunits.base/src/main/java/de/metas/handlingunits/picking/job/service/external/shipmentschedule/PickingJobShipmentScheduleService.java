@@ -23,9 +23,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.Adempiere;
-import org.compiere.util.DB;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -83,23 +81,6 @@ public class PickingJobShipmentScheduleService
 	public I_M_ShipmentSchedule getByIdAsRecord(@NonNull final ShipmentScheduleId id)
 	{
 		return huShipmentScheduleBL.getById(id);
-	}
-
-	/**
-	 * Takes a row lock ({@code SELECT ... FOR UPDATE}) on the shipment schedule, held until the current (thread-inherited)
-	 * transaction ends. Serialises concurrent picks of the same schedule so that a "check ordered qty, then book" sequence
-	 * is atomic. Must be called inside a transaction.
-	 */
-	public void lockForUpdate(@NonNull final ShipmentScheduleId shipmentScheduleId)
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			return; // the in-memory test DB has no SQL row locks
-		}
-
-		DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited,
-				"SELECT M_ShipmentSchedule_ID FROM M_ShipmentSchedule WHERE M_ShipmentSchedule_ID=? FOR UPDATE",
-				shipmentScheduleId);
 	}
 
 	public Quantity getQtyToDeliver(@NonNull final I_M_ShipmentSchedule schedule)

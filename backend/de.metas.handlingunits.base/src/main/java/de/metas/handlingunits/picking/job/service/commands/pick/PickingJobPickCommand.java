@@ -198,13 +198,13 @@ public class PickingJobPickCommand
 				.build();
 
 		this._pickingJob = pickingJob;
-		this.pickingJobOptions = configService.getPickingJobOptions(pickingJob.getLineById(pickingJobLineId).getCustomerId());
 		this._lineId = pickingJobLineId;
 		this._stepId = pickingJobStepId;
 		this.stepPickFromKey = pickFromKey != null ? pickFromKey : PickingJobStepPickFromKey.MAIN;
 		this.pickFromHUQRCode = pickFromQRCode != null ? huService.parsePickFromScannedCode(pickFromQRCode) : null;
 
 		final PickingJobLine line = getLine();
+		this.pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
 		final I_C_UOM uom = line.getUOM();
 		this.isPickWholeTU = isPickWholeTU;
@@ -340,9 +340,11 @@ public class PickingJobPickCommand
 	 * {@code isConsiderSalesOrderCapacity}; on a full line it falls through to the full packing qty. This check is
 	 * deliberately independent of both that cap and {@code isConsiderSalesOrderCapacity}.
 	 * <p>
-	 * Race-safety: the shipment schedule row is locked (FOR UPDATE, until trx end) and the line is RE-READ under the lock, so
-	 * a concurrent second request waits for the first to commit and then sees the committed picked qty (check+book atomic).
-	 * Must run inside {@link #executeInTrx()}.
+	 * The already-picked qty is summed from the job's steps ({@link PickingJobLine#getQtyPicked()}), which each pick
+	 * persists synchronously (M_Picking_Job_Step), so the reloaded job a sequential second request works from already
+	 * reflects the first pick's committed qty - no recompute wait and no row lock are needed to catch the observed
+	 * double-save. A truly concurrent double-submit under the blocked config is prevented client-side by the in-flight
+	 * guard. Must run inside {@link #executeInTrx()}.
 	 */
 	private void assertNotAboveOrderedQtyWhenOverPickBlocked()
 	{
@@ -351,23 +353,20 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		shipmentScheduleService.lockForUpdate(getScheduleId().getShipmentScheduleId());
-
-		// re-read AFTER taking the lock: the in-memory _pickingJob may predate a concurrently committed pick
-		final PickingJobLine freshLine = pickingJobService.getById(_pickingJob.getId()).getLineById(getLineId());
-		final Quantity qtyAlreadyPicked = freshLine.getQtyPicked();
+		final PickingJobLine line = getLine();
+		final Quantity qtyAlreadyPicked = line.getQtyPicked();
 
 		// Only a REPEAT pick is refused: a line that already carries picked qty must not be pushed above ordered by a
-		// further pick (the sequential / concurrent double-save this fix targets). A FIRST pick (nothing picked yet) is
-		// never refused here, so flows that legitimately over-deliver by design still work - notably AlwaysSplitHU
-		// "pick more than available => virtual inventory for the diff". Under the blocked config the mobile client already
-		// caps a first pick at the remaining qty, so a first over-pick is not reachable from the real UI anyway.
+		// further pick (the sequential double-save this fix targets). A FIRST pick (nothing picked yet) is never refused
+		// here, so flows that legitimately over-deliver by design still work - notably AlwaysSplitHU "pick more than
+		// available => virtual inventory for the diff". Under the blocked config the mobile client already caps a first
+		// pick at the remaining qty, so a first over-pick is not reachable from the real UI anyway.
 		if (qtyAlreadyPicked.signum() <= 0)
 		{
 			return;
 		}
 
-		final Quantity qtyAllowedToPick = freshLine.getQtyToPick().subtract(qtyAlreadyPicked).toZeroIfNegative();
+		final Quantity qtyAllowedToPick = line.getQtyToPick().subtract(qtyAlreadyPicked).toZeroIfNegative();
 		if (qtyToPickCUs.compareTo(qtyAllowedToPick) > 0)
 		{
 			throw new AdempiereException(PICK_OVERDELIVERY_BLOCKED_ERROR_MSG)
@@ -376,8 +375,8 @@ public class PickingJobPickCommand
 					.setParameter("pickingJobId", _pickingJob.getId())
 					.setParameter("pickingJobLineId", getLineId())
 					.setParameter("qtyToPick", qtyToPickCUs)
-					.setParameter("qtyOrdered", freshLine.getQtyToPick())
-					.setParameter("qtyAlreadyPicked", freshLine.getQtyPicked());
+					.setParameter("qtyOrdered", line.getQtyToPick())
+					.setParameter("qtyAlreadyPicked", line.getQtyPicked());
 		}
 	}
 
