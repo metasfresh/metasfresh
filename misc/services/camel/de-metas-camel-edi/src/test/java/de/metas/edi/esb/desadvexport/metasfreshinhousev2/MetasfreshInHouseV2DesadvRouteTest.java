@@ -117,10 +117,15 @@ class MetasfreshInHouseV2DesadvRouteTest extends CamelTestSupport
 		// defines it, so the generated JAXB binding must too; otherwise the element present in the input
 		// XML is silently discarded on unmarshal and is never re-emitted on marshal. Feeding the element
 		// through the unmarshal -> route -> marshal round trip is the faithful reproduction of that drop.
+		// Include the two neighbouring elements so the test also pins the position of <shipment_documentno>
+		// in the XSD sequence (M_InOut_ID -> shipment_documentno -> DatePromised): a wrong propOrder would
+		// move it and break the byte-for-byte match the clearing center relies on.
 		final var inputXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
 				+ "<EDI_Exp_Desadv AD_Client_Value=\"ADClientValueAttr\">\n"
 				+ "    <EDI_Desadv_ID>1001</EDI_Desadv_ID>\n"
+				+ "    <M_InOut_ID>2002</M_InOut_ID>\n"
 				+ "    <shipment_documentno>L394055</shipment_documentno>\n"
+				+ "    <DatePromised>2026-10-29</DatePromised>\n"
 				+ "</EDI_Exp_Desadv>";
 
 		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
@@ -142,7 +147,9 @@ class MetasfreshInHouseV2DesadvRouteTest extends CamelTestSupport
 				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
 						+ "<EDI_Exp_Desadv AD_Client_Value=\"ADClientValueAttr\">\n"
 						+ "    <EDI_Desadv_ID>1001</EDI_Desadv_ID>\n"
+						+ "    <M_InOut_ID>2002</M_InOut_ID>\n"
 						+ "    <shipment_documentno>L394055</shipment_documentno>\n"
+						+ "    <DatePromised>2026-10-29</DatePromised>\n"
 						+ "</EDI_Exp_Desadv>");
 	}
 
