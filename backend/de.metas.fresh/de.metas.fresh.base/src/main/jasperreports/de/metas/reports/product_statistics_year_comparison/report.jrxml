@@ -16,8 +16,7 @@ FROM (SELECT (SELECT o.Name FROM AD_Org o WHERE o.AD_Org_ID = $P{AD_Org_ID}) AS 
              (SELECT y.FiscalYear FROM C_Year y WHERE y.C_Year_ID = $P{C_Year_ID}) AS Hdr_FiscalYear,
              (SELECT c.ISO_Code
               FROM AD_Org o
-                       JOIN AD_ClientInfo ci ON ci.AD_Client_ID = o.AD_Client_ID
-                       JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
+                       JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = getC_AcctSchema_ID(o.AD_Client_ID, o.AD_Org_ID)
                        JOIN C_Currency c ON c.C_Currency_ID = acs.C_Currency_ID
               WHERE o.AD_Org_ID = $P{AD_Org_ID}) AS Hdr_Currency,
              (SELECT p.Value || ' ' || p.Name FROM M_Product p WHERE p.M_Product_ID = $P{M_Product_ID}) AS ParamProduct,
@@ -95,8 +94,8 @@ ORDER BY f.ProductValue]]>
 	<field name="currency" class="java.lang.String"/>
 	<field name="orgname" class="java.lang.String"/>
 	<field name="fiscalyear" class="java.lang.String"/>
-	<field name="ratemissing_count" class="java.lang.Integer"/>
-	<field name="ratemissing_months" class="java.lang.String"/>
+	<field name="notposted_count" class="java.lang.Integer"/>
+	<field name="notposted_months" class="java.lang.String"/>
 	<field name="printuser" class="java.lang.String"/>
 	<field name="paramproduct" class="java.lang.String"/>
 	<field name="hdr_orgname" class="java.lang.String"/>
@@ -865,8 +864,8 @@ ORDER BY f.ProductValue]]>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{ratemissing_count} != null && $F{ratemissing_count}.intValue() > 0
- ? java.text.MessageFormat.format($R{RateMissingWarning}, new Object[]{String.valueOf($F{ratemissing_count}), ($F{ratemissing_months} != null ? $F{ratemissing_months} : "")})
+					<textFieldExpression><![CDATA[$F{notposted_count} != null && $F{notposted_count}.intValue() > 0
+ ? java.text.MessageFormat.format($R{NotPostedWarning}, new Object[]{String.valueOf($F{notposted_count}), ($F{notposted_months} != null ? $F{notposted_months} : "")})
  : null]]></textFieldExpression>
 				</textField>
 		</band>
