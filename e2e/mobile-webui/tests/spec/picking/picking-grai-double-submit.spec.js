@@ -29,7 +29,7 @@ const TU_COUNT = 1;
 const QTY_CUS_PER_TU = 4;
 const PICK_EVENT_URL_PATTERN = '**/picking/event';
 
-const createMasterdata = async () => await Backend.createMasterdata({
+const createMasterdata = async ({ overpickAllowed = true } = {}) => await Backend.createMasterdata({
     language: 'en_US',
     request: {
         login: { user: { language: 'en_US' } },
@@ -42,8 +42,9 @@ const createMasterdata = async () => await Backend.createMasterdata({
                 shipOnCloseLU: false,
                 pickTo: ['LU_TU'],
                 allowCompletingPartialPickingJob: false,
-                // over-pick allowed: the server would not refuse a second booking
-                showPromptWhenOverPicking: true,
+                // true = over-pick allowed (server would not refuse a second booking);
+                // false = over-pick blocked (the customer config)
+                showPromptWhenOverPicking: overpickAllowed,
             },
         },
         bpartners: { BP1: { graiRequired: 'Y' } },
@@ -74,14 +75,7 @@ const createMasterdata = async () => await Backend.createMasterdata({
     },
 });
 
-// noinspection JSUnusedLocalSymbols
-test('GRAI Speichern fired twice while the pick is in flight books the pick only once', async ({ page: _page }) => {
-    await allure.epic('E0105: Picking');
-    await allure.feature('F00230: MobileUI Picking');
-    await allure.story('GRAI Speichern double-submit - in-flight guard');
-    await allure.severity('critical');
-
-    const masterdata = await createMasterdata();
+const runDoubleSubmitScenario = async (masterdata) => {
     const [companyPrefix, assetType] = masterdata.packingInstructions.PI_MAIN.grai.split('.');
     const grai = `${companyPrefix}.${assetType}.000001`;
 
@@ -128,4 +122,24 @@ test('GRAI Speichern fired twice while the pick is in flight books the pick only
             },
         },
     });
+};
+
+// noinspection JSUnusedLocalSymbols
+test('GRAI Speichern fired twice while the pick is in flight books the pick only once', async ({ page: _page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.feature('F00230: MobileUI Picking');
+    await allure.story('GRAI Speichern double-submit - in-flight guard');
+    await allure.severity('critical');
+
+    await runDoubleSubmitScenario(await createMasterdata());
+});
+
+// noinspection JSUnusedLocalSymbols
+test('GRAI Speichern fired twice while the pick is in flight books once (over-pick blocked)', async ({ page: _page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.feature('F00230: MobileUI Picking');
+    await allure.story('GRAI Speichern double-submit - in-flight guard, over-pick blocked');
+    await allure.severity('critical');
+
+    await runDoubleSubmitScenario(await createMasterdata({ overpickAllowed: false }));
 });
