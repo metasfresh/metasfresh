@@ -1,18 +1,18 @@
-# Side-effect-free copy of core cicd.yaml job for the ubuntu-26.04 check, body of massive_entropy_hotfix.
+# Side-effect-free copy of core cicd.yaml job for the ubuntu-24.04 check, body of massive_entropy_hotfix.
 # Gate and needs removed; every write replaced by the read-only twin of the same tool (see comments).
-name: zz-u2604-ubv-v142
+name: zz-u2604-ubv-v142-cmp
 on:
   push:
-    branches: [massive_entropy_hotfix_u2604_ubv]
+    branches: [massive_entropy_hotfix_u2604_ubv_cmp2404]
 concurrency:
-  group: zz-u2604-ubv-v142-u2604
+  group: zz-u2604-ubv-v142-cmp-u2604
   cancel-in-progress: false
 permissions:
   contents: read
   packages: read
 jobs:
   update-base-version:
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         include:
