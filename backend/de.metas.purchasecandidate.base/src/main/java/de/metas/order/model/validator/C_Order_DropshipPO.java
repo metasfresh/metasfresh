@@ -29,6 +29,7 @@ import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.createFrom.po_from_so.DropshipPOFromSOService;
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -90,6 +91,11 @@ public class C_Order_DropshipPO
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void validateVendorsBeforeComplete(@NonNull final I_C_Order order)
 	{
+		if (!isCreateDropshipPOEnabled())
+		{
+			// SysConfig de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO is off (default): no vendor auto-fill / validation
+			return;
+		}
 		if (!order.isSOTrx())
 		{
 			// BEFORE_COMPLETE vendor-validation only makes sense for SOs (the auto-fill is upstream
@@ -167,6 +173,11 @@ public class C_Order_DropshipPO
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void createDropshipPOAfterComplete(@NonNull final I_C_Order order)
 	{
+		if (!isCreateDropshipPOEnabled())
+		{
+			// SysConfig de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO is off (default): no PO creation on SO completion
+			return;
+		}
 		if (!order.isSOTrx())
 		{
 			// safety guard: never run on purchase orders even if accidentally invoked on a dropship warehouse
@@ -180,6 +191,11 @@ public class C_Order_DropshipPO
 	}
 
 	// -------
+
+	private boolean isCreateDropshipPOEnabled()
+	{
+		return Services.get(IC_Order_CreatePOFromSOsBL.class).isCreateDropshipPO();
+	}
 
 	/**
 	 * @param contractCreatedGroupIds every compensation line's group id that is contract-created (pre-resolved

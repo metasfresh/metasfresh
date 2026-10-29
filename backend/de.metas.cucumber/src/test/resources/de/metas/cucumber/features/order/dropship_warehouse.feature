@@ -469,3 +469,4 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
     Then validate the created orders
       | C_Order_ID | DocStatus |
       | so_dw12    | CO        |
+    And no purchase order is linked to the order identified by "so_dw12"
