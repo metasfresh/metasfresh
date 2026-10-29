@@ -418,6 +418,13 @@ class AssertSalesOrderExpectationsCommand
 						.as("MovementQty of shipment[" + shipmentIndex + "].line[" + lineIndex + "] M_InOutLine_ID=" + actual.getM_InOutLine_ID())
 						.isEqualTo(expectation.getMovementQty().stripTrailingZeros());
 			}
+
+			if (expectation.getQtyDeliveredCatch() != null)
+			{
+				assertThat(actual.getQtyDeliveredCatch())
+						.as("QtyDeliveredCatch of shipment[" + shipmentIndex + "].line[" + lineIndex + "] M_InOutLine_ID=" + actual.getM_InOutLine_ID())
+						.isEqualByComparingTo(expectation.getQtyDeliveredCatch());
+			}
 		});
 	}
 

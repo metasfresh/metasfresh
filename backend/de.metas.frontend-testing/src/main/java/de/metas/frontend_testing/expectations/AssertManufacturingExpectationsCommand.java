@@ -57,6 +57,12 @@ public class AssertManufacturingExpectationsCommand
 			assertReceivedHUs(expectation.getReceivedHUs(), actuals);
 		}
 
+		if (expectation.getReceivedCoProductHUs() != null)
+		{
+			final ArrayList<I_PP_Order_Qty> actuals = new ArrayList<>(services.getPPOrderQtyForCoProductReceive(ppOrderId));
+			assertReceivedHUs(expectation.getReceivedCoProductHUs(), actuals);
+		}
+
 		if (expectation.getIssuedHUs() != null)
 		{
 			final ArrayList<I_PP_Order_Qty> actuals = new ArrayList<>(services.getPPOrderQtyForComponentIssue(ppOrderId));
@@ -149,6 +155,12 @@ public class AssertManufacturingExpectationsCommand
 			{
 				final HuId tuId = getTuId(actual);
 				context.putSameOrMissingId("tu", expectation.getTu(), tuId, HuId.class);
+			}
+
+			if (Boolean.TRUE.equals(expectation.getLooseCUs()))
+			{
+				assertThat(getLuId(actual)).as("loose CUs are not on an LU").isNull();
+				assertThat(getTuId(actual)).as("loose CUs are not in a TU").isNull();
 			}
 
 			if (expectation.getQty() != null)

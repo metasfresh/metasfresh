@@ -37,6 +37,7 @@ public class POReplicationTrxLineDraft
 	private final PO poDraft;
 	private final I_EXP_ReplicationTrxLine trxLineDraft;
 	private final boolean lookup;
+	private final boolean lenientMatch;
 
 	/**
 	 * Creates a POReplicationTrxLineDraft with <code>trxLine=null</code> and <code>doLookup=false</code>
@@ -45,16 +46,28 @@ public class POReplicationTrxLineDraft
 	 */
 	public POReplicationTrxLineDraft(final PO po)
 	{
+		this(po, false);
+	}
+
+	public POReplicationTrxLineDraft(final PO po, final boolean lenientMatch)
+	{
 		poDraft = po;
 		trxLineDraft = null;
 		lookup = false;
+		this.lenientMatch = lenientMatch;
 	}
 
 	public POReplicationTrxLineDraft(final PO po, final I_EXP_ReplicationTrxLine trxLine, final boolean doLookup)
 	{
+		this(po, trxLine, doLookup, false);
+	}
+
+	public POReplicationTrxLineDraft(final PO po, final I_EXP_ReplicationTrxLine trxLine, final boolean doLookup, final boolean lenientMatch)
+	{
 		poDraft = po;
 		trxLineDraft = trxLine;
 		lookup = doLookup;
+		this.lenientMatch = lenientMatch;
 	}
 
 	public PO getPODraft()
@@ -65,6 +78,12 @@ public class POReplicationTrxLineDraft
 	public I_EXP_ReplicationTrxLine getTrxLineDraftOrNull()
 	{
 		return trxLineDraft;
+	}
+
+	/** The PO was found by a lookup retried with its lenient lines unset, so those lines' XML values must not be written to it. */
+	public boolean isLenientMatch()
+	{
+		return lenientMatch;
 	}
 
 	public boolean isDoLookup()
