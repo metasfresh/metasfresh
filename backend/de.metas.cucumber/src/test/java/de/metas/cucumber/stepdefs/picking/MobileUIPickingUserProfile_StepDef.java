@@ -40,6 +40,26 @@ public class MobileUIPickingUserProfile_StepDef
 	private static final Logger logger = LogManager.getLogger(MobileUIPickingUserProfile_StepDef.class);
 	private final MobileUIPickingUserProfileService profileService = SpringContextHolder.instance.getBean(MobileUIPickingUserProfileService.class);
 
+	/**
+	 * Updates the default picking job options of the mobile UI picking profile; only the given columns are changed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>IsAllowPickingAnyHU</b> - (optional) boolean<br>
+	 *   <b>CreateShipmentPolicy</b> - (optional) code or name of the CreateShipmentPolicy<br>
+	 *   <b>IsAlwaysSplitHUsEnabled</b> - (optional) boolean<br>
+	 *   <b>IsAllowCompletingPartialPickingJob</b> - (optional) boolean<br>
+	 *   <b>IsCatchWeightTUPickingEnabled</b> - (optional) boolean<br>
+	 *   <b>IsShowConfirmationPromptWhenOverPick</b> - (optional) boolean; N means over-picking is blocked<br>
+	 *   <b>PickingJobAggregationType</b> - (optional) PickingJobAggregationType enum<br>
+	 * @cucumber.depends Service: MobileUIPickingUserProfileService
+	 * @cucumber.example
+	 * <pre>
+	 * And set mobile UI picking profile
+	 *   | IsAllowPickingAnyHU | IsShowConfirmationPromptWhenOverPick |
+	 *   | Y                   | N                                    |
+	 * </pre>
+	 */
 	@And("set mobile UI picking profile")
 	public void updateProfile(@NonNull final DataTable dataTable)
 	{
@@ -47,6 +67,7 @@ public class MobileUIPickingUserProfile_StepDef
 
 		profileService.update((profile) -> {
 			final PickingJobOptionsBuilder defaultPickingJobOptionsBuilder = profile.getDefaultPickingJobOptions().toBuilder();
+			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsShowConfirmationPromptWhenOverPick).ifPresent(defaultPickingJobOptionsBuilder::isShowConfirmationPromptWhenOverPick);
 			row.getAsOptionalBoolean("IsAllowPickingAnyHU").ifPresent(defaultPickingJobOptionsBuilder::isAllowPickingAnyHU);
 			row.getAsOptionalString("CreateShipmentPolicy").map(CreateShipmentPolicy::ofCodeOrName).ifPresent(defaultPickingJobOptionsBuilder::createShipmentPolicy);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(defaultPickingJobOptionsBuilder::isAlwaysSplitHUsEnabled);
