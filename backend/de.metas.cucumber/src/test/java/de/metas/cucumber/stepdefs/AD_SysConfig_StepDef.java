@@ -68,6 +68,11 @@ public class AD_SysConfig_StepDef
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
 	/**
+	 * Set by {@link #enable_sys_config_for_this_scenario_only}; makes {@link #restoreTemporarySysConfigsAfterScenario()} reset all caches.
+	 */
+	private boolean resetAllCachesOnRestore = false;
+
+	/**
 	 * Sysconfigs this scenario overwrote via {@link #temporarily_set_sys_config_to_product_category}, mapped to the
 	 * state of their {@code AD_Client_ID=0, AD_Org_ID=0} row from BEFORE the overwrite. Deliberately separate from
 	 * {@link #priorValueBySysConfigName}: that map only knows "null = nothing to restore", whereas here
@@ -97,6 +102,25 @@ public class AD_SysConfig_StepDef
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
+		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
+	}
+
+	/**
+	 * Like {@link #enable_sys_config}, but for a sys config that is global state shared by every scenario on the executor:
+	 * the prior value is restored by {@link #restoreTemporarySysConfigsAfterScenario()}, also if the scenario or its Background fails.
+	 * The restore also resets all caches, because some caches are derived from a sys config (e.g. the report server).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And for this scenario only, set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+	 * </pre>
+	 */
+	@And("^for this scenario only, set sys config (String|boolean|int) value (.*) for sys config (.*)$")
+	public void enable_sys_config_for_this_scenario_only(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
+	{
+		rememberPriorValue(sysConfigName);
+		resetAllCachesOnRestore = true;
 		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
 	}
 
@@ -417,5 +441,10 @@ public class AD_SysConfig_StepDef
 
 		priorValueBySysConfigName.clear();
 		resetSysConfigCache();
+		if (resetAllCachesOnRestore)
+		{
+			CacheMgt.get().reset(); // also drops caches derived from a sys config, e.g. the report server
+			resetAllCachesOnRestore = false;
+		}
 	}
 }

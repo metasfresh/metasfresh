@@ -342,6 +342,12 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setValue(valueAndName.getValue());
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name2).ifPresent(bPartnerRecord::setName2);
 		row.getAsOptionalString(COLUMNNAME_Lookup_Label).ifPresent(bPartnerRecord::setLookup_Label);
+		// no generated accessor for this column
+		final Boolean isReplicationLookupDefault = row.getAsOptionalBoolean("IsReplicationLookupDefault").toBooleanOrNull();
+		if (isReplicationLookupDefault != null)
+		{
+			InterfaceWrapperHelper.setValue(bPartnerRecord, "IsReplicationLookupDefault", isReplicationLookupDefault);
+		}
 
 		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
 		bPartnerRecord.setIsVendor(row.getAsOptionalBoolean(COLUMNNAME_IsVendor).orElseFalse());
