@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0159_Manufacturing_Planning
-@allure.label.feature:F8010.1
+@allure.label.feature:F8010.1_Multi_level_BOM_Report
 @ghActions:run_on_executor5
 Feature: multi-level BOM report
 
