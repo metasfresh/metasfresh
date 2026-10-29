@@ -5,7 +5,7 @@ env:
 jobs:
 
   init:
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     outputs:
       tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
@@ -65,7 +65,7 @@ jobs:
           echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
 
   java:
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     needs: init
     permissions:
       packages: write
@@ -157,7 +157,7 @@ jobs:
           docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
 
   frontend:
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     needs: init
     steps:
       - uses: actions/checkout@v4
@@ -202,7 +202,7 @@ jobs:
 
   test-frontend:
     name: test (frontend)
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     needs: [init, frontend]
     steps:
       - uses: actions/checkout@v4
@@ -234,7 +234,7 @@ jobs:
           path: jest/**/jest.log
 
   backend:
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     needs: [init, java]
     steps:
       - uses: actions/checkout@v4
@@ -352,7 +352,7 @@ jobs:
           echo '* metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   procurement:
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -428,7 +428,7 @@ jobs:
         
 
   compatibility-images:
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     needs: [init, frontend, backend]
     steps:
       - uses: actions/checkout@v4
@@ -515,7 +515,7 @@ jobs:
 
   junit:
     name: test (java)
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     needs: [init, java]
     steps:
       - uses: actions/checkout@v4
@@ -587,7 +587,7 @@ jobs:
 
   cucumber-build:
     name: build (cucumber)
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     needs: [init, java]
     steps:
       - uses: actions/checkout@v4
@@ -620,7 +620,7 @@ jobs:
             docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
   cucumber-run:
     name: test (cucumber)
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     needs: [init, backend, frontend, cucumber-build]
     strategy:
       max-parallel: 10
@@ -699,7 +699,7 @@ jobs:
 
   health_check:
     name: health check
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     needs: [ init, backend, frontend ]
     steps:
       - uses: actions/checkout@v4
@@ -795,7 +795,7 @@ jobs:
 
   update-base-version:
     if: needs.init.outputs.base-version-matrix != ''
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     needs: [init, compatibility-images]
     strategy:
       matrix: ${{fromJSON(needs.init.outputs.base-version-matrix)}}
