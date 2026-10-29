@@ -441,3 +441,31 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
     # zero non-STOCK MD_Candidate rows must exist because isDropShipWarehouse=true triggers the
     # short-circuit in the cockpit TransactionCreatedHandler.
     Then no MD_Candidate exists for M_Product_ID product_dw_2
+
+
+  # ####################################################################################
+  # ####################################################################################
+  @from:cucumber
+  @Id:S33264_TC1
+  Scenario: Dropship-warehouse SO completes without a PO when CreateDropshipPO is off, even if the product has no vendor price
+    # CreateDropshipPO=N: completing the SO must neither create a PO nor fail on the missing purchase price.
+    Given for this scenario only, set sys config boolean value false for sys config de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO
+    And metasfresh contains M_Products:
+      | Identifier          | M_Product_Category_ID | IsSold | IsPurchased |
+      | product_no_po_price | standard_category     | Y      | Y           |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID | M_Product_ID        | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_np_so   | plv_dw_so              | product_no_po_price | 20.0     | PCE               | Normal                        |
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID | M_Product_ID        |
+      | vendor_dw     | product_no_po_price |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_dw12    | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID        | QtyEntered |
+      | sol_dw12_1 | so_dw12    | product_no_po_price | 10         |
+    When the order identified by so_dw12 is completed
+    Then validate the created orders
+      | C_Order_ID | DocStatus |
+      | so_dw12    | CO        |

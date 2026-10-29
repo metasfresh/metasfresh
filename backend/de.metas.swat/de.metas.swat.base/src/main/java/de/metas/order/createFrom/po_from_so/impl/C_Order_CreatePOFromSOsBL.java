@@ -43,6 +43,7 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	private static final String SYSCONFIG_PURCHASE_QTY_SOURCE = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseQtySource";
 	private static final String SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT = I_C_OrderLine.COLUMNNAME_QtyOrdered;
 	private static final String SYSCONFIG_COMPLETE_DROPSHIP_PO = "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO";
+	private static final String SYSCONFIG_CREATE_DROPSHIP_PO = "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO";
 
 	private final ArrayList<IC_Order_CreatePOFromSOsListener> listeners = new ArrayList<>();
 
@@ -86,5 +87,11 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	public boolean isCompleteDropshipPO()
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_COMPLETE_DROPSHIP_PO, true);
+	}
+
+	@Override
+	public boolean isCreateDropshipPO()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_CREATE_DROPSHIP_PO, false);
 	}
 }

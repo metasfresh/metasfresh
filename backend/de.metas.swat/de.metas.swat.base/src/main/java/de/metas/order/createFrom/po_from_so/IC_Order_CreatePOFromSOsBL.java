@@ -56,4 +56,11 @@ public interface IC_Order_CreatePOFromSOsBL extends ISingletonService
 	 * Controlled by SysConfig {@code de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO}.
 	 */
 	boolean isCompleteDropshipPO();
+
+	/**
+	 * @return whether a purchase order is auto-created when a sales order on a drop-ship warehouse is completed (default {@code false}).
+	 * When {@code false}, completing such a sales order creates no purchase order.
+	 * Controlled by SysConfig {@code de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO}.
+	 */
+	boolean isCreateDropshipPO();
 }
