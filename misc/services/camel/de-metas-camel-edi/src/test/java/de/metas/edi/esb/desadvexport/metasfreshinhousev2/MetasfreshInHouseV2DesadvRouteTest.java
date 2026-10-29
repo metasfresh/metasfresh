@@ -39,6 +39,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.math.BigInteger;
 import java.util.Properties;
 
@@ -112,18 +113,26 @@ class MetasfreshInHouseV2DesadvRouteTest extends CamelTestSupport
 	@Test
 	void desadv_with_shipment_documentno() throws Exception
 	{
-		// The EDI_Exp_Desadv must carry the lowercase <shipment_documentno> element. The XSD defines it,
-		// so the generated JAXB binding must too, otherwise this passthrough route drops it on marshal.
-		final var ediExpDesadvType = new ObjectFactory().createEDIExpDesadvType();
-		ediExpDesadvType.setEDIDesadvID(new BigInteger("1001"));
-		ediExpDesadvType.setADClientValueAttr("ADClientValueAttr");
-		ediExpDesadvType.setShipmentDocumentno("L394055");
+		// The EDI_Exp_Desadv must carry the lowercase <shipment_documentno> element end-to-end. The XSD
+		// defines it, so the generated JAXB binding must too; otherwise the element present in the input
+		// XML is silently discarded on unmarshal and is never re-emitted on marshal. Feeding the element
+		// through the unmarshal -> route -> marshal round trip is the faithful reproduction of that drop.
+		final var inputXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+				+ "<EDI_Exp_Desadv AD_Client_Value=\"ADClientValueAttr\">\n"
+				+ "    <EDI_Desadv_ID>1001</EDI_Desadv_ID>\n"
+				+ "    <shipment_documentno>L394055</shipment_documentno>\n"
+				+ "</EDI_Exp_Desadv>";
+
+		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+		final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+		@SuppressWarnings("unchecked")
+		final JAXBElement<EDIExpDesadvType> unmarshalled = (JAXBElement<EDIExpDesadvType>)unmarshaller.unmarshal(new StringReader(inputXml));
 
 		template.sendBodyAndHeader(
 				MetasfreshInHouseV2DesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER /*endpoint-URI*/,
-				ediExpDesadvType /*actual desadvBody*/,
+				unmarshalled.getValue() /*actual desadvBody*/,
 
-				EDIXmlFeedbackHelper.HEADER_OriginalXMLBody, ediExpDesadvType // this header is otherwise set by the preceeding generic route
+				EDIXmlFeedbackHelper.HEADER_OriginalXMLBody, unmarshalled.getValue() // this header is otherwise set by the preceeding generic route
 		);
 
 		fileOutputEndpoint.expectedMessageCount(1);
