@@ -125,14 +125,20 @@ export const PickGraiScreen = {
         const released = new Promise((resolve) => { release = resolve; });
         let seen;
         const firstEventReachedServer = new Promise((resolve) => { seen = resolve; });
+        let markFulfilled;
+        const firstResponseFulfilled = new Promise((resolve) => { markFulfilled = resolve; });
         const handler = async (route) => {
             if (route.request().method() !== 'POST') return route.fallback();
             count++;
             if (count > 1) return route.fallback(); // a second event is the bug: let it through, so it gets booked and caught
-            const response = await route.fetch();
-            seen();
-            await released;
-            await route.fulfill({ response });
+            try {
+                const response = await route.fetch();
+                seen();
+                await released;
+                await route.fulfill({ response });
+            } finally {
+                markFulfilled();
+            }
         };
         await page.route(urlPattern, handler);
         return {
@@ -140,6 +146,9 @@ export const PickGraiScreen = {
             getPickEventCount: () => count,
             release: async () => {
                 release();
+                // wait until the held response is actually fulfilled BEFORE unrouting, otherwise unroute races the
+                // in-flight handler and Playwright throws "Route is already handled!" (dropping the first pick's response)
+                await firstResponseFulfilled;
                 await page.unroute(urlPattern, handler);
             },
         };
