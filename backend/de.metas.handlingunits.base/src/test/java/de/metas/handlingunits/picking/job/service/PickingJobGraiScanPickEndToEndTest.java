@@ -547,7 +547,7 @@ class PickingJobGraiScanPickEndToEndTest
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	// me03#33201 - server ordered-qty ceiling (sequential repeat pick on an already-full line, over-pick BLOCKED)
+	// Server ordered-qty ceiling (sequential repeat pick on an already-full line, over-pick BLOCKED)
 	// ------------------------------------------------------------------------------------------------------------
 
 	private PickingJob pickOneTU(final PickingJob pickingJob, final HUInfo pickFromVHU, @javax.annotation.Nullable final PickingJobStepId stepId)
@@ -598,7 +598,7 @@ class PickingJobGraiScanPickEndToEndTest
 	}
 
 	/**
-	 * me03#33201 reference case A: the line is already fully picked (first pick committed, over-pick BLOCKED); a
+	 * Reference case A: the line is already fully picked (first pick committed, over-pick BLOCKED); a
 	 * further sequential pick request (a repeat GRAI-save) must be refused server-side, with NO second booking.
 	 * Without the ceiling, computeQtyToPickCUs falls through to the full packing qty on a remaining==0 line and
 	 * books the line a second time (over-delivery).

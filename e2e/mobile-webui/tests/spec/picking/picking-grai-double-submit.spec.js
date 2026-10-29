@@ -1,7 +1,7 @@
 /**
  * Playwright E2E - double-submit of the GRAI "Speichern" button must book the pick only ONCE.
  *
- * Regression (me03 33201): the inline GRAI capture of a GRAIRequired=Y customer sends the pick (qty +
+ * Regression: the inline GRAI capture of a GRAIRequired=Y customer sends the pick (qty +
  * GRAIs) from the "Speichern" button. Without an in-flight guard, a second tap while the first
  * `/picking/event` POST is still running fired a second, independent pick POST -> the line was
  * booked twice (over-delivery).

@@ -328,7 +328,7 @@ public class PickingJobPickCommand
 	}
 
 	/**
-	 * Server-side ordered-qty ceiling (me03#33201): refuses a pick that would take the line's picked qty above its ordered qty,
+	 * Server-side ordered-qty ceiling: refuses a pick that would take the line's picked qty above its ordered qty,
 	 * but ONLY when over-pick is blocked ({@code !isShowConfirmationPromptWhenOverPick}). When over-pick is allowed the
 	 * server never hard-rejects (the mobile client in-flight guard protects there). A partial pick within the remaining qty
 	 * is never refused.

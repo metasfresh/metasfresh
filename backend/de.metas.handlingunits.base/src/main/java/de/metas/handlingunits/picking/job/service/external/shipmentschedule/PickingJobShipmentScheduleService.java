@@ -88,7 +88,7 @@ public class PickingJobShipmentScheduleService
 	/**
 	 * Takes a row lock ({@code SELECT ... FOR UPDATE}) on the shipment schedule, held until the current (thread-inherited)
 	 * transaction ends. Serialises concurrent picks of the same schedule so that a "check ordered qty, then book" sequence
-	 * is atomic (me03#33201). Must be called inside a transaction.
+	 * is atomic. Must be called inside a transaction.
 	 */
 	public void lockForUpdate(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
