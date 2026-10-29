@@ -110,6 +110,7 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 				.ifPresent(shipmentLineId -> queryBuilder.addEqualsFilter(COLUMNNAME_M_InOutLine_ID, shipmentLineId));
 		row.getAsOptionalBigDecimal(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDelivered)
 				.ifPresent(qtyDelivered -> queryBuilder.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDelivered, qtyDelivered));
+		row.getAsOptionalBigDecimal(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Catch).ifPresent(q -> queryBuilder.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Catch, q));
 
 		final IQuery<I_C_InvoiceCandidate_InOutLine> query = queryBuilder.create();
 		final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLine = query.firstOnly(I_C_InvoiceCandidate_InOutLine.class);
@@ -136,7 +137,8 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 				.map(inoutLineAllocation -> "[C_InvoiceCandidate_InOutLine_ID - " + inoutLineAllocation.getC_InvoiceCandidate_InOutLine_ID()
 						+ ": C_Invoice_Candidate_ID: " + inoutLineAllocation.getC_Invoice_Candidate_ID()
 						+ " , M_InOut_Line_ID: " + inoutLineAllocation.getM_InOutLine_ID()
-						+ " , QtyDelivered: " + inoutLineAllocation.getQtyDelivered() + "]")
+						+ " , QtyDelivered: " + inoutLineAllocation.getQtyDelivered()
+						+ " , QtyDeliveredInUOM_Catch: " + inoutLineAllocation.getQtyDeliveredInUOM_Catch() + "]")
 				.collect(Collectors.joining(","));
 
 		return "allocations: " + allocations;

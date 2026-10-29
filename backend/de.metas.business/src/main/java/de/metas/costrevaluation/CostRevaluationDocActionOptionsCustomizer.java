@@ -26,24 +26,53 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 import de.metas.document.engine.IDocument;
+import de.metas.util.NumberUtils;
+import lombok.NonNull;
 import org.compiere.model.I_M_CostRevaluation;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+/**
+ * Status menu of a completed cost revaluation ("Kosten Neubewertung"):
+ * <ul>
+ * <li>never Re-Activate;</li>
+ * <li>never Reverse-Correct or Reverse-Accrual (Storno): reversing a posted revaluation would reset the product's cost;</li>
+ * <li>Void only for a {@link RevaluationSource#Manual} revaluation where nothing was booked yet,
+ * i.e. no line has its revaluation {@code M_CostDetail} (see {@link CostRevaluationDocumentHandler#voidIt});</li>
+ * <li>Close stays as offered by the defaults.</li>
+ * </ul>
+ * The parameters include {@code Posted}, so the cached menu is refreshed once the document gets posted.
+ */
 @Component
 public class CostRevaluationDocActionOptionsCustomizer implements IDocActionOptionsCustomizer
 {
+	private static final ImmutableSet<String> PARAMETERS = ImmutableSet.of(
+			I_M_CostRevaluation.COLUMNNAME_M_CostRevaluation_ID,
+			I_M_CostRevaluation.COLUMNNAME_RevaluationSource,
+			I_M_CostRevaluation.COLUMNNAME_Posted);
+
+	@NonNull private final CostRevaluationService costRevaluationService;
+
+	public CostRevaluationDocActionOptionsCustomizer(@NonNull final CostRevaluationService costRevaluationService)
+	{
+		this.costRevaluationService = costRevaluationService;
+	}
+
 	@Override
 	public String getAppliesToTableName()
 	{
 		return I_M_CostRevaluation.Table_Name;
 	}
 
-	/**
-	 * A completed revaluation offers Void: it is allowed as long as nothing was booked (see {@link CostRevaluationDocumentHandler#voidIt}).
-	 */
+	@Override
+	public Set<String> getParameters()
+	{
+		return PARAMETERS;
+	}
+
 	@Override
 	public void customizeValidActions(final DocActionOptionsContext optionsCtx)
 	{
@@ -53,7 +82,37 @@ public class CostRevaluationDocActionOptionsCustomizer implements IDocActionOpti
 		}
 
 		final Set<String> docActions = new LinkedHashSet<>(optionsCtx.getDocActions());
-		docActions.add(IDocument.ACTION_Void);
+		docActions.remove(IDocument.ACTION_ReActivate);
+		docActions.remove(IDocument.ACTION_Reverse_Correct);
+		docActions.remove(IDocument.ACTION_Reverse_Accrual);
+		docActions.remove(IDocument.ACTION_Void);
+		if (isVoidAllowed(optionsCtx))
+		{
+			docActions.add(IDocument.ACTION_Void);
+		}
 		optionsCtx.setDocActions(ImmutableSet.copyOf(docActions));
+	}
+
+	private boolean isVoidAllowed(@NonNull final DocActionOptionsContext optionsCtx)
+	{
+		final RevaluationSource source = RevaluationSource.ofNullableCode(optionsCtx.getParameterValue(I_M_CostRevaluation.COLUMNNAME_RevaluationSource));
+		if (source != RevaluationSource.Manual)
+		{
+			return false;
+		}
+
+		final CostRevaluationId costRevaluationId = toCostRevaluationIdOrNull(optionsCtx.getParameterValue(I_M_CostRevaluation.COLUMNNAME_M_CostRevaluation_ID));
+		if (costRevaluationId == null)
+		{
+			return false;
+		}
+
+		return !costRevaluationService.hasAnyLineWithCostDetail(costRevaluationId);
+	}
+
+	@Nullable
+	private static CostRevaluationId toCostRevaluationIdOrNull(@Nullable final String value)
+	{
+		return CostRevaluationId.ofRepoIdOrNull(NumberUtils.asInt(value, -1));
 	}
 }
