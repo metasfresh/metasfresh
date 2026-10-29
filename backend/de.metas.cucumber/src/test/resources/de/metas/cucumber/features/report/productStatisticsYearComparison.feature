@@ -1688,3 +1688,92 @@ Feature: Product Statistics Year Comparison - reference replay
     And the product statistics year comparison report for org "-", year "yearN", product "tcOrgOther" contains no rows for products:
       | M_Product_ID |
       | tcOrgOther   |
+
+  @from:cucumber
+  Scenario: Product range (text order, both ends included, either order) and product category, also combined; packing material stays excluded with its category
+    ## Product values are "<Identifier>_<timestamp>", so the text order is psycRngA < psycRngB < psycRngC < psycRngD.
+    ## psycRngB and psycRngD are in category rngCat; psycRngPack is in rngPackCat, which is set as the packing-material category.
+    ## Each product is invoiced once in 2026-03 (amount 10.00 each). Rows of other products (e.g. from earlier runs) are ignored by the steps.
+    Given metasfresh has date and time 2026-03-12T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains M_Product_Categories:
+      | Identifier |
+      | rngCat     |
+      | rngPackCat |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | psycRngA   |
+      | psycRngC   |
+    And metasfresh contains M_Products:
+      | Identifier  | M_Product_Category_ID |
+      | psycRngB    | rngCat                |
+      | psycRngD    | rngCat                |
+      | psycRngPack | rngPackCat            |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | psycPLV                | psycRngA     | 10.00    | PCE      | psycTaxCat       |
+      | psycPLV                | psycRngB     | 10.00    | PCE      | psycTaxCat       |
+      | psycPLV                | psycRngC     | 10.00    | PCE      | psycTaxCat       |
+      | psycPLV                | psycRngD     | 10.00    | PCE      | psycTaxCat       |
+      | psycPLV                | psycRngPack  | 10.00    | PCE      | psycTaxCat       |
+    And temporarily set sys config 'PackingMaterialProductCategoryID' to the M_Product_Category identified by 'rngPackCat'
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_rng    | psycBP        | 2026-03-12   | true    | CHF           | psycPL         |
+    And metasfresh contains C_InvoiceLines
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_rng_l1  | inv_rng      | psycRngA     | 1 PCE       | 10.00 | psycTax19    |
+      | inv_rng_l2  | inv_rng      | psycRngB     | 1 PCE       | 10.00 | psycTax19    |
+      | inv_rng_l3  | inv_rng      | psycRngC     | 1 PCE       | 10.00 | psycTax19    |
+      | inv_rng_l4  | inv_rng      | psycRngD     | 1 PCE       | 10.00 | psycTax19    |
+      | inv_rng_l5  | inv_rng      | psycRngPack  | 1 PCE       | 10.00 | psycTax19    |
+    And the invoice identified by inv_rng is completed
+    And Wait until documents inv_rng are posted
+
+    # Range B..C: both ends included, A and D outside
+    Then the product statistics year comparison report for org "-", year "yearN", products "psycRngB" to "psycRngC", category "-" returns:
+      | M_Product_ID | Amt_03 | Amt_Total |
+      | psycRngB     | 10.00  | 10.00     |
+      | psycRngC     | 10.00  | 10.00     |
+    And the product statistics year comparison report for org "-", year "yearN", products "psycRngB" to "psycRngC", category "-" contains no rows for products:
+      | M_Product_ID |
+      | psycRngA     |
+      | psycRngD     |
+    # Entered in reverse order: same result
+    And the product statistics year comparison report for org "-", year "yearN", products "psycRngC" to "psycRngB", category "-" returns:
+      | M_Product_ID | Amt_03 |
+      | psycRngB     | 10.00  |
+      | psycRngC     | 10.00  |
+    And the product statistics year comparison report for org "-", year "yearN", products "psycRngC" to "psycRngB", category "-" contains no rows for products:
+      | M_Product_ID |
+      | psycRngA     |
+      | psycRngD     |
+    # Only "to" filled: only that product
+    And the product statistics year comparison report for org "-", year "yearN", products "-" to "psycRngC", category "-" returns:
+      | M_Product_ID | Amt_03 |
+      | psycRngC     | 10.00  |
+    And the product statistics year comparison report for org "-", year "yearN", products "-" to "psycRngC", category "-" contains no rows for products:
+      | M_Product_ID |
+      | psycRngA     |
+      | psycRngB     |
+    # Category only: B and D
+    And the product statistics year comparison report for org "-", year "yearN", products "-" to "-", category "rngCat" returns:
+      | M_Product_ID | Amt_03 |
+      | psycRngB     | 10.00  |
+      | psycRngD     | 10.00  |
+    And the product statistics year comparison report for org "-", year "yearN", products "-" to "-", category "rngCat" contains no rows for products:
+      | M_Product_ID |
+      | psycRngA     |
+      | psycRngC     |
+    # Range A..C and category: only B
+    And the product statistics year comparison report for org "-", year "yearN", products "psycRngA" to "psycRngC", category "rngCat" returns:
+      | M_Product_ID | Amt_03 |
+      | psycRngB     | 10.00  |
+    And the product statistics year comparison report for org "-", year "yearN", products "psycRngA" to "psycRngC", category "rngCat" contains no rows for products:
+      | M_Product_ID |
+      | psycRngA     |
+      | psycRngC     |
+      | psycRngD     |
+    # The packing-material category chosen: its product stays excluded
+    And the product statistics year comparison report for org "-", year "yearN", products "-" to "-", category "rngPackCat" contains no rows for products:
+      | M_Product_ID |
+      | psycRngPack  |
