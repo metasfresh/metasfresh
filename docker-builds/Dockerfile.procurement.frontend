@@ -14,7 +14,7 @@ RUN yarn build
 RUN chmod a+x ./nginx-config/docker-entrypoint.d/*
 
 # Step 2
-FROM nginx
+FROM nginx:1.30
 
 # We copy our files to staging folders. They will be copied to the actual folders at startup, to prevent overmounting.
 # Also see the script in nginx-config.
