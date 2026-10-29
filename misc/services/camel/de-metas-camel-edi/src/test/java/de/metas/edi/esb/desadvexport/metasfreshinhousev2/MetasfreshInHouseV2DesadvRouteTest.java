@@ -110,6 +110,34 @@ class MetasfreshInHouseV2DesadvRouteTest extends CamelTestSupport
 	}
 
 	@Test
+	void desadv_with_shipment_documentno() throws Exception
+	{
+		// The EDI_Exp_Desadv must carry the lowercase <shipment_documentno> element. The XSD defines it,
+		// so the generated JAXB binding must too, otherwise this passthrough route drops it on marshal.
+		final var ediExpDesadvType = new ObjectFactory().createEDIExpDesadvType();
+		ediExpDesadvType.setEDIDesadvID(new BigInteger("1001"));
+		ediExpDesadvType.setADClientValueAttr("ADClientValueAttr");
+		ediExpDesadvType.setShipmentDocumentno("L394055");
+
+		template.sendBodyAndHeader(
+				MetasfreshInHouseV2DesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER /*endpoint-URI*/,
+				ediExpDesadvType /*actual desadvBody*/,
+
+				EDIXmlFeedbackHelper.HEADER_OriginalXMLBody, ediExpDesadvType // this header is otherwise set by the preceeding generic route
+		);
+
+		fileOutputEndpoint.expectedMessageCount(1);
+		fileOutputEndpoint.assertIsSatisfied(1000);
+		final var desadvBody = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
+		assertThat(desadvBody).isEqualToIgnoringWhitespace(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+						+ "<EDI_Exp_Desadv AD_Client_Value=\"ADClientValueAttr\">\n"
+						+ "    <EDI_Desadv_ID>1001</EDI_Desadv_ID>\n"
+						+ "    <shipment_documentno>L394055</shipment_documentno>\n"
+						+ "</EDI_Exp_Desadv>");
+	}
+
+	@Test
 	void nonEmpty_desadv() throws Exception
 	{
 		testAndValidateResult(
