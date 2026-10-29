@@ -664,4 +664,12 @@ class PickingJobGraiScanPickEndToEndTest
 
 		assertThat(countQtyPicked()).as("over-pick allowed: second booking happens").isEqualTo(2);
 	}
+
+	// Narrowing lock (first over-pick is NOT refused): the ceiling refuses only a REPEAT pick on an already-picked line.
+	// A FIRST pick that exceeds ordered must still book, so flows that over-deliver by design on the first pick keep
+	// working - notably AlwaysSplitHU "pick more than available" => virtual inventory for the diff. That first-over-pick
+	// path cannot be expressed in this TU in-memory harness (pickOneTU picks exactly one 100-CU TU and the order must be a
+	// TU multiple, so a single first pick can never exceed the order). It is locked instead by the real-flow cucumber
+	// scenarios in workflow/picking_alwaysSplitHUs.feature ("AlwaysSplitHU = Y/N, pick more than what's available"), which
+	// pick 11 of a 10-order under the blocked config and run in core CI - they go RED if the ceiling is re-broadened.
 }

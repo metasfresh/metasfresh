@@ -331,7 +331,9 @@ public class PickingJobPickCommand
 	 * Server-side ordered-qty ceiling: refuses a pick that would take the line's picked qty above its ordered qty,
 	 * but ONLY when over-pick is blocked ({@code !isShowConfirmationPromptWhenOverPick}). When over-pick is allowed the
 	 * server never hard-rejects (the mobile client in-flight guard protects there). A partial pick within the remaining qty
-	 * is never refused.
+	 * is never refused; neither is a FIRST pick (nothing yet picked on the line), so a flow that over-delivers by design on
+	 * the first pick (e.g. AlwaysSplitHU "pick more than available") is unaffected - only a REPEAT pick that would push an
+	 * already-picked line above ordered is blocked.
 	 * <p>
 	 * Guards the sequential repeat-save: the first pick already committed (line full), a second request would otherwise be
 	 * booked again, because {@link #computeQtyToPickCUs} caps only when remaining &gt; 0 and (independently) only when
@@ -353,7 +355,19 @@ public class PickingJobPickCommand
 
 		// re-read AFTER taking the lock: the in-memory _pickingJob may predate a concurrently committed pick
 		final PickingJobLine freshLine = pickingJobService.getById(_pickingJob.getId()).getLineById(getLineId());
-		final Quantity qtyAllowedToPick = freshLine.getQtyToPick().subtract(freshLine.getQtyPicked()).toZeroIfNegative();
+		final Quantity qtyAlreadyPicked = freshLine.getQtyPicked();
+
+		// Only a REPEAT pick is refused: a line that already carries picked qty must not be pushed above ordered by a
+		// further pick (the sequential / concurrent double-save this fix targets). A FIRST pick (nothing picked yet) is
+		// never refused here, so flows that legitimately over-deliver by design still work - notably AlwaysSplitHU
+		// "pick more than available => virtual inventory for the diff". Under the blocked config the mobile client already
+		// caps a first pick at the remaining qty, so a first over-pick is not reachable from the real UI anyway.
+		if (qtyAlreadyPicked.signum() <= 0)
+		{
+			return;
+		}
+
+		final Quantity qtyAllowedToPick = freshLine.getQtyToPick().subtract(qtyAlreadyPicked).toZeroIfNegative();
 		if (qtyToPickCUs.compareTo(qtyAllowedToPick) > 0)
 		{
 			throw new AdempiereException(PICK_OVERDELIVERY_BLOCKED_ERROR_MSG)
