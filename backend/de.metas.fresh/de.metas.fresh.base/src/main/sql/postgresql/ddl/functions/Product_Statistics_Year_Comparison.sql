@@ -5,9 +5,10 @@ SELECT db_drop_functions('report.product_statistics_year_comparison_aggregate')
 ;
 
 -- Aggregation helper of the product statistics year comparison: product x period (standard periods of the given year) x quantity x amount.
--- Amount: completed/closed sales invoice lines, in the currency of the client's accounting schema, by period of C_Invoice.DateAcct.
---   Tax-included invoices: the line's tax (TaxAmtInfo) is deducted, because LineNetAmt is gross there. Credit notes (ARC) are negated.
---   A line whose currency conversion returns NULL (no rate) adds nothing to the amount and is counted in RateMissing_Count.
+-- Amount: the posted amount (Fact_Acct, AmtAcctCr - AmtAcctDr, all accounts of the line) of completed/closed sales invoice and credit-note lines,
+--   in the accounting schema the organisation posts to (getC_AcctSchema_ID), by period of Fact_Acct.DateAcct; as report.fresh_statistics, no conversion.
+--   A completed/closed invoice that is not posted (yet, or its posting failed) adds nothing and is counted in NotPosted_Count (by period of C_Invoice.DateAcct).
+--   Only invoices with C_Invoice.DateAcct in the year are read (an invoice is posted on its DateAcct).
 -- Quantity: completed/closed customer shipments (C-) minus customer returns (C+, but not service repair / empties correction), by period of M_InOut.MovementDate.
 -- Both sources are aggregated separately and joined with a full outer join. Packing material is excluded (the amount side by product category only).
 -- NULL when a product has no amount (or no quantity) in a period.
@@ -22,30 +23,27 @@ CREATE FUNCTION report.Product_Statistics_Year_Comparison_Aggregate(
                 PeriodStart        date,
                 Qty                numeric,
                 Amt                numeric,
-                RateMissing_Count  integer
+                NotPosted_Count    integer
             )
     STABLE
     LANGUAGE plpgsql
 AS
 $$
 DECLARE
-    v_AD_Client_ID numeric;
-    v_Currency_ID  numeric;
-    v_PackingCat   numeric;
+    v_AD_Client_ID    numeric;
+    v_C_AcctSchema_ID numeric;
+    v_InvoiceTable_ID numeric;
+    v_PackingCat      numeric;
 BEGIN
     SELECT o.AD_Client_ID INTO v_AD_Client_ID FROM AD_Org o WHERE o.AD_Org_ID = p_AD_Org_ID;
 
-    SELECT acs.C_Currency_ID
-    INTO v_Currency_ID
-    FROM AD_ClientInfo ci
-             JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
-    WHERE ci.AD_Client_ID = v_AD_Client_ID;
-
-    IF (v_Currency_ID IS NULL)
+    v_C_AcctSchema_ID := getC_AcctSchema_ID(v_AD_Client_ID, p_AD_Org_ID);
+    IF (v_C_AcctSchema_ID IS NULL OR v_C_AcctSchema_ID <= 0)
     THEN
-        RAISE EXCEPTION 'No accounting schema currency found for AD_Client_ID=% (AD_ClientInfo.C_AcctSchema1_ID); cannot convert the amounts', v_AD_Client_ID;
+        RAISE EXCEPTION 'No accounting schema found for AD_Org_ID=% (getC_AcctSchema_ID); cannot read the posted amounts', p_AD_Org_ID;
     END IF;
 
+    v_InvoiceTable_ID := get_Table_ID('C_Invoice');
     v_PackingCat := getSysConfigAsNumeric('PackingMaterialProductCategoryID', v_AD_Client_ID, p_AD_Org_ID);
 
     RETURN QUERY
@@ -53,31 +51,41 @@ BEGIN
                          FROM C_Period p
                          WHERE p.C_Year_ID = p_C_Year_ID
                            AND p.PeriodType = 'S'),
-             amt_lines AS (SELECT il.M_Product_ID,
-                                  per.PeriodNo,
-                                  per.StartDate,
+             inv_lines AS (SELECT il.M_Product_ID,
+                                  il.C_InvoiceLine_ID,
                                   i.C_Invoice_ID,
-                                  line.net_amt,
-                                  currencyConvert(line.net_amt, i.C_Currency_ID, v_Currency_ID, i.DateAcct, i.C_ConversionType_ID, i.AD_Client_ID, i.AD_Org_ID) AS conv_amt
+                                  i.Posted,
+                                  i.DateAcct
                            FROM C_InvoiceLine il
                                     JOIN C_Invoice i ON i.C_Invoice_ID = il.C_Invoice_ID
-                                    JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocType_ID
                                     JOIN M_Product pr ON pr.M_Product_ID = il.M_Product_ID
-                                    JOIN periods per ON i.DateAcct::date BETWEEN per.StartDate AND per.EndDate
-                                    CROSS JOIN LATERAL (SELECT (CASE WHEN dt.DocBaseType = 'ARC' THEN -1 ELSE 1 END)
-                                                                   * (il.LineNetAmt - CASE WHEN i.IsTaxIncluded = 'Y' THEN COALESCE(il.TaxAmtInfo, 0) ELSE 0 END) AS net_amt) line
                            WHERE i.IsSOTrx = 'Y'
                              AND i.DocStatus IN ('CO', 'CL')
                              AND i.AD_Org_ID = p_AD_Org_ID
+                             AND i.DateAcct::date BETWEEN (SELECT MIN(per.StartDate) FROM periods per) AND (SELECT MAX(per.EndDate) FROM periods per)
                              AND il.M_Product_ID IS NOT NULL
                              AND pr.M_Product_Category_ID IS DISTINCT FROM v_PackingCat),
              amt AS (SELECT l.M_Product_ID,
-                            l.PeriodNo,
-                            l.StartDate,
-                            SUM(l.conv_amt)                                                         AS Amt,
-                            COUNT(DISTINCT l.C_Invoice_ID) FILTER (WHERE l.conv_amt IS NULL)::integer AS RateMissing_Count
-                     FROM amt_lines l
-                     GROUP BY l.M_Product_ID, l.PeriodNo, l.StartDate),
+                            per.PeriodNo,
+                            per.StartDate,
+                            SUM(fa.AmtAcctCr - fa.AmtAcctDr) AS Amt
+                     FROM inv_lines l
+                              JOIN Fact_Acct fa ON fa.AD_Table_ID = v_InvoiceTable_ID
+                         AND fa.Record_ID = l.C_Invoice_ID
+                         AND fa.Line_ID = l.C_InvoiceLine_ID
+                         AND fa.C_AcctSchema_ID = v_C_AcctSchema_ID
+                         AND fa.PostingType = 'A'
+                         AND fa.IsActive = 'Y'
+                              JOIN periods per ON fa.DateAcct::date BETWEEN per.StartDate AND per.EndDate
+                     GROUP BY l.M_Product_ID, per.PeriodNo, per.StartDate),
+             not_posted AS (SELECT l.M_Product_ID,
+                                   per.PeriodNo,
+                                   per.StartDate,
+                                   COUNT(DISTINCT l.C_Invoice_ID)::integer AS NotPosted_Count
+                            FROM inv_lines l
+                                     JOIN periods per ON l.DateAcct::date BETWEEN per.StartDate AND per.EndDate
+                            WHERE l.Posted <> 'Y'
+                            GROUP BY l.M_Product_ID, per.PeriodNo, per.StartDate),
              qty AS (SELECT iol.M_Product_ID,
                             per.PeriodNo,
                             per.StartDate,
@@ -95,14 +103,15 @@ BEGIN
                        AND iol.M_Product_ID IS NOT NULL
                        AND pr.M_Product_Category_ID IS DISTINCT FROM v_PackingCat
                      GROUP BY iol.M_Product_ID, per.PeriodNo, per.StartDate)
-        SELECT COALESCE(q.M_Product_ID, a.M_Product_ID),
-               COALESCE(q.PeriodNo, a.PeriodNo),
-               COALESCE(q.StartDate, a.StartDate),
+        SELECT COALESCE(q.M_Product_ID, a.M_Product_ID, np.M_Product_ID),
+               COALESCE(q.PeriodNo, a.PeriodNo, np.PeriodNo),
+               COALESCE(q.StartDate, a.StartDate, np.StartDate),
                q.Qty,
                a.Amt,
-               COALESCE(a.RateMissing_Count, 0)
+               COALESCE(np.NotPosted_Count, 0)
         FROM qty q
-                 FULL OUTER JOIN amt a ON a.M_Product_ID = q.M_Product_ID AND a.PeriodNo = q.PeriodNo;
+                 FULL OUTER JOIN amt a ON a.M_Product_ID = q.M_Product_ID AND a.PeriodNo = q.PeriodNo
+                 FULL OUTER JOIN not_posted np ON np.M_Product_ID = COALESCE(q.M_Product_ID, a.M_Product_ID) AND np.PeriodNo = COALESCE(q.PeriodNo, a.PeriodNo);
 END
 $$
 ;
@@ -110,7 +119,7 @@ $$
 -- Product statistics year comparison: one row per product with 12 monthly quantities/amounts of the chosen year, the same of the previous year
 -- (the C_Year of the same calendar with the next lower FiscalYear; NULL values when there is none) and the 12 monthly quantity deviations in percent.
 -- Totals are NULL when no month has a value. Dev_xx = ROUND(NULLIF(raw, 0), 2): blank when exactly 0; no total deviation.
--- RateMissing_Count / RateMissing_Months: documents without currency rate in the chosen and the previous year (distinct YYYY-MM, ascending).
+-- NotPosted_Count / NotPosted_Months: completed sales invoices / credit notes that are not posted, in the chosen and the previous year (distinct YYYY-MM, ascending).
 -- Only products of p_AD_Org_ID or of organisation * (0), as offered by the product parameter (AD_Val_Rule 540377).
 CREATE FUNCTION report.Product_Statistics_Year_Comparison(
     p_AD_Org_ID    numeric,
@@ -139,8 +148,8 @@ CREATE FUNCTION report.Product_Statistics_Year_Comparison(
                 Currency           varchar,
                 OrgName            varchar,
                 FiscalYear         varchar,
-                RateMissing_Count  integer,
-                RateMissing_Months varchar
+                NotPosted_Count    integer,
+                NotPosted_Months   varchar
             )
     STABLE
     LANGUAGE plpgsql
@@ -166,8 +175,7 @@ BEGIN
     SELECT c.ISO_Code
     INTO v_Currency
     FROM AD_Org o
-             JOIN AD_ClientInfo ci ON ci.AD_Client_ID = o.AD_Client_ID
-             JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
+             JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = getC_AcctSchema_ID(o.AD_Client_ID, o.AD_Org_ID)
              JOIN C_Currency c ON c.C_Currency_ID = acs.C_Currency_ID
     WHERE o.AD_Org_ID = p_AD_Org_ID;
 
@@ -234,9 +242,9 @@ BEGIN
                             SUM(m.Amt) FILTER (WHERE m.yr = 1 AND m.PeriodNo = 11) AS pa11,
                             SUM(m.Amt) FILTER (WHERE m.yr = 1 AND m.PeriodNo = 12) AS pa12,
                             SUM(m.Amt) FILTER (WHERE m.yr = 1) AS pat,
-                            SUM(m.RateMissing_Count)::integer AS rm_cnt,
+                            SUM(m.NotPosted_Count)::integer AS np_cnt,
                             string_agg(DISTINCT to_char(m.PeriodStart, 'YYYY-MM'), ', ' ORDER BY to_char(m.PeriodStart, 'YYYY-MM'))
-                            FILTER (WHERE m.RateMissing_Count > 0) AS rm_months
+                            FILTER (WHERE m.NotPosted_Count > 0) AS np_months
                      FROM m
                      GROUP BY m.M_Product_ID)
         SELECT x.M_Product_ID,
@@ -309,8 +317,8 @@ BEGIN
                v_Currency,
                v_OrgName,
                v_FiscalYear,
-               x.rm_cnt,
-               x.rm_months::varchar
+               x.np_cnt,
+               x.np_months::varchar
         FROM x
                  JOIN M_Product p ON p.M_Product_ID = x.M_Product_ID
         WHERE p.AD_Org_ID IN (p_AD_Org_ID, 0)
