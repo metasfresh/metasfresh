@@ -181,9 +181,11 @@ Feature: mobileUI Picking - Pick catch weight TUs
       | shipmentLineA | productA     | 8           | 7.070             |
       | shipmentLineB | productB     | 3           | 9.595             |
 
-    And after not more than 60s locate invoice candidates by order id:
-      | C_Order_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
-      | SO                    | icA,icB                           |
+    # bind each IC to its own order line: IC creation per order line is async, so the IC id order is not the order line order
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | icA                               | LA                        |
+      | icB                               | LB                        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | C_Invoice_Candidate_ID | M_InOutLine_ID | QtyDeliveredInUOM_Catch |
       | icShipLineA                                | icA                    | shipmentLineA  | 7.070                   |
