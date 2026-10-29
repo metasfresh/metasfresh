@@ -1,0 +1,28 @@
+# Side-effect-free copy of core cicd.yaml job for the ubuntu-26.04 check, body of massive_entropy_hotfix.
+# Gate and needs removed; every write replaced by the read-only twin of the same tool (see comments).
+name: zz-u2604-ubv-v142
+on:
+  push:
+    branches: [massive_entropy_hotfix_u2604_ubv]
+concurrency:
+  group: zz-u2604-ubv-v142-u2604
+  cancel-in-progress: false
+permissions:
+  contents: read
+  packages: read
+jobs:
+  update-base-version:
+    runs-on: ubuntu-26.04
+    strategy:
+      matrix:
+        include:
+          - project: metasfresh
+            branch: u2604-literal
+    steps:
+      - name: image-label
+        run: grep -m1 -E '^(PRETTY_NAME|VERSION_ID)=' /etc/os-release; echo "ImageOS=${ImageOS:-} ImageVersion=${ImageVersion:-}"
+      - name: dispatching-redeploy
+        run: |
+          # original: curl -X "POST" ... -d '{"event_type":"update_base_version",...}' https://api.github.com/repos/metasfresh/${{ matrix.project }}/dispatches   (a write)
+          # twin: curl GET of the repo resource (read-only), same PAT, same host, same repo path prefix; project = the public metasfresh repo
+          curl -sS -f -X "GET" -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.MF15_KUBERNETES_PAT }}" -o /dev/null -w 'HTTP %{http_code}\n' https://api.github.com/repos/metasfresh/${{ matrix.project }}
