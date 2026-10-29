@@ -470,3 +470,57 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | C_Order_ID | DocStatus |
       | so_dw12    | CO        |
     And no purchase order is linked to the order identified by "so_dw12"
+
+  @from:cucumber
+  @Id:S33264_TC2
+  Scenario: Feature preserved - CreateDropshipPO on, vendor has a valid purchase price: the SO creates a completed dropship PO
+    Given for this scenario only, set sys config boolean value true for sys config de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_dw13    | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID |
+      | sol_dw13_1 | so_dw13    | product_dw   | 10         | vendor_dw            |
+    When the order identified by so_dw13 is completed
+    Then validate the created orders
+      | C_Order_ID | DocStatus |
+      | so_dw13    | CO        |
+    And the order is created:
+      | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | so_dw13                  | false   | POO         | CO            | true           |
+
+  @from:cucumber
+  @Id:S33264_TC3
+  Scenario: CreateDropshipPO off, vendor HAS a valid purchase price (a PO could be created): SO completes and still no PO
+    Given for this scenario only, set sys config boolean value false for sys config de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_dw14    | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID |
+      | sol_dw14_1 | so_dw14    | product_dw   | 10         | vendor_dw            |
+    When the order identified by so_dw14 is completed
+    Then validate the created orders
+      | C_Order_ID | DocStatus |
+      | so_dw14    | CO        |
+    And no purchase order is linked to the order identified by "so_dw14"
+
+  @from:cucumber
+  @Id:S33264_TC4
+  Scenario: CreateDropshipPO off: the dropship warehouse is still recognised - no MD_Candidate (material disposition still skipped)
+    # Covers the IsDropShipWarehouse dispo-skip (AC4). Not covered here: setting
+    # AD_OrgInfo.DropShip_Warehouse_ID to the flagged warehouse (no step def sets that column).
+    Given for this scenario only, set sys config boolean value false for sys config de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_dw15    | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID |
+      | sol_dw15_1 | so_dw15    | product_dw_2 | 6          | vendor_dw_2          |
+    When the order identified by so_dw15 is completed
+    Then validate the created orders
+      | C_Order_ID | DocStatus |
+      | so_dw15    | CO        |
+    And no purchase order is linked to the order identified by "so_dw15"
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    And no MD_Candidate exists for M_Product_ID product_dw_2
