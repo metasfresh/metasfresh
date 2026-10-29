@@ -7,6 +7,8 @@
 	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<parameter name="C_Year_ID" class="java.math.BigDecimal"/>
 	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_Product_To_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_Product_Category_ID" class="java.math.BigDecimal"/>
 	<!-- login context key of the printing user (see Jasper parameter map), resolved to the user name in the query -->
 	<parameter name="#AD_User_ID" class="java.lang.String"/>
 	<queryString>
@@ -19,9 +21,15 @@ FROM (SELECT (SELECT o.Name FROM AD_Org o WHERE o.AD_Org_ID = $P{AD_Org_ID}) AS 
                        JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = getC_AcctSchema_ID(o.AD_Client_ID, o.AD_Org_ID)
                        JOIN C_Currency c ON c.C_Currency_ID = acs.C_Currency_ID
               WHERE o.AD_Org_ID = $P{AD_Org_ID}) AS Hdr_Currency,
-             (SELECT p.Value || ' ' || p.Name FROM M_Product p WHERE p.M_Product_ID = $P{M_Product_ID}) AS ParamProduct,
+             -- one product: value and name; a range: the lower and the higher value (text order, as the report sorts)
+             (SELECT CASE
+                         WHEN COUNT(*) = 1 THEN MIN(p.Value || ' ' || p.Name)
+                         WHEN COUNT(*) = 2 THEN MIN(p.Value) || ' … ' || MAX(p.Value)
+                     END
+              FROM M_Product p WHERE p.M_Product_ID IN ($P{M_Product_ID}, $P{M_Product_To_ID})) AS ParamProduct,
+             (SELECT pc.Name FROM M_Product_Category pc WHERE pc.M_Product_Category_ID = $P{M_Product_Category_ID}) AS ParamProductCategory,
              (SELECT u.Name FROM AD_User u WHERE u.AD_User_ID = NULLIF($P{#AD_User_ID}, '')::numeric) AS PrintUser) h
-         LEFT JOIN report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{M_Product_ID}) f ON TRUE
+         LEFT JOIN report.Product_Statistics_Year_Comparison($P{AD_Org_ID}, $P{C_Year_ID}, $P{M_Product_ID}, $P{M_Product_To_ID}, $P{M_Product_Category_ID}) f ON TRUE
 ORDER BY f.ProductValue]]>
 	</queryString>
 	<field name="m_product_id" class="java.math.BigDecimal"/>
@@ -98,6 +106,7 @@ ORDER BY f.ProductValue]]>
 	<field name="notposted_months" class="java.lang.String"/>
 	<field name="printuser" class="java.lang.String"/>
 	<field name="paramproduct" class="java.lang.String"/>
+	<field name="paramproductcategory" class="java.lang.String"/>
 	<field name="hdr_orgname" class="java.lang.String"/>
 	<field name="hdr_fiscalyear" class="java.lang.String"/>
 	<field name="hdr_currency" class="java.lang.String"/>
@@ -149,7 +158,7 @@ ORDER BY f.ProductValue]]>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$P{M_Product_ID} == null ? $R{AllProducts} : $F{paramproduct}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{paramproduct} == null ? $R{AllProducts} : $F{paramproduct}) + ($F{paramproductcategory} == null ? "" : "; " + $R{ProductCategory} + ": " + $F{paramproductcategory})]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true" textAdjust="CutText">
 					<reportElement x="0" y="65" width="500" height="12" uuid="c8588d47-352f-448e-99d6-86e390d1176f"/>

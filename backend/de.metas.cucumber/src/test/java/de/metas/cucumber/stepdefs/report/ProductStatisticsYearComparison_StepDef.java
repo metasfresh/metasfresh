@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -51,7 +52,7 @@ import java.util.stream.Collectors;
 
 /**
  * Asserts the rows of the DB function
- * {@code report.Product_Statistics_Year_Comparison(p_AD_Org_ID, p_C_Year_ID, p_M_Product_ID)}.
+ * {@code report.Product_Statistics_Year_Comparison(p_AD_Org_ID, p_C_Year_ID, p_M_Product_ID, p_M_Product_To_ID, p_M_Product_Category_ID)}.
  * <p>
  * The step FAILS (does not skip) if the function does not exist.
  */
@@ -69,6 +70,7 @@ public class ProductStatisticsYearComparison_StepDef
 	private final AD_Org_StepDefData orgTable;
 	private final C_Year_StepDefData yearTable;
 	private final M_Product_StepDefData productTable;
+	private final M_Product_Category_StepDefData productCategoryTable;
 
 	private static List<String> buildResultColumns()
 	{
@@ -112,6 +114,38 @@ public class ProductStatisticsYearComparison_StepDef
 			@NonNull final String productIdentifier,
 			@NonNull final DataTable dataTable)
 	{
+		assertReportRows(retrieveReportRows(orgIdentifier, yearIdentifier, productIdentifier, "-", "-"), dataTable);
+	}
+
+	/**
+	 * As {@link #expect_report}, with a product range and a product category.
+	 *
+	 * @param productFromIdentifier {@code M_Product} identifier of "Produkt von", or {@code -}
+	 * @param productToIdentifier   {@code M_Product} identifier of "Produkt bis", or {@code -}
+	 * @param categoryIdentifier    {@code M_Product_Category} identifier, or {@code -} for all categories
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: AD_Org_StepDefData, C_Year_StepDefData, M_Product_StepDefData, M_Product_Category_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the product statistics year comparison report for org "-", year "y2026", products "p1" to "p3", category "cat1" returns:
+	 *   | M_Product_ID | Amt_03 |
+	 *   | p2           | 10.00  |
+	 * </pre>
+	 */
+	@Then("the product statistics year comparison report for org {string}, year {string}, products {string} to {string}, category {string} returns:")
+	public void expect_report_for_range(
+			@NonNull final String orgIdentifier,
+			@NonNull final String yearIdentifier,
+			@NonNull final String productFromIdentifier,
+			@NonNull final String productToIdentifier,
+			@NonNull final String categoryIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		assertReportRows(retrieveReportRows(orgIdentifier, yearIdentifier, productFromIdentifier, productToIdentifier, categoryIdentifier), dataTable);
+	}
+
+	private void assertReportRows(@NonNull final List<Map<String, Object>> actualRows, @NonNull final DataTable dataTable)
+	{
 		// validate columns (typo protection)
 		final Map<String, String> canonicalByLower = new HashMap<>();
 		canonicalByLower.put(COLUMN_M_Product_ID.toLowerCase(), COLUMN_M_Product_ID);
@@ -128,8 +162,6 @@ public class ProductStatisticsYearComparison_StepDef
 		{
 			throw new AssertionError("Expected table needs the column " + COLUMN_M_Product_ID);
 		}
-
-		final List<Map<String, Object>> actualRows = retrieveReportRows(orgIdentifier, yearIdentifier, productIdentifier);
 
 		final SoftAssertions softly = new SoftAssertions();
 		int lastActualIndex = -1;
@@ -187,7 +219,9 @@ public class ProductStatisticsYearComparison_StepDef
 	private List<Map<String, Object>> retrieveReportRows(
 			@NonNull final String orgIdentifier,
 			@NonNull final String yearIdentifier,
-			@NonNull final String productIdentifier)
+			@NonNull final String productFromIdentifier,
+			@NonNull final String productToIdentifier,
+			@NonNull final String categoryIdentifier)
 	{
 		assertFunctionExists();
 
@@ -195,14 +229,38 @@ public class ProductStatisticsYearComparison_StepDef
 				? StepDefConstants.ORG_ID.getRepoId()
 				: orgTable.get(StepDefDataIdentifier.ofString(orgIdentifier)).getAD_Org_ID();
 		final int yearId = yearTable.get(StepDefDataIdentifier.ofString(yearIdentifier)).getC_Year_ID();
-		final Integer productId = "-".equals(productIdentifier)
+		final Integer productFromId = toProductIdOrNull(productFromIdentifier);
+		final Integer productToId = toProductIdOrNull(productToIdentifier);
+		final Integer categoryId = "-".equals(categoryIdentifier)
 				? null
-				: productTable.get(StepDefDataIdentifier.ofString(productIdentifier)).getM_Product_ID();
+				: productCategoryTable.get(StepDefDataIdentifier.ofString(categoryIdentifier)).getM_Product_Category_ID();
+
+		// the optional parameters are passed only when set, as the report does not pass empty ones either
+		final StringBuilder sql = new StringBuilder("SELECT * FROM " + FUNCTION + "(p_AD_Org_ID => ?::numeric, p_C_Year_ID => ?::numeric, p_M_Product_ID => ?::numeric");
+		final List<Object> sqlParams = new ArrayList<>(Arrays.<Object>asList(orgId, yearId, productFromId));
+		if (productToId != null)
+		{
+			sql.append(", p_M_Product_To_ID => ?::numeric");
+			sqlParams.add(productToId);
+		}
+		if (categoryId != null)
+		{
+			sql.append(", p_M_Product_Category_ID => ?::numeric");
+			sqlParams.add(categoryId);
+		}
+		sql.append(")");
 
 		return DB.retrieveRowsOutOfTrx(
-				"SELECT * FROM " + FUNCTION + "(p_AD_Org_ID => ?::numeric, p_C_Year_ID => ?::numeric, p_M_Product_ID => ?::numeric)",
-				Arrays.<Object>asList(orgId, yearId, productId),
+				sql.toString(),
+				sqlParams,
 				ProductStatisticsYearComparison_StepDef::toRow);
+	}
+
+	private Integer toProductIdOrNull(@NonNull final String productIdentifier)
+	{
+		return "-".equals(productIdentifier)
+				? null
+				: productTable.get(StepDefDataIdentifier.ofString(productIdentifier)).getM_Product_ID();
 	}
 
 	/**
@@ -227,6 +285,35 @@ public class ProductStatisticsYearComparison_StepDef
 			@NonNull final String productIdentifier,
 			@NonNull final DataTable dataTable)
 	{
+		assertNoRowsForProducts(retrieveReportRows(orgIdentifier, yearIdentifier, productIdentifier, "-", "-"), dataTable);
+	}
+
+	/**
+	 * As {@link #expect_no_rows_for_products}, with a product range and a product category.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: AD_Org_StepDefData, C_Year_StepDefData, M_Product_StepDefData, M_Product_Category_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the product statistics year comparison report for org "-", year "y2026", products "p1" to "p3", category "-" contains no rows for products:
+	 *   | M_Product_ID |
+	 *   | p4           |
+	 * </pre>
+	 */
+	@Then("the product statistics year comparison report for org {string}, year {string}, products {string} to {string}, category {string} contains no rows for products:")
+	public void expect_no_rows_for_products_for_range(
+			@NonNull final String orgIdentifier,
+			@NonNull final String yearIdentifier,
+			@NonNull final String productFromIdentifier,
+			@NonNull final String productToIdentifier,
+			@NonNull final String categoryIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		assertNoRowsForProducts(retrieveReportRows(orgIdentifier, yearIdentifier, productFromIdentifier, productToIdentifier, categoryIdentifier), dataTable);
+	}
+
+	private void assertNoRowsForProducts(@NonNull final List<Map<String, Object>> actualRows, @NonNull final DataTable dataTable)
+	{
 		if (!dataTable.row(0).stream().anyMatch(COLUMN_M_Product_ID::equalsIgnoreCase) || dataTable.row(0).size() != 1)
 		{
 			throw new AssertionError("The table needs exactly one column " + COLUMN_M_Product_ID);
@@ -236,8 +323,6 @@ public class ProductStatisticsYearComparison_StepDef
 		{
 			throw new AssertionError("The table needs at least one product row");
 		}
-
-		final List<Map<String, Object>> actualRows = retrieveReportRows(orgIdentifier, yearIdentifier, productIdentifier);
 
 		final SoftAssertions softly = new SoftAssertions();
 		for (final String listedIdentifier : productIdentifiers)
