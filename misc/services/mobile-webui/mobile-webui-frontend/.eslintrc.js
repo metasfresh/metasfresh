@@ -53,13 +53,12 @@ module.exports = {
   plugins: ['prettier', 'react', 'jest'],
   overrides: [
     {
-      // Pre-existing type="number" inputs that predate this ban and are the deferred follow-up
-      // surface for the decimal-input migration. Exempt them until they move to
-      // type="text" inputMode="decimal", so the ban above only guards new/changed inputs rather
-      // than failing the build on this pre-existing debt:
-      //  - the POS cash-journal amount inputs (the shop this fix targets runs no POS terminals);
-      //  - the NUMBER editable-attribute input, present on _release / new_dawn_uat but not on the
-      //    hotfix branch where the ban was introduced.
+      // The POS cash-journal amount inputs and the NUMBER attribute input of the Material Receipt
+      // attribute editor (EditableAttributesSection, not present on the branches that introduced the
+      // ban) still use type="number"; they are the deferred follow-up surface for the decimal-input
+      // migration (the shop this fix targets runs no POS terminals).
+      // Exempt them until they move to type="text" inputMode="decimal", so the ban above only guards
+      // new/changed inputs rather than failing the build on this pre-existing debt.
       files: [
         'src/apps/pos/containers/cash_journal/POSCashJournalClosingModal.jsx',
         'src/apps/pos/containers/cash_journal/POSCashJournalOpenModal.jsx',
