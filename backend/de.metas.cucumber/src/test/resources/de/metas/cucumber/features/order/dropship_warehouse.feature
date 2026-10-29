@@ -12,6 +12,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2024-06-17T08:00:00+02:00[Europe/Berlin]
+    And temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO"
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
@@ -508,9 +509,10 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
   @from:cucumber
   @Id:S33264_TC4
   Scenario: CreateDropshipPO off: the dropship warehouse is still recognised - no MD_Candidate (material disposition still skipped)
-    # Covers the IsDropShipWarehouse dispo-skip (AC4). Not covered here: setting
-    # AD_OrgInfo.DropShip_Warehouse_ID to the flagged warehouse (no step def sets that column).
+    # Covers the IsDropShipWarehouse dispo-skip (AC4) and that AD_OrgInfo.DropShip_Warehouse_ID accepts the flagged warehouse (AC4c).
     Given for this scenario only, set sys config boolean value false for sys config de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO
+    # the AD_OrgInfo guard accepts a flagged dropship warehouse: the save must not throw
+    And the AD_OrgInfo of the main organization has DropShip_Warehouse_ID set to the warehouse "warehouse_dw"
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | so_dw15    | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |

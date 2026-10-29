@@ -15,6 +15,7 @@ Feature: Contract-triggered compensation group with a service discount product o
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2026-07-01T09:00:00+02:00[Europe/Berlin]
+    And temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO"
     # the discount product is a service, so its tax category must not be restricted to items
     And taxCategory 'Normal' is updated to work with all productTypes
 
