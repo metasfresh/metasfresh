@@ -108,6 +108,7 @@ public class PickingJobPickCommand
 	private final static AdMessageKey ERR_LMQ_ManualCatchWeightMustBePresent = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
+	private final static AdMessageKey PICK_OVERDELIVERY_BLOCKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
 
 	//
 	// Services
@@ -125,6 +126,7 @@ public class PickingJobPickCommand
 
 	//
 	// Params
+	@NonNull private final PickingJobOptions pickingJobOptions;
 	@NonNull private final PickingJobLineId _lineId;
 	@NonNull private final PickingUnit pickingUnit;
 	@NonNull private final PickingJobStepPickFromKey stepPickFromKey;
@@ -196,6 +198,7 @@ public class PickingJobPickCommand
 				.build();
 
 		this._pickingJob = pickingJob;
+		this.pickingJobOptions = configService.getPickingJobOptions(pickingJob.getLineById(pickingJobLineId).getCustomerId());
 		this._lineId = pickingJobLineId;
 		this._stepId = pickingJobStepId;
 		this.stepPickFromKey = pickFromKey != null ? pickFromKey : PickingJobStepPickFromKey.MAIN;
@@ -223,7 +226,6 @@ public class PickingJobPickCommand
 
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
 
-			final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 			this.qtyToPickCUs = computeQtyToPickCUs(pickingJobOptions, line, qtyToPickTUs);
 
 			if (qtyRejectedReasonCode != null)
@@ -325,6 +327,46 @@ public class PickingJobPickCommand
 				: qtyToPickCUsBasedOnPackingInfo;
 	}
 
+	/**
+	 * Server-side ordered-qty ceiling (me03#33201): refuses a pick that would take the line's picked qty above its ordered qty,
+	 * but ONLY when over-pick is blocked ({@code !isShowConfirmationPromptWhenOverPick}). When over-pick is allowed the
+	 * server never hard-rejects (the mobile client in-flight guard protects there). A partial pick within the remaining qty
+	 * is never refused.
+	 * <p>
+	 * Guards the sequential repeat-save: the first pick already committed (line full), a second request would otherwise be
+	 * booked again, because {@link #computeQtyToPickCUs} caps only when remaining &gt; 0 and (independently) only when
+	 * {@code isConsiderSalesOrderCapacity}; on a full line it falls through to the full packing qty. This check is
+	 * deliberately independent of both that cap and {@code isConsiderSalesOrderCapacity}.
+	 * <p>
+	 * Race-safety: the shipment schedule row is locked (FOR UPDATE, until trx end) and the line is RE-READ under the lock, so
+	 * a concurrent second request waits for the first to commit and then sees the committed picked qty (check+book atomic).
+	 * Must run inside {@link #executeInTrx()}.
+	 */
+	private void assertNotAboveOrderedQtyWhenOverPickBlocked()
+	{
+		if (pickingJobOptions.isShowConfirmationPromptWhenOverPick() || qtyToPickCUs.signum() <= 0)
+		{
+			return;
+		}
+
+		shipmentScheduleService.lockForUpdate(getScheduleId().getShipmentScheduleId());
+
+		// re-read AFTER taking the lock: the in-memory _pickingJob may predate a concurrently committed pick
+		final PickingJobLine freshLine = pickingJobService.getById(_pickingJob.getId()).getLineById(getLineId());
+		final Quantity qtyAllowedToPick = freshLine.getQtyToPick().subtract(freshLine.getQtyPicked()).toZeroIfNegative();
+		if (qtyToPickCUs.compareTo(qtyAllowedToPick) > 0)
+		{
+			throw new AdempiereException(PICK_OVERDELIVERY_BLOCKED_ERROR_MSG)
+					.markAsUserValidationError()
+					.appendParametersToMessage()
+					.setParameter("pickingJobId", _pickingJob.getId())
+					.setParameter("pickingJobLineId", getLineId())
+					.setParameter("qtyToPick", qtyToPickCUs)
+					.setParameter("qtyOrdered", freshLine.getQtyToPick())
+					.setParameter("qtyAlreadyPicked", freshLine.getQtyPicked());
+		}
+	}
+
 	public PickingJob execute()
 	{
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
@@ -333,6 +375,8 @@ public class PickingJobPickCommand
 	private PickingJob executeInTrx()
 	{
 		_pickingJob.assertNotProcessed();
+
+		assertNotAboveOrderedQtyWhenOverPickBlocked();
 
 		checkOrAllocatePickingSlot();
 

@@ -545,4 +545,123 @@ class PickingJobGraiScanPickEndToEndTest
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("de.metas.handlingunits.picking.GRAIAttributeNotSupportedByTUType");
 	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// me03#33201 - server ordered-qty ceiling (sequential repeat pick on an already-full line, over-pick BLOCKED)
+	// ------------------------------------------------------------------------------------------------------------
+
+	private PickingJob pickOneTU(final PickingJob pickingJob, final HUInfo pickFromVHU, @javax.annotation.Nullable final PickingJobStepId stepId)
+	{
+		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+		return helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+				.pickingLineId(line.getId())
+				.pickingStepId(stepId)
+				.pickFromKey(stepId != null ? PickingJobStepPickFromKey.MAIN : null)
+				.eventType(PickingJobStepEventType.PICK)
+				.qrCode(pickFromVHU.getQrCode().toScannedCode())
+				.qtyPicked(BigDecimal.ONE) // 1 TU (capacity 100 CUs/TU)
+				.qtyRejectedReasonCode(null)
+				.build());
+	}
+
+	private PickingJobStepId stepPickingFrom(final PickingJob pickingJob, final HUInfo pickFromHU)
+	{
+		return pickingJob.streamSteps()
+				.filter(step -> pickFromHU.getId().equals(step.getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHUId()))
+				.map(PickingJobStep::getId)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No step picking from " + pickFromHU));
+	}
+
+	private PickingJobStepId singleStepId(final PickingJob pickingJob)
+	{
+		return CollectionUtils.singleElement(pickingJob.streamSteps().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
+	}
+
+	private void setOverPickPrompt(final boolean isShowConfirmationPromptWhenOverPick)
+	{
+		helper.updateMobileProfile(profile -> profile.toBuilder()
+				.defaultPickingJobOptions(profile.getDefaultPickingJobOptions().toBuilder()
+						.isShowConfirmationPromptWhenOverPick(isShowConfirmationPromptWhenOverPick)
+						.build())
+				.build());
+	}
+
+	/** Number of booked {@code M_ShipmentSchedule_QtyPicked} rows (one per booked pick; NOT inferred from the step picked_hu_id). */
+	private int countQtyPicked()
+	{
+		return Services.get(org.adempiere.ad.dao.IQueryBL.class)
+				.createQueryBuilder(de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.count();
+	}
+
+	/**
+	 * me03#33201 reference case A: the line is already fully picked (first pick committed, over-pick BLOCKED); a
+	 * further sequential pick request (a repeat GRAI-save) must be refused server-side, with NO second booking.
+	 * Without the ceiling, computeQtyToPickCUs falls through to the full packing qty on a remaining==0 line and
+	 * books the line a second time (over-delivery).
+	 */
+	@Test
+	void pickOnAlreadyFullLine_whenOverPickBlocked_isRefused_noSecondBooking()
+	{
+		setOverPickPrompt(false); // over-pick BLOCKED
+		final ProductId productId = BusinessTestHelper.createProductId("P-GRAI", helper.uomEach);
+		final HUPIItemProductId piipId = createGraiTuPI(productId, true);
+		final HUInfo vhu1 = helper.createVHUInfo(productId, "100", "QR-VHU-1");
+		final HUInfo vhu2 = helper.createVHUInfo(productId, "100", "QR-VHU-2");
+
+		PickingJob pickingJob = createTuPickingJob(productId, "100", piipId); // ordered 100 = exactly 1 TU
+		pickingJob = pickOneTU(pickingJob, vhu1, singleStepId(pickingJob));
+		pickingJob = helper.pickingJobService.getById(pickingJob.getId()); // a repeat request reloads the committed job
+		assertThat(CollectionUtils.singleElement(pickingJob.getLines()).getQtyRemainingToPick().signum()).as("line is full").isZero();
+		final int bookingsAfterFirstPick = countQtyPicked();
+		assertThat(bookingsAfterFirstPick).as("first pick books once").isEqualTo(1);
+
+		final PickingJob fullJob = pickingJob;
+		assertThatThrownBy(() -> pickOneTU(fullJob, vhu2, null))
+				.as("a further pick above ordered with over-pick blocked must be refused")
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
+
+		assertThat(countQtyPicked()).as("no second M_ShipmentSchedule_QtyPicked booking").isEqualTo(bookingsAfterFirstPick);
+	}
+
+	/** Must-stay-OK (TC4): a partial pick within the remaining qty is never refused, even with over-pick blocked. */
+	@Test
+	void partialPickWithinRemaining_whenOverPickBlocked_stillBooks()
+	{
+		setOverPickPrompt(false);
+		final ProductId productId = BusinessTestHelper.createProductId("P-GRAI", helper.uomEach);
+		final HUPIItemProductId piipId = createGraiTuPI(productId, true);
+		final HUInfo vhu1 = helper.createVHUInfo(productId, "100", "QR-VHU-1");
+		helper.createVHUInfo(productId, "100", "QR-VHU-2"); // stock for the 2nd TU, so the 200 order is pickable
+
+		PickingJob pickingJob = createTuPickingJob(productId, "200", piipId); // ordered 200 = 2 TUs
+		pickingJob = pickOneTU(pickingJob, vhu1, stepPickingFrom(pickingJob, vhu1));
+
+		assertThat(countQtyPicked()).as("the partial pick is booked").isEqualTo(1);
+		assertThat(CollectionUtils.singleElement(pickingJob.getLines()).getQtyRemainingToPick().toBigDecimal())
+				.as("remainder stays open").isEqualByComparingTo("100");
+	}
+
+	/** Must-stay-OK (TC5): with the over-pick prompt ENABLED the server never hard-rejects (client guard protects there). */
+	@Test
+	void pickOnAlreadyFullLine_whenOverPickPromptEnabled_isNotRefused()
+	{
+		setOverPickPrompt(true);
+		final ProductId productId = BusinessTestHelper.createProductId("P-GRAI", helper.uomEach);
+		final HUPIItemProductId piipId = createGraiTuPI(productId, true);
+		final HUInfo vhu1 = helper.createVHUInfo(productId, "100", "QR-VHU-1");
+		final HUInfo vhu2 = helper.createVHUInfo(productId, "100", "QR-VHU-2");
+
+		PickingJob pickingJob = createTuPickingJob(productId, "100", piipId);
+		pickingJob = pickOneTU(pickingJob, vhu1, singleStepId(pickingJob));
+		pickingJob = helper.pickingJobService.getById(pickingJob.getId());
+
+		pickOneTU(pickingJob, vhu2, null); // must not throw
+
+		assertThat(countQtyPicked()).as("over-pick allowed: second booking happens").isEqualTo(2);
+	}
 }
