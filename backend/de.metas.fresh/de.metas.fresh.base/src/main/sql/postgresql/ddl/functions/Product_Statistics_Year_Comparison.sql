@@ -120,11 +120,16 @@ $$
 -- (the C_Year of the same calendar with the next lower FiscalYear; NULL values when there is none) and the 12 monthly quantity deviations in percent.
 -- Totals are NULL when no month has a value. Dev_xx = ROUND(NULLIF(raw, 0), 2): blank when exactly 0; no total deviation.
 -- NotPosted_Count / NotPosted_Months: completed sales invoices / credit notes that are not posted, in the chosen and the previous year (distinct YYYY-MM, ascending).
--- Only products of p_AD_Org_ID or of organisation * (0), as offered by the product parameter (AD_Val_Rule 540377).
+-- Only products of p_AD_Org_ID or of organisation * (0), as offered by the product parameters (AD_Val_Rule 540377).
+-- Product selection: p_M_Product_ID ("Produkt von") and p_M_Product_To_ID ("Produkt bis") both empty = all products; only one set = that product;
+--   both set = every product whose Value lies between the two Values, both included, in text order (the order of the report), in either order.
+-- p_M_Product_Category_ID: only products of that category; combined with the product selection.
 CREATE FUNCTION report.Product_Statistics_Year_Comparison(
-    p_AD_Org_ID    numeric,
-    p_C_Year_ID    numeric,
-    p_M_Product_ID numeric DEFAULT NULL
+    p_AD_Org_ID             numeric,
+    p_C_Year_ID             numeric,
+    p_M_Product_ID          numeric DEFAULT NULL,
+    p_M_Product_To_ID       numeric DEFAULT NULL,
+    p_M_Product_Category_ID numeric DEFAULT NULL
 )
     RETURNS TABLE
             (
@@ -161,7 +166,12 @@ DECLARE
     v_FiscalYear   varchar;
     v_Currency     varchar;
     v_OrgName      varchar;
+    v_ValueFrom    varchar;
+    v_ValueTo      varchar;
 BEGIN
+    SELECT p.Value INTO v_ValueFrom FROM M_Product p WHERE p.M_Product_ID = p_M_Product_ID;
+    SELECT p.Value INTO v_ValueTo FROM M_Product p WHERE p.M_Product_ID = p_M_Product_To_ID;
+
     SELECT y.FiscalYear INTO v_FiscalYear FROM C_Year y WHERE y.C_Year_ID = p_C_Year_ID;
 
     SELECT py.C_Year_ID
@@ -182,10 +192,9 @@ BEGIN
     SELECT o.Name INTO v_OrgName FROM AD_Org o WHERE o.AD_Org_ID = p_AD_Org_ID;
 
     RETURN QUERY
-        WITH cur AS (SELECT a.* FROM report.Product_Statistics_Year_Comparison_Aggregate(p_AD_Org_ID, p_C_Year_ID) a
-                     WHERE p_M_Product_ID IS NULL OR a.M_Product_ID = p_M_Product_ID),
+        WITH cur AS (SELECT a.* FROM report.Product_Statistics_Year_Comparison_Aggregate(p_AD_Org_ID, p_C_Year_ID) a),
              prv AS (SELECT a.* FROM report.Product_Statistics_Year_Comparison_Aggregate(p_AD_Org_ID, v_PrevYear_ID) a
-                     WHERE v_PrevYear_ID IS NOT NULL AND (p_M_Product_ID IS NULL OR a.M_Product_ID = p_M_Product_ID)),
+                     WHERE v_PrevYear_ID IS NOT NULL),
              m AS (SELECT 0 AS yr, cur.* FROM cur
                    UNION ALL
                    SELECT 1 AS yr, prv.* FROM prv),
@@ -322,6 +331,12 @@ BEGIN
         FROM x
                  JOIN M_Product p ON p.M_Product_ID = x.M_Product_ID
         WHERE p.AD_Org_ID IN (p_AD_Org_ID, 0)
+          AND (CASE
+                   WHEN p_M_Product_ID IS NULL AND p_M_Product_To_ID IS NULL THEN TRUE
+                   WHEN p_M_Product_ID IS NULL OR p_M_Product_To_ID IS NULL THEN p.M_Product_ID = COALESCE(p_M_Product_ID, p_M_Product_To_ID)
+                   ELSE p.Value BETWEEN SYMMETRIC v_ValueFrom AND v_ValueTo
+               END)
+          AND (p_M_Product_Category_ID IS NULL OR p.M_Product_Category_ID = p_M_Product_Category_ID)
         ORDER BY p.Value;
 END
 $$
