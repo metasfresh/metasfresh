@@ -45,9 +45,16 @@ env:
 
 jobs:
   auto-port:
-    # Only run when cicd succeeded on a _hotfix or _release branch
+    # Only run when cicd succeeded on a _hotfix or _release branch.
+    # Exclude merge/* branches: those are auto-port's OWN merge-up branches
+    # (e.g. merge/<group>_hotfix-to-<group>_release ends in _release). Porting
+    # one again would create a merge/merge/... PR straight to new_dawn_uat,
+    # bypassing the release hop. The chain still advances correctly because each
+    # merge-up PR, once merged into its target base branch, triggers that
+    # branch's own cicd -> the next auto-port hop.
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
+      !startsWith(github.event.workflow_run.head_branch, 'merge/') &&
       (endsWith(github.event.workflow_run.head_branch, '_hotfix') ||
        endsWith(github.event.workflow_run.head_branch, '_release'))
     runs-on: ${{ vars.RUNNER_LIGHT }}
