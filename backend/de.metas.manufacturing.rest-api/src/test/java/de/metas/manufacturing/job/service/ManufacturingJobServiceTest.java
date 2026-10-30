@@ -64,10 +64,12 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -141,6 +143,11 @@ class ManufacturingJobServiceTest
 		private final List<TableRecordReference> postedDocuments = new ArrayList<>();
 		private final List<ITrx> trxsSeenByPoster = new ArrayList<>();
 		@Nullable private RuntimeException postingFailure;
+		/** What the accounting service does while we wait for its lock; null = it never finishes. */
+		@Nullable private Runnable backgroundPostingProgress;
+		/** What the accounting service does right before our post attempt; null = nothing. */
+		@Nullable private Consumer<TableRecordReference> beforePostAttempt;
+		private int sleeps;
 
 		@BeforeEach
 		void beforeEach()
@@ -155,7 +162,10 @@ class ManufacturingJobServiceTest
 			postedDocuments.clear();
 			trxsSeenByPoster.clear();
 			postingFailure = null;
-			SpringContextHolder.registerJUnitBean(PPOrderPostingService.class, new PPOrderPostingService(this::fakePostNow));
+			backgroundPostingProgress = null;
+			beforePostAttempt = null;
+			sleeps = 0;
+			SpringContextHolder.registerJUnitBean(PPOrderPostingService.class, new PPOrderPostingService(this::fakePostNow, this::fakeSleep));
 
 			ppOrderBL = spy(Services.get(IHUPPOrderBL.class));
 			doNothing().when(ppOrderBL).closeOrder(any());
@@ -379,21 +389,140 @@ class ManufacturingJobServiceTest
 			verify(ppOrderBL, times(1)).closeOrder(job.getPpOrderId());
 		}
 
-		/** Stands in for {@code Doc.post}: throws {@link #postingFailure} if set, else marks the document posted. */
+		@Test
+		void collectorBeingPostedInBackground_waitsThenSettles()
+		{
+			final ManufacturingJob job = givenJob(1, handLine());
+			final PPOrderId ppOrderId = job.getPpOrderId();
+			final I_PP_Cost_Collector receipt = givenCostCollector(ppOrderId, X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
+			receipt.setProcessing(true);
+			InterfaceWrapperHelper.saveRecord(receipt);
+			backgroundPostingProgress = backgroundPostingFinishes(receipt);
+			when(distributor.distribute(ppOrderId)).thenReturn(true);
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			assertThat(sleeps).isPositive();
+			assertThat(postedDocuments).containsExactly(TableRecordReference.of(I_PP_Order.Table_Name, ppOrderId.getRepoId()));
+			verify(distributor, times(1)).distribute(ppOrderId);
+		}
+
+		@Test
+		void collectorLockedBetweenCheckAndPost_waitsThenSettles()
+		{
+			final ManufacturingJob job = givenJob(1, handLine());
+			final PPOrderId ppOrderId = job.getPpOrderId();
+			final I_PP_Cost_Collector receipt = givenCostCollector(ppOrderId, X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
+			// the accounting service takes the lock between our check and our lock, so our first post attempt fails to lock
+			final TableRecordReference receiptRef = TableRecordReference.of(receipt);
+			final AtomicReference<Boolean> lockTaken = new AtomicReference<>(false);
+			beforePostAttempt = documentRef -> {
+				if (documentRef.equals(receiptRef) && !lockTaken.getAndSet(true))
+				{
+					final I_PP_Cost_Collector reloaded = InterfaceWrapperHelper.load(receipt.getPP_Cost_Collector_ID(), I_PP_Cost_Collector.class);
+					reloaded.setProcessing(true);
+					InterfaceWrapperHelper.saveRecord(reloaded);
+				}
+			};
+			backgroundPostingProgress = backgroundPostingFinishes(receipt);
+			when(distributor.distribute(ppOrderId)).thenReturn(true);
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			assertThat(lockTaken.get()).isTrue();
+			assertThat(sleeps).isPositive();
+			assertThat(postedDocuments).containsExactly(TableRecordReference.of(I_PP_Order.Table_Name, ppOrderId.getRepoId()));
+			verify(distributor, times(1)).distribute(ppOrderId);
+		}
+
+		@Test
+		void collectorLockedForever_failsClearly_beforeCloseTrx()
+		{
+			final ManufacturingJob job = givenJob(1, handLine());
+			final PPOrderId ppOrderId = job.getPpOrderId();
+			final I_PP_Cost_Collector receipt = givenCostCollector(ppOrderId, X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
+			receipt.setProcessing(true);
+			InterfaceWrapperHelper.saveRecord(receipt);
+
+			assertThatThrownBy(() -> service.withActivityCompleted(job, lastActivityId(job)))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(TableRecordReference.of(receipt).toString())
+					.hasMessageContaining("still being posted");
+
+			assertThat(sleeps).isEqualTo(120);
+			verify(distributor, never()).distribute(any());
+			verify(ppOrderBL, never()).closeOrder(any());
+		}
+
+		@Test
+		void accountingDisabled_handIssued_plainClose_nothingPosted()
+		{
+			Services.get(ISysConfigDAO.class).setValue("org.adempiere.acct.Enabled", "N", ClientAndOrgId.SYSTEM);
+			final ManufacturingJob job = givenJob(1, handLine());
+			givenCostCollector(job.getPpOrderId(), X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			assertThat(trxsSeenByPoster).isEmpty();
+			verify(distributor, never()).distribute(any());
+			verify(ppOrderBL, times(1)).closeOrder(job.getPpOrderId());
+		}
+
+		/**
+		 * Stands in for {@code Doc.post(force=false, ...)}: fails to lock a document another poster holds,
+		 * throws {@link #postingFailure} if set, else marks the document posted.
+		 */
 		private void fakePostNow(final TableRecordReference documentRef, final ClientId clientIdNotUsed)
 		{
 			trxsSeenByPoster.add(trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone));
+			if (beforePostAttempt != null)
+			{
+				beforePostAttempt.accept(documentRef);
+			}
+			final Object document = loadDocument(documentRef);
+			InterfaceWrapperHelper.refresh(document);
+			final boolean lockedByOtherPoster = document instanceof I_PP_Order
+					? ((I_PP_Order)document).isProcessing()
+					: ((I_PP_Cost_Collector)document).isProcessing();
+			if (lockedByOtherPoster)
+			{
+				throw new AdempiereException("Cannot Lock - ReSubmit or RePost with Force");
+			}
 			if (postingFailure != null)
 			{
 				throw postingFailure;
 			}
 
-			final Object document = I_PP_Order.Table_Name.equals(documentRef.getTableName())
-					? documentRef.getModel(I_PP_Order.class)
-					: documentRef.getModel(I_PP_Cost_Collector.class);
 			InterfaceWrapperHelper.setValue(document, I_PP_Order.COLUMNNAME_Posted, true);
 			InterfaceWrapperHelper.saveRecord(document);
 			postedDocuments.add(documentRef);
+		}
+
+		private void fakeSleep(final Duration durationNotUsed)
+		{
+			sleeps++;
+			if (backgroundPostingProgress != null)
+			{
+				backgroundPostingProgress.run();
+			}
+		}
+
+		private Object loadDocument(final TableRecordReference documentRef)
+		{
+			return I_PP_Order.Table_Name.equals(documentRef.getTableName())
+					? documentRef.getModel(I_PP_Order.class)
+					: documentRef.getModel(I_PP_Cost_Collector.class);
+		}
+
+		/** The accounting service finishes posting the document, i.e. it is posted and unlocked. */
+		private Runnable backgroundPostingFinishes(final I_PP_Cost_Collector costCollector)
+		{
+			return () -> {
+				final I_PP_Cost_Collector reloaded = InterfaceWrapperHelper.load(costCollector.getPP_Cost_Collector_ID(), I_PP_Cost_Collector.class);
+				reloaded.setPosted(true);
+				reloaded.setProcessing(false);
+				InterfaceWrapperHelper.saveRecord(reloaded);
+			};
 		}
 
 		private I_PP_Cost_Collector givenCostCollector(final PPOrderId ppOrderId, final String costCollectorType, final String docStatus, final boolean posted)

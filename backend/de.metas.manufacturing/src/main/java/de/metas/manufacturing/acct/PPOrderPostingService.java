@@ -6,6 +6,8 @@ import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.document.engine.DocStatus;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -16,6 +18,9 @@ import org.eevolution.model.I_PP_Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.util.function.BooleanSupplier;
+
 /**
  * Posts a manufacturing order and its cost collectors synchronously, in the caller's thread, so that
  * {@code PP_Order_Cost} reflects every issue and receipt before anything reads it.
@@ -23,10 +28,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class PPOrderPostingService
 {
+	private static final Duration DEFAULT_POLL_INTERVAL = Duration.ofMillis(250);
+	private static final Duration DEFAULT_MAX_WAIT = Duration.ofSeconds(30);
+
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IPPCostCollectorDAO costCollectorDAO = Services.get(IPPCostCollectorDAO.class);
 
 	@NonNull private final DocumentPoster documentPoster;
+	@NonNull private final Sleeper sleeper;
+	@NonNull private final Duration pollInterval;
+	private final long maxPolls;
 
 	@FunctionalInterface
 	public interface DocumentPoster
@@ -37,16 +48,25 @@ public class PPOrderPostingService
 		void postNow(@NonNull TableRecordReference documentRef, @NonNull ClientId clientId);
 	}
 
+	@FunctionalInterface
+	public interface Sleeper
+	{
+		void sleep(@NonNull Duration duration) throws InterruptedException;
+	}
+
 	@Autowired
 	public PPOrderPostingService(@NonNull final AcctDocRegistry acctDocRegistry)
 	{
-		this(newDocumentPoster(acctDocRegistry));
+		this(newDocumentPoster(acctDocRegistry), duration -> Thread.sleep(duration.toMillis()));
 	}
 
 	@VisibleForTesting
-	public PPOrderPostingService(@NonNull final DocumentPoster documentPoster)
+	public PPOrderPostingService(@NonNull final DocumentPoster documentPoster, @NonNull final Sleeper sleeper)
 	{
 		this.documentPoster = documentPoster;
+		this.sleeper = sleeper;
+		this.pollInterval = DEFAULT_POLL_INTERVAL;
+		this.maxPolls = DEFAULT_MAX_WAIT.toMillis() / DEFAULT_POLL_INTERVAL.toMillis();
 	}
 
 	private static DocumentPoster newDocumentPoster(@NonNull final AcctDocRegistry acctDocRegistry)
@@ -54,6 +74,7 @@ public class PPOrderPostingService
 		final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
 		// Same call as PostingService.postNow, minus its catch-all: that one only logs the error.
+		// No force: the accounting service posts with force, so forcing here could post the same document twice at once.
 		return (documentRef, clientId) -> acctDocRegistry
 				.get(acctSchemaDAO.getAllByClient(clientId), documentRef)
 				.post(false, true);
@@ -62,21 +83,83 @@ public class PPOrderPostingService
 	/**
 	 * Posts the order first (it creates the {@code PP_Order_Cost} rows), then each processed cost collector in creation order.
 	 * Documents already posted ({@code Posted='Y'}) are skipped; not posted and posting-error ones are (re)posted.
+	 * A document that is currently being posted elsewhere is waited for, up to 30 seconds per document.
 	 */
 	public void postOrderAndCostCollectorsIfNotPosted(@NonNull final PPOrderId ppOrderId)
 	{
 		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
-		if (!ppOrder.isPosted())
-		{
-			documentPoster.postNow(TableRecordReference.of(ppOrder), ClientId.ofRepoId(ppOrder.getAD_Client_ID()));
-		}
+		postIfNotPosted(ppOrder, ppOrder::isPosted, ppOrder::isProcessing, ppOrder.getAD_Client_ID());
 
 		for (final I_PP_Cost_Collector costCollector : costCollectorDAO.getByOrderId(ppOrderId))
 		{
-			if (isPostable(costCollector) && !costCollector.isPosted())
+			if (isPostable(costCollector))
 			{
-				documentPoster.postNow(TableRecordReference.of(costCollector), ClientId.ofRepoId(costCollector.getAD_Client_ID()));
+				postIfNotPosted(costCollector, costCollector::isPosted, costCollector::isProcessing, costCollector.getAD_Client_ID());
 			}
+		}
+	}
+
+	private void postIfNotPosted(
+			@NonNull final Object document,
+			@NonNull final BooleanSupplier isPosted,
+			@NonNull final BooleanSupplier isProcessing,
+			final int adClientId)
+	{
+		final TableRecordReference documentRef = TableRecordReference.of(document);
+		final ClientId clientId = ClientId.ofRepoId(adClientId);
+
+		waitWhileProcessing(document, isProcessing, documentRef);
+		if (isPosted.getAsBoolean())
+		{
+			return;
+		}
+
+		try
+		{
+			documentPoster.postNow(documentRef, clientId);
+		}
+		catch (final RuntimeException postingError)
+		{
+			// The lock fails when the accounting service locked the document between our check and our lock.
+			InterfaceWrapperHelper.refresh(document);
+			if (!isProcessing.getAsBoolean())
+			{
+				throw postingError;
+			}
+
+			waitWhileProcessing(document, isProcessing, documentRef);
+			if (!isPosted.getAsBoolean())
+			{
+				documentPoster.postNow(documentRef, clientId);
+			}
+		}
+	}
+
+	private void waitWhileProcessing(
+			@NonNull final Object document,
+			@NonNull final BooleanSupplier isProcessing,
+			@NonNull final TableRecordReference documentRef)
+	{
+		InterfaceWrapperHelper.refresh(document);
+		for (long poll = 0; isProcessing.getAsBoolean(); poll++)
+		{
+			if (poll >= maxPolls)
+			{
+				throw new AdempiereException("Document " + documentRef + " is still being posted by the accounting service after "
+						+ DEFAULT_MAX_WAIT.getSeconds() + "s. Please try again; if it persists, check the document's posting.");
+			}
+
+			try
+			{
+				sleeper.sleep(pollInterval);
+			}
+			catch (final InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+				throw AdempiereException.wrapIfNeeded(e);
+			}
+
+			InterfaceWrapperHelper.refresh(document);
 		}
 	}
 

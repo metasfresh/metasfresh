@@ -3,6 +3,7 @@ package de.metas.manufacturing.job.service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.IPostingService;
 import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
 import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
@@ -128,6 +129,7 @@ public class ManufacturingJobService
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 	@NonNull private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+	@NonNull private final IPostingService postingService = Services.get(IPostingService.class);
 	@NonNull private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final PPOrderSourceHUService ppOrderSourceHUService;
@@ -542,7 +544,8 @@ public class ManufacturingJobService
 		}
 
 		// Decided once, outside the transaction: a decision flipping inside a retry attempt would settle on unposted collectors.
-		final boolean settleWipCostDifference = hasRawMaterialIssuedByHand(ppOrderId);
+		// With accounting disabled nothing is posted, so there are no order costs to settle.
+		final boolean settleWipCostDifference = postingService.isEnabled() && hasRawMaterialIssuedByHand(ppOrderId);
 		if (settleWipCostDifference)
 		{
 			// The residual is read from PP_Order_Cost, which only posting fills; asynchronous posting may still be behind.
