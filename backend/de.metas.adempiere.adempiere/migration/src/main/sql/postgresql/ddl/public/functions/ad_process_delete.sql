@@ -6,7 +6,8 @@ DROP FUNCTION IF EXISTS ad_process_delete(numeric)
  * fail on databases that carry extra references (customer menu entries, archived report runs, print jobs, ...).
  *
  * Per-table policy for the foreign keys on AD_Process:
- *   FK_CASCADE  - removed by the FK itself: AD_Process_Para, AD_Process_Trl, AD_Scheduler, AD_Role_PermRequest
+ *   FK_CASCADE  - removed by the FK itself: AD_Process_Para, AD_Process_Trl, AD_Scheduler (its AD_SchedulerRecipient
+ *                 rows are deleted first, since that FK does not cascade), AD_Role_PermRequest
  *   FK_SET_NULL - nulled by the FK itself: AD_Column.AD_Process_ID, AD_Issue.AD_Process_ID
  *   DELETE      - row deleted: AD_Menu (with its AD_Menu_Trl and menu-tree AD_TreeNodeMM rows), AD_Table_Process,
  *                 AD_WF_Node (with its AD_WF_Node_Para rows), AD_WorkbenchWindow, AD_PrinterRouting, AD_MailConfig,
@@ -18,6 +19,13 @@ DROP FUNCTION IF EXISTS ad_process_delete(numeric)
  *                 ExternalSystem_Config_ScriptedExportConversion.AD_Process_OutboundData_ID,
  *                 Leichmehl_PluFile_ConfigGroup.AD_Process_CustomQuery_ID
  * Tables or columns missing on a database are skipped.
+ * AD_Process_Access rows of the process (role grants, no FK) are deleted as well.
+ *
+ * No backup_table() copies are made: backup_table() copies a whole table (AD_Archive, C_Printing_Queue and
+ * C_Queue_Block can be very large), REPOINT and SET_NULL only change the reference to a process that no longer
+ * exists, and DELETE only removes configuration rows that are meaningless without the process.
+ * Instead, for every table the IDs of the changed rows (up to 100) are written to the log via RAISE NOTICE,
+ * so the migration log keeps which rows referenced the deleted process.
  *
  * Before changing anything, the function refuses (raises an exception) when
  *   - p_AD_Process_ID is the placeholder process itself, or the placeholder does not exist;
@@ -61,6 +69,8 @@ DECLARE
     v_policy               record;
     v_fk                   record;
     v_count                bigint;
+    v_ids                  text;
+    v_sql                  text;
     v_blockers             text    := '';
 BEGIN
     IF p_AD_Process_ID IS NULL THEN
@@ -120,7 +130,8 @@ BEGIN
                   AND k.confrelid = to_regclass('public.' || v_policy.table_name)
                   AND array_length(k.conkey, 1) = 1
                   AND k.confdeltype IN ('a', 'r') -- NO ACTION, RESTRICT
-                  AND NOT (v_policy.table_name = 'ad_wf_node' AND k.conrelid = 'ad_wf_node_para'::regclass) -- deleted together with the node, see below
+                  AND NOT (v_policy.table_name = 'ad_wf_node' AND k.conrelid = 'ad_wf_node_para'::regclass)              -- deleted together with the node, see below
+                  AND NOT (v_policy.table_name = 'ad_scheduler' AND k.conrelid = 'ad_schedulerrecipient'::regclass) -- deleted together with the scheduler, see below
                 LOOP
                     EXECUTE format('SELECT count(*) FROM %s r WHERE r.%I IN (SELECT t.%I FROM %I t WHERE t.%I = $1)',
                                    v_fk.ref_table, v_fk.ref_column, v_fk.target_column, v_policy.table_name, v_policy.column_name)
@@ -153,11 +164,11 @@ BEGIN
         ORDER BY seq
         LOOP
             IF v_policy.action = 'REPOINT' THEN
-                EXECUTE format('UPDATE %I SET %I = $1, Updated = now(), UpdatedBy = 99 WHERE %I = $2', v_policy.table_name, v_policy.column_name, v_policy.column_name)
-                    USING c_ProcessWasDeleted_ID, p_AD_Process_ID;
+                v_sql := format('UPDATE %I SET %I = $1, Updated = now(), UpdatedBy = 99 WHERE %I = $2 RETURNING %I',
+                                v_policy.table_name, v_policy.column_name, v_policy.column_name, v_policy.table_name || '_id');
             ELSIF v_policy.action = 'SET_NULL' THEN
-                EXECUTE format('UPDATE %I SET %I = NULL, Updated = now(), UpdatedBy = 99 WHERE %I = $1', v_policy.table_name, v_policy.column_name, v_policy.column_name)
-                    USING p_AD_Process_ID;
+                v_sql := format('UPDATE %I SET %I = NULL, Updated = now(), UpdatedBy = 99 WHERE %I = $2 RETURNING %I',
+                                v_policy.table_name, v_policy.column_name, v_policy.column_name, v_policy.table_name || '_id');
             ELSE -- DELETE
                 IF v_policy.table_name = 'ad_menu' THEN
                     DELETE
@@ -169,16 +180,23 @@ BEGIN
                     DELETE FROM ad_wf_node_para WHERE ad_wf_node_id IN (SELECT n.ad_wf_node_id FROM ad_wf_node n WHERE n.ad_process_id = p_AD_Process_ID);
                 END IF;
 
-                EXECUTE format('DELETE FROM %I WHERE %I = $1', v_policy.table_name, v_policy.column_name)
-                    USING p_AD_Process_ID;
+                v_sql := format('DELETE FROM %I WHERE %I = $2 RETURNING %I',
+                                v_policy.table_name, v_policy.column_name, v_policy.table_name || '_id');
             END IF;
 
-            GET DIAGNOSTICS v_count = ROW_COUNT;
+            -- $1 is unused by SET_NULL and DELETE
+            EXECUTE format('WITH changed AS (%s) SELECT (SELECT count(*) FROM changed), (SELECT string_agg(id::text, '','' ORDER BY id) FROM (SELECT c.* FROM changed c LIMIT 100) l(id))', v_sql)
+                INTO v_count, v_ids USING c_ProcessWasDeleted_ID, p_AD_Process_ID;
             IF v_count > 0 THEN
-                RAISE NOTICE 'ad_process_delete: AD_Process_ID=%: % % row(s) in %.%', p_AD_Process_ID, v_policy.action, v_count, v_policy.table_name, v_policy.column_name;
+                RAISE NOTICE 'ad_process_delete: AD_Process_ID=%: % % row(s) in %.%; % IDs (first 100): %',
+                    p_AD_Process_ID, v_policy.action, v_count, v_policy.table_name, v_policy.column_name, v_policy.table_name, v_ids;
             END IF;
         END LOOP;
 
+    -- FK of AD_SchedulerRecipient on AD_Scheduler does not cascade; the AD_Scheduler rows are removed by the cascade below
+    DELETE FROM ad_schedulerrecipient WHERE ad_scheduler_id IN (SELECT s.ad_scheduler_id FROM ad_scheduler s WHERE s.ad_process_id = p_AD_Process_ID);
+    -- role grants; AD_Process_Access has no FK on AD_Process
+    DELETE FROM ad_process_access WHERE ad_process_id = p_AD_Process_ID;
     DELETE FROM ad_process_trl WHERE ad_process_id = p_AD_Process_ID;
     DELETE FROM ad_process WHERE ad_process_id = p_AD_Process_ID;
     RAISE NOTICE 'ad_process_delete: deleted AD_Process_ID=%', p_AD_Process_ID;
