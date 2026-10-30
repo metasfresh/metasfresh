@@ -218,6 +218,7 @@ public class PP_Order_StepDef
 	 *     and passed to {@link PPOrderCreateRequest#getWorkstationId()}. Distinct from the plant: a lot-number
 	 *     provider resolves the production line via {@code PP_Order.WorkStation_ID -> S_Resource.LotNumberCode},
 	 *     so a scenario covering that hop must be able to set it independently.</li>
+	 *     <li>{@code DocumentNo} — overrides the generated order number after creation</li>
 	 *     <li>{@code completeDocument} — defaults to {@code false}</li>
 	 * </ul>
 	 * <pre>
@@ -271,6 +272,12 @@ public class PP_Order_StepDef
 			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
 			assertThat(ppOrder).isNotNull();
 
+			// lets the PDF text assertions name a literal order number (the generated one is not predictable)
+			row.getAsOptionalString(I_PP_Order.COLUMNNAME_DocumentNo).ifPresent(documentNo -> {
+				ppOrder.setDocumentNo(documentNo);
+				InterfaceWrapperHelper.saveRecord(ppOrder);
+			});
+
 			ppOrderTable.put(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID), ppOrder);
 		});
 	}
@@ -316,6 +323,24 @@ public class PP_Order_StepDef
 				StepDefUtil.validateErrorMessage(e, errorMessage);
 			}
 		}
+	}
+
+	/**
+	 * Sets the {@code PickingInstruction} of already-found {@code PP_Order_BOMLine}s.
+	 * <pre>
+	 * And update PP_Order_BOMLines:
+	 *   | PP_Order_BOMLine_ID | PickingInstruction |
+	 *   | bomLine1            | Shelf 4            |
+	 * </pre>
+	 */
+	@And("update PP_Order_BOMLines:")
+	public void update_PP_Order_BOMLines(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_PP_Order_BOMLine bomLine = row.getAsIdentifier(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID).lookupNotNullIn(ppOrderBomLineTable);
+			bomLine.setPickingInstruction(row.getAsString(I_PP_Order_BOMLine.COLUMNNAME_PickingInstruction));
+			InterfaceWrapperHelper.saveRecord(bomLine);
+		});
 	}
 
 	@And("update PP_Order:")

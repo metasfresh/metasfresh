@@ -12,6 +12,8 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
+import de.metas.cucumber.stepdefs.distributionorder.DD_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.distributionorder.DD_Order_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_OrderLine_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_Candidate_StepDefData;
@@ -19,6 +21,7 @@ import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAlloc;
@@ -89,6 +92,8 @@ public class DD_Order_Candidate_StepDef
 	@NonNull private final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
+	@NonNull private final DD_Order_StepDefData ddOrderTable;
+	@NonNull private final DD_OrderLine_StepDefData ddOrderLineTable;
 
 	@And("^after not more than (.*)s, following DD_Order_Candidates are found$")
 	public void validateDDOrderLineCandidates(final int timeoutSec, @NonNull final DataTable dataTable)
@@ -529,6 +534,83 @@ public class DD_Order_Candidate_StepDef
 				.execute();
 
 		assertAggregation(rows, allocsByCandidate);
+	}
+
+	/**
+	 * Like the aggregation step, but asserts per {@code DD_OrderLine}: the same line identifier must resolve to the
+	 * same line (and DD_Order), different identifiers to different ones. Every DD_Order must be Completed and hold exactly
+	 * as many lines as there are distinct line identifiers pointing at it. Registers the DD_Order / DD_OrderLine identifiers.
+	 *
+	 * @cucumber.columns
+	 *   <b>DD_Order_Candidate_ID</b> — (required, identifier-ref) a candidate previously enqueued<br>
+	 *   <b>DD_Order_ID</b> — (required, identifier) generated DD_Order<br>
+	 *   <b>DD_OrderLine_ID</b> — (required, identifier) generated DD_OrderLine<br>
+	 * <pre>
+	 * Then after not more than 30s, the DD_Order_Candidates are allocated to DD_OrderLines:
+	 *   | DD_Order_Candidate_ID | DD_Order_ID | DD_OrderLine_ID |
+	 *   | cand_p1               | ddo         | ddol1           |
+	 *   | cand_p2               | ddo         | ddol1           |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, the DD_Order_Candidates are allocated to DD_OrderLines:$")
+	public void validateDDOrderCandidateLineAllocation(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
+
+		final Map<StepDefDataIdentifier, List<DDOrderCandidateAlloc>> allocsByCandidate = StepDefUtil.<Map<StepDefDataIdentifier, List<DDOrderCandidateAlloc>>>tryAndWaitForItem()
+				.worker(() -> resolveCandidateAllocations(rows))
+				.maxWaitSeconds(timeoutSec)
+				.execute();
+
+		final LinkedHashMap<StepDefDataIdentifier, DDOrderId> ddOrderIdByIdentifier = new LinkedHashMap<>();
+		final LinkedHashMap<StepDefDataIdentifier, DDOrderLineId> lineIdByIdentifier = new LinkedHashMap<>();
+		final LinkedHashMap<DDOrderId, java.util.Set<DDOrderLineId>> lineIdsByDDOrder = new LinkedHashMap<>();
+
+		for (final DataTableRow row : rows)
+		{
+			final StepDefDataIdentifier candidateIdentifier = row.getAsIdentifier("DD_Order_Candidate_ID");
+			final StepDefDataIdentifier ddOrderIdentifier = row.getAsIdentifier("DD_Order_ID");
+			final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier("DD_OrderLine_ID");
+
+			final List<DDOrderCandidateAlloc> allocs = allocsByCandidate.get(candidateIdentifier);
+			assertThat(allocs)
+					.as("candidate %s must be allocated to exactly one DD_OrderLine", candidateIdentifier)
+					.hasSize(1);
+			final DDOrderId ddOrderId = allocs.get(0).getDdOrderId();
+			final DDOrderLineId lineId = allocs.get(0).getDdOrderLineId();
+
+			final DDOrderId existingDDOrderId = ddOrderIdByIdentifier.putIfAbsent(ddOrderIdentifier, ddOrderId);
+			if (existingDDOrderId != null)
+			{
+				assertThat(ddOrderId).as("DD_Order %s must resolve to the same DD_Order for every row", ddOrderIdentifier).isEqualTo(existingDDOrderId);
+			}
+			final DDOrderLineId existingLineId = lineIdByIdentifier.putIfAbsent(lineIdentifier, lineId);
+			if (existingLineId != null)
+			{
+				assertThat(lineId).as("DD_OrderLine %s must resolve to the same DD_OrderLine for every row", lineIdentifier).isEqualTo(existingLineId);
+			}
+			lineIdsByDDOrder.computeIfAbsent(ddOrderId, k -> new java.util.LinkedHashSet<>()).add(lineId);
+		}
+
+		assertThat(ImmutableSet.copyOf(ddOrderIdByIdentifier.values()))
+				.as("different DD_Order identifiers must resolve to different DD_Orders")
+				.hasSize(ddOrderIdByIdentifier.size());
+		assertThat(ImmutableSet.copyOf(lineIdByIdentifier.values()))
+				.as("different DD_OrderLine identifiers must resolve to different DD_OrderLines")
+				.hasSize(lineIdByIdentifier.size());
+
+		lineIdsByDDOrder.forEach((ddOrderId, lineIds) -> {
+			final I_DD_Order ddOrder = ddOrderLowLevelDAO.getById(ddOrderId);
+			assertThat(DocStatus.ofNullableCodeOrUnknown(ddOrder.getDocStatus()))
+					.as("generated DD_Order %s DocStatus", ddOrderId)
+					.isEqualTo(DocStatus.Completed);
+			assertThat(ddOrderLowLevelDAO.retrieveLines(ddOrder))
+					.as("generated DD_Order %s must have one DD_OrderLine per distinct line identifier", ddOrderId)
+					.hasSize(lineIds.size());
+		});
+
+		ddOrderIdByIdentifier.forEach((identifier, ddOrderId) -> ddOrderTable.putOrReplace(identifier, ddOrderLowLevelDAO.getById(ddOrderId)));
+		lineIdByIdentifier.forEach((identifier, lineId) -> ddOrderLineTable.putOrReplace(identifier, ddOrderLowLevelDAO.getLineById(lineId)));
 	}
 
 	private ItemProvider.ProviderResult<Map<StepDefDataIdentifier, List<DDOrderCandidateAlloc>>> resolveCandidateAllocations(@NonNull final List<DataTableRow> rows)
