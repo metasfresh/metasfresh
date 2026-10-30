@@ -118,7 +118,6 @@ class QtyDemandQtySupplyJumpSeamTest
 		Mockito.when(shipmentScheduleRepository.getIdsByQuery(Mockito.any())).thenReturn(ImmutableSet.of());
 
 		final QtyDemandQtySupplyJumpService service = new QtyDemandQtySupplyJumpService(
-				qtyDemandSupplyRepository,
 				shipmentScheduleRepository,
 				Mockito.mock(PPOrderCandidateDAO.class));
 		SpringContextHolder.registerJUnitBean(QtyDemandQtySupplyJumpService.class, service);
