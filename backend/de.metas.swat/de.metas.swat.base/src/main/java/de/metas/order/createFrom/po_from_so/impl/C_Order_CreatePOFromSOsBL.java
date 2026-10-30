@@ -4,8 +4,10 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.spi.IC_Order_CreatePOFromSOsListener;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_OrderLine;
@@ -90,8 +92,9 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	}
 
 	@Override
-	public boolean isCreateDropshipPO()
+	public boolean isCreateDropshipPO(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_CREATE_DROPSHIP_PO, false);
+		// resolved for the given client/org so an org-level AD_SysConfig row overrides the system default (ConfigurationLevel 'O')
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_CREATE_DROPSHIP_PO, false, clientAndOrgId);
 	}
 }

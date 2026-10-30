@@ -98,7 +98,7 @@ class C_Order_DropshipPOTest
 
 		// these tests cover the behaviour with the CreateDropshipPO switch on; the off case is C_Order_DropshipPO_CreateFlagTest
 		final IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = mock(IC_Order_CreatePOFromSOsBL.class);
-		when(orderCreatePOFromSOsBL.isCreateDropshipPO()).thenReturn(true);
+		when(orderCreatePOFromSOsBL.isCreateDropshipPO(any())).thenReturn(true);
 		Services.registerService(IC_Order_CreatePOFromSOsBL.class, orderCreatePOFromSOsBL);
 
 		interceptor = new C_Order_DropshipPO(dropshipPOFromSOService, vendorProductInfoService, orderGroupRepository);

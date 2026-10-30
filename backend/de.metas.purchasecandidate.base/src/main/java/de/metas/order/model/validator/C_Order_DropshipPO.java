@@ -30,6 +30,7 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.createFrom.po_from_so.DropshipPOFromSOService;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -91,7 +92,7 @@ public class C_Order_DropshipPO
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void validateVendorsBeforeComplete(@NonNull final I_C_Order order)
 	{
-		if (!isCreateDropshipPOEnabled())
+		if (!isCreateDropshipPOEnabled(order))
 		{
 			// SysConfig de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO is off (default): no vendor auto-fill / validation
 			return;
@@ -173,7 +174,7 @@ public class C_Order_DropshipPO
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void createDropshipPOAfterComplete(@NonNull final I_C_Order order)
 	{
-		if (!isCreateDropshipPOEnabled())
+		if (!isCreateDropshipPOEnabled(order))
 		{
 			// SysConfig de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO is off (default): no PO creation on SO completion
 			return;
@@ -192,9 +193,10 @@ public class C_Order_DropshipPO
 
 	// -------
 
-	private boolean isCreateDropshipPOEnabled()
+	private boolean isCreateDropshipPOEnabled(@NonNull final I_C_Order order)
 	{
-		return Services.get(IC_Order_CreatePOFromSOsBL.class).isCreateDropshipPO();
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID());
+		return Services.get(IC_Order_CreatePOFromSOsBL.class).isCreateDropshipPO(clientAndOrgId);
 	}
 
 	/**

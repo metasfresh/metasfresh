@@ -27,8 +27,11 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.createFrom.po_from_so.DropshipPOFromSOService;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.impl.C_Order_CreatePOFromSOsBL;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.util.Services;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -91,7 +94,7 @@ class C_Order_DropshipPO_CreateFlagTest
 	@Test
 	void createFlagOff_createDropshipPOAfterComplete_createsNoPurchaseOrder()
 	{
-		when(orderCreatePOFromSOsBL.isCreateDropshipPO()).thenReturn(false);
+		when(orderCreatePOFromSOsBL.isCreateDropshipPO(any())).thenReturn(false);
 
 		interceptor.createDropshipPOAfterComplete(order);
 
@@ -101,7 +104,7 @@ class C_Order_DropshipPO_CreateFlagTest
 	@Test
 	void createFlagOff_validateVendorsBeforeComplete_isNoOp()
 	{
-		when(orderCreatePOFromSOsBL.isCreateDropshipPO()).thenReturn(false);
+		when(orderCreatePOFromSOsBL.isCreateDropshipPO(any())).thenReturn(false);
 
 		interceptor.validateVendorsBeforeComplete(order);
 
@@ -111,7 +114,7 @@ class C_Order_DropshipPO_CreateFlagTest
 	@Test
 	void createFlagOn_createDropshipPOAfterComplete_createsPurchaseOrder()
 	{
-		when(orderCreatePOFromSOsBL.isCreateDropshipPO()).thenReturn(true);
+		when(orderCreatePOFromSOsBL.isCreateDropshipPO(any())).thenReturn(true);
 
 		interceptor.createDropshipPOAfterComplete(order);
 
@@ -126,6 +129,30 @@ class C_Order_DropshipPO_CreateFlagTest
 				.as("sanity: the key is absent, so the passed default applies")
 				.isTrue();
 
-		assertThat(new C_Order_CreatePOFromSOsBL().isCreateDropshipPO()).isFalse();
+		assertThat(new C_Order_CreatePOFromSOsBL().isCreateDropshipPO(ClientAndOrgId.SYSTEM)).isFalse();
+	}
+
+	@Test
+	void createFlag_orgOverride_resolvesPerOrg()
+	{
+		AdempiereTestHelper.get().init();
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final String name = "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO";
+
+		final ClientId clientId = ClientId.ofRepoId(1000000);
+		final OrgId enabledOrg = OrgId.ofRepoId(1000001);
+		final OrgId otherOrg = OrgId.ofRepoId(1000002);
+
+		// system default off, one org switched on
+		sysConfigBL.setValue(name, false, ClientId.SYSTEM, OrgId.ANY);
+		sysConfigBL.setValue(name, true, clientId, enabledOrg);
+
+		final C_Order_CreatePOFromSOsBL bl = new C_Order_CreatePOFromSOsBL();
+		assertThat(bl.isCreateDropshipPO(ClientAndOrgId.ofClientAndOrg(clientId, enabledOrg)))
+				.as("the org with an explicit Y override resolves to on")
+				.isTrue();
+		assertThat(bl.isCreateDropshipPO(ClientAndOrgId.ofClientAndOrg(clientId, otherOrg)))
+				.as("another org falls back to the system default (off)")
+				.isFalse();
 	}
 }

@@ -23,7 +23,9 @@
 package de.metas.order.createFrom.po_from_so;
 
 import de.metas.order.createFrom.po_from_so.spi.IC_Order_CreatePOFromSOsListener;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /**
  *
@@ -60,7 +62,8 @@ public interface IC_Order_CreatePOFromSOsBL extends ISingletonService
 	/**
 	 * @return whether a purchase order is auto-created when a sales order on a drop-ship warehouse is completed (default {@code false}).
 	 * When {@code false}, completing such a sales order creates no purchase order.
-	 * Controlled by SysConfig {@code de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO}.
+	 * Controlled by SysConfig {@code de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO}, resolved for the given
+	 * client/org so it can be overridden per organization (ConfigurationLevel {@code O}).
 	 */
-	boolean isCreateDropshipPO();
+	boolean isCreateDropshipPO(@NonNull ClientAndOrgId clientAndOrgId);
 }
