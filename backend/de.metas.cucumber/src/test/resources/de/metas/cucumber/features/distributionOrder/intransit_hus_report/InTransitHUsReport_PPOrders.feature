@@ -142,7 +142,8 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     And the PDF archived for the record identified by "trolleyLoc" contains text "MBS_PP2: ohne Rinde"
     # the HU row does not repeat the order list
     And the PDF archived for the record identified by "trolleyLoc" does not contain text "Kommissionierhinweis: MBS_PP1"
-    And the visual line containing text "MBS_PP1: Sahne" in the PDF archived for the record identified by "trolleyLoc" is exactly "MBS_PP1: Sahne"
+    # one label line per order, one under the other (the line itself shares its visual line with the wrapped tail of the long test product value, so no 'exactly' on it)
+    And in the PDF archived for the record identified by "trolleyLoc", exactly 0 lines appear between text "MBS_PP1: Sahne" and text "MBS_PP2: ohne Rinde"
     And the PDF archived for the record identified by "trolleyLoc" has no overlapping text
 
     And the mobile user's trolley is cleared
@@ -238,8 +239,11 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     And the PDF archived for the record identified by "trolleyLoc" contains text "MBS_PP4: Sahne"
     # the old group header is hidden: the summary line follows the title and the two target lines directly, where the header used to be,
     # and the first "Produktionsauftrag:" is the QR label's, after the HU rows
-    And in the PDF archived for the record identified by "trolleyLoc", exactly 2 lines appear between text "Materialbegleitschein" and text "MBS_PP4 (Start"
-    And in the PDF archived for the record identified by "trolleyLoc", at least 3 lines appear between text "Materialbegleitschein" and text "Produktionsauftrag:"
+    # the 5 lines: the two target lines, the column header (2 lines) and the product row; the summary line sits under the product row
+    And in the PDF archived for the record identified by "trolleyLoc", exactly 5 lines appear between text "Materialbegleitschein" and text "MBS_PP4 (Start"
+    # between the summary line and the QR label: the HU row (the wrapped test product value takes 3 lines), the page footer and the next page's two target lines.
+    # A header printed after the summary line or a wrapped summary line would change this count.
+    And in the PDF archived for the record identified by "trolleyLoc", exactly 6 lines appear between text "MBS_PP4 (Start" and text "Produktionsauftrag:"
     # the HU row does not repeat the picking instruction: today it ends the wrapped product name (a timestamp ending in Z)
     And the PDF archived for the record identified by "trolleyLoc" does not contain text "Z Kommissionierhinweis"
     And the PDF archived for the record identified by "trolleyLoc" has no overlapping text

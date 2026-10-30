@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_pporders" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/intransit_hus_report/report" uuid="c4a8e1f2-5b3d-4e6a-8f7c-2d9b0a1e3c03">
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="dd_orderline_id" class="java.math.BigDecimal"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM report.InTransit_HUs_Report_PPOrders(p_DD_OrderLine_ID=>$P{dd_orderline_id}, p_AD_Language=>$P{ad_language})]]>
+	</queryString>
+	<field name="production_order_no" class="java.lang.String"/>
+	<field name="datestartschedule" class="java.sql.Timestamp"/>
+	<field name="qty" class="java.math.BigDecimal"/>
+	<field name="uomsymbol" class="java.lang.String"/>
+	<field name="pickinginstruction" class="java.lang.String"/>
+	<detail>
+		<band height="12" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-pporder" x="31" y="0" width="554" height="12" uuid="9e5d3b7a-2c4f-4a18-b6d0-1f8a7c5e4d04"/>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{pporder_label} + " " + $F{production_order_no}
++ " (" + $R{pporder_start} + " " + ($F{datestartschedule} != null ? new java.text.SimpleDateFormat("dd.MM.yyyy").format($F{datestartschedule}) : "")
++ ($F{qty} != null ? ", " + $F{qty}.stripTrailingZeros().toPlainString() + " " + $F{uomsymbol} : "") + ")"
++ ($F{pickinginstruction} != null ? ": " + $R{pickinginstruction} + ": " + $F{pickinginstruction} : "")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
