@@ -524,7 +524,8 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
 				.addInArrayFilter(I_PP_Product_BOMLine.COLUMNNAME_ComponentType
 						, X_PP_Product_BOMLine.COMPONENTTYPE_Component
-						, X_PP_Product_BOMLine.COMPONENTTYPE_Variant)
+						, X_PP_Product_BOMLine.COMPONENTTYPE_Variant
+						, X_PP_Product_BOMLine.COMPONENTTYPE_Packing)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();

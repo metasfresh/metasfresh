@@ -261,8 +261,8 @@ public class SourceHUsService
 			return;
 		}
 
-		final boolean referencedInComponentOrVariant = productBOMDAO.isComponent(productId);
-		if (!referencedInComponentOrVariant)
+		final boolean referencedInComponentVariantOrPacking = productBOMDAO.isComponent(productId);
+		if (!referencedInComponentVariantOrPacking)
 		{
 			return;
 		}
