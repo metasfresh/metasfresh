@@ -1777,3 +1777,82 @@ Feature: Product Statistics Year Comparison - reference replay
     And the product statistics year comparison report for org "-", year "yearN", products "-" to "-", category "rngPackCat" contains no rows for products:
       | M_Product_ID |
       | psycRngPack  |
+
+  @from:cucumber
+  Scenario: Product category includes its subcategories at every level: a parent category, a middle category and a leaf category, also combined with a product range
+    ## Category tree: subTopCat > subMidCat > subLeafCat (as on fm206, where the products sit in the subcategories of a top category).
+    ## psycSubTop is in subTopCat, psycSubMid in subMidCat, psycSubLeaf in subLeafCat, psycSubOther in the default category.
+    ## Product values are "<Identifier>_<timestamp>", so the text order is psycSubLeaf < psycSubMid < psycSubOther < psycSubTop.
+    ## Each product is invoiced once in 2026-03 (amount 10.00 each). Rows of other products (e.g. from earlier runs) are ignored by the steps.
+    Given metasfresh has date and time 2026-03-13T10:00:00+01:00[Europe/Berlin]
+    And metasfresh contains M_Product_Categories:
+      | Identifier |
+      | subTopCat  |
+    And metasfresh contains M_Product_Categories:
+      | Identifier | M_Product_Category_Parent_ID |
+      | subMidCat  | subTopCat                    |
+    And metasfresh contains M_Product_Categories:
+      | Identifier | M_Product_Category_Parent_ID |
+      | subLeafCat | subMidCat                    |
+    And metasfresh contains M_Products:
+      | Identifier   |
+      | psycSubOther |
+    And metasfresh contains M_Products:
+      | Identifier  | M_Product_Category_ID |
+      | psycSubTop  | subTopCat             |
+      | psycSubMid  | subMidCat             |
+      | psycSubLeaf | subLeafCat            |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | psycPLV                | psycSubTop   | 10.00    | PCE      | psycTaxCat       |
+      | psycPLV                | psycSubMid   | 10.00    | PCE      | psycTaxCat       |
+      | psycPLV                | psycSubLeaf  | 10.00    | PCE      | psycTaxCat       |
+      | psycPLV                | psycSubOther | 10.00    | PCE      | psycTaxCat       |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | M_PriceList_ID |
+      | inv_sub    | psycBP        | 2026-03-13   | true    | CHF           | psycPL         |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_Tax_ID$set |
+      | inv_sub_l1 | inv_sub      | psycSubTop   | 1 PCE       | 10.00 | psycTax19    |
+      | inv_sub_l2 | inv_sub      | psycSubMid   | 1 PCE       | 10.00 | psycTax19    |
+      | inv_sub_l3 | inv_sub      | psycSubLeaf  | 1 PCE       | 10.00 | psycTax19    |
+      | inv_sub_l4 | inv_sub      | psycSubOther | 1 PCE       | 10.00 | psycTax19    |
+    And the invoice identified by inv_sub is completed
+    And Wait until documents inv_sub are posted
+
+    # Top category: its own product and the products of all its subcategories (two levels down)
+    Then the product statistics year comparison report for org "-", year "yearN", products "-" to "-", category "subTopCat" returns:
+      | M_Product_ID | Amt_03 | Amt_Total |
+      | psycSubLeaf  | 10.00  | 10.00     |
+      | psycSubMid   | 10.00  | 10.00     |
+      | psycSubTop   | 10.00  | 10.00     |
+    And the product statistics year comparison report for org "-", year "yearN", products "-" to "-", category "subTopCat" contains no rows for products:
+      | M_Product_ID |
+      | psycSubOther |
+    # Middle category: its own product and its subcategory's, not the parent's
+    And the product statistics year comparison report for org "-", year "yearN", products "-" to "-", category "subMidCat" returns:
+      | M_Product_ID | Amt_03 |
+      | psycSubLeaf  | 10.00  |
+      | psycSubMid   | 10.00  |
+    And the product statistics year comparison report for org "-", year "yearN", products "-" to "-", category "subMidCat" contains no rows for products:
+      | M_Product_ID |
+      | psycSubTop   |
+      | psycSubOther |
+    # Leaf category: only its own product
+    And the product statistics year comparison report for org "-", year "yearN", products "-" to "-", category "subLeafCat" returns:
+      | M_Product_ID | Amt_03 |
+      | psycSubLeaf  | 10.00  |
+    And the product statistics year comparison report for org "-", year "yearN", products "-" to "-", category "subLeafCat" contains no rows for products:
+      | M_Product_ID |
+      | psycSubTop   |
+      | psycSubMid   |
+      | psycSubOther |
+    # Range Leaf..Other and the top category: Leaf and Mid (Top is outside the range, Other outside the category)
+    And the product statistics year comparison report for org "-", year "yearN", products "psycSubLeaf" to "psycSubOther", category "subTopCat" returns:
+      | M_Product_ID | Amt_03 |
+      | psycSubLeaf  | 10.00  |
+      | psycSubMid   | 10.00  |
+    And the product statistics year comparison report for org "-", year "yearN", products "psycSubLeaf" to "psycSubOther", category "subTopCat" contains no rows for products:
+      | M_Product_ID |
+      | psycSubTop   |
+      | psycSubOther |
