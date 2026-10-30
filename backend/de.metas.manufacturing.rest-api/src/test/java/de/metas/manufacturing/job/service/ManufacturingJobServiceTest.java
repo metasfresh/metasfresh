@@ -161,6 +161,7 @@ class ManufacturingJobServiceTest
 			productId = BusinessTestHelper.createProductId("finished good", uom);
 
 			distributor = mock(PPOrderCostDifferenceDistributor.class);
+			when(distributor.hasOrderCosts(any())).thenReturn(true);
 			SpringContextHolder.registerJUnitBean(PPOrderCostDifferenceDistributor.class, distributor);
 
 			postedDocuments.clear();
@@ -394,6 +395,22 @@ class ManufacturingJobServiceTest
 					.getActivityById(job.getActivities().get(0).getOrderRoutingActivityId())
 					.getStatus())
 					.isEqualTo(PPOrderRoutingActivityStatus.NOT_STARTED);
+		}
+
+		@Test
+		void costingWithoutOrderCosts_handIssued_plainClose_nothingPosted()
+		{
+			// e.g. Standard costing: nothing accumulates into PP_Order_Cost, so there is never a residual to settle
+			when(distributor.hasOrderCosts(any())).thenReturn(false);
+			final ManufacturingJob job = givenJob(1, handLine());
+			givenCostCollector(job.getPpOrderId(), X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
+			postingFailure = new AdempiereException("posting failed");
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			assertThat(trxsSeenByPoster).isEmpty();
+			verify(distributor, never()).distribute(any());
+			verify(ppOrderBL, times(1)).closeOrder(job.getPpOrderId());
 		}
 
 		@Test

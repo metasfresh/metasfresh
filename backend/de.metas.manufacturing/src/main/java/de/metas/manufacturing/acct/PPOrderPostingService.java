@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.document.engine.DocStatus;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -17,6 +18,7 @@ import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,8 +36,10 @@ public class PPOrderPostingService
 	private static final Duration DEFAULT_POLL_INTERVAL = Duration.ofMillis(250);
 	private static final Duration DEFAULT_MAX_WAIT = Duration.ofSeconds(30);
 
-	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
-	private final IPPCostCollectorDAO costCollectorDAO = Services.get(IPPCostCollectorDAO.class);
+	private static final Logger logger = LogManager.getLogger(PPOrderPostingService.class);
+
+	@NonNull private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+	@NonNull private final IPPCostCollectorDAO costCollectorDAO = Services.get(IPPCostCollectorDAO.class);
 
 	@NonNull private final DocumentPoster documentPoster;
 	@NonNull private final Sleeper sleeper;
@@ -60,7 +64,7 @@ public class PPOrderPostingService
 	@Autowired
 	public PPOrderPostingService(@NonNull final AcctDocRegistry acctDocRegistry)
 	{
-		this(newDocumentPoster(acctDocRegistry), duration -> Thread.sleep(duration.toMillis()));
+		this(newDocumentPoster(acctDocRegistry, Services.get(IAcctSchemaDAO.class)), duration -> Thread.sleep(duration.toMillis()));
 	}
 
 	@VisibleForTesting
@@ -72,10 +76,8 @@ public class PPOrderPostingService
 		this.maxPolls = DEFAULT_MAX_WAIT.toMillis() / DEFAULT_POLL_INTERVAL.toMillis();
 	}
 
-	private static DocumentPoster newDocumentPoster(@NonNull final AcctDocRegistry acctDocRegistry)
+	private static DocumentPoster newDocumentPoster(@NonNull final AcctDocRegistry acctDocRegistry, @NonNull final IAcctSchemaDAO acctSchemaDAO)
 	{
-		final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-
 		// Same call as PostingService.postNow, minus its catch-all: that one only logs the error.
 		// No force: the accounting service posts with force, so forcing here could post the same document twice at once.
 		return (documentRef, clientId) -> acctDocRegistry
@@ -91,13 +93,13 @@ public class PPOrderPostingService
 	public void postOrderAndCostCollectorsIfNotPosted(@NonNull final PPOrderId ppOrderId)
 	{
 		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
-		postIfNotPosted(ppOrder, ppOrder::isPosted, ppOrder::isProcessing, ppOrder.getAD_Client_ID());
+		postIfNotPosted(ppOrder, ppOrder::isPosted, ppOrder::isProcessing, ClientId.ofRepoId(ppOrder.getAD_Client_ID()));
 
 		for (final I_PP_Cost_Collector costCollector : costCollectorDAO.getByOrderId(ppOrderId))
 		{
 			if (isPostable(costCollector))
 			{
-				postIfNotPosted(costCollector, costCollector::isPosted, costCollector::isProcessing, costCollector.getAD_Client_ID());
+				postIfNotPosted(costCollector, costCollector::isPosted, costCollector::isProcessing, ClientId.ofRepoId(costCollector.getAD_Client_ID()));
 			}
 		}
 	}
@@ -106,10 +108,9 @@ public class PPOrderPostingService
 			@NonNull final Object document,
 			@NonNull final BooleanSupplier isPosted,
 			@NonNull final BooleanSupplier isProcessing,
-			final int adClientId)
+			@NonNull final ClientId clientId)
 	{
 		final TableRecordReference documentRef = TableRecordReference.of(document);
-		final ClientId clientId = ClientId.ofRepoId(adClientId);
 
 		waitWhileProcessing(document, isProcessing, documentRef);
 		if (isPosted.getAsBoolean())
@@ -130,6 +131,7 @@ public class PPOrderPostingService
 				throw postingError;
 			}
 
+			logger.debug("Accounting service locked {} before us; waiting for it", documentRef, postingError);
 			waitWhileProcessing(document, isProcessing, documentRef);
 			if (!isPosted.getAsBoolean())
 			{

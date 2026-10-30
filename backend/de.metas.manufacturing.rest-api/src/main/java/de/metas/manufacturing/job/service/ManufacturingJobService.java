@@ -76,6 +76,7 @@ import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.service.Constants;
+import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
@@ -115,6 +116,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class ManufacturingJobService
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -177,37 +179,6 @@ public class ManufacturingJobService
 				costDifferenceDistributor,
 				ppOrderPostingService,
 				DeadlockRetryPolicy.DEFAULT);
-	}
-
-	@VisibleForTesting
-	ManufacturingJobService(
-			@NonNull final PPOrderIssueScheduleService ppOrderIssueScheduleService,
-			@NonNull final HUReservationService huReservationService,
-			@NonNull final PPOrderSourceHUService ppOrderSourceHUService,
-			@NonNull final SourceHUsService sourceHUsService,
-			@NonNull final DeviceAccessorsHubFactory deviceAccessorsHubFactory,
-			@NonNull final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
-			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices,
-			@NonNull final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository,
-			@NonNull final HUQRCodesService huQRCodesService,
-			@NonNull final MaterialReceiptEditableAttributes materialReceiptEditableAttributes,
-			@NonNull final PPOrderCostDifferenceDistributor costDifferenceDistributor,
-			@NonNull final PPOrderPostingService ppOrderPostingService,
-			@NonNull final DeadlockRetryPolicy deadlockRetryPolicy)
-	{
-		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
-		this.huReservationService = huReservationService;
-		this.ppOrderSourceHUService = ppOrderSourceHUService;
-		this.sourceHUsService = sourceHUsService;
-		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
-		this.deviceWebsocketNamingStrategy = deviceWebsocketNamingStrategy;
-		this.loadingAndSavingSupportServices = loadingAndSavingSupportServices;
-		this.mobileUIManufacturingConfigRepository = mobileUIManufacturingConfigRepository;
-		this.huQRCodesService = huQRCodesService;
-		this.materialReceiptEditableAttributes = materialReceiptEditableAttributes;
-		this.costDifferenceDistributor = costDifferenceDistributor;
-		this.ppOrderPostingService = ppOrderPostingService;
-		this.deadlockRetryPolicy = deadlockRetryPolicy;
 	}
 
 	public static ManufacturingJobService newInstanceForUnitTesting()
@@ -544,9 +515,11 @@ public class ManufacturingJobService
 		}
 
 		// Decided once, outside the transaction: a decision flipping inside a retry attempt would settle on unposted collectors.
-		// With accounting disabled nothing is posted, so there are no order costs to settle.
-		final boolean settleWipCostDifference = postingService.isEnabled() && hasRawMaterialIssuedByHand(ppOrderId);
-		if (settleWipCostDifference)
+		// Without accounting, or with a costing method that keeps no order costs (e.g. Standard), there is never anything to settle.
+		final boolean isSettleWipCostDifference = postingService.isEnabled()
+				&& hasRawMaterialIssuedByHand(ppOrderId)
+				&& costDifferenceDistributor.hasOrderCosts(ppOrderBL.getById(ppOrderId));
+		if (isSettleWipCostDifference)
 		{
 			// The residual is read from PP_Order_Cost, which only posting fills; asynchronous posting may still be behind.
 			ppOrderPostingService.postOrderAndCostCollectorsIfNotPosted(ppOrderId);
@@ -556,8 +529,8 @@ public class ManufacturingJobService
 			changeRoutingActivityStatusToCompleted(ppOrderId, orderRoutingActivityId);
 
 			// the distributor closes the order itself when it settles
-			final boolean orderClosedBySettlement = settleWipCostDifference && costDifferenceDistributor.distribute(ppOrderId);
-			if (!orderClosedBySettlement)
+			final boolean isOrderClosedBySettlement = isSettleWipCostDifference && costDifferenceDistributor.distribute(ppOrderId);
+			if (!isOrderClosedBySettlement)
 			{
 				ppOrderBL.closeOrder(ppOrderId);
 			}
