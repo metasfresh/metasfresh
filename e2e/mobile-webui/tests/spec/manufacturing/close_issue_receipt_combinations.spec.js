@@ -38,6 +38,9 @@ const QTY_ORDERED = 10;
 const QTY_RECEIVED = 2;
 const RAW_ISSUING_TOLERANCE_PERC = 10;
 
+// above the up-to-30 s posting wait of the close
+const CLOSE_RESPONSE_TIMEOUT = 45_000;
+
 const SYSCONFIG_LaunchersLimit = 'WorkflowRestAPIService.LaunchersLimit';
 
 let costingMethodState;
@@ -158,8 +161,9 @@ const completeExpectingError = async (title) => {
         await page.locator('#last-confirm-button').tap();
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
-        // on success the jobs list shows up; on failure the toast wins the race
-        await ManufacturingJobsListScreen.waitForScreen();
+        // on success the jobs list shows up; on failure the toast wins the race. The close first waits up to 30 s for
+        // the posting of the order's collectors, so the wait must outlast that (the screen helper's own wait is 20 s).
+        await page.locator('#WFLaunchersScreen').waitFor({ timeout: CLOSE_RESPONSE_TIMEOUT });
     }, ({ textContent }) => {
         toastText = textContent;
     });
@@ -249,14 +253,14 @@ test('packagingWithoutSourceHU_doesNotAffectClose', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
-test('settlementFails_operatorSeesError_orderStaysCompleted', async ({ page }) => {
+test('closeFailsAfterSettlement_operatorSeesError_orderStaysCompleted', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0160: Manufacturing Execution');
     allure.feature('F1500: Costing');
     allure.tag('F1500');
     allure.tag('F8032');
     allure.tag('F8034');
-    allure.story('A failing close leaves the order Completed, shows the error and can be retried');
+    allure.story('A close validation error after the settlement was created rolls the close back, shows the error and can be retried');
     allure.severity('critical');
 
     // The failure trigger: the raw-material line enforces an issuing tolerance and the operator issues less than its
@@ -272,6 +276,9 @@ test('settlementFails_operatorSeesError_orderStaysCompleted', async ({ page }) =
     let firstError;
     await test.step('Close fails: the operator sees the error', async () => {
         firstError = await completeExpectingError('close below the issuing tolerance');
+        // WHICH error: the close validation (AD_Message OrderBOMLineQuantities.CannotIssueLessThan, en_US login) and not
+        // an earlier failure such as a posting error; otherwise the rollback of the created settlement is not what is shown
+        expect(firstError).toContain('Cannot issue less than');
     });
 
     await collectFailure('after failed close - order', () => Backend.expect({
