@@ -40,6 +40,7 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRow;
 import de.metas.ui.web.view.ViewRowIdsSelection;
@@ -91,6 +92,7 @@ class QtyDemandQtySupplyJumpSeamTest
 
 	private QtyDemandSupplyRepository qtyDemandSupplyRepository;
 	private ShipmentScheduleRepository shipmentScheduleRepository;
+	private IViewsRepository viewsRepository;
 
 	@BeforeEach
 	void setUp()
@@ -120,6 +122,9 @@ class QtyDemandQtySupplyJumpSeamTest
 				shipmentScheduleRepository,
 				Mockito.mock(PPOrderCandidateDAO.class));
 		SpringContextHolder.registerJUnitBean(QtyDemandQtySupplyJumpService.class, service);
+		// ViewBasedProcessTemplate (the jump base class) resolves it on construction
+		viewsRepository = Mockito.mock(IViewsRepository.class);
+		SpringContextHolder.registerJUnitBean(IViewsRepository.class, viewsRepository);
 	}
 
 	/** The one row the user clicked, carrying exactly the four fields a jump needs. */
@@ -212,13 +217,20 @@ class QtyDemandQtySupplyJumpSeamTest
 	 * {@code JavaProcess#init(IProcessPreconditionsContext)} is {@code protected} in another package, and the
 	 * platform's {@code init(ProcessInfo)} is what hands the process its record: do both, as the platform does.
 	 */
-	private static void initLikeThePlatform(final QtyDemandQtySupplyJumpProcess process, final IProcessPreconditionsContext context) throws Exception
+	private void initLikeThePlatform(final QtyDemandQtySupplyJumpProcess process, final IProcessPreconditionsContext context) throws Exception
 	{
 		final Method init = de.metas.process.JavaProcess.class.getDeclaredMethod("init", IProcessPreconditionsContext.class);
 		init.setAccessible(true);
 		init.invoke(process, context);
 
+		// the platform passes the view + selection to a view-based process as internal process parameters
+		final ViewAsPreconditionsContext viewContext = (ViewAsPreconditionsContext)context;
+		final IView view = viewContext.getView();
+		Mockito.when(viewsRepository.getView(view.getViewId().getViewId())).thenReturn(view);
+
 		process.init(ProcessInfo.builder()
+				.addParameter("$WEBUI_ViewId", view.getViewId().getViewId())
+				.addParameter("$WEBUI_ViewSelectedIds", String.valueOf(ROW_ID))
 				.setCtx(Env.getCtx())
 				.setClassname(process.getClass().getName())
 				.setAD_User_ID(100)
