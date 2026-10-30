@@ -289,11 +289,7 @@ public class DistributionLauncherCaptionProvider
 			return TranslatableStrings.empty();
 		}
 
-		return TranslatableStrings.builder()
-				.append(documentTypeAndNo.getLeft())
-				.append(" ")
-				.append(documentTypeAndNo.getRight())
-				.build();
+		return DistributionSourceDocService.toDocTypeAndNoCaption(documentTypeAndNo.getLeft(), documentTypeAndNo.getRight());
 	}
 
 	@NonNull

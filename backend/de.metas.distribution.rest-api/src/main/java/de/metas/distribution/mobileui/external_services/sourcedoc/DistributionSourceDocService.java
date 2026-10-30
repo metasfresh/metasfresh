@@ -111,6 +111,19 @@ public class DistributionSourceDocService
 				.build();
 	}
 
+	/**
+	 * @return e.g. "Manufacturing Order 1000123"
+	 */
+	@NonNull
+	public static ITranslatableString toDocTypeAndNoCaption(@NonNull final ITranslatableString docTypeName, @NonNull final String documentNo)
+	{
+		return TranslatableStrings.builder()
+				.append(docTypeName)
+				.append(" ")
+				.append(documentNo)
+				.build();
+	}
+
 	@NonNull
 	public ITranslatableString getPickingInstruction(@NonNull final PPOrderBOMLineId ppOrderBOMLineId)
 	{
