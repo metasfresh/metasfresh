@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Switches {@code C_AcctSchema.CostingMethod} and activates the material cost elements of the new method, so that products
+ * Switches {@code C_AcctSchema.CostingMethod} and, unless the new method already has an active material cost element, activates one, so that products
  * created afterwards get {@code M_Cost} rows for it. Returns the previous method code and the ids of the cost elements it
  * activated; passing them back (method + {@code deactivateCostElementIds}) restores everything the switch changed, so no
  * global state leaks into other specs.
@@ -58,15 +58,16 @@ public class SetAcctSchemaCostingMethodCommand
 		acctSchema.setCostingMethod(newMethod.getCode());
 		InterfaceWrapperHelper.saveRecord(acctSchema);
 
+		// Activate one element only, and none when the method already has an active one: two active material cost
+		// elements of the same method double every cost detail, M_Cost row and posting.
 		final List<Integer> activatedIds = new ArrayList<>();
-		for (final I_M_CostElement costElement : costElements)
+		final boolean hasActiveElement = costElements.stream().anyMatch(I_M_CostElement::isActive);
+		if (!isRestore && !hasActiveElement)
 		{
-			if (!costElement.isActive())
-			{
-				costElement.setIsActive(true);
-				InterfaceWrapperHelper.saveRecord(costElement);
-				activatedIds.add(costElement.getM_CostElement_ID());
-			}
+			final I_M_CostElement costElement = costElements.get(0);
+			costElement.setIsActive(true);
+			InterfaceWrapperHelper.saveRecord(costElement);
+			activatedIds.add(costElement.getM_CostElement_ID());
 		}
 
 		if (deactivateCostElementIds != null)
@@ -88,6 +89,7 @@ public class SetAcctSchemaCostingMethodCommand
 		final List<I_M_CostElement> costElements = queryBL.createQueryBuilder(I_M_CostElement.class)
 				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostingMethod, newMethod.getCode())
 				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostElementType, CostElementType.Material.getCode())
+				.orderBy(I_M_CostElement.COLUMNNAME_M_CostElement_ID)
 				.create()
 				.list();
 		if (costElements.isEmpty())

@@ -74,4 +74,23 @@ public class SetAcctSchemaCostingMethodCommandTest
 				.hasMessageContaining("No material cost element");
 		assertThat(InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class).getCostingMethod()).isEqualTo("S");
 	}
+
+	/**
+	 * Failure scenario: two active material cost elements of the same method make every cost detail, M_Cost row and
+	 * posting appear twice (doubled Fact_Acct lines), so the switch must not activate a second one.
+	 */
+	@Test
+	public void methodAlreadyHasAnActiveCostElement_activatesNothing()
+	{
+		final I_M_CostElement inactive = createCostElement(CostingMethod.MovingAverageInvoice, false);
+		final I_M_CostElement active = createCostElement(CostingMethod.MovingAverageInvoice, true);
+
+		final SetAcctSchemaCostingMethodCommand.Result result = SetAcctSchemaCostingMethodCommand.builder().acctSchemaId(acctSchemaId).costingMethod("M").build().execute();
+
+		assertThat(result.getActivatedCostElementIds()).isEmpty();
+		InterfaceWrapperHelper.refresh(inactive);
+		assertThat(inactive.isActive()).isFalse();
+		InterfaceWrapperHelper.refresh(active);
+		assertThat(active.isActive()).isTrue();
+	}
 }
