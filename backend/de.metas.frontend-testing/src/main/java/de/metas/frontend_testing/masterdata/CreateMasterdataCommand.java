@@ -747,6 +747,7 @@ public class CreateMasterdataCommand
 	private JsonReceiptCreateResponse createReceipt(final String identifier, final JsonReceiptCreateRequest request)
 	{
 		return ReceiptCreateCommand.builder()
+				.huQRCodesService(services.huQRCodesService)
 				.context(context)
 				.request(request)
 				.build()
