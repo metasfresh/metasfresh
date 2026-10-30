@@ -43,6 +43,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -133,7 +134,7 @@ public class FrontendTestingRestController
 	}
 
 	@PostMapping("setSysconfigs")
-	public void setSysconfigs(@RequestBody @NonNull final java.util.Map<String, String> sysconfigs)
+	public void setSysconfigs(@RequestBody @NonNull final Map<String, String> sysconfigs)
 	{
 		callInContext(() -> {
 			SysconfigCommand.builder()
@@ -146,7 +147,7 @@ public class FrontendTestingRestController
 
 	/** Restores sysconfigs at SYSTEM level, i.e. the counterpart of {@code systemSysconfigs} / {@code previousSystemSysconfigs}. */
 	@PostMapping("setSystemSysconfigs")
-	public void setSystemSysconfigs(@RequestBody @NonNull final java.util.Map<String, String> systemSysconfigs)
+	public void setSystemSysconfigs(@RequestBody @NonNull final Map<String, String> systemSysconfigs)
 	{
 		callInContext(() -> {
 			SystemSysconfigCommand.builder()

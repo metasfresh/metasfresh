@@ -76,10 +76,6 @@ order by order_docno, documentno, dd_orderline_id, m_hu_id]]>
 		<property name="com.jaspersoft.studio.field.name" value="m_hu_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="m_hu_id"/>
 	</field>
-	<field name="pickinginstruction" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="pickinginstruction"/>
-		<property name="com.jaspersoft.studio.field.label" value="pickinginstruction"/>
-	</field>
 	<field name="pporder_pickinginstruction_lines" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="pporder_pickinginstruction_lines"/>
 		<property name="com.jaspersoft.studio.field.label" value="pporder_pickinginstruction_lines"/>
@@ -136,7 +132,7 @@ order by order_docno, documentno, dd_orderline_id, m_hu_id]]>
 					<font fontName="Arial" size="9" isBold="true"/>
 					<paragraph leftIndent="5" spacingBefore="3"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{pporder_pickinginstruction_lines} != null ? $F{productname} + "\n" + $R{pickinginstruction} + ":\n" + $F{pporder_pickinginstruction_lines} : $F{pickinginstruction} != null ? $F{productname} + "\n\n" + $R{pickinginstruction} + ": " + $F{pickinginstruction} : $F{productname}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{pporder_pickinginstruction_lines} != null ? $F{productname} + "\n" + $R{pickinginstruction} + ":\n" + $F{pporder_pickinginstruction_lines} : $F{productname}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-16" x="31" y="132" width="60" height="120" forecolor="#000000" uuid="5c46dc41-db2a-4640-ae26-c0c0da4864fc">

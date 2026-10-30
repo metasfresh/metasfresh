@@ -171,6 +171,8 @@ public class ManufacturingOrderPickingInstructionsLoader
 				}
 			}
 
+			// Header-ref fallback, taken per DD_Order here; InTransit_HUs_Report_PPOrders.sql takes it per DD_OrderLine.
+			// Same result for aggregated and single-order DD_Orders: both have the same forward ref on header and lines.
 			if (refs.isEmpty())
 			{
 				final PPOrderId headerPPOrderId = PPOrderId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_ID());

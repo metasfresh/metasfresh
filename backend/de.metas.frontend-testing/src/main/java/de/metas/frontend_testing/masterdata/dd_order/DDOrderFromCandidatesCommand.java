@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.dd_order;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
@@ -70,7 +71,7 @@ public class DDOrderFromCandidatesCommand
 		final ShipperId shipperId = getShipperId();
 
 		// one timestamp for the whole request, so that all candidates share the same DD_Order header key
-		final Instant now = Instant.now();
+		final Instant now = SystemTime.asInstant();
 
 		final ImmutableList.Builder<DDOrderCandidate> candidates = ImmutableList.builder();
 		for (final JsonDDOrderFromCandidatesRequest.Candidate candidateRequest : request.getCandidates())

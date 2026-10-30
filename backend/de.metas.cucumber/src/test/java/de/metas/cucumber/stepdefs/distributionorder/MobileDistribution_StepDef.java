@@ -208,6 +208,11 @@ public class MobileDistribution_StepDef
 		updateContextFromWFProcessResponse(response);
 	}
 
+	/**
+	 * Sets the mobile user's trolley to the given locator (scans the locator's QR code against the trolley endpoint).
+	 * <p>
+	 * Gherkin: {@code And the mobile user's trolley is set to locator <locatorIdentifier>}
+	 */
 	@And("^the mobile user's trolley is set to locator (.*)$")
 	public void setTrolley(@NonNull final String locatorIdentifierStr)
 	{
@@ -218,12 +223,22 @@ public class MobileDistribution_StepDef
 		httpPOST(ENDPOINT_Trolley, ImmutableMap.of("scannedCode", scannedCode));
 	}
 
+	/**
+	 * Clears the mobile user's trolley.
+	 * <p>
+	 * Gherkin: {@code And the mobile user's trolley is cleared}
+	 */
 	@And("the mobile user's trolley is cleared")
 	public void clearTrolley()
 	{
 		httpDELETE(ENDPOINT_Trolley);
 	}
 
+	/**
+	 * Asserts that the mobile user currently has no trolley.
+	 * <p>
+	 * Gherkin: {@code Then the mobile user's trolley is empty}
+	 */
 	@Then("the mobile user's trolley is empty")
 	public void assertTrolleyEmpty()
 	{

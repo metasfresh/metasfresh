@@ -112,6 +112,7 @@ import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,6 +128,7 @@ public class CreateMasterdataCommand
 {
 	@NonNull private final CreateMasterdataCommandSupportingServices services;
 	@NonNull private final JsonCreateMasterdataRequest request;
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final MasterdataContext context = new MasterdataContext();
 	/**
@@ -134,7 +136,7 @@ public class CreateMasterdataCommand
 	 */
 	private final LinkedHashMap<String, String> previousSysconfigs = new LinkedHashMap<>();
 	/**
-	 * Previous SYSTEM-level values of the request's {@code systemSysconfigs}.
+	 * Previous SYSTEM-level values of the request's {@code systemSysconfigs}; {@code null} for a sysconfig that had no SYSTEM row.
 	 */
 	private final LinkedHashMap<String, String> previousSystemSysconfigs = new LinkedHashMap<>();
 
@@ -215,7 +217,7 @@ public class CreateMasterdataCommand
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
 				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : ImmutableMap.copyOf(previousSysconfigs))
-				.previousSystemSysconfigs(previousSystemSysconfigs.isEmpty() ? null : ImmutableMap.copyOf(previousSystemSysconfigs))
+				.previousSystemSysconfigs(previousSystemSysconfigs.isEmpty() ? null : Collections.unmodifiableMap(previousSystemSysconfigs))
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.roles(roles.isEmpty() ? null : roles)
@@ -890,10 +892,10 @@ public class CreateMasterdataCommand
 				.execute();
 	}
 
-	private ImmutableMap<String, String> applySystemSysconfigs()
+	private Map<String, String> applySystemSysconfigs()
 	{
 		return SystemSysconfigCommand.builder()
-				.sysConfigBL(Services.get(ISysConfigBL.class))
+				.sysConfigBL(sysConfigBL)
 				.systemSysconfigs(request.getSystemSysconfigs())
 				.build()
 				.execute();

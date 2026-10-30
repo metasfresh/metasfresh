@@ -48,8 +48,8 @@ public class JsonCreateMasterdataResponse
 
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, String> previousSysconfigs;
 
-	/** Previous values of the request's {@code systemSysconfigs}; restore them via {@code setSystemSysconfigs}. */
-	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, String> previousSystemSysconfigs;
+	/** Previous values of the request's {@code systemSysconfigs} ({@code null} = there was no SYSTEM row); restore them via {@code setSystemSysconfigs}. */
+	@Nullable @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.ALWAYS) Map<String, String> previousSystemSysconfigs;
 
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) JsonMobileConfigResponse mobileConfig;
 	@NonNull Map<String, JsonLoginUserResponse> login;

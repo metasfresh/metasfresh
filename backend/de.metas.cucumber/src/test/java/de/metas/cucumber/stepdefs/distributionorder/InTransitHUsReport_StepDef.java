@@ -60,6 +60,11 @@ public class InTransitHUsReport_StepDef
 	@NonNull private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 
+	/**
+	 * Runs the In-Transit HUs report for the given locator and archives the resulting PDF (German report language).
+	 * <p>
+	 * Gherkin: {@code When the Materialbegleitschein is printed for locator <locatorIdentifier>}
+	 */
 	@When("^the Materialbegleitschein is printed for locator (.*)$")
 	public void printMaterialbegleitschein(@NonNull final String locatorIdentifierStr)
 	{
