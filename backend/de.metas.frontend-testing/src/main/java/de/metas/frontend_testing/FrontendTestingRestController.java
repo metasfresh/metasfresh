@@ -204,12 +204,13 @@ public class FrontendTestingRestController
 	{
 		return callInContext(() -> {
 			final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getByClientAndOrg(ClientId.METASFRESH, OrgId.MAIN).getId();
-			final String previous = SetAcctSchemaCostingMethodCommand.builder()
+			final SetAcctSchemaCostingMethodCommand.Result result = SetAcctSchemaCostingMethodCommand.builder()
 					.acctSchemaId(acctSchemaId)
 					.costingMethod(request.getCostingMethod())
+					.deactivateCostElementIds(request.getDeactivateCostElementIds())
 					.build()
 					.execute();
-			return new JsonSetAcctSchemaCostingMethodResponse(previous);
+			return new JsonSetAcctSchemaCostingMethodResponse(result.getPreviousCostingMethod(), result.getActivatedCostElementIds());
 		});
 	}
 
@@ -220,6 +221,8 @@ public class FrontendTestingRestController
 	{
 		/** {@code C_AcctSchema.CostingMethod} code, e.g. {@code M} (MovingAverageInvoice) */
 		@NonNull String costingMethod;
+		/** cost elements to deactivate again: the {@code activatedCostElementIds} of the call being undone */
+		@javax.annotation.Nullable java.util.List<Integer> deactivateCostElementIds;
 	}
 
 	@lombok.Value
@@ -227,5 +230,7 @@ public class FrontendTestingRestController
 	{
 		/** the code before the change, to restore it */
 		String previousCostingMethod;
+		/** the cost elements this call switched from inactive to active; hand them back to restore */
+		java.util.List<Integer> activatedCostElementIds;
 	}
 }

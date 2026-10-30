@@ -44,16 +44,24 @@ public class SetAcctSchemaCostingMethodCommandTest
 		createCostElement(CostingMethod.StandardCosting, true);
 		final I_M_CostElement movingAvg = createCostElement(CostingMethod.MovingAverageInvoice, false);
 
-		final String previous = SetAcctSchemaCostingMethodCommand.builder().acctSchemaId(acctSchemaId).costingMethod("M").build().execute();
+		final SetAcctSchemaCostingMethodCommand.Result previous = SetAcctSchemaCostingMethodCommand.builder().acctSchemaId(acctSchemaId).costingMethod("M").build().execute();
 
-		assertThat(previous).isEqualTo("S");
+		assertThat(previous.getPreviousCostingMethod()).isEqualTo("S");
+		assertThat(previous.getActivatedCostElementIds()).containsExactly(movingAvg.getM_CostElement_ID());
 		assertThat(InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class).getCostingMethod()).isEqualTo("M");
 		InterfaceWrapperHelper.refresh(movingAvg);
 		assertThat(movingAvg.isActive()).isTrue();
 
-		// restoring
-		assertThat(SetAcctSchemaCostingMethodCommand.builder().acctSchemaId(acctSchemaId).costingMethod(previous).build().execute()).isEqualTo("M");
+		// restoring: the method AND the cost element it activated
+		final SetAcctSchemaCostingMethodCommand.Result restored = SetAcctSchemaCostingMethodCommand.builder()
+				.acctSchemaId(acctSchemaId)
+				.costingMethod(previous.getPreviousCostingMethod())
+				.deactivateCostElementIds(previous.getActivatedCostElementIds())
+				.build().execute();
+		assertThat(restored.getPreviousCostingMethod()).isEqualTo("M");
 		assertThat(InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class).getCostingMethod()).isEqualTo("S");
+		InterfaceWrapperHelper.refresh(movingAvg);
+		assertThat(movingAvg.isActive()).as("cost element activated by the switch is inactive again after restore").isFalse();
 	}
 
 	@Test

@@ -95,21 +95,23 @@ export const Backend = {
 
     /**
      * Switch C_AcctSchema.CostingMethod of the test client and activate the matching cost elements.
-     * Returns the previous method code: restore it in afterEach with the same call.
+     * Returns the previous state; pass it to restoreAcctSchemaCostingMethod in afterEach.
      * Production costing is MovingAverageInvoice, code 'M' (the E2E seed uses 'S').
      *
      * @param {string} code - e.g. 'M'
-     * @returns {Promise<string>} the previous code
+     * @returns {Promise<{previousCostingMethod: string, activatedCostElementIds: number[]}>}
      */
     setAcctSchemaCostingMethod: async (code) => await test.step(`Backend: set acct schema costing method ${code}`, async () => {
-        const backendBaseUrl = await getBackendBaseUrl();
-        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/acctSchema/costingMethod`, {
-            data: { costingMethod: code },
-            headers: { 'Content-Type': 'application/json' },
-        });
-        const responseBody = await response.json();
-        assertNoErrors({ responseBody });
-        return responseBody.previousCostingMethod;
+        return await postAcctSchemaCostingMethod({ costingMethod: code });
+    }),
+
+    /**
+     * Undo setAcctSchemaCostingMethod: puts back the costing method and deactivates the cost elements it activated.
+     *
+     * @param {{previousCostingMethod: string, activatedCostElementIds: number[]}} previousState - the result of setAcctSchemaCostingMethod
+     */
+    restoreAcctSchemaCostingMethod: async ({ previousCostingMethod, activatedCostElementIds }) => await test.step(`Backend: restore acct schema costing method ${previousCostingMethod}`, async () => {
+        await postAcctSchemaCostingMethod({ costingMethod: previousCostingMethod, deactivateCostElementIds: activatedCostElementIds });
     }),
 
     /**
@@ -281,6 +283,17 @@ export const Backend = {
 //
 
 let _backendBaseUrl = process.env.BACKEND_BASE_URL ? process.env.BACKEND_BASE_URL + '/api/v2' : null;
+
+const postAcctSchemaCostingMethod = async (data) => {
+    const backendBaseUrl = await getBackendBaseUrl();
+    const response = await page.request.post(`${backendBaseUrl}/frontendTesting/acctSchema/costingMethod`, {
+        data,
+        headers: { 'Content-Type': 'application/json' },
+    });
+    const responseBody = await response.json();
+    assertNoErrors({ responseBody });
+    return responseBody;
+};
 
 export const getBackendBaseUrl = async () => {
     if (!_backendBaseUrl) {
