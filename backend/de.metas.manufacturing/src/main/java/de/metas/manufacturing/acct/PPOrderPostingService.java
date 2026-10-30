@@ -9,7 +9,9 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderId;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Properties;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -116,7 +119,7 @@ public class PPOrderPostingService
 
 		try
 		{
-			documentPoster.postNow(documentRef, clientId);
+			postNowInAccountingContext(documentRef, clientId);
 		}
 		catch (final RuntimeException postingError)
 		{
@@ -130,8 +133,22 @@ public class PPOrderPostingService
 			waitWhileProcessing(document, isProcessing, documentRef);
 			if (!isPosted.getAsBoolean())
 			{
-				documentPoster.postNow(documentRef, clientId);
+				postNowInAccountingContext(documentRef, clientId);
 			}
+		}
+	}
+
+	/**
+	 * Posts under a fresh context carrying only the client, like the accounting service does,
+	 * so that the caller's role, org and user cannot influence the posting.
+	 */
+	private void postNowInAccountingContext(@NonNull final TableRecordReference documentRef, @NonNull final ClientId clientId)
+	{
+		final Properties ctx = Env.newTemporaryCtx();
+		Env.setClientId(ctx, clientId);
+		try (final IAutoCloseable ignored = Env.switchContext(ctx))
+		{
+			documentPoster.postNow(documentRef, clientId);
 		}
 	}
 

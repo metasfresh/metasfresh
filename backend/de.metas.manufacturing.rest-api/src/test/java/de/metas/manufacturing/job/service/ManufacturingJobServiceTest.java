@@ -34,7 +34,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.organization.OrgId;
 import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -142,6 +144,8 @@ class ManufacturingJobServiceTest
 
 		private final List<TableRecordReference> postedDocuments = new ArrayList<>();
 		private final List<ITrx> trxsSeenByPoster = new ArrayList<>();
+		private final List<OrgId> orgsSeenByPoster = new ArrayList<>();
+		private final List<ClientId> clientsSeenByPoster = new ArrayList<>();
 		@Nullable private RuntimeException postingFailure;
 		/** What the accounting service does while we wait for its lock; null = it never finishes. */
 		@Nullable private Runnable backgroundPostingProgress;
@@ -161,6 +165,8 @@ class ManufacturingJobServiceTest
 
 			postedDocuments.clear();
 			trxsSeenByPoster.clear();
+			orgsSeenByPoster.clear();
+			clientsSeenByPoster.clear();
 			postingFailure = null;
 			backgroundPostingProgress = null;
 			beforePostAttempt = null;
@@ -352,6 +358,21 @@ class ManufacturingJobServiceTest
 		}
 
 		@Test
+		void postsUnderAccountingContext_notTheOperatorsContext()
+		{
+			final ManufacturingJob job = givenJob(1, handLine());
+			final I_PP_Cost_Collector issue = givenCostCollector(job.getPpOrderId(), X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
+			final OrgId operatorOrgId = OrgId.ofRepoId(4711);
+			Env.setOrgId(Env.getCtx(), operatorOrgId);
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			assertThat(orgsSeenByPoster).hasSize(2).doesNotContain(operatorOrgId);
+			assertThat(clientsSeenByPoster).containsOnly(ClientId.ofRepoId(issue.getAD_Client_ID()));
+			assertThat(Env.getOrgId()).isEqualTo(operatorOrgId);
+		}
+
+		@Test
 		void postingErrorOfExistingCollectors_propagates_beforeCloseTrx()
 		{
 			final ManufacturingJob job = givenJob(1, handLine());
@@ -475,6 +496,8 @@ class ManufacturingJobServiceTest
 		private void fakePostNow(final TableRecordReference documentRef, final ClientId clientIdNotUsed)
 		{
 			trxsSeenByPoster.add(trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone));
+			orgsSeenByPoster.add(Env.getOrgId());
+			clientsSeenByPoster.add(Env.getClientId());
 			if (beforePostAttempt != null)
 			{
 				beforePostAttempt.accept(documentRef);
