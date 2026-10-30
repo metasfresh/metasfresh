@@ -248,12 +248,18 @@ Feature: Daily Revenue based on Delivery
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | NetAmtToInvoice |
       | ic_tc3                            | orderLine_tc3             | 6            | 30.00           |
 
+    # The invoice is a partial invoice: more invoices will follow for the open qty 4.
+    # A non-partial invoice would close the candidate (C_Invoice_Candidate_Close_PartiallyInvoiced=Y),
+    # leaving QtyToInvoice 0 instead of 4.
     When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
-      | C_Invoice_Candidate_ID.Identifier |
-      | ic_tc3                            |
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic_tc3                            | Y                | 6           |
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_tc3                            | invoice_tc3             |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | invoice_tc3             | Y                | CO        |
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | LineNetAmt |
       | invoice_tc3             | product_ddr             | 6           | 30.00      |
