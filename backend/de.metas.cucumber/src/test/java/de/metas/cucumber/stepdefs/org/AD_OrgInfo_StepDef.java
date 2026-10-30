@@ -27,8 +27,10 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,6 +39,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_M_Warehouse;
 
 import java.util.List;
 import java.util.Map;
@@ -49,6 +52,10 @@ public class AD_OrgInfo_StepDef
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final AD_OrgInfo_StepDefData orgInfoTable;
+	private final M_Warehouse_StepDefData warehouseTable;
+
+	/** The main org's {@code DropShip_Warehouse_ID} from before this scenario changed it; {@code null} = not changed. */
+	private Integer priorDropShipWarehouseRepoId = null;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -56,12 +63,14 @@ public class AD_OrgInfo_StepDef
 			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final AD_OrgInfo_StepDefData orgInfoTable)
+			@NonNull final AD_OrgInfo_StepDefData orgInfoTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.orgTable = orgTable;
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.orgInfoTable = orgInfoTable;
+		this.warehouseTable = warehouseTable;
 	}
 
 	@Given("metasfresh contains AD_OrgInfo:")
@@ -96,5 +105,59 @@ public class AD_OrgInfo_StepDef
 			final String orgInfoIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_AD_OrgInfo.COLUMNNAME_AD_OrgInfo_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			orgInfoTable.putOrReplace(orgInfoIdentifier, orgInfoRecord);
 		}
+	}
+
+	/**
+	 * Sets {@code AD_OrgInfo.DropShip_Warehouse_ID} of the main organization to the given warehouse. The save runs the
+	 * {@code AD_OrgInfo} dropship-warehouse guard (the warehouse must be flagged {@code IsDropShipWarehouse='Y'}), so the step
+	 * fails if the guard rejects the warehouse. The prior value is restored after the scenario.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns (none — the warehouse identifier is in the step text)
+	 * @cucumber.depends StepDefData: M_Warehouse_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the AD_OrgInfo of the main organization has DropShip_Warehouse_ID set to the warehouse "warehouse_dw"
+	 * </pre>
+	 */
+	@Given("the AD_OrgInfo of the main organization has DropShip_Warehouse_ID set to the warehouse {string}")
+	public void set_orgInfo_dropShipWarehouse(@NonNull final String warehouseIdentifier)
+	{
+		final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+
+		final I_AD_OrgInfo orgInfoRecord = queryBL.createQueryBuilder(I_AD_OrgInfo.class)
+				.addEqualsFilter(I_AD_OrgInfo.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID.getRepoId())
+				.create()
+				.firstOnly(I_AD_OrgInfo.class);
+		assertThat(orgInfoRecord).as("AD_OrgInfo of the main organization").isNotNull();
+
+		if (priorDropShipWarehouseRepoId == null)
+		{
+			priorDropShipWarehouseRepoId = orgInfoRecord.getDropShip_Warehouse_ID();
+		}
+
+		orgInfoRecord.setDropShip_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		InterfaceWrapperHelper.saveRecord(orgInfoRecord); // throws if the dropship-warehouse guard rejects the warehouse
+
+		InterfaceWrapperHelper.refresh(orgInfoRecord);
+		assertThat(orgInfoRecord.getDropShip_Warehouse_ID())
+				.as("AD_OrgInfo.DropShip_Warehouse_ID after the save")
+				.isEqualTo(warehouse.getM_Warehouse_ID());
+	}
+
+	@After
+	public void restoreDropShipWarehouseAfterScenario()
+	{
+		if (priorDropShipWarehouseRepoId == null)
+		{
+			return;
+		}
+		final I_AD_OrgInfo orgInfoRecord = queryBL.createQueryBuilder(I_AD_OrgInfo.class)
+				.addEqualsFilter(I_AD_OrgInfo.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID.getRepoId())
+				.create()
+				.firstOnly(I_AD_OrgInfo.class);
+		orgInfoRecord.setDropShip_Warehouse_ID(priorDropShipWarehouseRepoId);
+		InterfaceWrapperHelper.saveRecord(orgInfoRecord);
+		priorDropShipWarehouseRepoId = null;
 	}
 }

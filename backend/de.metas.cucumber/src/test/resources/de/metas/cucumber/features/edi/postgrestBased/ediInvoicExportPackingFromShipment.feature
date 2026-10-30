@@ -73,6 +73,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
     # Two purchase orders → two projects → one crate line per project on shipment and invoice.
     Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     And temporarily set project type Sales/Purchase Order to active
+    And temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO"
     And metasfresh contains M_DiscountSchemas:
       | Identifier         | Name                 | DiscountType | ValidFrom  |
       | vendorDiscountPlan | invoic_packing_vndr1 | F            | 2026-01-01 |
