@@ -1031,7 +1031,6 @@ Feature: Derivative price lists
       | dpl_tc18_prod  | 2.00     | true               |
       | dpl_tc18_prod2 | 3.50     | false              |
 
-
   # A copy-only schema (one line without product or category, all surcharges 0) copies the previous customer prices
   # unchanged. A schema whose only line is restricted to one product category copies the prices of that category's
   # products only; a product of another category gets no price on the new customer version.
