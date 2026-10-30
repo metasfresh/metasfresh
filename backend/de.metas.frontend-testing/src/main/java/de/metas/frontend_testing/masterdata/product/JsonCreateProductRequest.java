@@ -75,6 +75,15 @@ public class JsonCreateProductRequest
 	 */
 	@Nullable Boolean isSkipDefaultCosts;
 
+	/**
+	 * {@code M_Cost.CurrentCostPrice} (own cost price, in the product's stock UOM) of the costing-method element
+	 * of each accounting schema. When {@code null} the default costs are left untouched.
+	 */
+	@Nullable BigDecimal currentCostPrice;
+
+	/** {@code M_Product.CoProductCostDistributionPercent}; when {@code null} the column stays unset. */
+	@Nullable BigDecimal coProductCostDistributionPercent;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
 	@Nullable GTIN gtin;
