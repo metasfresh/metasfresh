@@ -180,6 +180,7 @@ class InlineFilterItem extends Component {
         widgetData={[dataClone]}
         range={data.range}
         caption={data.caption}
+        widgetSize={data.size}
         noLabel={true}
         filterWidget={true}
         {...{

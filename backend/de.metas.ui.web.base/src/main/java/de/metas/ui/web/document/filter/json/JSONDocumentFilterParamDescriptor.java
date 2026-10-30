@@ -11,6 +11,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.GuavaCollectors;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.ToString;
@@ -98,6 +99,10 @@ import java.util.List;
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Boolean showIncrementDecrementButtons;
 
+	@JsonProperty("size")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final WidgetSize size;
+
 	@JsonProperty("barcodeScannerType")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final BarcodeScannerType barcodeScannerType;
@@ -139,6 +144,8 @@ import java.util.List;
 		type = toJSONLayoutType(widgetType);
 
 		showIncrementDecrementButtons = param.isShowIncrementDecrementButtons() ? Boolean.TRUE : null;
+
+		size = param.getWidgetSize();
 
 		barcodeScannerType = param.getBarcodeScannerType();
 	}
