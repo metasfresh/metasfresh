@@ -46,7 +46,7 @@ import java.util.function.Function;
  *     <li>DD_Order_Candidate_DDOrder: 1 query (by DD_Order_ID)</li>
  *     <li>DD_Order_Candidate: 1 query (by PK)</li>
  *     <li>PP_Order: 1 query (by PK)</li>
- *     <li>PP_Order_BOMLine: 1 query (by PK, via IPPOrderBOMDAO)</li>
+ *     <li>PP_Order_BOMLine: 1 query (by PK, via IPPOrderBL)</li>
  *     <li>C_DocType: one table-cached lookup per distinct C_DocType_ID</li>
  * </ul>
  * PP_Order_BOMLine_Trl has no PickingInstruction column, so the picking instruction is not translated

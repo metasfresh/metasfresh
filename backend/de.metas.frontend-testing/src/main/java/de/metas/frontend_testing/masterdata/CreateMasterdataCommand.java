@@ -108,8 +108,8 @@ import de.metas.order.OrderId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
-import org.adempiere.service.ISysConfigBL;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;

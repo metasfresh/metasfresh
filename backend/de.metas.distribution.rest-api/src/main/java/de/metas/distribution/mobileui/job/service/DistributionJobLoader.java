@@ -1,6 +1,7 @@
 package de.metas.distribution.mobileui.job.service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.ddorder.DDOrderId;
@@ -8,7 +9,10 @@ import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.DDOrderQuery.DDOrderQueryBuilder;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.mobileui.config.DistributionJobCaptionField;
+import de.metas.distribution.mobileui.config.DistributionJobCaptionFormatItem;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
+import de.metas.distribution.mobileui.external_services.sourcedoc.ManufacturingOrderPickingInstructionLines;
 import de.metas.distribution.mobileui.external_services.sourcedoc.PlantInfo;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
@@ -17,6 +21,7 @@ import de.metas.distribution.mobileui.job.model.DistributionJobLineId;
 import de.metas.distribution.mobileui.job.model.DistributionJobStep;
 import de.metas.distribution.mobileui.job.model.DistributionJobStepId;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.ITranslatableString;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -36,7 +41,10 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 
 @RequiredArgsConstructor
 public class DistributionJobLoader
@@ -46,6 +54,7 @@ public class DistributionJobLoader
 	private final HashMap<DDOrderId, I_DD_Order> ddOrdersCache = new HashMap<>();
 	private final HashMap<DDOrderId, List<I_DD_OrderLine>> ddOrderLinesCache = new HashMap<>();
 	private final HashMap<DDOrderLineId, List<DDOrderMoveSchedule>> schedulesCache = new HashMap<>();
+	private final HashMap<DDOrderId, ImmutableList<ITranslatableString>> manufacturingOrderPickingInstructionLinesCache = new HashMap<>();
 
 	public DistributionJob loadByRecord(@NonNull final I_DD_Order ddOrder)
 	{
@@ -116,6 +125,7 @@ public class DistributionJobLoader
 				.salesOrderRef(loadingSupportServices.getSalesOderRef(ddOrder))
 				.manufacturingOrderRef(loadingSupportServices.getManufacturingOrderRef(ddOrder))
 				.pickingInstruction(loadingSupportServices.getPickingInstruction(ddOrder))
+				.manufacturingOrderPickingInstructionLines(manufacturingOrderPickingInstructionLinesCache.getOrDefault(ddOrderId, ImmutableList.of()))
 				.allowPickingAnyHU(config.isAllowPickingAnyHU())
 				.lines(getDDOrderLines(ddOrderId)
 						.stream()
@@ -204,6 +214,28 @@ public class DistributionJobLoader
 				.map(ddOrderLine -> DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 		CollectionUtils.getAllOrLoad(schedulesCache, ddOrderLineIds, loadingSupportServices::getSchedulesByDDOrderLineIds);
+
+		if (isManufacturingOrderPickingInstructionLinesRequired())
+		{
+			CollectionUtils.getAllOrLoad(manufacturingOrderPickingInstructionLinesCache, ddOrdersCache.keySet(), this::loadManufacturingOrderPickingInstructionLines);
+		}
+	}
+
+	private boolean isManufacturingOrderPickingInstructionLinesRequired()
+	{
+		return loadingSupportServices.getConfig()
+				.getCaptionFormat()
+				.getItems()
+				.stream()
+				.map(DistributionJobCaptionFormatItem::getField)
+				.anyMatch(field -> field == DistributionJobCaptionField.PPOrdersWithPickingInstruction);
+	}
+
+	private Map<DDOrderId, ImmutableList<ITranslatableString>> loadManufacturingOrderPickingInstructionLines(final Set<DDOrderId> ddOrderIds)
+	{
+		final List<I_DD_Order> ddOrders = ddOrderIds.stream().map(ddOrdersCache::get).collect(ImmutableList.toImmutableList());
+		final ManufacturingOrderPickingInstructionLines lines = loadingSupportServices.getManufacturingOrderPickingInstructionLines(ddOrders);
+		return ddOrderIds.stream().collect(ImmutableMap.toImmutableMap(Function.identity(), lines::getLines));
 	}
 
 	I_DD_Order getDDOrder(final DDOrderId ddOrderId)

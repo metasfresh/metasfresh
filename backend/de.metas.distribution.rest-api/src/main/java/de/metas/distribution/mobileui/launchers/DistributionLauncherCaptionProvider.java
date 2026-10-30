@@ -19,6 +19,7 @@ import de.metas.distribution.mobileui.job.model.DDOrderReference;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
@@ -29,6 +30,7 @@ import de.metas.util.lang.SeqNo;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
@@ -42,6 +44,8 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -66,11 +70,18 @@ public class DistributionLauncherCaptionProvider
 		@NonNull final ArrayList<String> fieldsInOrder = new ArrayList<>();
 		@NonNull final HashMap<String, ITranslatableString> fieldValues = new HashMap<>();
 		@NonNull final HashMap<String, Comparable<?>> comparingKeys = new HashMap<>();
+		@NonNull final HashSet<String> blockLayoutFields = new HashSet<>();
 
 		for (final DistributionJobCaptionFormatItem formatItem : format.getItems())
 		{
 			final DistributionJobCaptionField field = formatItem.getField();
-			final ITranslatableString captionItem = computeItem(context, field);
+			final ITranslatableString captionItem = field == DistributionJobCaptionField.PPOrdersWithPickingInstruction
+					? joinManufacturingOrderPickingInstructionLines(context, "\n")
+					: computeItem(context, field);
+			if (field == DistributionJobCaptionField.PPOrdersWithPickingInstruction)
+			{
+				blockLayoutFields.add(field.getCode());
+			}
 			fieldsInOrder.add(field.getCode());
 			fieldValues.put(field.getCode(), captionItem);
 		}
@@ -98,6 +109,7 @@ public class DistributionLauncherCaptionProvider
 				.fieldsInOrder(fieldsInOrder)
 				.fieldValues(fieldValues)
 				.comparingKeys(comparingKeys)
+				.blockLayoutFields(blockLayoutFields)
 				.build();
 	}
 
@@ -135,9 +147,29 @@ public class DistributionLauncherCaptionProvider
 				return extractPriority(context);
 			case PickingInstruction:
 				return extractPickingInstruction(context);
+			case PPOrdersWithPickingInstruction:
+				return joinManufacturingOrderPickingInstructionLines(context, ", ");
 			default:
 				return TranslatableStrings.empty();
 		}
+	}
+
+	@NonNull
+	private static ITranslatableString joinManufacturingOrderPickingInstructionLines(@NonNull final Context context, @NonNull final String separator)
+	{
+		final List<ITranslatableString> lines = context.getManufacturingOrderPickingInstructionLines();
+		if (lines.isEmpty())
+		{
+			return TranslatableStrings.empty();
+		}
+
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
+		for (int i = 0; i < lines.size(); i++)
+		{
+			if (i > 0) {builder.append(separator);}
+			builder.append(lines.get(i));
+		}
+		return builder.build();
 	}
 
 	@NonNull
@@ -310,6 +342,7 @@ public class DistributionLauncherCaptionProvider
 				.seqNo(ddOrderReference.getSeqNo())
 				.displayDate(ddOrderReference.getDisplayDate())
 				.pickingInstruction(ddOrderReference.getPickingInstruction())
+				.manufacturingOrderPickingInstructionLines(ddOrderReference.getManufacturingOrderPickingInstructionLines())
 				.pickFromWarehouseId(ddOrderReference.getFromWarehouseId())
 				.fromLocator(fromLocator)
 				.dropToWarehouseId(ddOrderReference.getToWarehouseId())
@@ -334,6 +367,7 @@ public class DistributionLauncherCaptionProvider
 				.seqNo(job.getSeqNo())
 				.displayDate(job.getPickDate())
 				.pickingInstruction(job.getPickingInstruction())
+				.manufacturingOrderPickingInstructionLines(job.getManufacturingOrderPickingInstructionLines())
 				.pickFromWarehouse(job.getPickFromWarehouse())
 				.fromLocator(fromLocator)
 				.dropToWarehouse(job.getDropToWarehouse())
@@ -364,6 +398,7 @@ public class DistributionLauncherCaptionProvider
 		// @Nullable ZonedDateTime pickDate;
 		@NonNull ZonedDateTime displayDate;
 		@Nullable ITranslatableString pickingInstruction;
+	@Singular List<ITranslatableString> manufacturingOrderPickingInstructionLines;
 		@Nullable WarehouseInfo pickFromWarehouse;
 		@Nullable WarehouseId pickFromWarehouseId;
 		@Nullable LocatorInfo fromLocator;

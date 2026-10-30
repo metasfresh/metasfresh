@@ -17,18 +17,18 @@ const CAPTION_MULTILINE_CLASS = /(^|\s)caption-multiline(\s|$)/;
 
 let previousSystemSysconfigs = {};
 
-// Both tests share one afterAll restore, so accumulate instead of overwrite; the FIRST recorded value of a
-// sysconfig is the one to restore (a later test would only see the value an earlier test already changed).
 // Inherent limit (as in picking/close_partially_shipped.spec.js): if createMasterdata itself throws, the
 // backend returns no previous values, so nothing can be restored for that call.
 const rememberPreviousSysconfigs = (masterdata) => {
-    previousSystemSysconfigs = { ...masterdata.previousSystemSysconfigs, ...previousSystemSysconfigs };
+    previousSystemSysconfigs = { ...masterdata.previousSystemSysconfigs };
 };
 
-// Restore the sysconfig even if the test body fails (pattern of picking/close_partially_shipped.spec.js)
-test.afterAll(async () => {
+// Restore the sysconfig after each test, even if the test body fails (pattern of picking/close_partially_shipped.spec.js).
+// afterEach, not afterAll: Backend.* posts through the current test's page, which no longer exists in afterAll.
+test.afterEach(async () => {
     if (Object.keys(previousSystemSysconfigs).length > 0) {
         await Backend.setSystemSysconfigs(previousSystemSysconfigs);
+        previousSystemSysconfigs = {};
     }
 });
 
