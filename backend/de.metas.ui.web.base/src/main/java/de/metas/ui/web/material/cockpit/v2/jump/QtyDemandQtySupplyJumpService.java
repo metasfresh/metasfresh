@@ -29,8 +29,6 @@ import de.metas.inoutcandidate.api.ReceiptScheduleQuery;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.QtyDemandQtySupply;
-import de.metas.material.cockpit.QtyDemandQtySupplyId;
-import de.metas.material.cockpit.QtyDemandSupplyRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -56,16 +54,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QtyDemandQtySupplyJumpService
 {
-	@NonNull private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final PPOrderCandidateDAO ppOrderCandidateDAO;
 
 	@NonNull private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-
-	public QtyDemandQtySupply getRow(@NonNull final QtyDemandQtySupplyId id)
-	{
-		return qtyDemandSupplyRepository.getById(id);
-	}
 
 	public boolean hasShipmentSchedulesToOpen(@NonNull final QtyDemandQtySupply row)
 	{
