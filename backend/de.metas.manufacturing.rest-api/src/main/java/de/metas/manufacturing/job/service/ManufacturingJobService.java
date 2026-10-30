@@ -32,6 +32,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.manufacturing.acct.PPOrderPostingService;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.config.ReceiveUnitType;
@@ -138,6 +139,7 @@ public class ManufacturingJobService
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final MaterialReceiptEditableAttributes materialReceiptEditableAttributes;
 	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
+	@NonNull private final PPOrderPostingService ppOrderPostingService;
 	@NonNull private final DeadlockRetryPolicy deadlockRetryPolicy;
 
 	@VisibleForTesting
@@ -156,7 +158,8 @@ public class ManufacturingJobService
 			@NonNull final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository,
 			@NonNull final HUQRCodesService huQRCodesService,
 			@NonNull final MaterialReceiptEditableAttributes materialReceiptEditableAttributes,
-			@NonNull final PPOrderCostDifferenceDistributor costDifferenceDistributor)
+			@NonNull final PPOrderCostDifferenceDistributor costDifferenceDistributor,
+			@NonNull final PPOrderPostingService ppOrderPostingService)
 	{
 		this(
 				ppOrderIssueScheduleService,
@@ -170,6 +173,7 @@ public class ManufacturingJobService
 				huQRCodesService,
 				materialReceiptEditableAttributes,
 				costDifferenceDistributor,
+				ppOrderPostingService,
 				DeadlockRetryPolicy.DEFAULT);
 	}
 
@@ -186,6 +190,7 @@ public class ManufacturingJobService
 			@NonNull final HUQRCodesService huQRCodesService,
 			@NonNull final MaterialReceiptEditableAttributes materialReceiptEditableAttributes,
 			@NonNull final PPOrderCostDifferenceDistributor costDifferenceDistributor,
+			@NonNull final PPOrderPostingService ppOrderPostingService,
 			@NonNull final DeadlockRetryPolicy deadlockRetryPolicy)
 	{
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
@@ -199,6 +204,7 @@ public class ManufacturingJobService
 		this.huQRCodesService = huQRCodesService;
 		this.materialReceiptEditableAttributes = materialReceiptEditableAttributes;
 		this.costDifferenceDistributor = costDifferenceDistributor;
+		this.ppOrderPostingService = ppOrderPostingService;
 		this.deadlockRetryPolicy = deadlockRetryPolicy;
 	}
 
@@ -219,6 +225,7 @@ public class ManufacturingJobService
 						SpringContextHolder.instance.getBean(HUQRCodesService.class),
 						new MaterialReceiptEditableAttributes(),
 						SpringContextHolder.instance.getBean(PPOrderCostDifferenceDistributor.class),
+						SpringContextHolder.instance.getBean(PPOrderPostingService.class),
 						DeadlockRetryPolicy.builder().backoffMillis(0).build()
 				)
 		);
@@ -536,6 +543,11 @@ public class ManufacturingJobService
 
 		// Decided once, outside the transaction: a decision flipping inside a retry attempt would settle on unposted collectors.
 		final boolean settleWipCostDifference = hasRawMaterialIssuedByHand(ppOrderId);
+		if (settleWipCostDifference)
+		{
+			// The residual is read from PP_Order_Cost, which only posting fills; asynchronous posting may still be behind.
+			ppOrderPostingService.postOrderAndCostCollectorsIfNotPosted(ppOrderId);
+		}
 
 		runInOneTrxWithDeadlockRetry(() -> {
 			changeRoutingActivityStatusToCompleted(ppOrderId, orderRoutingActivityId);

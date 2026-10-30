@@ -8,6 +8,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.manufacturing.acct.PPOrderPostingService;
 import de.metas.manufacturing.config.ReceiveUnitType;
 import de.metas.manufacturing.job.model.FinishedGoodsReceive;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
@@ -33,8 +34,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
@@ -47,10 +50,12 @@ import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.I_PP_Order_Workflow;
+import org.eevolution.model.X_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Order_Workflow;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -87,6 +92,7 @@ class ManufacturingJobServiceTest
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(PPOrderCostDifferenceDistributor.class, mock(PPOrderCostDifferenceDistributor.class));
+		SpringContextHolder.registerJUnitBean(PPOrderPostingService.class, mock(PPOrderPostingService.class));
 		this.manufacturingJobService = ManufacturingJobService.newInstanceForUnitTesting();
 		this.sysConfigDAO = Services.get(ISysConfigDAO.class);
 	}
@@ -131,6 +137,10 @@ class ManufacturingJobServiceTest
 		private ITrxManager trxManager;
 		private ManufacturingJobService service;
 
+		private final List<TableRecordReference> postedDocuments = new ArrayList<>();
+		private final List<ITrx> trxsSeenByPoster = new ArrayList<>();
+		@Nullable private RuntimeException postingFailure;
+
 		@BeforeEach
 		void beforeEach()
 		{
@@ -140,6 +150,11 @@ class ManufacturingJobServiceTest
 
 			distributor = mock(PPOrderCostDifferenceDistributor.class);
 			SpringContextHolder.registerJUnitBean(PPOrderCostDifferenceDistributor.class, distributor);
+
+			postedDocuments.clear();
+			trxsSeenByPoster.clear();
+			postingFailure = null;
+			SpringContextHolder.registerJUnitBean(PPOrderPostingService.class, new PPOrderPostingService(this::fakePostNow));
 
 			ppOrderBL = spy(Services.get(IHUPPOrderBL.class));
 			doNothing().when(ppOrderBL).closeOrder(any());
@@ -278,6 +293,100 @@ class ManufacturingJobServiceTest
 
 			assertThat(thrown.get()).isNotNull();
 			verify(distributor, times(1)).distribute(job.getPpOrderId());
+		}
+
+		@Test
+		void unpostedCollectors_settlesWithAllIssuesAndReceipts()
+		{
+			final ManufacturingJob job = givenJob(1, handLine());
+			final PPOrderId ppOrderId = job.getPpOrderId();
+			final I_PP_Cost_Collector issue = givenCostCollector(ppOrderId, X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
+			final I_PP_Cost_Collector receipt = givenCostCollector(ppOrderId, X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
+			givenCostCollector(ppOrderId, X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Cost_Collector.DOCSTATUS_Completed, true);
+			givenCostCollector(ppOrderId, X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Cost_Collector.DOCSTATUS_Drafted, false);
+
+			final List<TableRecordReference> postedWhenDistributing = new ArrayList<>();
+			when(distributor.distribute(ppOrderId)).thenAnswer(invocation -> {
+				postedWhenDistributing.addAll(postedDocuments);
+				return true;
+			});
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			// the order first: its posting creates the PP_Order_Cost rows the collectors accumulate into
+			assertThat(postedWhenDistributing).containsExactly(
+					TableRecordReference.of(I_PP_Order.Table_Name, ppOrderId.getRepoId()),
+					TableRecordReference.of(issue),
+					TableRecordReference.of(receipt));
+			assertThat(trxsSeenByPoster).allMatch(trxManager::isNull);
+			verify(distributor, times(1)).distribute(ppOrderId);
+		}
+
+		@Test
+		void postingErrorOfExistingCollectors_propagates_beforeCloseTrx()
+		{
+			final ManufacturingJob job = givenJob(1, handLine());
+			final PPOrderId ppOrderId = job.getPpOrderId();
+			final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
+			ppOrder.setPosted(true);
+			InterfaceWrapperHelper.saveRecord(ppOrder);
+			givenCostCollector(ppOrderId, X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
+			postingFailure = new AdempiereException("posting failed");
+
+			assertThatThrownBy(() -> service.withActivityCompleted(job, lastActivityId(job)))
+					.isSameAs(postingFailure);
+
+			assertThat(trxsSeenByPoster).hasSize(1);
+			verify(distributor, never()).distribute(any());
+			verify(ppOrderBL, never()).closeOrder(any());
+			assertThat(Services.get(IPPOrderRoutingRepository.class)
+					.getByOrderId(ppOrderId)
+					.getActivityById(job.getActivities().get(0).getOrderRoutingActivityId())
+					.getStatus())
+					.isEqualTo(PPOrderRoutingActivityStatus.NOT_STARTED);
+		}
+
+		@Test
+		void noHandIssue_existingCollectorsNotPosted_plainClose()
+		{
+			final ManufacturingJob job = givenJob(1, bomLine(BOMComponentType.Packing, BOMComponentIssueMethod.IssueOnlyForReceived, "5", "5"));
+			givenCostCollector(job.getPpOrderId(), X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
+			postingFailure = new AdempiereException("posting failed");
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			assertThat(trxsSeenByPoster).isEmpty();
+			verify(distributor, never()).distribute(any());
+			verify(ppOrderBL, times(1)).closeOrder(job.getPpOrderId());
+		}
+
+		/** Stands in for {@code Doc.post}: throws {@link #postingFailure} if set, else marks the document posted. */
+		private void fakePostNow(final TableRecordReference documentRef, final ClientId clientIdNotUsed)
+		{
+			trxsSeenByPoster.add(trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone));
+			if (postingFailure != null)
+			{
+				throw postingFailure;
+			}
+
+			final Object document = I_PP_Order.Table_Name.equals(documentRef.getTableName())
+					? documentRef.getModel(I_PP_Order.class)
+					: documentRef.getModel(I_PP_Cost_Collector.class);
+			InterfaceWrapperHelper.setValue(document, I_PP_Order.COLUMNNAME_Posted, true);
+			InterfaceWrapperHelper.saveRecord(document);
+			postedDocuments.add(documentRef);
+		}
+
+		private I_PP_Cost_Collector givenCostCollector(final PPOrderId ppOrderId, final String costCollectorType, final String docStatus, final boolean posted)
+		{
+			final I_PP_Cost_Collector costCollector = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class);
+			costCollector.setPP_Order_ID(ppOrderId.getRepoId());
+			costCollector.setCostCollectorType(costCollectorType);
+			costCollector.setDocStatus(docStatus);
+			costCollector.setProcessed(!X_PP_Cost_Collector.DOCSTATUS_Drafted.equals(docStatus));
+			costCollector.setPosted(posted);
+			InterfaceWrapperHelper.saveRecord(costCollector);
+			return costCollector;
 		}
 
 		private ManufacturingJobActivityId lastActivityId(final ManufacturingJob job)
