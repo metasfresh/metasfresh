@@ -11,6 +11,7 @@ Feature: Drop-ship purchase order mirrors the sales order line by line
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2026-07-01T09:00:00+02:00[Europe/Berlin]
+    And temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO"
     And set project type Sales/Purchase Order to inactive
     And temporarily set sys config boolean value false for sys config "AUTO_SHIP_AND_INVOICE"
 

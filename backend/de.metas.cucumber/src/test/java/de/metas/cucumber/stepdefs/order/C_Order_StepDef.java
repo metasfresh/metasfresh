@@ -933,6 +933,22 @@ public class C_Order_StepDef
 		row.getAsOptionalIdentifier().ifPresent(identifier -> orderTable.putOrReplace(identifier, purchaseOrder));
 	}
 
+	/**
+	 * Asserts that no purchase order is linked (via {@code Link_Order_ID}) to the given sales order.
+	 * <pre>
+	 * Then no purchase order is linked to the order identified by so_1
+	 * </pre>
+	 */
+	@Then("no purchase order is linked to the order identified by {string}")
+	public void noPurchaseOrderIsLinkedToOrder(@NonNull final String salesOrderIdentifier)
+	{
+		final OrderId salesOrderId = StepDefDataIdentifier.ofString(salesOrderIdentifier).lookupNotNullIdIn(orderTable);
+		final List<I_C_Order> linkedOrders = orderBL.getByLinkOrderId(salesOrderId);
+		assertThat(linkedOrders)
+				.as("orders linked via Link_Order_ID to the sales order %s", salesOrderIdentifier)
+				.isEmpty();
+	}
+
 	@Then("the sales order identified by {string} is closed")
 	public void salesOrderIsClosed(
 			@NonNull final String orderIdentifier)
