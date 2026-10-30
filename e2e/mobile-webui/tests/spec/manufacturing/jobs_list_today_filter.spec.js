@@ -33,7 +33,8 @@ test.afterEach(async ({ page }) => {
         // put '-' back for it, else the today filter would leak into the sibling manufacturing specs
         await Backend.setSysconfigs({
             [SYSCONFIG_defaultFilters]: '-',
-            [SYSCONFIG_LaunchersLimit]: '-',
+            // fallback when createMasterdata threw after writing: the migration seed of the limit (20)
+            [SYSCONFIG_LaunchersLimit]: '20',
             ...previousSysconfigs,
         });
     }

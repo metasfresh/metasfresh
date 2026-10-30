@@ -52,18 +52,22 @@ let previousSysconfigs = null;
 // the hooks must declare the page fixture: Backend uses the page of the current test
 test.beforeEach(async ({ page }) => {
     costingMethodState = undefined;
+    collectedFailures = [];
     // before createMasterdata: the current-cost fixture writes under the costing method that is current at that time
     costingMethodState = await Backend.setAcctSchemaCostingMethod(COSTING_METHOD_MOVING_AVERAGE_INVOICE);
 });
 
 test.afterEach(async ({ page }) => {
-    await Backend.restoreAcctSchemaCostingMethod(costingMethodState);
-    costingMethodState = undefined;
-    if (previousSysconfigs) {
-        // a sysconfig that had no value is not reported back as previous (the DB seed '-' reads as no value)
-        await Backend.setSysconfigs({ [SYSCONFIG_LaunchersLimit]: '-', ...previousSysconfigs });
+    try {
+        await Backend.restoreAcctSchemaCostingMethod(costingMethodState);
+    } finally {
+        costingMethodState = undefined;
+        if (previousSysconfigs) {
+            // fallback when createMasterdata threw after writing: the migration seed of the limit (20)
+            await Backend.setSysconfigs({ [SYSCONFIG_LaunchersLimit]: '20', ...previousSysconfigs });
+        }
+        previousSysconfigs = null;
     }
-    previousSysconfigs = null;
 });
 
 // The jobs list is capped by the launchers limit and sorted by DocumentNo; the orders of the sibling specs that
@@ -92,7 +96,7 @@ const issueRawHU = async ({ masterdata }) => {
 
 // Runs the check and remembers its failure instead of throwing it, so that the rest of the flow still runs and a
 // red run reports every wrong expectation of the flow, not only the first one. Call throwCollectedFailures at the end.
-const collectedFailures = [];
+let collectedFailures = [];
 const collectFailure = async (title, check) => {
     try {
         await check();
@@ -101,7 +105,8 @@ const collectFailure = async (title, check) => {
     }
 };
 const throwCollectedFailures = () => {
-    const failures = collectedFailures.splice(0);
+    const failures = collectedFailures;
+    collectedFailures = [];
     if (failures.length > 0) {
         throw new Error(failures.join('\n\n'));
     }
@@ -194,10 +199,15 @@ test('referenceCase_issueReceiveClose_settlesDifference', async ({ page }) => {
                     ],
                 },
             },
-            hus: {
-                HU_FOIL: { storages: { FOIL: `${round(FOIL_PURCHASED_QTY - foilIssued)} ${FOIL_UOM}` } },
-                HU_LABEL: { storages: { LABEL: `${LABEL_STOCK_QTY} PCE` } },
-            },
+        }));
+        // own call: the backend asserts manufacturings before hus and stops at the first failing block
+        await collectFailure('after receipt - foil HU', () => Backend.expect({
+            title: 'The foil HU is reduced by the issued foil',
+            hus: { HU_FOIL: { storages: { FOIL: `${round(FOIL_PURCHASED_QTY - foilIssued)} ${FOIL_UOM}` } } },
+        }));
+        await collectFailure('after receipt - label HU', () => Backend.expect({
+            title: 'The label HU is unchanged',
+            hus: { HU_LABEL: { storages: { LABEL: `${LABEL_STOCK_QTY} PCE` } } },
         }));
     });
 
@@ -246,6 +256,7 @@ test('coProduct_issueReceiveClose_valuesCoProductByPercent', async ({ page }) =>
     allure.story('Close values the co-product by its cost distribution percent');
     allure.severity('critical');
 
+    // Reduced shape on purpose (no packaging, no prior FG stock, no FG cost): it isolates the co-product percent split
     const masterdata = await createMasterdata({
         language: 'en_US',
         request: {
