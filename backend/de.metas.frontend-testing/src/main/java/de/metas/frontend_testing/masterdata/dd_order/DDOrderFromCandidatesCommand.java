@@ -28,10 +28,10 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -39,6 +39,7 @@ import org.eevolution.model.I_DD_Order;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Generates a DD_Order the way production does: saves one {@link DDOrderCandidate} per request entry and runs
@@ -123,17 +124,22 @@ public class DDOrderFromCandidatesCommand
 
 	private ShipperId getShipperId()
 	{
-		final ShipperId shipperId = shipperDAO.getDefault(MasterdataContext.CLIENT_ID);
-		if (shipperId == null)
+		if (request.getShipper() != null)
 		{
-			throw new AdempiereException("No default shipper found");
+			return context.getId(request.getShipper(), ShipperId.class);
 		}
-		return shipperId;
+
+		final ShipperId defaultShipperId = shipperDAO.getDefault(MasterdataContext.CLIENT_ID);
+		if (defaultShipperId == null)
+		{
+			throw new AdempiereException("No default shipper found. Pass the 'shipper' field (identifier of a shipper created in the 'shippers' section).");
+		}
+		return defaultShipperId;
 	}
 
 	private DDOrderId getSingleDDOrderId(final ImmutableList<DDOrderCandidate> candidates)
 	{
-		final Set<DDOrderCandidateId> candidateIds = candidates.stream().map(DDOrderCandidate::getIdNotNull).collect(java.util.stream.Collectors.toSet());
+		final Set<DDOrderCandidateId> candidateIds = candidates.stream().map(DDOrderCandidate::getIdNotNull).collect(Collectors.toSet());
 		final Set<DDOrderId> ddOrderIds = ddOrderCandidateAllocRepository.getByCandidateIds(candidateIds).getDDOrderIds();
 		if (ddOrderIds.size() != 1)
 		{
