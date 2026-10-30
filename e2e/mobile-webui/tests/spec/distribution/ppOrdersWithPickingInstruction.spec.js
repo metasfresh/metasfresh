@@ -15,20 +15,20 @@ const MO = 'Produktionsauftrag';
 const HEADER_CAPTION = 'Manufacturing orders with picking instruction';
 const CAPTION_MULTILINE_CLASS = /(^|\s)caption-multiline(\s|$)/;
 
-let previousSysconfigs = {};
+let previousSystemSysconfigs = {};
 
 // Both tests share one afterAll restore, so accumulate instead of overwrite; the FIRST recorded value of a
 // sysconfig is the one to restore (a later test would only see the value an earlier test already changed).
 // Inherent limit (as in picking/close_partially_shipped.spec.js): if createMasterdata itself throws, the
 // backend returns no previous values, so nothing can be restored for that call.
 const rememberPreviousSysconfigs = (masterdata) => {
-    previousSysconfigs = { ...masterdata.previousSysconfigs, ...previousSysconfigs };
+    previousSystemSysconfigs = { ...masterdata.previousSystemSysconfigs, ...previousSystemSysconfigs };
 };
 
 // Restore the sysconfig even if the test body fails (pattern of picking/close_partially_shipped.spec.js)
 test.afterAll(async () => {
-    if (Object.keys(previousSysconfigs).length > 0) {
-        await Backend.setSysconfigs(previousSysconfigs);
+    if (Object.keys(previousSystemSysconfigs).length > 0) {
+        await Backend.setSystemSysconfigs(previousSystemSysconfigs);
     }
 });
 
@@ -68,7 +68,8 @@ test('Aggregated DD_Order lists every PP_Order with its picking instruction', as
     allure.severity('normal');
 
     const request = baseRequest('ProductValueAndName,Qty,PickingInstruction,PPOrdersWithPickingInstruction');
-    request.sysconfigs = { 'DDOrderAggregation.header.byPPOrderRef': 'N' };
+    // SYSTEM-level write: DDOrderAggregation reads this sysconfig only at SYSTEM level
+    request.systemSysconfigs = { 'DDOrderAggregation.header.byPPOrderRef': 'N' };
     request.manufacturingOrders = {
         PP1: ppOrder({ lineId: 'PP1_L1' }),
         PP2: ppOrder({ lineId: 'PP2_L1', pickingInstruction: 'ohne Rinde' }),

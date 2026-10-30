@@ -53,6 +53,12 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, String> sysconfigs;
 
 	/**
+	 * Sysconfigs written as SYSTEM rows (AD_Client_ID=0, AD_Org_ID=0) instead of at their declared configuration level.
+	 * Use for sysconfigs that the code reads only at SYSTEM level.
+	 */
+	@Nullable Map<String, String> systemSysconfigs;
+
+	/**
 	 * Sets flag columns on {@code AD_Process} records matched by a {@code JasperReport} substring.
 	 * Used to enable {@code IsPdfA3Output=Y} on the sales-invoice report process so that the mock
 	 * report service returns a valid PDF/A-3 and ZUGFeRD assembly can embed the CII XML into it.

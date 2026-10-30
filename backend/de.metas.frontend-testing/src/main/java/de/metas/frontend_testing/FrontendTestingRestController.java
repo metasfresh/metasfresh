@@ -18,6 +18,7 @@ import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentResponse;
 import de.metas.frontend_testing.masterdata.shipment.ReverseShipmentCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
+import de.metas.frontend_testing.masterdata.sysconfig.SystemSysconfigCommand;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -137,6 +138,19 @@ public class FrontendTestingRestController
 		callInContext(() -> {
 			SysconfigCommand.builder()
 					.sysconfigs(sysconfigs)
+					.build()
+					.execute();
+			return null;
+		});
+	}
+
+	/** Restores sysconfigs at SYSTEM level, i.e. the counterpart of {@code systemSysconfigs} / {@code previousSystemSysconfigs}. */
+	@PostMapping("setSystemSysconfigs")
+	public void setSystemSysconfigs(@RequestBody @NonNull final java.util.Map<String, String> systemSysconfigs)
+	{
+		callInContext(() -> {
+			SystemSysconfigCommand.builder()
+					.systemSysconfigs(systemSysconfigs)
 					.build()
 					.execute();
 			return null;

@@ -90,6 +90,7 @@ import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
+import de.metas.frontend_testing.masterdata.sysconfig.SystemSysconfigCommand;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
@@ -130,6 +131,10 @@ public class CreateMasterdataCommand
 	 * Previous values of every sysconfig changed by this request (the request's own {@code sysconfigs} and those set by sub-commands).
 	 */
 	private final LinkedHashMap<String, String> previousSysconfigs = new LinkedHashMap<>();
+	/**
+	 * Previous SYSTEM-level values of the request's {@code systemSysconfigs}.
+	 */
+	private final LinkedHashMap<String, String> previousSystemSysconfigs = new LinkedHashMap<>();
 
 	public JsonCreateMasterdataResponse execute()
 	{
@@ -137,6 +142,7 @@ public class CreateMasterdataCommand
 
 		// Apply sysconfigs early (before any masterdata creation)
 		previousSysconfigs.putAll(applySysconfigs());
+		previousSystemSysconfigs.putAll(applySystemSysconfigs());
 
 		// Apply AD_Process flag overrides (e.g. IsPdfA3Output for the sales-invoice report process)
 		applyAdProcessFlags();
@@ -207,6 +213,7 @@ public class CreateMasterdataCommand
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
 				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : ImmutableMap.copyOf(previousSysconfigs))
+				.previousSystemSysconfigs(previousSystemSysconfigs.isEmpty() ? null : ImmutableMap.copyOf(previousSystemSysconfigs))
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.roles(roles.isEmpty() ? null : roles)
@@ -876,6 +883,14 @@ public class CreateMasterdataCommand
 	{
 		return SysconfigCommand.builder()
 				.sysconfigs(request.getSysconfigs())
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, String> applySystemSysconfigs()
+	{
+		return SystemSysconfigCommand.builder()
+				.systemSysconfigs(request.getSystemSysconfigs())
 				.build()
 				.execute();
 	}
