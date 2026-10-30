@@ -183,6 +183,10 @@ public class M_Product_Category_StepDef
 							.map(attributeSetTable::getId)
 							.ifPresent(attributeSetId -> productCategoryRecord.setM_AttributeSet_ID(attributeSetId.getRepoId()));
 
+					row.getAsOptionalIdentifier(COLUMNNAME_M_Product_Category_Parent_ID)
+							.map(parentIdentifier -> parentIdentifier.lookupNotNullIn(productCategoryTable))
+							.ifPresent(parent -> productCategoryRecord.setM_Product_Category_Parent_ID(parent.getM_Product_Category_ID()));
+
 					InterfaceWrapperHelper.saveRecord(productCategoryRecord);
 
 					row.getAsOptionalIdentifier().ifPresent(identifier -> productCategoryTable.putOrReplace(identifier, productCategoryRecord));
