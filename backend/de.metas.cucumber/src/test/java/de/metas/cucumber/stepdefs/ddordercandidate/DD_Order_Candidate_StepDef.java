@@ -124,7 +124,7 @@ public class DD_Order_Candidate_StepDef
 		}
 		else if (candidates.size() > 1)
 		{
-			return attemptMatchByQty(candidates, row);
+			return attemptMatchByAllRowColumns(candidates, row);
 		}
 
 		return validateDDOrderLineCandidate(row, candidates.get(0));
@@ -134,7 +134,7 @@ public class DD_Order_Candidate_StepDef
 	 * Several candidates share the row's product and warehouses: the row's other expectations (quantity, forward PP_Order, ...)
 	 * must single out exactly one of them.
 	 */
-	private ItemProvider.ProviderResult<DDOrderCandidate> attemptMatchByQty(@NonNull final List<DDOrderCandidate> candidates, @NonNull final DataTableRow row)
+	private ItemProvider.ProviderResult<DDOrderCandidate> attemptMatchByAllRowColumns(@NonNull final List<DDOrderCandidate> candidates, @NonNull final DataTableRow row)
 	{
 		final List<DDOrderCandidate> matchingCandidates = candidates.stream()
 				.filter(candidate -> validateDDOrderLineCandidate(row, candidate).isResultFound())

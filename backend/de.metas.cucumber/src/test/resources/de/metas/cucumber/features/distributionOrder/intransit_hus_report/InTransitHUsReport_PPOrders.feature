@@ -77,50 +77,23 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
 
   @from:cucumber
   Scenario: Bundled line for two manufacturing orders with different picking instructions prints one summary line per order
-    # one DD_Order line may bundle the demand of several sales order lines
-    Given for this scenario only, set sys config boolean value false for sys config DDOrderAggregation.line.bySalesOrderLineId
-    And metasfresh contains M_PricingSystems
-      | Identifier |
-      | ps         |
-    And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
-      | pl         | ps                 | DE           | EUR           | true  |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID |
-      | plv        | pl             |
-    And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | plv                    | FG           | 10.0     | PCE      |
-      | plv                    | FG2          | 10.0     | PCE      |
-    And metasfresh contains C_BPartners:
-      | Identifier | IsCustomer | M_PricingSystem_ID |
-      | customer   | Y          | ps                 |
+    # the raw material is in stock when the orders are planned, so the dispo advises a distribution candidate for each order
+    Given metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv1                      | 2021-04-11   | rawWH          |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv1                      | invLine1                      | COMP                    | rawLoc       | 0       | 20       | PCE          |
+    And complete inventory with inventoryIdentifier 'inv1'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | invLine1                      | hu1                |
+
     # the start date is a midday instant, so 12.04.2021 prints whatever the JVM default time zone is
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
-      | SO         | true    | customer      | 2021-04-11  | 2021-04-12T10:00:00Z | prodWH         |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | SO_L1      | SO         | FG           | 10         |
-      | SO_L2      | SO         | FG2          | 10         |
-    When the order identified by SO is completed
-    And after not more than 60s, PP_Order_Candidates are found
-      | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | Processed |
-      | oc1        | FG           | bom_fg            | fg_planning            | plant         | 10 PCE     | false     |
-      | oc2        | FG2          | bom_fg2           | fg2_planning           | plant         | 10 PCE     | false     |
-    And the following PP_Order_Candidates are enqueued for generating PP_Orders
-      | PP_Order_Candidate_ID |
-      | oc1                   |
-      | oc2                   |
-    And after not more than 60s, PP_Orders are found
-      | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | DatePromised         |
-      | PP1        | FG           | bom_fg            | fg_planning            | plant         | 10 PCE     | 10         | 2021-04-12T10:00:00Z |
-      | PP2        | FG2          | bom_fg2           | fg2_planning           | plant         | 10 PCE     | 10         | 2021-04-12T10:00:00Z |
-    # lets the PDF assertions name the order numbers
-    And update PP_Order:
-      | PP_Order_ID.Identifier | OPT.DocumentNo |
-      | PP1                    | MBS_PP1        |
-      | PP2                    | MBS_PP2        |
+    When create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument | DocumentNo |
+      | PP1                    | MOP         | FG                      | 10         | plant                    | prodWH                        | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP1    |
+      | PP2                    | MOP         | FG                      | 10         | plant                    | prodWH                        | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP2    |
     And after not more than 60s, PP_Order_BomLines are found
       | Identifier | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
       | PP1_L1     | PP1         | COMP         | 10 PCE       | CO            |
@@ -142,17 +115,6 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     And update PP_Order_BOMLines:
       | PP_Order_BOMLine_ID | PickingInstruction |
       | PP2_L1              | ohne Rinde         |
-
-    And metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
-      | inv1                      | 2021-04-11   | rawWH          |
-    And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
-      | inv1                      | invLine1                      | COMP                    | rawLoc       | 0       | 20       | PCE          |
-    And complete inventory with inventoryIdentifier 'inv1'
-    And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
-      | invLine1                      | hu1                |
 
     And the mobile user's trolley is set to locator trolleyLoc
     And Start distribution job for dd_order identified by ddo1
@@ -227,6 +189,7 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     # today's group header: the title is followed directly by the "Produktionsauftrag:" header line.
     # (The QR label prints "Produktionsauftrag:" too, but after the HU rows, so a plain 'contains' could not tell them apart.)
     And in the PDF archived for the record identified by "trolleyLoc", exactly 2 lines appear between text "Materialbegleitschein" and text "Produktionsauftrag:"
+    And the visual line containing text "Produktionsauftrag:" in the PDF archived for the record identified by "trolleyLoc" is exactly "Produktionsauftrag: MBS_PP3 Datum: 12.04.2021"
     # no summary line, and an empty note omits the label
     And the PDF archived for the record identified by "trolleyLoc" does not contain text "(Start "
     And the PDF archived for the record identified by "trolleyLoc" does not contain text "Kommissionierhinweis"
@@ -273,8 +236,13 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     Then an AD_Archive exists for the record identified by "trolleyLoc"
     And the visual line containing text "MBS_PP4 (Start" in the PDF archived for the record identified by "trolleyLoc" is exactly "Produktionsauftrag MBS_PP4 (Start 12.04.2021, 10 Stk): Kommissionierhinweis: Sahne"
     And the PDF archived for the record identified by "trolleyLoc" contains text "MBS_PP4: Sahne"
-    # the old group header is hidden: the first "Produktionsauftrag:" is the QR label's, after the HU rows
+    # the old group header is hidden: the summary line follows the title and the two target lines directly, where the header used to be,
+    # and the first "Produktionsauftrag:" is the QR label's, after the HU rows
+    And in the PDF archived for the record identified by "trolleyLoc", exactly 2 lines appear between text "Materialbegleitschein" and text "MBS_PP4 (Start"
     And in the PDF archived for the record identified by "trolleyLoc", at least 3 lines appear between text "Materialbegleitschein" and text "Produktionsauftrag:"
+    # the HU row does not repeat the picking instruction: today it ends the wrapped product name (a timestamp ending in Z)
+    And the PDF archived for the record identified by "trolleyLoc" does not contain text "Z Kommissionierhinweis"
+    And the PDF archived for the record identified by "trolleyLoc" has no overlapping text
 
     And the mobile user's trolley is cleared
     And the mobile user's trolley is empty
