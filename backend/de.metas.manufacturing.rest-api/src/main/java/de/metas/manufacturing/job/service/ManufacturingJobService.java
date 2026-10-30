@@ -3,6 +3,7 @@ package de.metas.manufacturing.job.service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
 import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
@@ -76,6 +77,7 @@ import de.metas.workflow.rest_api.service.Constants;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.trx.api.DeadlockRetryPolicy;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -86,6 +88,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -94,6 +98,7 @@ import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -108,7 +113,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
-@RequiredArgsConstructor
 public class ManufacturingJobService
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -133,10 +137,70 @@ public class ManufacturingJobService
 	@NonNull private final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final MaterialReceiptEditableAttributes materialReceiptEditableAttributes;
+	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
+	@NonNull private final DeadlockRetryPolicy deadlockRetryPolicy;
 
 	@VisibleForTesting
 	static final String SYSCONFIG_defaultFilters = "mobileui.manufacturing.defaultFilters";
 	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
+
+	@Autowired
+	public ManufacturingJobService(
+			@NonNull final PPOrderIssueScheduleService ppOrderIssueScheduleService,
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final PPOrderSourceHUService ppOrderSourceHUService,
+			@NonNull final SourceHUsService sourceHUsService,
+			@NonNull final DeviceAccessorsHubFactory deviceAccessorsHubFactory,
+			@NonNull final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
+			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices,
+			@NonNull final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository,
+			@NonNull final HUQRCodesService huQRCodesService,
+			@NonNull final MaterialReceiptEditableAttributes materialReceiptEditableAttributes,
+			@NonNull final PPOrderCostDifferenceDistributor costDifferenceDistributor)
+	{
+		this(
+				ppOrderIssueScheduleService,
+				huReservationService,
+				ppOrderSourceHUService,
+				sourceHUsService,
+				deviceAccessorsHubFactory,
+				deviceWebsocketNamingStrategy,
+				loadingAndSavingSupportServices,
+				mobileUIManufacturingConfigRepository,
+				huQRCodesService,
+				materialReceiptEditableAttributes,
+				costDifferenceDistributor,
+				DeadlockRetryPolicy.DEFAULT);
+	}
+
+	@VisibleForTesting
+	ManufacturingJobService(
+			@NonNull final PPOrderIssueScheduleService ppOrderIssueScheduleService,
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final PPOrderSourceHUService ppOrderSourceHUService,
+			@NonNull final SourceHUsService sourceHUsService,
+			@NonNull final DeviceAccessorsHubFactory deviceAccessorsHubFactory,
+			@NonNull final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
+			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices,
+			@NonNull final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository,
+			@NonNull final HUQRCodesService huQRCodesService,
+			@NonNull final MaterialReceiptEditableAttributes materialReceiptEditableAttributes,
+			@NonNull final PPOrderCostDifferenceDistributor costDifferenceDistributor,
+			@NonNull final DeadlockRetryPolicy deadlockRetryPolicy)
+	{
+		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
+		this.huReservationService = huReservationService;
+		this.ppOrderSourceHUService = ppOrderSourceHUService;
+		this.sourceHUsService = sourceHUsService;
+		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
+		this.deviceWebsocketNamingStrategy = deviceWebsocketNamingStrategy;
+		this.loadingAndSavingSupportServices = loadingAndSavingSupportServices;
+		this.mobileUIManufacturingConfigRepository = mobileUIManufacturingConfigRepository;
+		this.huQRCodesService = huQRCodesService;
+		this.materialReceiptEditableAttributes = materialReceiptEditableAttributes;
+		this.costDifferenceDistributor = costDifferenceDistributor;
+		this.deadlockRetryPolicy = deadlockRetryPolicy;
+	}
 
 	public static ManufacturingJobService newInstanceForUnitTesting()
 	{
@@ -153,7 +217,9 @@ public class ManufacturingJobService
 						ManufacturingJobLoaderAndSaverSupportingServices.newInstanceForUnitTesting(),
 						new MobileUIManufacturingConfigRepository(),
 						SpringContextHolder.instance.getBean(HUQRCodesService.class),
-						new MaterialReceiptEditableAttributes()
+						new MaterialReceiptEditableAttributes(),
+						SpringContextHolder.instance.getBean(PPOrderCostDifferenceDistributor.class),
+						DeadlockRetryPolicy.builder().backoffMillis(0).build()
 				)
 		);
 	}
@@ -463,17 +529,54 @@ public class ManufacturingJobService
 		final ManufacturingJobActivity jobActivity = job.getActivityById(jobActivityId);
 		final PPOrderRoutingActivityId orderRoutingActivityId = jobActivity.getOrderRoutingActivityId();
 
-		boolean jobNeedsReload = changeRoutingActivityStatusToCompleted(ppOrderId, orderRoutingActivityId);
-
-		if (job.isLastActivity(jobActivityId))
+		if (!job.isLastActivity(jobActivityId))
 		{
-			ppOrderBL.closeOrder(ppOrderId);
-			jobNeedsReload = true;
+			return changeRoutingActivityStatusToCompleted(ppOrderId, orderRoutingActivityId) ? getJobById(ppOrderId) : job;
 		}
 
-		//
-		return jobNeedsReload ? getJobById(ppOrderId) : job;
+		// Decided once, outside the transaction: a decision flipping inside a retry attempt would settle on unposted collectors.
+		final boolean settleWipCostDifference = hasRawMaterialIssuedByHand(ppOrderId);
 
+		runInOneTrxWithDeadlockRetry(() -> {
+			changeRoutingActivityStatusToCompleted(ppOrderId, orderRoutingActivityId);
+
+			// the distributor closes the order itself when it settles
+			final boolean orderClosedBySettlement = settleWipCostDifference && costDifferenceDistributor.distribute(ppOrderId);
+			if (!orderClosedBySettlement)
+			{
+				ppOrderBL.closeOrder(ppOrderId);
+			}
+		});
+
+		return getJobById(ppOrderId);
+	}
+
+	/**
+	 * Engine-owned transactions are retried on deadlock, each attempt in a fresh transaction; with an outer transaction open
+	 * the action runs once, joined to it, because a retry could not roll that transaction back.
+	 */
+	private void runInOneTrxWithDeadlockRetry(@NonNull final Runnable action)
+	{
+		if (trxManager.hasThreadInheritedTrx())
+		{
+			trxManager.runInThreadInheritedTrx(action);
+		}
+		else
+		{
+			deadlockRetryPolicy.run(() -> trxManager.runInThreadInheritedTrx(action));
+		}
+	}
+
+	/**
+	 * Only {@code QtyDeliveredActual} counts: issue collectors fill it, the close's usage variance fills {@code QtyDelivered} only.
+	 */
+	private boolean hasRawMaterialIssuedByHand(@NonNull final PPOrderId ppOrderId)
+	{
+		return ppOrderBOMBL.getOrderBOMLines(ppOrderId)
+				.stream()
+				.anyMatch(bomLine -> BOMComponentType.ofNullableCodeOrComponent(bomLine.getComponentType()).isIssue()
+						&& BOMComponentIssueMethod.ofNullableCode(bomLine.getIssueMethod()) != BOMComponentIssueMethod.IssueOnlyForReceived
+						&& bomLine.getQtyDeliveredActual().signum() != 0);
 	}
 
 	private boolean changeRoutingActivityStatusToCompleted(final PPOrderId ppOrderId, final PPOrderRoutingActivityId orderRoutingActivityId)

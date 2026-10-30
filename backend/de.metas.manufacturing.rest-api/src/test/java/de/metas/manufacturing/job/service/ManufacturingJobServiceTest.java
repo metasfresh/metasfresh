@@ -3,6 +3,8 @@ package de.metas.manufacturing.job.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.business.BusinessTestHelper;
+import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.TranslatableStrings;
@@ -24,7 +26,11 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigDAO;
@@ -32,23 +38,44 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_MobileUI_UserProfile_MFG;
+import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.I_PP_Order_Node;
+import org.eevolution.model.I_PP_Order_Workflow;
+import org.eevolution.model.X_PP_Order_Workflow;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ManufacturingJobServiceTest
 {
@@ -59,6 +86,7 @@ class ManufacturingJobServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(PPOrderCostDifferenceDistributor.class, mock(PPOrderCostDifferenceDistributor.class));
 		this.manufacturingJobService = ManufacturingJobService.newInstanceForUnitTesting();
 		this.sysConfigDAO = Services.get(ISysConfigDAO.class);
 	}
@@ -90,6 +118,268 @@ class ManufacturingJobServiceTest
 
 			Assertions.assertThat(manufacturingJobService.getDefaultFilters().toSet())
 					.contains(ManufacturingJobDefaultFilter.UserPlant, ManufacturingJobDefaultFilter.TodayDateStartSchedule);
+		}
+	}
+
+	@Nested
+	class withActivityCompleted_lastActivity
+	{
+		private I_C_UOM uom;
+		private ProductId productId;
+		private PPOrderCostDifferenceDistributor distributor;
+		private IHUPPOrderBL ppOrderBL;
+		private ITrxManager trxManager;
+		private ManufacturingJobService service;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			AdempiereTestHelper.get().init();
+			uom = BusinessTestHelper.createUomPCE();
+			productId = BusinessTestHelper.createProductId("finished good", uom);
+
+			distributor = mock(PPOrderCostDifferenceDistributor.class);
+			SpringContextHolder.registerJUnitBean(PPOrderCostDifferenceDistributor.class, distributor);
+
+			ppOrderBL = spy(Services.get(IHUPPOrderBL.class));
+			doNothing().when(ppOrderBL).closeOrder(any());
+			Services.registerService(IHUPPOrderBL.class, ppOrderBL);
+
+			trxManager = Services.get(ITrxManager.class);
+			service = spy(ManufacturingJobService.newInstanceForUnitTesting());
+		}
+
+		@Test
+		void handIssuedRawMaterial_distributorCalled_noSecondClose()
+		{
+			final ManufacturingJob job = givenJob(1, handLine());
+			when(distributor.distribute(job.getPpOrderId())).thenReturn(true);
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			verify(distributor, times(1)).distribute(job.getPpOrderId());
+			verify(ppOrderBL, never()).closeOrder(any());
+		}
+
+		@Test
+		void onlyAutoIssuedPackaging_plainClose_distributorNotCalled()
+		{
+			final ManufacturingJob job = givenJob(1, bomLine(BOMComponentType.Component, BOMComponentIssueMethod.IssueOnlyForReceived, "5", "5"));
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			verify(distributor, never()).distribute(any());
+			verify(ppOrderBL, times(1)).closeOrder(job.getPpOrderId());
+		}
+
+		@Test
+		void nothingIssued_plainClose_distributorNotCalled()
+		{
+			final ManufacturingJob job = givenJob(1, bomLine(BOMComponentType.Component, BOMComponentIssueMethod.Issue, "0", "0"));
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			verify(distributor, never()).distribute(any());
+			verify(ppOrderBL, times(1)).closeOrder(job.getPpOrderId());
+		}
+
+		@Test
+		void usageVarianceOnly_notCountedAsIssued_plainClose()
+		{
+			// the close's usage variance fills QtyDelivered only, never QtyDeliveredActual
+			final ManufacturingJob job = givenJob(1, bomLine(BOMComponentType.Component, BOMComponentIssueMethod.Issue, "3", "0"));
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			verify(distributor, never()).distribute(any());
+			verify(ppOrderBL, times(1)).closeOrder(job.getPpOrderId());
+		}
+
+		@Test
+		void handIssued_distributorReturnsFalse_plainClose()
+		{
+			final ManufacturingJob job = givenJob(1, handLine());
+			when(distributor.distribute(job.getPpOrderId())).thenReturn(false);
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			verify(distributor, times(1)).distribute(job.getPpOrderId());
+			verify(ppOrderBL, times(1)).closeOrder(job.getPpOrderId());
+		}
+
+		@Test
+		void notLastActivity_noCloseNoDistribution()
+		{
+			final ManufacturingJob job = givenJob(2, handLine());
+			final ManufacturingJobActivityId firstActivityId = job.getActivities().get(0).getId();
+
+			service.withActivityCompleted(job, firstActivityId);
+
+			verify(distributor, never()).distribute(any());
+			verify(ppOrderBL, never()).closeOrder(any());
+		}
+
+		@Test
+		void distributorFailure_propagates_withinOneThreadInheritedTrx()
+		{
+			final ManufacturingJob job = givenJob(1, handLine());
+			final PPOrderRoutingActivityId routingActivityId = job.getActivities().get(0).getOrderRoutingActivityId();
+			final AtomicReference<ITrx> trxSeenByDistributor = new AtomicReference<>();
+			final AtomicReference<PPOrderRoutingActivityStatus> activityStatusSeenByDistributor = new AtomicReference<>();
+			final AdempiereException failure = new AdempiereException("distribution failed");
+			when(distributor.distribute(any())).thenAnswer(invocation -> {
+				trxSeenByDistributor.set(trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone));
+				activityStatusSeenByDistributor.set(Services.get(IPPOrderRoutingRepository.class)
+						.getByOrderId(job.getPpOrderId())
+						.getActivityById(routingActivityId)
+						.getStatus());
+				throw failure;
+			});
+
+			assertThatThrownBy(() -> service.withActivityCompleted(job, lastActivityId(job)))
+					.hasMessageContaining("distribution failed");
+
+			assertThat(trxSeenByDistributor.get()).isNotNull();
+			assertThat(trxManager.isNull(trxSeenByDistributor.get())).isFalse();
+			assertThat(activityStatusSeenByDistributor.get()).isEqualTo(PPOrderRoutingActivityStatus.COMPLETED);
+		}
+
+		@Test
+		void deadlockOnFirstAttempt_retriedInFreshTrx()
+		{
+			final ManufacturingJob job = givenJob(1, handLine());
+			final List<String> trxNames = new ArrayList<>();
+			when(distributor.distribute(any())).thenAnswer(invocation -> {
+				trxNames.add(trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone));
+				if (trxNames.size() == 1)
+				{
+					throw new DBDeadLockDetectedException(new SQLException("deadlock detected", "40P01"), null);
+				}
+				return true;
+			});
+
+			service.withActivityCompleted(job, lastActivityId(job));
+
+			verify(distributor, times(2)).distribute(job.getPpOrderId());
+			assertThat(trxNames).hasSize(2).doesNotContainNull();
+			assertThat(trxNames.get(0)).isNotEqualTo(trxNames.get(1));
+			verify(ppOrderBL, never()).closeOrder(any());
+		}
+
+		@Test
+		void outerTrxOpen_noRetry_runsOnceJoined()
+		{
+			final ManufacturingJob job = givenJob(1, handLine());
+			final DBDeadLockDetectedException deadlock = new DBDeadLockDetectedException(new SQLException("deadlock detected", "40P01"), null);
+			when(distributor.distribute(any())).thenThrow(deadlock);
+
+			final AtomicReference<Throwable> thrown = new AtomicReference<>();
+			trxManager.runInThreadInheritedTrx(() -> thrown.set(catchThrowable(() -> service.withActivityCompleted(job, lastActivityId(job)))));
+
+			assertThat(thrown.get()).isNotNull();
+			verify(distributor, times(1)).distribute(job.getPpOrderId());
+		}
+
+		private ManufacturingJobActivityId lastActivityId(final ManufacturingJob job)
+		{
+			return job.getActivities().get(job.getActivities().size() - 1).getId();
+		}
+
+		/** Hand-issued raw material: QtyDeliveredActual is what the issue collectors fill, QtyDelivered deliberately differs. */
+		private BomLineSpec handLine()
+		{
+			return bomLine(BOMComponentType.Component, BOMComponentIssueMethod.Issue, "7", "5");
+		}
+
+		private BomLineSpec bomLine(final BOMComponentType componentType, final BOMComponentIssueMethod issueMethod, final String qtyDelivered, final String qtyDeliveredActual)
+		{
+			return new BomLineSpec(componentType, issueMethod, new BigDecimal(qtyDelivered), new BigDecimal(qtyDeliveredActual));
+		}
+
+		private ManufacturingJob givenJob(final int activityCount, final BomLineSpec bomLineSpec)
+		{
+			final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
+			ppOrder.setM_Product_ID(productId.getRepoId());
+			ppOrder.setC_UOM_ID(uom.getC_UOM_ID());
+			InterfaceWrapperHelper.saveRecord(ppOrder);
+			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+
+			final I_PP_Order_BOMLine bomLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
+			bomLine.setPP_Order_ID(ppOrderId.getRepoId());
+			bomLine.setM_Product_ID(BusinessTestHelper.createProductId("component", uom).getRepoId());
+			bomLine.setC_UOM_ID(uom.getC_UOM_ID());
+			bomLine.setComponentType(bomLineSpec.componentType.getCode());
+			bomLine.setIssueMethod(bomLineSpec.issueMethod.getCode());
+			bomLine.setQtyDelivered(bomLineSpec.qtyDelivered);
+			bomLine.setQtyDeliveredActual(bomLineSpec.qtyDeliveredActual);
+			InterfaceWrapperHelper.saveRecord(bomLine);
+
+			final I_PP_Order_Workflow workflow = InterfaceWrapperHelper.newInstance(I_PP_Order_Workflow.class);
+			workflow.setPP_Order_ID(ppOrderId.getRepoId());
+			workflow.setDurationUnit(X_PP_Order_Workflow.DURATIONUNIT_Second);
+			workflow.setAD_Workflow_ID(1);
+			InterfaceWrapperHelper.saveRecord(workflow);
+
+			final ImmutableList.Builder<ManufacturingJobActivity> activities = ImmutableList.builder();
+			for (int i = 1; i <= activityCount; i++)
+			{
+				final I_PP_Order_Node node = InterfaceWrapperHelper.newInstance(I_PP_Order_Node.class);
+				node.setPP_Order_ID(ppOrderId.getRepoId());
+				node.setPP_Order_Workflow_ID(workflow.getPP_Order_Workflow_ID());
+				node.setAD_Workflow_ID(1);
+				node.setAD_WF_Node_ID(i);
+				node.setValue("activity" + i);
+				node.setName("Activity " + i);
+				node.setS_Resource_ID(BusinessTestHelper.createManufacturingResource("workstation" + i, uom).getRepoId());
+				node.setC_UOM_ID(uom.getC_UOM_ID());
+				node.setPP_Activity_Type(PPRoutingActivityType.WorkReport.getCode());
+				node.setDocStatus(PPOrderRoutingActivityStatus.NOT_STARTED.getDocStatus());
+				InterfaceWrapperHelper.saveRecord(node);
+				if (i == 1)
+				{
+					workflow.setPP_Order_Node_ID(node.getPP_Order_Node_ID());
+					InterfaceWrapperHelper.saveRecord(workflow);
+				}
+
+				final PPOrderRoutingActivityId routingActivityId = PPOrderRoutingActivityId.ofRepoId(ppOrderId, node.getPP_Order_Node_ID());
+				activities.add(ManufacturingJobActivity.builder()
+						.id(ManufacturingJobActivityId.of(routingActivityId))
+						.name(node.getName())
+						.type(PPRoutingActivityType.WorkReport)
+						.orderRoutingActivityId(routingActivityId)
+						.routingActivityStatus(PPOrderRoutingActivityStatus.NOT_STARTED)
+						.alwaysAvailableToUser(PPAlwaysAvailableToUser.DEFAULT)
+						.build());
+			}
+
+			final ManufacturingJob job = ManufacturingJob.builder()
+					.ppOrderId(ppOrderId)
+					.documentNo("PP1")
+					.dateStartSchedule(SystemTime.asZonedDateTime())
+					.responsibleId(UserId.ofRepoId(1234))
+					.warehouseId(WarehouseId.ofRepoId(1))
+					.activities(activities.build())
+					.build();
+
+			// reloading the job after the close needs masterdata that is irrelevant here
+			doReturn(job).when(service).getJobById(ppOrderId);
+			return job;
+		}
+	}
+
+	private static class BomLineSpec
+	{
+		final BOMComponentType componentType;
+		final BOMComponentIssueMethod issueMethod;
+		final BigDecimal qtyDelivered;
+		final BigDecimal qtyDeliveredActual;
+
+		BomLineSpec(final BOMComponentType componentType, final BOMComponentIssueMethod issueMethod, final BigDecimal qtyDelivered, final BigDecimal qtyDeliveredActual)
+		{
+			this.componentType = componentType;
+			this.issueMethod = issueMethod;
+			this.qtyDelivered = qtyDelivered;
+			this.qtyDeliveredActual = qtyDeliveredActual;
 		}
 	}
 
