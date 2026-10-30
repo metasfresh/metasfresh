@@ -918,7 +918,7 @@ Feature: EDI INVOIC export via postgREST
       | Identifier         | Value              | Name              | Description              |
       | product_S33256_010 | markerProductValue | markerProductName | markerProductDescription |
     And metasfresh contains M_Product_ASI_Data:
-      | Identifier         | M_Product_ID       | SeqNo | ProductDescription                            |
+      | Identifier         | M_Product_ID       | SeqNo | ProductDescription                             |
       | asiData_S33256_010 | product_S33256_010 | 10    | [Migrated from C_BPartner_Product test-marker] |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID       | PriceStd | C_UOM_ID |
