@@ -1,0 +1,61 @@
+package de.metas.frontend_testing.masterdata.sysconfig;
+
+import de.metas.organization.ClientAndOrgId;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.ISysConfigDAO;
+
+import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * Writes sysconfigs as SYSTEM rows (AD_Client_ID=0, AD_Org_ID=0), like the cucumber {@code AD_SysConfig_StepDef} does.
+ * Needed for sysconfigs that are read only at SYSTEM level (e.g. via {@code ISysConfigBL#getBooleanValue(String, boolean)}),
+ * which {@link SysconfigCommand} (config-level write) would not affect.
+ * <p>
+ * A {@code null} value unsets the SYSTEM row (stored as the no-value marker); that is how a previously missing row is restored.
+ * Boolean and int reads then fall back to their default like for a missing row, but a plain string read returns "" instead of the default.
+ */
+@Builder
+public class SystemSysconfigCommand
+{
+	@NonNull private final ISysConfigDAO sysConfigDAO = Services.get(ISysConfigDAO.class);
+	@NonNull private final ISysConfigBL sysConfigBL;
+
+	@Nullable private final Map<String, String> systemSysconfigs;
+
+	/**
+	 * @return map from sysconfig name to its previous SYSTEM-level value, captured before any write;
+	 * the value is {@code null} for names that had no SYSTEM value, so that restoring them unsets it again
+	 */
+	public Map<String, String> execute()
+	{
+		if (systemSysconfigs == null || systemSysconfigs.isEmpty())
+		{
+			return new LinkedHashMap<>();
+		}
+
+		final LinkedHashMap<String, String> previousValues = new LinkedHashMap<>();
+		for (final String name : systemSysconfigs.keySet())
+		{
+			previousValues.put(name, sysConfigBL.getValue(name, ClientAndOrgId.SYSTEM));
+		}
+
+		systemSysconfigs.forEach((name, value) -> {
+			if (value == null)
+			{
+				sysConfigDAO.setValue(name, null, ClientAndOrgId.SYSTEM);
+			}
+			else
+			{
+				sysConfigBL.setValue(name, value, ClientId.SYSTEM, ClientAndOrgId.SYSTEM.getOrgId());
+			}
+		});
+
+		return previousValues;
+	}
+}

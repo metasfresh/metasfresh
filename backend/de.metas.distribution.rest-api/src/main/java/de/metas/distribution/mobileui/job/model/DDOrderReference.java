@@ -1,5 +1,6 @@
 package de.metas.distribution.mobileui.job.model;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.frontend_testing.JsonTestId;
 import de.metas.i18n.ITranslatableString;
@@ -28,6 +29,7 @@ public class DDOrderReference
 	@NonNull ZonedDateTime datePromised;
 	@Nullable ZonedDateTime pickDate;
 	@Nullable ITranslatableString pickingInstruction;
+	@NonNull @Builder.Default ImmutableList<ITranslatableString> manufacturingOrderPickingInstructionLines = ImmutableList.of();
 	@NonNull WarehouseId fromWarehouseId;
 	@Nullable LocatorId fromLocatorId;
 	@NonNull WarehouseId toWarehouseId;

@@ -74,6 +74,22 @@ export const Backend = {
         }
     }),
 
+    /** Counterpart of the request's `systemSysconfigs`: writes the given sysconfigs as SYSTEM rows (use to restore `previousSystemSysconfigs`). */
+    setSystemSysconfigs: async (systemSysconfigs) => await test.step(`Backend: set system sysconfigs`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/setSystemSysconfigs`, {
+            data: systemSysconfigs,
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (!response.ok()) {
+            const responseBody = await response.json();
+            assertNoErrors({ responseBody });
+        }
+    }),
+
     /**
      * Resolve a masterdata identifier (e.g. `"lu1"`) to the underlying handling-unit's
      * global QR code string. Used by tests that need to scan an HU which was created

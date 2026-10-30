@@ -48,6 +48,9 @@ public class JsonCreateMasterdataResponse
 
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, String> previousSysconfigs;
 
+	/** Previous values of the request's {@code systemSysconfigs} ({@code null} = there was no SYSTEM row); restore them via {@code setSystemSysconfigs}. */
+	@Nullable @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.ALWAYS) Map<String, String> previousSystemSysconfigs;
+
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) JsonMobileConfigResponse mobileConfig;
 	@NonNull Map<String, JsonLoginUserResponse> login;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonCreateRoleResponse> roles;
@@ -77,6 +80,7 @@ public class JsonCreateMasterdataResponse
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonReceiptCreateResponse> receipts;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonInvoiceCreateResponse> invoices;
 	@NonNull Map<String, JsonDDOrderResponse> distributionOrders;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonDDOrderResponse> distributionOrdersFromCandidates;
 	@NonNull Map<String, JsonPPOrderResponse> manufacturingOrders;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonInventoryResponse> inventories;
 }

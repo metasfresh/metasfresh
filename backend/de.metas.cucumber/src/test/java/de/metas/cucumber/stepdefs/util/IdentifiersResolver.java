@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.costing.M_CostRevaluation_StepDefData;
@@ -65,6 +66,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MatchInv;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -94,6 +96,7 @@ public class IdentifiersResolver
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData checkupReportTable;
 	@NonNull private final SAP_GLJournal_StepDefData sapGLJournalTable;
 	@NonNull private final C_Customs_Invoice_StepDefData customsInvoiceTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -172,6 +175,9 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		customsInvoiceTable.getIdOptional(identifier)
 				.map(id -> TableRecordReference.of(I_C_Customs_Invoice.Table_Name, id))
+				.ifPresent(result::add);
+		locatorTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_M_Locator.Table_Name, id))
 				.ifPresent(result::add);
 
 		if (result.isEmpty())

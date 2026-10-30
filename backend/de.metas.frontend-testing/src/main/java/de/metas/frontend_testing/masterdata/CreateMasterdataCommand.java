@@ -20,6 +20,8 @@ import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationG
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaResponse;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.CustomQRCodeFormatCommand;
 import de.metas.frontend_testing.masterdata.dd_order.DDOrderCommand;
+import de.metas.frontend_testing.masterdata.dd_order.DDOrderFromCandidatesCommand;
+import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderFromCandidatesRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderResponse;
 import de.metas.frontend_testing.masterdata.hu.CreateHUCommand;
@@ -88,6 +90,7 @@ import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
+import de.metas.frontend_testing.masterdata.sysconfig.SystemSysconfigCommand;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
@@ -102,11 +105,14 @@ import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
 import de.metas.frontend_testing.masterdata.workplace.CreateWorkplaceCommand;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
 import de.metas.order.OrderId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -122,12 +128,17 @@ public class CreateMasterdataCommand
 {
 	@NonNull private final CreateMasterdataCommandSupportingServices services;
 	@NonNull private final JsonCreateMasterdataRequest request;
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final MasterdataContext context = new MasterdataContext();
 	/**
 	 * Previous values of every sysconfig changed by this request (the request's own {@code sysconfigs} and those set by sub-commands).
 	 */
 	private final LinkedHashMap<String, String> previousSysconfigs = new LinkedHashMap<>();
+	/**
+	 * Previous SYSTEM-level values of the request's {@code systemSysconfigs}; {@code null} for a sysconfig that had no SYSTEM row.
+	 */
+	private final LinkedHashMap<String, String> previousSystemSysconfigs = new LinkedHashMap<>();
 
 	public JsonCreateMasterdataResponse execute()
 	{
@@ -135,6 +146,7 @@ public class CreateMasterdataCommand
 
 		// Apply sysconfigs early (before any masterdata creation)
 		previousSysconfigs.putAll(applySysconfigs());
+		previousSystemSysconfigs.putAll(applySystemSysconfigs());
 
 		// Apply AD_Process flag overrides (e.g. IsPdfA3Output for the sales-invoice report process)
 		applyAdProcessFlags();
@@ -193,6 +205,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonInvoiceCreateResponse> invoices = createInvoices();
 		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
+		final ImmutableMap<String, JsonDDOrderResponse> distributionOrdersFromCandidates = createDistributionOrdersFromCandidates();
 		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
 		createCustomQRCodeFormats();
 
@@ -204,6 +217,7 @@ public class CreateMasterdataCommand
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
 				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : ImmutableMap.copyOf(previousSysconfigs))
+				.previousSystemSysconfigs(previousSystemSysconfigs.isEmpty() ? null : Collections.unmodifiableMap(previousSystemSysconfigs))
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.roles(roles.isEmpty() ? null : roles)
@@ -233,6 +247,7 @@ public class CreateMasterdataCommand
 				.receipts(receipts)
 				.invoices(invoices)
 				.distributionOrders(distributionOrders)
+				.distributionOrdersFromCandidates(distributionOrdersFromCandidates)
 				.manufacturingOrders(manufacturingOrders)
 				.inventories(inventories)
 				.build();
@@ -786,6 +801,26 @@ public class CreateMasterdataCommand
 				.execute();
 	}
 
+	private ImmutableMap<String, JsonDDOrderResponse> createDistributionOrdersFromCandidates()
+	{
+		return process(request.getDistributionOrdersFromCandidates(), this::createDistributionOrderFromCandidates);
+	}
+
+	private JsonDDOrderResponse createDistributionOrderFromCandidates(final String identifier, final JsonDDOrderFromCandidatesRequest request)
+	{
+		return DDOrderFromCandidatesCommand.builder()
+				.ddOrderService(services.ddOrderService)
+				.ddOrderCandidateService(services.ddOrderCandidateService)
+				.ddOrderCandidateAllocRepository(services.ddOrderCandidateAllocRepository)
+				.distributionJobLoaderSupportingServices(services.distributionJobLoaderSupportingServices)
+				.captionProvider(services.distributionLauncherCaptionProvider)
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
 	private ImmutableMap<String, JsonPPOrderResponse> createManufacturingOrders()
 	{
 		return process(request.getManufacturingOrders(), this::createManufacturingOrder);
@@ -853,6 +888,15 @@ public class CreateMasterdataCommand
 	{
 		return SysconfigCommand.builder()
 				.sysconfigs(request.getSysconfigs())
+				.build()
+				.execute();
+	}
+
+	private Map<String, String> applySystemSysconfigs()
+	{
+		return SystemSysconfigCommand.builder()
+				.sysConfigBL(sysConfigBL)
+				.systemSysconfigs(request.getSystemSysconfigs())
 				.build()
 				.execute();
 	}

@@ -49,6 +49,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 {
 	I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId);
 
+	List<I_PP_Order_BOMLine> getOrderBOMLinesByIds(@NonNull Set<PPOrderBOMLineId> orderBOMLineIds);
+
 	List<I_PP_Order_BOMLine> getOrderBOMLines(PPOrderId orderId);
 
 	<T extends I_PP_Order_BOMLine> List<T> getOrderBOMLines(PPOrderId orderId, Class<T> orderBOMLineClass);

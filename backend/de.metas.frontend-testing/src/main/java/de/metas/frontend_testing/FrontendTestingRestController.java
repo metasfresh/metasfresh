@@ -18,6 +18,7 @@ import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentResponse;
 import de.metas.frontend_testing.masterdata.shipment.ReverseShipmentCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
+import de.metas.frontend_testing.masterdata.sysconfig.SystemSysconfigCommand;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -132,11 +134,25 @@ public class FrontendTestingRestController
 	}
 
 	@PostMapping("setSysconfigs")
-	public void setSysconfigs(@RequestBody @NonNull final java.util.Map<String, String> sysconfigs)
+	public void setSysconfigs(@RequestBody @NonNull final Map<String, String> sysconfigs)
 	{
 		callInContext(() -> {
 			SysconfigCommand.builder()
 					.sysconfigs(sysconfigs)
+					.build()
+					.execute();
+			return null;
+		});
+	}
+
+	/** Restores sysconfigs at SYSTEM level, i.e. the counterpart of {@code systemSysconfigs} / {@code previousSystemSysconfigs}. */
+	@PostMapping("setSystemSysconfigs")
+	public void setSystemSysconfigs(@RequestBody @NonNull final Map<String, String> systemSysconfigs)
+	{
+		callInContext(() -> {
+			SystemSysconfigCommand.builder()
+					.sysConfigBL(sysConfigBL)
+					.systemSysconfigs(systemSysconfigs)
 					.build()
 					.execute();
 			return null;
