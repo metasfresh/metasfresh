@@ -178,6 +178,19 @@ public class FrontendTestingRestController
 				.execute());
 	}
 
+	@PostMapping("serverDates")
+	public JsonServerDatesResponse getServerDates()
+	{
+		final java.time.ZoneId zoneId = java.time.ZoneId.systemDefault();
+		final java.time.LocalDate today = java.time.LocalDate.now(zoneId);
+		return JsonServerDatesResponse.builder()
+				.zoneId(zoneId.getId())
+				.yesterdayNoon(today.minusDays(1).atTime(12, 0).atZone(zoneId).toInstant().toString())
+				.todayNoon(today.atTime(12, 0).atZone(zoneId).toInstant().toString())
+				.tomorrowNoon(today.plusDays(1).atTime(12, 0).atZone(zoneId).toInstant().toString())
+				.build();
+	}
+
 	@PostMapping("wfNode/flags")
 	public JsonSetWFNodeFlagsResponse setWFNodeFlags(@RequestBody @NonNull final JsonSetWFNodeFlagsRequest request)
 	{

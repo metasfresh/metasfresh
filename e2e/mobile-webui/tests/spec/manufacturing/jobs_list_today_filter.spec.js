@@ -18,10 +18,14 @@ const SYSCONFIG_defaultFilters = 'mobileui.manufacturing.defaultFilters';
 const SYSCONFIG_LaunchersLimit = 'WorkflowRestAPIService.LaunchersLimit';
 
 let previousSysconfigs = null;
+// noon of yesterday / today / tomorrow in the SERVER's time zone: the server's "today" filter decides which day an
+// order is on, so the dates must not come from the clock/time zone of the machine that runs the test
+let serverDates = null;
 
 // Restore in afterEach so it runs even when the body fails or times out; otherwise the filter and the limit
-// leak into the sibling specs (every manufacturing spec shares the one E2E DB).
-// previousSysconfigs stays null when the test failed before the first createMasterdata: then nothing was changed.
+// leak into the sibling manufacturing specs (every manufacturing spec shares the one E2E DB).
+// previousSysconfigs is {} from before the first write on: when createMasterdata throws after it wrote the
+// sysconfigs but before it returned the previous values, the E2E seed state ('-' = no value) is put back.
 // the hook must declare the page fixture: Backend uses the page of the current test
 test.afterEach(async ({ page }) => {
     if (previousSysconfigs) {
@@ -34,19 +38,14 @@ test.afterEach(async ({ page }) => {
         });
     }
     previousSysconfigs = null;
+    serverDates = null;
 });
-
-/** noon (local time of the machine running the test, which is also the time zone of the browser) `dayOffset` days from today, as an ISO instant */
-const localNoon = (dayOffset) => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset, 12, 0, 0).toISOString();
-};
 
 const manufacturingOrder = ({ qty }) => ({
     warehouse: 'wh',
     product: 'BOM',
     qty,
-    datePromised: localNoon(0),
+    datePromised: serverDates.todayNoon,
 });
 
 const createMasterdataWithoutOrders = async () => {
@@ -106,8 +105,11 @@ test('todayOnlyJobsList_showsTodayAndStarted_hidesOtherDays', async ({ page }) =
     allure.story('Jobs list: today-only default filter, started jobs stay listed');
     allure.severity('critical');
 
+    serverDates = await Backend.getServerDates();
+    console.log(`Server time zone: ${serverDates.zoneId}; today noon ${serverDates.todayNoon}`);
+    previousSysconfigs = {};
     const base = await createMasterdataWithoutOrders();
-    previousSysconfigs = base.previousSysconfigs;
+    previousSysconfigs = base.previousSysconfigs ?? {};
 
     const { authToken } = await LoginScreen.login(base.login.user);
 
@@ -133,17 +135,17 @@ test('todayOnlyJobsList_showsTodayAndStarted_hidesOtherDays', async ({ page }) =
 
     // the orders are created for today; place them: 4 yesterday, 1 today (T1), 1 tomorrow
     for (const identifier of ['Y1', 'Y2', 'Y3', 'Y4']) {
-        await Backend.setManufacturingOrderDateStartSchedule({ documentNo: documentNo(identifier), dateStartSchedule: localNoon(-1) });
+        await Backend.setManufacturingOrderDateStartSchedule({ documentNo: documentNo(identifier), dateStartSchedule: serverDates.yesterdayNoon });
     }
-    await Backend.setManufacturingOrderDateStartSchedule({ documentNo: documentNo('TOMORROW'), dateStartSchedule: localNoon(1) });
+    await Backend.setManufacturingOrderDateStartSchedule({ documentNo: documentNo('TOMORROW'), dateStartSchedule: serverDates.tomorrowNoon });
 
     await test.step('Start yesterday order Y1 (it is listed while scheduled today), then schedule it back to yesterday', async () => {
-        await Backend.setManufacturingOrderDateStartSchedule({ documentNo: documentNo('Y1'), dateStartSchedule: localNoon(0) });
+        await Backend.setManufacturingOrderDateStartSchedule({ documentNo: documentNo('Y1'), dateStartSchedule: serverDates.todayNoon });
         await openJobsList();
         await ManufacturingJobsListScreen.startJob({ documentNo: documentNo('Y1') });
         await ManufacturingJobScreen.goBack();
         await ManufacturingJobsListScreen.waitForScreen();
-        await Backend.setManufacturingOrderDateStartSchedule({ documentNo: documentNo('Y1'), dateStartSchedule: localNoon(-1) });
+        await Backend.setManufacturingOrderDateStartSchedule({ documentNo: documentNo('Y1'), dateStartSchedule: serverDates.yesterdayNoon });
     });
 
     await test.step('List shows today\'s order and the started one only', async () => {
@@ -157,7 +159,7 @@ test('todayOnlyJobsList_showsTodayAndStarted_hidesOtherDays', async ({ page }) =
     });
 
     await test.step('An unstarted yesterday order moved to today appears', async () => {
-        await Backend.setManufacturingOrderDateStartSchedule({ documentNo: documentNo('Y2'), dateStartSchedule: localNoon(0) });
+        await Backend.setManufacturingOrderDateStartSchedule({ documentNo: documentNo('Y2'), dateStartSchedule: serverDates.todayNoon });
         await ManufacturingJobsListScreen.goBack();
         await openJobsList();
         await expectJobListed({ documentNo: documentNo('Y2') });

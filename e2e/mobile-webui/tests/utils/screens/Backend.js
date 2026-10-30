@@ -123,6 +123,22 @@ export const Backend = {
     },
 
     /**
+     * Noon of yesterday / today / tomorrow in the SERVER's time zone (ISO instants), the days that server-side
+     * "today" filters use. Use these instead of the test machine's clock, whose time zone may differ.
+     *
+     * @returns {Promise<{zoneId: string, yesterdayNoon: string, todayNoon: string, tomorrowNoon: string}>}
+     */
+    getServerDates: async () => await test.step(`Backend: get server dates`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/serverDates`, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+        const responseBody = await response.json();
+        assertNoErrors({ responseBody });
+        return responseBody;
+    }),
+
+    /**
      * Set PP_Order.DateStartSchedule of an existing manufacturing order.
      *
      * @param {string} args.documentNo - the order's DocumentNo
