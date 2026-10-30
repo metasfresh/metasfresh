@@ -15,6 +15,8 @@ import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickConfig';
 import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
+import Spinner from './Spinner';
+import { doFinally } from '../utils';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_HU_BARCODE = 'READ_HU_BARCODE';
@@ -70,6 +72,10 @@ const ScanHUAndGetQtyComponent = ({
   onClose: onCloseCallback,
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
+  const [isProcessing, setProcessing] = useState(false);
+  // synchronous twin of isProcessing: state is only visible after the next render, so two taps handled
+  // before that render would both pass a state-only check
+  const isResultInFlightRef = useRef(false);
   // GRAI Flow-Through: when graiScanEnabled, the confirmed qty result is stashed here and the GRAI
   // capture is shown inline (non-skippable) before the pick is reported, so qty + GRAIs go out in one
   // atomic onResult call.
@@ -304,12 +310,41 @@ const ScanHUAndGetQtyComponent = ({
     return onResult(result);
   };
 
+  // isProcessing suppresses the GRAI save button (and the scan target) while the pick's POST is in
+  // flight, so a second tap cannot book the same line again. It is cleared in a finally, so a failed
+  // pick gives the screen back to the operator.
+  const fireOnResult = (onResultPayload) => {
+    if (isResultInFlightRef.current) {
+      return undefined;
+    }
+    const clearInFlight = () => {
+      isResultInFlightRef.current = false;
+      setProcessing(false);
+    };
+
+    isResultInFlightRef.current = true;
+    setProcessing(true);
+    try {
+      const promise = onResult(onResultPayload)?.catch?.((error) => toastErrorFromObj(error));
+      return doFinally(promise, clearInFlight);
+    } catch (error) {
+      clearInFlight();
+      throw error;
+    }
+  };
+
   const onCloseDialog = () => {
     setProgressStatus(STATUS_READ_HU_BARCODE);
     onCloseCallback?.();
   };
 
   const showEligibleBarcodeDebugButton = useBooleanSetting('barcodeScanner.showEligibleBarcodeDebugButton');
+
+  // Early return (after every hook): the GRAI save button and the scanners are unmounted while the
+  // pick is in flight.
+  if (isProcessing) {
+    return <Spinner />;
+  }
 
   switch (progressStatus) {
     case STATUS_READ_HU_BARCODE: {
@@ -407,11 +442,7 @@ const ScanHUAndGetQtyComponent = ({
             captionKey="activities.picking.graiScan.save.buttonCaption"
             testId="grai-save-button"
             disabled={!canSave}
-            onClick={() =>
-              onResult({ ...pendingGraiResult, setGrais: true, graiCodes: assignedGrais })?.catch?.((error) =>
-                toastErrorFromObj(error)
-              )
-            }
+            onClick={() => fireOnResult({ ...pendingGraiResult, setGrais: true, graiCodes: assignedGrais })}
             additionalCssClass="action-button"
           />
         </GraiCapturePanel>
