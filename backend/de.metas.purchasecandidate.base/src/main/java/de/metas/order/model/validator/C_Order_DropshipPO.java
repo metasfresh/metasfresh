@@ -88,6 +88,7 @@ public class C_Order_DropshipPO
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = Services.get(IC_Order_CreatePOFromSOsBL.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void validateVendorsBeforeComplete(@NonNull final I_C_Order order)
@@ -196,7 +197,7 @@ public class C_Order_DropshipPO
 	private boolean isCreateDropshipPOEnabled(@NonNull final I_C_Order order)
 	{
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID());
-		return Services.get(IC_Order_CreatePOFromSOsBL.class).isCreateDropshipPO(clientAndOrgId);
+		return orderCreatePOFromSOsBL.isCreateDropshipPO(clientAndOrgId);
 	}
 
 	/**

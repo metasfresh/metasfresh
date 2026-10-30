@@ -47,6 +47,8 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	private static final String SYSCONFIG_COMPLETE_DROPSHIP_PO = "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO";
 	private static final String SYSCONFIG_CREATE_DROPSHIP_PO = "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO";
 
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	private final ArrayList<IC_Order_CreatePOFromSOsListener> listeners = new ArrayList<>();
 
 	@Override
@@ -69,8 +71,6 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	@Override
 	public String getConfigPurchaseQtySource()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 		// afaiu, qtyReserved would make more sense, but there seem to be problems in C_OrderLine.QtyReserved
 		final String purchaseQtySource = sysConfigBL.getValue(SYSCONFIG_PURCHASE_QTY_SOURCE, SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT);
 
@@ -88,13 +88,13 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	@Override
 	public boolean isCompleteDropshipPO()
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_COMPLETE_DROPSHIP_PO, true);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_COMPLETE_DROPSHIP_PO, true);
 	}
 
 	@Override
 	public boolean isCreateDropshipPO(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		// resolved for the given client/org so an org-level AD_SysConfig row overrides the system default (ConfigurationLevel 'O')
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_CREATE_DROPSHIP_PO, false, clientAndOrgId);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_CREATE_DROPSHIP_PO, false, clientAndOrgId);
 	}
 }
