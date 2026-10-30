@@ -24,26 +24,21 @@ package de.metas.cucumber.stepdefs.distributionorder;
 
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.report.AD_Process_StepDef;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessInfo;
-import de.metas.report.server.LocalReportServer;
 import de.metas.report.server.OutputType;
-import de.metas.report.server.ReportResult;
 import de.metas.util.Services;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.api.ArchiveRequest;
-import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Locator;
 import org.compiere.util.Env;
-import org.springframework.core.io.ByteArrayResource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,10 +55,10 @@ public class InTransitHUsReport_StepDef
 	private static final String REPORT_LANGUAGE = "de_DE";
 
 	@NonNull private final M_Locator_StepDefData locatorTable;
+	@NonNull private final AD_Process_StepDef adProcessStepDef;
 
 	@NonNull private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
-	@NonNull private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
 	@When("^the Materialbegleitschein is printed for locator (.*)$")
 	public void printMaterialbegleitschein(@NonNull final String locatorIdentifierStr)
@@ -88,29 +83,6 @@ public class InTransitHUsReport_StepDef
 				.addParameter(PARAM_M_Locator_ID, locator.getM_Locator_ID())
 				.build();
 
-		pInstanceDAO.saveProcessInfoOnly(processInfo);
-		// saveProcessInfoOnly drops the parameters, but the report reads them from the AD_PInstance_Para records
-		pInstanceDAO.saveParameterToDB(processInfo.getPinstanceId(), processInfo.getParameter());
-
-		final ReportResult reportResult = new LocalReportServer().report(
-				processId.getRepoId(),
-				processInfo.getPinstanceId().getRepoId(),
-				reportLanguage.getAD_Language(),
-				OutputType.PDF
-		);
-
-		archiveBL.archive(ArchiveRequest.builder()
-				.ctx(processInfo.getCtx())
-				.trxName(ITrx.TRXNAME_ThreadInherited)
-				.data(new ByteArrayResource(reportResult.getReportContent()))
-				.force(true) // archive it even if AutoArchive says no
-				.save(true)
-				.isReport(processInfo.isReportingProcess())
-				.recordRef(locatorRef)
-				.processId(processInfo.getAdProcessId())
-				.pinstanceId(processInfo.getPinstanceId())
-				.archiveName(reportResult.getReportFilename())
-				.isDirectProcessQueueItem(false)
-				.build());
+		adProcessStepDef.runAndArchive(processInfo, reportLanguage);
 	}
 }

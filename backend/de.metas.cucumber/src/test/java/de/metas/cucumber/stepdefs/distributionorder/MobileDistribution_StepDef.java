@@ -233,8 +233,10 @@ public class MobileDistribution_StepDef
 
 	/**
 	 * The trolley is in-memory state of {@code TrolleyService}, keyed by the API user; it would leak into the next scenario.
+	 * Fires for every scenario, but only acts if that scenario set a trolley. A cleanup error is logged, not thrown,
+	 * so it cannot mask the scenario's own failure.
 	 */
-	@After("@InTransitHUsReport")
+	@After
 	public void clearTrolleyAfterScenario()
 	{
 		if (!trolleySetInScenario)
@@ -243,8 +245,15 @@ public class MobileDistribution_StepDef
 		}
 		trolleySetInScenario = false;
 
-		clearTrolley();
-		assertTrolleyEmpty();
+		try
+		{
+			clearTrolley();
+			assertTrolleyEmpty();
+		}
+		catch (final Throwable ex)
+		{
+			logger.warn("Failed clearing the mobile user's trolley after scenario", ex);
+		}
 	}
 
 	@Nullable

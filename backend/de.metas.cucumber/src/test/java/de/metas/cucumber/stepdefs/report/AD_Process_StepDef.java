@@ -85,13 +85,26 @@ public class AD_Process_StepDef
 				.setRecord(recordRef)
 				.build();
 
+		runAndArchive(jasperProcessInfo, Language.getBaseLanguage());
+	}
+
+	/**
+	 * Runs the (already built) jasper process locally and archives the resulting PDF for the process' record.
+	 * Process parameters, if any, are persisted too, because the report reads them from the AD_PInstance_Para records.
+	 */
+	public void runAndArchive(@NonNull final ProcessInfo jasperProcessInfo, @NonNull final Language reportLanguage)
+	{
 		pInstanceDAO.saveProcessInfoOnly(jasperProcessInfo);
+		if (!jasperProcessInfo.getParameter().isEmpty())
+		{
+			pInstanceDAO.saveParameterToDB(jasperProcessInfo.getPinstanceId(), jasperProcessInfo.getParameter());
+		}
 
 		final LocalReportServer server = new LocalReportServer();
 		final ReportResult reportResult = server.report(
-				processId.getRepoId(),
+				jasperProcessInfo.getAdProcessId().getRepoId(),
 				jasperProcessInfo.getPinstanceId().getRepoId(),
-				Language.getBaseLanguage().getAD_Language(),
+				reportLanguage.getAD_Language(),
 				OutputType.PDF
 		);
 
