@@ -16,6 +16,7 @@ $$
 -- Every PP_Order (and its BOM line) this DD_OrderLine supplies. An HU is picked against the line, not against
 -- a candidate, so the HU's own PP_Order is unknown: callers list all of them. DD_Order.Forward_PP_Order_ID is
 -- empty for aggregated DD_Orders, so it is only a fallback for lines without candidates.
+-- qty and uomsymbol are NULL when the reference carries no PP_Order_BOMLine; callers must null-guard them.
 WITH refs AS (SELECT DISTINCT c.Forward_PP_Order_ID AS pp_order_id, c.Forward_PP_Order_BOMLine_ID AS pp_order_bomline_id
               FROM DD_Order_Candidate_DDOrder alloc
                        INNER JOIN DD_Order_Candidate c ON alloc.DD_Order_Candidate_ID = c.DD_Order_Candidate_ID
@@ -40,6 +41,6 @@ FROM all_refs r
          LEFT JOIN PP_Order_BOMLine bl ON bl.PP_Order_BOMLine_ID = r.pp_order_bomline_id
          LEFT JOIN C_UOM uom ON uom.C_UOM_ID = bl.C_UOM_ID
          LEFT JOIN C_UOM_Trl uomt ON uomt.C_UOM_ID = bl.C_UOM_ID AND uomt.AD_Language = p_AD_Language
-ORDER BY pp.DocumentNo, bl.PP_Order_BOMLine_ID
+ORDER BY pp.DocumentNo, pp.PP_Order_ID, bl.PP_Order_BOMLine_ID
 $$
     LANGUAGE SQL STABLE;

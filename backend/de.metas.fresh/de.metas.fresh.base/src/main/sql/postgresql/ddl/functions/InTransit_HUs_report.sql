@@ -25,6 +25,14 @@ CREATE OR REPLACE FUNCTION report.InTransit_HUs_Report(IN p_M_Locator_ID numeric
             )
 AS
 $$
+-- Per HU row: all PP_Orders its DD_Order line supplies (production_order_no, pporder_pickinginstruction_lines),
+-- one row per HU as before.
+-- pickinginstruction: "<order no>: <instruction>" lines when a BOM line carries an instruction, else the packing
+-- description. This changes the value for lines with a BOM instruction (formerly the bare instruction), so any
+-- report layout override printing pickinginstruction must be removed in the same rollout.
+-- is_single_pporder_header (per order_docno group, the report group) is STRICT: true only when the whole group
+-- has exactly one PP_Order, every row of the group belongs to a PP_Order, and no BOM line carries an instruction.
+-- A group mixing PP and non-PP lines is false, so the header never names one order for a line that does not supply it.
 WITH r AS (SELECT COALESCE(pt.Name, p.name) AS ProductName,
                   p.value                   AS p_value,
 
@@ -73,14 +81,14 @@ WITH r AS (SELECT COALESCE(pt.Name, p.name) AS ProductName,
                     LEFT JOIN c_bpartner bp ON o.c_bpartner_id = bp.c_bpartner_id
 
                     LEFT JOIN LATERAL (
-                        SELECT array_agg(DISTINCT o.pp_order_id)                                                       AS pp_order_ids,
-                               string_agg(DISTINCT o.production_order_no, E'\n' ORDER BY o.production_order_no)        AS production_order_nos,
-                               min(o.datestartschedule)                                                                AS datestartschedule,
-                               string_agg(DISTINCT o.production_order_no || ': ' || o.pickinginstruction, E'\n'
-                                          ORDER BY o.production_order_no || ': ' || o.pickinginstruction)
-                               FILTER (WHERE o.pickinginstruction IS NOT NULL)                                         AS pickinginstruction_lines,
-                               bool_or(o.pickinginstruction IS NOT NULL)                                               AS has_instruction
-                        FROM report.InTransit_HUs_Report_PPOrders(ddol.DD_OrderLine_ID, p_AD_Language) o
+                        SELECT array_agg(DISTINCT ppo.pp_order_id)                                                       AS pp_order_ids,
+                               string_agg(DISTINCT ppo.production_order_no, E'\n' ORDER BY ppo.production_order_no)        AS production_order_nos,
+                               min(ppo.datestartschedule)                                                                AS datestartschedule,
+                               string_agg(DISTINCT ppo.production_order_no || ': ' || ppo.pickinginstruction, E'\n'
+                                          ORDER BY ppo.production_order_no || ': ' || ppo.pickinginstruction)
+                               FILTER (WHERE ppo.pickinginstruction IS NOT NULL)                                         AS pickinginstruction_lines,
+                               bool_or(ppo.pickinginstruction IS NOT NULL)                                               AS has_instruction
+                        FROM report.InTransit_HUs_Report_PPOrders(ddol.DD_OrderLine_ID, p_AD_Language) ppo
                         ) pps ON TRUE
                     LEFT JOIN M_HU_PI_Item_Product piip ON ddol.M_HU_PI_Item_Product_ID = piip.M_HU_PI_Item_Product_ID
 
