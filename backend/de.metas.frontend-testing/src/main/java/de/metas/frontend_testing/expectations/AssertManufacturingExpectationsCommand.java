@@ -136,6 +136,16 @@ public class AssertManufacturingExpectationsCommand
 				assertThat(computeAcctBalance(ppOrderId, I_M_Product_Acct.COLUMNNAME_P_COGS_Acct)).as("cogsAcctBalance").isEqualByComparingTo(expectation.getCogsAcctBalance());
 			}
 
+			if (expectation.getOrderFactAcctPresent() != null)
+			{
+				final int factCount = queryBL.createQueryBuilder(I_Fact_Acct.class)
+						.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_PP_Order.class))
+						.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, ppOrderId.getRepoId())
+						.create()
+						.count();
+				assertThat(factCount > 0).as("orderFactAcctPresent (Fact_Acct rows on the PP_Order itself: " + factCount + ")").isEqualTo(expectation.getOrderFactAcctPresent());
+			}
+
 			if (expectation.getCurrentCostPrices() != null)
 			{
 				expectation.getCurrentCostPrices().forEach(this::assertCurrentCostPrice);

@@ -41,6 +41,12 @@ public class JsonManufacturingExpectation
 	/** like {@link #wipAcctBalance}, on the {@code P_COGS_Acct} account */
 	@Nullable BigDecimal cogsAcctBalance;
 
+	/**
+	 * Whether the {@code PP_Order} record itself has {@code Fact_Acct} rows (accounting is booked on the order's cost
+	 * collectors, never on the order); {@code false} catches a fact that was booked on the order.
+	 */
+	@Nullable Boolean orderFactAcctPresent;
+
 	/** product identifier to {@code M_Cost.CurrentCostPrice} of the costing-method element of the accounting schema */
 	@Nullable Map<String, BigDecimal> currentCostPrices;
 
