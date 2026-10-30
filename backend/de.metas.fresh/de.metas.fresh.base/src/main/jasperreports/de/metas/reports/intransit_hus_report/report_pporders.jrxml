@@ -24,7 +24,7 @@
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{pporder_label} + " " + $F{production_order_no}
-+ " (" + $R{pporder_start} + " " + ($F{datestartschedule} != null ? new java.text.SimpleDateFormat("dd.MM.yyyy").format($F{datestartschedule}) : "")
++ " (" + $R{pporder_start} + " " + ($F{datestartschedule} != null ? $F{datestartschedule}.toInstant().atZone($P{REPORT_TIME_ZONE}.toZoneId()).format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy")) : "")
 + ($F{qty} != null ? ", " + $F{qty}.stripTrailingZeros().toPlainString() + " " + $F{uomsymbol} : "") + ")"
 + ($F{pickinginstruction} != null ? ": " + $R{pickinginstruction} + ": " + $F{pickinginstruction} : "")]]></textFieldExpression>
 			</textField>

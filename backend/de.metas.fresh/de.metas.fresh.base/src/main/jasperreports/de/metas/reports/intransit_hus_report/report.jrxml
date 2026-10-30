@@ -388,7 +388,7 @@ order by order_docno, documentno, dd_orderline_id, m_hu_id]]>
 			</band>
 		</groupHeader>
 	</group>
-	<group name="Line">
+	<group name="Line" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="150">
 		<groupExpression><![CDATA[$F{dd_orderline_id}]]></groupExpression>
 		<groupHeader>
 			<band height="27" splitType="Stretch">
