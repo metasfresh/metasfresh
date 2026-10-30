@@ -130,6 +130,12 @@ public class PPOrderCommand
 
 			final I_PP_Order_BOMLine line = findAndRemoveMatchingBOMLine(lines, lineRequest);
 
+			if (lineRequest.getPickingInstruction() != null)
+			{
+				line.setPickingInstruction(lineRequest.getPickingInstruction());
+				InterfaceWrapperHelper.save(line);
+			}
+
 			assertExpectedPickingInstructionMatching(lineRequest, line);
 
 			context.putIdentifier(lineIdentifier, PPOrderBOMLineId.ofRepoId(line.getPP_Order_BOMLine_ID()));

@@ -20,6 +20,8 @@ import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationG
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaResponse;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.CustomQRCodeFormatCommand;
 import de.metas.frontend_testing.masterdata.dd_order.DDOrderCommand;
+import de.metas.frontend_testing.masterdata.dd_order.DDOrderFromCandidatesCommand;
+import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderFromCandidatesRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderResponse;
 import de.metas.frontend_testing.masterdata.hu.CreateHUCommand;
@@ -193,6 +195,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonInvoiceCreateResponse> invoices = createInvoices();
 		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
+		final ImmutableMap<String, JsonDDOrderResponse> distributionOrdersFromCandidates = createDistributionOrdersFromCandidates();
 		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
 		createCustomQRCodeFormats();
 
@@ -233,6 +236,7 @@ public class CreateMasterdataCommand
 				.receipts(receipts)
 				.invoices(invoices)
 				.distributionOrders(distributionOrders)
+				.distributionOrdersFromCandidates(distributionOrdersFromCandidates)
 				.manufacturingOrders(manufacturingOrders)
 				.inventories(inventories)
 				.build();
@@ -777,6 +781,25 @@ public class CreateMasterdataCommand
 	{
 		return DDOrderCommand.builder()
 				.ddOrderService(services.ddOrderService)
+				.distributionJobLoaderSupportingServices(services.distributionJobLoaderSupportingServices)
+				.captionProvider(services.distributionLauncherCaptionProvider)
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonDDOrderResponse> createDistributionOrdersFromCandidates()
+	{
+		return process(request.getDistributionOrdersFromCandidates(), this::createDistributionOrderFromCandidates);
+	}
+
+	private JsonDDOrderResponse createDistributionOrderFromCandidates(final String identifier, final JsonDDOrderFromCandidatesRequest request)
+	{
+		return DDOrderFromCandidatesCommand.builder()
+				.ddOrderCandidateService(services.ddOrderCandidateService)
+				.ddOrderCandidateAllocRepository(services.ddOrderCandidateAllocRepository)
 				.distributionJobLoaderSupportingServices(services.distributionJobLoaderSupportingServices)
 				.captionProvider(services.distributionLauncherCaptionProvider)
 				.context(context)
