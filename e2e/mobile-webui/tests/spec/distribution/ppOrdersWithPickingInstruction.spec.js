@@ -57,7 +57,7 @@ const expectedPPOrderLine = (ppOrderDocumentNo, pickingInstruction) =>
     `${MO} ${ppOrderDocumentNo}` + (pickingInstruction ? `: ${pickingInstruction}` : '');
 
 // noinspection JSUnusedLocalSymbols
-test('Aggregated DD_Order lists every PP_Order with its picking instruction', async () => {
+test('Aggregated DD_Order lists every PP_Order with its picking instruction', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5114: MobileUI Distribution');
@@ -115,7 +115,7 @@ test('Aggregated DD_Order lists every PP_Order with its picking instruction', as
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Single PP_Order renders one line next to Source Doc and Picking Instruction', async () => {
+test('Single PP_Order renders one line next to Source Doc and Picking Instruction', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5114: MobileUI Distribution');
