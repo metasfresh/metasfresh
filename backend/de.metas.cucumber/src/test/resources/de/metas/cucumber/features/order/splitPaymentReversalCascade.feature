@@ -236,6 +236,22 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
       | C_Payment_ID.Identifier | OpenAmt  |
       | lcPayment               | 12000.00 |
 
+    # Reversing INV1 created a reversal M_MatchInv (INV1 reversal line <-> r1_line1), whose posting runs
+    # asynchronously (after commit) and updates the product's M_Cost rows. Reversing R1 deletes all of R1's
+    # M_MatchInv rows and then locks those M_Cost rows. If the posting is still running, its COMMIT checks the
+    # deferred M_CostDetail -> M_MatchInv foreign key against a row the R1 reversal deleted, while the R1
+    # reversal waits for the M_Cost row the posting holds: a deadlock. A user reverses the receipt only after
+    # that posting is done, so the scenario waits for it too.
+    And the reversal of invoice inv1 is identified by inv1_reversal
+    And validate created invoice lines
+      | C_InvoiceLine_ID | C_Invoice_ID  | M_Product_ID | QtyInvoiced |
+      | inv1_reversalL1  | inv1_reversal | product      | -400        |
+    And M_MatchInv are found
+      | M_MatchInv_ID           | C_InvoiceLine_ID | M_InOutLine_ID |
+      | inv1_matchInv           | inv1L1           | r1_line1       |
+      | inv1_reversal_matchInv  | inv1_reversalL1  | r1_line1       |
+    And Wait until documents r1,inv1_matchInv,inv1_reversal_matchInv are posted
+
     # ── Step 2: reverse R1 ──
     And the material receipt identified by r1 is reversed
 
