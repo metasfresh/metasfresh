@@ -17,8 +17,8 @@ import java.util.Map;
  * Needed for sysconfigs that are read only at SYSTEM level (e.g. via {@code ISysConfigBL#getBooleanValue(String, boolean)}),
  * which {@link SysconfigCommand} (config-level write) would not affect.
  * <p>
- * A {@code null} value unsets the SYSTEM row (stored as the no-value marker, read like a missing row);
- * that is how a previously missing row is restored.
+ * A {@code null} value unsets the SYSTEM row (stored as the no-value marker); that is how a previously missing row is restored.
+ * Boolean and int reads then fall back to their default like for a missing row, but a plain string read returns "" instead of the default.
  */
 @Builder
 public class SystemSysconfigCommand
