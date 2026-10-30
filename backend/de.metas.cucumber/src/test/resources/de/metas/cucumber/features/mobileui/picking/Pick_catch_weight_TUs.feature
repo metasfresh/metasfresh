@@ -319,33 +319,33 @@ Feature: mobileUI Picking - Pick catch weight TUs
 # ######################################################################################################################
   @from:cucumber
   @Id:S33252_TC3c
-  Scenario: Pick a whole TU with a typed weight and no LU target set, the LU is created and the weight reaches the shipment line
+  Scenario: Pick a whole TU with a typed weight and no LU target, the TU goes onto a new LU on completion and the weight reaches the shipment line
     When metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | InvoiceRule |
-      | SO         | true    | customer                 | 2024-03-26  | I           |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | InvoiceRule |
+      | SO         | true    | customer      | 2024-03-26  | I           |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | LA         | SO                    | productA                | 4          | TUx4_A                                 |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | LA         | SO         | productA     | 4          | TUx4_A                  |
     And the order identified by SO is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | ssA        | LA                        | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ssA        | LA             | N             |
 
     And start picking job for sales order identified by SO
     And scan picking slot identified by 200.0
-    # no picking target is set; picking the whole TU puts it onto a new LU
+    # no picking target is set: the whole TU is picked on its own, without an LU
     And pick lines
       | PickingLine.byProduct | PickFromHU    | QtyPicked | CatchWeight |
       | productA              | pickFromTU_A1 | 1         | 8.000       |
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by ssA
-      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | M_TU_HU_ID    | M_LU_HU_ID | Processed |
-      | 8.000             | KGM          | 4         | 1     | pickFromTU_A1 | pickedLU   | N         |
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | M_TU_HU_ID    | Processed |
+      | 8.000             | KGM          | 4         | 1     | pickFromTU_A1 | N         |
 
     And complete picking job
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
-      | ssA                              | shipment              | CO            |
-    # pick record keeps the weight after the shipment is created
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ssA                   | shipment   | CO        |
+    # completing the job puts the TU onto a new LU; the pick record keeps the weight
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by ssA
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | M_TU_HU_ID    | M_LU_HU_ID | Processed | M_InOutLine_ID |
       | 8.000             | KGM          | 4         | 1     | pickFromTU_A1 | pickedLU   | Y         | shipmentLineA  |
