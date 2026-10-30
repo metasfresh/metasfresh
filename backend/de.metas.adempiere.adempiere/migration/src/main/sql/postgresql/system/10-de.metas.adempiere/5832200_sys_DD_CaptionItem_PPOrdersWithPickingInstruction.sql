@@ -7,7 +7,7 @@
 --
 -- IDs allocated from idserver.metas.de on 2026-10-30:
 --   AD_Ref_List 544384 (PPOrdersWithPickingInstruction, AD_Reference 542025)
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,542025,544384,TO_TIMESTAMP('2026-10-30 12:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Produktionsaufträge mit Kommissionierhinweis',TO_TIMESTAMP('2026-10-30 12:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'PPOrdersWithPickingInstruction','PPOrdersWithPickingInstruction')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,542025,544384/*From ID Server*/,TO_TIMESTAMP('2026-10-30 12:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Produktionsaufträge mit Kommissionierhinweis',TO_TIMESTAMP('2026-10-30 12:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'PPOrdersWithPickingInstruction','PPOrdersWithPickingInstruction')
 ;
 
 -- 2026-10-30T12:00:00.001Z
