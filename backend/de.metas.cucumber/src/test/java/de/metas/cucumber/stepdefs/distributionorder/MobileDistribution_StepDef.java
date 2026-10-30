@@ -1,6 +1,9 @@
 package de.metas.cucumber.stepdefs.distributionorder;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.api.APIRequest;
 import de.metas.cucumber.stepdefs.api.APIResponse;
@@ -24,22 +27,29 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Locator;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.function.Consumer;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RequiredArgsConstructor
 public class MobileDistribution_StepDef
 {
 	private static final String ENDPOINT_BASE_UserWorkflows = "api/v2/userWorkflows";
 	private static final String ENDPOINT_StartWorkflow = ENDPOINT_BASE_UserWorkflows + "/wfProcess/start";
+	private static final String ENDPOINT_Trolley = ENDPOINT_BASE_UserWorkflows + "/trolley";
 	private static final String ENDPOINT_Event = "api/v2/distribution/event";
 
 	// services
@@ -49,6 +59,7 @@ public class MobileDistribution_StepDef
 	//
 	private final DistributionWorkflow_RestController_StepDef distributionWorkflowRestControllerStepDef;
 	private final M_HU_StepDefData huTable;
+	private final M_Locator_StepDefData locatorTable;
 	private final REST_API_StepDef restAPIStepDef;
 	private final TestContext testContext;
 
@@ -58,6 +69,7 @@ public class MobileDistribution_StepDef
 	private DistributionJobLineId lineId;
 	private DistributionJobStepId stepId;
 	private WFActivityId lastConfirmActivityId;
+	private boolean trolleySetInScenario;
 
 	private APIResponse httpPOST(@NonNull final String path)
 	{
@@ -194,5 +206,84 @@ public class MobileDistribution_StepDef
 
 		final APIResponse response = httpPOST(ENDPOINT_BASE_UserWorkflows + "/wfProcess/" + wfProcessId.getAsString() + "/" + lastConfirmActivityId.getAsString() + "/userConfirmation");
 		updateContextFromWFProcessResponse(response);
+	}
+
+	@And("^the mobile user's trolley is set to locator (.*)$")
+	public void setTrolley(@NonNull final String locatorIdentifierStr)
+	{
+		final I_M_Locator locator = locatorTable.get(StepDefDataIdentifier.ofString(locatorIdentifierStr));
+		final String scannedCode = LocatorQRCode.ofLocator(locator).toGlobalQRCodeJsonString();
+
+		trolleySetInScenario = true; // set before the call, so that @After clears even if the call fails half-way
+		httpPOST(ENDPOINT_Trolley, ImmutableMap.of("scannedCode", scannedCode));
+	}
+
+	@And("the mobile user's trolley is cleared")
+	public void clearTrolley()
+	{
+		httpDELETE(ENDPOINT_Trolley);
+	}
+
+	@Then("the mobile user's trolley is empty")
+	public void assertTrolleyEmpty()
+	{
+		final APIResponse response = httpGET(ENDPOINT_Trolley);
+		assertThat(getTrolleyOrNull(response)).as("current trolley").isNull();
+	}
+
+	/**
+	 * The trolley is in-memory state of {@code TrolleyService}, keyed by the API user; it would leak into the next scenario.
+	 */
+	@After("@InTransitHUsReport")
+	public void clearTrolleyAfterScenario()
+	{
+		if (!trolleySetInScenario)
+		{
+			return;
+		}
+		trolleySetInScenario = false;
+
+		clearTrolley();
+		assertTrolleyEmpty();
+	}
+
+	@Nullable
+	private static JsonNode getTrolleyOrNull(@NonNull final APIResponse response)
+	{
+		try
+		{
+			final JsonNode trolley = response.getContentAs(JsonNode.class).get("trolley");
+			return trolley == null || trolley.isNull() ? null : trolley;
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException("Failed parsing trolley response: " + response, e);
+		}
+	}
+
+	private APIResponse httpGET(@NonNull final String path)
+	{
+		return httpNoPayload("GET", path);
+	}
+
+	private APIResponse httpDELETE(@NonNull final String path)
+	{
+		return httpNoPayload("DELETE", path);
+	}
+
+	private APIResponse httpNoPayload(@NonNull final String method, @NonNull final String path)
+	{
+		APIRequest request = null;
+		try
+		{
+			request = restAPIStepDef.newAPIRequest().method(method).endpointPath(path).payload(null).expectedStatusCode(200).build();
+			testContext.setRequestPayload(null);
+			restAPIStepDef.performHTTPRequest(request);
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException("Failed executing request: " + request, e);
+		}
+		return testContext.getApiResponse();
 	}
 }
