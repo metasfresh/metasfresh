@@ -11,6 +11,7 @@ import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
+import de.metas.frontend_testing.masterdata.pp_order.SetPPOrderDateStartScheduleCommand;
 import de.metas.frontend_testing.masterdata.shipment.JsonGenerateShipmentsRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonGenerateShipmentsResponse;
 import de.metas.frontend_testing.masterdata.shipment.GenerateShipmentsCommand;
@@ -18,6 +19,9 @@ import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentResponse;
 import de.metas.frontend_testing.masterdata.shipment.ReverseShipmentCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
+import de.metas.frontend_testing.wfnode.JsonSetWFNodeFlagsRequest;
+import de.metas.frontend_testing.wfnode.JsonSetWFNodeFlagsResponse;
+import de.metas.frontend_testing.wfnode.SetWFNodeFlagsCommand;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -169,5 +173,26 @@ public class FrontendTestingRestController
 				.request(request)
 				.build()
 				.execute());
+	}
+
+	@PostMapping("wfNode/flags")
+	public JsonSetWFNodeFlagsResponse setWFNodeFlags(@RequestBody @NonNull final JsonSetWFNodeFlagsRequest request)
+	{
+		return callInContext(() -> SetWFNodeFlagsCommand.builder()
+				.request(request)
+				.build()
+				.execute());
+	}
+
+	@PostMapping("ppOrder/dateStartSchedule")
+	public void setPPOrderDateStartSchedule(@RequestBody @NonNull final SetPPOrderDateStartScheduleCommand.Request request)
+	{
+		callInContext(() -> {
+			SetPPOrderDateStartScheduleCommand.builder()
+					.request(request)
+					.build()
+					.execute();
+			return null;
+		});
 	}
 }

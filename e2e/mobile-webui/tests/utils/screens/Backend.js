@@ -75,6 +75,44 @@ export const Backend = {
     }),
 
     /**
+     * Set AD_WF_Node.IsActive / PP_AlwaysAvailableToUser (omit = unchanged; alwaysAvailableToUser '' clears it).
+     * Returns the previous values, shaped so they can be passed back to restore the node.
+     *
+     * @returns {Promise<{adWfNodeId: number, isActive: boolean, alwaysAvailableToUser: string}>}
+     */
+    setWFNodeFlags: async ({ adWfNodeId, isActive, alwaysAvailableToUser }) => await test.step(`Backend: set WF node ${adWfNodeId} flags`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/wfNode/flags`, {
+            data: { adWfNodeId, isActive, alwaysAvailableToUser },
+            headers: { 'Content-Type': 'application/json' },
+        });
+        const responseBody = await response.json();
+        assertNoErrors({ responseBody });
+
+        // null (flag was empty) -> '' so that passing the result back clears the flag again
+        return { ...responseBody, alwaysAvailableToUser: responseBody.alwaysAvailableToUser ?? '' };
+    }),
+
+    /**
+     * Set PP_Order.DateStartSchedule of an existing manufacturing order.
+     *
+     * @param {string} args.documentNo - the order's DocumentNo
+     * @param {string} args.dateStartSchedule - ISO date-time, e.g. '2026-11-02T08:00:00+01:00'
+     */
+    setManufacturingOrderDateStartSchedule: async ({ documentNo, dateStartSchedule }) => await test.step(`Backend: set start date of PP order ${documentNo}`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/ppOrder/dateStartSchedule`, {
+            data: { ppOrder: documentNo, dateStartSchedule },
+            headers: { 'Content-Type': 'application/json' },
+        });
+        if (!response.ok()) {
+            const responseBody = await response.json();
+            assertNoErrors({ responseBody });
+            throw new Error(`setManufacturingOrderDateStartSchedule failed: ${response.status()}`);
+        }
+    }),
+
+    /**
      * Resolve a masterdata identifier (e.g. `"lu1"`) to the underlying handling-unit's
      * global QR code string. Used by tests that need to scan an HU which was created
      * indirectly (typically by a picking flow) and therefore has no QR code under
