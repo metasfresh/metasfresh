@@ -1,6 +1,5 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
-import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
@@ -13,7 +12,6 @@ import { DistributionJobScreen } from '../../utils/screens/distribution/Distribu
 const MO = 'Produktionsauftrag';
 // English label of the new element (AD_Ref_List_Trl en_US); this spec logs in as en_US, like its sibling specs.
 const HEADER_CAPTION = 'Manufacturing orders with picking instruction';
-const CAPTION_MULTILINE_CLASS = /(^|\s)caption-multiline(\s|$)/;
 
 let previousSystemSysconfigs = {};
 
@@ -59,7 +57,7 @@ const expectedPPOrderLine = (ppOrderDocumentNo, pickingInstruction) =>
     `${MO} ${ppOrderDocumentNo}` + (pickingInstruction ? `: ${pickingInstruction}` : '');
 
 // noinspection JSUnusedLocalSymbols
-test('Aggregated DD_Order lists every PP_Order with its picking instruction', async ({ page }) => {
+test('Aggregated DD_Order lists every PP_Order with its picking instruction', async () => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5114: MobileUI Distribution');
@@ -109,7 +107,7 @@ test('Aggregated DD_Order lists every PP_Order with its picking instruction', as
     await DistributionJobsListScreen.waitForScreen();
     await DistributionJobsListScreen.filterByFacetId({ facetId: dd.warehouseFromFacetId, expectHitCount: 1 });
     await DistributionJobsListScreen.expectJobButtons([{ testId: dd.launcherTestId, caption }]);
-    await expect(page.getByTestId(dd.launcherTestId).locator('.caption-btn .row span')).toHaveClass(CAPTION_MULTILINE_CLASS);
+    await DistributionJobsListScreen.expectJobButtonCaptionMultiline({ launcherTestId: dd.launcherTestId });
 
     // D2: the job header shows the same lines joined with ", "
     await DistributionJobsListScreen.startJob({ launcherTestId: dd.launcherTestId });
@@ -117,7 +115,7 @@ test('Aggregated DD_Order lists every PP_Order with its picking instruction', as
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Single PP_Order renders one line next to Source Doc and Picking Instruction', async ({ page }) => {
+test('Single PP_Order renders one line next to Source Doc and Picking Instruction', async () => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5114: MobileUI Distribution');
