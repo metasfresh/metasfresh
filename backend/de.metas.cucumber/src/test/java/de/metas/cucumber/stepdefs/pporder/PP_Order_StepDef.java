@@ -218,7 +218,7 @@ public class PP_Order_StepDef
 	 *     and passed to {@link PPOrderCreateRequest#getWorkstationId()}. Distinct from the plant: a lot-number
 	 *     provider resolves the production line via {@code PP_Order.WorkStation_ID -> S_Resource.LotNumberCode},
 	 *     so a scenario covering that hop must be able to set it independently.</li>
-	 *     <li>{@code DocumentNo} — overrides the generated order number after creation</li>
+	 *     <li>{@code DocumentNo} — overrides the generated order number after creation (and after completion, if {@code completeDocument} is set); a test-data override, as the real flow assigns the number at create</li>
 	 *     <li>{@code completeDocument} — defaults to {@code false}</li>
 	 * </ul>
 	 * <pre>
@@ -275,7 +275,7 @@ public class PP_Order_StepDef
 			// lets the PDF text assertions name a literal order number (the generated one is not predictable)
 			row.getAsOptionalString(I_PP_Order.COLUMNNAME_DocumentNo).ifPresent(documentNo -> {
 				ppOrder.setDocumentNo(documentNo);
-				InterfaceWrapperHelper.saveRecord(ppOrder);
+				saveRecord(ppOrder);
 			});
 
 			ppOrderTable.put(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID), ppOrder);
@@ -339,7 +339,7 @@ public class PP_Order_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_PP_Order_BOMLine bomLine = row.getAsIdentifier(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID).lookupNotNullIn(ppOrderBomLineTable);
 			bomLine.setPickingInstruction(row.getAsString(I_PP_Order_BOMLine.COLUMNNAME_PickingInstruction));
-			InterfaceWrapperHelper.saveRecord(bomLine);
+			saveRecord(bomLine);
 		});
 	}
 

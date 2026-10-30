@@ -63,6 +63,7 @@ import org.eevolution.productioncandidate.model.PPOrderLineCandidateId;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -564,7 +565,7 @@ public class DD_Order_Candidate_StepDef
 
 		final LinkedHashMap<StepDefDataIdentifier, DDOrderId> ddOrderIdByIdentifier = new LinkedHashMap<>();
 		final LinkedHashMap<StepDefDataIdentifier, DDOrderLineId> lineIdByIdentifier = new LinkedHashMap<>();
-		final LinkedHashMap<DDOrderId, java.util.Set<DDOrderLineId>> lineIdsByDDOrder = new LinkedHashMap<>();
+		final LinkedHashMap<DDOrderId, Set<DDOrderLineId>> lineIdsByDDOrder = new LinkedHashMap<>();
 
 		for (final DataTableRow row : rows)
 		{
@@ -589,7 +590,7 @@ public class DD_Order_Candidate_StepDef
 			{
 				assertThat(lineId).as("DD_OrderLine %s must resolve to the same DD_OrderLine for every row", lineIdentifier).isEqualTo(existingLineId);
 			}
-			lineIdsByDDOrder.computeIfAbsent(ddOrderId, k -> new java.util.LinkedHashSet<>()).add(lineId);
+			lineIdsByDDOrder.computeIfAbsent(ddOrderId, k -> new LinkedHashSet<>()).add(lineId);
 		}
 
 		assertThat(ImmutableSet.copyOf(ddOrderIdByIdentifier.values()))
