@@ -23,11 +23,13 @@
 package de.metas.material.planning.event;
 
 import ch.qos.logback.classic.Level;
+import de.metas.document.engine.DocStatus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -42,6 +44,8 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -71,7 +75,17 @@ public class SupplyRequiredDecreasedNotificationProducer
 
 	public void sendNotification(@Nullable final MaterialPlanningContext context, @NonNull final SupplyRequiredDescriptor descriptor, @NonNull final Quantity unhandledQty)
 	{
-		final TableRecordReference recordReference = getTableRecordReferenceFromEventDescriptor(descriptor);
+		// a PP_Order BOM-line demand (also when made for a sales order): point to the PP_Order, which is what changed
+		final PPOrderId ppOrderId = getPPOrderIdOrNull(descriptor);
+		final I_PP_Order ppOrder = ppOrderId == null ? null : getNotifiablePPOrderOrNull(ppOrderId);
+		if (ppOrderId != null && ppOrder == null)
+		{
+			return; // PP_Order deleted/voided/reversed meanwhile: nothing left to reduce, no notification
+		}
+
+		final TableRecordReference recordReference = ppOrderId != null
+				? TableRecordReference.of(I_PP_Order.Table_Name, ppOrderId)
+				: getOrderRecordReference(descriptor);
 		if (recordReference == null)
 		{
 			return;
@@ -83,7 +97,7 @@ public class SupplyRequiredDecreasedNotificationProducer
 				.contentADMessage(MSG_SUPPLY_REQUIRED_DECREASED)
 				.contentADMessageParam(unhandledQty.toString());
 
-		getRecipients(context, descriptor).forEach(userId -> {
+		getRecipients(context, descriptor, ppOrder).forEach(userId -> {
 			notificationBuilder.recipientUserId(userId);
 			notificationBL.sendAfterCommit(notificationBuilder
 					.build());
@@ -91,7 +105,26 @@ public class SupplyRequiredDecreasedNotificationProducer
 	}
 
 	@Nullable
-	private TableRecordReference getTableRecordReferenceFromEventDescriptor(final SupplyRequiredDescriptor descriptor)
+	private static PPOrderId getPPOrderIdOrNull(@NonNull final SupplyRequiredDescriptor descriptor)
+	{
+		final PPOrderRef ppOrderRef = descriptor.getPpOrderRef();
+		return ppOrderRef == null ? null : ppOrderRef.getPpOrderId();
+	}
+
+	/**
+	 * @return the PP_Order, or {@code null} if it no longer exists (the handler runs async, so it may have been deleted)
+	 * or is voided/reversed.
+	 */
+	@Nullable
+	private static I_PP_Order getNotifiablePPOrderOrNull(@NonNull final PPOrderId ppOrderId)
+	{
+		// no PP_Order DAO is reachable from this module (IPPOrderDAO lives in de.metas.manufacturing, which depends on this module); load returns null if not found
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
+		return ppOrder == null || DocStatus.ofCode(ppOrder.getDocStatus()).isReversedOrVoided() ? null : ppOrder;
+	}
+
+	@Nullable
+	private TableRecordReference getOrderRecordReference(final SupplyRequiredDescriptor descriptor)
 	{
 		final TableRecordReference recordReference = TableRecordReference.ofNullable(I_C_Order.Table_Name, descriptor.getOrderId());
 		if (recordReference == null)
@@ -102,7 +135,7 @@ public class SupplyRequiredDecreasedNotificationProducer
 		return recordReference;
 	}
 
-	private Set<UserId> getRecipients(@Nullable final MaterialPlanningContext context, @NonNull final SupplyRequiredDescriptor descriptor)
+	private Set<UserId> getRecipients(@Nullable final MaterialPlanningContext context, @NonNull final SupplyRequiredDescriptor descriptor, @Nullable final I_PP_Order ppOrder)
 	{
 		final Set<UserId> userIds = new HashSet<>();
 		final UserId plannerId = context == null ? null : context.getProductPlanning().getPlannerId();
@@ -110,9 +143,23 @@ public class SupplyRequiredDecreasedNotificationProducer
 		{
 			userIds.add(plannerId);
 		}
-		final OrderId orderId = OrderId.ofRepoIdOrNull(descriptor.getOrderId());
-		if (orderId != null)
+		if (ppOrder != null)
 		{
+			// the sales order (if any) did not change, so its sales rep is not notified
+			final UserId ppOrderPlannerId = UserId.ofRepoIdOrNull(ppOrder.getPlanner_ID());
+			if (ppOrderPlannerId != null && ppOrderPlannerId.isRegularUser())
+			{
+				userIds.add(ppOrderPlannerId);
+			}
+			final UserId updatedByUserId = UserId.ofRepoIdOrNull(InterfaceWrapperHelper.getPO(ppOrder).getUpdatedBy());
+			if (updatedByUserId != null && updatedByUserId.isRegularUser())
+			{
+				userIds.add(updatedByUserId);
+			}
+		}
+		else if (descriptor.getOrderId() > 0)
+		{
+			final OrderId orderId = OrderId.ofRepoId(descriptor.getOrderId());
 			final I_C_Order order = orderBL.getById(orderId);
 			final UserId salesRepUserId = UserId.ofRepoIdOrNull(order.getSalesRep_ID());
 			if (salesRepUserId != null && salesRepUserId.isRegularUser())

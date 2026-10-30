@@ -3,6 +3,7 @@ package org.eevolution.event;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.common.util.time.SystemTime;
+import de.metas.distribution.ddordercandidate.material_dispo.PPOrderBOMLineDistributionSupplyMover;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.event.impl.PlainEventBusFactory;
@@ -69,6 +70,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.mockito.Mockito;
 
 import static de.metas.document.engine.IDocument.STATUS_Completed;
 import static java.math.BigDecimal.ONE;
@@ -370,7 +372,8 @@ public class PPOrderRequestedEventHandlerTests
 				postMaterialEventService,
 				new DocumentNoBuilderFactory(Optional.empty()),
 				new PPOrderBOMBL(),
-				new ProductBOMVersionsDAO()));
+				new ProductBOMVersionsDAO(),
+				Mockito.mock(PPOrderBOMLineDistributionSupplyMover.class)));
 	}
 
 	private List<I_PP_Order_BOMLine> filter(final I_PP_Order ppOrder, final BOMComponentType componentType)

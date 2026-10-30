@@ -1,5 +1,6 @@
 package org.eevolution.model.validator;
 
+import de.metas.distribution.ddordercandidate.material_dispo.PPOrderBOMLineDistributionSupplyMover;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -18,11 +19,16 @@ import de.metas.project.ProjectId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -45,11 +51,16 @@ import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Interceptor(I_PP_Order.class)
+@RequiredArgsConstructor
 public class PP_Order
 {
+	private static final String DYNATTR_Voiding = PP_Order.class.getName() + "#voiding";
+
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
@@ -59,28 +70,16 @@ public class PP_Order
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
-	private final PPOrderPojoConverter ppOrderConverter;
-	private final PostMaterialEventService materialEventService;
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
-	private final IPPOrderBOMBL ppOrderBOMBL;
-	private final ProductBOMVersionsDAO bomVersionsDAO;
-
-	public PP_Order(
-			@NonNull final PPOrderPojoConverter ppOrderConverter,
-			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
-			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
-			@NonNull final ProductBOMVersionsDAO bomVersionsDAO)
-	{
-		this.ppOrderConverter = ppOrderConverter;
-		this.materialEventService = materialEventService;
-		this.documentNoBuilderFactory = documentNoBuilderFactory;
-		this.ppOrderBOMBL = ppOrderBOMBL;
-		this.bomVersionsDAO = bomVersionsDAO;
-	}
+	@NonNull private final PPOrderPojoConverter ppOrderConverter;
+	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final IDocumentNoBuilderFactory documentNoBuilderFactory;
+	@NonNull private final IPPOrderBOMBL ppOrderBOMBL;
+	@NonNull private final ProductBOMVersionsDAO bomVersionsDAO;
+	@NonNull private final PPOrderBOMLineDistributionSupplyMover distributionSupplyMover;
 
 	@Init
 	public void registerCallouts()
@@ -230,12 +229,87 @@ public class PP_Order
 		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord);
 
 		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID());
-		deleteWorkflowAndBOM(orderId);
-		createWorkflowAndBOM(ppOrderRecord);
+
+		// When voiding, QtyEntered is set to 0; the distribution supply is not moved then, but handled as before (deleted, or rejected if already processed).
+		final boolean isVoiding = isVoiding(ppOrderRecord);
+		InterfaceWrapperHelper.setDynAttribute(ppOrderRecord, DYNATTR_Voiding, null);
+
+		// the move needs a trx: the records are re-pointed after the old BOM lines were deleted, which is FK-safe only because the FKs are deferred
+		final ITrx trx = trxManager.get(InterfaceWrapperHelper.getTrxName(ppOrderRecord), OnTrxMissingPolicy.ReturnTrxNone);
+		final boolean shouldMoveDistributionSupply = !isVoiding
+				&& InterfaceWrapperHelper.isValueChanged(ppOrderRecord, I_PP_Order.COLUMNNAME_QtyEntered)
+				&& !trxManager.isNull(trx);
+		if (shouldMoveDistributionSupply)
+		{
+			final PPOrderBOMLineDistributionSupplyMover.Snapshot distributionSupplySnapshot = distributionSupplyMover.collect(orderId);
+
+			setMovingDistributionSupply(orderId, trx, true);
+			try
+			{
+				deleteWorkflowAndBOM(orderId);
+			}
+			finally
+			{
+				setMovingDistributionSupply(orderId, trx, false);
+			}
+			createWorkflowAndBOM(ppOrderRecord);
+
+			distributionSupplyMover.moveToRecreatedBOMLines(distributionSupplySnapshot);
+		}
+		else
+		{
+			deleteWorkflowAndBOM(orderId);
+			createWorkflowAndBOM(ppOrderRecord);
+		}
 
 		final PPOrderChangedEvent event = eventFactory.inspectPPOrderAfterChange();
 
 		materialEventService.enqueueEventAfterNextCommit(event);
+	}
+
+	/**
+	 * Marks the PP_Order as being voided: voiding sets QtyEntered=0, which must not move the distribution supply to the re-created BOM lines.
+	 */
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
+	public void markVoiding(@NonNull final I_PP_Order ppOrderRecord)
+	{
+		InterfaceWrapperHelper.setDynAttribute(ppOrderRecord, DYNATTR_Voiding, Boolean.TRUE);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
+	public void unmarkVoiding(@NonNull final I_PP_Order ppOrderRecord)
+	{
+		InterfaceWrapperHelper.setDynAttribute(ppOrderRecord, DYNATTR_Voiding, null);
+	}
+
+	private static boolean isVoiding(@NonNull final I_PP_Order ppOrderRecord)
+	{
+		return Boolean.TRUE.equals(InterfaceWrapperHelper.getDynAttribute(ppOrderRecord, DYNATTR_Voiding));
+	}
+
+	private static String movingDistributionSupplyTrxProperty(@NonNull final PPOrderId ppOrderId)
+	{
+		return PP_Order.class.getName() + "#movingDistributionSupply#" + ppOrderId.getRepoId();
+	}
+
+	private static void setMovingDistributionSupply(@NonNull final PPOrderId ppOrderId, @NonNull final ITrx trx, final boolean isMoving)
+	{
+		trx.setProperty(movingDistributionSupplyTrxProperty(ppOrderId), isMoving ? Boolean.TRUE : null);
+	}
+
+	/**
+	 * @return true while {@link #updateAndPostEventOnQtyEnteredChange(I_PP_Order)} deletes the BOM lines of the given PP_Order in order to re-create them,
+	 * i.e. the distribution supply of the deleted lines is not to be deleted, but re-pointed to the re-created lines. Always false without a transaction (e.g. the in-memory layer of plain JUnit tests).
+	 */
+	static boolean isMovingDistributionSupply(@NonNull final PPOrderId ppOrderId, @Nullable final String trxName)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
+		if (trxManager.isNull(trx))
+		{
+			return false;
+		}
+		return Boolean.TRUE.equals(trx.getProperty(movingDistributionSupplyTrxProperty(ppOrderId)));
 	}
 
 	private void deleteWorkflowAndBOM(final PPOrderId orderId)
