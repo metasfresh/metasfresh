@@ -7,12 +7,8 @@ import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateProcessRequest;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
-import de.metas.distribution.mobileui.job.model.DDOrderReference;
-import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
-import de.metas.distribution.mobileui.launchers.DDOrderReferenceCollector;
 import de.metas.distribution.mobileui.launchers.DistributionLauncherCaptionProvider;
-import de.metas.distribution.mobileui.launchers.facets.DistributionFacetId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.material.event.pporder.PPOrderRef;
@@ -25,7 +21,6 @@ import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -110,16 +105,12 @@ public class DDOrderFromCandidatesCommand
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.load(ddOrderId, I_DD_Order.class);
 		context.putIdentifier(identifier, ddOrderId);
 
-		final DDOrderReference ddOrderReference = toDDOrderReference(ddOrder);
-		return JsonDDOrderResponse.builder()
-				.documentNo(ddOrder.getDocumentNo())
-				.launcherCaption(captionProvider.compute(ddOrderReference).translate(context.getAdLanguage()))
-				.launcherTestId(ddOrderReference.getTestId())
-				.warehouseFromFacetId(DistributionFacetId.ofWarehouseFromId(fromWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
-				.warehouseToFacetId(DistributionFacetId.ofWarehouseFromId(toWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
-				.plantFacetId(DistributionFacetId.ofPlantId(plantId).toWorkflowLaunchersFacetId().toJsonString())
-				.jobId(DistributionJobId.ofDDOrderId(ddOrderReference.getDdOrderId()))
-				.build();
+		return DDOrderResponseFactory.builder()
+				.distributionJobLoaderSupportingServices(distributionJobLoaderSupportingServices)
+				.captionProvider(captionProvider)
+				.context(context)
+				.build()
+				.toResponse(ddOrder, fromWarehouseId, toWarehouseId, plantId);
 	}
 
 	private ShipperId getShipperId()
@@ -147,14 +138,5 @@ public class DDOrderFromCandidatesCommand
 					.setParameter("candidates", candidates);
 		}
 		return ddOrderIds.iterator().next();
-	}
-
-	private DDOrderReference toDDOrderReference(final I_DD_Order ddOrder)
-	{
-		final DDOrderReferenceCollector collector = DDOrderReferenceCollector.builder()
-				.loadingSupportServices(distributionJobLoaderSupportingServices)
-				.build();
-		collector.collect(ddOrder);
-		return CollectionUtils.singleElement(collector.getCollectedItems());
 	}
 }
