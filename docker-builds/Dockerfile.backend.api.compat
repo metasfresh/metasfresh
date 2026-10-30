@@ -1,7 +1,7 @@
 ARG REFNAME=local
 FROM metasfresh/metas-api:$REFNAME as api
 
-FROM eclipse-temurin:17.0.7_7-jdk as runtime
+FROM eclipse-temurin:17-jdk-jammy as runtime
 
 RUN apt-get -y update && apt-get -y install locales netcat && rm -rf /var/lib/apt/lists/*
 RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
