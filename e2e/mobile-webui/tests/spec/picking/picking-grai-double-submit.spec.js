@@ -43,7 +43,7 @@ const createMasterdata = async ({ overpickAllowed = true } = {}) => await Backen
                 pickTo: ['LU_TU'],
                 allowCompletingPartialPickingJob: false,
                 // true = over-pick allowed (server would not refuse a second booking);
-                // false = over-pick blocked (the customer config)
+                // false = over-pick blocked (server refuses the repeat booking)
                 showPromptWhenOverPicking: overpickAllowed,
             },
         },

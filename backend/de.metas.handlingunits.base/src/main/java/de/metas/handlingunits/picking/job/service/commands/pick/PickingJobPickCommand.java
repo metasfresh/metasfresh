@@ -356,11 +356,6 @@ public class PickingJobPickCommand
 		final PickingJobLine line = getLine();
 		final Quantity qtyAlreadyPicked = line.getQtyPicked();
 
-		// Only a REPEAT pick is refused: a line that already carries picked qty must not be pushed above ordered by a
-		// further pick (the sequential double-save this fix targets). A FIRST pick (nothing picked yet) is never refused
-		// here, so flows that legitimately over-deliver by design still work - notably AlwaysSplitHU "pick more than
-		// available => virtual inventory for the diff". Under the blocked config the mobile client already caps a first
-		// pick at the remaining qty, so a first over-pick is not reachable from the real UI anyway.
 		if (qtyAlreadyPicked.signum() <= 0)
 		{
 			return;
@@ -370,7 +365,6 @@ public class PickingJobPickCommand
 		if (qtyToPickCUs.compareTo(qtyAllowedToPick) > 0)
 		{
 			throw new AdempiereException(PICK_OVERDELIVERY_BLOCKED_ERROR_MSG)
-					.markAsUserValidationError()
 					.appendParametersToMessage()
 					.setParameter("pickingJobId", _pickingJob.getId())
 					.setParameter("pickingJobLineId", getLineId())
