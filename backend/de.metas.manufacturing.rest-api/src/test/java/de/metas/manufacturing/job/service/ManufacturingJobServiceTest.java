@@ -73,6 +73,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -179,7 +180,7 @@ class ManufacturingJobServiceTest
 		@Test
 		void onlyAutoIssuedPackaging_plainClose_distributorNotCalled()
 		{
-			final ManufacturingJob job = givenJob(1, bomLine(BOMComponentType.Component, BOMComponentIssueMethod.IssueOnlyForReceived, "5", "5"));
+			final ManufacturingJob job = givenJob(1, bomLine(BOMComponentType.Packing, BOMComponentIssueMethod.IssueOnlyForReceived, "5", "5"));
 
 			service.withActivityCompleted(job, lastActivityId(job));
 
@@ -215,11 +216,19 @@ class ManufacturingJobServiceTest
 		{
 			final ManufacturingJob job = givenJob(1, handLine());
 			when(distributor.distribute(job.getPpOrderId())).thenReturn(false);
+			final AtomicReference<ITrx> trxSeenByClose = new AtomicReference<>();
+			doAnswer(invocation -> {
+				trxSeenByClose.set(trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone));
+				return null;
+			}).when(ppOrderBL).closeOrder(any());
 
 			service.withActivityCompleted(job, lastActivityId(job));
 
 			verify(distributor, times(1)).distribute(job.getPpOrderId());
 			verify(ppOrderBL, times(1)).closeOrder(job.getPpOrderId());
+			// the close must roll back together with the routing completion and the distribution
+			assertThat(trxSeenByClose.get()).isNotNull();
+			assertThat(trxManager.isNull(trxSeenByClose.get())).isFalse();
 		}
 
 		@Test
@@ -286,12 +295,22 @@ class ManufacturingJobServiceTest
 		{
 			final ManufacturingJob job = givenJob(1, handLine());
 			final DBDeadLockDetectedException deadlock = new DBDeadLockDetectedException(new SQLException("deadlock detected", "40P01"), null);
-			when(distributor.distribute(any())).thenThrow(deadlock);
+			final AtomicReference<String> trxNameSeenByDistributor = new AtomicReference<>();
+			when(distributor.distribute(any())).thenAnswer(invocation -> {
+				trxNameSeenByDistributor.set(trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone));
+				throw deadlock;
+			});
 
+			final AtomicReference<String> outerTrxName = new AtomicReference<>();
 			final AtomicReference<Throwable> thrown = new AtomicReference<>();
-			trxManager.runInThreadInheritedTrx(() -> thrown.set(catchThrowable(() -> service.withActivityCompleted(job, lastActivityId(job)))));
+			trxManager.runInThreadInheritedTrx(() -> {
+				outerTrxName.set(trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone));
+				thrown.set(catchThrowable(() -> service.withActivityCompleted(job, lastActivityId(job))));
+			});
 
-			assertThat(thrown.get()).isNotNull();
+			assertThat(thrown.get()).isSameAs(deadlock);
+			assertThat(outerTrxName.get()).isNotNull();
+			assertThat(trxNameSeenByDistributor.get()).isEqualTo(outerTrxName.get());
 			verify(distributor, times(1)).distribute(job.getPpOrderId());
 		}
 
