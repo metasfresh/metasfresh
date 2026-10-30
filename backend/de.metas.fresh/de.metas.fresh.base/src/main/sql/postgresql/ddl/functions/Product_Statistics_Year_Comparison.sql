@@ -123,7 +123,7 @@ $$
 -- Only products of p_AD_Org_ID or of organisation * (0), as offered by the product parameters (AD_Val_Rule 540377).
 -- Product selection: p_M_Product_ID ("Produkt von") and p_M_Product_To_ID ("Produkt bis") both empty = all products; only one set = that product;
 --   both set = every product whose Value lies between the two Values, both included, in text order (the order of the report), in either order.
--- p_M_Product_Category_ID: only products of that category; combined with the product selection.
+-- p_M_Product_Category_ID: only products of that category or of one of its subcategories, at every level; combined with the product selection.
 CREATE FUNCTION report.Product_Statistics_Year_Comparison(
     p_AD_Org_ID             numeric,
     p_C_Year_ID             numeric,
@@ -336,7 +336,7 @@ BEGIN
                    WHEN p_M_Product_ID IS NULL OR p_M_Product_To_ID IS NULL THEN p.M_Product_ID = COALESCE(p_M_Product_ID, p_M_Product_To_ID)
                    ELSE p.Value BETWEEN SYMMETRIC v_ValueFrom AND v_ValueTo
                END)
-          AND (p_M_Product_Category_ID IS NULL OR p.M_Product_Category_ID = p_M_Product_Category_ID)
+          AND (p_M_Product_Category_ID IS NULL OR p.M_Product_Category_ID IN (SELECT getM_Product_Category_IDs_WithSubcategories(p_M_Product_Category_ID)))
         ORDER BY p.Value;
 END
 $$
