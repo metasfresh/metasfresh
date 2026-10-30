@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocList;
@@ -15,11 +16,11 @@ import de.metas.document.IDocTypeBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.material.event.pporder.PPOrderRef;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
-import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
@@ -30,13 +31,12 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Builds, for a whole set of DD_Orders, the caption lines "{doc type} {document no}: {picking instruction}"
@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  *     <li>DD_Order_Candidate_DDOrder: 1 query (by DD_Order_ID)</li>
  *     <li>DD_Order_Candidate: 1 query (by PK)</li>
  *     <li>PP_Order: 1 query (by PK)</li>
- *     <li>PP_Order_BOMLine: 1 query (by PK)</li>
+ *     <li>PP_Order_BOMLine: 1 query (by PK, via IPPOrderBOMDAO)</li>
  *     <li>C_DocType: one table-cached lookup per distinct C_DocType_ID</li>
  * </ul>
  * PP_Order_BOMLine_Trl has no PickingInstruction column, so the picking instruction is not translated
@@ -57,9 +57,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ManufacturingOrderPickingInstructionsLoader
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
 
@@ -72,48 +72,69 @@ public class ManufacturingOrderPickingInstructionsLoader
 		}
 
 		final Map<DDOrderId, Set<PPOrderRef>> refsByDDOrderId = loadPPOrderRefs(ddOrders);
-		final Set<PPOrderId> ppOrderIds = new HashSet<>();
-		final Set<PPOrderBOMLineId> bomLineIds = new HashSet<>();
-		refsByDDOrderId.values().forEach(refs -> refs.forEach(ref -> {
-			ppOrderIds.add(ref.getPpOrderId());
-			if (ref.getPpOrderBOMLineId() != null)
-			{
-				bomLineIds.add(ref.getPpOrderBOMLineId());
-			}
-		}));
+		final Set<PPOrderRef> allRefs = refsByDDOrderId.values().stream().flatMap(Set::stream).collect(ImmutableSet.toImmutableSet());
+		final Set<PPOrderId> ppOrderIds = allRefs.stream().map(PPOrderRef::getPpOrderId).collect(ImmutableSet.toImmutableSet());
 		if (ppOrderIds.isEmpty())
 		{
 			return ManufacturingOrderPickingInstructionLines.EMPTY;
 		}
+		final Set<PPOrderBOMLineId> bomLineIds = allRefs.stream()
+				.map(PPOrderRef::getPpOrderBOMLineId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<PPOrderId, I_PP_Order> ppOrdersById = indexBy(ppOrderDAO.getByIds(ppOrderIds), ppOrder -> PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
-		final Map<PPOrderBOMLineId, String> pickingInstructionsByBOMLineId = loadPickingInstructions(bomLineIds);
-		final Map<DocTypeId, ITranslatableString> docTypeNames = new HashMap<>();
+		final LineBuilder lineBuilder = new LineBuilder(
+				Maps.uniqueIndex(ppOrderBL.getByIds(ppOrderIds), ppOrder -> PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())),
+				loadPickingInstructions(bomLineIds));
 
 		final ImmutableListMultimap.Builder<DDOrderId, ITranslatableString> result = ImmutableListMultimap.builder();
-		refsByDDOrderId.forEach((ddOrderId, refs) -> {
+		refsByDDOrderId.forEach((ddOrderId, refs) -> result.putAll(ddOrderId, lineBuilder.toLines(refs)));
+		return ManufacturingOrderPickingInstructionLines.of(result.build());
+	}
+
+	/**
+	 * Builds the caption lines from already loaded data (no queries, except the table-cached C_DocType names).
+	 */
+	@RequiredArgsConstructor
+	private class LineBuilder
+	{
+		@NonNull private final Map<PPOrderId, I_PP_Order> ppOrdersById;
+		@NonNull private final Map<PPOrderBOMLineId, String> pickingInstructionsByBOMLineId;
+		private final HashMap<DocTypeId, ITranslatableString> docTypeNames = new HashMap<>();
+
+		ImmutableList<ITranslatableString> toLines(@NonNull final Set<PPOrderRef> refs)
+		{
 			final List<PPOrderRef> sortedRefs = refs.stream()
 					.filter(ref -> ppOrdersById.containsKey(ref.getPpOrderId()))
-					.sorted(Comparator.comparing((PPOrderRef ref) -> ppOrdersById.get(ref.getPpOrderId()).getDocumentNo()))
+					.sorted(Comparator.comparing(this::getDocumentNo))
 					.collect(ImmutableList.toImmutableList());
 
 			final Set<ITranslatableString> lines = new LinkedHashSet<>();
 			for (final PPOrderRef ref : sortedRefs)
 			{
-				final I_PP_Order ppOrder = ppOrdersById.get(ref.getPpOrderId());
-				final ITranslatableString docTypeName = docTypeNames.computeIfAbsent(DocTypeId.ofRepoId(ppOrder.getC_DocType_ID()), docTypeBL::getNameById);
-				final ITranslatableString docTypeAndNo = DistributionSourceDocService.toDocTypeAndNoCaption(docTypeName, ppOrder.getDocumentNo());
-
-				final String pickingInstruction = ref.getPpOrderBOMLineId() != null ? pickingInstructionsByBOMLineId.get(ref.getPpOrderBOMLineId()) : null;
-				lines.add(pickingInstruction != null && !pickingInstruction.trim().isEmpty()
-						? TranslatableStrings.builder().append(docTypeAndNo).append(": ").append(pickingInstruction).build()
-						: docTypeAndNo);
+				lines.add(toLine(ref));
 			}
+			return ImmutableList.copyOf(lines);
+		}
 
-			result.putAll(ddOrderId, lines);
-		});
+		private String getDocumentNo(final PPOrderRef ref)
+		{
+			return ppOrdersById.get(ref.getPpOrderId()).getDocumentNo();
+		}
 
-		return ManufacturingOrderPickingInstructionLines.of(result.build());
+		private ITranslatableString toLine(final PPOrderRef ref)
+		{
+			final I_PP_Order ppOrder = ppOrdersById.get(ref.getPpOrderId());
+			final ITranslatableString docTypeName = docTypeNames.computeIfAbsent(DocTypeId.ofRepoId(ppOrder.getC_DocType_ID()), docTypeBL::getNameById);
+			final ITranslatableString docTypeAndNo = DistributionSourceDocService.toDocTypeAndNoCaption(docTypeName, ppOrder.getDocumentNo());
+
+			final String pickingInstruction = ref.getPpOrderBOMLineId() != null ? pickingInstructionsByBOMLineId.get(ref.getPpOrderBOMLineId()) : null;
+			if (pickingInstruction == null || pickingInstruction.trim().isEmpty())
+			{
+				return docTypeAndNo;
+			}
+			return TranslatableStrings.builder().append(docTypeAndNo).append(": ").append(pickingInstruction).build();
+		}
 	}
 
 	/**
@@ -180,18 +201,11 @@ public class ManufacturingOrderPickingInstructionsLoader
 			return ImmutableMap.of();
 		}
 
-		return queryBL.createQueryBuilder(I_PP_Order_BOMLine.class)
-				.addInArrayFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID, bomLineIds)
-				.create()
+		return ppOrderBOMDAO.getOrderBOMLinesByIds(bomLineIds)
 				.stream()
 				.filter(bomLine -> bomLine.getPickingInstruction() != null)
-				.collect(Collectors.toMap(
+				.collect(ImmutableMap.toImmutableMap(
 						bomLine -> PPOrderBOMLineId.ofRepoId(bomLine.getPP_Order_BOMLine_ID()),
 						I_PP_Order_BOMLine::getPickingInstruction));
-	}
-
-	private static <K, V> Map<K, V> indexBy(final Collection<V> values, final Function<V, K> keyFunction)
-	{
-		return values.stream().collect(ImmutableMap.toImmutableMap(keyFunction, Function.identity()));
 	}
 }

@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.i18n.ITranslatableString;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -11,6 +13,7 @@ import lombok.Value;
  * Caption lines "manufacturing order + picking instruction", grouped by DD_Order.
  */
 @Value
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ManufacturingOrderPickingInstructionLines
 {
 	public static final ManufacturingOrderPickingInstructionLines EMPTY = new ManufacturingOrderPickingInstructionLines(ImmutableListMultimap.of());
