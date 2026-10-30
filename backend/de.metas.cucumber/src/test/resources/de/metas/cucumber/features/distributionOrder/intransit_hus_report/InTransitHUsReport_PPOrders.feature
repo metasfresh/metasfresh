@@ -70,10 +70,10 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
 
     # IsCreatePlan=N: the DD_Order_Candidates are enqueued by the scenario, not by the dispo
     And metasfresh contains PP_Product_Plannings
-      | Identifier   | M_Product_ID | PP_Product_BOMVersions_ID | DD_NetworkDistribution_ID | M_Warehouse_ID | S_Resource_ID | IsCreatePlan |
-      | fg_planning  | FG           | bomVersions_fg            |                           | prodWH         | plant         | N            |
-      | fg2_planning | FG2          | bomVersions_fg2           |                           | prodWH         | plant         | N            |
-      | comp_planning| COMP         |                           | N1                        | prodWH         | plant         | N            |
+      | Identifier    | M_Product_ID | PP_Product_BOMVersions_ID | DD_NetworkDistribution_ID | M_Warehouse_ID | S_Resource_ID | IsCreatePlan |
+      | fg_planning   | FG           | bomVersions_fg            |                           | prodWH         | plant         | N            |
+      | fg2_planning  | FG2          | bomVersions_fg2           |                           | prodWH         | plant         | N            |
+      | comp_planning | COMP         |                           | N1                        | prodWH         | plant         | N            |
 
   @from:cucumber
   Scenario: Bundled line for two manufacturing orders with different picking instructions prints one summary line per order
