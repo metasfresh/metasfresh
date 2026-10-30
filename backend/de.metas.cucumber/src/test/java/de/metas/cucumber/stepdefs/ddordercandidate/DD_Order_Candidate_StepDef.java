@@ -130,21 +130,23 @@ public class DD_Order_Candidate_StepDef
 		return validateDDOrderLineCandidate(row, candidates.get(0));
 	}
 
+	/**
+	 * Several candidates share the row's product and warehouses: the row's other expectations (quantity, forward PP_Order, ...)
+	 * must single out exactly one of them.
+	 */
 	private ItemProvider.ProviderResult<DDOrderCandidate> attemptMatchByQty(@NonNull final List<DDOrderCandidate> candidates, @NonNull final DataTableRow row)
 	{
-		final Quantity qtyEntered = row.getAsOptionalQuantity("Qty", uomDAO::getByX12DE355).orElse(null);
-
-		final List<DDOrderCandidate> filteredByQtyList = candidates.stream()
-				.filter(candidate -> qtyEntered != null && qtyEntered.compareTo(candidate.getQtyEntered()) == 0)
+		final List<DDOrderCandidate> matchingCandidates = candidates.stream()
+				.filter(candidate -> validateDDOrderLineCandidate(row, candidate).isResultFound())
 				.collect(Collectors.toList());
 
-		if (filteredByQtyList.size() != 1)
+		if (matchingCandidates.size() != 1)
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("More than one candidate found"
+			return ItemProvider.ProviderResult.resultWasNotFound("More than one candidate found, or none matching the row"
 					+ "\n\trow=" + row
 					+ "\n\tcandidates=" + candidates);
 		}
-		return validateDDOrderLineCandidate(row, filteredByQtyList.get(0));
+		return validateDDOrderLineCandidate(row, matchingCandidates.get(0));
 	}
 
 	private ItemProvider.@NonNull ProviderResult<DDOrderCandidate> validateDDOrderLineCandidate(final DataTableRow expected, final DDOrderCandidate actual)

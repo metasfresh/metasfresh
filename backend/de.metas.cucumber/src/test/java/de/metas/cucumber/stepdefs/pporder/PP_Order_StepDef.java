@@ -343,6 +343,20 @@ public class PP_Order_StepDef
 		});
 	}
 
+	/**
+	 * Updates already-known {@code PP_Order}s.
+	 * <ul>
+	 *     <li>{@code PP_Order_ID.Identifier} — (required) the order to update</li>
+	 *     <li>{@code OPT.QtyEntered} — (optional) also sets {@code QtyOrdered}</li>
+	 *     <li>{@code OPT.DatePromised} — (optional)</li>
+	 *     <li>{@code OPT.DocumentNo} — (optional) overrides the generated order number, so that PDF text assertions can name it</li>
+	 * </ul>
+	 * <pre>
+	 * And update PP_Order:
+	 *   | PP_Order_ID.Identifier | OPT.DocumentNo |
+	 *   | ppOrder                | PP-4711        |
+	 * </pre>
+	 */
 	@And("update PP_Order:")
 	public void update_PP_Order(@NonNull final DataTable dataTable)
 	{
@@ -745,6 +759,13 @@ public class PP_Order_StepDef
 		if (datePromised != null)
 		{
 			ppOrderRecord.setDatePromised(TimeUtil.asTimestampNotNull(datePromised));
+		}
+
+		// lets the PDF text assertions name a literal order number, also for orders generated from candidates
+		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_PP_Order.COLUMNNAME_DocumentNo);
+		if (documentNo != null)
+		{
+			ppOrderRecord.setDocumentNo(documentNo);
 		}
 
 		saveRecord(ppOrderRecord);
