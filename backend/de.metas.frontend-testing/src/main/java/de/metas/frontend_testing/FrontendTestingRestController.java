@@ -4,6 +4,9 @@ import de.metas.Profiles;
 import de.metas.frontend_testing.expectations.AssertExpectationsCommand;
 import de.metas.frontend_testing.expectations.request.JsonExpectations;
 import de.metas.frontend_testing.expectations.request.JsonExpectationsResponse;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.frontend_testing.acctschema.SetAcctSchemaCostingMethodCommand;
 import de.metas.frontend_testing.huQRCode.GetHUQRCodeCommand;
 import de.metas.frontend_testing.huQRCode.JsonGetHUQRCodeRequest;
 import de.metas.frontend_testing.huQRCode.JsonGetHUQRCodeResponse;
@@ -194,5 +197,35 @@ public class FrontendTestingRestController
 					.execute();
 			return null;
 		});
+	}
+
+	@PostMapping("acctSchema/costingMethod")
+	public JsonSetAcctSchemaCostingMethodResponse setAcctSchemaCostingMethod(@RequestBody @NonNull final JsonSetAcctSchemaCostingMethodRequest request)
+	{
+		return callInContext(() -> {
+			final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getByClientAndOrg(ClientId.METASFRESH, OrgId.MAIN).getId();
+			final String previous = SetAcctSchemaCostingMethodCommand.builder()
+					.acctSchemaId(acctSchemaId)
+					.costingMethod(request.getCostingMethod())
+					.build()
+					.execute();
+			return new JsonSetAcctSchemaCostingMethodResponse(previous);
+		});
+	}
+
+	@lombok.Value
+	@lombok.extern.jackson.Jacksonized
+	@lombok.Builder
+	public static class JsonSetAcctSchemaCostingMethodRequest
+	{
+		/** {@code C_AcctSchema.CostingMethod} code, e.g. {@code M} (MovingAverageInvoice) */
+		@NonNull String costingMethod;
+	}
+
+	@lombok.Value
+	public static class JsonSetAcctSchemaCostingMethodResponse
+	{
+		/** the code before the change, to restore it */
+		String previousCostingMethod;
 	}
 }

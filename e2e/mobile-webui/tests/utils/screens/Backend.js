@@ -94,6 +94,25 @@ export const Backend = {
     }),
 
     /**
+     * Switch C_AcctSchema.CostingMethod of the test client and activate the matching cost elements.
+     * Returns the previous method code: restore it in afterEach with the same call.
+     * Production costing is MovingAverageInvoice, code 'M' (the E2E seed uses 'S').
+     *
+     * @param {string} code - e.g. 'M'
+     * @returns {Promise<string>} the previous code
+     */
+    setAcctSchemaCostingMethod: async (code) => await test.step(`Backend: set acct schema costing method ${code}`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/acctSchema/costingMethod`, {
+            data: { costingMethod: code },
+            headers: { 'Content-Type': 'application/json' },
+        });
+        const responseBody = await response.json();
+        assertNoErrors({ responseBody });
+        return responseBody.previousCostingMethod;
+    }),
+
+    /**
      * Set PP_Order.DateStartSchedule of an existing manufacturing order.
      *
      * @param {string} args.documentNo - the order's DocumentNo
