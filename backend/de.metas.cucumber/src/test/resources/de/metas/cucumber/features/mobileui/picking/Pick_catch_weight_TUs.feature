@@ -333,7 +333,7 @@ Feature: mobileUI Picking - Pick catch weight TUs
 
     And start picking job for sales order identified by SO
     And scan picking slot identified by 200.0
-    # no picking target is set: the whole TU is picked on its own, without an LU
+    # no picking target is set
     And pick lines
       | PickingLine.byProduct | PickFromHU    | QtyPicked | CatchWeight |
       | productA              | pickFromTU_A1 | 1         | 8.000       |
