@@ -113,4 +113,59 @@ export const PickGraiScreen = {
     clickSave: async () => await test.step(`${NAME} - Click save`, async () => {
         await page.getByTestId('grai-save-button').tap();
     }),
+    /**
+     * Hold the response of the NEXT pick event open: the request reaches the server (so it books), the
+     * answer is withheld until `release()` is called. Makes the "pick is in flight" window deterministic.
+     * `getPickEventCount()` tells how many pick events the app has sent since.
+     */
+    holdNextPickEventResponse: async () => await test.step(`${NAME} - Hold the next pick event response`, async () => {
+        const urlPattern = '**/picking/event';
+        let count = 0;
+        let release;
+        const released = new Promise((resolve) => { release = resolve; });
+        let seen;
+        const firstEventReachedServer = new Promise((resolve) => { seen = resolve; });
+        let markFulfilled;
+        const firstResponseFulfilled = new Promise((resolve) => { markFulfilled = resolve; });
+        const handler = async (route) => {
+            if (route.request().method() !== 'POST') return route.fallback();
+            count++;
+            if (count > 1) return route.fallback(); // a second event is the bug: let it through, so it gets booked and caught
+            try {
+                const response = await route.fetch();
+                seen();
+                await released;
+                await route.fulfill({ response });
+            } finally {
+                markFulfilled();
+            }
+        };
+        await page.route(urlPattern, handler);
+        return {
+            firstEventReachedServer,
+            getPickEventCount: () => count,
+            release: async () => {
+                release();
+                // wait until the held response is actually fulfilled BEFORE unrouting, otherwise unroute races the
+                // in-flight handler and Playwright throws "Route is already handled!" (dropping the first pick's response)
+                await firstResponseFulfilled;
+                await page.unroute(urlPattern, handler);
+            },
+        };
+    }),
+
+    /**
+     * A second Save while the first pick is still in flight (an impatient double tap). With the in-flight
+     * guard the save button is gone (spinner shown), so there is nothing to press.
+     * Returns whether a save button was still there to press.
+     */
+    clickSaveAgainWhilePickInFlight: async () => await test.step(`${NAME} - Click save again while the pick is in flight`, async () => {
+        const wasPressed = await page.evaluate(() => {
+            const button = document.querySelector('[data-testid="grai-save-button"]');
+            button?.click();
+            return !!button;
+        });
+        await page.waitForTimeout(500); // give a (buggy) second POST time to reach the server
+        return wasPressed;
+    }),
 };
