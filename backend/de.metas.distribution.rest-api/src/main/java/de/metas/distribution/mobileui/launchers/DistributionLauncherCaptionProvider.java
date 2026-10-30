@@ -19,7 +19,6 @@ import de.metas.distribution.mobileui.job.model.DDOrderReference;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
@@ -30,7 +29,6 @@ import de.metas.util.lang.SeqNo;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
@@ -75,12 +73,15 @@ public class DistributionLauncherCaptionProvider
 		for (final DistributionJobCaptionFormatItem formatItem : format.getItems())
 		{
 			final DistributionJobCaptionField field = formatItem.getField();
-			final ITranslatableString captionItem = field == DistributionJobCaptionField.PPOrdersWithPickingInstruction
-					? joinManufacturingOrderPickingInstructionLines(context, "\n")
-					: computeItem(context, field);
+			final ITranslatableString captionItem;
 			if (field == DistributionJobCaptionField.PPOrdersWithPickingInstruction)
 			{
+				captionItem = TranslatableStrings.joinList("\n", context.getManufacturingOrderPickingInstructionLines());
 				blockLayoutFields.add(field.getCode());
+			}
+			else
+			{
+				captionItem = computeItem(context, field);
 			}
 			fieldsInOrder.add(field.getCode());
 			fieldValues.put(field.getCode(), captionItem);
@@ -148,28 +149,10 @@ public class DistributionLauncherCaptionProvider
 			case PickingInstruction:
 				return extractPickingInstruction(context);
 			case PPOrdersWithPickingInstruction:
-				return joinManufacturingOrderPickingInstructionLines(context, ", ");
+				return TranslatableStrings.joinList(", ", context.getManufacturingOrderPickingInstructionLines());
 			default:
 				return TranslatableStrings.empty();
 		}
-	}
-
-	@NonNull
-	private static ITranslatableString joinManufacturingOrderPickingInstructionLines(@NonNull final Context context, @NonNull final String separator)
-	{
-		final List<ITranslatableString> lines = context.getManufacturingOrderPickingInstructionLines();
-		if (lines.isEmpty())
-		{
-			return TranslatableStrings.empty();
-		}
-
-		final TranslatableStringBuilder builder = TranslatableStrings.builder();
-		for (int i = 0; i < lines.size(); i++)
-		{
-			if (i > 0) {builder.append(separator);}
-			builder.append(lines.get(i));
-		}
-		return builder.build();
 	}
 
 	@NonNull
@@ -398,7 +381,7 @@ public class DistributionLauncherCaptionProvider
 		// @Nullable ZonedDateTime pickDate;
 		@NonNull ZonedDateTime displayDate;
 		@Nullable ITranslatableString pickingInstruction;
-	@Singular List<ITranslatableString> manufacturingOrderPickingInstructionLines;
+		@NonNull List<ITranslatableString> manufacturingOrderPickingInstructionLines;
 		@Nullable WarehouseInfo pickFromWarehouse;
 		@Nullable WarehouseId pickFromWarehouseId;
 		@Nullable LocatorInfo fromLocator;

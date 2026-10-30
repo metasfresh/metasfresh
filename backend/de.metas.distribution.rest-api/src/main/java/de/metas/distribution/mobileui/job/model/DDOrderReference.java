@@ -1,5 +1,6 @@
 package de.metas.distribution.mobileui.job.model;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.frontend_testing.JsonTestId;
 import de.metas.i18n.ITranslatableString;
@@ -17,7 +18,6 @@ import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 @Value
 @Builder(toBuilder = true)
@@ -29,7 +29,7 @@ public class DDOrderReference
 	@NonNull ZonedDateTime datePromised;
 	@Nullable ZonedDateTime pickDate;
 	@Nullable ITranslatableString pickingInstruction;
-	@Nullable List<ITranslatableString> manufacturingOrderPickingInstructionLines;
+	@NonNull @Builder.Default ImmutableList<ITranslatableString> manufacturingOrderPickingInstructionLines = ImmutableList.of();
 	@NonNull WarehouseId fromWarehouseId;
 	@Nullable LocatorId fromLocatorId;
 	@NonNull WarehouseId toWarehouseId;
