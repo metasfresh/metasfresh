@@ -4,7 +4,6 @@ import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_WF_Node;
 
 /**
@@ -14,11 +13,12 @@ import org.compiere.model.I_AD_WF_Node;
 @Builder
 public class SetWFNodeFlagsCommand
 {
+	@NonNull private final WFNodeFlagsRepository repository = new WFNodeFlagsRepository();
 	@NonNull private final JsonSetWFNodeFlagsRequest request;
 
 	public JsonSetWFNodeFlagsResponse execute()
 	{
-		final I_AD_WF_Node node = InterfaceWrapperHelper.load(request.getAdWfNodeId(), I_AD_WF_Node.class);
+		final I_AD_WF_Node node = repository.getById(request.getAdWfNodeId());
 		if (node == null)
 		{
 			throw new AdempiereException("AD_WF_Node not found: " + request.getAdWfNodeId());
@@ -38,7 +38,7 @@ public class SetWFNodeFlagsCommand
 		{
 			node.setPP_AlwaysAvailableToUser(StringUtils.trimBlankToNull(request.getAlwaysAvailableToUser()));
 		}
-		InterfaceWrapperHelper.saveRecord(node);
+		repository.save(node);
 
 		return previous;
 	}

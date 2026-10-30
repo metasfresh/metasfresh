@@ -2,9 +2,18 @@ package de.metas.frontend_testing.acctschema;
 
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingLevel;
+import de.metas.costing.impl.CostElementRepository;
+import org.adempiere.service.ClientId;
+import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.compiere.model.I_AD_Client;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -92,5 +101,49 @@ public class SetAcctSchemaCostingMethodCommandTest
 		assertThat(inactive.isActive()).isFalse();
 		InterfaceWrapperHelper.refresh(active);
 		assertThat(active.isActive()).isTrue();
+	}
+
+	/**
+	 * Real-life case (CI, fresh DB): saving the new costing method makes {@code C_AcctSchema.checkCosting} call
+	 * {@code getOrCreateMaterialCostElement}, which only sees ACTIVE elements and so creates a NEW active element when the
+	 * method's seeded one is inactive. The command must then not activate the seeded one too, else the method has two
+	 * active material cost elements (doubled postings; "Expected exactly one material cost element" on close).
+	 * This mimics that interceptor (same call as {@code C_AcctSchema#checkCosting}).
+	 */
+	@Test
+	public void schemaSaveAutoCreatesAnActiveCostElement_doesNotActivateTheSeededOneAsWell()
+	{
+		final CostElementRepository costElementRepository = new CostElementRepository(ADReferenceService.newMocked());
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new AbstractModelInterceptor()
+		{
+			@Override
+			protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+			{
+				engine.addModelChange(I_C_AcctSchema.Table_Name, this);
+			}
+
+			@Override
+			public void onModelChange(final Object model, final ModelChangeType changeType)
+			{
+				if (changeType.isBefore() && changeType.isChange())
+				{
+					final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.create(model, I_C_AcctSchema.class);
+					costElementRepository.getOrCreateMaterialCostElement(ClientId.ofRepoId(acctSchema.getAD_Client_ID()), CostingMethod.ofCode(acctSchema.getCostingMethod()));
+				}
+			}
+		});
+		final I_M_CostElement seeded = createCostElement(CostingMethod.MovingAverageInvoice, false);
+
+		SetAcctSchemaCostingMethodCommand.builder().acctSchemaId(acctSchemaId).costingMethod("M").build().execute();
+
+		final long activeMaterialElements = Services.get(org.adempiere.ad.dao.IQueryBL.class).createQueryBuilder(I_M_CostElement.class)
+				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostingMethod, CostingMethod.MovingAverageInvoice.getCode())
+				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostElementType, CostElementType.Material.getCode())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.count();
+		assertThat(activeMaterialElements).as("active MAI material cost elements").isEqualTo(1);
+		InterfaceWrapperHelper.refresh(seeded);
+		assertThat(seeded.isActive()).as("seeded element stays inactive").isFalse();
 	}
 }

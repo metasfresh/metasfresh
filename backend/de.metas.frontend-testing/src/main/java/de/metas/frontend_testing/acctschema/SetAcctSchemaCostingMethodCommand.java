@@ -9,13 +9,10 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostElement;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,6 +25,7 @@ import java.util.List;
 public class SetAcctSchemaCostingMethodCommand
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final AcctSchemaCostingRepository costingRepository = new AcctSchemaCostingRepository();
 
 	@NonNull private final AcctSchemaId acctSchemaId;
 	@NonNull private final String costingMethod;
@@ -49,43 +47,46 @@ public class SetAcctSchemaCostingMethodCommand
 		final CostingMethod newMethod = CostingMethod.ofCode(costingMethod);
 		final boolean isRestore = deactivateCostElementIds != null;
 
-		// a restore only puts the recorded state back: it must neither require nor activate cost elements,
-		// or an element that was inactive before the switch would be silently activated
-		final List<I_M_CostElement> costElements = isRestore ? Collections.emptyList() : retrieveCostElementsToActivate(newMethod);
+		// fail before touching the schema, otherwise the schema would be left on a method without any cost element
+		if (!isRestore)
+		{
+			retrieveMaterialCostElements(newMethod);
+		}
 
-		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
-		final String previousCostingMethod = acctSchema.getCostingMethod();
-		acctSchema.setCostingMethod(newMethod.getCode());
-		InterfaceWrapperHelper.saveRecord(acctSchema);
+		final String previousCostingMethod = costingRepository.updateCostingMethod(acctSchemaId, newMethod.getCode());
 
 		// Activate one element only, and none when the method already has an active one: two active material cost
 		// elements of the same method double every cost detail, M_Cost row and posting.
+		// Look the elements up AFTER the switch: saving the schema creates an active material cost element for the new
+		// method when it has none active (C_AcctSchema.checkCosting), which a lookup before the switch does not see.
+		// A restore only puts the recorded state back: it must neither require nor activate cost elements,
+		// or an element that was inactive before the switch would be silently activated.
 		final List<Integer> activatedIds = new ArrayList<>();
-		final boolean hasActiveElement = costElements.stream().anyMatch(I_M_CostElement::isActive);
-		if (!isRestore && !hasActiveElement)
+		if (!isRestore)
 		{
-			final I_M_CostElement costElement = costElements.get(0);
-			costElement.setIsActive(true);
-			InterfaceWrapperHelper.saveRecord(costElement);
-			activatedIds.add(costElement.getM_CostElement_ID());
+			final List<I_M_CostElement> costElements = retrieveMaterialCostElements(newMethod);
+			final boolean hasActiveElement = costElements.stream().anyMatch(I_M_CostElement::isActive);
+			if (!hasActiveElement)
+			{
+				final I_M_CostElement costElement = costElements.get(0);
+				costingRepository.activateCostElement(costElement);
+				activatedIds.add(costElement.getM_CostElement_ID());
+			}
 		}
 
 		if (deactivateCostElementIds != null)
 		{
 			for (final int costElementId : deactivateCostElementIds)
 			{
-				final I_M_CostElement costElement = InterfaceWrapperHelper.load(costElementId, I_M_CostElement.class);
-				costElement.setIsActive(false);
-				InterfaceWrapperHelper.saveRecord(costElement);
+				costingRepository.deactivateCostElement(costElementId);
 			}
 		}
 
 		return new Result(previousCostingMethod, activatedIds);
 	}
 
-	private List<I_M_CostElement> retrieveCostElementsToActivate(@NonNull final CostingMethod newMethod)
+	private List<I_M_CostElement> retrieveMaterialCostElements(@NonNull final CostingMethod newMethod)
 	{
-		// fail before touching the schema, otherwise the schema would be left on a method without any cost element
 		final List<I_M_CostElement> costElements = queryBL.createQueryBuilder(I_M_CostElement.class)
 				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostingMethod, newMethod.getCode())
 				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostElementType, CostElementType.Material.getCode())

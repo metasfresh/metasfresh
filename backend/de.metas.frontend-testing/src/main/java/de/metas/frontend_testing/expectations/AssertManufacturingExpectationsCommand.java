@@ -33,6 +33,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderId;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -107,7 +108,7 @@ public class AssertManufacturingExpectationsCommand
 
 			if (expectation.getDocStatus() != null || expectation.getCostDifference() != null)
 			{
-				final I_PP_Order order = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
+				final I_PP_Order order = Services.get(IPPOrderDAO.class).getById(ppOrderId);
 				if (expectation.getDocStatus() != null)
 				{
 					assertThat(order.getDocStatus()).as("docStatus").isEqualTo(expectation.getDocStatus());

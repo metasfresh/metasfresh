@@ -21,7 +21,6 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse_SourceHUConfig;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +34,7 @@ public class WarehouseCommand
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
+	@NonNull private final WarehouseSourceHUConfigRepository sourceHUConfigRepository = new WarehouseSourceHUConfigRepository();
 
 	// params
 	@NonNull private final MasterdataContext context;
@@ -182,11 +182,7 @@ public class WarehouseCommand
 		{
 			final ProductCategoryId productCategoryId = context.getId(categoryIdentifier, ProductCategoryId.class);
 
-			final I_M_Warehouse_SourceHUConfig config = InterfaceWrapperHelper.newInstance(I_M_Warehouse_SourceHUConfig.class);
-			config.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
-			config.setM_Warehouse_ID(getWarehouseId().getRepoId());
-			config.setM_Product_Category_ID(productCategoryId.getRepoId());
-			saveRecord(config);
+			sourceHUConfigRepository.create(getWarehouseId(), productCategoryId);
 		}
 	}
 
