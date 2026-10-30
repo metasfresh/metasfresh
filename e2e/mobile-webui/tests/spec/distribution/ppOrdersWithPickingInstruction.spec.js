@@ -11,14 +11,23 @@ import { DistributionJobScreen } from '../../utils/screens/distribution/Distribu
 // this spec). Verified on the local DB: C_DocType.Name = C_DocType_Trl.Name(en_US) = 'Produktionsauftrag'
 // for the only DocBaseType 'MOP' production-order doc type (PP_Order default doc type).
 const MO = 'Produktionsauftrag';
+// English label of the new element (AD_Ref_List_Trl en_US); this spec logs in as en_US, like its sibling specs.
 const HEADER_CAPTION = 'Manufacturing orders with picking instruction';
 const CAPTION_MULTILINE_CLASS = /(^|\s)caption-multiline(\s|$)/;
 
-let previousSysconfigs = null;
+let previousSysconfigs = {};
+
+// Both tests share one afterAll restore, so accumulate instead of overwrite; the FIRST recorded value of a
+// sysconfig is the one to restore (a later test would only see the value an earlier test already changed).
+// Inherent limit (as in picking/close_partially_shipped.spec.js): if createMasterdata itself throws, the
+// backend returns no previous values, so nothing can be restored for that call.
+const rememberPreviousSysconfigs = (masterdata) => {
+    previousSysconfigs = { ...masterdata.previousSysconfigs, ...previousSysconfigs };
+};
 
 // Restore the sysconfig even if the test body fails (pattern of picking/close_partially_shipped.spec.js)
 test.afterAll(async () => {
-    if (previousSysconfigs && Object.keys(previousSysconfigs).length > 0) {
+    if (Object.keys(previousSysconfigs).length > 0) {
         await Backend.setSysconfigs(previousSysconfigs);
     }
 });
@@ -80,7 +89,7 @@ test('Aggregated DD_Order lists every PP_Order with its picking instruction', as
         },
     };
     const masterdata = await Backend.createMasterdata({ language: 'en_US', request });
-    previousSysconfigs = masterdata.previousSysconfigs;
+    rememberPreviousSysconfigs(masterdata);
 
     const lines = [
         expectedPPOrderLine(masterdata.manufacturingOrders.PP1.documentNo, 'Sahne'),
@@ -128,7 +137,7 @@ test('Single PP_Order renders one line next to Source Doc and Picking Instructio
         },
     };
     const masterdata = await Backend.createMasterdata({ language: 'en_US', request });
-    previousSysconfigs = masterdata.previousSysconfigs;
+    rememberPreviousSysconfigs(masterdata);
 
     const dd = masterdata.distributionOrders.DD1;
     const pp1DocNo = masterdata.manufacturingOrders.PP1.documentNo;
