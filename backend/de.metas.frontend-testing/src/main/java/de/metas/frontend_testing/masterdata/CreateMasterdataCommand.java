@@ -807,6 +807,7 @@ public class CreateMasterdataCommand
 	private JsonDDOrderResponse createDistributionOrderFromCandidates(final String identifier, final JsonDDOrderFromCandidatesRequest request)
 	{
 		return DDOrderFromCandidatesCommand.builder()
+				.ddOrderService(services.ddOrderService)
 				.ddOrderCandidateService(services.ddOrderCandidateService)
 				.ddOrderCandidateAllocRepository(services.ddOrderCandidateAllocRepository)
 				.distributionJobLoaderSupportingServices(services.distributionJobLoaderSupportingServices)

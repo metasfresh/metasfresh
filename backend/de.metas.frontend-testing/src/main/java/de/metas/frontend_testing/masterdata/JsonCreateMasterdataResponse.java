@@ -80,7 +80,7 @@ public class JsonCreateMasterdataResponse
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonReceiptCreateResponse> receipts;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonInvoiceCreateResponse> invoices;
 	@NonNull Map<String, JsonDDOrderResponse> distributionOrders;
-	@NonNull Map<String, JsonDDOrderResponse> distributionOrdersFromCandidates;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonDDOrderResponse> distributionOrdersFromCandidates;
 	@NonNull Map<String, JsonPPOrderResponse> manufacturingOrders;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonInventoryResponse> inventories;
 }

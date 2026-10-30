@@ -2,6 +2,7 @@ package de.metas.frontend_testing.masterdata.dd_order;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
@@ -25,7 +26,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -46,6 +46,7 @@ public class DDOrderFromCandidatesCommand
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final DDOrderService ddOrderService;
 	@NonNull private final DDOrderCandidateService ddOrderCandidateService;
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 	@NonNull private final DistributionJobLoaderSupportingServices distributionJobLoaderSupportingServices;
@@ -102,7 +103,7 @@ public class DDOrderFromCandidatesCommand
 				.build());
 
 		final DDOrderId ddOrderId = getSingleDDOrderId(candidatesList);
-		final I_DD_Order ddOrder = InterfaceWrapperHelper.load(ddOrderId, I_DD_Order.class);
+		final I_DD_Order ddOrder = ddOrderService.getById(ddOrderId);
 		context.putIdentifier(identifier, ddOrderId);
 
 		return DDOrderResponseFactory.builder()
