@@ -105,8 +105,10 @@ import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
 import de.metas.frontend_testing.masterdata.workplace.CreateWorkplaceCommand;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
 import de.metas.order.OrderId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
+import org.adempiere.service.ISysConfigBL;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -890,6 +892,7 @@ public class CreateMasterdataCommand
 	private ImmutableMap<String, String> applySystemSysconfigs()
 	{
 		return SystemSysconfigCommand.builder()
+				.sysConfigBL(Services.get(ISysConfigBL.class))
 				.systemSysconfigs(request.getSystemSysconfigs())
 				.build()
 				.execute();

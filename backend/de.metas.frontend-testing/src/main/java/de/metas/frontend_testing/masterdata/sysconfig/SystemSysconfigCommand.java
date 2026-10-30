@@ -2,7 +2,6 @@ package de.metas.frontend_testing.masterdata.sysconfig;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
@@ -19,7 +18,7 @@ import java.util.Map;
 @Builder
 public class SystemSysconfigCommand
 {
-	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL;
 
 	@Nullable private final Map<String, String> systemSysconfigs;
 
@@ -34,13 +33,14 @@ public class SystemSysconfigCommand
 		}
 
 		final ImmutableMap.Builder<String, String> previousValues = ImmutableMap.builder();
-		systemSysconfigs.keySet().forEach(name -> {
+		for (final String name : systemSysconfigs.keySet())
+		{
 			final String prev = sysConfigBL.getValue(name, ClientAndOrgId.SYSTEM);
 			if (prev != null)
 			{
 				previousValues.put(name, prev);
 			}
-		});
+		}
 
 		systemSysconfigs.forEach((name, value) -> sysConfigBL.setValue(name, value, ClientId.SYSTEM, ClientAndOrgId.SYSTEM.getOrgId()));
 

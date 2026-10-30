@@ -16,8 +16,9 @@ import java.util.List;
  * and line key, so exactly one DD_Order results.
  * <p>
  * Note: this only holds when candidates of different manufacturing orders are bundled, i.e. the masterdata request
- * must set the sysconfig {@code DDOrderAggregation.header.byPPOrderRef} to {@code N} (the shipped default is {@code Y},
- * which creates one DD_Order per manufacturing order and makes the command fail).
+ * must set the sysconfig {@code DDOrderAggregation.header.byPPOrderRef} to {@code N} via {@code systemSysconfigs}
+ * (SYSTEM level; the plain {@code sysconfigs} write at config level 'O', which the aggregation does not read).
+ * The shipped default is {@code Y}, which creates one DD_Order per manufacturing order and makes the command fail.
  */
 @Value
 @Builder

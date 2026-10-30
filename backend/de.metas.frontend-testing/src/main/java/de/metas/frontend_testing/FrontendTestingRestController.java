@@ -150,6 +150,7 @@ public class FrontendTestingRestController
 	{
 		callInContext(() -> {
 			SystemSysconfigCommand.builder()
+					.sysConfigBL(sysConfigBL)
 					.systemSysconfigs(systemSysconfigs)
 					.build()
 					.execute();

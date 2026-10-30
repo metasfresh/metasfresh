@@ -16,7 +16,6 @@ import de.metas.document.IDocTypeBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.material.event.pporder.PPOrderRef;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +57,6 @@ import java.util.function.Function;
 public class ManufacturingOrderPickingInstructionsLoader
 {
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
@@ -201,7 +199,7 @@ public class ManufacturingOrderPickingInstructionsLoader
 			return ImmutableMap.of();
 		}
 
-		return ppOrderBOMDAO.getOrderBOMLinesByIds(bomLineIds)
+		return ppOrderBL.getOrderBOMLinesByIds(bomLineIds)
 				.stream()
 				.filter(bomLine -> bomLine.getPickingInstruction() != null)
 				.collect(ImmutableMap.toImmutableMap(
