@@ -15,6 +15,7 @@ import org.compiere.model.I_M_CostElement;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,7 +31,10 @@ public class SetAcctSchemaCostingMethodCommand
 
 	@NonNull private final AcctSchemaId acctSchemaId;
 	@NonNull private final String costingMethod;
-	/** cost elements to deactivate after the switch, i.e. {@link Result#getActivatedCostElementIds()} of the call being undone */
+	/**
+	 * When not {@code null} this call is a restore: it only sets the method back and deactivates exactly these cost elements,
+	 * i.e. the {@link Result#getActivatedCostElementIds()} of the call being undone; nothing is activated.
+	 */
 	@Nullable private final List<Integer> deactivateCostElementIds;
 
 	@Value
@@ -43,17 +47,11 @@ public class SetAcctSchemaCostingMethodCommand
 	public Result execute()
 	{
 		final CostingMethod newMethod = CostingMethod.ofCode(costingMethod);
+		final boolean isRestore = deactivateCostElementIds != null;
 
-		// fail before touching the schema, otherwise the schema would be left on a method without any cost element
-		final List<I_M_CostElement> costElements = queryBL.createQueryBuilder(I_M_CostElement.class)
-				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostingMethod, newMethod.getCode())
-				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostElementType, CostElementType.Material.getCode())
-				.create()
-				.list();
-		if (costElements.isEmpty())
-		{
-			throw new AdempiereException("No material cost element found for costing method " + newMethod);
-		}
+		// a restore only puts the recorded state back: it must neither require nor activate cost elements,
+		// or an element that was inactive before the switch would be silently activated
+		final List<I_M_CostElement> costElements = isRestore ? Collections.emptyList() : retrieveCostElementsToActivate(newMethod);
 
 		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
 		final String previousCostingMethod = acctSchema.getCostingMethod();
@@ -82,5 +80,20 @@ public class SetAcctSchemaCostingMethodCommand
 		}
 
 		return new Result(previousCostingMethod, activatedIds);
+	}
+
+	private List<I_M_CostElement> retrieveCostElementsToActivate(@NonNull final CostingMethod newMethod)
+	{
+		// fail before touching the schema, otherwise the schema would be left on a method without any cost element
+		final List<I_M_CostElement> costElements = queryBL.createQueryBuilder(I_M_CostElement.class)
+				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostingMethod, newMethod.getCode())
+				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostElementType, CostElementType.Material.getCode())
+				.create()
+				.list();
+		if (costElements.isEmpty())
+		{
+			throw new AdempiereException("No material cost element found for costing method " + newMethod);
+		}
+		return costElements;
 	}
 }

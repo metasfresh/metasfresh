@@ -41,7 +41,7 @@ public class SetAcctSchemaCostingMethodCommandTest
 	@Test
 	public void switchesTheMethod_activatesItsCostElement_andReturnsThePrevious()
 	{
-		createCostElement(CostingMethod.StandardCosting, true);
+		final I_M_CostElement standard = createCostElement(CostingMethod.StandardCosting, false);
 		final I_M_CostElement movingAvg = createCostElement(CostingMethod.MovingAverageInvoice, false);
 
 		final SetAcctSchemaCostingMethodCommand.Result previous = SetAcctSchemaCostingMethodCommand.builder().acctSchemaId(acctSchemaId).costingMethod("M").build().execute();
@@ -62,6 +62,8 @@ public class SetAcctSchemaCostingMethodCommandTest
 		assertThat(InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class).getCostingMethod()).isEqualTo("S");
 		InterfaceWrapperHelper.refresh(movingAvg);
 		assertThat(movingAvg.isActive()).as("cost element activated by the switch is inactive again after restore").isFalse();
+		InterfaceWrapperHelper.refresh(standard);
+		assertThat(standard.isActive()).as("restore must not activate the previous method's inactive element").isFalse();
 	}
 
 	@Test

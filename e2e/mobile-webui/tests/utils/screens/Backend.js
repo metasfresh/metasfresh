@@ -108,11 +108,19 @@ export const Backend = {
     /**
      * Undo setAcctSchemaCostingMethod: puts back the costing method and deactivates the cost elements it activated.
      *
-     * @param {{previousCostingMethod: string, activatedCostElementIds: number[]}} previousState - the result of setAcctSchemaCostingMethod
+     * A no-op for an undefined/null state, so that an afterEach after a failed set does not mask the original failure.
+     *
+     * @param {{previousCostingMethod: string, activatedCostElementIds: number[]}} [previousState] - the result of setAcctSchemaCostingMethod
      */
-    restoreAcctSchemaCostingMethod: async ({ previousCostingMethod, activatedCostElementIds }) => await test.step(`Backend: restore acct schema costing method ${previousCostingMethod}`, async () => {
-        await postAcctSchemaCostingMethod({ costingMethod: previousCostingMethod, deactivateCostElementIds: activatedCostElementIds });
-    }),
+    restoreAcctSchemaCostingMethod: async (previousState) => {
+        if (!previousState) {
+            return;
+        }
+        const { previousCostingMethod, activatedCostElementIds } = previousState;
+        await test.step(`Backend: restore acct schema costing method ${previousCostingMethod}`, async () => {
+            await postAcctSchemaCostingMethod({ costingMethod: previousCostingMethod, deactivateCostElementIds: activatedCostElementIds ?? [] });
+        });
+    },
 
     /**
      * Set PP_Order.DateStartSchedule of an existing manufacturing order.
