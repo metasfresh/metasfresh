@@ -20,12 +20,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ProductBOMDAOTest
 {
-	private final ProductBOMDAO productBOMDAO = new ProductBOMDAO();
+	private ProductBOMDAO productBOMDAO;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		productBOMDAO = new ProductBOMDAO();
 	}
 
 	@Test

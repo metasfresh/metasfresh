@@ -1,8 +1,10 @@
 package de.metas.manufacturing.acct;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.doc.AcctDocRegistry;
+import de.metas.acct.posting.log.DocumentPostingLogService;
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -42,6 +44,7 @@ public class PPOrderPostingService
 	@NonNull private final IPPCostCollectorDAO costCollectorDAO = Services.get(IPPCostCollectorDAO.class);
 
 	@NonNull private final DocumentPoster documentPoster;
+	@NonNull private final DocumentPostingLogService documentPostingLogService;
 	@NonNull private final Sleeper sleeper;
 	@NonNull private final Duration pollInterval;
 	private final long maxPolls;
@@ -62,15 +65,24 @@ public class PPOrderPostingService
 	}
 
 	@Autowired
-	public PPOrderPostingService(@NonNull final AcctDocRegistry acctDocRegistry)
+	public PPOrderPostingService(
+			@NonNull final AcctDocRegistry acctDocRegistry,
+			@NonNull final DocumentPostingLogService documentPostingLogService)
 	{
-		this(newDocumentPoster(acctDocRegistry, Services.get(IAcctSchemaDAO.class)), duration -> Thread.sleep(duration.toMillis()));
+		this(
+				newDocumentPoster(acctDocRegistry, Services.get(IAcctSchemaDAO.class)),
+				duration -> Thread.sleep(duration.toMillis()),
+				documentPostingLogService);
 	}
 
 	@VisibleForTesting
-	public PPOrderPostingService(@NonNull final DocumentPoster documentPoster, @NonNull final Sleeper sleeper)
+	public PPOrderPostingService(
+			@NonNull final DocumentPoster documentPoster,
+			@NonNull final Sleeper sleeper,
+			@NonNull final DocumentPostingLogService documentPostingLogService)
 	{
 		this.documentPoster = documentPoster;
+		this.documentPostingLogService = documentPostingLogService;
 		this.sleeper = sleeper;
 		this.pollInterval = DEFAULT_POLL_INTERVAL;
 		this.maxPolls = DEFAULT_MAX_WAIT.toMillis() / DEFAULT_POLL_INTERVAL.toMillis();
@@ -128,6 +140,7 @@ public class PPOrderPostingService
 			InterfaceWrapperHelper.refresh(document);
 			if (!isProcessing.getAsBoolean())
 			{
+				logPostingError(documentRef, clientId, postingError);
 				throw postingError;
 			}
 
@@ -135,14 +148,32 @@ public class PPOrderPostingService
 			waitWhileProcessing(document, isProcessing, documentRef);
 			if (!isPosted.getAsBoolean())
 			{
-				postNowInAccountingContext(documentRef, clientId);
+				try
+				{
+					postNowInAccountingContext(documentRef, clientId);
+				}
+				catch (final RuntimeException retryPostingError)
+				{
+					logPostingError(documentRef, clientId, retryPostingError);
+					throw retryPostingError;
+				}
 			}
 		}
 	}
 
+	private void logPostingError(@NonNull final TableRecordReference documentRef, @NonNull final ClientId clientId, @NonNull final RuntimeException postingError)
+	{
+		documentPostingLogService.logPostingError(toPostRequest(documentRef, clientId), AdempiereException.wrapIfNeeded(postingError));
+	}
+
+	private static DocumentPostRequest toPostRequest(@NonNull final TableRecordReference documentRef, @NonNull final ClientId clientId)
+	{
+		return DocumentPostRequest.builder().record(documentRef).clientId(clientId).build();
+	}
+
 	/**
 	 * Posts under a fresh context carrying only the client, like the accounting service does,
-	 * so that the caller's role, org and user cannot influence the posting.
+	 * so that the caller's role, org and user cannot influence the posting. Logs the success in the posting log.
 	 */
 	private void postNowInAccountingContext(@NonNull final TableRecordReference documentRef, @NonNull final ClientId clientId)
 	{
@@ -152,6 +183,7 @@ public class PPOrderPostingService
 		{
 			documentPoster.postNow(documentRef, clientId);
 		}
+		documentPostingLogService.logPostingOK(toPostRequest(documentRef, clientId));
 	}
 
 	private void waitWhileProcessing(

@@ -2,6 +2,8 @@ package de.metas.manufacturing.job.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.acct.api.DocumentPostRequest;
+import de.metas.acct.posting.log.DocumentPostingLogService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
@@ -62,6 +64,7 @@ import org.eevolution.model.X_PP_Order_Workflow;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -144,6 +147,7 @@ class ManufacturingJobServiceTest
 
 		private final List<TableRecordReference> postedDocuments = new ArrayList<>();
 		private final List<ITrx> trxsSeenByPoster = new ArrayList<>();
+		private DocumentPostingLogService postingLog;
 		private final List<OrgId> orgsSeenByPoster = new ArrayList<>();
 		private final List<ClientId> clientsSeenByPoster = new ArrayList<>();
 		@Nullable private RuntimeException postingFailure;
@@ -172,7 +176,8 @@ class ManufacturingJobServiceTest
 			backgroundPostingProgress = null;
 			beforePostAttempt = null;
 			sleeps = 0;
-			SpringContextHolder.registerJUnitBean(PPOrderPostingService.class, new PPOrderPostingService(this::fakePostNow, this::fakeSleep));
+			postingLog = mock(DocumentPostingLogService.class);
+			SpringContextHolder.registerJUnitBean(PPOrderPostingService.class, new PPOrderPostingService(this::fakePostNow, this::fakeSleep, postingLog));
 
 			ppOrderBL = spy(Services.get(IHUPPOrderBL.class));
 			doNothing().when(ppOrderBL).closeOrder(any());
@@ -356,6 +361,11 @@ class ManufacturingJobServiceTest
 					TableRecordReference.of(receipt));
 			assertThat(trxsSeenByPoster).allMatch(trxManager::isNull);
 			verify(distributor, times(1)).distribute(ppOrderId);
+
+			final ArgumentCaptor<DocumentPostRequest> loggedOK = ArgumentCaptor.forClass(DocumentPostRequest.class);
+			verify(postingLog, times(3)).logPostingOK(loggedOK.capture());
+			assertThat(loggedOK.getAllValues()).extracting(DocumentPostRequest::getRecord).containsExactlyElementsOf(postedWhenDistributing);
+			verify(postingLog, never()).logPostingError(any(), any());
 		}
 
 		@Test
@@ -381,12 +391,16 @@ class ManufacturingJobServiceTest
 			final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
 			ppOrder.setPosted(true);
 			InterfaceWrapperHelper.saveRecord(ppOrder);
-			givenCostCollector(ppOrderId, X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
+			final I_PP_Cost_Collector collector = givenCostCollector(ppOrderId, X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
 			postingFailure = new AdempiereException("posting failed");
 
 			assertThatThrownBy(() -> service.withActivityCompleted(job, lastActivityId(job)))
 					.isSameAs(postingFailure);
 
+			final ArgumentCaptor<DocumentPostRequest> loggedError = ArgumentCaptor.forClass(DocumentPostRequest.class);
+			verify(postingLog, times(1)).logPostingError(loggedError.capture(), any());
+			assertThat(loggedError.getValue().getRecord()).isEqualTo(TableRecordReference.of(collector));
+			verify(postingLog, never()).logPostingOK(any());
 			assertThat(trxsSeenByPoster).hasSize(1);
 			verify(distributor, never()).distribute(any());
 			verify(ppOrderBL, never()).closeOrder(any());
@@ -469,6 +483,8 @@ class ManufacturingJobServiceTest
 
 			assertThat(lockTaken.get()).isTrue();
 			assertThat(sleeps).isPositive();
+			// the lost lock race is not a posting error; the accounting service logs its own outcome
+			verify(postingLog, never()).logPostingError(any(), any());
 			assertThat(postedDocuments).containsExactly(TableRecordReference.of(I_PP_Order.Table_Name, ppOrderId.getRepoId()));
 			verify(distributor, times(1)).distribute(ppOrderId);
 		}
