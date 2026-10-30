@@ -43,9 +43,11 @@ queue_rules:
   # Mergify deprecated allow_inplace_checks (2025-09-30), in-place checking
   # (reuse the PR's own green check instead of building a mergify/merge-queue/*
   # draft branch) is only used when merge_conditions == queue_conditions AND
-  # batch_size=1, max_parallel_checks=1, max_checks_retries=0, serial mode — all
-  # already true here. Without a matching queue_conditions, every queued PR gets
-  # a redundant full-cicd draft build. See https://docs.mergify.com/merge-queue/draft-pull-requests.md
+  # batch_size=1, max_parallel_checks=1, max_checks_retries=0, serial mode. Here
+  # max_parallel_checks=1 is set explicitly (above); batch_size=1,
+  # max_checks_retries=0 and serial mode are the Mergify defaults. Without a
+  # matching queue_conditions, every queued PR gets a redundant full-cicd draft
+  # build. See https://docs.mergify.com/merge-queue/draft-pull-requests.md
   - name: squash-queue
     merge_method: squash
     queue_conditions:
