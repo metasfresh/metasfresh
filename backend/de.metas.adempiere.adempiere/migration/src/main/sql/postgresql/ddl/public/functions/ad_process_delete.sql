@@ -161,6 +161,11 @@ BEGIN
                       WHERE c.table_schema = 'public'
                         AND c.table_name = split_part(e, '.', 1)
                         AND c.column_name = split_part(split_part(e, ':', 1), '.', 2))
+          AND EXISTS (SELECT 1 -- key column, used to log the IDs of the changed rows
+                      FROM information_schema.columns c
+                      WHERE c.table_schema = 'public'
+                        AND c.table_name = split_part(e, '.', 1)
+                        AND c.column_name = split_part(e, '.', 1) || '_id')
         ORDER BY seq
         LOOP
             IF v_policy.action = 'REPOINT' THEN
