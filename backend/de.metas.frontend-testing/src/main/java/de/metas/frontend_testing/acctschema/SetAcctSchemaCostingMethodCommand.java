@@ -1,0 +1,101 @@
+package de.metas.frontend_testing.acctschema;
+
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.CostElementType;
+import de.metas.costing.CostingMethod;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_M_CostElement;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Switches {@code C_AcctSchema.CostingMethod} and, unless the new method already has an active material cost element, activates one, so that products
+ * created afterwards get {@code M_Cost} rows for it. Returns the previous method code and the ids of the cost elements it
+ * activated; passing them back (method + {@code deactivateCostElementIds}) restores everything the switch changed, so no
+ * global state leaks into other specs.
+ */
+@Builder
+public class SetAcctSchemaCostingMethodCommand
+{
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@NonNull private final AcctSchemaId acctSchemaId;
+	@NonNull private final String costingMethod;
+	/**
+	 * When not {@code null} this call is a restore: it only sets the method back and deactivates exactly these cost elements,
+	 * i.e. the {@link Result#getActivatedCostElementIds()} of the call being undone; nothing is activated.
+	 */
+	@Nullable private final List<Integer> deactivateCostElementIds;
+
+	@Value
+	public static class Result
+	{
+		String previousCostingMethod;
+		List<Integer> activatedCostElementIds;
+	}
+
+	public Result execute()
+	{
+		final CostingMethod newMethod = CostingMethod.ofCode(costingMethod);
+		final boolean isRestore = deactivateCostElementIds != null;
+
+		// a restore only puts the recorded state back: it must neither require nor activate cost elements,
+		// or an element that was inactive before the switch would be silently activated
+		final List<I_M_CostElement> costElements = isRestore ? Collections.emptyList() : retrieveCostElementsToActivate(newMethod);
+
+		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
+		final String previousCostingMethod = acctSchema.getCostingMethod();
+		acctSchema.setCostingMethod(newMethod.getCode());
+		InterfaceWrapperHelper.saveRecord(acctSchema);
+
+		// Activate one element only, and none when the method already has an active one: two active material cost
+		// elements of the same method double every cost detail, M_Cost row and posting.
+		final List<Integer> activatedIds = new ArrayList<>();
+		final boolean hasActiveElement = costElements.stream().anyMatch(I_M_CostElement::isActive);
+		if (!isRestore && !hasActiveElement)
+		{
+			final I_M_CostElement costElement = costElements.get(0);
+			costElement.setIsActive(true);
+			InterfaceWrapperHelper.saveRecord(costElement);
+			activatedIds.add(costElement.getM_CostElement_ID());
+		}
+
+		if (deactivateCostElementIds != null)
+		{
+			for (final int costElementId : deactivateCostElementIds)
+			{
+				final I_M_CostElement costElement = InterfaceWrapperHelper.load(costElementId, I_M_CostElement.class);
+				costElement.setIsActive(false);
+				InterfaceWrapperHelper.saveRecord(costElement);
+			}
+		}
+
+		return new Result(previousCostingMethod, activatedIds);
+	}
+
+	private List<I_M_CostElement> retrieveCostElementsToActivate(@NonNull final CostingMethod newMethod)
+	{
+		// fail before touching the schema, otherwise the schema would be left on a method without any cost element
+		final List<I_M_CostElement> costElements = queryBL.createQueryBuilder(I_M_CostElement.class)
+				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostingMethod, newMethod.getCode())
+				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostElementType, CostElementType.Material.getCode())
+				.orderBy(I_M_CostElement.COLUMNNAME_M_CostElement_ID)
+				.create()
+				.list();
+		if (costElements.isEmpty())
+		{
+			throw new AdempiereException("No material cost element found for costing method " + newMethod);
+		}
+		return costElements;
+	}
+}
