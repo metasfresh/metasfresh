@@ -135,7 +135,9 @@ test('referenceCase_issueReceiveClose_settlesDifference', async ({ page }) => {
         request: {
             login: { user: { language: 'en_US' } },
             mobileConfig: {},
-            bpartners: { VENDOR: { isVendor: true, isCustomer: false, isSoPriceList: false } },
+            // the vendor's price list is in the accounting currency (CHF): the foil is costed from the purchase price converted
+            // to the accounting currency, so an EUR price list would cost the 2.50 foil at 2.50 * rate
+            bpartners: { VENDOR: { isVendor: true, isCustomer: false, isSoPriceList: false, priceListCurrencyCode: 'CHF' } },
             productCategories: { foilCat: {} },
             warehouses: {
                 wh: { receiveAsSourceHU: true, sourceHUProductCategories: ['foilCat'] },
