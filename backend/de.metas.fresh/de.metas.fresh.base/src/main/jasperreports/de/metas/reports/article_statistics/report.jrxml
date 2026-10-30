@@ -1,162 +1,434 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-09-27T18:13:11 -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/article_statistics/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.9487171000000116"/>
 	<property name="ireport.x" value="474"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Remote"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="C_Period_ID" class="java.math.BigDecimal"/>
-	<parameter name="IsSOTrx" class="java.lang.String"/>
-	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
-	<parameter name="C_Activity_ID" class="java.math.BigDecimal"/>
-	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
-	<parameter name="M_Product_Category_ID" class="java.math.BigDecimal"/>
-	<parameter name="M_AttributeSetInstance_ID" class="java.math.BigDecimal"/>
-	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
-	<parameter name="ad_language" class="java.lang.String">
-		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[new java.math.BigDecimal(1000000)]]></defaultValueExpression>
 	</parameter>
+	<parameter name="C_Year_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
 	<queryString>
-		<![CDATA[SELECT * FROM report.fresh_product_statistics_report(
-	$P{C_Period_ID},
-	$P{IsSOTrx},
-	$P{C_BPartner_ID},
-	$P{C_Activity_ID},
-	$P{M_Product_ID},
-	$P{M_Product_Category_ID},
-	$P{M_AttributeSetInstance_ID},
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fm206.Customer_Product_Statistics_Year_Comparison(
 	$P{AD_Org_ID},
-	$P{ad_language}
+	$P{C_Year_ID},
+    $P{M_Product_ID},
+	$P{C_BPartner_ID}
 )]]>
 	</queryString>
-	<field name="bp_name" class="java.lang.String"/>
-	<field name="bp_value" class="java.lang.String"/>
-	<field name="pc_name" class="java.lang.String"/>
-	<field name="p_name" class="java.lang.String"/>
-	<field name="p_value" class="java.lang.String"/>
-	<field name="uomsymbol" class="java.lang.String"/>
-	<field name="col1" class="java.sql.Date"/>
-	<field name="col2" class="java.sql.Date"/>
-	<field name="col3" class="java.sql.Date"/>
-	<field name="col4" class="java.sql.Date"/>
-	<field name="col5" class="java.sql.Date"/>
-	<field name="col6" class="java.sql.Date"/>
-	<field name="col7" class="java.sql.Date"/>
-	<field name="col8" class="java.sql.Date"/>
-	<field name="col9" class="java.sql.Date"/>
-	<field name="col10" class="java.sql.Date"/>
-	<field name="col11" class="java.sql.Date"/>
-	<field name="col12" class="java.sql.Date"/>
-	<field name="period1sum" class="java.math.BigDecimal"/>
-	<field name="period2sum" class="java.math.BigDecimal"/>
-	<field name="period3sum" class="java.math.BigDecimal"/>
-	<field name="period4sum" class="java.math.BigDecimal"/>
-	<field name="period5sum" class="java.math.BigDecimal"/>
-	<field name="period6sum" class="java.math.BigDecimal"/>
-	<field name="period7sum" class="java.math.BigDecimal"/>
-	<field name="period8sum" class="java.math.BigDecimal"/>
-	<field name="period9sum" class="java.math.BigDecimal"/>
-	<field name="period10sum" class="java.math.BigDecimal"/>
-	<field name="period11sum" class="java.math.BigDecimal"/>
-	<field name="period12sum" class="java.math.BigDecimal"/>
-	<field name="totalsum" class="java.math.BigDecimal"/>
-	<field name="totalamt" class="java.math.BigDecimal"/>
-	<field name="startdate" class="java.lang.String"/>
-	<field name="enddate" class="java.lang.String"/>
-	<field name="param_bp" class="java.lang.String"/>
-	<field name="param_activity" class="java.lang.String"/>
-	<field name="param_product" class="java.lang.String"/>
-	<field name="param_product_category" class="java.lang.String"/>
-	<field name="param_attributes" class="java.lang.String"/>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="iso_code" class="java.lang.String"/>
-	<field name="unionorder" class="java.lang.Integer"/>
+	<field name="c_bpartner_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_bpartner_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_bpartner_id"/>
+	</field>
+	<field name="bpvalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bpvalue"/>
+		<property name="com.jaspersoft.studio.field.label" value="bpvalue"/>
+	</field>
+	<field name="bpname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bpname"/>
+		<property name="com.jaspersoft.studio.field.label" value="bpname"/>
+	</field>
+	<field name="address" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="address"/>
+		<property name="com.jaspersoft.studio.field.label" value="address"/>
+	</field>
+	<field name="postal" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="postal"/>
+		<property name="com.jaspersoft.studio.field.label" value="postal"/>
+	</field>
+	<field name="city" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="city"/>
+		<property name="com.jaspersoft.studio.field.label" value="city"/>
+	</field>
+	<field name="phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="phone"/>
+		<property name="com.jaspersoft.studio.field.label" value="phone"/>
+	</field>
+	<field name="fax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="fax"/>
+		<property name="com.jaspersoft.studio.field.label" value="fax"/>
+	</field>
+	<field name="email" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="email"/>
+		<property name="com.jaspersoft.studio.field.label" value="email"/>
+	</field>
+	<field name="pricingsystemname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="pricingsystemname"/>
+		<property name="com.jaspersoft.studio.field.label" value="pricingsystemname"/>
+	</field>
+	<field name="balance" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="balance"/>
+		<property name="com.jaspersoft.studio.field.label" value="balance"/>
+	</field>
+	<field name="m_product_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="m_product_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
+	</field>
+	<field name="productvalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="productvalue"/>
+		<property name="com.jaspersoft.studio.field.label" value="productvalue"/>
+	</field>
+	<field name="productname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="productname"/>
+		<property name="com.jaspersoft.studio.field.label" value="productname"/>
+	</field>
+	<field name="qty_01" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_01"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_01"/>
+	</field>
+	<field name="qty_02" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_02"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_02"/>
+	</field>
+	<field name="qty_03" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_03"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_03"/>
+	</field>
+	<field name="qty_04" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_04"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_04"/>
+	</field>
+	<field name="qty_05" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_05"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_05"/>
+	</field>
+	<field name="qty_06" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_06"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_06"/>
+	</field>
+	<field name="qty_07" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_07"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_07"/>
+	</field>
+	<field name="qty_08" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_08"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_08"/>
+	</field>
+	<field name="qty_09" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_09"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_09"/>
+	</field>
+	<field name="qty_10" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_10"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_10"/>
+	</field>
+	<field name="qty_11" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_11"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_11"/>
+	</field>
+	<field name="qty_12" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_12"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_12"/>
+	</field>
+	<field name="qty_total" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qty_total"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty_total"/>
+	</field>
+	<field name="amt_01" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_01"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_01"/>
+	</field>
+	<field name="amt_02" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_02"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_02"/>
+	</field>
+	<field name="amt_03" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_03"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_03"/>
+	</field>
+	<field name="amt_04" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_04"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_04"/>
+	</field>
+	<field name="amt_05" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_05"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_05"/>
+	</field>
+	<field name="amt_06" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_06"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_06"/>
+	</field>
+	<field name="amt_07" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_07"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_07"/>
+	</field>
+	<field name="amt_08" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_08"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_08"/>
+	</field>
+	<field name="amt_09" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_09"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_09"/>
+	</field>
+	<field name="amt_10" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_10"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_10"/>
+	</field>
+	<field name="amt_11" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_11"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_11"/>
+	</field>
+	<field name="amt_12" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_12"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_12"/>
+	</field>
+	<field name="amt_total" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="amt_total"/>
+		<property name="com.jaspersoft.studio.field.label" value="amt_total"/>
+	</field>
+	<field name="prevqty_01" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_01"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_01"/>
+	</field>
+	<field name="prevqty_02" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_02"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_02"/>
+	</field>
+	<field name="prevqty_03" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_03"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_03"/>
+	</field>
+	<field name="prevqty_04" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_04"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_04"/>
+	</field>
+	<field name="prevqty_05" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_05"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_05"/>
+	</field>
+	<field name="prevqty_06" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_06"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_06"/>
+	</field>
+	<field name="prevqty_07" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_07"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_07"/>
+	</field>
+	<field name="prevqty_08" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_08"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_08"/>
+	</field>
+	<field name="prevqty_09" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_09"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_09"/>
+	</field>
+	<field name="prevqty_10" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_10"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_10"/>
+	</field>
+	<field name="prevqty_11" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_11"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_11"/>
+	</field>
+	<field name="prevqty_12" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_12"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_12"/>
+	</field>
+	<field name="prevqty_total" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevqty_total"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevqty_total"/>
+	</field>
+	<field name="prevamt_01" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_01"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_01"/>
+	</field>
+	<field name="prevamt_02" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_02"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_02"/>
+	</field>
+	<field name="prevamt_03" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_03"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_03"/>
+	</field>
+	<field name="prevamt_04" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_04"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_04"/>
+	</field>
+	<field name="prevamt_05" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_05"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_05"/>
+	</field>
+	<field name="prevamt_06" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_06"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_06"/>
+	</field>
+	<field name="prevamt_07" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_07"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_07"/>
+	</field>
+	<field name="prevamt_08" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_08"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_08"/>
+	</field>
+	<field name="prevamt_09" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_09"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_09"/>
+	</field>
+	<field name="prevamt_10" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_10"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_10"/>
+	</field>
+	<field name="prevamt_11" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_11"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_11"/>
+	</field>
+	<field name="prevamt_12" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_12"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_12"/>
+	</field>
+	<field name="prevamt_total" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="prevamt_total"/>
+		<property name="com.jaspersoft.studio.field.label" value="prevamt_total"/>
+	</field>
+	<field name="dev_01" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dev_01"/>
+		<property name="com.jaspersoft.studio.field.label" value="dev_01"/>
+	</field>
+	<field name="dev_02" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dev_02"/>
+		<property name="com.jaspersoft.studio.field.label" value="dev_02"/>
+	</field>
+	<field name="dev_03" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dev_03"/>
+		<property name="com.jaspersoft.studio.field.label" value="dev_03"/>
+	</field>
+	<field name="dev_04" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dev_04"/>
+		<property name="com.jaspersoft.studio.field.label" value="dev_04"/>
+	</field>
+	<field name="dev_05" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dev_05"/>
+		<property name="com.jaspersoft.studio.field.label" value="dev_05"/>
+	</field>
+	<field name="dev_06" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dev_06"/>
+		<property name="com.jaspersoft.studio.field.label" value="dev_06"/>
+	</field>
+	<field name="dev_07" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dev_07"/>
+		<property name="com.jaspersoft.studio.field.label" value="dev_07"/>
+	</field>
+	<field name="dev_08" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dev_08"/>
+		<property name="com.jaspersoft.studio.field.label" value="dev_08"/>
+	</field>
+	<field name="dev_09" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dev_09"/>
+		<property name="com.jaspersoft.studio.field.label" value="dev_09"/>
+	</field>
+	<field name="dev_10" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dev_10"/>
+		<property name="com.jaspersoft.studio.field.label" value="dev_10"/>
+	</field>
+	<field name="dev_11" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dev_11"/>
+		<property name="com.jaspersoft.studio.field.label" value="dev_11"/>
+	</field>
+	<field name="dev_12" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dev_12"/>
+		<property name="com.jaspersoft.studio.field.label" value="dev_12"/>
+	</field>
+	<field name="currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="currency"/>
+		<property name="com.jaspersoft.studio.field.label" value="currency"/>
+	</field>
+	<field name="orgname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="orgname"/>
+		<property name="com.jaspersoft.studio.field.label" value="orgname"/>
+	</field>
+	<field name="fiscalyear" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="fiscalyear"/>
+		<property name="com.jaspersoft.studio.field.label" value="fiscalyear"/>
+	</field>
+	<field name="ratemissing_count" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="ratemissing_count"/>
+		<property name="com.jaspersoft.studio.field.label" value="ratemissing_count"/>
+	</field>
+	<field name="ratemissing_months" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ratemissing_months"/>
+		<property name="com.jaspersoft.studio.field.label" value="ratemissing_months"/>
+	</field>
 	<group name="Product" isStartNewPage="true" isResetPageNumber="true" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{p_name}]]></groupExpression>
 		<groupHeader>
 			<band height="115">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1)]]></printWhenExpression>
 				<textField>
-					<reportElement x="37" y="20" width="198" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="10" fontName="Arial" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Title}]]></textFieldExpression>
-				</textField>
-				<textField>
 					<reportElement x="37" y="66" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{BP_Name}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="37" y="48" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Type}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="37" y="57" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{TimePeriod}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="170" y="57" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{startdate} + " - " + $F{enddate}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="170" y="48" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("N") ? $R{Purchase} : ($P{IsSOTrx} .equals("Y") ? $R{Sales} : $R{All} )]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="170" y="66" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_bp} != null ? $F{param_bp} : $R{All}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="364" y="57" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{p_name} != null ? $F{p_name} : $R{All}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="284" y="57" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="364" y="66" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_attributes} != null ? $F{param_attributes} : $R{All}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="284" y="66" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Attribute}]]></textFieldExpression>
 				</textField>
@@ -282,28 +554,28 @@
 				<textField pattern="dd.MM.yyyy">
 					<reportElement x="684" y="48" width="60" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement textAlignment="Right">
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="644" y="48" width="41" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement textAlignment="Right">
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="364" y="48" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{p_value} != null ? $F{p_value} : $R{All}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="284" y="48" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="7" fontName="Arial" isBold="true"/>
+						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{ArticleNr}]]></textFieldExpression>
 				</textField>
@@ -439,7 +711,37 @@
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band splitType="Stretch"/>
+		<band height="67" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField>
+				<reportElement x="37" y="10" width="302" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="28" width="302" height="10" uuid="e914d25b-78a0-4717-93eb-19d7d844bf3b"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fiscalyear}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="38" width="302" height="10" uuid="6ce1da1d-d673-47d0-b031-eb1657e60f58"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{orgname}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="630" y="10" width="170" height="10" uuid="fedfde86-a0f8-4b56-938a-0d67c70c50ef"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
 	</pageHeader>
 	<columnHeader>
 		<band splitType="Stretch"/>
@@ -572,112 +874,112 @@
 			<textField>
 				<reportElement x="37" y="0" width="134" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Total}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="644" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period1sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="604" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period2sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="324" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period9sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="524" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period4sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="284" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period10sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="404" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period7sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="564" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period3sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="170" y="0" width="35" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="364" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period8sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="743" y="0" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{totalamt}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="204" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period12sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="484" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period5sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="444" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period6sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="244" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period11sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
 				<reportElement x="684" y="0" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{totalsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
@@ -687,7 +989,7 @@
 			<textField pattern="#,##0">
 				<reportElement x="743" y="0" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font size="7" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{totalamt}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
