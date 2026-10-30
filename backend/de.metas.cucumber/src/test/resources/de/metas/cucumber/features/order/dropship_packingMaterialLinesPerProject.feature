@@ -11,6 +11,7 @@ Feature: dropship packing material lines split per project
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2024-06-17T08:00:00+02:00[Europe/Berlin]
+    And temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO"
     And set project type Sales/Purchase Order to inactive
     And metasfresh contains M_PricingSystems
       | Identifier    |

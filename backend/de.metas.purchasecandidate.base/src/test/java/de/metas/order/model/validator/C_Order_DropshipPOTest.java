@@ -30,6 +30,7 @@ import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.createFrom.po_from_so.DropshipPOFromSOService;
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.organization.OrgId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
@@ -94,6 +95,11 @@ class C_Order_DropshipPOTest
 
 		Services.registerService(IOrderBL.class, orderBL);
 		Services.registerService(IWarehouseDAO.class, warehouseDAO);
+
+		// these tests cover the behaviour with the CreateDropshipPO switch on; the off case is C_Order_DropshipPO_CreateFlagTest
+		final IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = mock(IC_Order_CreatePOFromSOsBL.class);
+		when(orderCreatePOFromSOsBL.isCreateDropshipPO(any())).thenReturn(true);
+		Services.registerService(IC_Order_CreatePOFromSOsBL.class, orderCreatePOFromSOsBL);
 
 		interceptor = new C_Order_DropshipPO(dropshipPOFromSOService, vendorProductInfoService, orderGroupRepository);
 	}
