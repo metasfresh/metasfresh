@@ -1071,8 +1071,8 @@ Feature: Derivative price lists
       | Identifier       | M_PriceList_Version_ID | M_Product_ID       | PriceStd | C_UOM_ID.X12DE355 |
       | dpl_tc19_pp_a1   | dpl_tc19_cust_a_v1     | dpl_tc19_prod_a1   | 2.00     | PCE               |
       | dpl_tc19_pp_a2   | dpl_tc19_cust_a_v1     | dpl_tc19_prod_a2   | 7.50     | PCE               |
-      | dpl_tc19_pp_in   | dpl_tc19_cust_b_v1     | dpl_tc19_prod_in   | 2.00     | PCE               |
-      | dpl_tc19_pp_none | dpl_tc19_cust_b_v1     | dpl_tc19_prod_none | 2.00     | PCE               |
+      | dpl_tc19_pp_in   | dpl_tc19_cust_b_v1     | dpl_tc19_prod_in   | 3.10     | PCE               |
+      | dpl_tc19_pp_none | dpl_tc19_cust_b_v1     | dpl_tc19_prod_none | 4.20     | PCE               |
     And metasfresh contains C_BPartners:
       | Identifier    | Name          | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
       | dpl_tc19_bp_a | dpl_tc19_bp_a | Y          | dpl_tc19_ps_ca     | Y                    |
@@ -1107,4 +1107,4 @@ Feature: Derivative price lists
       | dpl_tc19_cust_b_v2 | 2110-03-01 |
     And the M_ProductPrices of M_PriceList_Version dpl_tc19_cust_b_v2 are:
       | M_Product_ID     | PriceStd |
-      | dpl_tc19_prod_in | 2.00     |
+      | dpl_tc19_prod_in | 3.10     |
