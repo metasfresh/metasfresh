@@ -29,6 +29,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import org.slf4j.Logger;
 
 import java.time.Duration;
+import java.util.Comparator;
 import java.util.List;
 
 @Builder
@@ -66,7 +67,9 @@ public class ShipmentCreateCommand
 			@NonNull final OrderId orderId,
 			@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		final List<I_M_ShipmentSchedule> shipmentSchedules = ImmutableList.copyOf(shipmentSchedulePA.getByIds(shipmentScheduleIds).values());
+		final List<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentScheduleIds).values().stream()
+				.sorted(Comparator.comparing(I_M_ShipmentSchedule::getM_ShipmentSchedule_ID)) // same order as getByOrderLineIds
+				.collect(ImmutableList.toImmutableList());
 
 		// Prepare candidates and generate the shipment
 		final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
