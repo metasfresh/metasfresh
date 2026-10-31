@@ -51,7 +51,9 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.REPORTS_SERVER_SSH_KEY }}" > ~/.ssh/reports_key
           chmod 600 ~/.ssh/reports_key
-          ssh-keyscan -H test-reports.metasfresh.com >> ~/.ssh/known_hosts 2>/dev/null
+          # best-effort: StrictHostKeyChecking accept-new records the key on first connect anyway
+          ssh-keyscan -T 10 -H test-reports.metasfresh.com >> ~/.ssh/known_hosts \
+            || echo "::warning::Could not pre-fetch the SSH host key of test-reports.metasfresh.com; it will be accepted on first connect"
           cat >> ~/.ssh/config <<EOF
           Host reports-server
             HostName test-reports.metasfresh.com
