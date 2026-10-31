@@ -87,15 +87,26 @@ BEGIN
              WHERE is_main_article
              ORDER BY comp_group_id, seqno
          ),
+         main_item_line AS (
+             -- Get the main article's pack_item Line per comp group (lowest pi_line if multiple).
+             -- Sub-articles reference this Line so the receiver can match them to the main LineItem.
+             SELECT DISTINCT ON (comp_group_id)
+                 comp_group_id, pi_line AS main_pi_line
+             FROM pack_with_role
+             WHERE is_main_article
+             ORDER BY comp_group_id, pi_line
+         ),
          items_assigned AS (
              -- Sub-article items are reassigned to the main pack in their compensation group
              SELECT pwr.*,
+                    mil.main_pi_line,
                     CASE
                         WHEN pwr.is_sub_article THEN mp.main_pack_id
                         ELSE pwr.edi_desadv_pack_id
                         END AS effective_pack_id
              FROM pack_with_role pwr
                       LEFT JOIN main_packs mp ON mp.comp_group_id = pwr.comp_group_id
+                      LEFT JOIN main_item_line mil ON mil.comp_group_id = pwr.comp_group_id
          ),
          pack_header AS (
              -- Use the main pack's header info (SSCC, packaging code) for each effective_pack_id
@@ -160,10 +171,11 @@ BEGIN
                                ),
                                'M_HU_PackagingCode_TU_Text', pc_tu.packagingcode,
                                'Line', ia.pi_line,
+                               'DesadvLineNo', dl.line,
                                'GTIN_TU_PackingMaterial', ia.gtin_tu_packingmaterial,
                                'IsSubArticle', ia.is_sub_article,
-                               'MainArticleLine',
-                               CASE WHEN ia.is_sub_article THEN ia.main_desadv_line ELSE NULL END
+                               'MainArticleItemLine',
+                               CASE WHEN ia.is_sub_article THEN ia.main_pi_line ELSE NULL END
                        ) ORDER BY ia.is_sub_article, ia.pi_line
                ) AS items_data
         FROM items_assigned ia
