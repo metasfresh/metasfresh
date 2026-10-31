@@ -1,6 +1,8 @@
 package de.metas.payment.sepa.api.impl;
 
 import de.metas.currency.CurrencyCode;
+import de.metas.payment.sepa.api.CreatedSEPAExports;
+import de.metas.payment.sepa.api.CreatedSEPAExports.CreatedSEPAExport;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
@@ -69,7 +71,17 @@ public class SEPATestHelper
 	{
 		createMockData();
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		return command.run();
+		return getSingleExport(command.run()).getExport();
+	}
+
+	/**
+	 * @return the only export; fails the test if there is not exactly one
+	 */
+	@NonNull
+	public static CreatedSEPAExport getSingleExport(@NonNull final CreatedSEPAExports createdExports)
+	{
+		assertThat(createdExports.getExports()).as("created SEPA exports").hasSize(1);
+		return createdExports.getExports().get(0);
 	}
 	
 	public void createMockData()

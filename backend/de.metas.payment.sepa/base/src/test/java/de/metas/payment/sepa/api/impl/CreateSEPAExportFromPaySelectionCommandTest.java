@@ -4,24 +4,43 @@ import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
+import de.metas.banking.mandate.DirectDebitMandateRepository;
+import de.metas.banking.mandate.DirectDebitMandateType;
+import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.payment.sepa.api.CreatedSEPAExports;
+import de.metas.payment.sepa.api.CreatedSEPAExports.CreatedSEPAExport;
+import de.metas.payment.sepa.api.ISEPADocumentDAO;
+import de.metas.payment.sepa.api.SEPAExportLineId;
+import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.X_AD_OrgInfo;
+import org.compiere.model.I_C_BP_BankAccount_DirectDebitMandate;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -36,6 +55,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(new BankRepository());
+		SpringContextHolder.registerJUnitBean(DirectDebitMandateRepository.newInstanceForUnitTesting());
 	}
 
 	@Test
@@ -44,7 +64,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
 		sepaTestHelper.createMockData();
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getPaySelection(), true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		sepaTestHelper.creditTransferIsGroupTransactionTrue(command.run());
+		sepaTestHelper.creditTransferIsGroupTransactionTrue(SEPATestHelper.getSingleExport(command.run()).getExport());
 	}
 
 	@Test
@@ -53,7 +73,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
 		sepaTestHelper.createMockData();
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getPaySelection(), false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		sepaTestHelper.creditTransferIsGroupTransactionFalse(command.run());
+		sepaTestHelper.creditTransferIsGroupTransactionFalse(SEPATestHelper.getSingleExport(command.run()).getExport());
 	}
 
 	@Test
@@ -63,9 +83,11 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		sepaTestHelper.createMockData();
 		final I_C_PaySelection paySelection = sepaTestHelper.getPaySelection();
 		paySelection.setPaySelectionTrxType(PAYSELECTIONTRXTYPE_DirectDebit);
+		paySelection.setPayDate(Timestamp.valueOf("2026-10-20 00:00:00")); // the collection date, needed for the mandate check
 		save(paySelection);
+		createActiveMandatesOfLines(paySelection);
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		sepaTestHelper.assertCommonDebitDirectCases(command.run());
+		sepaTestHelper.assertCommonDebitDirectCases(SEPATestHelper.getSingleExport(command.run()).getExport());
 	}
 
 	@Test
@@ -75,9 +97,139 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		sepaTestHelper.createMockData();
 		final I_C_PaySelection paySelection = sepaTestHelper.getPaySelection();
 		paySelection.setPaySelectionTrxType(PAYSELECTIONTRXTYPE_DirectDebit);
+		paySelection.setPayDate(Timestamp.valueOf("2026-10-20 00:00:00")); // the collection date, needed for the mandate check
 		save(paySelection);
+		createActiveMandatesOfLines(paySelection);
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		sepaTestHelper.assertCommonDebitDirectCases(command.run());
+		sepaTestHelper.assertCommonDebitDirectCases(SEPATestHelper.getSingleExport(command.run()).getExport());
+	}
+
+	/**
+	 * A direct debit pay selection line is exported only with an active mandate of its bank account.
+	 */
+	private static void createActiveMandatesOfLines(@NonNull final I_C_PaySelection paySelection)
+	{
+		createOrgInfo(paySelection);
+
+		Services.get(IPaySelectionBL.class).retrievePaySelectionLines(paySelection).stream()
+				.map(I_C_PaySelectionLine::getC_BP_BankAccount_ID)
+				.distinct()
+				.forEach(bankAccountId -> createActiveMandate(bankAccountId, DirectDebitMandateType.B2B));
+	}
+
+	/**
+	 * A pay selection with a B2B and a CORE debtor gives one export per scheme; each line carries its mandate reference,
+	 * and each used mandate's DateLastUsed is the collection date.
+	 */
+	@Test
+	public void directDebit_b2bAndCoreLines_oneExportPerScheme()
+	{
+		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
+		sepaTestHelper.createMockData();
+		final I_C_PaySelection paySelection = sepaTestHelper.getPaySelection();
+		paySelection.setPaySelectionTrxType(PAYSELECTIONTRXTYPE_DirectDebit);
+		paySelection.setPayDate(Timestamp.valueOf("2026-10-20 00:00:00")); // the collection date
+		save(paySelection);
+		createOrgInfo(paySelection);
+
+		// the mock data has two bank accounts: the one of the first line (two lines) becomes B2B, the other one (one line) CORE
+		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IPaySelectionBL.class).retrievePaySelectionLines(paySelection);
+		final int b2bBankAccountId = paySelectionLines.get(0).getC_BP_BankAccount_ID();
+		final Map<Integer, I_C_BP_BankAccount_DirectDebitMandate> mandatesByBankAccountId = new HashMap<>();
+		paySelectionLines.stream()
+				.map(I_C_PaySelectionLine::getC_BP_BankAccount_ID)
+				.distinct()
+				.forEach(bankAccountId -> mandatesByBankAccountId.put(bankAccountId, createActiveMandate(bankAccountId, bankAccountId == b2bBankAccountId ? DirectDebitMandateType.B2B : DirectDebitMandateType.CORE)));
+		assertThat(mandatesByBankAccountId).hasSize(2);
+
+		final CreatedSEPAExports createdExports = new CreateSEPAExportFromPaySelectionCommand(paySelection, false, null).run();
+
+		assertThat(createdExports.getExports()).extracting(CreatedSEPAExport::getScheme).containsExactlyInAnyOrder(DirectDebitMandateType.B2B, DirectDebitMandateType.CORE);
+		final ISEPADocumentDAO sepaDocumentDAO = Services.get(ISEPADocumentDAO.class);
+		for (final CreatedSEPAExport createdExport : createdExports.getExports())
+		{
+			final I_SEPA_Export export = createdExport.getExport();
+			assertThat(export.getSEPA_Protocol()).isEqualTo("pain.008.001.08");
+
+			final List<I_SEPA_Export_Line> lines = sepaDocumentDAO.retrieveLines(export);
+			assertThat(lines).hasSize(createdExport.getScheme() == DirectDebitMandateType.B2B ? 2 : 1);
+			assertThat(createdExport.getMandatesBySepaExportLineId()).hasSize(lines.size());
+			for (final I_SEPA_Export_Line line : lines)
+			{
+				final I_C_BP_BankAccount_DirectDebitMandate mandateRecord = mandatesByBankAccountId.get(line.getC_BP_BankAccount_ID());
+				assertThat(mandateRecord.getMandateType()).isEqualTo(createdExport.getScheme().getCode());
+				assertThat(line.getSEPA_MandateRefNo()).isEqualTo(mandateRecord.getMandateReference());
+				assertThat(createdExport.getMandatesBySepaExportLineId().get(SEPAExportLineId.ofRepoId(line.getSEPA_Export_Line_ID())).getReference())
+						.isEqualTo(mandateRecord.getMandateReference());
+			}
+		}
+
+		for (final I_C_BP_BankAccount_DirectDebitMandate mandateRecord : mandatesByBankAccountId.values())
+		{
+			InterfaceWrapperHelper.refresh(mandateRecord);
+			assertThat(mandateRecord.getDateLastUsed()).isEqualTo(Timestamp.valueOf("2026-10-20 00:00:00"));
+		}
+	}
+
+	/**
+	 * The last use of a mandate never moves back: a mandate whose DateLastUsed is after the collection date keeps it,
+	 * a mandate used before the collection date gets the collection date.
+	 */
+	@Test
+	public void directDebit_dateLastUsedOnlyMovesForward()
+	{
+		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
+		sepaTestHelper.createMockData();
+		final I_C_PaySelection paySelection = sepaTestHelper.getPaySelection();
+		paySelection.setPaySelectionTrxType(PAYSELECTIONTRXTYPE_DirectDebit);
+		paySelection.setPayDate(Timestamp.valueOf("2026-10-20 00:00:00")); // the collection date
+		save(paySelection);
+		createOrgInfo(paySelection);
+
+		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IPaySelectionBL.class).retrievePaySelectionLines(paySelection);
+		final int laterUsedBankAccountId = paySelectionLines.get(0).getC_BP_BankAccount_ID();
+		final Map<Integer, I_C_BP_BankAccount_DirectDebitMandate> mandatesByBankAccountId = new HashMap<>();
+		paySelectionLines.stream()
+				.map(I_C_PaySelectionLine::getC_BP_BankAccount_ID)
+				.distinct()
+				.forEach(bankAccountId -> {
+					final I_C_BP_BankAccount_DirectDebitMandate mandate = createActiveMandate(bankAccountId, DirectDebitMandateType.B2B);
+					mandate.setDateLastUsed(Timestamp.valueOf(bankAccountId == laterUsedBankAccountId ? "2026-10-25 00:00:00" : "2026-10-01 00:00:00"));
+					save(mandate);
+					mandatesByBankAccountId.put(bankAccountId, mandate);
+				});
+		assertThat(mandatesByBankAccountId).hasSize(2);
+
+		new CreateSEPAExportFromPaySelectionCommand(paySelection, false, null).run();
+
+		mandatesByBankAccountId.forEach((bankAccountId, mandateRecord) -> {
+			InterfaceWrapperHelper.refresh(mandateRecord);
+			assertThat(mandateRecord.getDateLastUsed())
+					.as("DateLastUsed of the mandate of C_BP_BankAccount_ID=%s", bankAccountId)
+					.isEqualTo(Timestamp.valueOf(bankAccountId == laterUsedBankAccountId ? "2026-10-25 00:00:00" : "2026-10-20 00:00:00"));
+		});
+	}
+
+	private static void createOrgInfo(@NonNull final I_C_PaySelection paySelection)
+	{
+		// the collection date is resolved in the time zone of the export org
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(paySelection.getAD_Org_ID());
+		orgInfo.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_Speichern);
+		save(orgInfo);
+	}
+
+	private static I_C_BP_BankAccount_DirectDebitMandate createActiveMandate(final int bankAccountId, @NonNull final DirectDebitMandateType type)
+	{
+		final I_C_BP_BankAccount_DirectDebitMandate mandate = newInstance(I_C_BP_BankAccount_DirectDebitMandate.class);
+		mandate.setAD_Org_ID(0);
+		mandate.setC_BP_BankAccount_ID(bankAccountId);
+		mandate.setMandateType(type.getCode());
+		mandate.setMandateReference("MREF-" + bankAccountId);
+		mandate.setMandateDate(Timestamp.valueOf("2026-01-10 00:00:00"));
+		mandate.setIsRecurring(true);
+		save(mandate);
+		return mandate;
 	}
 
 	@Test
@@ -86,7 +238,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
 		sepaTestHelper.createQrIbanMockData();
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
-		sepaTestHelper.assertQrIbanLinesNotGrouped(command.run());
+		sepaTestHelper.assertQrIbanLinesNotGrouped(SEPATestHelper.getSingleExport(command.run()).getExport());
 	}
 
 	@Test
@@ -110,14 +262,14 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		// is package-private to de.metas.payment.sepa.sepamarshaller.impl, so it is exercised here through the public
 		// marshal(..) entry point instead. Running the command twice on the same C_PaySelection is safe - run() only
 		// reads the pay-selection lines, it never mutates them.
-		final I_SEPA_Export ungroupedExport = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run();
+		final I_SEPA_Export ungroupedExport = SEPATestHelper.getSingleExport(new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run()).getExport();
 		assertThatCode(() -> marshaler.marshal(ungroupedExport, new ByteArrayOutputStream()))
 				.as("each individual QR reference must be valid before we reproduce the grouping bug")
 				.doesNotThrowAnyException();
 
 		// reproduce the bug: grouping ON aggregates both QR-IBAN lines into one comma-joined, truncated reference
 		// that is no longer a valid 27-digit QRR reference.
-		final I_SEPA_Export groupedExport = new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run();
+		final I_SEPA_Export groupedExport = SEPATestHelper.getSingleExport(new CreateSEPAExportFromPaySelectionCommand(sepaTestHelper.getQrIbanPaySelection(), true, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run()).getExport();
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		assertThatCode(() -> marshaler.marshal(groupedExport, out))
@@ -132,7 +284,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 	@Test
 	void creditTransfer_exportedWith_pain_001_001_03_ch_02()
 	{
-		final I_SEPA_Export export = new CreateSEPAExportFromPaySelectionCommand(createCreditTransferPaySelection(), false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run();
+		final I_SEPA_Export export = SEPATestHelper.getSingleExport(new CreateSEPAExportFromPaySelectionCommand(createCreditTransferPaySelection(), false, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02).run()).getExport();
 
 		assertThat(export.getSEPA_Protocol()).isEqualTo("pain.001.001.03.ch.02");
 	}
@@ -140,9 +292,23 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 	@Test
 	void creditTransfer_nothingChosen_exportedWith_pain_001_001_09_ch_03()
 	{
-		final I_SEPA_Export export = new CreateSEPAExportFromPaySelectionCommand(createCreditTransferPaySelection(), false, null).run();
+		final I_SEPA_Export export = SEPATestHelper.getSingleExport(new CreateSEPAExportFromPaySelectionCommand(createCreditTransferPaySelection(), false, null).run()).getExport();
 
 		assertThat(export.getSEPA_Protocol()).isEqualTo("pain.001.001.09.ch.03");
+	}
+
+	/**
+	 * A credit transfer gives exactly one export, without scheme and without mandates.
+	 */
+	@Test
+	void creditTransfer_oneExportWithoutSchemeAndMandates()
+	{
+		final CreatedSEPAExports createdExports = new CreateSEPAExportFromPaySelectionCommand(createCreditTransferPaySelection(), false, null).run();
+
+		assertThat(createdExports.getExports()).hasSize(1);
+		final CreatedSEPAExport createdExport = createdExports.getExports().get(0);
+		assertThat(createdExport.getScheme()).isNull();
+		assertThat(createdExport.getMandatesBySepaExportLineId()).isEmpty();
 	}
 
 	private static I_C_PaySelection createCreditTransferPaySelection()

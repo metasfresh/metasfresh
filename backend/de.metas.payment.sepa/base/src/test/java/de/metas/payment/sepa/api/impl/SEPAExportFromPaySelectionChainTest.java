@@ -9,8 +9,13 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
+import de.metas.banking.mandate.DirectDebitMandateRepository;
+import de.metas.banking.mandate.DirectDebitMandateType;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.payment.sepa.api.CreatedSEPAExports;
+import de.metas.payment.sepa.api.CreatedSEPAExports.CreatedSEPAExport;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
+import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
@@ -19,6 +24,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.X_AD_OrgInfo;
+import org.compiere.model.I_C_BP_BankAccount_DirectDebitMandate;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -26,14 +34,21 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
+import org.compiere.util.MimeType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.util.StreamUtils;
 import org.w3c.dom.Document;
 
 import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.assertValidAgainstXsd;
 import static de.metas.payment.sepa.Pain001_001_09_XmlTestHelper.parse;
@@ -55,7 +70,7 @@ public class SEPAExportFromPaySelectionChainTest
 
 	private static final String NAMESPACE_PAIN_001_001_09 = "urn:iso:std:iso:20022:tech:xsd:pain.001.001.09";
 	private static final String NAMESPACE_PAIN_001_001_03_CH_02 = "http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd";
-	private static final String NAMESPACE_PAIN_008_003_02 = "urn:iso:std:iso:20022:tech:xsd:pain.008.003.02";
+	private static final String NAMESPACE_PAIN_008_001_08 = "urn:iso:std:iso:20022:tech:xsd:pain.008.001.08";
 
 	private static final String DEBTOR_IBAN = "CH72 8000 5000 0888 7776 6";
 	private static final String DEBTOR_BIC = "RAIFCH22005";
@@ -77,6 +92,7 @@ public class SEPAExportFromPaySelectionChainTest
 
 		bankRepository = new BankRepository();
 		SpringContextHolder.registerJUnitBean(bankRepository);
+		SpringContextHolder.registerJUnitBean(DirectDebitMandateRepository.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepository, new CurrencyRepository()));
 
 		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
@@ -122,14 +138,85 @@ public class SEPAExportFromPaySelectionChainTest
 	}
 
 	@Test
-	void directDebit_pain001_001_03_ch_02Chosen_exportsPain008_003_02()
+	void directDebit_pain001_001_03_ch_02Chosen_exportsPain008_001_08()
 	{
 		final I_C_PaySelection paySelection = createPaySelection(PaySelectionTrxType.DIRECT_DEBIT);
-		createPaySelectionLine(paySelection, createVendorBankAccount(CREDITOR_IBAN_CH, null), null);
+		final I_C_BP_BankAccount vendorBankAccount = createVendorBankAccount(CREDITOR_IBAN_CH, null);
+		createActiveMandate(vendorBankAccount);
+		createPaySelectionLine(paySelection, vendorBankAccount, null);
 
 		final byte[] xml = exportAsProcessDoes(paySelection, SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02);
 
-		assertThat(rootNamespace(xml)).isEqualTo(NAMESPACE_PAIN_008_003_02);
+		assertThat(rootNamespace(xml)).isEqualTo(NAMESPACE_PAIN_008_001_08);
+	}
+
+	/**
+	 * A direct debit with one scheme is downloaded as the writer's own XML file, not as a ZIP.
+	 */
+	@Test
+	void exportXML_oneExport_isTheSingleXmlFile()
+	{
+		final I_C_PaySelection paySelection = createPaySelection(PaySelectionTrxType.DIRECT_DEBIT);
+		paySelection.setName("Lastschrift 2026/11");
+		save(paySelection);
+		final I_C_BP_BankAccount b2bAccount = createVendorBankAccount(CREDITOR_IBAN_CH, null);
+		createActiveMandate(b2bAccount);
+		createPaySelectionLine(paySelection, b2bAccount, null);
+
+		final SEPACreditTransferXML xml = Services.get(ISEPADocumentBL.class).exportXML(createSEPAExports(paySelection), false, paySelection.getName());
+
+		assertThat(xml.getFilename()).isEqualTo("1000001.xml");
+		assertThat(xml.getContentType()).isEqualTo(MimeType.TYPE_XML);
+		assertThat(rootNamespace(xml.getContent())).isEqualTo(NAMESPACE_PAIN_008_001_08);
+	}
+
+	/**
+	 * A direct debit with a B2B and a CORE line is downloaded as one ZIP named after the pay selection, with one {@code <DocumentNo>_<scheme>.xml} entry per scheme.
+	 */
+	@Test
+	void exportXML_twoExports_isOneZipNamedAfterThePaySelection() throws Exception
+	{
+		final I_C_PaySelection paySelection = createPaySelection(PaySelectionTrxType.DIRECT_DEBIT);
+		paySelection.setName("Lastschrift 2026/11");
+		save(paySelection);
+		final I_C_BP_BankAccount b2bAccount = createVendorBankAccount(CREDITOR_IBAN_CH, null);
+		createActiveMandate(b2bAccount);
+		createPaySelectionLine(paySelection, b2bAccount, null);
+		final I_C_BP_BankAccount coreAccount = createVendorBankAccount(CREDITOR_IBAN_CH, null);
+		createMandate(coreAccount, DirectDebitMandateType.CORE);
+		createPaySelectionLine(paySelection, coreAccount, null);
+
+		final SEPACreditTransferXML zip = Services.get(ISEPADocumentBL.class).exportXML(createSEPAExports(paySelection), false, paySelection.getName());
+
+		assertThat(zip.getFilename()).isEqualTo("Lastschrift 202611.zip");
+		assertThat(zip.getContentType()).isEqualTo("application/zip");
+		final Map<String, byte[]> entries = new LinkedHashMap<>();
+		try (final ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(zip.getContent())))
+		{
+			ZipEntry entry;
+			while ((entry = zis.getNextEntry()) != null)
+			{
+				entries.put(entry.getName(), StreamUtils.copyToByteArray(zis));
+			}
+		}
+		assertThat(entries).containsOnlyKeys("1000001_B2B.xml", "1000002_CORE.xml");
+		assertThat(entries.values()).allSatisfy(xml -> assertThat(rootNamespace(xml)).isEqualTo(NAMESPACE_PAIN_008_001_08));
+	}
+
+	/**
+	 * Creates the exports of the pay selection; the B2B export gets DocumentNo 1000001 and the CORE export 1000002.
+	 */
+	private static CreatedSEPAExports createSEPAExports(@NonNull final I_C_PaySelection paySelection)
+	{
+		final CreatedSEPAExports createdExports = Services.get(ISEPADocumentBL.class).createSEPAExportFromPaySelection(paySelection, false, null);
+		for (final CreatedSEPAExport createdExport : createdExports.getExports())
+		{
+			// the in-memory test DB has no document sequences
+			final I_SEPA_Export sepaExport = createdExport.getExport();
+			sepaExport.setDocumentNo(createdExport.getScheme() == DirectDebitMandateType.CORE ? "1000002" : "1000001");
+			save(sepaExport);
+		}
+		return createdExports;
 	}
 
 	/**
@@ -141,12 +228,12 @@ public class SEPAExportFromPaySelectionChainTest
 		final I_C_PaySelection paySelection = createPaySelection(PaySelectionTrxType.CREDIT_TRANSFER);
 		createPaySelectionLine(paySelection, createVendorBankAccount(null, CREDITOR_QR_IBAN), QR_REFERENCE);
 
-		final I_SEPA_Export sepaExport = createSEPAExport(paySelection, null);
-		final List<I_SEPA_Export_Line> exportLines = Services.get(ISEPADocumentBL.class).retrieveLines(sepaExport);
+		final CreatedSEPAExport createdExport = createSEPAExport(paySelection, null);
+		final List<I_SEPA_Export_Line> exportLines = Services.get(ISEPADocumentBL.class).retrieveLines(createdExport.getExport());
 		assertThat(exportLines).extracting(I_SEPA_Export_Line::getIBAN).containsExactly("CH4431999123000889012");
 		assertThat(exportLines).extracting(I_SEPA_Export_Line::getStructuredRemittanceInfo).containsExactly(QR_REFERENCE);
 
-		final byte[] xml = exportXml(sepaExport);
+		final byte[] xml = exportXml(createdExport);
 
 		assertValidAgainstXsd(xml);
 		final Document doc = parse(xml);
@@ -191,19 +278,26 @@ public class SEPAExportFromPaySelectionChainTest
 		return exportXml(createSEPAExport(paySelection, chosenProtocol));
 	}
 
-	private static I_SEPA_Export createSEPAExport(@NonNull final I_C_PaySelection paySelection, @Nullable final SEPAProtocol chosenProtocol)
+	private static CreatedSEPAExport createSEPAExport(@NonNull final I_C_PaySelection paySelection, @Nullable final SEPAProtocol chosenProtocol)
 	{
-		final I_SEPA_Export sepaExport = Services.get(ISEPADocumentBL.class).createSEPAExportFromPaySelection(paySelection, false, chosenProtocol);
+		final CreatedSEPAExport createdExport = SEPATestHelper.getSingleExport(Services.get(ISEPADocumentBL.class).createSEPAExportFromPaySelection(paySelection, false, chosenProtocol));
+		final I_SEPA_Export sepaExport = createdExport.getExport();
 		// in the application, the document number comes from the SEPA_Export document sequence when the record is first saved; the in-memory test DB has no sequences
 		sepaExport.setDocumentNo("1000001");
 		save(sepaExport);
-		return sepaExport;
+		return createdExport;
 	}
 
-	private static byte[] exportXml(@NonNull final I_SEPA_Export sepaExport)
+	/**
+	 * Same export context as the process: the mandates of the created export are handed to the writer.
+	 */
+	private static byte[] exportXml(@NonNull final CreatedSEPAExport createdExport)
 	{
-		final SEPAExportContext exportContext = SEPAExportContext.builder().referenceAsEndToEndId(false).build();
-		return Services.get(ISEPADocumentBL.class).exportCreditTransferXML(sepaExport, exportContext).getContent();
+		final SEPAExportContext exportContext = SEPAExportContext.builder()
+				.referenceAsEndToEndId(false)
+				.directDebitMandates(createdExport.getMandatesBySepaExportLineId())
+				.build();
+		return Services.get(ISEPADocumentBL.class).exportCreditTransferXML(createdExport.getExport(), exportContext).getContent();
 	}
 
 	private I_C_PaySelection createPaySelection(@NonNull final PaySelectionTrxType trxType)
@@ -256,6 +350,32 @@ public class SEPAExportFromPaySelectionChainTest
 		bankAccount.setIsEsrAccount(qrIban != null);
 		save(bankAccount);
 		return bankAccount;
+	}
+
+	/**
+	 * A direct debit pay selection line is exported only with an active mandate of its bank account.
+	 */
+	private static void createActiveMandate(@NonNull final I_C_BP_BankAccount bankAccount)
+	{
+		// the collection date is resolved in the time zone of the export org
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(ORG_ID);
+		orgInfo.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_Speichern);
+		save(orgInfo);
+
+		createMandate(bankAccount, DirectDebitMandateType.B2B);
+	}
+
+	private static void createMandate(@NonNull final I_C_BP_BankAccount bankAccount, @NonNull final DirectDebitMandateType type)
+	{
+		final I_C_BP_BankAccount_DirectDebitMandate mandate = newInstance(I_C_BP_BankAccount_DirectDebitMandate.class);
+		mandate.setAD_Org_ID(0);
+		mandate.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
+		mandate.setMandateType(type.getCode());
+		mandate.setMandateReference("MREF-" + bankAccount.getC_BP_BankAccount_ID());
+		mandate.setMandateDate(Timestamp.valueOf("2026-01-10 00:00:00"));
+		mandate.setIsRecurring(true);
+		save(mandate);
 	}
 
 	private void createPaySelectionLine(

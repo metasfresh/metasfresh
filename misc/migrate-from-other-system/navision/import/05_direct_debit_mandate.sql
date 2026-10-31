@@ -45,9 +45,14 @@ SELECT 1000000                AS ad_client_id,
        T_BAM."Mandate Date"   AS mandatedate,
        T_BAM."Mandate ID"     AS mandatereference,
        CASE
+           WHEN T_BAM."Mandate Type" = 0 THEN 'CORE'
+           WHEN T_BAM."Mandate Type" = 1 THEN 'B2B'
+           END                AS mandatetype,
+       CASE
            WHEN T_BAM."Mandate Status" = 0 THEN 'F'
-           WHEN T_BAM."Mandate Status" = 1 THEN 'L'
+           WHEN T_BAM."Mandate Status" = 1 THEN 'F'
            WHEN T_BAM."Mandate Status" = 2 THEN 'R'
+           WHEN T_BAM."Mandate Status" = 3 THEN 'L'
            END                AS mandatestatus,
        NOW()                  AS updated,
        99                     AS updatedby
@@ -70,6 +75,7 @@ INSERT INTO c_bp_bankaccount_directdebitmandate (ad_client_id,
                                                  isrecurring,
                                                  mandatedate,
                                                  mandatereference,
+                                                 mandatetype,
                                                  mandatestatus,
                                                  updated,
                                                  updatedby)
@@ -85,6 +91,7 @@ SELECT s.ad_client_id,
        s.isrecurring,
        s.mandatedate,
        s.mandatereference,
+       s.mandatetype,
        s.mandatestatus,
        s.updated,
        s.updatedby

@@ -34,9 +34,11 @@ import java.util.List;
 public interface ISEPADocumentBL extends ISingletonService
 {
 	/**
+	 * Creates the SEPA exports of the given pay selection: one for a credit transfer, one per mandate type (scheme) for a direct debit.
+	 *
 	 * @param chosenCreditTransferProtocol the credit transfer protocol to use; {@code null} means the default. Ignored for direct debit pay selections.
 	 */
-	I_SEPA_Export createSEPAExportFromPaySelection(I_C_PaySelection from, boolean isGroupTransactions, @Nullable SEPAProtocol chosenCreditTransferProtocol);
+	CreatedSEPAExports createSEPAExportFromPaySelection(I_C_PaySelection from, boolean isGroupTransactions, @Nullable SEPAProtocol chosenCreditTransferProtocol);
 
 	Date getDueDate(I_SEPA_Export_Line line);
 
@@ -49,5 +51,13 @@ public interface ISEPADocumentBL extends ISingletonService
 	 * Generates the SEPA Credit Transfer xml from the given export header.
 	 */
 	SEPACreditTransferXML exportCreditTransferXML(I_SEPA_Export sepaExport, SEPAExportContext exportContext);
+
+	/**
+	 * Marshals each of the given exports into its own XML file.
+	 *
+	 * @return the file of a single export as it is; for several exports one ZIP named {@code <zipBaseName>.zip},
+	 * with one entry {@code <DocumentNo>_<scheme>.xml} per export and the warnings of all files
+	 */
+	SEPACreditTransferXML exportXML(CreatedSEPAExports createdExports, boolean referenceAsEndToEndId, String zipBaseName);
 
 }

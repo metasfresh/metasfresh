@@ -87,12 +87,50 @@ public class C_BP_BankAccount_StepDef
 		this.bankTable = bankTable;
 	}
 
+	/**
+	 * Creates (or re-uses, see below) bank accounts of existing business partners.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> - (required) identifier under which the account is registered<br>
+	 *   <b>C_BPartner_ID</b> - (required, identifier-ref) the partner that owns the account<br>
+	 *   <b>C_Currency_ID</b> - (required) ISO currency code, e.g. EUR<br>
+	 *   <b>AccountNo</b> - (optional) account number<br>
+	 *   <b>C_Bank_ID</b> - (optional, identifier-ref; also written <code>C_Bank_ID.Identifier</code>) the bank<br>
+	 *   <b>IBAN</b> - (optional) IBAN<br>
+	 *   <b>SEPA_CreditorIdentifier</b> - (optional) SEPA creditor identifier (needed for direct debit exports)<br>
+	 *   <b>A_Name</b> - (optional) account holder name<br>
+	 *   <b>A_City</b> - (optional) account holder city<br>
+	 *   An existing active account is re-used if partner, currency and every given AccountNo / C_Bank_ID / IBAN match; otherwise a new account is created.
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_BP_BankAccount
+	 *   | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier | OPT.A_Name          | OPT.A_City  |
+	 *   | debtorAcct | debtor        | EUR           | DE89370400440532013000 | debtorBank           | Account Holder Name | Holder City |
+	 * </pre>
+	 */
 	@And("metasfresh contains C_BP_BankAccount")
 	public void addOrUpdateBPartnerBankAccount(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> createOrUpdateBankAccount(row, false));
 	}
 
+	/**
+	 * Like {@code metasfresh contains C_BP_BankAccount}, but the account is created for the partner linked to the login organization
+	 * (so no <b>C_BPartner_ID</b> column); the same optional columns apply.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> - (required) identifier under which the account is registered<br>
+	 *   <b>C_Currency_ID</b> - (required) ISO currency code, e.g. EUR<br>
+	 *   <b>AccountNo</b>, <b>C_Bank_ID</b>, <b>IBAN</b>, <b>SEPA_CreditorIdentifier</b>, <b>A_Name</b>, <b>A_City</b> - (optional) as above
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains organization bank accounts
+	 *   | Identifier | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier | SEPA_CreditorIdentifier |
+	 *   | orgAcct    | EUR           | DE91100000000123456789 | creditorBank         | DE98ZZZ09999999999      |
+	 * </pre>
+	 */
 	@And("metasfresh contains organization bank accounts")
 	public void addOrUpdateOrgBankAccount(@NonNull final DataTable dataTable)
 	{
@@ -222,6 +260,17 @@ public class C_BP_BankAccount_StepDef
 		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_IBAN)
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(bpBankAccount::setIBAN);
+		// optional; needed for SEPA direct debit export (creditor = org bank account)
+		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_SEPA_CreditorIdentifier)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(bpBankAccount::setSEPA_CreditorIdentifier);
+		// optional; account holder name / city (the SEPA export does not use them: the debtor name is the partner name)
+		row.getAsOptionalString(COLUMNNAME_A_Name)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(bpBankAccount::setA_Name);
+		row.getAsOptionalString(COLUMNNAME_A_City)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(bpBankAccount::setA_City);
 
 		InterfaceWrapperHelper.save(bpBankAccount);
 
@@ -280,6 +329,12 @@ public class C_BP_BankAccount_StepDef
 			if (Check.isNotBlank(iban))
 			{
 				softly.assertThat(bpBankAccount.getIBAN()).as("IBAN").isEqualTo(iban);
+			}
+
+			final String sepaCreditorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_SEPA_CreditorIdentifier);
+			if (Check.isNotBlank(sepaCreditorIdentifier))
+			{
+				softly.assertThat(bpBankAccount.getSEPA_CreditorIdentifier()).as("SEPA_CreditorIdentifier").isEqualTo(sepaCreditorIdentifier);
 			}
 
 			final String qrIban = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_QR_IBAN);

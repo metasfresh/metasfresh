@@ -1,21 +1,36 @@
 package de.metas.payment.sepa.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.banking.Bank;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
+import de.metas.banking.PaySelectionId;
+import de.metas.banking.PaySelectionLineId;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.banking.mandate.DirectDebitMandate;
+import de.metas.banking.mandate.DirectDebitMandateRepository;
+import de.metas.banking.mandate.DirectDebitMandateType;
+import de.metas.banking.mandate.DirectDebitMandatesMap;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.sepa.api.CreatedSEPAExports;
+import de.metas.payment.sepa.api.CreatedSEPAExports.CreatedSEPAExport;
+import de.metas.payment.sepa.api.ISEPADocumentDAO;
+import de.metas.payment.sepa.api.SEPAExportLineId;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
@@ -34,12 +49,18 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
+import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
@@ -81,6 +102,12 @@ class CreateSEPAExportFromPaySelectionCommand
 	@NonNull private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	@NonNull private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
+	// lazy: only direct debit exports need it, credit transfer callers need not have the bean
+	@NonNull private final SpringContextHolder.Lazy<DirectDebitMandateRepository> mandateRepo = SpringContextHolder.lazyBean(DirectDebitMandateRepository.class);
+
+	@NonNull private final ISEPADocumentDAO sepaDocumentDAO = Services.get(ISEPADocumentDAO.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final I_C_PaySelection source;
 	private final boolean isGroupTransactions;
@@ -96,11 +123,24 @@ class CreateSEPAExportFromPaySelectionCommand
 		this.chosenCreditTransferProtocol = chosenCreditTransferProtocol;
 	}
 
-	public I_SEPA_Export run()
+	/**
+	 * Creates one export for a credit transfer, and one export per mandate type (scheme) for a direct debit,
+	 * because one direct debit file must not mix local instruments.
+	 * For a direct debit, it also sets each line's mandate reference and records the collection date as the last use of each mandate.
+	 */
+	public CreatedSEPAExports run()
 	{
-		final I_SEPA_Export header = createExportHeader(source);
 		final PaySelectionTrxType paySelectionTrxType = PaySelectionTrxType.ofNullableCode(source.getPaySelectionTrxType());
 		final List<I_C_PaySelectionLine> paySelectionLines = paySelectionBL.retrievePaySelectionLines(source);
+
+		if (PaySelectionTrxType.DIRECT_DEBIT.equals(paySelectionTrxType))
+		{
+			// refuse the whole export before anything is saved
+			final ImmutableMap<PaySelectionLineId, DirectDebitMandate> mandatesByLineId = resolveAndCheckMandates(paySelectionLines);
+			return createDirectDebitExports(paySelectionLines, mandatesByLineId);
+		}
+
+		final I_SEPA_Export header = createExportHeader(source);
 
 		if (isGroupTransactions && PaySelectionTrxType.CREDIT_TRANSFER.equals(paySelectionTrxType))
 		{
@@ -111,7 +151,153 @@ class CreateSEPAExportFromPaySelectionCommand
 			handleUngroupedPaySelectionLines(paySelectionLines, header);
 		}
 
-		return header;
+		return CreatedSEPAExports.builder()
+				.export(CreatedSEPAExport.withoutMandates(header))
+				.build();
+	}
+
+	private CreatedSEPAExports createDirectDebitExports(
+			@NonNull final List<I_C_PaySelectionLine> paySelectionLines,
+			@NonNull final ImmutableMap<PaySelectionLineId, DirectDebitMandate> mandatesByLineId)
+	{
+		// lines without a bank account are not exported; every other line has a checked mandate
+		final Map<DirectDebitMandateType, List<I_C_PaySelectionLine>> linesByScheme = new EnumMap<>(DirectDebitMandateType.class);
+		for (final I_C_PaySelectionLine line : paySelectionLines)
+		{
+			if (!hasBusinessPartnerBankAccount(line))
+			{
+				continue;
+			}
+			final DirectDebitMandate mandate = getMandate(mandatesByLineId, line);
+			linesByScheme.computeIfAbsent(mandate.getType(), scheme -> new ArrayList<>()).add(line);
+		}
+
+		final CreatedSEPAExports.CreatedSEPAExportsBuilder result = CreatedSEPAExports.builder();
+		if (linesByScheme.isEmpty())
+		{
+			// nothing to collect: one export without lines, as for a credit transfer
+			result.export(CreatedSEPAExport.withoutMandates(createExportHeader(source)));
+			return result.build();
+		}
+
+		final Set<DirectDebitMandate> usedMandates = new LinkedHashSet<>();
+		linesByScheme.forEach((scheme, lines) -> {
+			final I_SEPA_Export header = createExportHeader(source);
+			final ImmutableMap.Builder<SEPAExportLineId, DirectDebitMandate> mandatesBySepaExportLineId = ImmutableMap.builder();
+			for (final I_C_PaySelectionLine line : lines)
+			{
+				final DirectDebitMandate mandate = getMandate(mandatesByLineId, line);
+
+				final I_SEPA_Export_Line exportLine = createExportLine(line);
+				exportLine.setSEPA_Export(header);
+				exportLine.setSEPA_MandateRefNo(mandate.getReference());
+				sepaDocumentDAO.save(exportLine);
+
+				mandatesBySepaExportLineId.put(SEPAExportLineId.ofRepoId(exportLine.getSEPA_Export_Line_ID()), mandate);
+				usedMandates.add(mandate);
+			}
+
+			result.export(CreatedSEPAExport.builder()
+					.export(header)
+					.scheme(scheme)
+					.mandatesBySepaExportLineId(mandatesBySepaExportLineId.build())
+					.build());
+		});
+
+		final LocalDate collectionDate = getCollectionDate();
+		final ImmutableList<DirectDebitMandate> mandatesWithNewLastUse = usedMandates.stream()
+				.map(mandate -> mandate.withUsedOn(collectionDate))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(ImmutableList.toImmutableList());
+		mandateRepo.get().saveDateLastUsed(mandatesWithNewLastUse);
+
+		return result.build();
+	}
+
+	@NonNull
+	private static DirectDebitMandate getMandate(
+			@NonNull final ImmutableMap<PaySelectionLineId, DirectDebitMandate> mandatesByLineId,
+			@NonNull final I_C_PaySelectionLine line)
+	{
+		final DirectDebitMandate mandate = mandatesByLineId.get(toPaySelectionLineId(line));
+		if (mandate == null)
+		{
+			// the mandate check refuses every line with a bank account but without a mandate
+			throw new AdempiereException("No checked direct debit mandate for C_PaySelectionLine_ID=" + line.getC_PaySelectionLine_ID());
+		}
+		return mandate;
+	}
+
+	@NonNull
+	private static PaySelectionLineId toPaySelectionLineId(@NonNull final I_C_PaySelectionLine line)
+	{
+		return PaySelectionLineId.ofRepoId(PaySelectionId.ofRepoId(line.getC_PaySelection_ID()), line.getC_PaySelectionLine_ID());
+	}
+
+	/**
+	 * @return the pay date of the pay selection, as a date in the time zone of the export org
+	 */
+	@NonNull
+	private LocalDate getCollectionDate()
+	{
+		return TimeUtil.asLocalDate(source.getPayDate(), orgDAO.getTimeZone(OrgId.ofRepoId(source.getAD_Org_ID())));
+	}
+
+	/**
+	 * Loads the mandates of all bank accounts of the given lines at once, checks them and returns them per pay selection line.
+	 * Lines without a bank account are skipped (they are not exported).
+	 *
+	 * @throws AdempiereException if a line has no valid mandate
+	 */
+	private ImmutableMap<PaySelectionLineId, DirectDebitMandate> resolveAndCheckMandates(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
+	{
+		final OrgId exportOrgId = OrgId.ofRepoId(source.getAD_Org_ID());
+		final List<I_C_PaySelectionLine> linesWithBankAccount = paySelectionLines.stream()
+				.filter(this::hasBusinessPartnerBankAccount)
+				.collect(ImmutableList.toImmutableList());
+
+		final Set<BankAccountId> bankAccountIds = linesWithBankAccount.stream()
+				.map(line -> BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		final DirectDebitMandatesMap mandates = mandateRepo.get().getActiveMandates(bankAccountIds, exportOrgId);
+
+		final ImmutableSet<BPartnerId> partnerIds = linesWithBankAccount.stream()
+				.map(line -> BPartnerId.ofRepoId(line.getC_BPartner_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableMap<BPartnerId, I_C_BPartner> partnersById = Maps.uniqueIndex(
+				bpartnerDAO.retrieveByIds(partnerIds),
+				partner -> BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
+
+		final ImmutableMap.Builder<PaySelectionLineId, DirectDebitMandate> mandatesByLineId = ImmutableMap.builder();
+		final ImmutableList.Builder<DirectDebitMandateChecker.LineWithMandate> linesWithMandate = ImmutableList.builder();
+		for (final I_C_PaySelectionLine line : linesWithBankAccount)
+		{
+			final BankAccountId bankAccountId = BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID());
+			final DirectDebitMandate mandate = mandates.getActiveMandate(bankAccountId).orElse(null);
+			if (mandate != null)
+			{
+				mandatesByLineId.put(toPaySelectionLineId(line), mandate);
+			}
+
+			final I_C_BPartner partner = partnersById.get(BPartnerId.ofRepoId(line.getC_BPartner_ID()));
+			linesWithMandate.add(DirectDebitMandateChecker.LineWithMandate.builder()
+					.partnerValue(partner.getValue())
+					.partnerName(partner.getName())
+					.iban(extractIBAN(bankAccountDAO.getById(bankAccountId)))
+					.mandate(mandate)
+					.build());
+		}
+
+		final LocalDate collectionDate = getCollectionDate();
+		final DirectDebitMandateChecker checker = new DirectDebitMandateChecker();
+		final ImmutableList<DirectDebitMandateChecker.DirectDebitMandateProblem> problems = checker.check(linesWithMandate.build(), collectionDate);
+		if (!problems.isEmpty())
+		{
+			throw checker.toException(problems);
+		}
+
+		return mandatesByLineId.build();
 	}
 
 	private I_SEPA_Export_Line createExportLine(@NonNull final I_C_PaySelectionLine line)
@@ -182,7 +368,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		header.setSEPA_CreditorName(orgBP.getName());
 
 		final String sepaCreditorIdentifier = bpBankAccount.getSEPA_CreditorIdentifier();
-		if (SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.equals(sepaProtocol) && Check.isBlank(sepaCreditorIdentifier))
+		if (!sepaProtocol.isCreditTransfer() && Check.isBlank(sepaCreditorIdentifier))
 		{
 			throw new AdempiereException(ERR_C_BP_BankAccount_SEPA_CreditorIdentifierNotSet, bpBankAccount.toString());
 		}
