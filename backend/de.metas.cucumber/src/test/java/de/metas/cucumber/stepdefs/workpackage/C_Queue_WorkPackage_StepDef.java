@@ -25,9 +25,11 @@ package de.metas.cucumber.stepdefs.workpackage;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.*;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.async.spi.IWorkpackageProcessor2;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -49,6 +51,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -56,6 +59,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.LinkedHashSet;
@@ -74,6 +78,8 @@ public class C_Queue_WorkPackage_StepDef
 	private static final Logger logger = LogManager.getLogger(C_Queue_WorkPackage_StepDef.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
@@ -420,7 +426,7 @@ public class C_Queue_WorkPackage_StepDef
 
 		if (claimedWorkPackageIds.contains(workPackageId) || tryClaim(workPackageId))
 		{
-			processClaimedWorkPackage(workPackageId, processorShortName);
+			processClaimedWorkPackage(workPackageId, processorShortName, ITrx.TRXNAME_None, false);
 		}
 		else
 		{
@@ -431,12 +437,126 @@ public class C_Queue_WorkPackage_StepDef
 	}
 
 	/**
+	 * Holds every NEW {@code C_Queue_WorkPackage} of the given workpackage processor: it is inserted already claimed
+	 * ({@code LockedAt = }{@link #STEP_CLAIM_LOCKED_AT}), so the background queue processor does not run it and a
+	 * scenario can force a specific interleaving of workpackages. Workpackages created before this step are unaffected.
+	 * The hold lasts until {@link #release_held_workpackages(String)} or the end of the scenario.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given new "GenerateInOutFromShipmentSchedules" workpackages are held
+	 * </pre>
+	 */
+	@And("^new \"(.*)\" workpackages are held$")
+	public void hold_new_workpackages(@NonNull final String processorShortName)
+	{
+		final ImmutableSet<Integer> packageProcessorIds = resolveExistingPackageProcessorIds(processorShortName);
+		C_Queue_WorkPackage_HoldInterceptor.hold(packageProcessorIds, STEP_CLAIM_LOCKED_AT);
+	}
+
+	/**
+	 * Processes the oldest held workpackage of the processor exactly once, with the processor and the
+	 * {@code Processed=Y} update sharing ONE transaction (as {@code WorkpackageProcessorTask} does), unlike
+	 * {@link #process_next_workpackage(String)} which runs the processor outside a transaction.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction
+	 * </pre>
+	 */
+	@And("^the held \"(.*)\" workpackage is processed in one transaction$")
+	public void process_held_workpackage_in_one_transaction(@NonNull final String processorShortName)
+	{
+		final I_C_Queue_WorkPackage workPackage = retrieveOldestPendingWorkPackage(processorShortName)
+				.orElseThrow(() -> new AdempiereException("No pending C_Queue_WorkPackage found for processor")
+						.appendParametersToMessage()
+						.setParameter("processorShortName", processorShortName));
+		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID());
+		if (!claimedWorkPackageIds.contains(workPackageId) && !STEP_CLAIM_LOCKED_AT.equals(workPackage.getLockedAt()))
+		{
+			throw new AdempiereException("The oldest pending C_Queue_WorkPackage of the processor is not held (not claimed by a step)")
+					.appendParametersToMessage()
+					.setParameter("processorShortName", processorShortName)
+					.setParameter("C_Queue_WorkPackage_ID", workPackageId.getRepoId())
+					.setParameter("LockedAt", workPackage.getLockedAt());
+		}
+		claimedWorkPackageIds.add(workPackageId);
+
+		trxManager.runInNewTrx(localTrxName -> processClaimedWorkPackage(workPackageId, processorShortName, localTrxName, true));
+	}
+
+	/**
+	 * Stops holding new workpackages of the processor and unclaims its held workpackages, so the background queue
+	 * processor picks them up now. {@link #releaseClaimedWorkPackages()} still releases everything at scenario end.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And held "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are released
+	 * </pre>
+	 */
+	@And("^held \"(.*)\" workpackages are released$")
+	public void release_held_workpackages(@NonNull final String processorShortName)
+	{
+		final ImmutableSet<Integer> packageProcessorIds = resolveExistingPackageProcessorIds(processorShortName);
+		C_Queue_WorkPackage_HoldInterceptor.stopHolding(packageProcessorIds);
+		unclaimUnprocessedWorkPackages(packageProcessorIds);
+	}
+
+	@NonNull
+	private ImmutableSet<Integer> resolveExistingPackageProcessorIds(@NonNull final String processorShortName)
+	{
+		final ImmutableSet<Integer> packageProcessorIds = workPackageQueueUtil.resolvePackageProcessorIds(processorShortName);
+		if (packageProcessorIds.isEmpty())
+		{
+			throw new AdempiereException("No active C_Queue_PackageProcessor found")
+					.appendParametersToMessage()
+					.setParameter("processorShortName", processorShortName);
+		}
+		return packageProcessorIds;
+	}
+
+	private void unclaimUnprocessedWorkPackages(@NonNull final Set<Integer> packageProcessorIds)
+	{
+		if (packageProcessorIds.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSet<Integer> workPackageIds = ImmutableSet.copyOf(queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
+				.addInArrayFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID, packageProcessorIds)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, STEP_CLAIM_LOCKED_AT)
+				.create()
+				.listIds());
+		if (workPackageIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
+				.addInArrayFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, workPackageIds)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, null)
+				.execute();
+		workPackageIds.forEach(id -> claimedWorkPackageIds.remove(QueueWorkPackageId.ofRepoId(id)));
+	}
+
+	/**
 	 * Unclaims the workpackages {@link #process_next_workpackage(String)} claimed but did not process, so the
 	 * background queue processor can run them after the scenario.
 	 */
 	@After
 	public void releaseClaimedWorkPackages()
 	{
+		// stop every hold and unclaim what it held, so nothing stays claimed (or newly claimed) after the scenario
+		final ImmutableSet<Integer> heldPackageProcessorIds = C_Queue_WorkPackage_HoldInterceptor.getHeldPackageProcessorIds();
+		C_Queue_WorkPackage_HoldInterceptor.stopHolding(heldPackageProcessorIds);
+		unclaimUnprocessedWorkPackages(heldPackageProcessorIds);
+
 		if (claimedWorkPackageIds.isEmpty())
 		{
 			return;
@@ -486,14 +606,25 @@ public class C_Queue_WorkPackage_StepDef
 				.forEach(this::tryClaim);
 	}
 
-	private void processClaimedWorkPackage(@NonNull final QueueWorkPackageId workPackageId, @NonNull final String processorShortName)
+	private void processClaimedWorkPackage(
+			@NonNull final QueueWorkPackageId workPackageId,
+			@NonNull final String processorShortName,
+			@Nullable final String trxName,
+			final boolean prepareLikeWorkpackageProcessorTask)
 	{
 		final I_C_Queue_WorkPackage workPackage = retrieveWorkPackage(workPackageId);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
 		final IWorkpackageProcessor processor = workpackageProcessorFactory.getWorkpackageProcessor(ctx, workPackage.getC_Queue_PackageProcessor_ID());
+		if (prepareLikeWorkpackageProcessorTask && processor instanceof IWorkpackageProcessor2)
+		{
+			// as WorkpackageProcessorTask does before it calls the processor; many processors read these
+			final IWorkpackageProcessor2 processor2 = (IWorkpackageProcessor2)processor;
+			processor2.setParameters(workpackageParamDAO.retrieveWorkpackageParams(workPackage));
+			processor2.setC_Queue_WorkPackage(workPackage);
+		}
 
-		final IWorkpackageProcessor.Result result = processor.processWorkPackage(workPackage, ITrx.TRXNAME_None);
+		final IWorkpackageProcessor.Result result = processor.processWorkPackage(workPackage, trxName);
 		assertThat(result)
 				.as("Result of processing C_Queue_WorkPackage_ID=%s with processor %s", workPackageId.getRepoId(), processorShortName)
 				.isEqualTo(IWorkpackageProcessor.Result.SUCCESS);
@@ -528,7 +659,7 @@ public class C_Queue_WorkPackage_StepDef
 
 		if (claimedByStep.get())
 		{
-			processClaimedWorkPackage(workPackageId, processorShortName);
+			processClaimedWorkPackage(workPackageId, processorShortName, ITrx.TRXNAME_None, false);
 			return;
 		}
 

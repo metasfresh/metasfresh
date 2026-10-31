@@ -1208,6 +1208,55 @@ public class M_ShipmentSchedule_StepDef
 		saveRecord(schedule);
 	}
 
+	/**
+	 * Sets {@code M_ShipmentSchedule.C_Async_Batch_ID} with a direct SQL update — no model interceptor runs, the
+	 * schedule is not invalidated and {@code HeaderAggregationKey} stays untouched — then reloads the schedule in the
+	 * identifier table. It simulates a concurrent writer (e.g. an async-batch assignment by another transaction).
+	 *
+	 * @param asyncBatchId {@code null} or the numeric {@code C_Async_Batch_ID}
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And C_Async_Batch_ID of M_ShipmentSchedule schedule_1 is set to null by direct update
+	 * </pre>
+	 */
+	@And("^C_Async_Batch_ID of M_ShipmentSchedule (.*) is set to (null|.*) by direct update$")
+	public void set_C_Async_Batch_ID_by_direct_update(
+			@NonNull final String shipmentScheduleIdentifier,
+			@NonNull final String asyncBatchIdStr)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		final Integer asyncBatchId;
+		if ("null".equals(asyncBatchIdStr))
+		{
+			asyncBatchId = null;
+		}
+		else
+		{
+			try
+			{
+				asyncBatchId = Integer.valueOf(asyncBatchIdStr.trim());
+			}
+			catch (final NumberFormatException e)
+			{
+				throw new AdempiereException("C_Async_Batch_ID must be 'null' or a numeric id")
+						.appendParametersToMessage()
+						.setParameter("value", asyncBatchIdStr);
+			}
+		}
+
+		final int updatedCount = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, schedule.getM_ShipmentSchedule_ID())
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(COLUMNNAME_C_Async_Batch_ID, asyncBatchId)
+				.execute();
+		assertThat(updatedCount).as("Updated M_ShipmentSchedule rows").isEqualTo(1);
+
+		shipmentScheduleTable.putOrReplace(shipmentScheduleIdentifier, InterfaceWrapperHelper.load(schedule.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class));
+	}
+
 	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
 	{
 		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
