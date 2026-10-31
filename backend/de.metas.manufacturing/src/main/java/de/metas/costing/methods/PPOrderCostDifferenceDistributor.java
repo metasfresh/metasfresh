@@ -125,7 +125,10 @@ public class PPOrderCostDifferenceDistributor
 				OrgId.ofRepoId(order.getAD_Org_ID()));
 	}
 
-	public void distribute(@NonNull final PPOrderId orderId)
+	/**
+	 * @return {@code true} if and only if it created the distribution and closed the order
+	 */
+	public boolean distribute(@NonNull final PPOrderId orderId)
 	{
 		final I_PP_Order order = ppOrdersRepo.getById(orderId);
 
@@ -136,13 +139,13 @@ public class PPOrderCostDifferenceDistributor
 		final CostAmount residual = getResidualCostForOrderOrNull(orderId, acctSchemaId);
 		if (residual == null || residual.isZero())
 		{
-			return;
+			return false;
 		}
 
 		// Repeated from the process precondition so an API caller cannot bypass it.
 		if (!hasInboundCosts(order))
 		{
-			return;
+			return false;
 		}
 
 		costCollectorsService.createCostDifferenceDistribution(order, SystemTime.asZonedDateTime());
@@ -150,6 +153,7 @@ public class PPOrderCostDifferenceDistributor
 		// Closing is part of discharging: it stops a further issue or receipt from re-opening the residual that
 		// was just posted away, and withdraws the action from the order.
 		ppOrdersService.closeOrder(orderId);
+		return true;
 	}
 
 	/**
