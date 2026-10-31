@@ -263,7 +263,7 @@ class InvoiceCandBLSimpleTest
 	@Test
 	void updateProcessedFlag_deliveryClosed_delivered_notProcessed()
 	{
-		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().icQtyDelivered(ONE).olQtyDelivered(ONE));
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().icQtyDelivered(ONE));
 
 		invoiceCandBL.updateProcessedFlag(ic);
 
@@ -306,11 +306,11 @@ class InvoiceCandBLSimpleTest
 		assertThat(ic.getProcessed_Override()).as("Processed_Override").isEqualTo("N");
 	}
 
-	/** An explicit close (Processed_Override=Y) keeps resetting the approval for invoicing. */
+	/** An explicit close (Processed_Override=Y) keeps resetting the approval for invoicing, also when the rule would apply (delivery closed, nothing delivered). */
 	@Test
 	void updateProcessedFlag_processedOverrideY_resetsApprovalForInvoicing()
 	{
-		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().deliveryClosed(false).approvalForInvoicing(true).processedOverride("Y"));
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().approvalForInvoicing(true).processedOverride("Y"));
 
 		invoiceCandBL.updateProcessedFlag(ic);
 
