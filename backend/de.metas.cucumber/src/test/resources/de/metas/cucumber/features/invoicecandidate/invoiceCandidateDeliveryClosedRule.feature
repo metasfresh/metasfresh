@@ -259,14 +259,14 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
     Given for this scenario only, set sys config boolean value true for sys config C_Invoice_Candidate_Close_IsToClear
     And metasfresh contains C_UOMs:
       | Identifier  | X12DE355 | Name     | UOMSymbol | StdPrecision | CostingPrecision |
-      | flatfee_uom | MEAL     | Meal_7d  | M         | 2            | 2                |
+      | flatfee_uom | MEAL     | Meal_7d_@Date@ | M         | 2            | 2                |
     And metasfresh contains M_Product_Categories:
       | Identifier     | Name           | Value          |
-      | flatfee_cat    | flatfee_cat_7d | flatfee_cat_7d |
+      | flatfee_cat    | flatfee_cat_7d_@Date@ | flatfee_cat_7d_@Date@ |
     And metasfresh contains M_Products:
       | Identifier   | Name         | ProductType | OPT.X12DE355 | OPT.M_Product_Category_ID.Identifier |
-      | flatfee_prod | flatfee_prod | S           | MEAL         |                                      |
-      | product3     | product3     |             | PCE          | flatfee_cat                          |
+      | flatfee_prod | flatfee_prod_@Date@ | S           | MEAL         |                                      |
+      | product3     | product3_@Date@ |             | PCE          | flatfee_cat                          |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | PLV                    | flatfee_prod | 1.0      | MEAL              | Normal                        |
@@ -280,13 +280,13 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
     And complete inventory with inventoryIdentifier 'inventory3'
     And metasfresh contains C_BPartners without locations:
       | Identifier   | Name          | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | flatCustomer | flatCustomer7d | N            | Y              | PS                            |
+      | flatCustomer | flatCustomer7d_@Date@ | N            | Y              | PS                            |
     And metasfresh contains C_BPartner_Locations:
       | Identifier         | GLN        | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
-      | flatCustomerLoc    | Dummy_GLN7 | flatCustomer             | true                | true         |
+      | flatCustomerLoc    | Dummy_GLN7_@Date@ | flatCustomer             | true                | true         |
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier | Name         | Type_Conditions | OPT.Type_Flatrate | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_UOM_ID.Identifier |
-      | conditions | flatfee_7d   | FlatFee         | RPTD              | flatfee_prod                         | flatfee_uom             |
+      | conditions | flatfee_7d_@Date@ | FlatFee         | RPTD              | flatfee_prod                         | flatfee_uom             |
     And metasfresh contains C_Flatrate_Matchings:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | SeqNo | OPT.M_Product_Category_ID.Identifier |
       | matching   | conditions                          | 10    | flatfee_cat                          |
