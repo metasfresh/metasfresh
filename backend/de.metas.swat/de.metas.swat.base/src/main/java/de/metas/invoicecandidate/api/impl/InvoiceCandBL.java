@@ -1992,7 +1992,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	/**
-	 * @return {@code true} if the candidate's quantity to invoice can only come from a delivery (see {@code InvoiceCandidate.computeInvoicableQtys}),
+	 * @return {@code true} if the candidate's quantity to invoice can only come from a delivery (see {@code InvoiceCandidate.computeToInvoiceExclOverride}),
 	 * so with its delivery closed and nothing delivered, it can never be invoiced.
 	 */
 	private boolean isQtyToInvoiceBasedOnDeliveredQty(@NonNull final I_C_Invoice_Candidate ic)
