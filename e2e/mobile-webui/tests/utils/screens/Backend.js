@@ -75,6 +75,89 @@ export const Backend = {
     }),
 
     /**
+     * Set AD_WF_Node.IsActive / PP_AlwaysAvailableToUser (omit = unchanged; alwaysAvailableToUser '' clears it).
+     * Returns the previous values, shaped so they can be passed back to restore the node.
+     *
+     * @returns {Promise<{adWfNodeId: number, isActive: boolean, alwaysAvailableToUser: string}>}
+     */
+    setWFNodeFlags: async ({ adWfNodeId, isActive, alwaysAvailableToUser }) => await test.step(`Backend: set WF node ${adWfNodeId} flags`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/wfNode/flags`, {
+            data: { adWfNodeId, isActive, alwaysAvailableToUser },
+            headers: { 'Content-Type': 'application/json' },
+        });
+        const responseBody = await response.json();
+        assertNoErrors({ responseBody });
+
+        // null (flag was empty) -> '' so that passing the result back clears the flag again
+        return { ...responseBody, alwaysAvailableToUser: responseBody.alwaysAvailableToUser ?? '' };
+    }),
+
+    /**
+     * Switch C_AcctSchema.CostingMethod of the test client and activate the matching cost elements.
+     * Returns the previous state; pass it to restoreAcctSchemaCostingMethod in afterEach.
+     * Production costing is MovingAverageInvoice, code 'M' (the E2E seed uses 'S').
+     *
+     * @param {string} code - e.g. 'M'
+     * @returns {Promise<{previousCostingMethod: string, activatedCostElementIds: number[]}>}
+     */
+    setAcctSchemaCostingMethod: async (code) => await test.step(`Backend: set acct schema costing method ${code}`, async () => {
+        return await postAcctSchemaCostingMethod({ costingMethod: code });
+    }),
+
+    /**
+     * Undo setAcctSchemaCostingMethod: puts back the costing method and deactivates the cost elements it activated.
+     *
+     * A no-op for an undefined/null state, so that an afterEach after a failed set does not mask the original failure.
+     *
+     * @param {{previousCostingMethod: string, activatedCostElementIds: number[]}} [previousState] - the result of setAcctSchemaCostingMethod
+     */
+    restoreAcctSchemaCostingMethod: async (previousState) => {
+        if (!previousState) {
+            return;
+        }
+        const { previousCostingMethod, activatedCostElementIds } = previousState;
+        await test.step(`Backend: restore acct schema costing method ${previousCostingMethod}`, async () => {
+            await postAcctSchemaCostingMethod({ costingMethod: previousCostingMethod, deactivateCostElementIds: activatedCostElementIds ?? [] });
+        });
+    },
+
+    /**
+     * Noon of yesterday / today / tomorrow in the SERVER's time zone (ISO instants), the days that server-side
+     * "today" filters use. Use these instead of the test machine's clock, whose time zone may differ.
+     *
+     * @returns {Promise<{zoneId: string, yesterdayNoon: string, todayNoon: string, tomorrowNoon: string}>}
+     */
+    getServerDates: async () => await test.step(`Backend: get server dates`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/serverDates`, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+        const responseBody = await response.json();
+        assertNoErrors({ responseBody });
+        return responseBody;
+    }),
+
+    /**
+     * Set PP_Order.DateStartSchedule of an existing manufacturing order.
+     *
+     * @param {string} args.documentNo - the order's DocumentNo
+     * @param {string} args.dateStartSchedule - ISO date-time, e.g. '2026-11-02T08:00:00+01:00'
+     */
+    setManufacturingOrderDateStartSchedule: async ({ documentNo, dateStartSchedule }) => await test.step(`Backend: set start date of PP order ${documentNo}`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/ppOrder/dateStartSchedule`, {
+            data: { ppOrder: documentNo, dateStartSchedule },
+            headers: { 'Content-Type': 'application/json' },
+        });
+        if (!response.ok()) {
+            const responseBody = await response.json();
+            assertNoErrors({ responseBody });
+            throw new Error(`setManufacturingOrderDateStartSchedule failed: ${response.status()}`);
+        }
+    }),
+
+    /**
      * Resolve a masterdata identifier (e.g. `"lu1"`) to the underlying handling-unit's
      * global QR code string. Used by tests that need to scan an HU which was created
      * indirectly (typically by a picking flow) and therefore has no QR code under
@@ -224,6 +307,17 @@ export const Backend = {
 //
 
 let _backendBaseUrl = process.env.BACKEND_BASE_URL ? process.env.BACKEND_BASE_URL + '/api/v2' : null;
+
+const postAcctSchemaCostingMethod = async (data) => {
+    const backendBaseUrl = await getBackendBaseUrl();
+    const response = await page.request.post(`${backendBaseUrl}/frontendTesting/acctSchema/costingMethod`, {
+        data,
+        headers: { 'Content-Type': 'application/json' },
+    });
+    const responseBody = await response.json();
+    assertNoErrors({ responseBody });
+    return responseBody;
+};
 
 export const getBackendBaseUrl = async () => {
     if (!_backendBaseUrl) {

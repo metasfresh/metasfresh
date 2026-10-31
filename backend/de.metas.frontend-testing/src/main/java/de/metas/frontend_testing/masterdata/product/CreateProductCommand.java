@@ -5,6 +5,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostingMethod;
+import de.metas.costing.CurrentCostQuery;
+import de.metas.costing.CurrentCost;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -80,6 +86,7 @@ public class CreateProductCommand
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	@NonNull private final ProductRepository productRepository; // for C_BPartner_Product
 	@NonNull private final ICurrentCostsRepository currentCostsRepository; // for isSkipDefaultCosts
 
@@ -100,6 +107,7 @@ public class CreateProductCommand
 		createBPartnerProducts(productId);
 		createBOM(productRecord);
 		deleteDefaultCostsIfRequested(productRecord);
+		setCurrentCostPriceIfRequested(productRecord);
 
 		return JsonCreateProductResponse.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
@@ -182,6 +190,10 @@ public class CreateProductCommand
 		if (request.getBestBeforeDays() != null)
 		{
 			productRecord.setBestBeforeDays(request.getBestBeforeDays());
+		}
+		if (request.getCoProductCostDistributionPercent() != null)
+		{
+			productRecord.setCoProductCostDistributionPercent(request.getCoProductCostDistributionPercent());
 		}
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
@@ -534,6 +546,62 @@ public class CreateProductCommand
 
 		currentCostsRepository.deleteForProduct(productRecord);
 		logger.info("Deleted default M_Cost rows for product {} (isSkipDefaultCosts=true)", productRecord.getValue());
+	}
+
+	/**
+	 * Sets {@code M_Cost.CurrentCostPrice} of the costing-method element of every accounting schema, so that
+	 * a spec can give a finished good the cost it has on a real instance (e.g. to test the settlement of a production
+	 * order against its WIP). Creates the {@code M_Cost} rows first when the product save did not, so the price
+	 * cannot be silently dropped.
+	 */
+	private void setCurrentCostPriceIfRequested(@NonNull final I_M_Product productRecord)
+	{
+		final BigDecimal currentCostPrice = request.getCurrentCostPrice();
+		if (currentCostPrice == null)
+		{
+			return;
+		}
+
+		final ClientId clientId = ClientId.ofRepoId(productRecord.getAD_Client_ID());
+		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
+
+		final List<AcctSchema> acctSchemas = acctSchemaDAO.getAllByClient(clientId);
+		if (acctSchemas.isEmpty())
+		{
+			throw new AdempiereException("No accounting schema found for " + clientId + ", so currentCostPrice cannot be set");
+		}
+
+		for (final AcctSchema acctSchema : acctSchemas)
+		{
+			final CostingMethod costingMethod = acctSchema.getCosting().getCostingMethod();
+			final CurrentCostQuery query = CurrentCostQuery.builder().productId(productId).acctSchemaId(acctSchema.getId()).build();
+
+			List<CurrentCost> currentCosts = filterByCostingMethod(currentCostsRepository.list(query), costingMethod);
+			if (currentCosts.isEmpty())
+			{
+				currentCostsRepository.createDefaultProductCosts(productRecord);
+				currentCosts = filterByCostingMethod(currentCostsRepository.list(query), costingMethod);
+			}
+			if (currentCosts.isEmpty())
+			{
+				throw new AdempiereException("No M_Cost of costing method " + costingMethod + " found for product " + productRecord.getValue() + " and " + acctSchema.getId()
+						+ ", so currentCostPrice cannot be set");
+			}
+
+			for (final CurrentCost currentCost : currentCosts)
+			{
+				currentCost.setOwnCostPrice(CostAmount.of(currentCostPrice, currentCost.getCurrencyId()));
+				currentCostsRepository.save(currentCost);
+			}
+		}
+		logger.info("Set M_Cost.CurrentCostPrice={} for product {}", currentCostPrice, productRecord.getValue());
+	}
+
+	private static List<CurrentCost> filterByCostingMethod(@NonNull final List<CurrentCost> currentCosts, @NonNull final CostingMethod costingMethod)
+	{
+		return currentCosts.stream()
+				.filter(currentCost -> currentCost.getCostElement().isMaterialCostingMethod(costingMethod))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private void renamePreviousEAN13ProductCodes()
