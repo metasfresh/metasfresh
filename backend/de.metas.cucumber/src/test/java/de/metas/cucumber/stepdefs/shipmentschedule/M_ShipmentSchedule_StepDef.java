@@ -1220,7 +1220,7 @@ public class M_ShipmentSchedule_StepDef
 	 * And C_Async_Batch_ID of M_ShipmentSchedule schedule_1 is set to null by direct update
 	 * </pre>
 	 */
-	@And("^C_Async_Batch_ID of M_ShipmentSchedule (.*) is set to (null|.*) by direct update$")
+	@And("^C_Async_Batch_ID of M_ShipmentSchedule (.*) is set to (.*) by direct update$")
 	public void set_C_Async_Batch_ID_by_direct_update(
 			@NonNull final String shipmentScheduleIdentifier,
 			@NonNull final String asyncBatchIdStr)

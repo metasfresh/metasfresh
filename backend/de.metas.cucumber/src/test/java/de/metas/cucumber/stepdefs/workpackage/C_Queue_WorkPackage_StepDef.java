@@ -424,9 +424,17 @@ public class C_Queue_WorkPackage_StepDef
 						.setParameter("processorShortName", processorShortName));
 		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID());
 
+		if (STEP_CLAIM_LOCKED_AT.equals(workPackage.getLockedAt()))
+		{
+			claimedWorkPackageIds.add(workPackageId); // held by a hold step: already claimed with our value
+		}
+
 		if (claimedWorkPackageIds.contains(workPackageId) || tryClaim(workPackageId))
 		{
-			processClaimedWorkPackage(workPackageId, processorShortName, ITrx.TRXNAME_None, false);
+			// a held processor is prepared like WorkpackageProcessorTask does (GenerateInOutFromShipmentSchedules needs it);
+			// processors that are not held run exactly as before
+			final boolean held = C_Queue_WorkPackage_HoldInterceptor.getHeldPackageProcessorIds().contains(workPackage.getC_Queue_PackageProcessor_ID());
+			processClaimedWorkPackage(workPackageId, processorShortName, ITrx.TRXNAME_None, held);
 		}
 		else
 		{
@@ -452,6 +460,7 @@ public class C_Queue_WorkPackage_StepDef
 	public void hold_new_workpackages(@NonNull final String processorShortName)
 	{
 		final ImmutableSet<Integer> packageProcessorIds = resolveExistingPackageProcessorIds(processorShortName);
+		unclaimStaleClaims();
 		C_Queue_WorkPackage_HoldInterceptor.hold(packageProcessorIds, STEP_CLAIM_LOCKED_AT);
 	}
 
@@ -485,6 +494,10 @@ public class C_Queue_WorkPackage_StepDef
 		claimedWorkPackageIds.add(workPackageId);
 
 		trxManager.runInNewTrx(localTrxName -> processClaimedWorkPackage(workPackageId, processorShortName, localTrxName, true));
+
+		assertThat(retrieveWorkPackage(workPackageId).isProcessed())
+				.as("Processed of C_Queue_WorkPackage_ID=%s of processor %s after the one-transaction run", workPackageId.getRepoId(), processorShortName)
+				.isTrue();
 	}
 
 	/**
@@ -516,6 +529,37 @@ public class C_Queue_WorkPackage_StepDef
 					.setParameter("processorShortName", processorShortName);
 		}
 		return packageProcessorIds;
+	}
+
+	/**
+	 * Unclaims unprocessed workpackages still carrying {@link #STEP_CLAIM_LOCKED_AT} that this scenario does not track
+	 * (e.g. committed late by a transaction that was open when {@link #releaseClaimedWorkPackages()} ran, or left by an
+	 * aborted run), so they cannot block later scenarios. Workpackages of currently held processors are kept.
+	 */
+	private void unclaimStaleClaims()
+	{
+		final ImmutableSet<Integer> heldPackageProcessorIds = C_Queue_WorkPackage_HoldInterceptor.getHeldPackageProcessorIds();
+		final ImmutableSet<Integer> staleWorkPackageIds = queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, STEP_CLAIM_LOCKED_AT)
+				.create()
+				.list(I_C_Queue_WorkPackage.class)
+				.stream()
+				.filter(wp -> !heldPackageProcessorIds.contains(wp.getC_Queue_PackageProcessor_ID()))
+				.map(I_C_Queue_WorkPackage::getC_Queue_WorkPackage_ID)
+				.filter(id -> !claimedWorkPackageIds.contains(QueueWorkPackageId.ofRepoId(id)))
+				.collect(ImmutableSet.toImmutableSet());
+		if (staleWorkPackageIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
+				.addInArrayFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, staleWorkPackageIds)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, null)
+				.execute();
 	}
 
 	private void unclaimUnprocessedWorkPackages(@NonNull final Set<Integer> packageProcessorIds)
