@@ -35,5 +35,8 @@ public class JsonPurchaseOrderCreateRequest
 	{
 		@NonNull Identifier product;
 		@NonNull BigDecimal qty;
+
+		/** identifier of the TU of a created packing instruction; the order line (and so its receipt) is packed that way */
+		@Nullable Identifier piItemProduct;
 	}
 }
