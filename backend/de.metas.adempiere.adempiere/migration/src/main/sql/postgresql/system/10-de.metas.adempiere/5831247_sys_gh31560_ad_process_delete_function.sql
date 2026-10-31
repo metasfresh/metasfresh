@@ -24,22 +24,24 @@ DROP FUNCTION IF EXISTS ad_process_delete(numeric)
  * Tables or columns missing on a database are skipped.
  * AD_Process_Access (role grants) and AD_Process_Stats rows of the process (no FK) are deleted as well.
  *
- * Backups: the affected rows - and only those - are copied to backup.<first 20 chars of the table>_bkp_<timestamp>_adpdel_<AD_Process_ID>
+ * Backups: the affected rows - and only those - are copied (a re-pointed row: only its key and the old reference) to backup.<first 20 chars of the table>_bkp_<timestamp>_adpdel_<AD_Process_ID>
  * (registered in backup.backup_tables) before anything is changed, for
  *   - the tables marked BACKUP in the policy: business tables (AD_Archive, C_Printing_Queue, C_Queue_Block, PA_Report,
  *     M_HU_Label_Config, M_HU_Process, ExternalSystem_Config_ScriptedExportConversion, Leichmehl_PluFile_ConfigGroup)
  *     and operator-configured AD rows (AD_PrinterRouting, AD_MailConfig);
  *   - AD_Scheduler (with its AD_Scheduler_Para and AD_SchedulerRecipient rows) and AD_Process_Access.
- * backup_table() is not used because it always copies the whole table (AD_Archive holds the archived documents).
+ * backup_table() is not used because it always copies the whole table (AD_Archive holds the archived documents);
+ * backup_records_selective() is not used because its backup name (<table>_bkp_<seconds>) collides when two processes
+ * are deleted within the same second and exceeds 63 characters for long table names, and it cannot copy only some columns.
  * A table without affected rows gets no backup table. The name stays within PostgreSQL's 63-character identifier
  * limit and is unique per process, also when several processes are deleted in one transaction.
  * In addition, for every policy table the IDs of the changed rows (the 100 lowest) are written to the log via RAISE NOTICE.
  *
  * Before changing anything, the function refuses (raises an exception) when
  *   - p_AD_Process_ID is the placeholder process itself, or the placeholder does not exist;
- *   - a row references the process through a non-cascading FK that the policy does not handle
- *     (e.g. a customer table, an FK whose delete rule differs from the policy above, or a policy table without its
- *     <table>_id key column);
+ *   - a row references the process through an FK that the policy does not handle - with any delete rule, so also
+ *     a cascading or set-null FK of e.g. a customer table - or through an FK whose delete rule differs from the policy
+ *     above, or the policy table lacks its <table>_id key column;
  *   - a row that would be deleted - by this function or by an FK cascade, followed through up to 6 levels of cascading
  *     FKs - is referenced through a non-cascading FK (e.g. AD_PInstance runs of a cascaded AD_Scheduler,
  *     PP_Order_Node rows of a deleted AD_WF_Node, AD_Note rows of a cascaded AD_WF_Activity).
@@ -111,24 +113,28 @@ BEGIN
     -- Refusal checks: all of them run before the first change.
     --
 
-    -- 1. Rows that reference the process through a non-cascading FK which the policy does not handle
+    -- 1. Rows that reference the process through an FK which the policy does not handle - whatever the FK's delete rule,
+    --    so that neither a non-cascading FK fails at COMMIT nor a cascading / set-null FK changes rows without a backup.
+    --    An FK is handled when the policy names it with an action this function applies (and the table has its key column),
+    --    or names it as left to the FK and the FK's delete rule is indeed CASCADE resp. SET NULL.
     FOR v_fk IN
         SELECT k.conrelid::regclass::text AS ref_table, a.attname::text AS ref_column, k.conname::text AS fk_name
         FROM pg_constraint k
                  JOIN pg_attribute a ON a.attrelid = k.conrelid AND a.attnum = k.conkey[1]
         WHERE k.contype = 'f'
           AND k.confrelid = 'ad_process'::regclass
-          AND k.confdeltype IN ('a', 'r') -- NO ACTION, RESTRICT
           AND NOT EXISTS (SELECT 1
                           FROM UNNEST(c_policy) e
                           WHERE split_part(e, '.', 1) = k.conrelid::regclass::text
                             AND split_part(split_part(e, ':', 1), '.', 2) = a.attname::text
-                            AND split_part(e, ':', 2) IN ('DELETE', 'SET_NULL', 'REPOINT')
-                            AND EXISTS (SELECT 1 -- the apply loop below skips a table without its key column
-                                        FROM information_schema.columns c
-                                        WHERE c.table_schema = 'public'
-                                          AND c.table_name = split_part(e, '.', 1)
-                                          AND c.column_name = split_part(e, '.', 1) || '_id'))
+                            AND ((split_part(e, ':', 2) IN ('DELETE', 'SET_NULL', 'REPOINT')
+                                AND EXISTS (SELECT 1 -- the apply loop below skips a table without its key column
+                                            FROM information_schema.columns c
+                                            WHERE c.table_schema = 'public'
+                                              AND c.table_name = split_part(e, '.', 1)
+                                              AND c.column_name = split_part(e, '.', 1) || '_id'))
+                                OR (split_part(e, ':', 2) = 'FK_CASCADE' AND k.confdeltype = 'c')
+                                OR (split_part(e, ':', 2) = 'FK_SET_NULL' AND k.confdeltype = 'n')))
         LOOP
             EXECUTE format('SELECT count(*) FROM %s WHERE %I = $1', v_fk.ref_table, v_fk.ref_column) INTO v_count USING p_AD_Process_ID;
             IF v_count > 0 THEN
@@ -192,7 +198,14 @@ BEGIN
     -- Back up the affected rows (only those) of the tables that need a backup
     --
     FOR v_backup IN
-        SELECT split_part(e, '.', 1) AS table_name, format('%I = %L', split_part(split_part(e, ':', 1), '.', 2), p_AD_Process_ID) AS filter
+        SELECT split_part(e, '.', 1)                                                            AS table_name,
+               format('%I = %L', split_part(split_part(e, ':', 1), '.', 2), p_AD_Process_ID)     AS filter,
+               -- a re-pointed row stays in place: its key and the old reference are enough to restore it
+               CASE
+                   WHEN split_part(e, ':', 2) = 'REPOINT'
+                       THEN format('%I, %I', split_part(e, '.', 1) || '_id', split_part(split_part(e, ':', 1), '.', 2))
+                       ELSE '*'
+               END                                                                              AS columns
         FROM UNNEST(c_policy) e
         WHERE split_part(e, ':', 3) = 'BACKUP'
           AND EXISTS (SELECT 1
@@ -201,7 +214,7 @@ BEGIN
                         AND c.table_name = split_part(e, '.', 1)
                         AND c.column_name = split_part(split_part(e, ':', 1), '.', 2))
         UNION ALL
-        SELECT x.table_name, x.filter
+        SELECT x.table_name, x.filter, '*'
         FROM (VALUES ('ad_scheduler', format('ad_process_id = %L', p_AD_Process_ID)),
                      ('ad_scheduler_para', format('ad_scheduler_id IN (SELECT s.ad_scheduler_id FROM ad_scheduler s WHERE s.ad_process_id = %L)', p_AD_Process_ID)),
                      ('ad_schedulerrecipient', format('ad_scheduler_id IN (SELECT s.ad_scheduler_id FROM ad_scheduler s WHERE s.ad_process_id = %L)', p_AD_Process_ID)),
@@ -211,7 +224,8 @@ BEGIN
             EXECUTE format('SELECT count(*) FROM %I WHERE %s', v_backup.table_name, v_backup.filter) INTO v_count;
             IF v_count > 0 THEN
                 v_backupTableName := left(v_backup.table_name, 20) || '_bkp_' || to_char(now(), 'YYYYMMDD_HH24MISS_MS') || '_adpdel_' || p_AD_Process_ID::text;
-                EXECUTE format('CREATE TABLE backup.%I AS SELECT * FROM %I WHERE %s', v_backupTableName, v_backup.table_name, v_backup.filter);
+                CREATE SCHEMA IF NOT EXISTS backup; -- can be missing, e.g. after a database transfer
+                EXECUTE format('CREATE TABLE backup.%I AS SELECT %s FROM %I WHERE %s', v_backupTableName, v_backup.columns, v_backup.table_name, v_backup.filter);
                 GET DIAGNOSTICS v_count = ROW_COUNT;
                 CREATE TABLE IF NOT EXISTS backup.backup_tables
                 (
