@@ -1,0 +1,80 @@
+name: 'Setup test-reports SSH'
+description: >-
+  Install the reports SSH key and write the `reports-storage` / `reports-server` SSH host aliases
+  used to publish test reports. Pre-seeding known_hosts is best-effort (retried with backoff):
+  both host aliases use `StrictHostKeyChecking accept-new`, so a host key that could not be
+  pre-fetched is recorded on the first real connection instead. Connection timeouts and
+  keep-alives make a dead/hung server fail within about a minute instead of hanging the job.
+
+inputs:
+  ssh-key:
+    description: 'SSH private key for authentication'
+    required: true
+  server-hostname:
+    description: 'Storagebox hostname'
+    required: true
+  server-user:
+    description: 'Storagebox SSH user'
+    required: true
+  server-ssh-port:
+    description: 'Storagebox SSH port'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup SSH
+      shell: bash
+      env:
+        SSH_KEY: ${{ inputs.ssh-key }}
+        SERVER_HOSTNAME: ${{ inputs.server-hostname }}
+        SERVER_USER: ${{ inputs.server-user }}
+        SERVER_SSH_PORT: ${{ inputs.server-ssh-port }}
+      run: |
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        echo "$SSH_KEY" > ~/.ssh/reports_key
+        chmod 600 ~/.ssh/reports_key
+
+        # Best-effort pre-seed of known_hosts: ssh-keyscan exits non-zero on a transient DNS failure,
+        # refused/reset connection or timeout. Retry a few times; if it still fails, warn and go on:
+        # `StrictHostKeyChecking accept-new` below records the key on the first real connection.
+        keyscan() {
+          local host="$1" port="$2" attempt delay=5 err
+          err=$(mktemp)
+          for attempt in 1 2 3; do
+            if ssh-keyscan -T 10 -H -p "$port" "$host" >> ~/.ssh/known_hosts 2> "$err"; then
+              rm -f "$err"
+              return 0
+            fi
+            echo "ssh-keyscan of ${host}:${port} failed (attempt ${attempt}/3):"
+            grep -v '^#' "$err" || true
+            if [ "$attempt" -lt 3 ]; then sleep "$delay"; delay=$((delay * 2)); fi
+          done
+          rm -f "$err"
+          echo "::warning::Could not pre-fetch the SSH host key of ${host}:${port}; it will be accepted on first connect (StrictHostKeyChecking accept-new)"
+        }
+        keyscan "$SERVER_HOSTNAME" "$SERVER_SSH_PORT"
+        keyscan test-reports.metasfresh.com 22
+
+        # Several report uploads can run in one job: write the host aliases only once.
+        if ! grep -q '^Host reports-server$' ~/.ssh/config 2>/dev/null; then
+          cat >> ~/.ssh/config <<EOF
+        Host reports-storage reports-server
+          IdentityFile ~/.ssh/reports_key
+          StrictHostKeyChecking accept-new
+          BatchMode yes
+          ConnectTimeout 20
+          ServerAliveInterval 15
+          ServerAliveCountMax 4
+
+        Host reports-storage
+          HostName $SERVER_HOSTNAME
+          User $SERVER_USER
+          Port $SERVER_SSH_PORT
+
+        Host reports-server
+          HostName test-reports.metasfresh.com
+          User ci-reports
+        EOF
+        fi
