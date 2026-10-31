@@ -36,7 +36,9 @@ public class ShipmentCreateCommand
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 
-	private static final Duration SHIPMENT_SCHEDULE_POLL_TIMEOUT = Duration.ofSeconds(60);
+	// Covers creation + recompute of the schedules after the order completion. On a cold app server (first seed after start)
+	// that chain took ~62 s in CI (schedule created 35 s after completion, recompute committed 26 s later), so 60 s was too tight.
+	private static final Duration SHIPMENT_SCHEDULE_POLL_TIMEOUT = Duration.ofSeconds(180);
 	private static final Duration SHIPMENT_SCHEDULE_POLL_SLEEP = Duration.ofMillis(1000);
 
 	@NonNull private final MasterdataContext context;
