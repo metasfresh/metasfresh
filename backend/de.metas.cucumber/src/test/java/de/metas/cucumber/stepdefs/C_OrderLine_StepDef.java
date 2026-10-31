@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersEvaluatee;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -39,6 +40,8 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -68,6 +71,7 @@ import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -77,6 +81,7 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -94,6 +99,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_C_TaxCategory_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_DateOrdered;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
@@ -108,6 +114,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final @NonNull M_Product_StepDefData productTable;
 	private final @NonNull C_BPartner_StepDefData partnerTable;
@@ -122,6 +129,7 @@ public class C_OrderLine_StepDef
 	private final @NonNull C_Tax_StepDefData taxTable;
 	private final @NonNull M_Warehouse_StepDefData warehouseTable;
 	private final @NonNull IdentifierIds_StepDefData identifierIdsTable;
+	private final @NonNull AD_Message_StepDefData messageTable;
 
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
@@ -412,6 +420,46 @@ public class C_OrderLine_StepDef
 		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 		identifierIdsTable.put(orderLineIdentifier, orderLine.getC_OrderLine_ID());
 		InterfaceWrapperHelper.delete(orderLine);
+	}
+
+	/**
+	 * Attempts to delete a sales order line and asserts that the delete is blocked (an exception is thrown),
+	 * validating the error message against an AD_Message record when one is given.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>AD_Message_ID</b> — (optional, identifier-ref) expected error message from AD_Message<br>
+	 * @cucumber.depends StepDefData: C_OrderLine_StepDefData, AD_Message_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And delete C_OrderLine identified by ol_1 expecting error:
+	 *   | AD_Message_ID |
+	 *   | blockMsg      |
+	 * </pre>
+	 */
+	@And("^delete C_OrderLine identified by (.*) expecting error:$")
+	public void delete_orderLine_expecting_error(@NonNull final String orderLineIdentifier, @NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).getFirstRow();
+		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+
+		boolean errorThrown = false;
+		try
+		{
+			InterfaceWrapperHelper.delete(orderLine);
+		}
+		catch (final Exception e)
+		{
+			errorThrown = true;
+
+			row.getAsOptionalIdentifier(COLUMNNAME_AD_Message_ID)
+					.ifPresent(errorMessageIdentifier -> {
+						final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+						assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
+					});
+		}
+
+		assertThat(errorThrown).isTrue();
 	}
 
 	@And("load C_Order from C_OrderLine")
