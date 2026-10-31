@@ -1,9 +1,9 @@
-FROM node:16-alpine as build-step
+FROM node:16-bullseye as build-step
 
 LABEL maintainer="info@metasfresh.com"
 LABEL runinfo="Run this image with -e PUBLIC_URL=https://yourdomain.org"
 
-COPY misc/services/procurement-webui/procurement-webui-frontend/package.json .
+COPY misc/services/procurement-webui/procurement-webui-frontend/package.json misc/services/procurement-webui/procurement-webui-frontend/yarn.lock* .
 
 RUN yarn install
 
@@ -14,7 +14,7 @@ RUN yarn build
 RUN chmod a+x ./nginx-config/docker-entrypoint.d/*
 
 # Step 2
-FROM nginx
+FROM nginx:1.30
 
 # We copy our files to staging folders. They will be copied to the actual folders at startup, to prevent overmounting.
 # Also see the script in nginx-config.
