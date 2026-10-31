@@ -7,7 +7,7 @@
 #   - migration-cli.jar    : Pre-built migration CLI JAR from .m2-local
 #   - docker-builds/db/init-preloaded/migrate.properties
 
-FROM eclipse-temurin:17.0.7_7-jdk AS runtime
+FROM eclipse-temurin:17-jdk-jammy AS runtime
 
 RUN apt-get -y update && apt-get -y install locales netcat postgresql-client && rm -rf /var/lib/apt/lists/*
 
