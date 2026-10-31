@@ -1030,3 +1030,80 @@ Feature: Derivative price lists
       | M_Product_ID   | PriceStd | IsSeasonFixedPrice |
       | dpl_tc18_prod  | 2.00     | true               |
       | dpl_tc18_prod2 | 3.50     | false              |
+
+  # A copy-only schema (one line without product or category, all surcharges 0) copies the previous customer prices
+  # unchanged. A schema whose only line is restricted to one product category copies the prices of that category's
+  # products only; a product of another category gets no price on the new customer version.
+  @Id:S32970_TC19
+  Scenario: TC19 a copy-only schema keeps the previous prices, a product without matching schema line gets no price
+    Given metasfresh contains M_Product_Categories:
+      | Identifier         |
+      | dpl_tc19_cat_in    |
+      | dpl_tc19_cat_other |
+    And metasfresh contains M_Products:
+      | Identifier         | OPT.M_Product_Category_ID.Identifier |
+      | dpl_tc19_prod_a1   | dpl_tc19_cat_in                      |
+      | dpl_tc19_prod_a2   | dpl_tc19_cat_other                   |
+      | dpl_tc19_prod_in   | dpl_tc19_cat_in                      |
+      | dpl_tc19_prod_none | dpl_tc19_cat_other                   |
+    And metasfresh contains M_PricingSystems
+      | Identifier     |
+      | dpl_tc19_ps_ba |
+      | dpl_tc19_ps_ca |
+      | dpl_tc19_ps_bb |
+      | dpl_tc19_ps_cb |
+    And metasfresh contains new M_PriceLists:
+      | Identifier      | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name            |
+      | dpl_tc19_base_a | dpl_tc19_ps_ba     | DE                    | EUR                 | true  | dpl_tc19_base_a |
+      | dpl_tc19_base_b | dpl_tc19_ps_bb     | DE                    | EUR                 | true  | dpl_tc19_base_b |
+    And metasfresh contains new M_PriceLists:
+      | Identifier      | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | Name            | BasePriceList_ID |
+      | dpl_tc19_cust_a | dpl_tc19_ps_ca     | DE                    | EUR                 | true  | dpl_tc19_cust_a | dpl_tc19_base_a  |
+      | dpl_tc19_cust_b | dpl_tc19_ps_cb     | DE                    | EUR                 | true  | dpl_tc19_cust_b | dpl_tc19_base_b  |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier         | M_PriceList_ID  | ValidFrom  |
+      | dpl_tc19_base_a_v1 | dpl_tc19_base_a | 2110-01-10 |
+      | dpl_tc19_base_b_v1 | dpl_tc19_base_b | 2110-01-10 |
+      | dpl_tc19_cust_a_v1 | dpl_tc19_cust_a | 2110-01-10 |
+      | dpl_tc19_cust_b_v1 | dpl_tc19_cust_b | 2110-01-10 |
+    And metasfresh contains M_ProductPrices
+      | Identifier       | M_PriceList_Version_ID | M_Product_ID       | PriceStd | C_UOM_ID.X12DE355 |
+      | dpl_tc19_pp_a1   | dpl_tc19_cust_a_v1     | dpl_tc19_prod_a1   | 2.00     | PCE               |
+      | dpl_tc19_pp_a2   | dpl_tc19_cust_a_v1     | dpl_tc19_prod_a2   | 7.50     | PCE               |
+      | dpl_tc19_pp_in   | dpl_tc19_cust_b_v1     | dpl_tc19_prod_in   | 3.10     | PCE               |
+      | dpl_tc19_pp_none | dpl_tc19_cust_b_v1     | dpl_tc19_prod_none | 4.20     | PCE               |
+    And metasfresh contains C_BPartners:
+      | Identifier    | Name          | IsCustomer | M_PricingSystem_ID | IsAllowPriceMutation |
+      | dpl_tc19_bp_a | dpl_tc19_bp_a | Y          | dpl_tc19_ps_ca     | Y                    |
+      | dpl_tc19_bp_b | dpl_tc19_bp_b | Y          | dpl_tc19_ps_cb     | Y                    |
+    And metasfresh contains M_DiscountSchemas:
+      | Identifier    | DiscountType | Name          | ValidFrom  |
+      | dpl_tc19_ds_a | P            | dpl_tc19_ds_a | 2110-01-01 |
+      | dpl_tc19_ds_b | P            | dpl_tc19_ds_b | 2110-01-01 |
+    And metasfresh contains M_DiscountSchemaLines:
+      | M_DiscountSchema_ID | SeqNo |
+      | dpl_tc19_ds_a       | 10    |
+    And metasfresh contains M_DiscountSchemaLines:
+      | M_DiscountSchema_ID | SeqNo | M_Product_Category_ID |
+      | dpl_tc19_ds_b       | 10    | dpl_tc19_cat_in       |
+    And metasfresh contains new M_PriceList_Versions:
+      | Identifier         | M_PriceList_ID  | ValidFrom  | M_DiscountSchema_ID |
+      | dpl_tc19_base_a_v2 | dpl_tc19_base_a | 2110-03-01 | dpl_tc19_ds_a       |
+      | dpl_tc19_base_b_v2 | dpl_tc19_base_b | 2110-03-01 | dpl_tc19_ds_b       |
+
+    When the 'apply to derivative price lists' process is invoked for M_PriceList_Version dpl_tc19_base_a_v2
+    And the 'apply to derivative price lists' process is invoked for M_PriceList_Version dpl_tc19_base_b_v2
+
+    Then the latest M_PriceList_Version of M_PriceList dpl_tc19_cust_a is:
+      | Identifier         | ValidFrom  |
+      | dpl_tc19_cust_a_v2 | 2110-03-01 |
+    And the M_ProductPrices of M_PriceList_Version dpl_tc19_cust_a_v2 are:
+      | M_Product_ID     | PriceStd |
+      | dpl_tc19_prod_a1 | 2.00     |
+      | dpl_tc19_prod_a2 | 7.50     |
+    And the latest M_PriceList_Version of M_PriceList dpl_tc19_cust_b is:
+      | Identifier         | ValidFrom  |
+      | dpl_tc19_cust_b_v2 | 2110-03-01 |
+    And the M_ProductPrices of M_PriceList_Version dpl_tc19_cust_b_v2 are:
+      | M_Product_ID     | PriceStd |
+      | dpl_tc19_prod_in | 3.10     |
