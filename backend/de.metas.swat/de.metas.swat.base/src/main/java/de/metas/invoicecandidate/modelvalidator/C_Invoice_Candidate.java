@@ -270,6 +270,8 @@ public class C_Invoice_Candidate
 			I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced,
 			I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered,
 			I_C_Invoice_Candidate.COLUMNNAME_Processed_Override, // task 08567
+			I_C_Invoice_Candidate.COLUMNNAME_IsDeliveryClosed, // delivery-closed rule, see IInvoiceCandBL#isProcessedByDeliveryClosedRule
+			I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override, // same rule; a changed override would otherwise only be re-evaluated on the next recompute
 	})
 	public void updateProcessedFlag(final I_C_Invoice_Candidate ic)
 	{

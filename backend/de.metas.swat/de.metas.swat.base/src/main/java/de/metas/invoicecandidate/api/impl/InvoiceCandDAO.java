@@ -275,7 +275,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	private void setProcessedToFalseIfIcNotNeeded(@NonNull final I_C_Invoice_Candidate icToDelete)
 	{
 		final boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
-		if (!manuallyFlaggedAsProcessed)
+		final boolean processedByDeliveryClosedRule = icToDelete.isProcessed() && Services.get(IInvoiceCandBL.class).isProcessedByDeliveryClosedRule(icToDelete);
+		if (!manuallyFlaggedAsProcessed && !processedByDeliveryClosedRule)
 		{
 			return; // nothing to do
 		}
@@ -287,7 +288,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			return; // nothing to do
 		}
 
-		// icToDelete was manually set to "processed" to be out of the way; in this case, we can unprocess and delete it.
+		// icToDelete was set to "processed" to be out of the way (manually, or because its delivery was closed with nothing delivered); in this case, we can unprocess and delete it.
 		icToDelete.setProcessed(false);
 	}
 
