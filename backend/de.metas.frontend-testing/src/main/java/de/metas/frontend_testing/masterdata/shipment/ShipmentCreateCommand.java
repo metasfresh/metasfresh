@@ -1,6 +1,6 @@
 package de.metas.frontend_testing.masterdata.shipment;
 
-import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -10,6 +10,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedul
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -28,6 +29,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import org.slf4j.Logger;
 
 import java.time.Duration;
+import java.util.Comparator;
 import java.util.List;
 
 @Builder
@@ -47,21 +49,29 @@ public class ShipmentCreateCommand
 
 	public JsonShipmentCreateResponse execute()
 	{
-		return trxManager.callInThreadInheritedTrx(this::execute0);
-	}
-
-	private JsonShipmentCreateResponse execute0()
-	{
 		final OrderId orderId = context.getId(request.getSalesOrder(), OrderId.class);
 
-		// 1. Poll for shipment schedules (they are created asynchronously after order completion)
-		final List<I_M_ShipmentSchedule> shipmentSchedules = pollForShipmentSchedules(orderId);
-		if (shipmentSchedules.isEmpty())
-		{
-			throw new AdempiereException("No shipment schedules found for order " + orderId);
-		}
+		// 1. Wait for the shipment schedules (they are created and recomputed asynchronously after order completion).
+		// Wait OUTSIDE of a transaction: a transaction keeps the locks of its reads (e.g. on C_OrderLine) while it polls.
+		// A DDL statement waiting for such a lock (seen: "ALTER TABLE C_OrderLine ... SET NOT NULL" on a freshly started stack)
+		// then blocks every later reader of that table, including the recompute we are waiting for, until we give up.
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = awaitShipmentSchedules(orderId).stream()
+				.map(schedule -> ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 
-		// 2. Prepare candidates and generate the shipment
+		// 2. Create the shipment
+		return trxManager.callInThreadInheritedTrx(() -> createShipment(orderId, shipmentScheduleIds));
+	}
+
+	private JsonShipmentCreateResponse createShipment(
+			@NonNull final OrderId orderId,
+			@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		final List<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentScheduleIds).values().stream()
+				.sorted(Comparator.comparing(I_M_ShipmentSchedule::getM_ShipmentSchedule_ID)) // same order as getByOrderLineIds
+				.collect(ImmutableList.toImmutableList());
+
+		// Prepare candidates and generate the shipment
 		final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 
 		final List<ShipmentScheduleWithHU> candidates = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
@@ -98,7 +108,7 @@ public class ShipmentCreateCommand
 				.build();
 	}
 
-	private List<I_M_ShipmentSchedule> pollForShipmentSchedules(final OrderId orderId)
+	private List<I_M_ShipmentSchedule> awaitShipmentSchedules(@NonNull final OrderId orderId)
 	{
 		// Get order line IDs for this order
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(orderId);
@@ -111,25 +121,16 @@ public class ShipmentCreateCommand
 			throw new AdempiereException("No order lines found for order " + orderId);
 		}
 
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-
-		while (true)
-		{
-			final List<I_M_ShipmentSchedule> schedules = shipmentSchedulePA.getByOrderLineIds(orderLineIds);
-			if (!schedules.isEmpty())
-			{
-				logger.info("Found {} shipment schedules for order {} after {}", schedules.size(), orderId, stopwatch);
-				return schedules;
-			}
-
-			if (stopwatch.elapsed().compareTo(SHIPMENT_SCHEDULE_POLL_TIMEOUT) > 0)
-			{
-				throw new AdempiereException("Timeout waiting for shipment schedules for order " + orderId + ". Waited " + stopwatch.elapsed());
-			}
-
-			logger.info("No shipment schedules yet for order {}. Sleeping... (elapsed: {})", orderId, stopwatch);
-			sleep(SHIPMENT_SCHEDULE_POLL_SLEEP);
-		}
+		return ShipmentSchedulesAwaiter.builder()
+				.orderId(orderId)
+				.orderLineIds(orderLineIds)
+				// the shipment ships the QtyToDeliver, so it needs the recomputed QtyToDeliver
+				.requirePositiveQtyToDeliver(true)
+				.timeout(SHIPMENT_SCHEDULE_POLL_TIMEOUT)
+				.pollInterval(SHIPMENT_SCHEDULE_POLL_SLEEP)
+				.sleeper(ShipmentCreateCommand::sleep)
+				.build()
+				.await();
 	}
 
 	private static void sleep(@NonNull final Duration duration)
