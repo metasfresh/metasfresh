@@ -157,7 +157,8 @@ class CreateSEPAExportFromPaySelectionCommand
 
 		// Set corresponding data
 		header.setAD_Org_ID(paySelectionHeader.getAD_Org_ID());
-		header.setIBAN(selectIBANOrNull(bpBankAccount));
+		// the paying (debtor) account must be a normal IBAN, never a QR-IBAN (SIX SPS 2026 p.47, CH16)
+		header.setIBAN(toNullOrRemoveSpaces(bpBankAccount.getIBAN()));
 		header.setPaymentDate(paySelectionHeader.getPayDate());
 		header.setProcessed(false);
 		header.setSEPA_CreditorName(orgBP.getName());
