@@ -37,7 +37,8 @@ export class LoginPage {
    * @param {Object} credentials
    * @param {string} credentials.username - Username
    * @param {string} credentials.password - Password
-   * @returns {Promise<Object>} Login response body
+   * @returns {Promise<Object>} The /login/authenticate response body; after a role selection it is
+   *   returned with loginComplete: true, because /login/loginComplete has no response body.
    */
   static async login({ username, password }) {
     return await test.step(`LoginPage - Login as ${username}`, async () => {
@@ -81,17 +82,23 @@ export class LoginPage {
         const sendButton = page.locator('.btn-meta-success');
         await sendButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-        // Wait for the second authenticate response
+        // Sending the selected role calls POST /login/loginComplete (LoginForm.handleRoleSelected ->
+        // loginCompletionRequest), NOT a second /login/authenticate. That endpoint returns no body.
+        // Waiting for /login/authenticate here never resolved: the login itself succeeded, and the test
+        // hung on the dashboard until its own timeout (every test whose user has a role in more than one
+        // org, e.g. on customer builds where a role gets access to all of the tenant's orgs).
         const roleResponsePromise = page.waitForResponse(
-          (response) => response.url().includes('/login/authenticate')
+          (response) => response.url().includes('/login/loginComplete'),
+          { timeout: SLOW_ACTION_TIMEOUT }
         );
 
         await sendButton.click();
 
         const roleResponse = await roleResponsePromise;
-        responseBody = await roleResponse.json();
+        expect(roleResponse.ok(), `role selection (/login/loginComplete) failed with HTTP ${roleResponse.status()}`).toBe(true);
+        responseBody = { ...responseBody, loginComplete: true };
 
-        console.log('Role selection response:', responseBody);
+        console.log('Role selection completed (/login/loginComplete)');
       }
 
       // Wait for redirect away from login page
