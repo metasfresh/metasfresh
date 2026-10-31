@@ -37,7 +37,8 @@ export class LoginPage {
    * @param {Object} credentials
    * @param {string} credentials.username - Username
    * @param {string} credentials.password - Password
-   * @returns {Promise<Object>} Login response body
+   * @returns {Promise<Object>} The /login/authenticate response body; after a role selection it is
+   *   returned with loginComplete: true, because /login/loginComplete has no response body.
    */
   static async login({ username, password }) {
     return await test.step(`LoginPage - Login as ${username}`, async () => {
