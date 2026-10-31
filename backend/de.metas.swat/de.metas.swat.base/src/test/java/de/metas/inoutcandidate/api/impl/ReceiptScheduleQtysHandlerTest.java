@@ -36,11 +36,13 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -74,6 +76,16 @@ public class ReceiptScheduleQtysHandlerTest
 		receiptSchedule.setC_BPartner_ID(bpartnerId.getRepoId());
 		receiptSchedule.setM_Product_ID(productRecord.getM_Product_ID());
 		InterfaceWrapperHelper.save(receiptSchedule);
+	}
+
+	/**
+	 * Registering {@link ReceiptScheduleValidator} also registers its aggregation-key handlers in {@link IAggregationKeyRegistry}'s
+	 * static state, which {@link AdempiereTestHelper#init()} does not reset; clear them so they don't leak into later test classes.
+	 */
+	@AfterEach
+	public void clearAggregationKeyHandlers()
+	{
+		Services.get(IAggregationKeyRegistry.class).clearHandlers(ReceiptScheduleHeaderAggregationKeyBuilder.REGISTRATION_KEY);
 	}
 
 	@Test
