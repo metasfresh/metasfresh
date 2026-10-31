@@ -90,16 +90,9 @@ public class PostingService implements IPostingService
 
 		logger.debug("Posting directly: {}", this);
 
-		final Properties ctx = Env.newTemporaryCtx();
-		Env.setClientId(ctx, request.getClientId());
-
-		try (final IAutoCloseable ignored = Env.switchContext(ctx))
+		try
 		{
-			final List<AcctSchema> acctSchemas = acctSchemaDAO.getAllByClient(request.getClientId());
-			final Doc<?> doc = acctDocRegistryHolder.get().get(acctSchemas, request.getRecord());
-			doc.post(request.isForce(), true);
-
-			documentPostingLogServiceHolder.get().logPostingOK(request);
+			postNowAndThrow(request);
 		}
 		catch (final Exception ex)
 		{
@@ -118,6 +111,22 @@ public class PostingService implements IPostingService
 			{
 				userNotificationsHolder.get().notifyPostingError(request.getOnErrorNotifyUserId(), request.getRecord(), metasfreshException);
 			}
+		}
+	}
+
+	@Override
+	public void postNowAndThrow(@NonNull final DocumentPostRequest request)
+	{
+		final Properties ctx = Env.newTemporaryCtx();
+		Env.setClientId(ctx, request.getClientId());
+
+		try (final IAutoCloseable ignored = Env.switchContext(ctx))
+		{
+			final List<AcctSchema> acctSchemas = acctSchemaDAO.getAllByClient(request.getClientId());
+			final Doc<?> doc = acctDocRegistryHolder.get().get(acctSchemas, request.getRecord());
+			doc.post(request.isForce(), true);
+
+			documentPostingLogServiceHolder.get().logPostingOK(request);
 		}
 	}
 
