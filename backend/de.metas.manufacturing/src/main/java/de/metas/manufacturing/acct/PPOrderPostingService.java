@@ -2,8 +2,7 @@ package de.metas.manufacturing.acct;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.acct.api.DocumentPostRequest;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.acct.doc.AcctDocRegistry;
+import de.metas.acct.api.IPostingService;
 import de.metas.acct.posting.log.DocumentPostingLogService;
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
@@ -12,9 +11,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderId;
@@ -25,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Properties;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -43,20 +39,11 @@ public class PPOrderPostingService
 	@NonNull private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	@NonNull private final IPPCostCollectorDAO costCollectorDAO = Services.get(IPPCostCollectorDAO.class);
 
-	@NonNull private final DocumentPoster documentPoster;
+	@NonNull private final IPostingService postingService;
 	@NonNull private final DocumentPostingLogService documentPostingLogService;
 	@NonNull private final Sleeper sleeper;
 	@NonNull private final Duration pollInterval;
 	private final long maxPolls;
-
-	@FunctionalInterface
-	public interface DocumentPoster
-	{
-		/**
-		 * Posts the document now; any posting error is thrown, not logged.
-		 */
-		void postNow(@NonNull TableRecordReference documentRef, @NonNull ClientId clientId);
-	}
 
 	@FunctionalInterface
 	public interface Sleeper
@@ -65,36 +52,25 @@ public class PPOrderPostingService
 	}
 
 	@Autowired
-	public PPOrderPostingService(
-			@NonNull final AcctDocRegistry acctDocRegistry,
-			@NonNull final DocumentPostingLogService documentPostingLogService)
+	public PPOrderPostingService(@NonNull final DocumentPostingLogService documentPostingLogService)
 	{
 		this(
-				newDocumentPoster(acctDocRegistry, Services.get(IAcctSchemaDAO.class)),
+				Services.get(IPostingService.class),
 				duration -> Thread.sleep(duration.toMillis()),
 				documentPostingLogService);
 	}
 
 	@VisibleForTesting
 	public PPOrderPostingService(
-			@NonNull final DocumentPoster documentPoster,
+			@NonNull final IPostingService postingService,
 			@NonNull final Sleeper sleeper,
 			@NonNull final DocumentPostingLogService documentPostingLogService)
 	{
-		this.documentPoster = documentPoster;
+		this.postingService = postingService;
 		this.documentPostingLogService = documentPostingLogService;
 		this.sleeper = sleeper;
 		this.pollInterval = DEFAULT_POLL_INTERVAL;
 		this.maxPolls = DEFAULT_MAX_WAIT.toMillis() / DEFAULT_POLL_INTERVAL.toMillis();
-	}
-
-	private static DocumentPoster newDocumentPoster(@NonNull final AcctDocRegistry acctDocRegistry, @NonNull final IAcctSchemaDAO acctSchemaDAO)
-	{
-		// Same call as PostingService.postNow, minus its catch-all: that one only logs the error.
-		// No force: the accounting service posts with force, so forcing here could post the same document twice at once.
-		return (documentRef, clientId) -> acctDocRegistry
-				.get(acctSchemaDAO.getAllByClient(clientId), documentRef)
-				.post(false, true);
 	}
 
 	/**
@@ -132,7 +108,7 @@ public class PPOrderPostingService
 
 		try
 		{
-			postNowInAccountingContext(documentRef, clientId);
+			postNow(documentRef, clientId);
 		}
 		catch (final RuntimeException postingError)
 		{
@@ -150,7 +126,7 @@ public class PPOrderPostingService
 			{
 				try
 				{
-					postNowInAccountingContext(documentRef, clientId);
+					postNow(documentRef, clientId);
 				}
 				catch (final RuntimeException retryPostingError)
 				{
@@ -172,18 +148,12 @@ public class PPOrderPostingService
 	}
 
 	/**
-	 * Posts under a fresh context carrying only the client, like the accounting service does,
-	 * so that the caller's role, org and user cannot influence the posting. Logs the success in the posting log.
+	 * Posts synchronously, no force: the accounting service posts with force, so forcing here could post the same document twice at once.
+	 * Throws on a posting error, unlike the accounting service's own after-commit posting.
 	 */
-	private void postNowInAccountingContext(@NonNull final TableRecordReference documentRef, @NonNull final ClientId clientId)
+	private void postNow(@NonNull final TableRecordReference documentRef, @NonNull final ClientId clientId)
 	{
-		final Properties ctx = Env.newTemporaryCtx();
-		Env.setClientId(ctx, clientId);
-		try (final IAutoCloseable ignored = Env.switchContext(ctx))
-		{
-			documentPoster.postNow(documentRef, clientId);
-		}
-		documentPostingLogService.logPostingOK(toPostRequest(documentRef, clientId));
+		postingService.postNowAndThrow(toPostRequest(documentRef, clientId));
 	}
 
 	private void waitWhileProcessing(

@@ -3,6 +3,7 @@ package de.metas.manufacturing.job.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.DocumentPostRequest;
+import de.metas.acct.api.IPostingService;
 import de.metas.acct.posting.log.DocumentPostingLogService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
@@ -36,9 +37,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.organization.OrgId;
 import org.adempiere.service.ClientId;
-import org.compiere.util.Env;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -148,8 +147,7 @@ class ManufacturingJobServiceTest
 		private final List<TableRecordReference> postedDocuments = new ArrayList<>();
 		private final List<ITrx> trxsSeenByPoster = new ArrayList<>();
 		private DocumentPostingLogService postingLog;
-		private final List<OrgId> orgsSeenByPoster = new ArrayList<>();
-		private final List<ClientId> clientsSeenByPoster = new ArrayList<>();
+		private IPostingService postingService;
 		@Nullable private RuntimeException postingFailure;
 		/** What the accounting service does while we wait for its lock; null = it never finishes. */
 		@Nullable private Runnable backgroundPostingProgress;
@@ -170,14 +168,18 @@ class ManufacturingJobServiceTest
 
 			postedDocuments.clear();
 			trxsSeenByPoster.clear();
-			orgsSeenByPoster.clear();
-			clientsSeenByPoster.clear();
 			postingFailure = null;
 			backgroundPostingProgress = null;
 			beforePostAttempt = null;
 			sleeps = 0;
 			postingLog = mock(DocumentPostingLogService.class);
-			SpringContextHolder.registerJUnitBean(PPOrderPostingService.class, new PPOrderPostingService(this::fakePostNow, this::fakeSleep, postingLog));
+			postingService = mock(IPostingService.class);
+			doAnswer(invocation -> {
+				final DocumentPostRequest request = invocation.getArgument(0);
+				fakePostNow(request.getRecord(), request.getClientId());
+				return null;
+			}).when(postingService).postNowAndThrow(any());
+			SpringContextHolder.registerJUnitBean(PPOrderPostingService.class, new PPOrderPostingService(postingService, this::fakeSleep, postingLog));
 
 			ppOrderBL = spy(Services.get(IHUPPOrderBL.class));
 			doNothing().when(ppOrderBL).closeOrder(any());
@@ -362,25 +364,7 @@ class ManufacturingJobServiceTest
 			assertThat(trxsSeenByPoster).allMatch(trxManager::isNull);
 			verify(distributor, times(1)).distribute(ppOrderId);
 
-			final ArgumentCaptor<DocumentPostRequest> loggedOK = ArgumentCaptor.forClass(DocumentPostRequest.class);
-			verify(postingLog, times(3)).logPostingOK(loggedOK.capture());
-			assertThat(loggedOK.getAllValues()).extracting(DocumentPostRequest::getRecord).containsExactlyElementsOf(postedWhenDistributing);
 			verify(postingLog, never()).logPostingError(any(), any());
-		}
-
-		@Test
-		void postsUnderAccountingContext_notTheOperatorsContext()
-		{
-			final ManufacturingJob job = givenJob(1, handLine());
-			final I_PP_Cost_Collector issue = givenCostCollector(job.getPpOrderId(), X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Cost_Collector.DOCSTATUS_Completed, false);
-			final OrgId operatorOrgId = OrgId.ofRepoId(4711);
-			Env.setOrgId(Env.getCtx(), operatorOrgId);
-
-			service.withActivityCompleted(job, lastActivityId(job));
-
-			assertThat(orgsSeenByPoster).hasSize(2).doesNotContain(operatorOrgId);
-			assertThat(clientsSeenByPoster).containsOnly(ClientId.ofRepoId(issue.getAD_Client_ID()));
-			assertThat(Env.getOrgId()).isEqualTo(operatorOrgId);
 		}
 
 		@Test
@@ -400,7 +384,6 @@ class ManufacturingJobServiceTest
 			final ArgumentCaptor<DocumentPostRequest> loggedError = ArgumentCaptor.forClass(DocumentPostRequest.class);
 			verify(postingLog, times(1)).logPostingError(loggedError.capture(), any());
 			assertThat(loggedError.getValue().getRecord()).isEqualTo(TableRecordReference.of(collector));
-			verify(postingLog, never()).logPostingOK(any());
 			assertThat(trxsSeenByPoster).hasSize(1);
 			verify(distributor, never()).distribute(any());
 			verify(ppOrderBL, never()).closeOrder(any());
@@ -529,8 +512,6 @@ class ManufacturingJobServiceTest
 		private void fakePostNow(final TableRecordReference documentRef, final ClientId clientIdNotUsed)
 		{
 			trxsSeenByPoster.add(trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone));
-			orgsSeenByPoster.add(Env.getOrgId());
-			clientsSeenByPoster.add(Env.getClientId());
 			if (beforePostAttempt != null)
 			{
 				beforePostAttempt.accept(documentRef);
