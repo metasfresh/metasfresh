@@ -57,9 +57,11 @@ runs:
         keyscan "$SERVER_HOSTNAME" "$SERVER_SSH_PORT"
         keyscan test-reports.metasfresh.com 22
 
-        # Several report uploads can run in one job: write the host aliases only once.
-        if ! grep -q '^Host reports-server$' ~/.ssh/config 2>/dev/null; then
+        # Several report uploads can run in one job: write the host aliases only once (keyed on a
+        # marker line, so an older config shape left on a reused runner does not suppress them).
+        if ! grep -qx '# setup-reports-ssh' ~/.ssh/config 2>/dev/null; then
           cat >> ~/.ssh/config <<EOF
+        # setup-reports-ssh
         Host reports-storage reports-server
           IdentityFile ~/.ssh/reports_key
           StrictHostKeyChecking accept-new
