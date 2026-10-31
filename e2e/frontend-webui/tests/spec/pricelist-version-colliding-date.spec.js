@@ -180,7 +180,7 @@ const normalizePriceListToSeed = async (page) => {
 
 const loginAndOpenCleanPriceList = async (page) => {
   // Login as the admin masterdata user (sees the seed price lists). The simple helper handles the
-  // multi-role chooser by re-clicking — LoginPage.login waits for the wrong endpoint here.
+  // multi-role chooser by re-clicking.
   await loginWithMasterdataUser(page, { username: 'metasfresh', password: 'metasfresh' });
   await DashboardPage.expectVisible();
   // Clear any wedge from a prior run: without this a residual errored PLV sets allowCreateNew=false and the
