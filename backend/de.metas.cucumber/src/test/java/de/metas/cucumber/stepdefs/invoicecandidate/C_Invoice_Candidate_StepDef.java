@@ -52,6 +52,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
@@ -134,6 +135,7 @@ import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsUpdateLocati
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsCompleteInvoices;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsDeliveryDateAsInvoiceDate;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsPartialInvoice;
+import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_OnlyApprovedForInvoicing;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_OverrideDueDate;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
@@ -752,6 +754,16 @@ public class C_Invoice_Candidate_StepDef
 						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_Processed)
 								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isProcessed()).isEqualTo(expected));
 
+						row.getAsOptionalBoolean(COLUMNNAME_ApprovalForInvoicing)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isApprovalForInvoicing())
+										.as("ApprovalForInvoicing")
+										.isEqualTo(expected));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_Processed_Override)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getProcessed_Override())
+										.as("Processed_Override")
+										.isEqualTo(expected));
+
 						row.getAsOptionalIdentifier(COLUMNNAME_C_Tax_Effective_ID)
 								.map(taxTable::getId)
 								.ifPresent(taxEffectiveId -> softly.assertThat(finalInvoiceCandidate.getC_Tax_Effective_ID()).isEqualTo(taxEffectiveId.getRepoId()));
@@ -1206,6 +1218,17 @@ public class C_Invoice_Candidate_StepDef
 		return true;
 	}
 
+	/**
+	 * Closes the one invoice candidate by hand, like the user's "close" action does for it (the WebUI process calls the plural {@code closeInvoiceCandidates}).
+	 */
+	@And("^the C_Invoice_Candidate identified by (.*) is closed by hand$")
+	public void closeInvoiceCandidateByHand(@NonNull final String invoiceCandIdentifier)
+	{
+		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+		InterfaceWrapperHelper.refresh(invoiceCandidate);
+		invoiceCandBL.closeInvoiceCandidate(invoiceCandidate);
+	}
+
 	@And("update invoice candidates")
 	public void update_invoice_candidates(@NonNull final DataTable dataTable)
 	{
@@ -1270,6 +1293,7 @@ public class C_Invoice_Candidate_StepDef
 					row.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
 					row.getAsOptionalLocalDate(PARA_OverrideDueDate).ifPresent(invoicingParams::setOverrideDueDate);
 					row.getAsOptionalBoolean(PARA_IsPartialInvoice).ifPresent(invoicingParams::setIsPartialInvoice);
+					row.getAsOptionalBoolean(PARA_OnlyApprovedForInvoicing).ifPresent(invoicingParams::setOnlyApprovedForInvoicing);
 
 					final boolean completeInvoices = row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
 					invoicingParams.setCompleteInvoices(completeInvoices);
@@ -1278,11 +1302,14 @@ public class C_Invoice_Candidate_StepDef
 
 					try
 					{
-						invoiceCandBL.enqueueForInvoicing()
-								.setContext(Env.getCtx())
-								.setFailIfNothingEnqueued(true)
-								.setInvoicingParams(invoicingParams)
-								.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+						if (!isExcludedByApprovalFilter(invoiceCandidate, invoicingParams))
+						{
+							invoiceCandBL.enqueueForInvoicing()
+									.setContext(Env.getCtx())
+									.setFailIfNothingEnqueued(true)
+									.setInvoicingParams(invoicingParams)
+									.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+						}
 					}
 					catch (final AdempiereException adempiereException)
 					{
@@ -1338,6 +1365,7 @@ public class C_Invoice_Candidate_StepDef
 			invoicingParams.setIgnoreInvoiceSchedule(false);
 			invoicingParams.setInvoiceManualRule(false); // Manual is invoiced ONLY when this flag is true
 			invoicingParams.setCompleteInvoices(row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true));
+			row.getAsOptionalBoolean(PARA_OnlyApprovedForInvoicing).ifPresent(invoicingParams::setOnlyApprovedForInvoicing);
 
 			StepDefUtil.tryAndWait(waitSec, 500, () -> checkNotMarkedAsToRecompute(invoiceCandidate));
 
@@ -1346,11 +1374,14 @@ public class C_Invoice_Candidate_StepDef
 			// so nothing is enqueued (no exception is thrown because setFailIfNothingEnqueued=false).
 			try
 			{
-				invoiceCandBL.enqueueForInvoicing()
-						.setContext(Env.getCtx())
-						.setFailIfNothingEnqueued(false)
-						.setInvoicingParams(invoicingParams)
-						.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+				if (!isExcludedByApprovalFilter(invoiceCandidate, invoicingParams))
+				{
+					invoiceCandBL.enqueueForInvoicing()
+							.setContext(Env.getCtx())
+							.setFailIfNothingEnqueued(false)
+							.setInvoicingParams(invoicingParams)
+							.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+				}
 			}
 			catch (final AdempiereException adempiereException)
 			{
@@ -1452,6 +1483,7 @@ public class C_Invoice_Candidate_StepDef
 		firstRow.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
 		firstRow.getAsOptionalLocalDate(PARA_OverrideDueDate).ifPresent(invoicingParams::setOverrideDueDate);
 		firstRow.getAsOptionalBoolean(PARA_IsPartialInvoice).ifPresent(invoicingParams::setIsPartialInvoice);
+		firstRow.getAsOptionalBoolean(PARA_OnlyApprovedForInvoicing).ifPresent(invoicingParams::setOnlyApprovedForInvoicing);
 
 		final boolean completeInvoices = firstRow.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
 		invoicingParams.setCompleteInvoices(completeInvoices);
@@ -1463,11 +1495,12 @@ public class C_Invoice_Candidate_StepDef
 		}
 
 		// Create selection with all invoice candidate IDs
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(
-				invoiceCandidateIds.stream()
-						.map(InvoiceCandidateId::getRepoId)
-						.collect(ImmutableList.toImmutableList()),
-				Trx.TRXNAME_None);
+		// like the WebUI process, only select the approved candidates when OnlyApprovedForInvoicing is set
+		final ImmutableList<Integer> selectedIds = invoiceCandidates.stream()
+				.filter(ic -> !isExcludedByApprovalFilter(ic, invoicingParams))
+				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.collect(ImmutableList.toImmutableList());
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(selectedIds, Trx.TRXNAME_None);
 
 		try
 		{
@@ -1510,6 +1543,21 @@ public class C_Invoice_Candidate_StepDef
 		assertThat(invoiceCandidateInOutLine).isNull();
 	}
 
+	/**
+	 * Mirrors the WebUI invoicing process, which only selects approved candidates when {@code OnlyApprovedForInvoicing} is set:
+	 * {@code prepareAndEnqueueSelection} flags the whole selection as approved before the enqueuer's own approval check runs,
+	 * so that check alone would never exclude anything.
+	 */
+	private static boolean isExcludedByApprovalFilter(@NonNull final I_C_Invoice_Candidate invoiceCandidate, @NonNull final IInvoicingParams invoicingParams)
+	{
+		if (!invoicingParams.isOnlyApprovedForInvoicing())
+		{
+			return false;
+		}
+		InterfaceWrapperHelper.refresh(invoiceCandidate);
+		return !invoiceCandidate.isApprovalForInvoicing();
+	}
+
 	public void updateInvoiceCandidate(@NonNull final DataTableRow row)
 	{
 		final I_C_Invoice_Candidate invoiceCandidateRecord = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
@@ -1528,6 +1576,9 @@ public class C_Invoice_Candidate_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_InvoiceRule_Override)
 				.ifPresent(invoiceCandidateRecord::setInvoiceRule_Override);
+
+		row.getAsOptionalBoolean(COLUMNNAME_ApprovalForInvoicing)
+				.ifPresent(invoiceCandidateRecord::setApprovalForInvoicing);
 
 		row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID)
 				.map(taxTable::getId)
