@@ -95,6 +95,7 @@ SELECT getpricelistversionsuptobase_ForPricelistVersion(
                              SELECT MAX(M_PriceList_Version.ValidFrom)
                              from M_PriceList_Version
                              where M_PriceList_Version.M_PriceList_ID = p_M_PriceList_ID
+                               AND M_PriceList_Version.IsActive = 'Y'
                                AND M_PriceList_Version.ValidFrom <=  p_Date
                              GROUP BY M_PriceList_ID
                          )
