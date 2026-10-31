@@ -1,11 +1,11 @@
-FROM node:14 AS build
+FROM node:14-bullseye AS build
 
 RUN npm install -g webpack webpack-cli
 
-# Temporarily override apt sources to use archive for EOL distribution
-RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list && \
-    echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list && \
-    echo "deb http://archive.debian.org/debian buster-updates main" >> /etc/apt/sources.list && \
+# Debian bullseye has moved to archive.debian.org (LTS ended), so point apt there to keep
+# the locales package installable on a COLD build (node:14 = EOL buster 404s even via its archive security pool).
+RUN echo "deb http://archive.debian.org/debian bullseye main" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
@@ -15,7 +15,10 @@ WORKDIR /app
 
 COPY misc/services/mobile-webui/mobile-webui-frontend/package.json .
 COPY misc/services/mobile-webui/mobile-webui-frontend/yarn.lock* .
-RUN yarn install
+# --ignore-engines: this frontend has no committed yarn.lock, so a cold install floats test-only
+# transitive deps (e.g. expect@30) that now require node>=18; the build itself (react-scripts@4.0.3,
+# yarn lint/build) runs on node 14 and tests are not run here, so the engine gate is bypassed safely.
+RUN yarn install --ignore-engines
 
 COPY misc/services/mobile-webui/mobile-webui-frontend/ .
 RUN yarn lint
