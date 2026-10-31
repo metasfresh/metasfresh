@@ -62,8 +62,9 @@ const gridBox = async (page) =>
 
 /**
  * Inline login — see claude-docs/selectors-and-gotchas.md "Default Login — Role Selection".
- * LoginPage.login() is deliberately not used: its waitForResponse can miss the second
- * authenticate call of the role-selection step.
+ * Written when LoginPage.login() hung after the role-selection step: it waited for a second
+ * /login/authenticate, but the frontend sends the selected role to /login/loginComplete. LoginPage now
+ * waits for /login/loginComplete, so this inline variant is no longer required.
  */
 const login = async (page) => {
   await page.goto(`${FRONTEND_BASE_URL}/login`);
