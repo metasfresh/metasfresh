@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.order.OrderFactory;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -74,8 +75,13 @@ public class PurchaseOrderCreateCommand
 		final I_C_UOM uom = productBL.getStockUOM(productId);
 		final Quantity qty = Quantity.of(line.getQty(), uom);
 
+		final HUPIItemProductId piItemProductId = line.getPiItemProduct() != null
+				? context.getId(line.getPiItemProduct(), HUPIItemProductId.class)
+				: null;
+
 		purchaseOrderFactory.newOrderLine()
 				.productId(productId)
-				.addQty(qty);
+				.addQty(qty)
+				.piItemProductId(piItemProductId);
 	}
 }
