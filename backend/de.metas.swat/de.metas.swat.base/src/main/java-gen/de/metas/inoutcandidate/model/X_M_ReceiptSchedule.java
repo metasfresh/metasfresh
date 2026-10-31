@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ReceiptSchedule
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_ReceiptSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1596678912L;
+	private static final long serialVersionUID = 1411123725L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (final Properties ctx, final int M_ReceiptSchedule_ID, @Nullable final String trxName)
@@ -81,6 +81,39 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public void setATA (final @Nullable java.sql.Timestamp ATA)
+	{
+		throw new IllegalArgumentException ("ATA is virtual column");	}
+
+	@Override
+	public java.sql.Timestamp getATA()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ATA);
+	}
+
+	@Override
+	public void setATD (final @Nullable java.sql.Timestamp ATD)
+	{
+		throw new IllegalArgumentException ("ATD is virtual column");	}
+
+	@Override
+	public java.sql.Timestamp getATD()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ATD);
+	}
+
+	@Override
+	public void setBLDate (final @Nullable java.sql.Timestamp BLDate)
+	{
+		throw new IllegalArgumentException ("BLDate is virtual column");	}
+
+	@Override
+	public java.sql.Timestamp getBLDate()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_BLDate);
+	}
+
+	@Override
 	public void setBPartnerAddress (final @Nullable java.lang.String BPartnerAddress)
 	{
 		set_ValueNoCheck (COLUMNNAME_BPartnerAddress, BPartnerAddress);
@@ -120,18 +153,42 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setC_BP_Location_Override_ID (final int C_BP_Location_Override_ID)
+	public void setCalendarWeek (final @Nullable BigDecimal CalendarWeek)
 	{
-		if (C_BP_Location_Override_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, C_BP_Location_Override_ID);
+		throw new IllegalArgumentException ("CalendarWeek is virtual column");	}
+
+	@Override
+	public BigDecimal getCalendarWeek()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CalendarWeek);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public int getC_BP_Location_Override_ID() 
+	public void setCanBeExportedFrom (final @Nullable java.sql.Timestamp CanBeExportedFrom)
 	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_ID);
+		set_Value (COLUMNNAME_CanBeExportedFrom, CanBeExportedFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getCanBeExportedFrom()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
+	}
+
+	@Override
+	public void setCatch_UOM_ID (final int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1)
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
+	}
+
+	@Override
+	public int getCatch_UOM_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
 	}
 
 	@Override
@@ -177,6 +234,44 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public int getC_BPartner_Override_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Override_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_BP_Group getC_BP_Group()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
+	}
+
+	@Override
+	public void setC_BP_Group(final org.compiere.model.I_C_BP_Group C_BP_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class, C_BP_Group);
+	}
+
+	@Override
+	public void setC_BP_Group_ID (final int C_BP_Group_ID)
+	{
+		throw new IllegalArgumentException ("C_BP_Group_ID is virtual column");	}
+
+	@Override
+	public int getC_BP_Group_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_Group_ID);
+	}
+
+	@Override
+	public void setC_BP_Location_Override_ID (final int C_BP_Location_Override_ID)
+	{
+		if (C_BP_Location_Override_ID < 1)
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
+		else
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, C_BP_Location_Override_ID);
+	}
+
+	@Override
+	public int getC_BP_Location_Override_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_ID);
 	}
 
 	@Override
@@ -234,6 +329,17 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public int getC_Flatrate_Term_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
+	}
+
+	@Override
+	public void setContainerNo (final @Nullable java.lang.String ContainerNo)
+	{
+		throw new IllegalArgumentException ("ContainerNo is virtual column");	}
+
+	@Override
+	public java.lang.String getContainerNo()
+	{
+		return get_ValueAsString(COLUMNNAME_ContainerNo);
 	}
 
 	@Override
@@ -333,6 +439,17 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public void setCRD (final @Nullable java.sql.Timestamp CRD)
+	{
+		throw new IllegalArgumentException ("CRD is virtual column");	}
+
+	@Override
+	public java.sql.Timestamp getCRD()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_CRD);
+	}
+
+	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -348,33 +465,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setCanBeExportedFrom (final @Nullable java.sql.Timestamp CanBeExportedFrom)
-	{
-		set_Value (COLUMNNAME_CanBeExportedFrom, CanBeExportedFrom);
-	}
-
-	@Override
-	public java.sql.Timestamp getCanBeExportedFrom() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
-	}
-
-	@Override
-	public void setCatch_UOM_ID (final int Catch_UOM_ID)
-	{
-		if (Catch_UOM_ID < 1) 
-			set_Value (COLUMNNAME_Catch_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
-	}
-
-	@Override
-	public int getCatch_UOM_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
-	}
-
-	@Override
 	public void setDateOrdered (final @Nullable java.sql.Timestamp DateOrdered)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateOrdered, DateOrdered);
@@ -384,6 +474,29 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public java.sql.Timestamp getDateOrdered() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
+	}
+
+	@Override
+	public void setDatePromised_Effective (final @Nullable java.sql.Timestamp DatePromised_Effective)
+	{
+		throw new IllegalArgumentException ("DatePromised_Effective is virtual column");	}
+
+	@Override
+	public java.sql.Timestamp getDatePromised_Effective()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DatePromised_Effective);
+	}
+
+	@Override
+	public void setDatePromised_Override (final @Nullable java.sql.Timestamp DatePromised_Override)
+	{
+		set_Value (COLUMNNAME_DatePromised_Override, DatePromised_Override);
+	}
+
+	@Override
+	public java.sql.Timestamp getDatePromised_Override()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DatePromised_Override);
 	}
 
 	/** 
@@ -500,7 +613,29 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return get_ValueAsString(COLUMNNAME_DeliveryViaRule_Override);
 	}
 
-	/** 
+	@Override
+	public void setETA (final @Nullable java.sql.Timestamp ETA)
+	{
+		throw new IllegalArgumentException ("ETA is virtual column");	}
+
+	@Override
+	public java.sql.Timestamp getETA()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ETA);
+	}
+
+	@Override
+	public void setETD (final @Nullable java.sql.Timestamp ETD)
+	{
+		throw new IllegalArgumentException ("ETD is virtual column");	}
+
+	@Override
+	public java.sql.Timestamp getETD()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ETD);
+	}
+
+	/**
 	 * ExportStatus AD_Reference_ID=541161
 	 * Reference name: API_ExportStatus
 	 */
@@ -565,6 +700,28 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public void setIsBLReceived (final boolean IsBLReceived)
+	{
+		throw new IllegalArgumentException ("IsBLReceived is virtual column");	}
+
+	@Override
+	public boolean isBLReceived()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBLReceived);
+	}
+
+	@Override
+	public void setIsBookingConfirmed (final boolean IsBookingConfirmed)
+	{
+		throw new IllegalArgumentException ("IsBookingConfirmed is virtual column");	}
+
+	@Override
+	public boolean isBookingConfirmed()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBookingConfirmed);
+	}
+
+	@Override
 	public void setIsBPartnerAddress_Override (final boolean IsBPartnerAddress_Override)
 	{
 		set_Value (COLUMNNAME_IsBPartnerAddress_Override, IsBPartnerAddress_Override);
@@ -577,6 +734,18 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public void setIsConfirmedBySupplier (final boolean IsConfirmedBySupplier)
+	{
+		set_Value (COLUMNNAME_IsConfirmedBySupplier, IsConfirmedBySupplier);
+	}
+
+	@Override
+	public boolean isConfirmedBySupplier()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsConfirmedBySupplier);
+	}
+
+	@Override
 	public void setIsPackagingMaterial (final boolean IsPackagingMaterial)
 	{
 		set_Value (COLUMNNAME_IsPackagingMaterial, IsPackagingMaterial);
@@ -586,6 +755,28 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public boolean isPackagingMaterial() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPackagingMaterial);
+	}
+
+	@Override
+	public void setIsWENotice (final boolean IsWENotice)
+	{
+		throw new IllegalArgumentException ("IsWENotice is virtual column");	}
+
+	@Override
+	public boolean isWENotice()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWENotice);
+	}
+
+	@Override
+	public void setMaterialReceiptInfo (final @Nullable java.lang.String MaterialReceiptInfo)
+	{
+		throw new IllegalArgumentException ("MaterialReceiptInfo is virtual column");	}
+
+	@Override
+	public java.lang.String getMaterialReceiptInfo()
+	{
+		return get_ValueAsString(COLUMNNAME_MaterialReceiptInfo);
 	}
 
 	@Override
@@ -616,6 +807,59 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public org.compiere.model.I_M_CustomsTariff getM_CustomsTariff()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CustomsTariff_ID, org.compiere.model.I_M_CustomsTariff.class);
+	}
+
+	@Override
+	public void setM_CustomsTariff(final org.compiere.model.I_M_CustomsTariff M_CustomsTariff)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CustomsTariff_ID, org.compiere.model.I_M_CustomsTariff.class, M_CustomsTariff);
+	}
+
+	@Override
+	public void setM_CustomsTariff_ID (final int M_CustomsTariff_ID)
+	{
+		throw new IllegalArgumentException ("M_CustomsTariff_ID is virtual column");	}
+
+	@Override
+	public int getM_CustomsTariff_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CustomsTariff_ID);
+	}
+
+	@Override
+	public void setM_HU_LUTU_Configuration_ID (final int M_HU_LUTU_Configuration_ID)
+	{
+		if (M_HU_LUTU_Configuration_ID < 1)
+			set_Value (COLUMNNAME_M_HU_LUTU_Configuration_ID, null);
+		else
+			set_Value (COLUMNNAME_M_HU_LUTU_Configuration_ID, M_HU_LUTU_Configuration_ID);
+	}
+
+	@Override
+	public int getM_HU_LUTU_Configuration_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_LUTU_Configuration_ID);
+	}
+
+	@Override
+	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
+	{
+		if (M_HU_PI_Item_Product_ID < 1)
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
+		else
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public int getM_HU_PI_Item_Product_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
 	public de.metas.inoutcandidate.model.I_M_IolCandHandler getM_IolCandHandler()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_IolCandHandler_ID, de.metas.inoutcandidate.model.I_M_IolCandHandler.class);
@@ -640,6 +884,18 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public int getM_IolCandHandler_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_IolCandHandler_ID);
+	}
+
+	@Override
+	public void setMovementDate (final @Nullable java.sql.Timestamp MovementDate)
+	{
+		set_Value (COLUMNNAME_MovementDate, MovementDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getMovementDate()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
 	}
 
 	@Override
@@ -670,6 +926,17 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public int getM_ReceiptSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ReceiptSchedule_ID);
+	}
+
+	@Override
+	public void setM_ShipperTransportation_ID (final int M_ShipperTransportation_ID)
+	{
+		throw new IllegalArgumentException ("M_ShipperTransportation_ID is virtual column");	}
+
+	@Override
+	public int getM_ShipperTransportation_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_ShipperTransportation_ID);
 	}
 
 	@Override
@@ -728,18 +995,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_Override_ID);
 	}
 
-	@Override
-	public void setMovementDate (final @Nullable java.sql.Timestamp MovementDate)
-	{
-		set_Value (COLUMNNAME_MovementDate, MovementDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getMovementDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
-	}
-
 	/** 
 	 * OnMaterialReceiptWithDestWarehouse AD_Reference_ID=540835
 	 * Reference name: OnMaterialReceiptWithDestWarehouse_List
@@ -761,7 +1016,89 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return get_ValueAsString(COLUMNNAME_OnMaterialReceiptWithDestWarehouse);
 	}
 
-	/** 
+	@Override
+	public void setPackDescription (final @Nullable java.lang.String PackDescription)
+	{
+		set_Value (COLUMNNAME_PackDescription, PackDescription);
+	}
+
+	@Override
+	public java.lang.String getPackDescription()
+	{
+		return get_ValueAsString(COLUMNNAME_PackDescription);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Postal getPOD()
+	{
+		return get_ValueAsPO(COLUMNNAME_POD_ID, org.compiere.model.I_C_Postal.class);
+	}
+
+	@Override
+	public void setPOD(final org.compiere.model.I_C_Postal POD)
+	{
+		set_ValueFromPO(COLUMNNAME_POD_ID, org.compiere.model.I_C_Postal.class, POD);
+	}
+
+	@Override
+	public void setPOD_ID (final int POD_ID)
+	{
+		throw new IllegalArgumentException ("POD_ID is virtual column");	}
+
+	@Override
+	public int getPOD_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_POD_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Postal getPOL()
+	{
+		return get_ValueAsPO(COLUMNNAME_POL_ID, org.compiere.model.I_C_Postal.class);
+	}
+
+	@Override
+	public void setPOL(final org.compiere.model.I_C_Postal POL)
+	{
+		set_ValueFromPO(COLUMNNAME_POL_ID, org.compiere.model.I_C_Postal.class, POL);
+	}
+
+	@Override
+	public void setPOL_ID (final int POL_ID)
+	{
+		throw new IllegalArgumentException ("POL_ID is virtual column");	}
+
+	@Override
+	public int getPOL_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_POL_ID);
+	}
+
+	@Override
+	public void setPOReference (final @Nullable java.lang.String POReference)
+	{
+		set_Value (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public java.lang.String getPOReference()
+	{
+		return get_ValueAsString(COLUMNNAME_POReference);
+	}
+
+	@Override
+	public void setPreparationTime (final @Nullable java.sql.Timestamp PreparationTime)
+	{
+		set_Value (COLUMNNAME_PreparationTime, PreparationTime);
+	}
+
+	@Override
+	public java.sql.Timestamp getPreparationTime()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PreparationTime);
+	}
+
+	/**
 	 * PriorityRule AD_Reference_ID=154
 	 * Reference name: _PriorityRule
 	 */
@@ -828,6 +1165,19 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public void setQtyItemCapacity (final @Nullable BigDecimal QtyItemCapacity)
+	{
+		set_Value (COLUMNNAME_QtyItemCapacity, QtyItemCapacity);
+	}
+
+	@Override
+	public BigDecimal getQtyItemCapacity()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyItemCapacity);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyMoved (final @Nullable BigDecimal QtyMoved)
 	{
 		set_Value (COLUMNNAME_QtyMoved, QtyMoved);
@@ -850,6 +1200,18 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public BigDecimal getQtyMovedInCatchUOM() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyMovedInCatchUOM);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyMovedTU (final @Nullable BigDecimal QtyMovedTU)
+	{
+		throw new IllegalArgumentException ("QtyMovedTU is virtual column");	}
+
+	@Override
+	public BigDecimal getQtyMovedTU()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyMovedTU);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -984,6 +1346,17 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public void setShipper_BPartner_ID (final int Shipper_BPartner_ID)
+	{
+		throw new IllegalArgumentException ("Shipper_BPartner_ID is virtual column");	}
+
+	@Override
+	public int getShipper_BPartner_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Shipper_BPartner_ID);
+	}
+
+	@Override
 	public void setStatus (final @Nullable java.lang.String Status)
 	{
 		set_ValueNoCheck (COLUMNNAME_Status, Status);
@@ -993,6 +1366,17 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public java.lang.String getStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_Status);
+	}
+
+	@Override
+	public void setTrackingID (final @Nullable java.lang.String TrackingID)
+	{
+		throw new IllegalArgumentException ("TrackingID is virtual column");	}
+
+	@Override
+	public java.lang.String getTrackingID()
+	{
+		return get_ValueAsString(COLUMNNAME_TrackingID);
 	}
 
 	@Override
@@ -1080,14 +1464,13 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setPOReference (final @Nullable java.lang.String POReference)
+	public void setVesselName (final @Nullable java.lang.String VesselName)
 	{
-		set_Value (COLUMNNAME_POReference, POReference);
-	}
+		throw new IllegalArgumentException ("VesselName is virtual column");	}
 
 	@Override
-	public java.lang.String getPOReference()
+	public java.lang.String getVesselName()
 	{
-		return get_ValueAsString(COLUMNNAME_POReference);
+		return get_ValueAsString(COLUMNNAME_VesselName);
 	}
 }
