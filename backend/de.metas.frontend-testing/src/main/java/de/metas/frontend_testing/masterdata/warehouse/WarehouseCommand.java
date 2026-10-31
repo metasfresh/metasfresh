@@ -7,6 +7,7 @@ import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.product.ProductCategoryId;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,6 +34,7 @@ public class WarehouseCommand
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
+	@NonNull private final WarehouseSourceHUConfigRepository sourceHUConfigRepository = new WarehouseSourceHUConfigRepository();
 
 	// params
 	@NonNull private final MasterdataContext context;
@@ -68,6 +70,7 @@ public class WarehouseCommand
 		if (!isReusedWarehouse)
 		{
 			assignPickingGroup();
+			createSourceHUConfigs();
 		}
 
 		final JsonWarehouseResponse.JsonWarehouseResponseBuilder responseBuilder = JsonWarehouseResponse.builder()
@@ -122,6 +125,7 @@ public class WarehouseCommand
 		warehouseRecord.setSeparator("*");
 		warehouseRecord.setIsInTransit(request.isInTransit());
 		warehouseRecord.setIsQualityReturnWarehouse(request.isQualityReturnWarehouse());
+		warehouseRecord.setIsReceiveAsSourceHU(request.isReceiveAsSourceHU());
 		warehouseRecord.setC_BPartner_ID(MasterdataContext.METASFRESH_ORG_BPARTNER_LOCATION_ID.getBpartnerId().getRepoId());
 		warehouseRecord.setC_BPartner_Location_ID(MasterdataContext.METASFRESH_ORG_BPARTNER_LOCATION_ID.getRepoId());
 
@@ -160,6 +164,26 @@ public class WarehouseCommand
 
 		warehouseRecord.setM_Warehouse_PickingGroup_ID(pickingGroupId.getRepoId());
 		saveRecord(warehouseRecord);
+	}
+
+	/**
+	 * One {@code M_Warehouse_SourceHUConfig} per requested product category. The categories are resolved from the
+	 * context, so they must have been created before the warehouses (see {@code CreateMasterdataCommand}); an unknown
+	 * identifier fails here instead of silently leaving the warehouse without its source-HU configuration.
+	 */
+	private void createSourceHUConfigs()
+	{
+		if (request.getSourceHUProductCategories() == null)
+		{
+			return;
+		}
+
+		for (final Identifier categoryIdentifier : request.getSourceHUProductCategories())
+		{
+			final ProductCategoryId productCategoryId = context.getId(categoryIdentifier, ProductCategoryId.class);
+
+			sourceHUConfigRepository.create(getWarehouseId(), productCategoryId);
+		}
 	}
 
 	private Map<String, JsonWarehouseResponse.Locator> createLocators()
