@@ -126,9 +126,9 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
       | shipmentSchedule1     | true     |
       | shipmentSchedule2     | true     |
     And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.IsDeliveryClosed |
-      | ic1                               | false         | 6            | true                 |
-      | ic2                               | true          | 0            | true                 |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed_Override |
+      | ic1                               | false         | 6            | true                 | null                   |
+      | ic2                               | true          | 0            | true                 | null                   |
     When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier |
       | ic1                               |
@@ -136,8 +136,8 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic1                               | invoice                 |
     And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice |
-      | ic2                               | true          | 0            |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.Processed_Override |
+      | ic2                               | true          | 0            | null                   |
 
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
@@ -163,8 +163,8 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
 
     When the M_ShipmentSchedule identified by shipmentSchedule1 is closed
     Then validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.IsDeliveryClosed |
-      | ic1                               | true          | 0            | true                 |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed_Override |
+      | ic1                               | true          | 0            | true                 | null                   |
 
     When the M_ShipmentSchedule identified by shipmentSchedule1 is reactivated
     Then validate C_Invoice_Candidate:

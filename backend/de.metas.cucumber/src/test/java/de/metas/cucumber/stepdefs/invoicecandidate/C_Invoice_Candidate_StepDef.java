@@ -760,9 +760,10 @@ public class C_Invoice_Candidate_StepDef
 										.isEqualTo(expected));
 
 						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_Processed_Override)
+								// pass the `null` placeholder to assert that NO override is set
 								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getProcessed_Override())
 										.as("Processed_Override")
-										.isEqualTo(expected));
+										.isEqualTo(DataTableUtil.nullToken2Null(expected)));
 
 						row.getAsOptionalIdentifier(COLUMNNAME_C_Tax_Effective_ID)
 								.map(taxTable::getId)
