@@ -1,5 +1,5 @@
--- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/functions/ad_process_delete.sql
 -- Fixes failure of: 5831250_sys_gh31560_Drop_Open_items_Document_Based_Process.sql (sorted before it so that 5831248 can call the function)
+-- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/functions/ad_process_delete.sql
 
 DROP FUNCTION IF EXISTS ad_process_delete(numeric)
 ;
@@ -24,11 +24,14 @@ DROP FUNCTION IF EXISTS ad_process_delete(numeric)
  * Tables or columns missing on a database are skipped.
  * AD_Process_Access rows of the process (role grants, no FK) are deleted as well.
  *
- * No backup_table() copies are made: backup_table() copies a whole table (AD_Archive, C_Printing_Queue and
- * C_Queue_Block can be very large), REPOINT and SET_NULL only change the reference to a process that no longer
- * exists, and DELETE only removes configuration rows that are meaningless without the process.
- * Instead, for every table the IDs of the changed rows (up to 100) are written to the log via RAISE NOTICE,
- * so the migration log keeps which rows referenced the deleted process.
+ * Business (non-AD) tables, marked BACKUP in the policy (AD_Archive, C_Printing_Queue, C_Queue_Block, PA_Report,
+ * M_HU_Label_Config, M_HU_Process, ExternalSystem_Config_ScriptedExportConversion, Leichmehl_PluFile_ConfigGroup),
+ * are copied with backup_table() before they are changed - only when they have affected rows, so a run that
+ * changes nothing creates no backup table. The backup table name is passed explicitly
+ * (<first 20 chars of the table>_bkp_<timestamp>_adpdel_<AD_Process_ID>) so that it stays within PostgreSQL's
+ * 63-character identifier limit and does not collide when the function is called for several processes in one
+ * transaction.
+ * In addition, for every table the IDs of the changed rows (the 100 lowest) are written to the log via RAISE NOTICE.
  *
  * Before changing anything, the function refuses (raises an exception) when
  *   - p_AD_Process_ID is the placeholder process itself, or the placeholder does not exist;
@@ -57,17 +60,17 @@ DECLARE
         'ad_workbenchwindow.ad_process_id:DELETE',
         'ad_printerrouting.ad_process_id:DELETE',
         'ad_mailconfig.ad_process_id:DELETE',
-        'm_hu_process.ad_process_id:DELETE',
+        'm_hu_process.ad_process_id:DELETE:BACKUP',
         'ad_tab.ad_process_id:SET_NULL',
-        'ad_archive.ad_process_id:REPOINT',
-        'c_printing_queue.ad_process_id:REPOINT',
-        'c_queue_block.ad_process_id:REPOINT',
+        'ad_archive.ad_process_id:REPOINT:BACKUP',
+        'c_printing_queue.ad_process_id:REPOINT:BACKUP',
+        'c_queue_block.ad_process_id:REPOINT:BACKUP',
         'ad_printformat.jasperprocess_id:REPOINT',
         'ad_boilerplate.jasperprocess_id:REPOINT',
-        'pa_report.jasperprocess_id:REPOINT',
-        'm_hu_label_config.labelreport_process_id:REPOINT',
-        'externalsystem_config_scriptedexportconversion.ad_process_outbounddata_id:REPOINT',
-        'leichmehl_plufile_configgroup.ad_process_customquery_id:REPOINT'
+        'pa_report.jasperprocess_id:REPOINT:BACKUP',
+        'm_hu_label_config.labelreport_process_id:REPOINT:BACKUP',
+        'externalsystem_config_scriptedexportconversion.ad_process_outbounddata_id:REPOINT:BACKUP',
+        'leichmehl_plufile_configgroup.ad_process_customquery_id:REPOINT:BACKUP'
         ];
     v_policy               record;
     v_fk                   record;
@@ -109,7 +112,12 @@ BEGIN
                           FROM UNNEST(c_policy) e
                           WHERE split_part(e, '.', 1) = k.conrelid::regclass::text
                             AND split_part(split_part(e, ':', 1), '.', 2) = a.attname::text
-                            AND split_part(e, ':', 2) IN ('DELETE', 'SET_NULL', 'REPOINT'))
+                            AND split_part(e, ':', 2) IN ('DELETE', 'SET_NULL', 'REPOINT')
+                            AND EXISTS (SELECT 1 -- the apply loop below skips a table without its key column
+                                        FROM information_schema.columns c
+                                        WHERE c.table_schema = 'public'
+                                          AND c.table_name = split_part(e, '.', 1)
+                                          AND c.column_name = split_part(e, '.', 1) || '_id'))
         LOOP
             EXECUTE format('SELECT count(*) FROM %s WHERE %I = $1', v_fk.ref_table, v_fk.ref_column) INTO v_count USING p_AD_Process_ID;
             IF v_count > 0 THEN
@@ -149,6 +157,27 @@ BEGIN
     IF v_blockers <> '' THEN
         RAISE EXCEPTION 'ad_process_delete: cannot delete AD_Process_ID=%; nothing was changed. Blocking references:%', p_AD_Process_ID, v_blockers;
     END IF;
+
+    --
+    -- Back up the business tables that have affected rows
+    --
+    FOR v_policy IN
+        SELECT split_part(e, '.', 1)                     AS table_name,
+               split_part(split_part(e, ':', 1), '.', 2) AS column_name
+        FROM UNNEST(c_policy) e
+        WHERE split_part(e, ':', 3) = 'BACKUP'
+          AND EXISTS (SELECT 1
+                      FROM information_schema.columns c
+                      WHERE c.table_schema = 'public'
+                        AND c.table_name = split_part(e, '.', 1)
+                        AND c.column_name = split_part(split_part(e, ':', 1), '.', 2))
+        LOOP
+            EXECUTE format('SELECT count(*) FROM %I WHERE %I = $1', v_policy.table_name, v_policy.column_name) INTO v_count USING p_AD_Process_ID;
+            IF v_count > 0 THEN
+                PERFORM backup_table(v_policy.table_name, '',
+                                     left(v_policy.table_name, 20) || '_bkp_' || to_char(now(), 'YYYYMMDD_HH24MISS_MS') || '_adpdel_' || p_AD_Process_ID::text);
+            END IF;
+        END LOOP;
 
     --
     -- Apply the policy
@@ -193,10 +222,10 @@ BEGIN
             END IF;
 
             -- $1 is unused by SET_NULL and DELETE
-            EXECUTE format('WITH changed AS (%s) SELECT (SELECT count(*) FROM changed), (SELECT string_agg(id::text, '','' ORDER BY id) FROM (SELECT c.* FROM changed c LIMIT 100) l(id))', v_sql)
+            EXECUTE format('WITH changed AS (%s) SELECT (SELECT count(*) FROM changed), (SELECT string_agg(id::text, '','' ORDER BY id) FROM (SELECT c.* FROM changed c ORDER BY 1 LIMIT 100) l(id))', v_sql)
                 INTO v_count, v_ids USING c_ProcessWasDeleted_ID, p_AD_Process_ID;
             IF v_count > 0 THEN
-                RAISE NOTICE 'ad_process_delete: AD_Process_ID=%: % % row(s) in %.%; % IDs (first 100): %',
+                RAISE NOTICE 'ad_process_delete: AD_Process_ID=%: % % row(s) in %.%; % IDs (lowest 100): %',
                     p_AD_Process_ID, v_policy.action, v_count, v_policy.table_name, v_policy.column_name, v_policy.table_name, v_ids;
             END IF;
         END LOOP;
