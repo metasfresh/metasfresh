@@ -27,6 +27,6 @@
   "dependencies": {
     "axios": "^1.13.2",
     "pdf-parse": "^1.1.4",
-    "pdfjs-dist": "^3.11.174"
+    "pdfjs-dist": "^5.4.530"
   }
 }
