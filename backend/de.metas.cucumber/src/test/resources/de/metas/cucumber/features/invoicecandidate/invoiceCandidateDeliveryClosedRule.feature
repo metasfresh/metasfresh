@@ -170,3 +170,159 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.IsDeliveryClosed |
       | ic1                               | false         | false                |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: TC7d-hand - a candidate closed by hand stays closed when its line is delivered after the shipment schedule was closed and reactivated
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+
+    When the C_Invoice_Candidate identified by ic1 is closed by hand
+    And the M_ShipmentSchedule identified by shipmentSchedule1 is closed
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.Processed_Override |
+      | ic1                               | true          | 0            | Y                      |
+
+    When the M_ShipmentSchedule identified by shipmentSchedule1 is reactivated
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.Processed_Override |
+      | ic1                               | true          | Y                      |
+
+    When shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment1             | shipmentSchedule1                | D                 | Y                  |
+    Then validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipmentLine1             | shipment1             | product1                | 6           | true      |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.Processed_Override |
+      | ic1                               | true          | 0            | Y                      |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: TC7d-2 - a hand close after the shipment schedule close wins over a later delivery
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+
+    When the M_ShipmentSchedule identified by shipmentSchedule1 is closed
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed_Override |
+      | ic1                               | true          | 0            | true                 | null                   |
+
+    When the C_Invoice_Candidate identified by ic1 is closed by hand
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.Processed_Override |
+      | ic1                               | true          | Y                      |
+
+    When the M_ShipmentSchedule identified by shipmentSchedule1 is reactivated
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment1             | shipmentSchedule1                | D                 | Y                  |
+    Then validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipmentLine1             | shipment1             | product1                | 6           | true      |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.Processed_Override |
+      | ic1                               | true          | 0            | Y                      |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: TC7d-flatrate - a flatrate "to clear" candidate stays closed when its line is delivered after the shipment schedule was closed and reactivated
+    Given for this scenario only, set sys config boolean value true for sys config C_Invoice_Candidate_Close_IsToClear
+    And metasfresh contains C_UOMs:
+      | Identifier  | X12DE355 | Name     | UOMSymbol | StdPrecision | CostingPrecision |
+      | flatfee_uom | MEAL     | Meal_7d  | M         | 2            | 2                |
+    And metasfresh contains M_Product_Categories:
+      | Identifier     | Name           | Value          |
+      | flatfee_cat    | flatfee_cat_7d | flatfee_cat_7d |
+    And metasfresh contains M_Products:
+      | Identifier   | Name         | ProductType | OPT.X12DE355 | OPT.M_Product_Category_ID.Identifier |
+      | flatfee_prod | flatfee_prod | S           | MEAL         |                                      |
+      | product3     | product3     |             | PCE          | flatfee_cat                          |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | PLV                    | flatfee_prod | 1.0      | MEAL              | Normal                        |
+      | PLV                    | product3     | 10.0     | PCE               | Normal                        |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inventory3                | 2024-03-20   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory3                | line3                         | product3                | 0       | 1000     | PCE          |
+    And complete inventory with inventoryIdentifier 'inventory3'
+    And metasfresh contains C_BPartners without locations:
+      | Identifier   | Name          | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | flatCustomer | flatCustomer7d | N            | Y              | PS                            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier         | GLN        | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | flatCustomerLoc    | Dummy_GLN7 | flatCustomer             | true                | true         |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier | Name         | Type_Conditions | OPT.Type_Flatrate | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_UOM_ID.Identifier |
+      | conditions | flatfee_7d   | FlatFee         | RPTD              | flatfee_prod                         | flatfee_uom             |
+    And metasfresh contains C_Flatrate_Matchings:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | SeqNo | OPT.M_Product_Category_ID.Identifier |
+      | matching   | conditions                          | 10    | flatfee_cat                          |
+    When metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | term       | conditions                          | flatCustomer                  | 2024-01-01 | 2024-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by term is completed
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | flatCustomer             | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered |
+      | SO                    | L1         | product3                | 4          |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic1                               |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.Processed_Override |
+      | ic1                               | true          | Y                      |
+
+    When the M_ShipmentSchedule identified by shipmentSchedule1 is closed
+    And the M_ShipmentSchedule identified by shipmentSchedule1 is reactivated
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment1             | shipmentSchedule1                | D                 | Y                  |
+    Then validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipmentLine1             | shipment1             | product3                | 4           | true      |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.Processed_Override |
+      | ic1                               | true          | Y                      |
