@@ -406,9 +406,6 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void closeInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
 
-	/** Undo of {@link #closeInvoiceCandidatesByOrderLineId(OrderLineId)}: clears {@code Processed_Override} and invalidates the candidates. */
-	void openInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
-
 	/**
 	 * Close the given invoice candidate.
 	 * Closing an invoice candidate means setting its Processed_Override to Y and invalidating the invoice candidate.
