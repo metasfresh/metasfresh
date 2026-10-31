@@ -1257,6 +1257,31 @@ public class M_ShipmentSchedule_StepDef
 		shipmentScheduleTable.putOrReplace(shipmentScheduleIdentifier, InterfaceWrapperHelper.load(schedule.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class));
 	}
 
+	/**
+	 * Sets {@code M_ShipmentSchedule.C_Async_Batch_ID} by direct update (see {@link #set_C_Async_Batch_ID_by_direct_update}) to the
+	 * async batch of the newest unprocessed {@code C_Queue_WorkPackage} that has one. Makes a scenario independent of whether a
+	 * schedule recompute already cleared the batch the enqueue assigned (the very lost update a scenario may want to reproduce selectively).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And C_Async_Batch_ID of M_ShipmentSchedule schedule_1 gets the batch of the pending workpackage by direct update
+	 * </pre>
+	 */
+	@And("^C_Async_Batch_ID of M_ShipmentSchedule (.*) gets the batch of the pending workpackage by direct update$")
+	public void set_C_Async_Batch_ID_to_pending_workpackage_batch(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final de.metas.async.model.I_C_Queue_WorkPackage workPackage = queryBL.createQueryBuilder(de.metas.async.model.I_C_Queue_WorkPackage.class)
+				.addEqualsFilter(de.metas.async.model.I_C_Queue_WorkPackage.COLUMNNAME_Processed, false)
+				.addNotNull(de.metas.async.model.I_C_Queue_WorkPackage.COLUMNNAME_C_Async_Batch_ID)
+				.orderByDescending(de.metas.async.model.I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
+				.create()
+				.first(de.metas.async.model.I_C_Queue_WorkPackage.class);
+		assertThat(workPackage).as("unprocessed C_Queue_WorkPackage with a C_Async_Batch_ID").isNotNull();
+
+		set_C_Async_Batch_ID_by_direct_update(shipmentScheduleIdentifier, String.valueOf(workPackage.getC_Async_Batch_ID()));
+	}
+
 	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
 	{
 		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)

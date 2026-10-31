@@ -44,6 +44,7 @@ import org.springframework.context.ApplicationContext;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -68,6 +69,13 @@ public class AD_SysConfig_StepDef
 	 * Set by {@link #enable_sys_config_for_this_scenario_only}; makes {@link #restoreTemporarySysConfigsAfterScenario()} reset all caches.
 	 */
 	private boolean resetAllCachesOnRestore = false;
+
+	/**
+	 * Client-specific rows ({@code AD_Client_ID != 0}) of sysconfigs overwritten by {@link #enable_sys_config_for_this_scenario_only}, mapped to their value
+	 * from before the overwrite. Code reading a sysconfig for a client/org prefers such a row over the SYSTEM row, so a stale one (e.g. left by a UI test)
+	 * would make the SYSTEM-level override ineffective. Restored by {@link #restoreTemporarySysConfigsAfterScenario()}.
+	 */
+	private final Map<Integer, String> priorValueByClientSysConfigId = new LinkedHashMap<>();
 
 	/**
 	 * Sets a SYSTEM-level AD_SysConfig to the given value — permanently, for the rest of the scenario
@@ -104,6 +112,22 @@ public class AD_SysConfig_StepDef
 		rememberPriorValue(sysConfigName);
 		resetAllCachesOnRestore = true;
 		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
+		overrideClientSpecificRows(sysConfigName, sysconfigValue);
+	}
+
+	private void overrideClientSpecificRows(@NonNull final String sysConfigName, @NonNull final String value)
+	{
+		queryBL.createQueryBuilder(I_AD_SysConfig.class)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, sysConfigName)
+				.addNotEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM)
+				.create()
+				.list(I_AD_SysConfig.class)
+				.forEach(row -> {
+					priorValueByClientSysConfigId.putIfAbsent(row.getAD_SysConfig_ID(), row.getValue());
+					row.setValue(value);
+					InterfaceWrapperHelper.save(row);
+				});
+		resetSysConfigCache();
 	}
 
 	private void applySysConfigValue(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
@@ -333,6 +357,13 @@ public class AD_SysConfig_StepDef
 	@After
 	public void restoreTemporarySysConfigsAfterScenario()
 	{
+		priorValueByClientSysConfigId.forEach((id, priorValue) -> {
+			final I_AD_SysConfig row = InterfaceWrapperHelper.load(id, I_AD_SysConfig.class);
+			row.setValue(priorValue);
+			InterfaceWrapperHelper.save(row);
+		});
+		priorValueByClientSysConfigId.clear();
+
 		if (priorValueBySysConfigName.isEmpty())
 		{
 			return;
