@@ -16,7 +16,7 @@ RUN yarn lint
 RUN yarn build
 
 
-FROM nginx:1.21.6 AS runtime
+FROM nginx:1.30 AS runtime
 
 COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
 
