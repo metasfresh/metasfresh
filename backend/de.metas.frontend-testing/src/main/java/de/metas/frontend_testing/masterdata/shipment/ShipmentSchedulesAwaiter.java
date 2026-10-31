@@ -5,14 +5,15 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
@@ -31,7 +32,7 @@ class ShipmentSchedulesAwaiter
 {
 	private static final Logger logger = LogManager.getLogger(ShipmentSchedulesAwaiter.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-	private final IShipmentScheduleInvalidateRepository invalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	@NonNull private final OrderId orderId;
@@ -91,10 +92,10 @@ class ShipmentSchedulesAwaiter
 			return "no shipment schedules yet";
 		}
 
-		final boolean anyFlaggedForRecompute = schedules.stream()
+		final ImmutableSet<ShipmentScheduleId> scheduleIds = schedules.stream()
 				.map(schedule -> ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
-				.anyMatch(invalidateRepository::isFlaggedForRecompute);
-		if (anyFlaggedForRecompute)
+				.collect(ImmutableSet.toImmutableSet());
+		if (isAnyFlaggedForRecompute(scheduleIds))
 		{
 			return "some shipment schedules are flagged for recompute";
 		}
@@ -116,5 +117,17 @@ class ShipmentSchedulesAwaiter
 		}
 
 		return null;
+	}
+
+	/**
+	 * Same check as {@code IShipmentScheduleInvalidateRepository.isAllValid} on newer lines (not available on this one).
+	 * Uses {@link IQueryBL} rather than the repository's raw-SQL {@code isFlaggedForRecompute}, so it also works in unit tests.
+	 */
+	private boolean isAnyFlaggedForRecompute(@NonNull final ImmutableSet<ShipmentScheduleId> scheduleIds)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addInArrayFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, scheduleIds)
+				.create()
+				.anyMatch();
 	}
 }
