@@ -59,37 +59,17 @@ runs:
 
     - name: Setup SSH
       if: steps.check.outputs.skip != 'true'
-      shell: bash
-      env:
-        SSH_KEY: ${{ inputs.ssh-key }}
-        SERVER_HOSTNAME: ${{ inputs.server-hostname }}
-        SERVER_USER: ${{ inputs.server-user }}
-        SERVER_SSH_PORT: ${{ inputs.server-ssh-port }}
-      run: |
-        mkdir -p ~/.ssh
-        echo "$SSH_KEY" > ~/.ssh/reports_key
-        chmod 600 ~/.ssh/reports_key
+      uses: ./.github/actions/setup-reports-ssh
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        server-hostname: ${{ inputs.server-hostname }}
+        server-user: ${{ inputs.server-user }}
+        server-ssh-port: ${{ inputs.server-ssh-port }}
 
-        # Trust both the storagebox and the web server
-        ssh-keyscan -H -p "$SERVER_SSH_PORT" "$SERVER_HOSTNAME" >> ~/.ssh/known_hosts 2>/dev/null
-        ssh-keyscan -H test-reports.metasfresh.com >> ~/.ssh/known_hosts 2>/dev/null
-
-        # Write SSH config with two named hosts
-        cat >> ~/.ssh/config <<EOF
-        Host reports-storage
-          HostName $SERVER_HOSTNAME
-          User $SERVER_USER
-          Port $SERVER_SSH_PORT
-          IdentityFile ~/.ssh/reports_key
-          StrictHostKeyChecking accept-new
-
-        Host reports-server
-          HostName test-reports.metasfresh.com
-          User ci-reports
-          IdentityFile ~/.ssh/reports_key
-          StrictHostKeyChecking accept-new
-        EOF
-
+    # Publishing the report is best-effort: the test outcome is decided by the calling job's own
+    # result/assert steps, never by this upload. Transient failures are retried with backoff; a
+    # failure that persists (reports server down) is reported as a warning and does not turn a
+    # green test job red.
     - name: Upload report
       if: steps.check.outputs.skip != 'true'
       shell: bash
@@ -102,14 +82,33 @@ runs:
       run: |
         STORAGEBOX_PATH="${STORAGEBOX_BASE_PATH}/branches/${BRANCH}/builds/${VERSION}/${REPORT_TYPE}"
         SERVER_PATH="/var/www/test-reports/branches/${BRANCH}/builds/${VERSION}/${REPORT_TYPE}"
+        REPORT_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/${REPORT_TYPE}/"
+
+        # retry <description> <command...>: up to 3 attempts, 15 s then 30 s backoff
+        retry() {
+          local what="$1" attempt delay=15 rc
+          shift
+          for attempt in 1 2 3; do
+            if "$@"; then return 0; else rc=$?; fi
+            echo "${what} failed with exit code ${rc} (attempt ${attempt}/3)"
+            if [ "$attempt" -lt 3 ]; then sleep "$delay"; delay=$((delay * 2)); fi
+          done
+          return "$rc"
+        }
 
         echo "Creating server directory: $SERVER_PATH"
-        ssh reports-server "mkdir -p '${SERVER_PATH}'"
+        if ! retry "Creating the server directory" ssh reports-server "mkdir -p '${SERVER_PATH}'"; then
+          echo "::warning::Report ${REPORT_TYPE} was NOT published: the reports server could not be reached (test results are unaffected)"
+          exit 0
+        fi
 
         echo "Uploading report from ${REPORT_DIR}/ to reports-storage:${STORAGEBOX_PATH}/"
-        rsync -az --delete "${REPORT_DIR}/" "reports-storage:${STORAGEBOX_PATH}/"
+        if ! retry "Uploading the report" rsync -az --delete "${REPORT_DIR}/" "reports-storage:${STORAGEBOX_PATH}/"; then
+          echo "::warning::Report ${REPORT_TYPE} was NOT published: the upload to the report storage failed (test results are unaffected)"
+          exit 0
+        fi
 
-        echo "::notice::Report uploaded to https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/${REPORT_TYPE}/"
+        echo "::notice::Report uploaded to ${REPORT_URL}"
 
     - name: Cleanup SSH key
       if: always() && steps.check.outputs.skip != 'true'
