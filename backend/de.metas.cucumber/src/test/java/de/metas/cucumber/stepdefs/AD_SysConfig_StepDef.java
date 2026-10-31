@@ -357,12 +357,25 @@ public class AD_SysConfig_StepDef
 	@After
 	public void restoreTemporarySysConfigsAfterScenario()
 	{
-		priorValueByClientSysConfigId.forEach((id, priorValue) -> {
-			final I_AD_SysConfig row = InterfaceWrapperHelper.load(id, I_AD_SysConfig.class);
-			row.setValue(priorValue);
-			InterfaceWrapperHelper.save(row);
-		});
-		priorValueByClientSysConfigId.clear();
+		try
+		{
+			priorValueByClientSysConfigId.forEach((id, priorValue) -> {
+				final I_AD_SysConfig row = queryBL.createQueryBuilder(I_AD_SysConfig.class)
+						.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_SysConfig_ID, id)
+						.create()
+						.firstOnly(I_AD_SysConfig.class);
+				if (row == null)
+				{
+					return; // deleted during the scenario: nothing to restore
+				}
+				row.setValue(priorValue);
+				InterfaceWrapperHelper.save(row);
+			});
+		}
+		finally
+		{
+			priorValueByClientSysConfigId.clear();
+		}
 
 		if (priorValueBySysConfigName.isEmpty())
 		{

@@ -134,7 +134,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
     And complete picking job
     And there is 1 pending "GenerateInOutFromShipmentSchedules" workpackage
     And the shipment-schedule recompute work queue drains to zero pending workpackages
-    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule1 gets the batch of the pending workpackage by direct update
+    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule1 gets the batch of the pending "GenerateInOutFromShipmentSchedules" workpackage by direct update
     And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule2 is set to null by direct update
     And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule3 is set to null by direct update
     When the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction
@@ -225,6 +225,8 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | shipmentSchedule3                | shipment2             | CO            |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID | IsClosed |
+      | shipmentSchedule1     | true     |
+      | shipmentSchedule2     | true     |
       | shipmentSchedule3     | true     |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice |

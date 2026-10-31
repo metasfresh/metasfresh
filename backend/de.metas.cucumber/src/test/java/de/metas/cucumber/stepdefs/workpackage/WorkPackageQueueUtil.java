@@ -73,6 +73,21 @@ public class WorkPackageQueueUtil
 				.count();
 	}
 
+	/** @return the pending workpackages (same definition as {@link #countPendingWorkPackages(String)}) of the processor, oldest first */
+	public java.util.List<I_C_Queue_WorkPackage> retrievePendingWorkPackages(@NonNull final String processorShortName)
+	{
+		final ImmutableSet<Integer> packageProcessorIds = resolvePackageProcessorIds(processorShortName);
+		if (packageProcessorIds.isEmpty())
+		{
+			return com.google.common.collect.ImmutableList.of();
+		}
+
+		return pendingWorkPackagesQuery(packageProcessorIds)
+				.orderBy(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
+				.create()
+				.list(I_C_Queue_WorkPackage.class);
+	}
+
 	IQueryBuilder<I_C_Queue_WorkPackage> pendingWorkPackagesQuery(@NonNull final ImmutableSet<Integer> packageProcessorIds)
 	{
 		return queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
