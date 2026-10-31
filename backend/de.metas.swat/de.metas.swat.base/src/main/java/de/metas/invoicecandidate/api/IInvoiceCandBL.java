@@ -302,6 +302,12 @@ public interface IInvoiceCandBL extends ISingletonService
 	void updateProcessedFlag(I_C_Invoice_Candidate candidate);
 
 	/**
+	 * @return {@code true} if the candidate counts as processed only because its delivery is closed, its effective invoice rule is delivery-based
+	 * and nothing is delivered (candidate and order line) or invoiced.
+	 */
+	boolean isProcessedByDeliveryClosedRule(@NonNull I_C_Invoice_Candidate ic);
+
+	/**
 	 * Resets {@link I_C_Invoice_Candidate#COLUMNNAME_IsError} field together with some other depending fields:
 	 * <ul>
 	 * <li>{@link I_C_Invoice_Candidate#COLUMNNAME_AD_Note_ID}

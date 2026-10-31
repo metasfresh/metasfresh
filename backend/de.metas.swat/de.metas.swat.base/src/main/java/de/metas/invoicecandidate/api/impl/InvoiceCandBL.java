@@ -1981,6 +1981,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public boolean isProcessedByDeliveryClosedRule(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return false; // stub, implemented by the follow-up commit
+	}
+
+	@Override
 	public void updateProcessedFlag(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		Boolean processed = null;
