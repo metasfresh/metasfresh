@@ -144,12 +144,12 @@ public class CreateMasterdataCommand
 	{
 		this.context.putFromJson(request.getContext());
 
-		// Apply sysconfigs early (before any masterdata creation)
-		previousSysconfigs.putAll(applySysconfigs());
-		previousSystemSysconfigs.putAll(applySystemSysconfigs());
-
 		try
 		{
+			// Apply sysconfigs early (before any masterdata creation)
+			previousSysconfigs.putAll(applySysconfigs());
+			previousSystemSysconfigs.putAll(applySystemSysconfigs());
+
 			return createMasterdata();
 		}
 		catch (final RuntimeException ex)
@@ -169,15 +169,21 @@ public class CreateMasterdataCommand
 
 	private void restoreSysconfigs()
 	{
-		SystemSysconfigCommand.builder()
-				.sysConfigBL(sysConfigBL)
-				.systemSysconfigs(previousSystemSysconfigs)
-				.build()
-				.execute();
-		SysconfigCommand.builder()
-				.sysconfigs(previousSysconfigs)
-				.build()
-				.execute();
+		if (!previousSystemSysconfigs.isEmpty())
+		{
+			SystemSysconfigCommand.builder()
+					.sysConfigBL(sysConfigBL)
+					.systemSysconfigs(previousSystemSysconfigs)
+					.build()
+					.execute();
+		}
+		if (!previousSysconfigs.isEmpty())
+		{
+			SysconfigCommand.builder()
+					.sysconfigs(previousSysconfigs)
+					.build()
+					.execute();
+		}
 	}
 
 	private JsonCreateMasterdataResponse createMasterdata()
