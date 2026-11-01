@@ -64,10 +64,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_M_AttributeSetInstance_ID;
 
+/**
+ * Creates and updates bills of materials ({@code PP_Product_BOM}, {@code PP_Product_BOMVersions}, {@code PP_Product_BOMLine}) for cucumber scenarios.
+ *
+ * @see PP_Product_BOM_StepDefData
+ * @see PP_Product_BOMVersions_StepDefData
+ * @see PP_Product_BOMLine_StepDefData
+ */
 public class PP_Product_Bom_StepDef
 {
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
 
@@ -77,7 +84,7 @@ public class PP_Product_Bom_StepDef
 	private final PP_Product_BOMLine_StepDefData productBOMLineTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public PP_Product_Bom_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
