@@ -290,7 +290,7 @@ public class MTree extends MTree_Base
 		// Nodes w/o parent
 		if (!buffer.isEmpty())
 		{
-			log.error("Nodes w/o parent - adding to root - {}", buffer);
+			log.debug("Nodes w/o parent - adding to root - {}", buffer);
 			for (int i = 0; i < buffer.size(); i++)
 			{
 				final MTreeNode node = buffer.get(i);
