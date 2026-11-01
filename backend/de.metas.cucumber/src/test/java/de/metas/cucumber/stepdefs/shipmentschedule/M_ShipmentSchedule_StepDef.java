@@ -1784,8 +1784,8 @@ public class M_ShipmentSchedule_StepDef
 
 		waitUntilValid(timeoutSec, shipmentScheduleId);
 
-		// The updater deletes the recompute markers out of trx, before its own trx (which writes the dates) commits.
-		// So "no markers" does not yet mean "dates written": poll for the expected dates too.
+		// Don't rely on "no recompute markers" meaning "dates written" (that holds only while the updater deletes
+		// the markers in the same trx that writes the dates): poll for the expected dates too.
 		final ZoneId scheduleZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()));
 		final LocalDate expectedPreparationDate = tableRow.getAsOptionalLocalDate(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate).orElse(null);
 		final LocalDate expectedDeliveryDate = tableRow.getAsOptionalLocalDate(I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate).orElse(null);
