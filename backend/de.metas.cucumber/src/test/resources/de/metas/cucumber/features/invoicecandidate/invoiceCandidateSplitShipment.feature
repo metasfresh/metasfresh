@@ -487,9 +487,10 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value            |
       | warehouseB                | Leergebindelager |
+    # warehouseB needs its own stock of product2: line 2 is delivered from there, the Background inventory is in the standard warehouse
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
-      | inventoryB                | 2024-03-20   | 540012         |
+      | inventoryB                | 2024-03-20   | warehouseB     |
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inventoryB                | lineB2                        | product2                | 0       | 100      | PCE          |
