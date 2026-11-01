@@ -407,6 +407,23 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
+	public ImmutableSet<OrderLineId> retrieveOrderLineIdsWithInvoiceCandidates(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLineIds)
+				.create()
+				.listDistinct(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, Integer.class)
+				.stream()
+				.map(OrderLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
 	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
