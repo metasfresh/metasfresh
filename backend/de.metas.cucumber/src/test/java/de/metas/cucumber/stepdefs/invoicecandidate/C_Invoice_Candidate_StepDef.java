@@ -1231,6 +1231,46 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	/**
+	 * Writes the given columns of invoice candidates with plain SQL: no model interceptor, no invalidation, no recompute.
+	 * For a stored state the application does not write on its own, such as an {@code Updated} timestamp in the past.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_Candidate_ID.Identifier</b> — (required) the candidate<br>
+	 *   <b>OPT.Updated</b> — (optional) instant, e.g. {@code 2026-01-01T00:00:00Z}<br>
+	 *   <b>OPT.C_Tax_Override_ID</b> — (optional) the tax override's numeric ID, e.g. {@code 100} (Tax_Not_Found)<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_Invoice_Candidate by plain SQL, without interceptors or recompute:
+	 *   | C_Invoice_Candidate_ID.Identifier | OPT.Updated          |
+	 *   | ic1                               | 2026-01-01T00:00:00Z |
+	 * </pre>
+	 */
+	@And("update C_Invoice_Candidate by plain SQL, without interceptors or recompute:")
+	public void update_C_Invoice_Candidate_by_plain_SQL(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.forEach(row -> {
+					final I_C_Invoice_Candidate invoiceCandidate = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
+					final int invoiceCandidateId = invoiceCandidate.getC_Invoice_Candidate_ID();
+
+					row.getAsOptionalInstantTimestamp(I_C_Invoice_Candidate.COLUMNNAME_Updated)
+							.ifPresent(updated -> DB.executeUpdateAndThrowExceptionOnFail(
+									"UPDATE C_Invoice_Candidate SET Updated = ? WHERE C_Invoice_Candidate_ID = ?",
+									new Object[] { updated, invoiceCandidateId },
+									ITrx.TRXNAME_None));
+
+					row.getAsOptionalInt(I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID)
+							.ifPresent(taxId -> DB.executeUpdateAndThrowExceptionOnFail(
+									"UPDATE C_Invoice_Candidate SET C_Tax_Override_ID = ? WHERE C_Invoice_Candidate_ID = ?",
+									new Object[] { taxId, invoiceCandidateId },
+									ITrx.TRXNAME_None));
+
+					InterfaceWrapperHelper.refresh(invoiceCandidate);
+				});
+	}
+
+	/**
 	 * Asserts the stored state of invoice candidates as it is right now, i.e. without waiting for a pending recompute
 	 * (unlike {@code validate C_Invoice_Candidate:}, which waits for it and so cannot see a state that the recompute corrects).
 	 * Use it together with {@code new "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages are held}.
