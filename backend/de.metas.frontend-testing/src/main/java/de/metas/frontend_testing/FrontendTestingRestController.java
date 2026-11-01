@@ -21,6 +21,7 @@ import de.metas.frontend_testing.masterdata.shipment.GenerateShipmentsCommand;
 import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentResponse;
 import de.metas.frontend_testing.masterdata.shipment.ReverseShipmentCommand;
+import de.metas.frontend_testing.masterdata.sysconfig.JsonSetSysconfigsResponse;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SystemSysconfigCommand;
 import de.metas.frontend_testing.wfnode.JsonSetWFNodeFlagsRequest;
@@ -141,29 +142,27 @@ public class FrontendTestingRestController
 	}
 
 	@PostMapping("setSysconfigs")
-	public void setSysconfigs(@RequestBody @NonNull final Map<String, String> sysconfigs)
+	public JsonSetSysconfigsResponse setSysconfigs(@RequestBody @NonNull final Map<String, String> sysconfigs)
 	{
-		callInContext(() -> {
-			SysconfigCommand.builder()
-					.sysconfigs(sysconfigs)
-					.build()
-					.execute();
-			return null;
-		});
+		return callInContext(() -> JsonSetSysconfigsResponse.builder()
+				.previousSysconfigs(SysconfigCommand.builder()
+						.sysconfigs(sysconfigs)
+						.build()
+						.execute())
+				.build());
 	}
 
 	/** Restores sysconfigs at SYSTEM level, i.e. the counterpart of {@code systemSysconfigs} / {@code previousSystemSysconfigs}. */
 	@PostMapping("setSystemSysconfigs")
-	public void setSystemSysconfigs(@RequestBody @NonNull final Map<String, String> systemSysconfigs)
+	public JsonSetSysconfigsResponse setSystemSysconfigs(@RequestBody @NonNull final Map<String, String> systemSysconfigs)
 	{
-		callInContext(() -> {
-			SystemSysconfigCommand.builder()
-					.sysConfigBL(sysConfigBL)
-					.systemSysconfigs(systemSysconfigs)
-					.build()
-					.execute();
-			return null;
-		});
+		return callInContext(() -> JsonSetSysconfigsResponse.builder()
+				.previousSystemSysconfigs(SystemSysconfigCommand.builder()
+						.sysConfigBL(sysConfigBL)
+						.systemSysconfigs(systemSysconfigs)
+						.build()
+						.execute())
+				.build());
 	}
 
 	@PostMapping("getHUQRCode")

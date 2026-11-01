@@ -1,5 +1,5 @@
 import { test, testContext } from "../../../playwright.config";
-import { FRONTEND_BASE_URL, page } from "../common";
+import { FRONTEND_BASE_URL, page, rememberSysconfigsToRestore, takeSysconfigsToRestore } from "../common";
 
 export const Backend = {
     createMasterdata: async ({
@@ -23,6 +23,7 @@ export const Backend = {
         });
 
         const responseBody = await response.json();
+        rememberSysconfigsToRestore(responseBody);
         assertNoErrors({ responseBody });
 
         console.log(`Created master data (${language}):\n` + JSON.stringify(responseBody, null, 2));
@@ -59,35 +60,14 @@ export const Backend = {
         };
     }),
 
+    /** Writes sysconfigs at config level; the previous values are restored after the test. */
     setSysconfigs: async (sysconfigs) => await test.step(`Backend: set sysconfigs`, async () => {
-        const backendBaseUrl = await getBackendBaseUrl();
-        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/setSysconfigs`, {
-            data: sysconfigs,
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-
-        if (!response.ok()) {
-            const responseBody = await response.json();
-            assertNoErrors({ responseBody });
-        }
+        rememberSysconfigsToRestore(await postSysconfigs('setSysconfigs', sysconfigs));
     }),
 
-    /** Counterpart of the request's `systemSysconfigs`: writes the given sysconfigs as SYSTEM rows (use to restore `previousSystemSysconfigs`). */
+    /** Counterpart of the request's `systemSysconfigs`: writes the given sysconfigs as SYSTEM rows; the previous values are restored after the test. */
     setSystemSysconfigs: async (systemSysconfigs) => await test.step(`Backend: set system sysconfigs`, async () => {
-        const backendBaseUrl = await getBackendBaseUrl();
-        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/setSystemSysconfigs`, {
-            data: systemSysconfigs,
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-
-        if (!response.ok()) {
-            const responseBody = await response.json();
-            assertNoErrors({ responseBody });
-        }
+        rememberSysconfigsToRestore(await postSysconfigs('setSystemSysconfigs', systemSysconfigs));
     }),
 
     /**
@@ -333,6 +313,33 @@ const postAcctSchemaCostingMethod = async (data) => {
     const responseBody = await response.json();
     assertNoErrors({ responseBody });
     return responseBody;
+};
+
+const postSysconfigs = async (endpoint, sysconfigs) => {
+    const backendBaseUrl = await getBackendBaseUrl();
+    const response = await page.request.post(`${backendBaseUrl}/frontendTesting/${endpoint}`, {
+        data: sysconfigs,
+        headers: { 'Content-Type': 'application/json' },
+    });
+    const responseBody = await response.json();
+    assertNoErrors({ responseBody });
+    return responseBody;
+};
+
+/** Called by the page fixture after every test: writes back the sysconfig values the test overwrote. */
+export const restoreSysconfigsChangedByTest = async () => {
+    const { previousSysconfigs, previousSystemSysconfigs } = takeSysconfigsToRestore();
+    if (Object.keys(previousSysconfigs).length === 0 && Object.keys(previousSystemSysconfigs).length === 0) {
+        return;
+    }
+    await test.step(`Backend: restore sysconfigs changed by the test`, async () => {
+        if (Object.keys(previousSystemSysconfigs).length > 0) {
+            await postSysconfigs('setSystemSysconfigs', previousSystemSysconfigs);
+        }
+        if (Object.keys(previousSysconfigs).length > 0) {
+            await postSysconfigs('setSysconfigs', previousSysconfigs);
+        }
+    });
 };
 
 export const getBackendBaseUrl = async () => {

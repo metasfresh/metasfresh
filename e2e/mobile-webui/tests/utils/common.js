@@ -58,6 +58,28 @@ export const setCurrentPage = (currentPage) => {
     consoleRecorder = startConsoleRecorder(currentPage);
 }
 
+// Sysconfigs the current test overwrote, mapped to their value from BEFORE the test's first overwrite of each
+// (first previous value wins). Filled by Backend's sysconfig-writing calls; the page fixture restores them after
+// every test, also a failed one, so no spec needs its own afterEach.
+let sysconfigsToRestore = { previousSysconfigs: {}, previousSystemSysconfigs: {} };
+
+const putAllAbsent = (target, source) => Object.entries(source ?? {})
+    .filter(([name]) => !(name in target))
+    .forEach(([name, value]) => target[name] = value);
+
+/** @param {{previousSysconfigs?: Object<string, string>, previousSystemSysconfigs?: Object<string, ?string>}} previousValues as returned by the backend */
+export const rememberSysconfigsToRestore = ({ previousSysconfigs, previousSystemSysconfigs }) => {
+    putAllAbsent(sysconfigsToRestore.previousSysconfigs, previousSysconfigs);
+    putAllAbsent(sysconfigsToRestore.previousSystemSysconfigs, previousSystemSysconfigs);
+};
+
+/** Returns the remembered values and forgets them, so a failing restore cannot leak into the next test. */
+export const takeSysconfigsToRestore = () => {
+    const result = sysconfigsToRestore;
+    sysconfigsToRestore = { previousSysconfigs: {}, previousSystemSysconfigs: {} };
+    return result;
+};
+
 /**
  * Assert the app did NOT log a console message matching `pattern` so far in this test.
  * Not a polling assertion: use it only for a message the app would have logged *before* a state you

@@ -13,23 +13,6 @@ const MO = 'Produktionsauftrag';
 // English label of the new element (AD_Ref_List_Trl en_US); this spec logs in as en_US, like its sibling specs.
 const HEADER_CAPTION = 'Manufacturing orders with picking instruction';
 
-let previousSystemSysconfigs = {};
-
-// Inherent limit (as in picking/close_partially_shipped.spec.js): if createMasterdata itself throws, the
-// backend returns no previous values, so nothing can be restored for that call.
-const rememberPreviousSysconfigs = (masterdata) => {
-    previousSystemSysconfigs = { ...masterdata.previousSystemSysconfigs };
-};
-
-// Restore the sysconfig after each test, even if the test body fails (pattern of picking/close_partially_shipped.spec.js).
-// afterEach, not afterAll: Backend.* posts through the current test's page, which no longer exists in afterAll.
-test.afterEach(async () => {
-    if (Object.keys(previousSystemSysconfigs).length > 0) {
-        await Backend.setSystemSysconfigs(previousSystemSysconfigs);
-        previousSystemSysconfigs = {};
-    }
-});
-
 const ppOrder = ({ lineId, pickingInstruction }) => ({
     warehouse: 'whTarget',
     product: 'FG',
@@ -88,7 +71,6 @@ test('Aggregated DD_Order lists every PP_Order with its picking instruction', as
         },
     };
     const masterdata = await Backend.createMasterdata({ language: 'en_US', request });
-    rememberPreviousSysconfigs(masterdata);
 
     const lines = [
         expectedPPOrderLine(masterdata.manufacturingOrders.PP1.documentNo, 'Sahne'),
@@ -136,7 +118,6 @@ test('Single PP_Order renders one line next to Source Doc and Picking Instructio
         },
     };
     const masterdata = await Backend.createMasterdata({ language: 'en_US', request });
-    rememberPreviousSysconfigs(masterdata);
 
     const dd = masterdata.distributionOrders.DD1;
     const pp1DocNo = masterdata.manufacturingOrders.PP1.documentNo;
