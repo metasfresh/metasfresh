@@ -97,6 +97,7 @@ import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
@@ -148,6 +149,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -1329,6 +1331,15 @@ public class M_ShipmentSchedule_StepDef
 
 		waitUntilValid(timeoutSec, shipmentScheduleId);
 
+		// The updater deletes the recompute markers out of trx, before its own trx (which writes the dates) commits.
+		// So "no markers" does not yet mean "dates written": poll for the expected dates too.
+		final ZoneId scheduleZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()));
+		final LocalDate expectedPreparationDate = tableRow.getAsOptionalLocalDate(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate).orElse(null);
+		final LocalDate expectedDeliveryDate = tableRow.getAsOptionalLocalDate(I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate).orElse(null);
+		final Predicate<I_M_ShipmentSchedule> hasExpectedDates = record ->
+				(expectedPreparationDate == null || expectedPreparationDate.equals(TimeUtil.asLocalDate(record.getPreparationDate(), scheduleZoneId)))
+						&& (expectedDeliveryDate == null || expectedDeliveryDate.equals(TimeUtil.asLocalDate(record.getDeliveryDate(), scheduleZoneId)));
+
 		final Supplier<Boolean> isShipmentScheduleFound = () -> {
 			final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
 					.createQueryBuilder(I_M_ShipmentSchedule.class)
@@ -1358,6 +1369,7 @@ public class M_ShipmentSchedule_StepDef
 			return queryBuilder
 					.create()
 					.firstOnlyOptional(I_M_ShipmentSchedule.class)
+					.filter(hasExpectedDates)
 					.isPresent();
 		};
 
@@ -1538,7 +1550,6 @@ public class M_ShipmentSchedule_StepDef
 
 		// Compare the schedule's per-line dates at DATE granularity in the order's time zone — these are date fields,
 		// and a plain date in the feature (e.g. 2022-08-10) means "that calendar day in the org tz", not UTC midnight.
-		final ZoneId scheduleZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()));
 
 		tableRow.getAsOptionalLocalDate(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate)
 				.ifPresent(expected -> softly.assertThat(TimeUtil.asLocalDate(shipmentSchedule.getPreparationDate(), scheduleZoneId))
