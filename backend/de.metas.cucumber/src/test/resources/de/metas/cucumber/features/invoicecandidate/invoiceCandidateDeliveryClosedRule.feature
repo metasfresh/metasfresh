@@ -572,7 +572,8 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
     # Immediate (ordered qty), After pick (picked qty) and a service product (ordered qty) are not invoiced by the delivered quantity,
     # so a closed disposition does not make them uninvoiceable. After delivery on a stock item is.
     # A service product gets no shipment schedule at all (only items do), so its line has no schedule to close: it is checked to stay untouched.
-    Given metasfresh contains M_Products:
+    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And metasfresh contains M_Products:
       | Identifier | Name                   | ProductType | OPT.X12DE355 |
       | service1   | service1_16_@Date@     | S           | PCE          |
     And metasfresh contains M_ProductPrices
@@ -600,6 +601,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
       | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | SO_I                  | L_I        | product1                | 6          | TUx1_P1                                |
       | SO_P                  | L_P        | product1                | 6          | TUx1_P1                                |
+      | SO_P                  | L_P2       | product2                | 5          | TUx1_P2                                |
       | SO_D                  | L_D        | product2                | 5          | TUx1_P2                                |
       | SO_S                  | L_S        | service1                | 4          |                                        |
     And the order identified by SO_I is completed
@@ -610,6 +612,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_I | L_I                       | N             |
       | schedule_P | L_P                       | N             |
+      | schedule_P2 | L_P2                     | N             |
       | schedule_D | L_D                       | N             |
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
@@ -636,14 +639,22 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
       | C_Invoice_Candidate_ID.Identifier |
       | ic_P                              |
     And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice |
-      | ic_I                              | false         | 6            |
-      | ic_P                              | false         | 2            |
-      | ic_D                              | false         | 0            |
-      | ic_S                              | false         | 4            |
+      | C_Invoice_Candidate_ID.Identifier | InvoiceRule | OPT.Processed | QtyToInvoice |
+      | ic_I                              | I           | false         | 6            |
+      | ic_P                              | P           | false         | 2            |
+      | ic_D                              | D           | false         | 0            |
+      | ic_S                              | D           | false         | 4            |
 
     When the M_ShipmentSchedule identified by schedule_I is closed
-    And the M_ShipmentSchedule identified by schedule_P is closed
+    # the After pick schedule is closed the way production closes a picked, unshipped schedule (the user Close process refuses it, see
+    # closeWithUnfinishedPicking.feature): the completion of the shipment of the order's other line closes the siblings that are not fully
+    # delivered (ShipmentScheduleBL.closePartiallyShipped_ShipmentSchedules, sysconfig M_ShipmentSchedule_Close_PartiallyShipped)
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment_P2           | schedule_P2                      | D                 | Y                  |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed |
+      | schedule_P                       | true         |
     And the M_ShipmentSchedule identified by schedule_D is closed
 
     Then validate C_Invoice_Candidate:
@@ -686,3 +697,6 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed_Override |
       | ic1                               | false         | 6            | true                 | null                   |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | InvoiceRule_Override |
+      | ic1                               | I                    |
