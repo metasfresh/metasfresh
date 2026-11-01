@@ -79,6 +79,7 @@ public final class DocumentFieldDescriptor
 	@Getter private final String fieldName;
 	@Getter private final ITranslatableString caption;
 	@Getter private final ITranslatableString description;
+	@Getter private final ITranslatableString help;
 	/**
 	 * Detail ID or null if this is a field in main sections
 	 */
@@ -161,6 +162,7 @@ public final class DocumentFieldDescriptor
 		fieldName = Preconditions.checkNotNull(builder.fieldName, "name is null");
 		caption = builder.getCaption();
 		description = builder.getDescription();
+		help = builder.getHelp();
 		detailId = builder.getDetailId();
 
 		key = builder.isKey();
@@ -313,6 +315,7 @@ public final class DocumentFieldDescriptor
 		@Getter private final String fieldName;
 		private ITranslatableString caption;
 		private ITranslatableString description;
+		private ITranslatableString help;
 		public DetailId _detailId;
 
 		private boolean key = false;
@@ -454,6 +457,27 @@ public final class DocumentFieldDescriptor
 				return TranslatableStrings.empty();
 			}
 			return description;
+		}
+
+		public Builder setHelp(final Map<String, String> helpTrls, final String defaultHelp)
+		{
+			help = TranslatableStrings.ofMap(helpTrls, defaultHelp);
+			return this;
+		}
+
+		public Builder setHelp(final ITranslatableString help)
+		{
+			this.help = help;
+			return this;
+		}
+
+		public ITranslatableString getHelp()
+		{
+			if (help == null)
+			{
+				return TranslatableStrings.empty();
+			}
+			return help;
 		}
 
 		/* package */Builder setDetailId(final DetailId detailId)
