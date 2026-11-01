@@ -108,7 +108,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
     And the manufacturing order identified by ppOrder is completed
 
     # Required component qty: 1 (BOM QtyBatch) x 20 (new PP_Order qty) - 0 (no component stock in production_WH) = 20:
-    # the planned candidate of 10 moved to the new BOM line, plus one of 10 for the increase.
+    # two candidates of 10 on the new BOM line: the one planned for the first qty and one for the increase.
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
       | Identifier       | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
       | ddOrderCandidate | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | newBOMLine                  |
@@ -134,12 +134,18 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_15
-  Scenario: manually created PP_Order; decrease its qty right away and complete it -> every DD_Order_Candidate and distribution MD_Candidate supplies the re-created BOM line
+  Scenario: manually created PP_Order; decrease its qty after its distribution was planned and complete it -> every DD_Order_Candidate and distribution MD_Candidate supplies the re-created BOM line
     When create PP_Order:
       | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
       | ppOrder     | MOP         | finishedGood | 20         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
+      | oldBOMLine          | ppOrder     | component    | 20 PCE       | CO            |
+    # A user changes the qty only after material dispo has planned the distribution of the first qty
+    And after not more than 60s, the DD_Order_Candidate table has only the following records
+      | Identifier       | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
+      | ddOrderCandidate | component    | rawMaterials_WH     | production_WH    | 20 PCE | ppOrder             | oldBOMLine                  |
 
-    # The qty is decreased before material dispo has finished planning the distribution. The resulting qty is not asserted.
     When update PP_Order:
       | PP_Order_ID | QtyEntered |
       | ppOrder     | 10         |
@@ -147,7 +153,9 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | PP_Order_BOMLine_ID | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
       | newBOMLine          | ppOrder     | component    | 10 PCE       | CO            |
     And the manufacturing order identified by ppOrder is completed
-    And after not more than 60s, all DD_Order_Candidates of product component supply PP_Order_BOMLine newBOMLine
+    And after not more than 60s, the DD_Order_Candidate table has only the following records
+      | Identifier       | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
+      | ddOrderCandidate | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | newBOMLine                  |
     And after not more than 60s, all DISTRIBUTION MD_Candidates of product component supply PP_Order_BOMLine newBOMLine
     And no AD_Issue was created since the existing AD_Issue records were remembered
 
