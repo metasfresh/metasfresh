@@ -410,13 +410,11 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | ic2                               | true          | 0            | 0            | null                   |
       | ic3                               | true          | 0            | 0            | null                   |
 
-
-
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: TC7b - reversing the second shipment of a one-workpackage split after invoicing leaves its lines processed, without a credit
+  Scenario: reversing the second shipment of a one-workpackage split after invoicing leaves its lines processed, without a credit
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
     And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
     And metasfresh contains C_Orders:
@@ -1207,7 +1205,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: a later picked-quantity run still ships the picks of a line that an earlier shipment closed, all lines are invoiced
+  Scenario: a later picked-quantity run still ships the picks of a line that an earlier shipment closed, both lines become invoiceable
     Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy | IsAllowCompletingPartialPickingJob |
