@@ -1078,6 +1078,12 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | Identifier        | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
       | ddOrderCandidate1 | component    | rawMaterials_WH     | production_WH    | 20 PCE | ppOrder             | oldBOMLine1                 |
       | ddOrderCandidate2 | component    | rawMaterials_WH     | production_WH    | 40 PCE | ppOrder             | oldBOMLine2                 |
+    And after not more than 60s, MD_Candidates are found
+      | Identifier  | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
+      | distSupply1 | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 20  | *   | production_WH   | ppOrder             | oldBOMLine1                 |
+      | distDemand1 | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -20 | *   | rawMaterials_WH | ppOrder             | oldBOMLine1                 |
+      | distSupply2 | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 40  | *   | production_WH   | ppOrder             | oldBOMLine2                 |
+      | distDemand2 | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -40 | *   | rawMaterials_WH | ppOrder             | oldBOMLine2                 |
 
     # Re-creating the BOM lines at the later start date leaves out the second BOM line
     When update PP_Order:
@@ -1089,6 +1095,12 @@ Feature: Distribution for a manufacturing order's component follows the order's 
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
       | Identifier        | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
       | ddOrderCandidate1 | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | newBOMLine                  |
+    And after not more than 60s, metasfresh has no MD_Candidate for identifier distSupply2
+    And after not more than 60s, metasfresh has no MD_Candidate for identifier distDemand2
+    And after not more than 60s, MD_Candidates are found
+      | Identifier  | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
+      | distSupply1 | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | *   | production_WH   | ppOrder             | newBOMLine                  |
+      | distDemand1 | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | 90  | rawMaterials_WH | ppOrder             | newBOMLine                  |
     And after not more than 5s, no AD_Note records exist for the referenced record:
       | AD_Message_ID | Record_ID |
       | noteMsg       | ppOrder   |
