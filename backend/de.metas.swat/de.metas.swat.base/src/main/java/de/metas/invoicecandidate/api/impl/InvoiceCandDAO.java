@@ -1113,7 +1113,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// and count them as "remaining" for its own client.
 		// The form is negative on purpose: rows without an existing candidate (orphans; the column has no FK)
 		// and rows of inactive own candidates must still be tagged and swept, else they would pile up in the queue forever.
-		// Therefore the sub-query has neither an active-records nor a context-client filter.
+		// The sub-query must match every candidate of another client, active or not, so it has no active-records filter;
+		// and no context-client filter, which would contradict AD_Client_ID <> ctx and empty it.
 		queryBuilder.addNotInSubQueryFilter(
 				I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID,
 				I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID,

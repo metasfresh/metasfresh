@@ -62,6 +62,7 @@ public class InvoiceCandDAO_ClientScopedRecompute_Test
 	private I_C_Invoice_Candidate icAInactive;
 	private I_C_Invoice_Candidate icB1;
 	private I_C_Invoice_Candidate icB2;
+	private I_C_Invoice_Candidate icBInactive;
 
 	@BeforeEach
 	public void init()
@@ -79,6 +80,7 @@ public class InvoiceCandDAO_ClientScopedRecompute_Test
 		icA2 = createInvoiceCandidate(ctxA, true);
 		icB2 = createInvoiceCandidate(ctxB, true);
 		icAInactive = createInvoiceCandidate(ctxA, false);
+		icBInactive = createInvoiceCandidate(ctxB, false);
 
 		// the recompute table has no client column; all rows are queued from client A's context
 		enqueue(icA1.getC_Invoice_Candidate_ID());
@@ -86,6 +88,7 @@ public class InvoiceCandDAO_ClientScopedRecompute_Test
 		enqueue(icA2.getC_Invoice_Candidate_ID());
 		enqueue(icB2.getC_Invoice_Candidate_ID());
 		enqueue(icAInactive.getC_Invoice_Candidate_ID());
+		enqueue(icBInactive.getC_Invoice_Candidate_ID());
 		enqueue(ORPHAN_INVOICE_CANDIDATE_ID);
 	}
 
@@ -164,10 +167,10 @@ public class InvoiceCandDAO_ClientScopedRecompute_Test
 
 		final List<I_C_Invoice_Candidate_Recompute> remaining = retrieveAllQueued();
 
-		// (2) client B's rows are still queued and untagged
+		// (2) client B's rows (also the one of B's inactive candidate) are still queued and untagged
 		assertThat(queuedCandidateIds(remaining))
 				.as("(2)+(4)+(5) after client A's run only client B's rows remain queued; the orphan row and A's inactive candidate's row are swept")
-				.containsExactly(icB1.getC_Invoice_Candidate_ID(), icB2.getC_Invoice_Candidate_ID());
+				.containsExactly(icB1.getC_Invoice_Candidate_ID(), icB2.getC_Invoice_Candidate_ID(), icBInactive.getC_Invoice_Candidate_ID());
 		assertThat(remaining)
 				.as("(2) client B's remaining rows are untagged")
 				.allSatisfy(row -> assertThat(row.getAD_PInstance_ID()).isLessThanOrEqualTo(0));
@@ -176,10 +179,24 @@ public class InvoiceCandDAO_ClientScopedRecompute_Test
 	@Test
 	public void runOfClientA_countToBeTagged_excludesClientBRows()
 	{
-		// (3) A's 2 active rows + A's inactive candidate's row + the orphan row; not B's 2 rows
+		// (3) A's 2 active rows + A's inactive candidate's row + the orphan row; not B's 3 rows (2 active, 1 inactive)
 		assertThat(newRunOfClientA().countToBeTagged())
 				.as("(3)+(4)+(5) the remaining count of client A's run excludes client B's rows")
 				.isEqualTo(4);
+	}
+
+	@Test
+	public void rowOfInactiveOtherClientCandidate_staysUntaggedAndQueued()
+	{
+		final IInvoiceCandRecomputeTagger tagger = newRunOfClientA();
+		tagger.tag();
+		tagger.deleteAllTaggedAndInvalidateCache();
+
+		assertThat(retrieveAllQueued())
+				.as("(2) the row of client B's inactive candidate stays queued and untagged after client A's run")
+				.filteredOn(row -> row.getC_Invoice_Candidate_ID() == icBInactive.getC_Invoice_Candidate_ID())
+				.singleElement()
+				.satisfies(row -> assertThat(row.getAD_PInstance_ID()).isLessThanOrEqualTo(0));
 	}
 
 	@Test
