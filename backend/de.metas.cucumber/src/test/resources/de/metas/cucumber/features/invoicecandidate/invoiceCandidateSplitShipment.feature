@@ -248,3 +248,161 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | invoiceLine1                | invoice                 | product1                | 6           | true      |
       | invoiceLine2                | invoice                 | product2                | 5           | true      |
       | invoiceLine3                | invoice                 | product3                | 6           | true      |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: TC7a - reversing the second shipment of TC1b restores the processed state of its lines
+    Given new "GenerateInOutFromShipmentSchedules" workpackages are held
+    And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                |
+      | SO                    | L3         | product3                | 6          | TUx1_P3                                |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+      | shipmentSchedule2 | L2                        | N             |
+      | shipmentSchedule3 | L3                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+      | ic2                               | L2                        |
+      | ic3                               | L3                        |
+
+    And transform CU to new LU
+      | sourceCU    | newLU                 | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
+      | pickFromCU1 | pickFromAggregatedLU1 | TU       | 1           | 10          |
+      | pickFromCU2 | pickFromAggregatedLU2 | TU       | 1           | 10          |
+      | pickFromCU3 | pickFromAggregatedLU3 | TU       | 1           | 10          |
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product1              | pickFromAggregatedLU1 | 6         | 0           |                       | 2027-03-01     | 1111  |
+      | product2              | pickFromAggregatedLU2 | 5         | 0           |                       | 2027-03-01     | 2222  |
+      | product3              | pickFromAggregatedLU3 | 6         | 0           |                       | 2027-03-01     | 3333  |
+
+    And complete picking job
+    And there is 1 pending "GenerateInOutFromShipmentSchedules" workpackage
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule1 gets the batch of the pending "GenerateInOutFromShipmentSchedules" workpackage by direct update
+    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule2 is set to null by direct update
+    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule3 is set to null by direct update
+    When the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | CO            |
+      | shipmentSchedule2                | shipment2             | CO            |
+      | shipmentSchedule3                | shipment2             | CO            |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed |
+      | shipmentSchedule2     | true     |
+      | shipmentSchedule3     | true     |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice |
+      | ic1                               | false         | 6            |
+      | ic2                               | false         | 5            |
+      | ic3                               | false         | 6            |
+    When the shipment identified by shipment2 is reversed as shipment2Reversal
+    And validate C_OrderLine:
+      | C_OrderLine_ID | qtydelivered |
+      | L1             | 6            |
+      | L2             | 0            |
+      | L3             | 0            |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed |
+      | shipmentSchedule2     | true     |
+      | shipmentSchedule3     | true     |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyDelivered | QtyToInvoice | OPT.Processed_Override |
+      | ic1                               | false         | 6            | 6            | null                   |
+      | ic2                               | true          | 0            | 0            | null                   |
+      | ic3                               | true          | 0            | 0            | null                   |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: TC7c - reactivating the second shipment of TC1b restores the processed state of its lines
+    Given new "GenerateInOutFromShipmentSchedules" workpackages are held
+    And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                |
+      | SO                    | L3         | product3                | 6          | TUx1_P3                                |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+      | shipmentSchedule2 | L2                        | N             |
+      | shipmentSchedule3 | L3                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+      | ic2                               | L2                        |
+      | ic3                               | L3                        |
+
+    And transform CU to new LU
+      | sourceCU    | newLU                 | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
+      | pickFromCU1 | pickFromAggregatedLU1 | TU       | 1           | 10          |
+      | pickFromCU2 | pickFromAggregatedLU2 | TU       | 1           | 10          |
+      | pickFromCU3 | pickFromAggregatedLU3 | TU       | 1           | 10          |
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product1              | pickFromAggregatedLU1 | 6         | 0           |                       | 2027-03-01     | 1111  |
+      | product2              | pickFromAggregatedLU2 | 5         | 0           |                       | 2027-03-01     | 2222  |
+      | product3              | pickFromAggregatedLU3 | 6         | 0           |                       | 2027-03-01     | 3333  |
+
+    And complete picking job
+    And there is 1 pending "GenerateInOutFromShipmentSchedules" workpackage
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule1 gets the batch of the pending "GenerateInOutFromShipmentSchedules" workpackage by direct update
+    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule2 is set to null by direct update
+    And C_Async_Batch_ID of M_ShipmentSchedule shipmentSchedule3 is set to null by direct update
+    When the held "GenerateInOutFromShipmentSchedules" workpackage is processed in one transaction
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | CO            |
+      | shipmentSchedule2                | shipment2             | CO            |
+      | shipmentSchedule3                | shipment2             | CO            |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed |
+      | shipmentSchedule2     | true     |
+      | shipmentSchedule3     | true     |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice |
+      | ic1                               | false         | 6            |
+      | ic2                               | false         | 5            |
+      | ic3                               | false         | 6            |
+    When the shipment identified by shipment2 is reactivated
+    And validate C_OrderLine:
+      | C_OrderLine_ID | qtydelivered |
+      | L1             | 6            |
+      | L2             | 0            |
+      | L3             | 0            |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed |
+      | shipmentSchedule2     | true     |
+      | shipmentSchedule3     | true     |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyDelivered | QtyToInvoice | OPT.Processed_Override |
+      | ic1                               | false         | 6            | 6            | null                   |
+      | ic2                               | true          | 0            | 0            | null                   |
+      | ic3                               | true          | 0            | 0            | null                   |
