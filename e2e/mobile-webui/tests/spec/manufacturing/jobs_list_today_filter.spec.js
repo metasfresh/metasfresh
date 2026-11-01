@@ -17,28 +17,11 @@ import { FAST_ACTION_TIMEOUT, page as currentPage, SLOW_ACTION_TIMEOUT } from '.
 const SYSCONFIG_defaultFilters = 'mobileui.manufacturing.defaultFilters';
 const SYSCONFIG_LaunchersLimit = 'WorkflowRestAPIService.LaunchersLimit';
 
-let previousSysconfigs = null;
 // noon of yesterday / today / tomorrow in the SERVER's time zone: the server's "today" filter decides which day an
 // order is on, so the dates must not come from the clock/time zone of the machine that runs the test
 let serverDates = null;
 
-// Restore in afterEach so it runs even when the body fails or times out; otherwise the filter and the limit
-// leak into the sibling manufacturing specs (every manufacturing spec shares the one E2E DB).
-// previousSysconfigs is {} from before the first write on: when createMasterdata throws after it wrote the
-// sysconfigs but before it returned the previous values, the E2E seed state ('-' = no value) is put back.
-// the hook must declare the page fixture: Backend uses the page of the current test
-test.afterEach(async ({ page }) => {
-    if (previousSysconfigs) {
-        // a sysconfig that had no value is not reported back as previous (the DB seed '-' reads as no value):
-        // put '-' back for it, else the today filter would leak into the sibling manufacturing specs
-        await Backend.setSysconfigs({
-            [SYSCONFIG_defaultFilters]: '-',
-            // fallback when createMasterdata threw after writing: the migration seed of the limit (20)
-            [SYSCONFIG_LaunchersLimit]: '20',
-            ...previousSysconfigs,
-        });
-    }
-    previousSysconfigs = null;
+test.afterEach(() => {
     serverDates = null;
 });
 
@@ -108,9 +91,7 @@ test('todayOnlyJobsList_showsTodayAndStarted_hidesOtherDays', async ({ page }) =
 
     serverDates = await Backend.getServerDates();
     console.log(`Server time zone: ${serverDates.zoneId}; today noon ${serverDates.todayNoon}`);
-    previousSysconfigs = {};
     const base = await createMasterdataWithoutOrders();
-    previousSysconfigs = base.previousSysconfigs ?? {};
 
     const { authToken } = await LoginScreen.login(base.login.user);
 

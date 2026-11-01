@@ -17,7 +17,8 @@ import java.util.Map;
 @Jacksonized
 public class JsonSetSysconfigsResponse
 {
-	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, String> previousSysconfigs;
+	/** {@code null} value = there was no value; restore via {@code setSysconfigs}. */
+	@Nullable @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.ALWAYS) Map<String, String> previousSysconfigs;
 
 	/** {@code null} value = there was no SYSTEM row; restore via {@code setSystemSysconfigs}. */
 	@Nullable @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.ALWAYS) Map<String, String> previousSystemSysconfigs;

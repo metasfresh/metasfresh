@@ -8,6 +8,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
@@ -31,42 +32,48 @@ public class SysconfigCommand
 			.put("mobileui.frontend.barcodeScanner.mode.hardware.input.inputMode", "none")
 			.build();
 
+	/**
+	 * What {@code SysConfigDAO} stores for "no value" ({@code SysConfigEntryValue.NO_VALUE_MARKER}, not visible from here);
+	 * a sysconfig with this value reads as missing.
+	 */
+	private static final String NO_VALUE = "-";
+
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Nullable private final Map<String, String> sysconfigs;
 
 	/**
-	 * @return map from sysconfig name to its previous value, captured before any write
+	 * A {@code null} value in {@link #sysconfigs} unsets the sysconfig; that is how a previously missing one is restored.
+	 *
+	 * @return map from sysconfig name to its previous value, captured before any write;
+	 * the value is {@code null} for names that had no value, so that restoring them unsets it again
 	 */
-	public ImmutableMap<String, String> execute()
+	public Map<String, String> execute()
 	{
 		final LinkedHashSet<String> names = new LinkedHashSet<>(SCANNER_SYSCONFIG_DEFAULTS.keySet());
 		if (sysconfigs != null)
 		{
 			names.addAll(sysconfigs.keySet());
 		}
-		final ImmutableMap.Builder<String, String> previousValues = ImmutableMap.builder();
+		final LinkedHashMap<String, String> previousValues = new LinkedHashMap<>();
 		for (final String name : names)
 		{
 			final String prev = sysConfigBL.getValue(name);
-			if (prev != null)
-			{
-				previousValues.put(name, prev);
-			}
-			else if (SCANNER_SYSCONFIG_DEFAULTS.containsKey(name))
+			if (prev == null && SCANNER_SYSCONFIG_DEFAULTS.containsKey(name))
 			{
 				// fail loud instead of creating it: a missing row means the sysconfig was renamed or retired
 				throw new AdempiereException("Scanner sysconfig does not exist: " + name + " - update SCANNER_SYSCONFIG_DEFAULTS");
 			}
+			previousValues.put(name, prev);
 		}
 
 		SCANNER_SYSCONFIG_DEFAULTS.forEach(sysConfigBL::setValueAtConfigLevel);
 
 		if (sysconfigs != null)
 		{
-			sysconfigs.forEach(sysConfigBL::setValueAtConfigLevel);
+			sysconfigs.forEach((name, value) -> sysConfigBL.setValueAtConfigLevel(name, value != null ? value : NO_VALUE));
 		}
 
-		return previousValues.build();
+		return previousValues;
 	}
 }

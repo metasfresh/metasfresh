@@ -154,8 +154,8 @@ test.describe('Scan paths', () => {
     // (see e2e/mobile-webui/CLAUDE.md "Barcode Scanner Testing"), breaking unrelated picking scans.
     //
     // No explicit reset is needed here: SysconfigCommand resets the scanner sysconfigs to their
-    // mobile defaults at the start of every createMasterdata call, so each test starts from
-    // a clean scanner state regardless of what a prior test left behind.
+    // mobile defaults at the start of every createMasterdata call, and the page fixture restores
+    // every sysconfig a test changed after the test.
 
     // noinspection JSUnusedLocalSymbols
     test('DataWedge IME — InputConnection injection forwards barcode', async ({ page }) => {

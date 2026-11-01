@@ -148,6 +148,40 @@ public class CreateMasterdataCommand
 		previousSysconfigs.putAll(applySysconfigs());
 		previousSystemSysconfigs.putAll(applySystemSysconfigs());
 
+		try
+		{
+			return createMasterdata();
+		}
+		catch (final RuntimeException ex)
+		{
+			// the caller gets no previous values from a failed request, so it could not restore the sysconfigs itself
+			try
+			{
+				restoreSysconfigs();
+			}
+			catch (final RuntimeException restoreEx)
+			{
+				ex.addSuppressed(restoreEx);
+			}
+			throw ex;
+		}
+	}
+
+	private void restoreSysconfigs()
+	{
+		SystemSysconfigCommand.builder()
+				.sysConfigBL(sysConfigBL)
+				.systemSysconfigs(previousSystemSysconfigs)
+				.build()
+				.execute();
+		SysconfigCommand.builder()
+				.sysconfigs(previousSysconfigs)
+				.build()
+				.execute();
+	}
+
+	private JsonCreateMasterdataResponse createMasterdata()
+	{
 		// Apply AD_Process flag overrides (e.g. IsPdfA3Output for the sales-invoice report process)
 		applyAdProcessFlags();
 
@@ -216,7 +250,7 @@ public class CreateMasterdataCommand
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
-				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : ImmutableMap.copyOf(previousSysconfigs))
+				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : Collections.unmodifiableMap(previousSysconfigs))
 				.previousSystemSysconfigs(previousSystemSysconfigs.isEmpty() ? null : Collections.unmodifiableMap(previousSystemSysconfigs))
 				.mobileConfig(mobileConfig)
 				.login(login)
@@ -885,7 +919,7 @@ public class CreateMasterdataCommand
 
 	}
 
-	private ImmutableMap<String, String> applySysconfigs()
+	private Map<String, String> applySysconfigs()
 	{
 		return SysconfigCommand.builder()
 				.sysconfigs(request.getSysconfigs())
