@@ -24,8 +24,10 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
@@ -33,6 +35,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -42,9 +45,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product_Category;
 import org.springframework.context.ApplicationContext;
 
+import javax.annotation.Nullable;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.adempiere.model.InterfaceWrapperHelper;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -99,6 +103,10 @@ public class AD_SysConfig_StepDef
 	 * Like {@link #enable_sys_config}, but for a sys config that is global state shared by every scenario on the executor:
 	 * the prior value is restored by {@link #restoreTemporarySysConfigsAfterScenario()}, also if the scenario or its Background fails.
 	 * The restore also resets all caches, because some caches are derived from a sys config (e.g. the report server).
+	 * <p>
+	 * Client-specific rows ({@code AD_Client_ID != 0}) of the same sys config get the same value, because code reading the sys config for a client/org
+	 * prefers them over the SYSTEM row; they are restored after the scenario, too.
+	 * The value is stored as the type dictates for every row: {@code boolean} as {@code Y}/{@code N}, the {@code String} token {@code null} as "no value".
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -111,11 +119,12 @@ public class AD_SysConfig_StepDef
 	{
 		rememberPriorValue(sysConfigName);
 		resetAllCachesOnRestore = true;
-		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
-		overrideClientSpecificRows(sysConfigName, sysconfigValue);
+		final String storedValue = toStoredValue(sysconfigType, sysconfigValue);
+		sysConfigBL.setValue(sysConfigName, storedValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+		overrideClientSpecificRows(sysConfigName, storedValue);
 	}
 
-	private void overrideClientSpecificRows(@NonNull final String sysConfigName, @NonNull final String value)
+	private void overrideClientSpecificRows(@NonNull final String sysConfigName, @Nullable final String storedValue)
 	{
 		queryBL.createQueryBuilder(I_AD_SysConfig.class)
 				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, sysConfigName)
@@ -124,35 +133,36 @@ public class AD_SysConfig_StepDef
 				.list(I_AD_SysConfig.class)
 				.forEach(row -> {
 					priorValueByClientSysConfigId.putIfAbsent(row.getAD_SysConfig_ID(), row.getValue());
-					row.setValue(value);
-					InterfaceWrapperHelper.save(row);
+					sysConfigBL.setValue(sysConfigName, storedValue, ClientId.ofRepoId(row.getAD_Client_ID()), OrgId.ofRepoId(row.getAD_Org_ID()));
 				});
 		resetSysConfigCache();
 	}
 
 	private void applySysConfigValue(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
+		sysConfigBL.setValue(sysConfigName, toStoredValue(sysconfigType, sysconfigValue), ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+		resetSysConfigCache();
+	}
+
+	/**
+	 * @return the value as {@code AD_SysConfig.Value} stores it: {@code Y}/{@code N} for {@code boolean}; {@code null} (no value) for the {@code String} token {@code null}
+	 */
+	@Nullable
+	private static String toStoredValue(@NonNull final String sysconfigType, @NonNull final String sysconfigValue)
+	{
 		switch (sysconfigType)
 		{
 			case "String":
-				final String value = DataTableUtil.nullToken2Null(sysconfigValue);
-				sysConfigBL.setValue(sysConfigName, value, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
-				break;
+				return DataTableUtil.nullToken2Null(sysconfigValue);
 			case "boolean":
-				final boolean booleanValue = Boolean.parseBoolean(sysconfigValue);
-				sysConfigBL.setValue(sysConfigName, booleanValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
-				break;
+				return StringUtils.ofBoolean(Boolean.parseBoolean(sysconfigValue));
 			case "int":
-				final int intValue = Integer.parseInt(sysconfigValue);
-				setSysConfigIntValue(sysConfigName, intValue);
-				break;
+				return String.valueOf(Integer.parseInt(sysconfigValue));
 			default:
 				throw new AdempiereException("Unhandled sysConfig type")
 						.appendParametersToMessage()
 						.setParameter("type:", sysconfigType);
 		}
-
-		resetSysConfigCache();
 	}
 
 	/**
