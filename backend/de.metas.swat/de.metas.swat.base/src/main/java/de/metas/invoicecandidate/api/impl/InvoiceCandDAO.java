@@ -137,8 +137,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
-
 public class InvoiceCandDAO implements IInvoiceCandDAO
 {
 	private final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandDAO.class);
@@ -244,51 +242,24 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public int deleteAllReferencingInvoiceCandidates(@NonNull final Object model)
+	public List<I_C_Invoice_Candidate> retrieveAllReferencingInclInactive(@NonNull final Object model)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-
 		final int recordId = InterfaceWrapperHelper.getId(model);
 
-		// i could do all this with "stream", but i find "old-school" easier to debug
-		int deleteCount = 0;
-		final List<I_C_Invoice_Candidate> icRecordsToDelete = queryBL
+		return queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, tableId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, recordId)
 				.create()
 				.list();
-		for (final I_C_Invoice_Candidate icRecordToDelete : icRecordsToDelete)
-		{
-			setProcessedToFalseIfIcNotNeeded(icRecordToDelete);
-			delete(icRecordToDelete);
-			deleteCount++;
-		}
-
-		return deleteCount;
 	}
 
-	/**
-	 * Note: no need to save the record; just unset its processed flag to allow deletion if that makes sense.
-	 */
-	private void setProcessedToFalseIfIcNotNeeded(@NonNull final I_C_Invoice_Candidate icToDelete)
+	@Override
+	public void delete(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
-		if (!manuallyFlaggedAsProcessed)
-		{
-			return; // nothing to do
-		}
-
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final boolean hasInvoiceLines = !invoiceCandDAO.retrieveIlForIc(icToDelete).isEmpty();
-		if (hasInvoiceLines)
-		{
-			return; // nothing to do
-		}
-
-		// icToDelete was manually set to "processed" to be out of the way; in this case, we can unprocess and delete it.
-		icToDelete.setProcessed(false);
+		InterfaceWrapperHelper.delete(ic);
 	}
 
 	@Override
@@ -1104,6 +1075,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		//
 		// Append not locked where clause
 		queryBuilder.filter(LockedByOrNotLockedAtAllFilter.of(tagRequest.getLockedBy()));
+
+		//
+		// Never tag another client's rows: a run recomputes only its own client's candidates but deletes all it tagged (the table has no client column).
+		// Negative form, so orphans (no FK) and inactive own candidates are still tagged and swept;
+		// the sub-query must match every other-client candidate, so it has no active-records and no context-client filter.
+		queryBuilder.addNotInSubQueryFilter(
+				I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID,
+				I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID,
+				queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
+						.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Client_ID, Env.getAD_Client_ID(ctx))
+						.create());
 
 		//
 		// Only those which were already tagged with given tag

@@ -1208,6 +1208,81 @@ public class M_ShipmentSchedule_StepDef
 		saveRecord(schedule);
 	}
 
+	/**
+	 * Sets {@code M_ShipmentSchedule.C_Async_Batch_ID} with a direct SQL update — no model interceptor runs, the
+	 * schedule is not invalidated and {@code HeaderAggregationKey} stays untouched — then reloads the schedule in the
+	 * identifier table. It simulates a concurrent writer (e.g. an async-batch assignment by another transaction).
+	 *
+	 * @param asyncBatchId {@code null} or the numeric {@code C_Async_Batch_ID}
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And C_Async_Batch_ID of M_ShipmentSchedule schedule_1 is set to null by direct update
+	 * </pre>
+	 */
+	@And("^C_Async_Batch_ID of M_ShipmentSchedule (.*) is set to (.*) by direct update$")
+	public void set_C_Async_Batch_ID_by_direct_update(
+			@NonNull final String shipmentScheduleIdentifier,
+			@NonNull final String asyncBatchIdStr)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		final Integer asyncBatchId;
+		if (DataTableUtil.isNullPlaceholder(asyncBatchIdStr))
+		{
+			asyncBatchId = null;
+		}
+		else
+		{
+			try
+			{
+				asyncBatchId = Integer.valueOf(asyncBatchIdStr.trim());
+			}
+			catch (final NumberFormatException e)
+			{
+				throw new AdempiereException("C_Async_Batch_ID must be 'null' or a numeric id")
+						.appendParametersToMessage()
+						.setParameter("value", asyncBatchIdStr);
+			}
+		}
+
+		final int updatedCount = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, schedule.getM_ShipmentSchedule_ID())
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(COLUMNNAME_C_Async_Batch_ID, asyncBatchId)
+				.execute();
+		assertThat(updatedCount).as("Updated M_ShipmentSchedule rows").isEqualTo(1);
+
+		shipmentScheduleTable.putOrReplace(shipmentScheduleIdentifier, InterfaceWrapperHelper.load(schedule.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class));
+	}
+
+	/**
+	 * Sets {@code M_ShipmentSchedule.C_Async_Batch_ID} by direct update (see {@link #set_C_Async_Batch_ID_by_direct_update}) to the
+	 * async batch of THE pending workpackage of the named processor. Fails unless there is exactly one such workpackage and it has a batch,
+	 * rather than picking one. Makes a scenario independent of whether a schedule recompute already cleared the batch the enqueue assigned
+	 * (the very lost update a scenario may want to reproduce selectively).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And C_Async_Batch_ID of M_ShipmentSchedule schedule_1 gets the batch of the pending "GenerateInOutFromShipmentSchedules" workpackage by direct update
+	 * </pre>
+	 */
+	@And("^C_Async_Batch_ID of M_ShipmentSchedule (.*) gets the batch of the pending \"(.*)\" workpackage by direct update$")
+	public void set_C_Async_Batch_ID_to_pending_workpackage_batch(
+			@NonNull final String shipmentScheduleIdentifier,
+			@NonNull final String processorShortName)
+	{
+		final List<I_C_Queue_WorkPackage> workPackages = workPackageQueueUtil.retrievePendingWorkPackages(processorShortName);
+		assertThat(workPackages).as("pending %s workpackages", processorShortName).hasSize(1);
+
+		final int asyncBatchId = workPackages.get(0).getC_Async_Batch_ID();
+		assertThat(asyncBatchId).as("C_Async_Batch_ID of the pending %s workpackage", processorShortName).isGreaterThan(0);
+
+		set_C_Async_Batch_ID_by_direct_update(shipmentScheduleIdentifier, String.valueOf(asyncBatchId));
+	}
+
 	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
 	{
 		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)

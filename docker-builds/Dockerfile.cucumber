@@ -32,6 +32,11 @@ RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml \
     done
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress -T1C clean test-compile --offline
 
+# Migration scripts that scenarios run from the source tree (step "the migration script ... is executed in the DB").
+# The step looks up the repo-relative path in the working directory and its parents, so they are copied to the same path under the image root.
+# Kept after the dependency and compile layers, so that a migration edit does not invalidate their cache.
+COPY backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/ /backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/
+
 COPY docker-builds/mvn/settings.xml /root/.m2/
 COPY docker-builds/cucumber/compose.yml /compose.yml
 COPY --chmod=700 docker-builds/cucumber/entrypoint.sh .

@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -70,6 +71,8 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -105,6 +108,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
@@ -114,6 +118,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -147,6 +152,7 @@ public class ShipmentScheduleWithHUService
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -169,7 +175,7 @@ public class ShipmentScheduleWithHUService
 	}
 
 	@Value
-	@Builder
+	@Builder(toBuilder = true)
 	public static class PrepareForShipmentSchedulesRequest
 	{
 		@NonNull ShipmentScheduleAndJobSchedulesCollection schedules;
@@ -183,6 +189,22 @@ public class ShipmentScheduleWithHUService
 		@Builder.Default boolean onTheFlyPickToPackingInstructions = false;
 		@NonNull @Builder.Default QtyToDeliverMap qtyToDeliverOverrides = QtyToDeliverMap.EMPTY;
 		@Builder.Default boolean failOnSingleScheduleWithNoPickedHUs = true;
+
+		/**
+		 * If {@code true}, a processed schedule is still shipped when it is closed and this request carries a quantity for it:
+		 * unshipped picks in this request's scope (quantity type P / PD), or an entered quantity to deliver (quantity type D / PD).
+		 * If {@code false} (the default), processed schedules are skipped.
+		 * <p>
+		 * Only the shipment workpackage sets it; see {@code ShipmentScheduleWithHUService.isToBeShipped} for why.
+		 */
+		@Builder.Default boolean includeProcessedClosedSchedulesWithQty = false;
+
+		/**
+		 * When the shipment workpackage was enqueued ({@code C_Queue_WorkPackage.Created}).
+		 * Required when {@link #includeProcessedClosedSchedulesWithQty} is set: an entered quantity is not kept
+		 * if a shipment for the schedule was completed since this moment (see {@code isShippedSince}).
+		 */
+		@Nullable Instant enqueuedAt;
 
 		@Nullable
 		public StockQtyAndUOMQty getQtyToDeliverOverride(@NonNull final ShipmentScheduleId shipmentScheduleId)
@@ -231,7 +253,7 @@ public class ShipmentScheduleWithHUService
 		@Builder.Default boolean failOnSingleScheduleWithNoPickedHUs = true;
 
 		/**
-		 * Whether this request is part of a batch (determined by the caller from countUnprocessed()).
+		 * Whether this request is part of a batch (determined by the caller from the count of schedules to ship).
 		 * Must remain stable across all schedules in one batch.
 		 */
 		@Builder.Default boolean isBatchProcessing = false;
@@ -274,21 +296,25 @@ public class ShipmentScheduleWithHUService
 
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
-		// Compute batch mode once at the beginning based on unprocessed count.
+		final ArrayList<ShipmentScheduleAndJobSchedules> schedulesToShip = new ArrayList<>();
+		for (final ShipmentScheduleAndJobSchedules schedule : request.getSchedules())
+		{
+			if (isToBeShipped(schedule, request))
+			{
+				schedulesToShip.add(schedule);
+			}
+		}
+
+		// Compute batch mode once at the beginning based on the count of schedules to ship.
 		// Must be computed here (not in PrepareForSingleShipmentScheduleRequest) to:
 		// 1. Prevent manual override via builder
 		// 2. Ensure same value used for all schedules in this batch (stable throughout the loop)
-		// 3. Base decision on actual unprocessed count at batch start time
-		final boolean isBatchProcessing = request.getSchedules().countUnprocessed() > 1;
+		// 3. Base decision on the schedules to ship at batch start time; this counts the kept processed schedules too,
+		//    so a workpackage gets the same batch / single mode whether or not a recompute processed one of its schedules meanwhile
+		final boolean isBatchProcessing = schedulesToShip.size() > 1;
 
-		for (final ShipmentScheduleAndJobSchedules schedule : request.getSchedules())
+		for (final ShipmentScheduleAndJobSchedules schedule : schedulesToShip)
 		{
-			// Skip already processed candidates
-			if (schedule.isProcessed())
-			{
-				continue;
-			}
-
 			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentSchedule(schedule.getShipmentSchedule()))
 			{
 				final ImmutableList<ShipmentScheduleWithHU> candidates = prepareShipmentSchedulesWithHU(
@@ -306,6 +332,136 @@ public class ShipmentScheduleWithHUService
 		result.sort(new ShipmentScheduleWithHUComparator());
 
 		return ImmutableList.copyOf(result);
+	}
+
+	/**
+	 * An unprocessed schedule is always shipped. A processed one only if the request asks for it, the schedule is closed,
+	 * and the request carries a quantity for it.
+	 * <p>
+	 * Why: when a shipment workpackage completes a shipment, the close step can close the not yet shipped sibling schedules of the same order,
+	 * even though they are elements of another, still pending shipment workpackage (e.g. a split by header aggregation key);
+	 * a user can also close such a schedule by hand. A schedule recompute that runs in between then sets those closed siblings {@code Processed = Y}.
+	 * Without this exception, the pending workpackage would skip them and their picks / entered quantity would never be shipped
+	 * (race: close → recompute → skip).
+	 * <p>
+	 * "Carries a quantity" is decided like the shipping path itself decides it, so that a kept schedule is really shipped:
+	 * <ul>
+	 * <li>quantity type P / PD: unshipped picks in this request's scope (its picking-job schedules and {@code OnlyLUIds}), net quantity &gt; 0;</li>
+	 * <li>quantity type D / PD: the request's quantity override for the schedule, else the schedule's entered {@code QtyToDeliver_Override}, &gt; 0.
+	 * A closed schedule keeps its {@code QtyToDeliver_Override}; the recompute returns before touching it.</li>
+	 * </ul>
+	 * A run with neither carries nothing for a closed, processed schedule and still skips it.
+	 */
+	private boolean isToBeShipped(
+			@NonNull final ShipmentScheduleAndJobSchedules schedule,
+			@NonNull final PrepareForShipmentSchedulesRequest request)
+	{
+		if (!schedule.isProcessed())
+		{
+			return true;
+		}
+		if (!request.isIncludeProcessedClosedSchedulesWithQty())
+		{
+			return false;
+		}
+		if (!schedule.getShipmentSchedule().isClosed())
+		{
+			return false;
+		}
+
+		final M_ShipmentSchedule_QuantityTypeToUse quantityType = request.getQuantityTypeToUse();
+		final boolean usesPickedQty = quantityType.isOnlyUsePicked() || quantityType.isUseBoth();
+		final boolean usesQtyToDeliver = quantityType.isOnlyUseToDeliver() || quantityType.isUseBoth();
+
+		final boolean keep = (usesPickedQty && hasUnshippedPicksInScope(schedule, request))
+				|| (usesQtyToDeliver && hasEnteredQtyToDeliver(schedule, request));
+		if (keep)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("Shipping processed, closed shipment schedule {} because this run carries a quantity for it", schedule.getShipmentScheduleId());
+		}
+		return keep;
+	}
+
+	/**
+	 * Same query and net sum that {@link #prepareShipmentScheduleWithHUForPick(PrepareForSingleShipmentScheduleRequest)} ships from.
+	 */
+	private boolean hasUnshippedPicksInScope(
+			@NonNull final ShipmentScheduleAndJobSchedules schedule,
+			@NonNull final PrepareForShipmentSchedulesRequest request)
+	{
+		return !retrieveNotShippedRecords(schedule.toScheduleIds(), request.getOnlyLUIds()).isEmpty();
+	}
+
+	/**
+	 * Same quantity source as {@link #prepareShipmentSchedulesWithHUForQtyToDeliver(PrepareForSingleShipmentScheduleRequest)}: the request's override first, else the schedule's entered quantity.
+	 * Not applicable when only some job schedules are to be shipped, like there.
+	 * <p>
+	 * A schedule closed by its own shipment keeps its {@code QtyToDeliver_Override} (the recompute returns before it clears a fulfilled override),
+	 * and the D path ships the raw override. A D / PD run enqueued after that close cannot contain the schedule: the enqueue of such a run leaves out closed schedules
+	 * ({@link ShipmentScheduleWorkPackageParameters#getShipmentSchedulesQueryFiltersEffective()}), and while a run is pending the schedule is locked to it.
+	 * As defence in depth, the entered quantity is also not kept if a shipment for the schedule was completed since this workpackage was enqueued,
+	 * e.g. a draft shipment created before the enqueue and completed after it; see {@link #isShippedSince(ShipmentScheduleId, Instant)}.
+	 * Picks need no such check: a shipped pick has a shipment line and is no longer returned by {@link #retrieveNotShippedRecords(ShipmentScheduleAndJobScheduleIdSet, Set)}.
+	 */
+	private boolean hasEnteredQtyToDeliver(
+			@NonNull final ShipmentScheduleAndJobSchedules schedule,
+			@NonNull final PrepareForShipmentSchedulesRequest request)
+	{
+		if (schedule.hasJobSchedules())
+		{
+			return false;
+		}
+		if (!isEnteredQtyToDeliverPositive(schedule, request))
+		{
+			return false;
+		}
+
+		final Instant enqueuedAt = Check.assumeNotNull(request.getEnqueuedAt(), "enqueuedAt is set when includeProcessedClosedSchedulesWithQty is set; request={}", request);
+		return !isShippedSince(schedule.getShipmentScheduleId(), enqueuedAt);
+	}
+
+	private static boolean isEnteredQtyToDeliverPositive(
+			@NonNull final ShipmentScheduleAndJobSchedules schedule,
+			@NonNull final PrepareForShipmentSchedulesRequest request)
+	{
+		final StockQtyAndUOMQty qtyToDeliverOverride = request.getQtyToDeliverOverride(schedule.getShipmentScheduleId());
+		if (qtyToDeliverOverride != null)
+		{
+			return qtyToDeliverOverride.getStockQty().signum() > 0;
+		}
+
+		final I_M_ShipmentSchedule scheduleRecord = schedule.getShipmentSchedule();
+		return !InterfaceWrapperHelper.isNull(scheduleRecord, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override)
+				&& scheduleRecord.getQtyToDeliver_Override().signum() > 0;
+	}
+
+	/**
+	 * @return {@code true} if the schedule has an allocation on a shipment line whose shipment is completed or closed (DocStatus CO / CL) and
+	 * <ul>
+	 * <li>either the line was created at or after {@code enqueuedAt} ({@code M_InOutLine.Created >= enqueuedAt}),</li>
+	 * <li>or the shipment header was updated at or after {@code enqueuedAt} ({@code M_InOut.Updated >= enqueuedAt}); the completion updates the header,
+	 * so this also catches a draft created before the enqueue and completed after it.</li>
+	 * </ul>
+	 * Accepted false positive: an older shipment whose header was touched for another reason after the enqueue makes the entered quantity be skipped.
+	 * That is safe and visible (the quantity stays open on the schedule), while a double shipment would be a stock and money error.
+	 */
+	private boolean isShippedSince(@NonNull final ShipmentScheduleId shipmentScheduleId, @NonNull final Instant enqueuedAt)
+	{
+		return shipmentScheduleAllocDAO.stream(
+						ShipmentScheduleAllocQuery.builder()
+								.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(shipmentScheduleId))
+								.alreadyShipped(true)
+								.build())
+				.map(alloc -> inOutDAO.getLineByIdInTrx(InOutLineId.ofRepoId(alloc.getM_InOutLine_ID())))
+				.anyMatch(shipmentLine -> {
+					final I_M_InOut shipment = inOutDAO.getById(InOutId.ofRepoId(shipmentLine.getM_InOut_ID()));
+					if (!DocStatus.ofCode(shipment.getDocStatus()).isCompletedOrClosed())
+					{
+						return false;
+					}
+					return !shipmentLine.getCreated().toInstant().isBefore(enqueuedAt)
+							|| !shipment.getUpdated().toInstant().isBefore(enqueuedAt);
+				});
 	}
 
 	/**

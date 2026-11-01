@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupService;
 import de.metas.order.OrderLineId;
@@ -25,7 +24,6 @@ import javax.annotation.Nullable;
 public class C_OrderLine
 {
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final InvoiceCandidateGroupService invoiceCandidateGroupService;
@@ -58,7 +56,7 @@ public class C_OrderLine
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteInvoiceCandidates(final I_C_OrderLine ol)
 	{
-		invoiceCandDAO.deleteAllReferencingInvoiceCandidates(ol);
+		invoiceCandBL.deleteAllReferencingInvoiceCandidates(ol);
 	}
 
 	/**

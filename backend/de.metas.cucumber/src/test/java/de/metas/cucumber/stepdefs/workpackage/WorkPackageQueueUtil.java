@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.workpackage;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -30,10 +31,13 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 
+import java.util.List;
+
 /**
  * Shared queries over {@link I_C_Queue_WorkPackage} for cucumber step defs that need to know how many
  * workpackages are still pending for a given {@link I_C_Queue_PackageProcessor}, identified by its short name
- * (e.g. {@code CreateMissingShipmentSchedules} for {@code CreateMissingShipmentSchedulesWorkpackageProcessor}).
+ * (e.g. {@code CreateMissingShipmentSchedules} for {@code CreateMissingShipmentSchedulesWorkpackageProcessor},
+ * or the exact simple class name {@code GenerateInOutFromShipmentSchedules} for a processor without the suffix).
  * <p>
  * A plain PicoContainer-managed instance (see {@code cucumber-picocontainer}), constructor-injected into step
  * defs the same way {@link de.metas.cucumber.stepdefs.util.IdentifiersResolver} is — never a
@@ -72,6 +76,21 @@ public class WorkPackageQueueUtil
 				.count();
 	}
 
+	/** @return the pending workpackages (same definition as {@link #countPendingWorkPackages(String)}) of the processor, oldest first */
+	public List<I_C_Queue_WorkPackage> retrievePendingWorkPackages(@NonNull final String processorShortName)
+	{
+		final ImmutableSet<Integer> packageProcessorIds = resolvePackageProcessorIds(processorShortName);
+		if (packageProcessorIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return pendingWorkPackagesQuery(packageProcessorIds)
+				.orderBy(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
+				.create()
+				.list(I_C_Queue_WorkPackage.class);
+	}
+
 	IQueryBuilder<I_C_Queue_WorkPackage> pendingWorkPackagesQuery(@NonNull final ImmutableSet<Integer> packageProcessorIds)
 	{
 		return queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
@@ -82,17 +101,32 @@ public class WorkPackageQueueUtil
 	}
 
 	/**
-	 * Resolves the {@code C_Queue_PackageProcessor_ID}s whose {@code Classname} simple name matches the given
-	 * short name (with a {@value WORKPACKAGE_PROCESSOR_CLASS_SUFFIX} suffix appended if not already present) —
-	 * e.g. {@code CreateMissingShipmentSchedules} resolves {@code CreateMissingShipmentSchedulesWorkpackageProcessor}.
+	 * Resolves the {@code C_Queue_PackageProcessor_ID}s of the workpackage processor identified by the given name:
+	 * <ol>
+	 *   <li>the {@code Classname} simple name matches the name with a {@value WORKPACKAGE_PROCESSOR_CLASS_SUFFIX} suffix appended
+	 *       if not already present — e.g. {@code CreateMissingShipmentSchedules} resolves
+	 *       {@code CreateMissingShipmentSchedulesWorkpackageProcessor};</li>
+	 *   <li>only if (1) finds nothing: the {@code Classname} simple name equals the name exactly — e.g.
+	 *       {@code GenerateInOutFromShipmentSchedules}, a processor class without the suffix.</li>
+	 * </ol>
+	 * The fallback keeps every name that resolves by rule (1) resolving to the very same processors.
 	 */
 	ImmutableSet<Integer> resolvePackageProcessorIds(@NonNull final String processorShortName)
 	{
 		final String processorSimpleClassName = processorShortName.endsWith(WORKPACKAGE_PROCESSOR_CLASS_SUFFIX)
 				? processorShortName
 				: processorShortName + WORKPACKAGE_PROCESSOR_CLASS_SUFFIX;
-		final String classnameSuffix = "." + processorSimpleClassName;
 
+		final ImmutableSet<Integer> bySuffixedName = resolvePackageProcessorIdsByClassnameSuffix("." + processorSimpleClassName);
+		if (!bySuffixedName.isEmpty())
+		{
+			return bySuffixedName;
+		}
+		return resolvePackageProcessorIdsByClassnameSuffix("." + processorShortName);
+	}
+
+	private ImmutableSet<Integer> resolvePackageProcessorIdsByClassnameSuffix(@NonNull final String classnameSuffix)
+	{
 		return queryBL.createQueryBuilder(I_C_Queue_PackageProcessor.class)
 				.addOnlyActiveRecordsFilter()
 				.create()

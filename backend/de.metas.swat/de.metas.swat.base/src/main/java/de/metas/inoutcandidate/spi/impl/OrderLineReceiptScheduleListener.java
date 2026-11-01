@@ -1,7 +1,6 @@
 package de.metas.inoutcandidate.spi.impl;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.order.OrderLineId;
 import org.compiere.model.I_C_OrderLine;
 
@@ -38,15 +37,9 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 
 		orderBL.closeLine(orderLine);
 
-		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
-		invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
-
-		// Nothing was received, so the candidates can never be invoiced and would linger as open work that
-		// "Create Invoices" silently skips. A partial receipt must stay open - its delivered part is invoiceable.
-		if (orderLine.getQtyDelivered().signum() == 0)
-		{
-			invoiceCandBL.closeInvoiceCandidatesByOrderLineId(orderLineId);
-		}
+		// If nothing was received, IsDeliveryClosed=Y makes the candidates processed, so they don't linger as open work
+		// that "Create Invoices" silently skips - see InvoiceCandBL.updateProcessedFlag. A partial receipt stays invoiceable.
+		invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 	}
 
 	/**
@@ -69,8 +62,6 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 
 		orderBL.reopenLine(orderLine);
 
-		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
-		invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
-		invoiceCandBL.openInvoiceCandidatesByOrderLineId(orderLineId);
+		invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 	}
 }

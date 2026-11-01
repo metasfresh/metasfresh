@@ -31,6 +31,7 @@ import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.uom.UomId;
@@ -64,6 +65,7 @@ public class C_Flatrate_DataEntry
 	private static final List<String> DATAENTRY_TYPES_InvoiceCandidatesRelated = ImmutableList
 			.of(X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
 
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	private C_Flatrate_DataEntry()
@@ -292,7 +294,7 @@ public class C_Flatrate_DataEntry
 				InterfaceWrapperHelper.delete(invoiceCandidate);
 			}
 		}
-		invoiceCandDAO.deleteAllReferencingInvoiceCandidates(dataEntry);
+		invoiceCandBL.deleteAllReferencingInvoiceCandidates(dataEntry);
 	}
 
 	private void deleteInvoiceCandidateCorr(@NonNull final I_C_Flatrate_DataEntry dataEntry)
