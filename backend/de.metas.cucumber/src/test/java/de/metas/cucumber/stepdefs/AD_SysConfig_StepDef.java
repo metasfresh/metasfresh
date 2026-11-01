@@ -24,7 +24,6 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -34,8 +33,8 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -43,6 +42,7 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.util.DB;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nullable;
@@ -133,9 +133,25 @@ public class AD_SysConfig_StepDef
 				.list(I_AD_SysConfig.class)
 				.forEach(row -> {
 					priorValueByClientSysConfigId.putIfAbsent(row.getAD_SysConfig_ID(), row.getValue());
-					sysConfigBL.setValue(sysConfigName, storedValue, ClientId.ofRepoId(row.getAD_Client_ID()), OrgId.ofRepoId(row.getAD_Org_ID()));
+					updateClientSysConfigValue(row.getAD_SysConfig_ID(), storedValue);
 				});
 		resetSysConfigCache();
+	}
+
+	/**
+	 * Writes the value of an existing client-specific row with plain SQL, i.e. bypassing the AD_SysConfig model interceptor.
+	 * That interceptor refuses to save any client row of a sysconfig whose SYSTEM row has {@code ConfigurationLevel='S'}
+	 * ("Can't Save Client Level"), even though such legacy client rows exist and are preferred by every client/org read.
+	 * The interceptor guards against creating a client-level parameter; this only changes the value of a row that already exists.
+	 * <p>
+	 * No cache invalidation is fired, so the caller must reset the sysconfig cache afterwards.
+	 */
+	private static void updateClientSysConfigValue(final int sysConfigId, @Nullable final String value)
+	{
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"UPDATE " + I_AD_SysConfig.Table_Name + " SET " + I_AD_SysConfig.COLUMNNAME_Value + "=? WHERE " + I_AD_SysConfig.COLUMNNAME_AD_SysConfig_ID + "=?",
+				new Object[] { value, sysConfigId },
+				ITrx.TRXNAME_None);
 	}
 
 	private void applySysConfigValue(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
@@ -369,22 +385,12 @@ public class AD_SysConfig_StepDef
 	{
 		try
 		{
-			priorValueByClientSysConfigId.forEach((id, priorValue) -> {
-				final I_AD_SysConfig row = queryBL.createQueryBuilder(I_AD_SysConfig.class)
-						.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_SysConfig_ID, id)
-						.create()
-						.firstOnly(I_AD_SysConfig.class);
-				if (row == null)
-				{
-					return; // deleted during the scenario: nothing to restore
-				}
-				row.setValue(priorValue);
-				InterfaceWrapperHelper.save(row);
-			});
+			// a row deleted during the scenario is simply not updated
+			priorValueByClientSysConfigId.forEach(AD_SysConfig_StepDef::updateClientSysConfigValue);
 		}
 		finally
 		{
-			priorValueByClientSysConfigId.clear();
+			priorValueByClientSysConfigId.clear(); // the cache reset below covers these rows: they always come with a SYSTEM-level entry
 		}
 
 		if (priorValueBySysConfigName.isEmpty())
