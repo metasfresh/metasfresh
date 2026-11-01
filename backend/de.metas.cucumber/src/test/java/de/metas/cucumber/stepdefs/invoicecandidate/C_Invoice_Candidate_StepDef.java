@@ -1239,6 +1239,7 @@ public class C_Invoice_Candidate_StepDef
 	 *   <b>C_Invoice_Candidate_ID.Identifier</b> — (required) the candidate<br>
 	 *   <b>OPT.Updated</b> — (optional) instant, e.g. {@code 2026-01-01T00:00:00Z}<br>
 	 *   <b>OPT.C_Tax_Override_ID</b> — (optional) the tax override's numeric ID, e.g. {@code 100} (Tax_Not_Found)<br>
+	 *   <b>OPT.Processed</b> — (optional) boolean, written to both {@code Processed} and {@code Processed_Calc}, e.g. to restore the state of a candidate stored before a rule existed<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_Invoice_Candidate by plain SQL, without interceptors or recompute:
@@ -1266,6 +1267,12 @@ public class C_Invoice_Candidate_StepDef
 									new Object[] { taxId, invoiceCandidateId },
 									ITrx.TRXNAME_None));
 
+					row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_Processed)
+							.ifPresent(processed -> DB.executeUpdateAndThrowExceptionOnFail(
+									"UPDATE C_Invoice_Candidate SET Processed = ?, Processed_Calc = ? WHERE C_Invoice_Candidate_ID = ?",
+									new Object[] { processed ? "Y" : "N", processed ? "Y" : "N", invoiceCandidateId },
+									ITrx.TRXNAME_None));
+
 					InterfaceWrapperHelper.refresh(invoiceCandidate);
 				});
 	}
@@ -1276,6 +1283,11 @@ public class C_Invoice_Candidate_StepDef
 	 * Use it together with {@code new "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages are held}.
 	 *
 	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_Candidate_ID.Identifier</b> — (required) the candidate<br>
+	 *   <b>OPT.Processed</b> — (optional) boolean<br>
+	 *   <b>OPT.ApprovalForInvoicing</b> — (optional) boolean<br>
+	 *   <b>OPT.IsToRecompute</b> — (optional) boolean: whether the candidate is queued for recompute ({@code C_Invoice_Candidate_Recompute}) right now<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And validate C_Invoice_Candidate as stored right now, without waiting for its recompute:
@@ -1296,6 +1308,8 @@ public class C_Invoice_Candidate_StepDef
 							.ifPresent(expected -> softly.assertThat(invoiceCandidateRecord.isProcessed()).as("Processed").isEqualTo(expected));
 					row.getAsOptionalBoolean(COLUMNNAME_ApprovalForInvoicing)
 							.ifPresent(expected -> softly.assertThat(invoiceCandidateRecord.isApprovalForInvoicing()).as("ApprovalForInvoicing").isEqualTo(expected));
+					row.getAsOptionalBoolean("IsToRecompute")
+							.ifPresent(expected -> softly.assertThat(invoiceCandDAO.isToRecompute(invoiceCandidateRecord)).as("IsToRecompute").isEqualTo(expected));
 					softly.assertAll();
 				});
 	}

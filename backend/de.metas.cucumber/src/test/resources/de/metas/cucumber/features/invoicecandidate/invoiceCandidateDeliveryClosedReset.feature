@@ -11,7 +11,9 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
 ## Closing a disposition with nothing delivered used to close its invoice candidates explicitly (Processed_Override = Y),
 ## and only reopening the disposition cleared that again. Now a computed rule decides, and the reopen no longer clears explicit closes.
 ## The migration 5832360_sys_reset_C_Invoice_Candidate_Processed_Override_DeliveryClosed.sql resets the explicit closes written since
-## migration 5821320_sys_Event_InvoicingError_message.sql was applied. The scenarios run its statements verbatim.
+## migration 5821320_sys_Event_InvoicingError_message.sql was applied. Its scenarios run its statements verbatim.
+## The migration 5832370_sys_recompute_C_Invoice_Candidate_DeliveryClosed_at_deploy.sql queues older closed, never-delivered candidates
+## that are not processed yet for one recompute at deploy, so the computed rule applies to them; its scenario runs its statements verbatim.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -176,6 +178,8 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
     And update C_Invoice_Candidate by plain SQL, without interceptors or recompute:
       | C_Invoice_Candidate_ID.Identifier | OPT.Updated          |
       | ic_B                              | 2026-01-01T00:00:00Z |
+    # an update run still in flight could load a candidate before the reset and save its old processed state over it
+    And after not more than 60s, there are 0 pending "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages
 
     # the migration's statements, verbatim
     When the following SQL is executed in the DB:
@@ -442,3 +446,286 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.Processed_Override |
       | ic_A                              | true          | Y                      |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  @allure.label.feature:F00130_Shipment_Schedule
+  @F00130
+  Scenario: the deploy step processes older closed, never-delivered After-delivery candidates over several update runs, leaves Immediate and error candidates alone, and queues nothing when run again
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+      | SO_I       | true    | customerI                | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered |
+      | SO                    | L_1        | product1                | 1          |
+      | SO                    | L_2        | product1                | 2          |
+      | SO                    | L_3        | product1                | 3          |
+      | SO                    | L_4        | product1                | 4          |
+      | SO                    | L_5        | product1                | 5          |
+      | SO                    | L_F        | product1                | 3          |
+      | SO_I                  | L_I        | product1                | 6          |
+    And the order identified by SO is completed
+    And the order identified by SO_I is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | schedule_1 | L_1                       | N             |
+      | schedule_2 | L_2                       | N             |
+      | schedule_3 | L_3                       | N             |
+      | schedule_4 | L_4                       | N             |
+      | schedule_5 | L_5                       | N             |
+      | schedule_F | L_F                       | N             |
+      | schedule_I | L_I                       | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic_1                              | L_1                       |
+      | ic_2                              | L_2                       |
+      | ic_3                              | L_3                       |
+      | ic_4                              | L_4                       |
+      | ic_5                              | L_5                       |
+      | ic_F                              | L_F                       |
+      | ic_I                              | L_I                       |
+    And after not more than 120s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+      | ic_2                              |
+      | ic_3                              |
+      | ic_4                              |
+      | ic_5                              |
+      | ic_F                              |
+      | ic_I                              |
+    And update invoice candidates
+      | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
+      | ic_1                              | true                     |
+      | ic_2                              | true                     |
+      | ic_3                              | true                     |
+      | ic_4                              | true                     |
+      | ic_5                              | true                     |
+      | ic_I                              | true                     |
+
+    # a calculation error that every recompute finds again: the tax override is Tax_Not_Found (C_Tax_ID 100).
+    # ic_F is not approved for invoicing: the recompute does not recompute an approved candidate's tax, so the error would not appear.
+    And update C_Invoice_Candidate by plain SQL, without interceptors or recompute:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Tax_Override_ID |
+      | ic_F                              | 100                   |
+    And after not more than 120s, C_Invoice_Candidates are invalidated and recomputed:
+      | C_Invoice_Candidate_ID |
+      | ic_F                   |
+
+    And the M_ShipmentSchedule identified by schedule_1 is closed
+    And the M_ShipmentSchedule identified by schedule_2 is closed
+    And the M_ShipmentSchedule identified by schedule_3 is closed
+    And the M_ShipmentSchedule identified by schedule_4 is closed
+    And the M_ShipmentSchedule identified by schedule_5 is closed
+    And the M_ShipmentSchedule identified by schedule_F is closed
+    And the M_ShipmentSchedule identified by schedule_I is closed
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed_Override | OPT.IsError | OPT.ApprovalForInvoicing |
+      | ic_1                              | true          | 0            | true                 | null                   | false       | true                     |
+      | ic_2                              | true          | 0            | true                 | null                   | false       | true                     |
+      | ic_3                              | true          | 0            | true                 | null                   | false       | true                     |
+      | ic_4                              | true          | 0            | true                 | null                   | false       | true                     |
+      | ic_5                              | true          | 0            | true                 | null                   | false       | true                     |
+      | ic_F                              | false         | 0            | true                 | null                   | true        | false                    |
+      | ic_I                              | false         | 6            | true                 | null                   | false       | true                     |
+
+    # the After-delivery candidates as they were stored before the rule existed: closed, nothing delivered, not processed.
+    # Written with plain SQL, so nothing invalidates them and only the deploy step's own update run can recompute them.
+    And update C_Invoice_Candidate by plain SQL, without interceptors or recompute:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed |
+      | ic_1                              | false         |
+      | ic_2                              | false         |
+      | ic_3                              | false         |
+      | ic_4                              | false         |
+      | ic_5                              | false         |
+    And validate C_Invoice_Candidate as stored right now, without waiting for its recompute:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.ApprovalForInvoicing | OPT.IsToRecompute |
+      | ic_1                              | false         | true                     | false             |
+      | ic_2                              | false         | true                     | false             |
+      | ic_3                              | false         | true                     | false             |
+      | ic_4                              | false         | true                     | false             |
+      | ic_5                              | false         | true                     | false             |
+      | ic_F                              | false         | false                    | false             |
+      | ic_I                              | false         | true                     | false             |
+    # one update run takes at most 2 candidates, so the 5 After-delivery candidates need at least 3 runs, each scheduled by the one before
+    And for this scenario only, set sys config int value 2 for sys config de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor.MaxInvoiceCandidatesToUpdate
+    And after not more than 60s, there are 0 pending "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages
+
+    # the migration's statements, verbatim
+    When the following SQL is executed in the DB:
+    """
+    INSERT INTO C_Invoice_Candidate_Recompute (C_Invoice_Candidate_ID)
+    SELECT ic.C_Invoice_Candidate_ID
+    FROM C_Invoice_Candidate ic
+    WHERE ic.IsActive = 'Y'
+      AND ic.IsDeliveryClosed = 'Y'
+      AND ic.Processed = 'N'
+      AND ic.Processed_Override IS NULL
+      AND ic.IsError = 'N'
+      AND (COALESCE(ic.InvoiceRule_Override, ic.InvoiceRule) = 'O'
+        OR (COALESCE(ic.InvoiceRule_Override, ic.InvoiceRule) IN ('D', 'C', 'S', 'M')
+            AND EXISTS (SELECT 1 FROM M_Product p WHERE p.M_Product_ID = ic.M_Product_ID AND p.ProductType = 'I')))
+      AND ic.QtyDelivered = 0
+      AND ic.QtyInvoiced = 0
+      AND NOT EXISTS (SELECT 1 FROM C_OrderLine ol WHERE ol.C_OrderLine_ID = ic.C_OrderLine_ID AND ol.QtyDelivered <> 0)
+      AND NOT EXISTS (SELECT 1 FROM C_Invoice_Candidate_Recompute r WHERE r.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID)
+    ;
+    """
+    Then validate C_Invoice_Candidate as stored right now, without waiting for its recompute:
+      | C_Invoice_Candidate_ID.Identifier | OPT.IsToRecompute |
+      | ic_1                              | true              |
+      | ic_2                              | true              |
+      | ic_3                              | true              |
+      | ic_4                              | true              |
+      | ic_5                              | true              |
+      | ic_F                              | false             |
+      | ic_I                              | false             |
+    And the following SQL is executed in the DB:
+    """
+    DO
+    $$
+        DECLARE
+            v_client  record;
+            v_role_id numeric;
+            v_user_id numeric;
+        BEGIN
+            FOR v_client IN SELECT ic.AD_Client_ID, COUNT(*) AS queued
+                            FROM C_Invoice_Candidate_Recompute r
+                                     JOIN C_Invoice_Candidate ic ON ic.C_Invoice_Candidate_ID = r.C_Invoice_Candidate_ID
+                            WHERE ic.AD_Client_ID > 0
+                            GROUP BY ic.AD_Client_ID
+                            ORDER BY ic.AD_Client_ID
+                LOOP
+                    v_role_id := NULL;
+                    v_user_id := NULL;
+                    SELECT ur.AD_Role_ID, ur.AD_User_ID
+                    INTO v_role_id, v_user_id
+                    FROM AD_User_Roles ur
+                             JOIN AD_Role r ON r.AD_Role_ID = ur.AD_Role_ID
+                             JOIN AD_User u ON u.AD_User_ID = ur.AD_User_ID
+                    WHERE r.AD_Client_ID = v_client.AD_Client_ID
+                      AND r.IsActive = 'Y'
+                      AND r.IsManual = 'N'
+                      AND r.IsAccessAllOrgs = 'Y'
+                      AND r.UserLevel LIKE '%C%'
+                      AND ur.IsActive = 'Y'
+                      AND u.IsActive = 'Y'
+                    ORDER BY (ur.AD_User_ID = 100) DESC, r.AD_Role_ID, ur.AD_User_ID
+                    LIMIT 1;
+
+                    INSERT INTO C_Queue_WorkPackage (C_Queue_WorkPackage_ID, C_Queue_PackageProcessor_ID,
+                                                     AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID,
+                                                     IsReadyForProcessing, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+                    VALUES (NEXTVAL('c_queue_workpackage_seq'),
+                            (SELECT p.C_Queue_PackageProcessor_ID
+                             FROM C_Queue_PackageProcessor p
+                             WHERE p.Classname = 'de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor'),
+                            v_client.AD_Client_ID, 0, v_role_id, COALESCE(v_user_id, 100),
+                            'Y', 'Y', NOW(), 99, NOW(), 99);
+
+                    RAISE NOTICE 'AD_Client_ID=%: % queued invoice candidates, update workpackage enqueued with AD_Role_ID=%, AD_User_ID=%',
+                        v_client.AD_Client_ID, v_client.queued, v_role_id, COALESCE(v_user_id, 100);
+                END LOOP;
+        END
+    $$
+    ;
+    """
+
+    Then after not more than 120s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+      | ic_2                              |
+      | ic_3                              |
+      | ic_4                              |
+      | ic_5                              |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.Processed_Override | OPT.IsError | OPT.ApprovalForInvoicing |
+      | ic_1                              | true          | 0            | null                   | false       | true                     |
+      | ic_2                              | true          | 0            | null                   | false       | true                     |
+      | ic_3                              | true          | 0            | null                   | false       | true                     |
+      | ic_4                              | true          | 0            | null                   | false       | true                     |
+      | ic_5                              | true          | 0            | null                   | false       | true                     |
+      | ic_F                              | false         | 0            | null                   | true        | false                    |
+      | ic_I                              | false         | 6            | null                   | false       | true                     |
+
+    # running the migration's statements again queues none of the candidates
+    When the following SQL is executed in the DB:
+    """
+    INSERT INTO C_Invoice_Candidate_Recompute (C_Invoice_Candidate_ID)
+    SELECT ic.C_Invoice_Candidate_ID
+    FROM C_Invoice_Candidate ic
+    WHERE ic.IsActive = 'Y'
+      AND ic.IsDeliveryClosed = 'Y'
+      AND ic.Processed = 'N'
+      AND ic.Processed_Override IS NULL
+      AND ic.IsError = 'N'
+      AND (COALESCE(ic.InvoiceRule_Override, ic.InvoiceRule) = 'O'
+        OR (COALESCE(ic.InvoiceRule_Override, ic.InvoiceRule) IN ('D', 'C', 'S', 'M')
+            AND EXISTS (SELECT 1 FROM M_Product p WHERE p.M_Product_ID = ic.M_Product_ID AND p.ProductType = 'I')))
+      AND ic.QtyDelivered = 0
+      AND ic.QtyInvoiced = 0
+      AND NOT EXISTS (SELECT 1 FROM C_OrderLine ol WHERE ol.C_OrderLine_ID = ic.C_OrderLine_ID AND ol.QtyDelivered <> 0)
+      AND NOT EXISTS (SELECT 1 FROM C_Invoice_Candidate_Recompute r WHERE r.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID)
+    ;
+    """
+    Then validate C_Invoice_Candidate as stored right now, without waiting for its recompute:
+      | C_Invoice_Candidate_ID.Identifier | OPT.IsToRecompute |
+      | ic_1                              | false             |
+      | ic_2                              | false             |
+      | ic_3                              | false             |
+      | ic_4                              | false             |
+      | ic_5                              | false             |
+      | ic_F                              | false             |
+      | ic_I                              | false             |
+    And the following SQL is executed in the DB:
+    """
+    DO
+    $$
+        DECLARE
+            v_client  record;
+            v_role_id numeric;
+            v_user_id numeric;
+        BEGIN
+            FOR v_client IN SELECT ic.AD_Client_ID, COUNT(*) AS queued
+                            FROM C_Invoice_Candidate_Recompute r
+                                     JOIN C_Invoice_Candidate ic ON ic.C_Invoice_Candidate_ID = r.C_Invoice_Candidate_ID
+                            WHERE ic.AD_Client_ID > 0
+                            GROUP BY ic.AD_Client_ID
+                            ORDER BY ic.AD_Client_ID
+                LOOP
+                    v_role_id := NULL;
+                    v_user_id := NULL;
+                    SELECT ur.AD_Role_ID, ur.AD_User_ID
+                    INTO v_role_id, v_user_id
+                    FROM AD_User_Roles ur
+                             JOIN AD_Role r ON r.AD_Role_ID = ur.AD_Role_ID
+                             JOIN AD_User u ON u.AD_User_ID = ur.AD_User_ID
+                    WHERE r.AD_Client_ID = v_client.AD_Client_ID
+                      AND r.IsActive = 'Y'
+                      AND r.IsManual = 'N'
+                      AND r.IsAccessAllOrgs = 'Y'
+                      AND r.UserLevel LIKE '%C%'
+                      AND ur.IsActive = 'Y'
+                      AND u.IsActive = 'Y'
+                    ORDER BY (ur.AD_User_ID = 100) DESC, r.AD_Role_ID, ur.AD_User_ID
+                    LIMIT 1;
+
+                    INSERT INTO C_Queue_WorkPackage (C_Queue_WorkPackage_ID, C_Queue_PackageProcessor_ID,
+                                                     AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID,
+                                                     IsReadyForProcessing, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+                    VALUES (NEXTVAL('c_queue_workpackage_seq'),
+                            (SELECT p.C_Queue_PackageProcessor_ID
+                             FROM C_Queue_PackageProcessor p
+                             WHERE p.Classname = 'de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor'),
+                            v_client.AD_Client_ID, 0, v_role_id, COALESCE(v_user_id, 100),
+                            'Y', 'Y', NOW(), 99, NOW(), 99);
+
+                    RAISE NOTICE 'AD_Client_ID=%: % queued invoice candidates, update workpackage enqueued with AD_Role_ID=%, AD_User_ID=%',
+                        v_client.AD_Client_ID, v_client.queued, v_role_id, COALESCE(v_user_id, 100);
+                END LOOP;
+        END
+    $$
+    ;
+    """

@@ -751,6 +751,32 @@ public class C_Queue_WorkPackage_StepDef
 				.isEqualTo(expectedCount);
 	}
 
+	/**
+	 * Like {@code there are N pending "<processor>" workpackages}, but waits up to the given timeout for the count to reach the expected value,
+	 * e.g. for the routine runs that earlier steps scheduled to finish before a step that must be the only one to schedule a run.
+	 * The workpackages are counted for every client.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, there are 0 pending "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages
+	 * </pre>
+	 */
+	@And("^after not more than (\\d+)s, there (?:is|are) (\\d+) pending \"(.*)\" workpackages?$")
+	public void wait_for_pending_workpackage_count(final int timeoutSec, final int expectedCount, @NonNull final String processorShortName) throws InterruptedException
+	{
+		try
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> workPackageQueueUtil.countPendingWorkPackages(processorShortName) == expectedCount);
+		}
+		catch (final Throwable timeout)
+		{
+			// fail with the actual count, not with the generic timeout message
+			assert_pending_workpackage_count(expectedCount, processorShortName);
+			throw timeout;
+		}
+	}
+
 	private Optional<I_C_Queue_WorkPackage> retrieveOldestPendingWorkPackage(@NonNull final String processorShortName)
 	{
 		final ImmutableSet<Integer> packageProcessorIds = workPackageQueueUtil.resolvePackageProcessorIds(processorShortName);
