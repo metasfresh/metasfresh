@@ -147,4 +147,23 @@ public class PostgresFTSDocumentFilterConverterTest
 		assertThat((BigDecimal)params[2]).as("distance read from ...Distance.partner").isEqualByComparingTo("0.4");
 		assertThat(params[4]).as("limit read from ...NgramLimit.partner").isEqualTo(11);
 	}
+
+	@Test
+	void unsupportedTableName_allowsAll()
+	{
+		assertThat(convert("C_Invoice")).isSameAs(FilterSql.ALLOW_ALL);
+	}
+
+	@Test
+	void missingTableName_allowsAll()
+	{
+		final FilterSql result = new PostgresFTSDocumentFilterConverter().getSql(
+				DocumentFilter.builder()
+						.filterId(PostgresFTSDocumentFilterDescriptorsProviderFactory.FILTER_ID)
+						.addParameter(DocumentFilterParam.ofNameEqualsValue(PARAM_Search, SEARCH_TEXT))
+						.build(),
+				SqlOptions.usingTableAlias("p"),
+				SqlDocumentFilterConverterContext.builder().build());
+		assertThat(result).isSameAs(FilterSql.ALLOW_ALL);
+	}
 }
