@@ -700,3 +700,47 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | InvoiceRule_Override |
       | ic1                               | I                    |
+
+  # only the invoice rule override changes on a candidate that the rule already processed: the candidate's own save
+  # re-evaluates the rule, the held recompute does not do it
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: setting the invoice rule override to Immediate on a candidate processed by the rule unprocesses it on save
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed |
+      | ic1                               | false         |
+    And the M_ShipmentSchedule identified by shipmentSchedule1 is closed
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed_Override |
+      | ic1                               | true          | 0            | true                 | null                   |
+    And validate C_Invoice_Candidate as stored right now, without waiting for its recompute:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.IsToRecompute |
+      | ic1                               | true          | false             |
+    And new "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages are held
+
+    When update invoice candidates
+      | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |
+      | ic1                               | I                        |
+
+    Then validate C_Invoice_Candidate as stored right now, without waiting for its recompute:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed |
+      | ic1                               | false         |
+    And held "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages are released
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed_Override |
+      | ic1                               | false         | 6            | true                 | null                   |
