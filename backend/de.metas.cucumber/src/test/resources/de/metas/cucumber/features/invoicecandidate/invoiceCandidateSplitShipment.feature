@@ -554,3 +554,84 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine1                | invoice                 | product1                | 6           | true      |
       | invoiceLine2                | invoice                 | product2                | 5           | true      |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: a line closed by the other line's shipment keeps its approval for invoicing and is invoiced in an approved-only run
+    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value            |
+      | warehouseB                | Leergebindelager |
+    # warehouseB needs its own stock of product2: line 2 is delivered from there, the Background inventory is in the standard warehouse
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inventoryB                | 2024-03-20   | warehouseB     |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventoryB                | lineB2                        | product2                | 0       | 100      | PCE          |
+    And complete inventory with inventoryIdentifier 'inventoryB'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID      |
+      | lineB2             | stockHUB2    |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |                               |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                | warehouseB                    |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+      | shipmentSchedule2 | L2                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+      | ic2                               | L2                        |
+    And update invoice candidates
+      | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
+      | ic1                               | true                     |
+      | ic2                               | true                     |
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    And new "GenerateInOutFromShipmentSchedules" workpackages are held
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule1     | D            | false               | false       |
+      | shipmentSchedule2     | D            | false               | false       |
+    And there are 2 pending "GenerateInOutFromShipmentSchedules" workpackages
+    And the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | DR            |
+      | shipmentSchedule2                | shipment2             | DR            |
+
+    When the shipment identified by shipment1 is completed
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed |
+      | shipmentSchedule2     | true     |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.ApprovalForInvoicing |
+      | ic1                               | false         | true                     |
+      | ic2                               | true          | true                     |
+
+    When the shipment identified by shipment2 is completed
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.ApprovalForInvoicing | OPT.Processed_Override | QtyDelivered | QtyToInvoice |
+      | ic1                               | false         | true                     | null                   | 6            | 6            |
+      | ic2                               | false         | true                     | null                   | 5            | 5            |
+    When process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.OnlyApprovedForInvoicing |
+      | ic1                               | true                         |
+      | ic2                               | true                         |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic1                               | invoice                 |
+      | ic2                               | invoice                 |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | invoiceLine1                | invoice                 | product1                | 6           | true      |
+      | invoiceLine2                | invoice                 | product2                | 5           | true      |
