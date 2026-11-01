@@ -2,9 +2,12 @@
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00701_Sales_Invoice_Candidates
 @F00701
+@allure.label.feature:F00130_Shipment_Schedule
+@F00130
 @ghActions:run_on_executor7
 Feature: Invoice candidates of order lines that were never delivered - a closed shipment schedule processes them, a reopened one makes them invoiceable again
 ## F00701: Invoice Candidates
+## F00130: Shipment Schedule (Lieferdisposition)
 ## Guards for the computed "delivery closed, nothing delivered" processed rule.
 
   Background:
@@ -88,7 +91,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: TC4 - line 2 is never delivered and its shipment schedule gets closed: its invoice candidate stays processed, line 1 is still invoiced
+  Scenario: line 2 is never delivered and its shipment schedule gets closed: its invoice candidate stays processed, line 1 is still invoiced
     Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
@@ -143,7 +146,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: TC6 - closing an undelivered shipment schedule processes its invoice candidate, reactivating it makes the candidate invoiceable again
+  Scenario: closing an undelivered shipment schedule processes its invoice candidate, reactivating it makes the candidate invoiceable again
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -175,7 +178,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: TC7d-hand - a candidate closed by hand stays closed when its line is delivered after the shipment schedule was closed and reactivated
+  Scenario: a candidate closed by hand stays closed when its line is delivered after the shipment schedule was closed and reactivated
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -215,7 +218,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: TC7d-2 - a hand close after the shipment schedule close wins over a later delivery
+  Scenario: a hand close after the shipment schedule close wins over a later delivery
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -255,7 +258,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: TC7d-flatrate - a flatrate "to clear" candidate stays closed when its line is delivered after the shipment schedule was closed and reactivated
+  Scenario: a flatrate "to clear" candidate stays closed when its line is delivered after the shipment schedule was closed and reactivated
     Given for this scenario only, set sys config boolean value true for sys config C_Invoice_Candidate_Close_IsToClear
     And metasfresh contains C_UOMs:
       | Identifier  | X12DE355 | Name     | UOMSymbol | StdPrecision | CostingPrecision |
@@ -331,7 +334,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: TC7e - reactivating and re-completing the order reopens only the line its disposition close closed, not the hand-closed or the "to clear" line
+  Scenario: reactivating and re-completing the order reopens only the line its disposition close closed, not the hand-closed or the "to clear" line
     Given for this scenario only, set sys config boolean value true for sys config C_Invoice_Candidate_Close_IsToClear
     And metasfresh contains C_UOMs:
       | Identifier  | X12DE355 | Name               | UOMSymbol | StdPrecision | CostingPrecision |

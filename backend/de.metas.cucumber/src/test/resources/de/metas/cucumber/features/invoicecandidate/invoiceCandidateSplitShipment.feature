@@ -2,9 +2,12 @@
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00701_Sales_Invoice_Candidates
 @F00701
+@allure.label.feature:F00130_Shipment_Schedule
+@F00130
 @ghActions:run_on_executor7
 Feature: Invoice candidates of a split shipment - the second shipment's lines stay invoiceable
 ## F00701: Invoice Candidates
+## F00130: Shipment Schedule (Lieferdisposition)
 ## One order, one picking job, one pallet, three lines (real-life data shape: delivered 6 / 5 / 6, one shipment for line 1 and one for lines 2 and 3).
 
   Background:
@@ -94,7 +97,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: TC1b - one workpackage creates two shipments (batch lost on lines 2 and 3), all lines are invoiced
+  Scenario: one workpackage creates two shipments (batch lost on lines 2 and 3), all lines are invoiced
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
     And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
     And metasfresh contains C_Orders:
@@ -173,7 +176,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: TC1 - two shipment workpackages (the order line of line 3 has another shipper), all lines are invoiced
+  Scenario: two shipment workpackages (the order line of line 3 has another shipper), all lines are invoiced
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
     And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
     And metasfresh contains C_Orders:
@@ -253,7 +256,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: TC7a - reversing the second shipment of TC1b restores the processed state of its lines
+  Scenario: reversing the second shipment of a one-workpackage split restores the processed state of its lines
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
     And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
     And metasfresh contains C_Orders:
@@ -332,7 +335,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
-  Scenario: TC7c - reactivating the second shipment of TC1b restores the processed state of its lines
+  Scenario: reactivating the second shipment of a one-workpackage split restores the processed state of its lines
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
     And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
     And metasfresh contains C_Orders:

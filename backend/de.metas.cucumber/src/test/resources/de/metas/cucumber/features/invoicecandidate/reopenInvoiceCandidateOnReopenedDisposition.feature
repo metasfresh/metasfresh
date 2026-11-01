@@ -111,8 +111,8 @@ Feature: Reopening a receipt disposition reopens the purchase invoice candidate
 
     When the order identified by po2 is reactivated
 
-    # IsDeliveryClosed is computed from the receipt schedules: a parked (reactivated) disposition
-    # no longer keeps it true. The candidate stays open - see @Id:S0164_500 for the next complete.
+    # Parking the receipt schedule (reactivated order) reopens the delivery, so IsDeliveryClosed is false
+    # and the candidate stays open - see @Id:S0164_500 for the next complete.
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed |
       | invoiceCand_2                     | 0            | false                | false         |
