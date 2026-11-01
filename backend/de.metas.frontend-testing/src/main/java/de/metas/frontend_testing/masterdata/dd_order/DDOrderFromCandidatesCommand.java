@@ -71,6 +71,7 @@ public class DDOrderFromCandidatesCommand
 		if (candidateRequest.getPpOrder() == null)
 		{
 			Check.assume(candidateRequest.getSalesOrderLine() != null, "A candidate needs a ppOrder or a salesOrderLine: {}", candidateRequest);
+			Check.assume(candidateRequest.getPpOrderBOMLine() == null, "ppOrderBOMLine is set only together with ppOrder: {}", candidateRequest);
 			return null;
 		}
 		return PPOrderRef.builder()

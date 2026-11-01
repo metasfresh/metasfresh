@@ -135,12 +135,19 @@ public class SourceDocPickingNotesLoader
 					.map(salesOrdersById::get)
 					.filter(Objects::nonNull)
 					.sorted(Comparator.comparing(I_C_Order::getDocumentNo))
-					.forEach(salesOrder -> lines.add(toDocTypeAndNo(DocTypeId.ofRepoId(salesOrder.getC_DocType_ID()), salesOrder.getDocumentNo())));
+					.forEach(salesOrder -> lines.add(toDocTypeAndNo(DocTypeId.ofRepoIdOrNull(salesOrder.getC_DocType_ID()), salesOrder.getDocumentNo())));
 			return ImmutableList.copyOf(lines);
 		}
 
-		private ITranslatableString toDocTypeAndNo(@NonNull final DocTypeId docTypeId, @NonNull final String documentNo)
+		/**
+		 * A document without doc type (e.g. a sales order still in draft) is listed by its document no only.
+		 */
+		private ITranslatableString toDocTypeAndNo(@Nullable final DocTypeId docTypeId, @NonNull final String documentNo)
 		{
+			if (docTypeId == null)
+			{
+				return TranslatableStrings.anyLanguage(documentNo);
+			}
 			final ITranslatableString docTypeName = docTypeNames.computeIfAbsent(docTypeId, docTypeBL::getNameById);
 			return DistributionSourceDocService.toDocTypeAndNoCaption(docTypeName, documentNo);
 		}
@@ -153,7 +160,7 @@ public class SourceDocPickingNotesLoader
 		private ITranslatableString toLine(final PPOrderRef ref)
 		{
 			final I_PP_Order ppOrder = ppOrdersById.get(ref.getPpOrderId());
-			final ITranslatableString docTypeAndNo = toDocTypeAndNo(DocTypeId.ofRepoId(ppOrder.getC_DocType_ID()), ppOrder.getDocumentNo());
+			final ITranslatableString docTypeAndNo = toDocTypeAndNo(DocTypeId.ofRepoIdOrNull(ppOrder.getC_DocType_ID()), ppOrder.getDocumentNo());
 
 			final String pickingInstruction = ref.getPpOrderBOMLineId() != null ? pickingInstructionsByBOMLineId.get(ref.getPpOrderBOMLineId()) : null;
 			if (pickingInstruction == null || pickingInstruction.trim().isEmpty())

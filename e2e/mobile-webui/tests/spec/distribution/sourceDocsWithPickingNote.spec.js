@@ -115,14 +115,13 @@ test('Sales order is listed without note; a candidate with both lists only its m
     };
     request.products.FG.price = 1;
     request.bpartners = { customer: {} };
-    request.salesOrders = {
-        SO1: {
-            bpartner: 'customer',
-            warehouse: 'whTarget',
-            datePromised: '2025-03-01T00:00:00.000+02:00',
-            lines: [{ product: 'FG', qty: 10 }],
-        },
-    };
+    const salesOrder = () => ({
+        bpartner: 'customer',
+        warehouse: 'whTarget',
+        datePromised: '2025-03-01T00:00:00.000+02:00',
+        lines: [{ product: 'FG', qty: 10 }],
+    });
+    request.salesOrders = { SO1: salesOrder(), SO2: salesOrder() };
     request.manufacturingOrders = {
         PP1: ppOrder({ lineId: 'PP1_L1' }),
         PP2: ppOrder({ lineId: 'PP2_L1', pickingInstruction: 'ohne Rinde' }),
@@ -136,8 +135,8 @@ test('Sales order is listed without note; a candidate with both lists only its m
             candidates: [
                 { ppOrder: 'PP1', ppOrderBOMLine: 'PP1_L1', qty: 10 },
                 { salesOrderLine: 'SO1_line1', qty: 10 },
-                // both: only the manufacturing order is listed, it carries the picking note
-                { ppOrder: 'PP2', ppOrderBOMLine: 'PP2_L1', salesOrderLine: 'SO1_line1', qty: 10 },
+                // both: only the manufacturing order is listed, it carries the picking note; SO2 must not show up
+                { ppOrder: 'PP2', ppOrderBOMLine: 'PP2_L1', salesOrderLine: 'SO2_line1', qty: 10 },
             ],
         },
     };

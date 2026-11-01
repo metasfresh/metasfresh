@@ -4,7 +4,7 @@
 -- Value: SourceDocsWithPickingNote
 -- ValueName: SourceDocsWithPickingNote
 -- Caption element for the mobile distribution job list: lists the source documents of the job, each with its picking note
--- (one line per document, so a bundled line names every order it supplies; today: manufacturing orders).
+-- (one line per document, so a bundled line names every order it supplies: manufacturing orders with their picking instruction, sales orders without).
 --
 -- IDs allocated from idserver.metas.de on 2026-10-30:
 --   AD_Ref_List 544384 (SourceDocsWithPickingNote, AD_Reference 542025)
