@@ -288,7 +288,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
       | Identifier | Name         | Type_Conditions | OPT.Type_Flatrate | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_UOM_ID.Identifier |
       | conditions | flatfee_7d_@Date@ | FlatFee         | RPTD              | flatfee_prod                         | flatfee_uom             |
     And metasfresh contains C_Flatrate_Matchings:
-      | Identifier | C_Flatrate_Conditions_ID.Identifier | SeqNo | OPT.M_Product_Category_ID.Identifier |
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | SeqNo | M_Product_Category_Matching_ID.Identifier |
       | matching   | conditions                          | 10    | flatfee_cat                          |
     When metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
