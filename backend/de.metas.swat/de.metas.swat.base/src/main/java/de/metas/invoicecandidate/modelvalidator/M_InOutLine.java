@@ -77,7 +77,7 @@ public class M_InOutLine
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteC_Invoice_Candidates(final I_M_InOutLine inOutLine)
 	{
-		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(inOutLine);
+		invoiceCandBL.deleteAllReferencingInvoiceCandidates(inOutLine);
 	}
 
 	/**

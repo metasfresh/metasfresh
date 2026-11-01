@@ -1981,6 +1981,40 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public int deleteAllReferencingInvoiceCandidates(@NonNull final Object model)
+	{
+		final List<I_C_Invoice_Candidate> icRecordsToDelete = invoiceCandDAO.retrieveAllReferencingInclInactive(model);
+		for (final I_C_Invoice_Candidate icRecordToDelete : icRecordsToDelete)
+		{
+			setProcessedToFalseIfIcNotNeeded(icRecordToDelete);
+			invoiceCandDAO.delete(icRecordToDelete);
+		}
+		return icRecordsToDelete.size();
+	}
+
+	/**
+	 * Note: no need to save the record; just unset its processed flag to allow deletion if that makes sense.
+	 */
+	private void setProcessedToFalseIfIcNotNeeded(@NonNull final I_C_Invoice_Candidate icToDelete)
+	{
+		final boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
+		final boolean processedByDeliveryClosedRule = icToDelete.isProcessed() && isProcessedByDeliveryClosedRule(icToDelete);
+		if (!manuallyFlaggedAsProcessed && !processedByDeliveryClosedRule)
+		{
+			return; // nothing to do
+		}
+
+		final boolean hasInvoiceLines = !invoiceCandDAO.retrieveIlForIc(icToDelete).isEmpty();
+		if (hasInvoiceLines)
+		{
+			return; // nothing to do
+		}
+
+		// icToDelete was set to "processed" to be out of the way (manually, or because its delivery was closed with nothing delivered); in this case, we can unprocess and delete it.
+		icToDelete.setProcessed(false);
+	}
+
+	@Override
 	public boolean isProcessedByDeliveryClosedRule(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		// cheap conditions first; the order line is loaded only if they all hold

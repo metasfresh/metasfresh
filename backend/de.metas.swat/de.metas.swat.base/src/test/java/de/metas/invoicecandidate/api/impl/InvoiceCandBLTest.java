@@ -29,7 +29,6 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.greeting.GreetingRepository;
 import de.metas.invoicecandidate.AbstractICTestSupport;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -521,7 +520,7 @@ public class InvoiceCandBLTest
 		invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(ic.getC_OrderLine_ID()));
 		InterfaceWrapperHelper.refresh(ic);
 
-		final int deleteCount = Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(ic.getC_OrderLine());
+		final int deleteCount = invoiceCandBL.deleteAllReferencingInvoiceCandidates(ic.getC_OrderLine());
 
 		assertThat(deleteCount).isEqualTo(1);
 	}

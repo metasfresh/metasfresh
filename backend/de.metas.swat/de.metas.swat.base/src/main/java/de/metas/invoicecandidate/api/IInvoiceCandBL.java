@@ -315,6 +315,15 @@ public interface IInvoiceCandBL extends ISingletonService
 	boolean isProcessedByDeliveryClosedRule(@NonNull I_C_Invoice_Candidate ic);
 
 	/**
+	 * Delete all invoice candidates (active or not) that reference the given {@code model} via their {@code AD_Table_ID} and {@code Record_ID}.
+	 * A processed candidate without invoice lines is unprocessed first if it was processed only to be out of the way,
+	 * i.e. manually ({@code Processed_Override}) or by {@link #isProcessedByDeliveryClosedRule(I_C_Invoice_Candidate)}.
+	 *
+	 * @return number of deleted invoice candidates.
+	 */
+	int deleteAllReferencingInvoiceCandidates(@NonNull Object model);
+
+	/**
 	 * Resets {@link I_C_Invoice_Candidate#COLUMNNAME_IsError} field together with some other depending fields:
 	 * <ul>
 	 * <li>{@link I_C_Invoice_Candidate#COLUMNNAME_AD_Note_ID}
