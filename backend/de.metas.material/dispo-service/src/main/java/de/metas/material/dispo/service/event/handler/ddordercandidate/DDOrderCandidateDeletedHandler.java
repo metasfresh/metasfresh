@@ -57,7 +57,7 @@ public class DDOrderCandidateDeletedHandler implements MaterialEventHandler<DDOr
 
 		for (final Candidate candidate : candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query))
 		{
-			// deleting the supply candidate also deletes its linked demand candidate, which is part of the list retrieved above
+			// deleting a candidate also deletes its linked supply or demand candidate (both directions); the list is ordered by date and seqNo, so either side may already be gone
 			if (candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(candidate.getId())) == null)
 			{
 				continue;
