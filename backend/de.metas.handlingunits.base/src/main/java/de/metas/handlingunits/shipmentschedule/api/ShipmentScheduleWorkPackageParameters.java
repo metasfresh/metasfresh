@@ -114,11 +114,17 @@ public class ShipmentScheduleWorkPackageParameters
 			throw new AdempiereException("At least scheduleIds or queryFilters shall be set: " + this);
 		}
 
-		// A closed schedule must not go into a new shipment run. Without this, a run enqueued after an earlier shipment closed the schedule
-		// (and before the recompute marks it processed) would ship its still-set QtyToDeliver_Override again.
+		// A closed schedule must not go into a new run that ships the entered quantity (quantity type D / PD). Without this, a run enqueued
+		// after an earlier shipment closed the schedule (and before the recompute marks it processed) would ship its still-set QtyToDeliver_Override again.
+		// A picked-quantity run (P) keeps closed schedules: an earlier shipment (e.g. of another LU of the same picking job) may have closed a schedule
+		// that still has picks, and those picks must still be shipped. They cannot ship twice, because a shipped pick has a shipment line
+		// and is no longer among the not-shipped picks the P path ships from.
 		// This filter is used for both locking and selecting the records of every shipment run (ShipmentScheduleEnqueuer).
 		// A schedule closed after its run was enqueued is not affected; see ShipmentScheduleWithHUService.isToBeShipped.
-		result.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsClosed, false);
+		if (!quantityType.isOnlyUsePicked())
+		{
+			result.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsClosed, false);
+		}
 
 		return result;
 	}

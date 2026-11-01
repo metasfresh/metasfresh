@@ -1106,3 +1106,81 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | L2             | 5            |
       | L3             | 6            |
       | L4             | 0            |
+
+  # A later picked-quantity run ships the picks of a line that an earlier shipment closed (as with ship-on-LU-close or
+  # HU consolidation: one shipment per LU, the first shipment closes the order's other lines that still have picks in a
+  # later LU). The picks are recorded by a picking job that creates no shipment; each shipment is then generated through
+  # the shipment service with quantity type "picked", as the picking and consolidation flows do.
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: a later picked-quantity run still ships the picks of a line that an earlier shipment closed, all lines are invoiced
+    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy | IsAllowCompletingPartialPickingJob |
+      | Y                   | DO_NOT_CREATE        | Y                                  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+      | shipmentSchedule2 | L2                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+      | ic2                               | L2                        |
+
+    And transform CU to new LU
+      | sourceCU    | newLU                 | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
+      | pickFromCU1 | pickFromAggregatedLU1 | TU       | 1           | 10          |
+      | pickFromCU2 | pickFromAggregatedLU2 | TU       | 1           | 10          |
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product1              | pickFromAggregatedLU1 | 6         | 0           |                       | 2027-03-01     | 1111  |
+      | product2              | pickFromAggregatedLU2 | 5         | 0           |                       | 2027-03-01     | 2222  |
+    And complete picking job
+    And validate no M_InOut found for C_Order identified by SO
+
+    # first run: line 1 only; its shipment's completion closes line 2, which is not delivered yet
+    When shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment1             | shipmentSchedule1                | P                 | Y                  |
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed | Processed | QtyDelivered |
+      | shipmentSchedule2     | true     | true      | 0            |
+
+    # later run: line 2, closed by the first shipment, still carries its picks
+    When shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment2             | shipmentSchedule2                | P                 | Y                  |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | CO            |
+      | shipmentSchedule2                | shipment2             | CO            |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | qtydelivered |
+      | L1             | 6            |
+      | L2             | 5            |
+    # every pick is on a shipment line: no picked quantity left off a shipment
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule1
+      | QtyPicked | M_InOutLine_ID |
+      | 6         | shipmentLine1  |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule2
+      | QtyPicked | M_InOutLine_ID |
+      | 5         | shipmentLine2  |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice |
+      | ic1                               | false         | 6            |
+      | ic2                               | false         | 5            |

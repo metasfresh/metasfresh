@@ -394,7 +394,7 @@ public class ShipmentScheduleWithHUService
 	 * Not applicable when only some job schedules are to be shipped, like there.
 	 * <p>
 	 * A schedule closed by its own shipment keeps its {@code QtyToDeliver_Override} (the recompute returns before it clears a fulfilled override),
-	 * and the D path ships the raw override. A run enqueued after that close cannot contain the schedule: the enqueue leaves out closed schedules
+	 * and the D path ships the raw override. A D / PD run enqueued after that close cannot contain the schedule: the enqueue of such a run leaves out closed schedules
 	 * ({@link ShipmentScheduleWorkPackageParameters#getShipmentSchedulesQueryFiltersEffective()}), and while a run is pending the schedule is locked to it.
 	 * As defence in depth, the entered quantity is also not kept if a shipment for the schedule was completed since this workpackage was enqueued,
 	 * e.g. a draft shipment created before the enqueue and completed after it; see {@link #isShippedSince(ShipmentScheduleId, Instant)}.
