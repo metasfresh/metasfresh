@@ -1107,6 +1107,21 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		queryBuilder.filter(LockedByOrNotLockedAtAllFilter.of(tagRequest.getLockedBy()));
 
 		//
+		// Never take rows whose candidate belongs to another client.
+		// The recompute table has no client column, but a run only fetches (and recomputes) its own client's candidates
+		// and afterwards deletes everything it tagged; without this filter it would drop other clients' queued rows unrecomputed
+		// and count them as "remaining" for its own client.
+		// The form is negative on purpose: rows without an existing candidate (orphans; the column has no FK)
+		// and rows of inactive own candidates must still be tagged and swept, else they would pile up in the queue forever.
+		// Therefore the sub-query has neither an active-records nor a context-client filter.
+		queryBuilder.addNotInSubQueryFilter(
+				I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID,
+				I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID,
+				queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
+						.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Client_ID, Env.getAD_Client_ID(ctx))
+						.create());
+
+		//
 		// Only those which were already tagged with given tag
 		final InvoiceCandRecomputeTag taggedWith = tagRequest.getTaggedWith();
 		if (taggedWith != null)
