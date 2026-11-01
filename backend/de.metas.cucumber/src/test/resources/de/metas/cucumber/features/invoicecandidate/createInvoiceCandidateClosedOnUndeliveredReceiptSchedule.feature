@@ -123,7 +123,7 @@ Feature: Closing a receipt disposition closes the purchase invoice candidate onl
 
     When the M_ReceiptSchedule identified by receiptSchedule2 is closed
 
-    # IsDeliveryClosed is display-only and is set either way; the candidate itself must stay open,
+    # IsDeliveryClosed is computed from the closed receipt schedule (display-only); the candidate itself must stay open,
     # so the 40 PCE that were actually received can still be invoiced.
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyDelivered | QtyToInvoice | IsDeliveryClosed | Processed |
