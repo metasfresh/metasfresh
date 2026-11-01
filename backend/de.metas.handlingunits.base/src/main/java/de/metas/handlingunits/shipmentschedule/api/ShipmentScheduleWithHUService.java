@@ -71,6 +71,8 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -150,6 +152,7 @@ public class ShipmentScheduleWithHUService
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -449,9 +452,9 @@ public class ShipmentScheduleWithHUService
 								.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(shipmentScheduleId))
 								.alreadyShipped(true)
 								.build())
-				.map(alloc -> InterfaceWrapperHelper.load(alloc.getM_InOutLine_ID(), I_M_InOutLine.class))
+				.map(alloc -> inOutDAO.getLineByIdInTrx(InOutLineId.ofRepoId(alloc.getM_InOutLine_ID())))
 				.anyMatch(shipmentLine -> {
-					final I_M_InOut shipment = InterfaceWrapperHelper.load(shipmentLine.getM_InOut_ID(), I_M_InOut.class);
+					final I_M_InOut shipment = inOutDAO.getById(InOutId.ofRepoId(shipmentLine.getM_InOut_ID()));
 					if (!DocStatus.ofCode(shipment.getDocStatus()).isCompletedOrClosed())
 					{
 						return false;
