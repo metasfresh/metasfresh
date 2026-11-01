@@ -16,6 +16,7 @@ import de.metas.cucumber.stepdefs.pporder.PP_OrderLine_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.distribution.ddorder.DDOrderId;
@@ -57,8 +58,11 @@ import org.eevolution.model.I_DD_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.PPOrderLineCandidateId;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +93,7 @@ public class DD_Order_Candidate_StepDef
 	@NonNull private final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
+	@NonNull private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	@And("^after not more than (.*)s, following DD_Order_Candidates are found$")
 	public void validateDDOrderLineCandidates(final int timeoutSec, @NonNull final DataTable dataTable)
@@ -328,9 +333,185 @@ public class DD_Order_Candidate_StepDef
 				.build();
 	}
 
-	@And("^no DD_Order_Candidates found for product (.*)$")
-	public void assertNoCandidatesFoundByProduct(@NonNull final String productIdentifierStr)
+	/**
+	 * Exact-set ("has only") variant of {@link #validateDDOrderLineCandidates(int, DataTable)}: after the async chain settles,
+	 * the ONLY DD_Order_Candidate records for the product(s) referenced in the table are exactly the listed rows - no more, no fewer.
+	 * Each row must match a distinct record: candidates already matched by earlier rows are excluded,
+	 * so that two identical candidates are asserted one-to-one.
+	 * Rows are matched in table order, so a more specific row (more optional columns) must come before a less specific one.
+	 * Drains the rabbitMQ queues first, so that the candidate set is settled before it is compared.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (optional) stores the matched candidate; if already known, the row is matched to that candidate<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the distributed product<br>
+	 *   <b>M_Warehouse_From_ID</b> — (required, identifier-ref) the source warehouse<br>
+	 *   <b>M_WarehouseTo_ID</b> — (required, identifier-ref) the target warehouse<br>
+	 *   <b>Qty</b> — (optional) qty entered with UOM, e.g. "10 PCE"<br>
+	 *   <b>QtyProcessed</b>, <b>QtyToProcess</b> — (optional) with UOM<br>
+	 *   <b>Processed</b>, <b>IsSimulated</b> — (optional) Y/N<br>
+	 *   <b>C_OrderSO_ID</b>, <b>C_OrderLineSO_ID</b> — (optional, identifier-ref) the sales order / line<br>
+	 *   <b>Forward_PP_Order_Candidate_ID</b>, <b>Forward_PP_OrderLine_Candidate_ID</b> — (optional, identifier-ref)<br>
+	 *   <b>Forward_PP_Order_ID</b>, <b>Forward_PP_Order_BOMLine_ID</b> — (optional, identifier-ref) the supplied PP_Order / BOM line<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_Warehouse_StepDefData, PP_Order_StepDefData, PP_Order_BOMLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, the DD_Order_Candidate table has only the following records
+	 *   | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
+	 *   | ddoc1      | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | ppOrderBOMLine              |
+	 *   | ddoc2      | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | ppOrderBOMLine              |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, the DD_Order_Candidate table has only the following records$")
+	public void validateDDOrderCandidates_hasOnly(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
+		rabbitMQStepDef.wait_empty_all_queues();
+
+		final DataTableRows rows = DataTableRows.of(dataTable);
+
+		final Set<DDOrderCandidateId> alreadyMatchedIds = new HashSet<>();
+		rows.forEach(row -> matchAndRememberCandidate(row, timeoutSec, alreadyMatchedIds));
+
+		final ImmutableSet<ProductId> productIds = rows.stream()
+				.map(row -> row.getAsIdentifier(I_DD_Order_Candidate.COLUMNNAME_M_Product_ID).lookupIdIn(productTable))
+				.collect(ImmutableSet.toImmutableSet());
+		final int expectedCount = rows.toList().size();
+
+		StepDefUtil.<Boolean>tryAndWaitForItem()
+				.worker(() -> checkCandidateCount(productIds, expectedCount))
+				.maxWaitSeconds(timeoutSec)
+				.execute();
+	}
+
+	private void matchAndRememberCandidate(@NonNull final DataTableRow row, final int timeoutSec, @NonNull final Set<DDOrderCandidateId> alreadyMatchedIds) throws InterruptedException
+	{
+		final DDOrderCandidate candidate = StepDefUtil.<DDOrderCandidate>tryAndWaitForItem()
+				.worker(() -> findFirstMatchingCandidate(row, alreadyMatchedIds))
+				.maxWaitSeconds(timeoutSec)
+				.execute();
+		alreadyMatchedIds.add(candidate.getIdNotNull());
+		row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderCandidateTable.putOrReplace(identifier, candidate));
+	}
+
+	private ItemProvider.ProviderResult<Boolean> checkCandidateCount(@NonNull final Set<ProductId> productIds, final int expectedCount)
+	{
+		final List<DDOrderCandidate> actual = productIds.stream()
+				.flatMap(productId -> ddOrderCandidateService.list(DDOrderCandidateQuery.builder().productId(productId).build()).stream())
+				.collect(Collectors.toList());
+		if (actual.size() != expectedCount)
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("Expected " + expectedCount + " DD_Order_Candidate(s) but found " + actual.size()
+					+ " for products " + productIds
+					+ "\n\tcandidates=" + actual);
+		}
+		return ItemProvider.ProviderResult.resultWasFound(true);
+	}
+
+	private ItemProvider.ProviderResult<DDOrderCandidate> findFirstMatchingCandidate(@NonNull final DataTableRow row, @NonNull final Set<DDOrderCandidateId> excludeIds)
+	{
+		final List<DDOrderCandidate> candidates = ddOrderCandidateService.list(toDDOrderCandidateQuery(row))
+				.stream()
+				.filter(candidate -> !excludeIds.contains(candidate.getIdNotNull()))
+				.collect(Collectors.toList());
+
+		for (final DDOrderCandidate candidate : candidates)
+		{
+			final ItemProvider.ProviderResult<DDOrderCandidate> result = validateDDOrderLineCandidate(row, candidate);
+			if (result.isResultFound())
+			{
+				return result;
+			}
+		}
+
+		return ItemProvider.ProviderResult.resultWasNotFound("No not yet matched candidate found"
+				+ "\n\trow=" + row
+				+ "\n\tcandidates=" + candidates);
+	}
+
+	/**
+	 * Waits until at least one DD_Order_Candidate exists for the product and every one of them supplies the given PP_Order_BOMLine.
+	 * Unlike the "has only" step it does not pin the candidates' count.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, PP_Order_BOMLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, all DD_Order_Candidates of product component supply PP_Order_BOMLine newBOMLine
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, all DD_Order_Candidates of product (\\S+) supply PP_Order_BOMLine (\\S+)$")
+	public void assertAllCandidatesSupplyBOMLine(final int timeoutSec, @NonNull final String productIdentifierStr, @NonNull final String bomLineIdentifierStr) throws InterruptedException
+	{
+		assertAllCandidatesSupplyBOMLine(timeoutSec, productIdentifierStr, bomLineIdentifierStr, null);
+	}
+
+	/**
+	 * Same as {@code all DD_Order_Candidates of product X supply PP_Order_BOMLine Y}, and additionally the candidates' qtys must sum up to the given qty (count stays free).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, PP_Order_BOMLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, all DD_Order_Candidates of product component totalling 20 supply PP_Order_BOMLine newBOMLine
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, all DD_Order_Candidates of product (\\S+) totalling (\\S+) supply PP_Order_BOMLine (\\S+)$")
+	public void assertAllCandidatesTotallingQtySupplyBOMLine(final int timeoutSec, @NonNull final String productIdentifierStr, @NonNull final String expectedTotalQtyStr, @NonNull final String bomLineIdentifierStr) throws InterruptedException
+	{
+		assertAllCandidatesSupplyBOMLine(timeoutSec, productIdentifierStr, bomLineIdentifierStr, new BigDecimal(expectedTotalQtyStr));
+	}
+
+	private void assertAllCandidatesSupplyBOMLine(final int timeoutSec, @NonNull final String productIdentifierStr, @NonNull final String bomLineIdentifierStr, @Nullable final BigDecimal expectedTotalQty) throws InterruptedException
+	{
+		final ProductId productId = StepDefDataIdentifier.ofString(productIdentifierStr).lookupIdIn(productTable);
+		final PPOrderBOMLineId expectedBOMLineId = StepDefDataIdentifier.ofString(bomLineIdentifierStr).lookupIdIn(ppOrderBOMLineTable);
+
+		StepDefUtil.<Boolean>tryAndWaitForItem()
+				.worker(() -> checkAllCandidatesSupplyBOMLine(productId, productIdentifierStr, expectedBOMLineId, expectedTotalQty))
+				.maxWaitSeconds(timeoutSec)
+				.execute();
+	}
+
+	private ItemProvider.ProviderResult<Boolean> checkAllCandidatesSupplyBOMLine(
+			@NonNull final ProductId productId,
+			@NonNull final String productIdentifierStr,
+			@NonNull final PPOrderBOMLineId expectedBOMLineId,
+			@Nullable final BigDecimal expectedTotalQty)
+	{
+		final List<DDOrderCandidate> candidates = ddOrderCandidateService.list(DDOrderCandidateQuery.builder().productId(productId).build());
+		if (candidates.isEmpty())
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("No DD_Order_Candidate found for product " + productIdentifierStr);
+		}
+		final List<DDOrderCandidate> notSupplyingBOMLine = candidates.stream()
+				.filter(candidate -> candidate.getForwardPPOrderRef() == null
+						|| !PPOrderBOMLineId.equals(candidate.getForwardPPOrderRef().getPpOrderBOMLineId(), expectedBOMLineId))
+				.collect(Collectors.toList());
+		if (!notSupplyingBOMLine.isEmpty())
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("DD_Order_Candidate(s) not supplying the expected PP_Order_BOMLine " + expectedBOMLineId
+					+ "\n\tcandidates=" + notSupplyingBOMLine);
+		}
+		if (expectedTotalQty != null)
+		{
+			final BigDecimal actualTotalQtyBD = candidates.stream()
+					.map(candidate -> candidate.getQtyEntered().toBigDecimal())
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+			if (actualTotalQtyBD.compareTo(expectedTotalQty) != 0)
+			{
+				return ItemProvider.ProviderResult.resultWasNotFound("Expected the DD_Order_Candidates to total " + expectedTotalQty + " but they total " + actualTotalQtyBD
+						+ "\n\tcandidates=" + candidates);
+			}
+		}
+		return ItemProvider.ProviderResult.resultWasFound(true);
+	}
+
+	@And("^no DD_Order_Candidates found for product (.*)$")
+	public void assertNoCandidatesFoundByProduct(@NonNull final String productIdentifierStr) throws InterruptedException
+	{
+		// candidates are removed by asynchronous event handlers, so let them finish before looking
+		rabbitMQStepDef.wait_empty_all_queues();
+
 		final ProductId productId = StepDefDataIdentifier.ofString(productIdentifierStr).lookupIdIn(productTable);
 
 		final List<DDOrderCandidate> candidates = ddOrderCandidateService.list(DDOrderCandidateQuery.builder()
