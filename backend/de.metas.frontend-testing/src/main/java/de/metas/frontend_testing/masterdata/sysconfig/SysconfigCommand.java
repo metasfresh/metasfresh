@@ -1,14 +1,15 @@
 package de.metas.frontend_testing.masterdata.sysconfig;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.ISysConfigDAO;
 
 import javax.annotation.Nullable;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
@@ -39,32 +40,34 @@ public class SysconfigCommand
 	private static final String NO_VALUE = "-";
 
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ISysConfigDAO sysConfigDAO = Services.get(ISysConfigDAO.class);
 
 	@Nullable private final Map<String, String> sysconfigs;
+	/**
+	 * Receives the previous value of each written row (see {@link ISysConfigBL#getConfigLevelTarget(String)}), all before the first write,
+	 * so that the caller can restore them even if a write fails.
+	 */
+	@NonNull private final PreviousSysconfigsCollector previousSysconfigsCollector;
 
 	/**
-	 * A {@code null} value in {@link #sysconfigs} unsets the sysconfig; that is how a previously missing one is restored.
-	 *
-	 * @return map from sysconfig name to its previous value, captured before any write;
-	 * the value is {@code null} for names that had no value, so that restoring them unsets it again
+	 * A {@code null} value in {@link #sysconfigs} unsets the sysconfig.
 	 */
-	public Map<String, String> execute()
+	public void execute()
 	{
 		final LinkedHashSet<String> names = new LinkedHashSet<>(SCANNER_SYSCONFIG_DEFAULTS.keySet());
 		if (sysconfigs != null)
 		{
 			names.addAll(sysconfigs.keySet());
 		}
-		final LinkedHashMap<String, String> previousValues = new LinkedHashMap<>();
 		for (final String name : names)
 		{
-			final String prev = sysConfigBL.getValue(name);
-			if (prev == null && SCANNER_SYSCONFIG_DEFAULTS.containsKey(name))
+			final ClientAndOrgId target = sysConfigBL.getConfigLevelTarget(name);
+			if (SCANNER_SYSCONFIG_DEFAULTS.containsKey(name) && sysConfigBL.getValue(name, target) == null)
 			{
 				// fail loud instead of creating it: a missing row means the sysconfig was renamed or retired
 				throw new AdempiereException("Scanner sysconfig does not exist: " + name + " - update SCANNER_SYSCONFIG_DEFAULTS");
 			}
-			previousValues.put(name, prev);
+			previousSysconfigsCollector.add(JsonSysconfig.of(name, sysConfigDAO.getValueOfExactRow(name, target).orElse(null), target));
 		}
 
 		SCANNER_SYSCONFIG_DEFAULTS.forEach(sysConfigBL::setValueAtConfigLevel);
@@ -73,7 +76,5 @@ public class SysconfigCommand
 		{
 			sysconfigs.forEach((name, value) -> sysConfigBL.setValueAtConfigLevel(name, value != null ? value : NO_VALUE));
 		}
-
-		return previousValues;
 	}
 }

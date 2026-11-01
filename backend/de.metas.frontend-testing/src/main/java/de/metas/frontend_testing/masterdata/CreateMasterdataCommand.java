@@ -89,6 +89,7 @@ import de.metas.frontend_testing.masterdata.shipment.ShipmentCreateCommand;
 import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.PreviousSysconfigsCollector;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SystemSysconfigCommand;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
@@ -105,15 +106,11 @@ import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
 import de.metas.frontend_testing.masterdata.workplace.CreateWorkplaceCommand;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
 import de.metas.order.OrderId;
-import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -128,62 +125,24 @@ public class CreateMasterdataCommand
 {
 	@NonNull private final CreateMasterdataCommandSupportingServices services;
 	@NonNull private final JsonCreateMasterdataRequest request;
-	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final MasterdataContext context = new MasterdataContext();
 	/**
-	 * Previous values of every sysconfig changed by this request (the request's own {@code sysconfigs} and those set by sub-commands).
+	 * Previous values of every sysconfig row changed by this request (the request's {@code sysconfigs}, {@code systemSysconfigs} and those set by sub-commands).
 	 */
-	private final LinkedHashMap<String, String> previousSysconfigs = new LinkedHashMap<>();
-	/**
-	 * Previous SYSTEM-level values of the request's {@code systemSysconfigs}; {@code null} for a sysconfig that had no SYSTEM row.
-	 */
-	private final LinkedHashMap<String, String> previousSystemSysconfigs = new LinkedHashMap<>();
+	private final PreviousSysconfigsCollector previousSysconfigs = new PreviousSysconfigsCollector();
 
 	public JsonCreateMasterdataResponse execute()
 	{
 		this.context.putFromJson(request.getContext());
 
-		try
-		{
+		return previousSysconfigs.callAndRestoreOnFailure(() -> {
 			// Apply sysconfigs early (before any masterdata creation)
-			previousSysconfigs.putAll(applySysconfigs());
-			previousSystemSysconfigs.putAll(applySystemSysconfigs());
+			applySysconfigs();
+			applySystemSysconfigs();
 
 			return createMasterdata();
-		}
-		catch (final RuntimeException ex)
-		{
-			// the caller gets no previous values from a failed request, so it could not restore the sysconfigs itself
-			try
-			{
-				restoreSysconfigs();
-			}
-			catch (final RuntimeException restoreEx)
-			{
-				ex.addSuppressed(restoreEx);
-			}
-			throw ex;
-		}
-	}
-
-	private void restoreSysconfigs()
-	{
-		if (!previousSystemSysconfigs.isEmpty())
-		{
-			SystemSysconfigCommand.builder()
-					.sysConfigBL(sysConfigBL)
-					.systemSysconfigs(previousSystemSysconfigs)
-					.build()
-					.execute();
-		}
-		if (!previousSysconfigs.isEmpty())
-		{
-			SysconfigCommand.builder()
-					.sysconfigs(previousSysconfigs)
-					.build()
-					.execute();
-		}
+		});
 	}
 
 	private JsonCreateMasterdataResponse createMasterdata()
@@ -256,8 +215,7 @@ public class CreateMasterdataCommand
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
-				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : Collections.unmodifiableMap(previousSysconfigs))
-				.previousSystemSysconfigs(previousSystemSysconfigs.isEmpty() ? null : Collections.unmodifiableMap(previousSystemSysconfigs))
+				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : previousSysconfigs.toList())
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.roles(roles.isEmpty() ? null : roles)
@@ -925,19 +883,20 @@ public class CreateMasterdataCommand
 
 	}
 
-	private Map<String, String> applySysconfigs()
+	private void applySysconfigs()
 	{
-		return SysconfigCommand.builder()
+		SysconfigCommand.builder()
 				.sysconfigs(request.getSysconfigs())
+				.previousSysconfigsCollector(previousSysconfigs)
 				.build()
 				.execute();
 	}
 
-	private Map<String, String> applySystemSysconfigs()
+	private void applySystemSysconfigs()
 	{
-		return SystemSysconfigCommand.builder()
-				.sysConfigBL(sysConfigBL)
+		SystemSysconfigCommand.builder()
 				.systemSysconfigs(request.getSystemSysconfigs())
+				.previousSysconfigsCollector(previousSysconfigs)
 				.build()
 				.execute();
 	}

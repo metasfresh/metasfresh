@@ -22,6 +22,9 @@ import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentResponse;
 import de.metas.frontend_testing.masterdata.shipment.ReverseShipmentCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.JsonSetSysconfigsResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.JsonSysconfig;
+import de.metas.frontend_testing.masterdata.sysconfig.PreviousSysconfigsCollector;
+import de.metas.frontend_testing.masterdata.sysconfig.RestoreSysconfigsCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SystemSysconfigCommand;
 import de.metas.frontend_testing.wfnode.JsonSetWFNodeFlagsRequest;
@@ -51,8 +54,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @RequestMapping(FrontendTestingRestController.ENDPOINT)
@@ -141,28 +146,52 @@ public class FrontendTestingRestController
 				.execute());
 	}
 
+	/** Sets sysconfigs at their configuration level (see {@code SysconfigCommand}); the response tells how to restore them. */
 	@PostMapping("setSysconfigs")
 	public JsonSetSysconfigsResponse setSysconfigs(@RequestBody @NonNull final Map<String, String> sysconfigs)
 	{
-		return callInContext(() -> JsonSetSysconfigsResponse.builder()
-				.previousSysconfigs(SysconfigCommand.builder()
-						.sysconfigs(sysconfigs)
-						.build()
-						.execute())
-				.build());
+		return callInContext(() -> setSysconfigsAndReportPrevious(previous -> SysconfigCommand.builder()
+				.sysconfigs(sysconfigs)
+				.previousSysconfigsCollector(previous)
+				.build()
+				.execute()));
 	}
 
-	/** Restores sysconfigs at SYSTEM level, i.e. the counterpart of {@code systemSysconfigs} / {@code previousSystemSysconfigs}. */
+	/** Sets sysconfigs at SYSTEM level (see {@code SystemSysconfigCommand}); the response tells how to restore them. */
 	@PostMapping("setSystemSysconfigs")
 	public JsonSetSysconfigsResponse setSystemSysconfigs(@RequestBody @NonNull final Map<String, String> systemSysconfigs)
 	{
-		return callInContext(() -> JsonSetSysconfigsResponse.builder()
-				.previousSystemSysconfigs(SystemSysconfigCommand.builder()
-						.sysConfigBL(sysConfigBL)
-						.systemSysconfigs(systemSysconfigs)
-						.build()
-						.execute())
-				.build());
+		return callInContext(() -> setSysconfigsAndReportPrevious(previous -> SystemSysconfigCommand.builder()
+				.systemSysconfigs(systemSysconfigs)
+				.previousSysconfigsCollector(previous)
+				.build()
+				.execute()));
+	}
+
+	/** On failure, the rows written so far are restored here, because the error response carries no previous values. */
+	private static JsonSetSysconfigsResponse setSysconfigsAndReportPrevious(@NonNull final Consumer<PreviousSysconfigsCollector> writer)
+	{
+		final PreviousSysconfigsCollector previous = new PreviousSysconfigsCollector();
+		previous.callAndRestoreOnFailure(() -> {
+			writer.accept(previous);
+			return null;
+		});
+		return JsonSetSysconfigsResponse.builder()
+				.previousSysconfigs(previous.isEmpty() ? null : previous.toList())
+				.build();
+	}
+
+	/** Restores the {@code previousSysconfigs} reported by {@code setSysconfigs}, {@code setSystemSysconfigs} or the masterdata endpoint, each to its own row. */
+	@PostMapping("restoreSysconfigs")
+	public void restoreSysconfigs(@RequestBody @NonNull final List<JsonSysconfig> sysconfigs)
+	{
+		callInContext(() -> {
+			RestoreSysconfigsCommand.builder()
+					.sysconfigs(sysconfigs)
+					.build()
+					.execute();
+			return null;
+		});
 	}
 
 	@PostMapping("getHUQRCode")

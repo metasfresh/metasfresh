@@ -58,25 +58,24 @@ export const setCurrentPage = (currentPage) => {
     consoleRecorder = startConsoleRecorder(currentPage);
 }
 
-// Sysconfigs the current test overwrote, mapped to their value from BEFORE the test's first overwrite of each
-// (first previous value wins). Filled by Backend's sysconfig-writing calls; the page fixture restores them after
-// every test, also a failed one, so no spec needs its own afterEach.
-let sysconfigsToRestore = { previousSysconfigs: {}, previousSystemSysconfigs: {} };
+// Sysconfig rows the current test overwrote, each with its value from BEFORE the test's first overwrite of that row
+// (first previous value per name+clientId+orgId wins). Filled by Backend's sysconfig-writing calls; the page fixture
+// restores them after every test, also a failed one, so no spec needs its own afterEach.
+let sysconfigsToRestore = [];
 
-const putAllAbsent = (target, source) => Object.entries(source ?? {})
-    .filter(([name]) => !(name in target))
-    .forEach(([name, value]) => target[name] = value);
+const isSameRow = (a, b) => a.name === b.name && a.clientId === b.clientId && a.orgId === b.orgId;
 
-/** @param {{previousSysconfigs?: Object<string, string>, previousSystemSysconfigs?: Object<string, ?string>}} previousValues as returned by the backend */
-export const rememberSysconfigsToRestore = ({ previousSysconfigs, previousSystemSysconfigs }) => {
-    putAllAbsent(sysconfigsToRestore.previousSysconfigs, previousSysconfigs);
-    putAllAbsent(sysconfigsToRestore.previousSystemSysconfigs, previousSystemSysconfigs);
+/** @param {{previousSysconfigs?: Array<{name: string, value: ?string, clientId: number, orgId: number}>}} response as returned by the backend */
+export const rememberSysconfigsToRestore = ({ previousSysconfigs }) => {
+    (previousSysconfigs ?? [])
+        .filter((previous) => !sysconfigsToRestore.some((remembered) => isSameRow(remembered, previous)))
+        .forEach((previous) => sysconfigsToRestore.push(previous));
 };
 
 /** Returns the remembered values and forgets them, so a failing restore cannot leak into the next test. */
 export const takeSysconfigsToRestore = () => {
     const result = sysconfigsToRestore;
-    sysconfigsToRestore = { previousSysconfigs: {}, previousSystemSysconfigs: {} };
+    sysconfigsToRestore = [];
     return result;
 };
 

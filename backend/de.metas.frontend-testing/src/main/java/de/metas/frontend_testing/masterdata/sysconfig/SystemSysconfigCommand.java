@@ -4,12 +4,9 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
 
 import javax.annotation.Nullable;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -24,38 +21,21 @@ import java.util.Map;
 public class SystemSysconfigCommand
 {
 	@NonNull private final ISysConfigDAO sysConfigDAO = Services.get(ISysConfigDAO.class);
-	@NonNull private final ISysConfigBL sysConfigBL;
 
 	@Nullable private final Map<String, String> systemSysconfigs;
+	/** Receives the previous SYSTEM row of each sysconfig, all before the first write, so that the caller can restore them even if a write fails. */
+	@NonNull private final PreviousSysconfigsCollector previousSysconfigsCollector;
 
-	/**
-	 * @return map from sysconfig name to its previous SYSTEM-level value, captured before any write;
-	 * the value is {@code null} for names that had no SYSTEM value, so that restoring them unsets it again
-	 */
-	public Map<String, String> execute()
+	public void execute()
 	{
 		if (systemSysconfigs == null || systemSysconfigs.isEmpty())
 		{
-			return new LinkedHashMap<>();
+			return;
 		}
 
-		final LinkedHashMap<String, String> previousValues = new LinkedHashMap<>();
-		for (final String name : systemSysconfigs.keySet())
-		{
-			previousValues.put(name, sysConfigBL.getValue(name, ClientAndOrgId.SYSTEM));
-		}
+		systemSysconfigs.keySet().forEach(name -> previousSysconfigsCollector.add(
+				JsonSysconfig.of(name, sysConfigDAO.getValueOfExactRow(name, ClientAndOrgId.SYSTEM).orElse(null), ClientAndOrgId.SYSTEM)));
 
-		systemSysconfigs.forEach((name, value) -> {
-			if (value == null)
-			{
-				sysConfigDAO.setValue(name, null, ClientAndOrgId.SYSTEM);
-			}
-			else
-			{
-				sysConfigBL.setValue(name, value, ClientId.SYSTEM, ClientAndOrgId.SYSTEM.getOrgId());
-			}
-		});
-
-		return previousValues;
+		systemSysconfigs.forEach((name, value) -> sysConfigDAO.setValue(name, value, ClientAndOrgId.SYSTEM));
 	}
 }

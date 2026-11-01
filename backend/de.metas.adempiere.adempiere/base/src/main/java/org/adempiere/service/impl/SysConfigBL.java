@@ -226,10 +226,11 @@ public class SysConfigBL implements ISysConfigBL
 	@Override
 	public void setValueAtConfigLevel(@NonNull final String name, @NonNull final String value)
 	{
-		sysConfigDAO.setValue(name, value, computeConfigLevelTarget(name));
+		sysConfigDAO.setValue(name, value, getConfigLevelTarget(name));
 	}
 
-	private ClientAndOrgId computeConfigLevelTarget(@NonNull final String name)
+	@Override
+	public ClientAndOrgId getConfigLevelTarget(@NonNull final String name)
 	{
 		final String level = sysConfigDAO.getConfigurationLevel(name).orElse(null);
 		if (X_AD_SysConfig.CONFIGURATIONLEVEL_System.equals(level))

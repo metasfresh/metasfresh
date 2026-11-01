@@ -326,18 +326,22 @@ const postSysconfigs = async (endpoint, sysconfigs) => {
     return responseBody;
 };
 
-/** Called by the page fixture after every test: writes back the sysconfig values the test overwrote. */
+/** Called by the page fixture after every test: writes back the sysconfig values the test overwrote, each to its own row. */
 export const restoreSysconfigsChangedByTest = async () => {
-    const { previousSysconfigs, previousSystemSysconfigs } = takeSysconfigsToRestore();
-    if (Object.keys(previousSysconfigs).length === 0 && Object.keys(previousSystemSysconfigs).length === 0) {
+    const previousSysconfigs = takeSysconfigsToRestore();
+    if (previousSysconfigs.length === 0) {
         return;
     }
     await test.step(`Backend: restore sysconfigs changed by the test`, async () => {
-        if (Object.keys(previousSystemSysconfigs).length > 0) {
-            await postSysconfigs('setSystemSysconfigs', previousSystemSysconfigs);
-        }
-        if (Object.keys(previousSysconfigs).length > 0) {
-            await postSysconfigs('setSysconfigs', previousSysconfigs);
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/restoreSysconfigs`, {
+            data: previousSysconfigs,
+            headers: { 'Content-Type': 'application/json' },
+        });
+        if (!response.ok()) {
+            const responseBody = await response.json();
+            assertNoErrors({ responseBody });
+            throw new Error(`restoreSysconfigs failed: ${response.status()}`);
         }
     });
 };

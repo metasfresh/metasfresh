@@ -28,6 +28,7 @@ import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResp
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateResponse;
 import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateResponse;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.JsonSysconfig;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
@@ -37,6 +38,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 
 @Value
@@ -46,11 +48,8 @@ public class JsonCreateMasterdataResponse
 {
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, Object> context;
 
-	/** Previous values of the request's {@code sysconfigs} ({@code null} = there was no value); restore them via {@code setSysconfigs}. */
-	@Nullable @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.ALWAYS) Map<String, String> previousSysconfigs;
-
-	/** Previous values of the request's {@code systemSysconfigs} ({@code null} = there was no SYSTEM row); restore them via {@code setSystemSysconfigs}. */
-	@Nullable @JsonInclude(value = JsonInclude.Include.NON_EMPTY, content = JsonInclude.Include.ALWAYS) Map<String, String> previousSystemSysconfigs;
+	/** Previous values of every sysconfig row this request changed; restore them via {@code restoreSysconfigs}. */
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) List<JsonSysconfig> previousSysconfigs;
 
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) JsonMobileConfigResponse mobileConfig;
 	@NonNull Map<String, JsonLoginUserResponse> login;

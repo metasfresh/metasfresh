@@ -110,6 +110,9 @@ public interface ISysConfigBL extends ISingletonService
 	/** Writes the sysconfig at the (client,org) matching its declared ConfigurationLevel (System→0/0, Client→METASFRESH/ANY, else METASFRESH/MAIN), so the AD_SysConfig interceptor does not reject it. */
 	void setValueAtConfigLevel(@NonNull String name, @NonNull String value);
 
+	/** @return the (client,org) row that {@link #setValueAtConfigLevel(String, String)} writes for the given sysconfig. */
+	ClientAndOrgId getConfigLevelTarget(@NonNull String name);
+
 	/**
 	 * Returns a mapping (name -> value) that includes all AD_SysConfig records whose <code>Name</code> has the given <code>prefix</code>.
 	 */
