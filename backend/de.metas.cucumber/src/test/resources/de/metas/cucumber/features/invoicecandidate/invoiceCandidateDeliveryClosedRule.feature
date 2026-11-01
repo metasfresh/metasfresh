@@ -326,3 +326,87 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.Processed_Override |
       | ic1                               | true          | Y                      |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: TC7e - reactivating and re-completing the order reopens only the line its disposition close closed, not the hand-closed or the "to clear" line
+    Given for this scenario only, set sys config boolean value true for sys config C_Invoice_Candidate_Close_IsToClear
+    And metasfresh contains C_UOMs:
+      | Identifier  | X12DE355 | Name               | UOMSymbol | StdPrecision | CostingPrecision |
+      | flatfee_uom | MEAL     | Meal_7e_@Date@     | M         | 2            | 2                |
+    And metasfresh contains M_Product_Categories:
+      | Identifier  | Name                  | Value                 |
+      | flatfee_cat | flatfee_cat_7e_@Date@ | flatfee_cat_7e_@Date@ |
+    And metasfresh contains M_Products:
+      | Identifier   | Name                | ProductType | OPT.X12DE355 | OPT.M_Product_Category_ID.Identifier |
+      | flatfee_prod | flatfee_prod_7e_@Date@ | S           | MEAL         |                                      |
+      | product3     | product3_7e_@Date@  |             | PCE          | flatfee_cat                          |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | PLV                    | flatfee_prod | 1.0      | MEAL              | Normal                        |
+      | PLV                    | product3     | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier   | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | flatCustomer | flatCustomer7e_@Date@ | N            | Y              | PS                            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier      | GLN                | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | flatCustomerLoc | Dummy_GLN7e_@Date@ | flatCustomer             | true                | true         |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier | Name              | Type_Conditions | OPT.Type_Flatrate | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_UOM_ID.Identifier |
+      | conditions | flatfee_7e_@Date@ | FlatFee         | RPTD              | flatfee_prod                         | flatfee_uom             |
+    And metasfresh contains C_Flatrate_Matchings:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | SeqNo | M_Product_Category_Matching_ID.Identifier |
+      | matching   | conditions                          | 10    | flatfee_cat                          |
+    When metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | term       | conditions                          | flatCustomer                | 2024-01-01 | 2024-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by term is completed
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | flatCustomer             | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered |
+      | SO                    | L1         | product1                | 6          |
+      | SO                    | L2         | product3                | 4          |
+      | SO                    | L3         | product2                | 5          |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+      | shipmentSchedule2 | L2                        | N             |
+      | shipmentSchedule3 | L3                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+      | ic2                               | L2                        |
+      | ic3                               | L3                        |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic1                               |
+      | ic2                               |
+      | ic3                               |
+
+    # L1 is closed by hand, L2 by the "to clear" rule, L3 only by closing its shipment schedule
+    When the C_Invoice_Candidate identified by ic1 is closed by hand
+    And the M_ShipmentSchedule identified by shipmentSchedule3 is closed
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.Processed_Override |
+      | ic1                               | true          | Y                      |
+      | ic2                               | true          | Y                      |
+      | ic3                               | true          | null                   |
+
+    When the order identified by SO is reactivated
+    And the order identified by SO is completed
+    Then after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic1                               |
+      | ic2                               |
+      | ic3                               |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.Processed_Override |
+      | ic1                               | true          | Y                      |
+      | ic2                               | true          | Y                      |
+      | ic3                               | false         | null                   |

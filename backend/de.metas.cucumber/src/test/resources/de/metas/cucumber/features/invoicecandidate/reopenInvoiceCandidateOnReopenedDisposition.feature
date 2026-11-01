@@ -157,3 +157,44 @@ Feature: Reopening a receipt disposition reopens the purchase invoice candidate
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed |
       | invoiceCand_3                     | 0            | false                | false         |
+
+  @Id:S0164_600
+  @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01010.3_Match_Invoice
+@F00701
+  Scenario: Reopening a purchase order disposition leaves a hand-closed invoice candidate closed
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DocBaseType | DateOrdered |
+      | po4        | false   | bpartner_1    | POO         | 2022-07-26  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | QtyEnteredTU | M_HU_PI_Item_Product_ID |
+      | po4_l1     | po4        | product      | 100        | 10           | product_TU_10CU         |
+      | po4_l2     | po4        | product      | 50         | 5            | product_TU_10CU         |
+    And the order identified by po4 is completed
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
+      | receiptSchedule4_1              | po4                   | po4_l1                    | bpartner_1               | l_1                               | product                 | 100        | warehouseStd              | 10               |
+      | receiptSchedule4_2              | po4                   | po4_l2                    | bpartner_1               | l_1                               | product                 | 50         | warehouseStd              | 5                |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice |
+      | invoiceCand_4_1                   | po4                       | po4_l1                    | 0                | 0            |
+      | invoiceCand_4_2                   | po4                       | po4_l2                    | 0                | 0            |
+
+    When the C_Invoice_Candidate identified by invoiceCand_4_1 is closed by hand
+    And the order identified by po4 is reactivated
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.Processed_Override |
+      | invoiceCand_4_1                   | true          | Y                      |
+      | invoiceCand_4_2                   | false         | null                   |
+
+    When the order identified by po4 is completed
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.IsClosed |
+      | receiptSchedule4_2              | po4                   | po4_l2                    | bpartner_1               | l_1                               | product                 | 50         | warehouseStd              | false        |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.Processed_Override |
+      | invoiceCand_4_1                   | true          | Y                      |
+      | invoiceCand_4_2                   | false         | null                   |
