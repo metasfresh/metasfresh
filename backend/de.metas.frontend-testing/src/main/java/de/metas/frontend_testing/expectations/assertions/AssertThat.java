@@ -78,6 +78,16 @@ public class AssertThat<T>
 		return this;
 	}
 
+	public AssertThat<T> startsWith(@NonNull final String expectedPrefix)
+	{
+		if (actual == null || !actual.toString().startsWith(expectedPrefix))
+		{
+			fail("Expected " + what + " to start with <" + expectedPrefix + "> but was <" + actual + ">");
+		}
+
+		return this;
+	}
+
 	public AssertThat<T> isEmpty()
 	{
 		final int actualSize = getSize();

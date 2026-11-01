@@ -7,12 +7,12 @@ import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -90,17 +90,19 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(wfProcess);
 
 		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(job.getResponsibleId(), ClientId.METASFRESH);
+		final FinishedGoodsReceiptDefaults receiptDefaults = FinishedGoodsReceiptDefaults.of(job.getPpOrderId(), config.getEditableAttributes());
 
 		final ImmutableList<JsonFinishedGoodsReceiveLine> lines = job.getActivityById(wfActivity.getId())
 				.getFinishedGoodsReceiveAssumingNotNull()
 				.streamLines()
-				.map(line -> toJson(line, job.getCustomerId(), config, jsonOpts))
+				.map(line -> toJson(line, job.getCustomerId(), config, receiptDefaults, jsonOpts))
 				.collect(ImmutableList.toImmutableList());
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.valueObj("lines", lines)
 						.valueObj("readAttributes", config.getEditableAttributes())
+						.valueObj("readOnlyAttributes", config.getReadOnlyAttributes())
 						.valueObj(PROP_customQRCodeFormats, JsonScannableCodeFormat.ofCollection(scannableCodeFormatService.getAll()))
 						.build())
 				.build();
@@ -110,6 +112,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			@NonNull final FinishedGoodsReceiveLine line,
 			@Nullable final BPartnerId customerId,
 			@NonNull final MobileUIManufacturingConfig config,
+			@NonNull final FinishedGoodsReceiptDefaults receiptDefaults,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		final List<I_M_HU_PI_Item_Product> tuPIItemProducts = huPIItemProductDAO.retrieveTUs(
@@ -120,8 +123,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		final boolean isMainFinishedGood = line.getCoProductBOMLineId() == null;
-		final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(isMainFinishedGood);
+		final FinishedGoodsReceiveLineConfig lineConfig = config.effectiveForReceiveLine(line);
 
 		// A structure excluded by configuration comes out as an empty list WITHOUT an emptyReason: that reason is the
 		// operator-facing no-receiving-Gebinde guidance and must only ever accompany "no target at all".
@@ -151,7 +153,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final java.math.BigDecimal qtyToReceive;
 		final java.math.BigDecimal qtyReceived;
 
-		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null)
+		// With one piece per scan (weight captured at receipt) every receipt is one piece, also in TU mode, so the line counts pieces.
+		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null && !lineConfig.isReceiveOnePiecePerScan())
 		{
 			final HUPIItemProduct huPIItemProduct = huPIItemProductDAO.getById(line.getTuPIItemProductId());
 			final QtyTU qtyToReceiveTU = huPIItemProduct.computeQtyTUsOfTotalCUs(line.getQtyToReceive(), line.getProductId());
@@ -176,8 +179,10 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 
 		return JsonFinishedGoodsReceiveLine.builder()
 				.id(line.getId().toJson())
-				.coproduct(!isMainFinishedGood)
+				.coproduct(!line.isMainFinishedGood())
 				.skipReceiveTargetStep(lineConfig.isSkipReceiveTargetStep())
+				.catchWeightScanRequired(lineConfig.isCatchWeightScanRequired())
+				.receiveOnePiecePerScan(lineConfig.isReceiveOnePiecePerScan())
 				.productName(line.getProductValueAndProductName().translate(adLanguage))
 				.uom(uom)
 				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), adLanguage))
@@ -188,6 +193,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.availableReceivingTargets(newLUTargets)
 				.availableReceivingTUTargets(tuTargetList)
 				.catchWeightUomSymbol(catchWeightUomSymbol)
+				.defaultBestBeforeDate(receiptDefaults.getBestBeforeDate(line.getProductId()))
+				.defaultLotNo(receiptDefaults.getLotNo())
 				.build();
 	}
 
@@ -228,7 +235,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 
 			final List<I_M_HU_PI_Item> luPackingInstructionsItems = handlingUnitsBL.retrieveParentPIItemsForParentPI(
 					tuPackingInstructionsId,
-					X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
+					HuUnitType.LU,
 					customerId);
 
 			if (!luPackingInstructionsItems.isEmpty())

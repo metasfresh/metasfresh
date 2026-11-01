@@ -44,4 +44,13 @@ public interface CustomSequenceNoProvider
 		return true;
 	}
 
+	/**
+	 * @return {@code true} if the sequence number this provider returns for the given sequence does not depend on the sequence's incremental number,
+	 * i.e. it can be previewed without consuming the sequence.
+	 */
+	default boolean isSequenceNoIndependentOfIncrement(@NonNull final DocumentSequenceInfo docSeqInfo)
+	{
+		return false;
+	}
+
 }

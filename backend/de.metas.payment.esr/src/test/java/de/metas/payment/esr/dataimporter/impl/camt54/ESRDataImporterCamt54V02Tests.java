@@ -301,4 +301,36 @@ public class ESRDataImporterCamt54V02Tests
 				.isInstanceOf(AdempiereException.class)
 				.hasMessage(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
 	}
+
+	/**
+	 * Verifies that a creditor reference is accepted when its type is given through the structured
+	 * {@code CdtrRefInf/Tp/CdOrPrtry/Cd} element with value {@code SCOR}, rather than through the proprietary
+	 * {@code Prtry} element that the other fixtures use.
+	 * <p>
+	 * The v06 and v08 counterparts live in the respective test classes; all three versions must behave alike.
+	 */
+	@Test
+	public void testScorReferenceType()
+	{
+		final InputStream inputStream = getClass().getResourceAsStream("/camt54_v02_SCOR.xml");
+		assertThat(inputStream).isNotNull();
+
+		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData();
+
+		assertThat(importData.getErrorMsgs()).isEmpty();
+		assertThat(importData.getTransactions())
+				.hasSize(10)
+				.are(trxHasNoErrors);
+
+		assertThat(importData.getTransactions())
+				.as("every transaction has its reference extracted from the Cd=SCOR element")
+				.allSatisfy(t -> assertThat(t.getEsrReferenceNumber()).isNotEmpty());
+
+		assertThat(importData.getTransactions())
+				.filteredOn(t -> ESRType.TYPE_SCOR.equals(t.getType()))
+				.as("the reference type is recognised as SCOR")
+				.hasSize(10);
+
+		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("1000");
+	}
 }

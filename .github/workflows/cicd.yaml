@@ -20,6 +20,8 @@ jobs:
     outputs:
       tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
+      # The sanitized BASE branch name; selects the DB seed (metasfresh/metas-db:seed-<base-refname>) in job db-images.
+      base-refname: ${{ steps.base-refname.outputs.refname }}
       build-info-properties: ${{ steps.build-info-properties.outputs.content }}
       git-properties: ${{ steps.git-properties.outputs.content }}
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
@@ -53,6 +55,25 @@ jobs:
           GIT_REF: ${{ github.ref_name }}
         run: |
           echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
+      - name: determine-base-refname
+        # Resolve the BASE branch this ref derives from; selects the DB seed (see init output base-refname).
+        # Feature branches follow the "<base>_<suffix>" convention; the base branches are listed in CICD_BRANCH_MAP.
+        # Pick the LONGEST base that the ref equals or starts with ("<base>_"); fall back to the ref itself
+        # (base branches, merge-queue/merge-* branches, or anything unrecognised).
+        id: base-refname
+        env:
+          GIT_REF: ${{ github.ref_name }}
+          BRANCH_MAP: ${{ vars.CICD_BRANCH_MAP }}
+        run: |
+          best=""
+          for b in $(echo "$BRANCH_MAP" | grep -oE '"[^"]+"' | tr -d '"' || true); do
+            if [ "$GIT_REF" = "$b" ] || [[ "$GIT_REF" == "${b}_"* ]]; then
+              if [ ${#b} -gt ${#best} ]; then best="$b"; fi
+            fi
+          done
+          [ -z "$best" ] && best="$GIT_REF"
+          echo "Base branch resolved for the DB seed: $best"
+          echo "refname=$(echo "$best" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: sanitize-branch-for-gh-pages
         id: sanitize-branch-gh-pages
         env:
@@ -706,7 +727,17 @@ jobs:
           FOLDER_COUNT=$(find migration-sql -mindepth 1 -maxdepth 1 -type d | wc -l)
           echo "Aggregated $SQL_COUNT SQL migration files in $FOLDER_COUNT intermediate folders"
           ls -la migration-sql/
+      - name: resolve-db-seed
+        # the base branch's DB seed if it comes from this commit's own history, else the 5.172 dump
+        id: db-seed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash docker-builds/db/resolve-db-seed.sh "${{ needs.init.outputs.base-refname }}" "${GITHUB_SHA}"
       - name: build-db-init
+        # Always on the 5.172 dump: customer repos build their DB FROM this image and apply core and
+        # customer scripts interleaved in script-number order. A DB with all core scripts already
+        # applied would run older customer scripts after newer core scripts (e.g. after a unique
+        # constraint they predate), so the seed must not go into this image.
         run: |
           docker buildx build \
           --progress=plain \
@@ -716,6 +747,16 @@ jobs:
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-db-init-seeded
+        # The same image on the per-branch DB seed; used only by db-apply-migrations of this repo.
+        run: |
+          docker buildx build \
+          --progress=auto \
+          --file docker-builds/Dockerfile.db-init \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --build-arg DB_SEED=${{ steps.db-seed.outputs.db-seed }} \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded \
           .
       - name: build-db-migration-tool
         run: |
@@ -743,6 +784,14 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded
+        if: env.ACT != 'true'
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded
       - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
@@ -763,6 +812,7 @@ jobs:
         run: |
           echo '#### db-images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-seeded (for db-apply-migrations only)' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   db-apply-migrations:
@@ -788,7 +838,7 @@ jobs:
           --file docker-builds/Dockerfile.db-preloaded \
           --cache-to type=inline \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }}-seeded \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
           .
@@ -797,6 +847,15 @@ jobs:
         run: |
           docker compose up --abort-on-container-exit --exit-code-from migration 2>&1 | tee migration.log && echo "${PIPESTATUS[0]}" > migration.exit-code
           docker commit init-preloaded-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+          # the committed data dir must be cleanly shut down, otherwise every DB started from it begins with crash recovery
+          state=$(docker run --rm --entrypoint sh metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
+            -c '/usr/lib/postgresql/*/bin/pg_controldata /var/lib/postgresql/initdata' | grep 'Database cluster state' || true)
+          echo "${state}"
+          if ! echo "${state}" | grep -qE 'cluster state: +shut down$'; then
+            echo "::error::the preloaded DB was not shut down cleanly before docker commit: ${state:-pg_controldata reported no cluster state}"
+            if [ "$(cat migration.exit-code)" != 0 ]; then tail -1000 migration.log; fi
+            exit 1
+          fi
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
           docker compose down
       - name: assert success
@@ -1558,6 +1617,7 @@ jobs:
           fi
       - name: Check if 'metasfreshArchives' directory exists
         id: check_metasfreshArchives_dir
+        if: always()
         run: |
           if [ -d "cucumber/metasfreshArchives/" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
@@ -1565,7 +1625,7 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
       - uses: actions/upload-artifact@v6
-        if: steps.check_metasfreshArchives_dir.outputs.exists == 'true'
+        if: always() && steps.check_metasfreshArchives_dir.outputs.exists == 'true'
         with:
           name: metasfreshArchives-${{ matrix.profile }}
           path: cucumber/metasfreshArchives/
@@ -1764,10 +1824,28 @@ jobs:
           docker compose down
 
   mobile_test:
-    name: mobile test
+    name: mobile test (${{ matrix.shard }})
     timeout-minutes: 60
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
+    strategy:
+      max-parallel: 6
+      fail-fast: false
+      matrix:
+        shard: [ "1/6", "2/6", "3/6", "4/6", "5/6", "6/6" ]
+        include:
+          - shard: "1/6"
+            shard_label: shard1
+          - shard: "2/6"
+            shard_label: shard2
+          - shard: "3/6"
+            shard_label: shard3
+          - shard: "4/6"
+            shard_label: shard4
+          - shard: "5/6"
+            shard_label: shard5
+          - shard: "6/6"
+            shard_label: shard6
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -1785,47 +1863,34 @@ jobs:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           mfregistry: metasfresh
           dbqualifier: preloaded
+          PLAYWRIGHT_SHARD: ${{ matrix.shard }}
         run: |
           docker compose --profile mobile up --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
-          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
           docker compose --profile mobile down
 
-      # ===== ALLURE REPORT GENERATION =====
-      - name: Generate Allure Report for Mobile
-        uses: ./.github/actions/generate-allure-report
-        with:
-          results-dir: docker-builds/e2e-tests/allure-results-mobile
-          output-dir: e2e/mobile-webui/allure-report
-          artifact-name: allure-report-mobile-webui
-          history-artifact-name: allure-history-mobile-webui
-          report-title: 'Playwright (Mobile WebUI)'
-      - name: Upload Mobile Allure report to server
+      # The merged mobile Allure report is built by the mobile_allure_report job from all shards
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v6
         if: always()
-        uses: ./.github/actions/upload-report-to-server
         with:
-          report-dir: e2e/mobile-webui/allure-report
-          report-type: allure/mobile-webui
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
-          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
-          server-user: ${{ secrets.TESTREPORTS_USER }}
-          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
-          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
-      # ===== END ALLURE REPORT GENERATION =====
+          name: allure-results-mobile-${{ matrix.shard_label }}
+          path: docker-builds/e2e-tests/allure-results-mobile/
+          if-no-files-found: ignore
+          retention-days: 1
 
-      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}' >> $GITHUB_STEP_SUMMARY
       - name: assert success
         working-directory: docker-builds/e2e-tests/
         run: |
@@ -1833,7 +1898,7 @@ jobs:
       - uses: actions/upload-artifact@v6
         if: success() || failure() # upload the artifact even if is success because that artifact can contain valuable information about how to improve, optimize etc
         with:
-          name: playwright-mobile-report
+          name: playwright-mobile-report-${{ matrix.shard_label }}
           path: |
             docker-builds/e2e-tests/playwright-report-mobile/
             docker-builds/e2e-tests/test-results-mobile/
@@ -1842,16 +1907,34 @@ jobs:
         uses: actions/upload-artifact@v6
         if: always()
         with:
-          name: junit-results-playwright-mobile
+          name: junit-results-playwright-mobile-${{ matrix.shard_label }}
           path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
           if-no-files-found: ignore
           retention-days: 1
 
   frontend_webui_test:
-    name: frontend webui test
+    name: frontend webui test (${{ matrix.shard }})
     timeout-minutes: 60
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
+    strategy:
+      max-parallel: 6
+      fail-fast: false
+      matrix:
+        shard: [ "1/6", "2/6", "3/6", "4/6", "5/6", "6/6" ]
+        include:
+          - shard: "1/6"
+            shard_label: shard1
+          - shard: "2/6"
+            shard_label: shard2
+          - shard: "3/6"
+            shard_label: shard3
+          - shard: "4/6"
+            shard_label: shard4
+          - shard: "5/6"
+            shard_label: shard5
+          - shard: "6/6"
+            shard_label: shard6
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -1869,22 +1952,95 @@ jobs:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           mfregistry: metasfresh
           dbqualifier: preloaded
+          PLAYWRIGHT_SHARD: ${{ matrix.shard }}
         run: |
           docker compose --profile frontend up --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
-          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
+          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
           docker compose --profile frontend down
 
-      # ===== ALLURE REPORT GENERATION =====
+      # The merged frontend Allure report is built by the frontend_allure_report job from all shards
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: allure-results-frontend-${{ matrix.shard_label }}
+          path: docker-builds/e2e-tests/allure-results/
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
+        if: env.ACT != 'true'
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
+      - name: produce-summary
+        run: |
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}' >> $GITHUB_STEP_SUMMARY
+      - name: assert success
+        working-directory: docker-builds/e2e-tests/
+        run: |
+          if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
+      - uses: actions/upload-artifact@v6
+        if: success() || failure()
+        with:
+          name: playwright-frontend-report-${{ matrix.shard_label }}
+          path: |
+            docker-builds/e2e-tests/playwright-report-frontend/
+            docker-builds/e2e-tests/test-results-frontend/
+          retention-days: 30
+      - name: Upload Playwright Frontend JUnit results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: junit-results-playwright-frontend-${{ matrix.shard_label }}
+          path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
+          if-no-files-found: ignore
+          retention-days: 1
+
+  # =============================================================================
+  # Merge Frontend Playwright Allure Results from Sharded Runners
+  # =============================================================================
+  frontend_allure_report:
+    name: frontend allure report
+    runs-on: ${{ vars.RUNNER_LIGHT }}
+    needs: [ init, frontend_webui_test ]
+    if: always() && needs.init.result == 'success'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download all shard Allure results
+        uses: actions/download-artifact@v8
+        with:
+          pattern: allure-results-frontend-*
+          path: allure-results-merged
+          merge-multiple: true
+
+      - name: Check if results exist
+        id: check_results
+        run: |
+          if [ -d "allure-results-merged" ] && [ "$(ls -A allure-results-merged 2>/dev/null)" ]; then
+            echo "has_results=true" >> $GITHUB_OUTPUT
+            echo "Found $(find allure-results-merged -name '*.json' -type f | wc -l) JSON result files"
+          else
+            echo "has_results=false" >> $GITHUB_OUTPUT
+            echo "No Allure results found - skipping report generation"
+          fi
+
       - name: Generate Allure Report for Frontend
+        if: steps.check_results.outputs.has_results == 'true'
         uses: ./.github/actions/generate-allure-report
         with:
-          results-dir: docker-builds/e2e-tests/allure-results
+          results-dir: allure-results-merged
           output-dir: e2e/frontend-webui/allure-report
           artifact-name: allure-report-frontend-webui
           history-artifact-name: allure-history-frontend-webui
           report-title: 'Playwright (Frontend WebUI)'
       - name: Upload Frontend Allure report to server
-        if: always()
+        if: steps.check_results.outputs.has_results == 'true'
         uses: ./.github/actions/upload-report-to-server
         with:
           report-dir: e2e/frontend-webui/allure-report
@@ -1896,40 +2052,60 @@ jobs:
           server-user: ${{ secrets.TESTREPORTS_USER }}
           server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
           storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
-      # ===== END ALLURE REPORT GENERATION =====
 
-      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
-        if: env.ACT != 'true'
-        uses: nick-fields/retry@v4
+
+  # =============================================================================
+  # Merge Mobile Playwright Allure Results from Sharded Runners
+  # =============================================================================
+  mobile_allure_report:
+    name: mobile allure report
+    runs-on: ${{ vars.RUNNER_LIGHT }}
+    needs: [ init, mobile_test ]
+    if: always() && needs.init.result == 'success'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download all shard Allure results
+        uses: actions/download-artifact@v8
         with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
-      - name: produce-summary
+          pattern: allure-results-mobile-*
+          path: allure-results-mobile-merged
+          merge-multiple: true
+
+      - name: Check if results exist
+        id: check_results
         run: |
-          echo '#### images' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest' >> $GITHUB_STEP_SUMMARY
-      - name: assert success
-        working-directory: docker-builds/e2e-tests/
-        run: |
-          if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
-      - uses: actions/upload-artifact@v6
-        if: success() || failure()
+          if [ -d "allure-results-mobile-merged" ] && [ "$(ls -A allure-results-mobile-merged 2>/dev/null)" ]; then
+            echo "has_results=true" >> $GITHUB_OUTPUT
+            echo "Found $(find allure-results-mobile-merged -name '*.json' -type f | wc -l) JSON result files"
+          else
+            echo "has_results=false" >> $GITHUB_OUTPUT
+            echo "No Allure results found - skipping report generation"
+          fi
+
+      - name: Generate Allure Report for Mobile
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/generate-allure-report
         with:
-          name: playwright-frontend-report
-          path: |
-            docker-builds/e2e-tests/playwright-report-frontend/
-            docker-builds/e2e-tests/test-results-frontend/
-          retention-days: 30
-      - name: Upload Playwright Frontend JUnit results
-        uses: actions/upload-artifact@v6
-        if: always()
+          results-dir: allure-results-mobile-merged
+          output-dir: e2e/mobile-webui/allure-report
+          artifact-name: allure-report-mobile-webui
+          history-artifact-name: allure-history-mobile-webui
+          report-title: 'Playwright (Mobile WebUI)'
+      - name: Upload Mobile Allure report to server
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/upload-report-to-server
         with:
-          name: junit-results-playwright-frontend
-          path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
-          if-no-files-found: ignore
-          retention-days: 1
+          report-dir: e2e/mobile-webui/allure-report
+          report-type: allure/mobile-webui
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
+
 
   # =============================================================================
   # TODO: Test Report Upload to HTTP Server
@@ -1957,7 +2133,7 @@ jobs:
   publish-test-reports:
     name: publish test reports
     runs-on: ${{ vars.RUNNER_LIGHT }}
-    needs: [ init, cucumber-allure-report, mobile_test, frontend_webui_test, junit, test-frontend ]
+    needs: [ init, cucumber-allure-report, mobile_allure_report, frontend_allure_report, junit, test-frontend ]
     if: always() && needs.init.result == 'success' && needs.init.outputs.skip-publish-reports != 'true'
     permissions:
       actions: write       # trigger reports-cleanup workflow when disk space is low
@@ -2254,55 +2430,7 @@ jobs:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
         run: |
-          ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" <<'PYEOF'
-          import json, sys, os, shutil
-          from datetime import datetime, timezone
-
-          MAX_BUILDS_PER_BRANCH = 3
-
-          branch = sys.argv[1]
-          version = sys.argv[2]
-          metadata_dir = "/var/www/test-reports/_metadata"
-          metadata_file = os.path.join(metadata_dir, f"{branch}.json")
-          builds_dir = f"/var/www/test-reports/branches/{branch}/builds"
-
-          os.makedirs(metadata_dir, exist_ok=True)
-
-          # Read existing metadata or create new
-          if os.path.exists(metadata_file):
-              with open(metadata_file, "r") as f:
-                  try:
-                      data = json.load(f)
-                  except json.JSONDecodeError:
-                      data = {"branch": branch, "builds": []}
-          else:
-              data = {"branch": branch, "builds": []}
-
-          # Deduplicate: remove existing entry for this version
-          data["builds"] = [b for b in data["builds"] if b.get("version") != version]
-
-          # Prepend new build
-          data["builds"].insert(0, {
-              "version": version,
-              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-          })
-
-          # Cap metadata and collect evicted versions
-          evicted = [b["version"] for b in data["builds"][MAX_BUILDS_PER_BRANCH:]]
-          data["builds"] = data["builds"][:MAX_BUILDS_PER_BRANCH]
-
-          with open(metadata_file, "w") as f:
-              json.dump(data, f, indent=2)
-
-          # Delete build directories for evicted versions
-          for ver in evicted:
-              build_path = os.path.join(builds_dir, ver)
-              if os.path.isdir(build_path):
-                  shutil.rmtree(build_path)
-                  print(f"Pruned old build: {branch}/{ver}")
-
-          print(f"Kept {len(data['builds'])} build(s), pruned {len(evicted)} old build(s)")
-          PYEOF
+          ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" < .github/test-report-permalinks/update_branch_metadata.py
 
       - name: Generate feature/spec permalinks
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
@@ -2310,6 +2438,7 @@ jobs:
         env:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
+          GIT_REF: ${{ github.ref }}
         run: |
           DIR=.github/test-report-permalinks
           # build the feature/spec -> uid map from the just-published build's trees (server-side)
@@ -2317,7 +2446,79 @@ jobs:
           # deploy the static resolver (identical content per branch)
           ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.js"   < "$DIR/permalink.js"
           ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.html" < "$DIR/permalink.html"
+          # The coverage page answers for ANY branch from ONE URL, so it is deployed to the
+          # server ROOT rather than per branch: it takes ?branch= and reads that branch's
+          # permalinks.json. Only new_dawn_uat builds deploy it: every branch carries its own
+          # copy of the page source, so if every build deployed it, a branch with an older copy
+          # would overwrite a newer page. Other branches still publish their permalinks.json
+          # above, which the shared page reads via ?branch=.
+          # Ship ONE self-contained file. coverage.js stays a separate source file so node can
+          # unit-test it, but it is inlined here for two reasons:
+          #   1. this host serves .js as `public, immutable, max-age=604800` (verified 2026-09-12)
+          #      while .html carries no cache header -- so a separate script would freeze for a
+          #      week and could pair a stale script with a fresh page;
+          #   2. one file is one atomic rename. Two files have a window where the page and its
+          #      script disagree, which matters more here than for the per-branch resolver
+          #      because this one root page serves the readers of every branch.
+          # mktemp gives a unique name, so two new_dawn_uat builds publishing at once cannot collide on it.
+          # mktemp on the RUNNER too: a self-hosted runner can host concurrent jobs,
+          # and a fixed /tmp name would let two branches' builds clobber each other.
+          # The inlining runs on every branch, not only on new_dawn_uat, so a branch that
+          # breaks it (see the needle check) fails this step (visible, non-blocking: the step
+          # is continue-on-error) before reaching new_dawn_uat.
+          INLINED=$(mktemp)
+          python3 - "$DIR" > "$INLINED" <<'INLINEEOF'
+          import re, sys, pathlib
+          d = pathlib.Path(sys.argv[1])
+          js = (d / "coverage.js").read_text(encoding="utf-8")
+          html = (d / "coverage.html").read_text(encoding="utf-8")
+          needle = '<script src="coverage.js"></script>'
+          if needle not in html:
+              sys.exit("coverage.html no longer loads coverage.js by that exact tag; inlining aborted")
+          # No user data flows through here -- both files are repo content -- but a literal
+          # </script> inside the JS would still close the tag early.
+          # Escape anything the HTML tokenizer treats as ending or nesting a script
+          # element: </script in any case or with trailing space/slash, and <!-- / <script
+          # (which put the tokenizer in a state where a later </script> does NOT close).
+          safe = re.sub(r"(?i)<(/?script|!--)", r"<\\\g<1>", js)
+          sys.stdout.write(html.replace(needle, "<script>\n" + safe + "\n</script>"))
+          INLINEEOF
+          # The `find -mmin +60` sweeps temp files left by an interrupted earlier deploy
+          # (this whole step is continue-on-error, so a half-write is silent). The age
+          # bound is what keeps it from deleting a CONCURRENT publish's in-flight temp.
+          # `coverage.js` is removed because it was briefly deployed as a separate file
+          # and nothing references it any more; leaving it would serve week-cached dead code.
+          # The size check is the load-bearing guard, not the rename. `cat` cannot tell
+          # "stdin ended" from "stdin was cut": on a mid-transfer disconnect it exits 0,
+          # chmod succeeds, and the rename atomically publishes a TRUNCATED page --
+          # verified locally, a 4000-byte cut of a 12847-byte page published with the
+          # whole chain reporting success. Inlining makes that worse, because the cut
+          # now lands inside the page's own <script>. Compare byte counts before renaming.
+          SIZE=$(wc -c < "$INLINED")
+          # Compare the full ref, not the sanitized BRANCH: sanitizing maps several branch
+          # names onto one value (e.g. `new-dawn-uat` would match too).
+          if [ "$GIT_REF" = "refs/heads/new_dawn_uat" ]; then
+            ssh reports-server "
+              find /var/www/test-reports -maxdepth 1 -name '.coverage.*' -mmin +60 -delete 2>/dev/null
+              T=\$(mktemp /var/www/test-reports/.coverage.XXXXXX) &&
+              cat > \"\$T\" && chmod 644 \"\$T\" &&
+              [ \"\$(wc -c < \"\$T\")\" -eq $SIZE ] &&
+              mv \"\$T\" /var/www/test-reports/coverage.html &&
+              rm -f /var/www/test-reports/coverage.js ||
+              { rm -f \"\$T\"; echo 'coverage deploy FAILED (incomplete transfer)' >&2; exit 1; }
+            " < "$INLINED" && COVERAGE_OK=1 || echo "::warning::coverage.html was not updated this build"
+          else
+            echo "Shared coverage page not deployed: only new_dawn_uat builds deploy /coverage.html (this branch's permalinks.json is published)."
+            COVERAGE_OK=1
+          fi
+          rm -f "$INLINED"
           echo "Permalinks: https://test-reports.metasfresh.com/branches/${BRANCH}/permalink.html?feature=Fxxxx"
+          # On new_dawn_uat, print the coverage URL only if this build actually published the
+          # page: a banner that prints either way is a claim the step has not verified. Other
+          # branches print it unverified, assuming the page that new_dawn_uat deployed is served.
+          if [ -n "$COVERAGE_OK" ]; then
+            echo "Coverage:   https://test-reports.metasfresh.com/coverage.html?branch=${BRANCH}"
+          fi
 
       - name: Update landing page
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
@@ -2349,6 +2550,7 @@ jobs:
           <body>
               <div class="container">
                   <h1>📊 Test Reports</h1>
+                  <p><a href="coverage.html">Automated test coverage by feature</a> — which tests cover a feature on a given branch, and did they pass.</p>
                   <div id="branches"><p class="loading">Loading reports...</p></div>
               </div>
               <script>

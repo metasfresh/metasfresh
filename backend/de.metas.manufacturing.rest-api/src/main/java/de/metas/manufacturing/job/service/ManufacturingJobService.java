@@ -535,6 +535,7 @@ public class ManufacturingJobService
 				.barcode(receiveFrom.getBarcode())
 				.receiveUnitType(receiveUnitType)
 				.tuPIItemProductIdForTUMode(receiveLine.getTuPIItemProductId())
+				.receiveOnePiecePerScan(config.effectiveForReceiveLine(receiveLine).isReceiveOnePiecePerScan())
 				.build().execute();
 	}
 

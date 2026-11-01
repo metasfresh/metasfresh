@@ -1,6 +1,7 @@
 import { test } from "../../../../playwright.config";
-import { expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { expectErrorToast, expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from "@playwright/test";
+import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
 
 const NAME = 'GetQuantityDialog';
 /** @returns {import('@playwright/test').Locator} */
@@ -22,6 +23,20 @@ export const GetQuantityDialog = {
 
     expectQtyEntered: async (expected) => await test.step(`${NAME} - Expect QtyEntered to be '${expected}'`, async () => {
         await expect(page.locator('#qty-input')).toHaveValue(`${expected}`);
+    }),
+
+    // The quantity is shown but cannot be changed by the operator.
+    expectQtyEnteredFixedAt: async (expected) => await test.step(`${NAME} - Expect QtyEntered fixed at '${expected}'`, async () => {
+        const qtyInput = page.locator('#qty-input');
+        await expect(qtyInput).toHaveValue(`${expected}`, { timeout: SLOW_ACTION_TIMEOUT });
+        await expect(qtyInput).toBeDisabled();
+    }),
+
+    // The quantity is pre-filled and the operator can change it.
+    expectQtyEnteredEditable: async (expected) => await test.step(`${NAME} - Expect QtyEntered '${expected}' and editable`, async () => {
+        const qtyInput = page.locator('#qty-input');
+        await expect(qtyInput).toHaveValue(`${expected}`, { timeout: SLOW_ACTION_TIMEOUT });
+        await expect(qtyInput).toBeEnabled();
     }),
 
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
@@ -60,6 +75,8 @@ export const GetQuantityDialog = {
 
     typeLotNo: async (lotNo) => await test.step(`${NAME} - Type LotNo '${lotNo}'`, async () => {
         const field = page.getByTestId('lotNo');
+        // the field may already show a pre-filled or scanned lot, and it does not select its text on focus
+        await field.fill('');
         await clickAndType(field, lotNo);
     }),
 
@@ -80,6 +97,25 @@ export const GetQuantityDialog = {
         await clickAndType(field, correctedQty);
     }),
 
+    // Types the catch weight EXACTLY as given, one real key press per character (digits and the decimal
+    // separator keystroke included), with no locale substitution: what reaches the field is what the
+    // operator's keyboard sends, whatever the browser's language is.
+    typeCatchWeightKeystrokes: async (keys) => await test.step(`${NAME} - Type CatchWeight keystrokes '${keys}'`, async () => {
+        const field = page.locator('#catch-weight');
+        // focus first, so the field selects its current text and typing overrides it
+        await field.tap();
+        await field.pressSequentially(`${keys}`);
+    }),
+
+    // Empties the catch weight the way an operator does: select all, Delete.
+    clearCatchWeight: async () => await test.step(`${NAME} - Clear CatchWeight`, async () => {
+        const field = page.locator('#catch-weight');
+        await field.tap();
+        await field.press('ControlOrMeta+a');
+        await field.press('Delete');
+        await expect(field).toHaveValue('');
+    }),
+
     scanCatchWeightQRCode: async ({ qrCode, stepName }) => await test.step(`${NAME} - Scan ${stepName}: ${qrCode}`, async () => {
         const prevQtyTarget = await page.locator('[data-testid="qty-target"]').innerText();
 
@@ -96,6 +132,89 @@ export const GetQuantityDialog = {
                 const el = document.querySelector('[data-testid="qrCode-input"]');
                 return el && el.value === '';
             });
+    }),
+
+    // Mandatory catch-weight scan: the dialog opens on the scanner and offers neither the quantity form
+    // (so nothing can be confirmed) nor the switch to manual input.
+    expectOnlyCatchWeightScanOffered: async () => await test.step(`${NAME} - Expect only the catch weight scan to be offered`, async () => {
+        await expect(page.getByTestId('qrCode-input')).toBeAttached({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.getByTestId('switchToManualInput-button')).toHaveCount(0);
+        await expect(page.locator('#qty-input')).toHaveCount(0);
+    }),
+
+    // Mandatory catch-weight scan: a valid scan receives nothing yet, it fills the fields for review.
+    scanCatchWeightQRCodeForReview: async ({ qrCode }) => await test.step(`${NAME} - Scan for review: ${qrCode}`, async () => {
+        await BarcodeScannerComponent.type(qrCode);
+        await expect(page.locator('#qty-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.getByTestId('qrCode-input')).toHaveCount(0);
+    }),
+
+    // Mandatory catch-weight scan: a code that cannot be received is rejected with a message,
+    // and the scanner stays open with nothing filled in.
+    scanCatchWeightQRCodeExpectingError: async ({ qrCode, expectedError }) => await test.step(`${NAME} - Scan ${qrCode}, expecting error '${expectedError}'`, async () => {
+        await expectErrorToast(
+            expectedError,
+            async () => await BarcodeScannerComponent.type(qrCode),
+            ({ textContent }) => expect(textContent).toContain(expectedError)
+        );
+        // the closed message has left the screen (its close animation can outlive the message text)
+        await expect(page.locator('.Toastify__toast')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+        await GetQuantityDialog.expectOnlyCatchWeightScanOffered();
+    }),
+
+    // A piece-goods receipt is entered by hand: no scanner is offered, the quantity form shows right away.
+    expectNoScanOffered: async () => await test.step(`${NAME} - Expect no scan offered`, async () => {
+        await expect(page.locator('#qty-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.getByTestId('qrCode-input')).toHaveCount(0);
+        await expect(page.getByTestId('switchToQrCodeInput-button')).toHaveCount(0);
+    }),
+
+    // Back from the quantity form to the catch weight scanner.
+    clickSwitchToQRCodeInput: async () => await test.step(`${NAME} - Switch to QR code input`, async () => {
+        await page.getByTestId('switchToQrCodeInput-button').tap();
+        await expect(page.getByTestId('qrCode-input')).toBeAttached({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Returns the lot shown in the field, e.g. a pre-filled one whose exact value the test does not know upfront.
+    expectLotNoMatching: async (regex) => await test.step(`${NAME} - Expect LotNo matching ${regex}`, async () => {
+        const field = page.getByTestId('lotNo');
+        await expect(field).toHaveValue(regex);
+        return await field.inputValue();
+    }),
+
+    expectLotNo: async (expected) => await test.step(`${NAME} - Expect LotNo '${expected}'`, async () => {
+        await expect(page.getByTestId('lotNo')).toHaveValue(`${expected}`);
+    }),
+
+    // shown read-only: the receipt generates the lot
+    expectLotNoDisabled: async () => await test.step(`${NAME} - Expect LotNo shown but not editable`, async () => {
+        await expect(page.getByTestId('lotNo')).toBeVisible();
+        await expect(page.getByTestId('lotNo')).toBeDisabled();
+    }),
+
+    expectLotNoEditable: async () => await test.step(`${NAME} - Expect LotNo editable`, async () => {
+        await expect(page.getByTestId('lotNo')).toBeEnabled();
+    }),
+
+    // expected in the displayed format DD.MM.YYYY, or '' for empty
+    expectBestBeforeDate: async (expected) => await test.step(`${NAME} - Expect BestBeforeDate '${expected}'`, async () => {
+        await expect(page.getByTestId('bestBeforeDate')).toHaveValue(`${expected}`);
+    }),
+
+    // Like expectBestBeforeDate, accepting any of the given values (e.g. a receipt-day default when the run may cross midnight).
+    expectBestBeforeDateOneOf: async (expectedValues) => await test.step(`${NAME} - Expect BestBeforeDate one of ${expectedValues.join(', ')}`, async () => {
+        const anyOf = new RegExp(`^(${expectedValues.map((value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})$`);
+        await expect(page.getByTestId('bestBeforeDate')).toHaveValue(anyOf);
+    }),
+
+    // The scanner view's close button: leaves the dialog without receiving anything.
+    clickCloseScanner: async () => await test.step(`${NAME} - Close scanner`, async () => {
+        await page.getByTestId('done-button').tap();
+        await GetQuantityDialog.waitToClose();
+    }),
+
+    expectCatchWeight: async (expected) => await test.step(`${NAME} - Expect CatchWeight '${expected}'`, async () => {
+        await expect(page.locator('#catch-weight')).toHaveValue(`${expected}`);
     }),
 
     clickQtyNotFoundReason: async ({ reason }) => await test.step(`${NAME} - Click qty not found reason '${reason}'`, async () => {

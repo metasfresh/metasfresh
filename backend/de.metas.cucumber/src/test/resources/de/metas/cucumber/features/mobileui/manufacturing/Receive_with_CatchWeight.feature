@@ -51,6 +51,8 @@ Feature: mobileUI Picking - Pick mixed lines
     And load S_Resource:
       | S_Resource_ID.Identifier | S_Resource_ID |
       | testResource             | 540011        |
+    # defaults: no mandatory label scan, catch weight captured at receipt
+    And set MobileUI_MFG_Config IsFinishedGoodsCatchWeightScanRequired to 'N' and IsCaptureCatchWeightAtReceipt to 'Y'
 
     
 # ######################################################################################################################
@@ -108,3 +110,58 @@ Feature: mobileUI Picking - Pick mixed lines
       | Produced_LU | WeightNet            | 0.5         |            |         |
       | Produced_LU | HU_BestBeforeDate    |             | 2025-03-03 |         |
       | Produced_LU | Lot-Nummer           |             |            | LotNo_1 |
+
+# ######################################################################################################################
+  # Mandatory label scan, catch weight NOT captured at receipt: the operator enters the number of blocks and scans the
+  # label of the last block; its lot and best-before date apply to the whole receipt (no one-piece-per-scan rule).
+  @from:cucumber
+  Scenario: Label scan required, weight not captured at receipt: 2 blocks received at once with the last block's lot and best-before date
+    And set MobileUI_MFG_Config IsFinishedGoodsCatchWeightScanRequired to 'Y' and IsCaptureCatchWeightAtReceipt to 'N'
+    And metasfresh contains PP_Product_BOM
+      | Identifier         | M_Product_ID  | PP_Product_BOMVersions_ID |
+      | manufacturingBOM_2 | catchWeightFP | manufacturingBOMVersion_2 |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier             | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
+      | manufacturingBOMLine_2 | manufacturingBOM_2           | regularComponentProd    | 2021-01-02 | 2        |
+    And the PP_Product_BOM identified by manufacturingBOM_2 is completed
+    And load AD_Workflow:
+      | AD_Workflow_ID.Identifier | Name                   |
+      | mobileWorkflow_2          | mobileUI_workflow_test |
+    And metasfresh contains PP_Product_Plannings
+      | Identifier                     | OPT.AD_Workflow_ID.Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | manufacturingProductPlanning_2 | mobileWorkflow_2              | catchWeightFP           | manufacturingBOMVersion_2                | false        |
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | manufacturingOrder_2   | MOP         | catchWeightFP           | 2          | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                | manufacturingProductPlanning_2        |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | manufacturingBOMLine_2         | manufacturingOrder_2   | regularComponentProd    | 4            | false           | PCE               | CO            |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | manufacturingOrder_2   |
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | manufacturingOrder_2   |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+    And process response and extract manufacturing line and receiving target values:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier    | WorkflowLine.Identifier            | WorkflowReceivingTargetValues.Identifier |
+      | manufacturingWorkflow_2    | workflowManufacturingReceipt_2 | workflowManufacturingReceiptLine_2 | workflowReceivingTargetValues_2          |
+
+    # the whole open qty (2 blocks) in one receipt, no weight, lot and best-before date from the scanned label
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event       | BestBeforeDate | LotNo        | WorkflowProcess.Identifier | WorkflowActivity.Identifier    | WorkflowLine.Identifier            | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | 2025-11-08     | LastBlockLot | manufacturingWorkflow_2    | workflowManufacturingReceipt_2 | workflowManufacturingReceiptLine_2 | workflowReceivingTargetValues_2          |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And validate I_PP_Order_Qty
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | manufacturingOrder_2   | catchWeightFP           | 2   |
+
+    And load manufactured HU for PP_Order:
+      | PP_Order_ID          | M_HU_ID       |
+      | manufacturingOrder_2 | Produced_LU_2 |
+
+    And M_HU_Attribute is validated
+      | M_HU_ID       | M_Attribute_ID.Value | ValueNumber | ValueDate  | Value        |
+      | Produced_LU_2 | HU_BestBeforeDate    |             | 2025-11-08 |              |
+      | Produced_LU_2 | Lot-Nummer           |             |            | LastBlockLot |

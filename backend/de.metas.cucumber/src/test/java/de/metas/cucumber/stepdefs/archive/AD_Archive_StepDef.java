@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.archive;
 
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.util.Services;
 import io.cucumber.java.en.Then;
@@ -56,15 +57,52 @@ public class AD_Archive_StepDef
 	{
 		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
 
-		final int count = queryBL.createQueryBuilder(I_AD_Archive.class)
+		assertThat(countArchives(recordRef))
+				.as("AD_Archive count for record %s", recordRef)
+				.isGreaterThanOrEqualTo(1);
+	}
+
+	/**
+	 * Waits for the asynchronous archiving of the document PDF, which starts when the document is completed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 60s, an AD_Archive exists for the record identified by "salesInvoice1"
+	 * </pre>
+	 */
+	@Then("after not more than {int}s, an AD_Archive exists for the record identified by {string}")
+	public void assert_archive_exists_eventually(final int timeoutSec, @NonNull final String recordIdentifier) throws InterruptedException
+	{
+		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> countArchives(recordRef) >= 1);
+	}
+
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then no AD_Archive exists for the record identified by "salesInvoice2"
+	 * </pre>
+	 */
+	@Then("no AD_Archive exists for the record identified by {string}")
+	public void assert_archive_does_not_exist(@NonNull final String recordIdentifier)
+	{
+		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
+
+		assertThat(countArchives(recordRef))
+				.as("AD_Archive count for record %s", recordRef)
+				.isZero();
+	}
+
+	private int countArchives(@NonNull final TableRecordReference recordRef)
+	{
+		return queryBL.createQueryBuilder(I_AD_Archive.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Archive.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
 				.create()
 				.count();
-
-		assertThat(count)
-				.as("AD_Archive count for record %s", recordRef)
-				.isGreaterThanOrEqualTo(1);
 	}
 }
