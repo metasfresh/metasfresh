@@ -261,15 +261,15 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   Scenario: a flatrate "to clear" candidate stays closed when its line is delivered after the shipment schedule was closed and reactivated
     Given for this scenario only, set sys config boolean value true for sys config C_Invoice_Candidate_Close_IsToClear
     And metasfresh contains C_UOMs:
-      | Identifier  | X12DE355 | Name     | UOMSymbol | StdPrecision | CostingPrecision |
+      | Identifier  | X12DE355 | Name           | UOMSymbol | StdPrecision | CostingPrecision |
       | flatfee_uom | MEAL     | Meal_7d_@Date@ | M         | 2            | 2                |
     And metasfresh contains M_Product_Categories:
-      | Identifier     | Name           | Value          |
-      | flatfee_cat    | flatfee_cat_7d_@Date@ | flatfee_cat_7d_@Date@ |
+      | Identifier  | Name                  | Value                 |
+      | flatfee_cat | flatfee_cat_7d_@Date@ | flatfee_cat_7d_@Date@ |
     And metasfresh contains M_Products:
-      | Identifier   | Name         | ProductType | OPT.X12DE355 | OPT.M_Product_Category_ID.Identifier |
+      | Identifier   | Name                | ProductType | OPT.X12DE355 | OPT.M_Product_Category_ID.Identifier |
       | flatfee_prod | flatfee_prod_@Date@ | S           | MEAL         |                                      |
-      | product3     | product3_@Date@ |             | PCE          | flatfee_cat                          |
+      | product3     | product3_@Date@     |             | PCE          | flatfee_cat                          |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | PLV                    | flatfee_prod | 1.0      | MEAL              | Normal                        |
@@ -282,20 +282,20 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
       | inventory3                | line3                         | product3                | 0       | 1000     | PCE          |
     And complete inventory with inventoryIdentifier 'inventory3'
     And metasfresh contains C_BPartners without locations:
-      | Identifier   | Name          | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | Identifier   | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | flatCustomer | flatCustomer7d_@Date@ | N            | Y              | PS                            |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier         | GLN        | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
-      | flatCustomerLoc    | Dummy_GLN7_@Date@ | flatCustomer             | true                | true         |
+      | Identifier      | GLN               | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | flatCustomerLoc | Dummy_GLN7_@Date@ | flatCustomer             | true                | true         |
     And metasfresh contains C_Flatrate_Conditions:
-      | Identifier | Name         | Type_Conditions | OPT.Type_Flatrate | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_UOM_ID.Identifier |
+      | Identifier | Name              | Type_Conditions | OPT.Type_Flatrate | OPT.M_Product_Flatrate_ID.Identifier | OPT.C_UOM_ID.Identifier |
       | conditions | flatfee_7d_@Date@ | FlatFee         | RPTD              | flatfee_prod                         | flatfee_uom             |
     And metasfresh contains C_Flatrate_Matchings:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | SeqNo | M_Product_Category_Matching_ID.Identifier |
-      | matching   | conditions                          | 10    | flatfee_cat                          |
+      | matching   | conditions                          | 10    | flatfee_cat                               |
     When metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | term       | conditions                          | flatCustomer                  | 2024-01-01 | 2024-12-31 | DR            | false         |
+      | term       | conditions                          | flatCustomer                | 2024-01-01 | 2024-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by term is completed
 
     And metasfresh contains C_Orders:
@@ -337,15 +337,15 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   Scenario: reactivating and re-completing the order reopens only the line its disposition close closed, not the hand-closed or the "to clear" line
     Given for this scenario only, set sys config boolean value true for sys config C_Invoice_Candidate_Close_IsToClear
     And metasfresh contains C_UOMs:
-      | Identifier  | X12DE355 | Name               | UOMSymbol | StdPrecision | CostingPrecision |
-      | flatfee_uom | MEAL     | Meal_7e_@Date@     | M         | 2            | 2                |
+      | Identifier  | X12DE355 | Name           | UOMSymbol | StdPrecision | CostingPrecision |
+      | flatfee_uom | MEAL     | Meal_7e_@Date@ | M         | 2            | 2                |
     And metasfresh contains M_Product_Categories:
       | Identifier  | Name                  | Value                 |
       | flatfee_cat | flatfee_cat_7e_@Date@ | flatfee_cat_7e_@Date@ |
     And metasfresh contains M_Products:
-      | Identifier   | Name                | ProductType | OPT.X12DE355 | OPT.M_Product_Category_ID.Identifier |
+      | Identifier   | Name                   | ProductType | OPT.X12DE355 | OPT.M_Product_Category_ID.Identifier |
       | flatfee_prod | flatfee_prod_7e_@Date@ | S           | MEAL         |                                      |
-      | product3     | product3_7e_@Date@  |             | PCE          | flatfee_cat                          |
+      | product3     | product3_7e_@Date@     |             | PCE          | flatfee_cat                          |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | PLV                    | flatfee_prod | 1.0      | MEAL              | Normal                        |
@@ -361,7 +361,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
       | conditions | flatfee_7e_@Date@ | FlatFee         | RPTD              | flatfee_prod                         | flatfee_uom             |
     And metasfresh contains C_Flatrate_Matchings:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | SeqNo | M_Product_Category_Matching_ID.Identifier |
-      | matching   | conditions                          | 10    | flatfee_cat                          |
+      | matching   | conditions                          | 10    | flatfee_cat                               |
     When metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
       | term       | conditions                          | flatCustomer                | 2024-01-01 | 2024-12-31 | DR            | false         |
@@ -574,8 +574,8 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
     # A service product gets no shipment schedule at all (only items do), so its line has no schedule to close: it is checked to stay untouched.
     Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
     And metasfresh contains M_Products:
-      | Identifier | Name                   | ProductType | OPT.X12DE355 |
-      | service1   | service1_16_@Date@     | S           | PCE          |
+      | Identifier | Name               | ProductType | OPT.X12DE355 |
+      | service1   | service1_16_@Date@ | S           | PCE          |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | InvoicableQtyBasedOn | C_TaxCategory_ID.InternalName |
       | PLV                    | service1     | 5.0      | PCE               | Nominal              | Normal                        |
@@ -584,13 +584,13 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
       | CREATE_DRAFT         |
     # the order takes its invoice rule from the business partner
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name                 | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
-      | customerI  | customerI16_@Date@   | N            | Y              | PS                            | I               |
-      | customerP  | customerP16_@Date@   | N            | Y              | PS                            | P               |
+      | Identifier | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | customerI  | customerI16_@Date@ | N            | Y              | PS                            | I               |
+      | customerP  | customerP16_@Date@ | N            | Y              | PS                            | P               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier  | GLN                  | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
-      | locationI   | Dummy_GLN16I_@Date@  | customerI                | true                | true         |
-      | locationP   | Dummy_GLN16P_@Date@  | customerP                | true                | true         |
+      | Identifier | GLN                 | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | locationI  | Dummy_GLN16I_@Date@ | customerI                | true                | true         |
+      | locationP  | Dummy_GLN16P_@Date@ | customerP                | true                | true         |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO_I       | true    | customerI                | 2024-03-26  |
@@ -609,11 +609,11 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
     And the order identified by SO_D is completed
     And the order identified by SO_S is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | schedule_I | L_I                       | N             |
-      | schedule_P | L_P                       | N             |
-      | schedule_P2 | L_P2                     | N             |
-      | schedule_D | L_D                       | N             |
+      | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
+      | schedule_I  | L_I                       | N             |
+      | schedule_P  | L_P                       | N             |
+      | schedule_P2 | L_P2                      | N             |
+      | schedule_D  | L_D                       | N             |
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | ic_I                              | L_I                       |

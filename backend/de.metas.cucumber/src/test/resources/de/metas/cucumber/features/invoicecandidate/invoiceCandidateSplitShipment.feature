@@ -586,8 +586,8 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | inventoryB                | lineB2                        | product2                | 0       | 100      | PCE          |
     And complete inventory with inventoryIdentifier 'inventoryB'
     And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID | M_HU_ID      |
-      | lineB2             | stockHUB2    |
+      | M_InventoryLine_ID | M_HU_ID   |
+      | lineB2             | stockHUB2 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -663,8 +663,8 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | inventoryB                | lineB2                        | product2                | 0       | 100      | PCE          |
     And complete inventory with inventoryIdentifier 'inventoryB'
     And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID | M_HU_ID      |
-      | lineB2             | stockHUB2    |
+      | M_InventoryLine_ID | M_HU_ID   |
+      | lineB2             | stockHUB2 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |

@@ -21,9 +21,9 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
     And metasfresh has date and time 2024-03-26T13:30:13+01:00[Europe/Berlin]
 
     And metasfresh contains M_Products:
-      | Identifier | Name                  | ProductType | OPT.X12DE355 |
-      | product1   | product1_12_@Date@    |             | PCE          |
-      | service1   | service1_12_@Date@    | S           | PCE          |
+      | Identifier | Name               | ProductType | OPT.X12DE355 |
+      | product1   | product1_12_@Date@ |             | PCE          |
+      | service1   | service1_12_@Date@ | S           | PCE          |
 
     And metasfresh contains M_PricingSystems
       | Identifier |
@@ -41,10 +41,10 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
 
     # the orders take their invoice rule from the business partner
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
-      | customer   | customer12_@Date@   | N            | Y              | PS                            | D               |
-      | customerI  | customerI12_@Date@  | N            | Y              | PS                            | I               |
-      | customerP  | customerP12_@Date@  | N            | Y              | PS                            | P               |
+      | Identifier | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | customer   | customer12_@Date@  | N            | Y              | PS                            | D               |
+      | customerI  | customerI12_@Date@ | N            | Y              | PS                            | I               |
+      | customerP  | customerP12_@Date@ | N            | Y              | PS                            | P               |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN                 | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | location   | Dummy_GLN12_@Date@  | customer                 | true                | true         |
@@ -60,8 +60,8 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
   Scenario: the reset reopens to the rule only the explicit closes of never-delivered closed lines written since the bound, not older, flatrate or service candidates
     Given for this scenario only, set sys config boolean value true for sys config C_Invoice_Candidate_Close_IsToClear
     And metasfresh contains C_UOMs:
-      | Identifier  | X12DE355 | Name            | UOMSymbol | StdPrecision | CostingPrecision |
-      | flatfee_uom | MEAL     | Meal_12_@Date@  | M         | 2            | 2                |
+      | Identifier  | X12DE355 | Name           | UOMSymbol | StdPrecision | CostingPrecision |
+      | flatfee_uom | MEAL     | Meal_12_@Date@ | M         | 2            | 2                |
     And metasfresh contains M_Product_Categories:
       | Identifier  | Name                  | Value                 |
       | flatfee_cat | flatfee_cat_12_@Date@ | flatfee_cat_12_@Date@ |
