@@ -210,8 +210,13 @@ public class MobileDistribution_StepDef
 
 	/**
 	 * Sets the mobile user's trolley to the given locator (scans the locator's QR code against the trolley endpoint).
-	 * <p>
-	 * Gherkin: {@code And the mobile user's trolley is set to locator <locatorIdentifier>}
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Locator_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the mobile user's trolley is set to locator trolleyLoc
+	 * </pre>
 	 */
 	@And("^the mobile user's trolley is set to locator (.*)$")
 	public void setTrolley(@NonNull final String locatorIdentifierStr)
@@ -225,8 +230,12 @@ public class MobileDistribution_StepDef
 
 	/**
 	 * Clears the mobile user's trolley.
-	 * <p>
-	 * Gherkin: {@code And the mobile user's trolley is cleared}
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the mobile user's trolley is cleared
+	 * </pre>
 	 */
 	@And("the mobile user's trolley is cleared")
 	public void clearTrolley()
@@ -236,8 +245,12 @@ public class MobileDistribution_StepDef
 
 	/**
 	 * Asserts that the mobile user currently has no trolley.
-	 * <p>
-	 * Gherkin: {@code Then the mobile user's trolley is empty}
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the mobile user's trolley is empty
+	 * </pre>
 	 */
 	@Then("the mobile user's trolley is empty")
 	public void assertTrolleyEmpty()

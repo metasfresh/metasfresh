@@ -62,8 +62,13 @@ public class InTransitHUsReport_StepDef
 
 	/**
 	 * Runs the In-Transit HUs report for the given locator and archives the resulting PDF (German report language).
-	 * <p>
-	 * Gherkin: {@code When the Materialbegleitschein is printed for locator <locatorIdentifier>}
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Locator_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the Materialbegleitschein is printed for locator trolleyLoc
+	 * </pre>
 	 */
 	@When("^the Materialbegleitschein is printed for locator (.*)$")
 	public void printMaterialbegleitschein(@NonNull final String locatorIdentifierStr)

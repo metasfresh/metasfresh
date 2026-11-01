@@ -87,6 +87,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
 {
+	/** ATP cell value of a row that does not verify the ATP */
+	public static final String ATP_NOT_VERIFIED = "*";
+
 	private final M_Product_StepDefData productTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 
@@ -125,8 +128,18 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 				.build();
 	}
 
+	/**
+	 * @return the expected ATP; {@code null} if the ATP cell is {@value #ATP_NOT_VERIFIED}, i.e. the row does not verify the ATP
+	 */
+	@Nullable
 	public static BigDecimal extractATP(final DataTableRow row)
 	{
+		final boolean isAtpVerified = !row.getAsOptionalString("ATP").map(ATP_NOT_VERIFIED::equals).orElse(false);
+		if (!isAtpVerified)
+		{
+			return null;
+		}
+
 		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> row.getAsOptionalBigDecimal("ATP").orElse(null),
 				() -> row.getAsOptionalBigDecimal("Qty_AvailableToPromise").orElse(null),

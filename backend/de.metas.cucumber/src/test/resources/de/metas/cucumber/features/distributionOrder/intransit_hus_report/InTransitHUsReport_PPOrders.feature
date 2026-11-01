@@ -14,7 +14,7 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     # render the real jasper report; the mock report service would archive a placeholder PDF instead
-    And for this scenario only, set sys config boolean value false for sys config de.metas.report.jasper.IsMockReportService
+    And temporarily set sys config boolean value false for sys config 'de.metas.report.jasper.IsMockReportService'
     # the PDF steps read the archive back out of the database
     And update AD_Client
       | Identifier | StoreArchiveOnFileSystem |
@@ -23,7 +23,7 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     # a fixed time makes the dispo's DateOrdered equal for all candidates (it is part of the aggregation key)
     And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]
     # one DD_Order line may bundle the demand of several manufacturing orders
-    And for this scenario only, set sys config boolean value false for sys config DDOrderAggregation.header.byPPOrderRef
+    And temporarily set sys config boolean value false for sys config 'DDOrderAggregation.header.byPPOrderRef'
 
     # a short fixed value and name: the HU row and the QR label then do not wrap, so the line counts below do not depend on the clock
     And metasfresh contains M_Products:
@@ -82,21 +82,21 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
   Scenario: Bundled line for two manufacturing orders with different picking instructions prints one summary line per order
     # the raw material is in stock when the orders are planned, so the dispo advises a distribution candidate for each order
     Given metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
-      | inv1                      | 2021-04-11   | rawWH          |
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv1           | 2021-04-11   | rawWH          |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
-      | inv1                      | invLine1                      | COMP                    | rawLoc       | 0       | 20       | PCE          |
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv1           | invLine1           | COMP         | rawLoc       | 0       | 20       | PCE          |
     And complete inventory with inventoryIdentifier 'inv1'
     And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
-      | invLine1                      | hu1                |
+      | M_InventoryLine_ID | M_HU_ID |
+      | invLine1           | hu1     |
 
     # the start date is a midday instant, so 12.04.2021 prints whatever the JVM default time zone is
     When create PP_Order:
-      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument | DocumentNo |
-      | PP1                    | MOP         | FG                      | 10         | plant                    | prodWH                        | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP1    |
-      | PP2                    | MOP         | FG                      | 10         | plant                    | prodWH                        | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP2    |
+      | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument | DocumentNo |
+      | PP1         | MOP         | FG           | 10         | plant         | prodWH         | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP1    |
+      | PP2         | MOP         | FG           | 10         | plant         | prodWH         | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP2    |
     And after not more than 60s, PP_Order_BomLines are found
       | Identifier | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
       | PP1_L1     | PP1         | COMP         | 10 PCE       | CO            |
@@ -156,8 +156,8 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
   @from:cucumber
   Scenario: One manufacturing order without picking instruction keeps the single-order header
     When create PP_Order:
-      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument | DocumentNo |
-      | PP3                    | MOP         | FG2                     | 10         | plant                    | prodWH                        | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP3    |
+      | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument | DocumentNo |
+      | PP3         | MOP         | FG2          | 10         | plant         | prodWH         | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP3    |
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID |
       | c3         | COMP         | rawWH               | prodWH           | 10 PCE | PP3                 |
@@ -169,15 +169,15 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
       | c3                    | ddo2        | ddol2           |
 
     And metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
-      | inv2                      | 2021-04-11   | rawWH          |
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv2           | 2021-04-11   | rawWH          |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
-      | inv2                      | invLine2                      | COMP                    | rawLoc       | 0       | 10       | PCE          |
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv2           | invLine2           | COMP         | rawLoc       | 0       | 10       | PCE          |
     And complete inventory with inventoryIdentifier 'inv2'
     And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
-      | invLine2                      | hu2                |
+      | M_InventoryLine_ID | M_HU_ID |
+      | invLine2           | hu2     |
 
     And the mobile user's trolley is set to locator trolleyLoc
     And Start distribution job for dd_order identified by ddo2
@@ -205,8 +205,8 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
   @from:cucumber
   Scenario: One manufacturing order with a picking instruction prints the summary line and hides the single-order header
     When create PP_Order:
-      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument | DocumentNo |
-      | PP4                    | MOP         | FG                      | 10         | plant                    | prodWH                        | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP4    |
+      | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument | DocumentNo |
+      | PP4         | MOP         | FG           | 10         | plant         | prodWH         | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP4    |
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID |
       | c4         | COMP         | rawWH               | prodWH           | 10 PCE | PP4                 |
@@ -218,15 +218,15 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
       | c4                    | ddo3        | ddol3           |
 
     And metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
-      | inv3                      | 2021-04-11   | rawWH          |
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv3           | 2021-04-11   | rawWH          |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
-      | inv3                      | invLine3                      | COMP                    | rawLoc       | 0       | 10       | PCE          |
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv3           | invLine3           | COMP         | rawLoc       | 0       | 10       | PCE          |
     And complete inventory with inventoryIdentifier 'inv3'
     And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
-      | invLine3                      | hu3                |
+      | M_InventoryLine_ID | M_HU_ID |
+      | invLine3           | hu3     |
 
     And the mobile user's trolley is set to locator trolleyLoc
     And Start distribution job for dd_order identified by ddo3

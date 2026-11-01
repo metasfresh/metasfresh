@@ -25,6 +25,7 @@ package de.metas.distribution.ddordercandidate.material_dispo;
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateQuery;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -37,12 +38,14 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ddordercandidate.DDOrderCandidateDataFactory;
 import de.metas.material.planning.ddordercandidate.DDOrderCandidateDemandMatcher;
 import de.metas.material.planning.event.SupplyRequiredAdvisor;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -102,13 +105,11 @@ public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 	public Quantity handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent event,
 										   final Quantity qtyToDistribute)
 	{
-		final Set<DDOrderCandidateId> candidateIds = getDDOrderCandidateIds(event);
-		if (candidateIds.isEmpty())
+		final Collection<DDOrderCandidate> candidates = getDDOrderCandidates(event);
+		if (candidates.isEmpty())
 		{
 			return qtyToDistribute;
 		}
-
-		final Collection<DDOrderCandidate> candidates = ddOrderCandidateService.getByIds(candidateIds);
 
 		Quantity remainingQtyToDistribute = qtyToDistribute;
 
@@ -123,6 +124,39 @@ public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		}
 
 		return remainingQtyToDistribute;
+	}
+
+	private @NonNull Collection<DDOrderCandidate> getDDOrderCandidates(final @NonNull SupplyRequiredDecreasedEvent event)
+	{
+		final SupplyRequiredDescriptor descriptor = event.getSupplyRequiredDescriptor();
+		final PPOrderRef ppOrderRef = descriptor.getPpOrderRef();
+		return isPPOrderBOMLineDemand(ppOrderRef)
+				? getDDOrderCandidatesOfPPOrderBOMLine(descriptor, ppOrderRef)
+				: getDDOrderCandidatesOfDemandSupplies(event);
+	}
+
+	private static boolean isPPOrderBOMLineDemand(@Nullable final PPOrderRef ppOrderRef)
+	{
+		return ppOrderRef != null && ppOrderRef.getPpOrderId() != null && ppOrderRef.getPpOrderBOMLineId() != null;
+	}
+
+	/**
+	 * Reduces only the DD candidates of that PP_Order (not those of other PP_Orders of the same component).
+	 */
+	private @NonNull Collection<DDOrderCandidate> getDDOrderCandidatesOfPPOrderBOMLine(final @NonNull SupplyRequiredDescriptor descriptor, final @NonNull PPOrderRef ppOrderRef)
+	{
+		return ddOrderCandidateService.list(DDOrderCandidateQuery.builder()
+				.ppOrderId(ppOrderRef.getPpOrderId())
+				.ppOrderBOMLineIdOrEmpty(ppOrderRef.getPpOrderBOMLineId())
+				.productId(ProductId.ofRepoId(descriptor.getProductId()))
+				.targetWarehouseId(descriptor.getWarehouseId())
+				.build());
+	}
+
+	private @NonNull Collection<DDOrderCandidate> getDDOrderCandidatesOfDemandSupplies(final @NonNull SupplyRequiredDecreasedEvent event)
+	{
+		final Set<DDOrderCandidateId> candidateIds = getDDOrderCandidateIds(event);
+		return candidateIds.isEmpty() ? ImmutableList.of() : ddOrderCandidateService.getByIds(candidateIds);
 	}
 
 	private @NonNull Set<DDOrderCandidateId> getDDOrderCandidateIds(final @NonNull SupplyRequiredDecreasedEvent event)
