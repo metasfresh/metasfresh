@@ -2,6 +2,7 @@ package de.metas.material.dispo.service.event.handler.ddordercandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
@@ -54,7 +55,14 @@ public class DDOrderCandidateDeletedHandler implements MaterialEventHandler<DDOr
 												  .build())
 				.build();
 
-		candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query)
-				.forEach(candidateChangeHandler::onCandidateDelete);
+		for (final Candidate candidate : candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query))
+		{
+			// deleting the supply candidate also deletes its linked demand candidate, which is part of the list retrieved above
+			if (candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(candidate.getId())) == null)
+			{
+				continue;
+			}
+			candidateChangeHandler.onCandidateDelete(candidate);
+		}
 	}
 }

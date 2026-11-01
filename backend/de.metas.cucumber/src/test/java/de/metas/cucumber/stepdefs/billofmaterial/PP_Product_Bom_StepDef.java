@@ -133,6 +133,7 @@ public class PP_Product_Bom_StepDef
 	 *   <b>M_Product_ID</b> — (required, identifier-ref) the component<br>
 	 *   <b>QtyBatch</b> — (required) qty per finished good (percentage if IsQtyPercentage is Y)<br>
 	 *   <b>IsAdditionalLine</b> — (optional, default N) Y always adds another line, e.g. the same component twice in one BOM<br>
+	 *   <b>ValidTo</b> — (optional, local date) the line is left out when a PP_Order's BOM lines are created for a later start date<br>
 	 *   <b>ComponentType</b>, <b>ValidFrom</b>, <b>IsQtyPercentage</b>, <b>C_UOM_ID.X12DE355</b>, <b>M_AttributeSetInstance_ID</b> — (optional)
 	 * @cucumber.example
 	 * <pre>
@@ -197,6 +198,10 @@ public class PP_Product_Bom_StepDef
 				.map(localDate -> Timestamp.valueOf(localDate.atStartOfDay()))
 				.orElseGet(bom::getValidFrom);
 		bomLine.setValidFrom(validFrom);
+
+		row.getAsOptionalLocalDate(I_PP_Product_BOMLine.COLUMNNAME_ValidTo)
+				.map(localDate -> Timestamp.valueOf(localDate.atStartOfDay()))
+				.ifPresent(bomLine::setValidTo);
 
 		final boolean isPercentage = row.getAsOptionalBoolean(I_PP_Product_BOMLine.COLUMNNAME_IsQtyPercentage).orElseFalse();
 		final BigDecimal qty = row.getAsBigDecimal(I_PP_Product_BOMLine.COLUMNNAME_QtyBatch);

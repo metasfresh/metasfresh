@@ -777,7 +777,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
     And after not more than 5s, no AD_Note records exist for the referenced record:
       | AD_Message_ID | Record_ID |
       | noteMsg       | ppOrder   |
-    # Not asserted: dispo may log AD_Issues when it removes the candidates of a voided or deleted PP_Order.
+    # Not asserted: voiding the PP_Order makes dispo log an AD_Issue "No Candidates found for PP_Order_ID=...".
 
 
 
@@ -981,7 +981,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
     And after not more than 5s, no AD_Note records exist for the referenced record:
       | AD_Message_ID | Record_ID      |
       | noteMsg       | deletedPPOrder |
-    # Not asserted: dispo may log AD_Issues when it removes the candidates of a voided or deleted PP_Order.
+    And no AD_Issue was created since the existing AD_Issue records were remembered
 
 
 
@@ -1041,3 +1041,55 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | noteMsg       | ppOrder   |
     And no AD_Issue was created since the existing AD_Issue records were remembered
 
+
+
+# #############################################################################################################################################
+# #############################################################################################################################################
+# #############################################################################################################################################
+# #############################################################################################################################################
+# #############################################################################################################################################
+# #############################################################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0155_Material_Disposition
+  @allure.label.feature:F5100
+  @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
+  @Id:S28916_100
+  Scenario: PP_Order whose second BOM line is no longer valid at the new start date; decrease its qty and move its start -> that BOM line has no successor and its DD_Order_Candidate is removed, the other follows
+    # The same component is in the BOM twice; the second line is valid only until 2021-04-20.
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | removeGood |
+    And metasfresh contains PP_Product_BOM
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID |
+      | bomRemove  | removeGood   | bomVersionsRemove         |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier | PP_Product_BOM_ID | M_Product_ID | QtyBatch | IsAdditionalLine | ValidTo    |
+      | bomLineOne | bomRemove         | component    | 1        | N                |            |
+      | bomLineTwo | bomRemove         | component    | 2        | Y                | 2021-04-20 |
+    And the PP_Product_BOM identified by bomRemove is completed
+    When create PP_Order:
+      | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
+      | ppOrder     | MOP         | removeGood   | 20         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
+      | oldBOMLine1         | ppOrder     | component    | 20 PCE       | CO            |
+      | oldBOMLine2         | ppOrder     | component    | 40 PCE       | CO            |
+    Then after not more than 60s, the DD_Order_Candidate table has only the following records
+      | Identifier        | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
+      | ddOrderCandidate1 | component    | rawMaterials_WH     | production_WH    | 20 PCE | ppOrder             | oldBOMLine1                 |
+      | ddOrderCandidate2 | component    | rawMaterials_WH     | production_WH    | 40 PCE | ppOrder             | oldBOMLine2                 |
+
+    # Re-creating the BOM lines at the later start date leaves out the second BOM line
+    When update PP_Order:
+      | PP_Order_ID | QtyEntered | DatePromised         | DateStartSchedule    |
+      | ppOrder     | 10         | 2021-05-05T21:00:00Z | 2021-04-30T21:00:00Z |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
+      | newBOMLine          | ppOrder     | component    | 10 PCE       | CO            |
+    Then after not more than 60s, the DD_Order_Candidate table has only the following records
+      | Identifier        | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
+      | ddOrderCandidate1 | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | newBOMLine                  |
+    And after not more than 5s, no AD_Note records exist for the referenced record:
+      | AD_Message_ID | Record_ID |
+      | noteMsg       | ppOrder   |
+    And no AD_Issue was created since the existing AD_Issue records were remembered
