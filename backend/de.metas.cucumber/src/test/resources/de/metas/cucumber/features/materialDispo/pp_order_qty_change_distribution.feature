@@ -777,7 +777,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
     And after not more than 5s, no AD_Note records exist for the referenced record:
       | AD_Message_ID | Record_ID |
       | noteMsg       | ppOrder   |
-    # Dispo AD_Issues on void/delete are known today's behaviour, out of scope for this issue (user decision 2026-10-28).
+    # Not asserted: dispo may log AD_Issues when it removes the candidates of a voided or deleted PP_Order.
 
 
 
@@ -981,7 +981,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
     And after not more than 5s, no AD_Note records exist for the referenced record:
       | AD_Message_ID | Record_ID      |
       | noteMsg       | deletedPPOrder |
-    # Dispo AD_Issues on void/delete are known today's behaviour, out of scope for this issue (user decision 2026-10-28).
+    # Not asserted: dispo may log AD_Issues when it removes the candidates of a voided or deleted PP_Order.
 
 
 
@@ -997,13 +997,21 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_95
   Scenario: PP_Order whose BOM has the same component twice; decrease its qty -> each DD_Order_Candidate follows the re-created BOM line of its own BOM line
-    # The same component is in the BOM twice, with different qtys per finished good.
-    Given metasfresh contains PP_Product_BOMLines
+    # The same component is in the BOM twice, with different qtys per finished good; the BOM is completed after both lines exist.
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | twiceGood  |
+    And metasfresh contains PP_Product_BOM
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID |
+      | bomTwice   | twiceGood    | bomVersionsTwice          |
+    And metasfresh contains PP_Product_BOMLines
       | Identifier | PP_Product_BOM_ID | M_Product_ID | QtyBatch | IsAdditionalLine |
-      | bomLineTwo | bom               | component    | 2        | Y                |
+      | bomLineOne | bomTwice          | component    | 1        | N                |
+      | bomLineTwo | bomTwice          | component    | 2        | Y                |
+    And the PP_Product_BOM identified by bomTwice is completed
     When create PP_Order:
       | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
-      | ppOrder     | MOP         | finishedGood | 20         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
+      | ppOrder     | MOP         | twiceGood    | 20         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
       | oldBOMLine1         | ppOrder     | component    | 20 PCE       | CO            |

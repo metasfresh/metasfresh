@@ -58,8 +58,8 @@ public class PPOrderBOMLineDistributionSupplyMover
 {
 	public static final AdMessageKey DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED = AdMessageKey.of("org.eevolution.model.validator.DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED");
 
-	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
 	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;

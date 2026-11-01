@@ -94,12 +94,46 @@ public class PP_Product_Bom_StepDef
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
+	/**
+	 * Creates (or updates the existing) PP_Product_BOM of a product.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (optional) identifier of the BOM<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the finished good<br>
+	 *   <b>PP_Product_BOMVersions_ID</b> — (optional) identifier of the BOM versions record<br>
+	 *   <b>ValidFrom</b>, <b>BOMType</b>, <b>M_AttributeSetInstance_ID</b> — (optional)
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains PP_Product_BOM
+	 *   | Identifier | M_Product_ID | PP_Product_BOMVersions_ID |
+	 *   | bom        | finishedGood | bomVersions               |
+	 * </pre>
+	 */
 	@Given("metasfresh contains PP_Product_BOM")
 	public void add_PP_Product_Bom(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::createPP_Product_BOM);
 	}
 
+	/**
+	 * Creates the lines of a PP_Product_BOM. A row updates the existing line of the same product in the same BOM, unless <b>IsAdditionalLine</b> is Y.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (optional) identifier of the line<br>
+	 *   <b>PP_Product_BOM_ID</b> — (required, identifier-ref) the BOM<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the component<br>
+	 *   <b>QtyBatch</b> — (required) qty per finished good (percentage if IsQtyPercentage is Y)<br>
+	 *   <b>IsAdditionalLine</b> — (optional, default N) Y always adds another line, e.g. the same component twice in one BOM<br>
+	 *   <b>ComponentType</b>, <b>ValidFrom</b>, <b>IsQtyPercentage</b>, <b>C_UOM_ID.X12DE355</b>, <b>M_AttributeSetInstance_ID</b> — (optional)
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains PP_Product_BOMLines
+	 *   | Identifier | PP_Product_BOM_ID | M_Product_ID | QtyBatch | IsAdditionalLine |
+	 *   | bomLineTwo | bom               | component    | 2        | Y                |
+	 * </pre>
+	 */
 	@Given("metasfresh contains PP_Product_BOMLines")
 	public void add_PP_Product_BOMLine(@NonNull final DataTable dataTable)
 	{

@@ -302,6 +302,7 @@ public class MRPTestHelper
 				new DDOrderCandidateAllocRepository(),
 				new DistributionNetworkRepository(),
 				new ReplenishInfoRepository(),
+				// mock: its real collaborators are the material dispo repositories; no test using this helper has DD_Order_Candidates
 				Mockito.mock(PPOrderBOMLineDistributionSupplyMover.class));
 	}
 
