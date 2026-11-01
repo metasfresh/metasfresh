@@ -22,6 +22,7 @@ package de.metas.inoutcandidate.spi.impl;
  * #L%
  */
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
@@ -46,6 +47,7 @@ import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -147,11 +149,22 @@ import lombok.NonNull;
 			}
 
 			final AttributeCode name = attributeValue.getAttributeCode();
-			final Object value = attributeValue.getValue();
+			final Object value = toAggregationKeyValue(attributeValue.getValue());
 			key.put(name, value);
 		}
 
 		return key;
+	}
+
+	/**
+	 * Numbers are compared by value, not by scale, so that e.g. {@code 0} and {@code 0.00} end up on the same receipt line.
+	 */
+	@Nullable
+	private static Object toAggregationKeyValue(@Nullable final Object value)
+	{
+		return value instanceof BigDecimal
+				? NumberUtils.stripTrailingDecimalZeros((BigDecimal)value)
+				: value;
 	}
 
 	/**
