@@ -294,10 +294,6 @@ public class DebugRestController
 				"de.metas.ui.web.dashboard",
 				KPIDataProvider.class.getPackage().getName()
 		),
-		elasticsearch(
-				"de.metas.fulltextsearch",
-				de.metas.ui.web.document.filter.provider.fullTextSearch.FTSDocumentFilterConverter.class.getPackage().getName()
-		),
 		;
 
 		private final Set<String> loggerNames;

@@ -61,7 +61,7 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
-		final String searchText = filter.getParameterValueAsString(FTSDocumentFilterDescriptorsProviderFactory.PARAM_SearchText, null);
+		final String searchText = filter.getParameterValueAsString(PostgresFTSDocumentFilterDescriptorsProviderFactory.PARAM_SearchText, null);
 		if (Check.isBlank(searchText))
 		{
 			return FilterSql.ALLOW_ALL;

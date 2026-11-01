@@ -53,7 +53,7 @@ public class PostgresFTSDocumentFilterDescriptorsProviderFactory implements Docu
 {
 	@NonNull protected static final String FILTER_ID = "postgres-full-text-search";
 	@NonNull private static final AdMessageKey MSG_FULL_TEXT_SEARCH_CAPTION = AdMessageKey.of("Search");
-	@NonNull private static final String PARAM_SearchText = "Search";
+	@NonNull static final String PARAM_SearchText = "Search";
 	@NonNull static final String PARAM_TableName = "TableName";
 	@NonNull private static final ImmutableList<String> supportedTableNames = ImmutableList.of(I_C_BPartner.Table_Name, I_M_Product.Table_Name);
 	@NonNull private static final String SYSCONFIG_ENABLED =  "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterDescriptorsProviderFactory.enabled";
