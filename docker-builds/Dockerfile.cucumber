@@ -14,6 +14,10 @@ COPY --from=backend /backend/metasfresh-dist/dist/target/docker/app/reports/ /op
 WORKDIR /cucumber
 COPY backend/de.metas.cucumber/ .
 
+# Migration scripts that scenarios run from the source tree (step "the migration script ... is executed in the DB").
+# The step looks up the repo-relative path in the working directory and its parents, so they are copied to the same path under the image root.
+COPY backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/ /backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/
+
 # go-offline reaches the network for any artifact not already in the warm .m2 copied from the
 # backend base image (e.g. the allure-cucumber adapter tree). A stalled upstream (Maven Central /
 # GitHub Packages under heavy fleet-wide CI load) has no total-request cap here, so a slow-drip or

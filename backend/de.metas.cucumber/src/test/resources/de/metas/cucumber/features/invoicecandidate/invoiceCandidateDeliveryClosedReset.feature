@@ -11,9 +11,9 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
 ## Closing a disposition with nothing delivered used to close its invoice candidates explicitly (Processed_Override = Y),
 ## and only reopening the disposition cleared that again. Now a computed rule decides, and the reopen no longer clears explicit closes.
 ## The migration 5832360_sys_reset_C_Invoice_Candidate_Processed_Override_DeliveryClosed.sql resets the explicit closes written since
-## migration 5821320_sys_Event_InvoicingError_message.sql was applied. Its scenarios run its statements verbatim.
+## migration 5821320_sys_Event_InvoicingError_message.sql was applied. Its scenarios run the migration file itself.
 ## The migration 5832370_sys_recompute_C_Invoice_Candidate_DeliveryClosed_at_deploy.sql queues older closed, never-delivered candidates
-## that are not processed yet for one recompute at deploy, so the computed rule applies to them; its scenario runs its statements verbatim.
+## that are not processed yet for one recompute at deploy, so the computed rule applies to them; its scenario runs the file's statements one by one.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -181,136 +181,8 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
     # an update run still in flight could load a candidate before the reset and save its old processed state over it
     And after not more than 60s, there are 0 pending "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages
 
-    # the migration's statements, verbatim
-    When the following SQL is executed in the DB:
-    """
-    INSERT INTO C_Invoice_Candidate_Recompute (C_Invoice_Candidate_ID)
-    SELECT ic.C_Invoice_Candidate_ID
-    FROM C_Invoice_Candidate ic
-    WHERE ic.Processed_Override = 'Y'
-      AND ic.IsDeliveryClosed = 'Y'
-      AND ic.QtyDelivered = 0
-      AND ic.QtyInvoiced = 0
-      AND ic.Updated >= (SELECT MIN(ms.Created) FROM AD_MigrationScript ms WHERE ms.Name LIKE '%5821320_sys_Event_InvoicingError_message.sql')
-      AND EXISTS (SELECT 1 FROM C_OrderLine ol WHERE ol.C_OrderLine_ID = ic.C_OrderLine_ID AND ol.QtyDelivered = 0)
-      AND (EXISTS (SELECT 1 FROM M_ShipmentSchedule ss WHERE ss.C_OrderLine_ID = ic.C_OrderLine_ID AND ss.IsClosed = 'Y')
-        OR EXISTS (SELECT 1 FROM M_ReceiptSchedule rs WHERE rs.C_OrderLine_ID = ic.C_OrderLine_ID AND rs.IsClosed = 'Y'))
-      AND NOT EXISTS (SELECT 1
-                      FROM C_Flatrate_Term ft
-                               JOIN C_Flatrate_Conditions fc ON fc.C_Flatrate_Conditions_ID = ft.C_Flatrate_Conditions_ID
-                      WHERE ft.IsActive = 'Y'
-                        AND ft.IsSimulation = 'N'
-                        AND ft.DocStatus = 'CO'
-                        AND ft.AD_Org_ID = ic.AD_Org_ID
-                        AND ft.Bill_BPartner_ID = ic.Bill_BPartner_ID
-                        AND ft.StartDate <= ic.DateOrdered
-                        AND ft.EndDate >= ic.DateOrdered
-                        AND fc.IsActive = 'Y'
-                        AND fc.DocStatus = 'CO'
-                        AND fc.Type_Conditions NOT IN ('Subscr', 'HoldingFee')
-                        AND fc.M_Product_Flatrate_ID IS DISTINCT FROM ic.M_Product_ID
-                        AND fc.M_Product_Correction_ID IS DISTINCT FROM ic.M_Product_ID
-                        AND fc.M_Product_Actual_ID IS DISTINCT FROM ic.M_Product_ID
-                        AND EXISTS (SELECT 1
-                                    FROM C_Flatrate_Matching m
-                                             JOIN M_Product p ON p.M_Product_ID = ic.M_Product_ID
-                                    WHERE m.C_Flatrate_Conditions_ID = fc.C_Flatrate_Conditions_ID
-                                      AND m.IsActive = 'Y'
-                                      AND (m.M_Product_Category_Matching_ID IS NULL OR m.M_Product_Category_Matching_ID = p.M_Product_Category_ID)
-                                      AND (m.M_Product_ID IS NULL OR m.M_Product_ID = ic.M_Product_ID)
-                                      AND (m.C_Charge_ID IS NULL OR COALESCE(ic.C_Charge_ID, 0) <= 0 OR m.C_Charge_ID = ic.C_Charge_ID)))
-    ;
-    """
-    And the following SQL is executed in the DB:
-    """
-    UPDATE C_Invoice_Candidate ic
-    SET Processed_Override = NULL,
-        Updated            = TO_TIMESTAMP('2026-11-01 15:00:00', 'YYYY-MM-DD HH24:MI:SS'),
-        UpdatedBy          = 99
-    WHERE ic.Processed_Override = 'Y'
-      AND ic.IsDeliveryClosed = 'Y'
-      AND ic.QtyDelivered = 0
-      AND ic.QtyInvoiced = 0
-      AND ic.Updated >= (SELECT MIN(ms.Created) FROM AD_MigrationScript ms WHERE ms.Name LIKE '%5821320_sys_Event_InvoicingError_message.sql')
-      AND EXISTS (SELECT 1 FROM C_OrderLine ol WHERE ol.C_OrderLine_ID = ic.C_OrderLine_ID AND ol.QtyDelivered = 0)
-      AND (EXISTS (SELECT 1 FROM M_ShipmentSchedule ss WHERE ss.C_OrderLine_ID = ic.C_OrderLine_ID AND ss.IsClosed = 'Y')
-        OR EXISTS (SELECT 1 FROM M_ReceiptSchedule rs WHERE rs.C_OrderLine_ID = ic.C_OrderLine_ID AND rs.IsClosed = 'Y'))
-      AND NOT EXISTS (SELECT 1
-                      FROM C_Flatrate_Term ft
-                               JOIN C_Flatrate_Conditions fc ON fc.C_Flatrate_Conditions_ID = ft.C_Flatrate_Conditions_ID
-                      WHERE ft.IsActive = 'Y'
-                        AND ft.IsSimulation = 'N'
-                        AND ft.DocStatus = 'CO'
-                        AND ft.AD_Org_ID = ic.AD_Org_ID
-                        AND ft.Bill_BPartner_ID = ic.Bill_BPartner_ID
-                        AND ft.StartDate <= ic.DateOrdered
-                        AND ft.EndDate >= ic.DateOrdered
-                        AND fc.IsActive = 'Y'
-                        AND fc.DocStatus = 'CO'
-                        AND fc.Type_Conditions NOT IN ('Subscr', 'HoldingFee')
-                        AND fc.M_Product_Flatrate_ID IS DISTINCT FROM ic.M_Product_ID
-                        AND fc.M_Product_Correction_ID IS DISTINCT FROM ic.M_Product_ID
-                        AND fc.M_Product_Actual_ID IS DISTINCT FROM ic.M_Product_ID
-                        AND EXISTS (SELECT 1
-                                    FROM C_Flatrate_Matching m
-                                             JOIN M_Product p ON p.M_Product_ID = ic.M_Product_ID
-                                    WHERE m.C_Flatrate_Conditions_ID = fc.C_Flatrate_Conditions_ID
-                                      AND m.IsActive = 'Y'
-                                      AND (m.M_Product_Category_Matching_ID IS NULL OR m.M_Product_Category_Matching_ID = p.M_Product_Category_ID)
-                                      AND (m.M_Product_ID IS NULL OR m.M_Product_ID = ic.M_Product_ID)
-                                      AND (m.C_Charge_ID IS NULL OR COALESCE(ic.C_Charge_ID, 0) <= 0 OR m.C_Charge_ID = ic.C_Charge_ID)))
-    ;
-    """
-    And the following SQL is executed in the DB:
-    """
-    DO
-    $$
-        DECLARE
-            v_client  record;
-            v_role_id numeric;
-            v_user_id numeric;
-        BEGIN
-            FOR v_client IN SELECT ic.AD_Client_ID, COUNT(*) AS queued
-                            FROM C_Invoice_Candidate_Recompute r
-                                     JOIN C_Invoice_Candidate ic ON ic.C_Invoice_Candidate_ID = r.C_Invoice_Candidate_ID
-                            WHERE ic.AD_Client_ID > 0
-                            GROUP BY ic.AD_Client_ID
-                            ORDER BY ic.AD_Client_ID
-                LOOP
-                    v_role_id := NULL;
-                    v_user_id := NULL;
-                    SELECT ur.AD_Role_ID, ur.AD_User_ID
-                    INTO v_role_id, v_user_id
-                    FROM AD_User_Roles ur
-                             JOIN AD_Role r ON r.AD_Role_ID = ur.AD_Role_ID
-                             JOIN AD_User u ON u.AD_User_ID = ur.AD_User_ID
-                    WHERE r.AD_Client_ID = v_client.AD_Client_ID
-                      AND r.IsActive = 'Y'
-                      AND r.IsManual = 'N'
-                      AND r.IsAccessAllOrgs = 'Y'
-                      AND r.UserLevel LIKE '%C%'
-                      AND ur.IsActive = 'Y'
-                      AND u.IsActive = 'Y'
-                    ORDER BY (ur.AD_User_ID = 100) DESC, r.AD_Role_ID, ur.AD_User_ID
-                    LIMIT 1;
-
-                    INSERT INTO C_Queue_WorkPackage (C_Queue_WorkPackage_ID, C_Queue_PackageProcessor_ID,
-                                                     AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID,
-                                                     IsReadyForProcessing, IsActive, Created, CreatedBy, Updated, UpdatedBy)
-                    VALUES (NEXTVAL('c_queue_workpackage_seq'),
-                            (SELECT p.C_Queue_PackageProcessor_ID
-                             FROM C_Queue_PackageProcessor p
-                             WHERE p.Classname = 'de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor'),
-                            v_client.AD_Client_ID, 0, v_role_id, COALESCE(v_user_id, 100),
-                            'Y', 'Y', NOW(), 99, NOW(), 99);
-
-                    RAISE NOTICE 'AD_Client_ID=%: % queued invoice candidates; update workpackage enqueued with AD_Role_ID=%, AD_User_ID=%',
-                        v_client.AD_Client_ID, v_client.queued, v_role_id, COALESCE(v_user_id, 100);
-                END LOOP;
-        END
-    $$
-    ;
-    """
+    # the migration file itself
+    When the migration script "backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/5832360_sys_reset_C_Invoice_Candidate_Processed_Override_DeliveryClosed.sql" is executed in the DB
 
     # After delivery: still processed, now by the rule. Immediate keeps its ordered quantity, After pick its picked quantity (none);
     # a candidate with an error is not processed. The older close, the flatrate close and the service candidate are unchanged.
@@ -363,85 +235,7 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
       | ic_A                              | true          | true                 | Y                      |
     And the AD_MigrationScript record of 5821320_sys_Event_InvoicingError_message.sql is deleted for this scenario
 
-    When the following SQL is executed in the DB:
-    """
-    INSERT INTO C_Invoice_Candidate_Recompute (C_Invoice_Candidate_ID)
-    SELECT ic.C_Invoice_Candidate_ID
-    FROM C_Invoice_Candidate ic
-    WHERE ic.Processed_Override = 'Y'
-      AND ic.IsDeliveryClosed = 'Y'
-      AND ic.QtyDelivered = 0
-      AND ic.QtyInvoiced = 0
-      AND ic.Updated >= (SELECT MIN(ms.Created) FROM AD_MigrationScript ms WHERE ms.Name LIKE '%5821320_sys_Event_InvoicingError_message.sql')
-      AND EXISTS (SELECT 1 FROM C_OrderLine ol WHERE ol.C_OrderLine_ID = ic.C_OrderLine_ID AND ol.QtyDelivered = 0)
-      AND (EXISTS (SELECT 1 FROM M_ShipmentSchedule ss WHERE ss.C_OrderLine_ID = ic.C_OrderLine_ID AND ss.IsClosed = 'Y')
-        OR EXISTS (SELECT 1 FROM M_ReceiptSchedule rs WHERE rs.C_OrderLine_ID = ic.C_OrderLine_ID AND rs.IsClosed = 'Y'))
-      AND NOT EXISTS (SELECT 1
-                      FROM C_Flatrate_Term ft
-                               JOIN C_Flatrate_Conditions fc ON fc.C_Flatrate_Conditions_ID = ft.C_Flatrate_Conditions_ID
-                      WHERE ft.IsActive = 'Y'
-                        AND ft.IsSimulation = 'N'
-                        AND ft.DocStatus = 'CO'
-                        AND ft.AD_Org_ID = ic.AD_Org_ID
-                        AND ft.Bill_BPartner_ID = ic.Bill_BPartner_ID
-                        AND ft.StartDate <= ic.DateOrdered
-                        AND ft.EndDate >= ic.DateOrdered
-                        AND fc.IsActive = 'Y'
-                        AND fc.DocStatus = 'CO'
-                        AND fc.Type_Conditions NOT IN ('Subscr', 'HoldingFee')
-                        AND fc.M_Product_Flatrate_ID IS DISTINCT FROM ic.M_Product_ID
-                        AND fc.M_Product_Correction_ID IS DISTINCT FROM ic.M_Product_ID
-                        AND fc.M_Product_Actual_ID IS DISTINCT FROM ic.M_Product_ID
-                        AND EXISTS (SELECT 1
-                                    FROM C_Flatrate_Matching m
-                                             JOIN M_Product p ON p.M_Product_ID = ic.M_Product_ID
-                                    WHERE m.C_Flatrate_Conditions_ID = fc.C_Flatrate_Conditions_ID
-                                      AND m.IsActive = 'Y'
-                                      AND (m.M_Product_Category_Matching_ID IS NULL OR m.M_Product_Category_Matching_ID = p.M_Product_Category_ID)
-                                      AND (m.M_Product_ID IS NULL OR m.M_Product_ID = ic.M_Product_ID)
-                                      AND (m.C_Charge_ID IS NULL OR COALESCE(ic.C_Charge_ID, 0) <= 0 OR m.C_Charge_ID = ic.C_Charge_ID)))
-    ;
-    """
-    And the following SQL is executed in the DB:
-    """
-    UPDATE C_Invoice_Candidate ic
-    SET Processed_Override = NULL,
-        Updated            = TO_TIMESTAMP('2026-11-01 15:00:00', 'YYYY-MM-DD HH24:MI:SS'),
-        UpdatedBy          = 99
-    WHERE ic.Processed_Override = 'Y'
-      AND ic.IsDeliveryClosed = 'Y'
-      AND ic.QtyDelivered = 0
-      AND ic.QtyInvoiced = 0
-      AND ic.Updated >= (SELECT MIN(ms.Created) FROM AD_MigrationScript ms WHERE ms.Name LIKE '%5821320_sys_Event_InvoicingError_message.sql')
-      AND EXISTS (SELECT 1 FROM C_OrderLine ol WHERE ol.C_OrderLine_ID = ic.C_OrderLine_ID AND ol.QtyDelivered = 0)
-      AND (EXISTS (SELECT 1 FROM M_ShipmentSchedule ss WHERE ss.C_OrderLine_ID = ic.C_OrderLine_ID AND ss.IsClosed = 'Y')
-        OR EXISTS (SELECT 1 FROM M_ReceiptSchedule rs WHERE rs.C_OrderLine_ID = ic.C_OrderLine_ID AND rs.IsClosed = 'Y'))
-      AND NOT EXISTS (SELECT 1
-                      FROM C_Flatrate_Term ft
-                               JOIN C_Flatrate_Conditions fc ON fc.C_Flatrate_Conditions_ID = ft.C_Flatrate_Conditions_ID
-                      WHERE ft.IsActive = 'Y'
-                        AND ft.IsSimulation = 'N'
-                        AND ft.DocStatus = 'CO'
-                        AND ft.AD_Org_ID = ic.AD_Org_ID
-                        AND ft.Bill_BPartner_ID = ic.Bill_BPartner_ID
-                        AND ft.StartDate <= ic.DateOrdered
-                        AND ft.EndDate >= ic.DateOrdered
-                        AND fc.IsActive = 'Y'
-                        AND fc.DocStatus = 'CO'
-                        AND fc.Type_Conditions NOT IN ('Subscr', 'HoldingFee')
-                        AND fc.M_Product_Flatrate_ID IS DISTINCT FROM ic.M_Product_ID
-                        AND fc.M_Product_Correction_ID IS DISTINCT FROM ic.M_Product_ID
-                        AND fc.M_Product_Actual_ID IS DISTINCT FROM ic.M_Product_ID
-                        AND EXISTS (SELECT 1
-                                    FROM C_Flatrate_Matching m
-                                             JOIN M_Product p ON p.M_Product_ID = ic.M_Product_ID
-                                    WHERE m.C_Flatrate_Conditions_ID = fc.C_Flatrate_Conditions_ID
-                                      AND m.IsActive = 'Y'
-                                      AND (m.M_Product_Category_Matching_ID IS NULL OR m.M_Product_Category_Matching_ID = p.M_Product_Category_ID)
-                                      AND (m.M_Product_ID IS NULL OR m.M_Product_ID = ic.M_Product_ID)
-                                      AND (m.C_Charge_ID IS NULL OR COALESCE(ic.C_Charge_ID, 0) <= 0 OR m.C_Charge_ID = ic.C_Charge_ID)))
-    ;
-    """
+    When the migration script "backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/5832360_sys_reset_C_Invoice_Candidate_Processed_Override_DeliveryClosed.sql" is executed in the DB
 
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.Processed_Override |
@@ -553,8 +347,9 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
     And for this scenario only, set sys config int value 2 for sys config de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor.MaxInvoiceCandidatesToUpdate
     And after not more than 60s, there are 0 pending "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages
 
-    # the migration's statements, verbatim
-    When the following SQL is executed in the DB:
+    # the migration's statements one by one, to assert the queue before the update workpackage is enqueued;
+    # each docstring must be part of the migration file. A workpackage inserted by plain SQL cannot be held, so the file is not run whole here.
+    When the following statement of the migration script "backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/5832370_sys_recompute_C_Invoice_Candidate_DeliveryClosed_at_deploy.sql" is executed in the DB:
     """
     INSERT INTO C_Invoice_Candidate_Recompute (C_Invoice_Candidate_ID)
     SELECT ic.C_Invoice_Candidate_ID
@@ -582,7 +377,7 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
       | ic_5                              | true              |
       | ic_F                              | false             |
       | ic_I                              | false             |
-    And the following SQL is executed in the DB:
+    And the following statement of the migration script "backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/5832370_sys_recompute_C_Invoice_Candidate_DeliveryClosed_at_deploy.sql" is executed in the DB:
     """
     DO
     $$
@@ -650,8 +445,8 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
       | ic_F                              | false         | 0            | null                   | true        | false                    |
       | ic_I                              | false         | 6            | null                   | false       | true                     |
 
-    # running the migration's statements again queues none of the candidates
-    When the following SQL is executed in the DB:
+    # running the migration's statements again queues none of the candidates (each docstring must be part of the migration file)
+    When the following statement of the migration script "backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/5832370_sys_recompute_C_Invoice_Candidate_DeliveryClosed_at_deploy.sql" is executed in the DB:
     """
     INSERT INTO C_Invoice_Candidate_Recompute (C_Invoice_Candidate_ID)
     SELECT ic.C_Invoice_Candidate_ID
@@ -679,7 +474,7 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
       | ic_5                              | false             |
       | ic_F                              | false             |
       | ic_I                              | false             |
-    And the following SQL is executed in the DB:
+    And the following statement of the migration script "backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/5832370_sys_recompute_C_Invoice_Candidate_DeliveryClosed_at_deploy.sql" is executed in the DB:
     """
     DO
     $$

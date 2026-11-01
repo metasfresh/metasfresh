@@ -26,15 +26,27 @@ import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions that run plain SQL in the test DB: creating or replacing PL/pgSQL functions (used by scenarios that verify
- * DB-function-driven sequence providers), running a migration script's statements verbatim, and hiding an {@code AD_MigrationScript} record for one scenario.
+ * DB-function-driven sequence providers), running a migration script from the source tree (whole, or one of its statements),
+ * and hiding an {@code AD_MigrationScript} record for one scenario.
  */
 public class DB_Function_StepDef
 {
@@ -66,25 +78,99 @@ public class DB_Function_StepDef
 	}
 
 	/**
-	 * Runs the given SQL statement(s) in the test database, outside any transaction (each statement commits on its own).
-	 * Meant for a migration script's statements copied verbatim, so the scenario proves exactly what the migration does.
+	 * Runs a migration script of the source tree as one JDBC statement string, outside any transaction, so the scenario runs exactly the shipped file.
+	 * The path is relative to the repository root; it is looked up in the working directory and each of its parents
+	 * (the module directory locally; in the cucumber Docker image, {@code docker-builds/Dockerfile.cucumber} copies the needed migration directories to the image root).
+	 * A missing file fails the step.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
-	 * And the following SQL is executed in the DB:
+	 * When the migration script "backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/5832360_sys_reset_C_Invoice_Candidate_Processed_Override_DeliveryClosed.sql" is executed in the DB
+	 * </pre>
+	 */
+	@And("the migration script {string} is executed in the DB")
+	public void execute_migration_script(@NonNull final String repoRelativePath)
+	{
+		executeSqlWithResults(readMigrationScript(repoRelativePath), repoRelativePath);
+	}
+
+	/**
+	 * Runs one statement of a migration script, given as a docstring, after checking that the script contains it (whitespace-insensitive),
+	 * so a scenario that runs a script's statements one by one (to assert between them) fails when the script and the docstring drift apart.
+	 * The script is looked up as in {@link #execute_migration_script(String)}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the following statement of the migration script "backend/.../5832370_sys_recompute_C_Invoice_Candidate_DeliveryClosed_at_deploy.sql" is executed in the DB:
 	 * """
-	 * UPDATE C_Invoice_Candidate ic
-	 * SET Processed_Override = NULL
-	 * WHERE ic.Processed_Override = 'Y'
+	 * INSERT INTO C_Invoice_Candidate_Recompute (C_Invoice_Candidate_ID)
+	 * SELECT ...
 	 * ;
 	 * """
 	 * </pre>
 	 */
-	@And("the following SQL is executed in the DB:")
-	public void execute_sql(@NonNull final String sql)
+	@And("the following statement of the migration script {string} is executed in the DB:")
+	public void execute_migration_script_statement(@NonNull final String repoRelativePath, @NonNull final String statement)
 	{
-		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_None);
+		final String script = readMigrationScript(repoRelativePath);
+		assertThat(normalizeWhitespace(script))
+				.as("migration script %s contains the docstring statement (whitespace-insensitive)", repoRelativePath)
+				.contains(normalizeWhitespace(statement));
+		executeSqlWithResults(statement, repoRelativePath);
+	}
+
+	@NonNull
+	private static String readMigrationScript(@NonNull final String repoRelativePath)
+	{
+		final List<Path> searched = new ArrayList<>();
+		for (Path dir = Paths.get(System.getProperty("user.dir")).toAbsolutePath(); dir != null; dir = dir.getParent())
+		{
+			final Path candidate = dir.resolve(repoRelativePath);
+			searched.add(candidate);
+			if (Files.isRegularFile(candidate))
+			{
+				try
+				{
+					return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8);
+				}
+				catch (final IOException ex)
+				{
+					throw new AdempiereException("Failed reading migration script " + candidate, ex);
+				}
+			}
+		}
+		throw new AdempiereException("Migration script not found in the working directory or any of its parents")
+				.appendParametersToMessage()
+				.setParameter("repoRelativePath", repoRelativePath)
+				.setParameter("searched", searched);
+	}
+
+	private static String normalizeWhitespace(@NonNull final String sql)
+	{
+		return sql.replaceAll("\\s+", " ").trim();
+	}
+
+	/**
+	 * Unlike {@link DB#executeUpdateAndThrowExceptionOnFail(String, String)}, this accepts statements that return rows
+	 * (a migration script may {@code SELECT backup_table(...)}).
+	 */
+	private static void executeSqlWithResults(@NonNull final String sql, @NonNull final String source)
+	{
+		try (final Connection connection = DB.createConnection(true /*autoCommit*/, Connection.TRANSACTION_READ_COMMITTED);
+			 final Statement statement = connection.createStatement())
+		{
+			boolean isResultSet = statement.execute(sql);
+			while (isResultSet || statement.getUpdateCount() != -1)
+			{
+				isResultSet = statement.getMoreResults();
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new AdempiereException("Failed executing the SQL of " + source, ex);
+		}
 	}
 
 	/**
