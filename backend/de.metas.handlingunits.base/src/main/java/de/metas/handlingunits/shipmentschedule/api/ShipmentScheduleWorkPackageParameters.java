@@ -114,6 +114,12 @@ public class ShipmentScheduleWorkPackageParameters
 			throw new AdempiereException("At least scheduleIds or queryFilters shall be set: " + this);
 		}
 
+		// A closed schedule must not go into a new shipment run. Without this, a run enqueued after an earlier shipment closed the schedule
+		// (and before the recompute marks it processed) would ship its still-set QtyToDeliver_Override again.
+		// This filter is used for both locking and selecting the records of every shipment run (ShipmentScheduleEnqueuer).
+		// A schedule closed after its run was enqueued is not affected; see ShipmentScheduleWithHUService.isToBeShipped.
+		result.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsClosed, false);
+
 		return result;
 	}
 

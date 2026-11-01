@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -71,7 +72,6 @@ import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPicke
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.inout.InOutLineId;
-import de.metas.document.engine.DocStatus;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -198,8 +198,8 @@ public class ShipmentScheduleWithHUService
 
 		/**
 		 * When the shipment workpackage was enqueued ({@code C_Queue_WorkPackage.Created}).
-		 * Required when {@link #includeProcessedClosedSchedulesWithQty} is set: an entered quantity is not shipped again
-		 * if a completed shipment line for the schedule was created after this moment.
+		 * Required when {@link #includeProcessedClosedSchedulesWithQty} is set: an entered quantity is not kept
+		 * if a shipment for the schedule was completed since this moment (see {@code isShippedSince}).
 		 */
 		@Nullable Instant enqueuedAt;
 
@@ -393,10 +393,11 @@ public class ShipmentScheduleWithHUService
 	 * Same quantity source as {@link #prepareShipmentSchedulesWithHUForQtyToDeliver(PrepareForSingleShipmentScheduleRequest)}: the request's override first, else the schedule's entered quantity.
 	 * Not applicable when only some job schedules are to be shipped, like there.
 	 * <p>
-	 * Not kept if the entered quantity may already have been shipped since this workpackage was enqueued: a schedule closed by its own shipment keeps its
-	 * {@code QtyToDeliver_Override} (the recompute returns before it clears a fulfilled override), and the D path ships the raw override.
-	 * So a second workpackage that was enqueued between that shipment's close and the recompute would ship it again.
-	 * See {@link #isShippedSince(ShipmentScheduleId, Instant)} for the conditions.
+	 * A schedule closed by its own shipment keeps its {@code QtyToDeliver_Override} (the recompute returns before it clears a fulfilled override),
+	 * and the D path ships the raw override. A run enqueued after that close cannot contain the schedule: the enqueue leaves out closed schedules
+	 * ({@link ShipmentScheduleWorkPackageParameters#getShipmentSchedulesQueryFiltersEffective()}), and while a run is pending the schedule is locked to it.
+	 * As defence in depth, the entered quantity is also not kept if a shipment for the schedule was completed since this workpackage was enqueued,
+	 * e.g. a draft shipment created before the enqueue and completed after it; see {@link #isShippedSince(ShipmentScheduleId, Instant)}.
 	 * Picks need no such check: a shipped pick has a shipment line and is no longer returned by {@link #retrieveNotShippedRecords(ShipmentScheduleAndJobScheduleIdSet, Set)}.
 	 */
 	private boolean hasEnteredQtyToDeliver(
