@@ -38,8 +38,13 @@ import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.cucumber.stepdefs.ddordercandidate.DD_Order_Candidate_StepDefData;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocList;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -68,9 +73,14 @@ import org.compiere.util.Env;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class DD_Order_StepDef
@@ -83,7 +93,10 @@ public class DD_Order_StepDef
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final C_BPartner_StepDefData bPartnerTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository = SpringContextHolder.instance.getBean(DDOrderCandidateAllocRepository.class);
 	@NonNull private final DD_Order_StepDefData ddOrderTable;
+	@NonNull private final DD_Order_Candidate_StepDefData ddOrderCandidateTable;
+	@NonNull private final DD_OrderLine_StepDefData ddOrderLineTable;
 	@NonNull private final S_Resource_StepDefData resourceTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
@@ -162,6 +175,81 @@ public class DD_Order_StepDef
 					.appendParametersToMessage()
 					.setParameter("action", actionStr);
 		}
+	}
+
+	/**
+	 * Waits until the given DD_Order_Candidate has been turned into a DD_Order and stores that DD_Order.
+	 * If the row's Identifier already names a DD_Order (from an earlier row), the candidate's DD_Order must be that same one,
+	 * which is how a test asserts that several candidates were generated into one DD_Order.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias under which the DD_Order is stored<br>
+	 *   <b>DD_Order_Candidate_ID</b> — (required, identifier-ref) the candidate the DD_Order was generated from<br>
+	 *   <b>DocStatus</b> — (optional) expected doc status<br>
+	 *   <b>Forward_PP_Order_ID</b>, <b>Forward_PP_Order_BOMLine_ID</b>, <b>C_Order_ID</b> — (optional, identifier-ref) expected header references<br>
+	 *   <b>DD_OrderLine_ID</b> — (optional) alias under which the DD_OrderLine generated from the candidate is stored<br>
+	 *   <b>DD_OrderLine_QtyEntered_Total</b> — (optional) expected sum of the DD_Order's line quantities<br>
+	 * @cucumber.depends StepDefData: DD_Order_Candidate_StepDefData, DD_Order_StepDefData, DD_OrderLine_StepDefData, PP_Order_StepDefData, PP_Order_BOMLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, DD_Orders are generated from the following DD_Order_Candidates
+	 *   | Identifier | DD_Order_Candidate_ID | DocStatus | Forward_PP_Order_BOMLine_ID |
+	 *   | ddOrder    | ddOrderCandidate      | DR        | newBOMLine                  |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, DD_Orders are generated from the following DD_Order_Candidates$")
+	public void validateDDOrdersGeneratedFromCandidates(final int timeoutSec, @NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> validateDDOrderGeneratedFromCandidate(timeoutSec, row));
+	}
+
+	private void validateDDOrderGeneratedFromCandidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
+	{
+		final DDOrderCandidateId candidateId = row.getAsIdentifier("DD_Order_Candidate_ID").lookupIdIn(ddOrderCandidateTable);
+		final StepDefDataIdentifier ddOrderIdentifier = row.getAsIdentifier();
+
+		final DDOrderCandidateAllocList[] allocsHolder = new DDOrderCandidateAllocList[1];
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> rememberAllocsIfFound(candidateId, allocsHolder));
+
+		final DDOrderId ddOrderId = allocsHolder[0].getDDOrderIds().iterator().next();
+		final DDOrderLineId ddOrderLineId = allocsHolder[0].getDDOrderLineIds().iterator().next();
+		final DDOrderId knownDDOrderId = ddOrderTable.getIdOptional(ddOrderIdentifier).orElse(null);
+		if (knownDDOrderId != null)
+		{
+			assertThat(ddOrderId).as("DD_Order of DD_Order_Candidate " + candidateId + " vs. " + ddOrderIdentifier).isEqualTo(knownDDOrderId);
+		}
+
+		final I_DD_Order ddOrder = ddOrderService.getById(ddOrderId);
+		validateDDOrder(ddOrder, row);
+		row.getAsOptionalBigDecimal("DD_OrderLine_QtyEntered_Total")
+				.ifPresent(expectedTotal -> assertTotalLineQty(ddOrderId, ddOrderIdentifier, expectedTotal));
+		ddOrderTable.putOrReplace(ddOrderIdentifier, ddOrder);
+		row.getAsOptionalIdentifier("DD_OrderLine_ID")
+				.ifPresent(lineIdentifier -> ddOrderLineTable.putOrReplace(lineIdentifier, ddOrderService.getLineById(ddOrderLineId)));
+	}
+
+	private boolean rememberAllocsIfFound(@NonNull final DDOrderCandidateId candidateId, @NonNull final DDOrderCandidateAllocList[] allocsHolder)
+	{
+		final DDOrderCandidateAllocList allocs = ddOrderCandidateAllocRepository.getByCandidateIds(Collections.singleton(candidateId));
+		if (allocs.isEmpty())
+		{
+			return false;
+		}
+		allocsHolder[0] = allocs;
+		return true;
+	}
+
+	private void assertTotalLineQty(@NonNull final DDOrderId ddOrderId, @NonNull final StepDefDataIdentifier ddOrderIdentifier, @NonNull final BigDecimal expectedTotal)
+	{
+		final BigDecimal actualTotal = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrderId)
+				.create()
+				.list()
+				.stream()
+				.map(I_DD_OrderLine::getQtyEntered)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		assertThat(actualTotal).as("Total QtyEntered of the DD_OrderLines of " + ddOrderIdentifier).isEqualByComparingTo(expectedTotal);
 	}
 
 	@And("^after not more than (.*)s, following DD_Orders are found$")
