@@ -23,7 +23,6 @@
 package de.metas.ui.web.kpi.data;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
@@ -53,7 +52,6 @@ public class KPIDataProvider
 	public static final AdMessageKey MSG_FailedLoadingKPI = AdMessageKey.of("webui.dashboard.KPILoadError");
 
 	private static final Logger logger = LogManager.getLogger(KPIDataProvider.class);
-	private final IESSystem esSystem;
 	private final KPIRepository kpiRepository;
 	private final KPIPermissionsProvider kpiPermissionsProvider;
 
@@ -66,11 +64,9 @@ public class KPIDataProvider
 	@Builder
 	private KPIDataProvider(
 			@NonNull final KPIRepository kpiRepository,
-			@NonNull final IESSystem esSystem,
 			@NonNull final ISysConfigBL sysConfigBL,
 			@NonNull final KPIPermissionsProvider kpiPermissionsProvider)
 	{
-		this.esSystem = esSystem;
 		this.kpiRepository = kpiRepository;
 		this.kpiPermissionsProvider = kpiPermissionsProvider;
 
@@ -151,26 +147,7 @@ public class KPIDataProvider
 		try
 		{
 			final KPIDatasourceType dataSourceType = kpi.getDatasourceType();
-			if (dataSourceType == KPIDatasourceType.ELASTICSEARCH)
-			{
-				final BooleanWithReason elasticsearchEnabled = esSystem.getEnabled();
-				final KPIDataResult data;
-				if (elasticsearchEnabled.isTrue())
-				{
-					data = ElasticsearchKPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi)
-							.setTimeRange(timeRange)
-							.retrieveData();
-				}
-				else
-				{
-					data = KPIDataResult.builder()
-							.setFromPreviousResult(previousResult)
-							.error(elasticsearchEnabled.getReason())
-							.build();
-				}
-				return KPIDataCacheValue.ok(data, defaultMaxStaleAccepted);
-			}
-			else if (dataSourceType == KPIDatasourceType.SQL)
+			if (dataSourceType == KPIDatasourceType.SQL)
 			{
 				final KPIDataResult data = SQLKPIDataLoader.builder()
 						.permissionsProvider(kpiPermissionsProvider)
