@@ -120,7 +120,10 @@ class MaterialDispoTableRowValidator
 		softly.assertThat(actual.getMaterialDescriptor().getProductId()).as("productId").isEqualTo(expected.getProductId().getRepoId());
 		softly.assertThat(actual.getMaterialDescriptor().getDate()).as("date").isEqualTo(expected.getTime());
 		softly.assertThat(actual.getMaterialDescriptor().getQuantity().abs()).as("quantity.abs").isEqualByComparingTo(expected.getQty().abs()); // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
-		softly.assertThat(actual.getAtp()).as("ATP").isEqualByComparingTo(expected.getAtp());
+		if (expected.getAtp() != null)
+		{
+			softly.assertThat(actual.getAtp()).as("ATP").isEqualByComparingTo(expected.getAtp());
+		}
 		softly.assertThat(actual.isSimulated()).isEqualTo(expected.isSimulated());
 
 		if (expected.getAttributeSetInstanceId() != null)

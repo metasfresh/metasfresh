@@ -39,6 +39,7 @@ import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
 import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_LeichMehl_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
@@ -87,6 +88,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
@@ -116,6 +118,7 @@ import java.util.function.Supplier;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
  * Step definitions for {@code PP_Order} — manufacturing orders. Covers creating orders and their
@@ -153,6 +156,7 @@ public class PP_Order_StepDef
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final AD_Message_StepDefData messageTable;
 	@NonNull private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	/**
@@ -232,47 +236,50 @@ public class PP_Order_StepDef
 	@And("create PP_Order:")
 	public void compute_PPOrderCreateRequest_to_create_pp_order(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(row.getAsString(I_PP_Order.COLUMNNAME_DocBaseType));
-			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
+		DataTableRows.of(dataTable).forEach(this::createPPOrder);
+	}
 
-			final ResourceId resourceId = row.getAsIdentifier(I_S_Resource.COLUMNNAME_S_Resource_ID).lookupNotNullIdIn(resourceTable);
-			final ProductId productId = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
+	private void createPPOrder(@NonNull final DataTableRow row)
+	{
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(row.getAsString(I_PP_Order.COLUMNNAME_DocBaseType));
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
 
-			final Quantity quantity = Quantity.of(row.getAsInt(I_PP_Order.COLUMNNAME_QtyEntered), uomDAO.getEachUOM());
+		final ResourceId resourceId = row.getAsIdentifier(I_S_Resource.COLUMNNAME_S_Resource_ID).lookupNotNullIdIn(resourceTable);
+		final ProductId productId = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
 
-			final WarehouseId warehouseId = row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_M_Warehouse_ID)
-					.map(warehouseTable::getId)
-					.orElse(StepDefConstants.WAREHOUSE_ID);
+		final Quantity quantity = Quantity.of(row.getAsInt(I_PP_Order.COLUMNNAME_QtyEntered), uomDAO.getEachUOM());
 
-			final PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequest = PPOrderCreateRequest.builder()
-					.docBaseType(docBaseType)
-					.clientAndOrgId(clientAndOrgId)
-					.plantId(resourceId)
-					.warehouseId(warehouseId)
-					.productId(productId)
-					.qtyRequired(quantity)
-					.dateOrdered(row.getAsInstant(I_PP_Order.COLUMNNAME_DateOrdered))
-					.datePromised(row.getAsInstant(I_PP_Order.COLUMNNAME_DatePromised))
-					.dateStartSchedule(row.getAsInstant(I_PP_Order.COLUMNNAME_DateStartSchedule))
-					.completeDocument(row.getAsOptionalBoolean("completeDocument").orElseFalse());
+		final WarehouseId warehouseId = row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseTable::getId)
+				.orElse(StepDefConstants.WAREHOUSE_ID);
 
-			row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_PP_Product_Planning_ID)
-					.map(productPlanningTable::get)
-					.ifPresent(productPlanning -> ppOrderCreateRequest.productPlanningId(productPlanning.getIdNotNull()));
+		final PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequest = PPOrderCreateRequest.builder()
+				.docBaseType(docBaseType)
+				.clientAndOrgId(clientAndOrgId)
+				.plantId(resourceId)
+				.warehouseId(warehouseId)
+				.productId(productId)
+				.qtyRequired(quantity)
+				.dateOrdered(row.getAsInstant(I_PP_Order.COLUMNNAME_DateOrdered))
+				.datePromised(row.getAsInstant(I_PP_Order.COLUMNNAME_DatePromised))
+				.dateStartSchedule(row.getAsInstant(I_PP_Order.COLUMNNAME_DateStartSchedule))
+				.completeDocument(row.getAsOptionalBoolean("completeDocument").orElseFalse());
 
-			// The workstation is what a lot-number provider resolves the production line from
-			// (PP_Order.WorkStation_ID -> S_Resource.LotNumberCode), so it must be settable here
-			// independently of the plant.
-			row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_WorkStation_ID)
-					.map(workstationIdentifier -> workstationIdentifier.lookupNotNullIdIn(resourceTable))
-					.ifPresent(ppOrderCreateRequest::workstationId);
+		row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_PP_Product_Planning_ID)
+				.map(productPlanningTable::get)
+				.ifPresent(productPlanning -> ppOrderCreateRequest.productPlanningId(productPlanning.getIdNotNull()));
 
-			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
-			assertThat(ppOrder).isNotNull();
+		// The workstation is what a lot-number provider resolves the production line from
+		// (PP_Order.WorkStation_ID -> S_Resource.LotNumberCode), so it must be settable here
+		// independently of the plant.
+		row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_WorkStation_ID)
+				.map(workstationIdentifier -> workstationIdentifier.lookupNotNullIdIn(resourceTable))
+				.ifPresent(ppOrderCreateRequest::workstationId);
 
-			ppOrderTable.put(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID), ppOrder);
-		});
+		final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
+		assertThat(ppOrder).isNotNull();
+
+		ppOrderTable.put(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID), ppOrder);
 	}
 
 	/**
@@ -318,14 +325,87 @@ public class PP_Order_StepDef
 		}
 	}
 
+	/**
+	 * Updates existing PP_Orders.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PP_Order_ID</b> — (required, identifier-ref) the PP_Order to update<br>
+	 *   <b>QtyEntered</b> — (optional) new qty entered (also sets QtyOrdered)<br>
+	 *   <b>DatePromised</b> — (optional) new date promised, ISO-8601 with zone, e.g. 2021-04-16T21:00:00Z<br>
+	 *   <b>DateStartSchedule</b> — (optional) new scheduled start, ISO-8601 with zone, e.g. 2021-04-16T21:00:00Z<br>
+	 *   Column names may also carry the {@code OPT.} prefix and the {@code .Identifier} suffix.
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update PP_Order:
+	 *   | PP_Order_ID | QtyEntered |
+	 *   | ppOrder     | 20         |
+	 * </pre>
+	 */
 	@And("update PP_Order:")
 	public void update_PP_Order(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
+		DataTableRows.of(dataTable).forEach(this::updatePPOrder);
+	}
+
+	/**
+	 * Tries to update existing PP_Orders and asserts that the update is rejected with the given AD_Message.
+	 * Same columns as {@code update PP_Order:}, plus the expected rejection.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PP_Order_ID</b> — (required, identifier-ref) the PP_Order to update<br>
+	 *   <b>AD_Message_ID</b> — (required, identifier-ref, see {@code load AD_Message:}) the AD_Message the rejection was raised with (matched by message key, not by translated text)<br>
+	 *   <b>QtyEntered</b>, <b>DatePromised</b>, <b>DateStartSchedule</b> — (optional) as in {@code update PP_Order:}<br>
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData, AD_Message_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update PP_Order expecting error:
+	 *   | PP_Order_ID | DateStartSchedule    | AD_Message_ID |
+	 *   | ppOrder     | 2021-04-16T21:00:00Z | msg_rejected  |
+	 * </pre>
+	 */
+	@And("update PP_Order expecting error:")
+	public void update_PP_Order_expecting_error(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::assertUpdatePPOrderRejected);
+	}
+
+	private void assertUpdatePPOrderRejected(@NonNull final DataTableRow row)
+	{
+		final I_AD_Message expectedMessage = row.getAsIdentifier(I_AD_Message.COLUMNNAME_AD_Message_ID).lookupNotNullIn(messageTable);
+		final AdMessageKey expectedMessageKey = AdMessageKey.of(expectedMessage.getValue());
+		final I_PP_Order ppOrderRecord = ppOrderTable.get(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID));
+
+		final Throwable rejection = catchThrowable(() -> updatePPOrder(row));
+
+		// the rejected update leaves the in-memory record mutated; reload the persisted state
+		InterfaceWrapperHelper.refresh(ppOrderRecord);
+
+		assertThat(rejection)
+				.as("Expected the PP_Order update to be rejected, but it succeeded")
+				.isNotNull();
+		assertThat(isRejectedWithAdMessage(rejection, expectedMessageKey))
+				.as("Expected a rejection with AD_Message %s but got: %s", expectedMessageKey, rejection)
+				.isTrue();
+	}
+
+	/**
+	 * Checks the exception (or one of its causes) for the AD_Message it was created with, so that message
+	 * placeholders and translations do not matter.
+	 */
+	private static boolean isRejectedWithAdMessage(@NonNull final Throwable rejection, @NonNull final AdMessageKey expectedMessageKey)
+	{
+		for (Throwable t = rejection; t != null; t = t.getCause())
 		{
-			updatePPOrder(row);
+			if (t instanceof AdempiereException
+					&& expectedMessageKey.equals(((AdempiereException)t).getParameter("AD_Message")))
+			{
+				return true;
+			}
 		}
+		return false;
 	}
 
 	@And("^validate that after not more than (.*)s, PP_Orders are created for PP_Order_Candidate in the following order:$")
@@ -704,23 +784,24 @@ public class PP_Order_StepDef
 		return ppOrderCandidate2PPOrderIdsOrdered;
 	}
 
-	private void updatePPOrder(@NonNull final Map<String, String> row)
+	private void updatePPOrder(@NonNull final DataTableRow row)
 	{
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_PP_Order ppOrderRecord = ppOrderTable.get(orderIdentifier);
+		final I_PP_Order ppOrderRecord = ppOrderTable.get(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID));
 
-		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_PP_Order.COLUMNNAME_QtyEntered);
-		if (qtyEntered != null)
-		{
+		row.getAsOptionalBigDecimal(I_PP_Order.COLUMNNAME_QtyEntered).ifPresent(qtyEntered -> {
 			ppOrderRecord.setQtyEntered(qtyEntered);
 			ppOrderRecord.setQtyOrdered(qtyEntered);
-		}
+		});
 
-		final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeOrNullForColumnName(row, "OPT." + I_PP_Order.COLUMNNAME_DatePromised);
-		if (datePromised != null)
-		{
-			ppOrderRecord.setDatePromised(TimeUtil.asTimestampNotNull(datePromised));
-		}
+		row.getAsOptionalString(I_PP_Order.COLUMNNAME_DatePromised)
+				.filter(Check::isNotBlank)
+				.map(ZonedDateTime::parse)
+				.ifPresent(datePromised -> ppOrderRecord.setDatePromised(TimeUtil.asTimestampNotNull(datePromised)));
+
+		row.getAsOptionalString(I_PP_Order.COLUMNNAME_DateStartSchedule)
+				.filter(Check::isNotBlank)
+				.map(ZonedDateTime::parse)
+				.ifPresent(dateStartSchedule -> ppOrderRecord.setDateStartSchedule(TimeUtil.asTimestampNotNull(dateStartSchedule)));
 
 		saveRecord(ppOrderRecord);
 	}
@@ -800,5 +881,51 @@ public class PP_Order_StepDef
 		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
 		ppOrder.setDocAction(IDocument.ACTION_Complete);
 		documentBL.processEx(ppOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+	}
+
+	/**
+	 * Tries to void the PP_Order and asserts that the void is rejected with the given AD_Message (matched by message key, not by translated text).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData, AD_Message_StepDefData (see {@code load AD_Message:})
+	 * @cucumber.example
+	 * <pre>
+	 * And the PP_Order ppOrder is voided expecting rejection with AD_Message msg_rejected
+	 * </pre>
+	 */
+	@And("^the PP_Order (.*) is voided expecting rejection with AD_Message (.*)$")
+	public void voidPPOrderExpectingRejection(@NonNull final String ppOrderIdentifier, @NonNull final String messageIdentifier)
+	{
+		final I_AD_Message expectedMessage = StepDefDataIdentifier.ofString(messageIdentifier).lookupNotNullIn(messageTable);
+		final AdMessageKey expectedMessageKey = AdMessageKey.of(expectedMessage.getValue());
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+
+		final Throwable rejection = catchThrowable(() -> voidPPOrder(ppOrderIdentifier));
+
+		InterfaceWrapperHelper.refresh(ppOrder);
+
+		assertThat(rejection)
+				.as("Expected voiding the PP_Order to be rejected, but it succeeded")
+				.isNotNull();
+		assertThat(isRejectedWithAdMessage(rejection, expectedMessageKey))
+				.as("Expected a rejection with AD_Message %s but got: %s", expectedMessageKey, rejection)
+				.isTrue();
+	}
+
+	/**
+	 * Deletes the PP_Order record, like a user deleting it in the manufacturing order window.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the PP_Order ppOrder is deleted
+	 * </pre>
+	 */
+	@And("^the PP_Order (.*) is deleted$")
+	public void deletePPOrder(@NonNull final String ppOrderIdentifier)
+	{
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+		InterfaceWrapperHelper.delete(ppOrder);
 	}
 }
