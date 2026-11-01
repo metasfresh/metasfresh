@@ -65,6 +65,11 @@ public class AD_SysConfig_StepDef
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
 	/**
+	 * {@code ReportsClient} memoizes the report server built from this sys config and rebuilds it only on a reset of all caches.
+	 */
+	private static final String SYSCONFIG_ReportsServerClass = "de.metas.report.jasper.client.JRServerClass";
+
+	/**
 	 * Sets a SYSTEM-level AD_SysConfig to the given value — permanently, for the rest of the scenario
 	 * (and, if the scenario doesn't restore it itself, for whatever runs after it on the same executor).
 	 * Prefer {@link #temporarily_set_sys_config_boolean_value} instead whenever the override must not outlive this
@@ -321,7 +326,7 @@ public class AD_SysConfig_StepDef
 
 	/**
 	 * The only restore of the sysconfigs this scenario changed temporarily: an {@code @After} hook, so it also runs when a step failed.
-	 * A sysconfig without prior value is deleted again. Resets all caches, because some caches are derived from a sys config (e.g. the report server).
+	 * A sysconfig without prior value is deleted again.
 	 */
 	@After
 	public void restoreTemporarySysConfigsAfterScenario()
@@ -345,7 +350,15 @@ public class AD_SysConfig_StepDef
 			}
 		}
 
+		final boolean reportServerChanged = priorValueBySysConfigName.containsKey(SYSCONFIG_ReportsServerClass);
 		priorValueBySysConfigName.clear();
-		CacheMgt.get().reset(); // also drops caches derived from a sys config, e.g. the report server
+		if (reportServerChanged)
+		{
+			CacheMgt.get().reset();
+		}
+		else
+		{
+			resetSysConfigCache();
+		}
 	}
 }
