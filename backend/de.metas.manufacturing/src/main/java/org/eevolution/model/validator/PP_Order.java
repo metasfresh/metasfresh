@@ -51,7 +51,6 @@ import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
-import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Set;
 
@@ -61,19 +60,19 @@ public class PP_Order
 {
 	private static final String DYNATTR_Voiding = PP_Order.class.getName() + "#voiding";
 
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
-	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
-	private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	@NonNull private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
+	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	@NonNull private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
-	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
+	@NonNull private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+	@NonNull private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 	@NonNull private final PPOrderPojoConverter ppOrderConverter;
 	@NonNull private final PostMaterialEventService materialEventService;
 	@NonNull private final IDocumentNoBuilderFactory documentNoBuilderFactory;
@@ -243,15 +242,7 @@ public class PP_Order
 		{
 			final PPOrderBOMLineDistributionSupplyMover.Snapshot distributionSupplySnapshot = distributionSupplyMover.collect(orderId);
 
-			setMovingDistributionSupply(orderId, trx, true);
-			try
-			{
-				deleteWorkflowAndBOM(orderId);
-			}
-			finally
-			{
-				setMovingDistributionSupply(orderId, trx, false);
-			}
+			distributionSupplyMover.runWhileMovingDistributionSupply(orderId, trx, () -> deleteWorkflowAndBOM(orderId));
 			createWorkflowAndBOM(ppOrderRecord);
 
 			distributionSupplyMover.moveToRecreatedBOMLines(distributionSupplySnapshot);
@@ -285,31 +276,6 @@ public class PP_Order
 	private static boolean isVoiding(@NonNull final I_PP_Order ppOrderRecord)
 	{
 		return Boolean.TRUE.equals(InterfaceWrapperHelper.getDynAttribute(ppOrderRecord, DYNATTR_Voiding));
-	}
-
-	private static String movingDistributionSupplyTrxProperty(@NonNull final PPOrderId ppOrderId)
-	{
-		return PP_Order.class.getName() + "#movingDistributionSupply#" + ppOrderId.getRepoId();
-	}
-
-	private static void setMovingDistributionSupply(@NonNull final PPOrderId ppOrderId, @NonNull final ITrx trx, final boolean isMoving)
-	{
-		trx.setProperty(movingDistributionSupplyTrxProperty(ppOrderId), isMoving ? Boolean.TRUE : null);
-	}
-
-	/**
-	 * @return true while {@link #updateAndPostEventOnQtyEnteredChange(I_PP_Order)} deletes the BOM lines of the given PP_Order in order to re-create them,
-	 * i.e. the distribution supply of the deleted lines is not to be deleted, but re-pointed to the re-created lines. Always false without a transaction (e.g. the in-memory layer of plain JUnit tests).
-	 */
-	static boolean isMovingDistributionSupply(@NonNull final PPOrderId ppOrderId, @Nullable final String trxName)
-	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
-		if (trxManager.isNull(trx))
-		{
-			return false;
-		}
-		return Boolean.TRUE.equals(trx.getProperty(movingDistributionSupplyTrxProperty(ppOrderId)));
 	}
 
 	private void deleteWorkflowAndBOM(final PPOrderId orderId)

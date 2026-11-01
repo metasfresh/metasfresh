@@ -25,6 +25,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -56,6 +59,7 @@ public class PPOrderBOMLineDistributionSupplyMover
 	public static final AdMessageKey DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED = AdMessageKey.of("org.eevolution.model.validator.DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED");
 
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
 	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
@@ -296,15 +300,58 @@ public class PPOrderBOMLineDistributionSupplyMover
 	{
 		for (final DDOrderCandidateId ddOrderCandidateId : oldBOMLine.getDdOrderCandidateIds())
 		{
-			try
-			{
-				ddOrderCandidateRepository.delete(DDOrderCandidateQuery.builder().ddOrderCandidateId(ddOrderCandidateId).build());
-			}
-			catch (final AdempiereException e)
-			{
-				throw new AdempiereException(DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED, e);
-			}
+			deleteUnprocessedDDOrderCandidates(DDOrderCandidateQuery.builder().ddOrderCandidateId(ddOrderCandidateId).build());
 		}
+	}
+
+	/**
+	 * Deletes the DD_Order_Candidates matching the query; a processed one rejects the change.
+	 */
+	public void deleteUnprocessedDDOrderCandidates(@NonNull final DDOrderCandidateQuery query)
+	{
+		try
+		{
+			ddOrderCandidateRepository.delete(query);
+		}
+		catch (final AdempiereException e)
+		{
+			throw new AdempiereException(DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED, e);
+		}
+	}
+
+	/**
+	 * Runs the given code (which deletes the BOM lines of the PP_Order in order to re-create them) with the "moving" flag set on the trx,
+	 * i.e. the distribution supply of the deleted lines is not deleted, but re-pointed afterwards by {@link #moveToRecreatedBOMLines(Snapshot)}.
+	 */
+	public void runWhileMovingDistributionSupply(@NonNull final PPOrderId ppOrderId, @NonNull final ITrx trx, @NonNull final Runnable runnable)
+	{
+		trx.setProperty(movingDistributionSupplyTrxProperty(ppOrderId), Boolean.TRUE);
+		try
+		{
+			runnable.run();
+		}
+		finally
+		{
+			trx.setProperty(movingDistributionSupplyTrxProperty(ppOrderId), null);
+		}
+	}
+
+	/**
+	 * @return true while {@link #runWhileMovingDistributionSupply} runs for the given PP_Order. Always false without a transaction (e.g. the in-memory layer of plain JUnit tests).
+	 */
+	public boolean isMovingDistributionSupply(@NonNull final PPOrderId ppOrderId, @Nullable final String trxName)
+	{
+		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
+		if (trxManager.isNull(trx))
+		{
+			return false;
+		}
+		return Boolean.TRUE.equals(trx.getProperty(movingDistributionSupplyTrxProperty(ppOrderId)));
+	}
+
+	private static String movingDistributionSupplyTrxProperty(@NonNull final PPOrderId ppOrderId)
+	{
+		return PPOrderBOMLineDistributionSupplyMover.class.getName() + "#movingDistributionSupply#" + ppOrderId.getRepoId();
 	}
 
 	@Nullable

@@ -27,7 +27,6 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.lowlevel.interceptor.DDOrderLowLevelInterceptors;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
-import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
 import de.metas.distribution.ddordercandidate.material_dispo.PPOrderBOMLineDistributionSupplyMover;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
@@ -69,7 +68,6 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
 	@NonNull private final ProductBOMVersionsDAO bomVersionsDAO;
 	@NonNull private final ProductBOMService productBOMService;
-	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
@@ -84,7 +82,6 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 			 SpringContextHolder.instance.getBean(DDOrderLowLevelService.class),
 			 SpringContextHolder.instance.getBean(ProductBOMVersionsDAO.class),
 			 SpringContextHolder.instance.getBean(ProductBOMService.class),
-			 SpringContextHolder.instance.getBean(DDOrderCandidateRepository.class),
 			 SpringContextHolder.instance.getBean(DDOrderCandidateAllocRepository.class),
 			 SpringContextHolder.instance.getBean(DistributionNetworkRepository.class),
 			 SpringContextHolder.instance.getBean(ReplenishInfoRepository.class),
@@ -110,7 +107,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 				ppOrderBOMLineDistributionSupplyMover));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM());
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(ddOrderCandidateRepository));
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(ppOrderBOMLineDistributionSupplyMover));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_Node_Product());
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Cost_Collector());
 

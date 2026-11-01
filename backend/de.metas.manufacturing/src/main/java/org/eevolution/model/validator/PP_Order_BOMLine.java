@@ -23,7 +23,6 @@ package org.eevolution.model.validator;
  */
 
 import de.metas.distribution.ddordercandidate.DDOrderCandidateQuery;
-import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
 import de.metas.distribution.ddordercandidate.material_dispo.PPOrderBOMLineDistributionSupplyMover;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -36,7 +35,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -53,11 +51,11 @@ public class PP_Order_BOMLine
 {
 	private static final String DYNATTR_ExplodePhantomRunnable = PP_Order_BOMLine.class.getName() + "#explodePhantomRunnable";
 
-	private final DDOrderCandidateRepository ddOrderCandidateRepository;
+	@NonNull private final PPOrderBOMLineDistributionSupplyMover distributionSupplyMover;
 
-	public PP_Order_BOMLine(@NonNull final DDOrderCandidateRepository ddOrderCandidateRepository)
+	public PP_Order_BOMLine(@NonNull final PPOrderBOMLineDistributionSupplyMover distributionSupplyMover)
 	{
-		this.ddOrderCandidateRepository = ddOrderCandidateRepository;
+		this.distributionSupplyMover = distributionSupplyMover;
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Order_BOMLine());
 	}
 
@@ -134,7 +132,7 @@ public class PP_Order_BOMLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		if (PP_Order.isMovingDistributionSupply(PPOrderId.ofRepoId(orderBOMLine.getPP_Order_ID()), InterfaceWrapperHelper.getTrxName(orderBOMLine)))
+		if (distributionSupplyMover.isMovingDistributionSupply(PPOrderId.ofRepoId(orderBOMLine.getPP_Order_ID()), InterfaceWrapperHelper.getTrxName(orderBOMLine)))
 		{
 			// the DD_Order_Candidates are re-pointed to the re-created BOM line by PP_Order.updateAndPostEventOnQtyEnteredChange
 			return;
@@ -142,15 +140,8 @@ public class PP_Order_BOMLine
 
 		final PPOrderBOMLineId bomLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
 
-		try
-		{
-			ddOrderCandidateRepository.delete(DDOrderCandidateQuery.builder()
-													  .ppOrderBOMLineId(bomLineId)
-													  .build());
-		}
-		catch (final AdempiereException e)
-		{
-			throw new AdempiereException(PPOrderBOMLineDistributionSupplyMover.DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED, e);
-		}
+		distributionSupplyMover.deleteUnprocessedDDOrderCandidates(DDOrderCandidateQuery.builder()
+				.ppOrderBOMLineId(bomLineId)
+				.build());
 	}
 }

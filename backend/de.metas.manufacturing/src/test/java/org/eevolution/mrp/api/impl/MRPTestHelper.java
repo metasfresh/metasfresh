@@ -6,7 +6,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
-import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
 import de.metas.distribution.ddordercandidate.material_dispo.PPOrderBOMLineDistributionSupplyMover;
 import de.metas.document.DocSubType;
 import de.metas.document.engine.IDocument;
@@ -300,7 +299,6 @@ public class MRPTestHelper
 				new DDOrderLowLevelService(new DDOrderLowLevelDAO()),
 				new ProductBOMVersionsDAO(),
 				new ProductBOMService(new ProductBOMVersionsDAO()),
-				new DDOrderCandidateRepository(),
 				new DDOrderCandidateAllocRepository(),
 				new DistributionNetworkRepository(),
 				new ReplenishInfoRepository(),

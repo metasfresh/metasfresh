@@ -138,52 +138,35 @@ public class SupplyRequiredDecreasedNotificationProducer
 	private Set<UserId> getRecipients(@Nullable final MaterialPlanningContext context, @NonNull final SupplyRequiredDescriptor descriptor, @Nullable final I_PP_Order ppOrder)
 	{
 		final Set<UserId> userIds = new HashSet<>();
-		final UserId plannerId = context == null ? null : context.getProductPlanning().getPlannerId();
-		if (plannerId != null && plannerId.isRegularUser())
-		{
-			userIds.add(plannerId);
-		}
+		addIfRegularUser(userIds, context == null ? null : context.getProductPlanning().getPlannerId());
 		if (ppOrder != null)
 		{
 			// the sales order (if any) did not change, so its sales rep is not notified
-			final UserId ppOrderPlannerId = UserId.ofRepoIdOrNull(ppOrder.getPlanner_ID());
-			if (ppOrderPlannerId != null && ppOrderPlannerId.isRegularUser())
-			{
-				userIds.add(ppOrderPlannerId);
-			}
-			final UserId updatedByUserId = UserId.ofRepoIdOrNull(InterfaceWrapperHelper.getPO(ppOrder).getUpdatedBy());
-			if (updatedByUserId != null && updatedByUserId.isRegularUser())
-			{
-				userIds.add(updatedByUserId);
-			}
+			addIfRegularUser(userIds, UserId.ofRepoIdOrNull(ppOrder.getPlanner_ID()));
+			addIfRegularUser(userIds, UserId.ofRepoIdOrNull(ppOrder.getUpdatedBy()));
 		}
 		else if (descriptor.getOrderId() > 0)
 		{
 			final OrderId orderId = OrderId.ofRepoId(descriptor.getOrderId());
 			final I_C_Order order = orderBL.getById(orderId);
-			final UserId salesRepUserId = UserId.ofRepoIdOrNull(order.getSalesRep_ID());
-			if (salesRepUserId != null && salesRepUserId.isRegularUser())
-			{
-				userIds.add(salesRepUserId);
-			}
-
-			final UserId updatedByUserId = UserId.ofRepoIdOrNull(InterfaceWrapperHelper.getPO(order).getUpdatedBy());
-			if (updatedByUserId != null && updatedByUserId.isRegularUser())
-			{
-				userIds.add(updatedByUserId);
-			}
+			addIfRegularUser(userIds, UserId.ofRepoIdOrNull(order.getSalesRep_ID()));
+			addIfRegularUser(userIds, UserId.ofRepoIdOrNull(InterfaceWrapperHelper.getPO(order).getUpdatedBy()));
 		}
 
 		//deadletter recipient
 		if (userIds.isEmpty())
 		{
-			final UserId supervisorId = orgDAO.getOrgInfoById(descriptor.getOrgId()).getSupervisorId();
-			if (supervisorId != null && supervisorId.isRegularUser())
-			{
-				userIds.add(supervisorId);
-			}
+			addIfRegularUser(userIds, orgDAO.getOrgInfoById(descriptor.getOrgId()).getSupervisorId());
 		}
 
 		return userIds;
+	}
+
+	private static void addIfRegularUser(@NonNull final Set<UserId> userIds, @Nullable final UserId userId)
+	{
+		if (userId != null && userId.isRegularUser())
+		{
+			userIds.add(userId);
+		}
 	}
 }
