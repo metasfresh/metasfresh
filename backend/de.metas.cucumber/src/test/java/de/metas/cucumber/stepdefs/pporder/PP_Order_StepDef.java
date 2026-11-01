@@ -362,8 +362,8 @@ public class PP_Order_StepDef
 	 * @cucumber.columns
 	 *   <b>PP_Order_ID</b> — (required, identifier-ref) the PP_Order to update<br>
 	 *   <b>QtyEntered</b> — (optional) new qty entered (also sets QtyOrdered)<br>
-	 *   <b>DatePromised</b> — (optional) new date promised, ISO-8601, e.g. 2021-04-16T21:00:00Z<br>
-	 *   <b>DateStartSchedule</b> — (optional) new scheduled start, ISO-8601, e.g. 2021-04-16T21:00:00Z<br>
+	 *   <b>DatePromised</b> — (optional) new date promised: a UTC instant ending in Z, e.g. 2021-04-16T21:00:00Z, or a local date-time in the JVM time zone<br>
+	 *   <b>DateStartSchedule</b> — (optional) new scheduled start: a UTC instant ending in Z, e.g. 2021-04-16T21:00:00Z, or a local date-time in the JVM time zone<br>
 	 *   <b>DocumentNo</b> — (optional) overrides the generated order number, so that PDF text assertions can name it<br>
 	 *   Column names may also carry the {@code OPT.} prefix and the {@code .Identifier} suffix.
 	 * @cucumber.depends StepDefData: PP_Order_StepDefData

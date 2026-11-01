@@ -19,7 +19,7 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     And update AD_Client
       | Identifier | StoreArchiveOnFileSystem |
       | 1000000    | false                    |
-    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And temporarily set sys config boolean value true for sys config 'SKIP_WP_PROCESSOR_FOR_AUTOMATION'
     # a fixed time makes the dispo's DateOrdered equal for all candidates (it is part of the aggregation key)
     And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]
     # one DD_Order line may bundle the demand of several manufacturing orders
