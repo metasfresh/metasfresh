@@ -635,3 +635,474 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine1                | invoice                 | product1                | 6           | true      |
       | invoiceLine2                | invoice                 | product2                | 5           | true      |
+
+  # A later shipment workpackage must still ship the schedules an earlier shipment of the same order closed, even when a
+  # schedule recompute marked them processed in between. The recompute is held after the picking job and released
+  # between the two workpackages.
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: two shipment workpackages with a recompute in between, the second one still ships its picked line, all lines are invoiced
+    Given new "GenerateInOutFromShipmentSchedules" workpackages are held
+    And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |                             |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                |                             |
+      | SO                    | L3         | product3                | 6          | TUx1_P3                                | shipperB                    |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+      | shipmentSchedule2 | L2                        | N             |
+      | shipmentSchedule3 | L3                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+      | ic2                               | L2                        |
+      | ic3                               | L3                        |
+
+    And transform CU to new LU
+      | sourceCU    | newLU                 | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
+      | pickFromCU1 | pickFromAggregatedLU1 | TU       | 1           | 10          |
+      | pickFromCU2 | pickFromAggregatedLU2 | TU       | 1           | 10          |
+      | pickFromCU3 | pickFromAggregatedLU3 | TU       | 1           | 10          |
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product1              | pickFromAggregatedLU1 | 6         | 0           |                       | 2027-03-01     | 1111  |
+      | product2              | pickFromAggregatedLU2 | 5         | 0           |                       | 2027-03-01     | 2222  |
+      | product3              | pickFromAggregatedLU3 | 6         | 0           |                       | 2027-03-01     | 3333  |
+
+    And complete picking job
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    And new "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are held
+    And there are 2 pending "GenerateInOutFromShipmentSchedules" workpackages
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And held "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are released
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    # the first shipment closed line 3 and the recompute marked it processed, before the second workpackage runs
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed | Processed | QtyDelivered |
+      | shipmentSchedule3     | true     | true      | 0            |
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | CO            |
+      | shipmentSchedule2                | shipment1             | CO            |
+      | shipmentSchedule3                | shipment2             | CO            |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | qtydelivered |
+      | L1             | 6            |
+      | L2             | 5            |
+      | L3             | 6            |
+    # every pick is on a shipment line: no picked quantity left off a shipment
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule1
+      | QtyPicked | M_InOutLine_ID |
+      | 6         | shipmentLine1  |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule2
+      | QtyPicked | M_InOutLine_ID |
+      | 5         | shipmentLine2  |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule3
+      | QtyPicked | M_InOutLine_ID |
+      | 6         | shipmentLine3  |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice |
+      | ic1                               | false         | 6            |
+      | ic2                               | false         | 5            |
+      | ic3                               | false         | 6            |
+    When process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic1                               |
+      | ic2                               |
+      | ic3                               |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic1                               | invoice                 |
+      | ic2                               | invoice                 |
+      | ic3                               | invoice                 |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | invoiceLine1                | invoice                 | product1                | 6           | true      |
+      | invoiceLine2                | invoice                 | product2                | 5           | true      |
+      | invoiceLine3                | invoice                 | product3                | 6           | true      |
+
+  # As "Rüstliste erfassen" -> "Auswahl Liefern": the quantity to deliver is entered per line, then the selection is
+  # shipped with quantity type "to deliver", without handling units.
+  # Here lines 1 and 2 carry the other shipper: the selection enqueuer orders the workpackages by header key, so the
+  # shipper-B workpackage (lines 1, 2) runs first and line 3 is in the second one, as in the picking-job scenario.
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: two quantity-to-deliver workpackages with a recompute in between, the second one still ships its entered quantity, all lines are invoiced
+    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                | shipperB                    |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                | shipperB                    |
+      | SO                    | L3         | product3                | 6          | TUx1_P3                                |                             |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+      | shipmentSchedule2 | L2                        | N             |
+      | shipmentSchedule3 | L3                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+      | ic2                               | L2                        |
+      | ic3                               | L3                        |
+    And update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | shipmentSchedule1                | 6                         |
+      | shipmentSchedule2                | 5                         |
+      | shipmentSchedule3                | 6                         |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override | QtyToDeliver |
+      | shipmentSchedule1     | 6                     | 6            |
+      | shipmentSchedule2     | 5                     | 5            |
+      | shipmentSchedule3     | 6                     | 6            |
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    And new "GenerateInOutFromShipmentSchedules" workpackages are held
+    And new "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are held
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule1     |
+      | shipmentSchedule2     |
+      | shipmentSchedule3     |
+    And there are 2 pending "GenerateInOutFromShipmentSchedules" workpackages
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And held "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are released
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    # the first shipment closed line 3 and the recompute marked it processed, before the second workpackage runs
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed | Processed | QtyDelivered |
+      | shipmentSchedule3     | true     | true      | 0            |
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | CO            |
+      | shipmentSchedule2                | shipment1             | CO            |
+      | shipmentSchedule3                | shipment2             | CO            |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | qtydelivered |
+      | L1             | 6            |
+      | L2             | 5            |
+      | L3             | 6            |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice |
+      | ic1                               | false         | 6            |
+      | ic2                               | false         | 5            |
+      | ic3                               | false         | 6            |
+    When process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic1                               |
+      | ic2                               |
+      | ic3                               |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic1                               | invoice                 |
+      | ic2                               | invoice                 |
+      | ic3                               | invoice                 |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | invoiceLine1                | invoice                 | product1                | 6           | true      |
+      | invoiceLine2                | invoice                 | product2                | 5           | true      |
+      | invoiceLine3                | invoice                 | product3                | 6           | true      |
+
+  # Line 3 is closed by hand after its workpackage was enqueued, and the recompute marks it processed before the
+  # workpackage runs. Its entered quantity is still shipped.
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: a line closed by hand after its quantity-to-deliver workpackage was enqueued is still shipped with its entered quantity
+    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                | shipperB                    |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                | shipperB                    |
+      | SO                    | L3         | product3                | 6          | TUx1_P3                                |                             |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+      | shipmentSchedule2 | L2                        | N             |
+      | shipmentSchedule3 | L3                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+      | ic2                               | L2                        |
+      | ic3                               | L3                        |
+    And update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | shipmentSchedule1                | 6                         |
+      | shipmentSchedule2                | 5                         |
+      | shipmentSchedule3                | 6                         |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override | QtyToDeliver |
+      | shipmentSchedule1     | 6                     | 6            |
+      | shipmentSchedule2     | 5                     | 5            |
+      | shipmentSchedule3     | 6                     | 6            |
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    And new "GenerateInOutFromShipmentSchedules" workpackages are held
+    And new "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are held
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule1     |
+      | shipmentSchedule2     |
+      | shipmentSchedule3     |
+    And there are 2 pending "GenerateInOutFromShipmentSchedules" workpackages
+    When the M_ShipmentSchedule identified by shipmentSchedule3 is closed
+    And held "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are released
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed | Processed | QtyDelivered |
+      | shipmentSchedule3     | true     | true      | 0            |
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And the next GenerateInOutFromShipmentSchedules workpackage is processed
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | CO            |
+      | shipmentSchedule2                | shipment1             | CO            |
+      | shipmentSchedule3                | shipment2             | CO            |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | qtydelivered |
+      | L1             | 6            |
+      | L2             | 5            |
+      | L3             | 6            |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice |
+      | ic1                               | false         | 6            |
+      | ic2                               | false         | 5            |
+      | ic3                               | false         | 6            |
+
+  # Boundary: a closed line for which the second workpackage carries no picked quantity stays unshipped, without an
+  # error, and its invoice candidate stays processed. The picks are recorded by a picking job that creates no shipment;
+  # the shipments are generated afterwards from the selection with quantity type "picked" ("Auswahl Liefern").
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: a closed line with nothing picked in the second picked-quantity workpackage stays unshipped and its candidate stays processed
+    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy | IsAllowCompletingPartialPickingJob |
+      | Y                   | DO_NOT_CREATE        | Y                                  |
+    And metasfresh contains M_Products:
+      | Identifier | X12DE355 |
+      | product4   | PCE      |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | TUx1_P4                            | TU                         | product4                | 1   | 2000-01-01 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | InvoicableQtyBasedOn | C_TaxCategory_ID.InternalName |
+      | PLV                    | product4     | 9.0      | PCE               | Nominal              | Normal                        |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                | shipperB                    |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                | shipperB                    |
+      | SO                    | L3         | product3                | 6          | TUx1_P3                                |                             |
+      | SO                    | L4         | product4                | 4          | TUx1_P4                                |                             |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+      | shipmentSchedule2 | L2                        | N             |
+      | shipmentSchedule3 | L3                        | N             |
+      | shipmentSchedule4 | L4                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+      | ic2                               | L2                        |
+      | ic3                               | L3                        |
+      | ic4                               | L4                        |
+
+    And transform CU to new LU
+      | sourceCU    | newLU                 | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
+      | pickFromCU1 | pickFromAggregatedLU1 | TU       | 1           | 10          |
+      | pickFromCU2 | pickFromAggregatedLU2 | TU       | 1           | 10          |
+      | pickFromCU3 | pickFromAggregatedLU3 | TU       | 1           | 10          |
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    # nothing is picked for line 4
+    And pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product1              | pickFromAggregatedLU1 | 6         | 0           |                       | 2027-03-01     | 1111  |
+      | product2              | pickFromAggregatedLU2 | 5         | 0           |                       | 2027-03-01     | 2222  |
+      | product3              | pickFromAggregatedLU3 | 6         | 0           |                       | 2027-03-01     | 3333  |
+    And complete picking job
+    And validate no M_InOut found for C_Order identified by SO
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed | Processed |
+      | shipmentSchedule4     | false    | false     |
+    And there are no M_ShipmentSchedule_QtyPicked records created for the following shipment schedules
+      | M_ShipmentSchedule_ID.Identifier |
+      | shipmentSchedule4                |
+
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    And new "GenerateInOutFromShipmentSchedules" workpackages are held
+    And new "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are held
+    And 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule1     |
+      | shipmentSchedule2     |
+      | shipmentSchedule3     |
+      | shipmentSchedule4     |
+    And there are 2 pending "GenerateInOutFromShipmentSchedules" workpackages
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And held "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are released
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed | Processed | QtyDelivered |
+      | shipmentSchedule3     | true     | true      | 0            |
+      | shipmentSchedule4     | true     | true      | 0            |
+    # the step fails if the workpackage processor throws or does not return SUCCESS: no error for line 4
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+
+    # line 4: no shipment line, its schedule stays closed and its candidate processed
+    Then there are no M_ShipmentSchedule_QtyPicked records created for the following shipment schedules
+      | M_ShipmentSchedule_ID.Identifier |
+      | shipmentSchedule4                |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed | Processed | QtyDelivered |
+      | shipmentSchedule4     | true     | true      | 0            |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyDelivered | QtyToInvoice |
+      | ic4                               | true          | 0            | 0            |
+    # the picked lines are shipped
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | CO            |
+      | shipmentSchedule2                | shipment1             | CO            |
+      | shipmentSchedule3                | shipment2             | CO            |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | qtydelivered |
+      | L1             | 6            |
+      | L2             | 5            |
+      | L3             | 6            |
+      | L4             | 0            |
+
+  # Boundary: a line without an entered quantity to deliver (the system computes it) is not shipped by the second
+  # quantity-to-deliver workpackage once the first shipment closed it and the recompute marked it processed (as today).
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: a closed line without an entered quantity in the second quantity-to-deliver workpackage stays unshipped and its candidate stays processed
+    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And metasfresh contains M_Products:
+      | Identifier | X12DE355 |
+      | product4   | PCE      |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | TUx1_P4                            | TU                         | product4                | 1   | 2000-01-01 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | InvoicableQtyBasedOn | C_TaxCategory_ID.InternalName |
+      | PLV                    | product4     | 9.0      | PCE               | Nominal              | Normal                        |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inventory4                | 2024-03-20   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory4                | line4                         | product4                | 0       | 100      | PCE          |
+    And complete inventory with inventoryIdentifier 'inventory4'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID     |
+      | line4              | pickFromCU4 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_Shipper_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                | shipperB                    |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                | shipperB                    |
+      | SO                    | L3         | product3                | 6          | TUx1_P3                                |                             |
+      | SO                    | L4         | product4                | 4          | TUx1_P4                                |                             |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+      | shipmentSchedule2 | L2                        | N             |
+      | shipmentSchedule3 | L3                        | N             |
+      | shipmentSchedule4 | L4                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+      | ic2                               | L2                        |
+      | ic3                               | L3                        |
+      | ic4                               | L4                        |
+    # no entered quantity for line 4
+    And update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | shipmentSchedule1                | 6                         |
+      | shipmentSchedule2                | 5                         |
+      | shipmentSchedule3                | 6                         |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override | QtyToDeliver |
+      | shipmentSchedule1     | 6                     | 6            |
+      | shipmentSchedule2     | 5                     | 5            |
+      | shipmentSchedule3     | 6                     | 6            |
+      | shipmentSchedule4     |                       | 4            |
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    And new "GenerateInOutFromShipmentSchedules" workpackages are held
+    And new "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are held
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule1     |
+      | shipmentSchedule2     |
+      | shipmentSchedule3     |
+      | shipmentSchedule4     |
+    And there are 2 pending "GenerateInOutFromShipmentSchedules" workpackages
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+    And held "UpdateInvalidShipmentSchedulesWorkpackageProcessor" workpackages are released
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed | Processed | QtyDelivered |
+      | shipmentSchedule3     | true     | true      | 0            |
+      | shipmentSchedule4     | true     | true      | 0            |
+    # the step fails if the workpackage processor throws or does not return SUCCESS
+    When the next GenerateInOutFromShipmentSchedules workpackage is processed
+
+    # line 4: not shipped, its schedule stays closed and its candidate processed
+    Then there are no M_ShipmentSchedule_QtyPicked records created for the following shipment schedules
+      | M_ShipmentSchedule_ID.Identifier |
+      | shipmentSchedule4                |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed | Processed | QtyDelivered |
+      | shipmentSchedule4     | true     | true      | 0            |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyDelivered | QtyToInvoice |
+      | ic4                               | true          | 0            | 0            |
+    # the lines with an entered quantity are shipped
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | CO            |
+      | shipmentSchedule2                | shipment1             | CO            |
+      | shipmentSchedule3                | shipment2             | CO            |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | qtydelivered |
+      | L1             | 6            |
+      | L2             | 5            |
+      | L3             | 6            |
+      | L4             | 0            |
