@@ -8,8 +8,9 @@
 -- Not affected: candidates covered by a non-simulation flatrate term (closed when they were created; same term lookup as the invoice candidate's flatrate check).
 -- A close by hand on such a line after that time cannot be told apart from the disposition's close; it is reset too.
 --
--- The rows are queued for recompute first (same predicate, before Processed_Override is reset),
+-- The rows are queued for recompute first (same predicate, before Processed_Override is reset; rows already queued are skipped),
 -- then one update workpackage is enqueued per client that has queued rows.
+-- Updated is set to now(): the reset is runtime data written when this migration runs.
 
 SELECT backup_table('C_Invoice_Candidate', '_reset_ProcOverride');
 
@@ -48,11 +49,12 @@ WHERE ic.Processed_Override = 'Y'
                                   AND (m.M_Product_Category_Matching_ID IS NULL OR m.M_Product_Category_Matching_ID = p.M_Product_Category_ID)
                                   AND (m.M_Product_ID IS NULL OR m.M_Product_ID = ic.M_Product_ID)
                                   AND (m.C_Charge_ID IS NULL OR COALESCE(ic.C_Charge_ID, 0) <= 0 OR m.C_Charge_ID = ic.C_Charge_ID)))
+  AND NOT EXISTS (SELECT 1 FROM C_Invoice_Candidate_Recompute r WHERE r.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID)
 ;
 
 UPDATE C_Invoice_Candidate ic
 SET Processed_Override = NULL,
-    Updated            = TO_TIMESTAMP('2026-11-01 15:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+    Updated            = NOW(),
     UpdatedBy          = 99
 WHERE ic.Processed_Override = 'Y'
   AND ic.IsDeliveryClosed = 'Y'
