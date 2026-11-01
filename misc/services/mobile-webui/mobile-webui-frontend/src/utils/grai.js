@@ -105,3 +105,76 @@ export const isValidGrai = (graiString) => {
   const [companyPrefix, assetType, serial] = parts;
   return companyPrefix.length > 0 && assetType.length > 0 && serial.length > 0;
 };
+
+//
+// GRAI list helpers (HU-Manager GRAI screen)
+//
+
+/**
+ * Return the GRAIs that fill the assigned slots (first `tuCount` entries).
+ * When tuCount is 0 (unknown/unlimited), all captured GRAIs are "assigned".
+ *
+ * @param {string[]} graiCodes - current accumulated list
+ * @param {number} tuCount - expected number of TUs (0 = unlimited)
+ * @returns {string[]}
+ */
+export const getAssignedGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.slice(0, tuCount) : graiCodes);
+
+/**
+ * Return the GRAIs beyond the assigned slots (overflow / extras).
+ * When tuCount is 0, there are no extras.
+ *
+ * @param {string[]} graiCodes - current accumulated list
+ * @param {number} tuCount - expected number of TUs (0 = unlimited)
+ * @returns {string[]}
+ */
+export const getExtraGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.slice(tuCount) : []);
+
+/**
+ * Append the GRAIs of `newGrais` that are not yet in `prev`.
+ * Returns the SAME array reference if nothing was added (no unnecessary re-render).
+ *
+ * @param {string[]} prev - existing GRAI list
+ * @param {string[]} newGrais - GRAIs to add
+ * @returns {string[]}
+ */
+export const mergeGraiArrays = (prev, newGrais) => {
+  const existingSet = new Set(prev);
+  const toAdd = newGrais.filter((g) => !existingSet.has(g));
+  if (toAdd.length === 0) return prev;
+  return [...prev, ...toAdd];
+};
+
+/**
+ * Build the list to show once the backend has answered a Send, keeping what the user changed while
+ * the request was in flight. Scanning, removing and Clear All all stay possible while sending, so
+ * the list on screen may already differ from the baseline (the list that was sent, or the list an
+ * Undo showed while the request was in flight):
+ * - the backend's answer is taken as the saved state (the assigned GRAIs it persisted), followed by
+ *   the baseline's extras (beyond `tuCount`), as before;
+ * - a GRAI of the baseline that has been removed since stays removed;
+ * - a GRAI added since the baseline is kept, appended at the end.
+ * Each GRAI appears only once in the result.
+ * When nothing changed since the baseline, the result is the backend answer plus the extras.
+ *
+ * @param {Object} params
+ * @param {string[]} params.baselineGrais - the full list on screen when Send was tapped, or the list
+ *   shown by an Undo made while the request was in flight
+ * @param {string[]} params.currentGrais - the list on screen now, when the answer arrives
+ * @param {string[]} params.backendGrais - the GRAIs the backend reports as saved
+ * @param {number} params.tuCount - the TU count from the backend answer (0 = unlimited)
+ * @returns {string[]}
+ */
+export const mergeGraisAfterSend = ({ baselineGrais, currentGrais, backendGrais, tuCount }) => {
+  const baseline = new Set(baselineGrais);
+  const current = new Set(currentGrais);
+  const removedSinceBaseline = (grai) => baseline.has(grai) && !current.has(grai);
+
+  const saved = [...backendGrais, ...getExtraGrais(baselineGrais, tuCount)].filter(
+    (grai) => !removedSinceBaseline(grai)
+  );
+  const addedSinceBaseline = currentGrais.filter((grai) => !baseline.has(grai));
+
+  // Set keeps the first occurrence of each GRAI, in order
+  return [...new Set([...saved, ...addedSinceBaseline])];
+};

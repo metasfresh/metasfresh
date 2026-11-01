@@ -7,6 +7,18 @@ export const useKeyboardBarcodeReader = ({
   minLength = 10,
   disabled = false,
 }) => {
+  // The callbacks are read through refs, so that a new callback (e.g. an inline function of a re-rendered
+  // consumer) does not remove and re-add the window listener. A re-render can happen while a keydown is
+  // being dispatched (another window listener changing state on the same key), and a listener removed at
+  // that moment never sees the key: the scan's Enter was lost, its code stayed buffered and was delivered
+  // again later or glued to the next scan. The refs are updated after each commit, not during render.
+  const onReadDoneRef = useRef(onReadDone);
+  const onReadInProgressRef = useRef(onReadInProgress);
+  useLayoutEffect(() => {
+    onReadDoneRef.current = onReadDone;
+    onReadInProgressRef.current = onReadInProgress;
+  });
+
   // Use refs so values persist across rerenders but don't trigger state updates
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
@@ -39,7 +51,7 @@ export const useKeyboardBarcodeReader = ({
           }
 
           event.preventDefault(); // Prevent default paste behavior
-          onReadDone(clipboardText);
+          onReadDoneRef.current(clipboardText);
           bufferRef.current = '';
           lastKeyTimeRef.current = 0;
           return;
@@ -67,7 +79,7 @@ export const useKeyboardBarcodeReader = ({
       if (event.key.length !== 1) {
         // Optional: if your barcode uses Enter/Tab to finish, handle here
         if ((event.key === 'Enter' || event.key === 'Tab') && bufferRef.current) {
-          onReadDone(bufferRef.current);
+          onReadDoneRef.current(bufferRef.current);
           bufferRef.current = '';
           lastKeyTimeRef.current = 0;
           event.preventDefault();
@@ -81,7 +93,7 @@ export const useKeyboardBarcodeReader = ({
         // If the type rate is kept, collect the character
         if (now - lastKeyTimeRef.current < rateMs) {
           bufferRef.current += event.key;
-          onReadInProgress?.(bufferRef.current);
+          onReadInProgressRef.current?.(bufferRef.current);
           // Prevent the browser from also inserting the character into a focused input.
           // The hook handles value updates via onReadInProgress. Without this, the character
           // would be inserted twice: once by onReadInProgress and once by the browser's default action.
@@ -92,7 +104,7 @@ export const useKeyboardBarcodeReader = ({
         // Type rate dropped => send the collected string if any
         else {
           if (bufferRef.current && (!minLength || bufferRef.current.length >= minLength)) {
-            onReadDone(bufferRef.current);
+            onReadDoneRef.current(bufferRef.current);
           }
           bufferRef.current = event.key;
         }
@@ -106,7 +118,7 @@ export const useKeyboardBarcodeReader = ({
       // Flush leftovers if needed, using interval
       intervalId = setInterval(() => {
         if (bufferRef.current && Date.now() - lastKeyTimeRef.current > rateMs) {
-          onReadDone(bufferRef.current);
+          onReadDoneRef.current(bufferRef.current);
           bufferRef.current = '';
           lastKeyTimeRef.current = 0;
         }
@@ -125,5 +137,5 @@ export const useKeyboardBarcodeReader = ({
       clearInterval(intervalId);
       console.log('Disabled keyboard barcode reader');
     };
-  }, [onReadDone, onReadInProgress, rateMs, minLength, disabled]);
+  }, [rateMs, minLength, disabled]);
 };
