@@ -2007,7 +2007,6 @@ public class M_ShipmentSchedule_StepDef
 
 		// Compare the schedule's per-line dates at DATE granularity in the order's time zone — these are date fields,
 		// and a plain date in the feature (e.g. 2022-08-10) means "that calendar day in the org tz", not UTC midnight.
-
 		tableRow.getAsOptionalLocalDate(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate)
 				.ifPresent(expected -> softly.assertThat(TimeUtil.asLocalDate(shipmentSchedule.getPreparationDate(), scheduleZoneId))
 						.as("PreparationDate for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier)
