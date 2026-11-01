@@ -59,6 +59,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -97,6 +98,7 @@ class ShipmentScheduleWithHUServiceTest
 	@AfterEach
 	void afterEach()
 	{
+		SystemTime.resetTimeSource();
 		// Cleanup log appender
 		if (logger != null && logAppender != null)
 		{
@@ -501,6 +503,43 @@ class ShipmentScheduleWithHUServiceTest
 		assertThat(result.get(0).getQtyPicked().toBigDecimal()).isEqualByComparingTo("7");
 	}
 
+	/**
+	 * (8c) as (8), but the shipment line was created as a draft before this workpackage was enqueued and completed after it:
+	 * skipped, so the entered quantity is not shipped twice.
+	 */
+	@Test
+	void closedProcessedSchedule_flagSet_qtyToDeliverOverride_draftBeforeEnqueueCompletedAfter_isSkipped()
+	{
+		final ZonedDateTime draftTime = ZonedDateTime.parse("2026-01-01T10:00:00+01:00[Europe/Berlin]");
+		SystemTime.setFixedTimeSource(draftTime);
+
+		final I_M_ShipmentSchedule schedule = createClosedSchedule(ShipmentScheduleId.ofRepoId(710), true);
+		schedule.setQtyToDeliver_Override(new BigDecimal("7"));
+		InterfaceWrapperHelper.save(schedule);
+
+		// draft shipment line, created before the enqueue
+		final I_M_InOut shipment = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+		shipment.setDocStatus(DocStatus.Drafted.getCode());
+		shipment.setProcessed(false);
+		InterfaceWrapperHelper.save(shipment);
+		final I_M_ShipmentSchedule_QtyPicked alloc = createShipmentLineAndAlloc(schedule, shipment, new BigDecimal("7"));
+
+		final Instant enqueuedAt = draftTime.plusSeconds(60).toInstant();
+
+		// completed after the enqueue
+		SystemTime.setFixedTimeSource(draftTime.plusSeconds(120));
+		shipment.setDocStatus(DocStatus.Completed.getCode());
+		shipment.setProcessed(true);
+		InterfaceWrapperHelper.save(shipment);
+		alloc.setProcessed(true);
+		InterfaceWrapperHelper.save(alloc);
+
+		final ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest request = requestFor(schedule, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER, true, null)
+				.toBuilder().enqueuedAt(enqueuedAt).build();
+
+		assertThat(shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(request)).isEmpty();
+	}
+
 	private void createCompletedShipmentLine(@NonNull final I_M_ShipmentSchedule schedule, @NonNull final BigDecimal qty)
 	{
 		final I_M_InOut shipment = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
@@ -508,19 +547,29 @@ class ShipmentScheduleWithHUServiceTest
 		shipment.setProcessed(true);
 		InterfaceWrapperHelper.save(shipment);
 
+		final I_M_ShipmentSchedule_QtyPicked alloc = createShipmentLineAndAlloc(schedule, shipment, qty);
+		alloc.setProcessed(true);
+		InterfaceWrapperHelper.save(alloc);
+	}
+
+	private I_M_ShipmentSchedule_QtyPicked createShipmentLineAndAlloc(
+			@NonNull final I_M_ShipmentSchedule schedule,
+			@NonNull final I_M_InOut shipment,
+			@NonNull final BigDecimal qty)
+	{
 		final I_M_InOutLine shipmentLine = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
 		shipmentLine.setM_InOut_ID(shipment.getM_InOut_ID());
 		shipmentLine.setM_Product_ID(schedule.getM_Product_ID());
 		shipmentLine.setMovementQty(qty);
-		shipmentLine.setProcessed(true);
 		InterfaceWrapperHelper.save(shipmentLine);
 
 		final I_M_ShipmentSchedule_QtyPicked alloc = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_QtyPicked.class);
 		alloc.setM_ShipmentSchedule_ID(schedule.getM_ShipmentSchedule_ID());
 		alloc.setQtyPicked(qty);
 		alloc.setM_InOutLine_ID(shipmentLine.getM_InOutLine_ID());
-		alloc.setProcessed(true);
+		alloc.setProcessed(false);
 		InterfaceWrapperHelper.save(alloc);
+		return alloc;
 	}
 
 	private ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest requestFor(
