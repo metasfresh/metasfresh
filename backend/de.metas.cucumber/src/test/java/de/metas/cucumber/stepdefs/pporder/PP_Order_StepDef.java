@@ -69,7 +69,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -108,7 +107,6 @@ import org.eevolution.process.PP_Order_PostCalculation;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -208,30 +206,31 @@ public class PP_Order_StepDef
 	}
 
 	/**
-	 * Creates {@code PP_Order} record(s) from the DataTable.
-	 * <p>
-	 * Required columns: {@code PP_Order_ID.Identifier}, {@code DocBaseType}, {@code M_Product_ID.Identifier},
-	 * {@code QtyEntered}, {@code S_Resource_ID.Identifier} (the <b>plant</b>), {@code DateOrdered},
-	 * {@code DatePromised} and {@code DateStartSchedule}.
-	 * <p>
-	 * Optional columns:
-	 * <ul>
-	 *     <li>{@code OPT.M_Warehouse_ID.Identifier} — defaults to {@link StepDefConstants#WAREHOUSE_ID}</li>
-	 *     <li>{@code OPT.PP_Product_Planning_ID.Identifier}</li>
-	 *     <li>{@code OPT.WorkStation_ID.Identifier} — the <b>workstation</b>, resolved against the resource table
-	 *     and passed to {@link PPOrderCreateRequest#getWorkstationId()}. Distinct from the plant: a lot-number
-	 *     provider resolves the production line via {@code PP_Order.WorkStation_ID -> S_Resource.LotNumberCode},
-	 *     so a scenario covering that hop must be able to set it independently.</li>
-	 *     <li>{@code completeDocument} — defaults to {@code false}</li>
-	 * </ul>
+	 * Creates PP_Orders via {@code PPOrderService#createOrder}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PP_Order_ID</b> — (required, identifier) the created PP_Order<br>
+	 *   <b>DocBaseType</b> — (required) e.g. MOP<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product to manufacture<br>
+	 *   <b>QtyEntered</b> — (required) in the product's stocking UOM (each)<br>
+	 *   <b>S_Resource_ID</b> — (required, identifier-ref) the plant<br>
+	 *   <b>DateOrdered</b>, <b>DatePromised</b>, <b>DateStartSchedule</b> — (required) ISO-8601, e.g. 2025-04-01T23:59:00Z<br>
+	 *   <b>M_Warehouse_ID</b> — (optional, identifier-ref) defaults to {@link StepDefConstants#WAREHOUSE_ID}<br>
+	 *   <b>PP_Product_Planning_ID</b> — (optional, identifier-ref)<br>
+	 *   <b>WorkStation_ID</b> — (optional, identifier-ref) the workstation, distinct from the plant; a lot-number provider
+	 *   resolves the production line via {@code PP_Order.WorkStation_ID -> S_Resource.LotNumberCode}<br>
+	 *   <b>completeDocument</b> — (optional) defaults to false<br>
+	 *   <b>DocumentNo</b> — (optional) overrides the generated order number (after completion, if completed),
+	 *   so that PDF text assertions can name it; test data only, the real flow assigns the number at create<br>
+	 *   Column names may also carry the {@code OPT.} prefix and the {@code .Identifier} suffix.
+	 * @cucumber.depends StepDefData: PP_Order_StepDefData, M_Product_StepDefData, S_Resource_StepDefData, M_Warehouse_StepDefData, PP_Product_Planning_StepDefData
+	 * @cucumber.example
 	 * <pre>
 	 * And create PP_Order:
-	 *   | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.WorkStation_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
-	 *   | ppOrder_lotno_ws5      | MOP         | finishedGoodsProd       | 10         | testResource             | wsLineFive                    | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | 2025-04-01T23:59:00.00Z | Y                |
+	 *   | PP_Order_ID       | DocBaseType | M_Product_ID      | QtyEntered | S_Resource_ID | WorkStation_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
+	 *   | ppOrder_lotno_ws5 | MOP         | finishedGoodsProd | 10         | testResource  | wsLineFive     | 2025-04-01T23:59:00Z | 2025-04-01T23:59:00Z | 2025-04-01T23:59:00Z | Y                |
 	 * </pre>
-	 * Here {@code testResource} is the plant and {@code wsLineFive} the workstation — two different
-	 * resources on the same order. Omit {@code OPT.WorkStation_ID.Identifier} when the scenario does
-	 * not exercise the workstation hop.
 	 */
 	@And("create PP_Order:")
 	public void compute_PPOrderCreateRequest_to_create_pp_order(@NonNull final DataTable dataTable)
@@ -278,6 +277,12 @@ public class PP_Order_StepDef
 
 		final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
 		assertThat(ppOrder).isNotNull();
+
+		// lets the PDF text assertions name a literal order number (the generated one is not predictable)
+		row.getAsOptionalString(I_PP_Order.COLUMNNAME_DocumentNo).ifPresent(documentNo -> {
+			ppOrder.setDocumentNo(documentNo);
+			saveRecord(ppOrder);
+		});
 
 		ppOrderTable.put(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID), ppOrder);
 	}
@@ -326,14 +331,40 @@ public class PP_Order_StepDef
 	}
 
 	/**
+	 * Sets the picking instruction of already-loaded PP_Order_BOMLines.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PP_Order_BOMLine_ID</b> — (required, identifier-ref) the BOM line to update<br>
+	 *   <b>PickingInstruction</b> — (required) the new picking instruction<br>
+	 * @cucumber.depends StepDefData: PP_Order_BOMLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update PP_Order_BOMLines:
+	 *   | PP_Order_BOMLine_ID | PickingInstruction |
+	 *   | bomLine1            | Shelf 4            |
+	 * </pre>
+	 */
+	@And("update PP_Order_BOMLines:")
+	public void update_PP_Order_BOMLines(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_PP_Order_BOMLine bomLine = row.getAsIdentifier(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID).lookupNotNullIn(ppOrderBomLineTable);
+			bomLine.setPickingInstruction(row.getAsString(I_PP_Order_BOMLine.COLUMNNAME_PickingInstruction));
+			saveRecord(bomLine);
+		});
+	}
+
+	/**
 	 * Updates existing PP_Orders.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>PP_Order_ID</b> — (required, identifier-ref) the PP_Order to update<br>
 	 *   <b>QtyEntered</b> — (optional) new qty entered (also sets QtyOrdered)<br>
-	 *   <b>DatePromised</b> — (optional) new date promised, ISO-8601 with zone, e.g. 2021-04-16T21:00:00Z<br>
-	 *   <b>DateStartSchedule</b> — (optional) new scheduled start, ISO-8601 with zone, e.g. 2021-04-16T21:00:00Z<br>
+	 *   <b>DatePromised</b> — (optional) new date promised: a UTC instant ending in Z, e.g. 2021-04-16T21:00:00Z, or a local date-time in the JVM time zone<br>
+	 *   <b>DateStartSchedule</b> — (optional) new scheduled start: a UTC instant ending in Z, e.g. 2021-04-16T21:00:00Z, or a local date-time in the JVM time zone<br>
+	 *   <b>DocumentNo</b> — (optional) overrides the generated order number, so that PDF text assertions can name it<br>
 	 *   Column names may also carry the {@code OPT.} prefix and the {@code .Identifier} suffix.
 	 * @cucumber.depends StepDefData: PP_Order_StepDefData
 	 * @cucumber.example
@@ -792,16 +823,12 @@ public class PP_Order_StepDef
 			ppOrderRecord.setQtyEntered(qtyEntered);
 			ppOrderRecord.setQtyOrdered(qtyEntered);
 		});
-
-		row.getAsOptionalString(I_PP_Order.COLUMNNAME_DatePromised)
-				.filter(Check::isNotBlank)
-				.map(ZonedDateTime::parse)
+		row.getAsOptionalInstant(I_PP_Order.COLUMNNAME_DatePromised)
 				.ifPresent(datePromised -> ppOrderRecord.setDatePromised(TimeUtil.asTimestampNotNull(datePromised)));
-
-		row.getAsOptionalString(I_PP_Order.COLUMNNAME_DateStartSchedule)
-				.filter(Check::isNotBlank)
-				.map(ZonedDateTime::parse)
+		row.getAsOptionalInstant(I_PP_Order.COLUMNNAME_DateStartSchedule)
 				.ifPresent(dateStartSchedule -> ppOrderRecord.setDateStartSchedule(TimeUtil.asTimestampNotNull(dateStartSchedule)));
+		// lets the PDF text assertions name a literal order number, also for orders generated from candidates
+		row.getAsOptionalString(I_PP_Order.COLUMNNAME_DocumentNo).ifPresent(ppOrderRecord::setDocumentNo);
 
 		saveRecord(ppOrderRecord);
 	}

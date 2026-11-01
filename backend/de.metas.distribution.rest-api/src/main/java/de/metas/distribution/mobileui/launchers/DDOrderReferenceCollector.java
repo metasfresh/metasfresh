@@ -69,6 +69,7 @@ public class DDOrderReferenceCollector implements DistributionOrderCollector<DDO
 				.datePromised(job.getDateRequired())
 				.pickDate(job.getPickDate())
 				.pickingInstruction(job.getPickingInstruction())
+				.sourceDocPickingNoteLines(job.getSourceDocPickingNoteLines())
 				.fromWarehouseId(job.getPickFromWarehouse().getWarehouseId())
 				.toWarehouseId(job.getDropToWarehouse().getWarehouseId())
 				.salesOrderId(job.getSalesOrderRef() != null ? job.getSalesOrderRef().getId() : null)

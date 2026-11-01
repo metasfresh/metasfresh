@@ -65,9 +65,9 @@ public class AD_SysConfig_StepDef
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
 	/**
-	 * Set by {@link #enable_sys_config_for_this_scenario_only}; makes {@link #restoreTemporarySysConfigsAfterScenario()} reset all caches.
+	 * {@code ReportsClient} memoizes the report server built from this sys config and rebuilds it only on a reset of all caches.
 	 */
-	private boolean resetAllCachesOnRestore = false;
+	private static final String SYSCONFIG_ReportsServerClass = "de.metas.report.jasper.client.JRServerClass";
 
 	/**
 	 * Sets a SYSTEM-level AD_SysConfig to the given value — permanently, for the rest of the scenario
@@ -84,25 +84,6 @@ public class AD_SysConfig_StepDef
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
-		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
-	}
-
-	/**
-	 * Like {@link #enable_sys_config}, but for a sys config that is global state shared by every scenario on the executor:
-	 * the prior value is restored by {@link #restoreTemporarySysConfigsAfterScenario()}, also if the scenario or its Background fails.
-	 * The restore also resets all caches, because some caches are derived from a sys config (e.g. the report server).
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.example
-	 * <pre>
-	 * And for this scenario only, set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-	 * </pre>
-	 */
-	@And("^for this scenario only, set sys config (String|boolean|int) value (.*) for sys config (.*)$")
-	public void enable_sys_config_for_this_scenario_only(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
-	{
-		rememberPriorValue(sysConfigName);
-		resetAllCachesOnRestore = true;
 		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
 	}
 
@@ -266,6 +247,23 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
+	 * Sets a sys config to a String value for the current scenario; its prior value is restored after the scenario, and a sys config that had no value before is deleted again.
+	 * The value may be the null token, see {@link DataTableUtil#nullToken2Null(String)}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And temporarily set sys config String value 'de.metas.report.server.LocalReportServer' for sys config 'de.metas.report.jasper.client.JRServerClass'
+	 * </pre>
+	 */
+	@And("temporarily set sys config String value {string} for sys config {string}")
+	public void temporarily_set_sys_config_string_value(@NonNull final String value, @NonNull final String sysConfigName)
+	{
+		rememberPriorValue(sysConfigName);
+		applySysConfigValue("String", value, sysConfigName);
+	}
+
+	/**
 	 * Sets a sys config to the repo id of a scenario-created {@code M_Product_Category}, for the current scenario; its prior value is restored after the scenario, and a sys config that had no value before is deleted again.
 	 *
 	 * @cucumber.stepdef
@@ -352,12 +350,15 @@ public class AD_SysConfig_StepDef
 			}
 		}
 
+		final boolean reportServerChanged = priorValueBySysConfigName.containsKey(SYSCONFIG_ReportsServerClass);
 		priorValueBySysConfigName.clear();
-		resetSysConfigCache();
-		if (resetAllCachesOnRestore)
+		if (reportServerChanged)
 		{
-			CacheMgt.get().reset(); // also drops caches derived from a sys config, e.g. the report server
-			resetAllCachesOnRestore = false;
+			CacheMgt.get().reset();
+		}
+		else
+		{
+			resetSysConfigCache();
 		}
 	}
 }

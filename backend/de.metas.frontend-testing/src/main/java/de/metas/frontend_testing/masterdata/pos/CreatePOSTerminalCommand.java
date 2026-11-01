@@ -24,10 +24,13 @@ import de.metas.frontend_testing.masterdata.PricingSetupHelper;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.JsonSysconfig;
+import de.metas.frontend_testing.masterdata.sysconfig.PreviousSysconfigsCollector;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import de.metas.money.CurrencyId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSTerminalCreateRequest;
@@ -60,6 +63,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -87,7 +91,6 @@ public class CreatePOSTerminalCommand
 	private static final String POS_MOBILE_APPLICATION_VALUE = "pos";
 	static final String POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME = "POS_LineLevelTest";
 	static final BigDecimal DEFAULT_LINE_LEVEL_TAX_RATE_PERCENT = BigDecimal.valueOf(19);
-	static final String NO_CHARGE_TYPE_ID = "-1";
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -99,6 +102,7 @@ public class CreatePOSTerminalCommand
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ISysConfigDAO sysConfigDAO = Services.get(ISysConfigDAO.class);
 
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final ProductPriceRepository productPriceRepository;
@@ -110,9 +114,9 @@ public class CreatePOSTerminalCommand
 
 	@NonNull private final MasterdataContext context;
 	/**
-	 * Receives the previous value of each sysconfig this command changes (first writer wins), so the caller can restore it.
+	 * Receives the previous value of each sysconfig row this command changes, so the caller can restore it.
 	 */
-	@NonNull private final Map<String, String> previousSysconfigsCollector;
+	@NonNull private final PreviousSysconfigsCollector previousSysconfigsCollector;
 	@NonNull private final JsonPOSTerminalRequest request;
 	@NonNull private final Identifier identifier;
 	@NonNull private final OrgId orgId = MasterdataContext.ORG_ID;
@@ -214,13 +218,11 @@ public class CreatePOSTerminalCommand
 
 	/**
 	 * Sets the sysconfig on system level ({@code AD_Client_ID=0, AD_Org_ID=0}), the level the cash withdrawal sysconfig is configured on.
-	 * An absent previous value is reported as {@value #NO_CHARGE_TYPE_ID}, which {@link POSCashWithdrawalService} reads as
-	 * "no categories", so restoring the reported value switches the categories off again.
+	 * An absent previous row is reported as {@code null}; restoring it deletes the row, which {@link POSCashWithdrawalService} reads as "no categories".
 	 */
 	private void setSystemSysconfig(@NonNull final String name, @NonNull final String value)
 	{
-		final String previousValue = sysConfigBL.getValue(name);
-		previousSysconfigsCollector.putIfAbsent(name, previousValue != null ? previousValue : NO_CHARGE_TYPE_ID);
+		previousSysconfigsCollector.add(JsonSysconfig.of(name, sysConfigDAO.getValueOfExactRow(name, ClientAndOrgId.SYSTEM).orElse(null), ClientAndOrgId.SYSTEM));
 
 		sysConfigBL.setValue(name, value, ClientId.SYSTEM, OrgId.ANY);
 	}

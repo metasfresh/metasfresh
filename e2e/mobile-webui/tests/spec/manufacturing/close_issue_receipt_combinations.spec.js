@@ -44,7 +44,6 @@ const CLOSE_RESPONSE_TIMEOUT = 45_000;
 const SYSCONFIG_LaunchersLimit = 'WorkflowRestAPIService.LaunchersLimit';
 
 let costingMethodState;
-let previousSysconfigs = null;
 let collectedFailures = [];
 
 // the hooks must declare the page fixture: Backend uses the page of the current test
@@ -59,11 +58,6 @@ test.afterEach(async ({ page }) => {
         await Backend.restoreAcctSchemaCostingMethod(costingMethodState);
     } finally {
         costingMethodState = undefined;
-        if (previousSysconfigs) {
-            // fallback when createMasterdata threw after writing: the migration seed of the limit (20)
-            await Backend.setSysconfigs({ [SYSCONFIG_LaunchersLimit]: '20', ...previousSysconfigs });
-        }
-        previousSysconfigs = null;
     }
 });
 
@@ -95,7 +89,6 @@ const createMasterdata = async ({ packaging, rawIssuingTolerancePerc }) => {
         );
     }
 
-    previousSysconfigs = {};
     const masterdata = await Backend.createMasterdata({
         language: 'en_US',
         request: {
@@ -130,7 +123,6 @@ const createMasterdata = async ({ packaging, rawIssuingTolerancePerc }) => {
             },
         },
     });
-    previousSysconfigs = masterdata.previousSysconfigs ?? {};
     return masterdata;
 };
 

@@ -8,6 +8,7 @@ import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCalibrationRuleRequest;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.JsonCustomQRCodeFormatRequest;
+import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderFromCandidatesRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
@@ -50,6 +51,12 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, Object> context;
 
 	@Nullable Map<String, String> sysconfigs;
+
+	/**
+	 * Sysconfigs written as SYSTEM rows (AD_Client_ID=0, AD_Org_ID=0) instead of at their declared configuration level.
+	 * Use for sysconfigs that the code reads only at SYSTEM level.
+	 */
+	@Nullable Map<String, String> systemSysconfigs;
 
 	/**
 	 * Sets flag columns on {@code AD_Process} records matched by a {@code JasperReport} substring.
@@ -147,6 +154,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonInvoiceCreateRequest> invoices;
 	@Nullable Map<String, JsonPPOrderRequest> manufacturingOrders;
 	@Nullable Map<String, JsonDDOrderRequest> distributionOrders;
+	@Nullable Map<String, JsonDDOrderFromCandidatesRequest> distributionOrdersFromCandidates;
 	@Nullable List<JsonCustomQRCodeFormatRequest> customQRCodeFormats;
 	@Nullable Map<String, JsonInventoryRequest> inventories;
 }

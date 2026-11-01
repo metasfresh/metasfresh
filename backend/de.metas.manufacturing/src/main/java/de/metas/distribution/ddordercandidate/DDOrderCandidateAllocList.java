@@ -77,6 +77,16 @@ public class DDOrderCandidateAllocList implements Iterable<DDOrderCandidateAlloc
 		return list.stream().collect(Collectors.groupingBy(DDOrderCandidateAlloc::getDdOrderCandidateId, collect()));
 	}
 
+	public Map<DDOrderId, DDOrderCandidateAllocList> groupByDDOrderId()
+	{
+		if (list.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return list.stream().collect(Collectors.groupingBy(DDOrderCandidateAlloc::getDdOrderId, collect()));
+	}
+
 	public Optional<Quantity> getQtySum()
 	{
 		return list.stream()

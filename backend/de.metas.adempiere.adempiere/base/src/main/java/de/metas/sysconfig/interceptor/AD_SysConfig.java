@@ -144,6 +144,18 @@ public class AD_SysConfig
 		// because cache is invalidated while saving, and it's also accessed before the trx which changed a give sysconfig gets committed,
 		// so at that time the sysconfigs cache is still stale.
 		// To make sure we have fresh sysconfigs, we are resetting the cache again after trx commit.
+		resetCacheAfterCommit(record);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	public void afterDelete(final I_AD_SysConfig record)
+	{
+		// same reason as in afterSave
+		resetCacheAfterCommit(record);
+	}
+
+	private void resetCacheAfterCommit(final I_AD_SysConfig record)
+	{
 		final CacheMgt cacheMgt = CacheMgt.get();
 		final int recordId = record.getAD_SysConfig_ID();
 		trxManager.runAfterCommit(() -> cacheMgt.reset(I_AD_SysConfig.Table_Name, recordId));

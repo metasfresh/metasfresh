@@ -1,6 +1,7 @@
 package de.metas.distribution.ddordercandidate;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.distribution.ddorder.DDOrderAndLineId;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.quantity.Quantitys;
@@ -39,10 +40,23 @@ public class DDOrderCandidateAllocRepository
 
 	public DDOrderCandidateAllocList getByDDOrderId(@NonNull final DDOrderId ddOrderId)
 	{
+		return getByDDOrderIds(ImmutableSet.of(ddOrderId));
+	}
+
+	/**
+	 * Loads the allocations of all given DD_Orders with a single query.
+	 */
+	public DDOrderCandidateAllocList getByDDOrderIds(@NonNull final Set<DDOrderId> ddOrderIds)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return DDOrderCandidateAllocList.EMPTY;
+		}
+
 		return getByQuery(
 				queryBL.createQueryBuilder(I_DD_Order_Candidate_DDOrder.class)
 						.addOnlyActiveRecordsFilter()
-						.addEqualsFilter(I_DD_Order_Candidate_DDOrder.COLUMNNAME_DD_Order_ID, ddOrderId)
+						.addInArrayFilter(I_DD_Order_Candidate_DDOrder.COLUMNNAME_DD_Order_ID, ddOrderIds)
 		);
 	}
 
