@@ -914,6 +914,7 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>DeliveryDate</b> — (optional) expected per-line delivery date (the line's promised delivery date),
 	 *     as a plain calendar date compared in the order's time zone<br>
 	 *   <b>PriorityRule</b> — (optional) expected priority rule code (1=Urgent, 3=High, 5=Medium, 7=Low, 9=Minor)<br>
+	 *   <b>Carrier_Advising_Status</b> — (optional) expected carrier advising status; polled for, like QtyToDeliver<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -1364,6 +1365,7 @@ public class M_ShipmentSchedule_StepDef
 		final BigDecimal qtyScheduledForPicking = tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyScheduledForPicking).orElse(null);
 		final Boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Processed, null);
 		final Boolean isClosed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_IsClosed, null);
+		final String carrierAdvisingStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status);
 
 		final StepDefDataIdentifier shipmentScheduleIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID);
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleIdentifier.lookupNotNullIn(shipmentScheduleTable);
@@ -1396,6 +1398,11 @@ public class M_ShipmentSchedule_StepDef
 			if (shouldGateOnQtyScheduledForPicking(qtyScheduledForPicking))
 			{
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyScheduledForPicking, qtyScheduledForPicking);
+			}
+			if (Check.isNotBlank(carrierAdvisingStatus))
+			{
+				// the carrier advise runs async; waiting for its status lets a scenario continue only after the advise has settled
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status, carrierAdvisingStatus);
 			}
 			return queryBuilder
 					.create()
@@ -1489,6 +1496,11 @@ public class M_ShipmentSchedule_StepDef
 		{
 			final I_M_Product product = productTable.get(productIdentifier);
 			softly.assertThat(shipmentSchedule.getM_Product_ID()).as("M_Product_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(product.getM_Product_ID());
+		}
+
+		if (Check.isNotBlank(carrierAdvisingStatus))
+		{
+			softly.assertThat(shipmentSchedule.getCarrier_Advising_Status()).as("Carrier_Advising_Status for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(carrierAdvisingStatus);
 		}
 
 		final String exportStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_ExportStatus);
