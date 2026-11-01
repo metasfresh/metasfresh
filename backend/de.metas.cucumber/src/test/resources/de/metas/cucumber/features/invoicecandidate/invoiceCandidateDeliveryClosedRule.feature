@@ -563,3 +563,126 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.Processed |
       | ic2                               | true          |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: closing the shipment schedules of four undelivered lines processes only the candidate whose quantity to invoice comes from the delivery
+    # Immediate (ordered qty), After pick (picked qty) and a service product (ordered qty) are not invoiced by the delivered quantity,
+    # so a closed disposition does not make them uninvoiceable. After delivery on a stock item is.
+    # A service product gets no shipment schedule at all (only items do), so its line has no schedule to close: it is checked to stay untouched.
+    Given metasfresh contains M_Products:
+      | Identifier | Name                   | ProductType | OPT.X12DE355 |
+      | service1   | service1_16_@Date@     | S           | PCE          |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | InvoicableQtyBasedOn | C_TaxCategory_ID.InternalName |
+      | PLV                    | service1     | 5.0      | PCE               | Nominal              | Normal                        |
+    And set mobile UI picking profile
+      | CreateShipmentPolicy |
+      | CREATE_DRAFT         |
+    # the order takes its invoice rule from the business partner
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | Name                 | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | customerI  | customerI16_@Date@   | N            | Y              | PS                            | I               |
+      | customerP  | customerP16_@Date@   | N            | Y              | PS                            | P               |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier  | GLN                  | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | locationI   | Dummy_GLN16I_@Date@  | customerI                | true                | true         |
+      | locationP   | Dummy_GLN16P_@Date@  | customerP                | true                | true         |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO_I       | true    | customerI                | 2024-03-26  |
+      | SO_P       | true    | customerP                | 2024-03-26  |
+      | SO_D       | true    | customer                 | 2024-03-26  |
+      | SO_S       | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO_I                  | L_I        | product1                | 6          | TUx1_P1                                |
+      | SO_P                  | L_P        | product1                | 6          | TUx1_P1                                |
+      | SO_D                  | L_D        | product2                | 5          | TUx1_P2                                |
+      | SO_S                  | L_S        | service1                | 4          |                                        |
+    And the order identified by SO_I is completed
+    And the order identified by SO_P is completed
+    And the order identified by SO_D is completed
+    And the order identified by SO_S is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | schedule_I | L_I                       | N             |
+      | schedule_P | L_P                       | N             |
+      | schedule_D | L_D                       | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic_I                              | L_I                       |
+      | ic_P                              | L_P                       |
+      | ic_D                              | L_D                       |
+      | ic_S                              | L_S                       |
+
+    # the After pick line: 2 of 6 picked, the shipment is only drafted, so the picked quantity is not delivered
+    And transform CU to new LU
+      | sourceCU    | newLU                 | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
+      | pickFromCU1 | pickFromAggregatedLU1 | TU       | 1           | 10          |
+    And start picking job for sales order identified by SO_P
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product1              | pickFromAggregatedLU1 | 2         | 0           |                       | 2027-03-01     | 1111  |
+    And complete picking job
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | QtyPickList | OPT.IsClosed |
+      | schedule_P                       | 2           | false        |
+    And after not more than 120s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_P                              |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice |
+      | ic_I                              | false         | 6            |
+      | ic_P                              | false         | 2            |
+      | ic_D                              | false         | 0            |
+      | ic_S                              | false         | 4            |
+
+    When the M_ShipmentSchedule identified by schedule_I is closed
+    And the M_ShipmentSchedule identified by schedule_P is closed
+    And the M_ShipmentSchedule identified by schedule_D is closed
+
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed_Override |
+      | ic_I                              | false         | 6            | true                 | null                   |
+      | ic_P                              | false         | 2            | true                 | null                   |
+      | ic_D                              | true          | 0            | true                 | null                   |
+      | ic_S                              | false         | 4            | false                | null                   |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: an After delivery candidate whose invoice rule override is Immediate keeps its quantity to invoice when its shipment schedule is closed
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+    And update invoice candidates
+      | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |
+      | ic1                               | I                        |
+    And after not more than 120s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic1                               |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice |
+      | ic1                               | false         | 6            |
+
+    When the M_ShipmentSchedule identified by shipmentSchedule1 is closed
+
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed_Override |
+      | ic1                               | false         | 6            | true                 | null                   |
