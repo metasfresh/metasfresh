@@ -105,18 +105,31 @@ public class ApiAuditConfig
 	}
 
 	@NonNull
-	public Optional<UserGroupId> getUserGroupToNotify(final boolean isError)
+	public Optional<UserGroupId> getUserGroupToNotify(@NonNull final ApiCallOutcome outcome)
 	{
-		if (this.userGroupInChargeId == null
-				|| this.notifyUserInCharge == null
-				|| this.notifyUserInCharge.equals(NotificationTriggerType.NEVER)
-				|| (NotificationTriggerType.ONLY_ON_ERROR.equals(this.notifyUserInCharge)
-				&& !isError))
+		if (this.userGroupInChargeId == null || this.notifyUserInCharge == null)
 		{
-
 			return Optional.empty();
 		}
 
-		return Optional.of(userGroupInChargeId);
+		final boolean notify;
+		switch (this.notifyUserInCharge)
+		{
+			case ALWAYS:
+				notify = true;
+				break;
+			case ONLY_ON_ERROR:
+				notify = outcome == ApiCallOutcome.ERROR;
+				break;
+			case ERROR_OR_PARTIAL_ERROR:
+				notify = outcome == ApiCallOutcome.ERROR || outcome == ApiCallOutcome.PARTIAL_ERROR;
+				break;
+			case NEVER:
+			default:
+				notify = false;
+				break;
+		}
+
+		return notify ? Optional.of(userGroupInChargeId) : Optional.empty();
 	}
 }

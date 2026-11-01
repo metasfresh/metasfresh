@@ -22,14 +22,20 @@
 
 package de.metas.shipper.gateway.commons.model;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.cache.CCache;
+import de.metas.common.util.StringUtils;
 import de.metas.i18n.AdMessageKey;
-import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.Shipper;
+import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,7 +48,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.function.Function;
 
+/**
+ * Repository Tables: Carrier_Config
+ * Repository Cluster: ShipperConfigRepository, ShipperRepository
+ */
 @Repository
+@RequiredArgsConstructor
 public class ShipperConfigRepository
 {
 	private final static AdMessageKey MSG_NO_SHIPPER_CONFIG_FOUND = AdMessageKey.of("de.metas.shipper.gateway.commons.config.NoShipperConfigFound");
@@ -65,24 +76,59 @@ public class ShipperConfigRepository
 			I_Carrier_Config.COLUMNNAME_AD_Org_ID,
 			I_Carrier_Config.COLUMNNAME_AD_Client_ID);
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ShipperRepository shipperRepository;
+
+	@NonNull private final CCache<Integer, ImmutableMap<ShipperId, ShipperConfig>> cache = CCache.<Integer, ImmutableMap<ShipperId, ShipperConfig>>builder()
+			.tableName(I_Carrier_Config.Table_Name)
+			.additionalTableNameToResetFor(I_M_Shipper.Table_Name)
+			.build();
 
 	@NonNull
 	public ShipperConfig getByShipperId(@NonNull final ShipperId shipperId)
 	{
-		return queryBL.createQueryBuilder(I_Carrier_Config.class)
-				.addEqualsFilter(I_Carrier_Config.COLUMNNAME_M_Shipper_ID, shipperId)
+		final ShipperConfig config = getMap().get(shipperId);
+		if (config == null)
+		{
+			throw new AdempiereException(MSG_NO_SHIPPER_CONFIG_FOUND, shipperId);
+		}
+		return config;
+	}
+
+	/**
+	 * {@code Carrier_Config.IsSelectionRules} for the given shipper — does nShift resolve the carrier via its
+	 * selection rules (the explicit carrier product is not authoritative)? Defaults to the column default {@code 'Y'}
+	 * (rules ON) when the shipper has no {@code Carrier_Config} row.
+	 */
+	public boolean isSelectionRules(@NonNull final ShipperId shipperId)
+	{
+		final ShipperConfig config = getMap().get(shipperId);
+		// no config row → column default 'Y' (rules ON)
+		return config == null || config.isSelectionRules();
+	}
+
+	@NonNull
+	private ImmutableMap<ShipperId, ShipperConfig> getMap()
+	{
+		return cache.getOrLoadNonNull(0, this::retrieveMap);
+	}
+
+	@NonNull
+	private ImmutableMap<ShipperId, ShipperConfig> retrieveMap()
+	{
+		final ImmutableList<ShipperConfig> configs = queryBL.createQueryBuilder(I_Carrier_Config.class)
+				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOnlyOptional()
+				.stream()
 				.map(this::fromRecord)
-				.orElseThrow(() -> new AdempiereException(MSG_NO_SHIPPER_CONFIG_FOUND, shipperId));
+				.collect(ImmutableList.toImmutableList());
+		return Maps.uniqueIndex(configs, ShipperConfig::getShipperId);
 	}
 
 	private ShipperConfig fromRecord(@NotNull final I_Carrier_Config carrierConfig)
 	{
 		final ShipperId shipperId = ShipperId.ofRepoId(carrierConfig.getM_Shipper_ID());
-		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
+		final Shipper shipper = shipperRepository.getById(shipperId);
 		return ShipperConfig.builder()
 				.id(ShipperConfigId.ofRepoId(carrierConfig.getCarrier_Config_ID()))
 				.shipperId(shipperId)
@@ -91,7 +137,7 @@ public class ShipperConfigRepository
 				.password(carrierConfig.getPassword())
 				.clientId(carrierConfig.getClient_Id())
 				.clientSecret(carrierConfig.getClient_Secret())
-				.trackingUrlTemplate(shipper.getTrackingURL())
+				.trackingUrlTemplate(shipper.getTrackingUrl())
 				.additionalProperties(buildAdditionalPropertiesMap(carrierConfig))
 				.build();
 	}
@@ -100,11 +146,20 @@ public class ShipperConfigRepository
 	{
 		final POInfo poInfo = POInfo.getPOInfo(I_Carrier_Config.Table_Name);
 		Check.assumeNotNull(poInfo, "POInfo for {} is not null", I_Carrier_Config.Table_Name);
-		return
-				poInfo.streamColumns(poInfoColumn -> !COLUMNS_TO_EXCLUDE_FROM_MAPPING.contains(poInfoColumn.getColumnName()))
-						.map(POInfoColumn::getColumnName)
-						.filter(columnName -> InterfaceWrapperHelper.getValueOrNull(carrierConfig, columnName) != null)
-						.collect(ImmutableMap.toImmutableMap(Function.identity(), colName -> InterfaceWrapperHelper.getValueOrNull(carrierConfig, colName)));
+		return poInfo.streamColumns(poInfoColumn -> !COLUMNS_TO_EXCLUDE_FROM_MAPPING.contains(poInfoColumn.getColumnName()))
+				.map(POInfoColumn::getColumnName)
+				.filter(columnName -> InterfaceWrapperHelper.getValueOrNull(carrierConfig, columnName) != null)
+				.collect(ImmutableMap.toImmutableMap(Function.identity(), colName -> toPropertyString(InterfaceWrapperHelper.getValueOrNull(carrierConfig, colName))));
+	}
+
+	private static String toPropertyString(@NotNull final Object value)
+	{
+		// PO layer stores YesNo columns as Boolean; convert to "Y"/"N" for consistent string-based lookup
+		if (value instanceof Boolean)
+		{
+			return StringUtils.ofBooleanNonNull((Boolean) value);
+		}
+		return String.valueOf(value);
 	}
 
 }

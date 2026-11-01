@@ -95,6 +95,9 @@ FROM (SELECT
              -- note that when the pc is processed (->status PR or CL), then the QtyToDeliver is decreased accordingly
              AND pc.Status = 'IP'
              AND pc.IsActive = 'Y')                                               AS QtyPickedPlanned,
+          s.qtyonhand                                                             AS QtyOnHand,
+          s.qtyscheduledforpicking                                                AS QtyScheduledForPicking,
+          s.qtyscheduledforpickingofprocessed                                     AS QtyScheduledForPickingOfProcessed,
 
           --
           -- Rules&Quantities

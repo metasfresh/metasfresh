@@ -1,7 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 import { usePOSTerminal } from '../actions/posTerminal';
 import { useCurrentOrder } from '../actions/orders';
+import { PANEL_Return } from '../actions/ui';
+import { getPanelFromState } from '../reducers/uiUtils';
 import {
   ORDER_STATUS_COMPLETED,
   ORDER_STATUS_DRAFTED,
@@ -11,10 +14,16 @@ import {
 import POSOrderPanel from './order_panel/POSOrderPanel';
 import POSPaymentPanel from './payment_panel/POSPaymentPanel';
 import OrderSummary from './order_summary/OrderSummary';
+import POSReturnPanel from './return_panel/POSReturnPanel';
 
 export const POSContent = ({ disabled }) => {
   const posTerminal = usePOSTerminal();
   const currentOrder = useCurrentOrder({ posTerminalId: posTerminal.id });
+  const panel = useSelector((globalState) => getPanelFromState({ globalState }));
+
+  if (panel === PANEL_Return) {
+    return <POSReturnPanel disabled={disabled} />;
+  }
 
   switch (currentOrder?.status ?? '--') {
     case ORDER_STATUS_DRAFTED:

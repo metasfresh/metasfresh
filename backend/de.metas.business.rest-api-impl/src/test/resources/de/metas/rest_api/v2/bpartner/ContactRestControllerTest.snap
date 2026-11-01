@@ -138,6 +138,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContact_ext=[
       "lastUpdatedMillis": 1561133544,
       "changeLogs": [ ]
     },
+    "code": "contactRecord.value",
     "defaultContact": false,
     "email": "contactRecord.email",
     "firstName": "contactRecord.firstName",
@@ -169,6 +170,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContact_id=[
       "lastUpdatedMillis": 1561133544,
       "changeLogs": [ ]
     },
+    "code": "contactRecord.value",
     "defaultContact": false,
     "email": "contactRecord.email",
     "firstName": "contactRecord.firstName",
@@ -205,6 +207,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContact_id_unspe
         }
       ]
     },
+    "code": "contactRecord.value",
     "defaultContact": false,
     "email": "contactRecord.email",
     "firstName": "contactRecord.firstName",
@@ -238,6 +241,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContactsSince[pa
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
+        "code": "contactRecord.value",
         "defaultContact": false,
         "email": "contactRecord.email",
         "firstName": "contactRecord.firstName",
@@ -264,6 +268,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContactsSince[pa
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
+        "code": "contactRecord.value_1",
         "defaultContact": false,
         "email": "contactRecord.email_1",
         "firstName": "contactRecord.firstName_1",
@@ -303,6 +308,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContactsSince[pa
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
+        "code": "contactRecord.value_2",
         "defaultContact": false,
         "email": "contactRecord.email_2",
         "firstName": "contactRecord.firstName_2",
@@ -329,6 +335,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContactsSince[pa
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
+        "code": "contactRecord.value_3",
         "defaultContact": false,
         "email": "contactRecord.email_3",
         "firstName": "contactRecord.firstName_3",
@@ -368,6 +375,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContactsSince[pa
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
+        "code": "contactRecord.value_4",
         "defaultContact": false,
         "email": "contactRecord.email_4",
         "firstName": "contactRecord.firstName_4",

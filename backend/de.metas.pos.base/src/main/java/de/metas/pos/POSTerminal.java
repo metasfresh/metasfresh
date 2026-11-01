@@ -3,9 +3,11 @@ package de.metas.pos;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -26,6 +28,8 @@ import javax.annotation.Nullable;
 @ToString
 public class POSTerminal
 {
+	private static final AdMessageKey MSG_CashJournalNotOpen = AdMessageKey.of("de.metas.pos.CashJournalNotOpen");
+
 	@NonNull private final POSTerminalId id;
 	@NonNull private final String name;
 
@@ -114,6 +118,8 @@ public class POSTerminal
 
 	public CurrencyPrecision getCurrencyPrecision() {return currency.getPrecision();}
 
+	public BPartnerLocationId getWalkInCustomerShipToBPartnerLocationId() {return walkInCustomerShipToLocationId.getBpartnerLocationId();}
+
 	public boolean isCashJournalOpen() {return cashJournalId != null;}
 
 	@NonNull
@@ -121,7 +127,7 @@ public class POSTerminal
 	{
 		if (cashJournalId == null)
 		{
-			throw new AdempiereException("No open journals found");
+			throw new AdempiereException(MSG_CashJournalNotOpen);
 		}
 		return cashJournalId;
 	}

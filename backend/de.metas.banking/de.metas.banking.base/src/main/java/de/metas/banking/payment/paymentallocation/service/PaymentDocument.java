@@ -23,6 +23,8 @@
 package de.metas.banking.payment.paymentallocation.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingContext;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
@@ -76,6 +78,9 @@ public class PaymentDocument implements IPaymentDocument
 	private final LocalDate dateTrx;
 
 	@Getter
+	private final LocalDate dateAcct;
+
+	@Getter
 	private final ClientAndOrgId clientAndOrgId;
 
 	@Getter
@@ -92,6 +97,7 @@ public class PaymentDocument implements IPaymentDocument
 			@NonNull final Money amountToAllocate,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final LocalDate dateTrx,
+			@Nullable final LocalDate dateAcct,
 			@NonNull final PaymentCurrencyContext paymentCurrencyContext)
 	{
 		final OrgId orgId = clientAndOrgId.getOrgId();
@@ -112,6 +118,7 @@ public class PaymentDocument implements IPaymentDocument
 		this.amountToAllocate = amountToAllocate;
 		this.allocatedAmt = amountToAllocate.toZero();
 		this.dateTrx = dateTrx;
+		this.dateAcct = dateAcct != null ? dateAcct : dateTrx;
 		this.clientAndOrgId = clientAndOrgId;
 		this.paymentCurrencyContext = paymentCurrencyContext;
 	}
@@ -192,5 +199,15 @@ public class PaymentDocument implements IPaymentDocument
 	public Money getPaymentDiscountAmt()
 	{
 		return amountToAllocate.toZero();
+	}
+
+	/**
+	 * @return the invoice-processing context this payment stands for: its business partner as candidate service company,
+	 * and the start of its {@code DateTrx} (system time zone) as payment date.
+	 */
+	@NonNull
+	public InvoiceProcessingContext toInvoiceProcessingContext()
+	{
+		return InvoiceProcessingContext.of(bpartnerId, dateTrx.atStartOfDay(SystemTime.zoneId()));
 	}
 }

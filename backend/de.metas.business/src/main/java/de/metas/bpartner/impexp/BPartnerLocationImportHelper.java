@@ -162,6 +162,9 @@ import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION
 		bpartnerLocation.setM_Shipper_ID(from.getLocation_M_Shipper_ID());
 		bpartnerLocation.setM_Shipper_RoutingCode_ID(from.getM_Shipper_RoutingCode_ID());
 
+		bpartnerLocation.setBPartnerName(from.getBPartnerName());
+		bpartnerLocation.setBPartnerName2(from.getBPartnerName2());
+
 		if(from.isUpdateLocationName()) bpartnerLocation.setName(BPARTNER_LOCATION_NAME_DEFAULT);
 
 		fireImportValidator(from, bpartnerLocation);

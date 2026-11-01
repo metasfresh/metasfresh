@@ -42,6 +42,7 @@ import de.metas.inout.InOutLineId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -88,8 +89,7 @@ public class EDIDesadvPackRepository
 		}
 		else
 		{
-			final int maxSeqNo = desadvDAO.retrieveMaxDesadvPackSeqNo(createEDIDesadvPackRequest.getEdiDesadvId());
-			desadvPackRecord.setSeqNo(maxSeqNo + 1);
+			desadvPackRecord.setSeqNo(desadvDAO.retrievePackSeqNoSequence(createEDIDesadvPackRequest.getEdiDesadvId()).next());
 		}
 		desadvPackRecord.setAD_Org_ID(createEDIDesadvPackRequest.getOrgId().getRepoId());
 		desadvPackRecord.setEDI_Desadv_ID(EDIDesadvId.toRepoId(createEDIDesadvPackRequest.getEdiDesadvId()));
@@ -97,7 +97,8 @@ public class EDIDesadvPackRepository
 		desadvPackRecord.setIPA_SSCC18(createEDIDesadvPackRequest.getSscc18());
 		desadvPackRecord.setIsManual_IPA_SSCC18(createEDIDesadvPackRequest.getIsManualIpaSSCC());
 		desadvPackRecord.setM_HU_PackagingCode_ID(PackagingCodeId.toRepoId(createEDIDesadvPackRequest.getHuPackagingCodeID()));
-		desadvPackRecord.setGTIN_PackingMaterial(createEDIDesadvPackRequest.getGtinPackingMaterial());
+		// (EDIFACT GIN segment rejects values that don't match ^[0-9]{1,14}$).
+		desadvPackRecord.setGTIN_PackingMaterial(StringUtils.trimBlankToNull(createEDIDesadvPackRequest.getGtinPackingMaterial()));
 
 		saveRecord(desadvPackRecord);
 		final EDIDesadvPackId packId = EDIDesadvPackId.ofRepoId(desadvPackRecord.getEDI_Desadv_Pack_ID());
@@ -148,7 +149,7 @@ public class EDIDesadvPackRepository
 		packItemRecord.setBestBeforeDate(createPackItemRequest.getBestBeforeDate());
 		packItemRecord.setLotNumber(createPackItemRequest.getLotNumber());
 		packItemRecord.setM_HU_PackagingCode_TU_ID(PackagingCodeId.toRepoId(createPackItemRequest.getHuPackagingCodeTUID()));
-		packItemRecord.setGTIN_TU_PackingMaterial(createPackItemRequest.getGtinTUPackingMaterial());
+		packItemRecord.setGTIN_TU_PackingMaterial(StringUtils.trimBlankToNull(createPackItemRequest.getGtinTUPackingMaterial()));
 
 		saveRecord(packItemRecord);
 		return packItemRecord;
@@ -214,12 +215,16 @@ public class EDIDesadvPackRepository
 	}
 
 	@Nullable
-	public EDIDesadvPack getPackByDesadvLineAndHUId(@NonNull final HuId huId)
+	public EDIDesadvPack getPackByDesadvAndHUId(@NonNull final EDIDesadvId desadvId, @NonNull final HuId huId)
 	{
-		// with the recent changes, there can't be more than one pack per HU, but in old DESADVs there may be packs that share the same M_HU_ID,
+		// One pack per (DESADV, HU). When two M_InOuts ship the same physical LU
+		// (picker consolidates two orders onto one pallet, each shipment has its own DESADV),
+		// each DESADV must get its own edi_desadv_pack row. Looking up by huId alone would
+		// reuse the first DESADV's pack and attach the second DESADV's items to it.
 		final I_EDI_Desadv_Pack packRecord = queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID, huId)
+				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
 				.orderBy(I_EDI_Desadv_Pack.COLUMNNAME_SeqNo)
 				.create()
 				.first(I_EDI_Desadv_Pack.class);

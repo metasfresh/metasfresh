@@ -43,9 +43,11 @@ public class TourId implements RepoIdAware
 
 	public static int toRepoId(@Nullable final TourId tourId)
 	{
+		// -1 (not 0) is the convention for clearing an FK setter (docs/coding-rules/java-general.md §35);
+		// both M_Tour_ID call sites pass this straight to setM_Tour_ID, whose <1 guard clears the column.
 		if (tourId == null)
 		{
-			return 0;
+			return -1;
 		}
 		return tourId.getRepoId();
 	}

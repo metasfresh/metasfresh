@@ -23,6 +23,7 @@
 package de.metas.project.service;
 
 import de.metas.project.ProjectId;
+import de.metas.project.ProjectValue;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -53,6 +54,17 @@ public class ProjectRepository
 		return queryBL.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Project.COLUMNNAME_Value, value)
+				.create()
+				.firstId(ProjectId::ofRepoIdOrNull);
+	}
+
+	@Nullable
+	public ProjectId getIdByValueOrNull(@NonNull final ProjectValue value)
+	{
+		return queryBL.createQueryBuilder(I_C_Project.class)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_Value, value.getAsString())
+				.orderByDescending(I_C_Project.COLUMNNAME_IsActive)
+				.orderByDescending(I_C_Project.COLUMNNAME_C_Project_ID)
 				.create()
 				.firstId(ProjectId::ofRepoIdOrNull);
 	}

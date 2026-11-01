@@ -26,12 +26,13 @@ export const printTargetLabel = ({ wfProcessId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const consolidate = ({ wfProcessId, fromPickingSlotQRCode, huId }) => {
+export const consolidate = ({ wfProcessId, fromPickingSlotQRCode, huId, grai }) => {
   return axios
     .post(toUrl(`${apiBasePath}/mobile/huConsolidation/job/${wfProcessId}/consolidate`), {
       wfProcessId,
       fromPickingSlotQRCode,
       huId,
+      grai,
     })
     .then((response) => unboxAxiosResponse(response));
 };

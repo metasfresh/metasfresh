@@ -1,0 +1,5 @@
+Field <de.metas.distribution.ddorder.process.RawMaterialsReturnDDOrderLineCandidate.dateOrdered> has raw type java.sql.Timestamp in (RawMaterialsReturnDDOrderLineCandidate.java:0)
+Field <org.eevolution.process.CRPSummary.p_DateFrom> has raw type java.sql.Timestamp in (CRPSummary.java:0)
+Field <org.eevolution.process.CRPSummary.p_DateTo> has raw type java.sql.Timestamp in (CRPSummary.java:0)
+Field <org.eevolution.process.ComponentChange.p_ValidFrom> has raw type java.sql.Timestamp in (ComponentChange.java:0)
+Field <org.eevolution.process.ComponentChange.p_ValidTo> has raw type java.sql.Timestamp in (ComponentChange.java:0)

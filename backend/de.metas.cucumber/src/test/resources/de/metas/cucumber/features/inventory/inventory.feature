@@ -8,6 +8,7 @@ Feature: Physical inventory tests
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
     And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -46,6 +47,12 @@ Feature: Physical inventory tests
     And validate M_HUs:
       | M_HU_ID | M_HU_PI_ID | HUStatus | M_HU_Parent | M_Product_ID | Qty      |
       | hu1     | 101        | A        | -           | product      | 1000 PCE |
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu1                | A        | Y        |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 1000      |
 
   @from:cucumber
 @allure.label.epic:E0350_Warehouse_Managment
@@ -60,6 +67,13 @@ Feature: Physical inventory tests
       | lu1         | vhu     | 101        | A        | product      | 200 PCE |
       | -           | lu2     | LU         | A        | product      | 200 PCE |
       | lu2         | vhu     | 101        | A        | product      | 200 PCE |
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | lu1                | A        | Y        |
+      | lu2                | A        | Y        |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 400       |
 
   @from:cucumber
 @allure.label.epic:E0350_Warehouse_Managment
@@ -72,6 +86,12 @@ Feature: Physical inventory tests
       | M_HU_Parent | M_HU_ID | M_HU_PI_ID | HUStatus | M_Product_ID | Qty     | QtyTUs | IsAggregate |
       | -           | lu1     | LU         | A        | product      | 400 PCE |        | N           |
       | lu1         | tu_agg1 | TU         | A        | product      | 400 PCE | 40     | Y           |
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | lu1                | A        | Y        |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 800       |
 
   @from:cucumber
 @allure.label.epic:E0350_Warehouse_Managment
@@ -83,4 +103,11 @@ Feature: Physical inventory tests
     And validate M_HUs:
       | M_HU_Parent | M_HU_ID | M_HU_PI_ID | HUStatus | M_Product_ID | Qty    |
       | -           | tu1     | TU         | A        | product      | 10 PCE |
-      | -           | tu2     | TU         | A        | product      | 9 PCE  | 
+      | -           | tu2     | TU         | A        | product      | 9 PCE  |
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | tu1                | A        | Y        |
+      | tu2                | A        | Y        |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 19        |

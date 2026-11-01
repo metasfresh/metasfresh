@@ -67,6 +67,23 @@ public class BPartnerQuery
 	@Nullable
 	Boolean userSalesRepSet;
 
+	/**
+	 * Optional tie-breaker filters for IsCustomer/IsVendor.
+	 * Used as a fallback when a Value-based lookup returns multiple BPartners:
+	 * 1. First try WITHOUT the filter
+	 * 2. If exactly 1 result -> use it
+	 * 3. If >1 results -> retry WITH the filter
+	 * 4. If still >1 or 0 -> return empty / throw
+	 */
+	@Nullable Boolean isCustomerFilter;
+	@Nullable Boolean isVendorFilter;
+
+	/**
+	 * If {@code true}, the GLN lookup (only that branch) returns matches where both the {@code C_BPartner} and its {@code C_BPartner_Location} are active.
+	 * If {@code false} (default), also includes matches on inactive bpartners or locations.
+	 */
+	boolean glnLookupOnlyActive;
+
 	@Builder(toBuilder = true)
 	private BPartnerQuery(
 			@Nullable final BPartnerId bPartnerId,
@@ -79,7 +96,12 @@ public class BPartnerQuery
 			@NonNull @Singular final Set<OrgId> onlyOrgIds,
 			//
 			@Nullable final Boolean failIfNotExists,
-			@Nullable final Boolean userSalesRepSet)
+			@Nullable final Boolean userSalesRepSet,
+			//
+			@Nullable final Boolean isCustomerFilter,
+			@Nullable final Boolean isVendorFilter,
+			//
+			@Nullable final Boolean glnLookupOnlyActive)
 	{
 
 		this.bPartnerId = bPartnerId;
@@ -94,6 +116,11 @@ public class BPartnerQuery
 		this.failIfNotExists = coalesceNotNull(failIfNotExists, false);
 
 		this.userSalesRepSet = userSalesRepSet;
+
+		this.isCustomerFilter = isCustomerFilter;
+		this.isVendorFilter = isVendorFilter;
+
+		this.glnLookupOnlyActive = coalesceNotNull(glnLookupOnlyActive, false);
 
 		validate();
 	}

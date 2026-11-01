@@ -76,32 +76,40 @@ public class JsonShipmentData
 	String senderAccountAtBank;
 
 	@JsonProperty("Services")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular
 	List<Integer> services;
 
 	@JsonProperty("Addresses")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular
 	List<JsonAddress> addresses;
 
 	@JsonProperty("Lines")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular
 	List<JsonLine> lines;
 
 	@JsonProperty("References")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular
 	List<JsonReference> references;
 
 	@JsonProperty("DetailGroups")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular
 	List<JsonDetailGroup> detailGroups;
 
 	@JsonProperty("Amounts")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	List<JsonAmount> amounts;
 
 	@JsonProperty("Messages")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	List<JsonShipmentMessage> messages;
 
 	@JsonProperty("DangerousGoods")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular
 	List<JsonDangerousGoods> dangerousGoods;
 }

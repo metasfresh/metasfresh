@@ -4,11 +4,12 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
-import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.pporder.api.impl.HUPPOrderBL_LotNumberFromSequence_Test;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -28,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class FinishedGoodsReceiptDefaultsTest
 {
-	private static final ImmutableSet<PickAttribute> ALL_EDITABLE = ImmutableSet.of(PickAttribute.BestBeforeDate, PickAttribute.LotNo);
+	private static final ImmutableSet<AttributeCode> ALL_EDITABLE = ImmutableSet.of(AttributeConstants.ATTR_BestBeforeDate, AttributeConstants.ATTR_LotNumber);
 
 	private PPOrderId ppOrderId;
 
@@ -69,16 +70,13 @@ class FinishedGoodsReceiptDefaultsTest
 		assertThat(defaults.getBestBeforeDate(createProductWithBestBeforeDays(0))).isNull();
 	}
 
-	/**
-	 * A lot number that is not editable is still shown (read-only), so its preview is computed anyway.
-	 */
 	@Test
-	void attributesNotEditable_noBestBeforeDefault_butLotPreview()
+	void attributesNotEditable_noDefaults()
 	{
 		final FinishedGoodsReceiptDefaults defaults = FinishedGoodsReceiptDefaults.of(ppOrderId, ImmutableSet.of());
 
 		assertThat(defaults.getBestBeforeDate(createProductWithBestBeforeDays(10))).isNull();
-		assertThat(defaults.getLotNo()).isEqualTo("26-293");
+		assertThat(defaults.getLotNo()).isNull();
 	}
 
 	private static ProductId createProductWithBestBeforeDays(final int bestBeforeDays)

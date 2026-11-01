@@ -110,7 +110,7 @@ public interface I_C_InvoiceLine extends org.compiere.model.I_C_InvoiceLine
 
 	// @formatter:off
 	String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
-	boolean IsPackagingMaterial();
+	boolean isPackagingMaterial();
 	void setIsPackagingMaterial(boolean IsPackagingMaterial);
 	// @formatter:on
 

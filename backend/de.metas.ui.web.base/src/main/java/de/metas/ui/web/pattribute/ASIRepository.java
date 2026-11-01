@@ -15,6 +15,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -53,23 +54,18 @@ import java.util.function.Supplier;
  */
 
 @Repository
+@RequiredArgsConstructor
 public class ASIRepository
 {
 	// services
-	private static final Logger logger = LogManager.getLogger(ASIRepository.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
-	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-	private final ASIDescriptorFactory descriptorsFactory;
+	@NonNull private static final Logger logger = LogManager.getLogger(ASIRepository.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+	@NonNull private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	@NonNull private final ASIDescriptorFactory descriptorsFactory;
 
-	private final Supplier<DocumentId> nextASIDocId = DocumentId.supplier("N", 1);
-	private final CCache<DocumentId, ASIDocument> id2asiDoc = CCache.newLRUCache("ASIDocuments", 500, 0);
-
-	public ASIRepository(
-			@NonNull final ASIDescriptorFactory descriptorsFactory)
-	{
-		this.descriptorsFactory = descriptorsFactory;
-	}
+	@NonNull private final Supplier<DocumentId> nextASIDocId = DocumentId.supplier("N", 1);
+	@NonNull private final CCache<DocumentId, ASIDocument> id2asiDoc = CCache.newLRUCache("ASIDocuments", 500, 0);
 
 	public ASIDocument createNewFrom(@NonNull final WebuiASIEditingInfo info)
 	{
@@ -80,13 +76,26 @@ public class ASIRepository
 		//
 		// Create the new ASI document
 		final AttributeSetInstanceId templateAsiId = info.getAttributeSetInstanceId();
-		final Document asiDocData = Document.builder(asiDescriptor.getEntityDescriptor())
-				.initializeAsNewDocument(createASIDocumentValuesSupplier(templateAsiId, asiDescriptor.getEntityDescriptor()));
+		Document asiDocData = null;
+		try
+		{
+			asiDocData = Document.builder(asiDescriptor.getEntityDescriptor())
+					.dynAttribute(ASIDocument.DYNATTR_ASIDescriptor, asiDescriptor)
+					.dynAttribute(ASIDocument.DYNATTR_ASIEventType, ASIEventType.NEW)
+					.initializeAsNewDocument(createASIDocumentValuesSupplier(templateAsiId, asiDescriptor.getEntityDescriptor()));
+		}
+		finally
+		{
+			if (asiDocData != null)
+			{
+				asiDocData.setDynAttribute(ASIDocument.DYNATTR_ASIEventType, null);
+			}
+		}
 
 		//
 		// Validate, log and add the new ASI document to our index
 		asiDocData.checkAndGetValidStatus();
-		logger.trace("Created from ASI={}: {}", templateAsiId, asiDocData);
+		logger.trace("Created from template ASI={}: {}", templateAsiId, asiDocData);
 
 		final ASIDocument asiDoc = new ASIDocument(asiDescriptor, asiDocData);
 		commit(asiDoc);
@@ -114,13 +123,26 @@ public class ASIRepository
 
 		//
 		// Create the new ASI document
-		final Document asiDocData = Document.builder(asiDescriptor.getEntityDescriptor())
-				.initializeAsNewDocument(createASIDocumentValuesSupplier(attributeSetInstanceId, asiDescriptor.getEntityDescriptor()));
+		Document asiDocData = null;
+		try
+		{
+			asiDocData = Document.builder(asiDescriptor.getEntityDescriptor())
+					.dynAttribute(ASIDocument.DYNATTR_ASIDescriptor, asiDescriptor)
+					.dynAttribute(ASIDocument.DYNATTR_ASIEventType, ASIEventType.COPY)
+					.initializeAsNewDocument(createASIDocumentValuesSupplier(attributeSetInstanceId, asiDescriptor.getEntityDescriptor()));
+		}
+		finally
+		{
+			if (asiDocData != null)
+			{
+				asiDocData.setDynAttribute(ASIDocument.DYNATTR_ASIEventType, null);
+			}
+		}
 
 		//
 		// Validate, log and add the new ASI document to our index
 		asiDocData.checkAndGetValidStatus();
-		logger.trace("Created from ASI={}: {}", attributeSetInstanceId, asiDocData);
+		logger.trace("Created as a copy of existing ASI={}: {}", attributeSetInstanceId, asiDocData);
 
 		final ASIDocument asiDoc = new ASIDocument(asiDescriptor, asiDocData);
 		return asiDoc.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);

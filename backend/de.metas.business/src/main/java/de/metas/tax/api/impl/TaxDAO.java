@@ -1,8 +1,31 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.tax.api.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
@@ -32,6 +55,7 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.vatid.VATaxIDStatus;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -50,6 +74,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.X_C_Tax;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -66,6 +91,10 @@ import static de.metas.tax.api.TypeOfDestCountry.OUTSIDE_COUNTRY_AREA;
 import static de.metas.tax.api.TypeOfDestCountry.WITHIN_COUNTRY_AREA;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+/**
+ * Repository Tables: C_Tax, C_TaxCategory, C_VAT_SmallBusiness
+ * Repository Cluster: TaxDAO; C_Tax is additionally read (FK lookups only) by CiiMappingRepository.
+ */
 public class TaxDAO implements ITaxDAO
 {
 	private final static Logger logger = LogManager.getLogger(TaxDAO.class);
@@ -79,8 +108,7 @@ public class TaxDAO implements ITaxDAO
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
-	private final IBPartnerBL bpartnerBL  = Services.get(IBPartnerBL.class);
-
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public Tax getTaxById(final int taxRepoId)
@@ -238,6 +266,30 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
+	public Optional<TaxCategoryId> getTaxCategoryIdByInternalName(@NonNull final String internalName)
+	{
+		return queryBL.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_InternalName, internalName)
+				.create()
+				.firstOnlyOptional(I_C_TaxCategory.class)
+				.map(I_C_TaxCategory::getC_TaxCategory_ID)
+				.map(TaxCategoryId::ofRepoId);
+	}
+
+	@Override
+	public Optional<TaxCategoryId> getActiveTaxCategoryIdById(@NonNull final TaxCategoryId taxCategoryId)
+	{
+		final TaxCategoryId activeTaxCategoryId = queryBL.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, taxCategoryId)
+				.create()
+				.firstId(TaxCategoryId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(activeTaxCategoryId);
+	}
+
+	@Override
 	public Percent getRateById(@NonNull final TaxId taxId)
 	{
 		final Tax tax = getTaxById(taxId);
@@ -325,18 +377,15 @@ public class TaxDAO implements ITaxDAO
 				}
 
 				final CountryId warehouseCountryId = warehouseBL.getCountryId(warehouseId);
-				if (warehouseCountryId != null)
-				{
-					loggable.addLog("C_Country_ID={} based on warehouse", warehouseCountryId.getRepoId());
-					countryId = warehouseCountryId;
-				}
+				loggable.addLog("C_Country_ID={} based on warehouse", warehouseCountryId.getRepoId());
+				countryId = warehouseCountryId;
 			}
 			else
 			{
 				loggable.addLog("Effective AD_Org_ID={} (or any)", orgId.getRepoId());
 				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
 				countryId = bPartnerOrgBL.getOrgCountryId(orgId);
-				loggable.addLog("C_Country_ID={} based on AD_Org_ID={}", countryId.getRepoId(), orgId.getRepoId());
+				loggable.addLog("C_Country_ID={} based on AD_Org_ID={}", CountryId.toRepoId(countryId), orgId.getRepoId());
 			}
 			if (countryId == null)
 			{
@@ -393,12 +442,24 @@ public class TaxDAO implements ITaxDAO
 
 		final BPartnerId bpartnerId = taxQuery.getBPartnerId();
 
-		final VATIdentifier bpVATaxID = Optional.ofNullable( taxQuery.getBPartnerLocationId())
+		final BPartnerLocationId bpartnerLocationId = Optional.ofNullable(taxQuery.getBPartnerLocationId())
 				.map(BPartnerLocationAndCaptureId::getBpartnerLocationId)
-				.flatMap(bpartnerBL::getVATTaxId)
 				.orElse(null);
 
-		final boolean bPartnerHasTaxCertificate = bpVATaxID != null;
+		final VATIdentifier bpVATaxID = bpartnerLocationId != null
+				? bpartnerBL.getVATTaxId(bpartnerLocationId).orElse(null)
+				: null;
+
+		// A present VAT-ID keeps the tax certificate unless its VATaxIDStatus is explicitly Invalid.
+		// getVATaxIDStatusCode(...) is guaranteed (see its Javadoc) to read the status off the SAME
+		// record that supplied bpVATaxID -- never a different one. A missing/blank status
+		// (pre-migration data, or never checked) defaults to "has certificate" via orElse(true),
+		// which is exactly today's presence-only behaviour.
+		final boolean bPartnerHasTaxCertificate = bpVATaxID != null
+				&& bpartnerBL.getVATaxIDStatusCode(bpartnerLocationId)
+				.flatMap(VATaxIDStatus::optionalOfNullableCode)
+				.map(VATaxIDStatus::hasTaxCertificate)
+				.orElse(true);
 		loggable.addLog("BPartner has tax certificate={}", bPartnerHasTaxCertificate);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, StringUtils.ofBoolean(bPartnerHasTaxCertificate), null);
 
@@ -406,19 +467,8 @@ public class TaxDAO implements ITaxDAO
 		loggable.addLog("BPartner is a small business={}", bpartnerIsSmallbusiness);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_IsSmallbusiness, StringUtils.ofBoolean(bpartnerIsSmallbusiness), null);
 
-		// if (euOneStopShop && WITHIN_COUNTRY_AREA.equals(typeOfDestCountry) && !bPartnerHasTaxCertificate)
-		// {
-		// 	loggable.addLog("AD_Org_ID={} has IsEUOneStopShop=Y, typeOfDestCountry=WITHIN_COUNTRY_AREA and C_BPartner_ID={} has no tax certificate; -> filter by To_Country_ID={}",
-		// 					orgId.getRepoId(), destCountryId.getRepoId(), bpartnerId.getRepoId());
-		// 	queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_To_Country_ID, destCountryId);
-		// }
-		// else
-		// {
-		// 	loggable.addLog("AD_Org_ID={} has IsEUOneStopShop=N OR typeOfDestCountry!=WITHIN_COUNTRY_AREA OR C_BPartner_ID={} has a tax certificate; -> filter by To_Country_ID={} or NULL",
-		// 					orgId.getRepoId(), destCountryId.getRepoId(), bpartnerId.getRepoId());
 		loggable.addLog("Filter by To_Country_ID={} or NULL", destCountryId.getRepoId());
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, destCountryId, null);
-		//}
 
 		loggable.addLog("Type of dest country: {} or NULL", typeOfDestCountry);
 		if (typeOfDestCountry != null)
@@ -430,6 +480,13 @@ public class TaxDAO implements ITaxDAO
 		final boolean hasFiscalRepresentation = fiscalRepresentationBL.hasFiscalRepresentation(destCountryId, orgId, fiscalRepresentationFromDate);
 		loggable.addLog("BPartner has fiscal Representation = {}", hasFiscalRepresentation);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_IsFiscalRepresentation, StringUtils.ofBoolean(hasFiscalRepresentation), null);
+
+		final Percent rate = taxQuery.getRate();
+		if (rate != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_Rate, rate.toBigDecimal());
+			loggable.addLog("Rate={}", rate);
+		}
 
 		queryBuilder.orderBy(I_C_Tax.COLUMNNAME_SeqNo);
 		return queryBuilder;
@@ -499,5 +556,36 @@ public class TaxDAO implements ITaxDAO
 				.addEqualsFilter(I_C_Tax.COLUMNNAME_AD_Client_ID, clientId)
 				.create()
 				.firstIdOnlyOptional(TaxId::ofRepoIdOrNull);
+	}
+
+	@Override
+	@NonNull
+	public TaxCategoryId createTaxCategory(@NonNull final CreateTaxCategoryRequest request)
+	{
+		final I_C_TaxCategory taxCategory = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
+		taxCategory.setInternalName(request.getInternalName());
+		taxCategory.setName(request.getName());
+		InterfaceWrapperHelper.saveRecord(taxCategory);
+
+		return TaxCategoryId.ofRepoId(taxCategory.getC_TaxCategory_ID());
+	}
+
+	@Override
+	@NonNull
+	public TaxId createTax(@NonNull final CreateTaxRequest request)
+	{
+		final I_C_Tax tax = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
+		tax.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
+		tax.setName(request.getName());
+		tax.setRate(request.getRate().toBigDecimal());
+		tax.setIsDocumentLevel(request.isDocumentLevel());
+		tax.setValidFrom(TimeUtil.asTimestampNotNull(request.getValidFrom()));
+		tax.setC_Country_ID(request.getCountryId().getRepoId());
+		tax.setTo_Country_ID(request.getCountryId().getRepoId());
+		tax.setTypeOfDestCountry(request.getTypeOfDestCountry().getCode());
+		tax.setSOPOType(request.getSopoType().getCode());
+		InterfaceWrapperHelper.saveRecord(tax);
+
+		return TaxId.ofRepoId(tax.getC_Tax_ID());
 	}
 }

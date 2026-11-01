@@ -181,11 +181,11 @@ export class ManufacturingOrderReceiptPage {
     return await test.step('ManufacturingOrderReceiptPage - Select "No Packing Item"', async () => {
       const page = getPage();
       await this.#field('M_HU_PI_Item_Product_ID').locator('.input-dropdown').click();
-      // data-test-id is the ID followed by the caption: match exactly ID 101, not e.g. 1010001
-      const options = page.locator('.input-dropdown-list-option[data-test-id]');
+      // each option carries data-testid="option-<ID>" (SelectionDropdown): match exactly ID 101, not e.g. 1010001
+      const options = page.locator('.input-dropdown-list-option[data-testid^="option-"]');
       await options.first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      const testIds = await options.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-test-id')));
-      const index = testIds.findIndex((testId) => /^101\D/.test(testId));
+      const testIds = await options.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-testid')));
+      const index = testIds.indexOf('option-101');
       expect(index, `"No Packing Item" (ID 101) among ${testIds}`).toBeGreaterThanOrEqual(0);
       await this.#chooseOption('M_HU_PI_Item_Product_ID', options.nth(index));
     });

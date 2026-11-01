@@ -2,6 +2,7 @@ import HUManagerScreen from './containers/HUManagerScreen';
 import HUDisposalScreen from './containers/HUDisposalScreen';
 import HUMoveScreen from './containers/HUMoveScreen';
 import HUPrintingOptionsScreen from './containers/HUPrintingOptionsScreen';
+import GRAIScreen from './containers/GRAIScreen';
 import { APPLICATION_ID } from './constants';
 import HUBulkActionsScreen from './containers/HUBulkActionsScreen';
 
@@ -10,6 +11,7 @@ export const huManagerDisposeLocation = () => `/${APPLICATION_ID}/dispose`;
 export const huManagerMoveLocation = () => `/${APPLICATION_ID}/move`;
 export const huManagerBulkActionsLocation = () => `/${APPLICATION_ID}/bulkActions`;
 export const huManagerHuLabelsLocation = () => `/${APPLICATION_ID}/huLabels`;
+export const huManagerGraiLocation = () => `/${APPLICATION_ID}/grai`;
 
 export const huManagerRoutes = [
   {
@@ -31,5 +33,9 @@ export const huManagerRoutes = [
   {
     path: huManagerHuLabelsLocation(),
     Component: HUPrintingOptionsScreen,
+  },
+  {
+    path: huManagerGraiLocation(),
+    Component: GRAIScreen,
   },
 ];

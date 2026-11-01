@@ -22,15 +22,17 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
-import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.InOutId;
@@ -39,6 +41,7 @@ import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.logging.LogManager;
 import de.metas.material.MovementType;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.IUOMDAO;
@@ -70,9 +73,10 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_C_OrderLine_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID;
@@ -96,7 +100,30 @@ public class M_InOut_Line_StepDef
 	private final M_Locator_StepDefData locatorTable;
 	private final M_HU_PI_Item_Product_StepDefData huPIItemProductTable;
 	private final M_AttributeSetInstance_StepDefData asiTable;
+	private final C_Project_StepDefData projectTable;
 
+	/**
+	 * Finds one line of the given shipment or material receipt per row and validates it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier-ref) the shipment or material receipt<br>
+	 * <b>M_Product_ID</b> — (optional, identifier-ref or id) filter: the line's product<br>
+	 * <b>C_OrderLine_ID</b> — (optional, identifier-ref) filter: the line's order line<br>
+	 * <b>QualityDiscountPercent</b> — (optional) filter: the line's quality discount<br>
+	 * <b>MovementQty</b> — (optional) filter and assertion: the line's movement quantity<br>
+	 * <b>M_InOutLine_ID</b> — (optional) alias to store the found line under, in M_InOutLine_StepDefData<br>
+	 * <b>M_AttributeSetInstance_ID</b> — (optional) alias to store the line's attribute set instance under<br>
+	 * <b>Processed</b> — (optional) expected processed flag<br>
+	 * <b>ExternalId</b> — (optional) expected external id<br>
+	 * <b>C_Project_ID</b> — (optional, identifier-ref) expected project; {@code null} expects no project<br>
+	 * <b>Return_Origin_InOutLine_ID</b> — (optional, identifier-ref, null-allowed) expected origin shipment/receipt line; {@code null} expects none (e.g. a POS return line)<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_InOutLine_StepDefData, M_Product_StepDefData, C_OrderLine_StepDefData, C_Project_StepDefData
+	 * @cucumber.example <pre>
+	 * And validate the created shipment lines
+	 *   | M_InOutLine_ID | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
+	 *   | packing_line   | shipment   | crate        | 2           | project_1    |
+	 * </pre>
+	 */
 	@And("^validate the created (shipment|material receipt) lines$")
 	public void validate_created_M_InOutLines(@NonNull final String ignoredModel, @NonNull final DataTable table)
 	{
@@ -106,15 +133,30 @@ public class M_InOut_Line_StepDef
 	private void loadAndValidateAInOutLine(final DataTableRow row)
 	{
 		final I_M_InOutLine inoutLine = loadInOutLine(row);
+		SharedTestContext.put("inoutLine", inoutLine);
 		validateInOutLine(inoutLine, row);
 	}
 
-	private static void validateInOutLine(final I_M_InOutLine inoutLine, final DataTableRow row)
+	private void validateInOutLine(final I_M_InOutLine inoutLine, final DataTableRow row)
 	{
 		final SoftAssertions softly = new SoftAssertions();
 		row.getAsOptionalBoolean("processed").ifPresent(processed -> softly.assertThat(inoutLine.isProcessed()).as("Processed").isEqualTo(processed));
 		row.getAsOptionalBigDecimal("movementqty").ifPresent(movementQty -> softly.assertThat(inoutLine.getMovementQty()).as("MovementQty").isEqualByComparingTo(movementQty));
 		row.getAsOptionalString(I_M_InOutLine.COLUMNNAME_ExternalId).ifPresent(externalId -> softly.assertThat(inoutLine.getExternalId()).as("ExternalId").isEqualTo(externalId));
+		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_C_Project_ID)
+				.ifPresent(projectIdentifier -> softly.assertThat(ProjectId.ofRepoIdOrNull(inoutLine.getC_Project_ID()))
+						.as("C_Project_ID")
+						.isEqualTo(projectIdentifier.lookupIdIn(projectTable)));
+
+		row.getAsOptionalIdentifier(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_Return_Origin_InOutLine_ID)
+				.ifPresent(returnOriginIdentifier -> {
+					final de.metas.inout.model.I_M_InOutLine inoutLineExt = InterfaceWrapperHelper.create(inoutLine, de.metas.inout.model.I_M_InOutLine.class);
+					final int expectedReturnOriginId = returnOriginIdentifier.isNullPlaceholder()
+							? 0
+							: inoutLineTable.get(returnOriginIdentifier.getAsString()).getM_InOutLine_ID();
+					softly.assertThat(inoutLineExt.getReturn_Origin_InOutLine_ID()).as("Return_Origin_InOutLine_ID").isEqualTo(expectedReturnOriginId);
+				});
+
 		softly.assertAll();
 	}
 
@@ -137,10 +179,22 @@ public class M_InOut_Line_StepDef
 				.ifPresent(orderLineId -> lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLineId));
 		row.getAsOptionalBigDecimal(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent)
 				.ifPresent(qualityDiscountPercent -> lineQueryBuilder.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, qualityDiscountPercent));
+		// When multiple lines exist for the same product (e.g. one shipment line per reservation with different attributes),
+		// movementqty can be used as an additional filter to uniquely identify a line.
+		row.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_MovementQty)
+				.ifPresent(movementQty -> lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_MovementQty, movementQty));
 
 		final I_M_InOutLine inoutLine = getSingleInOutLine(lineQueryBuilder.create());
 
 		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).ifPresent(inoutLineIdentifier -> inoutLineTable.putOrReplace(inoutLineIdentifier, inoutLine));
+
+		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_AttributeSetInstance_ID).ifPresent(asiIdentifier -> {
+			if (inoutLine.getM_AttributeSetInstance_ID() > 0)
+			{
+				final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.load(inoutLine.getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
+				asiTable.putOrReplace(asiIdentifier, asi);
+			}
+		});
 
 		return inoutLine;
 	}
@@ -285,7 +339,60 @@ public class M_InOut_Line_StepDef
 						inOutLine.setIsPackagingMaterial(isPackingMaterial);
 					}
 
+					final I_M_InOutLine huInOutLine = InterfaceWrapperHelper.create(inOutLine, I_M_InOutLine.class);
+					final BigDecimal qtyEnteredTU = row.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_QtyEnteredTU).orElse(null);
+					final Optional<StepDefDataIdentifier> huPIItemProductIdentifier = row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_HU_PI_Item_Product_ID);
+					// the null placeholder means "no packing instruction"
+					final HUPIItemProductId huPIItemProductId = huPIItemProductIdentifier
+							.filter(identifier -> !identifier.isNullPlaceholder())
+							.map(huPIItemProductTable::getId)
+							.orElse(null);
+
+					assertThat(qtyEnteredTU != null)
+							.as("OPT.QtyEnteredTU and OPT.M_HU_PI_Item_Product_ID.Identifier must be given together (give both or neither)")
+							.isEqualTo(huPIItemProductIdentifier.isPresent());
+
+					if (qtyEnteredTU != null)
+					{
+						final Integer huPIItemProductRepoId = huPIItemProductId != null ? huPIItemProductId.getRepoId() : null;
+						if (Boolean.TRUE.equals(isPackingMaterial))
+						{
+							// the interceptor M_InOutLine.updateEffectiveValues skips packaging material lines, so the direct columns are kept as given
+							huInOutLine.setQtyEnteredTU(qtyEnteredTU);
+							InterfaceWrapperHelper.setValue(huInOutLine, I_M_InOutLine.COLUMNNAME_M_HU_PI_Item_Product_ID, huPIItemProductRepoId);
+						}
+						else
+						{
+							// The HU interceptor M_InOutLine.updateEffectiveValues overwrites QtyEnteredTU and M_HU_PI_Item_Product_ID
+							// on every non-packaging shipment line: with IsManualPackingMaterial=false from the *_Calculated columns,
+							// with IsManualPackingMaterial=true from QtyTU_Override and M_HU_PI_Item_Product_Override_ID.
+							// So we write the override pair (always together), to make the given values survive.
+							huInOutLine.setIsManualPackingMaterial(true);
+							huInOutLine.setQtyTU_Override(qtyEnteredTU);
+							InterfaceWrapperHelper.setValue(huInOutLine, I_M_InOutLine.COLUMNNAME_M_HU_PI_Item_Product_Override_ID, huPIItemProductRepoId);
+						}
+					}
+
 					InterfaceWrapperHelper.saveRecord(inOutLine);
+
+					if (qtyEnteredTU != null || huPIItemProductIdentifier.isPresent())
+					{
+						// re-load to make sure no interceptor recomputed the values we've set
+						InterfaceWrapperHelper.refresh(inOutLine);
+						final I_M_InOutLine storedHuInOutLine = InterfaceWrapperHelper.create(inOutLine, I_M_InOutLine.class);
+						if (qtyEnteredTU != null)
+						{
+							assertThat(storedHuInOutLine.getQtyEnteredTU())
+									.as("QtyEnteredTU after save")
+									.isEqualByComparingTo(qtyEnteredTU);
+						}
+						if (huPIItemProductIdentifier.isPresent())
+						{
+							assertThat(HUPIItemProductId.ofRepoIdOrNull(storedHuInOutLine.getM_HU_PI_Item_Product_ID()))
+									.as("M_HU_PI_Item_Product_ID after save")
+									.isEqualTo(huPIItemProductId);
+						}
+					}
 
 					row.getAsOptionalIdentifier().ifPresent(identifier -> inoutLineTable.putOrReplace(identifier, inOutLine));
 				});

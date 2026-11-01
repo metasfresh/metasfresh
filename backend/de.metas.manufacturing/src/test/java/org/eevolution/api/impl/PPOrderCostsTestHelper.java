@@ -29,6 +29,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -55,6 +56,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.PPOrderId;
@@ -93,6 +95,7 @@ public class PPOrderCostsTestHelper
 	private final AcctSchemaId acctSchemaId;
 	private final CostTypeId costTypeId = CostTypeId.ofRepoId(1);
 	public final CostElement costElement;
+	public final CostElementRepository costElementRepo;
 
 	public PPOrderCostsTestHelper()
 	{
@@ -111,7 +114,7 @@ public class PPOrderCostsTestHelper
 		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
-		final CostElementRepository costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
+		costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		SpringContextHolder.registerJUnitBean(ICurrentCostsRepository.class, new CurrentCostsRepository(costElementRepo));
 		SpringContextHolder.registerJUnitBean(ICostElementRepository.class, costElementRepo);
 
@@ -138,11 +141,12 @@ public class PPOrderCostsTestHelper
 	private void createCurrentCost(
 			final ProductId productId,
 			final I_C_UOM uom,
-			final String currentCostPrice)
+			final String currentCostPrice,
+			@Nullable final CostElementId costElementId)
 	{
 		final I_M_Cost cost = InterfaceWrapperHelper.newInstance(I_M_Cost.class);
 		cost.setC_AcctSchema_ID(acctSchemaId.getRepoId());
-		cost.setM_CostElement_ID(costElement.getId().getRepoId());
+		cost.setM_CostElement_ID((costElementId != null ? costElementId : costElement.getId()).getRepoId());
 		cost.setM_CostType_ID(costTypeId.getRepoId());
 		cost.setM_Product_ID(productId.getRepoId());
 		cost.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
@@ -218,14 +222,26 @@ public class PPOrderCostsTestHelper
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final ProductId productId,
 			@NonNull final String qtyRequired,
-			@NonNull final I_C_UOM uom)
+			@NonNull final I_C_UOM uom,
+			@Nullable final BOMComponentType componentType)
 	{
 		final I_PP_Order_BOMLine bomLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
 		bomLine.setPP_Order_ID(ppOrderId.getRepoId());
-		bomLine.setComponentType(BOMComponentType.Component.getCode());
+		bomLine.setComponentType((componentType != null ? componentType : BOMComponentType.Component).getCode());
 		bomLine.setM_Product_ID(productId.getRepoId());
 		bomLine.setC_UOM_ID(uom.getC_UOM_ID());
 		bomLine.setQtyRequiered(new BigDecimal(qtyRequired));
 		InterfaceWrapperHelper.saveRecord(bomLine);
+	}
+
+	/**
+	 * Creates a product carrying {@code M_Product.CoProductCostDistributionPercent}.
+	 */
+	public ProductId createCoProductId(final String name, final I_C_UOM uom, final String coProductCostDistributionPercent)
+	{
+		final I_M_Product product = BusinessTestHelper.createProduct(name, uom);
+		product.setCoProductCostDistributionPercent(new BigDecimal(coProductCostDistributionPercent));
+		InterfaceWrapperHelper.saveRecord(product);
+		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 }

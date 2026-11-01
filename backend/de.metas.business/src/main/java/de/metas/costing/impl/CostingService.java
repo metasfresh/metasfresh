@@ -1,6 +1,7 @@
 package de.metas.costing.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Range;
@@ -10,7 +11,6 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.AggregatedCostPrice;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
-import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
@@ -38,6 +38,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.costing.methods.CostAmountType;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
@@ -58,8 +59,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /*
@@ -180,6 +184,28 @@ public class CostingService implements ICostingService
 		{
 			return ExplainedOptional.of(CostDetailCreateResultsList.ofList(costElementResults));
 		}
+	}
+
+	@Override
+	public ImmutableMap<ProductId, CostAmountDetailed> getCostDetailAmountsToPostByProduct(
+			@NonNull final CostingDocumentRef documentRef,
+			@NonNull final AcctSchema as)
+	{
+		final List<CostDetail> costDetails = costDetailsService.getAllForDocumentAndAcctSchemaId(documentRef, as.getId());
+		if (costDetails.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		// Group by product FIRST: each product's rows are one cost segment, so toCostDetailCreateResultsList (which
+		// requires a single segment) is applied per product, never across the whole mixed-product document.
+		final Map<ProductId, List<CostDetail>> byProduct = costDetails.stream()
+				.collect(Collectors.groupingBy(CostDetail::getProductId, LinkedHashMap::new, Collectors.toList()));
+
+		final ImmutableMap.Builder<ProductId, CostAmountDetailed> result = ImmutableMap.builder();
+		byProduct.forEach((productId, rows) ->
+				result.put(productId, costDetailsService.toCostDetailCreateResultsList(rows).getTotalAmountToPost(as)));
+		return result.build();
 	}
 
 	private Stream<CostDetailCreateResult> createCostDetailUsingHandlersAndStream(final CostDetailCreateRequest request)
@@ -400,9 +426,12 @@ public class CostingService implements ICostingService
 			throw new AdempiereException("Initial document has no cost details: " + reversalRequest);
 		}
 
-		// matched by (costElementId, amtType), NOT costElementId alone: a distribution collector's 3 legs
-		// share one cost element, so a costElementId-keyed map would either return the wrong leg or (once
-		// a repost finds all 3 already persisted) throw on the duplicate key while building the map.
+		// matched by (productId, costElementId, amtType), NOT costElementId alone: a distribution collector's 3 legs
+		// share one cost element, so a costElementId-keyed map would either return the wrong leg or (once a repost
+		// finds all 3 already persisted) throw on the duplicate key while building the map. productId is part of the
+		// key because a CostDifferenceDistribution collector carries the MAIN product's legs AND each co-product's legs
+		// under one document, all sharing the material cost element -- without productId a co-product's already-reversed
+		// leg would shadow the main product's same-amtType leg (or vice versa) on a reversal repost.
 		final List<CostDetail> existingCostDetailsList = costDetailsService
 				.getAllForDocumentAndAcctSchemaId(reversalRequest.getReversalDocumentRef(), reversalRequest.getAcctSchemaId());
 
@@ -410,10 +439,13 @@ public class CostingService implements ICostingService
 
 		for (final CostDetail initialDocCostDetail : initialDocCostDetails)
 		{
+			final ProductId productId = initialDocCostDetail.getProductId();
 			final CostElementId costElementId = initialDocCostDetail.getCostElementId();
 			final CostAmountType amtType = initialDocCostDetail.getAmtType();
 			final CostDetail existingCostDetail = existingCostDetailsList.stream()
-					.filter(existing -> CostElementId.equals(existing.getCostElementId(), costElementId) && existing.getAmtType() == amtType)
+					.filter(existing -> ProductId.equals(existing.getProductId(), productId)
+							&& CostElementId.equals(existing.getCostElementId(), costElementId)
+							&& existing.getAmtType() == amtType)
 					.findFirst()
 					.orElse(null);
 			if (existingCostDetail != null)
@@ -523,63 +555,18 @@ public class CostingService implements ICostingService
 	@Override
 	public CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request)
 	{
-		final CostSegmentAndElement costSegmentAndElement = request.getCostSegmentAndElement();
-		final Instant evaluationStartDate = request.getEvaluationStartDate();
 		final CostAmount newCostPrice = request.getNewCostPrice();
 
-		//
-		// Fetch cost details for our cost segment, starting from evaluation start date
-		final ImmutableList<CostDetail> costDetails = costDetailsService.stream(
-						CostDetailQuery.builderFrom(costSegmentAndElement)
-								.dateAcctRage(Range.atLeast(evaluationStartDate))
-								.orderBy(CostDetailQuery.OrderBy.DATE_ACCT_ASC)
-								.orderBy(CostDetailQuery.OrderBy.ID_ASC)
-								.build())
-				.collect(ImmutableList.toImmutableList());
-
-		//
-		// Restore current costs at the time before evaluation date
-		final CostsRevaluationResult.CostsRevaluationResultBuilder result = CostsRevaluationResult.builder();
-		final CurrentCost currentCost = currentCostsRepo.getOrCreate(costSegmentAndElement);
-		if (!costDetails.isEmpty())
-		{
-			final CostDetail firstCostDetail = costDetails.get(0);
-			currentCost.setFrom(firstCostDetail.getPreviousAmounts());
-		}
-		//
+		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(request.getCostSegmentAndElement());
 		final CostsRevaluationResult.CurrentCostBeforeEvaluation currentCostBeforeEvaluation = CostsRevaluationResult.CurrentCostBeforeEvaluation.builder()
 				.qty(currentCost.getCurrentQty())
 				.costPriceOld(currentCost.getCostPrice().getOwnCostPrice())
 				.costPriceNew(newCostPrice)
 				.build();
-		currentCost.setOwnCostPrice(newCostPrice);
-		result.currentCostBeforeEvaluation(currentCostBeforeEvaluation);
 
-		//
-		// Iterate all cost details, calculate adjustments and update the current costs
-		final CostingMethod costingMethod = costElementsRepo.getById(costSegmentAndElement.getCostElementId()).getCostingMethod();
-		for (final CostDetail costDetail : costDetails)
-		{
-			// Cost details which were not changing the costs (so are there only for recording)
-			// are not relevant for cost adjustment.
-			if (!costDetail.isChangingCosts())
-			{
-				continue;
-			}
-
-			final CostingMethodHandler handler = getSingleCostingMethodHandler(costingMethod, costDetail.getDocumentRef());
-			final CostDetailAdjustment costDetailAdjustment = handler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
-			result.costDetailAdjustment(costDetailAdjustment);
-		}
-
-		//
-		result.currentCostAfterEvaluation(CostsRevaluationResult.CurrentCostAfterEvaluation.builder()
-				.qty(currentCost.getCurrentQty())
-				.costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
-				.build());
-
-		//
-		return result.build();
+		return CostsRevaluationResult.builder()
+				.currentCostBeforeEvaluation(currentCostBeforeEvaluation)
+				.build();
 	}
 
 	/**
@@ -596,7 +583,7 @@ public class CostingService implements ICostingService
 			@NonNull final Instant anchorDate,
 			@NonNull final CostRevaluationLineId lineId)
 	{
-		final CurrentCost currentCost = currentCostsRepo.getOrCreate(targetSegmentAndElement);
+		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(targetSegmentAndElement);
 		currentCost.setFrom(opening);
 		currentCostsRepo.save(currentCost);
 

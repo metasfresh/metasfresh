@@ -109,11 +109,21 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 		overPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner);
 		overPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income); // metas-tsa: added per Mark request
 
+		// Actions for when there is a payment but no invoice to settle it against.
+		// Such a line is money sitting on the partner, so the accountant faces the same three-way
+		// decision as on an overpayment: park it, offset it against the next invoice, or refund it.
+		// The overPaymentGroup above cannot serve that case, because it is gated on a NEGATIVE
+		// ESR_Invoice_Openamt and a line without an invoice keeps the column at zero -- only
+		// ESRImportBL.updateOpenAmtAndStatusDontSave writes it, and that runs per invoice group.
+		// Every handler behind these actions supports a line without an invoice: the refund one
+		// branches on it explicitly ("there is no invoice, so we transfer back all the money"),
+		// and the next-invoice one only needs the payment to set IsAutoAllocateAvailableAmt.
 		final List<String> noActionGroup = new ArrayList<String>();
-		// only show <code>X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income</code> action when c_invoice_id is empty
 		if (invoiceId <= 0)
 		{
 			noActionGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
+			noActionGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner);
+			noActionGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice);
 		}
 
 		// Actions for when we have Payment < Open amount

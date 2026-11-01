@@ -208,8 +208,8 @@ public class ProductBOMBL implements IProductBOMBL
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
 		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, bomLine);
 
-		final BigDecimal qty = getQtyExcludingScrap(bomLine).toBigDecimal().negate();
-		return Percent.of(BigDecimal.ONE, qty, 4);
+		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+		return Percent.of(productDAO.getById(productId).getCoProductCostDistributionPercent());
 	}
 
 	/**

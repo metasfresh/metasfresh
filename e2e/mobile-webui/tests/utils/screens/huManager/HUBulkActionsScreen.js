@@ -15,7 +15,7 @@ const SCAN_TARGET_MAX_ATTEMPTS = 5;
 
 export const HUBulkActionsScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
@@ -25,7 +25,7 @@ export const HUBulkActionsScreen = {
     move: async ({ targetLocator }) => await test.step(`${NAME} - Move HU`, async () => {
         await page.getByTestId('toggle-target-scanner-button').tap();
         // Wait for button text to change to "Close scanner" - ensures React re-render complete
-        await page.getByTestId('toggle-target-scanner-button').getByText('Close scanner').waitFor();
+        await page.getByTestId('toggle-target-scanner-button').getByText('Close scanner').waitFor({ timeout: SLOW_ACTION_TIMEOUT });
 
         // The keyboard-scanner hook's window listener attaches asynchronously (useEffect after
         // the React commit), so a single instantaneous scan can be dropped; re-scan until the

@@ -85,7 +85,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class PPOrderCostDifferenceDistributorCostDetailsTest
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private IQueryBL queryBL;
 
 	private final ClientId clientId = ClientId.ofRepoId(1);
 	private final OrgId orgId = OrgId.ofRepoId(0);
@@ -104,21 +104,23 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	private CurrentCostsRepository currentCostsRepo;
 	private CostElementRepository costElementRepo;
 	private CostingMethodHandlerUtils utils;
+	private IPPOrderCostBL ppOrderCostBL;
 
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+		queryBL = Services.get(IQueryBL.class);
 		Env.setClientId(Env.getCtx(), clientId);
 
 		uomEach = BusinessTestHelper.createUomEach();
 		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// getCostingLevel is asked with either AcctSchema, so a fixed answer works for both schemas under test
-		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
+		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.MovingAverageInvoice));
 
 		// has to precede everything that resolves IAcctSchemaDAO: the helper refuses to replace an already-used one
-		orderAcctSchemaId = createAcctSchema(CostingMethod.AveragePO);
+		orderAcctSchemaId = createAcctSchema(CostingMethod.MovingAverageInvoice);
 		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(orderAcctSchemaId);
 
 		orderId = createCompletedPPOrder();
@@ -130,6 +132,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 				currentCostsRepo,
 				new CostDetailService(new CostDetailRepository(), costElementRepo));
 		distributor = new PPOrderCostDifferenceDistributor(costElementRepo, utils);
+		ppOrderCostBL = Services.get(IPPOrderCostBL.class);
 	}
 
 	private void givenTheOrderHasAPlant()
@@ -230,12 +233,12 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 		// what every costing-method handler does after an issue or a receipt
 		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2));
 
-		Services.get(IPPOrderCostBL.class).save(orderCosts);
+		ppOrderCostBL.save(orderCosts);
 	}
 
 	private CostAmount residualOf(final AcctSchemaId acctSchemaId, final CostElementId costElementId)
 	{
-		return Services.get(IPPOrderCostBL.class).getByOrderId(orderId).getResidualCost(acctSchemaId, costElementId);
+		return ppOrderCostBL.getByOrderId(orderId).getResidualCost(acctSchemaId, costElementId);
 	}
 
 	private void saveCurrentCost(
@@ -301,8 +304,8 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	void positiveResidual_capitalizesTheInStockShare_andSpillsTheRestToCogs()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
-		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
-		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.MovingAverageInvoice);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.MovingAverageInvoice);
 		// issued=100, received=60 -> residual=40; 8 of the 10 manufactured are still in stock at 30
 		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10");
 		saveCurrentCost(schema, costElement.getId(), "8", "30");
@@ -322,8 +325,8 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	void negativeResidual_fullyInStock_movesTheCostPriceDown()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
-		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
-		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.MovingAverageInvoice);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.MovingAverageInvoice);
 		// issued=10, received=50 -> residual=-40; 20 on hand at 30
 		addPPOrderCosts(costs, schema, costElement.getId(), "1", "-10", "5", "10");
 		saveCurrentCost(schema, costElement.getId(), "20", "30");
@@ -343,8 +346,8 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	void negativeOnHand_capitalizesNothing_spillsTheWholeResidualToCogs()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
-		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
-		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.MovingAverageInvoice);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.MovingAverageInvoice);
 		// issued=100, received=60 -> residual=40; on-hand is negative (-5) after an over-issue
 		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10");
 		saveCurrentCost(schema, costElement.getId(), "-5", "30");
@@ -366,8 +369,8 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
 
-		final AcctSchemaId schemaA = createAcctSchema(CostingMethod.AveragePO);
-		final CostElement costElementA = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		final AcctSchemaId schemaA = createAcctSchema(CostingMethod.MovingAverageInvoice);
+		final CostElement costElementA = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.MovingAverageInvoice);
 		addPPOrderCosts(costs, schemaA, costElementA.getId(), "10", "-10", "6", "10");
 		saveCurrentCost(schemaA, costElementA.getId(), "8", "30");
 
@@ -393,10 +396,10 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	void aCostingMethodTheOrderHasNoRowsFor_producesNoCostDetails()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
-		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
-		final CostElement averagePOElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
-		addPPOrderCosts(costs, schema, averagePOElement.getId(), "10", "-10", "6", "10");
-		saveCurrentCost(schema, averagePOElement.getId(), "8", "30");
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.MovingAverageInvoice);
+		final CostElement maiElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.MovingAverageInvoice);
+		addPPOrderCosts(costs, schema, maiElement.getId(), "10", "-10", "6", "10");
+		saveCurrentCost(schema, maiElement.getId(), "8", "30");
 		saveAll(costs.build());
 
 		// the costing engine explodes every material cost element of the client against the schema being posted
@@ -405,15 +408,15 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 		final CostDetailCreateResultsList results = distributor.createCostDetails(request(schema, standardElement, "10"), orderId);
 
 		assertThat(results).isEqualTo(CostDetailCreateResultsList.EMPTY);
-		assertThat(costPriceOf(schema, averagePOElement.getId())).isEqualTo("30");
+		assertThat(costPriceOf(schema, maiElement.getId())).isEqualTo("30");
 	}
 
 	@Test
 	void theResidualIsDischargedInPPOrderCost_soASecondRunPostsNothing()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
-		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
-		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.MovingAverageInvoice);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.MovingAverageInvoice);
 		// issued=100, received=60 -> residual=40
 		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10");
 		saveCurrentCost(schema, costElement.getId(), "8", "30");
@@ -439,8 +442,8 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	void reversal_replaysTheNegatedAdjustment_andMovesTheCostPriceBack()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
-		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
-		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.MovingAverageInvoice);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.MovingAverageInvoice);
 		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10");
 		saveCurrentCost(schema, costElement.getId(), "8", "30");
 		saveAll(costs.build());
@@ -466,8 +469,8 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	void reversal_ofTheMainLeg_reopensTheResidualInPPOrderCost()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
-		final AcctSchemaId schema = createAcctSchema(CostingMethod.AveragePO);
-		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		final AcctSchemaId schema = createAcctSchema(CostingMethod.MovingAverageInvoice);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.MovingAverageInvoice);
 		// issued=100, received=60 -> residual=40
 		addPPOrderCosts(costs, schema, costElement.getId(), "10", "-10", "6", "10");
 		saveCurrentCost(schema, costElement.getId(), "8", "30");
@@ -502,7 +505,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	void distribute_afterTheResidualWasDischarged_createsNoFurtherCollector_andDoesNotCloseTheOrder()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
-		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.MovingAverageInvoice);
 		// issued=100, received=60 -> residual=40
 		addPPOrderCosts(costs, orderAcctSchemaId, costElement.getId(), "10", "-10", "6", "10");
 		saveCurrentCost(orderAcctSchemaId, costElement.getId(), "8", "30");
@@ -529,7 +532,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	void distribute_doesNothing_whenNothingWasIssued()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
-		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.MovingAverageInvoice);
 		// issued=0, received=60 => residual = -60: non-zero, so the zero-residual early-out does not catch it.
 		addPPOrderCosts(costs, orderAcctSchemaId, costElement.getId(), "10", "0", "6", "10");
 		saveCurrentCost(orderAcctSchemaId, costElement.getId(), "6", "10");

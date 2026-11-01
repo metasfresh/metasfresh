@@ -1,12 +1,12 @@
 package org.adempiere.inout.util;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-
 import com.google.common.collect.ImmutableList;
-
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
+
+import java.math.BigDecimal;
+import java.util.Collection;
 
 /*
  * #%L
@@ -18,12 +18,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,13 +33,6 @@ import lombok.ToString;
 @ToString
 public class ShipmentScheduleAvailableStock
 {
-	public static ShipmentScheduleAvailableStock of(@NonNull final Collection<ShipmentScheduleAvailableStockDetail> list)
-	{
-		return !list.isEmpty()
-				? new ShipmentScheduleAvailableStock(list)
-				: EMPTY;
-	}
-
 	public static ShipmentScheduleAvailableStock of()
 	{
 		return EMPTY;
@@ -47,11 +40,13 @@ public class ShipmentScheduleAvailableStock
 
 	private static final ShipmentScheduleAvailableStock EMPTY = new ShipmentScheduleAvailableStock();
 
-	private final ImmutableList<ShipmentScheduleAvailableStockDetail> list;
+	@NonNull private final ImmutableList<ShipmentScheduleAvailableStockDetail> list;
 
-	private ShipmentScheduleAvailableStock(@NonNull final Collection<ShipmentScheduleAvailableStockDetail> list)
+	@Builder
+	private ShipmentScheduleAvailableStock(
+			@NonNull final Collection<ShipmentScheduleAvailableStockDetail> stockDetails)
 	{
-		this.list = ImmutableList.copyOf(list);
+		this.list = ImmutableList.copyOf(stockDetails);
 	}
 
 	private ShipmentScheduleAvailableStock()
@@ -59,10 +54,10 @@ public class ShipmentScheduleAvailableStock
 		this.list = ImmutableList.of();
 	}
 
-	public BigDecimal getTotalQtyAvailable()
+	public BigDecimal getTotalQtyAvailable(@NonNull final ReservationKey reservationKey)
 	{
 		return list.stream()
-				.map(ShipmentScheduleAvailableStockDetail::getQtyAvailable)
+				.map(detail -> detail.getQtyAvailable(reservationKey))
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
@@ -76,9 +71,9 @@ public class ShipmentScheduleAvailableStock
 		return list.size();
 	}
 
-	public BigDecimal getQtyAvailable(final int storageIndex)
+	public BigDecimal getQtyAvailable(final int storageIndex, @NonNull final ReservationKey reservationKey)
 	{
-		return getStorageDetail(storageIndex).getQtyAvailable();
+		return getStorageDetail(storageIndex).getQtyAvailable(reservationKey);
 	}
 
 	public void subtractQtyOnHand(final int storageIndex, @NonNull final BigDecimal qtyOnHandToRemove)

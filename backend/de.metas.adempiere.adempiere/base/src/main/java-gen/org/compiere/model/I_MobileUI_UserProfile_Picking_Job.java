@@ -271,8 +271,8 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
-	 * Set Allow picking with no rejected qty reason.
-	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
+	 * Set Allow under-pick w/o reason.
+	 * When enabled, the picker can record a lower quantity without specifying a reason (the dropdown gets an additional «Without reason» option).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -281,8 +281,8 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	void setIsAllowSkippingRejectedReason (boolean IsAllowSkippingRejectedReason);
 
 	/**
-	 * Get Allow picking with no rejected qty reason.
-	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
+	 * Get Allow under-pick w/o reason.
+	 * When enabled, the picker can record a lower quantity without specifying a reason (the dropdown gets an additional «Without reason» option).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -361,8 +361,8 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_IsCatchWeightTUPickingEnabled = "IsCatchWeightTUPickingEnabled";
 
 	/**
-	 * Set Consider sales order capacity.
-	 * If not activated, the quantity allocation for TU Catch Weight is taken from the master data of the product
+	 * Set Cap TU content to remaining qty.
+	 * When enabled, the CU quantity taken from a scanned TU is capped to the remaining order qty (a TU may be picked partially). When disabled, the full TU capacity is always picked, even if that exceeds the order qty.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -371,8 +371,8 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	void setIsConsiderSalesOrderCapacity (boolean IsConsiderSalesOrderCapacity);
 
 	/**
-	 * Get Consider sales order capacity.
-	 * If not activated, the quantity allocation for TU Catch Weight is taken from the master data of the product
+	 * Get Cap TU content to remaining qty.
+	 * When enabled, the CU quantity taken from a scanned TU is capped to the remaining order qty (a TU may be picked partially). When disabled, the full TU capacity is always picked, even if that exceeds the order qty.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -405,6 +405,27 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_IsDisplayPickingSlotSuggestions = "IsDisplayPickingSlotSuggestions";
 
 	/**
+	 * Set Kommissionierfach erforderlich.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickingSlotRequired (@Nullable java.lang.String IsPickingSlotRequired);
+
+	/**
+	 * Get Kommissionierfach erforderlich.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsPickingSlotRequired();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsPickingSlotRequired = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsPickingSlotRequired", null);
+	String COLUMNNAME_IsPickingSlotRequired = "IsPickingSlotRequired";
+
+	/**
 	 * Set Ship after closing LU.
 	 *
 	 * <br>Type: YesNo
@@ -426,7 +447,9 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_IsShipOnCloseLU = "IsShipOnCloseLU";
 
 	/**
-	 * Set Ask User when Over Picking.
+	 * Set Allow over-pick with prompt.
+	 * When enabled, the picker can record more than the ordered qty;
+ the over-delivery must be confirmed via a prompt. When disabled, over-picking is hard-blocked in the frontend ("N above max").
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -435,7 +458,9 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	void setIsShowConfirmationPromptWhenOverPick (boolean IsShowConfirmationPromptWhenOverPick);
 
 	/**
-	 * Get Ask User when Over Picking.
+	 * Get Allow over-pick with prompt.
+	 * When enabled, the picker can record more than the ordered qty;
+ the over-delivery must be confirmed via a prompt. When disabled, over-picking is hard-blocked in the frontend ("N above max").
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

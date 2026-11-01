@@ -129,6 +129,11 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			value = "Optional, to override the discount as computed by metasfresh's own pricing engine for the respective invoice candidate")
 	BigDecimal discountOverride;
 
+	@ApiModelProperty(position = 175, required = false, //
+			value = "Optional, to set this invoice candidate's tax explicitly instead of letting metasfresh derive it from the product's tax category.\n"
+					+ "If given, BOTH `rate` and `taxCategoryIdentifier` are required.")
+	JsonTaxOverride taxOverride;
+
 	@ApiModelProperty(position = 180, required = false, //
 			value = "optional invoice line description")
 	String lineDescription;
@@ -163,6 +168,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			@JsonProperty("uomCode") @Nullable final String uomCode,
 			@JsonProperty("priceEnteredOverride") @Nullable final JsonPrice priceEnteredOverride,
 			@JsonProperty("discountOverride") @Nullable final BigDecimal discountOverride,
+			@JsonProperty("taxOverride") @Nullable final JsonTaxOverride taxOverride,
 			@JsonProperty("lineDescription") @Nullable final String lineDescription,
 			@JsonProperty("paymentTerm") @NonNull final String paymentTerm,
 			@JsonProperty("invoiceDetailItems") @Nullable @Singular final List<JSONInvoiceDetailItem> invoiceDetailItems)
@@ -185,6 +191,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 		this.uomCode = uomCode;
 		this.priceEnteredOverride = priceEnteredOverride;
 		this.discountOverride = discountOverride;
+		this.taxOverride = taxOverride;
 		this.lineDescription = lineDescription;
 		this.paymentTerm = paymentTerm;
 		this.invoiceDetailItems = invoiceDetailItems;

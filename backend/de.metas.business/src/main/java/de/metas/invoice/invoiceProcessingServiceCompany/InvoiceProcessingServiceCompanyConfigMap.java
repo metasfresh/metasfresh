@@ -54,25 +54,29 @@ import java.util.Optional;
 
 	/**
 	 * @return if there is an {@link InvoiceProcessingServiceCompanyConfig} with the given {@code customerId} (the one for which a service-company handles payments) at the given {@code validFrom}, then it is returned.<br>
-	 * If there is an older config for the given {@code customerId}, but a more recent config which does not have the given {@code customerId},
-	 * then {@link Optional#empty()} is returned.
+	 * Per service company, only its most recent config valid at {@code validFrom} counts: if there is an older config of that service company for the given {@code customerId},
+	 * but a more recent config of the <b>same</b> service company which does not have the given {@code customerId}, that service company yields no match.
+	 * If no service company matches, {@link Optional#empty()} is returned.
+	 * <p>
+	 * Assumes a customer is assigned to at most one service company at a given date. If several service companies match,
+	 * the one whose config comes first in the list given to the constructor wins (not the most recent {@code ValidFrom}).
 	 */
 	@NonNull
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerIdAndDate(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime validFrom)
 	{
-		final ImmutableList<InvoiceProcessingServiceCompanyConfig> configsForCompanyBPartners = companyBPartnersToConfigsSorted.values().asList();
-		for (int i = configsForCompanyBPartners.size() - 1; i >= 0; i--)
+		for (final BPartnerId serviceCompanyBPartnerId : companyBPartnersToConfigsSorted.keySet())
 		{
-			final InvoiceProcessingServiceCompanyConfig companyConfig = configsForCompanyBPartners.get(i);
-			if (companyConfig.isValid(validFrom))
+			final ImmutableList<InvoiceProcessingServiceCompanyConfig> configs = companyBPartnersToConfigsSorted.get(serviceCompanyBPartnerId);
+			for (int i = configs.size() - 1; i >= 0; i--)
 			{
-				if (companyConfig.isBPartnerDetailsActive(customerId))
+				final InvoiceProcessingServiceCompanyConfig companyConfig = configs.get(i);
+				if (companyConfig.isValid(validFrom))
 				{
-					return Optional.of(companyConfig);
-				}
-				else
-				{
-					return Optional.empty();
+					if (companyConfig.isBPartnerDetailsActive(customerId))
+					{
+						return Optional.of(companyConfig);
+					}
+					break;
 				}
 			}
 		}

@@ -1,7 +1,13 @@
 package de.metas.handlingunits.inout.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingMaterial;
 import de.metas.handlingunits.HuPackingMaterialId;
@@ -26,14 +32,20 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
@@ -64,6 +76,81 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
+	}
+
+	@Override
+	public ImmutableSetMultimap<HUPIItemProductId, ProductId> retrievePackingMaterialProductIdsByPIItemProductIds(@NonNull final Set<HUPIItemProductId> pipIds)
+	{
+		if (pipIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		// the pips' M_HU_PI_Items have type "Material"; we are looking for their "PackingMaterial"-siblings, i.e. the PM items of the same PI version
+		final ImmutableMap<HUPIItemProductId, HuPackingInstructionsItemId> materialItemIdsByPipId = loadByRepoIdAwaresOutOfTrx(pipIds, I_M_HU_PI_Item_Product.class)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						pip -> HUPIItemProductId.ofRepoId(pip.getM_HU_PI_Item_Product_ID()),
+						pip -> HuPackingInstructionsItemId.ofRepoId(pip.getM_HU_PI_Item_ID())));
+
+		final ImmutableMap<HuPackingInstructionsItemId, HuPackingInstructionsVersionId> versionIdsByMaterialItemId = loadByRepoIdAwaresOutOfTrx(ImmutableSet.copyOf(materialItemIdsByPipId.values()), I_M_HU_PI_Item.class)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						item -> HuPackingInstructionsItemId.ofRepoId(item.getM_HU_PI_Item_ID()),
+						item -> HuPackingInstructionsVersionId.ofRepoId(item.getM_HU_PI_Version_ID())));
+
+		final List<I_M_HU_PI_Item> packingMaterialItems = queryBL
+				.createQueryBuilder(I_M_HU_PI_Item.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, ImmutableSet.copyOf(versionIdsByMaterialItemId.values()))
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, X_M_HU_PI_Item.ITEMTYPE_PackingMaterial)
+				.create()
+				.list();
+
+		final ImmutableSet<HuPackingMaterialId> packingMaterialIds = packingMaterialItems.stream()
+				.map(item -> HuPackingMaterialId.ofRepoIdOrNull(item.getM_HU_PackingMaterial_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (packingMaterialIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		final Map<HuPackingMaterialId, ProductId> productIdsByPackingMaterialId = new HashMap<>();
+		for (final I_M_HU_PackingMaterial packingMaterial : queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_PackingMaterial.COLUMNNAME_M_HU_PackingMaterial_ID, packingMaterialIds)
+				.create()
+				.list())
+		{
+			final ProductId productId = ProductId.ofRepoIdOrNull(packingMaterial.getM_Product_ID());
+			if (productId != null)
+			{
+				productIdsByPackingMaterialId.put(HuPackingMaterialId.ofRepoId(packingMaterial.getM_HU_PackingMaterial_ID()), productId);
+			}
+		}
+
+		final ImmutableSetMultimap.Builder<HuPackingInstructionsVersionId, ProductId> productIdsByVersionId = ImmutableSetMultimap.builder();
+		for (final I_M_HU_PI_Item packingMaterialItem : packingMaterialItems)
+		{
+			final HuPackingMaterialId packingMaterialId = HuPackingMaterialId.ofRepoIdOrNull(packingMaterialItem.getM_HU_PackingMaterial_ID());
+			final ProductId productId = packingMaterialId != null ? productIdsByPackingMaterialId.get(packingMaterialId) : null;
+			if (productId != null)
+			{
+				productIdsByVersionId.put(HuPackingInstructionsVersionId.ofRepoId(packingMaterialItem.getM_HU_PI_Version_ID()), productId);
+			}
+		}
+		final ImmutableSetMultimap<HuPackingInstructionsVersionId, ProductId> productIdsByVersionIdMap = productIdsByVersionId.build();
+
+		final ImmutableSetMultimap.Builder<HUPIItemProductId, ProductId> result = ImmutableSetMultimap.builder();
+		materialItemIdsByPipId.forEach((pipId, materialItemId) -> {
+			final HuPackingInstructionsVersionId versionId = versionIdsByMaterialItemId.get(materialItemId);
+			if (versionId != null)
+			{
+				result.putAll(pipId, productIdsByVersionIdMap.get(versionId));
+			}
+		});
+		return result.build();
 	}
 
 	@Override
@@ -104,6 +191,12 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				.firstOnly(I_M_HU_PackingMaterial.class);
 	}
 
+	@Override
+	public void save(@NonNull final I_M_HU_PackingMaterial packingMaterial)
+	{
+		InterfaceWrapperHelper.save(packingMaterial);
+	}
+
 	@Nullable
 	@Override
 	public I_M_HU_PackingMaterial retrieveHUPackingMaterialOrNull(@NonNull final I_M_HU_Item huItem)
@@ -116,7 +209,13 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 	@Override
 	public PackageDimensions retrievePackageDimensions(@NonNull final I_M_HU_PackingMaterial packingMaterial, @NonNull final UomId toUomId)
 	{
-		final UomId fromUomId = UomId.ofRepoId(packingMaterial.getC_UOM_Dimension_ID());
+		final UomId fromUomId = UomId.ofRepoIdOrNull(packingMaterial.getC_UOM_Dimension_ID());
+		if (fromUomId == null)
+		{
+			// A packing material with no dimension UOM has unknown (optional) dimensions;
+			// return UNSPECIFIED rather than letting UomId.ofRepoId(0) abort package creation.
+			return PackageDimensions.UNSPECIFIED;
+		}
 
 		final IUOMConversionBL iuomConversionBL = Services.get(IUOMConversionBL.class);
 		return PackageDimensions.builder()

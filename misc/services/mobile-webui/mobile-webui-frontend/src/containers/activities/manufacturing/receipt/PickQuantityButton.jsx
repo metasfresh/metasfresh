@@ -5,6 +5,18 @@ import { trl } from '../../../../utils/translations';
 
 import Button from '../../../../components/buttons/Button';
 import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
+import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../../constants/HUAttributes';
+import { PickAttribute } from '../../../../reducers/wfProcesses/picking/PickAttribute';
+
+const ATTRIBUTE_ProductionDate = 'ProductionDate';
+
+// With the mandatory catch-weight scan, the scanned lot number and best-before date are always shown for review,
+// whether or not they are configured as editable attributes: in the dialog's own lot / best-before rows, sent
+// through the dedicated lotNo / bestBeforeDate fields. They are therefore left out of the editable-attribute rows,
+// so that each value is shown once and sent through one channel only. The production date a scanned code may
+// carry is sent through the dedicated productionDate field as well, so its row is left out too.
+const SCAN_FOR_REVIEW_READ_ATTRIBUTES = [PickAttribute.LotNo, PickAttribute.BestBeforeDate];
+const SCAN_FOR_REVIEW_ATTRIBUTE_CODES = [HU_ATTRIBUTE_LotNo, HU_ATTRIBUTE_BestBeforeDate, ATTRIBUTE_ProductionDate];
 
 const PickQuantityButton = ({
   qtyTarget,
@@ -13,8 +25,8 @@ const PickQuantityButton = ({
   caption,
   isDisabled,
   customQRCodeFormats,
-  readAttributes,
-  readOnlyAttributes,
+  editableAttributes,
+  readOnlyAttributes = [],
   defaultLotNo,
   defaultBestBeforeDate,
   isCatchWeightScanMandatory = false,
@@ -22,6 +34,22 @@ const PickQuantityButton = ({
   onClick,
 }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
+
+  // A lot number that is not editable is still shown, read-only, with its preview (the receipt generates it).
+  const isLotNoReadOnly = readOnlyAttributes.includes(PickAttribute.LotNo);
+
+  const dialogEditableAttributes = isCatchWeightScanMandatory
+    ? (editableAttributes ?? []).filter(({ code }) => !SCAN_FOR_REVIEW_ATTRIBUTE_CODES.includes(code))
+    : editableAttributes;
+
+  // The pre-filled defaults: the initial values of the lot number / best-before date attribute rows,
+  // or, with the mandatory scan, of the dialog's own lot / best-before rows.
+  const editableAttributesDefaultValues = isCatchWeightScanMandatory
+    ? {}
+    : {
+        [HU_ATTRIBUTE_LotNo]: defaultLotNo,
+        [HU_ATTRIBUTE_BestBeforeDate]: defaultBestBeforeDate,
+      };
 
   const validateQtyEntered = (qtyEntered) => {
     // Qty shall be positive
@@ -42,6 +70,16 @@ const PickQuantityButton = ({
     return isScanned || value !== defaultValue ? value : null;
   };
 
+  const withoutUnchangedDefaults = (attributeValues) => {
+    if (!attributeValues) return attributeValues;
+    return Object.fromEntries(
+      Object.entries(attributeValues).filter(
+        ([code, value]) =>
+          editableAttributesDefaultValues[code] == null || value !== editableAttributesDefaultValues[code]
+      )
+    );
+  };
+
   const onQtyPickedChanged = ({
     qtyEnteredAndValidated,
     catchWeight,
@@ -49,6 +87,7 @@ const PickQuantityButton = ({
     bestBeforeDate,
     productionDate,
     lotNo,
+    attributeValues,
     barcodeType,
     barcode, // i.e. the catch weight QR code
     isDone = true,
@@ -64,6 +103,7 @@ const PickQuantityButton = ({
       bestBeforeDate: sendOnlyIfChanged({ value: bestBeforeDate, defaultValue: defaultBestBeforeDate, isScanned }),
       productionDate,
       lotNo: sendOnlyIfChanged({ value: lotNo, defaultValue: defaultLotNo, isScanned }),
+      attributeValues: withoutUnchangedDefaults(attributeValues),
       barcode,
       barcodeType,
       isDone,
@@ -81,10 +121,12 @@ const PickQuantityButton = ({
           customQRCodeFormats={customQRCodeFormats}
           isCatchWeightScanMandatory={isCatchWeightScanMandatory}
           isOnePiecePerScan={isOnePiecePerScan}
-          readAttributes={readAttributes}
+          readAttributes={isCatchWeightScanMandatory ? SCAN_FOR_REVIEW_READ_ATTRIBUTES : []}
           readOnlyAttributes={readOnlyAttributes}
-          lotNo={defaultLotNo}
-          bestBeforeDate={defaultBestBeforeDate}
+          lotNo={isCatchWeightScanMandatory || isLotNoReadOnly ? defaultLotNo : undefined}
+          bestBeforeDate={isCatchWeightScanMandatory ? defaultBestBeforeDate : undefined}
+          editableAttributes={dialogEditableAttributes}
+          editableAttributesInitialValues={editableAttributesDefaultValues}
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyPickedChanged}
           onCloseDialog={() => setDialogOpen(false)}
@@ -103,7 +145,8 @@ PickQuantityButton.propTypes = {
   isDisabled: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
   customQRCodeFormats: PropTypes.array,
-  readAttributes: PropTypes.array,
+  editableAttributes: PropTypes.array,
+  // shown but not editable (set by the receipt); only LotNo is supported
   readOnlyAttributes: PropTypes.array,
   defaultLotNo: PropTypes.string,
   defaultBestBeforeDate: PropTypes.string,

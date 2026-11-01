@@ -11,7 +11,7 @@ import os from 'os';
 // source every such spec would carry its own copy that silently drifts when an arg is added here.
 export const MOBILE_CHROME_LAUNCH_ARGS = [
     '--no-sandbox', // Avoids sandboxing issues inside Docker
-    '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282', // Treats it as a secure origin
+    '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282,http://mobile:80,http://mobile', // Treats these as secure origins so navigator.mediaDevices (secure-context-only) is defined at http://mobile (mirrors production HTTPS)
     '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests', // Disables HSTS enforcement
     '--disable-site-isolation-trials', // Helps disable security sandboxing
     '--disable-web-security', // Disables web security (CORS, mixed content, etc.)

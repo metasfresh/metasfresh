@@ -408,6 +408,34 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
+	@Nullable
+	public AdTableId getMainTableId(@NonNull final AdWindowId adWindowId)
+	{
+		// The window's MAIN table is its header (TabLevel=0) tab's table, not simply its lowest-SeqNo tab, so
+		// retrieveFirstTab() must NOT be reused here: it orders by SeqNo across all tab levels with no unique
+		// tie-breaker, and a detail tab (TabLevel>0) may share the header tab's SeqNo, leaving the header picked
+		// only by chance of DB row order. Filter to the header tab and order deterministically (AD_Tab_ID
+		// tie-breaks header tabs sharing a SeqNo).
+		final I_AD_Tab mainTab = queryBL
+				.createQueryBuilder(I_AD_Tab.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, adWindowId)
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_TabLevel, 0)
+				.addInSubQueryFilter(I_AD_Tab.COLUMNNAME_AD_Table_ID, I_AD_Table.COLUMNNAME_AD_Table_ID,
+						queryBL.createQueryBuilder(I_AD_Table.class)
+								.addOnlyActiveRecordsFilter()
+								.create())
+				.orderBy()
+				.addColumn(I_AD_Tab.COLUMNNAME_SeqNo)
+				.addColumn(I_AD_Tab.COLUMNNAME_AD_Tab_ID)
+				.endOrderBy()
+				.create()
+				.first(I_AD_Tab.class);
+
+		return mainTab != null ? AdTableId.ofRepoIdOrNull(mainTab.getAD_Table_ID()) : null;
+	}
+
+	@Override
 	public String getFirstTabWhereClause(@NonNull final AdWindowId adWindowId)
 	{
 		final I_AD_Tab firstTab = retrieveFirstTab(adWindowId);
@@ -433,6 +461,7 @@ public class ADWindowDAO implements IADWindowDAO
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_InternalName)
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Description)
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Help)
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_EntityType) // preserve the entity type set by user
 				.setFrom(sourceWindow)
 				.setTo(targetWindow)
 				.copy();
@@ -441,7 +470,8 @@ public class ADWindowDAO implements IADWindowDAO
 
 		save(targetWindow);
 
-		copyWindowTrl(targetWindowId, sourceWindowId);
+		// no need to copy translations, because we are using the AD_Window.AD_Element_ID so the right translations are already in place
+		// copyWindowTrl(targetWindowId, sourceWindowId);
 
 		copyTabs(targetWindow, sourceWindow);
 	}

@@ -28,6 +28,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
@@ -35,8 +36,19 @@ import java.time.ZonedDateTime;
 @Builder
 public class WFProcessHeaderProperty
 {
+	@NonNull String id;
 	@NonNull ITranslatableString caption;
 	@NonNull ITranslatableString value;
+
+	private WFProcessHeaderProperty(
+			@Nullable final String id,
+			@NonNull final ITranslatableString caption,
+			@NonNull final ITranslatableString value)
+	{
+		this.id = id != null ? id.trim() : caption.getDefaultValue();
+		this.caption = caption;
+		this.value = value;
+	}
 
 	public boolean isValueNotBlank() {return !TranslatableStrings.isBlank(value);}
 

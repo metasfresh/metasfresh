@@ -13,6 +13,7 @@ Feature: stock changes accordingly
     Given infrastructure and metasfresh are running
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
     And no product with value 'product_value222' exists
     And metasfresh contains M_Products:

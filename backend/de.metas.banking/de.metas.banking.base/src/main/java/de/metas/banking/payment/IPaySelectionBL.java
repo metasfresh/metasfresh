@@ -70,8 +70,6 @@ public interface IPaySelectionBL extends ISingletonService
 
 	ImmutableSet<BPartnerId> getBPartnerIdsFromPaySelectionLineIds(@NonNull Collection<PaySelectionLineId> paySelectionLineIds);
 
-	PaySelectionLineType extractType(I_C_PaySelectionLine line);
-
 	I_C_PaySelectionLine getPaySelectionLineById(@NonNull PaySelectionLineId paySelectionLineId);
 
 	List<I_C_PaySelectionLine> retrievePaySelectionLines(@NonNull I_C_PaySelection paySelection);

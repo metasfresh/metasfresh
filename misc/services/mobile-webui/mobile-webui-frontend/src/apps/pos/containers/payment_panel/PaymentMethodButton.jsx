@@ -10,6 +10,8 @@ const PaymentMethodButton = ({ paymentMethod, disabled, onClick }) => {
   return (
     <div
       className={cx('payment-method', { 'is-disabled': disabled })}
+      data-testid="pos-payment-method-button"
+      data-payment-method={paymentMethod}
       onClick={() => {
         onClick({ paymentMethod });
       }}

@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.slot.PickingSlotQueue;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -40,6 +41,7 @@ public class GetPickingSlotContentCommand
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PickingSlotService pickingSlotService;
+	@NonNull private final PickingJobBPartnerService pickingJobBPartnerService;
 
 	@NonNull private final HUConsolidationJobId jobId;
 	@NonNull private final PickingSlotId pickingSlotId;
@@ -53,6 +55,9 @@ public class GetPickingSlotContentCommand
 		{
 			throw new AdempiereException("Job " + jobId + " does not have picking slot " + pickingSlotId);
 		}
+
+		// Show the GRAI scanner only when the customer requires GRAI — same rule (and same source) picking uses.
+		final boolean graiScanEnabled = !pickingJobBPartnerService.getGRAIRequired(job.getCustomerId()).isNo();
 
 		final PickingSlotQueue queue = pickingSlotService.getPickingSlotQueue(pickingSlotId);
 
@@ -105,6 +110,7 @@ public class GetPickingSlotContentCommand
 				.pickingSlotId(pickingSlotId)
 				.pickingSlotQRCode(pickingSlotService.getPickingSlotQRCode(pickingSlotId).toJsonDisplayableQRCode())
 				.items(items)
+				.graiScanEnabled(graiScanEnabled)
 				.build();
 	}
 

@@ -190,31 +190,31 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsAllowIssuingAnyHU = "IsAllowIssuingAnyHU";
 
 	/**
-	 * Set Best Before Date editable.
-	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
+	 * Set Allow receiving without a packing instruction.
+	 * Offer the 'No Packing Item' packing instruction as a receiving target for the production receipt.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsBestBeforeDateEditable (@Nullable java.lang.String IsBestBeforeDateEditable);
+	void setIsAllowReceiveWithoutPackingItem (@Nullable java.lang.String IsAllowReceiveWithoutPackingItem);
 
 	/**
-	 * Get Best Before Date editable.
-	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
+	 * Get Allow receiving without a packing instruction.
+	 * Offer the 'No Packing Item' packing instruction as a receiving target for the production receipt.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getIsBestBeforeDateEditable();
+	@Nullable java.lang.String getIsAllowReceiveWithoutPackingItem();
 
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsBestBeforeDateEditable = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsBestBeforeDateEditable", null);
-	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsAllowReceiveWithoutPackingItem = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsAllowReceiveWithoutPackingItem", null);
+	String COLUMNNAME_IsAllowReceiveWithoutPackingItem = "IsAllowReceiveWithoutPackingItem";
 
 	/**
-	 * Set Finished goods: capture catch weight.
-	 * Capture the catch weight of a catch-weight finished good at production receipt.
+	 * Set Capture catch weight.
+	 * Capture the catch weight of a catch-weight product at production receipt.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -223,8 +223,8 @@ public interface I_MobileUI_UserProfile_MFG
 	void setIsCaptureCatchWeightAtReceipt (@Nullable java.lang.String IsCaptureCatchWeightAtReceipt);
 
 	/**
-	 * Get Finished goods: capture catch weight.
-	 * Capture the catch weight of a catch-weight finished good at production receipt.
+	 * Get Capture catch weight.
+	 * Capture the catch weight of a catch-weight product at production receipt.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -257,29 +257,6 @@ public interface I_MobileUI_UserProfile_MFG
 
 	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsFinishedGoodsCatchWeightScanRequired = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsFinishedGoodsCatchWeightScanRequired", null);
 	String COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired = "IsFinishedGoodsCatchWeightScanRequired";
-
-	/**
-	 * Set Lot Number editable.
-	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsLotNumberEditable (@Nullable java.lang.String IsLotNumberEditable);
-
-	/**
-	 * Get Lot Number editable.
-	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIsLotNumberEditable();
-
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsLotNumberEditable = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsLotNumberEditable", null);
-	String COLUMNNAME_IsLotNumberEditable = "IsLotNumberEditable";
 
 	/**
 	 * Set Workstation Scan Required.

@@ -16,7 +16,7 @@ import WidgetTooltip from '../WidgetTooltip';
  * Composed lookup (e.g. partner/location/contact) component.
  * NOTE: this component is covering also the case of a simple lookup which is just a particular case.
  */
-class Lookup extends Component {
+export class Lookup extends Component {
   rawLookupsState = {};
 
   constructor(props) {
@@ -126,15 +126,17 @@ class Lookup extends Component {
 
   setNextProperty = (currentFieldName) => {
     const { widgetData, properties, onBlurWidget } = this.props;
+    let hasNextSubField = false;
 
     if (widgetData) {
-      widgetData.map((item, index) => {
+      widgetData.forEach((item, index) => {
         const nextIndex = index + 1;
 
         if (
           nextIndex < widgetData.length &&
           widgetData[index].field === currentFieldName
         ) {
+          hasNextSubField = true;
           const nextProp = properties[nextIndex];
           this.setState(
             { property: nextProp.field }, //
@@ -149,10 +151,37 @@ class Lookup extends Component {
             { property: '' }, //
             () => {
               onBlurWidget && onBlurWidget();
+              this.focusNextFormField();
             }
           );
         }
       });
+    }
+
+    return hasNextSubField;
+  };
+
+  focusNextFormField = () => {
+    const wrapperEl = this.wrapperElement;
+    if (!wrapperEl) return;
+
+    const form = wrapperEl.closest('form');
+    if (!form) return;
+
+    const allInputs = Array.from(
+      form.querySelectorAll(
+        'input:not([disabled]):not([readonly]):not([type="hidden"])'
+      )
+    );
+
+    const lookupInputs = wrapperEl.querySelectorAll('input');
+    if (lookupInputs.length === 0) return;
+
+    const lastLookupInput = lookupInputs[lookupInputs.length - 1];
+    const currentIndex = allInputs.indexOf(lastLookupInput);
+
+    if (currentIndex >= 0 && currentIndex + 1 < allInputs.length) {
+      allInputs[currentIndex + 1].focus();
     }
   };
 
@@ -450,7 +479,7 @@ class Lookup extends Component {
 
     return (
       <RawLookup
-        ref={isPrimaryField && forwardedRef}
+        ref={isPrimaryField ? forwardedRef : undefined}
         key={index}
         idValue={idValue}
         defaultValue={defaultValue}
@@ -463,7 +492,9 @@ class Lookup extends Component {
         setNextProperty={this.setNextProperty}
         lookupEmpty={isInputEmpty}
         fireDropdownList={fireDropdownList}
-        handleInputEmptyStatus={isPrimaryField && this.handleInputEmptyStatus}
+        handleInputEmptyStatus={
+          isPrimaryField ? this.handleInputEmptyStatus : undefined
+        }
         enableAutofocus={this.enableAutofocus}
         isOpen={isDropdownOpen}
         onDropdownListToggle={this.dropdownListToggle}

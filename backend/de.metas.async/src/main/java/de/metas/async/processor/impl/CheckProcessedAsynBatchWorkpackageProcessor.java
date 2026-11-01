@@ -84,7 +84,7 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 
 		if (delayUntilCheckingProcessedState.toMillis() > 0)
 		{
-			// a delay that didn't fit into Integer occured when during testing we got the async-batch's first/last processed from the actual time, but "now" from SystemTime with a fixed testing-value. 
+			// a delay that didn't fit into Integer occurred during testing when we got the async-batch's first/last processed from the actual time, but "now" from SystemTime with a fixed testing-value. 
 			Check.assume(delayUntilCheckingProcessedState.toMillis() <= Integer.MAX_VALUE, "The delay until re-checking processed state of C_Async_Batch_ID={} has to be <={}", asyncBatch.getC_Async_Batch_ID(), Integer.MAX_VALUE);
 			throw WorkpackageSkipRequestException.createWithTimeout("AsyncBatch not ready for processed status check. Postponed!", Math.toIntExact(delayUntilCheckingProcessedState.toMillis()));
 		}

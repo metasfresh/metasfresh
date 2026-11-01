@@ -45,7 +45,9 @@ public class HUsToReceiveViewFactory extends HUEditorViewFactoryTemplate
 
 	public HUsToReceiveViewFactory()
 	{
-		super(ImmutableList.of(HUsToReceiveHUEditorViewCustomizer.instance));
+		super(ImmutableList.of(
+				HUsToReceiveHUEditorViewCustomizer.forReceiptSchedule,
+				HUsToReceiveHUEditorViewCustomizer.forReceiptDispositionDeliveryPlanning));
 	}
 
 	@Override

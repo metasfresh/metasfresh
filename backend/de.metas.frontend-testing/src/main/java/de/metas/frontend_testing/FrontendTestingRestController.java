@@ -4,11 +4,28 @@ import de.metas.Profiles;
 import de.metas.frontend_testing.expectations.AssertExpectationsCommand;
 import de.metas.frontend_testing.expectations.request.JsonExpectations;
 import de.metas.frontend_testing.expectations.request.JsonExpectationsResponse;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.frontend_testing.acctschema.SetAcctSchemaCostingMethodCommand;
+import de.metas.frontend_testing.huQRCode.GetHUQRCodeCommand;
+import de.metas.frontend_testing.huQRCode.JsonGetHUQRCodeRequest;
+import de.metas.frontend_testing.huQRCode.JsonGetHUQRCodeResponse;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
+import de.metas.frontend_testing.masterdata.pp_order.SetPPOrderDateStartScheduleCommand;
+import de.metas.frontend_testing.masterdata.shipment.JsonGenerateShipmentsRequest;
+import de.metas.frontend_testing.masterdata.shipment.JsonGenerateShipmentsResponse;
+import de.metas.frontend_testing.masterdata.shipment.GenerateShipmentsCommand;
+import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentRequest;
+import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentResponse;
+import de.metas.frontend_testing.masterdata.shipment.ReverseShipmentCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
+import de.metas.frontend_testing.wfnode.JsonSetWFNodeFlagsRequest;
+import de.metas.frontend_testing.wfnode.JsonSetWFNodeFlagsResponse;
+import de.metas.frontend_testing.wfnode.SetWFNodeFlagsCommand;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -48,6 +65,7 @@ public class FrontendTestingRestController
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final UserAuthTokenFilterConfiguration userAuthTokenFilterConfiguration;
 	@NonNull private final CreateMasterdataCommandSupportingServices services;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	private boolean isEnabled()
 	{
@@ -104,15 +122,20 @@ public class FrontendTestingRestController
 	}
 
 	@PostMapping("expect")
-	public ResponseEntity<JsonExpectationsResponse> expect(@RequestBody @NonNull final JsonExpectations jsonExpectations) throws Exception
+	public ResponseEntity<JsonExpectationsResponse> expect(@RequestBody @NonNull final JsonExpectations jsonExpectations)
 	{
-		assertEnabled();
-
-		return AssertExpectationsCommand.builder()
+		// Run in the METASFRESH client/org context (mirroring createMasterdata above; callInContext
+		// also performs the assertEnabled() check). The assertion
+		// queries are client-scoped — e.g. AssertHUExpectationsCommand.assertShipped uses
+		// addOnlyContextClientOrSystem() (AD_Client_ID IN (ctxClient, 0)). createMasterdata creates its
+		// data under ClientId.METASFRESH; without switching into that same context here the request runs
+		// as system (AD_Client_ID=0), so those reads (e.g. the packed-HU → sales-shipment-line lookup)
+		// filter out the METASFRESH-client rows and return empty — making shipped:true assertions fail.
+		return callInContext(() -> AssertExpectationsCommand.builder()
 				.services(services.assertExpectationsCommandServices)
 				.expectations(jsonExpectations)
 				.build()
-				.execute();
+				.execute());
 	}
 
 	@PostMapping("setSysconfigs")
@@ -125,5 +148,102 @@ public class FrontendTestingRestController
 					.execute();
 			return null;
 		});
+	}
+
+	@PostMapping("getHUQRCode")
+	public JsonGetHUQRCodeResponse getHUQRCode(@RequestBody @NonNull final JsonGetHUQRCodeRequest request)
+	{
+		return callInContext(() -> GetHUQRCodeCommand.builder()
+				.huQRCodesService(huQRCodesService)
+				.request(request)
+				.build()
+				.execute());
+	}
+
+	@PostMapping("reverseShipment")
+	public JsonReverseShipmentResponse reverseShipment(@RequestBody @NonNull final JsonReverseShipmentRequest request)
+	{
+		return callInContext(() -> ReverseShipmentCommand.builder()
+				.request(request)
+				.build()
+				.execute());
+	}
+
+	@PostMapping("generateShipments")
+	public JsonGenerateShipmentsResponse generateShipments(@RequestBody @NonNull final JsonGenerateShipmentsRequest request)
+	{
+		return callInContext(() -> GenerateShipmentsCommand.builder()
+				.request(request)
+				.build()
+				.execute());
+	}
+
+	@PostMapping("serverDates")
+	public JsonServerDatesResponse getServerDates()
+	{
+		final java.time.ZoneId zoneId = java.time.ZoneId.systemDefault();
+		final java.time.LocalDate today = java.time.LocalDate.now(zoneId);
+		return JsonServerDatesResponse.builder()
+				.zoneId(zoneId.getId())
+				.yesterdayNoon(today.minusDays(1).atTime(12, 0).atZone(zoneId).toInstant().toString())
+				.todayNoon(today.atTime(12, 0).atZone(zoneId).toInstant().toString())
+				.tomorrowNoon(today.plusDays(1).atTime(12, 0).atZone(zoneId).toInstant().toString())
+				.build();
+	}
+
+	@PostMapping("wfNode/flags")
+	public JsonSetWFNodeFlagsResponse setWFNodeFlags(@RequestBody @NonNull final JsonSetWFNodeFlagsRequest request)
+	{
+		return callInContext(() -> SetWFNodeFlagsCommand.builder()
+				.request(request)
+				.build()
+				.execute());
+	}
+
+	@PostMapping("ppOrder/dateStartSchedule")
+	public void setPPOrderDateStartSchedule(@RequestBody @NonNull final SetPPOrderDateStartScheduleCommand.Request request)
+	{
+		callInContext(() -> {
+			SetPPOrderDateStartScheduleCommand.builder()
+					.request(request)
+					.build()
+					.execute();
+			return null;
+		});
+	}
+
+	@PostMapping("acctSchema/costingMethod")
+	public JsonSetAcctSchemaCostingMethodResponse setAcctSchemaCostingMethod(@RequestBody @NonNull final JsonSetAcctSchemaCostingMethodRequest request)
+	{
+		return callInContext(() -> {
+			final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getByClientAndOrg(ClientId.METASFRESH, OrgId.MAIN).getId();
+			final SetAcctSchemaCostingMethodCommand.Result result = SetAcctSchemaCostingMethodCommand.builder()
+					.acctSchemaId(acctSchemaId)
+					.costingMethod(request.getCostingMethod())
+					.deactivateCostElementIds(request.getDeactivateCostElementIds())
+					.build()
+					.execute();
+			return new JsonSetAcctSchemaCostingMethodResponse(result.getPreviousCostingMethod(), result.getActivatedCostElementIds());
+		});
+	}
+
+	@lombok.Value
+	@lombok.extern.jackson.Jacksonized
+	@lombok.Builder
+	public static class JsonSetAcctSchemaCostingMethodRequest
+	{
+		/** {@code C_AcctSchema.CostingMethod} code, e.g. {@code M} (MovingAverageInvoice) */
+		@NonNull String costingMethod;
+		/** cost elements to deactivate again: the {@code activatedCostElementIds} of the call being undone */
+		@javax.annotation.Nullable java.util.List<Integer> deactivateCostElementIds;
+	}
+
+	@lombok.Value
+	public static class JsonSetAcctSchemaCostingMethodResponse
+	{
+		/** the code before the change, to restore it */
+		String previousCostingMethod;
+		/** the cost elements this call switched from inactive to active; hand them back to restore */
+		java.util.List<Integer> activatedCostElementIds;
 	}
 }

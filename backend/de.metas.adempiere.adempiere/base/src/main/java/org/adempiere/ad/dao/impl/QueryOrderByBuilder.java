@@ -22,21 +22,18 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.List;
-
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.model.ModelColumn;
 
-import lombok.NonNull;
+import java.util.ArrayList;
 
 final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
 {
-	private List<QueryOrderByItem> orderBys = new ArrayList<QueryOrderByItem>();
+	private final ArrayList<QueryOrderByItem> orderBys = new ArrayList<>();
 
 	public QueryOrderByBuilder()
 	{
@@ -52,7 +49,7 @@ final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
 	@Override
 	public QueryOrderByBuilder<T> copy()
 	{
-		final QueryOrderByBuilder<T> copy = new QueryOrderByBuilder<T>();
+		final QueryOrderByBuilder<T> copy = new QueryOrderByBuilder<>();
 		copy.orderBys.addAll(this.orderBys);
 		return copy;
 	}
@@ -128,7 +125,6 @@ final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
 	@Override
 	public IQueryOrderBy createQueryOrderBy()
 	{
-		final QueryOrderBy orderBy = new QueryOrderBy(orderBys);
-		return orderBy;
+		return QueryOrderBy.of(orderBys);
 	}
 }

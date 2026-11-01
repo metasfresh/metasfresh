@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class JsonTableRecordReferenceTest
 {
@@ -54,5 +55,40 @@ public class JsonTableRecordReferenceTest
 		final JsonTableRecordReference result = mapper.readValue(string, JsonTableRecordReference.class);
 
 		assertThat(result).isEqualTo(reference);
+		assertThat(result.getTableName()).isEqualTo("tableName");
+		assertThat(result.getAdTableId()).isNull();
+	}
+
+	@Test
+	public void serializeDeserialize_adTableIdOnly() throws IOException
+	{
+		final JsonTableRecordReference reference = JsonTableRecordReference.builder()
+				.recordId(JsonMetasfreshId.of(1))
+				.adTableId(540123)
+				.build();
+
+		final String string = mapper.writeValueAsString(reference);
+
+		final JsonTableRecordReference result = mapper.readValue(string, JsonTableRecordReference.class);
+
+		assertThat(result).isEqualTo(reference);
+		assertThat(result.getAdTableId()).isEqualTo(540123);
+		assertThat(result.getTableName()).isNull();
+	}
+
+	@Test
+	public void rejectBothOrNeitherOfTableNameAndAdTableId()
+	{
+		assertThatThrownBy(() -> JsonTableRecordReference.builder()
+				.recordId(JsonMetasfreshId.of(1))
+				.tableName("tableName")
+				.adTableId(540123)
+				.build())
+				.isInstanceOf(RuntimeException.class);
+
+		assertThatThrownBy(() -> JsonTableRecordReference.builder()
+				.recordId(JsonMetasfreshId.of(1))
+				.build())
+				.isInstanceOf(RuntimeException.class);
 	}
 }

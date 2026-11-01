@@ -22,90 +22,33 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
-import javax.annotation.concurrent.Immutable;
-
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
+import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.util.Check;
-import lombok.NonNull;
-
-@Immutable
-final class QueryOrderByItem
+@Value
+class QueryOrderByItem
 {
-	private final String columnName;
-	private final Direction direction;
-	private final Nulls nulls;
+	@NonNull String columnName;
+	@NonNull Direction direction;
+	@NonNull Nulls nulls;
 
 	public QueryOrderByItem(
 			@NonNull final String columnName,
 			@NonNull final Direction direction,
 			@NonNull final Nulls nulls)
 	{
-		Check.assumeNotEmpty(columnName, "columnName not empty");
-		this.columnName = columnName;
+		final String columnNameNorm = StringUtils.trimBlankToNull(columnName);
+		if (columnNameNorm == null)
+		{
+			throw new AdempiereException("columnName not empty");
+		}
 
+		this.columnName = columnNameNorm;
 		this.direction = direction;
-
 		this.nulls = nulls;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "OrderByItem ["
-				+ "columnName=" + columnName
-				+ ", direction=" + direction
-				+ ", nulls=" + nulls
-				+ "]";
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(columnName)
-				.append(direction)
-				.toHashcode();
-	}
-
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final QueryOrderByItem other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-		return new EqualsBuilder()
-				.append(this.columnName, other.columnName)
-				.append(this.direction, other.direction)
-				.isEqual();
-	}
-
-	/**
-	 * @return the columnName
-	 */
-	public String getColumnName()
-	{
-		return columnName;
-	}
-
-	public Direction getDirection()
-	{
-		return direction;
-	}
-
-	public Nulls getNulls()
-	{
-		return nulls;
 	}
 }

@@ -25,6 +25,8 @@ package de.metas.invoice.invoiceProcessingServiceCompany;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
@@ -57,6 +59,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
@@ -66,14 +69,17 @@ import static org.compiere.model.X_C_DocType.DOCSUBTYPE_PaymentServiceProviderIn
 public class InvoiceProcessingServiceCompanyService
 {
 	private static final AdMessageKey MSG_INVOICE_HAS_SERVICE_INVOICE = AdMessageKey.of("AlreadyGeneratedServiceInvoice");
+	private static final AdMessageKey MSG_PAYMENTS_OF_DIFFERENT_SERVICE_COMPANY_OR_DATE = AdMessageKey.of("InvoiceProcessingServiceCompany_PaymentsOfDifferentServiceCompanyOrDate");
+	private static final AdMessageKey MSG_CUSTOMER_NOT_ASSIGNED_TO_SERVICE_COMPANY = AdMessageKey.of("InvoiceProcessingServiceCompany_CustomerNotAssignedToServiceCompany");
 
-	private final InvoiceProcessingServiceCompanyConfigRepository configRepository;
-	private final MoneyService moneyService;
+	@NonNull private final InvoiceProcessingServiceCompanyConfigRepository configRepository;
+	@NonNull private final MoneyService moneyService;
 
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	public InvoiceProcessingServiceCompanyService(
 			@NonNull final InvoiceProcessingServiceCompanyConfigRepository configRepository,
@@ -83,11 +89,22 @@ public class InvoiceProcessingServiceCompanyService
 		this.moneyService = moneyService;
 	}
 
+	@NonNull
+	public BPartnerId getServiceCompanyBPartnerIdByConfigId(@NonNull final InvoiceProcessingServiceCompanyConfigId configId)
+	{
+		return configRepository.getServiceCompanyBPartnerIdByConfigId(configId);
+	}
+
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerId(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime evaluationDate)
 	{
 		return configRepository.getByCustomerId(customerId, evaluationDate);
 	}
 
+	/**
+	 * @return the service fee calculation for the given payment's partner, or empty if that partner is not an invoice processing service company
+	 * @throws AdempiereException (user validation error) if the invoice's customer is not assigned to that service company,
+	 *                            because a service company may only retain a service fee on invoices of its own customers
+	 */
 	public Optional<InvoiceProcessingFeeCalculation> createFeeCalculationForPayment(@NonNull final InvoiceProcessingFeeWithPrecalculatedAmountRequest request)
 	{
 		final BPartnerId serviceCompanyBPartnerId = request.getServiceCompanyBPartnerId();
@@ -98,9 +115,7 @@ public class InvoiceProcessingServiceCompanyService
 
 		if (!invoiceIdsWithGeneratedFees.isEmpty())
 		{
-			final String documentNo = invoiceDAO.getDocumentNosByInvoiceIds(ImmutableSet.of(invoiceId)).get(invoiceId);
-
-			throw new AdempiereException(MSG_INVOICE_HAS_SERVICE_INVOICE, documentNo);
+			throw new AdempiereException(MSG_INVOICE_HAS_SERVICE_INVOICE, getDocumentNo(invoiceId));
 		}
 
 		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByPaymentBPartnerAndValidFromDate(serviceCompanyBPartnerId, request.getPaymentDate()).orElse(null);
@@ -109,11 +124,18 @@ public class InvoiceProcessingServiceCompanyService
 			return Optional.empty();
 		}
 
+		final BPartnerId customerId = request.getCustomerId();
+		if (!config.isBPartnerDetailsActive(customerId))
+		{
+			// the invoice may not be persisted here either, but the with-fee path has an id to look up its documentNo
+			throwCustomerNotAssigned(getDocumentNo(invoiceId), serviceCompanyBPartnerId, customerId, invoiceId);
+		}
+
 		return Optional.of(InvoiceProcessingFeeCalculation.builder()
 				.orgId(request.getOrgId())
 				.evaluationDate(request.getPaymentDate())
 				//
-				.customerId(request.getCustomerId())
+				.customerId(customerId)
 				.invoiceId(invoiceId)
 				//
 				.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
@@ -122,6 +144,95 @@ public class InvoiceProcessingServiceCompanyService
 				.feeAmountIncludingTax(feeAmountIncludingTax)
 				//
 				.build());
+	}
+
+	/**
+	 * Asserts that a sales invoice paid by an invoice processing service company belongs to one of that service company's own customers.
+	 * Mirrors the refusal in {@link #createFeeCalculationForPayment(InvoiceProcessingFeeWithPrecalculatedAmountRequest)}, but is meant for the
+	 * no-service-fee path, so it takes the invoice's documentNo from the caller rather than looking it up (the caller's invoice may not be persisted).
+	 * <p>
+	 * Does nothing when the paying partner is not a service company, or when the service company pays its own invoice.
+	 *
+	 * @throws AdempiereException (user validation error) if the invoice's customer is not assigned to the paying service company
+	 */
+	public void assertSalesInvoiceCustomerAssignedToPayingServiceCompany(
+			@NonNull final BPartnerId invoiceCustomerId,
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final String invoiceDocumentNo,
+			@NonNull final BPartnerId payingServiceCompanyBPartnerId,
+			@NonNull final ZonedDateTime paymentDate)
+	{
+		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByPaymentBPartnerAndValidFromDate(payingServiceCompanyBPartnerId, paymentDate).orElse(null);
+		if (config == null)
+		{
+			return; // the paying partner is not an invoice processing service company
+		}
+
+		if (BPartnerId.equals(invoiceCustomerId, payingServiceCompanyBPartnerId))
+		{
+			return; // the service company pays its own invoice
+		}
+
+		if (!config.isBPartnerDetailsActive(invoiceCustomerId))
+		{
+			throwCustomerNotAssigned(invoiceDocumentNo, payingServiceCompanyBPartnerId, invoiceCustomerId, invoiceId);
+		}
+	}
+
+	/**
+	 * Throws the user-validation error that the invoice's customer is not assigned to the paying service company.
+	 * Shared by the with-fee ({@link #createFeeCalculationForPayment}) and no-fee ({@link #assertSalesInvoiceCustomerAssignedToPayingServiceCompany}) paths,
+	 * so both raise the identical message, error code and parameters. The caller supplies the invoice documentNo (the invoice may not be persisted).
+	 */
+	private void throwCustomerNotAssigned(
+			@NonNull final String invoiceDocumentNo,
+			@NonNull final BPartnerId serviceCompanyBPartnerId,
+			@NonNull final BPartnerId customerId,
+			@NonNull final InvoiceId invoiceId)
+	{
+		throw new AdempiereException(
+				MSG_CUSTOMER_NOT_ASSIGNED_TO_SERVICE_COMPANY,
+				invoiceDocumentNo,
+				bpartnerBL.getBPartnerName(serviceCompanyBPartnerId),
+				bpartnerBL.getBPartnerName(customerId))
+				.markAsUserValidationError()
+				.setParameter("C_Invoice_ID", invoiceId.getRepoId())
+				.setParameter("C_BPartner_ID", serviceCompanyBPartnerId.getRepoId()) // like the sibling service fee errors: the service company
+				.setParameter("Customer_BPartner_ID", customerId.getRepoId());
+	}
+
+	private String getDocumentNo(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceDAO.getDocumentNosByInvoiceIds(ImmutableSet.of(invoiceId)).get(invoiceId);
+	}
+
+	/**
+	 * Derives the context for the service fee of an invoice that is allocated against the given payments.
+	 *
+	 * @param paymentContexts one context per selected payment (payment partner = service company, payment date); may be empty
+	 * @param noConfigError   the error to throw if there are no payments and the customer has no service company config
+	 * @return with payments: their single common context; without payments: the customer's configured service company and now
+	 */
+	@NonNull
+	public InvoiceProcessingContext extractInvoiceProcessingContext(
+			@NonNull final BPartnerId customerId,
+			@NonNull final Collection<InvoiceProcessingContext> paymentContexts,
+			@NonNull final Supplier<AdempiereException> noConfigError)
+	{
+		if (paymentContexts.isEmpty())
+		{
+			final ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
+			final InvoiceProcessingServiceCompanyConfig config = getByCustomerId(customerId, evaluationDate)
+					.orElseThrow(noConfigError);
+			return InvoiceProcessingContext.of(config.getServiceCompanyBPartnerId(), evaluationDate);
+		}
+
+		final ImmutableSet<InvoiceProcessingContext> distinctContexts = ImmutableSet.copyOf(paymentContexts);
+		if (distinctContexts.size() != 1)
+		{
+			throw new AdempiereException(MSG_PAYMENTS_OF_DIFFERENT_SERVICE_COMPANY_OR_DATE).markAsUserValidationError();
+		}
+		return distinctContexts.iterator().next();
 	}
 
 	public Optional<InvoiceProcessingFeeCalculation> computeFee(@NonNull final InvoiceProcessingFeeComputeRequest request)

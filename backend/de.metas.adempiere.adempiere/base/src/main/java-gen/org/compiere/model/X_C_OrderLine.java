@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -752666192L;
+	private static final long serialVersionUID = -852522201L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -247,6 +247,33 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_Charge_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Charge_ID);
+	}
+
+	@Override
+	public de.metas.order.model.I_C_CompensationGroup_CalibrationRule getC_CompensationGroup_CalibrationRule()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CompensationGroup_CalibrationRule_ID, de.metas.order.model.I_C_CompensationGroup_CalibrationRule.class);
+	}
+
+	@Override
+	public void setC_CompensationGroup_CalibrationRule(final de.metas.order.model.I_C_CompensationGroup_CalibrationRule C_CompensationGroup_CalibrationRule)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CompensationGroup_CalibrationRule_ID, de.metas.order.model.I_C_CompensationGroup_CalibrationRule.class, C_CompensationGroup_CalibrationRule);
+	}
+
+	@Override
+	public void setC_CompensationGroup_CalibrationRule_ID (final int C_CompensationGroup_CalibrationRule_ID)
+	{
+		if (C_CompensationGroup_CalibrationRule_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_CompensationGroup_CalibrationRule_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_CompensationGroup_CalibrationRule_ID, C_CompensationGroup_CalibrationRule_ID);
+	}
+
+	@Override
+	public int getC_CompensationGroup_CalibrationRule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_CompensationGroup_CalibrationRule_ID);
 	}
 
 	@Override
@@ -725,6 +752,17 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setFA_OpenQty_Exists_Color_ID (final int FA_OpenQty_Exists_Color_ID)
+	{
+		throw new IllegalArgumentException ("FA_OpenQty_Exists_Color_ID is virtual column");	}
+
+	@Override
+	public int getFA_OpenQty_Exists_Color_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FA_OpenQty_Exists_Color_ID);
+	}
+
+	@Override
 	public void setFreightAmt (final BigDecimal FreightAmt)
 	{
 		set_Value (COLUMNNAME_FreightAmt, FreightAmt);
@@ -762,6 +800,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return get_ValueAsString(COLUMNNAME_FrequencyType);
 	}
 
+	@Override
+	public void setGrossWeightKg (final BigDecimal GrossWeightKg)
+	{
+		set_Value (COLUMNNAME_GrossWeightKg, GrossWeightKg);
+	}
+
+	@Override
+	public BigDecimal getGrossWeightKg() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrossWeightKg);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
 	/** 
 	 * GroupCompensationAmtType AD_Reference_ID=540759
 	 * Reference name: GroupCompensationAmtType
@@ -797,6 +848,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setGroupCompensationCalibrationFactor (final @Nullable BigDecimal GroupCompensationCalibrationFactor)
+	{
+		set_ValueNoCheck (COLUMNNAME_GroupCompensationCalibrationFactor, GroupCompensationCalibrationFactor);
+	}
+
+	@Override
+	public BigDecimal getGroupCompensationCalibrationFactor() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GroupCompensationCalibrationFactor);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setGroupCompensationPercentage (final @Nullable BigDecimal GroupCompensationPercentage)
 	{
 		set_Value (COLUMNNAME_GroupCompensationPercentage, GroupCompensationPercentage);
@@ -806,6 +870,34 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public BigDecimal getGroupCompensationPercentage() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GroupCompensationPercentage);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setGroupCompensation_Product_Category_ID (final int GroupCompensation_Product_Category_ID)
+	{
+		if (GroupCompensation_Product_Category_ID < 1) 
+			set_Value (COLUMNNAME_GroupCompensation_Product_Category_ID, null);
+		else 
+			set_Value (COLUMNNAME_GroupCompensation_Product_Category_ID, GroupCompensation_Product_Category_ID);
+	}
+
+	@Override
+	public int getGroupCompensation_Product_Category_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_GroupCompensation_Product_Category_ID);
+	}
+
+	@Override
+	public void setGroupCompensationQtyEnteredUncalibrated (final @Nullable BigDecimal GroupCompensationQtyEnteredUncalibrated)
+	{
+		set_ValueNoCheck (COLUMNNAME_GroupCompensationQtyEnteredUncalibrated, GroupCompensationQtyEnteredUncalibrated);
+	}
+
+	@Override
+	public BigDecimal getGroupCompensationQtyEnteredUncalibrated() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GroupCompensationQtyEnteredUncalibrated);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -1405,6 +1497,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setPreparationDate (final @Nullable java.sql.Timestamp PreparationDate)
+	{
+		set_Value (COLUMNNAME_PreparationDate, PreparationDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getPreparationDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PreparationDate);
+	}
+
+	@Override
 	public void setPresetDateInvoiced (final @Nullable java.sql.Timestamp PresetDateInvoiced)
 	{
 		set_Value (COLUMNNAME_PresetDateInvoiced, PresetDateInvoiced);
@@ -1728,6 +1832,8 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public static final String REASON_PromotionalCampaign = "P";
 	/** InternalUse = I */
 	public static final String REASON_InternalUse = "I";
+	/** Bestandteil Handelsstückliste = B */
+	public static final String REASON_BestandteilHandelsstueckliste = "B";
 	@Override
 	public void setReason (final @Nullable java.lang.String Reason)
 	{

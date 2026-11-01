@@ -948,4 +948,54 @@ public final class CollectionUtils
 		return list.size() == result.size() ? list : result;
 	}
 
+	@Nullable
+	public static <T> T removeFirst(@NonNull final ArrayList<T> list, @NonNull final Predicate<T> predicate)
+	{
+		final Iterator<T> it = list.iterator();
+		while (it.hasNext())
+		{
+			final T item = it.next();
+			if (predicate.test(item))
+			{
+				it.remove();
+				return item;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the first element after {@code element} (round-robin, wrapping to the start) that satisfies {@code isEligible},
+	 * scanning each of the other elements at most once.
+	 * The given {@code element} itself is never returned.
+	 *
+	 * @return {@code null} if {@code element} is not in the list, or if no other element is eligible.
+	 */
+	@Nullable
+	public static <T> T getNextRoundRobin(
+			@NonNull final List<T> list,
+			@NonNull final T element,
+			@Nullable final Predicate<T> isEligible)
+	{
+		final int startIdx = list.indexOf(element);
+		if (startIdx < 0)
+		{
+			return null; // element not found
+		}
+
+		// Scan only the other size-1 elements, wrapping around. The loop is bounded by `size`,
+		// so it can never spin forever — even when nothing is eligible.
+		final int size = list.size();
+		for (int step = 1; step < size; step++)
+		{
+			final T candidate = list.get((startIdx + step) % size);
+			if (isEligible == null || isEligible.test(candidate))
+			{
+				return candidate;
+			}
+		}
+
+		return null; // no eligible candidate other than the given one
+	}
 }

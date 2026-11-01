@@ -309,6 +309,7 @@ public interface I_C_DocType
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -318,6 +319,7 @@ public interface I_C_DocType
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -704,7 +706,7 @@ public interface I_C_DocType
 
 	/**
 	 * Set In Transit.
-	 * Movement is in transit
+	 * If Yes, this is a transit warehouse (for inventory between two physical warehouses). Distinct from "Dropship Warehouse" (IsDropShipWarehouse): an in-transit warehouse holds own goods moving between sites, whereas a dropship warehouse routes goods directly from supplier to end customer.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -714,7 +716,7 @@ public interface I_C_DocType
 
 	/**
 	 * Get In Transit.
-	 * Movement is in transit
+	 * If Yes, this is a transit warehouse (for inventory between two physical warehouses). Distinct from "Dropship Warehouse" (IsDropShipWarehouse): an in-transit warehouse holds own goods moving between sites, whereas a dropship warehouse routes goods directly from supplier to end customer.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -768,6 +770,29 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, Object> COLUMN_IsOverwriteSeqOnComplete = new ModelColumn<>(I_C_DocType.class, "IsOverwriteSeqOnComplete", null);
 	String COLUMNNAME_IsOverwriteSeqOnComplete = "IsOverwriteSeqOnComplete";
+
+	/**
+	 * Set Partial invoice.
+	 * When checked, this invoice is a partial invoice.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPartialInvoice (@Nullable java.lang.String IsPartialInvoice);
+
+	/**
+	 * Get Partial invoice.
+	 * When checked, this invoice is a partial invoice.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsPartialInvoice();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_IsPartialInvoice = new ModelColumn<>(I_C_DocType.class, "IsPartialInvoice", null);
+	String COLUMNNAME_IsPartialInvoice = "IsPartialInvoice";
 
 	/**
 	 * Set Pick/QA Confirmation.
@@ -888,6 +913,7 @@ public interface I_C_DocType
 
 	/**
 	 * Set Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -897,6 +923,7 @@ public interface I_C_DocType
 
 	/**
 	 * Get Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

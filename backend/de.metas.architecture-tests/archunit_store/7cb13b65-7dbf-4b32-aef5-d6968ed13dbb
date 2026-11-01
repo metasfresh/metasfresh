@@ -1,0 +1,1 @@
+Method <de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver.saveHeader(de.metas.manufacturing.job.model.ManufacturingJob)> calls method <org.adempiere.model.InterfaceWrapperHelper.saveRecord(java.lang.Object)> in (ManufacturingJobLoaderAndSaver.java:418)

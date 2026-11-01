@@ -1,0 +1,3 @@
+Method <de.metas.purchasecandidate.ReferenceGenerator.getNextDemandReference()> calls method <org.compiere.util.Env.getAD_Client_ID()> in (ReferenceGenerator.java:47)
+Method <de.metas.purchasecandidate.ReferenceGenerator.getNextDemandReference()> calls method <org.compiere.util.Env.getAD_Org_ID(java.util.Properties)> in (ReferenceGenerator.java:48)
+Method <de.metas.purchasecandidate.ReferenceGenerator.getNextDemandReference()> calls method <org.compiere.util.Env.getClientId()> in (ReferenceGenerator.java:57)

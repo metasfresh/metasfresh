@@ -23,7 +23,10 @@
 package de.metas.costing.methods;
 
 import de.metas.acct.AcctSchemaTestHelper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
@@ -50,18 +53,26 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_CostElement;
 import org.compiere.util.Env;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPOrderCost;
+import org.eevolution.api.PPOrderCosts;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderCostTrxType;
 import org.eevolution.api.impl.MockedProductCostingBL;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,6 +80,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -83,10 +95,12 @@ public class PPOrderCostDifferenceDistributorTest
 	private final CurrencyPrecision precision = CurrencyPrecision.ofInt(4);
 	private I_C_UOM uomEach;
 	private UomId uomEachId;
+	private I_C_UOM uomKg;
 
 	private static final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(1);
 	private static final CostElementId materialCostElementId = CostElementId.ofRepoId(1);
 	private static final ProductId mainProductId = ProductId.ofRepoId(1);
+	private static final ProductId coProductId = ProductId.ofRepoId(2);
 
 	private final ClientId orderClientId = ClientId.ofRepoId(1);
 	private final OrgId orderOrgId = OrgId.ofRepoId(0);
@@ -101,6 +115,7 @@ public class PPOrderCostDifferenceDistributorTest
 
 		uomEach = BusinessTestHelper.createUomEach();
 		uomEachId = UomId.ofRepoId(uomEach.getC_UOM_ID());
+		uomKg = BusinessTestHelper.createUomKg();
 		finishedGoodId = BusinessTestHelper.createProductId("finished good", uomEach);
 	}
 
@@ -137,7 +152,8 @@ public class PPOrderCostDifferenceDistributorTest
 		final CostAmountDetailed split = PPOrderCostDifferenceDistributor.computeSplit(
 				CostAmount.of(40, currencyId),
 				mainProductCostWithAccumulatedQty(10),
-				currentCost("30", "8"));
+				currentCost("30", "8"),
+				identityUomConverter());
 
 		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("40");
 		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("32"); // capitalize 4 x 8
@@ -150,11 +166,33 @@ public class PPOrderCostDifferenceDistributorTest
 		final CostAmountDetailed split = PPOrderCostDifferenceDistributor.computeSplit(
 				CostAmount.of(-40, currencyId),
 				mainProductCostWithAccumulatedQty(10),
-				currentCost("30", "20"));
+				currentCost("30", "20"),
+				identityUomConverter());
 
 		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("-40");
 		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("-40"); // all capitalized (qtyInStock == mfd)
 		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualTo("0");
+	}
+
+	/**
+	 * A co-product made in a different UOM than it is stocked/costed in (e.g. produced in kg, kept in Stk). The
+	 * split must convert the accumulated qty into the cost UOM before comparing it against the on-hand qty; without
+	 * the conversion {@code min()}/{@code divide()} mix kg with Stk and the write-down throws
+	 * {@code QuantitiesUOMNotMatchingExpection}. Same operands as {@link #positiveResidual_partlyShipped_spillsToCogs}
+	 * once converted (5 kg x 2 Stk/kg = 10 Stk manufactured, 8 on hand), so the correct split is identical.
+	 */
+	@Test
+	public void differingUom_convertsAccumulatedQtyIntoCostUomBeforeSplitting()
+	{
+		final CostAmountDetailed split = PPOrderCostDifferenceDistributor.computeSplit(
+				CostAmount.of(40, currencyId),
+				coProductCostWithAccumulatedQty(5, uomKg), // 5 kg == 10 Stk at 2 Stk/kg
+				currentCost("30", "8"),                    // 8 Stk on hand, cost UOM = Stk
+				kgToEachConverter(2));
+
+		assertThat(split.getMainAmt().toBigDecimal()).isEqualTo("40");
+		assertThat(split.getCostAdjustmentAmt().toBigDecimal()).isEqualTo("32"); // capitalize 4 x 8 Stk
+		assertThat(split.getAlreadyShippedAmt().toBigDecimal()).isEqualTo("8");  // spill 4 x 2 Stk -> COGS
 	}
 
 	/** The manufactured qty {@code computeSplit} works off is the main-product line's accumulated qty. */
@@ -168,12 +206,48 @@ public class PPOrderCostDifferenceDistributorTest
 				.build();
 	}
 
+	/** A co-product line whose price and accumulated qty are booked in its document UOM {@code uom} (e.g. kg). */
+	private PPOrderCost coProductCostWithAccumulatedQty(final int accumulatedQty, final I_C_UOM uom)
+	{
+		return PPOrderCost.builder()
+				.trxType(PPOrderCostTrxType.CoProduct)
+				.costSegmentAndElement(segment(coProductId))
+				.price(costPrice("30", UomId.ofRepoId(uom.getC_UOM_ID())))
+				.accumulatedQty(Quantity.of(accumulatedQty, uom))
+				.build();
+	}
+
+	/** Same-UOM cases: the accumulated qty already lives in the cost UOM, so no conversion is applied. */
+	private static QuantityUOMConverter identityUomConverter()
+	{
+		return (qty, productId, targetUOMId) -> qty;
+	}
+
+	/**
+	 * Converts a kg qty into Stk ({@code uomEach}) at a fixed {@code eachPerKg} factor. Asserts the caller passes the
+	 * co-product's own id and the cost UOM as the conversion target, so a regression that converted against the wrong
+	 * product rate or the wrong UOM (e.g. the price UOM instead of {@code currentCost.getUomId()}) is caught here.
+	 */
+	private QuantityUOMConverter kgToEachConverter(final int eachPerKg)
+	{
+		return (qty, productId, targetUOMId) -> {
+			assertThat(productId).isEqualTo(coProductId);
+			assertThat(targetUOMId).isEqualTo(uomEachId);
+			return Quantity.of(qty.toBigDecimal().multiply(BigDecimal.valueOf(eachPerKg)), uomEach);
+		};
+	}
+
 	private CostPrice costPrice(final String ownCostPrice)
+	{
+		return costPrice(ownCostPrice, uomEachId);
+	}
+
+	private CostPrice costPrice(final String ownCostPrice, final UomId uomId)
 	{
 		return CostPrice.builder()
 				.ownCostPrice(CostAmount.of(new BigDecimal(ownCostPrice), currencyId))
 				.componentsCostPrice(CostAmount.zero(currencyId))
-				.uomId(uomEachId)
+				.uomId(uomId)
 				.build();
 	}
 
@@ -240,6 +314,76 @@ public class PPOrderCostDifferenceDistributorTest
 		final PPOrderCostDifferenceDistributor distributor = givenDistributor(CostingMethod.StandardCosting, CostingMethod.AveragePO);
 
 		assertThat(distributor.hasOrderCosts(ppOrder())).isFalse();
+	}
+
+	@Test
+	public void distribute_standardCosting_returnsFalse_noCollector()
+	{
+		final I_M_CostElement standardMaterialCostElement = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
+		standardMaterialCostElement.setAD_Org_ID(OrgId.ANY.getRepoId());
+		standardMaterialCostElement.setName("Standard Material");
+		standardMaterialCostElement.setCostElementType(CostElementType.Material.getCode());
+		standardMaterialCostElement.setCostingMethod(CostingMethod.StandardCosting.getCode());
+		standardMaterialCostElement.setIsCalculated(false);
+		InterfaceWrapperHelper.saveRecord(standardMaterialCostElement);
+
+		final PPOrderCostDifferenceDistributor distributor = givenDistributor(CostingMethod.StandardCosting, CostingMethod.StandardCosting);
+		final I_PP_Order ppOrder = ppOrder();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		givenZeroMainProductOrderCost(ppOrderId, standardMaterialCostElement);
+
+		final boolean distributed = distributor.distribute(ppOrderId);
+
+		assertThat(distributed).isFalse();
+		assertThat(Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Cost_Collector.class)
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_CostCollectorType, CostCollectorType.CostDifferenceDistribution.getCode())
+				.create()
+				.count())
+				.isZero();
+	}
+
+	/** Standard costing accumulates nothing, so the order's rows exist (created when the order is posted) but carry a zero residual. */
+	private void givenZeroMainProductOrderCost(@NonNull final PPOrderId ppOrderId, @NonNull final I_M_CostElement materialCostElement)
+	{
+		final AcctSchemaId orderAcctSchemaId = Services.get(IAcctSchemaDAO.class).getByClientAndOrg(orderClientId, orderOrgId).getId();
+		final CostElementId costElementId = CostElementId.ofRepoId(materialCostElement.getM_CostElement_ID());
+		final ProductId componentProductId = BusinessTestHelper.createProductId("component", uomEach);
+
+		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
+		for (final Map.Entry<PPOrderCostTrxType, ProductId> trxTypeAndProductId : ImmutableMap.of(
+				PPOrderCostTrxType.MaterialIssue, componentProductId,
+				PPOrderCostTrxType.MainProduct, finishedGoodId).entrySet())
+		{
+			costs.add(PPOrderCost.builder()
+					.trxType(trxTypeAndProductId.getKey())
+					.costSegmentAndElement(CostSegmentAndElement.builder()
+							.costingLevel(CostingLevel.Client)
+							.acctSchemaId(orderAcctSchemaId)
+							.costTypeId(CostTypeId.ofRepoId(1))
+							.clientId(orderClientId)
+							.orgId(orderOrgId)
+							.productId(trxTypeAndProductId.getValue())
+							.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+							.costElementId(costElementId)
+							.build())
+					.price(CostPrice.builder()
+							.ownCostPrice(CostAmount.zero(currencyId))
+							.componentsCostPrice(CostAmount.zero(currencyId))
+							.uomId(uomEachId)
+							.build())
+					.accumulatedQty(Quantity.zero(uomEach))
+					.accumulatedAmount(CostAmount.zero(currencyId))
+					.build());
+		}
+
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.costs(costs.build())
+				.build();
+		orderCosts.updatePostCalculationAmounts(precision);
+		Services.get(IPPOrderCostBL.class).save(orderCosts);
 	}
 
 	/**

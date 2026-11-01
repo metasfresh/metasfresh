@@ -22,6 +22,37 @@
   overflow: visible;
 }
 
+/*
+ * The quick-actions dropdown toggle is the last element in the list-view header, flush against the
+ * right edge of `.document-list-wrapper` — which is `overflow: auto`. A centred tooltip does not fit
+ * there: `left: 50%; margin-left: -40px; width: 80px` reaches 24px past a 32px-wide trigger, so it
+ * spills out of the wrapper, the wrapper gains a horizontal scrollbar, and (where scrollbars take
+ * layout space) that cascades into a vertical one and shifts the whole list view sideways as the
+ * pointer crosses the quick actions.
+ *
+ * Open this tooltip inward instead: right-aligned to its trigger, it can never reach past the
+ * trigger's right edge, so it can never overflow the wrapper. The arrows are re-offset to stay on
+ * the trigger's centre, which sits 15px left of the tooltip's right edge (the trigger's 30px
+ * padding box, halved).
+ */
+.quick-actions-wrapper .tooltip-parent .tooltip-wrapp {
+  left: auto;
+  right: 0;
+  margin-left: 0;
+
+  &:after {
+    left: auto;
+    right: 11px; /* 15px - half of the 8px arrow */
+    margin-left: 0;
+  }
+
+  &:before {
+    left: auto;
+    right: 9px; /* 15px - half of the 12px arrow */
+    margin-left: 0;
+  }
+}
+
 .tooltip-home-menu {
   left: 25px;
 }

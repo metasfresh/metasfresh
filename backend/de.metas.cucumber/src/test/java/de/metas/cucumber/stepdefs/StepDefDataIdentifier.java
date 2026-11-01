@@ -64,7 +64,7 @@ public final class StepDefDataIdentifier
 		{
 			throw new AdempiereException("Invalid identifier `" + value + "`");
 		}
-		else if (valueNorm.equalsIgnoreCase(NULL.value) || "-".equals(value))
+		else if (valueNorm.equalsIgnoreCase(NULL.value) || "-" .equals(valueNorm) || DataTableUtil.isNullPlaceholder(valueNorm))
 		{
 			return NULL;
 		}

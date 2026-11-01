@@ -38,6 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -188,6 +189,106 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		assertLineCorrect(invoiceLines.get(1));
 		assertLineCorrect(invoiceLines.get(2));
 		// System.out.println(invoices);
+	}
+
+	/**
+	 * A refund candidate has a positive amount and the credit memo type of its refund document type;
+	 * the invoice stays a credit memo with that positive amount.
+	 */
+	@Test
+	public void test_refundCandidateWithPositiveAmount_isCreditMemoWithPositiveAmount()
+	{
+		final IInvoiceHeader invoice = aggregateWithPresetDocType(X_C_DocType.DOCBASETYPE_ARCreditMemo, X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung, 1);
+
+		assertThat(invoice.getDocBaseType()).as("Invalid DocBaseType").isEqualTo(InvoiceDocBaseType.CustomerCreditMemo);
+		assertThat(singleNetLineAmt(invoice)).as("Invalid NetLineAmt").isEqualByComparingTo(new BigDecimal("100")); // price=10 times qtyInUom=10
+	}
+
+	@Test
+	public void test_refundCreditMemoCandidateWithPositiveAmount_isCreditMemoWithPositiveAmount()
+	{
+		final IInvoiceHeader invoice = aggregateWithPresetDocType(X_C_DocType.DOCBASETYPE_ARCreditMemo, X_C_DocType.DOCSUBTYPE_Rueckverguetungsgutschrift, 1);
+
+		assertThat(invoice.getDocBaseType()).as("Invalid DocBaseType").isEqualTo(InvoiceDocBaseType.CustomerCreditMemo);
+		assertThat(singleNetLineAmt(invoice)).as("Invalid NetLineAmt").isEqualByComparingTo(new BigDecimal("100"));
+	}
+
+	/**
+	 * A negative refund means that the customer owes: it stays a credit memo, with the negative amount.
+	 */
+	@Test
+	public void test_refundCandidateWithNegativeAmount_isCreditMemoWithNegativeAmount()
+	{
+		final IInvoiceHeader invoice = aggregateWithPresetDocType(X_C_DocType.DOCBASETYPE_ARCreditMemo, X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung, -1);
+
+		assertThat(invoice.getDocBaseType()).as("Invalid DocBaseType").isEqualTo(InvoiceDocBaseType.CustomerCreditMemo);
+		assertThat(singleNetLineAmt(invoice)).as("Invalid NetLineAmt").isEqualByComparingTo(new BigDecimal("-100"));
+	}
+
+	/**
+	 * A document sub type that is not known to the code must not break invoicing.
+	 */
+	@Test
+	public void test_unknownDocSubType_isTreatedLikeAnyOtherDocType()
+	{
+		final IInvoiceHeader invoice = aggregateWithPresetDocType(X_C_DocType.DOCBASETYPE_ARInvoice, "ZZ", 1);
+
+		assertThat(invoice.getDocBaseType()).as("Invalid DocBaseType").isEqualTo(InvoiceDocBaseType.CustomerInvoice);
+		assertThat(singleNetLineAmt(invoice)).as("Invalid NetLineAmt").isEqualByComparingTo(new BigDecimal("100"));
+	}
+
+	/**
+	 * Aggregates one sales candidate whose invoice document type is preset to a document type with the given base and sub type.
+	 */
+	private IInvoiceHeader aggregateWithPresetDocType(final String docBaseType, final String docSubType, final int qtyOrdered)
+	{
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
+
+		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+		docType.setName("preset-" + docBaseType + "-" + docSubType);
+		docType.setDocBaseType(docBaseType);
+		docType.setDocSubType(docSubType);
+		docType.setIsSOTrx(true);
+		InterfaceWrapperHelper.save(docType);
+
+		// we also need a regular invoice candidate, or 'updateInvalidCandidates()' won't set the NetAmtToInvoice of a manual candidate
+		final I_C_Invoice_Candidate regularIc = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(10)
+				.setQtyOrdered(1)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
+		InterfaceWrapperHelper.save(regularIc);
+
+		final I_C_Invoice_Candidate ic = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(10)
+				.setQtyOrdered(qtyOrdered)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+		ic.setC_ILCandHandler(manualHandler);
+		ic.setC_DocTypeInvoice_ID(docType.getC_DocType_ID());
+		InterfaceWrapperHelper.save(ic);
+
+		updateInvalidCandidates();
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting().build();
+		engine.addInvoiceCandidate(ic);
+
+		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
+		assertThat(invoices).hasSize(1);
+		return invoices.get(0);
+	}
+
+	private BigDecimal singleNetLineAmt(final IInvoiceHeader invoice)
+	{
+		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
+		assertThat(invoiceLines).hasSize(1);
+		return invoiceLines.get(0).getNetLineAmt().toBigDecimal();
 	}
 
 	@Test

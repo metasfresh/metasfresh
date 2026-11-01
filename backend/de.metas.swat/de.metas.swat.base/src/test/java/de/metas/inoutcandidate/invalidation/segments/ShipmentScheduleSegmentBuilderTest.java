@@ -41,7 +41,7 @@ class ShipmentScheduleSegmentBuilderTest
 		// in the recompute WHERE clause — build() must fail fast rather than silently under-invalidate.
 		assertThatThrownBy(() -> ShipmentScheduleSegments.builder()
 				.productId(PRODUCT_ID)
-				.bpartnerId(0)
+				.anyBPartnerId()
 				.warehouseId(WAREHOUSE_ID)
 				.locatorId(LOCATOR_ID)
 				.build())
@@ -54,7 +54,7 @@ class ShipmentScheduleSegmentBuilderTest
 	{
 		final IShipmentScheduleSegment segment = ShipmentScheduleSegments.builder()
 				.productId(PRODUCT_ID)
-				.bpartnerId(0)
+				.anyBPartnerId()
 				.warehouseId(WAREHOUSE_ID)
 				.build();
 
@@ -68,7 +68,7 @@ class ShipmentScheduleSegmentBuilderTest
 	{
 		final IShipmentScheduleSegment segment = ShipmentScheduleSegments.builder()
 				.productId(PRODUCT_ID)
-				.bpartnerId(0)
+				.anyBPartnerId()
 				.locatorId(LOCATOR_ID)
 				.build();
 

@@ -5,12 +5,14 @@ import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,7 +31,7 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	/**
 	 * Map of "packing material key" to {@link IPackingMaterialDocumentLine}.
 	 * <p>
-	 * For creating packing material key, see {@link #createPackingMaterialKey(ProductId)}.
+	 * For creating packing material key, see {@link #createPackingMaterialKey(ProductId, ProjectId)}.
 	 */
 	private final Map<ArrayKey, IPackingMaterialDocumentLine> packingMaterialKey2packingMaterialLine = new HashMap<>();
 
@@ -39,17 +41,13 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	 * We will use this set to be able to unlink those sources from existing packing material lines (if any).
 	 */
 	private final Set<IPackingMaterialDocumentLineSource> sourcesWithoutPackingMaterials = new HashSet<>();
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public boolean isEmpty()
 	{
 		// If we have already have packing material lines, consider it not empty
-		if (!packingMaterialKey2packingMaterialLine.isEmpty())
-		{
-			return false;
-		}
-
-		return true;
+		return packingMaterialKey2packingMaterialLine.isEmpty();
 	}
 
 	/**
@@ -59,18 +57,19 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	 */
 	protected final void addPackingMaterialDocumentLine(@NonNull final IPackingMaterialDocumentLine line)
 	{
-		final ArrayKey pmKey = createPackingMaterialKey(line.getProductId());
+		final ArrayKey pmKey = createPackingMaterialKey(line.getProductId(), line.getProjectIdOrNull());
 		final IPackingMaterialDocumentLine lineExisting = packingMaterialKey2packingMaterialLine.put(pmKey, line);
 		if (lineExisting != null)
 		{
-			final String productName = Services.get(IProductBL.class).getProductValueAndName(line.getProductId());
+			final String productName = productBL.getProductValueAndName(line.getProductId());
+
 			throw new AdempiereException("An packing material line was already added for product " + productName);
 		}
 	}
 
-	private ArrayKey createPackingMaterialKey(@NonNull final ProductId productId)
+	private ArrayKey createPackingMaterialKey(@NonNull final ProductId productId, @Nullable final ProjectId projectId)
 	{
-		return Util.mkKey(productId);
+		return Util.mkKey(productId, projectId);
 	}
 
 	@Override
@@ -88,23 +87,24 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 		}
 		else
 		{
+			final ProjectId projectId = source.getProjectId();
 			for (final I_M_HU_PackingMaterial packingMaterial : packingMaterials)
 			{
-				final IPackingMaterialDocumentLine packingMaterialLine = getCreatePackingMaterialDocumentLine(packingMaterial);
+				final IPackingMaterialDocumentLine packingMaterialLine = getCreatePackingMaterialDocumentLine(packingMaterial, projectId);
 				packingMaterialLine.addSourceOrderLine(source, source.getQty());
 			}
 			final ProductId luProductID = source.getLUProductId();
 			if (luProductID != null)
 			{
-				final IPackingMaterialDocumentLine luPackingMaterialLine = getCreatePackingMaterialDocumentLine(luProductID);
+				final IPackingMaterialDocumentLine luPackingMaterialLine = getCreatePackingMaterialDocumentLine(luProductID, projectId);
 				luPackingMaterialLine.addSourceOrderLine(source, source.getQtyLU());
 			}
 		}
 	}
 
-	private IPackingMaterialDocumentLine getCreatePackingMaterialDocumentLine(@NonNull final ProductId luProductId)
+	private IPackingMaterialDocumentLine getCreatePackingMaterialDocumentLine(@NonNull final ProductId luProductId, @Nullable final ProjectId projectId)
 	{
-		final ArrayKey pmKey = createPackingMaterialKey(luProductId);
+		final ArrayKey pmKey = createPackingMaterialKey(luProductId, projectId);
 
 		//
 		// Check if we already have a packing material line
@@ -116,7 +116,7 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 
 		//
 		// Packing material order line was not found => Create New
-		final IPackingMaterialDocumentLine pmLineNew = createPackingMaterialDocumentLine(luProductId);
+		final IPackingMaterialDocumentLine pmLineNew = createPackingMaterialDocumentLine(luProductId, projectId);
 
 		// NOTE: we are not saving here, but later
 		addPackingMaterialDocumentLine(pmLineNew);
@@ -134,10 +134,10 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 		sources.forEach(this::addSource);
 	}
 
-	private IPackingMaterialDocumentLine getCreatePackingMaterialDocumentLine(@NonNull final I_M_HU_PackingMaterial packingMaterial)
+	private IPackingMaterialDocumentLine getCreatePackingMaterialDocumentLine(@NonNull final I_M_HU_PackingMaterial packingMaterial, @Nullable final ProjectId projectId)
 	{
 		final ProductId productId = ProductId.ofRepoId(packingMaterial.getM_Product_ID());
-		return getCreatePackingMaterialDocumentLine(productId);
+		return getCreatePackingMaterialDocumentLine(productId, projectId);
 	}
 
 	/**
@@ -147,9 +147,10 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	 * {@link #createDocumentLine(IPackingMaterialDocumentLine)}).
 	 *
 	 * @param productId the product for which the packing material line shall be created.
+	 * @param projectId the project for which the packing material line shall be created.
 	 * @return packing material document line.
 	 */
-	protected abstract IPackingMaterialDocumentLine createPackingMaterialDocumentLine(final ProductId productId);
+	protected abstract IPackingMaterialDocumentLine createPackingMaterialDocumentLine(final ProductId productId, @Nullable final ProjectId projectId);
 
 	@Override
 	@OverridingMethodsMustInvokeSuper

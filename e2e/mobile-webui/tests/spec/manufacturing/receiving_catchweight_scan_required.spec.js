@@ -29,30 +29,45 @@ const L_M_CODE_3 = 'LMQ#1#0.097#22.11.2025#502';
 const L_M_CODE_WITHOUT_WEIGHT = 'LMQ#1##15.11.2025#501';
 const BEST_BEFORE_DAYS = 70;
 
+// With the scan required, the scanned lot and best-before date are shown in the dialog's own lot / best-before
+// rows (configured as editable attributes or not). Without it, the pre-filled best-before date is the initial
+// value of the best-before editable-attribute row (attr-<code>-field), so lot and best-before date are configured
+// as editable and are instance attributes of the attribute set of the product's category.
 // isTUMode: the line is received in TUs (receive unit type TU); the PP order then carries the two-piece TU packing.
 // isCaptureCatchWeightAtReceipt: undefined = the default (captured)
+// editableAttributes: the global editable-attribute list; without LOT_NO the lot number is not editable
+const LOT_NO = 'Lot-Nummer';
+const BEST_BEFORE_DATE = 'HU_BestBeforeDate';
+// the default pair (the editable-attribute list is global, so other specs rely on it)
+const DEFAULT_EDITABLE_ATTRIBUTES = [LOT_NO, BEST_BEFORE_DATE];
 const createMasterdata = async ({
     isFinishedGoodsCatchWeightScanRequired,
     isTUMode = false,
     isCaptureCatchWeightAtReceipt,
-    isLotNumberEditable,
+    editableAttributes = DEFAULT_EDITABLE_ATTRIBUTES,
 }) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
             login: { user: { language: 'en_US' } },
+            productCategories: { 'mfgCat': { attributeSetName: 'mfgAttrSet' } },
+            attributes: {
+                'lotNumberAttr': { value: LOT_NO, attributeSetNames: ['mfgAttrSet'] },
+                'bestBeforeDateAttr': { value: BEST_BEFORE_DATE, attributeSetNames: ['mfgAttrSet'] },
+            },
             mobileConfig: {
                 manufacturing: {
                     isFinishedGoodsCatchWeightScanRequired,
                     isCaptureCatchWeightAtReceipt,
-                    isLotNumberEditable,
                     receiveUnitType: isTUMode ? 'TU' : 'CU',
+                    editableAttributes,
                 },
             },
             warehouses: { 'wh': {} },
             products: {
-                'COMP1': {},
+                'COMP1': { productCategory: 'mfgCat' },
                 'BOM': {
+                    productCategory: 'mfgCat',
                     uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
                     bestBeforeDays: BEST_BEFORE_DAYS,
                     bom: { lines: [{ product: 'COMP1', qty: 1 }] },
@@ -115,6 +130,8 @@ const receiveOneScannedPiece = async ({ qrCode, expectedCatchWeight, expectedLot
 
 // Weight not captured at receipt: one scan of the last block's label fills lot and best-before date (editable),
 // no weight is shown, and the operator enters the number of blocks.
+// As with the weight, lot and best-before date are shown in the dialog's own lot / best-before rows, not in the
+// editable-attribute rows (configured as editable or not), so each value is shown once.
 const receiveBlocksWithLastBlockScan = async ({ qrCode, expectedQtyBefore, qty, expectedLotNo, expectedBestBeforeDate, qtyToReceive, qtyReceivedAfter }) => {
     await MaterialReceiptLineScreen.clickReceiveQtyButton();
     // The scan is still mandatory: nothing can be confirmed or typed in manually before it.
@@ -124,12 +141,26 @@ const receiveBlocksWithLastBlockScan = async ({ qrCode, expectedQtyBefore, qty, 
     await GetQuantityDialog.expectLotNo(expectedLotNo);
     await GetQuantityDialog.expectLotNoEditable();
     await GetQuantityDialog.expectBestBeforeDate(expectedBestBeforeDate);
+    await GetQuantityDialog.expectEditableAttributeNotPresent(LOT_NO);
+    await GetQuantityDialog.expectEditableAttributeNotPresent(BEST_BEFORE_DATE);
     await GetQuantityDialog.expectQtyEnteredEditable(expectedQtyBefore);
     await GetQuantityDialog.typeQtyEntered(qty);
     await GetQuantityDialog.clickDone();
     await ManufacturingJobScreen.waitForScreen();
     await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive, qtyReceived: qtyReceivedAfter });
 };
+
+// A test that narrows the global editable-attribute list puts the default pair back, also if it fails part-way.
+let isEditableAttributesChanged = false;
+test.afterEach(async () => {
+    if (isEditableAttributesChanged) {
+        await Backend.createMasterdata({
+            language: 'en_US',
+            request: { mobileConfig: { manufacturing: { editableAttributes: DEFAULT_EDITABLE_ATTRIBUTES } } },
+        });
+        isEditableAttributesChanged = false;
+    }
+});
 
 // noinspection JSUnusedLocalSymbols
 test('Scan required, new TU: the scan fills the fields for review; one piece is received with the edited weight and lot and the scanned best-before date', async ({ page }) => {
@@ -513,7 +544,7 @@ test('Scan not required (default): the scan receives the piece right away', asyn
     await MaterialReceiptLineScreen.clickReceiveQtyButton();
     // The manual input shows the pre-filled best-before date ...
     await GetQuantityDialog.clickManual();
-    await GetQuantityDialog.expectBestBeforeDateOneOf([...new Set([before.displayed, receiptDayPlusDays(BEST_BEFORE_DAYS).displayed])]);
+    await GetQuantityDialog.expectEditableAttributeValueOneOf(BEST_BEFORE_DATE, [...new Set([before.displayed, receiptDayPlusDays(BEST_BEFORE_DAYS).displayed])]);
     // ... but the operator scans, and the scan receives the piece with the scanned best-before date.
     await GetQuantityDialog.clickSwitchToQRCodeInput();
     await GetQuantityDialog.scanCatchWeightQRCode({ qrCode: L_M_CODE, stepName: '#1/1' });
@@ -669,10 +700,11 @@ test('Scan required, weight not captured at receipt, TU mode: 2 TUs received wit
 test('Scan required, weight not captured at receipt, lot number not editable: the scanned lot is shown, editable, and lands on the HU', async ({ page }) => {
     lastBlockScanStory();
 
+    isEditableAttributesChanged = true;
     const masterdata = await createMasterdata({
         isFinishedGoodsCatchWeightScanRequired: true,
         isCaptureCatchWeightAtReceipt: false,
-        isLotNumberEditable: false,
+        editableAttributes: [BEST_BEFORE_DATE],
     });
     const { jobId } = await startReceiveToNewTU(masterdata);
 

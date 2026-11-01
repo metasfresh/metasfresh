@@ -24,7 +24,7 @@ package de.metas.externalsystem.woocommerce.housekeeping;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemType;
@@ -50,9 +50,9 @@ public class ExternalSystemWooCommerceHouseKeepingTask implements IStartupHouseK
 	private static final Logger logger = LogManager.getLogger(ExternalSystemWooCommerceHouseKeepingTask.class);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final ExternalSystemConfigRepo externalSystemConfigDAO;
+	private final ExternalSystemConfigRepository externalSystemConfigDAO;
 
-	public ExternalSystemWooCommerceHouseKeepingTask(@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO)
+	public ExternalSystemWooCommerceHouseKeepingTask(@NonNull final ExternalSystemConfigRepository externalSystemConfigDAO)
 	{
 		this.externalSystemConfigDAO = externalSystemConfigDAO;
 	}

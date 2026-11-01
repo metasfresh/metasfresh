@@ -3,6 +3,12 @@ import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, } from '../common';
 import { PURCHASE_ORDER_WINDOW_ID } from '../WindowIds';
 import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
+import { addLineViaBatchEntry } from '../BatchEntry';
+import { openRelatedDocument, REFERENCE_DATA_CY } from '../DocumentReferences';
+import { reactivateDocument } from '../DocumentStatus';
+
+/** Included tab of the order lines, as used in the REST path. */
+const PURCHASE_ORDER_LINES_TAB_ID = 'AD_Tab-293';
 
 /**
  * Page object for Purchase Order window (ID: 181).
@@ -240,136 +246,94 @@ export class PurchaseOrderPage {
   }
 
   /**
-   * Add an order line using batch entry.
+   * Add an order line using batch entry, exactly once (no retry; see `addLineViaBatchEntry`).
+   * Fails right away if the backend rejects the line, and otherwise waits until the grid shows it.
    * IMPORTANT: Parent record must be saved before calling this method.
    * Use waitForTabAllowsNew() or call selectBusinessPartner() first which waits for save.
    *
-   * Language-independent: Uses database field names M_Product_ID, QtyEntered
-   * @param {Object} lineData - Order line data
-   * @param {string} lineData.product - Product name to search for
-   * @param {number} lineData.quantity - Quantity to order
-   * @param {string} lineData.recordId - Optional record ID (will extract from URL if not provided)
+   * @param {Object} params - Order line parameters
+   * @param {string} params.product - Product code or name
+   * @param {string|number} params.quantity - Quantity to order
+   * @param {string} params.recordId - Optional record ID (will extract from URL if not provided)
    */
   static async addOrderLine({ product, quantity, recordId }) {
     return await test.step(`PurchaseOrderPage - Add order line: ${product} x ${quantity}`, async () => {
-      const page = getPage();
-
       // Get record ID if not provided
       const effectiveRecordId = recordId || this.getRecordId();
 
       // Wait for tab to allow creating new records
       // Tab ID for Purchase Order Lines: AD_Tab-293 (internalName: C_OrderLine)
-      await waitForTabAllowsNew(PURCHASE_ORDER_WINDOW_ID, effectiveRecordId, 'AD_Tab-293', {
+      await waitForTabAllowsNew(PURCHASE_ORDER_WINDOW_ID, effectiveRecordId, PURCHASE_ORDER_LINES_TAB_ID, {
         maxRetries: 15,
         retryDelayMs: 1000,
       });
 
       console.log(`Purchase Order Lines tab ready for record ${effectiveRecordId}`);
 
-      // Scroll to batch entry button (may be below the fold in single-section layout)
-      const batchEntryButton = page.getByTestId('batch-entry-toggle');
-      await batchEntryButton.scrollIntoViewIfNeeded();
-      await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-      // Click batch entry toggle
-      await batchEntryButton.click();
-
-      // Wait for batch entry form container to appear
-      // The form has class 'quick-input-container' from TableQuickInput.js
-      await page.locator('.quick-input-container').waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      // Wait for the product input field to be visible and ready
-      const productInput = page.locator('#lookup_M_Product_ID input.input-field');
-      await productInput.waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      // Click to focus the product input field
-      await productInput.click();
-      await page.waitForTimeout(300);
-
-      await productInput.fill(product);
-
-      // Wait for debounce/input processing
-      await page.waitForTimeout(500);
-
-      // Wait for any search spinner to disappear (after typing)
-      await page.locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {
-        // Ignore if no spinner exists
-      });
-
-      // Wait for dropdown to populate and click the matching option
-      // Note: Dropdown options use data-test-id attributes, not CSS classes
-      // The dropdown displays names doubled (e.g., "Product123_Product123")
-      // so we use partial match instead of exact match
-      await page.waitForTimeout(300);
-
-      // Click the option by text - finds element containing the product name
-      // Use more specific selector to ensure we're clicking dropdown option
-      await page.locator('.input-dropdown-list-option').getByText(product).first().click();
-
-      // Wait for product to be selected
-      await page.waitForTimeout(500);
-
-      // Fill quantity using spinbutton role (language-independent)
-      await page.getByRole('spinbutton').fill(quantity.toString());
-
-      // Press Enter to add the line (as instructed by the UI: "Press 'Enter' to add")
-      await page.keyboard.press('Enter');
-
-      // Wait for the line to be added
-      await page.waitForTimeout(500);
-
-      // Close the batch entry modal
-      // Language-independent: Use data-testid from TableFilter.js
-      const closeButton = page.getByTestId('batch-entry-toggle');
-      await closeButton.click();
-
-      // Wait for the modal to close
-      await page.waitForTimeout(500);
+      await addLineViaBatchEntry({ tabId: PURCHASE_ORDER_LINES_TAB_ID, product, quantity });
     });
   }
 
   /**
    * Complete the purchase order using the document action.
-   * Clicks the action button and selects "Complete" from the dropdown.
+   * Retries up to maxAttempts times, using language-independent data-testid selectors
+   * to detect whether the Complete (CO) action is still available.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxAttempts - Maximum retry attempts (default: 3)
    */
-  static async complete() {
+  static async complete({ maxAttempts = 3 } = {}) {
     return await test.step('PurchaseOrderPage - Complete order', async () => {
       const page = getPage();
 
-      // Click the document status button (e.g., "Drafted") in the upper right header
-      // This opens the document action dropdown with options like Complete, Close, Void, etc.
-      // Language-independent: Use data-testid
-      await page.getByTestId('status-button').click();
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const coOption = page.getByTestId('status-CO');
 
-      // Wait for the action dropdown to appear
-      await page.waitForTimeout(500);
+        // Check if dropdown is already open from a previous failed attempt
+        const isAlreadyOpen = await coOption.isVisible().catch(() => false);
+        if (!isAlreadyOpen) {
+          await page.getByTestId('status-button').click();
+          await page.waitForTimeout(500);
+        }
 
-      // Click "Complete" action in the dropdown
-      // Language-independent: Use data-testid (CO = Complete document action key)
-      await page.getByTestId('status-CO').click();
+        // Language-independent: check if Complete action is available
+        const coVisible = await coOption
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .then(() => true)
+          .catch(() => false);
 
-      // Wait for the completion process (can take a few seconds)
-      await page.waitForTimeout(3000);
+        if (!coVisible) {
+          console.log(`Complete action (status-CO) not available — document likely already completed`);
+          await page.keyboard.press('Escape');
+          return;
+        }
 
-      // Wait for any processing indicators to disappear
-      await page
-        .locator('.rotating, .indicator-pending')
-        .waitFor({
-          state: 'detached',
-          timeout: VERY_SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Ignore if indicator doesn't exist
-        });
+        console.log(`Complete attempt ${attempt}/${maxAttempts}`);
+
+        await coOption.click();
+        await page.waitForTimeout(3000);
+
+        await page
+          .locator('.rotating, .indicator-pending')
+          .waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT })
+          .catch(() => {});
+
+        // Language-independent verification: open dropdown and check if CO is still there
+        await page.getByTestId('status-button').click();
+        await page.waitForTimeout(500);
+        const stillHasCO = await coOption.isVisible().catch(() => false);
+        await page.keyboard.press('Escape');
+
+        if (!stillHasCO) {
+          console.log(`Order completed successfully on attempt ${attempt}`);
+          return;
+        }
+
+        console.log(`Order still shows CO action after attempt ${attempt}, retrying...`);
+        await page.waitForTimeout(2000);
+      }
+
+      throw new Error(`Failed to complete order after ${maxAttempts} attempts`);
     });
   }
 
@@ -422,156 +386,102 @@ export class PurchaseOrderPage {
    * IMPORTANT: Use this method instead of navigating to window 540196 and searching,
    * because it ensures we select the CORRECT receipt candidate for this specific PO.
    *
-   * @param {number} waitTime - Time to wait for receipt candidates to be created (default: 5000ms)
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Initial delay between retries in ms (default: 2000)
    */
-  static async openRelatedReceiptCandidate(waitTime = 5000) {
-    return await test.step('PurchaseOrderPage - Open related receipt candidate (Alt+6)', async () => {
-      const page = getPage();
-
-      // Wait for receipt candidates to be created asynchronously by backend
-      // Receipt candidates are created by the app server after PO completion
-      await page.waitForTimeout(waitTime);
-
-      // Click on the page body to ensure it has focus
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      // Press Alt+6 to open related documents panel
-      await page.keyboard.press('Alt+6');
-
-      // Wait for the related documents panel to appear
-      // The panel typically contains links like "Material Receipt Candidates (#1)"
-      await page.waitForTimeout(1000);
-
-      // Wait for any loading spinners in the related documents panel to disappear
-      await page
-        .locator('.rotating, .spinner')
-        .waitFor({
-          state: 'detached',
-          timeout: SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Ignore if spinner doesn't exist
-        });
-
-      // Click on "Material Receipt Candidates" link (or "Wareneingangsdisposition" in German)
-      // This navigates to window 540196 with the correct candidate already selected
-      // Language-independent: Use regex to match English or German text with count indicator
-      // English: "Material Receipt Candidates (#1)"
-      // German: "Wareneingangsdisposition (#1)"
-      await page.getByText(/(?:Material Receipt Candidates|Wareneingangsdisposition).*\(#\d+\)/).first().click();
-
-      // Wait for navigation to Receipt Candidates window with pre-selected candidate
-      // URL pattern: /window/540196?page=1&refDocumentId={poId}&refType=181&...
-      await page.waitForURL(/\/window\/540196/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      // Wait for the window to fully load
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {
-        // Ignore timeout
-      });
-
-      // Wait for any loading spinners to disappear
-      await page
-        .locator('.rotating, .panel-spaced-lg')
-        .waitFor({
-          state: 'detached',
-          timeout: SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Ignore if spinner doesn't exist
-        });
-
-      // Give the window a moment to be ready
-      await page.waitForTimeout(500);
+  static async openRelatedReceiptCandidate({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.PO_TO_RECEIPT_CANDIDATES,
+      stepName: 'PurchaseOrderPage - Open related receipt candidate (Alt+6)',
+      maxRetries,
+      retryDelay,
+      navigateToDetail: false, // Receipt candidates opens as list view
     });
   }
 
   /**
    * Open the related Invoice Candidate for the current purchase order using Alt+6.
    *
-   * This method:
-   * 1. Waits for invoice candidates to be created (asynchronously by backend)
-   * 2. Opens the related documents panel (Alt+6)
-   * 3. Clicks on the "Invoice Candidates" link
-   * 4. Navigates to the Invoice Candidate window with the candidate already selected
-   *
    * IMPORTANT: Use this method instead of navigating to window 540983 and searching,
    * because it ensures we select the CORRECT invoice candidate for this specific PO.
    *
-   * NOTE: Invoice candidates are created when the PO is completed (one IC per PO line).
-   * Additional ICs may be created if the material receipt includes items not in the PO
-   * (e.g., a pallet that's not part of the PO).
-   *
-   * @param {number} waitTime - Time to wait for invoice candidates to be created (default: 5000ms)
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
    */
-  static async openRelatedInvoiceCandidate(waitTime = 5000) {
-    return await test.step('PurchaseOrderPage - Open related invoice candidate (Alt+6)', async () => {
+  static async openRelatedInvoiceCandidate({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.PO_TO_INVOICE_CANDIDATES,
+      stepName: 'PurchaseOrderPage - Open related invoice candidate (Alt+6)',
+      maxRetries,
+      retryDelay,
+      navigateToDetail: false, // Invoice candidates opens as list view
+    });
+  }
+
+  /**
+   * Reactivate the currently displayed purchase order through the document-status dropdown and
+   * wait until it offers "Complete" (status-CO) again. See {@link reactivateDocument}.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxAttempts - Maximum dropdown openings (default: 3)
+   */
+  static async reactivate({ maxAttempts = 3 } = {}) {
+    return await test.step('PurchaseOrderPage - Reactivate order', async () => {
       const page = getPage();
+      const match = page.url().match(new RegExp(`/window/${PURCHASE_ORDER_WINDOW_ID}/(\\d+)`));
+      expect(match, `not on a purchase order detail view: ${page.url()}`).toBeTruthy();
 
-      // Wait for invoice candidates to be created asynchronously by backend
-      // ICs are created when PO is completed (one IC per PO line)
-      // Additional ICs may be created after material receipt for non-PO items
-      await page.waitForTimeout(waitTime);
-
-      // Click on the page body to ensure it has focus
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      // Press Alt+6 to open related documents panel
-      await page.keyboard.press('Alt+6');
-
-      // Wait for the related documents panel to appear
-      // The panel typically contains links like "Invoice Candidates (#1)"
-      await page.waitForTimeout(1000);
-
-      // Wait for any loading spinners in the related documents panel to disappear
-      await page
-        .locator('.rotating, .spinner')
-        .waitFor({
-          state: 'detached',
-          timeout: SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Ignore if spinner doesn't exist
-        });
-
-      // Click on "Invoice Candidates" link (or "Rechnungsdisposition" in German)
-      // This navigates to window 540983 with the correct candidate already selected
-      // Language-independent: Use regex to match English or German text with count indicator
-      // English: "Invoice Candidates (#1)"
-      // German: "Rechnungsdisposition (#1)"
-      await page.getByText(/(?:Invoice Candidates|Rechnungsdisposition).*\(#\d+\)/).first().click();
-
-      // Wait for navigation to Invoice Candidates window with pre-selected candidate
-      // URL pattern: /window/540983?page=1&refDocumentId={poId}&refType=181&...
-      await page.waitForURL(/\/window\/540983/, {
-        timeout: SLOW_ACTION_TIMEOUT,
+      await reactivateDocument({
+        windowId: PURCHASE_ORDER_WINDOW_ID,
+        documentId: match[1],
+        maxAttempts,
+        notReactivatableHint: 'is PO_AllowReactivationIfReceiptsCreated=Y set?',
       });
+    });
+  }
 
-      // Wait for the window to fully load
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {
-        // Ignore timeout
-      });
+  /**
+   * Open the related Material Receipt (M_InOut) for the current purchase order using Alt+6.
+   *
+   * Use this method after creating a material receipt via Receipt Candidates workflow.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Initial delay between retries in ms (default: 2000)
+   */
+  static async openRelatedMaterialReceipt({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.PO_TO_MATERIAL_RECEIPT,
+      stepName: 'PurchaseOrderPage - Open related Material Receipt (Alt+6)',
+      maxRetries,
+      retryDelay,
+      navigateToDetail: true, // Auto-navigate to detail view if landing on list
+    });
+  }
 
-      // Wait for any loading spinners to disappear
-      await page
-        .locator('.rotating, .panel-spaced-lg')
-        .waitFor({
-          state: 'detached',
-          timeout: SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Ignore if spinner doesn't exist
-        });
-
-      // Give the window a moment to be ready
-      await page.waitForTimeout(500);
+  /**
+   * Open the related Vendor Invoice (C_Invoice) for the current purchase order using Alt+6.
+   *
+   * Use this method after creating a vendor invoice via Invoice Candidates workflow.
+   *
+   * IMPORTANT: Vendor invoice creation is asynchronous and can take 40-60 seconds.
+   * This method uses polling with page refresh to wait for the invoice to appear.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 20 for ~60s total wait)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 3000)
+   */
+  static async openRelatedVendorInvoice({ maxRetries = 20, retryDelay = 3000 } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.PO_TO_VENDOR_INVOICE,
+      stepName: 'PurchaseOrderPage - Open related Vendor Invoice (Alt+6)',
+      maxRetries,
+      retryDelay,
+      navigateToDetail: false, // Vendor invoice opens as list view
+      refreshOnRetry: true, // Refresh page before each retry (async invoice generation)
+      sseDebug: {}, // Enable SSE debugging for invoice timing issues
     });
   }
 }

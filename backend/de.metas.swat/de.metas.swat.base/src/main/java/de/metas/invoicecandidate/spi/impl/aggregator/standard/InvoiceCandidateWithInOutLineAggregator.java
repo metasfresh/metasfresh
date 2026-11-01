@@ -59,7 +59,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 	// Parameters
 	@ToStringBuilder(skip = true)
-	private HashMap<InvoiceCandidateId, StockQtyAndUOMQty> _ic2QtyInvoiceable;
+	private Map<InvoiceCandidateId, StockQtyAndUOMQty> _ic2QtyInvoiceable;
 
 	/** This can be different from {@link #_ic2QtyInvoiceable} because it contains the final result from {@link #addInvoiceCandidateWithInOutLine(InvoiceCandidateWithInOutLine)} */
 	@ToStringBuilder(skip = true)
@@ -86,7 +86,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 	private final List<InvoiceCandidateWithInOutLine> _invoiceCandidateWithInOutLines = new ArrayList<>();
 	private final List<InvoiceCandidateInOutLineToUpdate> _iciolsToUpdate = new ArrayList<>();
 
-	public void setInvoiceableQtys(@NonNull final HashMap<InvoiceCandidateId, StockQtyAndUOMQty> ic2QtyInvoiceable)
+	public void setInvoiceableQtys(@NonNull final Map<InvoiceCandidateId, StockQtyAndUOMQty> ic2QtyInvoiceable)
 	{
 		this._ic2QtyInvoiceable = ic2QtyInvoiceable;
 	}
