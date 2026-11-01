@@ -31,8 +31,11 @@ runs:
       uses: ./.github/actions/setup-allure
 
     # Download previous history from last run on same branch
+    # The history only feeds the trend charts. A transport error while fetching it (e.g. "other side closed")
+    # must not fail the job: the report is then generated without trends. Test results are not affected.
     - name: Download previous Allure history
       if: inputs.history-artifact-name != ''
+      continue-on-error: true
       uses: dawidd6/action-download-artifact@v21
       with:
         name: ${{ inputs.history-artifact-name }}
