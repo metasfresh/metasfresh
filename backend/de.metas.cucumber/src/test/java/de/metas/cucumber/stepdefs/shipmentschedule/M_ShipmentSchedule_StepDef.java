@@ -1228,7 +1228,7 @@ public class M_ShipmentSchedule_StepDef
 		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
 		final Integer asyncBatchId;
-		if ("null".equals(asyncBatchIdStr))
+		if (DataTableUtil.isNullPlaceholder(asyncBatchIdStr))
 		{
 			asyncBatchId = null;
 		}
@@ -1274,7 +1274,7 @@ public class M_ShipmentSchedule_StepDef
 			@NonNull final String shipmentScheduleIdentifier,
 			@NonNull final String processorShortName)
 	{
-		final java.util.List<de.metas.async.model.I_C_Queue_WorkPackage> workPackages = workPackageQueueUtil.retrievePendingWorkPackages(processorShortName);
+		final List<I_C_Queue_WorkPackage> workPackages = workPackageQueueUtil.retrievePendingWorkPackages(processorShortName);
 		assertThat(workPackages).as("pending %s workpackages", processorShortName).hasSize(1);
 
 		final int asyncBatchId = workPackages.get(0).getC_Async_Batch_ID();

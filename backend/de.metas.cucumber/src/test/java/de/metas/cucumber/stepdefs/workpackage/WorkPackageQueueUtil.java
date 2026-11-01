@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.workpackage;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -29,6 +30,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+
+import java.util.List;
 
 /**
  * Shared queries over {@link I_C_Queue_WorkPackage} for cucumber step defs that need to know how many
@@ -74,12 +77,12 @@ public class WorkPackageQueueUtil
 	}
 
 	/** @return the pending workpackages (same definition as {@link #countPendingWorkPackages(String)}) of the processor, oldest first */
-	public java.util.List<I_C_Queue_WorkPackage> retrievePendingWorkPackages(@NonNull final String processorShortName)
+	public List<I_C_Queue_WorkPackage> retrievePendingWorkPackages(@NonNull final String processorShortName)
 	{
 		final ImmutableSet<Integer> packageProcessorIds = resolvePackageProcessorIds(processorShortName);
 		if (packageProcessorIds.isEmpty())
 		{
-			return com.google.common.collect.ImmutableList.of();
+			return ImmutableList.of();
 		}
 
 		return pendingWorkPackagesQuery(packageProcessorIds)
