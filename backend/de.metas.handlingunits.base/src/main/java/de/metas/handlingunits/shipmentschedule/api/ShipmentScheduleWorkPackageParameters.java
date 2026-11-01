@@ -119,6 +119,7 @@ public class ShipmentScheduleWorkPackageParameters
 		// A picked-quantity run (P) keeps closed schedules: an earlier shipment (e.g. of another LU of the same picking job) may have closed a schedule
 		// that still has picks, and those picks must still be shipped. They cannot ship twice, because a shipped pick has a shipment line
 		// and is no longer among the not-shipped picks the P path ships from.
+		// A PD run also leaves out a closed schedule's picks; they stay unshipped for a later P run.
 		// This filter is used for both locking and selecting the records of every shipment run (ShipmentScheduleEnqueuer).
 		// A schedule closed after its run was enqueued is not affected; see ShipmentScheduleWithHUService.isToBeShipped.
 		if (!quantityType.isOnlyUsePicked())
