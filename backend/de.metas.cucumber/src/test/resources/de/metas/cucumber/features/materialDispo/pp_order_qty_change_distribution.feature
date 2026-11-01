@@ -86,7 +86,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_10
-  Scenario: manually created PP_Order; change its qty right away and complete it -> the DD_Order_Candidates supply the re-created BOM line with the new qty (AC1, AC2)
+  Scenario: manually created PP_Order; change its qty right away and complete it -> the DD_Order_Candidates supply the re-created BOM line with the new qty
     When create PP_Order:
       | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
       | ppOrder     | MOP         | finishedGood | 10         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
@@ -125,7 +125,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_15
-  Scenario: manually created PP_Order; decrease its qty right away and complete it -> every DD_Order_Candidate and distribution MD_Candidate supplies the re-created BOM line (AC1)
+  Scenario: manually created PP_Order; decrease its qty right away and complete it -> every DD_Order_Candidate and distribution MD_Candidate supplies the re-created BOM line
     When create PP_Order:
       | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
       | ppOrder     | MOP         | finishedGood | 20         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
@@ -155,7 +155,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_20
-  Scenario: manually created PP_Order; decrease its qty after planning -> the DD_Order_Candidate is reduced and supplies the re-created BOM line (AC1, AC3)
+  Scenario: manually created PP_Order; decrease its qty after planning -> the DD_Order_Candidate is reduced and supplies the re-created BOM line
     When create PP_Order:
       | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
       | ppOrder     | MOP         | finishedGood | 20         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
@@ -199,7 +199,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_30
-  Scenario: manually created PP_Order; increase its qty after planning -> the DD_Order_Candidates total the new qty and supply the re-created BOM line (AC1, AC2)
+  Scenario: manually created PP_Order; increase its qty after planning -> the DD_Order_Candidates total the new qty and supply the re-created BOM line
     When create PP_Order:
       | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
       | ppOrder     | MOP         | finishedGood | 10         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
@@ -236,7 +236,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_40
-  Scenario: PP_Order with a processed DD_Order_Candidate; decrease its qty -> the change succeeds, the processed candidate and DD_Order stay, the user is notified (AC1, AC4)
+  Scenario: PP_Order with a processed DD_Order_Candidate; decrease its qty -> the change succeeds, the processed candidate and DD_Order stay, the user is notified
     When update existing PP_Product_Plannings
       | Identifier        | IsCreatePlan |
       | componentPlanning | Y            |
@@ -291,7 +291,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_50
-  Scenario: PP_Order with a processed DD_Order_Candidate; increase its qty -> a second processed candidate supplies the re-created BOM line (AC1, AC2, AC4)
+  Scenario: PP_Order with a processed DD_Order_Candidate; increase its qty -> a second processed candidate supplies the re-created BOM line
     When update existing PP_Product_Plannings
       | Identifier        | IsCreatePlan |
       | componentPlanning | Y            |
@@ -352,7 +352,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_55
-  Scenario: PP_Order with a processed DD_Order_Candidate; change its DateStartSchedule -> still rejected, candidate and DD_Order unchanged (AC6)
+  Scenario: PP_Order with a processed DD_Order_Candidate; change its DateStartSchedule -> still rejected, candidate and DD_Order unchanged
     When update existing PP_Product_Plannings
       | Identifier        | IsCreatePlan |
       | componentPlanning | Y            |
@@ -393,8 +393,8 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_60
-  Scenario: user flow: PP_Order created, DD_Order_Candidate planned, qty decreased, PP_Order completed -> the DD_Order_Candidate supplies the re-created BOM line (AC1, AC3, AC9)
-    # The customer aggregates DD_Orders without the PP_Order reference.
+  Scenario: user flow: PP_Order created, DD_Order_Candidate planned, qty decreased, PP_Order completed -> the DD_Order_Candidate supplies the re-created BOM line
+    # DDOrderAggregation.header.byPPOrderRef=N: DD_Orders are aggregated without the PP_Order reference.
     Given set sys config boolean value false for sys config DDOrderAggregation.header.byPPOrderRef
     When create PP_Order:
       | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
@@ -441,8 +441,8 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_65
-  Scenario: user flow: PP_Order created, DD_Order_Candidate planned, qty increased, PP_Order completed -> the DD_Order_Candidates total the new qty on the re-created BOM line (AC1, AC2, AC9)
-    # The customer aggregates DD_Orders without the PP_Order reference.
+  Scenario: user flow: PP_Order created, DD_Order_Candidate planned, qty increased, PP_Order completed -> the DD_Order_Candidates total the new qty on the re-created BOM line
+    # DDOrderAggregation.header.byPPOrderRef=N: DD_Orders are aggregated without the PP_Order reference.
     Given set sys config boolean value false for sys config DDOrderAggregation.header.byPPOrderRef
     When create PP_Order:
       | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
@@ -482,7 +482,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_52
-  Scenario: PP_Order with a processed and an unprocessed DD_Order_Candidate; decrease its qty below the processed candidate -> the unprocessed one is reduced to 0, the processed one stays, the user is notified (AC3, AC4)
+  Scenario: PP_Order with a processed and an unprocessed DD_Order_Candidate; decrease its qty below the processed candidate -> the unprocessed one is reduced to 0, the processed one stays, the user is notified
     When update existing PP_Product_Plannings
       | Identifier        | IsCreatePlan |
       | componentPlanning | Y            |
@@ -521,7 +521,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | PP_Order_BOMLine_ID | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
       | reducedBOMLine      | ppOrder     | component    | 5 PCE        | CO            |
     Then after not more than 60s, the DD_Order_Candidate table has only the following records
-      # AC3: the unprocessed candidate is reduced to 0 and kept (same as the sales-order decrease, distribution.feature S0171.300)
+      # the unprocessed candidate is reduced to 0 and kept (same as the sales-order decrease, distribution.feature S0171.300)
       | Identifier           | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
       | ddOrderCandidate     | component    | rawMaterials_WH     | production_WH    | 10 PCE | Y         | ppOrder             | reducedBOMLine              |
       | unprocessedCandidate | component    | rawMaterials_WH     | production_WH    | 0 PCE  | N         | ppOrder             | reducedBOMLine              |
@@ -548,7 +548,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_70
-  Scenario: two manually created PP_Orders of the same component; decrease the second one -> only its DD_Order_Candidate is reduced (AC5)
+  Scenario: two manually created PP_Orders of the same component; decrease the second one -> only its DD_Order_Candidate is reduced
     When create PP_Order:
       | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
       | ppOrderA    | MOP         | finishedGood | 10         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
@@ -598,8 +598,8 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_72
-  Scenario: two PP_Orders whose processed DD_Order_Candidates share one DD_Order; decrease the second one -> the DD_Order and the other candidate stay, the user is notified (AC4, AC5)
-    # The customer aggregates DD_Orders without the PP_Order reference.
+  Scenario: two PP_Orders whose processed DD_Order_Candidates share one DD_Order; decrease the second one -> the DD_Order and the other candidate stay, the user is notified
+    # DDOrderAggregation.header.byPPOrderRef=N: DD_Orders are aggregated without the PP_Order reference.
     Given set sys config boolean value false for sys config DDOrderAggregation.header.byPPOrderRef
     And create PP_Order:
       | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
@@ -668,7 +668,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_75
-  Scenario: PP_Order created from a PP_Order_Candidate with two distributed components; decrease its qty -> each component's DD_Order_Candidate is reduced by its own decrease (AC3)
+  Scenario: PP_Order created from a PP_Order_Candidate with two distributed components; decrease its qty -> each component's DD_Order_Candidate is reduced by its own decrease
     Given metasfresh contains M_Products:
       | Identifier   |
       | multiProduct |
@@ -761,7 +761,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_80
-  Scenario: manually created PP_Order; void it after planning -> its unprocessed DD_Order_Candidates are removed (AC6)
+  Scenario: manually created PP_Order; void it after planning -> its unprocessed DD_Order_Candidates are removed
     When create PP_Order:
       | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
       | ppOrder     | MOP         | finishedGood | 20         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
@@ -792,7 +792,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_85
-  Scenario: PP_Order with a processed DD_Order_Candidate; void it -> the void is rejected (AC6)
+  Scenario: PP_Order with a processed DD_Order_Candidate; void it -> the void is rejected
     When update existing PP_Product_Plannings
       | Identifier        | IsCreatePlan |
       | componentPlanning | Y            |
@@ -831,7 +831,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_47
-  Scenario: PP_Order created from a PP_Order_Candidate with a processed DD_Order_Candidate; decrease its qty -> the processed candidate and DD_Order stay, the PP_Order's user is notified (AC4)
+  Scenario: PP_Order created from a PP_Order_Candidate with a processed DD_Order_Candidate; decrease its qty -> the processed candidate and DD_Order stay, the PP_Order's user is notified
     When update existing PP_Product_Plannings
       | Identifier        | IsCreatePlan |
       | componentPlanning | Y            |
@@ -911,7 +911,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_45
-  Scenario: manually created PP_Order whose component is fully in stock at the production warehouse; decrease its qty -> no DD_Order_Candidate, the user is notified (AC4)
+  Scenario: manually created PP_Order whose component is fully in stock at the production warehouse; decrease its qty -> no DD_Order_Candidate, the user is notified
     Given metasfresh contains M_Inventories:
       | Identifier          | M_Warehouse_ID | MovementDate |
       | inventoryProduction | production_WH  | 2021-04-12   |
@@ -954,7 +954,7 @@ Feature: Distribution for a manufacturing order's component follows the order's 
   @allure.label.feature:F5100
   @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
   @Id:S28916_90
-  Scenario: manually created PP_Order; delete it after planning -> its DD_Order_Candidates and MD_Candidates are removed (AC6)
+  Scenario: manually created PP_Order; delete it after planning -> its DD_Order_Candidates and MD_Candidates are removed
     When create PP_Order:
       | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
       | ppOrder     | MOP         | finishedGood | 20         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
@@ -982,3 +982,54 @@ Feature: Distribution for a manufacturing order's component follows the order's 
       | AD_Message_ID | Record_ID      |
       | noteMsg       | deletedPPOrder |
     # Dispo AD_Issues on void/delete are known today's behaviour, out of scope for this issue (user decision 2026-10-28).
+
+
+
+# #############################################################################################################################################
+# #############################################################################################################################################
+# #############################################################################################################################################
+# #############################################################################################################################################
+# #############################################################################################################################################
+# #############################################################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0155_Material_Disposition
+  @allure.label.feature:F5100
+  @allure.label.feature:F5113_Materialbegleitschein_Distribution_Order_Document
+  @Id:S28916_95
+  Scenario: PP_Order whose BOM has the same component twice; decrease its qty -> each DD_Order_Candidate follows the re-created BOM line of its own BOM line
+    # The same component is in the BOM twice, with different qtys per finished good.
+    Given metasfresh contains PP_Product_BOMLines
+      | Identifier | PP_Product_BOM_ID | M_Product_ID | QtyBatch | IsAdditionalLine |
+      | bomLineTwo | bom               | component    | 2        | Y                |
+    When create PP_Order:
+      | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument |
+      | ppOrder     | MOP         | finishedGood | 20         | plant         | production_WH  | 2021-04-11T08:00:00Z | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | N                |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
+      | oldBOMLine1         | ppOrder     | component    | 20 PCE       | CO            |
+      | oldBOMLine2         | ppOrder     | component    | 40 PCE       | CO            |
+    Then after not more than 60s, the DD_Order_Candidate table has only the following records
+      | Identifier        | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
+      | ddOrderCandidate1 | component    | rawMaterials_WH     | production_WH    | 20 PCE | ppOrder             | oldBOMLine1                 |
+      | ddOrderCandidate2 | component    | rawMaterials_WH     | production_WH    | 40 PCE | ppOrder             | oldBOMLine2                 |
+
+    When update PP_Order:
+      | PP_Order_ID | QtyEntered |
+      | ppOrder     | 10         |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
+      | newBOMLine1         | ppOrder     | component    | 10 PCE       | CO            |
+      | newBOMLine2         | ppOrder     | component    | 20 PCE       | CO            |
+    Then after not more than 60s, the DD_Order_Candidate table has only the following records
+      | Identifier        | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
+      | ddOrderCandidate1 | component    | rawMaterials_WH     | production_WH    | 10 PCE | ppOrder             | newBOMLine1                 |
+      | ddOrderCandidate2 | component    | rawMaterials_WH     | production_WH    | 20 PCE | ppOrder             | newBOMLine2                 |
+    And after not more than 60s, MD_Candidates are found
+      | Identifier  | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID | Forward_PP_Order_ID | Forward_PP_Order_BOMLine_ID |
+      | distSupply1 | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | *   | production_WH  | ppOrder             | newBOMLine1                 |
+      | distSupply2 | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 20  | *   | production_WH  | ppOrder             | newBOMLine2                 |
+    And after not more than 5s, no AD_Note records exist for the referenced record:
+      | AD_Message_ID | Record_ID |
+      | noteMsg       | ppOrder   |
+    And no AD_Issue was created since the existing AD_Issue records were remembered
+

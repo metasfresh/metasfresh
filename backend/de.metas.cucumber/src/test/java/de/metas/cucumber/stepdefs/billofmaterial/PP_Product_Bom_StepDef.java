@@ -123,7 +123,11 @@ public class PP_Product_Bom_StepDef
 
 		final I_M_Product productRecord = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
 
-		final I_PP_Product_BOMLine bomLine = CoalesceUtil.coalesceSuppliersNotNull(
+		// By default an existing line of the same product in the same BOM is updated; IsAdditionalLine=Y always adds another line (a BOM with the same component twice)
+		final boolean isAdditionalLine = row.getAsOptionalBoolean("IsAdditionalLine").orElseFalse();
+		final I_PP_Product_BOMLine bomLine = isAdditionalLine
+				? newInstance(I_PP_Product_BOMLine.class)
+				: CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
 						.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 						.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bomId)
