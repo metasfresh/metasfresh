@@ -29,7 +29,7 @@ public class DDOrderReference
 	@NonNull ZonedDateTime datePromised;
 	@Nullable ZonedDateTime pickDate;
 	@Nullable ITranslatableString pickingInstruction;
-	@NonNull @Builder.Default ImmutableList<ITranslatableString> manufacturingOrderPickingInstructionLines = ImmutableList.of();
+	@NonNull @Builder.Default ImmutableList<ITranslatableString> sourceDocPickingNoteLines = ImmutableList.of();
 	@NonNull WarehouseId fromWarehouseId;
 	@Nullable LocatorId fromLocatorId;
 	@NonNull WarehouseId toWarehouseId;

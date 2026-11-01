@@ -15,8 +15,8 @@ import de.metas.distribution.mobileui.external_services.hu.HUInfo;
 import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
 import de.metas.distribution.mobileui.external_services.product.ProductInfo;
 import de.metas.distribution.mobileui.external_services.sourcedoc.DistributionSourceDocService;
-import de.metas.distribution.mobileui.external_services.sourcedoc.ManufacturingOrderPickingInstructionLines;
-import de.metas.distribution.mobileui.external_services.sourcedoc.ManufacturingOrderPickingInstructionsLoader;
+import de.metas.distribution.mobileui.external_services.sourcedoc.SourceDocPickingNoteLines;
+import de.metas.distribution.mobileui.external_services.sourcedoc.SourceDocPickingNotesLoader;
 import de.metas.distribution.mobileui.external_services.sourcedoc.ManufacturingOrderRef;
 import de.metas.distribution.mobileui.external_services.sourcedoc.PlantInfo;
 import de.metas.distribution.mobileui.external_services.sourcedoc.SalesOrderRef;
@@ -63,7 +63,7 @@ public class DistributionJobLoaderSupportingServices
 	@NonNull private final DistributionWarehouseService warehouseService;
 	@NonNull private final DistributionHUService huService;
 	@NonNull private final DistributionSourceDocService sourceDocService;
-	@NonNull private final ManufacturingOrderPickingInstructionsLoader manufacturingOrderPickingInstructionsLoader;
+	@NonNull private final SourceDocPickingNotesLoader sourceDocPickingNotesLoader;
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
@@ -152,9 +152,9 @@ public class DistributionJobLoaderSupportingServices
 	}
 
 	@NonNull
-	public ManufacturingOrderPickingInstructionLines getManufacturingOrderPickingInstructionLines(@NonNull final Collection<I_DD_Order> ddOrders)
+	public SourceDocPickingNoteLines getSourceDocPickingNoteLines(@NonNull final Collection<I_DD_Order> ddOrders)
 	{
-		return manufacturingOrderPickingInstructionsLoader.load(ddOrders);
+		return sourceDocPickingNotesLoader.load(ddOrders);
 	}
 
 	@NonNull

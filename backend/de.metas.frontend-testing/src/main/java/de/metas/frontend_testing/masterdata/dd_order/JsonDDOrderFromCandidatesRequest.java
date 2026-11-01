@@ -41,10 +41,12 @@ public class JsonDDOrderFromCandidatesRequest
 	@Jacksonized
 	public static class Candidate
 	{
-		/** The manufacturing order (identifier from {@code manufacturingOrders}) this candidate is the forward demand of */
-		@NonNull Identifier ppOrder;
-		/** The BOM line (identifier from {@code manufacturingOrders[].lines}) of {@link #ppOrder} */
-		@NonNull Identifier ppOrderBOMLine;
+		/** The manufacturing order (identifier from {@code manufacturingOrders}) this candidate is the forward demand of; set it, {@link #salesOrderLine}, or both */
+		@Nullable Identifier ppOrder;
+		/** The BOM line (identifier from {@code manufacturingOrders[].lines}) of {@link #ppOrder}; required together with it */
+		@Nullable Identifier ppOrderBOMLine;
+		/** The sales order line (identifier from {@code salesOrders[].lines}) this candidate is the demand of */
+		@Nullable Identifier salesOrderLine;
 		/** Quantity in the product's stock UOM */
 		@NonNull BigDecimal qty;
 	}

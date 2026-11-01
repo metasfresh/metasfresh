@@ -74,9 +74,9 @@ public class DistributionLauncherCaptionProvider
 		{
 			final DistributionJobCaptionField field = formatItem.getField();
 			final ITranslatableString captionItem;
-			if (field == DistributionJobCaptionField.PPOrdersWithPickingInstruction)
+			if (field == DistributionJobCaptionField.SourceDocsWithPickingNote)
 			{
-				captionItem = TranslatableStrings.joinList("\n", context.getManufacturingOrderPickingInstructionLines());
+				captionItem = TranslatableStrings.joinList("\n", context.getSourceDocPickingNoteLines());
 				blockLayoutFields.add(field.getCode());
 			}
 			else
@@ -148,8 +148,8 @@ public class DistributionLauncherCaptionProvider
 				return extractPriority(context);
 			case PickingInstruction:
 				return extractPickingInstruction(context);
-			case PPOrdersWithPickingInstruction:
-				return TranslatableStrings.joinList(", ", context.getManufacturingOrderPickingInstructionLines());
+			case SourceDocsWithPickingNote:
+				return TranslatableStrings.joinList(", ", context.getSourceDocPickingNoteLines());
 			default:
 				return TranslatableStrings.empty();
 		}
@@ -325,7 +325,7 @@ public class DistributionLauncherCaptionProvider
 				.seqNo(ddOrderReference.getSeqNo())
 				.displayDate(ddOrderReference.getDisplayDate())
 				.pickingInstruction(ddOrderReference.getPickingInstruction())
-				.manufacturingOrderPickingInstructionLines(ddOrderReference.getManufacturingOrderPickingInstructionLines())
+				.sourceDocPickingNoteLines(ddOrderReference.getSourceDocPickingNoteLines())
 				.pickFromWarehouseId(ddOrderReference.getFromWarehouseId())
 				.fromLocator(fromLocator)
 				.dropToWarehouseId(ddOrderReference.getToWarehouseId())
@@ -350,7 +350,7 @@ public class DistributionLauncherCaptionProvider
 				.seqNo(job.getSeqNo())
 				.displayDate(job.getPickDate())
 				.pickingInstruction(job.getPickingInstruction())
-				.manufacturingOrderPickingInstructionLines(job.getManufacturingOrderPickingInstructionLines())
+				.sourceDocPickingNoteLines(job.getSourceDocPickingNoteLines())
 				.pickFromWarehouse(job.getPickFromWarehouse())
 				.fromLocator(fromLocator)
 				.dropToWarehouse(job.getDropToWarehouse())
@@ -381,7 +381,7 @@ public class DistributionLauncherCaptionProvider
 		// @Nullable ZonedDateTime pickDate;
 		@NonNull ZonedDateTime displayDate;
 		@Nullable ITranslatableString pickingInstruction;
-		@NonNull List<ITranslatableString> manufacturingOrderPickingInstructionLines;
+		@NonNull List<ITranslatableString> sourceDocPickingNoteLines;
 		@Nullable WarehouseInfo pickFromWarehouse;
 		@Nullable WarehouseId pickFromWarehouseId;
 		@Nullable LocatorInfo fromLocator;

@@ -10,19 +10,19 @@ import lombok.NonNull;
 import lombok.Value;
 
 /**
- * Caption lines "manufacturing order + picking instruction", grouped by DD_Order.
+ * Caption lines "source document + picking note", grouped by DD_Order (see {@link SourceDocPickingNotesLoader}).
  */
 @Value
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ManufacturingOrderPickingInstructionLines
+public class SourceDocPickingNoteLines
 {
-	public static final ManufacturingOrderPickingInstructionLines EMPTY = new ManufacturingOrderPickingInstructionLines(ImmutableListMultimap.of());
+	public static final SourceDocPickingNoteLines EMPTY = new SourceDocPickingNoteLines(ImmutableListMultimap.of());
 
 	@NonNull ImmutableListMultimap<DDOrderId, ITranslatableString> linesByDDOrderId;
 
-	public static ManufacturingOrderPickingInstructionLines of(@NonNull final ImmutableListMultimap<DDOrderId, ITranslatableString> linesByDDOrderId)
+	public static SourceDocPickingNoteLines of(@NonNull final ImmutableListMultimap<DDOrderId, ITranslatableString> linesByDDOrderId)
 	{
-		return linesByDDOrderId.isEmpty() ? EMPTY : new ManufacturingOrderPickingInstructionLines(linesByDDOrderId);
+		return linesByDDOrderId.isEmpty() ? EMPTY : new SourceDocPickingNoteLines(linesByDDOrderId);
 	}
 
 	@NonNull

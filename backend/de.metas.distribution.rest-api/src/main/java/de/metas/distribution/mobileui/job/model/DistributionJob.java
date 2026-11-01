@@ -51,7 +51,7 @@ public class DistributionJob
 	@Nullable private final SalesOrderRef salesOrderRef;
 	@Nullable private final ManufacturingOrderRef manufacturingOrderRef;
 	@NonNull private final ITranslatableString pickingInstruction;
-	@NonNull private final ImmutableList<ITranslatableString> manufacturingOrderPickingInstructionLines;
+	@NonNull private final ImmutableList<ITranslatableString> sourceDocPickingNoteLines;
 	private final boolean allowPickingAnyHU;
 	@NonNull private final ImmutableList<DistributionJobLine> lines;
 
@@ -74,7 +74,7 @@ public class DistributionJob
 			@Nullable final SalesOrderRef salesOrderRef,
 			@Nullable final ManufacturingOrderRef manufacturingOrderRef,
 			@Nullable final ITranslatableString pickingInstruction,
-			@Nullable final List<ITranslatableString> manufacturingOrderPickingInstructionLines,
+			@Nullable final List<ITranslatableString> sourceDocPickingNoteLines,
 			final boolean allowPickingAnyHU,
 			@NonNull final List<DistributionJobLine> lines)
 	{
@@ -93,7 +93,7 @@ public class DistributionJob
 		this.salesOrderRef = salesOrderRef;
 		this.manufacturingOrderRef = manufacturingOrderRef;
 		this.pickingInstruction = pickingInstruction != null ? pickingInstruction : TranslatableStrings.empty();
-		this.manufacturingOrderPickingInstructionLines = manufacturingOrderPickingInstructionLines != null ? ImmutableList.copyOf(manufacturingOrderPickingInstructionLines) : ImmutableList.of();
+		this.sourceDocPickingNoteLines = sourceDocPickingNoteLines != null ? ImmutableList.copyOf(sourceDocPickingNoteLines) : ImmutableList.of();
 		this.allowPickingAnyHU = allowPickingAnyHU;
 		this.lines = ImmutableList.copyOf(lines);
 

@@ -25,7 +25,7 @@ public enum DistributionJobCaptionField implements ReferenceListAwareEnum
 	SourceDoc(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_SourceDoc),
 	Priority(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_Priority),
 	PickingInstruction(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_PickingInstruction),
-	PPOrdersWithPickingInstruction(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_PPOrdersWithPickingInstruction),
+	SourceDocsWithPickingNote(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_SourceDocsWithPickingNote),
 	;
 
 	public static final int AD_Reference_ID = X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_AD_Reference_ID;

@@ -14,6 +14,10 @@ import de.metas.distribution.mobileui.launchers.DistributionLauncherCaptionProvi
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.material.event.pporder.PPOrderRef;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -22,17 +26,20 @@ import de.metas.quantity.Quantity;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,6 +54,7 @@ public class DDOrderFromCandidatesCommand
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final DDOrderService ddOrderService;
 	@NonNull private final DDOrderCandidateService ddOrderCandidateService;
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
@@ -56,6 +64,32 @@ public class DDOrderFromCandidatesCommand
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonDDOrderFromCandidatesRequest request;
 	@NonNull private final Identifier identifier;
+
+	@Nullable
+	private PPOrderRef toForwardPPOrderRef(@NonNull final JsonDDOrderFromCandidatesRequest.Candidate candidateRequest)
+	{
+		if (candidateRequest.getPpOrder() == null)
+		{
+			Check.assume(candidateRequest.getSalesOrderLine() != null, "A candidate needs a ppOrder or a salesOrderLine: {}", candidateRequest);
+			return null;
+		}
+		return PPOrderRef.builder()
+				.ppOrderId(context.getId(candidateRequest.getPpOrder(), PPOrderId.class))
+				.ppOrderBOMLineId(context.getId(Check.assumeNotNull(candidateRequest.getPpOrderBOMLine(), "ppOrderBOMLine is set together with ppOrder: {}", candidateRequest), PPOrderBOMLineId.class))
+				.build();
+	}
+
+	@Nullable
+	private OrderAndLineId toSalesOrderLineId(@NonNull final JsonDDOrderFromCandidatesRequest.Candidate candidateRequest)
+	{
+		if (candidateRequest.getSalesOrderLine() == null)
+		{
+			return null;
+		}
+		final OrderLineId orderLineId = context.getId(candidateRequest.getSalesOrderLine(), OrderLineId.class);
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+		return OrderAndLineId.of(OrderId.ofRepoId(orderLine.getC_Order_ID()), orderLineId);
+	}
 
 	public JsonDDOrderResponse execute()
 	{
@@ -88,10 +122,8 @@ public class DDOrderFromCandidatesCommand
 					.targetPlantId(plantId)
 					.shipperId(shipperId)
 					.isSimulated(false)
-					.forwardPPOrderRef(PPOrderRef.builder()
-							.ppOrderId(context.getId(candidateRequest.getPpOrder(), PPOrderId.class))
-							.ppOrderBOMLineId(context.getId(candidateRequest.getPpOrderBOMLine(), PPOrderBOMLineId.class))
-							.build())
+					.forwardPPOrderRef(toForwardPPOrderRef(candidateRequest))
+					.salesOrderLineId(toSalesOrderLineId(candidateRequest))
 					.build();
 			ddOrderCandidateService.save(candidate);
 			candidates.add(candidate);
