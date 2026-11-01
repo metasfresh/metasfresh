@@ -27,15 +27,26 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.business.BusinessTestHelper;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -46,6 +57,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ShipmentScheduleWithHUServiceTest
 {
 	private ShipmentScheduleWithHUService shipmentScheduleWithHUService;
+	private ProductId productId;
 	private ListAppender<ILoggingEvent> logAppender;
 	private Logger logger;
 
@@ -54,6 +66,11 @@ class ShipmentScheduleWithHUServiceTest
 	{
 		AdempiereTestHelper.get().init();
 		shipmentScheduleWithHUService = ShipmentScheduleWithHUService.newInstanceForUnitTesting();
+		// not stocked: a quantity-to-deliver run then ships without picking HUs on the fly, so these tests need no stock / partner fixture
+		final I_M_Product product = BusinessTestHelper.createProduct("product", BusinessTestHelper.createUomEach());
+		product.setIsStocked(false);
+		InterfaceWrapperHelper.save(product);
+		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		// Setup log capturing
 		logger = (Logger) LoggerFactory.getLogger(ShipmentScheduleWithHUService.class);
@@ -294,6 +311,141 @@ class ShipmentScheduleWithHUServiceTest
 		assertThat(warnCount)
 				.as("Should log WARN for each skipped schedule (if Loggables routes to SLF4J)")
 				.isEqualTo(2);
+	}
+
+	// ---------------------------------------------------------------------------------------------------------------
+	// A shipment run still ships a schedule that an earlier shipment's completion closed and a recompute then
+	// processed, when the run carries a quantity for it (unshipped picks in its scope, or an entered QtyToDeliver_Override).
+	// ---------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * (1) flag set, schedule closed + processed, unshipped pick in this run's scope: the schedule is shipped with its pick.
+	 */
+	@Test
+	void closedProcessedSchedule_flagSet_unshippedPickInScope_isShipped()
+	{
+		final I_M_ShipmentSchedule schedule = createClosedSchedule(ShipmentScheduleId.ofRepoId(701), true);
+		createPick(schedule, new BigDecimal("5"), null);
+
+		final ImmutableList<ShipmentScheduleWithHU> result = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
+				requestFor(schedule, M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY, true, null));
+
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getShipmentScheduleId()).isEqualTo(ShipmentScheduleId.ofRepoId(701));
+		assertThat(result.get(0).getQtyPicked().toBigDecimal()).isEqualByComparingTo("5");
+	}
+
+	/**
+	 * (2) flag set, schedule closed + processed, quantity type D, entered QtyToDeliver_Override > 0: the schedule is shipped with that quantity.
+	 */
+	@Test
+	void closedProcessedSchedule_flagSet_qtyToDeliverOverride_isShippedWithThatQty()
+	{
+		final I_M_ShipmentSchedule schedule = createClosedSchedule(ShipmentScheduleId.ofRepoId(702), true);
+		schedule.setQtyToDeliver(BigDecimal.ZERO); // what the recompute leaves on a closed schedule
+		schedule.setQtyToDeliver_Override(new BigDecimal("7"));
+		InterfaceWrapperHelper.save(schedule);
+
+		final ImmutableList<ShipmentScheduleWithHU> result = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
+				requestFor(schedule, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER, true, null));
+
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getShipmentScheduleId()).isEqualTo(ShipmentScheduleId.ofRepoId(702));
+		assertThat(result.get(0).getQtyPicked().toBigDecimal()).isEqualByComparingTo("7");
+	}
+
+	/**
+	 * (3) single schedule, type P, failOnSingleScheduleWithNoPickedHUs = true, flag set, closed + processed, no picks:
+	 * the run carries no quantity for it, so it is skipped as before - no "no qty picked" exception.
+	 */
+	@Test
+	void closedProcessedSchedule_flagSet_noPicks_isSkippedWithoutException()
+	{
+		final I_M_ShipmentSchedule schedule = createClosedSchedule(ShipmentScheduleId.ofRepoId(703), true);
+
+		final ImmutableList<ShipmentScheduleWithHU> result = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
+				requestFor(schedule, M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY, true, null));
+
+		assertThat(result).isEmpty();
+	}
+
+	/**
+	 * (4) flag NOT set (any other caller), closed + processed with picks: skipped as before.
+	 */
+	@Test
+	void closedProcessedSchedule_flagNotSet_withPicks_isSkipped()
+	{
+		final I_M_ShipmentSchedule schedule = createClosedSchedule(ShipmentScheduleId.ofRepoId(704), true);
+		createPick(schedule, new BigDecimal("5"), null);
+
+		final ImmutableList<ShipmentScheduleWithHU> result = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
+				requestFor(schedule, M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY, false, null));
+
+		assertThat(result).isEmpty();
+	}
+
+	/**
+	 * (5) flag set, processed but NOT closed, with an unshipped pick in scope: skipped (only the "closed" condition decides).
+	 */
+	@Test
+	void processedNotClosedSchedule_flagSet_withPicks_isSkipped()
+	{
+		final I_M_ShipmentSchedule schedule = createClosedSchedule(ShipmentScheduleId.ofRepoId(705), false);
+		createPick(schedule, new BigDecimal("5"), null);
+
+		final ImmutableList<ShipmentScheduleWithHU> result = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
+				requestFor(schedule, M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY, true, null));
+
+		assertThat(result).isEmpty();
+	}
+
+	/**
+	 * (6) single schedule, type P, flag set, closed + processed, unshipped picks only on an LU outside the run's OnlyLUIds:
+	 * the run carries no quantity for it, so it is skipped - no "no qty picked" exception.
+	 */
+	@Test
+	void closedProcessedSchedule_flagSet_picksOnlyOutsideOnlyLUIds_isSkippedWithoutException()
+	{
+		final I_M_ShipmentSchedule schedule = createClosedSchedule(ShipmentScheduleId.ofRepoId(706), true);
+		createPick(schedule, new BigDecimal("5"), HuId.ofRepoId(9001));
+
+		final ImmutableList<ShipmentScheduleWithHU> result = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
+				requestFor(schedule, M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY, true, ImmutableSet.of(HuId.ofRepoId(9002))));
+
+		assertThat(result).isEmpty();
+	}
+
+	private ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest requestFor(
+			@NonNull final I_M_ShipmentSchedule schedule,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityType,
+			final boolean includeProcessedClosedSchedulesWithQty,
+			@Nullable final Set<HuId> onlyLUIds)
+	{
+		return ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest.builder()
+				.schedules(ShipmentScheduleAndJobSchedulesCollection.ofShipmentSchedules(ImmutableList.of(schedule)))
+				.quantityTypeToUse(quantityType)
+				.onlyLUIds(onlyLUIds)
+				.includeProcessedClosedSchedulesWithQty(includeProcessedClosedSchedulesWithQty)
+				.build(); // failOnSingleScheduleWithNoPickedHUs keeps its default (true)
+	}
+
+	private I_M_ShipmentSchedule createClosedSchedule(final ShipmentScheduleId id, final boolean closed)
+	{
+		final I_M_ShipmentSchedule schedule = createShipmentSchedule(id);
+		schedule.setM_Product_ID(productId.getRepoId());
+		schedule.setIsClosed(closed);
+		schedule.setProcessed(true);
+		InterfaceWrapperHelper.save(schedule);
+		return schedule;
+	}
+
+	private void createPick(@NonNull final I_M_ShipmentSchedule schedule, @NonNull final BigDecimal qtyPicked, @Nullable final HuId luId)
+	{
+		final I_M_ShipmentSchedule_QtyPicked pick = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_QtyPicked.class);
+		pick.setM_ShipmentSchedule_ID(schedule.getM_ShipmentSchedule_ID());
+		pick.setQtyPicked(qtyPicked);
+		pick.setM_LU_HU_ID(HuId.toRepoId(luId));
+		InterfaceWrapperHelper.save(pick);
 	}
 
 	/**
