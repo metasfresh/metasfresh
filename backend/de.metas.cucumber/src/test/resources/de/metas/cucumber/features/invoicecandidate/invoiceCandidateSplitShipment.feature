@@ -99,7 +99,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @F00701
   Scenario: one workpackage creates two shipments (batch lost on lines 2 and 3), all lines are invoiced
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
-    And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -178,7 +178,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @F00701
   Scenario: two shipment workpackages (the order line of line 3 has another shipper), all lines are invoiced
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
-    And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -258,7 +258,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @F00701
   Scenario: reversing the second shipment of a one-workpackage split restores the processed state of its lines
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
-    And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -337,7 +337,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @F00701
   Scenario: reactivating the second shipment of a one-workpackage split restores the processed state of its lines
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
-    And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -416,7 +416,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @F00701
   Scenario: reversing the second shipment of a one-workpackage split after invoicing leaves its lines processed, without a credit
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
-    And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -506,7 +506,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: a quantity-to-deliver run without handling units splits into two shipments, all lines are invoiced
-    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    Given temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -573,7 +573,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: two draft shipments, completing the second one makes its line invoiceable again
-    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    Given temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value            |
       | warehouseB                | Leergebindelager |
@@ -650,7 +650,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: a line closed by the other line's shipment keeps its approval for invoicing and is invoiced in an approved-only run
-    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    Given temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value            |
       | warehouseB                | Leergebindelager |
@@ -735,7 +735,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @F00701
   Scenario: two shipment workpackages with a recompute in between, the second one still ships its picked line, all lines are invoiced
     Given new "GenerateInOutFromShipmentSchedules" workpackages are held
-    And for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -833,7 +833,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: two quantity-to-deliver workpackages with a recompute in between, the second one still ships its entered quantity, all lines are invoiced
-    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    Given temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -919,7 +919,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: a line closed by hand after its quantity-to-deliver workpackage was enqueued is still shipped with its entered quantity
-    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    Given temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -991,7 +991,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: a closed line with nothing picked in the second picked-quantity workpackage stays unshipped and its candidate stays processed
-    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    Given temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy | IsAllowCompletingPartialPickingJob |
       | Y                   | DO_NOT_CREATE        | Y                                  |
@@ -1100,7 +1100,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: a closed line without an entered quantity in the second quantity-to-deliver workpackage stays unshipped and its candidate stays processed
-    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    Given temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains M_Products:
       | Identifier | X12DE355 |
       | product4   | PCE      |
@@ -1206,7 +1206,7 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: a later picked-quantity run still ships the picks of a line that an earlier shipment closed, both lines become invoiceable
-    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    Given temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy | IsAllowCompletingPartialPickingJob |
       | Y                   | DO_NOT_CREATE        | Y                                  |

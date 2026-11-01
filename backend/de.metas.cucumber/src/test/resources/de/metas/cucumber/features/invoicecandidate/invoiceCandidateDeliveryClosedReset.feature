@@ -58,7 +58,7 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
   @allure.label.feature:F00130_Shipment_Schedule
   @F00130
   Scenario: the reset reopens to the rule only the explicit closes of never-delivered closed lines written since the bound, not older, flatrate or service candidates
-    Given for this scenario only, set sys config boolean value true for sys config C_Invoice_Candidate_Close_IsToClear
+    Given temporarily set sys config boolean value true for sys config 'C_Invoice_Candidate_Close_IsToClear'
     And metasfresh contains C_UOMs:
       | Identifier  | X12DE355 | Name           | UOMSymbol | StdPrecision | CostingPrecision |
       | flatfee_uom | MEAL     | Meal_12_@Date@ | M         | 2            | 2                |
@@ -344,7 +344,7 @@ Feature: Invoice candidates explicitly closed together with their undelivered, c
       | ic_F                              | false         | false                    | false             |
       | ic_I                              | false         | true                     | false             |
     # one update run takes at most 2 candidates, so the 5 After-delivery candidates need at least 3 runs, each scheduled by the one before
-    And for this scenario only, set sys config int value 2 for sys config de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor.MaxInvoiceCandidatesToUpdate
+    And temporarily set sys config int value 2 for sys config 'de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor.MaxInvoiceCandidatesToUpdate'
     And after not more than 60s, there are 0 pending "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages
 
     # the migration's statements one by one, to assert the queue before the update workpackage is enqueued;

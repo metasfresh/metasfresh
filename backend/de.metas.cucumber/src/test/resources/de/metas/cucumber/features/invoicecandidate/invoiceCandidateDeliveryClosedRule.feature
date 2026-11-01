@@ -92,7 +92,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: line 2 is never delivered and its shipment schedule gets closed: its invoice candidate stays processed, line 1 is still invoiced
-    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    Given temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -259,7 +259,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: a flatrate "to clear" candidate stays closed when its line is delivered after the shipment schedule was closed and reactivated
-    Given for this scenario only, set sys config boolean value true for sys config C_Invoice_Candidate_Close_IsToClear
+    Given temporarily set sys config boolean value true for sys config 'C_Invoice_Candidate_Close_IsToClear'
     And metasfresh contains C_UOMs:
       | Identifier  | X12DE355 | Name           | UOMSymbol | StdPrecision | CostingPrecision |
       | flatfee_uom | MEAL     | Meal_7d_@Date@ | M         | 2            | 2                |
@@ -335,7 +335,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: reactivating and re-completing the order reopens only the line its disposition close closed, not the hand-closed or the "to clear" line
-    Given for this scenario only, set sys config boolean value true for sys config C_Invoice_Candidate_Close_IsToClear
+    Given temporarily set sys config boolean value true for sys config 'C_Invoice_Candidate_Close_IsToClear'
     And metasfresh contains C_UOMs:
       | Identifier  | X12DE355 | Name           | UOMSymbol | StdPrecision | CostingPrecision |
       | flatfee_uom | MEAL     | Meal_7e_@Date@ | M         | 2            | 2                |
@@ -419,7 +419,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: a line closed by its own partial shipment is never processed, the delivered quantity stays invoiceable
-    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    Given temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -472,7 +472,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
   @allure.label.feature:F00701_Sales_Invoice_Candidates
   @F00701
   Scenario: an approval for invoicing survives the shipment completion that closes the line
-    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    Given temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO         | true    | customer                 | 2024-03-26  |
@@ -572,7 +572,7 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
     # Immediate (ordered qty), After pick (picked qty) and a service product (ordered qty) are not invoiced by the delivered quantity,
     # so a closed disposition does not make them uninvoiceable. After delivery on a stock item is.
     # A service product gets no shipment schedule at all (only items do), so its line has no schedule to close: it is checked to stay untouched.
-    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    Given temporarily set sys config boolean value true for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
     And metasfresh contains M_Products:
       | Identifier | Name               | ProductType | OPT.X12DE355 |
       | service1   | service1_16_@Date@ | S           | PCE          |

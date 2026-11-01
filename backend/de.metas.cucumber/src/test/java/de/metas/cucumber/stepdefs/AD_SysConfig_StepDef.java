@@ -70,12 +70,12 @@ public class AD_SysConfig_StepDef
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
 	/**
-	 * Set by {@link #enable_sys_config_for_this_scenario_only}; makes {@link #restoreTemporarySysConfigsAfterScenario()} reset all caches.
+	 * Set by {@link #setForThisScenario}; makes {@link #restoreTemporarySysConfigsAfterScenario()} reset all caches.
 	 */
 	private boolean resetAllCachesOnRestore = false;
 
 	/**
-	 * Client-specific rows ({@code AD_Client_ID != 0}) of sysconfigs overwritten by {@link #enable_sys_config_for_this_scenario_only}, mapped to their value
+	 * Client-specific rows ({@code AD_Client_ID != 0}) of sysconfigs overwritten by {@link #setForThisScenario}, mapped to their value
 	 * from before the overwrite. Code reading a sysconfig for a client/org prefers such a row over the SYSTEM row, so a stale one (e.g. left by a UI test)
 	 * would make the SYSTEM-level override ineffective. Restored by {@link #restoreTemporarySysConfigsAfterScenario()}.
 	 */
@@ -116,6 +116,15 @@ public class AD_SysConfig_StepDef
 	 */
 	@And("^for this scenario only, set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config_for_this_scenario_only(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
+	{
+		setForThisScenario(sysconfigType, sysconfigValue, sysConfigName);
+	}
+
+	/**
+	 * Sets the SYSTEM row and every existing client-specific row of the sys config to the value, remembers their prior values,
+	 * and makes {@link #restoreTemporarySysConfigsAfterScenario()} restore them and reset all caches.
+	 */
+	private void setForThisScenario(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
 		rememberPriorValue(sysConfigName);
 		resetAllCachesOnRestore = true;
@@ -232,9 +241,7 @@ public class AD_SysConfig_StepDef
 	@And("temporarily set sys config int value {int} for sys config {string}")
 	public void temporarily_set_sys_config_int_value(final int value, @NonNull final String sysConfigName)
 	{
-		rememberPriorValue(sysConfigName);
-		setSysConfigIntValue(sysConfigName, value);
-		resetSysConfigCache();
+		setForThisScenario("int", String.valueOf(value), sysConfigName);
 	}
 
 	@And("update AD_SysConfig with login AD_User_ID")
@@ -311,8 +318,23 @@ public class AD_SysConfig_StepDef
 			throw new AdempiereException("Expected true or false but got: " + valueStr);
 		}
 
-		rememberPriorValue(sysConfigName);
-		enable_sys_config("boolean", valueStr, sysConfigName);
+		setForThisScenario("boolean", valueStr, sysConfigName);
+	}
+
+	/**
+	 * Sets a sys config to a String value for the current scenario; its prior value is restored after the scenario, and a sys config that had no value before is deleted again.
+	 * The value may be the null token, see {@link DataTableUtil#nullToken2Null(String)}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And temporarily set sys config String value 'de.metas.report.server.LocalReportServer' for sys config 'de.metas.report.jasper.client.JRServerClass'
+	 * </pre>
+	 */
+	@And("temporarily set sys config String value {string} for sys config {string}")
+	public void temporarily_set_sys_config_string_value(@NonNull final String value, @NonNull final String sysConfigName)
+	{
+		setForThisScenario("String", value, sysConfigName);
 	}
 
 	/**
@@ -363,7 +385,7 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * The temporary steps set and restore sysconfigs on SYSTEM level only (client 0, org 0).
+	 * The SYSTEM-level row (client 0, org 0); client-specific rows are remembered by {@link #overrideClientSpecificRows}.
 	 * <p>
 	 * Remembers the SYSTEM-level value a sysconfig had before this scenario first changed it; {@code containsKey} (not {@code putIfAbsent}),
 	 * because {@code null} (no prior value) is a value too.
