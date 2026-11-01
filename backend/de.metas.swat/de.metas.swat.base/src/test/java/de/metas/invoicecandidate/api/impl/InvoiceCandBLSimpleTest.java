@@ -11,8 +11,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import de.metas.business.BusinessTestHelper;
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.common.util.time.SystemTime;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.product.ProductType;
 import de.metas.uom.UomId;

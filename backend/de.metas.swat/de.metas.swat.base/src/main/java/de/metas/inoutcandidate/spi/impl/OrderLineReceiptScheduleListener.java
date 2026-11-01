@@ -1,7 +1,6 @@
 package de.metas.inoutcandidate.spi.impl;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.order.OrderLineId;
 import org.compiere.model.I_C_OrderLine;
 

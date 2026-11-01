@@ -2047,8 +2047,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	/**
-	 * Freshly loaded, because the order line's {@code QtyDelivered} is raised by a shipment's/receipt's completion before the candidate's own {@code QtyDelivered} follows;
-	 * {@code ic.getC_OrderLine()} might return an instance cached within the candidate.
+	 * Reads the order line in the candidate's transaction, where a shipment's/receipt's completion already raised its {@code QtyDelivered} before the candidate's own {@code QtyDelivered} follows.
+	 * Not via {@code IOrderDAO#getOrderLineById}: that loads in the thread-inherited transaction, while the recompute can pass the candidate an explicit one.
 	 *
 	 * @return the order line's {@code QtyDelivered}, or zero if the candidate has no order line
 	 */
