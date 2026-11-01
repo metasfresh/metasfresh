@@ -33,7 +33,19 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.document.engine.DocStatus;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.common.util.time.SystemTime;
+import de.metas.workplace.WorkplaceId;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,6 +58,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,6 +71,7 @@ class ShipmentScheduleWithHUServiceTest
 {
 	private ShipmentScheduleWithHUService shipmentScheduleWithHUService;
 	private ProductId productId;
+	private I_C_UOM uomEach;
 	private ListAppender<ILoggingEvent> logAppender;
 	private Logger logger;
 
@@ -67,7 +81,8 @@ class ShipmentScheduleWithHUServiceTest
 		AdempiereTestHelper.get().init();
 		shipmentScheduleWithHUService = ShipmentScheduleWithHUService.newInstanceForUnitTesting();
 		// not stocked: a quantity-to-deliver run then ships without picking HUs on the fly, so these tests need no stock / partner fixture
-		final I_M_Product product = BusinessTestHelper.createProduct("product", BusinessTestHelper.createUomEach());
+		uomEach = BusinessTestHelper.createUomEach();
+		final I_M_Product product = BusinessTestHelper.createProduct("product", uomEach);
 		product.setIsStocked(false);
 		InterfaceWrapperHelper.save(product);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
@@ -415,6 +430,99 @@ class ShipmentScheduleWithHUServiceTest
 		assertThat(result).isEmpty();
 	}
 
+	/**
+	 * (7) picking-job schedule, quantity type D, flag set, closed + processed, QtyToDeliver_Override > 0, no picks:
+	 * shipping by quantity to deliver does not apply to picking-job schedules, so the run carries nothing for it - skipped, no exception.
+	 */
+	@Test
+	void closedProcessedPickingJobSchedule_flagSet_qtyToDeliverOverride_isSkippedWithoutException()
+	{
+		final I_M_ShipmentSchedule schedule = createClosedSchedule(ShipmentScheduleId.ofRepoId(707), true);
+		schedule.setQtyToDeliver_Override(new BigDecimal("7"));
+		InterfaceWrapperHelper.save(schedule);
+
+		final PickingJobSchedule jobSchedule = PickingJobSchedule.builder()
+				.id(PickingJobScheduleId.ofRepoId(7071))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.ANY))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(707))
+				.workplaceId(WorkplaceId.ofRepoId(1))
+				.qtyToPick(Quantity.of(new BigDecimal("7"), uomEach))
+				.active(true)
+				.build();
+
+		final ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest request = ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest.builder()
+				.schedules(ShipmentScheduleAndJobSchedulesCollection.ofList(ImmutableList.of(ShipmentScheduleAndJobSchedules.of(schedule, ImmutableList.of(jobSchedule)))))
+				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+				.includeProcessedClosedSchedulesWithQty(true)
+				.enqueuedAt(SystemTime.asInstant().minusSeconds(60))
+				.build();
+
+		final ImmutableList<ShipmentScheduleWithHU> result = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(request);
+
+		assertThat(result).isEmpty();
+	}
+
+	/**
+	 * (8) flag set, closed + processed, QtyToDeliver_Override > 0, but a completed shipment line for the schedule was created
+	 * after this workpackage was enqueued (an earlier run already shipped the entered quantity): skipped, so it is not shipped twice.
+	 */
+	@Test
+	void closedProcessedSchedule_flagSet_qtyToDeliverOverride_shippedAfterEnqueue_isSkipped()
+	{
+		final I_M_ShipmentSchedule schedule = createClosedSchedule(ShipmentScheduleId.ofRepoId(708), true);
+		schedule.setQtyToDeliver_Override(new BigDecimal("7"));
+		InterfaceWrapperHelper.save(schedule);
+		final Instant enqueuedAt = SystemTime.asInstant().minusSeconds(60);
+		createCompletedShipmentLine(schedule, new BigDecimal("7")); // created "now", i.e. after enqueuedAt
+
+		final ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest request = requestFor(schedule, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER, true, null)
+				.toBuilder().enqueuedAt(enqueuedAt).build();
+
+		assertThat(shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(request)).isEmpty();
+	}
+
+	/**
+	 * (8b) as (8), but the completed shipment line was created before this workpackage was enqueued: the entered quantity is still shipped.
+	 */
+	@Test
+	void closedProcessedSchedule_flagSet_qtyToDeliverOverride_shippedBeforeEnqueue_isShipped()
+	{
+		final I_M_ShipmentSchedule schedule = createClosedSchedule(ShipmentScheduleId.ofRepoId(709), true);
+		schedule.setQtyToDeliver_Override(new BigDecimal("7"));
+		InterfaceWrapperHelper.save(schedule);
+		createCompletedShipmentLine(schedule, new BigDecimal("3")); // created "now", i.e. before enqueuedAt
+		final Instant enqueuedAt = SystemTime.asInstant().plusSeconds(60);
+
+		final ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest request = requestFor(schedule, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER, true, null)
+				.toBuilder().enqueuedAt(enqueuedAt).build();
+
+		final ImmutableList<ShipmentScheduleWithHU> result = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(request);
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getQtyPicked().toBigDecimal()).isEqualByComparingTo("7");
+	}
+
+	private void createCompletedShipmentLine(@NonNull final I_M_ShipmentSchedule schedule, @NonNull final BigDecimal qty)
+	{
+		final I_M_InOut shipment = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+		shipment.setDocStatus(DocStatus.Completed.getCode());
+		shipment.setProcessed(true);
+		InterfaceWrapperHelper.save(shipment);
+
+		final I_M_InOutLine shipmentLine = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
+		shipmentLine.setM_InOut_ID(shipment.getM_InOut_ID());
+		shipmentLine.setM_Product_ID(schedule.getM_Product_ID());
+		shipmentLine.setMovementQty(qty);
+		shipmentLine.setProcessed(true);
+		InterfaceWrapperHelper.save(shipmentLine);
+
+		final I_M_ShipmentSchedule_QtyPicked alloc = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_QtyPicked.class);
+		alloc.setM_ShipmentSchedule_ID(schedule.getM_ShipmentSchedule_ID());
+		alloc.setQtyPicked(qty);
+		alloc.setM_InOutLine_ID(shipmentLine.getM_InOutLine_ID());
+		alloc.setProcessed(true);
+		InterfaceWrapperHelper.save(alloc);
+	}
+
 	private ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest requestFor(
 			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityType,
@@ -426,6 +534,7 @@ class ShipmentScheduleWithHUServiceTest
 				.quantityTypeToUse(quantityType)
 				.onlyLUIds(onlyLUIds)
 				.includeProcessedClosedSchedulesWithQty(includeProcessedClosedSchedulesWithQty)
+				.enqueuedAt(SystemTime.asInstant().minusSeconds(60))
 				.build(); // failOnSingleScheduleWithNoPickedHUs keeps its default (true)
 	}
 

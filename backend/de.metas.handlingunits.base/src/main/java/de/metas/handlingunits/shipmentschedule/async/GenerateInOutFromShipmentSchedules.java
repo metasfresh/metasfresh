@@ -198,6 +198,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 						// an earlier shipment's completion may have closed some of our schedules and a recompute processed them since we were enqueued;
 						// still ship those for which we carry picks or an entered quantity
 						.includeProcessedClosedSchedulesWithQty(true)
+						// C_Queue_WorkPackage.Created: an entered quantity already shipped by a shipment line created after this moment is not shipped again
+						.enqueuedAt(getC_Queue_WorkPackage().getCreated().toInstant())
 						.build()
 		);
 	}

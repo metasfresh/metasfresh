@@ -114,6 +114,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -169,7 +170,7 @@ public class ShipmentScheduleWithHUService
 	}
 
 	@Value
-	@Builder
+	@Builder(toBuilder = true)
 	public static class PrepareForShipmentSchedulesRequest
 	{
 		@NonNull ShipmentScheduleAndJobSchedulesCollection schedules;
@@ -192,6 +193,13 @@ public class ShipmentScheduleWithHUService
 		 * Only the shipment workpackage sets it; see {@code ShipmentScheduleWithHUService.isToBeShipped} for why.
 		 */
 		@Builder.Default boolean includeProcessedClosedSchedulesWithQty = false;
+
+		/**
+		 * When the shipment workpackage was enqueued ({@code C_Queue_WorkPackage.Created}).
+		 * Required when {@link #includeProcessedClosedSchedulesWithQty} is set: an entered quantity is not shipped again
+		 * if a completed shipment line for the schedule was created after this moment.
+		 */
+		@Nullable Instant enqueuedAt;
 
 		@Nullable
 		public StockQtyAndUOMQty getQtyToDeliverOverride(@NonNull final ShipmentScheduleId shipmentScheduleId)
@@ -382,6 +390,11 @@ public class ShipmentScheduleWithHUService
 	/**
 	 * Same quantity source as {@link #prepareShipmentSchedulesWithHUForQtyToDeliver(PrepareForSingleShipmentScheduleRequest)}: the request's override first, else the schedule's entered quantity.
 	 * Not applicable when only some job schedules are to be shipped, like there.
+	 * <p>
+	 * Not kept if the entered quantity was already shipped after this workpackage was enqueued: a schedule closed by its own shipment keeps its
+	 * {@code QtyToDeliver_Override} (the recompute returns before it clears a fulfilled override), and the D path ships the raw override.
+	 * So a second workpackage that was enqueued between that shipment's close and the recompute would ship it again.
+	 * Picks need no such check: a shipped pick has a shipment line and is no longer returned by {@link #retrieveNotShippedRecords(ShipmentScheduleAndJobScheduleIdSet, Set)}.
 	 */
 	private boolean hasEnteredQtyToDeliver(
 			@NonNull final ShipmentScheduleAndJobSchedules schedule,
@@ -391,7 +404,19 @@ public class ShipmentScheduleWithHUService
 		{
 			return false;
 		}
+		if (!isEnteredQtyToDeliverPositive(schedule, request))
+		{
+			return false;
+		}
 
+		final Instant enqueuedAt = Check.assumeNotNull(request.getEnqueuedAt(), "enqueuedAt is set when includeProcessedClosedSchedulesWithQty is set; request={}", request);
+		return !hasCompletedShipmentLineCreatedAfter(schedule.getShipmentScheduleId(), enqueuedAt);
+	}
+
+	private static boolean isEnteredQtyToDeliverPositive(
+			@NonNull final ShipmentScheduleAndJobSchedules schedule,
+			@NonNull final PrepareForShipmentSchedulesRequest request)
+	{
 		final StockQtyAndUOMQty qtyToDeliverOverride = request.getQtyToDeliverOverride(schedule.getShipmentScheduleId());
 		if (qtyToDeliverOverride != null)
 		{
@@ -401,6 +426,21 @@ public class ShipmentScheduleWithHUService
 		final I_M_ShipmentSchedule scheduleRecord = schedule.getShipmentSchedule();
 		return !InterfaceWrapperHelper.isNull(scheduleRecord, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override)
 				&& scheduleRecord.getQtyToDeliver_Override().signum() > 0;
+	}
+
+	/**
+	 * @return {@code true} if the schedule has an allocation on a completed shipment line (allocation {@code Processed = Y}) whose {@code M_InOutLine.Created} is after the given moment.
+	 */
+	private boolean hasCompletedShipmentLineCreatedAfter(@NonNull final ShipmentScheduleId shipmentScheduleId, @NonNull final Instant moment)
+	{
+		return shipmentScheduleAllocDAO.stream(
+						ShipmentScheduleAllocQuery.builder()
+								.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(shipmentScheduleId))
+								.alreadyShipped(true)
+								.processed(true)
+								.build())
+				.map(alloc -> InterfaceWrapperHelper.load(alloc.getM_InOutLine_ID(), I_M_InOutLine.class))
+				.anyMatch(shipmentLine -> shipmentLine.getCreated().toInstant().isAfter(moment));
 	}
 
 	/**
