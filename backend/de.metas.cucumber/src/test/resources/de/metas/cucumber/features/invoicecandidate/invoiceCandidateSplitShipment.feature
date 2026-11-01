@@ -476,6 +476,8 @@ Feature: Invoice candidates of a split shipment - the second shipment's lines st
       | invoiceLine3                | invoice                 | product3                | 6           | true      |
 
 
+  # Line 2 is in another warehouse: its draft shipment needs a different header key than line 1's. A different shipper
+  # does not do it, because an open draft shipment is reused regardless of the shipper (HUShipmentScheduleBL.getOpenShipmentOrNull).
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00701_Sales_Invoice_Candidates
