@@ -220,6 +220,18 @@ class InvoiceCandBLSimpleTest
 		assertThat(ic.getQtyToInvoice()).as("QtyToInvoice").isZero();
 	}
 
+	/** An error candidate keeps {@code Processed_Calc = N} until the error is solved (gh #428), even if the delivery-closed rule would hold. */
+	@Test
+	void updateProcessedFlag_deliveryClosed_nothingDeliveredOrInvoiced_error_notProcessed()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().error(true));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed_Calc()).as("Processed_Calc").isFalse();
+		assertThat(ic.isProcessed()).as("Processed").isFalse();
+	}
+
 	/** Invoice rule O applies to any product, service products included. */
 	@Test
 	void updateProcessedFlag_invoiceRuleAfterOrderDelivered_serviceProduct_processed()
@@ -390,6 +402,7 @@ class InvoiceCandBLSimpleTest
 		private BigDecimal qtyInvoiced = ZERO;
 		private boolean approvalForInvoicing = false;
 		private String processedOverride = null;
+		private boolean error = false;
 
 		RuleFixture deliveryClosed(final boolean v) { deliveryClosed = v; return this; }
 		RuleFixture invoiceRule(final String v) { invoiceRule = v; return this; }
@@ -401,6 +414,7 @@ class InvoiceCandBLSimpleTest
 		RuleFixture qtyInvoiced(final BigDecimal v) { qtyInvoiced = v; return this; }
 		RuleFixture approvalForInvoicing(final boolean v) { approvalForInvoicing = v; return this; }
 		RuleFixture processedOverride(final String v) { processedOverride = v; return this; }
+		RuleFixture error(final boolean v) { error = v; return this; }
 	}
 
 	private I_C_Invoice_Candidate createICForRuleTest(@NonNull final RuleFixture f)
@@ -420,6 +434,7 @@ class InvoiceCandBLSimpleTest
 		ic.setIsDeliveryClosed(f.deliveryClosed);
 		ic.setApprovalForInvoicing(f.approvalForInvoicing);
 		ic.setProcessed_Override(f.processedOverride);
+		ic.setIsError(f.error);
 		if (f.withOrderLine)
 		{
 			final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
