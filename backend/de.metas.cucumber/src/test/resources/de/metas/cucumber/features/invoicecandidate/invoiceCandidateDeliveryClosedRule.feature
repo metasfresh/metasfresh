@@ -413,3 +413,153 @@ Feature: Invoice candidates of order lines that were never delivered - a closed 
       | ic1                               | true          | Y                      |
       | ic2                               | true          | Y                      |
       | ic3                               | false         | null                   |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: a line closed by its own partial shipment is never processed, the delivered quantity stays invoiceable
+    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product1                | 12         | TUx1_P1                                |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+
+    # hold the candidate recompute: the state stored by the shipment completion itself is then readable, before any recompute corrects it
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed |
+      | ic1                               | false         |
+    And new "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages are held
+    And transform CU to new LU
+      | sourceCU    | newLU                 | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
+      | pickFromCU1 | pickFromAggregatedLU1 | TU       | 1           | 10          |
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product1              | pickFromAggregatedLU1 | 8         | 0           |                       | 2027-03-01     | 1111  |
+    When complete picking job
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | CO            |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed |
+      | shipmentSchedule1     | true     |
+    And validate C_Invoice_Candidate as stored right now, without waiting for its recompute:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed |
+      | ic1                               | false         |
+    And held "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages are released
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.Processed_Override |
+      | ic1                               | false         | null                   |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice |
+      | ic1                               | false         | 8            |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: an approval for invoicing survives the shipment completion that closes the line
+    Given for this scenario only, set sys config boolean value true for sys config M_ShipmentSchedule_Close_PartiallyShipped
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product1                | 12         | TUx1_P1                                |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+    And update invoice candidates
+      | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
+      | ic1                               | true                     |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.ApprovalForInvoicing |
+      | ic1                               | false         | true                     |
+
+
+    # hold the candidate recompute: the state stored by the shipment completion itself is then readable, before any recompute corrects it
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed |
+      | ic1                               | false         |
+    And new "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages are held
+    And transform CU to new LU
+      | sourceCU    | newLU                 | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
+      | pickFromCU1 | pickFromAggregatedLU1 | TU       | 1           | 10          |
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product1              | pickFromAggregatedLU1 | 8         | 0           |                       | 2027-03-01     | 1111  |
+    When complete picking job
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | CO            |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsClosed |
+      | shipmentSchedule1     | true     |
+    And validate C_Invoice_Candidate as stored right now, without waiting for its recompute:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.ApprovalForInvoicing |
+      | ic1                               | false         | true                     |
+    And held "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages are released
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.ApprovalForInvoicing | OPT.Processed_Override |
+      | ic1                               | false         | true                     | null                   |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.ApprovalForInvoicing | QtyToInvoice |
+      | ic1                               | false         | true                     | 8            |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00701_Sales_Invoice_Candidates
+  @F00701
+  Scenario: an order line of a reactivated order whose shipment schedule was closed can be deleted with its invoice candidate
+    # L2 is the line with the highest id of the run and stays: the deleted L1 must not be the last record the run created, else the next run reuses its id
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product1                | 6          | TUx1_P1                                |
+      | SO                    | L2         | product2                | 5          | TUx1_P2                                |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+      | shipmentSchedule2 | L2                        | N             |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic1                               | L1                        |
+      | ic2                               | L2                        |
+
+    When the order identified by SO is reactivated
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed | QtyToInvoice | OPT.IsDeliveryClosed |
+      | ic1                               | true          | 0            | true                 |
+      | ic2                               | true          | 0            | true                 |
+
+    When delete C_OrderLine identified by L1, but keep its id into identifierIds table
+    Then validate C_Invoice_Candidates does not exist
+      | C_Order_ID.Identifier | M_Product_ID.Identifier |
+      | SO                    | product1                |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.Processed |
+      | ic2                               | true          |

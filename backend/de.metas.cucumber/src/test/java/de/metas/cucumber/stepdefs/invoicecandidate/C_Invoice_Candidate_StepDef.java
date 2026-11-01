@@ -1230,6 +1230,36 @@ public class C_Invoice_Candidate_StepDef
 		invoiceCandBL.closeInvoiceCandidate(invoiceCandidate);
 	}
 
+	/**
+	 * Asserts the stored state of invoice candidates as it is right now, i.e. without waiting for a pending recompute
+	 * (unlike {@code validate C_Invoice_Candidate:}, which waits for it and so cannot see a state that the recompute corrects).
+	 * Use it together with {@code new "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages are held}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And validate C_Invoice_Candidate as stored right now, without waiting for its recompute:
+	 *   | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.ApprovalForInvoicing |
+	 *   | ic1                               | false         | true                     |
+	 * </pre>
+	 */
+	@And("validate C_Invoice_Candidate as stored right now, without waiting for its recompute:")
+	public void validate_C_Invoice_Candidate_as_stored_now(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.forEach(row -> {
+					final I_C_Invoice_Candidate invoiceCandidateRecord = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
+					InterfaceWrapperHelper.refresh(invoiceCandidateRecord);
+
+					final SoftAssertions softly = new SoftAssertions();
+					row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_Processed)
+							.ifPresent(expected -> softly.assertThat(invoiceCandidateRecord.isProcessed()).as("Processed").isEqualTo(expected));
+					row.getAsOptionalBoolean(COLUMNNAME_ApprovalForInvoicing)
+							.ifPresent(expected -> softly.assertThat(invoiceCandidateRecord.isApprovalForInvoicing()).as("ApprovalForInvoicing").isEqualTo(expected));
+					softly.assertAll();
+				});
+	}
+
 	@And("update invoice candidates")
 	public void update_invoice_candidates(@NonNull final DataTable dataTable)
 	{
