@@ -22,7 +22,10 @@
 
 package de.metas.handlingunits.shipmentschedule.api;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
@@ -36,24 +39,38 @@ import de.metas.lock.api.LockOwner;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.spi.impl.PlainLockDatabase;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
+/**
+ * Covers how {@link ShipmentScheduleEnqueuer} selects and locks the schedules of a shipment run:
+ * <ul>
+ * <li>a selection that matched nothing at lock time, and the snapshot over the locked schedules;</li>
+ * <li>a closed shipment schedule is not put into a new shipment run that ships the entered quantity (quantity type D / PD),
+ * but it is put into a new run that ships picks only (quantity type P).</li>
+ * </ul>
+ */
 class ShipmentScheduleEnqueuerTest
 {
 	private static final AdMessageKey MSG_NO_VALID_RECORDS = AdMessageKey.of("de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords");
@@ -144,6 +161,128 @@ class ShipmentScheduleEnqueuerTest
 		assertThat(query.<Boolean>getOption(IQuery.OPTION_GuaranteedIteratorRequired)).isTrue();
 		final List<I_M_ShipmentSchedule> result = query.list(I_M_ShipmentSchedule.class);
 		assertThat(result).extracting(I_M_ShipmentSchedule::getM_ShipmentSchedule_ID).containsExactly(locked.getM_ShipmentSchedule_ID());
+	}
+
+	/**
+	 * The filter every shipment run is enqueued (and locked) by keeps an open schedule and leaves out a closed one.
+	 */
+	@Test
+	void queryFilter_keepsOpenSchedule_leavesOutClosedSchedule()
+	{
+		final I_M_ShipmentSchedule open = createSchedule(801, false);
+		final I_M_ShipmentSchedule closed = createSchedule(802, true);
+
+		final ShipmentScheduleWorkPackageParameters parameters = ShipmentScheduleWorkPackageParameters.builder()
+				.adPInstanceId(PInstanceId.ofRepoId(1))
+				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(ImmutableSet.of(
+						ShipmentScheduleId.ofRepoId(open.getM_ShipmentSchedule_ID()),
+						ShipmentScheduleId.ofRepoId(closed.getM_ShipmentSchedule_ID()))))
+				.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+				.build();
+
+		final List<Integer> matchingIds = Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule.class)
+				.filter(parameters.getShipmentSchedulesQueryFiltersEffective())
+				.create()
+				.list()
+				.stream()
+				.map(I_M_ShipmentSchedule::getM_ShipmentSchedule_ID)
+				.collect(Collectors.toList());
+
+		assertThat(matchingIds).containsExactly(801);
+	}
+
+	/**
+	 * Review scenario: run A shipped schedule X with its entered quantity and closed it; X is not processed yet (the recompute did not run).
+	 * A new "Auswahl Liefern" run C for X is attempted: no workpackage is created, so X's entered quantity is not shipped again.
+	 * The open schedule Y, enqueued the same way, gets its workpackage.
+	 */
+	@Test
+	void createWorkpackages_closedScheduleIsNotEnqueued_openScheduleIs()
+	{
+		final I_M_ShipmentSchedule shippedAndClosedX = createSchedule(811, true);
+		shippedAndClosedX.setQtyDelivered(new BigDecimal("7"));
+		InterfaceWrapperHelper.save(shippedAndClosedX);
+		final I_M_ShipmentSchedule openY = createSchedule(812, false);
+
+		assertThatThrownBy(() -> enqueue(shippedAndClosedX))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("NoValidRecords");
+		assertThat(countWorkpackages()).isZero();
+
+		final ShipmentScheduleEnqueuer.Result result = enqueue(openY);
+		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
+		assertThat(countWorkpackages()).isEqualTo(1);
+	}
+
+	/**
+	 * Picks on a schedule that an earlier shipment closed (e.g. ship-on-LU-close: shipping LU1 closed X, X also has picks in LU2;
+	 * or HU consolidation; or a schedule closed by hand while its picking job is open) are shipped by a later picked-quantity run.
+	 * A pick cannot ship twice: a shipped pick has a shipment line and is no longer among the not-shipped picks the P path ships from.
+	 */
+	@Test
+	void createWorkpackages_pickedQtyRun_closedScheduleWithPicksIsEnqueued()
+	{
+		final I_M_ShipmentSchedule closedWithPicks = createSchedule(821, true);
+		createPick(closedWithPicks, new BigDecimal("5"));
+
+		final ShipmentScheduleEnqueuer.Result result = enqueue(closedWithPicks, M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY);
+
+		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
+		assertThat(countWorkpackages()).isEqualTo(1);
+	}
+
+	/**
+	 * A run that ships picks and the entered quantity (PD) leaves out a closed schedule too, because it would ship the entered quantity again.
+	 */
+	@Test
+	void createWorkpackages_pickedAndEnteredQtyRun_closedScheduleIsNotEnqueued()
+	{
+		final I_M_ShipmentSchedule closed = createSchedule(831, true);
+
+		assertThatThrownBy(() -> enqueue(closed, M_ShipmentSchedule_QuantityTypeToUse.TYPE_BOTH))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("NoValidRecords");
+		assertThat(countWorkpackages()).isZero();
+	}
+
+	private ShipmentScheduleEnqueuer.Result enqueue(final I_M_ShipmentSchedule schedule)
+	{
+		return enqueue(schedule, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+	}
+
+	private ShipmentScheduleEnqueuer.Result enqueue(final I_M_ShipmentSchedule schedule, final M_ShipmentSchedule_QuantityTypeToUse quantityType)
+	{
+		return ShipmentScheduleEnqueuer.newInstance(Env.getCtx(), ITrx.TRXNAME_None)
+				.createWorkpackages(ShipmentScheduleWorkPackageParameters.builder()
+						.adPInstanceId(PInstanceId.ofRepoId(1))
+						.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(ImmutableSet.of(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))))
+						.quantityType(quantityType)
+						.completeShipments(true)
+						.build());
+	}
+
+	private int countWorkpackages()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Queue_WorkPackage.class).create().count();
+	}
+
+	private void createPick(final I_M_ShipmentSchedule schedule, final BigDecimal qtyPicked)
+	{
+		final I_M_ShipmentSchedule_QtyPicked pick = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_QtyPicked.class);
+		pick.setM_ShipmentSchedule_ID(schedule.getM_ShipmentSchedule_ID());
+		pick.setQtyPicked(qtyPicked);
+		InterfaceWrapperHelper.save(pick);
+	}
+
+	private I_M_ShipmentSchedule createSchedule(final int id, final boolean closed)
+	{
+		final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_ShipmentSchedule_ID(id);
+		schedule.setIsClosed(closed);
+		schedule.setProcessed(false); // closed, but the recompute did not process it yet
+		schedule.setQtyToDeliver_Override(new BigDecimal("7"));
+		InterfaceWrapperHelper.save(schedule);
+		return schedule;
 	}
 
 	/**
