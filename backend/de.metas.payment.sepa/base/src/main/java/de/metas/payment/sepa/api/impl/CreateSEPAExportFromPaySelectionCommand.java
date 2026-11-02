@@ -259,7 +259,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		final Set<BankAccountId> bankAccountIds = linesWithBankAccount.stream()
 				.map(line -> BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID()))
 				.collect(ImmutableSet.toImmutableSet());
-		final DirectDebitMandatesMap mandates = mandateRepo.getActiveMandates(bankAccountIds, exportOrgId);
+		final DirectDebitMandatesMap mandates = mandateRepo.getMandates(bankAccountIds, exportOrgId);
 
 		final ImmutableSet<BPartnerId> partnerIds = linesWithBankAccount.stream()
 				.map(line -> BPartnerId.ofRepoId(line.getC_BPartner_ID()))
@@ -273,7 +273,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		for (final I_C_PaySelectionLine line : linesWithBankAccount)
 		{
 			final BankAccountId bankAccountId = BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID());
-			final DirectDebitMandate mandate = mandates.getActiveMandate(bankAccountId).orElse(null);
+			final DirectDebitMandate mandate = mandates.getMandate(bankAccountId).orElse(null);
 			if (mandate != null)
 			{
 				mandatesByLineId.put(toPaySelectionLineId(line), mandate);

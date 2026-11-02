@@ -69,11 +69,11 @@ public class DirectDebitMandateRepository
 	/**
 	 * Loads, with ONE query, the active mandates of all given bank accounts (e.g. of a whole pay selection).
 	 * <p>
-	 * Only mandates of the export org and of org 0 are considered; use {@link DirectDebitMandatesMap#getActiveMandate(BankAccountId)}
+	 * Only mandates of the export org and of org 0 are considered; use {@link DirectDebitMandatesMap#getMandate(BankAccountId)}
 	 * to pick the export org's mandate first, falling back to the org-0 one.
 	 * The DB unique index guarantees at most one active mandate per bank account and org.
 	 */
-	public DirectDebitMandatesMap getActiveMandates(
+	public DirectDebitMandatesMap getMandates(
 			@NonNull final Set<BankAccountId> bankAccountIds,
 			@NonNull final OrgId exportOrgId)
 	{

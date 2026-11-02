@@ -59,7 +59,7 @@ class DirectDebitMandatesMapTest
 		final DirectDebitMandatesMap map = DirectDebitMandatesMap.ofList(
 				ImmutableList.of(mandate(OrgId.ANY, "ANY"), mandate(EXPORT_ORG, "EXPORT")), EXPORT_ORG);
 
-		assertThat(map.getActiveMandate(BANK_ACCOUNT)).get().extracting(DirectDebitMandate::getReference).isEqualTo("EXPORT");
+		assertThat(map.getMandate(BANK_ACCOUNT)).get().extracting(DirectDebitMandate::getReference).isEqualTo("EXPORT");
 	}
 
 	@Test
@@ -67,7 +67,7 @@ class DirectDebitMandatesMapTest
 	{
 		final DirectDebitMandatesMap map = DirectDebitMandatesMap.ofList(ImmutableList.of(mandate(OrgId.ANY, "ANY")), EXPORT_ORG);
 
-		assertThat(map.getActiveMandate(BANK_ACCOUNT)).get().extracting(DirectDebitMandate::getReference).isEqualTo("ANY");
+		assertThat(map.getMandate(BANK_ACCOUNT)).get().extracting(DirectDebitMandate::getReference).isEqualTo("ANY");
 	}
 
 	@Test
@@ -75,12 +75,12 @@ class DirectDebitMandatesMapTest
 	{
 		final DirectDebitMandatesMap map = DirectDebitMandatesMap.ofList(ImmutableList.of(mandate(OTHER_ORG, "OTHER")), EXPORT_ORG);
 
-		assertThat(map.getActiveMandate(BANK_ACCOUNT)).isEmpty();
+		assertThat(map.getMandate(BANK_ACCOUNT)).isEmpty();
 	}
 
 	@Test
 	void noMandatesGivesEmpty()
 	{
-		assertThat(DirectDebitMandatesMap.ofList(ImmutableList.of(), EXPORT_ORG).getActiveMandate(BANK_ACCOUNT)).isEmpty();
+		assertThat(DirectDebitMandatesMap.ofList(ImmutableList.of(), EXPORT_ORG).getMandate(BANK_ACCOUNT)).isEmpty();
 	}
 }

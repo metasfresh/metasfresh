@@ -69,7 +69,7 @@ public class DirectDebitMandatesMap
 	/**
 	 * @return the export org's mandate of the given bank account, else the org-0 mandate; empty if there is none
 	 */
-	public Optional<DirectDebitMandate> getActiveMandate(@NonNull final BankAccountId bankAccountId)
+	public Optional<DirectDebitMandate> getMandate(@NonNull final BankAccountId bankAccountId)
 	{
 		final DirectDebitMandate exportOrgMandate = byBankAccountIdForExportOrg.get(bankAccountId);
 		return Optional.ofNullable(exportOrgMandate != null ? exportOrgMandate : byBankAccountIdForOrgAny.get(bankAccountId));
