@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_pporders" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/intransit_hus_report/report" uuid="c4a8e1f2-5b3d-4e6a-8f7c-2d9b0a1e3c03">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_pporders" pageWidth="554" pageHeight="842" columnWidth="554" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/intransit_hus_report/report" uuid="c4a8e1f2-5b3d-4e6a-8f7c-2d9b0a1e3c03">
 	<property name="ireport.encoding" value="UTF-8"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -19,7 +19,7 @@
 	<detail>
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-pporder" x="31" y="0" width="554" height="12" uuid="9e5d3b7a-2c4f-4a18-b6d0-1f8a7c5e4d04"/>
+				<reportElement key="textField-pporder" x="4" y="0" width="546" height="12" uuid="9e5d3b7a-2c4f-4a18-b6d0-1f8a7c5e4d04"/>
 				<textElement textAlignment="Left" markup="none">
 					<font fontName="Arial" size="9"/>
 				</textElement>

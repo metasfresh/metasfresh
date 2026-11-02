@@ -394,29 +394,37 @@ order by order_docno, documentno, dd_orderline_id, m_hu_id]]>
 			<band height="27" splitType="Stretch">
 				<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				<printWhenExpression><![CDATA[!Boolean.TRUE.equals($F{is_single_pporder_header}) && $F{production_order_no} != null]]></printWhenExpression>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-product" positionType="Float" x="31" y="2" width="554" height="12" uuid="3b1f6a3e-6f2c-4d0e-9a55-0c7b8e1d2a01">
-						<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					</reportElement>
-					<textElement textAlignment="Left" markup="none">
-						<font fontName="Arial" size="9" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{p_value} + " " + $F{productname}]]></textFieldExpression>
-				</textField>
-				<subreport isUsingCache="true">
-					<reportElement key="subreport-pporders" positionType="Float" x="0" y="15" width="595" height="12" uuid="7d2c9b44-1e0a-4b77-8f13-5a6e4c9d3b02">
-						<property name="com.jaspersoft.studio.unit.y" value="px"/>
-						<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					</reportElement>
-					<subreportParameter name="dd_orderline_id">
-						<subreportParameterExpression><![CDATA[$F{dd_orderline_id}]]></subreportParameterExpression>
-					</subreportParameter>
-					<subreportParameter name="ad_language">
-						<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
-					</subreportParameter>
-					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-					<subreportExpression><![CDATA["de/metas/reports/intransit_hus_report/report_pporders.jasper"]]></subreportExpression>
-				</subreport>
+				<frame>
+					<reportElement key="frame-pporders" positionType="Float" stretchType="ContainerHeight" x="31" y="0" width="554" height="27" uuid="4c1e2f0a-8b3d-4e5f-9a6b-7c8d9e0f1a2b"/>
+					<box>
+						<leftPen lineWidth="0.75"/>
+						<bottomPen lineWidth="0.75"/>
+						<rightPen lineWidth="0.75"/>
+					</box>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement key="textField-product" positionType="Float" x="4" y="2" width="546" height="12" uuid="3b1f6a3e-6f2c-4d0e-9a55-0c7b8e1d2a01">
+							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						</reportElement>
+						<textElement textAlignment="Left" markup="none">
+							<font fontName="Arial" size="9" isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$F{p_value} + " " + $F{productname}]]></textFieldExpression>
+					</textField>
+					<subreport isUsingCache="true">
+						<reportElement key="subreport-pporders" positionType="Float" x="0" y="15" width="554" height="12" uuid="7d2c9b44-1e0a-4b77-8f13-5a6e4c9d3b02">
+							<property name="com.jaspersoft.studio.unit.y" value="px"/>
+							<property name="com.jaspersoft.studio.unit.x" value="px"/>
+						</reportElement>
+						<subreportParameter name="dd_orderline_id">
+							<subreportParameterExpression><![CDATA[$F{dd_orderline_id}]]></subreportParameterExpression>
+						</subreportParameter>
+						<subreportParameter name="ad_language">
+							<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+						</subreportParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						<subreportExpression><![CDATA["de/metas/reports/intransit_hus_report/report_pporders.jasper"]]></subreportExpression>
+					</subreport>
+				</frame>
 			</band>
 		</groupHeader>
 	</group>
