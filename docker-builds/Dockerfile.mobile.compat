@@ -1,4 +1,4 @@
-FROM node:14 AS build
+FROM node:14-bullseye AS build
 
 RUN npm install -g webpack webpack-cli
 
