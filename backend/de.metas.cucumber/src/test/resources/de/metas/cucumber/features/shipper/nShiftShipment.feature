@@ -119,9 +119,12 @@ Feature: nShift Shipment
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so1_l1     | so1        | product      | 10         |
     When the order identified by so1 is completed
+    # Gate on Carrier_Advising_Status=CO, not only on the carrier product: the first recompute sets DeliveryDate, and
+    # if the order-completion advise already finished, that re-requests the advise (status R) while the previous cp1
+    # stays on the record. A manual advise on a still-Requested schedule is silently skipped.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss1        | so1_l1         | N             | cp1                | cgt1                  |
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Advising_Status |
+      | ss1        | so1_l1         | N             | cp1                | cgt1                  | CO                      |
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | nShift       | ss1                   | cp2                | cgt2                  | cs3, cs4           |
@@ -330,9 +333,10 @@ Feature: nShift Shipment
       | Identifier           | C_Order_ID       | M_Product_ID | QtyEntered |
       | so_manual_advise_l1  | so_manual_advise | product      | 10         |
     When the order identified by so_manual_advise is completed
+    # Advise must be Completed (CO), not merely carry cp1 — see "nShift Carrier Advise" for why.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier       | C_OrderLine_ID      | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss_manual_advise | so_manual_advise_l1 | N             | cp1                | cgt1                  |
+      | Identifier       | C_OrderLine_ID      | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Advising_Status |
+      | ss_manual_advise | so_manual_advise_l1 | N             | cp1                | cgt1                  | CO                      |
     # Set the carrier-advising status to Manual via the manual-advise process
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
@@ -1231,10 +1235,12 @@ Feature: nShift Shipment
     # reached Completed (isEligibleForManualEnqueue excludes Requested). So WAIT for the auto-advise to land the
     # carrier (cp1) on BOTH schedules before overriding them manually — otherwise a manual advise on a
     # still-Requested schedule is silently skipped (it stays Requested and later auto-advises, losing the Manual).
+    # cp1 alone is not proof of Completed: the first recompute can re-request the advise (status R) while cp1 stays
+    # on the record, so gate on the status as well.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier     | C_OrderLine_ID  | Carrier_Product_ID |
-      | ss_manualmix_1 | so_manualmix_l1 | cp1                |
-      | ss_manualmix_2 | so_manualmix_l2 | cp1                |
+      | Identifier     | C_OrderLine_ID  | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_manualmix_1 | so_manualmix_l1 | N             | cp1                | CO                      |
+      | ss_manualmix_2 | so_manualmix_l2 | N             | cp1                | CO                      |
     # Manually override BOTH schedules with DIFFERENT carriers (product_2→cp1, product→cp2) → two distinct manual carriers
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
@@ -1279,12 +1285,13 @@ Feature: nShift Shipment
       | so_l1      | so         | product      | 5          | product_TU_10CU         |
       | so_l2      | so         | product_2    | 5          | product_2_TU_10CU       |
     When the order identified by so is completed
-    # Wait for the auto-advise (cp1) to land on BOTH schedules — recompute settled AND carrier resolved in one
-    # gate — before overriding them manually (a manual advise on a still-Requested schedule is silently skipped).
+    # Wait for the auto-advise (cp1) to land on BOTH schedules — recompute settled AND advise Completed in one
+    # gate — before overriding them manually (a manual advise on a still-Requested schedule is silently skipped;
+    # cp1 alone is not enough, the first recompute can re-request the advise while cp1 stays on the record).
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
-      | ss_1       | so_l1          | N             | cp1                |
-      | ss_2       | so_l2          | N             | cp1                |
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_1       | so_l1          | N             | cp1                | CO                      |
+      | ss_2       | so_l2          | N             | cp1                | CO                      |
     # Manually override the two schedules with DIFFERENT carriers → two distinct manual carriers on one package.
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
@@ -1354,12 +1361,13 @@ Feature: nShift Shipment
       | so_l1      | so         | product      | 5          |
       | so_l2      | so         | product_2    | 5          |
     When the order identified by so is completed
-    # Wait for the auto-advise (cp1) to land on BOTH schedules — recompute settled AND carrier resolved in one
-    # gate — before overriding them manually (a manual advise on a still-Requested schedule is silently skipped).
+    # Wait for the auto-advise (cp1) to land on BOTH schedules — recompute settled AND advise Completed in one
+    # gate — before overriding them manually (a manual advise on a still-Requested schedule is silently skipped;
+    # cp1 alone is not enough, the first recompute can re-request the advise while cp1 stays on the record).
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
-      | ss_1       | so_l1          | N             | cp1                |
-      | ss_2       | so_l2          | N             | cp1                |
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_1       | so_l1          | N             | cp1                | CO                      |
+      | ss_2       | so_l2          | N             | cp1                | CO                      |
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | nShift       | ss_2                  | cp1                | cgt1                  | cs1                |
@@ -2060,10 +2068,11 @@ Feature: nShift Shipment
     When the order identified by so_split is completed
     # Wait for the auto-advise to COMPLETE (both schedules resolve to the stubbed cp1/cgt1) BEFORE the manual
     # overrides — otherwise the async auto-advise races and overwrites the manual cp1/cp2 assigned below.
+    # Gate on Carrier_Advising_Status=CO: the first recompute can re-request the advise while cp1/cgt1 stay on the record.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier   | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss_split_l1  | so_split_l1    | N             | cp1                | cgt1                  |
-      | ss_split_l2  | so_split_l2    | N             | cp1                | cgt1                  |
+      | Identifier   | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Advising_Status |
+      | ss_split_l1  | so_split_l1    | N             | cp1                | cgt1                  | CO                      |
+      | ss_split_l2  | so_split_l2    | N             | cp1                | cgt1                  | CO                      |
     # Each line advised to its own carrier product of the same shipper.
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
