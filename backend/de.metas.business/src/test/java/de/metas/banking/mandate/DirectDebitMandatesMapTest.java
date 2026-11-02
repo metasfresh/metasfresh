@@ -80,6 +80,15 @@ class DirectDebitMandatesMapTest
 	}
 
 	@Test
+	void exportOrgAny_orgAnyMandateIsFound()
+	{
+		final DirectDebitMandatesMap map = DirectDebitMandatesMap.ofList(
+				ImmutableList.of(mandate(OTHER_ORG, "OTHER"), mandate(OrgId.ANY, "ANY")), OrgId.ANY);
+
+		assertThat(map.getMandate(BANK_ACCOUNT)).get().extracting(DirectDebitMandate::getReference).isEqualTo("ANY");
+	}
+
+	@Test
 	void mandateOfAnotherOrgIsIgnored()
 	{
 		final DirectDebitMandatesMap map = DirectDebitMandatesMap.ofList(ImmutableList.of(mandate(OTHER_ORG, "OTHER")), EXPORT_ORG);
