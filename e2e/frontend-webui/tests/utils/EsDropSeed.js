@@ -5,10 +5,17 @@ import { Backend } from './Backend';
 import { getPage } from './common';
 import { WEBAPI_BASE_URL } from './WebAPIValidation';
 
-/** Seeded business partner / product / order sums, as asserted by es-drop-fts-and-kpi.spec.js. */
+// Per-run-unique suffix for the FTS partner/product keys. Two reasons: (1) a Playwright retry runs in a fresh worker
+// process -> fresh RUN -> the REST seed never collides with the rows the failed attempt already created; (2) on an
+// isolated stack where the KPI scenario also runs, these keys stay disjoint from that scenario's fixed psql keys
+// (ESDROPBP1 / ESDROPPRD1), so its DELETE never hits a REST-created partner (which carries an FK'd location row).
+// Letters only, so each stays a single full-text-search token.
+const RUN = Array.from({ length: 8 }, () => String.fromCharCode(97 + Math.floor(Math.random() * 26))).join('');
+
+/** Seeded business partner / product (per-run-unique) + order sums, as asserted by es-drop-fts-and-kpi.spec.js. */
 export const ES_DROP_SEED = {
-  partner: { value: 'ESDROPBP1', nameWord: 'Zyxquarta', name: 'Zyxquarta Handels GmbH' },
-  product: { value: 'ESDROPPRD1', nameWord: 'Zyxbanane', name: 'Zyxbanane Bio Spezialsorte' },
+  partner: { value: `ESDROPBP${RUN}`, nameWord: `Zyxquarta${RUN}`, name: `Zyxquarta${RUN} Handels GmbH` },
+  product: { value: `ESDROPPRD${RUN}`, nameWord: `Zyxbanane${RUN}`, name: `Zyxbanane${RUN} Bio Spezialsorte` },
   salesNetAmount: '350.50',
   purchaseNetAmount: '100.25',
 };

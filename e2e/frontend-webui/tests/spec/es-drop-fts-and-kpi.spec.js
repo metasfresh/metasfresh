@@ -49,7 +49,7 @@ test.describe('ES drop: Postgres full-text search and SQL KPIs', () => {
     allure.tag('F15010');
     allure.story('Postgres FTS: Business Partner');
     allure.severity('critical');
-    allure.description('The Business Partner window "Search records" filter (Postgres FTS) finds "Zyxquarta Handels GmbH" by the name word "Zyxquarta" and by the value "ESDROPBP1".');
+    allure.description('The Business Partner window "Search records" filter (Postgres FTS) finds the seeded partner ("Zyxquarta… Handels GmbH") by its unique name word and by its value (per-run-unique keys).');
 
     await login();
     await seedEsDropMasterdata();
@@ -63,7 +63,7 @@ test.describe('ES drop: Postgres full-text search and SQL KPIs', () => {
     allure.tag('F15021');
     allure.story('Postgres FTS: Product');
     allure.severity('critical');
-    allure.description('The Product window "Search records" filter (Postgres FTS) finds "Zyxbanane Bio Spezialsorte" by the name word "Zyxbanane" and by the value "ESDROPPRD1".');
+    allure.description('The Product window "Search records" filter (Postgres FTS) finds the seeded product ("Zyxbanane… Bio Spezialsorte") by its unique name word and by its value (per-run-unique keys).');
 
     await login();
     await seedEsDropMasterdata();
