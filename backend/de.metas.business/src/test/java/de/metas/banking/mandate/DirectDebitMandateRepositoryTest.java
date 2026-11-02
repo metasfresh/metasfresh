@@ -24,6 +24,7 @@ package de.metas.banking.mandate;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.organization.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount_DirectDebitMandate;
@@ -39,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class DirectDebitMandateRepositoryTest
 {
+	private static final BPartnerId BPARTNER = BPartnerId.ofRepoId(20);
 	private static final BankAccountId BANK_ACCOUNT = BankAccountId.ofRepoId(10);
 
 	private DirectDebitMandateRepository repository;
@@ -58,7 +60,7 @@ class DirectDebitMandateRepositoryTest
 	{
 		final I_C_BP_BankAccount_DirectDebitMandate record = newInstance(I_C_BP_BankAccount_DirectDebitMandate.class);
 		record.setAD_Org_ID(orgId.getRepoId());
-		record.setC_BPartner_ID(20);
+		record.setC_BPartner_ID(BPARTNER.getRepoId());
 		record.setC_BP_BankAccount_ID(BANK_ACCOUNT.getRepoId());
 		record.setMandateType(DirectDebitMandateType.B2B.getCode());
 		record.setMandateReference(reference);

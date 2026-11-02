@@ -24,12 +24,15 @@ package de.metas.banking.mandate;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimaps;
 import de.metas.banking.BankAccountId;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -53,27 +56,29 @@ public class DirectDebitMandatesMap
 
 	private DirectDebitMandatesMap(@NonNull final List<DirectDebitMandate> mandates)
 	{
-		this.byBankAccountId = mandates.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						DirectDebitMandate::getBankAccountId,
-						mandate -> mandate,
-						DirectDebitMandatesMap::regularOrgMandateWins));
+		this.byBankAccountId = Multimaps.index(mandates, DirectDebitMandate::getBankAccountId)
+				.asMap()
+				.entrySet()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, entry -> regularOrgMandateWins(entry.getValue())));
 	}
 
 	/**
-	 * @return the mandate of the regular org
-	 * @throws AdempiereException if both mandates are of org 0 or both are of a regular org
+	 * @param mandates the mandates of one bank account
+	 * @return the mandate of the regular org, else the one of org 0
+	 * @throws AdempiereException if there is more than one mandate of a regular org or more than one of org 0
 	 */
-	private static DirectDebitMandate regularOrgMandateWins(@NonNull final DirectDebitMandate mandate1, @NonNull final DirectDebitMandate mandate2)
+	private static DirectDebitMandate regularOrgMandateWins(@NonNull final Collection<DirectDebitMandate> mandates)
 	{
-		if (mandate1.getOrgId().isAny() == mandate2.getOrgId().isAny())
+		final List<DirectDebitMandate> regularOrgMandates = mandates.stream().filter(mandate -> mandate.getOrgId().isRegular()).collect(ImmutableList.toImmutableList());
+		final List<DirectDebitMandate> orgAnyMandates = mandates.stream().filter(mandate -> mandate.getOrgId().isAny()).collect(ImmutableList.toImmutableList());
+		if (regularOrgMandates.size() > 1 || orgAnyMandates.size() > 1)
 		{
 			throw new AdempiereException("Expected per bank account at most one mandate of a regular org and one of org 0")
 					.appendParametersToMessage()
-					.setParameter("mandate1", mandate1)
-					.setParameter("mandate2", mandate2);
+					.setParameter("mandates", mandates);
 		}
-		return mandate1.getOrgId().isAny() ? mandate2 : mandate1;
+		return !regularOrgMandates.isEmpty() ? regularOrgMandates.get(0) : orgAnyMandates.get(0);
 	}
 
 	/**

@@ -56,19 +56,15 @@ class DirectDebitMandateTest
 		@Test
 		void neverUsed_lastUseIsTheCollectionDate()
 		{
-			final DirectDebitMandate mandate = mandate(null);
-
-			assertThat(mandate.withUsedOn(COLLECTION_DATE))
-					.contains(mandate.toBuilder().dateLastUsed(COLLECTION_DATE).build());
+			assertThat(mandate(null).withUsedOn(COLLECTION_DATE))
+					.get().extracting(DirectDebitMandate::getDateLastUsed).isEqualTo(COLLECTION_DATE);
 		}
 
 		@Test
 		void usedBefore_lastUseMovesForwardToTheCollectionDate()
 		{
-			final DirectDebitMandate mandate = mandate(COLLECTION_DATE.minusDays(1));
-
-			assertThat(mandate.withUsedOn(COLLECTION_DATE))
-					.contains(mandate.toBuilder().dateLastUsed(COLLECTION_DATE).build());
+			assertThat(mandate(COLLECTION_DATE.minusDays(1)).withUsedOn(COLLECTION_DATE))
+					.get().extracting(DirectDebitMandate::getDateLastUsed).isEqualTo(COLLECTION_DATE);
 		}
 
 		@Test

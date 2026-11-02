@@ -86,7 +86,19 @@ class DirectDebitMandatesMapTest
 	{
 		final ImmutableList<DirectDebitMandate> mandates = ImmutableList.of(mandate(EXPORT_ORG, "EXPORT"), mandate(OTHER_ORG, "OTHER"));
 
-		assertThatThrownBy(() -> DirectDebitMandatesMap.ofList(mandates)).isInstanceOf(AdempiereException.class);
+		assertThatThrownBy(() -> DirectDebitMandatesMap.ofList(mandates))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("at most one mandate of a regular org and one of org 0");
+	}
+
+	@Test
+	void twoOrgAnyMandatesFail_regardlessOfOrder()
+	{
+		final ImmutableList<DirectDebitMandate> mandates = ImmutableList.of(mandate(EXPORT_ORG, "EXPORT"), mandate(OrgId.ANY, "ANY1"), mandate(OrgId.ANY, "ANY2"));
+
+		assertThatThrownBy(() -> DirectDebitMandatesMap.ofList(mandates))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("at most one mandate of a regular org and one of org 0");
 	}
 
 	@Test
