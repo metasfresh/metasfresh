@@ -13,7 +13,7 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
+import de.metas.document.IDocTypeBL;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.frontend_testing.masterdata.PricingSetupHelper;
@@ -267,7 +267,7 @@ public class CreateBPartnerCommand
 	@NonNull
 	private DocTypeId getSalesOrderDocTypeId(@NonNull final DocSubType docSubType)
 	{
-		return Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+		return Services.get(IDocTypeBL.class).getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(DocBaseType.SalesOrder)
 				.docSubType(docSubType)
 				.adClientId(MasterdataContext.CLIENT_ID.getRepoId())

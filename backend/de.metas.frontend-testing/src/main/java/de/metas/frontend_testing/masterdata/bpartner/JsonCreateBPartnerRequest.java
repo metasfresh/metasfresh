@@ -75,7 +75,7 @@ public class JsonCreateBPartnerRequest
 	/**
 	 * Sets {@code C_BPartner.SO_DocTypeTarget_ID} (the partner's order type) to the active sales order doc type (org {@code *})
 	 * with this {@code C_DocType.DocSubType} code, e.g. {@code "PR"} for the prepay order.
-	 * If null, the field is left unchanged.
+	 * If null, the partner has no order type.
 	 */
 	@Nullable String orderDocSubType;
 
