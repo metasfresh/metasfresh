@@ -72,7 +72,6 @@ import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPicke
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -108,7 +107,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
@@ -436,32 +434,31 @@ public class ShipmentScheduleWithHUService
 	}
 
 	/**
-	 * @return {@code true} if the schedule has an allocation on a shipment line whose shipment is completed or closed (DocStatus CO / CL) and
-	 * <ul>
-	 * <li>either the line was created at or after {@code enqueuedAt} ({@code M_InOutLine.Created >= enqueuedAt}),</li>
-	 * <li>or the shipment header was updated at or after {@code enqueuedAt} ({@code M_InOut.Updated >= enqueuedAt}); the completion updates the header,
-	 * so this also catches a draft created before the enqueue and completed after it.</li>
-	 * </ul>
+	 * @return {@code true} if the schedule has an allocation on a shipment line whose shipment is completed or closed (DocStatus CO / CL)
+	 * and was updated at or after {@code enqueuedAt} ({@code M_InOut.Updated >= enqueuedAt}). The completion updates the header, so this catches
+	 * a draft created before the enqueue and completed after it; a line can only be added to a draft, so it also covers lines created after the enqueue.
 	 * Accepted false positive: an older shipment whose header was touched for another reason after the enqueue makes the entered quantity be skipped.
 	 * That is safe and visible (the quantity stays open on the schedule), while a double shipment would be a stock and money error.
 	 */
 	private boolean isShippedSince(@NonNull final ShipmentScheduleId shipmentScheduleId, @NonNull final Instant enqueuedAt)
 	{
-		return shipmentScheduleAllocDAO.stream(
+		final ImmutableSet<InOutLineId> shipmentLineIds = shipmentScheduleAllocDAO.stream(
 						ShipmentScheduleAllocQuery.builder()
 								.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(shipmentScheduleId))
 								.alreadyShipped(true)
 								.build())
-				.map(alloc -> inOutDAO.getLineByIdInTrx(InOutLineId.ofRepoId(alloc.getM_InOutLine_ID())))
-				.anyMatch(shipmentLine -> {
-					final I_M_InOut shipment = inOutDAO.getById(InOutId.ofRepoId(shipmentLine.getM_InOut_ID()));
-					if (!DocStatus.ofCode(shipment.getDocStatus()).isCompletedOrClosed())
-					{
-						return false;
-					}
-					return !shipmentLine.getCreated().toInstant().isBefore(enqueuedAt)
-							|| !shipment.getUpdated().toInstant().isBefore(enqueuedAt);
-				});
+				.map(alloc -> InOutLineId.ofRepoId(alloc.getM_InOutLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		if (shipmentLineIds.isEmpty())
+		{
+			return false;
+		}
+
+		return inOutDAO.retrieveInOutByLineIds(shipmentLineIds)
+				.values()
+				.stream()
+				.anyMatch(shipment -> DocStatus.ofCode(shipment.getDocStatus()).isCompletedOrClosed()
+						&& !shipment.getUpdated().toInstant().isBefore(enqueuedAt));
 	}
 
 	/**
