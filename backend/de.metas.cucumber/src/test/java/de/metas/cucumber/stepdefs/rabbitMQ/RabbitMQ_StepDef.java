@@ -41,7 +41,6 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
-import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -143,44 +142,6 @@ public class RabbitMQ_StepDef
 	{
 		waitEmptyQueueByTopic(MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
 		waitEmptyQueueByTopic(AsyncBatchQueueConfiguration.EVENTBUS_TOPIC.getName());
-	}
-
-	/**
-	 * Best-effort, non-throwing variant of {@link #wait_empty_all_queues()}: polls the material and async queues until empty or until the cap elapsed.
-	 *
-	 * @return {@code null} if both queues are empty; otherwise a description of the non-empty queues
-	 */
-	@Nullable
-	public String waitEmptyAllQueuesCapped(@NonNull final java.time.Duration cap) throws InterruptedException
-	{
-		final long deadLineMillis = System.currentTimeMillis() + cap.toMillis();
-		final RabbitAdmin rabbitAdmin = new RabbitAdmin(((RabbitTemplate)amqpTemplate));
-
-		final StringBuilder notEmpty = new StringBuilder();
-		for (final String topicName : java.util.Arrays.asList(
-				MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName(),
-				AsyncBatchQueueConfiguration.EVENTBUS_TOPIC.getName()))
-		{
-			final String queueName = rabbitMQDestinationSolver.getAMQPQueueNameByTopicName(topicName);
-			long messageCount;
-			do
-			{
-				final QueueInformation queueInformation = rabbitAdmin.getQueueInfo(queueName);
-				messageCount = queueInformation != null ? queueInformation.getMessageCount() : 0;
-				if (messageCount > 0 && System.currentTimeMillis() < deadLineMillis)
-				{
-					//noinspection BusyWait
-					Thread.sleep(1000);
-				}
-			}
-			while (messageCount > 0 && System.currentTimeMillis() < deadLineMillis);
-
-			if (messageCount > 0)
-			{
-				notEmpty.append("topic=").append(topicName).append(", queue=").append(queueName).append(", messageCount=").append(messageCount).append('\n');
-			}
-		}
-		return notEmpty.length() > 0 ? notEmpty.toString() : null;
 	}
 
 	@Given("rabbitMQ queue is created")

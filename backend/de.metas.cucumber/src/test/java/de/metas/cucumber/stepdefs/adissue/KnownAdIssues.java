@@ -33,6 +33,13 @@ public class KnownAdIssues
 			{
 				for (final KnownAdIssueJson e : entries)
 				{
+					if (e == null
+							|| e.pattern == null || e.pattern.trim().isEmpty()
+							|| e.issueUrl == null || e.issueUrl.trim().isEmpty())
+					{
+						// skip an incomplete entry rather than NPE on @NonNull, which would hide all findings
+						continue;
+					}
 					result.add(new KnownAdIssue(e.pattern, e.issueUrl));
 				}
 			}
