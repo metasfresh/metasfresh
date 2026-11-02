@@ -34,6 +34,8 @@ import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordSer
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
+import de.metas.order.InvoiceRule;
+import de.metas.order.OrderLineId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -482,6 +484,60 @@ public class InvoiceCandBLTest
 
 		assertThat(splitCandidate.getC_UOM_ID()).as("C_UOM_ID").isEqualTo(123);
 		assertThat(splitCandidate.getC_PaymentTerm_ID()).as("C_PaymentTerm_ID").isEqualTo(456);
+	}
+
+	/**
+	 * Closing the delivery of a line with nothing delivered makes its candidate processed by the computed rule (no {@code Processed_Override});
+	 * reopening the delivery makes it open again.
+	 */
+	@Test
+	public void closeAndOpenDelivery_nothingDelivered_togglesProcessed()
+	{
+		final I_C_Invoice_Candidate ic = createAfterDeliveryCandidate();
+		assertThat(ic.getQtyDelivered()).isZero();
+		assertThat(ic.isProcessed()).isFalse();
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(ic.getC_OrderLine_ID());
+
+		invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
+		InterfaceWrapperHelper.refresh(ic);
+		assertThat(ic.isDeliveryClosed()).as("IsDeliveryClosed after close").isTrue();
+		assertThat(ic.isProcessed()).as("Processed after close").isTrue();
+		assertThat(ic.getProcessed_Override()).as("Processed_Override after close").isNull();
+
+		invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
+		InterfaceWrapperHelper.refresh(ic);
+		assertThat(ic.isDeliveryClosed()).as("IsDeliveryClosed after reopen").isFalse();
+		assertThat(ic.isProcessed()).as("Processed after reopen").isFalse();
+	}
+
+	/**
+	 * E.g. a reactivated sales order closes the delivery of all its lines; deleting a line that had nothing delivered must still be possible.
+	 */
+	@Test
+	public void deleteAllReferencingInvoiceCandidates_deliveryClosed_nothingDelivered()
+	{
+		final I_C_Invoice_Candidate ic = createAfterDeliveryCandidate();
+		invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(ic.getC_OrderLine_ID()));
+		InterfaceWrapperHelper.refresh(ic);
+
+		final int deleteCount = invoiceCandBL.deleteAllReferencingInvoiceCandidates(ic.getC_OrderLine());
+
+		assertThat(deleteCount).isEqualTo(1);
+	}
+
+	/** Sales candidate with invoice rule D (After delivery, no override), stock product and an order line with {@code QtyDelivered = 0}. */
+	private I_C_Invoice_Candidate createAfterDeliveryCandidate()
+	{
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
+		return icTestSupport.createInvoiceCandidate()
+				.setBillBPartnerId(bpartner.getC_BPartner_ID())
+				.setPriceEntered(10)
+				.setQtyOrdered(3)
+				.setManual(false)
+				.setSOTrx(true)
+				.setInvoiceRule(InvoiceRule.AfterDelivery.getCode())
+				.setInvoiceRule_Override(null)
+				.build();
 	}
 
 	private static BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, CurrencyPrecision precision)
