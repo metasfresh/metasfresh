@@ -25,7 +25,7 @@ ENV PUBLIC_URL=/
 RUN yarn build
 
 
-FROM nginx:1.21.6 as runtime
+FROM nginx:1.30 AS runtime
 
 COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
 

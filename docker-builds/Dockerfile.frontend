@@ -33,7 +33,7 @@ WORKDIR /reports/frontend
 CMD cp /webui/jest.* .
 
 
-FROM nginx:1.21.6 as runtime
+FROM nginx:1.30 AS runtime
 WORKDIR /usr/share/nginx/html
 COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
 COPY --from=build /webui/dist/ .
