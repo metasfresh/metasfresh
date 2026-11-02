@@ -3,6 +3,7 @@ package de.metas.frontend_testing.masterdata.bpartner;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocTypeId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
@@ -464,7 +465,7 @@ public class CreateBPartnerCommandTest
 
 		// then
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(response.getId(), I_C_BPartner.class);
-		assertThat(bpartner.getSO_DocTypeTarget_ID()).isEqualTo(prepayType.getC_DocType_ID());
+		assertThat(DocTypeId.ofRepoIdOrNull(bpartner.getSO_DocTypeTarget_ID())).isEqualTo(DocTypeId.ofRepoId(prepayType.getC_DocType_ID()));
 	}
 
 	@Test
@@ -480,6 +481,6 @@ public class CreateBPartnerCommandTest
 				.execute();
 
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(response.getId(), I_C_BPartner.class);
-		assertThat(bpartner.getSO_DocTypeTarget_ID()).isLessThanOrEqualTo(0);
+		assertThat(DocTypeId.ofRepoIdOrNull(bpartner.getSO_DocTypeTarget_ID())).isNull();
 	}
 }

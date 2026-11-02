@@ -742,12 +742,9 @@ public class C_Order_StepDef
 	@Then("^the business partner identified by (.*) has exactly (\\d+) orders?$")
 	public void bpartner_has_n_orders(@NonNull final String bpartnerIdentifier, final int expectedOrderCount)
 	{
-		final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
+		final BPartnerId bpartnerId = bpartnerTable.getId(bpartnerIdentifier);
 
-		final long actualOrderCount = queryBL.createQueryBuilder(I_C_Order.class)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
-				.create()
-				.count();
+		final long actualOrderCount = orderBL.streamOrderIdsByBPartnerId(bpartnerId).count();
 
 		assertThat(actualOrderCount).as("Number of C_Order records for partner %s", bpartnerIdentifier).isEqualTo(expectedOrderCount);
 	}

@@ -48,6 +48,7 @@ import java.util.Map;
 
 public class CreateBPartnerCommand
 {
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	@NonNull private final RandomGLNGenerator randomGLNGenerator = new RandomGLNGenerator();
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final PriceListVersionRepository priceListVersionRepository;
@@ -267,7 +268,7 @@ public class CreateBPartnerCommand
 	@NonNull
 	private DocTypeId getSalesOrderDocTypeId(@NonNull final DocSubType docSubType)
 	{
-		return Services.get(IDocTypeBL.class).getDocTypeId(DocTypeQuery.builder()
+		return docTypeBL.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(DocBaseType.SalesOrder)
 				.docSubType(docSubType)
 				.adClientId(MasterdataContext.CLIENT_ID.getRepoId())

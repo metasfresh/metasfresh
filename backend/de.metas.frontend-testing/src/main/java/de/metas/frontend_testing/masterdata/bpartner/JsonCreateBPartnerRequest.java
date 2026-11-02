@@ -73,9 +73,8 @@ public class JsonCreateBPartnerRequest
 	@Nullable String invoiceRule;
 
 	/**
-	 * Sets {@code C_BPartner.SO_DocTypeTarget_ID} (the partner's order type) to the active sales order doc type (org {@code *})
-	 * with this {@code C_DocType.DocSubType} code, e.g. {@code "PR"} for the prepay order.
-	 * If null, the partner has no order type.
+	 * The partner's sales order type ({@code C_BPartner.SO_DocTypeTarget_ID}), given by its {@code C_DocType.DocSubType} code,
+	 * e.g. {@code "PR"} for the prepay order. If null, the partner has no order type.
 	 */
 	@Nullable String orderDocSubType;
 
