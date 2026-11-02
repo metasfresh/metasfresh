@@ -54,7 +54,11 @@ class OLCandBLGetOrderDocTypeIdTest
 	void candidateWithOwnOrderType_doesNotLoadThePartner()
 	{
 		final DocTypeId ownDocTypeId = createSalesOrderDocType();
-		final I_C_OLCand olCand = createOLCand(ownDocTypeId, createPartnerId());
+		final BPartnerId partnerId = createPartnerId();
+		final I_C_BPartner partner = newInstanceOutOfTrx(I_C_BPartner.class);
+		partner.setSO_DocTypeTarget_ID(createSalesOrderDocType().getRepoId());
+		when(bpartnerBL.getById(partnerId)).thenReturn(partner); // so that an eager partner load fails the verify below, not with an NPE
+		final I_C_OLCand olCand = createOLCand(ownDocTypeId, partnerId);
 
 		final DocTypeId result = olCandBL.getOrderDocTypeId(null, olCand);
 
@@ -74,6 +78,20 @@ class OLCandBLGetOrderDocTypeIdTest
 		final DocTypeId result = olCandBL.getOrderDocTypeId(null, createOLCand(null, partnerId));
 
 		assertThat(result).isEqualTo(partnerDocTypeId);
+	}
+
+	@Test
+	void candidateAndPartnerWithoutOrderType_usesTheProcessorDefault()
+	{
+		final DocTypeId defaultDocTypeId = createSalesOrderDocType();
+		final BPartnerId partnerId = createPartnerId();
+		when(bpartnerBL.getById(partnerId)).thenReturn(newInstanceOutOfTrx(I_C_BPartner.class));
+
+		final DocTypeId result = olCandBL.getOrderDocTypeId(
+				OLCandOrderDefaults.builder().docTypeTargetId(defaultDocTypeId).build(),
+				createOLCand(null, partnerId));
+
+		assertThat(result).isEqualTo(defaultDocTypeId);
 	}
 
 	@Test
