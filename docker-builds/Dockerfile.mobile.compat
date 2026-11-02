@@ -1,8 +1,8 @@
-FROM node:14 AS build
+FROM node:14-bullseye AS build
 
 RUN npm install -g webpack webpack-cli
 
-WORKDIR /app
+WORKDIR /app 
 COPY misc/services/mobile-webui/mobile-webui-frontend/package.json .
 COPY misc/services/mobile-webui/mobile-webui-frontend/yarn.lock* .
 
