@@ -7,6 +7,8 @@
 --   | en_US        | Target Document Type | Order Type |
 --   | fr_CH        | Type de document cible | Type de commande |
 --   | other English variants (en_%, e.g. en_GB) | old text | Order Type (IsTranslated=Y) |
+--   | other French variants (fr_%, e.g. fr_FR) | old text | Type de commande (IsTranslated=Y) |
+--   | other German variants (de_%, e.g. de_AT) | old text | Auftragsart (IsTranslated=Y) |
 --   | all other languages (e.g. it_CH) | old text | Auftragsart (German base text, IsTranslated=N, for the translators) |
 -- Validation rule: AD_Column 540377 (C_BPartner.SO_DocTypeTarget_ID) AD_Val_Rule_ID old 540285 -> new 540810 (new row).
 -- Layout: new AD_UI_Element 655461 on AD_Tab 223 (form view; grid placement is done by the follow-up script 5832580).
@@ -90,13 +92,29 @@ $$
                 IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-02 19:00:02.500', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy = 100
             WHERE AD_Element_ID = v_element_id AND AD_Language LIKE 'en\_%' AND AD_Language <> 'en_US';
 
+            -- other French variants (fr_FR, ...): French text
+            UPDATE AD_Element_Trl
+            SET Name = 'Type de commande', PrintName = 'Type de commande',
+                Description = 'Type de commande prérempli pour les commandes de vente et les candidats de commande de ce client.',
+                Help = 'Le type de commande (p. ex. commande avec paiement anticipé) proposé pour les nouvelles commandes de vente et les candidats de commande de ce client. Laisser vide pour utiliser le type de commande standard. Un type de commande indiqué directement sur la commande ou le candidat de commande est prioritaire.',
+                IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-02 19:00:02.550', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy = 100
+            WHERE AD_Element_ID = v_element_id AND AD_Language LIKE 'fr\_%' AND AD_Language <> 'fr_CH';
+
+            -- other German variants (de_AT, ...): German text
+            UPDATE AD_Element_Trl
+            SET Name = 'Auftragsart', PrintName = 'Auftragsart',
+                Description = 'Auftragsart, die bei Verkaufsaufträgen und Auftragskandidaten dieses Kunden vorbelegt wird.',
+                Help = 'Die Auftragsart (z.B. Vorauskasseauftrag), die bei neuen Verkaufsaufträgen und Auftragskandidaten dieses Kunden vorgeschlagen wird. Leer lassen, wenn die Standard-Auftragsart gelten soll. Eine direkt am Auftrag oder Auftragskandidaten angegebene Auftragsart hat Vorrang.',
+                IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-02 19:00:02.600', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy = 100
+            WHERE AD_Element_ID = v_element_id AND AD_Language LIKE 'de\_%' AND AD_Language NOT IN ('de_DE', 'de_CH');
+
             -- every other remaining language (e.g. it_CH): German base text, flagged untranslated so translators find it
             UPDATE AD_Element_Trl
             SET Name = 'Auftragsart', PrintName = 'Auftragsart',
                 Description = 'Auftragsart, die bei Verkaufsaufträgen und Auftragskandidaten dieses Kunden vorbelegt wird.',
                 Help = 'Die Auftragsart (z.B. Vorauskasseauftrag), die bei neuen Verkaufsaufträgen und Auftragskandidaten dieses Kunden vorgeschlagen wird. Leer lassen, wenn die Standard-Auftragsart gelten soll. Eine direkt am Auftrag oder Auftragskandidaten angegebene Auftragsart hat Vorrang.',
                 IsTranslated = 'N', Updated = TO_TIMESTAMP('2026-11-02 19:00:02.700', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy = 100
-            WHERE AD_Element_ID = v_element_id AND AD_Language NOT LIKE 'en\_%' AND AD_Language NOT IN ('de_DE', 'de_CH', 'fr_CH');
+            WHERE AD_Element_ID = v_element_id AND AD_Language NOT LIKE 'en\_%' AND AD_Language NOT LIKE 'fr\_%' AND AD_Language NOT LIKE 'de\_%';
 
             -- sets AD_Field_Trl (name, description, help) and the base AD_Field name and description; not the base AD_Field.Help
             PERFORM update_TRL_Tables_On_AD_Element_TRL_Update(v_element_id);
