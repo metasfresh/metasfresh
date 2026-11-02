@@ -27,12 +27,14 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
 
     # a short fixed value and name: the HU row and the QR label then do not wrap, so the line counts below do not depend on the clock
     And metasfresh contains M_Products:
-      | Identifier | Value    | Name           |
-      | COMP       | MBS_COMP | MBS Komponente |
+      | Identifier | Value    | Name             |
+      | COMP       | MBS_COMP | MBS Komponente   |
+      | COMP2      | MBS_C2   | MBS Komponente 2 |
     And metasfresh contains M_Products:
       | Identifier |
       | FG         |
       | FG2        |
+      | FG3        |
 
     And create S_Resource:
       | Identifier | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
@@ -64,19 +66,25 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
       | Identifier | M_Product_ID | PP_Product_BOMVersions_ID |
       | bom_fg     | FG           | bomVersions_fg            |
       | bom_fg2    | FG2          | bomVersions_fg2           |
+      | bom_fg3    | FG3          | bomVersions_fg3           |
     And metasfresh contains PP_Product_BOMLines
       | Identifier | PP_Product_BOM_ID | M_Product_ID | QtyBatch | PickingInstruction |
       | boml_fg    | bom_fg            | COMP         | 1        | Sahne              |
       | boml_fg2   | bom_fg2           | COMP         | 1        |                    |
+      | boml_fg3_1 | bom_fg3           | COMP         | 1        | ohne Rinde         |
+      | boml_fg3_2 | bom_fg3           | COMP2        | 1        | gerieben           |
     And the PP_Product_BOM identified by bom_fg is completed
     And the PP_Product_BOM identified by bom_fg2 is completed
+    And the PP_Product_BOM identified by bom_fg3 is completed
 
     # IsCreatePlan=N: the DD_Order_Candidates are enqueued by the scenario, not by the dispo
     And metasfresh contains PP_Product_Plannings
       | Identifier    | M_Product_ID | PP_Product_BOMVersions_ID | DD_NetworkDistribution_ID | M_Warehouse_ID | S_Resource_ID | IsCreatePlan |
       | fg_planning   | FG           | bomVersions_fg            |                           | prodWH         | plant         | N            |
       | fg2_planning  | FG2          | bomVersions_fg2           |                           | prodWH         | plant         | N            |
+      | fg3_planning  | FG3          | bomVersions_fg3           |                           | prodWH         | plant         | N            |
       | comp_planning | COMP         |                           | N1                        | prodWH         | plant         | N            |
+      | comp2_plan    | COMP2        |                           | N1                        | prodWH         | plant         | N            |
 
   @from:cucumber
   Scenario: Bundled line for two manufacturing orders with different picking instructions prints one summary line per order
@@ -140,14 +148,10 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     And in the PDF archived for the record identified by "trolleyLoc", exactly 0 lines appear between text "MBS_PP1 (Start" and text "MBS_PP2 (Start"
     # no single-order header (the QR label hides its order line too, since the line has 2 orders)
     And the PDF archived for the record identified by "trolleyLoc" does not contain text "Produktionsauftrag:"
-    # the QR label lines
-    And the PDF archived for the record identified by "trolleyLoc" contains text "MBS_PP1: Sahne"
-    And the PDF archived for the record identified by "trolleyLoc" contains text "MBS_PP2: ohne Rinde"
-    # the HU row does not repeat the order list
+    # neither the HU row nor the QR label page repeats the order list: the QR label shows the product name only
+    And the PDF archived for the record identified by "trolleyLoc" does not contain text "MBS_PP1: Sahne"
+    And the PDF archived for the record identified by "trolleyLoc" does not contain text "MBS_PP2: ohne Rinde"
     And the PDF archived for the record identified by "trolleyLoc" does not contain text "Kommissionierhinweis: MBS_PP1"
-    # one label line per order, one under the other
-    And the visual line containing text "MBS_PP1: Sahne" in the PDF archived for the record identified by "trolleyLoc" is exactly "MBS_PP1: Sahne"
-    And in the PDF archived for the record identified by "trolleyLoc", exactly 0 lines appear between text "MBS_PP1: Sahne" and text "MBS_PP2: ohne Rinde"
     And the PDF archived for the record identified by "trolleyLoc" has no overlapping text
 
     And the mobile user's trolley is cleared
@@ -240,7 +244,8 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
 
     Then an AD_Archive exists for the record identified by "trolleyLoc"
     And the visual line containing text "MBS_PP4 (Start" in the PDF archived for the record identified by "trolleyLoc" is exactly "Produktionsauftrag MBS_PP4 (Start 12.04.2021, 10 Stk): Kommissionierhinweis: Sahne"
-    And the PDF archived for the record identified by "trolleyLoc" contains text "MBS_PP4: Sahne"
+    # the QR label page shows the product name only
+    And the PDF archived for the record identified by "trolleyLoc" does not contain text "MBS_PP4: Sahne"
     # the old group header is hidden
     # no single-order header between the target lines and the column header
     And in the PDF archived for the record identified by "trolleyLoc", exactly 0 lines appear between text "Ziellagerort" and text "Art. Nr."
@@ -248,6 +253,84 @@ Feature: Materialbegleitschein (In-Transit HUs report) for DD_Order lines that s
     And in the PDF archived for the record identified by "trolleyLoc", exactly 5 lines appear between text "Materialbegleitschein" and text "MBS_PP4 (Start"
     # the HU row (one line, no picking instruction repeated) follows the summary line directly, then the page footer
     And in the PDF archived for the record identified by "trolleyLoc", exactly 1 lines appear between text "MBS_PP4 (Start" and text "Seite 1"
+    And the PDF archived for the record identified by "trolleyLoc" has no overlapping text
+
+    And the mobile user's trolley is cleared
+    And the mobile user's trolley is empty
+
+  @from:cucumber
+  Scenario: Two products on the trolley (one distribution order each) print one summary row per product inside its table
+    # each product has its own product planning, which is part of the DD_Order header key, so each component gets its own DD_Order
+    Given metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv4           | 2021-04-11   | rawWH          |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv4           | invLine4           | COMP         | rawLoc       | 0       | 20       | PCE          |
+      | inv4           | invLine5           | COMP2        | rawLoc       | 0       | 10       | PCE          |
+    And complete inventory with inventoryIdentifier 'inv4'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | invLine4           | hu4     |
+      | invLine5           | hu5     |
+
+    # MBS_PP5 needs COMP; MBS_PP6 needs COMP and COMP2
+    When create PP_Order:
+      | PP_Order_ID | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | M_Warehouse_ID | DateOrdered          | DatePromised         | DateStartSchedule    | completeDocument | DocumentNo |
+      | PP5         | MOP         | FG           | 10         | plant         | prodWH         | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP5    |
+      | PP6         | MOP         | FG3          | 10         | plant         | prodWH         | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | 2021-04-12T10:00:00Z | Y                | MBS_PP6    |
+    And after not more than 60s, PP_Order_BomLines are found
+      | Identifier | PP_Order_ID | M_Product_ID | QtyRequiered | ComponentType |
+      | PP5_L1     | PP5         | COMP         | 10 PCE       | CO            |
+      | PP6_L1     | PP6         | COMP         | 10 PCE       | CO            |
+      | PP6_L2     | PP6         | COMP2        | 10 PCE       | CO            |
+    And after not more than 60s, following DD_Order_Candidates are found
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Forward_PP_Order_ID |
+      | c5         | COMP         | rawWH               | prodWH           | 10 PCE | PP5                 |
+      | c6         | COMP         | rawWH               | prodWH           | 10 PCE | PP6                 |
+      | c7         | COMP2        | rawWH               | prodWH           | 10 PCE | PP6                 |
+    And the following DD_Order_Candidates are enqueued for generating DD_Orders
+      | DD_Order_Candidate_ID |
+      | c5                    |
+      | c6                    |
+      | c7                    |
+    And after not more than 60s, the DD_Order_Candidates are allocated to DD_OrderLines:
+      | DD_Order_Candidate_ID | DD_Order_ID | DD_OrderLine_ID |
+      | c5                    | ddo4        | ddol4_comp      |
+      | c6                    | ddo4        | ddol4_comp      |
+      | c7                    | ddo5        | ddol5_comp2     |
+
+    And the mobile user's trolley is set to locator trolleyLoc
+    And Start distribution job for dd_order identified by ddo4
+      | DD_Order_ID |
+      | ddo4        |
+    And Pick HU for distribution job line
+      | M_HU_ID |
+      | hu4     |
+    And Start distribution job for dd_order identified by ddo5
+      | DD_Order_ID |
+      | ddo5        |
+    And Pick HU for distribution job line
+      | M_HU_ID |
+      | hu5     |
+    And M_HU are validated:
+      | M_HU_ID | HUStatus | IsActive | M_Locator_ID |
+      | hu4     | A        | true     | trolleyLoc   |
+      | hu5     | A        | true     | trolleyLoc   |
+
+    When the Materialbegleitschein is printed for locator trolleyLoc
+
+    Then an AD_Archive exists for the record identified by "trolleyLoc"
+    # MBS_COMP: both orders
+    And the visual line containing text "MBS_PP5 (Start" in the PDF archived for the record identified by "trolleyLoc" is exactly "Produktionsauftrag MBS_PP5 (Start 12.04.2021, 10 Stk): Kommissionierhinweis: Sahne"
+    And the PDF archived for the record identified by "trolleyLoc" contains text "Produktionsauftrag MBS_PP6 (Start 12.04.2021, 10 Stk): Kommissionierhinweis: ohne Rinde"
+    # MBS_C2: its own summary row with MBS_PP6's instruction for that component
+    And the visual line containing text "Kommissionierhinweis: gerieben" in the PDF archived for the record identified by "trolleyLoc" is exactly "Produktionsauftrag MBS_PP6 (Start 12.04.2021, 10 Stk): Kommissionierhinweis: gerieben"
+    # each product's summary row: the product line, directly followed by its order lines (independent of which DD_Order prints first)
+    And the visual line containing text "MBS_C2 MBS Komponente 2" in the PDF archived for the record identified by "trolleyLoc" is exactly "MBS_C2 MBS Komponente 2"
+    And in the PDF archived for the record identified by "trolleyLoc", exactly 0 lines appear between text "MBS_C2 MBS Komponente 2" and text "Kommissionierhinweis: gerieben"
+    And the visual line containing text "MBS_COMP MBS Komponente" in the PDF archived for the record identified by "trolleyLoc" is exactly "MBS_COMP MBS Komponente"
+    And in the PDF archived for the record identified by "trolleyLoc", exactly 0 lines appear between text "MBS_COMP MBS Komponente" and text "MBS_PP5 (Start"
     And the PDF archived for the record identified by "trolleyLoc" has no overlapping text
 
     And the mobile user's trolley is cleared
