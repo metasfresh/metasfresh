@@ -9,6 +9,11 @@ import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.frontend_testing.masterdata.PricingSetupHelper;
@@ -149,6 +154,11 @@ public class CreateBPartnerCommand
 			bpartner.setInvoiceRule(InvoiceRule.ofCode(request.getInvoiceRule()).getCode());
 		}
 
+		if (request.getOrderDocSubType() != null)
+		{
+			bpartner.setSO_DocTypeTarget_ID(getSalesOrderDocTypeId(DocSubType.ofCode(request.getOrderDocSubType())).getRepoId());
+		}
+
 		// Set pricing system based on vendor/customer flags
 		if (request.isCustomer())
 		{
@@ -252,6 +262,17 @@ public class CreateBPartnerCommand
 				.locations(responseLocations)
 				.contacts(responseContacts)
 				.build();
+	}
+
+	@NonNull
+	private DocTypeId getSalesOrderDocTypeId(@NonNull final DocSubType docSubType)
+	{
+		return Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(DocBaseType.SalesOrder)
+				.docSubType(docSubType)
+				.adClientId(MasterdataContext.CLIENT_ID.getRepoId())
+				.adOrgId(OrgId.ANY.getRepoId())
+				.build());
 	}
 
 	private I_C_BPartner_Location createBPLocation(

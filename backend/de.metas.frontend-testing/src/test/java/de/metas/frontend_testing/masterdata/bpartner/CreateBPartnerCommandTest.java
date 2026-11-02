@@ -10,6 +10,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.I_M_PricingSystem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -429,5 +431,55 @@ public class CreateBPartnerCommandTest
 
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(response.getId(), I_C_BPartner.class);
 		assertThat(bpartner.getC_BP_Group_ID()).isEqualTo(BPGroupId.STANDARD.getRepoId());
+	}
+
+	@Test
+	public void execute_withOrderDocSubType_shouldSetPartnerOrderType()
+	{
+		// given: a sales order doc type of sub-type "PR" (prepay order), org '*'
+		final I_C_DocType prepayType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+		InterfaceWrapperHelper.setValue(prepayType, I_C_DocType.COLUMNNAME_AD_Client_ID, MasterdataContext.CLIENT_ID.getRepoId());
+		prepayType.setAD_Org_ID(0);
+		prepayType.setName("Prepay order");
+		prepayType.setDocBaseType(X_C_DocType.DOCBASETYPE_SalesOrder);
+		prepayType.setDocSubType(X_C_DocType.DOCSUBTYPE_PrepayOrder);
+		prepayType.setIsSOTrx(true);
+		InterfaceWrapperHelper.saveRecord(prepayType);
+
+		final JsonCreateBPartnerRequest request = JsonCreateBPartnerRequest.builder()
+				.bpartnerCode("BP_DT_001")
+				.isCustomer(true)
+				.orderDocSubType("PR")
+				.build();
+
+		// when
+		final JsonCreateBPartnerResponse response = CreateBPartnerCommand.builder()
+				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
+				.context(context)
+				.request(request)
+				.identifier("bpDt1")
+				.build()
+				.execute();
+
+		// then
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(response.getId(), I_C_BPartner.class);
+		assertThat(bpartner.getSO_DocTypeTarget_ID()).isEqualTo(prepayType.getC_DocType_ID());
+	}
+
+	@Test
+	public void execute_withoutOrderDocSubType_shouldLeavePartnerOrderTypeEmpty()
+	{
+		final JsonCreateBPartnerResponse response = CreateBPartnerCommand.builder()
+				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
+				.context(context)
+				.request(JsonCreateBPartnerRequest.builder().bpartnerCode("BP_DT_002").isCustomer(true).build())
+				.identifier("bpDt2")
+				.build()
+				.execute();
+
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(response.getId(), I_C_BPartner.class);
+		assertThat(bpartner.getSO_DocTypeTarget_ID()).isLessThanOrEqualTo(0);
 	}
 }
