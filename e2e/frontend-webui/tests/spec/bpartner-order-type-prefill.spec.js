@@ -18,8 +18,7 @@ import { BUSINESS_PARTNER_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/Wind
  * Language-independent: nothing is asserted against localized text. Order types are compared by their lookup KEY
  * (`C_BPartner.SO_DocTypeTarget_ID`, `C_Order.C_DocTypeTarget_ID`), the document status by its `DocStatus` key
  * (`WP` / `CO`), both read through the WebAPI. The field is found by its column name (`data-testid`), never by its
- * caption; AC1's label text (de_DE / de_CH / en_US) is covered by the cucumber feature
- * `bpartnerOrderTypeFieldLabel.feature` (AD_Field_Trl / AD_Element_Trl), the layer the language rule allows for it.
+ * caption.
  *
  * Fixture: a prepay partner (order type set through the masterdata API's `orderDocSubType: 'PR'`), a standard-type
  * partner (`'SO'`, only to read the standard type's key), a plain partner without an order type, and one priced product.
