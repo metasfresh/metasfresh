@@ -4,6 +4,7 @@ import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
+import de.metas.banking.mandate.DirectDebitMandateRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -74,6 +75,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		SpringContextHolder.registerJUnitBean(bankAccountService);
 		SpringContextHolder.registerJUnitBean(bankRepository);
+		SpringContextHolder.registerJUnitBean(DirectDebitMandateRepository.newInstanceForUnitTesting());
 	}
 
 	@Test
