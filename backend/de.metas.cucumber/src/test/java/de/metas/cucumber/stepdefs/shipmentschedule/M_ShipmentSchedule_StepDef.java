@@ -91,7 +91,6 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
-import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.organization.IOrgDAO;
@@ -204,7 +203,6 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-	@NonNull private final CarrierAdviseProcessService carrierAdviseProcessService = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
 
 	/** Recompute selection ids created by {@link #tagInvalidShipmentSchedulesForRecompute}, keyed by the scenario's selection identifier. */
 	private final Map<String, PInstanceId> recomputeSelectionsByIdentifier = new HashMap<>();
