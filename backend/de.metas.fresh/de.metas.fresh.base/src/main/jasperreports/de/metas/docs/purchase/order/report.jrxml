@@ -68,7 +68,7 @@ FROM (SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-4" x="0" y="0" width="595" height="85" uuid="6c8f3682-cc29-41b3-ba55-a7c4afabc647">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[($P{PRINTER_OPTS_IsPrintLogo}.equals("Y")) && !Boolean.TRUE.equals($F{hasreportbackground})]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintLogo}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
@@ -136,7 +136,7 @@ FROM (SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-5" x="0" y="0" width="595" height="123" uuid="abfcdfd2-e4cf-46d9-be04-331d6249fba0">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[($P{PRINTER_OPTS_IsPrintLogo}.equals("Y")) && !Boolean.TRUE.equals($F{hasreportbackground})]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintLogo}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
