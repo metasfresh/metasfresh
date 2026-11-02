@@ -97,6 +97,13 @@ export const DistributionJobsListScreen = {
         await holdForVideo();
     }),
 
+    // The job's caption renders one line per row (CSS class `caption-multiline`), so every PP_Order line
+    // of an aggregated distribution order shows on its own line instead of collapsing into one.
+    expectJobButtonCaptionMultiline: async ({ launcherTestId }) => await test.step(`${NAME} - Expect caption of job "${launcherTestId}" is multiline`, async () => {
+        await expect(locateJobButtons({ testId: launcherTestId }).locator('.caption-btn .row span'))
+            .toHaveClass(/(^|\s)caption-multiline(\s|$)/);
+    }),
+
     // Order-INDEPENDENT variant of expectJobButtons: use for *filtering* assertions (which
     // launchers are offered), NOT ordering assertions. Each expectation is located by its
     // testId rather than by slot, so a non-deterministic launcher render order cannot flake

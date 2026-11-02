@@ -450,7 +450,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
   @Id:S33264_TC1
   Scenario: Dropship-warehouse SO completes without a PO when CreateDropshipPO is off, even if the product has no vendor price
     # CreateDropshipPO=N: completing the SO must neither create a PO nor fail on the missing purchase price.
-    Given for this scenario only, set sys config boolean value false for sys config de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO
+    Given temporarily set sys config boolean value false for sys config 'de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO'
     And metasfresh contains M_Products:
       | Identifier          | M_Product_Category_ID | IsSold | IsPurchased |
       | product_no_po_price | standard_category     | Y      | Y           |
@@ -475,7 +475,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
   @from:cucumber
   @Id:S33264_TC2
   Scenario: Feature preserved - CreateDropshipPO on, vendor has a valid purchase price: the SO creates a completed dropship PO
-    Given for this scenario only, set sys config boolean value true for sys config de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO
+    Given temporarily set sys config boolean value true for sys config 'de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | so_dw13    | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
@@ -493,7 +493,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
   @from:cucumber
   @Id:S33264_TC3
   Scenario: CreateDropshipPO off, vendor HAS a valid purchase price (a PO could be created): SO completes and still no PO
-    Given for this scenario only, set sys config boolean value false for sys config de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO
+    Given temporarily set sys config boolean value false for sys config 'de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | so_dw14    | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
@@ -510,7 +510,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
   @Id:S33264_TC4
   Scenario: CreateDropshipPO off: the dropship warehouse is still recognised - no MD_Candidate (material disposition still skipped)
     # Covers the IsDropShipWarehouse dispo-skip (AC4) and that AD_OrgInfo.DropShip_Warehouse_ID accepts the flagged warehouse (AC4c).
-    Given for this scenario only, set sys config boolean value false for sys config de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO
+    Given temporarily set sys config boolean value false for sys config 'de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO'
     # the AD_OrgInfo guard accepts a flagged dropship warehouse: the save must not throw
     And the AD_OrgInfo of the main organization has DropShip_Warehouse_ID set to the warehouse "warehouse_dw"
     And metasfresh contains C_Orders:

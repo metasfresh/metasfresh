@@ -264,6 +264,8 @@ public class PP_Product_Bom_StepDef
 				.map(attributeSetInstanceTable::getId)
 				.ifPresent(asiId -> bomLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
 
+		row.getAsOptionalString(I_PP_Product_BOMLine.COLUMNNAME_PickingInstruction).ifPresent(bomLine::setPickingInstruction);
+
 		saveRecord(bomLine);
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> productBOMLineTable.putOrReplace(identifier, bomLine));
