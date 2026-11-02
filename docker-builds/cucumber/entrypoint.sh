@@ -48,7 +48,10 @@ echo " running cucumber tests ..."
 echo "==================="
 
 # i ran this with `-Duser.timezone=UTC`, which causes the ysstem to act as expected in some case, but broke a numer of others
-mvn --offline surefire:test --fail-never "$@"
+# Archive PDFs (AD_Client.StoreArchiveOnFileSystem=Y in the report features) go below /reports, the directory
+# compose mounts from the host, so that CI can attach them as the metasfreshArchives-<profile> artifact.
+# Without this, AD_Client_StepDef falls back to /tmp/metasfreshArchives inside the container and they are lost.
+mvn --offline surefire:test --fail-never -Dcucumber.archive.path=/reports/metasfreshArchives "$@"
 
 echo "==================="
 echo " exporting reports ..."
