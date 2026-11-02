@@ -75,7 +75,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		SpringContextHolder.registerJUnitBean(bankAccountService);
 		SpringContextHolder.registerJUnitBean(bankRepository);
-		// registers itself as JUnit bean, which the code under test gets via SpringContextHolder
 		DirectDebitMandateRepository.newInstanceForUnitTesting();
 	}
 

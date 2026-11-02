@@ -92,7 +92,6 @@ public class SEPAExportFromPaySelectionChainTest
 
 		bankRepository = new BankRepository();
 		SpringContextHolder.registerJUnitBean(bankRepository);
-		// registers itself as JUnit bean, which the code under test gets via SpringContextHolder
 		DirectDebitMandateRepository.newInstanceForUnitTesting();
 		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepository, new CurrencyRepository()));
 

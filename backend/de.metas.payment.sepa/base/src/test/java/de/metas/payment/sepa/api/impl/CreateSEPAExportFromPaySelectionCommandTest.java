@@ -55,7 +55,6 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(new BankRepository());
-		// registers itself as JUnit bean, which the code under test gets via SpringContextHolder
 		DirectDebitMandateRepository.newInstanceForUnitTesting();
 	}
 
