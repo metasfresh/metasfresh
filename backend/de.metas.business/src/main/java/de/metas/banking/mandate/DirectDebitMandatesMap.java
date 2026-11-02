@@ -50,20 +50,17 @@ public class DirectDebitMandatesMap
 		return !mandates.isEmpty() ? new DirectDebitMandatesMap(mandates, exportOrgId) : EMPTY;
 	}
 
-	private final ImmutableMap<BankAccountId, DirectDebitMandate> byBankAccountIdForExportOrg;
-	private final ImmutableMap<BankAccountId, DirectDebitMandate> byBankAccountIdForOrgAny;
+	private final ImmutableMap<BankAccountId, DirectDebitMandate> byBankAccountId;
 
 	private DirectDebitMandatesMap(@NonNull final List<DirectDebitMandate> mandates, @NonNull final OrgId exportOrgId)
 	{
-		this.byBankAccountIdForExportOrg = indexByBankAccountId(mandates, exportOrgId);
-		this.byBankAccountIdForOrgAny = indexByBankAccountId(mandates, OrgId.ANY);
-	}
-
-	private static ImmutableMap<BankAccountId, DirectDebitMandate> indexByBankAccountId(final List<DirectDebitMandate> mandates, final OrgId orgId)
-	{
-		return mandates.stream()
-				.filter(mandate -> OrgId.equals(mandate.getOrgId(), orgId))
-				.collect(ImmutableMap.toImmutableMap(DirectDebitMandate::getBankAccountId, mandate -> mandate));
+		this.byBankAccountId = mandates.stream()
+				.filter(mandate -> OrgId.equals(mandate.getOrgId(), exportOrgId) || mandate.getOrgId().isAny())
+				// a bank account with both: the export org's mandate wins over the org-0 one
+				.collect(ImmutableMap.toImmutableMap(
+						DirectDebitMandate::getBankAccountId,
+						mandate -> mandate,
+						(mandate1, mandate2) -> mandate1.getOrgId().isAny() ? mandate2 : mandate1));
 	}
 
 	/**
@@ -71,7 +68,6 @@ public class DirectDebitMandatesMap
 	 */
 	public Optional<DirectDebitMandate> getMandate(@NonNull final BankAccountId bankAccountId)
 	{
-		final DirectDebitMandate exportOrgMandate = byBankAccountIdForExportOrg.get(bankAccountId);
-		return Optional.ofNullable(exportOrgMandate != null ? exportOrgMandate : byBankAccountIdForOrgAny.get(bankAccountId));
+		return Optional.ofNullable(byBankAccountId.get(bankAccountId));
 	}
 }
