@@ -1378,7 +1378,6 @@ public class C_Invoice_Candidate_StepDef
 					row.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
 					row.getAsOptionalLocalDate(PARA_OverrideDueDate).ifPresent(invoicingParams::setOverrideDueDate);
 					row.getAsOptionalBoolean(PARA_IsPartialInvoice).ifPresent(invoicingParams::setIsPartialInvoice);
-					row.getAsOptionalBoolean(PARA_OnlyApprovedForInvoicing).ifPresent(invoicingParams::setOnlyApprovedForInvoicing);
 
 					final boolean completeInvoices = row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
 					invoicingParams.setCompleteInvoices(completeInvoices);
@@ -1387,14 +1386,11 @@ public class C_Invoice_Candidate_StepDef
 
 					try
 					{
-						if (!isExcludedByApprovalFilter(invoiceCandidate, invoicingParams))
-						{
-							invoiceCandBL.enqueueForInvoicing()
-									.setContext(Env.getCtx())
-									.setFailIfNothingEnqueued(true)
-									.setInvoicingParams(invoicingParams)
-									.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
-						}
+						invoiceCandBL.enqueueForInvoicing()
+								.setContext(Env.getCtx())
+								.setFailIfNothingEnqueued(true)
+								.setInvoicingParams(invoicingParams)
+								.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
 					}
 					catch (final AdempiereException adempiereException)
 					{
@@ -1450,7 +1446,6 @@ public class C_Invoice_Candidate_StepDef
 			invoicingParams.setIgnoreInvoiceSchedule(false);
 			invoicingParams.setInvoiceManualRule(false); // Manual is invoiced ONLY when this flag is true
 			invoicingParams.setCompleteInvoices(row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true));
-			row.getAsOptionalBoolean(PARA_OnlyApprovedForInvoicing).ifPresent(invoicingParams::setOnlyApprovedForInvoicing);
 
 			StepDefUtil.tryAndWait(waitSec, 500, () -> checkNotMarkedAsToRecompute(invoiceCandidate));
 
@@ -1459,14 +1454,11 @@ public class C_Invoice_Candidate_StepDef
 			// so nothing is enqueued (no exception is thrown because setFailIfNothingEnqueued=false).
 			try
 			{
-				if (!isExcludedByApprovalFilter(invoiceCandidate, invoicingParams))
-				{
-					invoiceCandBL.enqueueForInvoicing()
-							.setContext(Env.getCtx())
-							.setFailIfNothingEnqueued(false)
-							.setInvoicingParams(invoicingParams)
-							.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
-				}
+				invoiceCandBL.enqueueForInvoicing()
+						.setContext(Env.getCtx())
+						.setFailIfNothingEnqueued(false)
+						.setInvoicingParams(invoicingParams)
+						.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
 			}
 			catch (final AdempiereException adempiereException)
 			{
