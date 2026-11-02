@@ -27,18 +27,12 @@
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT q.*,
-       (SELECT oi.ReportBackground_Image_ID IS NOT NULL FROM AD_OrgInfo oi WHERE oi.AD_Org_ID = q.ad_org_id) AS hasreportbackground
-FROM (SELECT 	*
-FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $P{ad_language} )) q
+		<![CDATA[SELECT 	*
+FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $P{ad_language} )
 ;]]>
 	</queryString>
 	<field name="ad_user_id" class="java.math.BigDecimal"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="hasreportbackground" class="java.lang.Boolean">
-		<property name="com.jaspersoft.studio.field.name" value="hasreportbackground"/>
-		<property name="com.jaspersoft.studio.field.label" value="hasreportbackground"/>
-	</field>
 	<field name="m_inout_id" class="java.math.BigDecimal"/>
 	<field name="docstatus" class="java.lang.String"/>
 	<field name="c_bpartner_id" class="java.math.BigDecimal"/>
@@ -268,7 +262,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 		<band height="93" splitType="Stretch">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-7" x="0" y="0" width="595" height="93" uuid="a1ef87ac-5fb9-4f7e-a50e-e520bc29995d">
-					<printWhenExpression><![CDATA[(new Boolean($R{showfooter}.equals( "Y" ))) && !Boolean.TRUE.equals($F{hasreportbackground})]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($R{showfooter}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
