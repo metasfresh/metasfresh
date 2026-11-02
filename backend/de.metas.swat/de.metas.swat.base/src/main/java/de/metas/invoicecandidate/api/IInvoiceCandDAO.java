@@ -210,11 +210,11 @@ public interface IInvoiceCandDAO extends ISingletonService
 	ImmutableSet<InvoiceCandidateId> retrieveReferencingIds(@NonNull TableRecordReference reference);
 
 	/**
-	 * Delete all invoice candidates (active or not) that reference the given {@code model} via their {@code AD_Table_ID} and {@code Record_ID}.
-	 *
-	 * @return number of deleted invoice candidates.
+	 * @return all invoice candidates (active or not) that reference the given {@code model} via their {@code AD_Table_ID} and {@code Record_ID}.
 	 */
-	int deleteAllReferencingInvoiceCandidates(Object model);
+	List<I_C_Invoice_Candidate> retrieveAllReferencingInclInactive(@NonNull Object model);
+
+	void delete(@NonNull I_C_Invoice_Candidate ic);
 
 	/**
 	 * Updates <code>dateInvoiced</code> of candidates from selection.
