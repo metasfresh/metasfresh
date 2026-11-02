@@ -26,14 +26,12 @@ import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -42,10 +40,7 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product_Category;
-import org.compiere.util.DB;
 import org.springframework.context.ApplicationContext;
-
-import javax.annotation.Nullable;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -70,16 +65,9 @@ public class AD_SysConfig_StepDef
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
 	/**
-	 * Set by {@link #setForThisScenario}; makes {@link #restoreTemporarySysConfigsAfterScenario()} reset all caches.
+	 * {@code ReportsClient} memoizes the report server built from this sys config and rebuilds it only on a reset of all caches.
 	 */
-	private boolean resetAllCachesOnRestore = false;
-
-	/**
-	 * Client-specific rows ({@code AD_Client_ID != 0}) of sysconfigs overwritten by {@link #setForThisScenario}, mapped to their value
-	 * from before the overwrite. Code reading a sysconfig for a client/org prefers such a row over the SYSTEM row, so a stale one (e.g. left by a UI test)
-	 * would make the SYSTEM-level override ineffective. Restored by {@link #restoreTemporarySysConfigsAfterScenario()}.
-	 */
-	private final Map<Integer, String> priorValueByClientSysConfigId = new LinkedHashMap<>();
+	private static final String SYSCONFIG_ReportsServerClass = "de.metas.report.jasper.client.JRServerClass";
 
 	/**
 	 * Sets a SYSTEM-level AD_SysConfig to the given value — permanently, for the rest of the scenario
@@ -99,95 +87,29 @@ public class AD_SysConfig_StepDef
 		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
 	}
 
-	/**
-	 * Like {@link #enable_sys_config}, but for a sys config that is global state shared by every scenario on the executor:
-	 * the prior value is restored by {@link #restoreTemporarySysConfigsAfterScenario()}, also if the scenario or its Background fails.
-	 * The restore also resets all caches, because some caches are derived from a sys config (e.g. the report server).
-	 * <p>
-	 * Client-specific rows ({@code AD_Client_ID != 0}) of the same sys config get the same value, because code reading the sys config for a client/org
-	 * prefers them over the SYSTEM row; they are restored after the scenario, too.
-	 * The value is stored as the type dictates for every row: {@code boolean} as {@code Y}/{@code N}, the {@code String} token {@code null} as "no value".
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.example
-	 * <pre>
-	 * And for this scenario only, set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-	 * </pre>
-	 */
-	@And("^for this scenario only, set sys config (String|boolean|int) value (.*) for sys config (.*)$")
-	public void enable_sys_config_for_this_scenario_only(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
-	{
-		setForThisScenario(sysconfigType, sysconfigValue, sysConfigName);
-	}
-
-	/**
-	 * Sets the SYSTEM row and every existing client-specific row of the sys config to the value, remembers their prior values,
-	 * and makes {@link #restoreTemporarySysConfigsAfterScenario()} restore them and reset all caches.
-	 */
-	private void setForThisScenario(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
-	{
-		rememberPriorValue(sysConfigName);
-		resetAllCachesOnRestore = true;
-		final String storedValue = toStoredValue(sysconfigType, sysconfigValue);
-		sysConfigBL.setValue(sysConfigName, storedValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
-		overrideClientSpecificRows(sysConfigName, storedValue);
-	}
-
-	private void overrideClientSpecificRows(@NonNull final String sysConfigName, @Nullable final String storedValue)
-	{
-		queryBL.createQueryBuilder(I_AD_SysConfig.class)
-				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, sysConfigName)
-				.addNotEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM)
-				.create()
-				.list(I_AD_SysConfig.class)
-				.forEach(row -> {
-					priorValueByClientSysConfigId.putIfAbsent(row.getAD_SysConfig_ID(), row.getValue());
-					updateClientSysConfigValue(row.getAD_SysConfig_ID(), storedValue);
-				});
-		resetSysConfigCache();
-	}
-
-	/**
-	 * Writes the value of an existing client-specific row with plain SQL, i.e. bypassing the AD_SysConfig model interceptor.
-	 * That interceptor refuses to save any client row of a sysconfig whose SYSTEM row has {@code ConfigurationLevel='S'}
-	 * ("Can't Save Client Level"), even though such legacy client rows exist and are preferred by every client/org read.
-	 * The interceptor guards against creating a client-level parameter; this only changes the value of a row that already exists.
-	 * <p>
-	 * No cache invalidation is fired, so the caller must reset the sysconfig cache afterwards.
-	 */
-	private static void updateClientSysConfigValue(final int sysConfigId, @Nullable final String value)
-	{
-		DB.executeUpdateAndThrowExceptionOnFail(
-				"UPDATE " + I_AD_SysConfig.Table_Name + " SET " + I_AD_SysConfig.COLUMNNAME_Value + "=? WHERE " + I_AD_SysConfig.COLUMNNAME_AD_SysConfig_ID + "=?",
-				new Object[] { value, sysConfigId },
-				ITrx.TRXNAME_None);
-	}
-
 	private void applySysConfigValue(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
-	{
-		sysConfigBL.setValue(sysConfigName, toStoredValue(sysconfigType, sysconfigValue), ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
-		resetSysConfigCache();
-	}
-
-	/**
-	 * @return the value as {@code AD_SysConfig.Value} stores it: {@code Y}/{@code N} for {@code boolean}; {@code null} (no value) for the {@code String} token {@code null}
-	 */
-	@Nullable
-	private static String toStoredValue(@NonNull final String sysconfigType, @NonNull final String sysconfigValue)
 	{
 		switch (sysconfigType)
 		{
 			case "String":
-				return DataTableUtil.nullToken2Null(sysconfigValue);
+				final String value = DataTableUtil.nullToken2Null(sysconfigValue);
+				sysConfigBL.setValue(sysConfigName, value, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+				break;
 			case "boolean":
-				return StringUtils.ofBoolean(Boolean.parseBoolean(sysconfigValue));
+				final boolean booleanValue = Boolean.parseBoolean(sysconfigValue);
+				sysConfigBL.setValue(sysConfigName, booleanValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+				break;
 			case "int":
-				return String.valueOf(Integer.parseInt(sysconfigValue));
+				final int intValue = Integer.parseInt(sysconfigValue);
+				setSysConfigIntValue(sysConfigName, intValue);
+				break;
 			default:
 				throw new AdempiereException("Unhandled sysConfig type")
 						.appendParametersToMessage()
 						.setParameter("type:", sysconfigType);
 		}
+
+		resetSysConfigCache();
 	}
 
 	/**
@@ -241,7 +163,9 @@ public class AD_SysConfig_StepDef
 	@And("temporarily set sys config int value {int} for sys config {string}")
 	public void temporarily_set_sys_config_int_value(final int value, @NonNull final String sysConfigName)
 	{
-		setForThisScenario("int", String.valueOf(value), sysConfigName);
+		rememberPriorValue(sysConfigName);
+		setSysConfigIntValue(sysConfigName, value);
+		resetSysConfigCache();
 	}
 
 	@And("update AD_SysConfig with login AD_User_ID")
@@ -318,7 +242,8 @@ public class AD_SysConfig_StepDef
 			throw new AdempiereException("Expected true or false but got: " + valueStr);
 		}
 
-		setForThisScenario("boolean", valueStr, sysConfigName);
+		rememberPriorValue(sysConfigName);
+		enable_sys_config("boolean", valueStr, sysConfigName);
 	}
 
 	/**
@@ -334,7 +259,8 @@ public class AD_SysConfig_StepDef
 	@And("temporarily set sys config String value {string} for sys config {string}")
 	public void temporarily_set_sys_config_string_value(@NonNull final String value, @NonNull final String sysConfigName)
 	{
-		setForThisScenario("String", value, sysConfigName);
+		rememberPriorValue(sysConfigName);
+		applySysConfigValue("String", value, sysConfigName);
 	}
 
 	/**
@@ -385,7 +311,7 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * The SYSTEM-level row (client 0, org 0); client-specific rows are remembered by {@link #overrideClientSpecificRows}.
+	 * The temporary steps set and restore sysconfigs on SYSTEM level only (client 0, org 0).
 	 * <p>
 	 * Remembers the SYSTEM-level value a sysconfig had before this scenario first changed it; {@code containsKey} (not {@code putIfAbsent}),
 	 * because {@code null} (no prior value) is a value too.
@@ -405,16 +331,6 @@ public class AD_SysConfig_StepDef
 	@After
 	public void restoreTemporarySysConfigsAfterScenario()
 	{
-		try
-		{
-			// a row deleted during the scenario is simply not updated
-			priorValueByClientSysConfigId.forEach(AD_SysConfig_StepDef::updateClientSysConfigValue);
-		}
-		finally
-		{
-			priorValueByClientSysConfigId.clear(); // the cache reset below covers these rows: they always come with a SYSTEM-level entry
-		}
-
 		if (priorValueBySysConfigName.isEmpty())
 		{
 			return;
@@ -434,12 +350,15 @@ public class AD_SysConfig_StepDef
 			}
 		}
 
+		final boolean reportServerChanged = priorValueBySysConfigName.containsKey(SYSCONFIG_ReportsServerClass);
 		priorValueBySysConfigName.clear();
-		resetSysConfigCache();
-		if (resetAllCachesOnRestore)
+		if (reportServerChanged)
 		{
-			CacheMgt.get().reset(); // also drops caches derived from a sys config, e.g. the report server
-			resetAllCachesOnRestore = false;
+			CacheMgt.get().reset();
+		}
+		else
+		{
+			resetSysConfigCache();
 		}
 	}
 }

@@ -20,7 +20,7 @@
 	<queryString>
 		<![CDATA[SELECT * 
     FROM report.InTransit_HUs_report(p_M_Locator_ID=>$P{M_Locator_ID}, p_AD_Language=>$P{ad_language})
-order by order_docno, production_order_no, documentno]]>
+order by order_docno, documentno, dd_orderline_id, m_hu_id]]>
 	</queryString>
 	<field name="productname" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="productname"/>
@@ -82,6 +82,18 @@ order by order_docno, production_order_no, documentno]]>
 		<property name="com.jaspersoft.studio.field.name" value="m_hu_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="m_hu_id"/>
 	</field>
+	<field name="dd_orderline_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="dd_orderline_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="dd_orderline_id"/>
+	</field>
+	<field name="is_single_pporder_header" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.name" value="is_single_pporder_header"/>
+		<property name="com.jaspersoft.studio.field.label" value="is_single_pporder_header"/>
+	</field>
+	<field name="pporder_pickinginstruction_lines" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="pporder_pickinginstruction_lines"/>
+		<property name="com.jaspersoft.studio.field.label" value="pporder_pickinginstruction_lines"/>
+	</field>
 	<group name="Order" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="50" keepTogether="true">
 		<groupExpression><![CDATA[$F{order_docno}]]></groupExpression>
 		<groupHeader>
@@ -90,7 +102,7 @@ order by order_docno, production_order_no, documentno]]>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement key="textField-10" x="120" y="39" width="60" height="12" uuid="4efd721e-d87d-4dd7-8269-2cc1e30522fa">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
-						<printWhenExpression><![CDATA[$F{production_order_no}!=null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[Boolean.TRUE.equals($F{is_single_pporder_header}) && $F{production_order_no} != null]]></printWhenExpression>
 					</reportElement>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -119,7 +131,7 @@ order by order_docno, production_order_no, documentno]]>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement key="textField-11" x="30" y="39" width="90" height="12" uuid="c310b925-2915-4360-b8f6-7669bba0eb7a">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
-						<printWhenExpression><![CDATA[$F{production_order_no}!=null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[Boolean.TRUE.equals($F{is_single_pporder_header}) && $F{production_order_no} != null]]></printWhenExpression>
 					</reportElement>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -135,7 +147,7 @@ order by order_docno, production_order_no, documentno]]>
 				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 					<reportElement key="textField-3" x="220" y="39" width="131" height="12" uuid="d7a89522-45df-4a81-b7ad-1a851ebe8d22">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
-						<printWhenExpression><![CDATA[$F{production_order_no}!=null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[Boolean.TRUE.equals($F{is_single_pporder_header}) && $F{production_order_no} != null]]></printWhenExpression>
 					</reportElement>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -287,7 +299,7 @@ order by order_docno, production_order_no, documentno]]>
 					<reportElement key="textField-10" x="180" y="39" width="40" height="12" uuid="9fc6b7b1-6941-449c-9199-e7535c7d2a12">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
-						<printWhenExpression><![CDATA[$F{production_order_no}!=null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[Boolean.TRUE.equals($F{is_single_pporder_header}) && $F{production_order_no} != null]]></printWhenExpression>
 					</reportElement>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -376,6 +388,38 @@ order by order_docno, production_order_no, documentno]]>
 			</band>
 		</groupHeader>
 	</group>
+	<group name="Line" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="150">
+		<groupExpression><![CDATA[$F{dd_orderline_id}]]></groupExpression>
+		<groupHeader>
+			<band height="27" splitType="Stretch">
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				<printWhenExpression><![CDATA[!Boolean.TRUE.equals($F{is_single_pporder_header}) && $F{production_order_no} != null]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField-product" positionType="Float" x="31" y="2" width="554" height="12" uuid="3b1f6a3e-6f2c-4d0e-9a55-0c7b8e1d2a01">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<textElement textAlignment="Left" markup="none">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{p_value} + " " + $F{productname}]]></textFieldExpression>
+				</textField>
+				<subreport isUsingCache="true">
+					<reportElement key="subreport-pporders" positionType="Float" x="0" y="15" width="595" height="12" uuid="7d2c9b44-1e0a-4b77-8f13-5a6e4c9d3b02">
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+						<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					</reportElement>
+					<subreportParameter name="dd_orderline_id">
+						<subreportParameterExpression><![CDATA[$F{dd_orderline_id}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="ad_language">
+						<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression><![CDATA["de/metas/reports/intransit_hus_report/report_pporders.jasper"]]></subreportExpression>
+				</subreport>
+			</band>
+		</groupHeader>
+	</group>
 	<title>
 		<band height="53" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -453,9 +497,7 @@ order by order_docno, production_order_no, documentno]]>
 					<font fontName="Arial" size="9" isBold="true"/>
 					<paragraph leftIndent="5" spacingBefore="3"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{pickinginstruction} != null
-    ? ($F{productname} + "\n\n" + $R{pickinginstruction} + ": " + $F{pickinginstruction})
-    : $F{productname}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{pporder_pickinginstruction_lines} == null && $F{pickinginstruction} != null ? $F{productname} + "\n\n" + $R{pickinginstruction} + ": " + $F{pickinginstruction} : $F{productname}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-16" x="31" y="0" width="60" height="120" forecolor="#000000" uuid="5c46dc41-db2a-4640-ae26-c0c0da4864fc">
