@@ -14,6 +14,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
+import de.metas.ui.web.window.model.DocumentCollection;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import org.adempiere.exceptions.AdempiereException;
@@ -66,6 +67,8 @@ public class DocumentAttachmentsRestController
 
 	private DocumentDescriptorFactory documentDescriptorFactory;
 
+	private DocumentCollection documentCollection;
+
 	private DocumentWebsocketPublisher websocketPublisher;
 
 	private AttachmentEntryService attachmentEntryService;
@@ -74,12 +77,14 @@ public class DocumentAttachmentsRestController
 
 	public DocumentAttachmentsRestController(final UserSession userSession,
 			final DocumentDescriptorFactory documentDescriptorFactory,
+			final DocumentCollection documentCollection,
 			final DocumentWebsocketPublisher websocketPublisher,
 			final AttachmentEntryService attachmentEntryService,
 			final TableAttachmentListenerService tableAttachmentListenerService)
 	{
 		this.userSession = userSession;
 		this.documentDescriptorFactory = documentDescriptorFactory;
+		this.documentCollection = documentCollection;
 		this.websocketPublisher = websocketPublisher;
 		this.attachmentEntryService = attachmentEntryService;
 		this.tableAttachmentListenerService = tableAttachmentListenerService;
@@ -98,6 +103,9 @@ public class DocumentAttachmentsRestController
 			throw new AdempiereException("Document does not support attachments")
 					.setParameter("technicalReason", "documents with composed keys are not handled");
 		}
+
+		// The attachments and archives of a document are as confidential as the document itself
+		documentCollection.assertCanViewRootDocument(documentPath);
 
 		final TableRecordReference recordRef = documentDescriptorFactory.getTableRecordReference(documentPath);
 
