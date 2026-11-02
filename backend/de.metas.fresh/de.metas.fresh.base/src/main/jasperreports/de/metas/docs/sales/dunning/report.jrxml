@@ -27,10 +27,12 @@
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select r.*, showQRBill, showESR_QR
+		<![CDATA[SELECT q.*,
+       (SELECT oi.ReportBackground_Image_ID IS NOT NULL FROM AD_OrgInfo oi WHERE oi.AD_Org_ID = q.ad_org_id) AS hasreportbackground
+FROM (select r.*, showQRBill, showESR_QR
  from report.Docs_Sales_Dunning_Report_Root ($P{RECORD_ID}, $P{ad_language}) as r
 JOIN report.isShowQRBill(1000000, r.ad_org_id)  showQRBill on 1=1
-JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
+JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1) q
 ;]]>
 	</queryString>
 	<field name="processed" class="java.lang.String">
@@ -38,6 +40,10 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 	</field>
 	<field name="ad_org_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="hasreportbackground" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.name" value="hasreportbackground"/>
+		<property name="com.jaspersoft.studio.field.label" value="hasreportbackground"/>
 	</field>
 	<field name="ad_language" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="ad_language"/>
@@ -117,7 +123,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 			</subreport>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-4" x="0" y="0" width="595" height="85" uuid="8d540ecf-6f54-4712-a4e6-81d7568900ef">
-					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintLogo}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA[($P{PRINTER_OPTS_IsPrintLogo}.equals("Y")) && !Boolean.TRUE.equals($F{hasreportbackground})]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
