@@ -453,7 +453,10 @@ class OLCandOrderFactory
 		final DocStatus docStatus = DocStatus.ofCode(order.getDocStatus());
 		if (!docStatus.isCompleted() && !docStatus.isWaitingForPayment())
 		{
-			throw new AdempiereException("Prepay order does not have expected status (Expected=" + DocStatus.Completed + " or " + DocStatus.WaitingPayment + ", actual=" + docStatus + ")");
+			throw new AdempiereException("Prepay order does not have expected status (Expected=" + DocStatus.Completed + " or " + DocStatus.WaitingPayment + ", actual=" + docStatus + ")")
+					.appendParametersToMessage()
+					.setParameter("C_Order_ID", order.getC_Order_ID())
+					.setParameter("DocumentNo", order.getDocumentNo());
 		}
 	}
 

@@ -23,10 +23,10 @@ import { BUSINESS_PARTNER_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/Wind
  * Fixture: a prepay partner (order type set through the masterdata API's `orderDocSubType: 'PR'`), a standard-type
  * partner (`'SO'`, only to read the standard type's key), a plain partner without an order type, and one priced product.
  *
- * TC1 field is shown on the customer tab (found by column name), offers exactly the sales order types, can be set, saved and cleared (AC1)
- * TC2 order for the prepay partner: header type pre-filled with the partner's type, completes with status WP (AC2)
- * TC3 the user may switch the pre-filled type to the standard type: order completes normally, status CO (AC3)
- * TC4 partner without order type: header type is the default, as before (AC4)
+ * - the field is shown on the customer tab (found by column name), offers exactly the sales order types, can be set, saved and cleared
+ * - order for the prepay partner: header type pre-filled with the partner's type, completes with status WP
+ * - the user may switch the pre-filled type to the standard type: order completes normally, status CO
+ * - partner without order type: header type is the default, as before
  */
 
 /** Number of sales order types the field's validation rule offers to the test org (org 001 reads orgs '*' and 001). */
@@ -137,7 +137,7 @@ test.describe('Partner order type', () => {
   // playwright.config.js publishes as `global.currentPage`, and Playwright only runs that fixture for a
   // test that requests `page`.
   // eslint-disable-next-line no-unused-vars
-  test('TC1 partner window shows the order type on tab Kunde and offers the sales order types', async ({ page }) => {
+  test('partner window shows the order type on tab Kunde and offers the sales order types', async ({ page }) => {
     const masterdata = await createFixture();
 
     await LoginPage.goto();
@@ -146,6 +146,8 @@ test.describe('Partner order type', () => {
     const prepayKey = await partnerTypeKey(masterdata.bpartners.PREPAY.id);
     expect(prepayKey, 'fixture: the prepay partner carries an order type').not.toBeNull();
     expect(await partnerTypeKey(masterdata.bpartners.PLAIN.id), 'fixture: the plain partner has none').toBeNull();
+    const standardKey = await partnerTypeKey(masterdata.bpartners.STANDARD.id);
+    expect(standardKey, 'fixture: the standard-type partner carries the standard order type').not.toBeNull();
 
     await BusinessPartnerPage.gotoRecord(masterdata.bpartners.PLAIN.id);
     await BusinessPartnerPage.clickTab(BusinessPartnerPage.TAB_IDS.CUSTOMER);
@@ -164,6 +166,7 @@ test.describe('Partner order type', () => {
     await WidgetCommon.waitForDropdown();
     expect(offeredKeys, 'the dropdown offers exactly the sales order types').toHaveLength(EXPECTED_PARTNER_TYPE_OPTION_COUNT);
     expect(offeredKeys.map(String), 'the prepay type is offered').toContain(String(prepayKey));
+    expect(offeredKeys.map(String), 'the standard type is offered').toContain(String(standardKey));
 
     await getPage().locator(`.input-dropdown-list [data-testid="option-${prepayKey}"]`).first().click();
     await getPage().keyboard.press('Tab');
@@ -191,7 +194,7 @@ test.describe('Partner order type', () => {
   });
 
   // eslint-disable-next-line no-unused-vars
-  test('TC2 order for the prepay partner is pre-filled with the prepay type and waits for payment', async ({ page }) => {
+  test('order for the prepay partner is pre-filled with the prepay type and waits for payment', async ({ page }) => {
     const masterdata = await createFixture();
 
     await LoginPage.goto();
@@ -211,7 +214,7 @@ test.describe('Partner order type', () => {
   });
 
   // eslint-disable-next-line no-unused-vars
-  test('TC3 the pre-filled prepay type can be changed to the standard order type', async ({ page }) => {
+  test('the pre-filled prepay type can be changed to the standard order type', async ({ page }) => {
     const masterdata = await createFixture();
 
     await LoginPage.goto();
@@ -220,7 +223,7 @@ test.describe('Partner order type', () => {
     const prepayKey = await partnerTypeKey(masterdata.bpartners.PREPAY.id);
     expect(prepayKey, 'fixture: the prepay partner carries an order type').not.toBeNull();
 
-    // the standard type = the type an order of a partner without order type gets (AC4 default)
+    // the standard type = the type an order of a partner without order type gets
     const standardKey = await orderFieldKey(await newOrderFor(masterdata.bpartners.PLAIN.bpartnerCode), ORDER_FIELD);
     expect(standardKey, 'the default order type').not.toBeNull();
     expect(standardKey, 'the default differs from the prepay type').not.toBe(prepayKey);
@@ -239,7 +242,7 @@ test.describe('Partner order type', () => {
   });
 
   // eslint-disable-next-line no-unused-vars
-  test('TC4 order for a partner without order type keeps the default order type', async ({ page }) => {
+  test('order for a partner without order type keeps the default order type', async ({ page }) => {
     const masterdata = await createFixture();
 
     await LoginPage.goto();

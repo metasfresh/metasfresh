@@ -3,6 +3,7 @@ package de.metas.frontend_testing.masterdata.bpartner;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
@@ -450,7 +451,7 @@ public class CreateBPartnerCommandTest
 		final JsonCreateBPartnerRequest request = JsonCreateBPartnerRequest.builder()
 				.bpartnerCode("BP_DT_001")
 				.isCustomer(true)
-				.orderDocSubType("PR")
+				.orderDocSubType(DocSubType.PrepayOrder)
 				.build();
 
 		// when

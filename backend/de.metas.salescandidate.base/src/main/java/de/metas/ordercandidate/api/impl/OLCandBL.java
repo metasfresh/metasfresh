@@ -362,9 +362,11 @@ public class OLCandBL implements IOLCandBL
 		final DocTypeId orderDefaultsDocTypeId = orderDefaults == null ? null
 				: orderDefaults.getDocTypeTargetId();
 
-		return coalesce(orderDocTypeId,
-				getBPartnerOrderDocTypeId(orderCandidateRecord),
-				orderDefaultsDocTypeId);
+		// the partner is loaded only if the candidate carries no order type of its own
+		return CoalesceUtil.coalesceSuppliers(
+				() -> orderDocTypeId,
+				() -> getBPartnerOrderDocTypeId(orderCandidateRecord),
+				() -> orderDefaultsDocTypeId);
 	}
 
 	/**

@@ -157,7 +157,7 @@ public class CreateBPartnerCommand
 
 		if (request.getOrderDocSubType() != null)
 		{
-			bpartner.setSO_DocTypeTarget_ID(getSalesOrderDocTypeId(DocSubType.ofCode(request.getOrderDocSubType())).getRepoId());
+			bpartner.setSO_DocTypeTarget_ID(getSalesOrderDocTypeId(request.getOrderDocSubType()).getRepoId());
 		}
 
 		// Set pricing system based on vendor/customer flags
