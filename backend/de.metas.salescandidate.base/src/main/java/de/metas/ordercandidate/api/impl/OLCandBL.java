@@ -31,12 +31,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
+import de.metas.document.IDocTypeBL;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.freighcost.FreightCostRule;
@@ -61,8 +60,8 @@ import de.metas.ordercandidate.api.OLCandSPIRegistry;
 import de.metas.ordercandidate.api.OLCandsProcessorExecutor;
 import de.metas.ordercandidate.api.source.OLCandProcessingHelper;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.organization.OrgId;
 import de.metas.ordercandidate.spi.IOLCandCreator;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
@@ -91,8 +90,8 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.MNote;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
@@ -123,8 +122,7 @@ public class OLCandBL implements IOLCandBL
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
@@ -382,16 +380,17 @@ public class OLCandBL implements IOLCandBL
 		}
 
 		final BPartnerId bpartnerId = effectiveValuesBL.getBPartnerEffectiveId(orderCandidateRecord);
-		final DocTypeId docTypeId = bpartnerId == null ? null : DocTypeId.ofRepoIdOrNull(bpartnerDAO.getById(bpartnerId).getSO_DocTypeTarget_ID());
+		final DocTypeId docTypeId = bpartnerId == null ? null : DocTypeId.ofRepoIdOrNull(bpartnerBL.getById(bpartnerId).getSO_DocTypeTarget_ID());
 		if (docTypeId == null)
 		{
 			return null;
 		}
 
-		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
+		final I_C_DocType docType = docTypeBL.getById(docTypeId);
+		final OrgId docTypeOrgId = OrgId.ofRepoId(docType.getAD_Org_ID());
 		final boolean isUsable = docType.isActive()
 				&& DocBaseType.ofCode(docType.getDocBaseType()).isSalesOrder()
-				&& (docType.getAD_Org_ID() == orderCandidateRecord.getAD_Org_ID() || docType.getAD_Org_ID() == OrgId.ANY.getRepoId());
+				&& (docTypeOrgId.isAny() || docTypeOrgId.equals(OrgId.ofRepoId(orderCandidateRecord.getAD_Org_ID())));
 		return isUsable ? docTypeId : null;
 	}
 

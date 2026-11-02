@@ -354,8 +354,8 @@ Feature: Order type of the order created from an order candidate
       | C_Order_ID.Identifier |
       | order                 |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId      | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
-      | order                 | partner_buyer_1 | partner_buyer            | SOO         | prepayType              | true      | WP        |
+      | C_Order_ID.Identifier | externalId      | C_BPartner_ID.Identifier | Bill_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
+      | order                 | partner_buyer_1 | partner_buyer            | partner_bill                | SOO         | prepayType              | true      | WP        |
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |
       | olCand                 | partner_buyer            | prepay_product          | 2          | N       | Y             | N           |
@@ -558,4 +558,68 @@ Feature: Order type of the order created from an order candidate
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |
       | olCand                 | partner_candorg          | prepay_product          | 2          | N       | Y             | N           |
     And the business partner identified by partner_candorg has exactly 1 order
+    And no AD_Issue was created since the existing AD_Issue records were remembered
+
+  Scenario: partner type that is not a sales order type uses the processor default
+    Given load C_DocType:
+      | DocBaseType | C_DocType_ID |
+      | ARI         | invoiceType  |
+    And metasfresh contains C_BPartners:
+      | Identifier     | Name           | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | OPT.SO_DocTypeTarget_ID.Identifier |
+      | partner_nonsoo | partner_nonsoo | Y              | N            | prepay_ps                     | partner_nonsoo_loc         | 4056789012432 | invoiceType                        |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier         | GLN           | C_BPartner_ID.Identifier |
+      | partner_nonsoo_loc | 4056789012432 | partner_nonsoo           |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+"""
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "partner_nonsoo_1",
+            "externalLineId": "partner_nonsoo_1_0",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-4056789012432",
+                "bpartnerLocationIdentifier": "gln-4056789012432"
+            },
+            "dateRequired": "2021-12-02",
+            "dateOrdered": "2021-11-20",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-prepay_product",
+            "qty": 2,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "partner_nonsoo_1",
+            "deliveryViaRule": "S"
+        }
+    ]
+}
+"""
+    Then process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand                 |
+    And the existing AD_Issue records are remembered
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "partner_nonsoo_1",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    Then process metasfresh response
+      | C_Order_ID.Identifier |
+      | order                 |
+    And validate the created orders
+      | C_Order_ID.Identifier | externalId       | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
+      | order                 | partner_nonsoo_1 | partner_nonsoo           | SOO         | standardType            | true      | CO        |
+    And validate C_OLCand:
+      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |
+      | olCand                 | partner_nonsoo           | prepay_product          | 2          | N       | Y             | N           |
+    And the business partner identified by partner_nonsoo has exactly 1 order
     And no AD_Issue was created since the existing AD_Issue records were remembered
