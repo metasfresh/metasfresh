@@ -3,6 +3,7 @@ import { defineConfig, devices, test as testOrig } from '@playwright/test';
 import { setCurrentPage, resetErrorWatchers } from "./tests/utils/common";
 import { installFakeCameraIfBrowserExposesNone } from "./tests/utils/fakeCamera";
 import { trackInFlightXhr } from "./tests/utils/inFlightXhr";
+import { restoreSysconfigsChangedByTest } from "./tests/utils/screens/Backend";
 import os from 'os';
 
 // Base Chromium launch args for the Mobile Chrome project. Exported so a spec that must add an arg
@@ -107,6 +108,10 @@ export const test = testOrig.extend({
         await installFakeCameraIfBrowserExposesNone(page);
         await trackInFlightXhr(page);
 
-        await use(page);
+        try {
+            await use(page);
+        } finally {
+            await restoreSysconfigsChangedByTest();
+        }
     },
 });

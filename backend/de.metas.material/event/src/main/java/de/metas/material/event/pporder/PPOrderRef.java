@@ -14,6 +14,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
@@ -107,6 +108,8 @@ public class PPOrderRef
 	{
 		return !isBOMLine();
 	}
+
+	public static boolean equals(@Nullable final PPOrderRef ref1, @Nullable final PPOrderRef ref2) {return Objects.equals(ref1, ref2);}
 
 	public boolean isBOMLine()
 	{
