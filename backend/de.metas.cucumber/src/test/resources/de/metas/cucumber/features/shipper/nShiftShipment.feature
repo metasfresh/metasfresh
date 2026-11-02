@@ -333,7 +333,8 @@ Feature: nShift Shipment
       | Identifier           | C_Order_ID       | M_Product_ID | QtyEntered |
       | so_manual_advise_l1  | so_manual_advise | product      | 10         |
     When the order identified by so_manual_advise is completed
-    # Advise must be Completed (CO), not merely carry cp1 — see "nShift Carrier Advise" for why.
+    # Advise must be Completed (CO), not merely carry cp1: the first recompute can re-request the advise (status R)
+    # while cp1 stays on the record, and a manual advise on a Requested schedule is silently skipped.
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier       | C_OrderLine_ID      | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Advising_Status |
       | ss_manual_advise | so_manual_advise_l1 | N             | cp1                | cgt1                  | CO                      |
