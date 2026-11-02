@@ -46,7 +46,6 @@ const round = (value) => Number(value.toFixed(6));
 const SYSCONFIG_LaunchersLimit = 'WorkflowRestAPIService.LaunchersLimit';
 
 let costingMethodState;
-let previousSysconfigs = null;
 
 // Restore in afterEach so it runs even when the test body fails or times out; otherwise the costing method leaks into the sibling specs.
 // the hooks must declare the page fixture: Backend uses the page of the current test
@@ -62,23 +61,16 @@ test.afterEach(async ({ page }) => {
         await Backend.restoreAcctSchemaCostingMethod(costingMethodState);
     } finally {
         costingMethodState = undefined;
-        if (previousSysconfigs) {
-            // fallback when createMasterdata threw after writing: the migration seed of the limit (20)
-            await Backend.setSysconfigs({ [SYSCONFIG_LaunchersLimit]: '20', ...previousSysconfigs });
-        }
-        previousSysconfigs = null;
     }
 });
 
 // The jobs list is capped by the launchers limit and sorted by DocumentNo; the orders of the sibling specs that
 // share the one E2E DB would crowd this spec's order out of the list, so the limit is raised for the test.
 const createMasterdata = async ({ request, ...rest }) => {
-    previousSysconfigs = {};
     const masterdata = await Backend.createMasterdata({
         ...rest,
         request: { ...request, sysconfigs: { [SYSCONFIG_LaunchersLimit]: '10000' } },
     });
-    previousSysconfigs = masterdata.previousSysconfigs ?? {};
     return masterdata;
 };
 

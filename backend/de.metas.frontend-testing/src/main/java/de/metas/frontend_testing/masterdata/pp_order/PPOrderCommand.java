@@ -7,6 +7,7 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.IProductBL;
@@ -38,6 +39,7 @@ public class PPOrderCommand
 {
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 
 	@NonNull MasterdataContext context;
 	@NonNull JsonPPOrderRequest request;
@@ -129,6 +131,12 @@ public class PPOrderCommand
 			final JsonPPOrderRequest.Line lineRequest = lineIdentifierAndRequest.getValue();
 
 			final I_PP_Order_BOMLine line = findAndRemoveMatchingBOMLine(lines, lineRequest);
+
+			if (lineRequest.getPickingInstruction() != null)
+			{
+				line.setPickingInstruction(lineRequest.getPickingInstruction());
+				ppOrderBOMBL.save(line);
+			}
 
 			assertExpectedPickingInstructionMatching(lineRequest, line);
 

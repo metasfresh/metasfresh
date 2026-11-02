@@ -21,9 +21,13 @@ import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.JsonSysconfig;
+import de.metas.frontend_testing.masterdata.sysconfig.PreviousSysconfigsCollector;
+import de.metas.frontend_testing.masterdata.sysconfig.RestoreSysconfigsCommand;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSTerminalRepository;
@@ -65,7 +69,6 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,7 +108,7 @@ public class CreatePOSTerminalCommandTest
 	private MasterdataContext context;
 	private DocTypeId salesOrderDocTypeId;
 	private TaxCategoryId normalTaxCategoryId;
-	private HashMap<String, String> previousSysconfigs;
+	private PreviousSysconfigsCollector previousSysconfigs;
 
 	@BeforeEach
 	public void init()
@@ -117,7 +120,7 @@ public class CreatePOSTerminalCommandTest
 		currentCostsRepository = new CurrentCostsRepository(new CostElementRepository(ADReferenceService.newMocked()));
 		mobileApplicationInfoRepository = new MobileApplicationInfoRepository();
 		context = new MasterdataContext();
-		previousSysconfigs = new HashMap<>();
+		previousSysconfigs = new PreviousSysconfigsCollector();
 
 		salesOrderDocTypeId = createSalesOrderDocType();
 		normalTaxCategoryId = createNormalTaxCategory();
@@ -625,8 +628,9 @@ public class CreatePOSTerminalCommandTest
 		assertThat(sysconfigChargeTypeId).isEqualTo(travelCostsCharge.getC_ChargeType_ID());
 
 		// no sysconfig before: restoring the reported previous value must switch the categories off again
-		assertThat(previousSysconfigs).containsEntry(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, "-1");
-		assertThat(ChargeTypeId.ofRepoIdOrNull(Integer.parseInt(previousSysconfigs.get(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId)))).isNull();
+		assertThat(previousSysconfigs.toList()).containsExactly(JsonSysconfig.of(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, null, ClientAndOrgId.SYSTEM));
+		RestoreSysconfigsCommand.builder().sysconfigs(previousSysconfigs.toList()).build().execute();
+		assertThat(ChargeTypeId.ofRepoIdOrNull(Services.get(ISysConfigBL.class).getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1))).isNull();
 	}
 
 	@Test
@@ -650,8 +654,11 @@ public class CreatePOSTerminalCommandTest
 				.execute();
 
 		// then
-		assertThat(previousSysconfigs).containsEntry(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, "12345");
+		assertThat(previousSysconfigs.toList()).containsExactly(JsonSysconfig.of(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, "12345", ClientAndOrgId.SYSTEM));
 		assertThat(sysConfigBL.getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1)).isNotEqualTo(12345);
+
+		RestoreSysconfigsCommand.builder().sysconfigs(previousSysconfigs.toList()).build().execute();
+		assertThat(sysConfigBL.getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1)).isEqualTo(12345);
 	}
 
 	@Test
@@ -672,7 +679,7 @@ public class CreatePOSTerminalCommandTest
 
 		// then
 		assertThat(response.getCashWithdrawalCategories()).isEmpty();
-		assertThat(previousSysconfigs).isEmpty();
+		assertThat(previousSysconfigs.toList()).isEmpty();
 		assertThat(ChargeTypeId.ofRepoIdOrNull(Services.get(ISysConfigBL.class).getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1))).isNull();
 	}
 
