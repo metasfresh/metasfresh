@@ -112,6 +112,25 @@ export async function getWindowLayout(windowId) {
 }
 
 /**
+ * Get an INCLUDED TAB's layout (grid columns of a child tab) from the WebAPI: `/window/{windowId}/{tabId}/layout`.
+ * Its `elements[]` carry the localized `caption` and the `fields[].field` ColumnName, so
+ * {@link getFieldLabelFromLayout} works on it as on a window layout.
+ *
+ * @param {number|string} windowId - AD_Window_ID
+ * @param {string} tabId - included tab id (e.g. 'AD_Tab-223')
+ * @returns {Promise<Object>} the tab layout JSON
+ */
+export async function getTabLayout(windowId, tabId) {
+  const response = await getPage().request.get(`${WEBAPI_BASE_URL}/window/${windowId}/${tabId}/layout`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok()) {
+    throw new Error(`HTTP ${response.status()}: ${response.statusText()} — tab layout of ${windowId}/${tabId}`);
+  }
+  return await response.json();
+}
+
+/**
  * The localized field LABEL the backend serves for a given ColumnName in a window's detail layout
  * (see {@link getWindowLayout}) — i.e. the AD_Element_Trl.Name in the current session's AD_Language,
  * which is exactly the caption the frontend renders. Returns `undefined` if the field is not laid out.

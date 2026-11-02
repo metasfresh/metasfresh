@@ -122,7 +122,7 @@ public class OLCandBL implements IOLCandBL
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;

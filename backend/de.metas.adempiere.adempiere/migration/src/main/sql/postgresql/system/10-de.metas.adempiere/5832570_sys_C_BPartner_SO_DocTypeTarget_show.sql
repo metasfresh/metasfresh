@@ -1,6 +1,6 @@
 -- Impact
 --
--- Field name of AD_Field 542107 (C_BPartner.SO_DocTypeTarget_ID), via its own AD_Element (resolved by FK, local id 1000117):
+-- Field name of AD_Field 542107 (C_BPartner.SO_DocTypeTarget_ID), via its own AD_Element (resolved by FK):
 --   AD_Element_Trl.Name / PrintName / Description / Help and, via propagation, AD_Field_Trl + AD_Field (name, description, help)
 --   | language     | Name old    | Name new         |
 --   | de_DE, de_CH | Zielbelegart | Auftragsart     |
@@ -65,21 +65,21 @@ $$
             SET Name = 'Auftragsart', PrintName = 'Auftragsart',
                 Description = 'Auftragsart, die bei Verkaufsaufträgen und Auftragskandidaten dieses Kunden vorbelegt wird.',
                 Help = 'Die Auftragsart (z.B. Vorauskasseauftrag), die bei neuen Verkaufsaufträgen und Auftragskandidaten dieses Kunden vorgeschlagen wird. Leer lassen, wenn die Standard-Auftragsart gelten soll. Eine direkt am Auftrag oder Auftragskandidaten angegebene Auftragsart hat Vorrang.',
-                IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-02 19:00:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+                IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-02 19:00:02.100', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy = 100
             WHERE AD_Element_ID = v_element_id AND AD_Language IN ('de_DE', 'de_CH');
 
             UPDATE AD_Element_Trl
             SET Name = 'Order Type', PrintName = 'Order Type',
                 Description = 'Order type that is pre-filled for sales orders and order candidates of this customer.',
                 Help = 'The order type (e.g. prepayment order) that is suggested for new sales orders and order candidates of this customer. Leave empty to use the standard order type. An order type given directly on the order or order candidate takes precedence.',
-                IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-02 19:00:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+                IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-02 19:00:02.200', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy = 100
             WHERE AD_Element_ID = v_element_id AND AD_Language = 'en_US';
 
             UPDATE AD_Element_Trl
             SET Name = 'Type de commande', PrintName = 'Type de commande',
                 Description = 'Type de commande prérempli pour les commandes de vente et les candidats de commande de ce client.',
                 Help = 'Le type de commande (p. ex. commande avec paiement anticipé) proposé pour les nouvelles commandes de vente et les candidats de commande de ce client. Laisser vide pour utiliser le type de commande standard. Un type de commande indiqué directement sur la commande ou le candidat de commande est prioritaire.',
-                IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-02 19:00:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+                IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-02 19:00:02.300', 'YYYY-MM-DD HH24:MI:SS.MS'), UpdatedBy = 100
             WHERE AD_Element_ID = v_element_id AND AD_Language = 'fr_CH';
 
             -- other English variants (en_GB, ...): English text

@@ -132,6 +132,14 @@ public interface IOLCandBL extends ISingletonService
 	@Nullable
 	WarehouseId getWarehouseId(@NonNull I_C_OLCand olCand, @Nullable OLCandOrderDefaults orderDefaults);
 
+	/**
+	 * Returns the order document type to use for the given order candidate, following this precedence:
+	 * <ol>
+	 * <li>OLCand's own {@code C_DocTypeTarget_ID} if set</li>
+	 * <li>Buyer BP's {@code SO_DocTypeTarget_ID}, if it is active, a sales order type and belongs to the candidate's organization or to organization {@code *}</li>
+	 * <li>Processor default ({@code orderDefaults.docTypeTargetId})</li>
+	 * </ol>
+	 */
 	DocTypeId getOrderDocTypeId(@Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand orderCandidateRecord);
 
 	void markAsProcessed(final OLCand olCand);

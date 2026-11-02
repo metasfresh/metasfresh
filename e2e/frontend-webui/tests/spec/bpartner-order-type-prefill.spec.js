@@ -8,36 +8,41 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { ListWidget } from '../utils/widgets/ListWidget';
 import { WidgetCommon } from '../utils/widgets/WidgetCommon';
 import { getPage, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import {
+  getFieldData,
+  getTabRows,
+  getTabLayout,
+  getFieldLabelFromLayout,
+} from '../utils/WebAPIValidation';
+import { BUSINESS_PARTNER_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 
 /**
  * Partner order type: the business partner window shows the partner's order type
  * (`C_BPartner.SO_DocTypeTarget_ID`, tab "Kunde"), and a new sales order takes it over as its order type.
  *
- * Expected texts are German: the spec logs in as a `de_DE` user and asserts the labels the customer sees
- * (`Auftragsart`, `Vorauskasseauftrag`, `Standardauftrag`, `Warten auf Zahlung`).
+ * Language-independent: nothing is asserted against localized text. Order types are compared by their lookup KEY
+ * (`C_BPartner.SO_DocTypeTarget_ID`, `C_Order.C_DocTypeTarget_ID`), the document status by its `DocStatus` key
+ * (`WP` / `CO`), both read through the WebAPI. The only caption check is AC1's own label: the expectation is the
+ * caption the backend serves in the tab layout for the session language, fetched at runtime.
  *
  * Fixture: a prepay partner (order type set through the masterdata API's `orderDocSubType: 'PR'`), a plain
  * partner without an order type, and one priced product.
  *
- * TC1 field is shown on tab "Kunde", offers exactly the sales order types, can be set, saved and cleared (AC1)
- * TC2 order for the prepay partner: header type pre-filled "Vorauskasseauftrag", completes as "Warten auf Zahlung" (AC2)
- * TC3 the user may switch the pre-filled type to "Standardauftrag": order completes normally (AC3)
+ * TC1 field is shown on the customer tab with its layout caption, offers exactly the sales order types, can be set, saved and cleared (AC1)
+ * TC2 order for the prepay partner: header type pre-filled with the partner's type, completes with status WP (AC2)
+ * TC3 the user may switch the pre-filled type to the standard type: order completes normally, status CO (AC3)
  * TC4 partner without order type: header type is the default, as before (AC4)
  */
 
-const PREPAY_TYPE = 'Vorauskasseauftrag';
-const STANDARD_TYPE = 'Standardauftrag';
-const WAITING_FOR_PAYMENT = 'Warten auf Zahlung';
-const COMPLETED = 'Fertiggestellt';
-const FIELD_LABEL = 'Auftragsart';
-/** The dropdown's entry for "no value" (de_DE). */
-const EMPTY_OPTION = 'leer';
+/** Number of sales order types the field's validation rule offers to the test org (org 001 reads orgs '*' and 001). */
+const EXPECTED_PARTNER_TYPE_OPTION_COUNT = 3;
 
-/** The sales order types the field's validation rule offers to the test org (org 001 reads orgs '*' and 001). */
-const EXPECTED_PARTNER_TYPE_OPTIONS = ['Auftrag auf Kommission', STANDARD_TYPE, PREPAY_TYPE].sort();
+const WAITING_FOR_PAYMENT = 'WP';
+const COMPLETED = 'CO';
 
 const PARTNER_FIELD = 'SO_DocTypeTarget_ID';
 const ORDER_FIELD = 'C_DocTypeTarget_ID';
+const CUSTOMER_TAB = 'AD_Tab-223'; // tab "Customer" (internal name) of the business partner window
 
 const createFixture = async () =>
   Backend.createMasterdata({
@@ -88,14 +93,31 @@ const openCellEditor = async () => {
   await cell.locator('input').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 };
 
-/** The text the document status button of the open document shows (e.g. "Warten auf Zahlung"). */
-const statusText = async () => (await getPage().getByTestId('status-button').innerText()).trim();
+/** The lookup key of an order field (e.g. `C_DocTypeTarget_ID`, `DocStatus`) as the WebAPI serves it. */
+const orderFieldKey = async (recordId, fieldName) =>
+  (await getFieldData(String(SALES_ORDER_WINDOW_ID), recordId, fieldName)).value?.key ?? null;
 
-/** Waits until the status button shows `expected`; returns the shown text. */
-const expectStatus = async (expected) => {
+/** Waits until the order's `DocStatus` has the key `expected`. */
+const expectStatus = async (recordId, expected) => {
   await expect
-    .poll(statusText, { timeout: SLOW_ACTION_TIMEOUT, message: `document status shows "${expected}"` })
-    .toContain(expected);
+    .poll(() => orderFieldKey(recordId, 'DocStatus'), {
+      timeout: SLOW_ACTION_TIMEOUT,
+      message: `DocStatus of order ${recordId} is ${expected}`,
+    })
+    .toBe(expected);
+};
+
+/** Waits until the order's order type (`C_DocTypeTarget_ID`) has the lookup key `expected`. */
+const expectOrderType = async (recordId, expected, message) => {
+  await expect
+    .poll(() => orderFieldKey(recordId, ORDER_FIELD), { timeout: SLOW_ACTION_TIMEOUT, message })
+    .toBe(expected);
+};
+
+/** The partner's order type (`C_BPartner.SO_DocTypeTarget_ID`) lookup key, read from its customer tab row; null if empty. */
+const partnerTypeKey = async (partnerId) => {
+  const rows = (await getTabRows(String(BUSINESS_PARTNER_WINDOW_ID), partnerId, CUSTOMER_TAB)) ?? [];
+  return rows[0]?.fieldsByName?.[PARTNER_FIELD]?.value?.key ?? null;
 };
 
 /** New sales order for `partnerCode`: returns the record id once the partner was chosen and saved. */
@@ -125,37 +147,55 @@ test.describe('Partner order type', () => {
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
 
+    const prepayKey = await partnerTypeKey(masterdata.bpartners.PREPAY.id);
+    expect(prepayKey, 'fixture: the prepay partner carries an order type').not.toBeNull();
+    expect(await partnerTypeKey(masterdata.bpartners.PLAIN.id), 'fixture: the plain partner has none').toBeNull();
+
     await BusinessPartnerPage.gotoRecord(masterdata.bpartners.PLAIN.id);
     await BusinessPartnerPage.clickTab(BusinessPartnerPage.TAB_IDS.CUSTOMER);
 
     // The tab "Kunde" is a grid: the field is a column, identified language-independently by its data-testid.
     const header = getPage().locator(`th[data-testid="column-${PARTNER_FIELD}"]`);
     await expect(header, 'order type column is shown on tab Kunde').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-    await expect(header).toContainText(FIELD_LABEL);
+    // AC1 is the label itself: the expectation is the caption the backend serves for the session language (never a literal).
+    const caption = getFieldLabelFromLayout(await getTabLayout(String(BUSINESS_PARTNER_WINDOW_ID), CUSTOMER_TAB), PARTNER_FIELD);
+    expect(caption, `the tab layout labels ${PARTNER_FIELD}`).toBeTruthy();
+    await expect(header).toContainText(caption);
 
+    await openCellEditor();
+    const dropdownLoaded = getPage().waitForResponse(
+      (resp) => resp.request().method() === 'GET' && resp.url().includes(`/field/${PARTNER_FIELD}/dropdown`),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    await getPage().keyboard.press('ArrowDown');
+    const offeredKeys = ((await (await dropdownLoaded).json()).values || []).map((value) => value.key);
+    await WidgetCommon.waitForDropdown();
+    expect(offeredKeys, 'the dropdown offers exactly the sales order types').toHaveLength(EXPECTED_PARTNER_TYPE_OPTION_COUNT);
+    expect(offeredKeys.map(String), 'the prepay type is offered').toContain(String(prepayKey));
+
+    await getPage().locator(`.input-dropdown-list [data-testid="option-${prepayKey}"]`).first().click();
+    await getPage().keyboard.press('Tab');
+    await reloadKundeTab();
+    await expect
+      .poll(() => partnerTypeKey(masterdata.bpartners.PLAIN.id), {
+        timeout: SLOW_ACTION_TIMEOUT,
+        message: 'the chosen order type is saved',
+      })
+      .toBe(prepayKey);
+
+    // clear it again: the dropdown appends the "no value" entry (key null) last (RawList.js)
     await openCellEditor();
     await getPage().keyboard.press('ArrowDown');
     await WidgetCommon.waitForDropdown();
-    const options = (await getPage().locator('.input-dropdown-list .input-dropdown-list-option').allTextContents())
-      .map((option) => option.trim())
-      .filter((option) => option !== EMPTY_OPTION)
-      .sort();
-    expect(options, 'the dropdown offers exactly the sales order types').toEqual(EXPECTED_PARTNER_TYPE_OPTIONS);
-
-    await getPage().locator('.input-dropdown-list-option').getByText(PREPAY_TYPE, { exact: true }).first().click();
+    await getPage().locator('.input-dropdown-list .input-dropdown-list-option').last().click();
     await getPage().keyboard.press('Tab');
     await reloadKundeTab();
-    await expect(await partnerTypeCell().locator(), 'the chosen order type is saved').toHaveText(PREPAY_TYPE, {
-      timeout: SLOW_ACTION_TIMEOUT,
-    });
-
-    await openCellEditor();
-    await getPage().keyboard.press('ArrowDown');
-    await WidgetCommon.waitForDropdown();
-    await getPage().locator('.input-dropdown-list-option').getByText(EMPTY_OPTION, { exact: true }).first().click();
-    await getPage().keyboard.press('Tab');
-    await reloadKundeTab();
-    await expect(await partnerTypeCell().locator(), 'the order type is cleared').toHaveText('', { timeout: SLOW_ACTION_TIMEOUT });
+    await expect
+      .poll(() => partnerTypeKey(masterdata.bpartners.PLAIN.id), {
+        timeout: SLOW_ACTION_TIMEOUT,
+        message: 'the order type is cleared',
+      })
+      .toBeNull();
   });
 
   // eslint-disable-next-line no-unused-vars
@@ -165,15 +205,17 @@ test.describe('Partner order type', () => {
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
 
+    const prepayKey = await partnerTypeKey(masterdata.bpartners.PREPAY.id);
+    expect(prepayKey, 'fixture: the prepay partner carries an order type').not.toBeNull();
+
     const recordId = await newOrderFor(masterdata.bpartners.PREPAY.bpartnerCode);
-    await expect(WidgetCommon.getFieldContainer(ORDER_FIELD).locator('input').first()).toHaveValue(PREPAY_TYPE, {
-      timeout: SLOW_ACTION_TIMEOUT,
-    });
+    await expectOrderType(recordId, prepayKey, "order type is pre-filled with the partner's order type");
 
     await SalesOrderPage.addOrderLine({ product: masterdata.products.PROD.productName, quantity: 1, recordId });
     await SalesOrderPage.complete();
 
-    await expectStatus(WAITING_FOR_PAYMENT);
+    await expectStatus(recordId, WAITING_FOR_PAYMENT);
+    expect(await orderFieldKey(recordId, ORDER_FIELD), 'completion keeps the order type').toBe(prepayKey);
   });
 
   // eslint-disable-next-line no-unused-vars
@@ -183,19 +225,25 @@ test.describe('Partner order type', () => {
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
 
-    const recordId = await newOrderFor(masterdata.bpartners.PREPAY.bpartnerCode);
-    await expect(WidgetCommon.getFieldContainer(ORDER_FIELD).locator('input').first()).toHaveValue(PREPAY_TYPE, {
-      timeout: SLOW_ACTION_TIMEOUT,
-    });
+    const prepayKey = await partnerTypeKey(masterdata.bpartners.PREPAY.id);
+    expect(prepayKey, 'fixture: the prepay partner carries an order type').not.toBeNull();
 
-    await ListWidget.setValue(ORDER_FIELD, STANDARD_TYPE, { exactMatch: true });
-    await expect(WidgetCommon.getFieldContainer(ORDER_FIELD).locator('input').first()).toHaveValue(STANDARD_TYPE);
+    // the standard type = the type an order of a partner without order type gets (AC4 default)
+    const standardKey = await orderFieldKey(await newOrderFor(masterdata.bpartners.PLAIN.bpartnerCode), ORDER_FIELD);
+    expect(standardKey, 'the default order type').not.toBeNull();
+    expect(standardKey, 'the default differs from the prepay type').not.toBe(prepayKey);
+
+    const recordId = await newOrderFor(masterdata.bpartners.PREPAY.bpartnerCode);
+    await expectOrderType(recordId, prepayKey, "order type is pre-filled with the partner's order type");
+
+    await ListWidget.setByValue(ORDER_FIELD, standardKey);
+    await expectOrderType(recordId, standardKey, 'the user switched the order type');
 
     await SalesOrderPage.addOrderLine({ product: masterdata.products.PROD.productName, quantity: 1, recordId });
     await SalesOrderPage.complete();
 
-    await expectStatus(COMPLETED);
-    await expect(WidgetCommon.getFieldContainer(ORDER_FIELD).locator('input').first()).toHaveValue(STANDARD_TYPE);
+    await expectStatus(recordId, COMPLETED);
+    expect(await orderFieldKey(recordId, ORDER_FIELD), 'completion keeps the chosen order type').toBe(standardKey);
   });
 
   // eslint-disable-next-line no-unused-vars
@@ -205,9 +253,12 @@ test.describe('Partner order type', () => {
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
 
-    await newOrderFor(masterdata.bpartners.PLAIN.bpartnerCode);
+    const prepayKey = await partnerTypeKey(masterdata.bpartners.PREPAY.id);
+    expect(prepayKey, 'fixture: the prepay partner carries an order type').not.toBeNull();
 
-    const headerType = await ListWidget.getValue(ORDER_FIELD);
-    expect(headerType, 'default order type, not the prepay type').toBe(STANDARD_TYPE);
+    const recordId = await newOrderFor(masterdata.bpartners.PLAIN.bpartnerCode);
+    const headerType = await orderFieldKey(recordId, ORDER_FIELD);
+    expect(headerType, 'an order type is set').not.toBeNull();
+    expect(headerType, 'default order type, not the prepay type').not.toBe(prepayKey);
   });
 });

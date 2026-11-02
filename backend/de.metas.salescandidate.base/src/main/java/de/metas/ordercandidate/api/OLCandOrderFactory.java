@@ -151,7 +151,7 @@ class OLCandOrderFactory
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
