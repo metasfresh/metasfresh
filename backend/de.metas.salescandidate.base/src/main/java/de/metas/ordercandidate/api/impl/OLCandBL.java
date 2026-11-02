@@ -32,6 +32,7 @@ import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -91,6 +92,7 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MNote;
 import org.compiere.model.PO;
@@ -102,6 +104,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -125,6 +128,11 @@ public class OLCandBL implements IOLCandBL
 	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	private final IBPartnerBL bpartnerBL;
+	/** {@code C_BPartner.SO_DocTypeTarget_ID} by partner; avoids re-loading the partner for every candidate of a bulk import */
+	private final CCache<BPartnerId, Optional<DocTypeId>> bpartnerOrderDocTypeIdCache = CCache.<BPartnerId, Optional<DocTypeId>>builder()
+			.cacheName(OLCandBL.class.getSimpleName() + "#bpartnerOrderDocTypeId")
+			.tableName(I_C_BPartner.Table_Name)
+			.build();
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
 	@NonNull private final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL;
 
@@ -382,7 +390,7 @@ public class OLCandBL implements IOLCandBL
 		}
 
 		final BPartnerId bpartnerId = effectiveValuesBL.getBPartnerEffectiveId(orderCandidateRecord);
-		final DocTypeId docTypeId = bpartnerId == null ? null : DocTypeId.ofRepoIdOrNull(bpartnerBL.getById(bpartnerId).getSO_DocTypeTarget_ID());
+		final DocTypeId docTypeId = bpartnerId == null ? null : getBPartnerSODocTypeTargetId(bpartnerId);
 		if (docTypeId == null)
 		{
 			return null;
@@ -394,6 +402,15 @@ public class OLCandBL implements IOLCandBL
 				&& DocBaseType.ofCode(docType.getDocBaseType()).isSalesOrder()
 				&& (docTypeOrgId.isAny() || docTypeOrgId.equals(OrgId.ofRepoId(orderCandidateRecord.getAD_Org_ID())));
 		return isUsable ? docTypeId : null;
+	}
+
+	@Nullable
+	private DocTypeId getBPartnerSODocTypeTargetId(@NonNull final BPartnerId bpartnerId)
+	{
+		return bpartnerOrderDocTypeIdCache.getOrLoad(
+				bpartnerId,
+				() -> Optional.ofNullable(DocTypeId.ofRepoIdOrNull(bpartnerBL.getById(bpartnerId).getSO_DocTypeTarget_ID()))
+		).orElse(null);
 	}
 
 	@Nullable

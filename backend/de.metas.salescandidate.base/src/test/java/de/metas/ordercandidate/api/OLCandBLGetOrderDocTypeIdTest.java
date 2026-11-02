@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -73,6 +74,23 @@ class OLCandBLGetOrderDocTypeIdTest
 		final DocTypeId result = olCandBL.getOrderDocTypeId(null, createOLCand(null, partnerId));
 
 		assertThat(result).isEqualTo(partnerDocTypeId);
+	}
+
+	@Test
+	void candidatesOfTheSamePartner_loadThePartnerOnlyOnce()
+	{
+		final DocTypeId partnerDocTypeId = createSalesOrderDocType();
+		final BPartnerId partnerId = createPartnerId();
+		final I_C_BPartner partner = newInstanceOutOfTrx(I_C_BPartner.class);
+		partner.setSO_DocTypeTarget_ID(partnerDocTypeId.getRepoId());
+		when(bpartnerBL.getById(partnerId)).thenReturn(partner);
+
+		final DocTypeId result1 = olCandBL.getOrderDocTypeId(null, createOLCand(null, partnerId));
+		final DocTypeId result2 = olCandBL.getOrderDocTypeId(null, createOLCand(null, partnerId));
+
+		assertThat(result1).isEqualTo(partnerDocTypeId);
+		assertThat(result2).isEqualTo(partnerDocTypeId);
+		verify(bpartnerBL, times(1)).getById(partnerId);
 	}
 
 	private DocTypeId createSalesOrderDocType()
