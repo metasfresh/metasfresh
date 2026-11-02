@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeQuery;
@@ -37,6 +38,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocType_Invoicing_Pool;
 
@@ -44,6 +46,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.model.I_AD_Org.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocTypeInvoice_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_C_DocType_Invoicing_Pool_ID;
@@ -55,19 +58,26 @@ public class C_DocType_StepDef
 
 	private final C_DocType_Invoicing_Pool_StepDefData invoicingPoolTable;
 	private final C_DocType_StepDefData docTypeTable;
+	private final AD_Org_StepDefData orgTable;
 
 	public C_DocType_StepDef(
 			@NonNull final C_DocType_Invoicing_Pool_StepDefData invoicingPoolTable,
-			@NonNull final C_DocType_StepDefData docTypeTable)
+			@NonNull final C_DocType_StepDefData docTypeTable,
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.invoicingPoolTable = invoicingPoolTable;
 		this.docTypeTable = docTypeTable;
+		this.orgTable = orgTable;
 	}
 
 	/**
-	 * {@code C_DocType_ID} -> the {@code IsActive} the doc type had before {@link #update_C_DocType(DataTable)} changed it, so {@link #restoreIsActive()} can put it back.
+	 * {@code C_DocType_ID} -> the {@code IsActive} the doc type had before {@link #update_C_DocType(DataTable)} changed it, so {@link #restoreDocTypes()} can put it back.
 	 */
 	private final Map<Integer, Boolean> isActiveBeforeScenario = new LinkedHashMap<>();
+	/**
+	 * {@code C_DocType_ID} -> the {@code AD_Org_ID} the doc type had before {@link #update_C_DocType(DataTable)} changed it, so {@link #restoreDocTypes()} can put it back.
+	 */
+	private final Map<Integer, Integer> orgIdBeforeScenario = new LinkedHashMap<>();
 
 	/**
 	 * Updates existing {@code C_DocType}s that were registered before, e.g. with {@code load C_DocType:}.
@@ -77,8 +87,9 @@ public class C_DocType_StepDef
 	 *   <b>C_DocType_ID</b> — (required) identifier of the doc type<br>
 	 *   <b>C_DocTypeInvoice_ID</b> — (optional) identifier of the doc type's invoice doc type; {@code null} removes it<br>
 	 *   <b>C_DocType_Invoicing_Pool_ID</b> — (optional) identifier of the doc type's invoicing pool; {@code null} removes it<br>
-	 *   <b>IsActive</b> — (optional) activates or deactivates the doc type; the doc type is set back to its former value after the scenario, also when a step failed
-	 * @cucumber.depends StepDefData: C_DocType_StepDefData, C_DocType_Invoicing_Pool_StepDefData
+	 *   <b>IsActive</b> — (optional) activates or deactivates the doc type; the doc type is set back to its former value after the scenario, also when a step failed<br>
+	 *   <b>AD_Org_ID.Identifier</b> — (optional) identifier of the organisation to move the doc type to (e.g. from {@code load AD_Org:}); the doc type is set back to its former organisation after the scenario, also when a step failed
+	 * @cucumber.depends StepDefData: C_DocType_StepDefData, C_DocType_Invoicing_Pool_StepDefData, AD_Org_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_DocType:
@@ -159,19 +170,26 @@ public class C_DocType_StepDef
 					docTypeRecord.setIsActive(isActive);
 				});
 
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_Org_ID)
+				.ifPresent(orgIdentifier -> {
+					final I_AD_Org orgRecord = orgIdentifier.lookupNotNullIn(orgTable);
+					orgIdBeforeScenario.putIfAbsent(docTypeRecord.getC_DocType_ID(), docTypeRecord.getAD_Org_ID());
+					docTypeRecord.setAD_Org_ID(orgRecord.getAD_Org_ID());
+				});
+
 		saveRecord(docTypeRecord);
 
 		docTypeTable.putOrReplace(docTypeIdentifier, docTypeRecord);
 	}
 
 	/**
-	 * Sets back the {@code IsActive} of every doc type that {@link #update_C_DocType(DataTable)} changed.
+	 * Sets back the {@code IsActive} and {@code AD_Org_ID} of every doc type that {@link #update_C_DocType(DataTable)} changed.
 	 * <p>
 	 * Doc types are shared by every scenario on the executor, so a doc type left inactive would break whatever runs next;
 	 * an {@code @After} hook also runs when a step failed, a trailing Gherkin step would not.
 	 */
 	@After
-	public void restoreIsActive()
+	public void restoreDocTypes()
 	{
 		isActiveBeforeScenario.forEach((docTypeId, isActive) -> {
 			final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
@@ -179,5 +197,12 @@ public class C_DocType_StepDef
 			saveRecord(docTypeRecord);
 		});
 		isActiveBeforeScenario.clear();
+
+		orgIdBeforeScenario.forEach((docTypeId, orgId) -> {
+			final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
+			docTypeRecord.setAD_Org_ID(orgId);
+			saveRecord(docTypeRecord);
+		});
+		orgIdBeforeScenario.clear();
 	}
 }
