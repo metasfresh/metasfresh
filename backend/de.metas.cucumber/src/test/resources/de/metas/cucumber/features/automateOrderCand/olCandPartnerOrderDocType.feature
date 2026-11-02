@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0100_Sales
-@allure.label.feature:F00122
-@topic:orderCandidate
+@allure.label.feature:F00100_Sales_Order_Window
+@allure.label.feature:F00122_Sales_Order_Candidate_to_Order
 @ghActions:run_on_executor3
 Feature: Order type of the order created from an order candidate
   As a user
@@ -16,30 +16,30 @@ Feature: Order type of the order created from an order candidate
 
   @from:cucumber
   @allure.label.epic:E0100_Sales
-  @allure.label.feature:F00122
-  @topic:orderCandidate
+  @allure.label.feature:F00100_Sales_Order_Window
+  @allure.label.feature:F00122_Sales_Order_Candidate_to_Order
   Scenario: explicit prepay order type completes waiting for payment
     Given metasfresh contains M_PricingSystems
-      | Identifier         | Name               | Value              | OPT.IsActive |
-      | ps_prepay_02112026 | ps_prepay_02112026 | ps_prepay_02112026 | true         |
+      | Identifier | Name      | Value     | OPT.IsActive |
+      | prepay_ps  | prepay_ps | prepay_ps | true         |
     And metasfresh contains M_PriceLists
-      | Identifier         | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_prepay_02112026 | ps_prepay_02112026            | DE                        | EUR                 | pl_prepay_02112026 | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name      | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | prepay_pl  | prepay_ps                     | DE                        | EUR                 | prepay_pl | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier          | M_PriceList_ID.Identifier | Name                | ValidFrom  |
-      | plv_prepay_02112026 | pl_prepay_02112026        | plv_prepay_02112026 | 2021-04-01 |
+      | Identifier | M_PriceList_ID.Identifier | Name       | ValidFrom  |
+      | prepay_plv | prepay_pl                 | prepay_plv | 2021-04-01 |
     And metasfresh contains M_Products:
-      | Identifier          | Name                |
-      | product_prepay_0211 | product_prepay_0211 |
+      | Identifier     | Name           |
+      | prepay_product | prepay_product |
     And metasfresh contains M_ProductPrices
-      | Identifier       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_prepay_0211   | plv_prepay_02112026               | product_prepay_0211     | 10.0     | PCE               | Normal                        |
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | prepay_pp  | prepay_plv                        | prepay_product          | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier           | Name                 | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           |
-      | prepay_customer_0211 | prepay_customer_0211 | Y              | N            | ps_prepay_02112026            | prepay_customer_loc_0211   | 4056789012340 |
+      | Identifier      | Name            | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           |
+      | prepay_customer | prepay_customer | Y              | N            | prepay_ps                     | prepay_customer_loc        | 4056789012340 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier               | GLN           | C_BPartner_ID.Identifier |
-      | prepay_customer_loc_0211 | 4056789012340 | prepay_customer_0211     |
+      | Identifier          | GLN           | C_BPartner_ID.Identifier |
+      | prepay_customer_loc | 4056789012340 | prepay_customer          |
     And load C_DocType:
       | DocBaseType | DocSubType | C_DocType_ID |
       | SOO         | PR         | prepayType   |
@@ -62,7 +62,7 @@ Feature: Order type of the order created from an order candidate
             "dateOrdered": "2021-11-20",
             "orderDocType": "PrepayOrder",
             "paymentTerm": "val-1000002",
-            "productIdentifier": "val-product_prepay_0211",
+            "productIdentifier": "val-prepay_product",
             "qty": 2,
             "currencyCode": "EUR",
             "discount": 0,
@@ -93,11 +93,11 @@ Feature: Order type of the order created from an order candidate
       | order_prepay          |
     And validate the created orders
       | C_Order_ID.Identifier | externalId      | C_BPartner_ID.Identifier | DocBaseType | C_DocType_ID.Identifier | processed | DocStatus |
-      | order_prepay          | prepay_02112026 | prepay_customer_0211     | SOO         | prepayType              | true      | WP        |
+      | order_prepay          | prepay_02112026 | prepay_customer          | SOO         | prepayType              | true      | WP        |
     And validate C_OLCand:
-      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed |
-      | olCand_prepay          | prepay_customer_0211     | product_prepay_0211     | 2          | N       | Y             |
-    And the business partner identified by prepay_customer_0211 has exactly 1 order
+      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | QtyEntered | IsError | OPT.Processed | OPT.HasNote |
+      | olCand_prepay          | prepay_customer          | prepay_product          | 2          | N       | Y             | N           |
+    And the business partner identified by prepay_customer has exactly 1 order
     And no AD_Issue was created since the existing AD_Issue records were remembered
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
@@ -110,4 +110,4 @@ Feature: Order type of the order created from an order candidate
     "closeOrder": false
 }
 """
-    Then the business partner identified by prepay_customer_0211 has exactly 1 order
+    Then the business partner identified by prepay_customer has exactly 1 order

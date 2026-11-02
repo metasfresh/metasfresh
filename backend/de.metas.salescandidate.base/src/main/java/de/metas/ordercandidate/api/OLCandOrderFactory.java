@@ -441,8 +441,8 @@ class OLCandOrderFactory
 	 */
 	private void completeOrder(@NonNull final I_C_Order order)
 	{
-		final boolean prepayOrder = docTypeBL.isPrepay(DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
-		if (!prepayOrder)
+		final boolean isPrepayOrder = docTypeBL.isPrepay(DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
+		if (!isPrepayOrder)
 		{
 			documentBL.processEx(order, X_C_Order.DOCACTION_Complete, DocStatus.Completed.getCode());
 			return;
