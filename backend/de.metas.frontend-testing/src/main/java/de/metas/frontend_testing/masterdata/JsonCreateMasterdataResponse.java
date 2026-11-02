@@ -28,6 +28,7 @@ import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResp
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateResponse;
 import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateResponse;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.JsonSysconfig;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
@@ -37,6 +38,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 
 @Value
@@ -46,7 +48,8 @@ public class JsonCreateMasterdataResponse
 {
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, Object> context;
 
-	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, String> previousSysconfigs;
+	/** Previous values of every sysconfig row this request changed; restore them via {@code restoreSysconfigs}. */
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) List<JsonSysconfig> previousSysconfigs;
 
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) JsonMobileConfigResponse mobileConfig;
 	@NonNull Map<String, JsonLoginUserResponse> login;
@@ -77,6 +80,7 @@ public class JsonCreateMasterdataResponse
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonReceiptCreateResponse> receipts;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonInvoiceCreateResponse> invoices;
 	@NonNull Map<String, JsonDDOrderResponse> distributionOrders;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonDDOrderResponse> distributionOrdersFromCandidates;
 	@NonNull Map<String, JsonPPOrderResponse> manufacturingOrders;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonInventoryResponse> inventories;
 }
