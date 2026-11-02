@@ -8,12 +8,7 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { ListWidget } from '../utils/widgets/ListWidget';
 import { WidgetCommon } from '../utils/widgets/WidgetCommon';
 import { getPage, SLOW_ACTION_TIMEOUT } from '../utils/common';
-import {
-  getFieldData,
-  getTabRows,
-  getTabLayout,
-  getFieldLabelFromLayout,
-} from '../utils/WebAPIValidation';
+import { getFieldData, getTabRows } from '../utils/WebAPIValidation';
 import { BUSINESS_PARTNER_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 
 /**
@@ -22,13 +17,14 @@ import { BUSINESS_PARTNER_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/Wind
  *
  * Language-independent: nothing is asserted against localized text. Order types are compared by their lookup KEY
  * (`C_BPartner.SO_DocTypeTarget_ID`, `C_Order.C_DocTypeTarget_ID`), the document status by its `DocStatus` key
- * (`WP` / `CO`), both read through the WebAPI. The only caption check is AC1's own label: the expectation is the
- * caption the backend serves in the tab layout for the session language, fetched at runtime.
+ * (`WP` / `CO`), both read through the WebAPI. The field is found by its column name (`data-testid`), never by its
+ * caption; AC1's label text (de_DE / de_CH / en_US) is covered by the cucumber feature
+ * `bpartnerOrderTypeFieldLabel.feature` (AD_Field_Trl / AD_Element_Trl), the layer the language rule allows for it.
  *
- * Fixture: a prepay partner (order type set through the masterdata API's `orderDocSubType: 'PR'`), a plain
- * partner without an order type, and one priced product.
+ * Fixture: a prepay partner (order type set through the masterdata API's `orderDocSubType: 'PR'`), a standard-type
+ * partner (`'SO'`, only to read the standard type's key), a plain partner without an order type, and one priced product.
  *
- * TC1 field is shown on the customer tab with its layout caption, offers exactly the sales order types, can be set, saved and cleared (AC1)
+ * TC1 field is shown on the customer tab (found by column name), offers exactly the sales order types, can be set, saved and cleared (AC1)
  * TC2 order for the prepay partner: header type pre-filled with the partner's type, completes with status WP (AC2)
  * TC3 the user may switch the pre-filled type to the standard type: order completes normally, status CO (AC3)
  * TC4 partner without order type: header type is the default, as before (AC4)
@@ -50,6 +46,7 @@ const createFixture = async () =>
       login: { user: { language: 'de_DE' } },
       bpartners: {
         PREPAY: { isCustomer: true, isSoPriceList: true, orderDocSubType: 'PR' },
+        STANDARD: { isCustomer: true, isSoPriceList: true, orderDocSubType: 'SO' },
         PLAIN: { isCustomer: true, isSoPriceList: true },
       },
       products: {
@@ -157,10 +154,6 @@ test.describe('Partner order type', () => {
     // The tab "Kunde" is a grid: the field is a column, identified language-independently by its data-testid.
     const header = getPage().locator(`th[data-testid="column-${PARTNER_FIELD}"]`);
     await expect(header, 'order type column is shown on tab Kunde').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-    // AC1 is the label itself: the expectation is the caption the backend serves for the session language (never a literal).
-    const caption = getFieldLabelFromLayout(await getTabLayout(String(BUSINESS_PARTNER_WINDOW_ID), CUSTOMER_TAB), PARTNER_FIELD);
-    expect(caption, `the tab layout labels ${PARTNER_FIELD}`).toBeTruthy();
-    await expect(header).toContainText(caption);
 
     await openCellEditor();
     const dropdownLoaded = getPage().waitForResponse(
@@ -183,11 +176,11 @@ test.describe('Partner order type', () => {
       })
       .toBe(prepayKey);
 
-    // clear it again: the dropdown appends the "no value" entry (key null) last (RawList.js)
+    // clear it again: the dropdown has a "no value" entry with key null (RawList.js), testid `option-null`
     await openCellEditor();
     await getPage().keyboard.press('ArrowDown');
     await WidgetCommon.waitForDropdown();
-    await getPage().locator('.input-dropdown-list .input-dropdown-list-option').last().click();
+    await getPage().locator('.input-dropdown-list [data-testid="option-null"]').first().click();
     await getPage().keyboard.press('Tab');
     await reloadKundeTab();
     await expect
@@ -256,9 +249,10 @@ test.describe('Partner order type', () => {
     const prepayKey = await partnerTypeKey(masterdata.bpartners.PREPAY.id);
     expect(prepayKey, 'fixture: the prepay partner carries an order type').not.toBeNull();
 
+    const standardKey = await partnerTypeKey(masterdata.bpartners.STANDARD.id);
+    expect(standardKey, 'fixture: the standard-type partner carries the standard order type').not.toBeNull();
+
     const recordId = await newOrderFor(masterdata.bpartners.PLAIN.bpartnerCode);
-    const headerType = await orderFieldKey(recordId, ORDER_FIELD);
-    expect(headerType, 'an order type is set').not.toBeNull();
-    expect(headerType, 'default order type, not the prepay type').not.toBe(prepayKey);
+    expect(await orderFieldKey(recordId, ORDER_FIELD), 'default order type is the standard type, not the prepay type').toBe(standardKey);
   });
 });
