@@ -32,7 +32,6 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -251,26 +250,14 @@ public class C_BP_BankAccount_StepDef
 		bpBankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
 		bpBankAccount.setC_Currency_ID(currencyId.getRepoId());
 
-		row.getAsOptionalString(COLUMNNAME_AccountNo)
-				.map(StringUtils::trimBlankToNull)
-				.ifPresent(bpBankAccount::setAccountNo);
+		row.getAsOptionalString(COLUMNNAME_AccountNo).ifPresent(bpBankAccount::setAccountNo);
 		row.getAsOptionalIdentifier(I_C_BP_BankAccount.COLUMNNAME_C_Bank_ID)
 				.map(bankTable::getId)
 				.ifPresent(bankId -> bpBankAccount.setC_Bank_ID(bankId.getRepoId()));
-		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_IBAN)
-				.map(StringUtils::trimBlankToNull)
-				.ifPresent(bpBankAccount::setIBAN);
-		// optional; needed for SEPA direct debit export (creditor = org bank account)
-		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_SEPA_CreditorIdentifier)
-				.map(StringUtils::trimBlankToNull)
-				.ifPresent(bpBankAccount::setSEPA_CreditorIdentifier);
-		// optional; account holder name / city (the SEPA export does not use them: the debtor name is the partner name)
-		row.getAsOptionalString(COLUMNNAME_A_Name)
-				.map(StringUtils::trimBlankToNull)
-				.ifPresent(bpBankAccount::setA_Name);
-		row.getAsOptionalString(COLUMNNAME_A_City)
-				.map(StringUtils::trimBlankToNull)
-				.ifPresent(bpBankAccount::setA_City);
+		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_IBAN).ifPresent(bpBankAccount::setIBAN);
+		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_SEPA_CreditorIdentifier).ifPresent(bpBankAccount::setSEPA_CreditorIdentifier);
+		row.getAsOptionalString(COLUMNNAME_A_Name).ifPresent(bpBankAccount::setA_Name);
+		row.getAsOptionalString(COLUMNNAME_A_City).ifPresent(bpBankAccount::setA_City);
 
 		InterfaceWrapperHelper.save(bpBankAccount);
 
