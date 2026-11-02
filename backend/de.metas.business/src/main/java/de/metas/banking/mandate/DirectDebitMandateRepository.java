@@ -69,8 +69,7 @@ public class DirectDebitMandateRepository
 	/**
 	 * Loads, with ONE query, the active mandates of all given bank accounts (e.g. of a whole pay selection).
 	 * <p>
-	 * Only mandates of the export org and of org 0 are considered; use {@link DirectDebitMandatesMap#getMandate(BankAccountId)}
-	 * to pick the export org's mandate first, falling back to the org-0 one.
+	 * Only mandates of the export org and of org 0 are loaded, so the map holds per bank account the export org's mandate, else the org-0 one.
 	 * The DB unique index guarantees at most one active mandate per bank account and org.
 	 */
 	public DirectDebitMandatesMap getMandates(
@@ -91,7 +90,7 @@ public class DirectDebitMandateRepository
 				.map(record -> fromRecord(record, orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()))))
 				.collect(ImmutableList.toImmutableList());
 
-		return DirectDebitMandatesMap.ofList(mandates, exportOrgId);
+		return DirectDebitMandatesMap.ofList(mandates);
 	}
 
 	/**

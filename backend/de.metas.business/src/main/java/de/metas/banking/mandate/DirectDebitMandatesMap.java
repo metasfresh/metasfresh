@@ -25,46 +25,59 @@ package de.metas.banking.mandate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.banking.BankAccountId;
-import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.util.List;
 import java.util.Optional;
 
 /**
- * The active mandates of a set of bank accounts, as seen by one export org:
- * the export org's own mandates, with the org-0 ("*") mandates as fallback.
+ * Direct debit mandates, indexed by bank account.
+ * Per bank account it holds one mandate; if there is one of a regular org and one of org 0 ("*"), the regular org's mandate is kept.
  */
 @ToString
 public class DirectDebitMandatesMap
 {
-	public static final DirectDebitMandatesMap EMPTY = new DirectDebitMandatesMap(ImmutableList.of(), OrgId.ANY);
+	public static final DirectDebitMandatesMap EMPTY = new DirectDebitMandatesMap(ImmutableList.of());
 
 	/**
-	 * @param mandates active mandates, at most one per bank account and org (guaranteed by the DB unique index);
-	 *                 only those of {@code exportOrgId} and of org 0 are indexed, others are ignored
+	 * @param mandates per bank account at most one mandate of a regular org and one of org 0
 	 */
-	public static DirectDebitMandatesMap ofList(@NonNull final List<DirectDebitMandate> mandates, @NonNull final OrgId exportOrgId)
+	public static DirectDebitMandatesMap ofList(@NonNull final List<DirectDebitMandate> mandates)
 	{
-		return !mandates.isEmpty() ? new DirectDebitMandatesMap(mandates, exportOrgId) : EMPTY;
+		return !mandates.isEmpty() ? new DirectDebitMandatesMap(mandates) : EMPTY;
 	}
 
 	private final ImmutableMap<BankAccountId, DirectDebitMandate> byBankAccountId;
 
-	private DirectDebitMandatesMap(@NonNull final List<DirectDebitMandate> mandates, @NonNull final OrgId exportOrgId)
+	private DirectDebitMandatesMap(@NonNull final List<DirectDebitMandate> mandates)
 	{
 		this.byBankAccountId = mandates.stream()
-				.filter(mandate -> OrgId.equals(mandate.getOrgId(), exportOrgId) || mandate.getOrgId().isAny())
-				// a bank account with both: the export org's mandate wins over the org-0 one
 				.collect(ImmutableMap.toImmutableMap(
 						DirectDebitMandate::getBankAccountId,
 						mandate -> mandate,
-						(mandate1, mandate2) -> mandate1.getOrgId().isAny() ? mandate2 : mandate1));
+						DirectDebitMandatesMap::regularOrgMandateWins));
 	}
 
 	/**
-	 * @return the export org's mandate of the given bank account, else the org-0 mandate; empty if there is none
+	 * @return the mandate of the regular org
+	 * @throws AdempiereException if both mandates are of org 0 or both are of a regular org
+	 */
+	private static DirectDebitMandate regularOrgMandateWins(@NonNull final DirectDebitMandate mandate1, @NonNull final DirectDebitMandate mandate2)
+	{
+		if (mandate1.getOrgId().isAny() == mandate2.getOrgId().isAny())
+		{
+			throw new AdempiereException("Expected per bank account at most one mandate of a regular org and one of org 0")
+					.appendParametersToMessage()
+					.setParameter("mandate1", mandate1)
+					.setParameter("mandate2", mandate2);
+		}
+		return mandate1.getOrgId().isAny() ? mandate2 : mandate1;
+	}
+
+	/**
+	 * @return the mandate of the given bank account; empty if there is none
 	 */
 	public Optional<DirectDebitMandate> getMandate(@NonNull final BankAccountId bankAccountId)
 	{
