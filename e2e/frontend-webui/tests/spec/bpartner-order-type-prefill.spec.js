@@ -82,8 +82,10 @@ const reloadKundeTab = async () => {
 };
 
 const openCellEditor = async () => {
-  await (await partnerTypeCell().locator()).dblclick();
-  await getPage().waitForTimeout(500);
+  const cell = await partnerTypeCell().locator();
+  await cell.dblclick();
+  // wait for the cell editor (an input inside the cell) instead of a fixed pause
+  await cell.locator('input').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 };
 
 /** The text the document status button of the open document shows (e.g. "Warten auf Zahlung"). */
@@ -106,6 +108,7 @@ const newOrderFor = async (partnerCode) => {
 test.describe('Partner order type', () => {
   test.beforeEach(() => {
     allure.epic('E0100: Sales');
+    allure.epic('E0390: Masterdata Partner');
     allure.tag('F00100: Sales Order Window');
     allure.tag('F00100');
     allure.tag('F00900: Business Partner');
