@@ -3,6 +3,8 @@ package de.metas.frontend_testing.masterdata.sales_order;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.DocTypeId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
@@ -13,6 +15,7 @@ import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleSer
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
@@ -47,7 +50,9 @@ public class SalesOrderCreateCommand
 	@NonNull private static final Logger logger = LogManager.getLogger(SalesOrderCreateCommand.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	@NonNull private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 
 	@NonNull private final JsonSalesOrderCreateRequest request;
@@ -59,13 +64,15 @@ public class SalesOrderCreateCommand
 	private transient OrderFactory salesOrderFactory;
 	private final ArrayList<LineCreateRequestAndBuilder> lineCreateRequestAndBuilders = new ArrayList<>();
 
-	private static Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(30);
-	private static Duration JOB_SCHEDULE_CREATE_SLEEP_BETWEEN = Duration.ofMillis(1000);
+	/** Upper bound for both {@link #createSchedules()} and {@link #waitForShipmentSchedulesToBeValid()} — schedules are written by an async workpackage, measured past 40s on a cold stack. */
+	private static final Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(60);
+	private static final Duration JOB_SCHEDULE_CREATE_SLEEP_BETWEEN = Duration.ofMillis(1000);
 
 	public JsonSalesOrderCreateResponse execute()
 	{
 		final JsonSalesOrderCreateResponse response = trxManager.callInThreadInheritedTrx(this::execute0);
 		trxManager.runInThreadInheritedTrx(this::createSchedules);
+		waitForShipmentSchedulesToBeValid();
 		return response;
 	}
 
@@ -91,7 +98,8 @@ public class SalesOrderCreateCommand
 		this.salesOrderFactory = OrderFactory.newSalesOrder()
 				.shipBPartner(shipBPartnerId, shipBPartnerLocationId, null)
 				.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
-				.datePromised(request.getDatePromised());
+				.datePromised(request.getDatePromised())
+				.poReference(request.getPoReference());
 
 		if (request.getShipper() != null)
 		{
@@ -112,6 +120,7 @@ public class SalesOrderCreateCommand
 		return JsonSalesOrderCreateResponse.builder()
 				.id(String.valueOf(salesOrderRecord.getC_Order_ID()))
 				.documentNo(salesOrderRecord.getDocumentNo())
+				.docTypeName(docTypeBL.getNameById(DocTypeId.ofRepoId(salesOrderRecord.getC_DocType_ID())).translate(context.getAdLanguage()))
 				.build();
 	}
 
@@ -172,6 +181,60 @@ public class SalesOrderCreateCommand
 		stopwatch.stop();
 
 		logger.info("Created job schedules for all {} order lines. Took {}", orderLineIds.size(), stopwatch);
+	}
+
+	/**
+	 * Waits until ALL shipment schedules for this order's lines are (a) created and (b) no longer flagged
+	 * for recompute (i.e. valid in {@code M_ShipmentSchedule_Recompute}).
+	 *
+	 * <p>Why this is needed: shipment-schedule creation and the subsequent recompute pass are asynchronous
+	 * (driven by background workpackage processors). The old mass-printing E2E flow incidentally triggered
+	 * a global {@code M_ShipmentSchedule_Recompute} pass by opening a picking job, which made freshly-created
+	 * self-packed orders' schedules valid before the test scanned. The new launcher-based flow skips that,
+	 * so without this wait the schedules may still be flagged when {@code MassPrintingService} queries
+	 * {@code M_Packageable_V} and no packageable lines are found (boxesPacked=0).
+	 */
+	private void waitForShipmentSchedulesToBeValid()
+	{
+		final ImmutableSet<OrderLineId> allOrderLineIds = lineCreateRequestAndBuilders.stream()
+				.map(LineCreateRequestAndBuilder::getOrderLineId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (allOrderLineIds.isEmpty())
+		{
+			return;
+		}
+
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		while (true)
+		{
+			final List<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByOrderLineIds(allOrderLineIds);
+
+			if (shipmentSchedules.size() >= allOrderLineIds.size())
+			{
+				final ImmutableSet<ShipmentScheduleId> scheduleIds = shipmentSchedules.stream()
+						.map(ss -> ShipmentScheduleId.ofRepoId(ss.getM_ShipmentSchedule_ID()))
+						.collect(ImmutableSet.toImmutableSet());
+
+				if (shipmentScheduleInvalidateRepository.isAllValid(scheduleIds))
+				{
+					logger.info("All {} shipment schedules are valid. Took {}", scheduleIds.size(), stopwatch);
+					stopwatch.stop();
+					return;
+				}
+			}
+
+			if (stopwatch.elapsed().compareTo(JOB_SCHEDULE_CREATE_TIMEOUT) > 0)
+			{
+				throw new AdempiereException("Timeout waiting for shipment schedules to be created and valid. "
+						+ "Expected " + allOrderLineIds.size() + " schedule(s), found " + shipmentSchedules.size() + ". "
+						+ "Took " + stopwatch.elapsed());
+			}
+
+			logger.info("Waiting for shipment schedules to be created and valid ({}/{} found). Sleeping...",
+					shipmentSchedules.size(), allOrderLineIds.size());
+			sleep(JOB_SCHEDULE_CREATE_SLEEP_BETWEEN);
+		}
 	}
 
 	private static void sleep(@NonNull final Duration duration)

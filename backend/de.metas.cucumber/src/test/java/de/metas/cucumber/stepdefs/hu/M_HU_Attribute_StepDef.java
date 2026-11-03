@@ -221,6 +221,28 @@ public class M_HU_Attribute_StepDef
 				+ ", ValueDate=" + huAttribute.getValueDate();
 	}
 
+	/**
+	 * Changes an HU attribute via the attribute storage service, which triggers propagation and event firing.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_HU_ID.Identifier} — HU whose attribute is to be changed</li>
+	 *   <li>{@code M_Attribute_ID.Value} — attribute code (e.g. "WeightGross", "Lot-Nummer")</li>
+	 * </ul>
+	 * Optional columns (at least one value column should be present):
+	 * <ul>
+	 *   <li>{@code OPT.ValueNumber} — numeric value (BigDecimal); used for number-type attributes</li>
+	 *   <li>{@code OPT.Value} — value as string; for list/string-type attributes pass the attribute-value
+	 *       code (e.g. "A", "B"); for numeric attributes a parseable number string also works</li>
+	 * </ul>
+	 *
+	 * <p>Example (list attribute):
+	 * <pre>
+	 * And M_HU_Attribute is changed
+	 *   | M_HU_ID.Identifier | M_Attribute_ID.Value    | OPT.Value |
+	 *   | vhu1               | stock_attr_rekey_test   | B         |
+	 * </pre>
+	 */
 	private void changeHUAttribute(@NonNull final DataTableRow row)
 	{
 		final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(I_M_HU_Attribute.COLUMNNAME_M_HU_ID);
@@ -245,7 +267,20 @@ public class M_HU_Attribute_StepDef
 		row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
 				.ifPresent(valueNumber -> attributesStorage.setValue(attributeRecord, valueNumber));
 
-		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value)
-				.ifPresent(value -> attributesStorage.setValue(attributeRecord, value));
+		// OPT.Value: dispatch on the attribute's declared value type, not on whether the string
+		// parses as a number — otherwise a list attribute with a numeric-looking value code
+		// (e.g. "1") would be silently sent down the numeric path.
+		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value).ifPresent(valueStr -> {
+			final AttributeValueType attributeValueType = AttributeValueType.ofCode(attributeRecord.getAttributeValueType());
+			if (attributeValueType == AttributeValueType.NUMBER)
+			{
+				attributesStorage.setValue(attributeRecord, new BigDecimal(valueStr));
+			}
+			else
+			{
+				// STRING / LIST / DATE: set as the string value (list = the attribute-value code)
+				attributesStorage.setValue(attributeRecord, valueStr);
+			}
+		});
 	}
 }

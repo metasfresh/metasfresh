@@ -9,6 +9,12 @@
 -- 5. Propagates changes through the entire MD_Candidate_QtyDetails chain chronologically
 -- 6. Creates QtyDetails if they don't exist (looking up previous STOCK record)
 --
+-- Error contract: the three precondition failures below (candidate missing/inactive, candidate is a
+-- STOCK candidate, no STOCK sibling) RAISE. They are checked before any write, so raising leaves no
+-- partial change behind, and the caller -- AD_Process MD_Candidate_RemoveFromATP, which runs this via
+-- ExecuteUpdateSQL and discards the result set -- surfaces the reason to the operator instead of
+-- reporting success while doing nothing.
+--
 -- Stock Impact Formula (uses helper function MD_Candidate_Get_Stock_Impact):
 -- - DEMAND, STOCK_UP, INVENTORY_DOWN (STOCK_CHANGE): -qty
 -- - SUPPLY, INVENTORY_UP (STOCK_CHANGE): qty
@@ -66,22 +72,12 @@ BEGIN
       AND IsActive = 'Y';
 
     IF NOT FOUND THEN
-        RETURN QUERY SELECT p_MD_Candidate_ID,
-                            NULL::numeric,
-                            NULL::numeric,
-                            'ERROR: MD_Candidate not found or not active: ' || p_MD_Candidate_ID;
-        RETURN;
+        RAISE EXCEPTION 'MD_Candidate not found or not active: %', p_MD_Candidate_ID;
     END IF;
 
     -- Check if already a STOCK type
     IF v_candidate_record.MD_Candidate_Type = 'STOCK' THEN
-        RETURN QUERY SELECT p_MD_Candidate_ID,
-                            NULL::numeric,
-                            NULL::numeric,
-                            NULL::numeric,
-                            NULL::integer,
-                            'ERROR: Cannot remove STOCK candidates directly. Only DEMAND/SUPPLY/etc types are supported.';
-        RETURN;
+        RAISE EXCEPTION 'Cannot remove STOCK candidates directly. Only DEMAND/SUPPLY/etc types are supported. MD_Candidate_ID=%', p_MD_Candidate_ID;
     END IF;
 
     -- 2. Find the associated STOCK candidate using helper function
@@ -93,11 +89,7 @@ BEGIN
 
     -- STOCK candidate must exist - if not, it's a data integrity error
     IF v_stock_candidate_id IS NULL THEN
-        RETURN QUERY SELECT p_MD_Candidate_ID,
-                            NULL::numeric,
-                            NULL::numeric,
-                            'ERROR: No STOCK candidate found for this record. Data integrity issue - STOCK candidate should always exist.';
-        RETURN;
+        RAISE EXCEPTION 'No STOCK candidate found for this record. Data integrity issue - STOCK candidate should always exist. MD_Candidate_ID=%', p_MD_Candidate_ID;
     END IF;
 
     -- Get current stock record
@@ -399,7 +391,8 @@ COMMENT ON FUNCTION de_metas_material.MD_Candidate_Remove_From_ATP(numeric) IS
       current_ATP_qty - The new ATP quantity after removal
       qty_adjustment - The quantity adjustment made to ATP
       impacted_md_candidates_count - Number of candidates updated in the chain
-      message - Success/error message
+      message - Success message. A precondition failure does not come back in this column: it is
+                raised, so the caller sees the reason instead of a row it would have to inspect.
 
     Example usage:
       SELECT * FROM de_metas_material.MD_Candidate_Remove_From_ATP(1000000);

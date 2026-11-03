@@ -53,6 +53,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  *     <li>{@code Qty} (required) — quantity per template line</li>
  *     <li>{@code C_UOM_ID} (required) — X12DE355 code of the UOM (e.g., "PCE", "KGM")</li>
  *     <li>{@code SeqNo} (required) — sequence number for ordering</li>
+ *     <li>{@code IsWithoutCharge} (optional, default N) — if Y, the component order line created from
+ *         this template line will have its price zeroed out and {@code Reason} set to the
+ *         ref-list code {@code "B"} (AD_Reference 541968 "Reason for without charge").</li>
  * </ul>
  */
 @RequiredArgsConstructor
@@ -90,6 +93,9 @@ public class C_CompensationGroup_Schema_TemplateLine_StepDef
 			record.setC_UOM_ID(uomId.getRepoId());
 			record.setQty(row.getAsBigDecimal(I_C_CompensationGroup_Schema_TemplateLine.COLUMNNAME_Qty));
 			record.setSeqNo(row.getAsInt(I_C_CompensationGroup_Schema_TemplateLine.COLUMNNAME_SeqNo));
+
+			row.getAsOptionalBoolean(I_C_CompensationGroup_Schema_TemplateLine.COLUMNNAME_IsWithoutCharge)
+					.ifPresent(record::setIsWithoutCharge);
 
 			saveRecord(record);
 

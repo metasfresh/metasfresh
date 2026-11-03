@@ -69,6 +69,11 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
+		if (!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
+		}
+
 		final I_PP_Order ppOrder = context.getSelectedModel(I_PP_Order.class);
 		return ProcessPreconditionsResolution.acceptIf(isEligible(ppOrder));
 	}
@@ -158,6 +163,8 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 			}
 
 			final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
+			// Only the collectors that closeIt() generated itself are reversed here. Adding
+			// CostDifferenceDistribution would re-open the residual it discharged and let it post twice.
 			if (costCollectorType == CostCollectorType.UsageVariance)
 			{
 				if (docStatus.isClosed())

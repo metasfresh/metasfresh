@@ -2,12 +2,14 @@ import React from 'react';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { huConsolidationJobLocation } from '../routes';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { usePickingSlot } from '../actions/usePickingSlot';
 import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
 import { toastErrorFromObj } from '../../../utils/toast';
 import Spinner from '../../../components/Spinner';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
+import { trl } from '../../../utils/translations';
 import PropTypes from 'prop-types';
 
 export const PickingSlotScreen = () => {
@@ -30,6 +32,7 @@ export const PickingSlotScreen = () => {
   });
 
   const items = pickingSlotContent?.items ?? [];
+  const graiScanEnabled = pickingSlotContent?.graiScanEnabled ?? false;
   const isWorking = isLoading || isProcessing;
 
   const onConsolidateHUClicked = ({ huId }) => {
@@ -40,12 +43,23 @@ export const PickingSlotScreen = () => {
       .then(() => history.goBack())
       .catch((error) => toastErrorFromObj(error));
   };
+  const onGraiScanned = ({ scannedBarcode }) => {
+    return consolidate({ grai: scannedBarcode }).catch((error) => toastErrorFromObj(error));
+  };
 
   // console.log('PickingSlotScreen', { pickingSlotContent });
 
   return (
     <div className="section pt-2">
       {isLoading && <Spinner />}
+      {graiScanEnabled && (
+        <BarcodeScannerComponent
+          testId="grai-scanner"
+          onResolvedResult={onGraiScanned}
+          inputPlaceholderText={trl('huConsolidation.PickingSlotScreen.scanGRAI')}
+          invisible={isWorking}
+        />
+      )}
       <PickingSlotContent
         items={items}
         disabled={isWorking}

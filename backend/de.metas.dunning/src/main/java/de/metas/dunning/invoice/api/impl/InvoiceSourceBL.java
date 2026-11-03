@@ -67,7 +67,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 		}
 		final LocalDate dunningGraceDate = dueDate.plusDays(dunning.getGraceDays());
 
-		invoice.setDunningGrace(TimeUtil.asTimestamp(dunningGraceDate));
+		invoice.setDunningGrace(TimeUtil.asTimestamp(dunningGraceDate, timeZone));
 		return true;
 	}
 

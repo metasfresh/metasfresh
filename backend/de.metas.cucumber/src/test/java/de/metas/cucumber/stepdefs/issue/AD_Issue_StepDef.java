@@ -29,6 +29,7 @@ import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.error.AdIssueId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
@@ -38,34 +39,36 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.X_AD_Issue;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class AD_Issue_StepDef
 {
-	private final AD_Issue_StepDefData issueTable;
-
-	private PInstanceId pInstanceId;
-	private final TestContext testContext;
+	@NonNull private final AD_Issue_StepDefData issueTable;
+	@NonNull private final TestContext testContext;
+	@NonNull private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public AD_Issue_StepDef(
-			@NonNull final AD_Issue_StepDefData issueTable,
-			@NonNull final TestContext testContext)
-	{
-		this.issueTable = issueTable;
-		this.testContext = testContext;
-	}
+	private PInstanceId pInstanceId;
+	/** {@code null} if the AD_Issue table was empty when remembered */
+	@Nullable private AdIssueId rememberedMaxIssueId;
+	private boolean isExistingIssuesRemembered = false;
 
 	@Given("I_AD_PInstance with id {int} is created")
 	public void new_PInstanceId_is_created(final int pInstanceIdString)
@@ -128,5 +131,53 @@ public class AD_Issue_StepDef
 			final boolean containsSummary = issue.getIssueSummary().contains(issueSummary);
 			assertThat(containsSummary).isTrue();
 		}
+	}
+
+	/**
+	 * Remembers the highest existing AD_Issue_ID. A snapshot is used instead of a timestamp because scenarios run on a
+	 * fixed {@code SystemTime}, which freezes {@code AD_Issue.Created}, so "created since" cannot be told by time.
+	 * New AD_Issue records get higher ids.
+	 */
+	@And("the existing AD_Issue records are remembered")
+	public void remember_existing_AD_Issues()
+	{
+		rememberedMaxIssueId = retrieveMaxIssueIdOrNull();
+		isExistingIssuesRemembered = true;
+	}
+
+	/**
+	 * Asserts that no AD_Issue was created since {@code the existing AD_Issue records are remembered}.
+	 * Waits for the material and async queues to drain first, because issues are raised by asynchronous event handlers.
+	 * Accounting (posting) issues are ignored: they stem from the asynchronous posting of documents created in the scenario's background
+	 * (e.g. a completed PP_Product_BOM has no accountable document) and are unrelated to what the scenario verifies.
+	 */
+	@Then("no AD_Issue was created since the existing AD_Issue records were remembered")
+	public void no_AD_Issue_created_since_remembered() throws InterruptedException
+	{
+		// issues are raised by asynchronous event handlers, so let them finish before looking
+		rabbitMQStepDef.wait_empty_all_queues();
+
+		assertThat(isExistingIssuesRemembered)
+				.as("Step 'the existing AD_Issue records are remembered' must run first")
+				.isTrue();
+
+		final List<String> newIssues = queryBL.createQueryBuilderOutOfTrx(I_AD_Issue.class)
+				.addCompareFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, CompareQueryFilter.Operator.GREATER, rememberedMaxIssueId != null ? rememberedMaxIssueId.getRepoId() : 0)
+				.addNotEqualsFilter(I_AD_Issue.COLUMNNAME_IssueCategory, X_AD_Issue.ISSUECATEGORY_Accounting)
+				.orderBy(I_AD_Issue.COLUMNNAME_AD_Issue_ID)
+				.create()
+				.stream()
+				.map(issue -> issue.getAD_Issue_ID() + ": " + issue.getIssueSummary())
+				.collect(Collectors.toList());
+		assertThat(newIssues).as("AD_Issue records created since they were remembered").isEmpty();
+	}
+
+	@Nullable
+	private AdIssueId retrieveMaxIssueIdOrNull()
+	{
+		final int maxIssueId = queryBL.createQueryBuilderOutOfTrx(I_AD_Issue.class)
+				.create()
+				.maxInt(I_AD_Issue.COLUMNNAME_AD_Issue_ID);
+		return AdIssueId.ofRepoIdOrNull(maxIssueId);
 	}
 }

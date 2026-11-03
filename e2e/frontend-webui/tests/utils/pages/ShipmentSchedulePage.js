@@ -122,12 +122,37 @@ export class ShipmentSchedulePage {
    * Execute M_ShipmentSchedule_EnqueueSelection action to create shipment.
    * This is a Quick Action on the shipment schedule list view.
    *
+   * The action operates on the SELECTED rows. The list view opened via
+   * SalesOrderPage.openRelatedShipmentCandidate() (Alt+6) is already filtered to
+   * the current order's shipment schedules, so we safely "Select all on this page"
+   * to ensure ALL schedules (e.g. for compensation groups with multiple Item lines,
+   * each producing its own shipment schedule) are processed — not just the first /
+   * active row. This preserves single-row behaviour (selecting 1 of 1 row works
+   * identically to single-row selection).
+   *
    * The action opens a modal with configuration options (e.g., QuantityType, Complete Shipment Note).
    * After clicking "Start" in the modal, the shipment is created asynchronously.
    */
   static async createShipment() {
     return await test.step('ShipmentSchedulePage - Create shipment', async () => {
       const page = getPage();
+
+      // Step 0: Select all rows on this page so the action processes every
+      // shipment schedule in the (already order-filtered) view, not just one.
+      // Uses title="Alt+A" selector — language-independent; see picking-terminal.spec.js
+      // and frontend/src/components/table/TablePagination.js where the attribute is set.
+      const selectAllBtn = page.locator('[title="Alt+A"]').first();
+      const selectAllVisible = await selectAllBtn.isVisible().catch(() => false);
+      if (selectAllVisible) {
+        await selectAllBtn.click();
+      } else {
+        // Fallback: keyboard shortcut Alt+A. Click body first to ensure focus is
+        // on the document, not on a grid cell (which would enter edit mode).
+        await page.locator('body').click();
+        await page.waitForTimeout(200);
+        await page.keyboard.press('Alt+A');
+      }
+      await page.waitForTimeout(500);
 
       // Step 1: Open the quick actions dropdown
       const dropdownToggle = page.getByTestId('quick-action-dropdown-toggle');

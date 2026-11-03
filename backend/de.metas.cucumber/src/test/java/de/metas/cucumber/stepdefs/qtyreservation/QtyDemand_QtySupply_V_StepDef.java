@@ -29,8 +29,11 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.inoutcandidate.qty_reservation.MakeQtyReservationCommand;
 import de.metas.order.IOrderLineBL;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.inoutcandidate.qty_reservation.MaterialCockpitV2RowVO;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationId;
@@ -89,9 +92,6 @@ import java.util.Map;
  * <h3>{@code make qty reservation from QtyDemand_QtySupply_V row {string} for order line {string} with QtyTU {int}}</h3>
  * <p>Executes a reservation using a previously queried view row.
  *
- * <h3>{@code make qty reservation from QtyDemand_QtySupply_V row {string} for order line {string} with QtyTU {int} expecting error}</h3>
- * <p>Same as above but expects the reservation to fail with an exception.
- *
  * <h3>{@code validate QtyDemand_QtySupply_V:}</h3>
  * <p>Re-queries the view and validates field values against expectations.
  * <pre>
@@ -104,6 +104,8 @@ import java.util.Map;
 public class QtyDemand_QtySupply_V_StepDef
 {
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	@NonNull private final QtyReservationService qtyReservationService = SpringContextHolder.instance.getBean(QtyReservationService.class);
 
 	@NonNull private final M_Product_StepDefData productTable;
@@ -163,13 +165,19 @@ public class QtyDemand_QtySupply_V_StepDef
 
 		final ProjectRepository projectRepository = SpringContextHolder.instance.getBeanOr(ProjectRepository.class, null);
 
+		// Resolve the LU/TU-derived CU-per-TU fallback (used when the order line has no positive
+		// QtyItemCapacity) via the same shared helper the WebUI process uses.
+		final Quantity capacityPerTUFallback = huOrderBL.getCapacityPerTUInStockUOMFallback(orderAndLineId, rowVO.getProductId());
+
 		final QtyReservationId reservationId = MakeQtyReservationCommand.builder()
 				.orderLineBL(orderLineBL)
+				.productBL(productBL)
 				.qtyReservationService(qtyReservationService)
 				.projectRepository(projectRepository)
 				.rowVO(rowVO)
 				.salesOrderAndLineId(orderAndLineId)
 				.qtyToReserveTU(QtyTU.ofInt(qtyTU))
+				.capacityPerTUFallback(capacityPerTUFallback)
 				.build()
 				.execute();
 

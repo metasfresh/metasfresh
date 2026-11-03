@@ -1,0 +1,4 @@
+Method <de.metas.vertical.creditscore.creditpass.process.CS_Creditpass_TransactionFrom_C_Order.doIt()> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (CS_Creditpass_TransactionFrom_C_Order.java:79)
+Method <de.metas.vertical.creditscore.creditpass.process.CS_Transaction_Result_ManualOverride.doIt()> calls method <org.adempiere.model.InterfaceWrapperHelper.load(int, java.lang.Class)> in (CS_Transaction_Result_ManualOverride.java:65)
+Method <de.metas.vertical.creditscore.creditpass.process.CS_Transaction_Result_ManualOverride.doIt()> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (CS_Transaction_Result_ManualOverride.java:83)
+Method <de.metas.vertical.creditscore.creditpass.process.CS_Transaction_Result_ManualOverride.doIt()> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (CS_Transaction_Result_ManualOverride.java:86)

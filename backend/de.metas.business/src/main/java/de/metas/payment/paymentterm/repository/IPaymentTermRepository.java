@@ -33,7 +33,12 @@ import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
+/**
+ * Repository Tables: C_PaymentTerm, C_PaymentTerm_Break, C_PaySchedule
+ * Repository Cluster: PaymentTermRepository
+ */
 public interface IPaymentTermRepository extends ISingletonService
 {
 	@NonNull
@@ -68,4 +73,11 @@ public interface IPaymentTermRepository extends ISingletonService
 			@Nullable Percent discount);
 
 	boolean isAllowOverrideDueDate(@NonNull PaymentTermId paymentTermId);
+
+	/**
+	 * Returns the IDs of all active payment terms whose {@code IsAllowOverrideDueDate} flag matches
+	 * the given value. An empty set means no terms match, not "all terms".
+	 */
+	@NonNull
+	Set<PaymentTermId> getPaymentTermIdsByIsAllowOverrideDueDate(boolean isAllowOverrideDueDate);
 }

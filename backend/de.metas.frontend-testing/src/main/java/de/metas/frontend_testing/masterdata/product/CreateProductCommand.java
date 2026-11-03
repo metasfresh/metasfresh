@@ -4,6 +4,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostingMethod;
+import de.metas.costing.CurrentCostQuery;
+import de.metas.costing.CurrentCost;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -56,6 +64,7 @@ import org.eevolution.model.X_PP_Product_BOM;
 import org.eevolution.model.X_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -70,20 +79,22 @@ public class CreateProductCommand
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(CreateProductCommand.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final LotNoSequenceRepository lotNoSequenceRepository = new LotNoSequenceRepository();
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	@NonNull private final ProductRepository productRepository; // for C_BPartner_Product
+	@NonNull private final ICurrentCostsRepository currentCostsRepository; // for isSkipDefaultCosts
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonCreateProductRequest request;
 
 	@NonNull private final Identifier identifier;
 	@NonNull private final OrgId orgId = MasterdataContext.ORG_ID;
-	@NonNull private final ProductCategoryId productCategoryId = MasterdataContext.PRODUCT_CATEGORY_STANDARD_ID;
 
 	public JsonCreateProductResponse execute()
 	{
@@ -95,6 +106,8 @@ public class CreateProductCommand
 		createPrices(productId, productUomId);
 		createBPartnerProducts(productId);
 		createBOM(productRecord);
+		deleteDefaultCostsIfRequested(productRecord);
+		setCurrentCostPriceIfRequested(productRecord);
 
 		return JsonCreateProductResponse.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
@@ -128,11 +141,28 @@ public class CreateProductCommand
 		productRecord.setGTIN(request.getGtin() != null ? request.getGtin().getAsString() : null);
 		productRecord.setEAN13_ProductCode(request.getEan13ProductCode() != null ? request.getEan13ProductCode().getAsString() : null);
 		productRecord.setC_UOM_ID(productUomId.getRepoId());
-		productRecord.setProductType(ProductType.Item.getCode());
-		productRecord.setIsStocked(true);
-		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
-		productRecord.setIsSold(true);
-		productRecord.setIsPurchased(true);
+		final ProductType productType = resolveProductType(request.getType());
+		productRecord.setProductType(productType.getCode());
+		// Explicit request override wins; otherwise Items are stocked, non-items are not.
+		final Boolean explicitIsStocked = request.getIsStocked();
+		productRecord.setIsStocked(explicitIsStocked != null ? explicitIsStocked : productType.isItem());
+		final Boolean isSelfPacked = request.getIsSelfPacked();
+		if (isSelfPacked != null)
+		{
+			productRecord.setIsSelfPacked(isSelfPacked);
+		}
+		final Boolean isSerialNoPicked = request.getIsSerialNoPicked();
+		if (isSerialNoPicked != null)
+		{
+			productRecord.setIsSerialNoPicked(isSerialNoPicked);
+		}
+		productRecord.setM_Product_Category_ID(resolveProductCategoryId().getRepoId());
+		productRecord.setIsSold(CoalesceUtil.coalesceNotNull(request.getIsSold(), true));
+		productRecord.setIsPurchased(CoalesceUtil.coalesceNotNull(request.getIsPurchased(), true));
+		if (request.getGuaranteeDaysMin() != null)
+		{
+			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
+		}
 
 		// Set M_AttributeSet_ID if attributeSetName is provided
 		final String attributeSetName = StringUtils.trimBlankToNull(request.getAttributeSetName());
@@ -153,12 +183,40 @@ public class CreateProductCommand
 			logger.info("Set M_AttributeSet_ID={} (name={}) for product {}", attributeSet.getM_AttributeSet_ID(), attributeSetName, productRecord.getValue());
 		}
 
+		if (request.getGuaranteeDaysMin() != null)
+		{
+			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
+		}
+		if (request.getBestBeforeDays() != null)
+		{
+			productRecord.setBestBeforeDays(request.getBestBeforeDays());
+		}
+		if (request.getCoProductCostDistributionPercent() != null)
+		{
+			productRecord.setCoProductCostDistributionPercent(request.getCoProductCostDistributionPercent());
+		}
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 		context.putIdentifier(identifier, productId);
 
 		return productRecord;
+	}
+
+	/**
+	 * Resolves the product's category: the per-run {@link JsonCreateProductRequest#getProductCategory()} when the
+	 * request names one (looked up from the context, which the {@code productCategories} section populated), else the
+	 * shared {@link MasterdataContext#PRODUCT_CATEGORY_STANDARD_ID} default (backward-compatible for every product
+	 * that omits it).
+	 */
+	private ProductCategoryId resolveProductCategoryId()
+	{
+		final Identifier productCategory = request.getProductCategory();
+		if (productCategory != null)
+		{
+			return context.getId(productCategory, ProductCategoryId.class);
+		}
+		return MasterdataContext.PRODUCT_CATEGORY_STANDARD_ID;
 	}
 
 	private String generateValue()
@@ -322,6 +380,7 @@ public class CreateProductCommand
 				.bPartnerId(bpartnerId)
 				.usedForCustomer(true)
 				.cuEAN(ean13 != null ? ean13.getAsString() : null)
+				.shelfLifeMinDays(bpartner.getShelfLifeMinDays())
 				.build());
 	}
 
@@ -366,6 +425,15 @@ public class CreateProductCommand
 		bomRecord.setC_DocType_ID(getBOMDocTypeId().getRepoId());
 		bomRecord.setDateDoc(TimeUtil.asTimestamp(Instant.now()));
 		bomRecord.setDocStatus(X_PP_Product_BOM.DOCSTATUS_Drafted);
+		final JsonCreateProductRequest.LotNoSequence lotNoSequence = request.getBom() != null ? request.getBom().getLotNoSequence() : null;
+		if (lotNoSequence != null)
+		{
+			bomRecord.setLotNo_Sequence_ID(lotNoSequenceRepository.create(lotNoSequence, productRecord.getValue()).getRepoId());
+		}
+		if (request.getBom() != null && request.getBom().isSerialNoSequence())
+		{
+			bomRecord.setSerialNo_Sequence_ID(lotNoSequenceRepository.createSerialNoSequence(productRecord.getValue()).getRepoId());
+		}
 		saveRecord(bomRecord);
 		return bomRecord;
 	}
@@ -438,6 +506,102 @@ public class CreateProductCommand
 		}
 
 		saveRecord(lineRecord);
+	}
+
+	/**
+	 * Map the request's {@code type} field to a {@link ProductType}.
+	 * Accepts both the enum name ({@code "Item"}, {@code "Service"}, …) and the AD ref-list code
+	 * ({@code "I"}, {@code "S"}, …). Falls back to {@link ProductType#Item} when {@code null}/blank.
+	 */
+	private static ProductType resolveProductType(@Nullable final String requestType)
+	{
+		final String trimmed = StringUtils.trimBlankToNull(requestType);
+		if (trimmed == null)
+		{
+			return ProductType.Item;
+		}
+		// Try enum-name matching first (case-insensitive) — "Item", "Service", "Resource", …
+		for (final ProductType candidate : ProductType.values())
+		{
+			if (candidate.name().equalsIgnoreCase(trimmed))
+			{
+				return candidate;
+			}
+		}
+		// Fall back to the AD ref-list code ("I", "S", "R", …). ofCode throws when not found,
+		// which is the right behaviour for an invalid type — surface it to the caller.
+		return ProductType.ofCode(trimmed);
+	}
+
+	/**
+	 * When the request asks to skip default costs, leaves the product without any {@code M_Cost} row,
+	 * like a migrated product. Must run after the last product save, which would create them again.
+	 */
+	private void deleteDefaultCostsIfRequested(@NonNull final I_M_Product productRecord)
+	{
+		if (!Boolean.TRUE.equals(request.getIsSkipDefaultCosts()))
+		{
+			return;
+		}
+
+		currentCostsRepository.deleteForProduct(productRecord);
+		logger.info("Deleted default M_Cost rows for product {} (isSkipDefaultCosts=true)", productRecord.getValue());
+	}
+
+	/**
+	 * Sets {@code M_Cost.CurrentCostPrice} of the costing-method element of every accounting schema, so that
+	 * a spec can give a finished good the cost it has on a real instance (e.g. to test the settlement of a production
+	 * order against its WIP). Creates the {@code M_Cost} rows first when the product save did not, so the price
+	 * cannot be silently dropped.
+	 */
+	private void setCurrentCostPriceIfRequested(@NonNull final I_M_Product productRecord)
+	{
+		final BigDecimal currentCostPrice = request.getCurrentCostPrice();
+		if (currentCostPrice == null)
+		{
+			return;
+		}
+
+		final ClientId clientId = ClientId.ofRepoId(productRecord.getAD_Client_ID());
+		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
+
+		final List<AcctSchema> acctSchemas = acctSchemaDAO.getAllByClient(clientId);
+		if (acctSchemas.isEmpty())
+		{
+			throw new AdempiereException("No accounting schema found for " + clientId + ", so currentCostPrice cannot be set");
+		}
+
+		for (final AcctSchema acctSchema : acctSchemas)
+		{
+			final CostingMethod costingMethod = acctSchema.getCosting().getCostingMethod();
+			final CurrentCostQuery query = CurrentCostQuery.builder().productId(productId).acctSchemaId(acctSchema.getId()).build();
+
+			List<CurrentCost> currentCosts = filterByCostingMethod(currentCostsRepository.list(query), costingMethod);
+			if (currentCosts.isEmpty())
+			{
+				currentCostsRepository.createDefaultProductCosts(productRecord);
+				currentCosts = filterByCostingMethod(currentCostsRepository.list(query), costingMethod);
+			}
+			if (currentCosts.isEmpty())
+			{
+				throw new AdempiereException("No M_Cost of costing method " + costingMethod + " found for product " + productRecord.getValue() + " and " + acctSchema.getId()
+						+ ", so currentCostPrice cannot be set");
+			}
+
+			for (final CurrentCost currentCost : currentCosts)
+			{
+				currentCost.setOwnCostPrice(CostAmount.of(currentCostPrice, currentCost.getCurrencyId()));
+				currentCostsRepository.save(currentCost);
+			}
+		}
+		logger.info("Set M_Cost.CurrentCostPrice={} for product {}", currentCostPrice, productRecord.getValue());
+	}
+
+	private static List<CurrentCost> filterByCostingMethod(@NonNull final List<CurrentCost> currentCosts, @NonNull final CostingMethod costingMethod)
+	{
+		return currentCosts.stream()
+				.filter(currentCost -> currentCost.getCostElement().isMaterialCostingMethod(costingMethod))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private void renamePreviousEAN13ProductCodes()

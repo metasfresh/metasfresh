@@ -8,7 +8,7 @@ import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -106,7 +106,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	 */
 	public void deleteInvoiceCandidates(@NonNull final I_C_Flatrate_Term term)
 	{
-		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(term);
+		Services.get(IInvoiceCandBL.class).deleteAllReferencingInvoiceCandidates(term);
 	}
 
 	/**

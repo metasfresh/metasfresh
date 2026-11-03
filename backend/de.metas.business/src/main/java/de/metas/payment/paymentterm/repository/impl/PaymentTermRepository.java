@@ -48,11 +48,16 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static de.metas.util.Check.isNotBlank;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: C_PaymentTerm, C_PaymentTerm_Break, C_PaySchedule
+ * Repository Cluster: PaymentTermRepository
+ */
 public class PaymentTermRepository implements IPaymentTermRepository
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -265,5 +270,12 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	public boolean isAllowOverrideDueDate(@NonNull final PaymentTermId paymentTermId)
 	{
 		return getById(paymentTermId).isAllowOverrideDueDate();
+	}
+
+	@Override
+	@NonNull
+	public Set<PaymentTermId> getPaymentTermIdsByIsAllowOverrideDueDate(final boolean isAllowOverrideDueDate)
+	{
+		return getIndexedPaymentTerms().getPaymentTermIdsByIsAllowOverrideDueDate(isAllowOverrideDueDate);
 	}
 }
