@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.invalidation.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import de.metas.async.AsyncBatchId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
@@ -221,6 +222,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		}
 	}
 
+	// PostgreSQL's driver rejects a single "IN (?,?,...)" statement once the parameter count exceeds ~32,765
+	// (DB-08006, "out-of-range integer as a 2-byte value"); chunk well under that cap.
+	private static final int MAX_IDS_PER_CHUNK = 10_000;
+
 	@Override
 	public void invalidateShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
@@ -232,22 +237,26 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final String description = truncInvalidateDescription("" + shipmentScheduleIds.size() + " shipment schedules: " + shipmentScheduleIds);
 		final String chunkUUID = UUID.randomUUID().toString();
 
-		final List<Object> sqlParams = new ArrayList<>();
-		sqlParams.add(description);
-		sqlParams.add(chunkUUID);
-		final String sqlInWhereClause = DB.buildSqlList(shipmentScheduleIds, sqlParams); // creates the string and fills the sqlParams list
+		int count = 0;
+		for (final List<ShipmentScheduleId> shipmentScheduleIdsChunk : Iterables.partition(shipmentScheduleIds, MAX_IDS_PER_CHUNK))
+		{
+			final List<Object> sqlParams = new ArrayList<>();
+			sqlParams.add(description);
+			sqlParams.add(chunkUUID);
+			final String sqlInWhereClause = DB.buildSqlList(shipmentScheduleIdsChunk, sqlParams); // creates the string and fills the sqlParams list
 
-		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
-				+ " SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + " , ?"
-				+ " FROM " + I_M_ShipmentSchedule.Table_Name
-				+ " WHERE "
-				// Only our shipment schedule Ids
-				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + " IN " + sqlInWhereClause
-				// Only those which were not already added (technically not necessary, but shall reduce unnecessary bloat)
-				+ "   AND NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "."
-				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
+			final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
+					+ " SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + " , ?"
+					+ " FROM " + I_M_ShipmentSchedule.Table_Name
+					+ " WHERE "
+					// Only our shipment schedule Ids
+					+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + " IN " + sqlInWhereClause
+					// Only those which were not already added (technically not necessary, but shall reduce unnecessary bloat)
+					+ "   AND NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "."
+					+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
 
-		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			count += DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		}
 		logger.debug("Invalidated {} shipment schedules for M_ShipmentSchedule_IDs={}", count, shipmentScheduleIds);
 
 		if (count > 0)
@@ -579,15 +588,30 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		return whereClause.toString();
 	}
 
-	// ::int: the DB function RETURNS bigint; getSQLValueEx reads via ResultSet.getInt. The explicit narrowing
-	// documents that dedup counts stay within int range (bounded by the recompute-table size).
+	// ::int: the DB functions RETURN bigint; getSQLValueEx reads via ResultSet.getInt. The explicit narrowing
+	// documents that dedup/reap counts stay within int range (bounded by the recompute-table size).
 	private static final String SQL_DEDUP_RECOMPUTE = "SELECT m_shipmentschedule_recompute_dedup()::int";
+	private static final String SQL_REAP_ORPHANED_RECOMPUTE = "SELECT m_shipmentschedule_recompute_reap_orphans()::int";
 	private static final String SQL_TAG_TO_RECOMPUTE = "SELECT M_ShipmentSchedule_TagToRecompute(p_selection_id => ?, p_batchsize => ?)";
 
 	@Override
 	public void markAllToRecomputeOutOfTrx(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
 	{
-		// Dedup the untagged (unclaimed) recompute markers first: multiple untagged rows for the same
+		// Reap the orphaned untagged markers: there is no FK from M_ShipmentSchedule_Recompute to
+		// M_ShipmentSchedule, so a marker can outlive its schedule, and M_ShipmentSchedule_TagToRecompute can never
+		// tag such a marker -- it would sit in this high-churn queue table forever. Same best-effort contract as the
+		// dedup below (see there): out-of-trx, 5s lock_timeout in the DB function, warn and fall through on failure.
+		try
+		{
+			final int countReaped = DB.getSQLValueEx(ITrx.TRXNAME_None, SQL_REAP_ORPHANED_RECOMPUTE);
+			logger.debug("Reaped {} orphaned untagged recompute marker(s) before tagging for {}", countReaped, pinstanceId);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed to reap orphaned untagged recompute markers before tagging for {}; proceeding with tagging anyway", pinstanceId, ex);
+		}
+
+		// Dedup the untagged (unclaimed) recompute markers next: multiple untagged rows for the same
 		// M_ShipmentSchedule_ID would skew the distinct-schedule batch counting in the whole-product batching
 		// performed by M_ShipmentSchedule_TagToRecompute below. m_shipmentschedule_recompute_dedup keeps one
 		// unclaimed marker per schedule; it is idempotent and a no-op when there are no duplicates. Runs out-of-trx
@@ -621,8 +645,35 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	@Override
 	public boolean existsUntaggedRecomputeMarkers()
 	{
-		final String sql = "SELECT 1 FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_PInstance_ID IS NULL LIMIT 1";
+		// The EXISTS is the taggability condition of M_ShipmentSchedule_TagToRecompute (both of its branches
+		// require the M_ShipmentSchedule row to still exist). M_ShipmentSchedule_Recompute has no FK to
+		// M_ShipmentSchedule, so an ORPHANED untagged marker -- one whose schedule was deleted -- can exist and can
+		// never be tagged. Counting it here would answer a looser question than the tagging can deliver on: the
+		// pass tags nothing, still reports limit-reached, and enqueues a follow-up pass, forever.
+		final String sql = "SELECT 1"
+				+ " FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr"
+				+ " WHERE sr.AD_PInstance_ID IS NULL"
+				+ "   AND EXISTS (SELECT 1 FROM " + I_M_ShipmentSchedule.Table_Name + " s"
+				+ "               WHERE s." + COLUMNNAME_M_ShipmentSchedule_ID + "=sr." + COLUMNNAME_M_ShipmentSchedule_ID + ")"
+				+ " LIMIT 1";
 		return DB.getSQLValueEx(ITrx.TRXNAME_None, sql) == 1;
+	}
+
+	@Override
+	public void deleteRecomputeMarkers(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		// deleteDirectly (bulk filter-based DELETE), NOT delete(): M_ShipmentSchedule_Recompute is a keyless
+		// queue table, so the PO-by-PO delete() builds an empty WHERE and fails.
+		//
+		// Deliberately NOT restricted to untagged markers: with no FK between the two tables, a marker outliving
+		// its schedule is an ORPHAN that M_ShipmentSchedule_TagToRecompute can never tag (both branches require
+		// the schedule row), so existsUntaggedRecomputeMarkers() reports work remaining forever and every bounded
+		// pass re-enqueues a follow-up. m_shipmentschedule_recompute_reap_orphans() backstops orphans already in
+		// the database and any deletion path bypassing the model layer.
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create()
+				.deleteDirectly();
 	}
 
 	@Override

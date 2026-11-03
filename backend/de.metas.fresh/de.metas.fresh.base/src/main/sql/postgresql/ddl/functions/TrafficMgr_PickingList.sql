@@ -15,7 +15,8 @@ CREATE OR REPLACE FUNCTION report.TrafficMgr_PickingList(
                 lagernr          VARCHAR,
                 menge_at_locator NUMERIC,
                 m_product_id     NUMERIC,
-                picklist_group   VARCHAR
+                picklist_group   VARCHAR,
+                GrossWeight      NUMERIC
             )
     LANGUAGE plpgsql
 AS
@@ -40,7 +41,8 @@ BEGIN
                (wh.Name || COALESCE(' / ' || loc.Value, ''))::VARCHAR                            AS lagernr,
                pjs.qtypicked                                                                      AS menge_at_locator,
                p.M_Product_ID                                                                     AS m_product_id,
-               CASE WHEN pjs.qtypicked > 0 THEN 'Bereits gepickt' ELSE 'Zu picken' END::VARCHAR  AS picklist_group
+               CASE WHEN pjs.qtypicked > 0 THEN 'Bereits gepickt' ELSE 'Zu picken' END::VARCHAR  AS picklist_group,
+               pjs.GrossWeight
         FROM M_Picking_Job_Schedule_view pjs
                  JOIN M_Product p ON p.M_Product_ID = pjs.M_Product_ID
                  LEFT JOIN C_Workplace w ON w.C_Workplace_ID = pjs.C_Workplace_ID

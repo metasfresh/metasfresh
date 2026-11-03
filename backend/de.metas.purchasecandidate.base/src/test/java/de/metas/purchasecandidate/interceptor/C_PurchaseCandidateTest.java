@@ -24,6 +24,7 @@ package de.metas.purchasecandidate.interceptor;
 
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,6 +35,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -130,5 +133,37 @@ class C_PurchaseCandidateTest
 
 		assertThat(annotation).isNotNull();
 		assertThat(annotation.timings()).containsExactly(ModelValidator.TYPE_BEFORE_NEW);
+	}
+
+	@Test
+	public void rejectsUnknownSourceOnNew()
+	{
+		final I_C_PurchaseCandidate record = newInstance(I_C_PurchaseCandidate.class);
+		record.setSource(PurchaseCandidateSource.Unknown.getCode());
+
+		assertThatThrownBy(() -> interceptor.rejectLegacyUnknownSourceOnNew(record))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	@ParameterizedTest
+	@EnumSource(value = PurchaseCandidateSource.class, names = "Unknown", mode = EnumSource.Mode.EXCLUDE)
+	public void allowsRealSourceOnNew(final PurchaseCandidateSource source)
+	{
+		final I_C_PurchaseCandidate record = newInstance(I_C_PurchaseCandidate.class);
+		record.setSource(source.getCode());
+
+		assertThatCode(() -> interceptor.rejectLegacyUnknownSourceOnNew(record))
+				.doesNotThrowAnyException();
+	}
+
+	@Test
+	public void rejectsMissingSourceOnNew()
+	{
+		// Source has no column default and no callout, so a legitimate creation path must set it before
+		// BEFORE_NEW; a missing Source here is a programming error and must not slip through.
+		final I_C_PurchaseCandidate record = newInstance(I_C_PurchaseCandidate.class);
+
+		assertThatThrownBy(() -> interceptor.rejectLegacyUnknownSourceOnNew(record))
+				.isInstanceOf(RuntimeException.class);
 	}
 }

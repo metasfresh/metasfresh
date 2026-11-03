@@ -317,6 +317,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setSeqNo(from.getSeqNo());
 		record.setIsDisplayInSummary(from.isShowInSummary());
 		record.setIsDisplayInDetailed(from.isShowInDetailed());
+		record.setIsBlockLayout(from.isBlockLayout());
 		record.setFormatPattern(from.getPattern());
 	}
 
@@ -397,6 +398,8 @@ public class MobileUIPickingUserProfileRepository
 		return queryBL.createQueryBuilder(I_PickingProfile_Filter.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PickingProfile_Filter.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileId)
+				// deliberately unordered: both callers are order-insensitive (retrieveFilters re-sorts via
+				// PickingFiltersList, save_Filters collects into a map keyed by facet group)
 				.create()
 				.stream();
 	}
@@ -427,6 +430,7 @@ public class MobileUIPickingUserProfileRepository
 				.seqNo(record.getSeqNo())
 				.isShowInDetailed(record.isDisplayInDetailed())
 				.isShowInSummary(record.isDisplayInSummary())
+				.isBlockLayout(record.isBlockLayout())
 				.pattern(record.getFormatPattern())
 				.build();
 	}

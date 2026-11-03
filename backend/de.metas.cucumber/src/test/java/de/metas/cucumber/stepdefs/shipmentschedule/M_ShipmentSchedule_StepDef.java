@@ -50,6 +50,7 @@ import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData;
@@ -60,6 +61,8 @@ import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Service_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.cucumber.stepdefs.workpackage.WorkPackageQueueUtil;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
@@ -70,6 +73,8 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
+import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
@@ -86,7 +91,6 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
-import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.organization.IOrgDAO;
@@ -98,6 +102,7 @@ import java.time.ZoneId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.Builder;
@@ -111,7 +116,10 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -163,6 +171,27 @@ public class M_ShipmentSchedule_StepDef
 	private static final String SHIP_BPARTNER = "shipBPartner";
 	private static final String BILL_BPARTNER = "billBPartner";
 
+	/**
+	 * The two workpackage processors that can touch {@code M_ShipmentSchedule_Recompute} behind a scenario's back
+	 * (see {@link #deleteAllUntaggedRecomputeMarkers()}): the recompute pass itself, and the create-missing run
+	 * whose newly created schedules get invalidated — which both INSERTS markers and enqueues a recompute pass.
+	 */
+	private static final ImmutableList<String> RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES = ImmutableList.of(
+			UpdateInvalidShipmentSchedulesWorkpackageProcessor.class.getSimpleName(),
+			CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
+
+	/**
+	 * Timeout of the queue drain in {@link #deleteAllUntaggedRecomputeMarkers()}: this module's standard wait budget,
+	 * and ~120 polls of a queue whose planner picks up work every 500ms ({@code CucumberLifeCycleSupport} sets
+	 * {@code QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS=500}), so it expires only when the queue is genuinely
+	 * stuck, never when it is merely slow. When it does expire, {@link #logPendingRecomputeWorkPackages()} names the
+	 * processor that is still busy and its pending count, so the failure is diagnosable rather than just a timeout.
+	 */
+	private static final int RECOMPUTE_QUEUE_DRAIN_TIMEOUT_SEC = 60;
+
+	/** Poll interval of the queue drain — the planner's own poll interval; polling faster only adds queries. */
+	private static final long RECOMPUTE_QUEUE_DRAIN_POLL_MS = 500;
+
 	@NonNull private final JsonAttributeService jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
 	@NonNull private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
 	@NonNull private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
@@ -171,12 +200,19 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-	@NonNull private final CarrierAdviseProcessService carrierAdviseProcessService = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
 
 	/** Recompute selection ids created by {@link #tagInvalidShipmentSchedulesForRecompute}, keyed by the scenario's selection identifier. */
 	private final Map<String, PInstanceId> recomputeSelectionsByIdentifier = new HashMap<>();
+
+	/**
+	 * Regression coverage: orphaned {@code M_ShipmentSchedule_ID}s seeded by
+	 * {@link #seedOrphanedUntaggedRecomputeMarker}, keyed by the scenario's identifier, so
+	 * {@link #assertOrphanedRecomputeMarkerReaped} can look the id back up.
+	 */
+	private final Map<String, Integer> orphanedRecomputeMarkerScheduleIdsByIdentifier = new HashMap<>();
 
 	/**
 	 * M_ShipmentSchedule_IDs seeded by {@link #seedShipmentSchedulesWithUntaggedRecomputeMarker}. They carry
@@ -203,6 +239,8 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
+	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
 
 	private final TestContext testContext;
 
@@ -336,10 +374,189 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	/**
-	 * Isolation cleanup: removes any leftover untagged {@code M_ShipmentSchedule_Recompute} markers
-	 * ({@code AD_PInstance_ID IS NULL}) that a prior scenario sharing this DB may have left behind, so a
-	 * whole-product recompute-batching scenario starts from a known, empty recompute backlog. Belongs at the
-	 * start of the Background.
+	 * Regression coverage: seeds one orphaned, untagged {@code M_ShipmentSchedule_Recompute} marker. A
+	 * minimal {@code M_ShipmentSchedule} row is inserted, an untagged marker is inserted for it, then the
+	 * schedule row itself is deleted directly -- leaving the marker behind with no matching schedule. This is
+	 * possible only because {@code M_ShipmentSchedule_Recompute} carries NO FK to {@code M_ShipmentSchedule}
+	 * (verified against the live local DB); its only FK is to {@code C_Async_Batch}.
+	 * <p>
+	 * Why raw SQL, not the DAO layer: every DAO insertion path for this marker (e.g.
+	 * {@code IShipmentScheduleInvalidateRepository#invalidateShipmentSchedules}) INSERTs
+	 * {@code FROM M_ShipmentSchedule WHERE M_ShipmentSchedule_ID IN (...)}, so it can never produce a marker
+	 * whose schedule does not exist -- the DAO layer is designed to prevent exactly the state this step needs.
+	 * Raw SQL is the only way to create it; this mirrors {@link #seedShipmentSchedulesWithUntaggedRecomputeMarker}'s
+	 * own raw INSERT, plus one raw DELETE to orphan it.
+	 * <p>
+	 * The seeded id is remembered under {@code identifier} for {@link #assertOrphanedRecomputeMarkerReaped}, and
+	 * tracked in {@link #seededRecomputeScheduleIds} so the existing {@link #deleteSeededRecomputeSchedules()}
+	 * cleanup also removes it if it survives the scenario (a harmless no-op once the fix has reaped it).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>identifier</b> — (required) alias to remember the orphaned schedule's id under, for the later
+	 *     "no untagged marker remains" assertion<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Given an orphaned untagged M_ShipmentSchedule_Recompute marker exists for "orphanSchedule"
+	 * </pre>
+	 */
+	@Given("an orphaned untagged M_ShipmentSchedule_Recompute marker exists for {string}")
+	public void seedOrphanedUntaggedRecomputeMarker(@NonNull final String identifier)
+	{
+		final int shipmentScheduleTableId = InterfaceWrapperHelper.getTableId(I_M_ShipmentSchedule.class);
+		final int orphanScheduleId = DB.getNextID(StepDefConstants.CLIENT_ID.getRepoId(), I_M_ShipmentSchedule.Table_Name);
+		final int fillerProductId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT M_Product_ID FROM M_Product ORDER BY M_Product_ID LIMIT 1");
+
+		// Minimal M_ShipmentSchedule row -- same filler pattern as seedShipmentSchedulesWithUntaggedRecomputeMarker.
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"INSERT INTO M_ShipmentSchedule ("
+						+ " M_ShipmentSchedule_ID, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy,"
+						+ " M_Product_ID, M_Warehouse_ID, C_BPartner_ID, C_BPartner_Location_ID, Bill_BPartner_ID,"
+						+ " DeliveryRule, DeliveryViaRule, BPartnerAddress, AD_Table_ID, Record_ID)"
+						+ " VALUES (?, ?, ?, now(), ?, now(), ?, ?, ?, ?, ?, ?, 'F', 'D', '.', ?, ?)",
+				new Object[] {
+						orphanScheduleId,
+						StepDefConstants.CLIENT_ID.getRepoId(),
+						StepDefConstants.ORG_ID.getRepoId(),
+						UserId.METASFRESH.getRepoId(),
+						UserId.METASFRESH.getRepoId(),
+						fillerProductId,
+						StepDefConstants.WAREHOUSE_ID.getRepoId(),
+						StepDefConstants.METASFRESH_AG_BPARTNER_ID.getRepoId(),
+						StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId(),
+						StepDefConstants.METASFRESH_AG_BPARTNER_ID.getRepoId(),
+						shipmentScheduleTableId,
+						orphanScheduleId },
+				ITrx.TRXNAME_ThreadInherited);
+
+		// One untagged marker for it (keyless queue table -- see seedShipmentSchedulesWithUntaggedRecomputeMarker).
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"INSERT INTO M_ShipmentSchedule_Recompute (M_ShipmentSchedule_ID) VALUES (?)",
+				new Object[] { orphanScheduleId },
+				ITrx.TRXNAME_ThreadInherited);
+
+		// Orphan it: delete the schedule row, leaving the marker with no matching M_ShipmentSchedule. No FK
+		// exists between the two tables, so this delete succeeds and the marker survives untouched.
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM M_ShipmentSchedule WHERE M_ShipmentSchedule_ID = ?",
+				new Object[] { orphanScheduleId },
+				ITrx.TRXNAME_ThreadInherited);
+
+		orphanedRecomputeMarkerScheduleIdsByIdentifier.put(identifier, orphanScheduleId);
+
+		// Track it so the existing @After cleanup (deleteSeededRecomputeSchedules) removes the leftover marker
+		// too -- the M_ShipmentSchedule delete there is a harmless no-op (the row is already gone).
+		seededRecomputeScheduleIds.add(orphanScheduleId);
+	}
+
+	/**
+	 * Regression coverage: enqueues one bounded shipment-schedule recompute pass via the real
+	 * production entry point, {@link UpdateInvalidShipmentSchedulesWorkpackageProcessor#schedule()} (the same
+	 * static method every real invalidation calls internally). The pass is bounded exactly as in production by
+	 * the {@code UpdateInvalidShipmentSchedulesWorkpackageProcessor.MaxToProcess} sysconfig (default 500 -- a
+	 * real, non-zero limit; nothing in this test module overrides it to unbounded), so
+	 * {@code maxToProcess.isLimited()} is {@code true} and the livelock branch in
+	 * {@code ShipmentScheduleUpdater#updateShipmentSchedules} is reachable.
+	 * <p>
+	 * Two consequences of driving the REAL pipeline (this is the only step in this feature that does):
+	 * the Background's fixture schedules are handler-less (self-referential {@code AD_Table_ID}, no registered
+	 * {@code ShipmentScheduleHandler}), so {@code ShipmentSchedulePA#createOlAndScheds} skips them via its
+	 * defensive report-and-skip path rather than running per-schedule business logic against minimal rows --
+	 * which keeps this pass fast, but also means each run logs one {@code AD_Issue} per skipped fixture
+	 * schedule. Those {@code AD_Issue} rows are an EXPECTED side effect, not a failure. And if that skip path
+	 * were ever removed, this scenario would start failing for a reason unrelated to the orphan it guards --
+	 * look there first before suspecting the reaper or the probe.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When a shipment-schedule recompute pass is enqueued
+	 * </pre>
+	 */
+	@When("a shipment-schedule recompute pass is enqueued")
+	public void enqueueBoundedRecomputePass()
+	{
+		UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();
+	}
+
+	/**
+	 * Regression assertion: waits until no untagged ({@code AD_PInstance_ID IS NULL})
+	 * {@code M_ShipmentSchedule_Recompute} marker remains for the schedule id seeded under {@code identifier}
+	 * by {@link #seedOrphanedUntaggedRecomputeMarker} -- i.e. the orphan was reaped rather than left to
+	 * accumulate forever in the queue table. Polls instead of checking once: the marker is removed
+	 * asynchronously by the enqueued recompute pass (see the module's async-wait rule).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>identifier</b> — (required) the alias {@link #seedOrphanedUntaggedRecomputeMarker} stored the orphaned schedule's id under<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then no untagged M_ShipmentSchedule_Recompute marker remains for "orphanSchedule"
+	 * </pre>
+	 */
+	@Then("no untagged M_ShipmentSchedule_Recompute marker remains for {string}")
+	public void assertOrphanedRecomputeMarkerReaped(@NonNull final String identifier) throws InterruptedException
+	{
+		final int orphanScheduleId = getOrphanedRecomputeMarkerScheduleId(identifier);
+
+		final Supplier<Boolean> markerReaped = () -> queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, orphanScheduleId)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, null)
+				.create()
+				.noneMatch();
+
+		StepDefUtil.tryAndWait(RECOMPUTE_QUEUE_DRAIN_TIMEOUT_SEC, RECOMPUTE_QUEUE_DRAIN_POLL_MS, markerReaped);
+
+		assertThat(markerReaped.get())
+				.as("Untagged M_ShipmentSchedule_Recompute marker for orphaned schedule %s (identifier %s) -- expected it to be reaped", orphanScheduleId, identifier)
+				.isTrue();
+	}
+
+	/**
+	 * Regression assertion: the strongest available livelock signal -- waits until no
+	 * {@link #RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES} workpackage remains pending, i.e. the shipment-schedule
+	 * recompute queue actually drains to zero within the module's standard wait budget. Before the fix, a
+	 * bounded pass that could never make progress on an untaggable (orphaned) marker kept reporting
+	 * {@code limitReached=true} and re-enqueueing a follow-up workpackage forever, so this wait would time out
+	 * instead of observing the queue reach zero. Delegates to {@link #waitForRecomputeWorkQueueToDrain()} -- the
+	 * same signal and wait budget the Background's isolation cleanup already relies on.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the shipment-schedule recompute work queue drains to zero pending workpackages
+	 * </pre>
+	 */
+	@And("the shipment-schedule recompute work queue drains to zero pending workpackages")
+	public void assertRecomputeWorkQueueDrains() throws InterruptedException
+	{
+		waitForRecomputeWorkQueueToDrain();
+	}
+
+	private int getOrphanedRecomputeMarkerScheduleId(@NonNull final String identifier)
+	{
+		final Integer orphanScheduleId = orphanedRecomputeMarkerScheduleIdsByIdentifier.get(identifier);
+		assertThat(orphanScheduleId)
+				.as("No orphaned M_ShipmentSchedule_Recompute marker was seeded for identifier %s -- call the seeding step first", identifier)
+				.isNotNull();
+		return orphanScheduleId;
+	}
+
+	/**
+	 * Isolation cleanup: deletes any leftover untagged {@code M_ShipmentSchedule_Recompute} markers
+	 * ({@code AD_PInstance_ID IS NULL}), waits until the shipment-schedule work queue is drained, then deletes
+	 * once more. Belongs at the start of the Background.
+	 * <p>
+	 * Deleting first keeps the wait independent of the untagged backlog this step removes anyway; the trailing
+	 * delete catches markers a pass completing during the drain created. The wait closes a real race: a recompute
+	 * pass enqueued by an earlier scenario claims markers through the same DB function this feature asserts on,
+	 * and that claiming SQL is unconditionally global. Both processors are checked in ONE predicate so they are
+	 * zero at the same poll: a create-missing run enqueues a recompute pass, so checking them one after the other
+	 * could pass on a queue that is not quiet.
+	 * <p>
+	 * Do NOT widen {@link WorkPackageQueueUtil#countPendingWorkPackages(String)} to not-ready workpackages: one
+	 * bound to a rolled-back transaction never becomes ready, so waiting on it would turn this intermittent flake
+	 * into a deterministic timeout.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -348,7 +565,16 @@ public class M_ShipmentSchedule_StepDef
 	 * </pre>
 	 */
 	@And("all untagged M_ShipmentSchedule_Recompute markers are deleted")
-	public void deleteAllUntaggedRecomputeMarkers()
+	public void deleteAllUntaggedRecomputeMarkers() throws InterruptedException
+	{
+		deleteUntaggedRecomputeMarkers();
+
+		waitForRecomputeWorkQueueToDrain();
+
+		deleteUntaggedRecomputeMarkers();
+	}
+
+	private void deleteUntaggedRecomputeMarkers()
 	{
 		// deleteDirectly (bulk filter-based DELETE), NOT delete(): M_ShipmentSchedule_Recompute is a keyless
 		// queue table (no single-column PK), so the PO-by-PO delete() builds an empty WHERE and fails with a
@@ -357,6 +583,36 @@ public class M_ShipmentSchedule_StepDef
 				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				.create()
 				.deleteDirectly();
+	}
+
+	/**
+	 * Waits until no {@link #RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES} workpackage is pending any more; see
+	 * {@link #deleteAllUntaggedRecomputeMarkers()} for the race this closes.
+	 */
+	private void waitForRecomputeWorkQueueToDrain() throws InterruptedException
+	{
+		StepDefUtil.tryAndWait(
+				RECOMPUTE_QUEUE_DRAIN_TIMEOUT_SEC,
+				RECOMPUTE_QUEUE_DRAIN_POLL_MS,
+				() -> countPendingRecomputeWorkPackages() == 0,
+				this::logPendingRecomputeWorkPackages);
+	}
+
+	private int countPendingRecomputeWorkPackages()
+	{
+		return RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES.stream()
+				.mapToInt(workPackageQueueUtil::countPendingWorkPackages)
+				.sum();
+	}
+
+	private void logPendingRecomputeWorkPackages()
+	{
+		final StringBuilder message = new StringBuilder();
+		RECOMPUTE_QUEUE_PROCESSOR_SHORT_NAMES.forEach(processorShortName -> message
+				.append(processorShortName).append(" : ").append(workPackageQueueUtil.countPendingWorkPackages(processorShortName))
+				.append(" pending C_Queue_WorkPackage(s)").append("\n"));
+
+		logger.error("*** Error while waiting for the shipment-schedule work queue to drain, see current context: \n" + message);
 	}
 
 	/**
@@ -645,6 +901,7 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>QtyReserved</b> — (optional) expected reserved quantity<br>
 	 *   <b>QtyToDeliver</b> — (optional) expected qty to deliver<br>
 	 *   <b>QtyToDeliver_Override</b> — (optional) expected override qty<br>
+	 *   <b>M_HU_PI_Item_Product_Override_ID</b> — (optional, identifier-ref) expected packing instruction override<br>
 	 *   <b>QtyPickList</b> — (optional) expected picked quantity<br>
 	 *   <b>QtyDelivered</b> — (optional) expected delivered quantity<br>
 	 *   <b>QtyOnHand</b> — (optional) expected on-hand quantity<br>
@@ -658,6 +915,7 @@ public class M_ShipmentSchedule_StepDef
 	 *     (e.g. {@code 2022-08-10}) compared in the order's time zone<br>
 	 *   <b>DeliveryDate</b> — (optional) expected per-line delivery date (the line's promised delivery date),
 	 *     as a plain calendar date compared in the order's time zone<br>
+	 *   <b>PriorityRule</b> — (optional) expected priority rule code (1=Urgent, 3=High, 5=Medium, 7=Low, 9=Minor)<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -672,6 +930,44 @@ public class M_ShipmentSchedule_StepDef
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
 				.forEach(row -> validateShipmentSchedule(timeoutSec, row));
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts that no {@code M_AttributeInstance} row exists for the given attribute on the
+	 *                   {@code M_ShipmentSchedule}'s CURRENT ASI (as opposed to a row that exists but carries a
+	 *                   null value). The ASI is resolved fresh from the shipment-schedule record — never from a
+	 *                   setup-time ASI identifier — because the schedule is given its own private ASI copied
+	 *                   from the order line via {@code AttributeSetInstanceBL.syncAttributesToASIAware}
+	 *                   (called from {@code OrderLineShipmentScheduleHandler}), so a captured identifier would
+	 *                   not follow it. Twin of {@code M_AttributeSetInstance_StepDef.validate_M_AttributeInstance_absent}
+	 *                   for the {@code C_OrderLine} case.
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the shipment schedule whose current ASI is checked.<br>
+	 *   <b>AttributeCode</b> — (required) the {@code M_Attribute.Value} that must be absent.<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate M_ShipmentSchedule M_AttributeInstance is absent:
+	 *   | M_ShipmentSchedule_ID | AttributeCode |
+	 *   | shipmentSchedule      | ProjectValue  |
+	 * </pre>
+	 */
+	@And("validate M_ShipmentSchedule M_AttributeInstance is absent:")
+	public void validate_M_ShipmentSchedule_AttributeInstance_absent(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach((row) -> {
+			final AttributeCode attributeCode = AttributeCode.ofString(row.getAsString("AttributeCode"));
+
+			final I_M_ShipmentSchedule shipmentSchedule = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIn(shipmentScheduleTable);
+			InterfaceWrapperHelper.refresh(shipmentSchedule);
+			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID());
+
+			final ImmutableAttributeSet asi = attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
+
+			assertThat(asi.hasAttribute(attributeCode))
+					.as("M_AttributeInstance for %s must NOT exist on M_ShipmentSchedule %s's current ASI %s", attributeCode, shipmentSchedule.getM_ShipmentSchedule_ID(), asiId)
+					.isFalse();
+		});
 	}
 
 	/**
@@ -858,6 +1154,30 @@ public class M_ShipmentSchedule_StepDef
 		validateNoShipmentScheduleCreatedForOrder(orderId);
 	}
 
+	/**
+	 * Asserts that the given order line has no shipment schedule, also after the missing shipment schedules were created
+	 * (e.g. a service line, which is never shipped).
+	 * <p>
+	 * Wait for the shipment schedules of the order's other lines first (e.g. {@code M_ShipmentSchedules are found} with {@code IsToRecompute=N}):
+	 * creating the missing schedules here while their asynchronous creation is still running would create them twice.
+	 *
+	 * @param orderLineIdentifier (required, identifier-ref) the C_OrderLine to check
+	 * @cucumber.stepdef <pre>{@code
+	 * And there is no M_ShipmentSchedule for C_OrderLine ol_discount
+	 * }</pre>
+	 */
+	@And("^there is no M_ShipmentSchedule for C_OrderLine (.*)$")
+	public void validate_no_M_ShipmentSchedule_created_for_orderLine(@NonNull final String orderLineIdentifier)
+	{
+		final OrderLineId orderLineId = orderLineTable.getId(StepDefDataIdentifier.ofString(orderLineIdentifier));
+
+		validateNoShipmentScheduleCreatedForOrderLine(orderLineId);
+
+		shipmentScheduleHandlerBL.createMissingCandidates(Env.getCtx());
+
+		validateNoShipmentScheduleCreatedForOrderLine(orderLineId);
+	}
+
 	@And("^the M_ShipmentSchedule identified by (.*) is (closed|reactivated)$")
 	public void M_ShipmentSchedule_action(@NonNull final String shipmentScheduleIdentifier, @NonNull final String action)
 	{
@@ -886,6 +1206,81 @@ public class M_ShipmentSchedule_StepDef
 		saveRecord(schedule);
 	}
 
+	/**
+	 * Sets {@code M_ShipmentSchedule.C_Async_Batch_ID} with a direct SQL update — no model interceptor runs, the
+	 * schedule is not invalidated and {@code HeaderAggregationKey} stays untouched — then reloads the schedule in the
+	 * identifier table. It simulates a concurrent writer (e.g. an async-batch assignment by another transaction).
+	 *
+	 * @param asyncBatchId {@code null} or the numeric {@code C_Async_Batch_ID}
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And C_Async_Batch_ID of M_ShipmentSchedule schedule_1 is set to null by direct update
+	 * </pre>
+	 */
+	@And("^C_Async_Batch_ID of M_ShipmentSchedule (.*) is set to (.*) by direct update$")
+	public void set_C_Async_Batch_ID_by_direct_update(
+			@NonNull final String shipmentScheduleIdentifier,
+			@NonNull final String asyncBatchIdStr)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		final Integer asyncBatchId;
+		if (DataTableUtil.isNullPlaceholder(asyncBatchIdStr))
+		{
+			asyncBatchId = null;
+		}
+		else
+		{
+			try
+			{
+				asyncBatchId = Integer.valueOf(asyncBatchIdStr.trim());
+			}
+			catch (final NumberFormatException e)
+			{
+				throw new AdempiereException("C_Async_Batch_ID must be 'null' or a numeric id")
+						.appendParametersToMessage()
+						.setParameter("value", asyncBatchIdStr);
+			}
+		}
+
+		final int updatedCount = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, schedule.getM_ShipmentSchedule_ID())
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(COLUMNNAME_C_Async_Batch_ID, asyncBatchId)
+				.execute();
+		assertThat(updatedCount).as("Updated M_ShipmentSchedule rows").isEqualTo(1);
+
+		shipmentScheduleTable.putOrReplace(shipmentScheduleIdentifier, InterfaceWrapperHelper.load(schedule.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class));
+	}
+
+	/**
+	 * Sets {@code M_ShipmentSchedule.C_Async_Batch_ID} by direct update (see {@link #set_C_Async_Batch_ID_by_direct_update}) to the
+	 * async batch of THE pending workpackage of the named processor. Fails unless there is exactly one such workpackage and it has a batch,
+	 * rather than picking one. Makes a scenario independent of whether a schedule recompute already cleared the batch the enqueue assigned
+	 * (the very lost update a scenario may want to reproduce selectively).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And C_Async_Batch_ID of M_ShipmentSchedule schedule_1 gets the batch of the pending "GenerateInOutFromShipmentSchedules" workpackage by direct update
+	 * </pre>
+	 */
+	@And("^C_Async_Batch_ID of M_ShipmentSchedule (.*) gets the batch of the pending \"(.*)\" workpackage by direct update$")
+	public void set_C_Async_Batch_ID_to_pending_workpackage_batch(
+			@NonNull final String shipmentScheduleIdentifier,
+			@NonNull final String processorShortName)
+	{
+		final List<I_C_Queue_WorkPackage> workPackages = workPackageQueueUtil.retrievePendingWorkPackages(processorShortName);
+		assertThat(workPackages).as("pending %s workpackages", processorShortName).hasSize(1);
+
+		final int asyncBatchId = workPackages.get(0).getC_Async_Batch_ID();
+		assertThat(asyncBatchId).as("C_Async_Batch_ID of the pending %s workpackage", processorShortName).isGreaterThan(0);
+
+		set_C_Async_Batch_ID_by_direct_update(shipmentScheduleIdentifier, String.valueOf(asyncBatchId));
+	}
+
 	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
 	{
 		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
@@ -894,6 +1289,16 @@ public class M_ShipmentSchedule_StepDef
 				.firstOnlyOrNull(I_M_ShipmentSchedule.class);
 
 		assertThat(schedule).isNull();
+	}
+
+	private void validateNoShipmentScheduleCreatedForOrderLine(@NonNull final OrderLineId orderLineId)
+	{
+		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create()
+				.firstOnlyOrNull(I_M_ShipmentSchedule.class);
+
+		assertThat(schedule).as("M_ShipmentSchedule for C_OrderLine_ID=%s", orderLineId.getRepoId()).isNull();
 	}
 
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTableRows rows)
@@ -1029,6 +1434,9 @@ public class M_ShipmentSchedule_StepDef
 		tableRow.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID)
 				.ifPresent(identifier -> shipmentScheduleRecord.setM_Shipper_ID(ShipperId.toRepoId(identifier.lookupIdIn(shipperTable))));
 		tableRow.getAsOptionalInstantTimestamp(I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override).ifPresent(shipmentScheduleRecord::setDeliveryDate_Override);
+		tableRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_Override_ID)
+				.ifPresent(identifier -> InterfaceWrapperHelper.create(shipmentScheduleRecord, de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
+						.setM_HU_PI_Item_Product_Override_ID(HUPIItemProductId.toRepoId(identifier.lookupIdIn(huPiItemProductTable))));
 
 		saveRecord(shipmentScheduleRecord);
 	}
@@ -1070,6 +1478,7 @@ public class M_ShipmentSchedule_StepDef
 		final BigDecimal qtyScheduledForPicking = tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyScheduledForPicking).orElse(null);
 		final Boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Processed, null);
 		final Boolean isClosed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_IsClosed, null);
+		final String carrierAdvisingStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status);
 
 		final StepDefDataIdentifier shipmentScheduleIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID);
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleIdentifier.lookupNotNullIn(shipmentScheduleTable);
@@ -1094,6 +1503,11 @@ public class M_ShipmentSchedule_StepDef
 			{
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyOnHand, qtyOnHand);
 			}
+			if (Check.isNotBlank(carrierAdvisingStatus))
+			{
+				// the carrier advise runs async; waiting for its status lets a scenario continue only after the advise has settled
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status, carrierAdvisingStatus);
+			}
 			// Gate only on the SETTLED picking state; see shouldGateOn* for why the unsettled N/0 must not gate.
 			if (shouldGateOnScheduledForPicking(isScheduledForPicking))
 			{
@@ -1113,6 +1527,10 @@ public class M_ShipmentSchedule_StepDef
 
 		InterfaceWrapperHelper.refresh(shipmentSchedule);
 		final SoftAssertions softly = new SoftAssertions();
+		tableRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_Override_ID)
+				.ifPresent(identifier -> softly.assertThat(InterfaceWrapperHelper.create(shipmentSchedule, de.metas.handlingunits.model.I_M_ShipmentSchedule.class).getM_HU_PI_Item_Product_Override_ID())
+						.as("M_HU_PI_Item_Product_Override_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier)
+						.isEqualTo(HUPIItemProductId.toRepoId(identifier.lookupIdIn(huPiItemProductTable))));
 		if (qtyToDeliverOverride != null)
 		{
 			softly.assertThat(shipmentSchedule.getQtyToDeliver_Override().stripTrailingZeros()).as("QtyToDeliver_Override for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyToDeliverOverride.stripTrailingZeros());
@@ -1195,6 +1613,11 @@ public class M_ShipmentSchedule_StepDef
 		{
 			final I_M_Product product = productTable.get(productIdentifier);
 			softly.assertThat(shipmentSchedule.getM_Product_ID()).as("M_Product_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(product.getM_Product_ID());
+		}
+
+		if (Check.isNotBlank(carrierAdvisingStatus))
+		{
+			softly.assertThat(shipmentSchedule.getCarrier_Advising_Status()).as("Carrier_Advising_Status for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(carrierAdvisingStatus);
 		}
 
 		final String exportStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_ExportStatus);
@@ -1304,6 +1727,9 @@ public class M_ShipmentSchedule_StepDef
 			final I_C_Project project = projectTable.get(projectIdentifier);
 			softly.assertThat(shipmentSchedule.getC_Project_ID()).as("C_Project_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(project.getC_Project_ID());
 		}
+
+		tableRow.getAsOptionalString(I_M_ShipmentSchedule.COLUMNNAME_PriorityRule)
+				.ifPresent(expected -> softly.assertThat(shipmentSchedule.getPriorityRule()).as("PriorityRule for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(expected));
 
 		softly.assertAll();
 	}

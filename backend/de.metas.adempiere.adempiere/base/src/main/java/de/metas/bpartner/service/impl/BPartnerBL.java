@@ -64,6 +64,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -926,10 +927,32 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public Optional<VATIdentifier> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
+		return resolveVATaxIDSource(bpartnerLocationId)
+				.map(source -> VATIdentifier.of(source.getVatTaxID()));
+	}
+
+	@NonNull
+	@Override
+	public Optional<String> getVATaxIDStatusCode(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return resolveVATaxIDSource(bpartnerLocationId)
+				.map(VATaxIDSource::getVatTaxIDStatus);
+	}
+
+	/**
+	 * The single resolution shared by {@link #getVATTaxId(BPartnerLocationId)} and
+	 * {@link #getVATaxIDStatusCode(BPartnerLocationId)}: which record — the location, or (unless
+	 * AD_SysConfig {@value #SYS_CONFIG_IgnorePartnerVATID} is set to Y) the partner — actually
+	 * supplies the VAT-ID. Both public methods read off the SAME resolved record, so a caller
+	 * combining them never mismatches a VAT-ID from one record with the status of the other.
+	 */
+	@NonNull
+	private Optional<VATaxIDSource> resolveVATaxIDSource(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
 		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		if (bpartnerLocation != null && Check.isNotBlank(bpartnerLocation.getVATaxID()))
 		{
-			return Optional.of(VATIdentifier.of(bpartnerLocation.getVATaxID()));
+			return Optional.of(new VATaxIDSource(bpartnerLocation.getVATaxID(), bpartnerLocation.getVATaxIDStatus()));
 		}
 
 		// if is set on Y, we will not use the vatid from partner
@@ -944,11 +967,18 @@ public class BPartnerBL implements IBPartnerBL
 			final I_C_BPartner bPartner = getById(bpartnerLocationId.getBpartnerId());
 			if (bPartner != null && Check.isNotBlank(bPartner.getVATaxID()))
 			{
-				return Optional.of(VATIdentifier.of(bPartner.getVATaxID()));
+				return Optional.of(new VATaxIDSource(bPartner.getVATaxID(), bPartner.getVATaxIDStatus()));
 			}
 
 		}
 		return Optional.empty();
+	}
+
+	@Value
+	private static class VATaxIDSource
+	{
+		@NonNull String vatTaxID;
+		@Nullable String vatTaxIDStatus;
 	}
 
 	@Override

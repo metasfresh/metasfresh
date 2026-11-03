@@ -73,6 +73,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,6 +113,12 @@ public final class ProductBL implements IProductBL
 	public I_M_Product getByIdInTrx(@NonNull final ProductId productId)
 	{
 		return productsRepo.getByIdInTrx(productId);
+	}
+
+	@Override
+	public ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId)
+	{
+		return productsRepo.retrieveStockedProductIds(clientId);
 	}
 
 	@Override
@@ -471,7 +478,39 @@ public final class ProductBL implements IProductBL
 	@Override
 	public void assertAllowed(@NonNull final ProductId productId, @NonNull final ProductLifeCycleAction action)
 	{
-		final I_M_Product product = getById(productId);
+		assertAllowed(getById(productId), action);
+	}
+
+	@Override
+	public void assertAllowed(@NonNull final Set<ProductId> productIds, @NonNull final ProductLifeCycleAction action)
+	{
+		if (productIds.isEmpty())
+		{
+			return;
+		}
+
+		// One query for the whole document. getByIdsInTrxIncludingInactive (not getByIds / getByIdsInTrx):
+		// in-trx because a product may have been created within the current trx, and including inactive
+		// records because a product can be deactivated while documents still reference it — dropping those
+		// would silently skip a check that assertAllowed(ProductId, ...) still performs.
+		final ImmutableMap<ProductId, I_M_Product> productsById = Maps.uniqueIndex(
+				productsRepo.getByIdsInTrxIncludingInactive(ImmutableSet.copyOf(productIds)),
+				product -> ProductId.ofRepoId(product.getM_Product_ID()));
+
+		// Iterate the REQUESTED ids in a stable order: the query result is unordered, so without this a
+		// document carrying several blocked products would name an arbitrary one of them, differing
+		// between runs.
+		for (final ProductId productId : ImmutableList.sortedCopyOf(Comparator.comparingInt(ProductId::getRepoId), productIds))
+		{
+			final I_M_Product product = productsById.get(productId);
+			// A missing id means there is no such product at all: delegate to the single-record load, which
+			// raises the same "@NotFound@ @M_Product_ID@" error the single-product overload raises.
+			assertAllowed(product != null ? product : productsRepo.getByIdInTrx(productId), action);
+		}
+	}
+
+	private static void assertAllowed(@NonNull final I_M_Product product, @NonNull final ProductLifeCycleAction action)
+	{
 		final String code = product.getProductLifeCycleStatus();
 		if (!isStatusAllowed(code, action))
 		{
@@ -845,7 +884,8 @@ public final class ProductBL implements IProductBL
 		//noinspection OptionalAssignedToNull
 		return Optionals.firstPresentOfSuppliers(
 				() -> gtin.isFixed() ? getProductIdByGTINStrictly(gtin, bpartnerId, clientId) : null,
-				() -> ean13 != null && ean13.isVariable() ? getProductIdByEAN13ProductCode(ean13.getProductNo(), bpartnerId, clientId) : null,
+				// fixed prefixes also fall back to EAN13_ProductCode when no exact GTIN matches
+				() -> ean13 != null ? getProductIdByEAN13ProductCode(ean13.getProductNo(), bpartnerId, clientId) : null,
 				() -> ean13 != null && ean13.isVariableWeight() ? productsRepo.getProductIdByValueStartsWith(ean13.getProductNo().getAsString(), clientId) : null
 		);
 	}

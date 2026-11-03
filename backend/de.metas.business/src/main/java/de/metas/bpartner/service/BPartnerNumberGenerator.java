@@ -100,6 +100,11 @@ public class BPartnerNumberGenerator
 	@NonNull
 	public BPartnerNumbers generateNumbers(@NonNull final I_C_BPartner bpartner)
 	{
+		if (!isEnabled(ClientAndOrgId.ofClientAndOrg(bpartner.getAD_Client_ID(), bpartner.getAD_Org_ID())))
+		{
+			return BPartnerNumbers.NONE;
+		}
+
 		DebtorId debtorId = null;
 		CreditorId creditorId = null;
 

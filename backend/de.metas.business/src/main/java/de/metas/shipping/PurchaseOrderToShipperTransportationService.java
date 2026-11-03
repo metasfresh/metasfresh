@@ -84,13 +84,17 @@ public class PurchaseOrderToShipperTransportationService
 	@VisibleForTesting
 	static final AdMessageKey MSG_NoLUPackingConfigForOrderLines = AdMessageKey.of("NoLUPackingConfigForOrderLines");
 
+	@VisibleForTesting
+	static final AdMessageKey MSG_WrongTransportDirectionForPurchaseOrder = AdMessageKey.of("WrongTransportDirectionForPurchaseOrder");
+
 	/**
 	 * Order in which assigned purchase orders are processed, so the "first order" that seeds the transport order's default dates is
-	 * deterministic: earliest {@code DatePromised} first (the promised delivery date), ties broken by {@code C_Order_ID}. A missing
-	 * {@code DatePromised} sorts last.
+	 * deterministic: earliest {@code PreparationDate} (the departure date the header's ETD is seeded from) first, ties broken by
+	 * {@code DatePromised} (which seeds ETA) and then by {@code C_Order_ID}; missing dates sort last.
 	 */
 	private static final Comparator<I_C_Order> SEED_ORDER_COMPARATOR = Comparator
-			.comparing(I_C_Order::getDatePromised, Comparator.nullsLast(Comparator.naturalOrder()))
+			.comparing(I_C_Order::getPreparationDate, Comparator.nullsLast(Comparator.naturalOrder()))
+			.thenComparing(I_C_Order::getDatePromised, Comparator.nullsLast(Comparator.naturalOrder()))
 			.thenComparingInt(I_C_Order::getC_Order_ID);
 
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
@@ -204,6 +208,8 @@ public class PurchaseOrderToShipperTransportationService
 
 	private void addPurchaseOrderLines(final @NonNull I_M_ShipperTransportation shipperTransportation, final @NonNull I_C_Order order, @NonNull final List<I_C_OrderLine> orderLines)
 	{
+		assertTransportOrderAcceptsPurchaseDocument(shipperTransportation, order);
+
 		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
 		// Detect BEFORE any package is created whether this is the very first purchase order assigned to the transport order.
 		final boolean isFirstOrderOnTransportation = shipperTransportationDAO.retrieveOrderIds(shipperTransportationId).isEmpty();
@@ -260,8 +266,7 @@ public class PurchaseOrderToShipperTransportationService
 
 			if (addedCount == 0)
 			{
-				throw new AdempiereException(MSG_NoLUPackingConfigForOrderLines, skippedLineNos)
-						.markAsUserValidationError();
+				throw new AdempiereException(MSG_NoLUPackingConfigForOrderLines, skippedLineNos);
 			}
 			else
 			{
@@ -280,6 +285,24 @@ public class PurchaseOrderToShipperTransportationService
 	}
 
 	/**
+	 * A purchase document is receipt-side: it may only join an Incoming or Dropship transport order, never an
+	 * Outgoing-only one no receipt could link to. A sales document is unconstrained and falls through.
+	 */
+	private void assertTransportOrderAcceptsPurchaseDocument(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
+	{
+		if (order.isSOTrx())
+		{
+			return;
+		}
+
+		final TransportDirection direction = TransportDirection.ofCode(shipperTransportation.getTransportDirection());
+		if (!direction.isIncomingOrDropship())
+		{
+			throw new AdempiereException(MSG_WrongTransportDirectionForPurchaseOrder, order.getDocumentNo(), shipperTransportation.getDocumentNo());
+		}
+	}
+
+	/**
 	 * Defaults the transport order's date fields from the first assigned purchase order (each value stays user-overridable afterwards):
 	 * <ul>
 	 *     <li>ETA = the purchase order's {@code DatePromised} (the promised arrival date)</li>
@@ -294,9 +317,18 @@ public class PurchaseOrderToShipperTransportationService
 	 */
 	private void applyDefaultDatesFromFirstOrder(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
 	{
-		if (shipperTransportation.isSOTrx())
+		// These defaults describe an inbound purchase arrival (ETA from DatePromised, ETD from PreparationDate),
+		// so only a purchase document may seed them.
+		if (order.isSOTrx())
 		{
-			return; // sales behaviour on the transport order must keep working unchanged
+			return;
+		}
+
+		// isOutgoing(), NOT isOutgoingOrDropship(): Dropship carries a shipment too, but must fall through to the
+		// purchase-side defaults below.
+		if (TransportDirection.ofCode(shipperTransportation.getTransportDirection()).isOutgoing())
+		{
+			return;
 		}
 
 		// ETA = the PO's promised (arrival) date; guaranteed non-null here (the caller already dereferences it when building the base

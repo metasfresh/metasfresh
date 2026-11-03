@@ -103,7 +103,7 @@ export const useLaunchersWebsocket = ({
     // ws.disconnectClient is async, so a frame can still be delivered after this effect's cleanup ran and
     // the screen unmounted -- in the captured failure the STOMP DISCONNECT was logged BEFORE the deleting
     // MESSAGE. An unmounted subscription must not write to the store at all.
-    let subscriptionActive = true;
+    let isSubscriptionActive = true;
     if (enabled) {
       const topic = `/v2/userWorkflows/launchers/?${toQueryString({
         userToken,
@@ -119,7 +119,7 @@ export const useLaunchersWebsocket = ({
         topic,
         debug: !!window?.debug_ws,
         onWebsocketMessage: (message) => {
-          if (!subscriptionActive) return;
+          if (!isSubscriptionActive) return;
           const applicationLaunchers = JSON.parse(message.body);
           onWebsocketMessage({ applicationId, applicationLaunchers });
         },
@@ -127,7 +127,7 @@ export const useLaunchersWebsocket = ({
     }
 
     return () => {
-      subscriptionActive = false;
+      isSubscriptionActive = false;
       if (client) {
         ws.disconnectClient(client);
         client = null;

@@ -23,6 +23,7 @@ package de.metas.handlingunits.callout;
  */
 
 
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -39,6 +40,8 @@ public class C_InvoiceLine
 {
 	public static final C_InvoiceLine instance = new C_InvoiceLine();
 
+	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+
 	/**
 	 * Task 06915: If QtyEnteredTU or M_HU_PI_Item_Product_ID change, then update QtyEntered (i.e. the CU qty).
 	 */
@@ -46,8 +49,7 @@ public class C_InvoiceLine
 	public void onQtyEnteredChange(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
 	{
 		final IHUPackingAware packingAware = InvoiceLineHUPackingAware.of(invoiceLine);
-		final Integer qtyPacks = packingAware.getQtyTU().intValue();
-		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks);
+		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 
 		// Update lineNetAmt, because QtyEnteredCU changed : see task 06727
 		Services.get(IInvoiceLineBL.class).updateLineNetAmt(invoiceLine, invoiceLine.getQtyEntered());

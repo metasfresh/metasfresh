@@ -45,6 +45,8 @@ import java.util.OptionalInt;
 @Value(staticConstructor = "of")
 public class BPartnerNumbers
 {
+	public static BPartnerNumbers NONE = BPartnerNumbers.of(null, null);
+
 	@Nullable DebtorId debtorId;
 	@Nullable CreditorId creditorId;
 

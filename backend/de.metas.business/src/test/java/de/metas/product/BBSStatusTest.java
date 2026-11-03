@@ -41,8 +41,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * |-------------|:------:|:-----------:|:------------:|:---------------:|
  * | PURCHASE    |   Y    |      N      |      N       |        Y        |
  * | SELL        |   Y    |      Y      |      N       |        Y        |
- * | PICK        |   Y    |      Y      |      N       |        Y        |
- * | MANUFACTURE |   Y    |      Y      |      N       |        Y        |
+ * | PICK        |   Y    |      Y      |      N       |        N        |
+ * | MANUFACTURE |   Y    |      N      |      N       |        Y        |
  * | SHIP        |   Y    |      Y      |      N       |        N        |
  * </pre>
  */
@@ -67,11 +67,11 @@ public class BBSStatusTest
 				Arguments.of(BBSStatus.OK, ProductLifeCycleAction.MANUFACTURE, true),
 				Arguments.of(BBSStatus.OK, ProductLifeCycleAction.SHIP, true),
 
-				// PHASE_OUT (Auslauf): blocks PURCHASE only
+				// PHASE_OUT (Auslauf): blocks PURCHASE and MANUFACTURE
 				Arguments.of(BBSStatus.PHASE_OUT, ProductLifeCycleAction.PURCHASE, false),
 				Arguments.of(BBSStatus.PHASE_OUT, ProductLifeCycleAction.SELL, true),
 				Arguments.of(BBSStatus.PHASE_OUT, ProductLifeCycleAction.PICK, true),
-				Arguments.of(BBSStatus.PHASE_OUT, ProductLifeCycleAction.MANUFACTURE, true),
+				Arguments.of(BBSStatus.PHASE_OUT, ProductLifeCycleAction.MANUFACTURE, false),
 				Arguments.of(BBSStatus.PHASE_OUT, ProductLifeCycleAction.SHIP, true),
 
 				// BLOCKED (Gesperrt): blocks everything
@@ -81,10 +81,10 @@ public class BBSStatusTest
 				Arguments.of(BBSStatus.BLOCKED, ProductLifeCycleAction.MANUFACTURE, false),
 				Arguments.of(BBSStatus.BLOCKED, ProductLifeCycleAction.SHIP, false),
 
-				// DO_NOT_DELIVER (Lieferstopp): blocks SHIP only
+				// DO_NOT_DELIVER (Lieferstopp): blocks SHIP and PICK
 				Arguments.of(BBSStatus.DO_NOT_DELIVER, ProductLifeCycleAction.PURCHASE, true),
 				Arguments.of(BBSStatus.DO_NOT_DELIVER, ProductLifeCycleAction.SELL, true),
-				Arguments.of(BBSStatus.DO_NOT_DELIVER, ProductLifeCycleAction.PICK, true),
+				Arguments.of(BBSStatus.DO_NOT_DELIVER, ProductLifeCycleAction.PICK, false),
 				Arguments.of(BBSStatus.DO_NOT_DELIVER, ProductLifeCycleAction.MANUFACTURE, true),
 				Arguments.of(BBSStatus.DO_NOT_DELIVER, ProductLifeCycleAction.SHIP, false));
 	}

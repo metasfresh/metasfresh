@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1478414169L;
+	private static final long serialVersionUID = 1476785033L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -279,6 +279,18 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getC_OrderLine_MTO_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_MTO_ID);
+	}
+
+	@Override
+	public void setCostDifference (final @Nullable BigDecimal CostDifference)
+	{
+		throw new IllegalArgumentException ("CostDifference is virtual column");	}
+
+	@Override
+	public BigDecimal getCostDifference() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostDifference);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -591,6 +603,10 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
 	/** BOM & Formula = BOM */
 	public static final String DOCBASETYPE_BOMFormula = "BOM";
+	/** Cost Revaluation = CRD */
+	public static final String DOCBASETYPE_CostRevaluation = "CRD";
+	/** AnalysisReport = QMA */
+	public static final String DOCBASETYPE_AnalysisReport = "QMA";
 	@Override
 	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
@@ -712,6 +728,17 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
+	public void setHasCostDifference (final boolean HasCostDifference)
+	{
+		throw new IllegalArgumentException ("HasCostDifference is virtual column");	}
+
+	@Override
+	public boolean isHasCostDifference() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_HasCostDifference);
+	}
+
+	@Override
 	public void setIsApproved (final boolean IsApproved)
 	{
 		set_Value (COLUMNNAME_IsApproved, IsApproved);
@@ -784,18 +811,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public void setKostendifferenz (final @Nullable BigDecimal Kostendifferenz)
-	{
-		throw new IllegalArgumentException ("Kostendifferenz is virtual column");	}
-
-	@Override
-	public BigDecimal getKostendifferenz() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Kostendifferenz);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setLine (final int Line)
 	{
 		set_Value (COLUMNNAME_Line, Line);
@@ -805,6 +820,29 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getLine() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Line);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order getLink_PP_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_Link_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setLink_PP_Order(final org.eevolution.model.I_PP_Order Link_PP_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_Link_PP_Order_ID, org.eevolution.model.I_PP_Order.class, Link_PP_Order);
+	}
+
+	@Override
+	public void setLink_PP_Order_ID (final int Link_PP_Order_ID)
+	{
+		throw new IllegalArgumentException ("Link_PP_Order_ID is virtual column");	}
+
+	@Override
+	public int getLink_PP_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Link_PP_Order_ID);
 	}
 
 	@Override

@@ -158,6 +158,14 @@ public class PercentTest
 	}
 
 	@Test
+	public void isOverOneHundred()
+	{
+		assertThat(Percent.of(100).isOverOneHundred()).isFalse();
+		assertThat(Percent.of(new BigDecimal("100.01")).isOverOneHundred()).isTrue();
+		assertThat(Percent.of(99).isOverOneHundred()).isFalse();
+	}
+
+	@Test
 	public void ofDelta()
 	{
 		assertThat(Percent.ofDelta(ONE, new BigDecimal("1.2")).toBigDecimal()).isEqualByComparingTo("20");
