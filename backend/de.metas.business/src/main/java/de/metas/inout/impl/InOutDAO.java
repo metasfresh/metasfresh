@@ -30,9 +30,11 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -40,6 +42,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,6 +52,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -84,6 +88,12 @@ public class InOutDAO implements IInOutDAO
 		return load(inoutId, I_M_InOut.class);
 	}
 
+	@Override
+	public <T extends I_M_InOut> List<T> getByIds(@NonNull final Set<InOutId> inOutIds, @NonNull final Class<T> type)
+	{
+		return loadByRepoIdAwares(inOutIds, type);
+	}
+
 	@Nullable
 	@Override
 	public <T extends I_M_InOut> T getById(@NonNull final InOutId inoutId, @NonNull final Class<T> modelClass)
@@ -96,7 +106,7 @@ public class InOutDAO implements IInOutDAO
 	{
 		return loadOutOfTrx(inoutId.getRepoId(), modelClass);
 	}
-	
+
 	@Override
 	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
@@ -155,6 +165,23 @@ public class InOutDAO implements IInOutDAO
 	{
 		final boolean retrieveAll = true;
 		return retrieveLines(inOut, retrieveAll, I_M_InOutLine.class);
+	}
+
+	@Override
+	@NonNull
+	public List<I_C_Order> retrieveSourceOrders(@NonNull final I_M_InOut inOut)
+	{
+		final ImmutableSet<OrderId> orderIds = queryBL.createQueryBuilder(I_M_InOutLine.class, inOut)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
+				.addNotEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, 0)
+				.andCollect(I_M_InOutLine.COLUMN_C_OrderLine_ID, I_C_OrderLine.class)
+				.create()
+				.listDistinct(I_C_OrderLine.COLUMNNAME_C_Order_ID, Integer.class)
+				.stream()
+				.map(OrderId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		return loadByRepoIdAwares(orderIds, I_C_Order.class);
 	}
 
 	@Override
@@ -252,17 +279,22 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(final Set<OrderLineId> orderLineIds)
 	{
-		if (orderLineIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
+		if (orderLineIds.isEmpty()) {return ImmutableSet.of();}
+
+		return streamLinesByOrderLineIds(orderLineIds)
+				.map(this::extractInOutAndLineId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public Stream<I_M_InOutLine> streamLinesByOrderLineIds(final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty()) {return Stream.of();}
 
 		return queryBL.createQueryBuilder(I_M_InOutLine.class)
 				.addInArrayFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineIds)
 				.addOnlyActiveRecordsFilter()
-				.stream()
-				.map(inoutLine -> InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID()))
-				.collect(ImmutableSet.toImmutableSet());
+				.stream();
 	}
 
 	@Override
@@ -372,7 +404,15 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public Set<InOutAndLineId> retrieveLinesForInOutId(final InOutId inOutId)
+	public List<I_M_InOutLine> retrieveLinesByInOutId(final InOutId inOutId)
+	{
+		final I_M_InOut inOut = getById(inOutId);
+
+		return retrieveLines(inOut);
+	}
+
+	@Override
+	public Set<InOutAndLineId> retrieveLineIdsByInOutId(final InOutId inOutId)
 	{
 		final I_M_InOut inOut = getById(inOutId);
 
@@ -474,6 +514,26 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
+	public List<I_M_InOut> retrieveInOutsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryByOrderId(orderId).create().list();
+	}
+
+	@Override
+	public List<InOutId> retrieveInOutIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryByOrderId(orderId).create().listIds(InOutId::ofRepoId);
+	}
+
+	private IQueryBuilder<I_M_InOut> queryByOrderId(final @NotNull OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderId)
+				.orderBy(I_M_InOut.COLUMNNAME_M_InOut_ID);
+	}
+
+	@Override
 	public List<I_M_InOutLine> retrieveShipmentLinesForOrderId(@NonNull final Set<OrderId> orderIds)
 	{
 		final List<Integer> shipmentIds = queryBL.createQueryBuilder(I_M_InOut.class)
@@ -541,6 +601,28 @@ public class InOutDAO implements IInOutDAO
 	public Stream<I_M_InOut> retrieveByQuery(@NonNull final InOutQuery query)
 	{
 		return toSqlQuery(query).create().stream();
+	}
+
+	@Override
+	public List<I_M_InOutLine> retrieveProcessedLinesForOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return retrieveProcessedLinesForOrderLineIds(Collections.singleton(orderLineId));
+	}
+
+	@Override
+	public List<I_M_InOutLine> retrieveProcessedLinesForOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineIds)
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_Processed, true)
+				.create()
+				.list();
 	}
 
 	private IQueryBuilder<I_M_InOut> toSqlQuery(@NonNull final InOutQuery query)

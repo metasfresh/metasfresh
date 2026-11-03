@@ -205,6 +205,22 @@ public class DDOrderMoveScheduleRepository
 				.anyMatch();
 	}
 
+	/** The batch flavour of {@link #hasInProgressSchedules(DDOrderId)}, for a caller that has to ask about a whole set of orders. */
+	public ImmutableSet<DDOrderId> retrieveIdsOfOrdersWithInProgressSchedules(@NonNull final Set<DDOrderId> ddOrderIds)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_DD_Order_MoveSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_Status, DDOrderMoveScheduleStatus.IN_PROGRESS)
+				.create()
+				.listDistinctAsImmutableSet(I_DD_Order_MoveSchedule.COLUMNNAME_DD_Order_ID, DDOrderId.class);
+	}
+
 	public Set<DDOrderId> retrieveDDOrderIdsInTransit(@NonNull final LocatorId inTransitLocatorId)
 	{
 		return queryInTransitSchedules(inTransitLocatorId)

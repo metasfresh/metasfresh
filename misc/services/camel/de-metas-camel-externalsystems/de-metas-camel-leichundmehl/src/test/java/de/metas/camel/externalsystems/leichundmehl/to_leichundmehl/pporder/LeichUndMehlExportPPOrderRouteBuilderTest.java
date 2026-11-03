@@ -181,7 +181,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 
 		final JsonAttachmentRequest actualJsonAttachmentRequest = mockJsonAttachmentRequestProcessor.jsonAttachmentRequest;
 
-		assertThat(actualJsonAttachmentRequest.getOrgCode().equals(expectedJsonAttachmentRequest.getOrgCode())).isTrue();
+		assertThat(actualJsonAttachmentRequest.getOrgCode()).isEqualTo(expectedJsonAttachmentRequest.getOrgCode());
 		assertThat(actualJsonAttachmentRequest.getTargets().equals(expectedJsonAttachmentRequest.getTargets())).isTrue();
 
 		final JsonAttachment expectedJsonAttachment = expectedJsonAttachmentRequest.getAttachment();
@@ -319,7 +319,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 
 		final JsonAttachmentRequest actualJsonAttachmentRequest = mockJsonAttachmentRequestProcessor.jsonAttachmentRequest;
 
-		assertThat(actualJsonAttachmentRequest.getOrgCode().equals(expectedJsonAttachmentRequest.getOrgCode())).isTrue();
+		assertThat(actualJsonAttachmentRequest.getOrgCode()).isEqualTo(expectedJsonAttachmentRequest.getOrgCode());
 		assertThat(actualJsonAttachmentRequest.getTargets().equals(expectedJsonAttachmentRequest.getTargets())).isTrue();
 
 		final JsonAttachment expectedJsonAttachment = expectedJsonAttachmentRequest.getAttachment();

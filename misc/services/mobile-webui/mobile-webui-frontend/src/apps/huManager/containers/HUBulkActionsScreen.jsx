@@ -89,7 +89,7 @@ const HUBulkActionsScreen = () => {
       {showHUScanner && (
         <BarcodeScannerComponent
           onResolvedResult={onScannedHUResolved}
-          scannerPlaceholder={'huManager.action.bulkActions.scanHUPlaceholder'}
+          inputPlaceholderText={trl('huManager.action.bulkActions.scanHUPlaceholder')}
         />
       )}
       <br />

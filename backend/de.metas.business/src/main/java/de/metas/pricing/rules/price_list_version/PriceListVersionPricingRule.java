@@ -55,7 +55,8 @@ public class PriceListVersionPricingRule implements IPricingRule
 		this.includedPricingRules = AggregatedPricingRule.ofNullables(
 				createPricingRule(PriceListVersionConfiguration.getHUPricingRuleFactory()),
 				new AttributePricing(),
-				new MainProductPriceRule()
+				new MainProductPriceRule(),
+				new UniqueProductPriceFallbackRule()
 		);
 	}
 

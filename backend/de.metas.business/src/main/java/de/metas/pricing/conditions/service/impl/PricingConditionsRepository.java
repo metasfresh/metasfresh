@@ -182,6 +182,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.id(PricingConditionsId.ofRepoId(discountSchemaRecord.getM_DiscountSchema_ID()))
 				.active(discountSchemaRecord.isActive())
 				.validFrom(discountSchemaRecord.getValidFrom().toInstant())
+				.validTo(discountSchemaRecord.getValidTo() != null ? discountSchemaRecord.getValidTo().toInstant() : null)
 				.discountType(discountType)
 				.bpartnerFlatDiscount(discountSchemaRecord.isBPartnerFlatDiscount())
 				.flatDiscount(Percent.of(discountSchemaRecord.getFlatDiscount()))

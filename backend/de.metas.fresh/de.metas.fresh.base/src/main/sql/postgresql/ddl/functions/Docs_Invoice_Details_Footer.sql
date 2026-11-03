@@ -20,7 +20,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Detai
                 deliveryrule      character varying,
                 deliveryviarule   character varying,
                 additionaltext    text,
-                taxnote           text
+                taxnote           text,
+                isAdvancePayment  char(1)
             )
 AS
 $$
@@ -57,13 +58,17 @@ SELECT i.descriptionbottom,
        c.cursymbol,
        COALESCE(inc_trl.name, inc.name)                                                               AS Incoterms,
        i.incotermlocation,
-       COALESCE(o_dr_trl.name, o_dr.name)                                                             AS deliveryrule,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'DeliveryRule') = 'N' THEN
+               COALESCE(o_dr_trl.name, o_dr.name)
+       END                                                                                            AS deliveryrule,
        CASE
            WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Delivery_Via_Rule') = 'N' THEN
                COALESCE(o_dvr_trl.name, o_dvr.name)
        END                                                                                            AS deliveryviarule,
        report.getBPartner_CustomDocumentText(i.C_DocTypeTarget_ID, i.c_bpartner_id)                   AS AdditionalText,
-       report.TaxNote(NULL, p_Invoice_ID, p_Language)                                                 AS taxnote
+       report.TaxNote(NULL, p_Invoice_ID, p_Language)                                                 AS taxnote,
+       de_metas_endcustomer_fresh_reports.Is_Advance_Payment_Invoice(i.C_Invoice_ID)                  AS isAdvancePayment
 FROM C_Invoice i
          LEFT OUTER JOIN C_PaymentTerm pt ON i.C_PaymentTerm_ID = pt.C_PaymentTerm_ID
          LEFT OUTER JOIN C_PaymentTerm_Trl ptt ON i.C_PaymentTerm_ID = ptt.C_PaymentTerm_ID AND ptt.AD_Language = p_Language

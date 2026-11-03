@@ -36,10 +36,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
-import de.metas.document.archive.model.I_C_BPartner;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -48,6 +49,9 @@ import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
@@ -59,13 +63,33 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
+import de.metas.ui.web.payment_allocation.InvoiceRowReducers;
+import de.metas.ui.web.payment_allocation.InvoiceRows;
+import de.metas.ui.web.payment_allocation.InvoicesViewFactory;
+import de.metas.ui.web.payment_allocation.PaymentAndInvoiceRowsRepo;
+import de.metas.ui.web.payment_allocation.PaymentBonusRowValues;
 import de.metas.ui.web.payment_allocation.PaymentRow;
+import de.metas.ui.web.view.IEditableView.RowEditingContext;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.event.JSONViewChanges;
+import de.metas.ui.web.view.event.ViewChangesCollector;
+import de.metas.ui.web.view.event.ViewChangesCollectorAutoCloseable;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
+import de.metas.websocket.sender.WebsocketSender;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.UserMessagePresentation;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -73,6 +97,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -85,17 +110,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class PaymentsViewAllocateCommandTest
@@ -177,7 +206,7 @@ public class PaymentsViewAllocateCommandTest
 		assertThat(actualAllocatedAmt.toBigDecimal()).isEqualByComparingTo(expectedAllocatedAmt);
 	}
 
-	private void assertInvoicePaymentStatus(final InvoiceId invoiceId, InvoicePaymentStatus expectedPaymentStatus, String expectedOpenAmt)
+	private void assertInvoicePaymentStatus(final InvoiceId invoiceId, final InvoicePaymentStatus expectedPaymentStatus, final String expectedOpenAmt)
 	{
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 		invoiceBL.testAllocation(invoice, true);
@@ -202,11 +231,13 @@ public class PaymentsViewAllocateCommandTest
 
 		final BPartnerId bpartnerIdEffective = bpartnerId != null ? bpartnerId : this.bpartnerId;
 
+		final LocalDate dateTrxEffective = paymentDateTrx != null ? LocalDate.parse(paymentDateTrx) : this.paymentDateTrx;
 		return PaymentRow.builder()
 				.paymentId(paymentId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
 				.documentNo("paymentNo_" + paymentId.getRepoId())
-				.dateTrx(paymentDateTrx != null ? LocalDate.parse(paymentDateTrx) : this.paymentDateTrx)
+				.dateTrx(dateTrxEffective)
+				.dateAcct(dateTrxEffective)
 				.bpartner(IntegerLookupValue.of(bpartnerIdEffective.getRepoId(), "BPartner"))
 				.paymentDirection(direction)
 				.paymentAmtMultiplier(PaymentAmtMultiplier.builder().paymentDirection(direction).isOutboundAdjusted(false).build())
@@ -221,8 +252,13 @@ public class PaymentsViewAllocateCommandTest
 			@NonNull final Amount openAmt,
 			@Nullable final String discountAmt,
 			@Nullable final String serviceFeeAmt,
-			@Nullable final String dateInvoiced)
+			@Nullable final String paymentBonusAmt,
+			@Nullable final PaymentBonusDeduction paymentBonusDeduction,
+			@Nullable final String dateInvoiced,
+			@Nullable final BPartnerId bpartnerId)
 	{
+		final BPartnerId bpartnerIdEffective = bpartnerId != null ? bpartnerId : this.bpartnerId;
+
 		final InvoiceAmtMultiplier invoiceAmtMultiplier = InvoiceAmtMultiplier.builder()
 				.soTrx(docBaseType.getSoTrx())
 				.isCreditMemo(docBaseType.isCreditMemo())
@@ -245,17 +281,20 @@ public class PaymentsViewAllocateCommandTest
 			invoiceRecord.setIsSOTrx(docType.isSOTrx());
 			invoiceRecord.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
 			invoiceRecord.setGrandTotal(invoiceGrandTotal.toBigDecimal());
+			invoiceRecord.setIsFinancial(docBaseType.isFinancial());
 			saveRecord(invoiceRecord);
 			invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 		}
 
+		final LocalDate dateInvoicedEffective = dateInvoiced != null ? LocalDate.parse(dateInvoiced) : this.dateInvoiced;
 		return InvoiceRow.builder()
 				.invoiceId(invoiceId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
 				.docTypeName(TranslatableStrings.anyLanguage("invoice doc type"))
 				.documentNo("invoiceNo_" + invoiceId.getRepoId())
-				.dateInvoiced(dateInvoiced != null ? LocalDate.parse(dateInvoiced) : this.dateInvoiced)
-				.bpartner(IntegerLookupValue.of(bpartnerId.getRepoId(), "BPartner"))
+				.dateInvoiced(dateInvoicedEffective)
+				.dateAcct(dateInvoicedEffective)
+				.bpartner(IntegerLookupValue.of(bpartnerIdEffective.getRepoId(), "BPartner"))
 				.docBaseType(docBaseType)
 				.invoiceAmtMultiplier(invoiceAmtMultiplier)
 				.grandTotal(openAmt)
@@ -266,6 +305,35 @@ public class PaymentsViewAllocateCommandTest
 				.serviceFeeAmt(serviceFeeAmt != null
 						? Amount.of(serviceFeeAmt, openAmt.getCurrencyCode())
 						: Amount.zero(openAmt.getCurrencyCode()))
+				.paymentBonusAmt(paymentBonusAmt != null ? Amount.of(paymentBonusAmt, openAmt.getCurrencyCode()) : null)
+				.paymentBonusDeduction(paymentBonusDeduction)
+				.build();
+	}
+
+	/** A bonus of the given net amount, with 7 % VAT on top. */
+	private PaymentBonusDeduction paymentBonusDeduction(final String netAmt)
+	{
+		return PaymentBonusDeduction.builder()
+				.orgId(orgId)
+				.invoiceId(InvoiceId.ofRepoId(1111))
+				.customerId(bpartnerId)
+				.currencyId(euroCurrencyId)
+				.precision(CurrencyPrecision.TWO)
+				.line(PaymentBonusDeductionLine.builder()
+						.bonusProductId(ProductId.ofRepoId(4444))
+						.tax(Tax.builder()
+								.taxId(TaxId.ofRepoId(7))
+								.name("7 %")
+								.orgId(OrgId.ANY)
+								.validFrom(TimeUtil.asTimestamp(LocalDate.parse("2020-01-01")))
+								.taxCategoryId(TaxCategoryId.ofRepoId(1))
+								.rate(new BigDecimal("7"))
+								.isTaxExempt(false)
+								.requiresTaxCertificate(false)
+								.seqNo(10)
+								.build())
+						.netAmt(Money.of(new BigDecimal(netAmt), euroCurrencyId))
+						.build())
 				.build();
 	}
 
@@ -330,6 +398,155 @@ public class PaymentsViewAllocateCommandTest
 							.build());
 		}
 
+		/** The customer pays the invoice minus the pre-filled bonus. */
+		@Test
+		public void customerInvoice_withPaymentBonus()
+		{
+			final PaymentBonusDeduction deduction = paymentBonusDeduction("2.60"); // 2.78 with VAT
+			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(100))
+					.paymentBonusAmt("2.78")
+					.paymentBonusDeduction(deduction)
+					.build();
+
+			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
+			assertThat(payableDocument.getAmountsToAllocate())
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationAmounts.builder()
+							.payAmt(Money.of(new BigDecimal("97.22"), euroCurrencyId))
+							.paymentBonus(Money.of(new BigDecimal("2.78"), euroCurrencyId))
+							.build());
+			assertThat(payableDocument.getPaymentBonusDeduction()).isEqualTo(deduction);
+		}
+
+		/** The customer deducted another amount than computed: that amount is booked, the bonus lines are scaled to it. */
+		@Test
+		public void customerInvoice_withChangedPaymentBonus()
+		{
+			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(100))
+					.paymentBonusAmt("2.00")
+					.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+					.build();
+
+			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
+			assertThat(payableDocument.getAmountsToAllocate().getPaymentBonus().toBigDecimal()).isEqualByComparingTo("2.00");
+			assertThat(payableDocument.getAmountsToAllocate().getPayAmt().toBigDecimal()).isEqualByComparingTo("98.00");
+			assertThat(payableDocument.getPaymentBonusDeduction().getNetAmount().toBigDecimal()).isEqualByComparingTo("1.87"); // + 0.13 VAT
+		}
+
+		/** The customer cannot deduct more than is open: the allocation would leave the invoice over-paid. */
+		@Test
+		public void customerInvoice_withPaymentBonusAboveTheOpenAmount_fails()
+		{
+			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(2))
+					.paymentBonusAmt("2.78")
+					.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+					.build();
+
+			assertThatThrownBy(() -> PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> {
+						final AdempiereException adempiereException = (AdempiereException)ex;
+						assertThat(adempiereException.isUserValidationError()).isTrue();
+						assertThat(adempiereException.getErrorCode()).isEqualTo(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_WHAT_THE_CUSTOMER_PAYS.toAD_Message());
+						// shown as a message to the user, not as a "Server error" toast
+						assertThat(adempiereException.getUserMessagePresentation()).isEqualTo(UserMessagePresentation.ACKNOWLEDGE_DIALOG);
+					});
+		}
+
+		/** The allocate action is not offered while a bonus is above what the customer pays; the user sees why. */
+		@Test
+		public void allocatePreconditions_withPaymentBonusAboveTheOpenAmount_rejectedWithTheReason()
+		{
+			final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).build();
+			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(2))
+					.paymentBonusAmt("2.78")
+					.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+					.build();
+			final PaymentsViewAllocateCommand command = PaymentsViewAllocateCommand.builder()
+					.moneyService(moneyService)
+					.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+					.paymentBonusCreditMemoService(new PaymentBonusCreditMemoService())
+					.paymentRow(paymentRow)
+					.invoiceRow(invoiceRow)
+					.allowPurchaseSalesInvoiceCompensation(false)
+					.build();
+
+			final ProcessPreconditionsResolution resolution = PaymentsView_Allocate.checkPreconditions(command);
+
+			assertThat(resolution.isRejected()).isTrue();
+			assertThat(resolution.isInternal()).isFalse();
+			// the short reason, like the row's note: the actions list shows it on one line; the full sentence is for the dialog
+			assertThat(resolution.getRejectReason().getDefaultValue())
+					.contains(PaymentBonusRowValues.MSG_ABOVE_WHAT_THE_CUSTOMER_PAYS.toAD_Message())
+					.doesNotContain(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_WHAT_THE_CUSTOMER_PAYS.toAD_Message());
+		}
+
+		/** The discount is not paid either: open 100.00 - discount 3.00 leaves 97.00, a bonus of 99.00 would make the payment negative. */
+		@Test
+		public void customerInvoice_withPaymentBonusAboveTheOpenAmountMinusDiscount_fails()
+		{
+			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(100))
+					.discountAmt("3")
+					.paymentBonusAmt("99")
+					.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+					.build();
+
+			assertThatThrownBy(() -> PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_ABOVE_WHAT_THE_CUSTOMER_PAYS.toAD_Message()));
+		}
+
+		/** A bonus typed on an invoice whose customer has no bonus to deduct is a user error, shown to the user (translated). */
+		@Test
+		public void customerInvoice_withPaymentBonusButNothingToDeduct_fails()
+		{
+			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(100))
+					.paymentBonusAmt("2.00")
+					.build();
+
+			assertThatThrownBy(() -> PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> {
+						final AdempiereException adempiereException = (AdempiereException)ex;
+						assertThat(adempiereException.isUserValidationError()).isTrue();
+						assertThat(adempiereException.getErrorCode()).isEqualTo(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_NOTHING_TO_DEDUCT.toAD_Message());
+						// shown as a message to the user, not as a "Server error" toast
+						assertThat(adempiereException.getUserMessagePresentation()).isEqualTo(UserMessagePresentation.ACKNOWLEDGE_DIALOG);
+					});
+		}
+
+		/** The allocate action is not offered while a bonus is typed on an invoice with no bonus to deduct; the user sees why, instead of the action silently vanishing. */
+		@Test
+		public void allocatePreconditions_withPaymentBonusButNothingToDeduct_rejectedWithTheReason()
+		{
+			final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).build();
+			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(100))
+					.paymentBonusAmt("5.00")
+					.build();
+			final PaymentsViewAllocateCommand command = PaymentsViewAllocateCommand.builder()
+					.moneyService(moneyService)
+					.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+					.paymentBonusCreditMemoService(new PaymentBonusCreditMemoService())
+					.paymentRow(paymentRow)
+					.invoiceRow(invoiceRow)
+					.allowPurchaseSalesInvoiceCompensation(false)
+					.build();
+
+			final ProcessPreconditionsResolution resolution = PaymentsView_Allocate.checkPreconditions(command);
+
+			assertThat(resolution.isRejected()).isTrue();
+			assertThat(resolution.isInternal()).isFalse();
+			assertThat(resolution.getRejectReason().getDefaultValue())
+					.contains(PaymentsViewAllocateCommand.MSG_PAYMENT_BONUS_NOTHING_TO_DEDUCT.toAD_Message());
+		}
+
 		@Test
 		public void customerCreditMemo()
 		{
@@ -373,6 +590,77 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.PURCHASE);
 			assertThat(payableDocument.isCreditMemo()).isTrue();
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(100, euroCurrencyId));
+			assertThat(payableDocument.getAmountsToAllocate())
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
+		}
+
+		@Test
+		public void serviceFeeInvoice_withoutPaymentAndWithoutConfig_failsWithUserFriendlyMessage()
+		{
+			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).serviceFeeAmt("10").build();
+
+			assertThatThrownBy(() -> PaymentsViewAllocateCommand.toPayableDocument(
+					invoiceRow,
+					ImmutableList.of(),
+					moneyService,
+					invoiceProcessingServiceCompanyService))
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> {
+						assertThat(ex.isUserValidationError()).isTrue();
+						assertThat(ex.getErrorCode()).isEqualTo(AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForInvoicePartner").toAD_Message());
+						// the message names the invoice and the partner as shown in the view (not a raw id)
+						assertThat(ex.getMessage()).contains(invoiceRow.getDocumentNo()).contains("BPartner");
+					});
+		}
+
+		/**
+		 * An ordinary sales allocation with two payments of DIFFERENT dates (no service company anywhere) must not be refused.
+		 * RED before the fix: the no-fee guard used the single-common-context extraction, which threw
+		 * {@code InvoiceProcessingServiceCompany_PaymentsOfDifferentServiceCompanyOrDate} for payments of different dates.
+		 */
+		@Test
+		public void customerInvoice_noServiceCompany_twoPaymentsOfDifferentDates_isNotRefused()
+		{
+			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).build();
+			final PaymentRow payment1 = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(40)).paymentDateTrx("2020-04-10").build();
+			final PaymentRow payment2 = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(60)).paymentDateTrx("2020-04-20").build();
+
+			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(
+					invoiceRow,
+					ImmutableList.of(
+							PaymentsViewAllocateCommand.toPaymentDocument(payment1, moneyService),
+							PaymentsViewAllocateCommand.toPaymentDocument(payment2, moneyService)),
+					moneyService,
+					invoiceProcessingServiceCompanyService);
+
+			assertThat(payableDocument.getInvoiceProcessingFeeCalculation()).isNull();
+			assertThat(payableDocument.getAmountsToAllocate())
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
+		}
+
+		/**
+		 * An ordinary sales allocation with two payments of DIFFERENT (non-service-company) partners must not be refused.
+		 * RED before the fix: the single-common-context extraction threw because the payment partners differ.
+		 */
+		@Test
+		public void customerInvoice_noServiceCompany_twoPaymentsOfDifferentPartners_isNotRefused()
+		{
+			final BPartnerId payer1 = createBPartnerId();
+			final BPartnerId payer2 = createBPartnerId();
+			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).build();
+			final PaymentRow payment1 = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(40)).bpartnerId(payer1).paymentDateTrx("2020-04-10").build();
+			final PaymentRow payment2 = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(60)).bpartnerId(payer2).paymentDateTrx("2020-04-10").build();
+
+			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(
+					invoiceRow,
+					ImmutableList.of(
+							PaymentsViewAllocateCommand.toPaymentDocument(payment1, moneyService),
+							PaymentsViewAllocateCommand.toPaymentDocument(payment2, moneyService)),
+					moneyService,
+					invoiceProcessingServiceCompanyService);
+
+			assertThat(payableDocument.getInvoiceProcessingFeeCalculation()).isNull();
 			assertThat(payableDocument.getAmountsToAllocate())
 					.usingRecursiveComparison()
 					.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
@@ -441,8 +729,36 @@ public class PaymentsViewAllocateCommandTest
 										.build())
 								.clientAndOrgId(invoiceRow.getClientAndOrgId())
 								.date(invoiceRow.getDateInvoiced())
+								.dateAcct(invoiceRow.getDateAcct())
 								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
 								.build());
+			}
+
+			@Test
+			public void salesInvoiceAndPaymentOfPartnerWithoutServiceCompanyConfig_failsWithUserFriendlyMessage()
+			{
+				final I_C_BPartner payerRecord = newInstance(I_C_BPartner.class);
+				payerRecord.setName("Payer Without Service Company");
+				saveRecord(payerRecord);
+				final BPartnerId payerId = BPartnerId.ofRepoId(payerRecord.getC_BPartner_ID());
+
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).serviceFeeAmt("10").build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerId(payerId).paymentDateTrx("2020-08-01").build();
+
+				assertThatThrownBy(() -> PaymentsViewAllocateCommand.toPayableDocument(
+						invoiceRow,
+						ImmutableList.of(PaymentsViewAllocateCommand.toPaymentDocument(paymentRow, moneyService)),
+						moneyService,
+						invoiceProcessingServiceCompanyService))
+						.isInstanceOfSatisfying(AdempiereException.class, ex -> {
+							assertThat(ex.isUserValidationError()).isTrue();
+							assertThat(ex.getErrorCode()).isEqualTo(AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForPaymentPartner").toAD_Message());
+							// the message names the invoice, the payment and the payment's partner (not a raw id)
+							assertThat(ex.getMessage())
+									.contains(invoiceRow.getDocumentNo())
+									.contains(paymentRow.getDocumentNo())
+									.contains("Payer Without Service Company");
+						});
 			}
 
 			@Test
@@ -490,9 +806,281 @@ public class PaymentsViewAllocateCommandTest
 										.build())
 								.clientAndOrgId(invoiceRow.getClientAndOrgId())
 								.date(invoiceRow.getDateInvoiced())
+								.dateAcct(invoiceRow.getDateAcct())
 								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
 								.build());
 			}
+		}
+	
+		/**
+		 * A payment of an invoice processing service company may only be allocated to invoices of the service company's own customers,
+		 * also when no service fee is entered in the invoice row.
+		 */
+		@Nested
+		public class ServiceCompanyPaymentWithoutServiceFee
+		{
+			private BPartnerId serviceCompanyId;
+			private BPartnerId notAssignedCustomerId;
+
+			@BeforeEach
+			public void beforeEach()
+			{
+				serviceInvoiceDocTypeId = DocTypeId.ofRepoId(222);
+				serviceFeeProductId = ProductId.ofRepoId(333);
+				serviceCompanyId = createNamedBPartner("Service Company");
+				notAssignedCustomerId = createNamedBPartner("Customer Not Assigned");
+
+				processingServiceCompanyConfig()
+						.customerId(bpartnerId)
+						.validFrom(LocalDate.parse("2020-02-11").atStartOfDay(ZoneId.of("UTC+5")))
+						.feePercentageOfGrandTotal("1")
+						.serviceCompanyBPartnerId(serviceCompanyId)
+						.build();
+			}
+
+			private BPartnerId createNamedBPartner(@NonNull final String name)
+			{
+				final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+				bpartnerRecord.setName(name);
+				saveRecord(bpartnerRecord);
+				return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
+			}
+
+			private PayableDocument toPayableDocument(@NonNull final InvoiceRow invoiceRow, @NonNull final PaymentRow paymentRow)
+			{
+				return PaymentsViewAllocateCommand.toPayableDocument(
+						invoiceRow,
+						ImmutableList.of(PaymentsViewAllocateCommand.toPaymentDocument(paymentRow, moneyService)),
+						moneyService,
+						invoiceProcessingServiceCompanyService);
+			}
+
+			private void assertRefusedAsNotAssigned(@NonNull final Throwable ex, @NonNull final InvoiceRow invoiceRow)
+			{
+				assertThat(ex).isInstanceOf(AdempiereException.class);
+				final AdempiereException adempiereException = (AdempiereException)ex;
+				assertThat(adempiereException.isUserValidationError()).isTrue();
+				assertThat(adempiereException.getErrorCode()).isEqualTo(AdMessageKey.of("InvoiceProcessingServiceCompany_CustomerNotAssignedToServiceCompany").toAD_Message());
+				assertThat(adempiereException.getMessage())
+						.contains(invoiceRow.getDocumentNo())
+						.contains("Service Company")
+						.contains("Customer Not Assigned");
+			}
+
+			@ParameterizedTest
+			@ValueSource(strings = { "2020-01-01", "2020-08-01" }) // before and after the config's ValidFrom: like with a service fee, the service company's config counts
+			public void salesInvoiceOfCustomerNotAssigned_isRefused(final String paymentDateStr)
+			{
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).bpartnerId(notAssignedCustomerId).build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerId(serviceCompanyId).paymentDateTrx(paymentDateStr).build();
+
+				assertThatThrownBy(() -> toPayableDocument(invoiceRow, paymentRow))
+						.satisfies(ex -> assertRefusedAsNotAssigned(ex, invoiceRow));
+			}
+
+			@Test
+			public void salesCreditMemoOfCustomerNotAssigned_isRefused()
+			{
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerCreditMemo).openAmt(euro(-100)).bpartnerId(notAssignedCustomerId).build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.OUTBOUND).payAmt(euro(100)).bpartnerId(serviceCompanyId).paymentDateTrx("2020-08-01").build();
+
+				assertThatThrownBy(() -> toPayableDocument(invoiceRow, paymentRow))
+						.satisfies(ex -> assertRefusedAsNotAssigned(ex, invoiceRow));
+			}
+
+			@Test
+			public void salesInvoiceOfAssignedCustomer_isAllocatedWithoutFee()
+			{
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerId(serviceCompanyId).paymentDateTrx("2020-08-01").build();
+
+				final PayableDocument payableDocument = toPayableDocument(invoiceRow, paymentRow);
+
+				assertThat(payableDocument.getInvoiceProcessingFeeCalculation()).isNull();
+				assertThat(payableDocument.getAmountsToAllocate())
+						.usingRecursiveComparison()
+						.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
+			}
+
+			@Test
+			public void salesInvoiceOfTheServiceCompanyItself_isNotRefused()
+			{
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).bpartnerId(serviceCompanyId).build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerId(serviceCompanyId).paymentDateTrx("2020-08-01").build();
+
+				final PayableDocument payableDocument = toPayableDocument(invoiceRow, paymentRow);
+
+				assertThat(payableDocument.getAmountsToAllocate())
+						.usingRecursiveComparison()
+						.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
+			}
+
+			@Test
+			public void salesInvoiceOfCustomerNotAssigned_paymentOfAnotherPartner_isNotRefused()
+			{
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).bpartnerId(notAssignedCustomerId).build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerId(notAssignedCustomerId).paymentDateTrx("2020-08-01").build();
+
+				final PayableDocument payableDocument = toPayableDocument(invoiceRow, paymentRow);
+
+				assertThat(payableDocument.getAmountsToAllocate())
+						.usingRecursiveComparison()
+						.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
+			}
+
+			@Test
+			public void vendorInvoiceOfPartnerNotAssigned_paymentToTheServiceCompany_isNotRefused()
+			{
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.VendorInvoice).openAmt(euro(100)).bpartnerId(notAssignedCustomerId).build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.OUTBOUND).payAmt(euro(100)).bpartnerId(serviceCompanyId).paymentDateTrx("2020-08-01").build();
+
+				final PayableDocument payableDocument = toPayableDocument(invoiceRow, paymentRow);
+
+				assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.PURCHASE);
+				assertThat(payableDocument.getAmountsToAllocate())
+						.usingRecursiveComparison()
+						.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(-100, euroCurrencyId)));
+			}
+
+			/** Several invoices in one allocation: one of them is of a customer not assigned to the service company → the action is not offered, the user sees why. */
+			@Test
+			public void allocatePreconditions_severalInvoicesOneOfACustomerNotAssigned_rejectedWithTheReason()
+			{
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(189)).bpartnerId(serviceCompanyId).paymentDateTrx("2020-08-01").build();
+				final InvoiceRow invoiceOfAssignedCustomer = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).serviceFeeAmt("1").build();
+				final InvoiceRow invoiceOfCustomerNotAssigned = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(90)).bpartnerId(notAssignedCustomerId).build();
+				final PaymentsViewAllocateCommand command = PaymentsViewAllocateCommand.builder()
+						.moneyService(moneyService)
+						.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+						.paymentBonusCreditMemoService(new PaymentBonusCreditMemoService())
+						.paymentRow(paymentRow)
+						.invoiceRow(invoiceOfAssignedCustomer)
+						.invoiceRow(invoiceOfCustomerNotAssigned)
+						.allowPurchaseSalesInvoiceCompensation(false)
+						.build();
+
+				final ProcessPreconditionsResolution resolution = PaymentsView_Allocate.checkPreconditions(command);
+
+				assertThat(resolution.isRejected()).isTrue();
+				assertThat(resolution.isInternal()).isFalse();
+				assertThat(resolution.getRejectReason().getDefaultValue())
+						.contains(AdMessageKey.of("InvoiceProcessingServiceCompany_CustomerNotAssignedToServiceCompany").toAD_Message());
+			}
+		}
+	}
+
+	/** The note on the payment bonus follows the other amounts of the row: what the customer pays depends on the discount and the fees too. */
+	@Nested
+	public class InvoiceRowReducers_paymentBonusNote
+	{
+		@Test
+		public void raisingTheBankFee_aboveWhatTheCustomerPays_showsTheReason()
+		{
+			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(10))
+					.paymentBonusAmt("2.78")
+					.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+					.build();
+			assertThat(row.getPaymentBonusNote()).isNull();
+
+			final InvoiceRow changedRow = InvoiceRowReducers.reduce(row, ImmutableList.of(JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_BankFeeAmt, new BigDecimal("8"))));
+
+			assertThat(changedRow.getPaymentBonusNote()).isNotNull(); // 2.78 > 10 - 8
+		}
+
+		/** The note that the entered amount was adjusted for the VAT rounding stays when another amount of the row changes afterwards. */
+		@Test
+		public void adjustedAmount_thenTheDiscountChanges_keepsTheRoundingNote()
+		{
+			final PaymentBonusDeduction deduction = paymentBonusDeduction("2.60");
+			final InvoiceRow row = InvoiceRowReducers.reduce(
+					invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+							.openAmt(euro(10))
+							.paymentBonusDeduction(deduction)
+							.build(),
+					ImmutableList.of(JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_PaymentBonusAmt, new BigDecimal("0.99"))));
+			final Amount bookedAmt = row.getPaymentBonusAmt();
+			assertThat(bookedAmt.toBigDecimal()).isNotEqualByComparingTo("0.99"); // no net amount gives 0.99 with 7 % VAT
+			assertThat(row.getPaymentBonusNote()).isNotNull();
+
+			final InvoiceRow changedRow = InvoiceRowReducers.reduce(row, ImmutableList.of(JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_DiscountAmt, new BigDecimal("1"))));
+
+			assertThat(changedRow.getPaymentBonusAmt()).isEqualByComparingTo(bookedAmt);
+			assertThat(changedRow.getPaymentBonusNote()).isNotNull();
+		}
+
+		@Test
+		public void loweringTheBankFee_belowWhatTheCustomerPays_removesTheReason()
+		{
+			final InvoiceRow row = InvoiceRowReducers.reduce(
+					invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+							.openAmt(euro(10))
+							.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+							.build(),
+					ImmutableList.of(
+							JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_BankFeeAmt, new BigDecimal("8")),
+							JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_PaymentBonusAmt, new BigDecimal("2.78"))));
+			assertThat(row.getPaymentBonusNote()).isNotNull();
+
+			final InvoiceRow changedRow = InvoiceRowReducers.reduce(row, ImmutableList.of(JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_BankFeeAmt, BigDecimal.ZERO)));
+
+			assertThat(changedRow.getPaymentBonusNote()).isNull();
+		}
+	}
+
+	/**
+	 * The allocate action of the payments view checks the invoice rows' bonus; after an invoice row is changed, the invoices view is reported as changed,
+	 * so that the WebUI fetches its rows and the actions of both the invoices view and the payments view again.
+	 */
+	@Nested
+	public class InvoiceRows_patchRow
+	{
+		@Test
+		public void reportsTheInvoicesViewAsChanged()
+		{
+			final ArrayList<JSONViewChanges> sentChanges = new ArrayList<>();
+			final WebsocketSender websocketSender = Mockito.mock(WebsocketSender.class);
+			Mockito.doAnswer(args -> {
+						final Collection<?> events = args.getArgument(0);
+						events.forEach(event -> sentChanges.add((JSONViewChanges)event));
+						return null;
+					})
+					.when(websocketSender)
+					.convertAndSend(Mockito.anyCollection());
+			SpringContextHolder.registerJUnitBean(WebsocketSender.class, websocketSender);
+
+			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice)
+					.openAmt(euro(10))
+					.paymentBonusDeduction(paymentBonusDeduction("2.60"))
+					.build();
+			final InvoiceRows rows = InvoiceRows.builder()
+					// the rows must not be reloaded from the database, or the user's edits would be lost
+					.repository(Mockito.mock(PaymentAndInvoiceRowsRepo.class, invocation -> {
+						throw new AssertionError("The invoice rows shall not be reloaded: " + invocation);
+					}))
+					.initialRows(ImmutableList.of(row))
+					.evaluationDate(ZonedDateTime.now())
+					.build();
+			final ViewId invoicesViewId = ViewId.random(InvoicesViewFactory.WINDOW_ID);
+
+			try (final ViewChangesCollectorAutoCloseable ignored = ViewChangesCollector.currentOrNewThreadLocalCollector(invoicesViewId))
+			{
+				rows.patchRow(
+						RowEditingContext.builder()
+								.viewId(invoicesViewId)
+								.rowId(row.getId())
+								.documentsCollection(Mockito.mock(DocumentCollection.class))
+								.userRolePermissions(Mockito.mock(IUserRolePermissions.class))
+								.build(),
+						ImmutableList.of(JSONDocumentChangedEvent.replace(InvoiceRow.FIELD_PaymentBonusAmt, new BigDecimal("2.78"))));
+			}
+
+			assertThat(sentChanges)
+					.filteredOn(changes -> invoicesViewId.getViewId().equals(changes.getViewId()))
+					.extracting(JSONViewChanges::getFullyChanged)
+					.containsExactly(Boolean.TRUE);
+			// the edited value is kept
+			assertThat(rows.getById(row.getId()).getPaymentBonusAmt()).isEqualByComparingTo(Amount.of("2.78", CurrencyCode.EUR));
 		}
 	}
 
@@ -536,6 +1124,7 @@ public class PaymentsViewAllocateCommandTest
 			final PaymentAllocationResult result = PaymentsViewAllocateCommand.builder()
 					.moneyService(moneyService)
 					.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+					.paymentBonusCreditMemoService(new PaymentBonusCreditMemoService())
 					.paymentRow(paymentRow)
 					.invoiceRow(invoiceRow)
 					.allowPurchaseSalesInvoiceCompensation(false)
@@ -570,6 +1159,7 @@ public class PaymentsViewAllocateCommandTest
 			final PaymentAllocationResult result = PaymentsViewAllocateCommand.builder()
 					.moneyService(moneyService)
 					.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+					.paymentBonusCreditMemoService(new PaymentBonusCreditMemoService())
 					.invoiceRow(invoiceRow)
 					.invoiceRow(creditMemoRow)
 					.allowPurchaseSalesInvoiceCompensation(false)
@@ -612,6 +1202,7 @@ public class PaymentsViewAllocateCommandTest
 			final PaymentAllocationResult result = PaymentsViewAllocateCommand.builder()
 					.moneyService(moneyService)
 					.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+					.paymentBonusCreditMemoService(new PaymentBonusCreditMemoService())
 					.invoiceRow(invoiceRow)
 					.invoiceRow(creditMemoRow)
 					.allowPurchaseSalesInvoiceCompensation(false)
@@ -655,6 +1246,7 @@ public class PaymentsViewAllocateCommandTest
 			final PaymentAllocationResult result = PaymentsViewAllocateCommand.builder()
 					.moneyService(moneyService)
 					.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+					.paymentBonusCreditMemoService(new PaymentBonusCreditMemoService())
 					.paymentRow(paymentRow)
 					.invoiceRow(invoiceRow)
 					.invoiceRow(creditMemoRow)
@@ -709,6 +1301,7 @@ public class PaymentsViewAllocateCommandTest
 			final PaymentAllocationResult result = PaymentsViewAllocateCommand.builder()
 					.moneyService(moneyService)
 					.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+					.paymentBonusCreditMemoService(new PaymentBonusCreditMemoService())
 					.paymentRow(paymentRow)
 					.invoiceRow(invoiceRow)
 					.invoiceRow(creditMemoRow)
@@ -763,6 +1356,7 @@ public class PaymentsViewAllocateCommandTest
 			final PaymentAllocationResult result = PaymentsViewAllocateCommand.builder()
 					.moneyService(moneyService)
 					.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+					.paymentBonusCreditMemoService(new PaymentBonusCreditMemoService())
 					.paymentRow(inboundPaymentRow)
 					.paymentRow(outboundPaymentRow)
 					.allowPurchaseSalesInvoiceCompensation(false) // not relevant

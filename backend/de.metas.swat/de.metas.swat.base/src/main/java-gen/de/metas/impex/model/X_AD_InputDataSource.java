@@ -25,7 +25,6 @@ public class X_AD_InputDataSource extends org.compiere.model.PO implements I_AD_
 			setAD_InputDataSource_ID (0);
 			setEntityType (null); // de.metas.swat
 			setIsDestination (false); // N
-			setIsEdiEnabled (false); // N
 			setName (null);
         } */
     }
@@ -157,29 +156,6 @@ public class X_AD_InputDataSource extends org.compiere.model.PO implements I_AD_
 	public boolean isDestination ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsDestination);
-		if (oo != null)
-		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Beleg soll per EDI übermittelt werden.
-		@param IsEdiEnabled Beleg soll per EDI übermittelt werden	  */
-	@Override
-	public void setIsEdiEnabled (boolean IsEdiEnabled)
-	{
-		set_Value (COLUMNNAME_IsEdiEnabled, Boolean.valueOf(IsEdiEnabled));
-	}
-
-	/** Get Beleg soll per EDI übermittelt werden.
-		@return Beleg soll per EDI übermittelt werden	  */
-	@Override
-	public boolean isEdiEnabled ()
-	{
-		Object oo = get_Value(COLUMNNAME_IsEdiEnabled);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)

@@ -1,5 +1,5 @@
 import { test } from '../../playwright.config';
-import { getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from './common';
+import { getPage, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from './common';
 
 /**
  * DocumentReferences - Utility for working with Alt+6 related documents panel.
@@ -51,6 +51,22 @@ export async function waitForReferences({ timeout = 8000 } = {}) {
 }
 
 /**
+ * Wait until the Alt+6 panel has received ALL references: the panel shows its spinner (`.docref-spinner-wrapper`)
+ * from the moment it opens until the SSE stream reports COMPLETED (DocumentReferences.js), so once the spinner is gone
+ * every reference the document has is rendered. Fails when the stream does not complete within `timeout`.
+ *
+ * Unlike waitForReferences() (first reference, any one, given up after 8 s) this waits for the complete list, however
+ * long the server takes for it, up to `timeout`.
+ *
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Maximum time for the stream to complete (default: VERY_SLOW_ACTION_TIMEOUT)
+ */
+export async function waitForReferencesComplete({ timeout = VERY_SLOW_ACTION_TIMEOUT } = {}) {
+  const page = getPage();
+  await page.locator('.order-list-panel-open .docref-spinner-wrapper').waitFor({ state: 'detached', timeout });
+}
+
+/**
  * Open the Alt+6 references panel and wait for it to load.
  *
  * @param {Object} options - Configuration options
@@ -84,6 +100,48 @@ export async function openReferencesPanel({ timeout = 5000 } = {}) {
 }
 
 /**
+ * Open the Alt+6 panel and wait until its reference stream has COMPLETED, so the rendered list is final.
+ *
+ * Reading the panel earlier is unreliable: references arrive group by group over SSE, and a reference first rendered
+ * from a generic relation (e.g. data-cy "reference-169 (Todo: ...)") is REPLACED by the higher-priority relation for
+ * the same target window (e.g. "reference-C_Order_to_M_InOut_SO") once that one is streamed — so an expected data-cy
+ * can be absent from a mid-stream read although the final panel shows it.
+ *
+ * If the stream does not complete (the frontend closes the EventSource on an SSE error and never removes the spinner),
+ * the panel is closed and re-opened, which starts a new stream.
+ *
+ * The default streamTimeout (FAST_ACTION_TIMEOUT) is far above the observed stream duration (the whole SSE response took
+ * 0.16-0.28 s in CI) and keeps one attempt as cheap as the former "first reference visible" wait, so callers with many
+ * attempts stay within their test timeout.
+ *
+ * @param {Object} options - Configuration options
+ * @param {number} options.maxAttempts - How often to (re)open the panel (default: 3)
+ * @param {number} options.streamTimeout - Maximum time per attempt for the stream to complete (default: FAST_ACTION_TIMEOUT)
+ * @returns {Promise<boolean>} True if the panel is open and its stream completed, false if no attempt completed
+ */
+export async function openReferencesPanelComplete({ maxAttempts = 3, streamTimeout = FAST_ACTION_TIMEOUT } = {}) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const panelOpened = await openReferencesPanel();
+    if (!panelOpened) {
+      console.log(`[openReferencesPanelComplete] Panel did not open (attempt ${attempt}/${maxAttempts})`);
+      continue;
+    }
+    try {
+      await waitForReferencesComplete({ timeout: streamTimeout });
+      return true;
+    } catch (error) {
+      if (error?.name !== 'TimeoutError') {
+        throw error;
+      }
+      console.log(
+        `[openReferencesPanelComplete] Reference stream not completed within ${streamTimeout}ms (attempt ${attempt}/${maxAttempts})`
+      );
+    }
+  }
+  return false;
+}
+
+/**
  * Wait for spinners to disappear in the references panel.
  *
  * @param {Object} options - Configuration options
@@ -92,8 +150,12 @@ export async function openReferencesPanel({ timeout = 5000 } = {}) {
 export async function waitForSpinnersToDisappear({ timeout = 10000 } = {}) {
   const page = getPage();
 
+  // .first(): the selector usually matches several elements (the Alt+6 panel spinner alone renders a div.spinner AND an
+  // i.spinner); a strict locator would throw a strict-mode violation at once, swallowed below, so nothing was waited
+  // for. "first match detached" == "no match left".
   await page
     .locator('.rotating, .spinner, .indicator-pending')
+    .first()
     .waitFor({
       state: 'detached',
       timeout,
@@ -111,13 +173,14 @@ export async function waitForSpinnersToDisappear({ timeout = 10000 } = {}) {
 export async function getVisibleReferences() {
   const page = getPage();
 
-  const allRefs = await page.locator('[data-cy^="reference-"]').all();
-  return Promise.all(
-    allRefs.map(async (el) => ({
-      dataCy: await el.getAttribute('data-cy'),
-      text: await el.textContent().catch(() => 'N/A'),
-    }))
-  );
+  // One DOM pass: data-cy and text of each element are read together. Reading them via separate per-index locators
+  // (locator.all() returns nth=i locators that re-resolve on every call) can pair the data-cy of one reference with
+  // the text of another while the panel re-renders.
+  return page
+    .locator('[data-cy^="reference-"]')
+    .evaluateAll((elements) =>
+      elements.map((el) => ({ dataCy: el.getAttribute('data-cy'), text: el.textContent }))
+    );
 }
 
 /**
@@ -202,12 +265,10 @@ export async function openRelatedDocument({
           await page.waitForTimeout(1000);
         }
 
-        // Open the references panel
-        const panelOpened = await openReferencesPanel();
-        console.log(`[Attempt ${attempt}] Panel opened: ${panelOpened}`);
-
-        // Wait for spinners to disappear
-        await waitForSpinnersToDisappear();
+        // Open the references panel and wait until its reference stream has completed (a mid-stream read can see a
+        // reference not yet rendered or with an interim data-cy - see openReferencesPanelComplete)
+        const panelComplete = await openReferencesPanelComplete({ maxAttempts: 1 });
+        console.log(`[Attempt ${attempt}] Panel opened and reference stream completed: ${panelComplete}`);
 
         // Wait for SSE references to load
         const referencesLoaded = await waitForReferences();
@@ -343,24 +404,82 @@ export async function openRelatedDocument({
  * reference-AD_RelationType_ID-{id}
  */
 export const REFERENCE_DATA_CY = {
+  // =====================================================================
   // Purchase Order relations (POTrx, IsSOTrx='N')
+  // =====================================================================
   PO_TO_VENDOR_INVOICE: 'reference-C_Order_to_C_Invoice_PO',
-  PO_TO_MATERIAL_RECEIPT: 'reference-C_Order_to_M_InOut_PO',
+  PO_TO_MATERIAL_RECEIPT: 'reference-Receipt',
   PO_TO_RECEIPT_CANDIDATES: 'reference-M_ReceiptSchedule',
   PO_TO_INVOICE_CANDIDATES: 'reference-C_Invoice_Candidate_Purchase',
+  PO_TO_SALES_ORDER: 'reference-C_Order_PO_to_C_Order_SO',
+  PO_TO_INVENTORY_LINE: 'reference-C_Order_PO_to_M_InventoryLine',
+  PO_TO_PROJECT: 'reference-C_Order_PO_to_C_Project',
+  PO_TO_FORECAST: 'reference-C_Order_to_M_Forecast',
 
+  // =====================================================================
   // Sales Order relations (SOTrx, IsSOTrx='Y')
+  // =====================================================================
   SO_TO_CUSTOMER_INVOICE: 'reference-C_Order_to_C_Invoice_SO',
   SO_TO_SHIPMENT: 'reference-C_Order_to_M_InOut_SO',
   SO_TO_SHIPMENT_SCHEDULE: 'reference-M_ShipmentSchedule',
   SO_TO_INVOICE_CANDIDATES: 'reference-C_Invoice_Candidate_Sales',
+  SO_TO_PURCHASE_ORDER: 'reference-C_Order_SO_to_C_Order_PO',
+  SO_TO_QUOTATION: 'reference-C_Order_SO_to_C_Order_Quotation',
+  SO_TO_PROJECT: 'reference-C_Order_SO_to_C_Project',
+  SO_TO_FLATRATE_TERM: 'reference-C_Order_to_C_FlatRate_Term',
+  SO_TO_OLCAND: 'reference-C_Order_to_C_OLCand',
+  SO_TO_PP_ORDER_CANDIDATE: 'reference-C_Order_SO_to_PP_Order_Candidate',
 
+  // =====================================================================
   // Invoice Candidate relations
+  // =====================================================================
   IC_TO_VENDOR_INVOICE: 'reference-C_Invoice_Candidate_to_C_Invoice_PO',
+  IC_SALES_TO_INVOICE: 'reference-C_Invoice_Candidate_Sales_C_Invoice',
+  IC_PURCHASE_TO_INVOICE: 'reference-C_Invoice_Candidate_Purchase_C_Invoice',
 
+  // =====================================================================
   // Shipment Schedule relations
+  // =====================================================================
   SHIPMENT_SCHEDULE_TO_SHIPMENT: 'reference-M_ShipmentSchedule_to_M_InOut',
 
-  // Invoice relations
+  // =====================================================================
+  // Shipment (M_InOut SOTrx) relations
+  // =====================================================================
+  SHIPMENT_TO_SALES_ORDER: 'reference-M_InOut_to_C_Order_SO',
+  SHIPMENT_TO_CUSTOMER_INVOICE: 'reference-M_InOut_to_C_Invoice_SO',
+  SHIPMENT_TO_SHIPMENT_SCHEDULE: 'reference-M_InOut_to_M_ShipmentSchedule',
+  SHIPMENT_TO_PROJECT: 'reference-M_InOut_SO_to_C_Project',
+
+  // =====================================================================
+  // Material Receipt (M_InOut POTrx) relations
+  // =====================================================================
+  RECEIPT_TO_PURCHASE_ORDER: 'reference-M_InOut_to_C_Order_PO',
+  RECEIPT_TO_VENDOR_INVOICE: 'reference-M_InOut_to_C_Invoice_PO',
+
+  // =====================================================================
+  // Sales Invoice (C_Invoice SOTrx) relations
+  // =====================================================================
+  SALES_INVOICE_TO_SALES_ORDER: 'reference-C_Invoice_to_C_Order_SO',
+  SALES_INVOICE_TO_SHIPMENT: 'reference-C_Invoice_to_M_InOut_SO',
+  SALES_INVOICE_TO_INVOICE_CANDIDATE: 'reference-C_Invoice_to_C_Invoice_Candidate_SO',
+  SALES_INVOICE_TO_DUNNING: 'reference-C_Invoice-C_DunningDoc',
+  SALES_INVOICE_TO_PAY_SELECTION: 'reference-C_Invoice_SO_to_C_PaySelection',
+  SALES_INVOICE_TO_PROJECT: 'reference-C_Invoice_SO_to_C_Project',
+  SALES_INVOICE_TO_REF_INVOICE: 'reference-C_Invoice_to_Ref_C_Invoice_SO',
+
+  // =====================================================================
+  // Vendor Invoice (C_Invoice POTrx) relations
+  // =====================================================================
+  VENDOR_INVOICE_TO_PURCHASE_ORDER: 'reference-C_Invoice_to_C_Order_PO',
+  VENDOR_INVOICE_TO_RECEIPT: 'reference-C_Invoice_to_M_InOut_PO',
+  VENDOR_INVOICE_TO_INVOICE_CANDIDATE: 'reference-C_Invoice_to_C_Invoice_Candidate_PO',
+  VENDOR_INVOICE_TO_PAY_SELECTION: 'reference-C_Invoice_PO_to_C_PaySelection',
+  VENDOR_INVOICE_TO_PROJECT: 'reference-C_Invoice_PO_to_C_Project',
+  VENDOR_INVOICE_TO_REF_INVOICE: 'reference-C_Invoice_to_Ref_C_Invoice_PO',
+
+  // =====================================================================
+  // Payment relations
+  // =====================================================================
   INVOICE_TO_PAYMENT: 'reference-C_Invoice_to_C_Payment',
+  PAYMENT_TO_PAY_SELECTION: 'reference-C_Payment_to_C_PaySelection',
 };

@@ -46,6 +46,7 @@ import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.util.StringUtils;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.edi.impprocessor.IMP_Processor_StepDefData;
@@ -53,12 +54,12 @@ import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.issue.AD_Issue_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
-import de.metas.edi.model.I_AD_InputDataSource;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
@@ -234,6 +235,37 @@ public class C_OLCand_StepDef
 		}
 	}
 
+	/**
+	 * @cucumber.stepdef Changes an already-loaded {@code C_OLCand} like a user would in the window and saves it (which triggers the candidate's validation).
+	 * @cucumber.columns
+	 *   <b>C_OLCand_ID</b> — (required, identifier-ref) the OLCand to update<br>
+	 *   <b>M_HU_PI_Item_Product_Override_ID</b> — (optional, identifier-ref) new packing instruction override
+	 * @cucumber.depends StepDefData: C_OLCand_StepDefData, M_HU_PI_Item_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_OLCand:
+	 *   | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_Override_ID.Identifier |
+	 *   | olCand                 | huItemProduct                                    |
+	 * </pre>
+	 */
+	@And("update C_OLCand:")
+	public void update_C_OLCand(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final de.metas.handlingunits.model.I_C_OLCand olCand = InterfaceWrapperHelper.create(
+					row.getAsIdentifier(COLUMNNAME_C_OLCand_ID).lookupIn(olCandTable),
+					de.metas.handlingunits.model.I_C_OLCand.class);
+			InterfaceWrapperHelper.refresh(olCand);
+
+			row.getAsOptionalIdentifier(de.metas.handlingunits.model.I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_Override_ID)
+					.map(id -> id.lookupIn(huItemProductTable))
+					.ifPresent(huPIItemProduct -> olCand.setM_HU_PI_Item_Product_Override_ID(huPIItemProduct.getM_HU_PI_Item_Product_ID()));
+
+			InterfaceWrapperHelper.saveRecord(olCand);
+		});
+	}
+
 	@And("validate C_OLCand is with error")
 	public void validate_C_OLCand_has_error(@NonNull final DataTable dataTable)
 	{
@@ -257,6 +289,26 @@ public class C_OLCand_StepDef
 		assertThat(olCand.getErrorMsg()).contains(errorMsg);
 	}
 
+	/**
+	 * @cucumber.stepdef Validates fields of an already-loaded {@code C_OLCand}. Only the columns present in the row are asserted.
+	 * @cucumber.columns
+	 *   <b>C_OLCand_ID</b> — (required, identifier-ref) the OLCand to validate<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) expected product<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) expected bpartner<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) expected bpartner location<br>
+	 *   <b>M_HU_PI_Item_Product_ID</b> — (optional, identifier-ref) expected packing instruction<br>
+	 *   <b>IsError</b> — (optional) expected error flag<br>
+	 *   <b>IsManualQtyItemCapacity</b> — (optional) expected flag whether the candidate's own QtyItemCapacity is used<br>
+	 *   <b>QtyItemCapacityInternal</b> — (optional) expected TU capacity from the master data<br>
+	 *   <b>QtyEntered, DeliveryRule, DeliveryViaRule, POReference, Processed, PriceActual, …</b> — (optional) asserted when present<br>
+	 * @cucumber.depends StepDefData: C_OLCand_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData, M_Product_StepDefData, M_HU_PI_Item_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate C_OLCand:
+	 *   | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | QtyEntered |
+	 *   | olCand                 | product                 | huItemProduct_old                      | 10         |
+	 * </pre>
+	 */
 	@And("validate C_OLCand:")
 	public void validate_C_OLCand(@NonNull final DataTable dataTable)
 	{
@@ -268,11 +320,19 @@ public class C_OLCand_StepDef
 			assertThat(olCand).isNotNull();
 			InterfaceWrapperHelper.refresh(olCand);
 
-			final BPartnerId bPartnerId = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID).lookupIdIn(bpartnerTable);
-			softly.assertThat(olCand.getC_BPartner_ID()).as(COLUMNNAME_C_BPartner_ID).isEqualTo(BPartnerId.toRepoId(bPartnerId));
+			row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final BPartnerId bPartnerId = id.lookupIdIn(bpartnerTable);
+						softly.assertThat(olCand.getC_BPartner_ID()).as(COLUMNNAME_C_BPartner_ID).isEqualTo(BPartnerId.toRepoId(bPartnerId));
+					});
 
-			final BPartnerLocationId bPartnerLocationId = row.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID).lookupIdIn(bpartnerLocationTable);
-			softly.assertThat(olCand.getC_BPartner_Location_ID()).as(COLUMNNAME_C_BPartner_Location_ID).isEqualTo(BPartnerLocationId.toRepoId(bPartnerLocationId));
+			row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final BPartnerLocationId bPartnerLocationId = id.lookupIdIn(bpartnerLocationTable);
+						softly.assertThat(olCand.getC_BPartner_Location_ID()).as(COLUMNNAME_C_BPartner_Location_ID).isEqualTo(BPartnerLocationId.toRepoId(bPartnerLocationId));
+					});
 
 			final ProductId productId = row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
 			softly.assertThat(olCand.getM_Product_ID()).as(COLUMNNAME_M_Product_ID).isEqualTo(ProductId.toRepoId(productId));
@@ -291,8 +351,14 @@ public class C_OLCand_StepDef
 			row.getAsOptionalBigDecimal(COLUMNNAME_QtyEntered)
 					.ifPresent(qtyEntered -> softly.assertThat(olCand.getQtyEntered()).as(COLUMNNAME_QtyEntered).isEqualTo(qtyEntered));
 
-			final Boolean isError = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsError);
-			softly.assertThat(olCand.isError()).as(COLUMNNAME_IsError).isEqualTo(isError);
+			row.getAsOptionalString(COLUMNNAME_IsError)
+					.map(StringUtils::toBoolean)
+					.ifPresent(isError -> softly.assertThat(olCand.isError()).as(COLUMNNAME_IsError).isEqualTo(isError));
+			row.getAsOptionalString(I_C_OLCand.COLUMNNAME_IsManualQtyItemCapacity)
+					.map(StringUtils::toBoolean)
+					.ifPresent(isManual -> softly.assertThat(olCand.isManualQtyItemCapacity()).as(I_C_OLCand.COLUMNNAME_IsManualQtyItemCapacity).isEqualTo(isManual));
+			row.getAsOptionalBigDecimal(I_C_OLCand.COLUMNNAME_QtyItemCapacityInternal)
+					.ifPresent(qty -> softly.assertThat(olCand.getQtyItemCapacityInternal()).as(I_C_OLCand.COLUMNNAME_QtyItemCapacityInternal).isEqualByComparingTo(qty));
 
 			final Boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_Processed, false);
 			softly.assertThat(olCand.isProcessed()).as(COLUMNNAME_Processed).isEqualTo(processed);
@@ -370,6 +436,26 @@ public class C_OLCand_StepDef
 
 			softly.assertAll();
 		});
+	}
+
+	/**
+	 * Asserts how many active {@code C_OLCand} records carry the given external header id.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And exactly 0 C_OLCand exist for externalHeaderId 'order_1'
+	 * </pre>
+	 */
+	@And("exactly {int} C_OLCand exist for externalHeaderId {string}")
+	public void assert_C_OLCand_count_for_externalHeaderId(final int expectedCount, @NonNull final String externalHeaderId)
+	{
+		final int actualCount = queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(COLUMNNAME_ExternalHeaderId, externalHeaderId)
+				.create()
+				.count();
+		assertThat(actualCount).as("C_OLCand count for externalHeaderId=%s", externalHeaderId).isEqualTo(expectedCount);
 	}
 
 	@And("^after not more than (.*)s, C_OLCand is found")

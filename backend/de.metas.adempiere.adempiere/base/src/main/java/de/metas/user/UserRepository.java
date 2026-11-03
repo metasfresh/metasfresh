@@ -73,7 +73,9 @@ public class UserRepository
 				.name(userRecord.getName())
 				.firstName(userRecord.getFirstname())
 				.lastName(userRecord.getLastname())
+				.department(userRecord.getDepartment())
 				.birthday(TimeUtil.asLocalDate(userRecord.getBirthday()))
+				.phone(userRecord.getPhone())
 				.emailAddress(userRecord.getEMail())
 
 				.userLanguage(userLanguage)

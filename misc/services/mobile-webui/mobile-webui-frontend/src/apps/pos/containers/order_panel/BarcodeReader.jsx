@@ -37,7 +37,7 @@ const BarcodeReader = ({ onBarcodeScanned }) => {
   }, []);
 
   useEffect(() => {
-    videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
+    videoRef?.current?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'end' });
   });
 
   const fireBarcodeScanned = ({ scannedBarcode }) => {
