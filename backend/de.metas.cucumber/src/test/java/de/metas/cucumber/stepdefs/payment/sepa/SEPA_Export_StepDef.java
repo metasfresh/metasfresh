@@ -248,10 +248,10 @@ public class SEPA_Export_StepDef
 	@Then("the SEPA direct debit file for scheme {word} is:")
 	public void assertFile(@NonNull final String scheme, @NonNull final String expectedXml)
 	{
-		final String actualXml = new String(getFile(scheme), StandardCharsets.UTF_8);
+		final byte[] actualFile = getFile(scheme);
 
 		final Diff diff = DiffBuilder.compare(Input.fromString(expectedXml))
-				.withTest(Input.fromString(actualXml))
+				.withTest(Input.fromByteArray(actualFile))
 				.withNodeFilter(node -> NodeFilters.Default.test(node) && node.getNodeType() != Node.COMMENT_NODE && !isFormattingWhitespace(node))
 				.withNodeMatcher(new PmtInfByTransactionNodeMatcher())
 				.withDifferenceEvaluator(DifferenceEvaluators.chain(DifferenceEvaluators.Default, SEPA_Export_StepDef::evaluateIgnorePlaceholder))
@@ -263,7 +263,7 @@ public class SEPA_Export_StepDef
 			final StringBuilder differences = new StringBuilder();
 			diff.getDifferences().forEach(difference -> differences.append("- ").append(difference).append('\n'));
 			throw new AssertionError("The SEPA direct debit file for scheme " + scheme + " is not as expected:\n" + differences
-					+ "==================\nActual file:\n" + actualXml
+					+ "==================\nActual file:\n" + new String(actualFile, StandardCharsets.UTF_8)
 					+ "\n==================\nExpected file:\n" + expectedXml);
 		}
 	}

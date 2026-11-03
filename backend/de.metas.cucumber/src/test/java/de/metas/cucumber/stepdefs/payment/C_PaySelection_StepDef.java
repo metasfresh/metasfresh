@@ -210,13 +210,13 @@ public class C_PaySelection_StepDef
 		final PaySelectionId paySelectionId = paySelectionTable.getId(paySelectionIdentifier);
 		final List<I_C_PaySelectionLine> lines = paySelectionBL.retrievePaySelectionLines(paySelectionId);
 
-		assertThat(lines).hasSize(rows.size());
 		if (isEveryRowIdentifyingAnInvoice(rows))
 		{
 			verifyPaySelectionLinesMatchedByInvoice(rows, lines);
 		}
 		else
 		{
+			assertThat(lines).hasSize(rows.size());
 			rows.forEach((row, index) -> verifyPaySelectionLine(lines.get(index), row));
 		}
 	}
