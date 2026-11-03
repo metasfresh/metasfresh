@@ -3,16 +3,16 @@ package de.metas.handlingunits.rest_api.createfromlabel;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.handlingunits.CreateHUFromInventoryRequest;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
@@ -20,15 +20,14 @@ import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.time.PatternedDateTimeFormatter;
 import de.metas.workplace.WorkplaceRepository;
 import de.metas.workplace.WorkplaceService;
 import de.metas.workplace.WorkplaceUserAssignRepository;
-import de.metas.util.time.PatternedDateTimeFormatter;
 import com.google.common.collect.ImmutableList;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -51,9 +50,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Only the two server-side guards of the create command that the UI cannot produce (the handheld never opens a preview for a shared
- * barcode and sends only the editable fields); everything else is proven by the HU Manager Playwright specs
- * (e2e/mobile-webui/tests/spec/humanager/createFromLabel.spec.js).
+ * The create path through {@code CreateHUFromLabelService.create}: the request-to-command mapping and the server-side guards the UI
+ * cannot produce (the handheld never opens a preview for a shared barcode and sends only the editable fields). The UI flow itself is
+ * proven by the HU Manager Playwright specs (e2e/mobile-webui/tests/spec/humanager/createFromLabel.spec.js).
  */
 class CreateHUFromScannedCodeCommandTest
 {
