@@ -21,6 +21,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
@@ -319,6 +320,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setC_Charge_ID(ChargeId.toRepoId(request.getChargeId()));
 		record.setDebitorOrCreditorId(request.getDebtorOrCreditorId());
 		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getInvoiceId()));
+		record.setC_Order_ID(OrderId.toRepoId(request.getOrderId()));
 		record.setCurrencyRate(request.getCurrencyRate());
 		record.setIsMultiplePayment(request.isMultiPayment());
 
