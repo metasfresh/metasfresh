@@ -3,7 +3,6 @@ package de.metas.handlingunits.rest_api.createfromlabel;
 import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -66,9 +65,8 @@ class LabelValues
 	 * booking does not store them (one rule for both steps, so OK never fails on a value the preview left out).
 	 */
 	@NonNull
-	ImmutableMap<AttributeCode, Object> getAttributeValuesDefinedHere()
+	ImmutableMap<AttributeCode, Object> getAttributeValuesDefinedHere(@NonNull final IAttributeDAO attributeDAO)
 	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		return getAttributeValues().entrySet().stream()
 				.filter(entry -> attributeDAO.getAttributeDisplayNameByValue(entry.getKey()).isPresent())
 				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));

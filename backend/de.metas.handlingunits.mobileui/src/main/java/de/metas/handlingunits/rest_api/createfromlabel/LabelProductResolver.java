@@ -13,9 +13,7 @@ import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -36,23 +34,22 @@ import static de.metas.handlingunits.rest_api.createfromlabel.CreateFromLabelMes
  * <p>
  * Every refusal is a {@link LabelRejectionException} (one plain-language message).
  */
-class LabelProductResolver
+public class LabelProductResolver
 {
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final HUQRCodesService huQRCodesService;
-	@NonNull private final ClientId clientId;
+	@NonNull private final IProductBL productBL;
 
-	@Builder
-	private LabelProductResolver(
+	/** stateless: the services only; the per-request client is the argument of {@link #resolve(ScannedCode, ClientId)} */
+	public LabelProductResolver(
 			@NonNull final HUQRCodesService huQRCodesService,
-			@NonNull final ClientId clientId)
+			@NonNull final IProductBL productBL)
 	{
 		this.huQRCodesService = huQRCodesService;
-		this.clientId = clientId;
+		this.productBL = productBL;
 	}
 
 	@NonNull
-	public LabelProduct resolve(@NonNull final ScannedCode scannedCode)
+	public LabelProduct resolve(@NonNull final ScannedCode scannedCode, @NonNull final ClientId clientId)
 	{
 		final IHUQRCode code = parse(scannedCode);
 
@@ -64,13 +61,13 @@ class LabelProductResolver
 		}
 		else if (code instanceof CustomHUQRCode)
 		{
-			return resolveCustom(scannedCode, (CustomHUQRCode)code);
+			return resolveCustom(scannedCode, (CustomHUQRCode)code, clientId);
 		}
 		else if (code instanceof GS1HUQRCode)
 		{
 			final GTIN gtin = ((GS1HUQRCode)code).getGTIN()
 					.orElseThrow(() -> new LabelRejectionException(LABEL_HAS_NO_PRODUCT, trunc(scannedCode)));
-			return LabelProduct.builder().code(code).productId(resolveByGTIN(gtin)).build();
+			return LabelProduct.builder().code(code).productId(resolveByGTIN(gtin, clientId)).build();
 		}
 		else if (code instanceof EAN13HUQRCode)
 		{
@@ -103,7 +100,7 @@ class LabelProductResolver
 		}
 	}
 
-	private LabelProduct resolveCustom(@NonNull final ScannedCode scannedCode, @NonNull final CustomHUQRCode code)
+	private LabelProduct resolveCustom(@NonNull final ScannedCode scannedCode, @NonNull final CustomHUQRCode code, @NonNull final ClientId clientId)
 	{
 		final String productNo = code.getProductNo().orElse(null);
 		if (productNo != null)
@@ -121,12 +118,12 @@ class LabelProductResolver
 		{
 			throw new LabelRejectionException(LABEL_HAS_NO_PRODUCT, trunc(scannedCode));
 		}
-		return LabelProduct.builder().code(code).productId(resolveByGTIN(gtin.get())).build();
+		return LabelProduct.builder().code(code).productId(resolveByGTIN(gtin.get(), clientId)).build();
 	}
 
 	/** exactly one active product with this GTIN, else a rejection (none: no product found; several: the barcode fits several products, never picks one) */
 	@NonNull
-	private ProductId resolveByGTIN(@NonNull final GTIN gtin)
+	private ProductId resolveByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
 	{
 		final ImmutableSet<ProductId> productIds = productBL.getProductIdsByGTIN(gtin, clientId);
 		if (productIds.isEmpty())

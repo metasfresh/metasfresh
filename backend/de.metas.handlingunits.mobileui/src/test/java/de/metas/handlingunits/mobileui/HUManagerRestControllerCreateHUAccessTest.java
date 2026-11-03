@@ -1,5 +1,9 @@
 package de.metas.handlingunits.mobileui;
 
+import de.metas.handlingunits.rest_api.createfromlabel.LabelProductResolver;
+import de.metas.product.IProductBL;
+import de.metas.organization.IOrgDAO;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.AdRefListRepositoryMocked;
@@ -116,7 +120,7 @@ class HUManagerRestControllerCreateHUAccessTest
 						inventoryCandidateService,
 						new HUGraiService(new HUPIGraiRepository())),
 				inventoryCandidateService,
-				new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelTargetLocatorResolver(new WorkplaceService(WorkplaceRepository.newInstanceForUnitTesting(), new WorkplaceUserAssignRepository()))));
+				new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)), new LabelTargetLocatorResolver(new WorkplaceService(WorkplaceRepository.newInstanceForUnitTesting(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class))));
 	}
 
 	private I_Mobile_Application_Action newAction(final String internalName)

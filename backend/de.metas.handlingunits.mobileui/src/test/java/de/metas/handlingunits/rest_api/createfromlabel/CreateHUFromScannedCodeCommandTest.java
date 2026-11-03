@@ -1,5 +1,13 @@
 package de.metas.handlingunits.rest_api.createfromlabel;
 
+import de.metas.scannable_code.ScannedCode;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.product.IProductBL;
+import de.metas.organization.IOrgDAO;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import de.metas.util.Services;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.handlingunits.CreateHUFromInventoryRequest;
 import de.metas.handlingunits.HuId;
@@ -121,8 +129,34 @@ class CreateHUFromScannedCodeCommandTest
 	/** goes through the real service, so the request-to-command mapping of production code is what the tests exercise */
 	private HuId create(final JsonCreateHUFromScannedCodeRequest request)
 	{
-		final CreateHUFromLabelService service = new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelTargetLocatorResolver(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository())));
+		final CreateHUFromLabelService service = new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)), new LabelTargetLocatorResolver(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class)));
 		return service.create(request, ClientId.METASFRESH, BOOKING_DATE).getHuId();
+	}
+
+	/** The command takes every service and the label resolver as builder parameters (it builds and looks up nothing itself). */
+	@Test
+	void commandBuiltWithItsServicesAndResolver_booksTheLabelProduct()
+	{
+		product2.setGTIN("02001234567893");
+		InterfaceWrapperHelper.saveRecord(product2);
+
+		final HuId huId = CreateHUFromScannedCodeCommand.builder()
+				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
+				.uomConversionBL(Services.get(IUOMConversionBL.class))
+				.warehouseDAO(Services.get(IWarehouseDAO.class))
+				.attributeDAO(Services.get(IAttributeDAO.class))
+				.huQtyService(huQtyService)
+				.labelProductResolver(new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)))
+				.clientId(ClientId.METASFRESH)
+				.scannedCode(ScannedCode.ofString("01" + SHARED_GTIN))
+				.qty(java.math.BigDecimal.ONE)
+				.locatorId(locatorQRCode.getLocatorId())
+				.date(BOOKING_DATE)
+				.build()
+				.execute();
+
+		assertThat(huId).isNotNull();
+		assertThat(huQtyService.requests.get(0).getProductId()).isEqualTo(ProductId.ofRepoId(product1.getM_Product_ID()));
 	}
 
 	/**
