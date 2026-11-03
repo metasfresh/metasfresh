@@ -149,7 +149,7 @@ public class MobileUIPickingClient
 				.findFirst();
 	}
 
-	public JsonWFProcess pickLine(JsonPickingStepEvent request)
+	public JsonWFProcess pickLine(@NonNull final JsonPickingStepEvent request)
 	{
 		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
 		return pickingRestController.postEvent(request);
@@ -173,5 +173,44 @@ public class MobileUIPickingClient
 		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
 		Check.assume(request.isSetGrais(), "setGrais must be true for an atomic pick-with-GRAIs call: {}", request);
 		return pickLine(request);
+	}
+
+	/**
+	 * Triggers the mobile packing re-advise — the {@code POST /job/{wfProcessId}/target/advise} endpoint the
+	 * "Advise carrier" button calls — which re-advises the packed HUs' shipment schedules regardless of their
+	 * current advising status (except Manual).
+	 */
+	public JsonWFProcess advisePackedHU(@NonNull final String wfProcessId)
+	{
+		return pickingRestController.advisePackedHU(wfProcessId, null);
+	}
+
+	/**
+	 * Closes the current LU pick target — the {@code POST /job/{wfProcessId}/target/close} endpoint the
+	 * mobile "close LU" button calls. Routes through {@code closeLUAndTUPickingTargets}, so the carrier-advise
+	 * consistency guard runs on the closed LU.
+	 */
+	public JsonWFProcess closeLUPickingTarget(@NonNull final String wfProcessId)
+	{
+		return pickingRestController.closeLUPickingTarget(wfProcessId, null);
+	}
+
+	/**
+	 * Closes the current TU pick target — the {@code POST /job/{wfProcessId}/target/tu/close} endpoint the
+	 * mobile "close TU" button calls.
+	 */
+	public JsonWFProcess closeTUPickingTarget(@NonNull final String wfProcessId)
+	{
+		return pickingRestController.closeTUPickingTarget(wfProcessId, null);
+	}
+
+	/**
+	 * Re-fetches the current workflow process from the server, exactly like the mobile UI does after each step.
+	 * Unlike the post-event responses, this rebuilds the picking-job JSON freshly, so values that materialize
+	 * only after a pick (e.g. the existing LU/TU picking target and its carrier-advise flags) are reflected.
+	 */
+	public JsonWFProcess getWFProcessById(@NonNull final String wfProcessId)
+	{
+		return workflowRestController.getWFProcessById(wfProcessId);
 	}
 }

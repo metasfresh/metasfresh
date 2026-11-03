@@ -1,5 +1,6 @@
 package de.metas.handlingunits.reservation;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -13,6 +14,7 @@ import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.Condition;
@@ -23,13 +25,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.handlingunits.HUAssertions.assertThat;
 import static de.metas.handlingunits.HUConditions.isAggregate;
 import static de.metas.handlingunits.HUConditions.isNotAggregate;
 import static java.math.BigDecimal.ONE;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -208,6 +215,109 @@ public class HUReservationServiceTest
 			final Optional<HUReservation> secondResult = huReservationService.makeReservation(secondRequest);
 			assertThat(secondResult).isNotPresent();
 		}
+	}
+
+	/**
+	 * Reserves 200kg => 5 VHUs of 40kg each; returns the VHU ids in ascending order.
+	 */
+	private List<HuId> reserveFiveVhusOf40kg()
+	{
+		final I_M_HU lu = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
+		final HUReservation reservation = huReservationService.makeReservation(ReserveHUsRequest.builder()
+				.documentRef(HUReservationDocRef.ofSalesOrderLineId(OrderLineId.ofRepoId(20)))
+				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
+				.qtyToReserve(Quantity.of("200", cuUOM))
+				.productId(data.helper.pTomatoProductId)
+				.build()).get();
+		final List<HuId> vhuIds = reservation.getVhuIds().stream().sorted(Comparator.comparingInt(HuId::getRepoId)).collect(Collectors.toList());
+		assertThat(vhuIds).hasSize(5); // guard
+		return vhuIds;
+	}
+
+	private BigDecimal reservedQty(final HuId vhuId)
+	{
+		return huReservationService.getEntriesByVHUIds(Collections.singleton(vhuId)).stream()
+				.map(entry -> entry.getQtyReserved().toBigDecimal())
+				.findFirst()
+				.orElse(null);
+	}
+
+	@Test
+	public void reduceReservation_partOfOneVhu_remainderStays()
+	{
+		final List<HuId> vhuIds = reserveFiveVhusOf40kg();
+		final HuId vhu = vhuIds.get(0);
+
+		huReservationService.reduceReservation(ImmutableSet.of(vhu), Quantity.of("15", cuUOM));
+
+		assertThat(reservedQty(vhu)).isEqualByComparingTo("25");
+		assertThat(handlingUnitsDAO.getById(vhu).isReserved()).isTrue();
+		assertThat(reservedQty(vhuIds.get(1))).isEqualByComparingTo("40"); // untouched
+	}
+
+	@Test
+	public void reduceReservation_spanningTwoVhus_carriesOver()
+	{
+		final List<HuId> vhuIds = reserveFiveVhusOf40kg();
+		final HuId vhu1 = vhuIds.get(0);
+		final HuId vhu2 = vhuIds.get(1);
+
+		huReservationService.reduceReservation(ImmutableSet.of(vhu1, vhu2), Quantity.of("60", cuUOM));
+
+		// deterministic greedy order: lowest HuId first => vhu1 fully released (40), vhu2 reduced by 20
+		assertThat(reservedQty(vhu1)).isNull();
+		assertThat(handlingUnitsDAO.getById(vhu1).isReserved()).isFalse();
+		assertThat(reservedQty(vhu2)).isEqualByComparingTo("20");
+		final HUReservationEntry entry2 = huReservationService.getEntriesByVHUIds(Collections.singleton(vhu2)).get(0);
+		assertThat(entry2.getDocumentRef()).isEqualTo(HUReservationDocRef.ofSalesOrderLineId(OrderLineId.ofRepoId(20)));
+		assertThat(entry2.getCustomerId()).isNull(); // fixture reserves without customer; must be carried through unchanged
+		assertThat(handlingUnitsDAO.getById(vhu2).isReserved()).isTrue();
+	}
+
+	@Test
+	public void reduceReservation_fullAmount_deletesReservations()
+	{
+		final List<HuId> vhuIds = reserveFiveVhusOf40kg();
+		final HuId vhu1 = vhuIds.get(0);
+		final HuId vhu2 = vhuIds.get(1);
+
+		huReservationService.reduceReservation(ImmutableSet.of(vhu1, vhu2), Quantity.of("80", cuUOM));
+
+		assertThat(huReservationService.isAnyOfVHUIdsReserved(Arrays.asList(vhu1, vhu2))).isFalse();
+		assertThat(handlingUnitsDAO.getById(vhu1).isReserved()).isFalse();
+		assertThat(handlingUnitsDAO.getById(vhu2).isReserved()).isFalse();
+		assertThat(reservedQty(vhuIds.get(2))).isEqualByComparingTo("40"); // untouched
+	}
+
+	@Test
+	public void reduceReservation_moreThanReserved_throwsAndChangesNothing()
+	{
+		final List<HuId> vhuIds = reserveFiveVhusOf40kg();
+		final HuId vhu1 = vhuIds.get(0);
+		final HuId vhu2 = vhuIds.get(1);
+
+		assertThatThrownBy(() ->
+						huReservationService.reduceReservation(ImmutableSet.of(vhu1, vhu2), Quantity.of("81", cuUOM)))
+				.isInstanceOf(AdempiereException.class);
+
+		assertThat(reservedQty(vhu1)).isEqualByComparingTo("40");
+		assertThat(reservedQty(vhu2)).isEqualByComparingTo("40");
+		assertThat(handlingUnitsDAO.getById(vhu1).isReserved()).isTrue();
+		assertThat(handlingUnitsDAO.getById(vhu2).isReserved()).isTrue();
+	}
+
+	@Test
+	public void reduceReservation_nonPositiveQty_throwsAndChangesNothing()
+	{
+		final HuId vhu = reserveFiveVhusOf40kg().get(0);
+
+		assertThatThrownBy(() -> huReservationService.reduceReservation(ImmutableSet.of(vhu), Quantity.zero(cuUOM)))
+				.isInstanceOf(AdempiereException.class);
+		assertThatThrownBy(() -> huReservationService.reduceReservation(ImmutableSet.of(vhu), Quantity.of("-5", cuUOM)))
+				.isInstanceOf(AdempiereException.class);
+
+		assertThat(reservedQty(vhu)).isEqualByComparingTo("40");
+		assertThat(handlingUnitsDAO.getById(vhu).isReserved()).isTrue();
 	}
 
 	private void assertThatHuHasQty(final I_M_HU hu, final String expectedQty)

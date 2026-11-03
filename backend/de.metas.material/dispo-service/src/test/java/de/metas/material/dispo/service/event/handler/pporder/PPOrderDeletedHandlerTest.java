@@ -39,8 +39,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_M_Warehouse;
 import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -60,6 +63,7 @@ import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.X_AD_OrgInfo.STORECREDITCARDDATA_Speichern;
 
@@ -120,6 +124,11 @@ public class PPOrderDeletedHandlerTest
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		// Pre-create the warehouse so WarehouseBL.isIgnoreInMaterialDispo can load it.
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		setValue(warehouse, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, WAREHOUSE_ID.getRepoId());
+		saveRecord(warehouse);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);

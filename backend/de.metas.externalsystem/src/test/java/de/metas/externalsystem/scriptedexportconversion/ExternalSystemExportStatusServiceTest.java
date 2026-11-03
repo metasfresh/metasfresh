@@ -419,6 +419,188 @@ public class ExternalSystemExportStatusServiceTest
 		assertThat(result).containsExactly(configId);
 	}
 
+	/**
+	 * An Enqueued config is actively in flight and must NOT be offered — re-sending would double-send.
+	 * (Asserted here at service level, not only through {@code ExternalSystemExportStatus.isResendable()},
+	 * so the exclusion holds even if the predicate composition in {@code isResendableAttempt} changes.)
+	 */
+	@Test
+	void getResendableConfigs_excludes_enqueuedConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, PInstanceId.ofRepoId(1801));
+
+		assertThat(service.getResendableConfigsBySourceRecord(ref)).isEmpty();
+	}
+
+	/**
+	 * Same for SendingStarted — dispatched to the external system, awaiting its callback.
+	 */
+	@Test
+	void getResendableConfigs_excludes_sendingStartedConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.SendingStarted).build());
+
+		assertThat(service.getResendableConfigsBySourceRecord(ref)).isEmpty();
+	}
+
+	// -----------------------------------------------------------------------
+	// getMatchingConfigIdsBySourceRecord — the force-resend selection (Re-send process with
+	// IsOnlyNotSentSuccessfully=N): everything except DontSend and the actively-in-flight attempts
+	// -----------------------------------------------------------------------
+
+	/**
+	 * The force-resend mode re-triggers an already-delivered export on purpose (e.g. the external system
+	 * lost its data), so a config whose latest attempt is Sent must be offered.
+	 */
+	@Test
+	void getMatchingConfigIds_includes_sentConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+		final PInstanceId pInstanceId = PInstanceId.ofRepoId(1301);
+
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstanceId);
+		service.markSent(pInstanceId, HttpStatus.OK);
+
+		assertThat(service.getMatchingConfigIdsBySourceRecord(ref)).containsExactly(configId);
+	}
+
+	/**
+	 * An OPERATOR-PARKED Pending — one carrying an AD_PInstance, set via the "Change EPCIS Export Status"
+	 * action — is not in flight, so the force-resend mode must offer it too. Otherwise the broader mode
+	 * would send LESS than the not-yet-sent-only mode ({@code getResendableConfigsBySourceRecord}, which
+	 * includes it): an operator who parks a shipment in Pending and then unchecks "only not-yet-sent"
+	 * would see it silently skipped.
+	 */
+	@Test
+	void getMatchingConfigIds_includes_manuallyParkedPendingConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		// operator parks it in Pending via the Change action -> stamped with the process PInstance
+		service.recordManualStatusChange(configId, ref, ExternalSystemExportStatus.Pending, PInstanceId.ofRepoId(1401));
+
+		assertThat(service.getMatchingConfigIdsBySourceRecord(ref)).containsExactly(configId);
+	}
+
+	/**
+	 * A TRANSIENT auto-flow Pending — no AD_PInstance, the momentary state the normal export flow writes
+	 * just before flipping to Enqueued — is on its way out and must NOT be offered: re-sending it would
+	 * double-send.
+	 */
+	@Test
+	void getMatchingConfigIds_excludes_transientPendingConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		service.recordPending(configId, ref); // auto-flow Pending, no PInstance
+
+		assertThat(service.getMatchingConfigIdsBySourceRecord(ref)).isEmpty();
+	}
+
+	/**
+	 * Per-attempt history: only the LATEST attempt decides. A config whose latest attempt is in-flight
+	 * (Enqueued) must NOT be offered even though an OLDER attempt is Sent — re-sending while the current
+	 * attempt is still on the wire double-sends.
+	 */
+	@Test
+	void getMatchingConfigIds_excludesConfigWhoseLatestAttemptIsInFlight()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+		final PInstanceId pInstanceId = PInstanceId.ofRepoId(1501);
+
+		// older attempt was delivered ...
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.Sent).build());
+		// ... but the LATEST attempt is still in flight
+		service.recordPendingAsResend(configId, ref);
+		service.markEnqueued(configId, ref, pInstanceId);
+
+		assertThat(service.getMatchingConfigIdsBySourceRecord(ref)).isEmpty();
+	}
+
+	/**
+	 * Per-attempt history: a config whose LATEST attempt is DontSend must NOT be offered even though an
+	 * OLDER attempt is Sent — DontSend means the WhereClause excluded this record.
+	 */
+	@Test
+	void getMatchingConfigIds_excludesConfigWhoseLatestAttemptIsDontSend()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		// older attempt was delivered ...
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.Sent).build());
+		// ... but the LATEST attempt was suppressed
+		service.recordDontSend(configId, ref);
+
+		assertThat(service.getMatchingConfigIdsBySourceRecord(ref)).isEmpty();
+	}
+
+	/**
+	 * An errored config is not in flight and was not delivered, so the force-resend mode must offer it too —
+	 * it is a superset of the not-yet-sent-only mode in everything but DontSend.
+	 */
+	@Test
+	void getMatchingConfigIds_includes_errorConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+		final PInstanceId pInstanceId = PInstanceId.ofRepoId(1601);
+
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstanceId);
+		service.markError(pInstanceId, AdIssueId.ofRepoId(99), "connection refused");
+
+		assertThat(service.getMatchingConfigIdsBySourceRecord(ref)).containsExactly(configId);
+	}
+
+	/**
+	 * Same for an Invalid config — nothing is in flight, so it may be re-triggered.
+	 */
+	@Test
+	void getMatchingConfigIds_includes_invalidConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+		final PInstanceId pInstanceId = PInstanceId.ofRepoId(1701);
+
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstanceId);
+		service.markInvalid(pInstanceId, "bad data");
+
+		assertThat(service.getMatchingConfigIdsBySourceRecord(ref)).containsExactly(configId);
+	}
+
+	/**
+	 * SendingStarted is the second actively-in-flight state (dispatched, awaiting the external system's
+	 * callback) and must be excluded for the same reason as Enqueued: re-triggering would double-send.
+	 */
+	@Test
+	void getMatchingConfigIds_excludes_sendingStartedConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.SendingStarted).build());
+
+		assertThat(service.getMatchingConfigIdsBySourceRecord(ref)).isEmpty();
+	}
+
 	// -----------------------------------------------------------------------
 	// recordManualStatusChange — writes a NEW, PInstance-stamped attempt row; prior rows are history
 	// -----------------------------------------------------------------------

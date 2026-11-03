@@ -172,6 +172,13 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
+	@NonNull
+	public List<I_C_OrderLine> getByIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		return orderDAO.retrieveOrderLinesByIds(orderLineIds);
+	}
+
+	@Override
 	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
 	{
 		return orderDAO.getOrderLineById(orderLineId);
@@ -1150,5 +1157,18 @@ public class OrderLineBL implements IOrderLineBL
 			final Quantity grossWeightInKg = uomConversionBL.convertToKilogram(grossWeight, productId);
 			orderLine.setGrossWeightKg(grossWeightInKg.toBigDecimal());
 		}
+	}
+
+	@Override
+	public Money getLineGrossAmt(@NonNull final I_C_OrderLine orderLine)
+	{
+		// LineNetAmt is the gross-inclusive total when the owning price list has IsTaxIncluded=Y;
+		// adding TaxAmtInfo would double-count. When IsTaxIncluded=N, LineNetAmt is the net (excl-tax)
+		// and TaxAmtInfo adds the tax to reach gross.
+		final BigDecimal lineGrossAmt = isTaxIncluded(orderLine)
+				? orderLine.getLineNetAmt()
+				: orderLine.getLineNetAmt().add(orderLine.getTaxAmtInfo());
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+		return Money.of(lineGrossAmt, currencyId);
 	}
 }

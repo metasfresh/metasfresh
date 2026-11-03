@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -52,11 +53,14 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 	private I_C_SubscriptionProgress firstRecord;
 	private I_C_SubscriptionProgress secondRecord;
 	private I_M_Product secondProduct;
+	private I_C_Flatrate_Term secondTerm;
+	private ISysConfigBL sysConfigBL;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		sysConfigBL = Services.get(ISysConfigBL.class);
 
 		final I_M_Product firstProduct = newInstance(I_M_Product.class);
 		firstProduct.setProductType(X_M_Product.PRODUCTTYPE_Item);
@@ -77,7 +81,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 		secondProduct.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		save(secondProduct);
 
-		final I_C_Flatrate_Term secondTerm = newInstance(I_C_Flatrate_Term.class);
+		secondTerm = newInstance(I_C_Flatrate_Term.class);
 		secondTerm.setM_Product_ID(secondProduct.getM_Product_ID());
 		save(secondTerm);
 
@@ -98,8 +102,6 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 	@Test
 	public void retrieveModelsWithMissingCandidates_Different_Advance_Days_Values()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 		// guard
 		{
 			sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 3, ClientId.SYSTEM, OrgId.ANY);
@@ -120,7 +122,6 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 	public void retrieveModelsWithMissingCandidates_Service_Product()
 	{
 		// taken from another test; i don't really care, i just need a setup that returns both records
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, ClientId.SYSTEM, OrgId.ANY);
 		assertBothRecordsAreReturned(); // guard
 
@@ -130,9 +131,21 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 		assertOnlyFirstRecordIsReturned();
 	}
 
+	@Test
+	public void retrieveModelsWithMissingCandidates_Inactive_Term()
+	{
+		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, ClientId.SYSTEM, OrgId.ANY);
+		assertBothRecordsAreReturned(); // guard
+
+		secondTerm.setIsActive(false);
+		save(secondTerm);
+
+		assertOnlyFirstRecordIsReturned();
+	}
+
 	private void assertOnlyFirstRecordIsReturned()
 	{
-		final List<? extends Object> result = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
+		final List<? extends Object> result = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited, QueryLimit.NO_LIMIT));
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0)).isInstanceOf(I_C_SubscriptionProgress.class);
@@ -143,7 +156,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 
 	private void assertBothRecordsAreReturned()
 	{
-		final List<? extends Object> secondResult = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
+		final List<? extends Object> secondResult = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited, QueryLimit.NO_LIMIT));
 		assertThat(secondResult).hasSize(2);
 
 		assertThat(secondResult).allSatisfy(r -> {

@@ -21,7 +21,9 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPool;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
@@ -80,6 +82,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -146,6 +149,7 @@ public final class AggregationEngine
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
 	private final boolean deliveryDateAsInvoiceDate;
+	@Nullable private final Boolean partialInvoice;
 
 	private final AdTableId inoutLineTableId;
 	/**
@@ -185,7 +189,8 @@ public final class AggregationEngine
 			@Nullable final LocalDate overrideDueDateParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
 			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService,
-			final boolean deliveryDateAsInvoiceDate)
+			final boolean deliveryDateAsInvoiceDate,
+			@Nullable final Boolean partialInvoice)
 	{
 		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
 		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, MatchInvoiceService::get);
@@ -204,6 +209,7 @@ public final class AggregationEngine
 
 		this.docTypeInvoicingPoolService = docTypeInvoicingPoolService;
 		this.deliveryDateAsInvoiceDate = deliveryDateAsInvoiceDate;
+		this.partialInvoice = partialInvoice;
 	}
 
 	@Override
@@ -641,7 +647,7 @@ public final class AggregationEngine
 			return null;
 		}
 		final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
-		if (paymentTermId != null && !paymentTermRepository.isAllowOverrideDueDate(paymentTermId))
+		if (paymentTermId == null || !paymentTermRepository.isAllowOverrideDueDate(paymentTermId))
 		{
 			return null;
 		}
@@ -821,6 +827,7 @@ public final class AggregationEngine
 		final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
 
 		final InvoiceDocBaseType docBaseType;
+		boolean isRefundDocType = false;
 
 		//
 		// Case: Invoice DocType was preset
@@ -830,7 +837,12 @@ public final class AggregationEngine
 
 			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
 
-			docBaseType = flipDocBaseTypeIfNeeded(invoiceDocBaseType, invoiceIsSOTrx, totalAmt);
+			// A refund candidate carries the positive refund amount and its refund document type already says that this is a credit memo.
+			// Neither the sign of its amount may change that type, nor does a credit memo of it need negated amounts.
+			isRefundDocType = isRefundDocType(invoiceDocType);
+			docBaseType = isRefundDocType
+					? invoiceDocBaseType
+					: flipDocBaseTypeIfNeeded(invoiceDocBaseType, invoiceIsSOTrx, totalAmt);
 		}
 		//
 		// Case: no invoice DocType was set
@@ -865,13 +877,27 @@ public final class AggregationEngine
 
 		//
 		// NOTE: in credit memos, amounts are positive but the invoice effect is reversed
-		if (docBaseType.isCreditMemo())
+		if (docBaseType.isCreditMemo() && !isRefundDocType)
 		{
 			invoiceHeader.negateAllLineAmounts();
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
 		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
+	}
+
+	/**
+	 * A refund document type (invoice or credit memo) is the type of the refund engine's candidates.
+	 * They carry the refund amount as a positive amount, so such a document type keeps its credit memo base type and its amounts as they are,
+	 * whatever the sign. A negative refund therefore stays a credit memo with a negative amount, which means that the customer owes.
+	 * <p>
+	 * The sub type is compared as a plain string, so that a sub type that the code does not know does not break invoicing.
+	 */
+	private static boolean isRefundDocType(@NonNull final I_C_DocType docType)
+	{
+		final String docSubType = docType.getDocSubType();
+		return X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung.equals(docSubType)
+				|| X_C_DocType.DOCSUBTYPE_Rueckverguetungsgutschrift.equals(docSubType);
 	}
 
 	@NonNull
@@ -946,12 +972,13 @@ public final class AggregationEngine
 				.collect(GuavaCollectors.toImmutableMapByKey(line -> PaymentTermId.optionalOfRepoId(line.getC_PaymentTerm_ID())));
 	}
 
-	private void setDocTypeInvoiceId(@NonNull final InvoiceHeaderImpl invoiceHeader)
+	@VisibleForTesting
+	void setDocTypeInvoiceId(@NonNull final InvoiceHeaderImpl invoiceHeader)
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
 		final boolean isTakeDocTypeFromPool = invoiceHeader.isTakeDocTypeFromPool();
 
-		final DocTypeId docTypeIdToBeUsed;
+		DocTypeId docTypeIdToBeUsed;
 
 		final Optional<DocTypeId> docTypeInvoiceId = invoiceHeader.getDocTypeInvoiceId();
 		if (docTypeInvoiceId.isPresent() && !isTakeDocTypeFromPool)
@@ -975,7 +1002,59 @@ public final class AggregationEngine
 			docTypeIdToBeUsed = null;
 		}
 
+		// If a specific isPartialInvoice flavor is required and a doctype was resolved,
+		// try to swap to a sibling doctype that matches the required isPartialInvoice flag.
+		// Iter-3 tri-state: when the doctype is NA (NULL) the doctype is neutral and no swap
+		// is needed — the invoice's IsPartialInvoice value will be set directly from the caller
+		// via the C_Invoice interceptor. If a swap is needed but no sibling exists, fall through
+		// and keep the current doctype rather than throwing (same rationale: the explicit
+		// caller value is honoured by the interceptor).
+		if (partialInvoice != null && docTypeIdToBeUsed != null)
+		{
+			final I_C_DocType resolvedDocType = docTypeBL.getById(docTypeIdToBeUsed);
+			final de.metas.invoice.IsPartialInvoice resolvedDocTypeIntent = de.metas.invoice.IsPartialInvoice.fromValue(
+					InterfaceWrapperHelper.getValue(resolvedDocType, I_C_DocType.COLUMNNAME_IsPartialInvoice).orElse(null));
+
+			final boolean swapNeeded = !resolvedDocTypeIntent.isNA()
+					&& (resolvedDocTypeIntent.isYes() != partialInvoice);
+
+			if (swapNeeded)
+			{
+				final DocTypeId alternativeDocTypeId = docTypeBL.getDocTypeIdOrNull(DocTypeQuery.builder()
+						.docBaseType(DocBaseType.ofCode(resolvedDocType.getDocBaseType()))
+						.adClientId(resolvedDocType.getAD_Client_ID())
+						.adOrgId(resolvedDocType.getAD_Org_ID())
+						.isSOTrx(resolvedDocType.isSOTrx())
+						.isPartialInvoice(partialInvoice)
+						.build());
+				if (alternativeDocTypeId == null)
+				{
+					// No sibling doctype found — keep the current doctype; the invoice's
+					// IsPartialInvoice will be set explicitly from the caller's intent via
+					// the C_Invoice interceptor's "skip if already set" branch. Don't throw —
+					// migration 5801950 made the doctype-swap optional.
+					logger.warn("No sibling doctype with IsPartialInvoice={} found for resolved {}; keeping current doctype, invoice intent will be set directly.",
+							partialInvoice, resolvedDocType);
+				}
+				else
+				{
+					docTypeIdToBeUsed = alternativeDocTypeId;
+				}
+			}
+		}
 		invoiceHeader.setDocTypeInvoiceId(docTypeIdToBeUsed);
+
+		// Propagate caller's explicit IsPartialInvoice intent directly to the invoice header.
+		// The downstream invoice-creation code (InvoiceCandBLCreateInvoices) sets the value on
+		// the C_Invoice via setValue before save; the C_Invoice BEFORE_NEW interceptor's
+		// "skip if already set" branch then preserves it. Required because migration
+		// 5801950 made C_DocType.IsPartialInvoice nullable, so the doctype-swap above may find
+		// no matching sibling — the direct propagation guarantees the caller's intent reaches
+		// the invoice. See me03 #29369.
+		if (partialInvoice != null)
+		{
+			invoiceHeader.setIsPartialInvoice(partialInvoice);
+		}
 	}
 
 	private Optional<DocTypeInvoicingPool> getDocTypeInvoicingPool(@NonNull final DocTypeId docTypeId)

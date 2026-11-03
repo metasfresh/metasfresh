@@ -124,6 +124,13 @@ import java.util.Optional;
 	@Getter @Setter @Nullable
 	private PromotionCodeId promotionCode2Id;
 
+	/**
+	 * Caller's explicit Y/N intent for {@code C_Invoice.IsPartialInvoice}; {@code null} means no
+	 * explicit intent. See {@link IInvoiceHeader#getIsPartialInvoice()}.
+	 */
+	@Nullable
+	private Boolean isPartialInvoice;
+
 	/* package */ InvoiceHeaderImpl()
 	{
 	}
@@ -440,5 +447,12 @@ import java.util.Optional;
 	public InputDataSourceId getAD_InputDataSource_ID() {return inputDataSourceId;}
 
 	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId) {this.inputDataSourceId = inputDataSourceId;}
+
+	@Override
+	@Nullable
+	public Boolean getIsPartialInvoice() {return isPartialInvoice;}
+
+	@Override
+	public void setIsPartialInvoice(@Nullable final Boolean isPartialInvoice) {this.isPartialInvoice = isPartialInvoice;}
 
 }

@@ -35,14 +35,13 @@ import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -282,12 +281,9 @@ public abstract class QueueProcessorPlanner implements Runnable
 
 			final IQuery<I_C_Queue_WorkPackage> query = queryOptional.get();
 
-			if (!Adempiere.isUnitTestMode())
-			{// Enable FOR UPDATE SKIP LOCKED on this query
-				TypedSqlQuery.cast(query).setForUpdateSkipLocked(true);
-			}
-			
-			// Set LockedAt timestamp immediately (rows are still locked via "ForUpdateSkipLocked")
+			query.setForUpdate(ForUpdate.FOR_UPDATE_SKIP_LOCKED);
+
+			// Set LockedAt timestamp immediately (rows are still locked via FOR UPDATE SKIP LOCKED)
 			final ICompositeQueryUpdater<I_C_Queue_WorkPackage> workPackageUpdater = queryBL.createCompositeQueryUpdater(I_C_Queue_WorkPackage.class)
 					.addSetColumnValue(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, now);
 			final int lockedCount = query.updateDirectly(workPackageUpdater);

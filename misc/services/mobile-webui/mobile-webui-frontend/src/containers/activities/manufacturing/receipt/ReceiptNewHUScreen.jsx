@@ -7,6 +7,7 @@ import {
   updateManufacturingTUReceiptTarget,
 } from '../../../../actions/ManufacturingActions';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { useMobileLocation } from '../../../../hooks/useMobileLocation';
 import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 import {
   manufacturingReceiptReceiveTargetScreen,
@@ -14,19 +15,24 @@ import {
 } from '../../../../routes/manufacturing_receipt';
 
 const ReceiptNewHUScreen = () => {
-  const { history, wfProcessId, activityId, lineId } = useScreenDefinition({
-    screenId: 'ReceiptNewHUScreen',
-    captionKey: 'activities.mfg.receipts.newHU',
-    back: manufacturingReceiptReceiveTargetScreen,
-  });
+  const { wfProcessId, activityId, lineId } = useMobileLocation();
 
-  const { availableReceivingTargets, availableReceivingTUTargets } = useSelector((state) => {
+  const { availableReceivingTargets, availableReceivingTUTargets, skipReceiveTargetStep } = useSelector((state) => {
     const line = getLineById(state, wfProcessId, activityId, lineId);
     return {
       availableReceivingTargets: line.availableReceivingTargets,
       availableReceivingTUTargets: line.availableReceivingTUTargets,
+      skipReceiveTargetStep: line.skipReceiveTargetStep,
     };
   }, shallowEqual);
+
+  const { history } = useScreenDefinition({
+    screenId: 'ReceiptNewHUScreen',
+    captionKey: 'activities.mfg.receipts.newHU',
+    // In skip mode this screen is entered directly from the line screen, so going back to the
+    // target chooser would re-expose the very step the configuration removes.
+    back: skipReceiveTargetStep ? manufacturingReceiptScreenLocation : manufacturingReceiptReceiveTargetScreen,
+  });
 
   const dispatch = useDispatch();
 
@@ -43,9 +49,21 @@ const ReceiptNewHUScreen = () => {
     history.goTo(manufacturingReceiptScreenLocation);
   };
 
+  const luTargets = availableReceivingTargets?.values ?? [];
+  const tuTargets = availableReceivingTUTargets?.values ?? [];
+  const hasTargets = luTargets.length > 0 || tuTargets.length > 0;
+  // When no receiving Gebinde can be offered, the backend supplies a localized, actionable
+  // reason on either target list. Show it instead of an empty screen.
+  const emptyReason = availableReceivingTargets?.emptyReason || availableReceivingTUTargets?.emptyReason;
+
   return (
     <div className="section pt-2">
-      {availableReceivingTargets.values.map((target) => (
+      {!hasTargets && emptyReason && (
+        <div className="notification is-warning" data-testid="receive-no-gebinde-guidance">
+          {emptyReason}
+        </div>
+      )}
+      {luTargets.map((target) => (
         <ButtonWithIndicator
           key={target.luPIItemId}
           caption={target.luCaption}
@@ -55,8 +73,8 @@ const ReceiptNewHUScreen = () => {
           <div className="row is-full is-size-7">{target.tuCaption}</div>
         </ButtonWithIndicator>
       ))}
-      {availableReceivingTUTargets?.values?.length > 0 && <br />}
-      {availableReceivingTUTargets?.values?.map((tuTarget) => (
+      {tuTargets.length > 0 && <br />}
+      {tuTargets.map((tuTarget) => (
         <ButtonWithIndicator
           key={tuTarget.tuPIItemProductId}
           caption={tuTarget.caption}

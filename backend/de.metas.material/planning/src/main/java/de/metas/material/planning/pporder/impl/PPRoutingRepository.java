@@ -94,6 +94,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private static final AdMessageKey MSG_AD_Workflow_Missing_Node = AdMessageKey.of("AD_Workflow_StartNode_NotSet");
+	private static final AdMessageKey MSG_FirstNodeInvalid = AdMessageKey.of("PPRouting_FirstNodeInvalid");
 
 	private final CCache<PPRoutingId, PPRouting> routingsById = CCache.<PPRoutingId, PPRouting>builder()
 			.tableName(I_AD_Workflow.Table_Name)
@@ -147,6 +148,17 @@ public class PPRoutingRepository implements IPPRoutingRepository
 			throw new AdempiereException(MSG_AD_Workflow_Missing_Node, routingRecord.getName());
 		}
 		final PPRoutingActivityId firstActivityId = PPRoutingActivityId.ofRepoId(routingId, wfNodeId);
+
+		final boolean firstActivityInActivities = activities.stream()
+				.map(PPRoutingActivity::getId)
+				.anyMatch(firstActivityId::equals);
+		if (!firstActivityInActivities)
+		{
+			throw new AdempiereException(MSG_FirstNodeInvalid,
+					"workflow=" + routingRecord.getName()
+							+ " (AD_Workflow_ID=" + routingId.getRepoId() + "), first node AD_WF_Node_ID=" + wfNodeId
+							+ " is not in the active node set (deactivated, different workflow, or missing S_Resource_ID)");
+		}
 
 		return PPRouting.builder()
 				.id(routingId)
@@ -352,6 +364,20 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_Workflow_ID, excludeActivityId.getRoutingId())
 				.addNotEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_WF_Node_ID, excludeActivityId.getRepoId())
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	public boolean isFirstNodeOfWorkflow(@NonNull final PPRoutingActivityId activityId)
+	{
+		// Note: intentionally NO addOnlyActiveRecordsFilter() — the first-node-guard interceptors
+		// must also fire for soft-deleted workflows (IsActive='N') whose AD_WF_Node_ID pointer is
+		// still set. Adding an active-only filter would silently disable the guard for those rows.
+		return queryBL
+				.createQueryBuilder(I_AD_Workflow.class)
+				.addEqualsFilter(I_AD_Workflow.COLUMNNAME_AD_Workflow_ID, activityId.getRoutingId())
+				.addEqualsFilter(I_AD_Workflow.COLUMNNAME_AD_WF_Node_ID, activityId.getRepoId())
 				.create()
 				.anyMatch();
 	}

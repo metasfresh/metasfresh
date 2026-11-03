@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 858145598L;
+	private static final long serialVersionUID = 688047207L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -78,6 +78,33 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public int getAD_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_InOut getB2B_InOut()
+	{
+		return get_ValueAsPO(COLUMNNAME_B2B_InOut_ID, org.compiere.model.I_M_InOut.class);
+	}
+
+	@Override
+	public void setB2B_InOut(final org.compiere.model.I_M_InOut B2B_InOut)
+	{
+		set_ValueFromPO(COLUMNNAME_B2B_InOut_ID, org.compiere.model.I_M_InOut.class, B2B_InOut);
+	}
+
+	@Override
+	public void setB2B_InOut_ID (final int B2B_InOut_ID)
+	{
+		if (B2B_InOut_ID < 1) 
+			set_Value (COLUMNNAME_B2B_InOut_ID, null);
+		else 
+			set_Value (COLUMNNAME_B2B_InOut_ID, B2B_InOut_ID);
+	}
+
+	@Override
+	public int getB2B_InOut_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_B2B_InOut_ID);
 	}
 
 	@Override
@@ -1319,6 +1346,17 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public boolean isSendEMail() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_SendEMail);
+	}
+
+	@Override
+	public void setTrackingURL (final @Nullable java.lang.String TrackingURL)
+	{
+		throw new IllegalArgumentException ("TrackingURL is virtual column");	}
+
+	@Override
+	public java.lang.String getTrackingURL() 
+	{
+		return get_ValueAsString(COLUMNNAME_TrackingURL);
 	}
 
 	@Override

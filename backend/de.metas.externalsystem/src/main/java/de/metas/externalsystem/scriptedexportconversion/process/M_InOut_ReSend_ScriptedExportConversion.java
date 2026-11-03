@@ -25,6 +25,7 @@ package de.metas.externalsystem.scriptedexportconversion.process;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -36,19 +37,26 @@ import org.compiere.model.I_M_InOut;
 import java.util.List;
 
 /**
- * Re-triggers the scripted-export-conversion for any config with a non-Sent attempt for this M_InOut.
+ * Re-triggers the scripted-export-conversion for a selection of M_InOut records.
+ * When {@code IsOnlyNotSentSuccessfully=Y} only not-yet-successfully-sent configs are re-sent
+ * (error/invalid, the suppressed DontSend, and an operator-parked Pending).
+ * When {@code IsOnlyNotSentSuccessfully=N} configs in any state are re-triggered, including
+ * already-Sent; DontSend and actively-in-flight configs are always skipped.
  */
 public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess implements IProcessPrecondition
 {
 	private final ExternalSystemScriptedExportConversionService scriptedExportService =
 			SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionService.class);
 
+	@Param(parameterName = "IsOnlyNotSentSuccessfully")
+	private boolean isOnlyNotSentSuccessfully;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.getSelectedIncludedRecords().size() > 1)
+		if (context.getSelectionSize().isNoSelection())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 		return ProcessPreconditionsResolution.accept();
 	}
@@ -56,20 +64,26 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 	@Override
 	protected String doIt()
 	{
-		final int m_inout_id = getRecord_ID();
-		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, m_inout_id);
-
-		final List<ExternalSystemScriptedExportConversionConfigId> configIds =
-				scriptedExportService.getResendableConfigsBySourceRecord(sourceRecord);
+		// Collect IDs first to close the DB cursor before making external-service calls.
+		final List<Integer> inoutIds = retrieveSelectedRecordsQueryBuilder(I_M_InOut.class).create().listIds();
 
 		int triggered = 0;
-		for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
+		for (final int m_inout_id : inoutIds)
 		{
-			// The service gates the re-send on the config's WhereClause: nothing left to export
-			// (e.g. every SSCC already in the EPCIS ledger) → DontSend, no adapter invocation.
-			if (scriptedExportService.resendConfigIfRelevant(configId, sourceRecord, m_inout_id))
+			final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, m_inout_id);
+
+			final List<ExternalSystemScriptedExportConversionConfigId> configIds = isOnlyNotSentSuccessfully
+					? scriptedExportService.getResendableConfigsBySourceRecord(sourceRecord)
+					: scriptedExportService.getMatchingConfigIdsBySourceRecord(sourceRecord);
+
+			for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
 			{
-				triggered++;
+				// The service gates the re-send on the config's WhereClause: nothing left to export
+				// (e.g. every SSCC already in the EPCIS ledger) → DontSend, no adapter invocation.
+				if (scriptedExportService.resendConfigIfRelevant(configId, sourceRecord, m_inout_id))
+				{
+					triggered++;
+				}
 			}
 		}
 

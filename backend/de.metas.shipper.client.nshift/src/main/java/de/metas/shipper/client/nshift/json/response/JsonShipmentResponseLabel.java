@@ -62,6 +62,9 @@ public class JsonShipmentResponseLabel
 	@JsonProperty("PkgNo")
 	String pkgNo;
 
+	@JsonProperty("TrackingURL")
+	String trackingURL;
+
 	@JsonProperty("Tag")
 	String tag;
 

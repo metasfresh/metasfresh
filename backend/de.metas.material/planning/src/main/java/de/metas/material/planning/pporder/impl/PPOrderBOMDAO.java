@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -30,6 +31,12 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	public I_PP_Order_BOMLine getOrderBOMLineById(@NonNull final PPOrderBOMLineId orderBOMLineId)
 	{
 		return load(orderBOMLineId, I_PP_Order_BOMLine.class);
+	}
+
+	@Override
+	public List<I_PP_Order_BOMLine> getOrderBOMLinesByIds(@NonNull final Set<PPOrderBOMLineId> orderBOMLineIds)
+	{
+		return InterfaceWrapperHelper.loadByRepoIdAwares(orderBOMLineIds, I_PP_Order_BOMLine.class);
 	}
 
 	@Override

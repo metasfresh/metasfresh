@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -92,6 +93,7 @@ public class RESTUtil
 {
 	private static final Logger logger = LogManager.getLogger(RESTUtil.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 
 	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
@@ -106,6 +108,13 @@ public class RESTUtil
 
 		Env.setLoggedUserId(Env.getCtx(), userId);
 		Env.setOrgId(Env.getCtx(), OrgId.ofRepoId(1000000));
+		// Establish the role + client on the test thread so DIRECT (non-HTTP) service calls in step defs run
+		// under this role's UserRolePermissions. The token alone only authorises HTTP requests (via the
+		// UserAuthTokenFilter); an in-process call would otherwise have no role permissions, so an
+		// Access.READ-guarded lookup (e.g. OrgDAO.retrieveOrgIdBy) could not see orgs outside the context org.
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Role_ID, roleId.getRepoId());
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID,
+				roleDAO.getById(roleId).getClientId().getRepoId());
 
 		return userAuthTokenRecord.getAuthToken();
 	}
@@ -254,8 +263,9 @@ public class RESTUtil
 		}
 
 		final String expectErrorContaining = apiRequest.getExpectedErrorMessageContaining();
+		final String expectErrorCode = apiRequest.getExpectedErrorCode();
 		final Boolean expectErrorUserFriendly = apiRequest.getExpectErrorUserFriendly();
-		final boolean isExpectError = expectErrorContaining != null || expectErrorUserFriendly != null;
+		final boolean isExpectError = expectErrorContaining != null || expectErrorCode != null || expectErrorUserFriendly != null;
 		if (isExpectError)
 		{
 			final JsonError jsonError = apiResponse.getContentAs(JsonError.class);
@@ -266,6 +276,12 @@ public class RESTUtil
 				assertThat(jsonErrorItem.getMessage())
 						.as(() -> "Error Message of " + jsonError)
 						.contains(expectErrorContaining);
+			}
+			if (expectErrorCode != null)
+			{
+				assertThat(jsonErrorItem.getErrorCode())
+						.as(() -> "ErrorCode of " + jsonError)
+						.isEqualTo(expectErrorCode);
 			}
 			if (expectErrorUserFriendly != null)
 			{

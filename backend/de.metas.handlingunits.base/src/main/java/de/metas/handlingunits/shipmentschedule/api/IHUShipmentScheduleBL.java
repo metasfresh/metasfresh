@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.impl.TULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -165,6 +166,20 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 
 	void deleteByTopLevelHUsAndShipmentScheduleId(@NonNull Collection<I_M_HU> topLevelHUs, @NonNull ShipmentScheduleId shipmentScheduleId);
 
+	/**
+	 * Reduces the {@link I_M_ShipmentSchedule_QtyPicked} row(s) keyed to the given pick-to TU (i.e.
+	 * {@code M_TU_HU_ID = pickToTuId}) by {@code qtyToReduce}, walking the rows newest-first (highest
+	 * {@code M_ShipmentSchedule_QtyPicked_ID} first). A row fully consumed by the reduction is deleted;
+	 * the last touched row (if any qty remains after it) is partially reduced instead. Use this — instead of
+	 * {@link #deleteByTopLevelHUsAndShipmentScheduleId}/{@link #deleteByTopLevelHUAndShipmentScheduleId} —
+	 * for a partial unpick-to-floor of a CU picked into a bare TU, where the picked-to row is keyed to the
+	 * TU (not the leaf CU) and a blind delete would also erase the still-picked remainder.
+	 */
+	void reduceQtyPickedForPickToTU(
+			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@NonNull HuId pickToTuId,
+			@NonNull Quantity qtyToReduce);
+
 	WarehouseId getWarehouseId(@NonNull I_M_ShipmentSchedule schedule);
 
 	BPartnerId getBPartnerId(@NonNull I_M_ShipmentSchedule schedule);
@@ -187,4 +202,20 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 */
 	@Nullable
 	ProjectId extractSingleProjectIdOrNull(@NonNull List<ShipmentScheduleWithHU> candidates);
+
+	/**
+	 * Creates shipment candidates for a QtyPicked record, expanding mixed-origin TUs into
+	 * per-VHU or per-COO-group candidates so each gets its own InOutLine with the correct ASI.
+	 */
+	List<ShipmentScheduleWithHU> createCandidatesForQtyPicked(
+			@NonNull I_M_ShipmentSchedule_QtyPicked qtyPicked,
+			@NonNull IHUContext huContext,
+			@NonNull M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse);
+
+	/**
+	 * Retrieves all undelivered shipment schedule candidates for a list of top-level HUs,
+	 * expanding any mixed-origin TUs into per-COO candidates.
+	 * Each HU in the list must be a top-level HU.
+	 */
+	List<ShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(@NonNull List<I_M_HU> hus);
 }

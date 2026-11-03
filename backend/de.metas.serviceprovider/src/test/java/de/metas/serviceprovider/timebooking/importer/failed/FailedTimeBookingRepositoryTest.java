@@ -29,6 +29,8 @@ import de.metas.externalsystem.ExternalSystemType;
 import de.metas.serviceprovider.model.I_S_FailedTimeBooking;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.Adempiere;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,6 +47,16 @@ public class FailedTimeBookingRepositoryTest
 
 	private ExternalSystem MOCK_EXTERNAL_SYSTEM_EVERHOUR = null;
 	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
+
+	// Enable JUnit test mode before any test-instance field initializer runs: the field above calls
+	// FailedTimeBookingRepository.newInstanceForUnitTesting(), which asserts unit-test-mode at construction time,
+	// before @BeforeEach. Otherwise this test only passes when an earlier test in the same surefire fork already
+	// enabled it — an order-dependent flake (reactor-order shift, registry case 129).
+	@BeforeAll
+	public static void enableUnitTestMode()
+	{
+		Adempiere.enableUnitTestMode();
+	}
 
 	@BeforeEach
 	public void init()

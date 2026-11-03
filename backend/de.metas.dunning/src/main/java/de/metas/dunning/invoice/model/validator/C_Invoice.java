@@ -26,7 +26,19 @@ public class C_Invoice
 {
 	private static final Logger logger = LogManager.getLogger(C_Invoice.class);
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_PREPARE })
+	/**
+	 * Runs at AFTER_COMPLETE (not AFTER_PREPARE) on purpose: the DueDate this computation
+	 * depends on is filled by de.metas.business's C_Invoice interceptor at AFTER_PREPARE,
+	 * and the execution order of two AFTER_PREPARE interceptors from different modules is
+	 * not deterministic (Spring registration order; ModelValidationEngine has no priority
+	 * mechanism). If grace ran first, DueDate was still null, the computation was silently
+	 * skipped, and the eligibility check in DefaultDunningCandidateProducer.isEligible()
+	 * was bypassed - invoices could be dunned during their grace period. Nothing reads
+	 * DunningGrace during the completion window, so AFTER_COMPLETE is safe and guarantees
+	 * DueDate is present. The null-DueDate guard in InvoiceSourceBL remains for legacy
+	 * invoices whose DueDate was never back-filled.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void setDunningGraceIfAutomatic(final I_C_Invoice invoice)
 	{
 		Services.get(IInvoiceSourceBL.class).setDunningGraceIfManaged(invoice);

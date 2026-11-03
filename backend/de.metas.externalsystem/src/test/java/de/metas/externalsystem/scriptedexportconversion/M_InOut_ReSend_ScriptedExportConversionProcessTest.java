@@ -63,16 +63,18 @@ import static org.mockito.Mockito.when;
 /**
  * Process-level test for {@link M_InOut_ReSend_ScriptedExportConversion}.
  *
- * <p>The process is thin glue: it loops the resendable config IDs and delegates the whole per-config
- * re-send decision (relevance gate → DontSend-or-Pending+invoke) to
+ * <p>The process is thin glue: per selected M_InOut it resolves the config IDs for the requested mode
+ * ({@code IsOnlyNotSentSuccessfully=Y} → {@code getResendableConfigsBySourceRecord}; {@code =N} →
+ * {@code getMatchingConfigIdsBySourceRecord}) and delegates the whole per-config re-send decision
+ * (relevance gate → DontSend-or-Pending+invoke) to
  * {@link ExternalSystemScriptedExportConversionService#resendConfigIfRelevant}. So this test verifies
- * only the delegation + counting; the gate branch itself is unit-tested in
+ * the mode selection + delegation + counting; the gate branch itself is unit-tested in
  * {@code ExternalSystemScriptedExportConversionServiceResendTest}.
  * <ul>
- *   <li>Each resendable config is delegated once; the {@code @Processed@ #N} count reflects only the
- *       configs for which the service reported a send ({@code true}).</li>
+ *   <li>Each config is delegated once; the {@code @Processed@ #N} count reflects only the configs for
+ *       which the service reported a send ({@code true}).</li>
  *   <li>A config the service suppressed ({@code false} — nothing left to export) is excluded from the count.</li>
- *   <li>No resendable configs → {@code @Processed@ #0}, no delegation.</li>
+ *   <li>No configs → {@code @Processed@ #0}, no delegation.</li>
  * </ul>
  */
 @ExtendWith(AdempiereTestWatcher.class)
@@ -94,10 +96,10 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 	}
 
 	// -----------------------------------------------------------------------
-	// 1. Two resendable configs, both sent → delegated once each, count = 2
+	// 1. Two matching configs, both sent → delegated once each, count = 2
 	// -----------------------------------------------------------------------
 	@Test
-	void doIt_twoResendableConfigs_delegatedOncePerConfig()
+	void doIt_twoConfigs_bothSent_delegatedOncePerConfig()
 	{
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 		InterfaceWrapperHelper.saveRecord(inout);
@@ -108,14 +110,15 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		final ExternalSystemScriptedExportConversionConfigId configIdA = ExternalSystemScriptedExportConversionConfigId.ofRepoId(101);
 		final ExternalSystemScriptedExportConversionConfigId configIdB = ExternalSystemScriptedExportConversionConfigId.ofRepoId(102);
 
-		when(scriptedExportServiceMock.getResendableConfigsBySourceRecord(sourceRecord))
+		// isOnlyNotSentSuccessfully=false → all matching configs
+		when(scriptedExportServiceMock.getMatchingConfigIdsBySourceRecord(sourceRecord))
 				.thenReturn(Arrays.asList(configIdA, configIdB));
 
 		// both still have something to export → service reports a send
 		when(scriptedExportServiceMock.resendConfigIfRelevant(eq(configIdA), any(TableRecordReference.class), eq(inoutId))).thenReturn(true);
 		when(scriptedExportServiceMock.resendConfigIfRelevant(eq(configIdB), any(TableRecordReference.class), eq(inoutId))).thenReturn(true);
 
-		final String result = runProcess(inoutId, tableId);
+		final String result = runProcess(inoutId, tableId, false);
 
 		verify(scriptedExportServiceMock, times(1)).resendConfigIfRelevant(eq(configIdA), any(TableRecordReference.class), eq(inoutId));
 		verify(scriptedExportServiceMock, times(1)).resendConfigIfRelevant(eq(configIdB), any(TableRecordReference.class), eq(inoutId));
@@ -123,20 +126,20 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 	}
 
 	// -----------------------------------------------------------------------
-	// 2. No resendable configs → zero-count result, no delegation
+	// 2. No configs → zero-count result, no delegation
 	// -----------------------------------------------------------------------
 	@Test
-	void doIt_noResendableConfigs_returnsZeroCount()
+	void doIt_noConfigs_returnsZeroCount()
 	{
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 		InterfaceWrapperHelper.saveRecord(inout);
 		final int inoutId = inout.getM_InOut_ID();
 		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);
 
-		when(scriptedExportServiceMock.getResendableConfigsBySourceRecord(any()))
+		when(scriptedExportServiceMock.getMatchingConfigIdsBySourceRecord(any()))
 				.thenReturn(Collections.emptyList());
 
-		final String result = runProcess(inoutId, tableId);
+		final String result = runProcess(inoutId, tableId, false);
 
 		assertThat(result).contains("#0");
 		verify(scriptedExportServiceMock, times(0)).resendConfigIfRelevant(any(), any(), anyInt());
@@ -157,14 +160,14 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		final ExternalSystemScriptedExportConversionConfigId configIdSent = ExternalSystemScriptedExportConversionConfigId.ofRepoId(201);
 		final ExternalSystemScriptedExportConversionConfigId configIdSuppressed = ExternalSystemScriptedExportConversionConfigId.ofRepoId(202);
 
-		when(scriptedExportServiceMock.getResendableConfigsBySourceRecord(sourceRecord))
+		when(scriptedExportServiceMock.getMatchingConfigIdsBySourceRecord(sourceRecord))
 				.thenReturn(Arrays.asList(configIdSent, configIdSuppressed));
 
 		// one config sends, the other is suppressed (nothing left to export)
 		when(scriptedExportServiceMock.resendConfigIfRelevant(eq(configIdSent), any(TableRecordReference.class), eq(inoutId))).thenReturn(true);
 		when(scriptedExportServiceMock.resendConfigIfRelevant(eq(configIdSuppressed), any(TableRecordReference.class), eq(inoutId))).thenReturn(false);
 
-		final String result = runProcess(inoutId, tableId);
+		final String result = runProcess(inoutId, tableId, false);
 
 		// both delegated once, but only the sent one counts
 		verify(scriptedExportServiceMock, times(1)).resendConfigIfRelevant(eq(configIdSent), any(TableRecordReference.class), eq(inoutId));
@@ -173,14 +176,43 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 	}
 
 	// -----------------------------------------------------------------------
+	// 4. isOnlyNotSentSuccessfully=true → uses getResendableConfigsBySourceRecord (not the all-matching path)
+	// -----------------------------------------------------------------------
+	@Test
+	void doIt_isOnlyNotSentSuccessfully_usesResendableConfigs()
+	{
+		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+		InterfaceWrapperHelper.saveRecord(inout);
+		final int inoutId = inout.getM_InOut_ID();
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);
+		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, inoutId);
+
+		final ExternalSystemScriptedExportConversionConfigId configIdA = ExternalSystemScriptedExportConversionConfigId.ofRepoId(201);
+
+		when(scriptedExportServiceMock.getResendableConfigsBySourceRecord(sourceRecord))
+				.thenReturn(Collections.singletonList(configIdA));
+		when(scriptedExportServiceMock.resendConfigIfRelevant(eq(configIdA), any(TableRecordReference.class), eq(inoutId))).thenReturn(true);
+
+		final String result = runProcess(inoutId, tableId, true /*isOnlyNotSentSuccessfully*/);
+
+		// Verify the filtered path was used, NOT the all-matching path
+		verify(scriptedExportServiceMock, times(1)).getResendableConfigsBySourceRecord(sourceRecord);
+		verify(scriptedExportServiceMock, times(0)).getMatchingConfigIdsBySourceRecord(any());
+		verify(scriptedExportServiceMock, times(1)).resendConfigIfRelevant(eq(configIdA), any(TableRecordReference.class), eq(inoutId));
+		assertThat(result).contains("#1");
+	}
+
+	// -----------------------------------------------------------------------
 	// Helpers
 	// -----------------------------------------------------------------------
 
 	/**
 	 * Instantiates and drives the process for the given M_InOut record.
-	 * Returns the process summary result string.
+	 *
+	 * @param isOnlyNotSentSuccessfully value for the {@code IsOnlyNotSentSuccessfully} process parameter
+	 * @return the process summary result string
 	 */
-	private String runProcess(final int inoutId, final int tableId)
+	private String runProcess(final int inoutId, final int tableId, final boolean isOnlyNotSentSuccessfully)
 	{
 		final I_AD_Process adProcess = newInstanceOutOfTrx(I_AD_Process.class);
 		adProcess.setValue(M_InOut_ReSend_ScriptedExportConversion.class.getSimpleName());
@@ -197,6 +229,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 				.setAD_PInstance(pinstance)
 				.setRecord(tableId, inoutId)
 				.setTitle("Test")
+				.addParameter("IsOnlyNotSentSuccessfully", isOnlyNotSentSuccessfully)
 				.build();
 
 		// Instantiate AFTER mocks are registered (fields resolved at construction via SpringContextHolder)
