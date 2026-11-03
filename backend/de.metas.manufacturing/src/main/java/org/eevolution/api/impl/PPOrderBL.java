@@ -163,6 +163,12 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
+	public List<I_PP_Order_BOMLine> getOrderBOMLinesByIds(final Set<PPOrderBOMLineId> orderBOMLineIds)
+	{
+		return orderBOMService.getOrderBOMLinesByIds(orderBOMLineIds);
+	}
+
+	@Override
 	public List<I_PP_Order_BOMLine> getOrderBOMLines(final PPOrderId orderId)
 	{
 		return orderBOMService.getOrderBOMLines(orderId);

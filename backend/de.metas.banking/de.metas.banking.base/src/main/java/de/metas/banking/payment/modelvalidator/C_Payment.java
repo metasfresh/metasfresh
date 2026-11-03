@@ -87,6 +87,12 @@ public class C_Payment
 		paymentBL.onPayAmtChange(payment, true);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_PaymentBonusAmt)
+	public void onPaymentBonusAmtChange(final I_C_Payment payment)
+	{
+		paymentBL.onPaymentBonusAmtChange(payment);
+	}
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID })
 	public void onBeforeVoid(final I_C_Payment payment)
 	{

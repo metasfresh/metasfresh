@@ -78,6 +78,12 @@ public class BPartnerQuery
 	@Nullable Boolean isCustomerFilter;
 	@Nullable Boolean isVendorFilter;
 
+	/**
+	 * If {@code true}, the GLN lookup (only that branch) returns matches where both the {@code C_BPartner} and its {@code C_BPartner_Location} are active.
+	 * If {@code false} (default), also includes matches on inactive bpartners or locations.
+	 */
+	boolean glnLookupOnlyActive;
+
 	@Builder(toBuilder = true)
 	private BPartnerQuery(
 			@Nullable final BPartnerId bPartnerId,
@@ -93,7 +99,9 @@ public class BPartnerQuery
 			@Nullable final Boolean userSalesRepSet,
 			//
 			@Nullable final Boolean isCustomerFilter,
-			@Nullable final Boolean isVendorFilter)
+			@Nullable final Boolean isVendorFilter,
+			//
+			@Nullable final Boolean glnLookupOnlyActive)
 	{
 
 		this.bPartnerId = bPartnerId;
@@ -111,6 +119,8 @@ public class BPartnerQuery
 
 		this.isCustomerFilter = isCustomerFilter;
 		this.isVendorFilter = isVendorFilter;
+
+		this.glnLookupOnlyActive = coalesceNotNull(glnLookupOnlyActive, false);
 
 		validate();
 	}

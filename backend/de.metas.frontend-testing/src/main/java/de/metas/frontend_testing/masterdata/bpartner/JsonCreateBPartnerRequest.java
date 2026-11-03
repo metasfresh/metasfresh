@@ -1,6 +1,8 @@
 package de.metas.frontend_testing.masterdata.bpartner;
 
+import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.handlingunits.grai.GRAIRequired;
+import de.metas.order.InvoiceRule;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -16,6 +18,12 @@ public class JsonCreateBPartnerRequest
 	// Allow custom bpartner code and name (if null, use timestamp-based generation)
 	@Nullable String bpartnerCode;
 	@Nullable String name;
+
+	/**
+	 * The {@code C_BP_Group} (map key of the {@code bpGroups} section) this partner belongs to.
+	 * If null, the "Standard" group is used.
+	 */
+	@Nullable Identifier bpGroup;
 
 	@Nullable String gln;
 	@Nullable Map<String, Location> locations;
@@ -53,6 +61,18 @@ public class JsonCreateBPartnerRequest
 	@Nullable String vatTaxId;
 
 	/**
+	 * Sets {@code C_BPartner.InvoiceRule} from an {@link InvoiceRule} reference-list code (e.g. {@code "I"} for
+	 * {@link InvoiceRule#Immediate}). {@code null} (the default) leaves the column unset, so the effective rule
+	 * ({@code BPartnerEffectiveBL}) falls through to the BP-group's own InvoiceRule and, since the "Standard" BP
+	 * group carries none either, to the system default — After Delivery. A flow that invoices this bpartner via the
+	 * ordinary invoice-candidate pipeline WITHOUT ever creating a shipment (e.g. settling an already-issued invoice
+	 * at the till) needs {@code "I"} here, since After Delivery leaves {@code C_Invoice_Candidate.QtyToInvoice=0}
+	 * until something is delivered. Carried as the raw code rather than the {@link InvoiceRule} enum so the domain
+	 * enum stays free of Jackson annotations (whose global serialization change would break other consumers).
+	 */
+	@Nullable String invoiceRule;
+
+	/**
 	 * Contacts (AD_User records) to create for this business partner.
 	 * Each contact is linked to the business partner via C_BPartner_ID.
 	 */
@@ -77,6 +97,15 @@ public class JsonCreateBPartnerRequest
 	 * Default: true (sales price list)
 	 */
 	@Builder.Default boolean isSoPriceList = true;
+
+	/**
+	 * ISO currency code (e.g. {@code "CHF"}) of the price list created for this business partner.
+	 * Only used when this request creates the pricing system (the first business partner of a masterdata request).
+	 * Costs of purchased goods are valued from the purchase price, converted to the accounting currency: a price list in
+	 * another currency than the accounting schema's one makes the costed price differ from the entered price.
+	 * Default: EUR
+	 */
+	@Nullable String priceListCurrencyCode;
 
 	/**
 	 * Bank accounts to create for this business partner.

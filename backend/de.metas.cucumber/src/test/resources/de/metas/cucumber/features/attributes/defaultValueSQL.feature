@@ -2,7 +2,7 @@
 @allure.label.epic:E2300_Attributes
 @allure.label.feature:F00820_Time_Tracking_via_Everhour
 @F00820
-@ghActions:run_on_executor6
+@ghActions:run_on_executor9
 Feature: Test M_Attribute.DefaultValueSQL feature
 ## F00820: Attributes
 

@@ -25,16 +25,19 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.CamelServiceRouteIdWithRequestType;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.ScriptedImportedConversionToMfRequest;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.util.Check;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.AggregationStrategy;
+import org.apache.camel.CamelExecutionException;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
@@ -42,20 +45,25 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.base.HttpOperationFailedException;
 
 import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.EXCEPTION_PREFIX;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.FIELD_ERROR_MESSAGE;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD;
 
 /**
- * Shared archiving + dispatch behaviour for the two ScriptedImportConversion transports (SFTP polling
- * and REST POST): split the transform's response into items, dispatch each item to the resolved Camel
- * endpoint, and archive the original payload to a LOCAL, transport-agnostic processed/error folder — see
- * {@code ExternalSystem_Endpoint.ProcessedDirectory}/{@code ErrorDirectory}.
+ * Shared archiving + dispatch behaviour for the ScriptedImportConversion transports (SFTP polling, local
+ * file polling and REST POST): split the transform's response into items, dispatch each item to the
+ * resolved Camel endpoint, and archive the original payload to a LOCAL, transport-agnostic
+ * processed/error folder — see {@code ExternalSystem_Endpoint.ProcessedDirectory}/{@code ErrorDirectory}.
+ * <p>
+ * Every item is attempted even after an earlier one was rejected; which of the two folders the payload
+ * lands in is a separate, per-RUN verdict — see {@link #archiveLocallyByItemOutcome(Exchange)}.
  * <p>
  * The one behavioural difference between transports is the archive file name: a subclass derives it via
  * {@link #archiveFileName(Exchange)} (the real remote file name for SFTP, a synthesized name for REST,
@@ -64,6 +72,15 @@ import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterCons
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends RouteBuilder
 {
+	/**
+	 * Exchange property holding the number of items whose dispatch was rejected, as an
+	 * {@link AtomicInteger} armed via {@link #initFailedItemCount(Exchange)} BEFORE the item split: the
+	 * split gives each item a COPY of the exchange, so only the shared object -- never a property write
+	 * from inside the split -- reaches the original.
+	 */
+	@VisibleForTesting
+	static final String EXCHANGE_PROPERTY_FAILED_ITEM_COUNT = "ScriptedImportConversion-failedItemCount";
+
 	@NonNull protected final String endpointName;
 	@NonNull protected final String scriptIdentifier;
 	@NonNull protected final JavaScriptRepo javaScriptRepo;
@@ -75,8 +92,61 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 	/** LOCAL, transport-agnostic archive folder for the payload on failure. Never a remote path. */
 	@NonNull protected final String errorDir;
 
+	/**
+	 * The configured Importeur's metasfresh WEBUI token ({@code ExternalSystem_Config_ScriptedImportConversion.AD_User_Import_ID}).
+	 * Every call the script dispatches carries it as {@link ExternalSystemCamelConstants#PROPERTY_MF_AUTH_TOKEN}, so metasfresh records
+	 * are authored by the Importeur (in its org) and not by camel's service user.
+	 */
+	@NonNull protected final String mfAuthToken;
+
 	/** Derives the archive file name for {@code exchange} — the one difference between transports. */
 	protected abstract String archiveFileName(@NonNull Exchange exchange);
+
+	/**
+	 * Captures the current message body as the
+	 * {@link de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants#PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD}
+	 * exchange property, encoded to bytes explicitly as UTF-8 — Camel's implicit String→byte[] conversion
+	 * has no guaranteed charset. A {@code null} body leaves the property unset.
+	 * <p>
+	 * Pins only the encode half: SFTP and REST reach this after their own upstream
+	 * {@code convertBodyTo(String.class)} decode, so their archived copy is only as faithful as that decode
+	 * was; LOCAL_FILE skips this method and archives raw bytes.
+	 */
+	protected void captureOriginalPayloadAsUtf8Bytes(@NonNull final Exchange exchange)
+	{
+		final String bodyAsString = exchange.getIn().getBody(String.class);
+		if (bodyAsString != null)
+		{
+			exchange.setProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, bodyAsString.getBytes(StandardCharsets.UTF_8));
+		}
+	}
+
+	/**
+	 * Arms the per-item dispatch-failure tally. MUST run before the item split — see
+	 * {@link #EXCHANGE_PROPERTY_FAILED_ITEM_COUNT}.
+	 */
+	protected void initFailedItemCount(@NonNull final Exchange exchange)
+	{
+		exchange.setProperty(EXCHANGE_PROPERTY_FAILED_ITEM_COUNT, new AtomicInteger());
+	}
+
+	/**
+	 * The run's verdict, and the trailing step of every transport's route: the payload is filed under
+	 * {@code processedDir} only if EVERY item was dispatched successfully, else under {@code errorDir} —
+	 * the source is already consumed, so filing a partially-imported payload as processed would leave no
+	 * copy to retry from.
+	 */
+	protected void archiveLocallyByItemOutcome(@NonNull final Exchange exchange)
+	{
+		if (getFailedItemCount(exchange).get() > 0)
+		{
+			archiveLocallyOnError(exchange);
+		}
+		else
+		{
+			archiveLocallyOnSuccess(exchange);
+		}
+	}
 
 	protected void archiveLocallyOnSuccess(@NonNull final Exchange exchange)
 	{
@@ -85,12 +155,54 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 
 	protected void archiveLocallyOnError(@NonNull final Exchange exchange)
 	{
+		// For the polling transports this file IS the operator's rejection notification -- unlike REST,
+		// there is no synchronous caller to answer.
 		archiveLocally(exchange, errorDir);
+	}
+
+	@NonNull
+	private static AtomicInteger getFailedItemCount(@NonNull final Exchange exchange)
+	{
+		final AtomicInteger failedItemCount = exchange.getProperty(EXCHANGE_PROPERTY_FAILED_ITEM_COUNT, AtomicInteger.class);
+		if (failedItemCount == null)
+		{
+			// Without the tally a route would file every rejected import under processed; fail loudly on
+			// its first run instead.
+			throw new RuntimeCamelException("Missing exchange property '" + EXCHANGE_PROPERTY_FAILED_ITEM_COUNT
+					+ "': the route must run initFailedItemCount before splitting the items");
+		}
+		return failedItemCount;
+	}
+
+	/**
+	 * Whether one item's aggregated response (see {@link ResponseAggregationStrategy}) reports a failure: a metasfresh error body
+	 * ({@value de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants#FIELD_ERROR_MESSAGE}) or a caught exception.
+	 */
+	static boolean isErrorResponse(@Nullable final Object response)
+	{
+		final String responseStr = String.valueOf(response);
+		return responseStr.contains(FIELD_ERROR_MESSAGE) || responseStr.startsWith(EXCEPTION_PREFIX);
+	}
+
+	/**
+	 * The Importeur's WEBUI token ({@link ExternalSystemConstants#PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN}) is mandatory: every call the
+	 * import dispatches is sent with it. Without it the records would be authored by camel's service user, so fail loudly instead.
+	 */
+	@NonNull
+	static String requireImporteurToken(@NonNull final Map<String, String> params)
+	{
+		final String token = params.get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN);
+		if (token == null || token.isBlank())
+		{
+			throw new RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN
+					+ "' (the Importeur's WEBUI token) is required!");
+		}
+		return token;
 	}
 
 	private void archiveLocally(@NonNull final Exchange exchange, @NonNull final String directory)
 	{
-		final String payload = exchange.getProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, String.class);
+		final byte[] payload = exchange.getProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, byte[].class);
 		if (payload == null)
 		{
 			// nothing was ever read from the source (failure occurred before the body was captured)
@@ -110,13 +222,24 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 			final Object payload = JsonObjectMapperHolder.sharedJsonObjectMapper()
 					.readValue(request.getRequestBody(), camelRouteIdWithRequestType.getRequestType());
 
-			final String response = producerTemplate.requestBody(resolveCamelEndpointUri(camelRouteIdWithRequestType), payload, String.class);
-			exchange.getMessage().setBody(response);
+			final Exchange result = producerTemplate.request(resolveCamelEndpointUri(camelRouteIdWithRequestType), itemExchange -> {
+				itemExchange.getIn().setBody(payload);
+				itemExchange.setProperty(ExternalSystemCamelConstants.PROPERTY_MF_AUTH_TOKEN, mfAuthToken);
+			});
+			if (result.getException() != null)
+			{
+				// same wrapping as ProducerTemplate.requestBody, so getErrorMessage sees the same exception shape
+				throw CamelExecutionException.wrapCamelExecutionException(result, result.getException());
+			}
+			exchange.getMessage().setBody(result.getMessage().getBody(String.class));
 		}
 		catch (final Exception e)
 		{
+			// Caught, not rethrown: stopOnException() would otherwise cancel items 2..N; the tally below is
+			// what archiveLocallyByItemOutcome later reads to route the payload to the error folder.
 			log.warn("Exception caught when handling request: {}", request, e);
 			exchange.getMessage().setBody(getErrorMessage(e));
+			getFailedItemCount(exchange).incrementAndGet();
 		}
 	}
 
@@ -127,6 +250,12 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 				.map(root -> {
 					if (root instanceof HttpOperationFailedException httpOperationFailedException)
 					{
+						if (httpOperationFailedException.getStatusCode() == 401)
+						{
+							return EXCEPTION_PREFIX + "HTTP 401 - the call to " + httpOperationFailedException.getUri()
+									+ " was rejected with the Importeur's WEBUI token (ExternalSystem_Config_ScriptedImportConversion.AD_User_Import_ID);"
+									+ " check that user's token and re-enable the import " + endpointName;
+						}
 						return httpOperationFailedException.getResponseBody();
 					}
 					return EXCEPTION_PREFIX + root.getMessage();
