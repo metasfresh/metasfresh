@@ -14,10 +14,9 @@ import BarcodeScannerFooter from './BarcodeScanner/BarcodeScannerFooter';
 
 const TOAST_ID = 'BarcodeScannerComponentError';
 
-// Opt-in (prop `errorToastOnce`, HU Manager scan only): one error toast at a time (a repeated scan error must not
-// stack), but every toast gets its own id: a toast shown right after the previous one was closed must not reuse that id,
-// else it flashes and disappears (the closed toast's removal still hits the same id).
-// Default (no prop): the fixed TOAST_ID, as in every other mobile app.
+// Prop `uniqueErrorToastIds`: one error toast at a time (a repeated scan error must not stack), but every toast gets its
+// own id: a toast shown right after the previous one was closed must not reuse that id, else it flashes and disappears
+// (the closed toast's removal still hits the same id). Without the prop: the fixed TOAST_ID.
 let lastErrorToastId = null;
 let errorToastSeq = 0;
 const showErrorToast = ({ once, showToast }) => {
@@ -39,7 +38,7 @@ const BarcodeScannerComponent = ({
   onResolvedResult,
   inputPlaceholderText,
   invisible,
-  errorToastOnce,
+  uniqueErrorToastIds,
 }) => {
   const { enabledModes, defaultMode, okBeepParams, errorBeepParams, scanDuplicatesIntervalMillis } = useConfigParams({
     invisible,
@@ -98,7 +97,7 @@ const BarcodeScannerComponent = ({
 
       if (resolvedResult.error) {
         showErrorToast({
-          once: errorToastOnce,
+          once: uniqueErrorToastIds,
           showToast: (toastId) => toastError({ plainMessage: resolvedResult.error, toastId }),
         });
         beep(errorBeepParams);
@@ -111,7 +110,7 @@ const BarcodeScannerComponent = ({
       }
     } catch (error) {
       beep(errorBeepParams);
-      showErrorToast({ once: errorToastOnce, showToast: (toastId) => toastErrorFromObj(error, toastId) });
+      showErrorToast({ once: uniqueErrorToastIds, showToast: (toastId) => toastErrorFromObj(error, toastId) });
       onError?.();
     } finally {
       scanningStatus.running = false;
@@ -190,8 +189,8 @@ BarcodeScannerComponent.propTypes = {
   inputPlaceholderText: PropTypes.string,
   onResolvedResult: PropTypes.func.isRequired,
   invisible: PropTypes.bool,
-  /** opt-in: show one error toast at a time, each with its own id (default: the fixed id, as in every other app) */
-  errorToastOnce: PropTypes.bool,
+  /** one error toast at a time, each with its own id; default: the fixed id */
+  uniqueErrorToastIds: PropTypes.bool,
 };
 
 BarcodeScannerComponent.defaultProps = {

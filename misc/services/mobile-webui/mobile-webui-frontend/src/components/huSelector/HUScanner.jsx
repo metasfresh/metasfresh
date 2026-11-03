@@ -30,8 +30,7 @@ const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode, onHUNotF
       if (errorResponse && errorResponse.multipleHUsFound) {
         return { targetQrCode: scannedBarcode };
       } else if (onHUNotFound && is404(axiosError)) {
-        // opt-in (HU Manager: a product label that is no HU). The callback handles the code itself or throws to
-        // show an error; every other scanner user has no callback and keeps the not-found error.
+        // the callback handles a code that is no HU itself, or throws to show an error; without a callback the not-found error is kept
         await onHUNotFound({ scannedBarcode });
         return { isNotFoundHandled: true };
       } else {
@@ -115,7 +114,7 @@ const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode, onHUNotF
       <BarcodeScannerComponent
         resolveScannedBarcode={resolveHUScannedBarcode}
         onResolvedResult={onResolvedHUScannedResult}
-        errorToastOnce={!!onHUNotFound} // HU Manager create-from-label scan only
+        uniqueErrorToastIds={!!onHUNotFound}
       />
     );
   }
