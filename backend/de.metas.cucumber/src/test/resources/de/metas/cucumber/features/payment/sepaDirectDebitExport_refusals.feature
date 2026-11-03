@@ -203,9 +203,9 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
 
     Examples:
       | DateLastUsed     | MandateDate | PayDate    | DateInvoiced | RefDate    |
-      | 2023-08-31 23:59 | 2013-01-01  | 2026-09-01 | 2026-08-27   | 31.08.2023 |
+      | 2023-08-31T23:59 | 2013-01-01  | 2026-09-01 | 2026-08-27   | 31.08.2023 |
       | 2024-02-29       | 2013-01-01  | 2027-03-01 | 2027-02-24   | 29.02.2024 |
-      | -                | 2023-09-30  | 2026-10-31 | 2026-10-26   | 30.09.2023 |
+      |                  | 2023-09-30  | 2026-10-31 | 2026-10-26   | 30.09.2023 |
 
   @from:cucumber
   @Id:S32708_TC19b
@@ -244,7 +244,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
 
     Examples:
       | DateLastUsed     | PayDate    | DateInvoiced |
-      | 2023-08-31 00:00 | 2026-08-31 | 2026-08-26   |
+      | 2023-08-31T00:00 | 2026-08-31 | 2026-08-26   |
       | 2024-02-29       | 2027-02-28 | 2027-02-23   |
 
   @from:cucumber
@@ -435,8 +435,8 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
       | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier |
       | debtorAcct | debtor        | EUR           | DE89370400440532013000 | debtorBank           |
     And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
-      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | DateLastUsed | AD_Org_ID |
-      | mandate                                | debtorAcct          | CORE        | MREF-ONEOFF2-001 | 2026-10-01  | N           | -            | sellerOrg |
+      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | AD_Org_ID |
+      | mandate                                | debtorAcct          | CORE        | MREF-ONEOFF2-001 | 2026-10-01  | N           | sellerOrg |
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | AD_Org_ID |
       | invoice1   | debtor        | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | sellerOrg |

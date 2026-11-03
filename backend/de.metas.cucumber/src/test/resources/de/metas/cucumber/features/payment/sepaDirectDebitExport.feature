@@ -184,8 +184,8 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | Identifier | C_BPartner_ID | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier |
       | coreAcct   | coreDebtor    | EUR           | DE02120300000000202051 | coreBank             |
     And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
-      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | DateLastUsed | AD_Org_ID |
-      | coreMandate                            | coreAcct            | CORE        | MREF-TC3-001     | 2026-10-01  | N           | -            | sellerOrg |
+      | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference | MandateDate | IsRecurring | AD_Org_ID |
+      | coreMandate                            | coreAcct            | CORE        | MREF-TC3-001     | 2026-10-01  | N           | sellerOrg |
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency_ID | C_PaymentTerm_ID | OPT.PaymentRule | OPT.Description | AD_Org_ID |
       | invoice    | coreDebtor    | Y       | 2026-10-28   | EUR           | pt_sepa          | D               | Invoice OOFF 1  | sellerOrg |

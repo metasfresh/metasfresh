@@ -28,7 +28,6 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.organization.OrgId;
@@ -41,12 +40,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BP_BankAccount_DirectDebitMandate;
 import org.compiere.util.Env;
-
-import javax.annotation.Nullable;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -72,8 +65,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class C_BP_BankAccount_DirectDebitMandate_StepDef
 {
-	private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final @NonNull C_BP_BankAccount_DirectDebitMandate_StepDefData mandateTable;
@@ -93,10 +84,10 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 	 *   <b>C_BP_BankAccount_ID</b> - (required, identifier-ref) the debtor bank account; the partner is taken from it<br>
 	 *   <b>MandateType</b> - (required) CORE or B2B<br>
 	 *   <b>MandateReference</b> - (required) the mandate reference<br>
-	 *   <b>MandateDate</b> - (required) signature date, <code>yyyy-MM-dd</code> or <code>yyyy-MM-dd HH:mm</code>; <code>-</code> = null<br>
+	 *   <b>MandateDate</b> - (required) signature date, <code>yyyy-MM-dd</code> or <code>yyyy-MM-ddTHH:mm</code><br>
 	 *   <b>IsRecurring</b> - (required) Y/N<br>
 	 *   <b>AD_Org_ID</b> - (optional) AD_Org identifier, or <code>0</code> for org *; absent or blank = the login org<br>
-	 *   <b>DateLastUsed</b> - (optional) same formats; <code>-</code> or absent = null<br>
+	 *   <b>DateLastUsed</b> - (optional) same formats; empty or absent = null<br>
 	 *   <b>IsActive</b> - (optional) Y/N; absent = Y
 	 * @cucumber.example
 	 * <pre>
@@ -136,12 +127,10 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 		mandateRecord.setC_BPartner_ID(bankAccountId.getBpartnerId().getRepoId());
 		mandateRecord.setMandateType(row.getAsString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateType));
 		mandateRecord.setMandateReference(mandateReference);
-		mandateRecord.setMandateDate(parseTimestampOrNull(row.getAsString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateDate), I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateDate));
+		mandateRecord.setMandateDate(row.getAsInstantTimestamp(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateDate));
 		mandateRecord.setIsRecurring(row.getAsBoolean(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_IsRecurring));
 		// optional columns: an absent column resets a re-used row to the state of a new one
-		mandateRecord.setDateLastUsed(row.getAsOptionalString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed)
-				.map(str -> parseTimestampOrNull(str, I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed))
-				.orElse(null));
+		mandateRecord.setDateLastUsed(row.getAsOptionalInstantTimestamp(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed).orElse(null));
 		mandateRecord.setIsActive(row.getAsOptionalBoolean(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_IsActive).orElseTrue());
 
 		saveRecord(mandateRecord);
@@ -155,7 +144,7 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>C_BP_BankAccount_DirectDebitMandate_ID</b> (or <b>Identifier</b>) - (required) identifier of the mandate<br>
-	 *   <b>DateLastUsed</b>, <b>MandateDate</b> - (optional) expected timestamp, <code>yyyy-MM-dd</code> or <code>yyyy-MM-dd HH:mm</code>; <code>-</code> = null<br>
+	 *   <b>DateLastUsed</b>, <b>MandateDate</b> - (optional) expected timestamp, <code>yyyy-MM-dd</code> or <code>yyyy-MM-ddTHH:mm</code><br>
 	 *   <b>IsActive</b> - (optional) Y/N<br>
 	 *   <b>MandateType</b> - (optional) CORE or B2B
 	 * @cucumber.example
@@ -180,14 +169,10 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 				identifier.lookupNotNullIn(mandateTable).getC_BP_BankAccount_DirectDebitMandate_ID(),
 				I_C_BP_BankAccount_DirectDebitMandate.class);
 
-		row.getAsOptionalString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed)
-				.ifPresent(str -> assertThat(mandate.getDateLastUsed())
-						.as(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed)
-						.isEqualTo(parseTimestampOrNull(str, I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed)));
-		row.getAsOptionalString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateDate)
-				.ifPresent(str -> assertThat(mandate.getMandateDate())
-						.as(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateDate)
-						.isEqualTo(parseTimestampOrNull(str, I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateDate)));
+		row.getAsOptionalInstantTimestamp(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed)
+				.ifPresent(dateLastUsed -> assertThat(mandate.getDateLastUsed()).as(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_DateLastUsed).isEqualTo(dateLastUsed));
+		row.getAsOptionalInstantTimestamp(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateDate)
+				.ifPresent(mandateDate -> assertThat(mandate.getMandateDate()).as(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateDate).isEqualTo(mandateDate));
 		row.getAsOptionalBoolean(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_IsActive)
 				.ifPresent(isActive -> assertThat(mandate.isActive()).as(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_IsActive).isEqualTo(isActive));
 		row.getAsOptionalString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateType)
@@ -222,26 +207,5 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 		return "0".equals(orgStr.trim())
 				? OrgId.ANY
 				: StepDefDataIdentifier.ofString(orgStr).lookupNotNullIdIn(orgTable);
-	}
-
-	/** Accepts {@code yyyy-MM-dd} and {@code yyyy-MM-dd HH:mm}; {@code -} (null placeholder) means null. */
-	@Nullable
-	private static Timestamp parseTimestampOrNull(@Nullable final String valueStr, @NonNull final String columnName)
-	{
-		if (DataTableUtil.isNullPlaceholder(valueStr))
-		{
-			return null;
-		}
-		final String value = valueStr.trim();
-		try
-		{
-			return value.length() > 10
-					? Timestamp.valueOf(LocalDateTime.parse(value, DATE_TIME_FORMAT))
-					: Timestamp.valueOf(LocalDate.parse(value).atStartOfDay());
-		}
-		catch (final Exception ex)
-		{
-			throw new IllegalArgumentException("Column " + columnName + " has invalid value '" + valueStr + "'; expected yyyy-MM-dd or yyyy-MM-dd HH:mm or -", ex);
-		}
 	}
 }
