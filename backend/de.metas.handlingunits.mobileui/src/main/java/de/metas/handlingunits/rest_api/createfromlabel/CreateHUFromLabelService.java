@@ -53,24 +53,22 @@ public class CreateHUFromLabelService
 	@NonNull
 	public CreatedHU create(@NonNull final JsonCreateHUFromScannedCodeRequest request, @NonNull final ClientId clientId, @NonNull final String adLanguage, @NonNull final ZonedDateTime date)
 	{
-		return trxManager.callInThreadInheritedTrx(() -> {
-			return CreateHUFromScannedCodeCommand.builder()
-					.handlingUnitsBL(handlingUnitsBL)
-					.uomConversionBL(uomConversionBL)
-					.warehouseDAO(warehouseDAO)
-					.attributeDAO(attributeDAO)
-					.huQtyService(huQtyService)
-					.huQRCodesService(huQRCodesService)
-					.labelProductResolver(labelProductResolver)
-					.labelQtyAndWeightService(labelQtyAndWeightService)
-					.clientId(clientId)
-					.adLanguage(adLanguage)
-					.scannedCode(request.getScannedCode())
-					.qty(request.getQty())
-					.locatorId(LocatorQRCode.ofScannedCode(request.getLocatorQRCode()).getLocatorId())
-					.date(date)
-					.build()
-					.execute();
-		});
+		final CreateHUFromScannedCodeCommand command = CreateHUFromScannedCodeCommand.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.uomConversionBL(uomConversionBL)
+				.warehouseDAO(warehouseDAO)
+				.attributeDAO(attributeDAO)
+				.huQtyService(huQtyService)
+				.huQRCodesService(huQRCodesService)
+				.labelProductResolver(labelProductResolver)
+				.labelQtyAndWeightService(labelQtyAndWeightService)
+				.clientId(clientId)
+				.adLanguage(adLanguage)
+				.scannedCode(request.getScannedCode())
+				.qty(request.getQty())
+				.locatorId(LocatorQRCode.ofScannedCode(request.getLocatorQRCode()).getLocatorId())
+				.date(date)
+				.build();
+		return trxManager.callInThreadInheritedTrx(command::execute);
 	}
 }

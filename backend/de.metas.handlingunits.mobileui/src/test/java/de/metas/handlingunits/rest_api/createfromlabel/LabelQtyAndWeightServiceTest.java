@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** The four weight rules of the label (moved unchanged from the former static {@code LabelQtyAndWeight.of}). */
+/** The four weight rules of a label: kg product, catch-weight product, other product, no weight on the label. */
 class LabelQtyAndWeightServiceTest
 {
 	private static final BigDecimal LABEL_WEIGHT = new BigDecimal("12.345");
