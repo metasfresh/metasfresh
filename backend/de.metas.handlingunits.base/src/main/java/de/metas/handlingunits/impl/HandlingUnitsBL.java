@@ -29,6 +29,7 @@ import com.google.common.collect.Maps;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.IPair;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUContextHolder;
@@ -42,6 +43,7 @@ import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuPackingMaterialId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -63,6 +65,7 @@ import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.generichumodel.HUType;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.CopyHUsCommand.CopyHUsCommandBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -83,6 +86,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
@@ -1032,6 +1036,34 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPI(piVersion);
 	}
 
+	@Override
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsRepo.retrievePICurrentVersionId(piId);
+	}
+
+	@Override
+	@NonNull
+	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsRepo.retrievePICurrentVersion(piId);
+	}
+
+	@Override
+	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version)
+	{
+		return handlingUnitsRepo.retrievePIItemMaterial(version);
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull final HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId includedPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveFirstPIItem(piId, includedPIId, bpartnerId);
+	}
+
 	@NonNull
 	@Override
 	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_Item huItem)
@@ -1346,7 +1378,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
-			@Nullable final String huUnitType,
+			@Nullable final HuUnitType huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(packingInstructionsId, huUnitType, bpartnerId);
@@ -1497,7 +1529,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull final I_M_HU_PI huPI,
-			@Nullable final String huUnitType,
+			@Nullable final HuUnitType huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
@@ -1577,6 +1609,23 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public List<I_M_HU> retrieveIncludedHUs(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.retrieveIncludedHUs(huId);
+	}
+
+	@Override
+	public Optional<ProductId> getFirstPackingMaterialProductId(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.retrievePackingMaterialAndQtys(getById(huId))
+				.stream()
+				.findFirst()
+				.map(IPair::getLeft)
+				.map(IHUPackingMaterialDAO::extractProductOrNull)
+				.map(product -> ProductId.ofRepoId(product.getM_Product_ID()));
+	}
+
+	@Override
 	@NonNull
 	public ImmutableSet<LocatorId> getLocatorIds(@NonNull final Collection<HuId> huIds)
 	{
@@ -1612,6 +1661,16 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.setOnlyActiveHUs(true)
 				.setOnlyTopLevelHUs()
 				.addOnlyWithAttribute(AttributeConstants.ATTR_ExternalBarcode, scannedCode.getAsString())
+				.firstIdOnly();
+	}
+
+	@Override
+	public Optional<HuId> getTopLevelHuIdByGrai(@NonNull final GRAI grai)
+	{
+		return handlingUnitsRepo.createHUQueryBuilder()
+				.setOnlyActiveHUs(true)
+				.setOnlyTopLevelHUs()
+				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString())
 				.firstIdOnly();
 	}
 

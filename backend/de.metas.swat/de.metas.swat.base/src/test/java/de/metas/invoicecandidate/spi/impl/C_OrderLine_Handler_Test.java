@@ -430,6 +430,42 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 	}
 
 	@Test
+	public void propagatesWithoutChargeAndReasonToInvoiceCandidate()
+	{
+		final BPartnerLocationAndCaptureId bpartnerAndLocationId = createBPartnerAndLocation();
+
+		final I_C_Order order = order("withoutCharge");
+		order.setAD_Org_ID(orgId.getRepoId());
+		order.setM_Warehouse_ID(warehouseId.getRepoId());
+		order.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
+		order.setC_BPartner_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
+		order.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
+		order.setBill_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
+		order.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
+		order.setC_Currency_ID(10);
+		order.setM_PricingSystem_ID(20);
+		order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		save(order);
+
+		final I_C_OrderLine ol = orderLine("withoutCharge");
+		ol.setAD_Org_ID(orgId.getRepoId());
+		ol.setC_Order(order);
+		ol.setM_Product_ID(productId.getRepoId());
+		ol.setIsWithoutCharge(true);
+		ol.setReason("BundleDiscount");
+		save(ol);
+		setUpActivityAndTaxRetrieval(order, ol);
+
+		final I_C_Invoice_Candidate ic = orderLineHandler
+				.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, ol))
+				.getC_Invoice_Candidates()
+				.get(0);
+
+		assertThat(ic.isWithoutCharge()).isTrue();
+		assertThat(ic.getReason()).isEqualTo("BundleDiscount");
+	}
+
+	@Test
 	public void testWithDifferentCapturedLocation()
 	{
 		final BPartnerLocationAndCaptureId bpartnerAndLocationId = createBPartnerAndLocation();

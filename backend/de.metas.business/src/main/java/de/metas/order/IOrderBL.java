@@ -25,8 +25,10 @@ package de.metas.order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
@@ -70,6 +72,11 @@ public interface IOrderBL extends ISingletonService
 
 	/** Returns max(PurchaseTransportDays across all order lines), or 0 if there are no lines or no transport days. */
 	int getMaxPurchaseTransportDays(I_C_Order order);
+
+	/**
+	 * @return the active orders whose {@code Link_Order_ID} is the given order (e.g. the purchase orders created from a sales order), ordered by id
+	 */
+	List<I_C_Order> getByLinkOrderId(@NonNull OrderId linkOrderId);
 
 	/**
 	 * Sets price list if there is a price list for the given order's location and pricing system.
@@ -119,6 +126,9 @@ public interface IOrderBL extends ISingletonService
 
 	@Nullable
 	BPartnerId getEffectiveDropshipPartnerIdOrNull(@NonNull I_C_Order orderRecord);
+
+	@NonNull
+	BPartnerLocationId getEffectiveDropshipLocationId(@NonNull I_C_Order orderRecord);
 
 	/**
 	 * @return the order's bill contact <b>but</b> falls back to the "general" contact ({@code C_Order.AD_User_ID}) if possible.
@@ -281,6 +291,9 @@ public interface IOrderBL extends ISingletonService
 
 	void reserveStock(I_C_Order order, I_C_OrderLine... orderLines);
 
+	@NonNull
+	DocBaseAndSubType getDocBaseAndSubType(@NonNull I_C_Order order);
+
 	@Nullable
 	I_C_DocType getDocTypeOrNull(I_C_Order order);
 
@@ -324,6 +337,8 @@ public interface IOrderBL extends ISingletonService
 	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
 
 	void setIncoterms(@NonNull I_C_Order order);
+
+	void setSalesRep(@NonNull I_C_Order order);
 
 	void setWeightFromLines(@NonNull I_C_Order order);
 

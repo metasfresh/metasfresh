@@ -25,7 +25,9 @@ package de.metas.handlingunits.shipping;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreatePackagesRequest;
 import de.metas.inout.IInOutDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.PackageDimensions;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,6 +48,26 @@ public class InOutPackageRepository
 	public ImmutableList<I_M_Package> createM_Packages(@NonNull final List<CreatePackagesRequest> packagesRequestList)
 	{
 		return packagesRequestList.stream().map(this::createM_Package).collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Creates a standalone {@code M_Package}, i.e. one that is not (yet) attached to an {@code M_InOut}
+	 * and therefore carries no bpartner/shipment data.
+	 */
+	@NonNull
+	public I_M_Package createM_Package(
+			@NonNull final OrgId orgId,
+			@NonNull final ShipperId shipperId,
+			@NonNull final String documentNo)
+	{
+		final I_M_Package mPackage = newInstance(I_M_Package.class);
+		mPackage.setAD_Org_ID(orgId.getRepoId());
+		mPackage.setM_Shipper_ID(shipperId.getRepoId());
+		mPackage.setDocumentNo(documentNo);
+
+		InterfaceWrapperHelper.save(mPackage);
+
+		return mPackage;
 	}
 
 	private I_M_Package createM_Package(@NonNull final CreatePackagesRequest createPackageRequest)

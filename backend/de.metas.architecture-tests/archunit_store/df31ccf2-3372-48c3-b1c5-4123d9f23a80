@@ -1,0 +1,2 @@
+Method <de.metas.util.web.audit.ApiAuditService.createLogger(de.metas.audit.apirequest.request.ApiRequestAuditId, de.metas.user.UserId)> calls method <org.compiere.util.Env.getClientId()> in (ApiAuditService.java:201)
+Method <de.metas.util.web.audit.ApiAuditService.getMatchingAuditConfig(javax.servlet.http.HttpServletRequest)> calls method <org.compiere.util.Env.getOrgId()> in (ApiAuditService.java:223)

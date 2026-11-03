@@ -31,6 +31,8 @@ import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.CreditorId;
+import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.GlnWithLabel;
 import de.metas.bpartner.composite.BPartner;
@@ -247,6 +249,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.COUNTRYCODE, JsonResponseLocation.COUNTRY_CODE)
 			.put(BPartnerLocation.PHONE, JsonResponseLocation.PHONE)
 			.put(BPartnerLocation.EMAIL, JsonResponseLocation.EMAIL)
+			.put(BPartnerLocation.ATTENTION, JsonResponseLocation.ATTENTION)
 			.put(BPartnerLocationType.BILL_TO, JsonResponseLocation.BILL_TO)
 			.put(BPartnerLocationType.BILL_TO_DEFAULT, JsonResponseLocation.BILL_TO_DEFAULT)
 			.put(BPartnerLocationType.SHIP_TO, JsonResponseLocation.SHIP_TO)
@@ -321,7 +324,7 @@ public class JsonRetrieverService
 		this.customColumnService = customColumnService;
 		this.identifier = identifier;
 
-		this.cache = new BPartnerCompositeCacheByLookupKey(identifier);
+		this.cache = new BPartnerCompositeCacheByLookupKey();
 	}
 
 	public Optional<JsonResponseComposite> getJsonBPartnerComposite(
@@ -455,6 +458,7 @@ public class JsonRetrieverService
 						.map(JSONPaymentRule::ofCode)
 						.orElse(null))
 				.internalName(bpartner.getInternalName())
+				.glnLookupLabel(bpartner.getGlnLookupLabel())
 				.vatId(bpartner.getVatId())
 				.eori(bpartner.getEori())
 				.eInvoiceBuyerReference(bpartner.getEInvoiceBuyerReference())
@@ -463,8 +467,8 @@ public class JsonRetrieverService
 				.customerIncoterms(toJson(customerIncoterms))
 				.changeInfo(jsonChangeInfo)
 				.metasfreshUrl(TableRecordUtil.getMetasfreshUrl(bPartnerRecordRef))
-				.creditorId(bpartner.getCreditorId())
-				.debtorId(bpartner.getDebtorId())
+				.creditorId(CreditorId.toIntOrNull(bpartner.getCreditorId()))
+				.debtorId(DebtorId.toIntOrNull(bpartner.getDebtorId()))
 				.extendedProps(getExtendedPropsOrNull(bpartnerRecord))
 				.build();
 	}
@@ -577,6 +581,7 @@ public class JsonRetrieverService
 
 			return JsonResponseContact.builder()
 					.active(contact.isActive())
+					.code(contact.getValue())
 					.email(contact.getEmail())
 					.firstName(contact.getFirstName())
 					.lastName(contact.getLastName())
@@ -656,6 +661,7 @@ public class JsonRetrieverService
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
 					.email(location.getEmail())
+					.attention(location.getAttention())
 					.vatId(VATIdentifier.toString(location.getVatTaxId()))
 					.build();
 		}

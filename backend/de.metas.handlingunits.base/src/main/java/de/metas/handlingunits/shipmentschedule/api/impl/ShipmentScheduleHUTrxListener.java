@@ -100,7 +100,7 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 		//
 		// Link VHU to shipment schedule
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
+		final AddQtyPickedRequest request = AddQtyPickedRequest.builder()
 				.shipmentSchedule(shipmentSchedule)
 				.qtyPicked(CatchWeightHelper.extractQtys(
 						huContext,
@@ -111,7 +111,21 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 				.hu(vhu)
 				.huContext(huContext)
 				.anonymousHuPickedOnTheFly(false)
-				.build());
+				.build();
+
+		// On aggregate-HU snapshot replay (e.g. shipment reversal), the same VHU node receives
+		// multiple HU-trx lines in one transaction. Without consolidation, that produces N
+		// QtyPicked rows that share the same (VHU, TU, LU, QtyLU, QtyTU, QtyPicked) tuple and
+		// later collide on the M_ShipmentSchedule_QtyPicked_UI partial unique index when the
+		// next shipment is generated.
+		// The FIRST trx-line for a (schedule, VHU) pair finds no existing row, so tryMerge returns
+		// false and the addQtyPickedAndUpdateHU below creates it; the 2nd..Nth lines merge into it.
+		if (huShipmentScheduleBL.tryMergeQtyPickedIntoExistingForVHU(request))
+		{
+			return;
+		}
+
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(request);
 	}
 
 	@Nullable

@@ -35,6 +35,7 @@ import de.metas.order.IOrderBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
@@ -84,6 +85,7 @@ class C_Invoice_IsPartialInvoiceTest
 		Services.registerService(IBPartnerDAO.class, Mockito.mock(IBPartnerDAO.class));
 		Services.registerService(IAllocationDAO.class, Mockito.mock(IAllocationDAO.class));
 		Services.registerService(IOrderBL.class, Mockito.mock(IOrderBL.class));
+		Services.registerService(IPaymentTermRepository.class, Mockito.mock(IPaymentTermRepository.class));
 
 		interceptor = new C_Invoice(
 				Mockito.mock(PaymentReservationService.class),

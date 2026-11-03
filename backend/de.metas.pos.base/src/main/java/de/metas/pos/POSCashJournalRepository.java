@@ -8,6 +8,7 @@ import de.metas.pos.repository.model.I_C_POS_JournalLine;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,6 +38,26 @@ public class POSCashJournalRepository
 			throw new AdempiereException("No POS cash journal with id " + cashJournalId + " found");
 		}
 		return record;
+	}
+
+	/**
+	 * Loads the journal record under a {@code FOR NO KEY UPDATE} row lock, used by the read-modify-write in
+	 * {@link #changeJournalById}. Prevents a lost update to {@code CashEndingBalance}: {@code changeJournalById} reads the
+	 * journal aggregate, mutates it (add a cash line, re-sum the ending balance) and writes it back, and two POS cash
+	 * flows that touch the same open journal concurrently (e.g. a return and an invoice settlement at the same till, or
+	 * an order checkout and a withdrawal) would otherwise both read the pre-update balance and the later committer would
+	 * overwrite the earlier one's ending balance. Locking the row here serialises those writers on the DB, so the second
+	 * blocks until the first commits and then re-reads the committed balance. Mirrors the invoice lock in
+	 * {@code POSInvoiceSettlementService.getByIdInTrxWithRowLock} and the precedent in {@code CurrentCostsRepository} /
+	 * {@code VATaxIDCheckRepository}. NOTE: the read-only {@link #getById} deliberately does NOT lock.
+	 */
+	private @NonNull I_C_POS_Journal retrieveRecordByIdForUpdate(final @NonNull POSCashJournalId cashJournalId)
+	{
+		return queryBL.createQueryBuilder(I_C_POS_Journal.class)
+				.addEqualsFilter(I_C_POS_Journal.COLUMNNAME_C_POS_Journal_ID, cashJournalId)
+				.create()
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
+				.firstOnlyNotNull(I_C_POS_Journal.class);
 	}
 
 	private List<I_C_POS_JournalLine> retrieveLineRecordsByJournalId(final @NonNull POSCashJournalId cashJournalId)
@@ -119,7 +140,7 @@ public class POSCashJournalRepository
 
 	public POSCashJournal changeJournalById(@NonNull final POSCashJournalId cashJournalId, @NonNull final Consumer<POSCashJournal> updater)
 	{
-		final I_C_POS_Journal record = retrieveRecordById(cashJournalId);
+		final I_C_POS_Journal record = retrieveRecordByIdForUpdate(cashJournalId);
 		final List<I_C_POS_JournalLine> lineRecords = retrieveLineRecordsByJournalId(cashJournalId);
 
 		final POSCashJournal journal = fromRecord(record, lineRecords);
