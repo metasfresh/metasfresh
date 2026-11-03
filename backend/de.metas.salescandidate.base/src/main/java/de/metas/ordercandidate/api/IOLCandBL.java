@@ -132,6 +132,9 @@ public interface IOLCandBL extends ISingletonService
 	@Nullable
 	WarehouseId getWarehouseId(@NonNull I_C_OLCand olCand, @Nullable OLCandOrderDefaults orderDefaults);
 
+	/**
+	 * @return the document type of the order to create from the given order candidate
+	 */
 	DocTypeId getOrderDocTypeId(@Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand orderCandidateRecord);
 
 	void markAsProcessed(final OLCand olCand);
