@@ -254,6 +254,25 @@ test('preview -> Cancel -> nothing booked', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
+test('phone viewport: a long product name does not push the values off-screen, OK/Cancel are reachable without scrolling', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - create HU from a scanned label');
+    allure.severity('normal');
+
+    const gtin = uniqueGtin14();
+    const longName = 'Invented-article-with-an-extremely-long-unbroken-product-name-ABCDEFGHIJKLMNOPQRSTUVWXYZ-0123456789';
+    const masterdata = await createMasterdata({ gtin, products: { "P1": { gtin, uom: 'PCE', name: longName } } });
+    await openHUManager({ user: masterdata.login.user });
+    await scanLabelAndWaitForPreview({ label: customLabel(gtin) });
+    await NewHUPreviewScreen.expectLocatorProposedAndGet();
+
+    await NewHUPreviewScreen.expectFitsViewport();
+    await NewHUPreviewScreen.clickCancel();
+    await HUManagerScreen.waitForScreen();
+});
+
+// noinspection JSUnusedLocalSymbols
 test('location from the user workplace — pick-from location, else the default location of the workplace warehouse', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');

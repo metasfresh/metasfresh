@@ -62,6 +62,28 @@ export const NewHUPreviewScreen = {
         await dialog.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
+    /**
+     * Phone ergonomics: every value cell ends inside the viewport (nothing clipped on the right) and OK + Cancel are fully
+     * visible without scrolling (the page is not scrolled when this runs: it just opened).
+     */
+    expectFitsViewport: async () => await test.step(`${NAME} - Expect values and OK/Cancel inside the viewport`, async () => {
+        const viewport = page.viewportSize();
+        const container = containerElement();
+        const cells = container.locator('td');
+        const cellCount = await cells.count();
+        for (let i = 0; i < cellCount; i++) {
+            const cell = cells.nth(i);
+            const box = await cell.boundingBox();
+            expect(box.x + box.width, `value cell #${i} right edge`).toBeLessThanOrEqual(viewport.width);
+            const overflow = await cell.evaluate((el) => el.scrollWidth - el.clientWidth);
+            expect(overflow, `value cell #${i} is clipped (scrollWidth > clientWidth)`).toBeLessThanOrEqual(1);
+        }
+        for (const testId of ['ok-button', 'cancel-button']) {
+            const box = await container.getByTestId(testId).boundingBox();
+            expect(box.y + box.height, `${testId} bottom edge`).toBeLessThanOrEqual(viewport.height);
+        }
+    }),
+
     /** the OK button of the preview (scoped: the clearance dialog in the HU Manager uses the same test ids) */
     okButton: () => containerElement().getByTestId('ok-button'),
 

@@ -18,6 +18,17 @@
     }
   }
 
+  // Opt-in (class `wrap-values`): a long unbroken value (article name/number, lot) wraps inside its cell instead of
+  // widening the table and clipping the other values (quantity, location) off the right edge of a handheld screen.
+  &.wrap-values {
+    table-layout: fixed;
+
+    tbody tr td {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  }
+
   @media only screen and (max-width: $small-screen-width) {
     tbody {
       font-size: 1rem;

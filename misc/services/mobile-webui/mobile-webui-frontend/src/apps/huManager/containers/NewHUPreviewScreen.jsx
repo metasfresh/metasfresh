@@ -103,7 +103,7 @@ const NewHUPreviewScreen = () => {
           }}
         />
       )}
-      <table className="table view-header is-size-6">
+      <table className="table view-header wrap-values is-size-6">
         <tbody>
           <Row
             captionKey="huManager.newHU.product"
@@ -131,12 +131,13 @@ const NewHUPreviewScreen = () => {
         disabled={isCreating}
         onClick={() => setQtyDialogOpen(true)}
       />
+      {/* the confirm buttons come before the scanner block so they stay reachable without scrolling on a handheld screen */}
+      <Button testId="ok-button" caption={trl('huManager.newHU.ok')} disabled={!isOKEnabled} onClick={onOK} />
+      <Button testId="cancel-button" caption={trl('general.cancelText')} isDanger onClick={onCancel} />
       {/* no scanner while the quantity dialog is open: its window-level key reader would swallow the typed digits */}
       {!isCreating && !isQtyDialogOpen && (
         <BarcodeScannerComponent inputPlaceholderText={trl('huManager.newHU.locator')} onResolvedResult={onScanned} />
       )}
-      <Button testId="ok-button" caption={trl('huManager.newHU.ok')} disabled={!isOKEnabled} onClick={onOK} />
-      <Button testId="cancel-button" caption={trl('general.cancelText')} isDanger onClick={onCancel} />
     </div>
   );
 };

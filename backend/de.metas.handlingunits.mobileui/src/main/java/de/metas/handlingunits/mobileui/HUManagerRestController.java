@@ -37,7 +37,6 @@ import de.metas.handlingunits.mobileui.config.HUManagerProfileLayoutSectionList;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileRepository;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.GetByIdRequest;
 import de.metas.handlingunits.rest_api.GetByQRCodeRequest;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
@@ -98,7 +97,6 @@ public class HUManagerRestController
 	@NonNull private final HandlingUnitsService handlingUnitsService;
 	@NonNull private final InventoryCandidateService inventoryCandidateService;
 	@NonNull private final CreateHUFromLabelService createHUFromLabelService;
-	@NonNull private final HUQRCodesService huQRCodesService;
 
 	private void assertApplicationAccess()
 	{
