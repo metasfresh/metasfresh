@@ -1,0 +1,95 @@
+.pos-cash-withdrawal-modal {
+  .modal-card-body {
+    .caption {
+      font-weight: bold;
+      margin-bottom: 0.5em;
+    }
+
+    .categories {
+      display: flex;
+      flex-flow: column nowrap;
+      gap: 0.5em;
+      margin-bottom: 1em;
+
+      // a long category name wraps instead of overflowing the button
+      .button {
+        height: auto;
+        white-space: normal;
+        text-align: left;
+        justify-content: flex-start;
+      }
+    }
+
+    .amount-line {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: baseline;
+
+      .caption {
+        flex-grow: 1;
+      }
+
+      .amount {
+        flex-grow: 0;
+        font-weight: bold;
+        font-size: 1.5em;
+      }
+    }
+
+    .numpad-container {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+      justify-content: right;
+    }
+  }
+
+  // the slip preview; its printed copy is styled by CashWithdrawalSlip's PRINT_STYLE
+  .slip {
+    max-width: 24em;
+    margin: 0 auto;
+
+    .slip-title {
+      font-weight: bold;
+      font-size: 1.25em;
+      margin-bottom: 0.75em;
+    }
+
+    .slip-line {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      gap: 1em;
+
+      .slip-caption {
+        flex-shrink: 0;
+      }
+
+      // long values (e.g. a terminal name) wrap on a narrow handheld screen
+      .slip-value {
+        min-width: 0;
+        font-weight: bold;
+        text-align: right;
+        overflow-wrap: break-word;
+      }
+    }
+
+    .slip-blank-line {
+      height: 1em;
+    }
+
+    .slip-signature {
+      border-top: 1px solid #000;
+      margin-top: 2em;
+      padding-top: 0.25em;
+      font-size: 0.8em;
+    }
+  }
+
+  // phone-sized tills: the app's large base font would wrap every slip value
+  @media screen and (max-width: 768px) {
+    .slip {
+      font-size: 1rem;
+    }
+  }
+}

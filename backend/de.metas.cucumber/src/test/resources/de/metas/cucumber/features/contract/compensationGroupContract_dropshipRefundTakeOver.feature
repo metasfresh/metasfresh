@@ -10,6 +10,7 @@ Feature: Compensation-group contract take-over of the customer's periodic refund
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2026-07-01T09:00:00+02:00[Europe/Berlin]
+    And temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO"
 
     And metasfresh contains M_Product_Category:
       | Identifier    | Name | Value                               |

@@ -79,8 +79,6 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.Language;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.IInOutBL;
@@ -141,7 +139,6 @@ import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -164,6 +161,7 @@ import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
@@ -203,13 +201,13 @@ public class M_InOut_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -239,6 +237,10 @@ public class M_InOut_StepDef
 	 * <b>ExternalSystem.Value</b> — (optional) expected external system value<br>
 	 * <b>C_DocType.DocBaseType</b> — (optional) expected doc base type + C_DocType.Name<br>
 	 * <b>ExternalId</b> — (optional) expected external ID<br>
+	 * <b>M_Warehouse_ID</b> — (optional, identifier-ref) expected warehouse<br>
+	 * <b>MovementType</b> — (optional) expected movement type code (e.g. {@code C+} for a customer return)<br>
+	 * <b>OPT.C_Order_ID</b> — (optional, identifier-ref, null-allowed) expected sales order; pass
+	 *   {@code null} to assert the shipment/receipt carries no order (e.g. a POS return, which is order-less)<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
 	 * @cucumber.example <pre>
 	 * And validate the created shipments
@@ -319,6 +321,19 @@ public class M_InOut_StepDef
 					softly.assertThat(inout.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
 				});
 
+		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseTable::getIdOrParse)
+				.ifPresent(expectedWarehouseId -> softly.assertThat(inout.getM_Warehouse_ID()).as("M_Warehouse_ID").isEqualTo(expectedWarehouseId.getRepoId()));
+
+		row.getAsOptionalString(I_M_InOut.COLUMNNAME_MovementType)
+				.ifPresent(movementType -> softly.assertThat(inout.getMovementType()).as("MovementType").isEqualTo(movementType));
+
+		row.getAsOptionalIdentifier(COLUMNNAME_C_Order_ID)
+				.ifPresent(orderIdentifier -> {
+					final int expectedOrderId = orderIdentifier.isNullPlaceholder() ? 0 : orderTable.get(orderIdentifier.getAsString()).getC_Order_ID();
+					softly.assertThat(inout.getC_Order_ID()).as("C_Order_ID").isEqualTo(expectedOrderId);
+				});
+
 		softly.assertAll();
 	}
 
@@ -367,20 +382,11 @@ public class M_InOut_StepDef
 					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 					final boolean isOnTheFlyPickToPackingInstructions = tableRow.getAsOptionalBoolean(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions).orElse(false);
 
-					final String errorMessage = DataTableUtil.extractStringForColumnName(tableRow, "AD_Message.Value");
+					final AdMessageKey expectedErrorMessage = AdMessageKey.of(DataTableUtil.extractStringForColumnName(tableRow, "AD_Message.Value"));
 
-					try
-					{
-						invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, isOnTheFlyPickToPackingInstructions, DataTableRows.ofRows(ImmutableList.of(tableRow)));
-
-						assertThat(errorMessage).as("An error message should had been thrown!").isNull();
-					}
-					catch (final Exception e)
-					{
-						final AdMessageKey expectedErrorMessage = AdMessageKey.of("de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords");
-						StepDefUtil.validateErrorMessage(e, msgBL.getTranslatableMsgText(expectedErrorMessage).translate(Optional.ofNullable(Env.getAD_Language())
-								.orElse(Language.getBaseAD_Language())));
-					}
+					StepDefUtil.assertThrowsWithAdMessage(
+							() -> invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, isOnTheFlyPickToPackingInstructions, DataTableRows.ofRows(ImmutableList.of(tableRow))),
+							expectedErrorMessage);
 				}
 		);
 	}
@@ -1015,7 +1021,7 @@ public class M_InOut_StepDef
 	{
 		final I_M_InOut inout = inoutTable.get(identifier);
 		InterfaceWrapperHelper.refresh(inout);
-		documentBL.processEx(inout, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+		processExInTrx(inout, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
 		final InOutId reversalId = InOutId.ofRepoId(inout.getReversal_ID());
 		final I_M_InOut reversal = inOutDAO.getById(reversalId);
@@ -1049,22 +1055,23 @@ public class M_InOut_StepDef
 		{
 			case completed:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				processExInTrx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 				break;
 			case reactivated:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				processExInTrx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				break;
 			case reversed:
-				reverse(shipment);
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				processExInTrx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
 			case voided:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				processExInTrx(shipment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
 			case closed:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				processExInTrx(shipment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled M_InOut action")
@@ -1139,6 +1146,21 @@ public class M_InOut_StepDef
 	}
 
 	/**
+	 * Runs the doc-action <b>and</b> the subsequent save of the document header in ONE transaction, like the WebUI does
+	 * (it runs each document action within a transaction).
+	 * <p>
+	 * Without an enclosing transaction, {@link IDocumentBL#processEx(Object, String, String)} lets the document engine commit
+	 * its own transaction <i>before</i> it saves the header with the new {@code DocStatus}. An async consumer running in between
+	 * sees the doc-action's side effects together with the old {@code DocStatus}. E.g. on reactivate, the invoice candidate recompute
+	 * consumes the {@code C_Invoice_Candidate_Recompute} markers while still reading the shipment as completed,
+	 * and the candidate keeps the pre-reactivation {@code QtyDelivered}.
+	 */
+	private void processExInTrx(@NonNull final I_M_InOut inout, @NonNull final String docAction, @Nullable final String expectedDocStatus)
+	{
+		trxManager.runInThreadInheritedTrx(() -> documentBL.processEx(inout, docAction, expectedDocStatus));
+	}
+
+	/**
 	 * Load an existing M_InOut by matching on M_InOutLine.QtyEntered (and optionally C_OrderLine_ID).
 	 * Validates DocStatus and optionally C_Order_ID. Stores both the line and header in StepDefData.
 	 *
@@ -1210,7 +1232,7 @@ public class M_InOut_StepDef
 		{
 			final I_M_InOut shipment = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
 			final String docAction = row.getAsString(I_M_InOut.COLUMNNAME_DocAction);
-			documentBL.processEx(shipment, docAction);
+			processExInTrx(shipment, docAction, null);
 		});
 	}
 
@@ -1489,24 +1511,16 @@ public class M_InOut_StepDef
 	{
 		final DataTableRow row = DataTableRows.of(dataTable).getFirstRow();
 
-		boolean errorThrown = false;
-
-		try
+		final StepDefDataIdentifier errorMessageIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_AD_Message_ID).orElse(null);
+		if (errorMessageIdentifier != null)
 		{
-			processInOut(model_UNUSED, shipmentIdentifier, action);
+			final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+			StepDefUtil.assertThrowsWithAdMessage(() -> processInOut(model_UNUSED, shipmentIdentifier, action), AdMessageKey.of(errorMessage.getValue()));
 		}
-		catch (final Exception e)
+		else
 		{
-			errorThrown = true;
-
-			row.getAsOptionalIdentifier(COLUMNNAME_AD_Message_ID)
-					.ifPresent(errorMessageIdentifier -> {
-						final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
-						assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
-					});
+			assertThat(catchThrowable(() -> processInOut(model_UNUSED, shipmentIdentifier, action))).as("error expected").isInstanceOf(Exception.class);
 		}
-
-		assertThat(errorThrown).isTrue();
 	}
 
 	/**
@@ -1826,19 +1840,39 @@ public class M_InOut_StepDef
 		});
 	}
 
-	@Then("process single receipt response")
-	public void process_receipts_response(@NonNull final DataTable table) throws JsonProcessingException
+	/**
+	 * Reads a {@code POST /api/v2/receipts} response and loads the single created document — either
+	 * the {@code createdReceiptIdList} (the {@code receiptList} half of the payload) or the
+	 * {@code createdReturnIdList} (the {@code returnList} half), selected by the matched step text.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier) alias to store the found receipt/return<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example <pre>
+	 * Then process single receipt response
+	 *   | M_InOut_ID |
+	 *   | receipt_1  |
+	 *
+	 * Then process single return response
+	 *   | M_InOut_ID |
+	 *   | return_1   |
+	 * </pre>
+	 */
+	@Then("^process single (receipt|return) response$")
+	public void process_receipt_or_return_response(@NonNull final String receiptOrReturn, @NonNull final DataTable table) throws JsonProcessingException
 	{
 		final JsonCreateReceiptsResponse receiptsResponse = mapper.readValue(restTestContext.getApiResponse().getContent(), JsonCreateReceiptsResponse.class);
 		assertThat(receiptsResponse).isNotNull();
 
-		final List<JsonMetasfreshId> createdReceiptIdList = receiptsResponse.getCreatedReceiptIdList();
-		assertThat(createdReceiptIdList.size()).isEqualTo(1);
+		final List<JsonMetasfreshId> createdIdList = "receipt".equals(receiptOrReturn)
+				? receiptsResponse.getCreatedReceiptIdList()
+				: receiptsResponse.getCreatedReturnIdList();
+		assertThat(createdIdList.size()).isEqualTo(1);
 
-		final I_M_InOut receiptRecord = inOutDAO.getById(InOutId.ofRepoId(createdReceiptIdList.get(0).getValue()));
-		assertThat(receiptRecord).isNotNull();
+		final I_M_InOut record = inOutDAO.getById(InOutId.ofRepoId(createdIdList.get(0).getValue()));
+		assertThat(record).isNotNull();
 
-		inoutTable.putOrReplace(DataTableRow.singleRow(table).getAsIdentifier(COLUMNNAME_M_InOut_ID), receiptRecord);
+		inoutTable.putOrReplace(DataTableRow.singleRow(table).getAsIdentifier(COLUMNNAME_M_InOut_ID), record);
 	}
 
 	/**

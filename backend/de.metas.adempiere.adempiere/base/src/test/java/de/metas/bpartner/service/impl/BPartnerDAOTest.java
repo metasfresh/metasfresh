@@ -1,6 +1,7 @@
 package de.metas.bpartner.service.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
@@ -84,6 +85,44 @@ public class BPartnerDAOTest
 				.hasSize(2)
 				.containsEntry(BPartnerId.ofRepoId(bPartnerRecord1.getC_BPartner_ID()), 23)
 				.containsEntry(BPartnerId.ofRepoId(bPartnerRecord2.getC_BPartner_ID()), 24);
+	}
+
+	/**
+	 * A partner without an own bill-to location and with exactly one location-bound bill-to relation
+	 * resolves to that relation's location (behaviour before the per-location bill-to relation resolution).
+	 */
+	@Test
+	public void retrieveBillToLocation_singleLocationBoundRelation_usedWhenNoOwnBillToLocation()
+	{
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		saveRecord(partner);
+		final BPartnerId partnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
+		final I_C_BPartner_Location partnerLocation = newInstance(I_C_BPartner_Location.class);
+		partnerLocation.setC_BPartner_ID(partnerId.getRepoId());
+		partnerLocation.setIsBillTo(false);
+		saveRecord(partnerLocation);
+
+		final I_C_BPartner billPartner = newInstance(I_C_BPartner.class);
+		saveRecord(billPartner);
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(billPartner.getC_BPartner_ID());
+		final I_C_BPartner_Location billLocation = newInstance(I_C_BPartner_Location.class);
+		billLocation.setC_BPartner_ID(billPartnerId.getRepoId());
+		saveRecord(billLocation);
+
+		BPRelation.builder()
+				.billTo(true)
+				.bpartnerId(partnerId)
+				.bpLocationId(BPartnerLocationId.ofRepoId(partnerId, partnerLocation.getC_BPartner_Location_ID()))
+				.relBPartnerId(billPartnerId)
+				.relBPLocationId(BPartnerLocationId.ofRepoId(billPartnerId, billLocation.getC_BPartner_Location_ID()))
+				.name("billTo")
+				.build()
+				.createRecord();
+
+		final I_C_BPartner_Location result = bpartnerDAO.retrieveBillToLocation(Env.getCtx(), partnerId.getRepoId(), true, null);
+
+		assertThat(result).isNotNull();
+		assertThat(result.getC_BPartner_Location_ID()).isEqualTo(billLocation.getC_BPartner_Location_ID());
 	}
 
 	@Test

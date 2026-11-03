@@ -23,15 +23,21 @@
 package de.metas.cucumber.stepdefs.util;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.costing.M_CostRevaluation_StepDefData;
+import de.metas.cucumber.stepdefs.customs.C_Customs_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_DunningDoc_StepDefData;
+import de.metas.cucumber.stepdefs.gljournal_sap.SAP_GLJournal_StepDefData;
 import de.metas.cucumber.stepdefs.inventory.M_Inventory_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_MFGWarehouse_Report_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
@@ -53,11 +59,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MatchInv;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -78,12 +87,16 @@ public class IdentifiersResolver
 	@NonNull private final M_InOut_StepDefData inOutTable;
 	@NonNull private final M_Inventory_StepDefData inventoryTable;
 	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 	@NonNull private final C_DunningDoc_StepDefData dunningDocTable;
 	@NonNull private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
 	@NonNull private final M_CostRevaluation_StepDefData costRevaluationTable;
 	@NonNull private final M_ShipperTransportation_StepDefData shipperTransportationTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData checkupReportTable;
+	@NonNull private final SAP_GLJournal_StepDefData sapGLJournalTable;
+	@NonNull private final C_Customs_Invoice_StepDefData customsInvoiceTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -136,6 +149,9 @@ public class IdentifiersResolver
 		orderTable.getIdOptional(identifier)
 				.map(OrderId::toRecordRef)
 				.ifPresent(result::add);
+		orderLineTable.getOptional(identifier)
+				.map(orderLine -> TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
+				.ifPresent(result::add);
 		dunningDocTable.getIdOptional(identifier)
 				.map(DunningDocId::toRecordRef)
 				.ifPresent(result::add);
@@ -153,6 +169,15 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		checkupReportTable.getIdOptional(identifier)
 				.map(id -> TableRecordReference.of(C_Order_MFGWarehouse_Report_StepDefData.TABLE_NAME, id))
+				.ifPresent(result::add);
+		sapGLJournalTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_SAP_GLJournal.Table_Name, id))
+				.ifPresent(result::add);
+		customsInvoiceTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_C_Customs_Invoice.Table_Name, id))
+				.ifPresent(result::add);
+		locatorTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_M_Locator.Table_Name, id))
 				.ifPresent(result::add);
 
 		if (result.isEmpty())
@@ -188,6 +213,8 @@ public class IdentifiersResolver
 				return inOutTable.getFirstIdentifierById(InOutId.ofRepoId(recordId));
 			case I_M_Inventory.Table_Name:
 				return inventoryTable.getFirstIdentifierById(InventoryId.ofRepoId(recordId));
+			case I_SAP_GLJournal.Table_Name:
+				return sapGLJournalTable.getFirstIdentifierById(SAPGLJournalId.ofRepoId(recordId));
 			default:
 				return Optional.empty();
 		}
@@ -211,6 +238,9 @@ public class IdentifiersResolver
 				.forEach(result::add);
 		inOutTable.streamIds()
 				.map(InOutId::toRecordRef)
+				.forEach(result::add);
+		sapGLJournalTable.streamIds()
+				.map(id -> TableRecordReference.of(I_SAP_GLJournal.Table_Name, id))
 				.forEach(result::add);
 
 		return TableRecordReferenceSet.of(result);

@@ -163,7 +163,7 @@ public class JsonConverters
 				? request.getDateRequired().atStartOfDay(masterdataProvider.getOrgTimeZone(orgId))
 				: null;
 		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
-		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(productIdentifier, orgId, datePromised, bPartnerInfo.getBpartnerId());
+		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfoForOrderCandidate(productIdentifier, orgId, datePromised, bPartnerInfo.getBpartnerId());
 
 		final ShipperId shipperId = masterdataProvider.getShipperId(request);
 

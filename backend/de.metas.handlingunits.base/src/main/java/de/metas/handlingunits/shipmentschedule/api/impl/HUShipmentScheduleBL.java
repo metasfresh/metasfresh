@@ -78,6 +78,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -1282,9 +1283,21 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// QtyPicked, breaking qty-sync (M_InOutLine.onMovementQtyChange) and HU-based package/content resolution.
 		// Reuse the original row for the first group; split off a copy (same TU/LU) for each further group.
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
+		final List<AttributesKey> fingerprints = ImmutableList.copyOf(storagesByFingerprint.keySet());
+		final List<Quantity> groupQtys = fingerprints.stream()
+				.map(fp -> storagesByFingerprint.get(fp).stream()
+						.map(IHUProductStorage::getQty)
+						.reduce(Quantity::add)
+						.get())
+				.collect(ImmutableList.toImmutableList());
+		final List<Optional<Quantity>> catchWeightShares = splitCatchWeightByQty(qtyPicked, groupQtys);
+		final UomId catchUomId = UomId.ofRepoIdOrNull(qtyPicked.getCatch_UOM_ID());
 		boolean firstGroup = true;
-		for (final AttributesKey fingerprint : storagesByFingerprint.keySet())
+		int groupIndex = -1;
+		for (final AttributesKey fingerprint : fingerprints)
 		{
+			groupIndex++;
+			final Optional<Quantity> catchWeightShare = catchWeightShares.get(groupIndex);
 			final List<IHUProductStorage> group = storagesByFingerprint.get(fingerprint);
 			// Any VHU of the group supplies the group's (shared) attribute set — the candidate/line reads its
 			// attributes from it. All members carry the same fingerprint, so the choice is arbitrary.
@@ -1299,12 +1312,16 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			{
 				groupQtyPicked = qtyPicked;
 				firstGroup = false;
+				catchWeightShare.ifPresent(share -> groupQtyPicked.setQtyDeliveredCatch(share.toBigDecimal()));
 			}
 			else
 			{
+				final StockQtyAndUOMQty groupStockAndCatchQty = catchWeightShare.isPresent()
+						? StockQtyAndUOMQtys.create(groupStorageQty.toBigDecimal(), productId, catchWeightShare.get().toBigDecimal(), catchUomId)
+						: StockQtyAndUOMQtys.ofQtyInStockUOM(groupStorageQty, productId);
 				groupQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecordNoSave(
 						qtyPicked.getM_ShipmentSchedule(),
-						StockQtyAndUOMQtys.ofQtyInStockUOM(groupStorageQty, productId),
+						groupStockAndCatchQty,
 						I_M_ShipmentSchedule_QtyPicked.class);
 				groupQtyPicked.setM_TU_HU_ID(qtyPicked.getM_TU_HU_ID());
 				groupQtyPicked.setM_LU_HU_ID(qtyPicked.getM_LU_HU_ID());
@@ -1325,6 +1342,41 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 					groupQtyPicked, huContext, attributeSourceVHU, groupStorageQty, qtyTypeToUse));
 		}
 		return result.build();
+	}
+
+	/**
+	 * Splits the record's catch weight across the given groups proportionally to their qtys.
+	 * The last group gets the remainder, so the shares always sum up to the record's weight.
+	 *
+	 * @return one entry per group; all empty if the record has no catch UOM
+	 */
+	private static List<Optional<Quantity>> splitCatchWeightByQty(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked record,
+			@NonNull final List<Quantity> groupQtys)
+	{
+		if (record.getCatch_UOM_ID() <= 0)
+		{
+			return groupQtys.stream().map(q -> Optional.<Quantity>empty()).collect(ImmutableList.toImmutableList());
+		}
+
+		final I_C_UOM catchUom = Services.get(IUOMDAO.class).getById(record.getCatch_UOM_ID());
+		final Quantity totalWeight = Quantity.of(record.getQtyDeliveredCatch(), catchUom);
+		final BigDecimal totalQty = groupQtys.stream()
+				.map(q -> q.toBigDecimal())
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		final int scale = totalWeight.getUOMPrecision().toInt();
+
+		final ImmutableList.Builder<Optional<Quantity>> shares = ImmutableList.builder();
+		Quantity allocated = totalWeight.toZero();
+		for (int i = 0; i < groupQtys.size(); i++)
+		{
+			final Quantity share = i < groupQtys.size() - 1
+					? totalWeight.multiply(groupQtys.get(i).toBigDecimal()).divide(totalQty, scale, RoundingMode.HALF_UP)
+					: totalWeight.subtract(allocated);
+			allocated = allocated.add(share);
+			shares.add(Optional.of(share));
+		}
+		return shares.build();
 	}
 
 	@Override

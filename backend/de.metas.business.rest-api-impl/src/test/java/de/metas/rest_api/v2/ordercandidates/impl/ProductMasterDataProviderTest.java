@@ -29,6 +29,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
+import de.metas.util.web.exception.MissingResourceException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
@@ -36,15 +37,19 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for {@link ProductMasterDataProvider}.
@@ -60,6 +65,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class ProductMasterDataProviderTest
 {
+	/** Deliberately neither the CI zone (Europe/Berlin) nor UTC, so a provider that re-zones the date is caught. */
+	private static final ZoneId ORG_ZONE = ZoneId.of("Asia/Tokyo");
 	private ProductMasterDataProvider productMasterDataProvider;
 	private static final OrgId ANY_ORG = OrgId.ofRepoId(1);
 
@@ -231,6 +238,59 @@ class ProductMasterDataProviderTest
 				.as("partner B (must not get A's cached row)").isEqualTo(rowB);
 		assertThat(productMasterDataProvider.getProductInfo(identifier, ANY_ORG, null, partnerA).getHupiItemProductId())
 				.as("partner A again").isEqualTo(rowA);
+	}
+
+	@Nested
+	class getProductInfoForOrderCandidate
+	{
+		private String existingText(final String identifier)
+		{
+			return "The resource with resourceName=productIdentifier - which is identified by resourceIdentifier=" + identifier + " -  could not be found.";
+		}
+
+		@Test
+		void gtin_not_valid_on_date_explains()
+		{
+			final I_M_Product product = createProduct("gtin-explain");
+			final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+			piip.setM_Product_ID(product.getM_Product_ID());
+			piip.setGTIN("90000000101");
+			piip.setValidFrom(Timestamp.from(LocalDate.of(2022, 9, 1).atStartOfDay(ORG_ZONE).toInstant()));
+			piip.setIsActive(true);
+			InterfaceWrapperHelper.save(piip);
+			final ZonedDateTime date = LocalDate.of(2020, 1, 27).atStartOfDay(ORG_ZONE);
+
+			assertThatThrownBy(() -> productMasterDataProvider.getProductInfoForOrderCandidate(ExternalIdentifier.of("gtin-90000000101"), ANY_ORG, date, null))
+					.isInstanceOf(OLCandProductNotFoundException.class)
+					.hasMessage(existingText("gtin-90000000101") + " "
+							+ "GTIN 90000000101 is only on packing instructions that are not valid on the delivery date 2020-01-27: "
+							+ "M_HU_PI_Item_Product_ID=" + piip.getM_HU_PI_Item_Product_ID() + " valid from 2022-09-01.");
+		}
+
+		@Test
+		void val_not_found_keeps_text()
+		{
+			assertThatThrownBy(() -> productMasterDataProvider.getProductInfoForOrderCandidate(ExternalIdentifier.of("val-unknown"), ANY_ORG, null, null))
+					.isInstanceOf(OLCandProductNotFoundException.class)
+					.hasMessage(existingText("val-unknown"));
+		}
+	}
+
+	@Test
+	void getProductInfo_unchanged_for_other_apis()
+	{
+		final I_M_Product product = createProduct("gtin-unchanged");
+		final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		piip.setM_Product_ID(product.getM_Product_ID());
+		piip.setGTIN("90000000102");
+		piip.setValidFrom(TimeUtil.parseLocalDateAsTimestamp("2022-09-01"));
+		piip.setIsActive(true);
+		InterfaceWrapperHelper.save(piip);
+		final ZonedDateTime date = LocalDate.of(2020, 1, 27).atStartOfDay(ORG_ZONE);
+
+		assertThatThrownBy(() -> productMasterDataProvider.getProductInfo(ExternalIdentifier.of("gtin-90000000102"), ANY_ORG, date, null))
+				.isInstanceOf(MissingResourceException.class)
+				.hasMessage("The resource with resourceName=productIdentifier - which is identified by resourceIdentifier=gtin-90000000102 -  could not be found.");
 	}
 
 	private BPartnerId createBPartner(final String value)

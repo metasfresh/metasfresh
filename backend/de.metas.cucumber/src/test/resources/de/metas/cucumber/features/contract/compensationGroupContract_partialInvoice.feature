@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0170_Contract_Management
 @allure.label.feature:F2070_Compensation_Group_Contract
-@ghActions:run_on_executor3
+@ghActions:run_on_executor8
 Feature: Contract-triggered compensation group on a partially delivered and invoiced sales order
 ## F2070: Compensation Group Contract
 

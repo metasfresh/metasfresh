@@ -253,8 +253,8 @@ Feature: Compensation group on a partially delivered and invoiced sales order
       | C_Invoice_Candidate_ID.Identifier | QtyOrdered | QtyInvoiced | QtyToInvoice | NetAmtInvoiced | Processed | IsError |
       | ic_discount                       | 2          | 1           | 0            | -30            | false     | false   |
     And validate the created orders
-      | C_Order_ID   | InvoiceStatus |
-      | orderManual  | PI            |
+      | C_Order_ID  | InvoiceStatus |
+      | orderManual | PI            |
     And validate C_OrderLine:
       | C_OrderLine_ID | qtyinvoiced |
       | ol_discount    | 1           |
@@ -296,8 +296,8 @@ Feature: Compensation group on a partially delivered and invoiced sales order
       | C_Invoice_Candidate_ID.Identifier | QtyOrdered | QtyInvoiced | QtyToInvoice | NetAmtInvoiced | Processed | IsError |
       | ic_discount                       | 2          | 2           | 0            | -51            | true      | false   |
     And validate the created orders
-      | C_Order_ID   | InvoiceStatus |
-      | orderManual  | CI            |
+      | C_Order_ID  | InvoiceStatus |
+      | orderManual | CI            |
     And validate C_OrderLine:
       | C_OrderLine_ID | qtyinvoiced |
       | ol_discount    | 1           |
