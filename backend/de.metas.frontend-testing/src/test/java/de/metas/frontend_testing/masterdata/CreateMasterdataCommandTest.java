@@ -1,9 +1,11 @@
 package de.metas.frontend_testing.masterdata;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCalibrationRuleRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
@@ -18,6 +20,7 @@ import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
+import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceRequest;
@@ -33,6 +36,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -159,6 +163,35 @@ public class CreateMasterdataCommandTest
 		assertThat(request.getDistributionOrders()).hasSize(1);
 		assertThat(request.getManufacturingOrders()).hasSize(1);
 		assertThat(request.getInventories()).hasSize(1);
+	}
+
+	@Test
+	public void hu_request_builder_withLocator_shouldPreserveLocator()
+	{
+		// given/when
+		final JsonCreateHURequest request = JsonCreateHURequest.builder()
+				.product(Identifier.ofString("product"))
+				.warehouse(Identifier.ofString("warehouse"))
+				.locator(Identifier.ofString("locatorB"))
+				.qty(BigDecimal.TEN)
+				.build();
+
+		// then
+		assertThat(request.getLocator()).isEqualTo(Identifier.ofString("locatorB"));
+	}
+
+	@Test
+	public void hu_request_builder_withoutLocator_shouldDefaultToNull()
+	{
+		// given/when
+		final JsonCreateHURequest request = JsonCreateHURequest.builder()
+				.product(Identifier.ofString("product"))
+				.warehouse(Identifier.ofString("warehouse"))
+				.qty(BigDecimal.TEN)
+				.build();
+
+		// then
+		assertThat(request.getLocator()).isNull();
 	}
 
 	@Test
@@ -297,6 +330,7 @@ public class CreateMasterdataCommandTest
 				.productPlannings(ImmutableMap.of())
 				.packingInstructions(ImmutableMap.of())
 				.handlingUnits(ImmutableMap.of())
+				.packages(ImmutableMap.of())
 				.generatedHUQRCodes(ImmutableMap.of())
 				.salesOrders(ImmutableMap.of())
 				.distributionOrders(ImmutableMap.of())
@@ -339,14 +373,17 @@ public class CreateMasterdataCommandTest
 				.bpartners(ImmutableMap.of())
 				.products(ImmutableMap.of())
 				.resources(ImmutableMap.of())
+				.shippers(ImmutableMap.of())
 				.warehouses(ImmutableMap.of())
 				.pickingSlots(ImmutableMap.of())
 				.workplaces(ImmutableMap.of())
 				.productPlannings(ImmutableMap.of())
 				.packingInstructions(ImmutableMap.of())
 				.handlingUnits(ImmutableMap.of())
+				.packages(ImmutableMap.of())
 				.generatedHUQRCodes(ImmutableMap.of())
 				.salesOrders(ImmutableMap.of())
+				.purchaseOrders(ImmutableMap.of())
 				.distributionOrders(ImmutableMap.of())
 				.manufacturingOrders(ImmutableMap.of())
 				.inventories(ImmutableMap.of())
@@ -389,5 +426,59 @@ public class CreateMasterdataCommandTest
 		final ResourceId resourceId = context.getId(resourceIdentifier, ResourceId.class);
 		final I_S_Resource resource = InterfaceWrapperHelper.load(resourceId, I_S_Resource.class);
 		assertThat(resource.getC_Workplace_ID()).isEqualTo(workplaceId.getRepoId());
+	}
+
+	@Test
+	public void request_json_withShippersAndWarehouseEmpties_shouldDeserialize() throws Exception
+	{
+		// given: the JSON shape the Playwright fixtures use
+		final String json = "{"
+				+ "\"shippers\": {\"SHIPPER\": {\"name\": \"Shipper\"}},"
+				+ "\"warehouses\": {\"WH\": {\"empties\": {\"toWarehouse\": \"EMPTIES\", \"shipper\": \"SHIPPER\"}}, \"EMPTIES\": {}},"
+				+ "\"packages\": {\"PKG1\": {\"hu\": \"HU\", \"shipper\": \"SHIPPER\"}}"
+				+ "}";
+
+		// when
+		final JsonCreateMasterdataRequest request = new ObjectMapper().readValue(json, JsonCreateMasterdataRequest.class);
+
+		// then
+		final JsonCreateShipperRequest shipper = Objects.requireNonNull(request.getShippers()).get("SHIPPER");
+		assertThat(shipper.getName()).isEqualTo("Shipper");
+
+		final Map<String, JsonWarehouseRequest> warehouses = Objects.requireNonNull(request.getWarehouses());
+		final JsonWarehouseRequest.Empties empties = Objects.requireNonNull(warehouses.get("WH").getEmpties());
+		assertThat(empties.getToWarehouse()).isEqualTo(Identifier.ofString("EMPTIES"));
+		assertThat(empties.getShipper()).isEqualTo(Identifier.ofString("SHIPPER"));
+		assertThat(warehouses.get("EMPTIES").getEmpties()).isNull();
+
+		assertThat(Objects.requireNonNull(request.getPackages()).get("PKG1").getShipper()).isEqualTo(Identifier.ofString("SHIPPER"));
+	}
+
+	@Test
+	public void request_json_withBpGroupsAndCalibrationRules_shouldDeserialize() throws Exception
+	{
+		// given: the JSON shape the Playwright fixtures use
+		final String json = "{"
+				+ "\"bpGroups\": {\"GRP\": {\"name\": \"Wholesale\"}},"
+				+ "\"bpartners\": {\"BP\": {\"bpGroup\": \"GRP\"}},"
+				+ "\"calibrationRules\": {\"R1\": {\"seqNo\": 10, \"bpartner\": \"BP\", \"bpGroup\": \"GRP\", \"product\": \"P1\","
+				+ " \"productCategory\": \"CAT\", \"schema\": \"S1\", \"factor\": 150}}"
+				+ "}";
+
+		// when
+		final JsonCreateMasterdataRequest request = new ObjectMapper().readValue(json, JsonCreateMasterdataRequest.class);
+
+		// then
+		assertThat(Objects.requireNonNull(request.getBpGroups()).get("GRP").getName()).isEqualTo("Wholesale");
+		assertThat(Objects.requireNonNull(request.getBpartners()).get("BP").getBpGroup()).isEqualTo(Identifier.ofString("GRP"));
+
+		final JsonCalibrationRuleRequest rule = Objects.requireNonNull(request.getCalibrationRules()).get("R1");
+		assertThat(rule.getSeqNo()).isEqualTo(10);
+		assertThat(rule.getBpartner()).isEqualTo(Identifier.ofString("BP"));
+		assertThat(rule.getBpGroup()).isEqualTo(Identifier.ofString("GRP"));
+		assertThat(rule.getProduct()).isEqualTo(Identifier.ofString("P1"));
+		assertThat(rule.getProductCategory()).isEqualTo(Identifier.ofString("CAT"));
+		assertThat(rule.getSchema()).isEqualTo(Identifier.ofString("S1"));
+		assertThat(rule.getFactor()).isEqualByComparingTo("150");
 	}
 }

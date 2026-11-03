@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -80715273L;
+	private static final long serialVersionUID = 1681424160L;
 
     /** Standard Constructor */
     public X_C_Payment (final Properties ctx, final int C_Payment_ID, @Nullable final String trxName)
@@ -466,33 +466,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public int getC_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_OrderPaySchedule getC_OrderPaySchedule()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderPaySchedule_ID, org.compiere.model.I_C_OrderPaySchedule.class);
-	}
-
-	@Override
-	public void setC_OrderPaySchedule(final org.compiere.model.I_C_OrderPaySchedule C_OrderPaySchedule)
-	{
-		set_ValueFromPO(COLUMNNAME_C_OrderPaySchedule_ID, org.compiere.model.I_C_OrderPaySchedule.class, C_OrderPaySchedule);
-	}
-
-	@Override
-	public void setC_OrderPaySchedule_ID (final int C_OrderPaySchedule_ID)
-	{
-		if (C_OrderPaySchedule_ID < 1) 
-			set_Value (COLUMNNAME_C_OrderPaySchedule_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_OrderPaySchedule_ID, C_OrderPaySchedule_ID);
-	}
-
-	@Override
-	public int getC_OrderPaySchedule_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_OrderPaySchedule_ID);
 	}
 
 	@Override
@@ -1000,6 +973,46 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
+	public void setPaymentBonusAmt (final BigDecimal PaymentBonusAmt)
+	{
+		set_Value (COLUMNNAME_PaymentBonusAmt, PaymentBonusAmt);
+	}
+
+	@Override
+	public BigDecimal getPaymentBonusAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PaymentBonusAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public org.compiere.model.I_C_Invoice getPaymentBonus_CreditMemo()
+	{
+		return get_ValueAsPO(COLUMNNAME_PaymentBonus_CreditMemo_ID, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public void setPaymentBonus_CreditMemo(final org.compiere.model.I_C_Invoice PaymentBonus_CreditMemo)
+	{
+		set_ValueFromPO(COLUMNNAME_PaymentBonus_CreditMemo_ID, org.compiere.model.I_C_Invoice.class, PaymentBonus_CreditMemo);
+	}
+
+	@Override
+	public void setPaymentBonus_CreditMemo_ID (final int PaymentBonus_CreditMemo_ID)
+	{
+		if (PaymentBonus_CreditMemo_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PaymentBonus_CreditMemo_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PaymentBonus_CreditMemo_ID, PaymentBonus_CreditMemo_ID);
+	}
+
+	@Override
+	public int getPaymentBonus_CreditMemo_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PaymentBonus_CreditMemo_ID);
+	}
+
+	@Override
 	public void setPONum (final @Nullable java.lang.String PONum)
 	{
 		set_Value (COLUMNNAME_PONum, PONum);
@@ -1060,6 +1073,33 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Invoice getProforma_Invoice()
+	{
+		return get_ValueAsPO(COLUMNNAME_Proforma_Invoice_ID, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public void setProforma_Invoice(final org.compiere.model.I_C_Invoice Proforma_Invoice)
+	{
+		set_ValueFromPO(COLUMNNAME_Proforma_Invoice_ID, org.compiere.model.I_C_Invoice.class, Proforma_Invoice);
+	}
+
+	@Override
+	public void setProforma_Invoice_ID (final int Proforma_Invoice_ID)
+	{
+		if (Proforma_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_Proforma_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_Proforma_Invoice_ID, Proforma_Invoice_ID);
+	}
+
+	@Override
+	public int getProforma_Invoice_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Proforma_Invoice_ID);
 	}
 
 	@Override

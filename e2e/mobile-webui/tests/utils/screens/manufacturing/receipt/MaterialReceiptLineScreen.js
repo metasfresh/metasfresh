@@ -13,8 +13,8 @@ const containerElement = () => page.locator('#MaterialReceiptLineScreen');
 
 export const MaterialReceiptLineScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
-        await page.locator('.loading').waitFor({ state: 'detached' });
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
@@ -79,26 +79,42 @@ export const MaterialReceiptLineScreen = {
         await MaterialReceiptLineScreen.waitForScreen();
     }),
 
-    receiveQty: async ({ switchToManualInput, qtyEntered, expectQtyEntered, expectQtyInputVisible, expectCatchWeightVisible, lotNo, bestBeforeDate, expectLotNoVisible, expectBestBeforeDateVisible, catchWeight, catchWeightQRCode, expectGoBackToJob = true }) => await test.step(`${NAME} - Receive qty ${qtyEntered ? qtyEntered : ''}`, async () => {
+    receiveQty: async ({ switchToManualInput, qtyEntered, expectQtyEntered, expectQtyInputVisible, expectCatchWeightVisible, lotNo, bestBeforeDate, expectLotNoVisible, expectBestBeforeDateVisible, listAttributes, catchWeight, catchWeightQRCode, expectGoBackToJob = true }) => await test.step(`${NAME} - Receive qty ${qtyEntered ? qtyEntered : ''}`, async () => {
         await page.getByTestId('receive-qty-button').tap();
 
         await GetQuantityDialog.waitForDialog();
+        // Mfg receipt renders Lot / Best-before through the generic editable-attributes section
+        // (attr-<code>-field), NOT the picking dialog's dedicated lotNo/bestBeforeDate rows. Their
+        // M_Attribute codes are 'Lot-Nummer' and 'HU_BestBeforeDate'.
         if (expectLotNoVisible != null) {
             if (expectLotNoVisible) {
-                await GetQuantityDialog.expectLotNoVisible();
+                await GetQuantityDialog.expectEditableAttributeVisible('Lot-Nummer');
             } else {
-                await GetQuantityDialog.expectLotNoNotVisible();
+                await GetQuantityDialog.expectEditableAttributeNotVisible('Lot-Nummer');
             }
         }
         if (expectBestBeforeDateVisible != null) {
             if (expectBestBeforeDateVisible) {
-                await GetQuantityDialog.expectBestBeforeDateVisible();
+                await GetQuantityDialog.expectEditableAttributeVisible('HU_BestBeforeDate');
             } else {
-                await GetQuantityDialog.expectBestBeforeDateNotVisible();
+                await GetQuantityDialog.expectEditableAttributeNotVisible('HU_BestBeforeDate');
+            }
+        }
+        if (lotNo != null) {
+            await GetQuantityDialog.typeEditableAttribute('Lot-Nummer', lotNo);
+        }
+        if (bestBeforeDate != null) {
+            await GetQuantityDialog.typeEditableAttributeDate('HU_BestBeforeDate', bestBeforeDate);
+        }
+        // Generic LIST editable attributes (e.g. a "size (cm)" list): { codeOrIdentifier: valueCode }.
+        // Selected via the native <select> the EditableAttributesSection renders for a LIST attribute.
+        if (listAttributes != null) {
+            for (const [codeOrIdentifier, value] of Object.entries(listAttributes)) {
+                await GetQuantityDialog.selectEditableAttribute(codeOrIdentifier, value);
             }
         }
 
-        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyInputVisible, expectCatchWeightVisible, expectQtyEntered, qtyEntered, lotNo, bestBeforeDate, catchWeight, catchWeightQRCode });
+        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyInputVisible, expectCatchWeightVisible, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode });
         // await MaterialReceiptLineScreen.waitForScreen(); // while processing
 
         // final screen

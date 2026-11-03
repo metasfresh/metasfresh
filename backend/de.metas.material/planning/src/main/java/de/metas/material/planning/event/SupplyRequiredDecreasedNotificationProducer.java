@@ -31,6 +31,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.pporder.PPOrderRepository;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.order.IOrderBL;
@@ -63,14 +64,16 @@ public class SupplyRequiredDecreasedNotificationProducer
 	@NonNull private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final PPOrderRepository ppOrderRepository;
 
-	public static SupplyRequiredDecreasedNotificationProducer newInstance()
+	public static SupplyRequiredDecreasedNotificationProducer newInstance(@NonNull final PPOrderRepository ppOrderRepository)
 	{
-		return new SupplyRequiredDecreasedNotificationProducer();
+		return new SupplyRequiredDecreasedNotificationProducer(ppOrderRepository);
 	}
 
-	private SupplyRequiredDecreasedNotificationProducer()
+	private SupplyRequiredDecreasedNotificationProducer(@NonNull final PPOrderRepository ppOrderRepository)
 	{
+		this.ppOrderRepository = ppOrderRepository;
 	}
 
 	public void sendNotification(@Nullable final MaterialPlanningContext context, @NonNull final SupplyRequiredDescriptor descriptor, @NonNull final Quantity unhandledQty)
@@ -116,10 +119,9 @@ public class SupplyRequiredDecreasedNotificationProducer
 	 * or is voided/reversed.
 	 */
 	@Nullable
-	private static I_PP_Order getNotifiablePPOrderOrNull(@NonNull final PPOrderId ppOrderId)
+	private I_PP_Order getNotifiablePPOrderOrNull(@NonNull final PPOrderId ppOrderId)
 	{
-		// no PP_Order DAO is reachable from this module (IPPOrderDAO lives in de.metas.manufacturing, which depends on this module); load returns null if not found
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
+		final I_PP_Order ppOrder = ppOrderRepository.getByIdOrNull(ppOrderId);
 		return ppOrder == null || DocStatus.ofCode(ppOrder.getDocStatus()).isReversedOrVoided() ? null : ppOrder;
 	}
 

@@ -1,6 +1,7 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.receive.json;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import de.metas.handlingunits.attribute.json.JsonAttribute;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonAllergen;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonHazardSymbol;
 import lombok.Builder;
@@ -44,6 +45,13 @@ public class JsonFinishedGoodsReceiveLine
 
 	@NonNull JsonNewLUTargetsList availableReceivingTargets;
 	@NonNull JsonNewTUTargetList availableReceivingTUTargets;
+
+	/**
+	 * The generic, per-line editable-attribute list: the mobile-UI Manufacturing Configuration's
+	 * editable-attribute list, restricted to this line's product {@code M_AttributeSet} and to instance-level
+	 * attributes, in the config's {@code SeqNo} order.
+	 */
+	@NonNull List<JsonAttribute> editableAttributes;
 
 	/**
 	 * Pre-filled best-before date (MHD); {@code null} if there is no default

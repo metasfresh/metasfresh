@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1966330028L;
+	private static final long serialVersionUID = 1727319638L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -74,6 +74,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setAttention (final @Nullable java.lang.String Attention)
+	{
+		set_Value (COLUMNNAME_Attention, Attention);
+	}
+
+	@Override
+	public java.lang.String getAttention() 
+	{
+		return get_ValueAsString(COLUMNNAME_Attention);
+	}
+
+	@Override
 	public void setBPartnerName (final @Nullable java.lang.String BPartnerName)
 	{
 		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
@@ -83,6 +95,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.lang.String getBPartnerName() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerName);
+	}
+
+	@Override
+	public void setBPartnerName2 (final @Nullable java.lang.String BPartnerName2)
+	{
+		set_Value (COLUMNNAME_BPartnerName2, BPartnerName2);
+	}
+
+	@Override
+	public java.lang.String getBPartnerName2() 
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerName2);
 	}
 
 	@Override
@@ -242,6 +266,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setGLN_GCPLength (final int GLN_GCPLength)
+	{
+		set_Value (COLUMNNAME_GLN_GCPLength, GLN_GCPLength);
+	}
+
+	@Override
+	public int getGLN_GCPLength() 
+	{
+		return get_ValueAsInt(COLUMNNAME_GLN_GCPLength);
+	}
+
+	@Override
 	public void setIsBillTo (final boolean IsBillTo)
 	{
 		set_Value (COLUMNNAME_IsBillTo, IsBillTo);
@@ -290,13 +326,13 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setIsDefaultVisitorAddress(final boolean IsDefaultVisitorAddress)
+	public void setIsDefaultVisitorAddress (final boolean IsDefaultVisitorAddress)
 	{
 		set_Value (COLUMNNAME_IsDefaultVisitorAddress, IsDefaultVisitorAddress);
 	}
 
 	@Override
-	public boolean isDefaultVisitorAddress()
+	public boolean isDefaultVisitorAddress() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefaultVisitorAddress);
 	}
@@ -359,6 +395,27 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public boolean isPayFrom() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPayFrom);
+	}
+
+	/** 
+	 * IsPreAdviceRequired AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISPREADVICEREQUIRED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISPREADVICEREQUIRED_Yes = "Y";
+	/** No = N */
+	public static final String ISPREADVICEREQUIRED_No = "N";
+	@Override
+	public void setIsPreAdviceRequired (final @Nullable java.lang.String IsPreAdviceRequired)
+	{
+		set_Value (COLUMNNAME_IsPreAdviceRequired, IsPreAdviceRequired);
+	}
+
+	@Override
+	public java.lang.String getIsPreAdviceRequired() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsPreAdviceRequired);
 	}
 
 	@Override
@@ -583,6 +640,86 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.lang.String getVATaxID() 
 	{
 		return get_ValueAsString(COLUMNNAME_VATaxID);
+	}
+
+	@Override
+	public void setVATaxIDCheckedAt (final @Nullable java.sql.Timestamp VATaxIDCheckedAt)
+	{
+		set_Value (COLUMNNAME_VATaxIDCheckedAt, VATaxIDCheckedAt);
+	}
+
+	@Override
+	public java.sql.Timestamp getVATaxIDCheckedAt() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_VATaxIDCheckedAt);
+	}
+
+	@Override
+	public org.compiere.model.I_VATaxID_CheckLog getVATaxID_CheckLog()
+	{
+		return get_ValueAsPO(COLUMNNAME_VATaxID_CheckLog_ID, org.compiere.model.I_VATaxID_CheckLog.class);
+	}
+
+	@Override
+	public void setVATaxID_CheckLog(final org.compiere.model.I_VATaxID_CheckLog VATaxID_CheckLog)
+	{
+		set_ValueFromPO(COLUMNNAME_VATaxID_CheckLog_ID, org.compiere.model.I_VATaxID_CheckLog.class, VATaxID_CheckLog);
+	}
+
+	@Override
+	public void setVATaxID_CheckLog_ID (final int VATaxID_CheckLog_ID)
+	{
+		if (VATaxID_CheckLog_ID < 1) 
+			set_Value (COLUMNNAME_VATaxID_CheckLog_ID, null);
+		else 
+			set_Value (COLUMNNAME_VATaxID_CheckLog_ID, VATaxID_CheckLog_ID);
+	}
+
+	@Override
+	public int getVATaxID_CheckLog_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_VATaxID_CheckLog_ID);
+	}
+
+	@Override
+	public void setVATaxIDLastAttemptedAt (final @Nullable java.sql.Timestamp VATaxIDLastAttemptedAt)
+	{
+		set_Value (COLUMNNAME_VATaxIDLastAttemptedAt, VATaxIDLastAttemptedAt);
+	}
+
+	@Override
+	public java.sql.Timestamp getVATaxIDLastAttemptedAt() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_VATaxIDLastAttemptedAt);
+	}
+
+	/** 
+	 * VATaxIDStatus AD_Reference_ID=542125
+	 * Reference name: USt-IdNr.-Prüfstatus
+	 */
+	public static final int VATAXIDSTATUS_AD_Reference_ID=542125;
+	/** NotChecked = NotChecked */
+	public static final String VATAXIDSTATUS_NotChecked = "NotChecked";
+	/** RequestSent = RequestSent */
+	public static final String VATAXIDSTATUS_RequestSent = "RequestSent";
+	/** Valid = Valid */
+	public static final String VATAXIDSTATUS_Valid = "Valid";
+	/** Invalid = Invalid */
+	public static final String VATAXIDSTATUS_Invalid = "Invalid";
+	/** NotSupported = NotSupported */
+	public static final String VATAXIDSTATUS_NotSupported = "NotSupported";
+	/** ServiceUnavailable = ServiceUnavailable */
+	public static final String VATAXIDSTATUS_ServiceUnavailable = "ServiceUnavailable";
+	@Override
+	public void setVATaxIDStatus (final java.lang.String VATaxIDStatus)
+	{
+		set_Value (COLUMNNAME_VATaxIDStatus, VATaxIDStatus);
+	}
+
+	@Override
+	public java.lang.String getVATaxIDStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_VATaxIDStatus);
 	}
 
 	@Override

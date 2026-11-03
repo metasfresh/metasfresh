@@ -32,8 +32,10 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDef;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -46,9 +48,12 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.process.M_PricelistVersion_MutateCustomerPrices;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -56,23 +61,26 @@ import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import javax.annotation.Nullable;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.Env;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -80,8 +88,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_TaxCategory_InternalName;
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -95,10 +104,10 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 public class M_PriceList_StepDef
 {
 	@NonNull private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_PricingSystem_StepDefData pricingSystemTable;
@@ -108,6 +117,14 @@ public class M_PriceList_StepDef
 	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
+	@NonNull private final M_DiscountSchema_StepDefData discountSchemaTable;
+	@NonNull private final C_TaxCategory_StepDef taxCategoryStepDef;
+
+	/**
+	 * Summary text of the last "apply to derivative price lists" process run in this scenario
+	 * ({@code null} until the process was invoked); read it via {@link #getLastDerivativeProcessSummary()}.
+	 */
+	@Nullable private String lastDerivativeProcessSummary;
 
 	@And("metasfresh contains M_PricingSystems")
 	public void add_M_PricingSystem(@NonNull final DataTable dataTable)
@@ -119,6 +136,16 @@ public class M_PriceList_StepDef
 	public void add_M_PriceList(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::createM_PriceList);
+	}
+
+	/**
+	 * Like {@code metasfresh contains M_PriceLists}, but always inserts a new record: no existing price list
+	 * (same pricing system / country / SOTrx) is looked up and overwritten.
+	 */
+	@And("metasfresh contains new M_PriceLists:")
+	public void add_new_M_PriceList(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::createNewM_PriceList);
 	}
 
 	private void createM_PricingSystem(@NonNull final DataTableRow row)
@@ -180,6 +207,40 @@ public class M_PriceList_StepDef
 		row.getAsIdentifier().putOrReplace(priceListTable, priceList);
 	}
 
+	private void createNewM_PriceList(@NonNull final DataTableRow row)
+	{
+		final I_M_PricingSystem pricingSystem = row.getAsIdentifier(COLUMNNAME_M_PricingSystem_ID).lookupNotNullIn(pricingSystemTable);
+		final I_C_Country country = extractOptionalCountry(row).orElse(null);
+		final SOTrx soTrx = SOTrx.ofBoolean(row.getAsBoolean("SOTrx"));
+		final boolean isSOPriceList = row.getAsOptionalBoolean(I_M_PriceList.COLUMNNAME_IsSOPriceList).orElse(soTrx.toBoolean());
+		assertThat(isSOPriceList)
+				.as("The IsSOPriceList column must not contradict the SOTrx column (SOTrx=%s)", soTrx)
+				.isEqualTo(soTrx.toBoolean());
+
+		final I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
+
+		final OrgId orgId = row.getAsOptionalIdentifier("AD_Org_ID").map(orgTable::getId).orElse(ORG_ID);
+		final String name = row.getAsOptionalName("Name").orElseGet(() -> pricingSystem.getName() + "_" + (country != null ? country.getCountryCode() : "-") + "_" + soTrx + "_" + row.getAsIdentifier().getAsString());
+
+		priceList.setAD_Org_ID(orgId.getRepoId());
+		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+		priceList.setC_Currency_ID(extractCurrencyId(row).getRepoId());
+		priceList.setName(name);
+		priceList.setIsTaxIncluded(row.getAsOptionalBoolean("IsTaxIncluded").orElseFalse());
+		priceList.setPricePrecision(row.getAsOptionalInt("PricePrecision").orElse(2));
+		priceList.setIsActive(row.getAsOptionalBoolean("IsActive").orElseTrue());
+		priceList.setIsSOPriceList(isSOPriceList);
+		priceList.setC_Country_ID(country != null ? country.getC_Country_ID() : -1);
+
+		row.getAsOptionalString("Description").ifPresent(priceList::setDescription);
+		row.getAsOptionalIdentifier(I_M_PriceList.COLUMNNAME_BasePriceList_ID)
+				.map(priceListTable::get)
+				.ifPresent(basePriceList -> priceList.setBasePriceList_ID(basePriceList.getM_PriceList_ID()));
+
+		saveRecord(priceList);
+		row.getAsIdentifier().putOrReplace(priceListTable, priceList);
+	}
+
 	private Optional<I_M_PriceList> getExistingPriceList(@NonNull final SOTrx soTrx, @NonNull final PricingSystemId pricingSystemId, final CountryId countryId)
 	{
 		final List<I_M_PriceList> existingPriceLists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx, null);
@@ -219,6 +280,267 @@ public class M_PriceList_StepDef
 	public void add_M_PriceListVersion(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::createM_PriceList_Version);
+	}
+
+	/**
+	 * Like {@code metasfresh contains M_PriceList_Versions}, but always inserts a new record: no existing version
+	 * of the price list valid at that date is looked up and overwritten.
+	 */
+	@And("metasfresh contains new M_PriceList_Versions:")
+	public void add_new_M_PriceListVersion(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::createNewM_PriceList_Version);
+	}
+
+	private void createNewM_PriceList_Version(@NonNull final DataTableRow row)
+	{
+		final I_M_PriceList priceList = row.getAsIdentifier(COLUMNNAME_M_PriceList_ID).lookupNotNullIn(priceListTable);
+
+		final ZonedDateTime validFrom = row.getAsOptionalLocalDate(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.orElse(DEFAULT_ValidFrom)
+				.atStartOfDay(SystemTime.zoneId()); // same zone as the existing step
+
+		final I_M_PriceList_Version priceListVersion = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
+		priceListVersion.setAD_Org_ID(priceList.getAD_Org_ID());
+		priceListVersion.setM_PriceList_ID(priceList.getM_PriceList_ID());
+		priceListVersion.setValidFrom(Timestamp.from(validFrom.toInstant()));
+		priceListVersion.setIsActive(row.getAsOptionalBoolean("IsActive").orElseTrue());
+		row.getAsOptionalString(I_M_PriceList_Version.COLUMNNAME_Description).ifPresent(priceListVersion::setDescription);
+		row.getAsOptionalIdentifier(I_M_PriceList_Version.COLUMNNAME_M_DiscountSchema_ID)
+				.map(discountSchemaTable::get)
+				.map(I_M_DiscountSchema::getM_DiscountSchema_ID)
+				.ifPresent(priceListVersion::setM_DiscountSchema_ID);
+		row.getAsOptionalIdentifier(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID)
+				.map(priceListVersionTable::get)
+				.map(I_M_PriceList_Version::getM_PriceList_Version_ID)
+				.ifPresent(priceListVersion::setM_Pricelist_Version_Base_ID);
+
+		saveRecord(priceListVersion);
+		row.getAsIdentifier().putOrReplace(priceListVersionTable, priceListVersion);
+	}
+
+	@Nullable
+	public String getLastDerivativeProcessSummary()
+	{
+		return lastDerivativeProcessSummary;
+	}
+
+	/**
+	 * Runs the "apply to derivative price lists" process
+	 * ({@code M_PricelistVersion_MutateCustomerPrices}) with the given price list version as its record, and keeps
+	 * the process result summary for later assertions.
+	 * A process error fails the step ({@code onErrorThrowException}); without it {@code ProcessExecutor} only
+	 * records the error in the result and the scenario would continue unnoticed.
+	 */
+	@When("the 'apply to derivative price lists' process is invoked for M_PriceList_Version {word}")
+	public void apply_to_derivative_price_lists(@NonNull final String priceListVersionIdentifier)
+	{
+		final I_M_PriceList_Version basePriceListVersion = StepDefDataIdentifier.ofString(priceListVersionIdentifier).lookupNotNullIn(priceListVersionTable);
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(M_PricelistVersion_MutateCustomerPrices.class);
+
+		// the result text is asserted in English: run the process in a copy of the context with language en_US,
+		// so the shared context (and other scenarios) stay untouched
+		final Properties processCallerCtx = Env.copyCtx(Env.getCtx());
+		Env.setContext(processCallerCtx, Env.CTXNAME_AD_Language, "en_US");
+
+		final ProcessExecutionResult result = ProcessInfo.builder()
+				.setCtx(processCallerCtx)
+				.setAD_Process_ID(processId)
+				.setAD_User_ID(Env.getAD_User_ID(Env.getCtx()))
+				.setRecord(I_M_PriceList_Version.Table_Name, basePriceListVersion.getM_PriceList_Version_ID())
+				.buildAndPrepareExecution()
+				.onErrorThrowException() // else ProcessExecutor swallows errors into the result and the step would pass
+				.executeSync()
+				.getResult();
+
+		lastDerivativeProcessSummary = result.getSummary();
+	}
+
+	/**
+	 * Asserts that the summary text returned by the last "apply to derivative price lists" run of this scenario
+	 * contains the given text (case-sensitive). Fails if the process was not run or returned no summary.
+	 */
+	@Then("the 'apply to derivative price lists' result text contains {string}")
+	public void validate_derivative_process_result_contains(@NonNull final String expectedText)
+	{
+		assertThat(lastDerivativeProcessSummary).as("summary of the last 'apply to derivative price lists' run").contains(expectedText);
+	}
+
+	/**
+	 * Asserts the number of M_PriceList_Versions of the price list. <b>All</b> versions are counted, inactive ones
+	 * included (no {@code IsActive} filter), whatever their {@code ValidFrom}.
+	 */
+	@Then("M_PriceList {word} has {int} M_PriceList_Versions")
+	public void validate_M_PriceList_Version_count(@NonNull final String priceListIdentifier, final int expectedCount)
+	{
+		final I_M_PriceList priceList = StepDefDataIdentifier.ofString(priceListIdentifier).lookupNotNullIn(priceListTable);
+		final int actualCount = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceList.getM_PriceList_ID())
+				.create()
+				.count();
+		assertThat(actualCount).as("number of M_PriceList_Versions of M_PriceList %s", priceListIdentifier).isEqualTo(expectedCount);
+	}
+
+	/**
+	 * Asserts the complete set of {@code M_ProductPrice} rows (active and inactive) of a price list version: it has
+	 * exactly the given rows, so a product that must not get a price is asserted by leaving it out.
+	 * <p>
+	 * Columns: {@code M_Product_ID} (identifier), {@code PriceStd}; optional {@code M_AttributeSetInstance_ID}
+	 * (identifier; the price must carry the same attribute values), {@code IsSeasonFixedPrice} (Y/N),
+	 * {@code CopyOf_M_ProductPrice_ID} (identifier of a price registered earlier; asserts the price has its
+	 * <b>own</b> attribute set instance, i.e. not the same ID as that earlier price's).
+	 */
+	@Then("the M_ProductPrices of M_PriceList_Version {word} are:")
+	public void validate_M_ProductPrices_of_version(@NonNull final String priceListVersionIdentifier, @NonNull final DataTable dataTable)
+	{
+		final I_M_PriceList_Version plv = StepDefDataIdentifier.ofString(priceListVersionIdentifier).lookupNotNullIn(priceListVersionTable);
+		final List<I_M_ProductPrice> actualPrices = queryBL.createQueryBuilder(I_M_ProductPrice.class)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, plv.getM_PriceList_Version_ID())
+				.create()
+				.list();
+
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(Collectors.toList());
+		assertThat(actualPrices).as("number of M_ProductPrices of M_PriceList_Version %s", priceListVersionIdentifier).hasSize(rows.size());
+
+		for (final DataTableRow row : rows)
+		{
+			final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_M_ProductPrice.COLUMNNAME_M_Product_ID);
+			final int productId = productIdentifier.lookupNotNullIn(productTable).getM_Product_ID();
+			final BigDecimal expectedPriceStd = row.getAsBigDecimal(I_M_ProductPrice.COLUMNNAME_PriceStd);
+
+			final I_M_ProductPrice actual = actualPrices.stream()
+					.filter(price -> price.getM_Product_ID() == productId)
+					.findFirst()
+					.orElse(null);
+			assertThat(actual).as("M_ProductPrice of product %s in M_PriceList_Version %s", productIdentifier, priceListVersionIdentifier).isNotNull();
+			assertThat(actual.getPriceStd()).as("PriceStd of product %s in M_PriceList_Version %s", productIdentifier, priceListVersionIdentifier).isEqualByComparingTo(expectedPriceStd);
+
+			row.getAsOptionalBoolean(I_M_ProductPrice.COLUMNNAME_IsSeasonFixedPrice)
+					.ifPresent(expected -> assertThat(actual.isSeasonFixedPrice()).as("IsSeasonFixedPrice of product %s in M_PriceList_Version %s", productIdentifier, priceListVersionIdentifier).isEqualTo(expected));
+			row.getAsOptionalIdentifier(I_M_ProductPrice.COLUMNNAME_M_AttributeSetInstance_ID)
+					.map(attributeSetInstanceTable::get)
+					.ifPresent(expectedAsi -> {
+						assertThat(actual.getM_AttributeSetInstance_ID()).as("M_AttributeSetInstance_ID of product %s", productIdentifier).isGreaterThan(0);
+						assertThat(toAttributesKey(InterfaceWrapperHelper.load(actual.getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class)))
+								.as("attribute values of the price of product %s", productIdentifier)
+								.isEqualTo(toAttributesKey(expectedAsi));
+					});
+			row.getAsOptionalIdentifier("CopyOf_M_ProductPrice_ID")
+					.map(productPriceTable::get)
+					.ifPresent(source -> {
+						assertThat(source.getM_AttributeSetInstance_ID()).as("source price must have an ASI").isGreaterThan(0);
+						assertThat(actual.getM_AttributeSetInstance_ID()).as("the copied price must have its own ASI").isNotEqualTo(source.getM_AttributeSetInstance_ID());
+					});
+		}
+	}
+
+	/**
+	 * Loads the version of the price list with the latest {@code ValidFrom} (highest ID on a tie), asserts the given
+	 * columns and registers it under the row's {@code Identifier}.
+	 * <p>
+	 * Caution: "latest" means highest {@code ValidFrom}, then highest ID, with <b>no</b> {@code IsActive} filter.
+	 * It is NOT "latest active" and NOT "most recently created": an inactive version can be the latest one, and when
+	 * a derivative's existing version is dated after the newly created one, the new version is not the latest.
+	 * <p>
+	 * Columns: {@code Identifier}, optional {@code ValidFrom}, {@code Name}, {@code M_DiscountSchema_ID} (identifier),
+	 * {@code M_Pricelist_Version_Base_ID} (identifier).
+	 */
+	@Then("the latest M_PriceList_Version of M_PriceList {word} is:")
+	public void validate_latest_M_PriceList_Version(@NonNull final String priceListIdentifier, @NonNull final DataTable dataTable)
+	{
+		final I_M_PriceList priceList = StepDefDataIdentifier.ofString(priceListIdentifier).lookupNotNullIn(priceListTable);
+		final I_M_PriceList_Version latest = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceList.getM_PriceList_ID())
+				.orderByDescending(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.orderByDescending(I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID)
+				.create()
+				.first(I_M_PriceList_Version.class);
+		assertThat(latest).as("latest M_PriceList_Version of M_PriceList %s", priceListIdentifier).isNotNull();
+
+		validateAndRegisterVersion(latest, "latest version of " + priceListIdentifier, DataTableRows.of(dataTable).singleRow());
+	}
+
+	/**
+	 * Loads the version of the price list that is valid from exactly the given date (highest ID if several, any
+	 * {@code IsActive}), asserts the given columns and registers it under the row's {@code Identifier}. Use it to
+	 * reach a version that is not the latest one.
+	 * <p>
+	 * Columns: {@code Identifier}, optional {@code Name}, {@code M_DiscountSchema_ID} (identifier),
+	 * {@code M_Pricelist_Version_Base_ID} (identifier).
+	 */
+	@Then("the M_PriceList_Version of M_PriceList {word} valid from {word} is:")
+	public void validate_M_PriceList_Version_valid_from(@NonNull final String priceListIdentifier, @NonNull final String validFromIsoDate, @NonNull final DataTable dataTable)
+	{
+		final I_M_PriceList priceList = StepDefDataIdentifier.ofString(priceListIdentifier).lookupNotNullIn(priceListTable);
+		final Timestamp validFrom = Timestamp.from(java.time.LocalDate.parse(validFromIsoDate).atStartOfDay(SystemTime.zoneId()).toInstant());
+		final I_M_PriceList_Version version = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceList.getM_PriceList_ID())
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_ValidFrom, validFrom)
+				.orderByDescending(I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID)
+				.create()
+				.first(I_M_PriceList_Version.class);
+		assertThat(version).as("M_PriceList_Version of M_PriceList %s valid from %s", priceListIdentifier, validFromIsoDate).isNotNull();
+
+		validateAndRegisterVersion(version, "version of " + priceListIdentifier + " valid from " + validFromIsoDate, DataTableRows.of(dataTable).singleRow());
+	}
+
+	private void validateAndRegisterVersion(@NonNull final I_M_PriceList_Version latest, @NonNull final String what, @NonNull final DataTableRow row)
+	{
+		row.getAsOptionalLocalDate(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.ifPresent(validFrom -> assertThat(latest.getValidFrom())
+						.as("ValidFrom of the %s", what)
+						.isEqualTo(Timestamp.from(validFrom.atStartOfDay(SystemTime.zoneId()).toInstant())));
+		row.getAsOptionalString(I_M_PriceList_Version.COLUMNNAME_Name)
+				.ifPresent(name -> assertThat(latest.getName()).as("Name of the %s", what).isEqualTo(name));
+		row.getAsOptionalIdentifier(I_M_PriceList_Version.COLUMNNAME_M_DiscountSchema_ID)
+				.map(identifier -> identifier.lookupNotNullIn(discountSchemaTable))
+				.ifPresent(schema -> assertThat(latest.getM_DiscountSchema_ID()).as("M_DiscountSchema_ID of the %s", what).isEqualTo(schema.getM_DiscountSchema_ID()));
+		row.getAsOptionalIdentifier(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID)
+				.map(identifier -> identifier.lookupNotNullIn(priceListVersionTable))
+				.ifPresent(base -> assertThat(latest.getM_Pricelist_Version_Base_ID()).as("M_Pricelist_Version_Base_ID of the %s", what).isEqualTo(base.getM_PriceList_Version_ID()));
+
+		row.getAsIdentifier().putOrReplace(priceListVersionTable, latest);
+	}
+
+	@Then("the M_PriceLists exist:")
+	public void validate_M_PriceLists(@NonNull final DataTable dataTable)
+	{
+		final List<Integer> ids = DataTableRows.of(dataTable).stream().map(this::validateM_PriceList).collect(Collectors.toList());
+		assertThat(ids).as("every identifier must be its own M_PriceList record").doesNotHaveDuplicates();
+	}
+
+	private int validateM_PriceList(@NonNull final DataTableRow row)
+	{
+		final I_M_PriceList cached = row.getAsIdentifier().lookupNotNullIn(priceListTable);
+		final I_M_PriceList actual = InterfaceWrapperHelper.load(cached.getM_PriceList_ID(), I_M_PriceList.class);
+
+		final I_M_PricingSystem pricingSystem = row.getAsIdentifier(COLUMNNAME_M_PricingSystem_ID).lookupNotNullIn(pricingSystemTable);
+		assertThat(actual.getM_PricingSystem_ID()).isEqualTo(pricingSystem.getM_PricingSystem_ID());
+		assertThat(actual.getC_Currency_ID()).isEqualTo(extractCurrencyId(row).getRepoId());
+		extractOptionalCountry(row).ifPresent(country -> assertThat(actual.getC_Country_ID()).isEqualTo(country.getC_Country_ID()));
+		row.getAsOptionalName("Name").ifPresent(name -> assertThat(actual.getName()).isEqualTo(name));
+		row.getAsOptionalBoolean("IsActive").ifPresent(isActive -> assertThat(actual.isActive()).isEqualTo(isActive));
+		return actual.getM_PriceList_ID();
+	}
+
+	@Then("the M_PriceList_Versions exist:")
+	public void validate_M_PriceList_Versions(@NonNull final DataTable dataTable)
+	{
+		final List<Integer> ids = DataTableRows.of(dataTable).stream().map(this::validateM_PriceList_Version).collect(Collectors.toList());
+		assertThat(ids).as("every identifier must be its own M_PriceList_Version record").doesNotHaveDuplicates();
+	}
+
+	private int validateM_PriceList_Version(@NonNull final DataTableRow row)
+	{
+		final I_M_PriceList_Version cached = row.getAsIdentifier().lookupNotNullIn(priceListVersionTable);
+		final I_M_PriceList_Version actual = InterfaceWrapperHelper.load(cached.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
+
+		final I_M_PriceList priceList = row.getAsIdentifier(COLUMNNAME_M_PriceList_ID).lookupNotNullIn(priceListTable);
+		assertThat(actual.getM_PriceList_ID()).isEqualTo(priceList.getM_PriceList_ID());
+		final Timestamp expectedValidFrom = Timestamp.from(row.getAsLocalDate(I_M_PriceList_Version.COLUMNNAME_ValidFrom).atStartOfDay(SystemTime.zoneId()).toInstant());
+		assertThat(actual.getValidFrom()).isEqualTo(expectedValidFrom);
+		row.getAsOptionalString(I_M_PriceList_Version.COLUMNNAME_Description).ifPresent(description -> assertThat(actual.getDescription()).isEqualTo(description));
+		return actual.getM_PriceList_Version_ID();
 	}
 
 	private void createM_PriceList_Version(@NonNull final DataTableRow row)
@@ -347,7 +669,7 @@ public class M_PriceList_StepDef
 		productPrice.setM_Product_ID(productId);
 		productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
 		productPrice.setPriceStd(priceStd);
-		productPrice.setC_TaxCategory_ID(extractTaxCategoryId(row).getRepoId());
+		productPrice.setC_TaxCategory_ID(taxCategoryStepDef.extractTaxCategoryIdOrDefault(row).getRepoId());
 
 		row.getAsOptionalString(I_M_ProductPrice.COLUMNNAME_UseScalePrice).ifPresent(productPrice::setUseScalePrice);
 		row.getAsOptionalEnum(I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn.class).ifPresent(invoiceableQtyBasedOn -> productPrice.setInvoicableQtyBasedOn(invoiceableQtyBasedOn.getCode()));
@@ -357,6 +679,7 @@ public class M_PriceList_StepDef
 				.ifPresent(productPrice::setM_HU_PI_Item_Product);
 
 		row.getAsOptionalBoolean(I_M_ProductPrice.COLUMNNAME_IsAttributeDependant).ifPresent(productPrice::setIsAttributeDependant);
+		row.getAsOptionalBoolean(I_M_ProductPrice.COLUMNNAME_IsSeasonFixedPrice).ifPresent(productPrice::setIsSeasonFixedPrice);
 
 		row.getAsOptionalIdentifier(I_M_ProductPrice.COLUMNNAME_M_AttributeSetInstance_ID)
 				.map(attributeSetInstanceTable::get)
@@ -367,18 +690,6 @@ public class M_PriceList_StepDef
 
 		saveRecord(productPrice);
 		row.getAsOptionalIdentifier().ifPresent(id -> id.putOrReplace(productPriceTable, productPrice));
-	}
-
-	private TaxCategoryId extractTaxCategoryId(final @NonNull DataTableRow row)
-	{
-		final String taxCategoryInternalName = CoalesceUtil.coalesceSuppliersNotNull(
-				() -> row.getAsOptionalString(I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID).orElse(null),
-				() -> row.getAsOptionalString(I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName).orElse(null),
-				() -> DEFAULT_TaxCategory_InternalName
-		);
-
-		return taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName)
-				.orElseThrow(() -> new AdempiereException("Missing C_TaxCategory for internalName `" + taxCategoryInternalName + "` of row " + row));
 	}
 
 	private I_M_ProductPrice lookupForProductPrice(@NonNull final DataTableRow row)
@@ -449,6 +760,10 @@ public class M_PriceList_StepDef
 				.orElse(AttributesKey.NONE);
 	}
 
+	/**
+	 * Updates price lists. Columns: {@code Identifier} (or {@code M_PriceList_ID}), optional {@code IsTaxIncluded},
+	 * {@code C_Currency.ISO_Code}, {@code C_Country.CountryCode} ({@code none} clears the country).
+	 */
 	@And("update M_PriceLists:")
 	public void updatePriceLists(@NonNull final DataTable dataTable)
 	{
@@ -463,6 +778,13 @@ public class M_PriceList_StepDef
 
 		final I_M_PriceList priceList = identifier.lookupNotNullIn(priceListTable);
 		row.getAsOptionalBoolean("IsTaxIncluded").ifPresent(priceList::setIsTaxIncluded);
+		// changing country/currency of a list that other lists are based on is not re-validated for those lists
+		row.getAsOptionalString("C_Currency.ISO_Code")
+				.map(CurrencyCode::ofThreeLetterCode)
+				.map(currencyRepository::getCurrencyIdByCurrencyCode)
+				.ifPresent(currencyId -> priceList.setC_Currency_ID(currencyId.getRepoId()));
+		row.getAsOptionalString("C_Country.CountryCode")
+				.ifPresent(countryCode -> priceList.setC_Country_ID("none".equalsIgnoreCase(countryCode) ? -1 : countryDAO.retrieveCountryByCountryCode(countryCode).getC_Country_ID()));
 
 		save(priceList);
 		priceListTable.putOrReplace(identifier, priceList);

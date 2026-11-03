@@ -199,6 +199,10 @@ public interface IPriceListDAO extends ISingletonService
 	@Nullable
 	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(PriceListVersionId priceListVersionId, ZonedDateTime date);
 
+	PricingSystemId createPricingSystem(@NonNull CreatePricingSystemRequest request);
+
+	PriceListId createPriceList(@NonNull CreatePriceListRequest request);
+
 	ProductPriceId addProductPrice(AddProductPriceRequest request);
 
 	ProductPriceId copyProductPrice(CopyProductPriceRequest request);
@@ -213,7 +217,7 @@ public interface IPriceListDAO extends ISingletonService
 	@Nullable
 	I_M_PriceList_Version retrieveNextVersionOrNull(I_M_PriceList_Version plv, final boolean onlyProcessed);
 
-	void mutateCustomerPrices(PriceListVersionId priceListVersionId, UserId userId);
+	MutateCustomerPricesResult mutateCustomerPrices(PriceListVersionId priceListVersionId, UserId userId);
 
 	Optional<TaxCategoryId> getDefaultTaxCategoryByPriceListVersionId(final PriceListVersionId priceListVersionId);
 

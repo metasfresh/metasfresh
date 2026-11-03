@@ -9,12 +9,8 @@ import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
-import de.metas.distribution.mobileui.job.model.DDOrderReference;
-import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
-import de.metas.distribution.mobileui.launchers.DDOrderReferenceCollector;
 import de.metas.distribution.mobileui.launchers.DistributionLauncherCaptionProvider;
-import de.metas.distribution.mobileui.launchers.facets.DistributionFacetId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -25,13 +21,12 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
-import de.metas.handlingunits.QtyTU;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -127,16 +122,12 @@ public class DDOrderCommand
 		ddOrder.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 		documentBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
-		final DDOrderReference ddOrderReference = toDDOrderReference(ddOrder);
-		return JsonDDOrderResponse.builder()
-				.documentNo(ddOrder.getDocumentNo())
-				.launcherCaption(computeLauncherCaption(ddOrderReference))
-				.launcherTestId(ddOrderReference.getTestId())
-				.warehouseFromFacetId(DistributionFacetId.ofWarehouseFromId(fromWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
-				.warehouseToFacetId(DistributionFacetId.ofWarehouseFromId(toWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
-				.plantFacetId(DistributionFacetId.ofPlantId(plantId).toWorkflowLaunchersFacetId().toJsonString())
-				.jobId(DistributionJobId.ofDDOrderId(ddOrderReference.getDdOrderId()))
-				.build();
+		return DDOrderResponseFactory.builder()
+				.distributionJobLoaderSupportingServices(distributionJobLoaderSupportingServices)
+				.captionProvider(captionProvider)
+				.context(context)
+				.build()
+				.toResponse(ddOrder, fromWarehouseId, toWarehouseId, plantId);
 	}
 
 	private void createLine(final JsonDDOrderRequest.Line line, final I_DD_Order ddOrder)
@@ -155,6 +146,13 @@ public class DDOrderCommand
 		ddOrderLine.setM_Locator_ID(fromLocatorId.getRepoId());
 		ddOrderLine.setM_LocatorTo_ID(toLocatorId.getRepoId());
 		ddOrderLine.setIsInvoiced(false);
+
+		if (line.getSalesOrderLine() != null)
+		{
+			final OrderLineId salesOrderLineId = context.getId(line.getSalesOrderLine(), OrderLineId.class);
+			ddOrderLine.setC_OrderLineSO_ID(salesOrderLineId.getRepoId());
+		}
+
 		saveRecord(ddOrderLine);
 
 		final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(I_DD_OrderLine.Table_Name);
@@ -163,8 +161,7 @@ public class DDOrderCommand
 		final IHUPackingAware packingAware = new DDOrderLineHUPackingAware(InterfaceWrapperHelper.create(ddOrderLine, de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine.class));
 		huPackingAwareBL.setQtyTU(packingAware);
 
-		final QtyTU qtyPacks = QtyTU.ofBigDecimal(packingAware.getQtyTU());
-		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyPacks.toInt());
+		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 
 		saveRecord(ddOrderLine);
 	}
@@ -202,19 +199,4 @@ public class DDOrderCommand
 				.clientAndOrgId(MasterdataContext.CLIENT_ID, orgId)
 				.build());
 	}
-
-	private DDOrderReference toDDOrderReference(final I_DD_Order ddOrder)
-	{
-		final DDOrderReferenceCollector collector = DDOrderReferenceCollector.builder()
-				.loadingSupportServices(distributionJobLoaderSupportingServices)
-				.build();
-		collector.collect(ddOrder);
-		return CollectionUtils.singleElement(collector.getCollectedItems());
-	}
-
-	private String computeLauncherCaption(final DDOrderReference ddOrderReference)
-	{
-		return captionProvider.compute(ddOrderReference).translate(context.getAdLanguage());
-	}
-
 }

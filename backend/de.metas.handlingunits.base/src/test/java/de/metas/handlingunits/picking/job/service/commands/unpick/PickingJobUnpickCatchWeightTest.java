@@ -31,6 +31,22 @@ import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
+import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.api.impl.DefaultInOutGenerateResult;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.picking.api.Packageable;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.compiere.model.I_C_UOM_Conversion;
+import org.compiere.model.I_M_InOutLine;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -85,6 +101,14 @@ class PickingJobUnpickCatchWeightTest
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = huTestHelper.handlingUnitsBL();
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
+		// needed by InOutProducerFromShipmentScheduleWithHU (shipment-line half of the unpick test)
+		org.compiere.SpringContextHolder.registerJUnitBean(new de.metas.order.impl.OrderEmailPropagationSysConfigRepository(Services.get(org.adempiere.service.ISysConfigBL.class)));
+		org.compiere.SpringContextHolder.registerJUnitBean(new de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite(com.google.common.collect.ImmutableList.of()));
+		final de.metas.document.DocBaseAndSubType shipmentDocBaseAndSubType = de.metas.document.DocBaseAndSubType.of(de.metas.document.DocBaseType.Shipment);
+		final org.compiere.model.I_C_DocType shipmentDocType = InterfaceWrapperHelper.newInstance(org.compiere.model.I_C_DocType.class);
+		shipmentDocType.setDocBaseType(shipmentDocBaseAndSubType.getDocBaseType().getCode());
+		shipmentDocType.setDocSubType(shipmentDocBaseAndSubType.getDocSubType().getCode());
+		InterfaceWrapperHelper.saveRecord(shipmentDocType);
 	}
 
 	/** A finite-capacity TU PI for the product, so it can be used as a (new-TU) picking target the CU is packed into. */
@@ -185,5 +209,150 @@ class PickingJobUnpickCatchWeightTest
 		assertThat(childrenAfter)
 				.as("the pick-to TU must hold NO orphan CU after skip-to-floor unpick")
 				.isEmpty();
+	}
+
+	/**
+	 * Product with a catch UOM (kg): UOM conversion each -> kg flagged as the catch UOM of the product.
+	 */
+	private ProductId createCatchWeightProductId(@NonNull final String value)
+	{
+		final ProductId productId = BusinessTestHelper.createProductId(value, helper.uomEach);
+		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		product.setM_Product_Category_ID(BusinessTestHelper.createProductCategory(value + "-Cat", null).getRepoId());
+		InterfaceWrapperHelper.save(product);
+
+		final I_C_UOM_Conversion catchUOMConversion = InterfaceWrapperHelper.newInstance(I_C_UOM_Conversion.class);
+		catchUOMConversion.setM_Product_ID(productId.getRepoId());
+		catchUOMConversion.setC_UOM_ID(helper.uomEach.getC_UOM_ID());
+		catchUOMConversion.setC_UOM_To_ID(huTestHelper.uomKgId.getRepoId());
+		catchUOMConversion.setMultiplyRate(BigDecimal.TEN);
+		catchUOMConversion.setDivideRate(new BigDecimal("0.1"));
+		catchUOMConversion.setIsCatchUOMForProduct(true);
+		catchUOMConversion.setIsActive(true);
+		InterfaceWrapperHelper.save(catchUOMConversion);
+
+		return productId;
+	}
+
+	/**
+	 * Two bare-TU picks (2 pcs, 4.100 kg and 2 pcs, 3.900 kg) into one new TU; unpicking the second must keep the weight of the first,
+	 * all the way down to the shipment line.
+	 */
+	@Test
+	void unpickOneOfTwoBareTUPicks_keepsOtherPicksWeight()
+	{
+		final ProductId productId = createCatchWeightProductId("P-CW-UNPICK-2TU");
+		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		final HuPackingInstructionsId tuPIId = createTuPI(product, 100);
+
+		helper.createVHUInfo(productId, "10", "QR-VHU-CW-2TU-1");
+		helper.createVHUInfo(productId, "10", "QR-VHU-CW-2TU-2");
+
+		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("salesOrderCwUnpick2TU");
+		final Packageable packageable = helper.packageable()
+				.orderAndLineId(orderAndLineId)
+				.productId(productId)
+				.catchWeightUomId(huTestHelper.uomKgId)
+				.qtyToDeliver("20")
+				.build();
+
+		PickingJob pickingJob = helper.pickingJobService.createPickingJob(
+						PickingJobCreateRequest.builder()
+								.aggregationType(PickingJobAggregationType.SALES_ORDER)
+								.pickerId(de.metas.user.UserId.ofRepoId(1234))
+								.salesOrderId(orderAndLineId.getOrderId())
+								.deliveryBPLocationId(helper.shipToBPLocationId)
+								.isAllowPickingAnyHU(false)
+								.build())
+				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
+
+		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+		pickingJob = helper.pickingJobService.setTUPickingTarget(pickingJob, /*lineId*/ null,
+				TUPickingTarget.ofPackingInstructions(tuPIId, "UNPICK-TU-PI"));
+		// one step per pick-from HU
+		final List<PickingJobStep> steps = pickingJob.streamSteps().collect(java.util.stream.Collectors.toList());
+		assertThat(steps).as("one step per pick-from HU").hasSize(2);
+		final PickingJobStepId stepId = steps.get(0).getId();
+		final PickingJobStepId stepId2 = steps.get(1).getId();
+
+		// first pick: 2 pcs, 4.100 kg
+		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+				.pickingLineId(line.getId())
+				.pickingStepId(stepId)
+				.pickFromKey(PickingJobStepPickFromKey.MAIN)
+				.eventType(PickingJobStepEventType.PICK)
+				.qrCode(steps.get(0).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU().getQrCode().toScannedCode())
+				.qtyPicked(new BigDecimal("2"))
+				.catchWeight(new BigDecimal("4.100"))
+				.build());
+
+		final HuId tuId = pickingJob.getTuPickingTargetEffective(line.getId()).orElseThrow(() -> new AdempiereException("no TU target")).getTuIdNotNull();
+
+		// second pick: 2 pcs, 3.900 kg
+		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+				.pickingLineId(line.getId())
+				.pickingStepId(stepId2)
+				.pickFromKey(PickingJobStepPickFromKey.MAIN)
+				.eventType(PickingJobStepEventType.PICK)
+				.qrCode(steps.get(1).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU().getQrCode().toScannedCode())
+				.qtyPicked(new BigDecimal("2"))
+				.catchWeight(new BigDecimal("3.900"))
+				.build());
+
+		// each pick records ITS OWN weight. With the TU's running total (the bug) the second pick would record 4.100 + 3.900,
+		// because the CU weights roll up into the TU's WeightNet.
+		final List<I_M_ShipmentSchedule_QtyPicked> recordsBeforeUnpick = Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, packageable.getShipmentScheduleId())
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
+				.create()
+				.list();
+		assertThat(recordsBeforeUnpick).as("records before unpick").hasSize(2);
+		assertThat(recordsBeforeUnpick.get(0).getQtyDeliveredCatch()).as("first pick record QtyDeliveredCatch").isEqualByComparingTo("4.100");
+		assertThat(recordsBeforeUnpick.get(1).getQtyDeliveredCatch()).as("second pick record QtyDeliveredCatch").isEqualByComparingTo("3.900");
+
+		// unpick 2 pcs of the product (LIFO => the second pick)
+		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+				.pickingLineId(line.getId())
+				.eventType(PickingJobStepEventType.UNPICK)
+				.qrCode(steps.get(1).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU().getQrCode().toScannedCode())
+				.unpickProductId(productId)
+				.qtyToUnpick(new BigDecimal("2"))
+				.unpickToTargetQRCode(null)
+				.build());
+
+		// the remaining record keeps the first pick's weight
+		final I_M_ShipmentSchedule_QtyPicked remainingRecord = CollectionUtils.singleElement(
+				Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+						.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, packageable.getShipmentScheduleId())
+						.create()
+						.list());
+		assertThat(remainingRecord.getQtyDeliveredCatch()).as("remaining record QtyDeliveredCatch").isEqualByComparingTo("4.100");
+		assertThat(remainingRecord.getCatch_UOM_ID()).as("remaining record Catch_UOM_ID").isEqualTo(huTestHelper.uomKgId.getRepoId());
+
+		// ... and so does the shipment line, built through the real breakdown + producer
+		// the producer resolves the schedule's handler through AD_Table_ID/Record_ID (the helper-created schedule carries none)
+		Services.get(de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL.class)
+				.registerHandler(de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler.newInstanceWithoutExtensions());
+		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentScheduleRecord = InterfaceWrapperHelper.load(packageable.getShipmentScheduleId(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+		shipmentScheduleRecord.setAD_Table_ID(Services.get(org.adempiere.ad.table.api.IADTableDAO.class).retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
+		shipmentScheduleRecord.setRecord_ID(orderAndLineId.getOrderLineRepoId());
+		shipmentScheduleRecord.setDeliveryRule(de.metas.order.DeliveryRule.AVAILABILITY.getCode());
+		InterfaceWrapperHelper.save(shipmentScheduleRecord);
+		final IHUContext huContext = huTestHelper.createMutableHUContext();
+		final List<ShipmentScheduleWithHU> candidates = Services.get(IHUShipmentScheduleBL.class)
+				.createCandidatesForQtyPicked(remainingRecord, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+		assertThat(candidates).as("candidates").isNotEmpty();
+
+		final InOutGenerateResult result = Services.get(ITrxItemProcessorExecutorService.class)
+				.<ShipmentScheduleWithHU, InOutGenerateResult>createExecutor()
+				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.setProcessor(new InOutProducerFromShipmentScheduleWithHU(new DefaultInOutGenerateResult(true)))
+				.setExceptionHandler(FailTrxItemExceptionHandler.instance)
+				.process(candidates);
+
+		final I_M_InOutLine shipmentLine = CollectionUtils.singleElement(
+				Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class).create().list());
+		assertThat(result.getInOuts()).as("generated shipments").isNotEmpty();
+		assertThat(shipmentLine.getQtyDeliveredCatch()).as("shipment line QtyDeliveredCatch").isEqualByComparingTo("4.100");
 	}
 }

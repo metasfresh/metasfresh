@@ -163,6 +163,12 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
+	public List<I_PP_Order_BOMLine> getOrderBOMLinesByIds(final Set<PPOrderBOMLineId> orderBOMLineIds)
+	{
+		return orderBOMService.getOrderBOMLinesByIds(orderBOMLineIds);
+	}
+
+	@Override
 	public List<I_PP_Order_BOMLine> getOrderBOMLines(final PPOrderId orderId)
 	{
 		return orderBOMService.getOrderBOMLines(orderId);
@@ -294,7 +300,13 @@ public class PPOrderBL implements IPPOrderBL
 		//
 		// Update PP Order Dates
 		final Timestamp date = TimeUtil.asTimestamp(request.getDate());
-		order.setDateDelivered(date); // overwrite=last
+		// Keep a manually-set effective production date: when IsFixedProductionDate='Y' the
+		// "Eff. Prod. Datum" (DateDelivered) is user-managed, so it must not be overwritten
+		// by the reported receipt date. When 'N' (default) the previous behaviour applies.
+		if (!order.isFixedProductionDate())
+		{
+			order.setDateDelivered(date); // overwrite=last
+		}
 		if (order.getDateStart() == null)
 		{
 			order.setDateStart(date);

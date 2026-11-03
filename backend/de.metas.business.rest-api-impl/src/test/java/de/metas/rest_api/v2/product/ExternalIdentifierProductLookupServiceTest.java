@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.product;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.ProductAndHUPIItemProductId;
@@ -29,14 +30,19 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -45,6 +51,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExternalIdentifierProductLookupServiceTest
 {
+	private static final String UNKNOWN_GTIN_TEXT_PREFIX = "No active packing instruction (M_HU_PI_Item_Product) of an active product for the ordering business partner or without business partner, no active partner product (C_BPartner_Product) and no active product (M_Product) carries GTIN ";
+	private static final ZoneId ORG_ZONE = ZoneId.of("Europe/Berlin");
+	private static final ZonedDateTime DELIVERY_DATE = LocalDate.of(2020, 1, 27).atStartOfDay(ORG_ZONE);
+
 	private ExternalIdentifierProductLookupService productLookupService;
 	
 	@BeforeEach
@@ -71,7 +81,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -95,7 +105,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-87654321");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -119,7 +129,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-98765432");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -143,7 +153,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-11223344");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -167,7 +177,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-44332211");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -191,7 +201,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-55667788");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -211,7 +221,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-99887766");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -231,7 +241,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-66778899");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -251,7 +261,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-77889900");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -264,7 +274,7 @@ public class ExternalIdentifierProductLookupServiceTest
 	{
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-00000000");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isEmpty();
@@ -328,7 +338,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when — date before NEW's ValidFrom: only OLD is valid → expect OLD row (Qty=9)
 		final ZonedDateTime beforeSwitch = LocalDate.of(2026, 6, 26).atStartOfDay(ZoneOffset.UTC);
-		final Optional<ProductAndHUPIItemProductId> resultBeforeSwitch = productLookupService.lookupProductByGTIN(identifier, beforeSwitch);
+		final Optional<ProductAndHUPIItemProductId> resultBeforeSwitch = productLookupService.lookupProductByGTIN(identifier, beforeSwitch, null);
 		assertThat(resultBeforeSwitch).isPresent();
 		assertThat(resultBeforeSwitch.get().getHupiItemProductId())
 				.as("date=2026-06-26 (pre-switch): only OLD row is valid → expect OLD (Qty=9)")
@@ -336,7 +346,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when — date on/after NEW's ValidFrom: both rows valid, latest ValidFrom wins → expect NEW row (Qty=6)
 		final ZonedDateTime afterSwitch = LocalDate.of(2026, 7, 5).atStartOfDay(ZoneOffset.UTC);
-		final Optional<ProductAndHUPIItemProductId> resultAfterSwitch = productLookupService.lookupProductByGTIN(identifier, afterSwitch);
+		final Optional<ProductAndHUPIItemProductId> resultAfterSwitch = productLookupService.lookupProductByGTIN(identifier, afterSwitch, null);
 		assertThat(resultAfterSwitch).isPresent();
 		assertThat(resultAfterSwitch.get().getHupiItemProductId())
 				.as("date=2026-07-05 (post-switch): both rows valid, NEW has the latest ValidFrom → expect NEW (Qty=6)")
@@ -370,7 +380,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		final ZonedDateTime queryDate = LocalDate.of(2021, 4, 15).atStartOfDay(ZoneOffset.UTC);
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-" + gtin);
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, queryDate);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, queryDate, null);
 
 		// then — no valid PIIP, no BPartner_Product, no M_Product carrying the GTIN → empty
 		assertThat(result)
@@ -394,7 +404,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isEmpty();
@@ -419,9 +429,88 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-99001234");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then — stale PIIP pointing to inactive product must be excluded
+		assertThat(result).isEmpty();
+	}
+
+	@Test
+	void lookupProductByGTIN_skips_HU_PI_Item_Product_when_referenced_M_Product_is_inactive()
+	{
+		// given: an active HUPI pointing to a deactivated M_Product
+		final I_M_Product inactiveProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		inactiveProduct.setValue("inactive-product");
+		inactiveProduct.setIsActive(false);
+		InterfaceWrapperHelper.save(inactiveProduct);
+
+		final I_M_HU_PI_Item_Product hupiItemProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		hupiItemProduct.setM_Product_ID(inactiveProduct.getM_Product_ID());
+		hupiItemProduct.setGTIN("12345678");
+		hupiItemProduct.setIsActive(true);
+		InterfaceWrapperHelper.save(hupiItemProduct);
+
+		// when
+		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier,null, null);
+
+		// then: HUPI is NOT matched because its M_Product is inactive — no other candidate either
+		assertThat(result).isEmpty();
+	}
+
+	@Test
+	void lookupProductByGTIN_falls_through_when_HU_PI_Item_Product_refs_inactive_product_but_another_active_product_has_GTIN()
+	{
+		// given: one HUPI points to an inactive M_Product (= the stale PI row the consolidation
+		// process forgot to deactivate), and a *different*, active M_Product carries the GTIN.
+		final I_M_Product inactiveProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		inactiveProduct.setValue("inactive-product");
+		inactiveProduct.setIsActive(false);
+		InterfaceWrapperHelper.save(inactiveProduct);
+
+		final I_M_HU_PI_Item_Product hupiItemProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		hupiItemProduct.setM_Product_ID(inactiveProduct.getM_Product_ID());
+		hupiItemProduct.setGTIN("12345678");
+		hupiItemProduct.setIsActive(true);
+		InterfaceWrapperHelper.save(hupiItemProduct);
+
+		final I_M_Product activeProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		activeProduct.setValue("active-product");
+		activeProduct.setGTIN("12345678");
+		activeProduct.setIsActive(true);
+		InterfaceWrapperHelper.save(activeProduct);
+
+		// when
+		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
+
+		// then: the stale HUPI is skipped, BPartner_Product step finds nothing,
+		// and the direct M_Product lookup returns the active product (without a specific HUPI).
+		assertThat(result).isPresent();
+		assertThat(result.get().getProductId()).isEqualTo(ProductId.ofRepoId(activeProduct.getM_Product_ID()));
+		assertThat(result.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.VIRTUAL_HU);
+	}
+
+	@Test
+	void lookupProductByGTIN_skips_C_BPartner_Product_when_referenced_M_Product_is_inactive()
+	{
+		// given: an active BPartner_Product pointing to a deactivated M_Product
+		final I_M_Product inactiveProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		inactiveProduct.setValue("inactive-product");
+		inactiveProduct.setIsActive(false);
+		InterfaceWrapperHelper.save(inactiveProduct);
+
+		final I_C_BPartner_Product bpartnerProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
+		bpartnerProduct.setM_Product_ID(inactiveProduct.getM_Product_ID());
+		bpartnerProduct.setGTIN("11223344");
+		bpartnerProduct.setIsActive(true);
+		InterfaceWrapperHelper.save(bpartnerProduct);
+
+		// when
+		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-11223344");
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
+
+		// then: BPartner_Product is NOT matched because its M_Product is inactive
 		assertThat(result).isEmpty();
 	}
 
@@ -447,7 +536,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -477,11 +566,212 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null, null);
 
 		// then
 		assertThat(result).isPresent();
 		assertThat(result.get().getProductId()).isEqualTo(ProductId.ofRepoId(product2.getM_Product_ID()));
 		assertThat(result.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.VIRTUAL_HU);
+	}
+
+	@Test
+	void lookupProductByGTIN_prefers_ordering_partners_row()
+	{
+		// given: one product, carton rows with the same GTIN for two partners and one without partner
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setValue("feta");
+		InterfaceWrapperHelper.save(product);
+		final BPartnerId orderingPartner = createBPartner("ordering");
+		final BPartnerId otherPartner = createBPartner("other"); // created second -> higher id
+		createPiip(product, "90000000001", null);
+		final I_M_HU_PI_Item_Product orderingPartnersRow = createPiip(product, "90000000001", orderingPartner);
+		createPiip(product, "90000000001", otherPartner);
+
+		// when
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(ExternalIdentifier.of("gtin-90000000001"), null, orderingPartner);
+
+		// then
+		assertThat(result).isPresent();
+		assertThat(result.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.ofRepoId(orderingPartnersRow.getM_HU_PI_Item_Product_ID()));
+	}
+
+	@Test
+	void lookupProductByGTIN_partner_without_own_row_gets_generic_row()
+	{
+		// given: a generic (partner-less) row and another partner's row; a third partner orders
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setValue("feta");
+		InterfaceWrapperHelper.save(product);
+		final BPartnerId otherPartner = createBPartner("other");
+		final BPartnerId orderingPartner = createBPartner("ordering");
+		final I_M_HU_PI_Item_Product genericRow = createPiip(product, "90000000001", null);
+		createPiip(product, "90000000001", otherPartner);
+
+		// when
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(ExternalIdentifier.of("gtin-90000000001"), null, orderingPartner);
+
+		// then
+		assertThat(result).isPresent();
+		assertThat(result.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.ofRepoId(genericRow.getM_HU_PI_Item_Product_ID()));
+	}
+
+	@Test
+	void lookupProductByGTIN_other_partners_row_is_ignored_in_favour_of_product_gtin()
+	{
+		// given: another partner's packing instruction carries the GTIN; a different product carries it as M_Product.GTIN
+		final I_M_Product piipProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		piipProduct.setValue("piip-product");
+		InterfaceWrapperHelper.save(piipProduct);
+		final I_M_Product gtinProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		gtinProduct.setValue("gtin-product");
+		gtinProduct.setGTIN("90000000002");
+		gtinProduct.setIsActive(true);
+		InterfaceWrapperHelper.save(gtinProduct);
+		final BPartnerId orderingPartner = createBPartner("ordering");
+		final BPartnerId otherPartner = createBPartner("other");
+		createPiip(piipProduct, "90000000002", otherPartner);
+
+		// when
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(ExternalIdentifier.of("gtin-90000000002"), null, orderingPartner);
+
+		// then: the product-level match, not the other partner's packing instruction
+		assertThat(result).isPresent();
+		assertThat(result.get().getProductId()).isEqualTo(ProductId.ofRepoId(gtinProduct.getM_Product_ID()));
+		assertThat(result.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.VIRTUAL_HU);
+	}
+
+	private static Timestamp orgMidnight(final String date)
+	{
+		return TimeUtil.asTimestamp(LocalDate.parse(date).atStartOfDay(ORG_ZONE));
+	}
+
+	@Nested
+	public class explainUnresolvedGTIN
+	{
+		@Test
+		void unknown()
+		{
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000009"), DELIVERY_DATE, null);
+
+			assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000009.");
+		}
+
+		@Test
+		void only_on_piips_not_valid_on_date()
+		{
+			final I_M_Product product = createProduct("feta", true);
+			final BPartnerId orderingPartner = createBPartner("ordering");
+			final I_M_HU_PI_Item_Product partnerRow = createPiip(product, "90000000003", orderingPartner);
+			partnerRow.setValidFrom(orgMidnight("2022-09-01"));
+			InterfaceWrapperHelper.save(partnerRow);
+			final I_M_HU_PI_Item_Product genericRow = createPiip(product, "90000000003", null);
+			genericRow.setValidFrom(orgMidnight("2022-09-01"));
+			InterfaceWrapperHelper.save(genericRow);
+
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000003"), DELIVERY_DATE, orderingPartner);
+
+			assertThat(text).isEqualTo("GTIN 90000000003 is only on packing instructions that are not valid on the delivery date 2020-01-27: "
+					+ "M_HU_PI_Item_Product_ID=" + partnerRow.getM_HU_PI_Item_Product_ID() + " valid from 2022-09-01, "
+					+ "M_HU_PI_Item_Product_ID=" + genericRow.getM_HU_PI_Item_Product_ID() + " valid from 2022-09-01.");
+		}
+
+		@Test
+		void expired_piip_shows_valid_to()
+		{
+			final I_M_Product product = createProduct("feta", true);
+			final I_M_HU_PI_Item_Product piip = createPiip(product, "90000000004", null);
+			piip.setValidFrom(orgMidnight("2019-01-01"));
+			piip.setValidTo(orgMidnight("2019-12-31"));
+			InterfaceWrapperHelper.save(piip);
+
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000004"), DELIVERY_DATE, null);
+
+			assertThat(text).isEqualTo("GTIN 90000000004 is only on packing instructions that are not valid on the delivery date 2020-01-27: "
+					+ "M_HU_PI_Item_Product_ID=" + piip.getM_HU_PI_Item_Product_ID() + " valid from 2019-01-01 to 2019-12-31.");
+		}
+
+		@Test
+		void piip_exists_but_no_date_is_unknown()
+		{
+			final I_M_Product product = createProduct("feta", true);
+			final I_M_HU_PI_Item_Product piip = createPiip(product, "90000000008", null);
+			piip.setValidFrom(orgMidnight("2022-09-01"));
+			InterfaceWrapperHelper.save(piip);
+
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000008"), null, null);
+
+			assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000008.");
+		}
+
+		@Test
+		void only_on_other_partners_piip_is_unknown()
+		{
+			final I_M_Product product = createProduct("feta", true);
+			final BPartnerId orderingPartner = createBPartner("ordering");
+			final BPartnerId otherPartner = createBPartner("other");
+			final I_M_HU_PI_Item_Product piip = createPiip(product, "90000000005", otherPartner);
+			piip.setValidFrom(orgMidnight("2019-01-01"));
+			InterfaceWrapperHelper.save(piip);
+
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000005"), DELIVERY_DATE, orderingPartner);
+
+			assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000005.");
+		}
+
+		@Test
+		void piip_of_inactive_product_is_unknown()
+		{
+			final I_M_Product inactiveProduct = createProduct("stale", false);
+			final I_M_HU_PI_Item_Product piip = createPiip(inactiveProduct, "90000000006", null);
+			piip.setValidFrom(orgMidnight("2022-09-01"));
+			InterfaceWrapperHelper.save(piip);
+
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000006"), DELIVERY_DATE, null);
+
+			assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000006.");
+		}
+
+		@Test
+		void inactive_piip_row_is_unknown()
+		{
+			final I_M_Product product = createProduct("feta", true);
+			final I_M_HU_PI_Item_Product piip = createPiip(product, "90000000007", null);
+			piip.setValidFrom(orgMidnight("2022-09-01"));
+			piip.setIsActive(false);
+			InterfaceWrapperHelper.save(piip);
+
+			final String text = productLookupService.explainUnresolvedGTIN(ExternalIdentifier.of("gtin-90000000007"), DELIVERY_DATE, null);
+
+			assertThat(text).isEqualTo(UNKNOWN_GTIN_TEXT_PREFIX + "90000000007.");
+		}
+	}
+
+	private I_M_Product createProduct(final String value, final boolean active)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setValue(value);
+		product.setIsActive(active);
+		InterfaceWrapperHelper.save(product);
+		return product;
+	}
+
+	private BPartnerId createBPartner(final String value)
+	{
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		bpartner.setValue(value);
+		bpartner.setName(value);
+		InterfaceWrapperHelper.save(bpartner);
+		return BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+	}
+
+	private I_M_HU_PI_Item_Product createPiip(final I_M_Product product, final String gtin, @Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		piip.setM_Product_ID(product.getM_Product_ID());
+		piip.setGTIN(gtin);
+		piip.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+		piip.setIsActive(true);
+		InterfaceWrapperHelper.save(piip);
+		return piip;
 	}
 }

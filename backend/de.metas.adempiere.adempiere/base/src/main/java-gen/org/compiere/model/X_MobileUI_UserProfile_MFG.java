@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements I_MobileUI_UserProfile_MFG, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1338998732L;
+	private static final long serialVersionUID = 1219969750L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_MFG (final Properties ctx, final int MobileUI_UserProfile_MFG_ID, @Nullable final String trxName)
@@ -113,24 +113,24 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	}
 
 	/** 
-	 * IsBestBeforeDateEditable AD_Reference_ID=319
+	 * IsAllowReceiveWithoutPackingItem AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
-	public static final int ISBESTBEFOREDATEEDITABLE_AD_Reference_ID=319;
+	public static final int ISALLOWRECEIVEWITHOUTPACKINGITEM_AD_Reference_ID=319;
 	/** Yes = Y */
-	public static final String ISBESTBEFOREDATEEDITABLE_Yes = "Y";
+	public static final String ISALLOWRECEIVEWITHOUTPACKINGITEM_Yes = "Y";
 	/** No = N */
-	public static final String ISBESTBEFOREDATEEDITABLE_No = "N";
+	public static final String ISALLOWRECEIVEWITHOUTPACKINGITEM_No = "N";
 	@Override
-	public void setIsBestBeforeDateEditable (final @Nullable java.lang.String IsBestBeforeDateEditable)
+	public void setIsAllowReceiveWithoutPackingItem (final @Nullable java.lang.String IsAllowReceiveWithoutPackingItem)
 	{
-		set_Value (COLUMNNAME_IsBestBeforeDateEditable, IsBestBeforeDateEditable);
+		set_Value (COLUMNNAME_IsAllowReceiveWithoutPackingItem, IsAllowReceiveWithoutPackingItem);
 	}
 
 	@Override
-	public java.lang.String getIsBestBeforeDateEditable() 
+	public java.lang.String getIsAllowReceiveWithoutPackingItem() 
 	{
-		return get_ValueAsString(COLUMNNAME_IsBestBeforeDateEditable);
+		return get_ValueAsString(COLUMNNAME_IsAllowReceiveWithoutPackingItem);
 	}
 
 	/** 
@@ -173,27 +173,6 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	public java.lang.String getIsFinishedGoodsCatchWeightScanRequired() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired);
-	}
-
-	/** 
-	 * IsLotNumberEditable AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int ISLOTNUMBEREDITABLE_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String ISLOTNUMBEREDITABLE_Yes = "Y";
-	/** No = N */
-	public static final String ISLOTNUMBEREDITABLE_No = "N";
-	@Override
-	public void setIsLotNumberEditable (final @Nullable java.lang.String IsLotNumberEditable)
-	{
-		set_Value (COLUMNNAME_IsLotNumberEditable, IsLotNumberEditable);
-	}
-
-	@Override
-	public java.lang.String getIsLotNumberEditable() 
-	{
-		return get_ValueAsString(COLUMNNAME_IsLotNumberEditable);
 	}
 
 	/** 

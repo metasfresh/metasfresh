@@ -46,8 +46,8 @@ Feature: Purchase order project is automatically created when PO is completed
       | dsb_1      | ds_1                | p_1          | ps_1                  | 10    | Y                      | P         | 10         | 0             |
 
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID | IsCreatePlan | IsPurchased |
-      | ppln_1     | p_1          | true         | Y           |
+      | Identifier | M_Product_ID | IsCreatePlan | OPT.IsDocComplete | IsPurchased |
+      | ppln_1     | p_1          | true         | true              | Y           |
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PO_DiscountSchema_ID |
       | customer_1 | N        | Y          | ps_1               |                      |
@@ -75,11 +75,7 @@ Feature: Purchase order project is automatically created when PO is completed
       | C_PurchaseCandidate_ID | QtyToPurchase |
       | pc_1                   | 10            |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
-
-    And the following C_PurchaseCandidates are enqueued for generating C_Orders
-      | C_PurchaseCandidate_ID |
-      | pc_1                   |
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, C_PurchaseCandidate_Alloc are found
       | C_PurchaseCandidate_ID | C_PurchaseCandidate_Alloc_ID |
@@ -93,7 +89,7 @@ Feature: Purchase order project is automatically created when PO is completed
       | C_Order_ID | C_OrderLine_ID |
       | po_1       | pol_1          |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
 ## PO header and lines
     Then validate the created orders

@@ -191,6 +191,7 @@ public class C_Invoice_MassDiscountOrWriteOff extends JavaProcess
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Client_ID, getClientId())
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false) // not already fully allocated
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsFinancial, true)
 				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses());
 
 		if (!getProcessInfo().isInvokedByScheduler())

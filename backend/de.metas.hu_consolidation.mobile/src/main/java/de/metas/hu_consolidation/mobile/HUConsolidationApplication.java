@@ -10,6 +10,8 @@ import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobReference;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobService;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequest;
 import de.metas.hu_consolidation.mobile.launchers.HUConsolidationWorkflowLaunchersProvider;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateRequest;
@@ -22,6 +24,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
+import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
@@ -34,6 +37,7 @@ import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
@@ -193,11 +197,27 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 
 	public WFProcess consolidate(@NonNull final JsonConsolidateRequest request, @NonNull final UserId callerId)
 	{
+		final String graiStr = StringUtils.trimBlankToNull(request.getGrai());
+		final GRAI grai;
+		if (graiStr != null)
+		{
+			grai = GRAI.parse(graiStr);
+			if (grai == null)
+			{
+				throw new AdempiereException(MobileQRCodeMessages.INVALID_GRAI_BARCODE, graiStr);
+			}
+		}
+		else
+		{
+			grai = null;
+		}
+
 		final HUConsolidationJob job = jobService.consolidate(ConsolidateRequest.builder()
 				.callerId(callerId)
 				.jobId(HUConsolidationJobId.ofWFProcessId(request.getWfProcessIdNotNull()))
 				.fromPickingSlotId(request.getFromPickingSlotId())
 				.huId(request.getHuId())
+				.grai(grai)
 				.build());
 		return toWFProcess(job);
 	}

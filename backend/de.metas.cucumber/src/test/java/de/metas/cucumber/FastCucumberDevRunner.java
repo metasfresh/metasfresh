@@ -31,12 +31,13 @@ public class FastCucumberDevRunner
 			System.err.flush();
 			System.out.println("\n\n\n=======================================================");
 			System.out.println("WAITING: Paste absolute path to .feature file (or 'exit'):");
+			System.out.println("  Tip: append :LINE to run a single scenario, e.g. MyFeature.feature:55");
 			// Line 2: Contextual Instruction (Conditional)
 			if (lastFeatureFilePath != null)
 			{
 				// Extract just the filename for a cleaner display or use the full path if needed
 				final String filename = new File(lastFeatureFilePath).getName();
-				System.out.println("  > Hit ENTER to re-run last file: **" + filename + "**");
+			System.out.println("  > Hit ENTER to re-run last: **" + filename + "**");
 			}
 			else
 			{

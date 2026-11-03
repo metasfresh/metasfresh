@@ -47,7 +47,7 @@ const LMQ_CODE = 'LMQ#1#0.101#08.11.2025#500';
 // Captions render as their translation key in Jest (no messages loaded).
 const CONFIRM_CAPTION = /activities\.picking\.confirmDone$/;
 
-const renderCatchWeightButton = ({ isCatchWeightScanMandatory = true } = {}) => {
+const renderCatchWeightButton = ({ isCatchWeightScanMandatory = true, editableAttributes } = {}) => {
   const onClick = jest.fn();
   const store = createStore(combineReducers({ settings }), {
     settings: { backend: { 'dateInput.isUseNativeComponent': true } },
@@ -59,7 +59,7 @@ const renderCatchWeightButton = ({ isCatchWeightScanMandatory = true } = {}) => 
         uom="PCE"
         catchWeightUom="kg"
         caption="Receive"
-        readAttributes={['BestBeforeDate', 'LotNo']}
+        editableAttributes={editableAttributes}
         defaultLotNo={DEFAULT_LOT_NO}
         defaultBestBeforeDate={DEFAULT_BEST_BEFORE_DATE}
         isCatchWeightScanMandatory={isCatchWeightScanMandatory}
@@ -168,6 +168,35 @@ it('receives one unit with the weight the operator entered after the scan, with 
       barcode: LMQ_CODE,
     })
   );
+});
+
+// Lot-Nr, MHD and production date configured as editable attributes as well: with the mandatory scan they are shown once, in the
+// scan-review rows, and sent once, through the dedicated fields; the other configured attributes stay as they are.
+it('shows the scanned Lot-Nr and MHD once and sends them through the dedicated fields only', async () => {
+  const { onClick } = renderCatchWeightButton({
+    editableAttributes: [
+      { code: 'HU_BestBeforeDate', caption: 'Best before', valueType: 'DATE' },
+      { code: 'Lot-Nummer', caption: 'Lot', valueType: 'STRING' },
+      { code: 'ProductionDate', caption: 'Production date', valueType: 'DATE' },
+      { code: 'Color', caption: 'Color', valueType: 'STRING' },
+    ],
+  });
+  await openDialog();
+  await scan(LMQ_CODE);
+
+  expect(screen.getByTestId('lotNo')).toHaveValue('500');
+  expect(screen.getByTestId('bestBeforeDate')).toHaveValue('2025-11-08');
+  expect(screen.queryByTestId('attr-Lot-Nummer-field')).not.toBeInTheDocument();
+  expect(screen.queryByTestId('attr-HU_BestBeforeDate-field')).not.toBeInTheDocument();
+  expect(screen.queryByTestId('attr-ProductionDate-field')).not.toBeInTheDocument();
+  await act(async () => {
+    fireEvent.change(screen.getByTestId('attr-Color-field'), { target: { value: 'red' } });
+  });
+  await confirm();
+
+  const sent = onClick.mock.calls[0][0];
+  expect(sent).toEqual(expect.objectContaining({ lotNo: '500', bestBeforeDate: '2025-11-08', barcode: LMQ_CODE }));
+  expect(sent.attributeValues).toEqual({ Color: 'red' });
 });
 
 // Co-/by-products keep the previous behaviour: each scan receives one piece right away.

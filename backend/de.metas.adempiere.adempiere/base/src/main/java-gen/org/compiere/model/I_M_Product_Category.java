@@ -703,4 +703,25 @@ public interface I_M_Product_Category
 
 	ModelColumn<I_M_Product_Category, I_S_Resource> COLUMN_WorkStation_ID = new ModelColumn<>(I_M_Product_Category.class, "WorkStation_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_WorkStation_ID = "WorkStation_ID";
+
+	/**
+	 * Set Exclude from Forecast.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsExcludeFromForecast (boolean IsExcludeFromForecast);
+
+	/**
+	 * Get Exclude from Forecast.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExcludeFromForecast();
+
+	org.adempiere.model.ModelColumn<I_M_Product_Category, Object> COLUMN_IsExcludeFromForecast = new org.adempiere.model.ModelColumn<>(I_M_Product_Category.class, "IsExcludeFromForecast", null);
+	String COLUMNNAME_IsExcludeFromForecast = "IsExcludeFromForecast";
 }

@@ -58,7 +58,10 @@ SELECT ol.line,
        ol.PriceEntered                                                         AS PriceEntered,
        COALESCE(puomt.UOMSymbol, puom.UOMSymbol)                               AS UOMSymbol,
        uom.StdPrecision,
-       ol.linenetamt                                                           AS linenetamt,
+       CASE
+           WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Net_Sum') = 'N'
+               THEN ol.linenetamt
+       END                                                    AS linenetamt,
        CASE
            WHEN ROUND(discount, 0) = discount THEN ROUND(discount, 0)
            WHEN ROUND(discount, 1) = discount THEN ROUND(discount, 1)
@@ -66,10 +69,13 @@ SELECT ol.line,
        END                                                                     AS discount,
        bp.isDiscountPrinted,
        CASE
-           WHEN ROUND(rate, 0) = rate THEN ROUND(rate, 0)
-           WHEN ROUND(rate, 1) = rate THEN ROUND(rate, 1)
-                                      ELSE ROUND(rate, 2)
-       END::character varying                                                  AS rate,
+           WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Tax_Rate') = 'N'
+               THEN CASE
+                        WHEN ROUND(rate, 0) = rate THEN ROUND(rate, 0)
+                        WHEN ROUND(rate, 1) = rate THEN ROUND(rate, 1)
+                                                   ELSE ROUND(rate, 2)
+                    END::character varying
+       END                                                    AS rate,
        isPrintTax,
        ol.Description,
        -- in case there is no C_BPartner_Product, fallback to the default ones

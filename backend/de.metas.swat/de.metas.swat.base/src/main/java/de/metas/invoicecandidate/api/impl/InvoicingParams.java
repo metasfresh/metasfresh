@@ -26,6 +26,7 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import lombok.NonNull;
 import org.adempiere.util.api.IParams;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -60,9 +61,21 @@ public class InvoicingParams implements IInvoicingParams
 	}
 
 	@Override
+	public boolean isInvoiceManualRule()
+	{
+		return params.getParameterAsBool(PARA_IsInvoiceManualRule);
+	}
+
+	@Override
 	public boolean isUpdateLocationAndContactForInvoice()
 	{
 		return params.getParameterAsBool(PARA_IsUpdateLocationAndContactForInvoice);
+	}
+
+	@Override
+	public boolean isDeliveryDateAsInvoiceDate()
+	{
+		return params.getParameterAsBool(PARA_IsDeliveryDateAsInvoiceDate);
 	}
 
 	@Override
@@ -81,6 +94,12 @@ public class InvoicingParams implements IInvoicingParams
 	public String getPOReference()
 	{
 		return params.getParameterAsString(PARA_POReference);
+	}
+
+	@Override
+	public LocalDate getOverrideDueDate()
+	{
+		return params.getParameterAsLocalDate(PARA_OverrideDueDate);
 	}
 
 	@Override
@@ -103,7 +122,7 @@ public class InvoicingParams implements IInvoicingParams
 	{
 		return params.getParameterAsBoolean(PARA_IsCompleteInvoices, true /*true for backwards-compatibility*/);
 	}
-	
+
 	/**
 	 * Always returns {@code false}.
 	 */
@@ -111,5 +130,12 @@ public class InvoicingParams implements IInvoicingParams
 	public boolean isStoreInvoicesInResult()
 	{
 		return false;
+	}
+
+	@Nullable
+	@Override
+	public Boolean getIsPartialInvoice()
+	{
+		return params.getParameterAsBoolean(PARA_IsPartialInvoice);
 	}
 }

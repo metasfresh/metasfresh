@@ -48,6 +48,7 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -241,7 +242,7 @@ import java.util.function.Supplier;
 	}
 
 	@Override
-	public List<I_M_HU> receiveLUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId, @NonNull HuPackingInstructionsItemId luPIItemId)
+	public List<I_M_HU> receiveLUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId, @NonNull final HuPackingInstructionsItemId luPIItemId)
 	{
 		this.receiveUsingSpec = HUPIItemProductLUTUSpec.lu(tuPIItemProductId, luPIItemId);
 		return receiveHUs(qtyToReceive);
@@ -368,7 +369,10 @@ import java.util.function.Supplier;
 				if (Check.isNotBlank(lotNumber)
 						&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 				{
-					huAttributesBL.updateHUAttributeRecursive(huId, AttributeConstants.ATTR_LotNumber, lotNumber, null);
+					huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+							.attributeCode(AttributeConstants.ATTR_LotNumber)
+							.attributeValue(lotNumber)
+							.build());
 				}
 			}
 
@@ -386,11 +390,15 @@ import java.util.function.Supplier;
 				huAttributes.setValue(AttributeConstants.ProductionDate, getProductionDate());
 			}
 
-			huAttributesBL.updateHUAttributeRecursive(
-					huId,
-					HUAttributeConstants.ATTR_PP_Order_ID,
-					ppOrderId.getRepoId(),
-					null);
+			huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+					.attributeCode(HUAttributeConstants.ATTR_PP_Order_ID)
+					.attributeValue(ppOrderId.getRepoId())
+					.build());
+
+			huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+					.attributeCode(AttributeConstants.ATTR_DateReceived)
+					.attributeValue(getProductionDate())
+					.build());
 		}
 
 		//
@@ -783,14 +791,14 @@ import java.util.function.Supplier;
 		@NonNull HUPIItemProductId tuPIItemProductId;
 		@Nullable HuPackingInstructionsItemId luPIItemId;
 
-		public static HUPIItemProductLUTUSpec topLevelTU(@NonNull HUPIItemProductId tuPIItemProductId)
+		public static HUPIItemProductLUTUSpec topLevelTU(@NonNull final HUPIItemProductId tuPIItemProductId)
 		{
 			return tuPIItemProductId.isVirtualHU()
 					? VIRTUAL
 					: new HUPIItemProductLUTUSpec(tuPIItemProductId, null);
 		}
 
-		public static HUPIItemProductLUTUSpec lu(@NonNull HUPIItemProductId tuPIItemProductId, @NonNull HuPackingInstructionsItemId luPIItemId)
+		public static HUPIItemProductLUTUSpec lu(@NonNull final HUPIItemProductId tuPIItemProductId, @NonNull final HuPackingInstructionsItemId luPIItemId)
 		{
 			return new HUPIItemProductLUTUSpec(tuPIItemProductId, luPIItemId);
 		}

@@ -40,7 +40,10 @@ public class M_ShipmentSchedule
 {
 	@NonNull private final DesadvBL desadvBL;
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
+			I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
+			I_M_ShipmentSchedule.COLUMNNAME_IsClosed
+	})
 	public void updateQtyOrdered_Override(@Nonnull final I_M_ShipmentSchedule schedule)
 	{
 		desadvBL.updateQtyOrdered_OverrideFromShipSchedAndSave(schedule);

@@ -57,7 +57,11 @@ SELECT
     END                                  AS percentofbasepoints,
     ic_settlement.C_Invoice_Candidate_ID AS C_Invoice_Candidate_Commission_ID,
     il_settlement.C_InvoiceLine_ID       AS C_InvoiceLine_Commission_ID,
-    il_settlement.C_Invoice_ID           AS C_Invoice_Commission_ID
+    il_settlement.C_Invoice_ID           AS C_Invoice_Commission_ID,
+    -- The configured commission rate as maintained on the commission settings line.
+    -- Distinct from percentofbasepoints above, which is the realised ratio back-computed
+    -- from the points and rounded to whole percent. Kept unrounded on purpose.
+    csl.PercentOfBasePoints              AS ConfiguredPercentOfBasePoints
 
 FROM C_Commission_Trigger_With_Instance_V trigger
          LEFT JOIN C_Commission_Instance ci ON ci.C_Commission_Instance_ID = trigger.C_Commission_Instance_ID
@@ -65,5 +69,6 @@ FROM C_Commission_Trigger_With_Instance_V trigger
          LEFT JOIN C_Invoice_Candidate ic_settlement ON ic_settlement.Record_ID = cs.C_Commission_Share_ID AND ic_settlement.AD_Table_ID = get_table_id('C_Commission_Share') AND ic_settlement.isactive = 'Y'
          LEFT JOIN C_Invoice_Line_Alloc ila_settlement ON ila_settlement.C_Invoice_Candidate_ID = ic_settlement.C_Invoice_Candidate_ID AND ila_settlement.isactive = 'Y'
          LEFT JOIN C_InvoiceLine il_settlement ON il_settlement.C_InvoiceLine_ID = ila_settlement.C_InvoiceLine_ID AND il_settlement.isactive = 'Y'
+         LEFT JOIN C_CommissionSettingsLine csl ON csl.C_CommissionSettingsLine_ID = cs.C_CommissionSettingsLine_ID
 --LIMIT 10
 ;

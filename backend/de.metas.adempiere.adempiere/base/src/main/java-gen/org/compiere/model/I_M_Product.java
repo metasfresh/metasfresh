@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Product
  *  @author metasfresh (generated) 
@@ -302,6 +301,31 @@ public interface I_M_Product
 	String COLUMNNAME_Content = "Content";
 
 	/**
+	 * Set Co-Product Cost Distribution Percent.
+	 * Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = the co-product receives zero cost;
+ the main product absorbs the total inbound costs.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCoProductCostDistributionPercent (@Nullable BigDecimal CoProductCostDistributionPercent);
+
+	/**
+	 * Get Co-Product Cost Distribution Percent.
+	 * Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = the co-product receives zero cost;
+ the main product absorbs the total inbound costs.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCoProductCostDistributionPercent();
+
+	ModelColumn<I_M_Product, Object> COLUMN_CoProductCostDistributionPercent = new ModelColumn<>(I_M_Product.class, "CoProductCostDistributionPercent", null);
+	String COLUMNNAME_CoProductCostDistributionPercent = "CoProductCostDistributionPercent";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -395,6 +419,29 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_CustomerLabelName = new ModelColumn<>(I_M_Product.class, "CustomerLabelName", null);
 	String COLUMNNAME_CustomerLabelName = "CustomerLabelName";
+
+	/**
+	 * Set Deposit Type.
+	 * Deposit type classification: Disposable (NRC) or Reusable (RC) container.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDepositType (@Nullable java.lang.String DepositType);
+
+	/**
+	 * Get Deposit Type.
+	 * Deposit type classification: Disposable (NRC) or Reusable (RC) container.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDepositType();
+
+	ModelColumn<I_M_Product, Object> COLUMN_DepositType = new ModelColumn<>(I_M_Product.class, "DepositType", null);
+	String COLUMNNAME_DepositType = "DepositType";
 
 	/**
 	 * Set Description.
@@ -1297,6 +1344,7 @@ public interface I_M_Product
 
 	/**
 	 * Set Self Packed.
+	 * Indicates that the goods are already packed ready to ship, so no additional packaging is needed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1306,6 +1354,7 @@ public interface I_M_Product
 
 	/**
 	 * Get Self Packed.
+	 * Indicates that the goods are already packed ready to ship, so no additional packaging is needed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1338,6 +1387,29 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_IsSelfService = new ModelColumn<>(I_M_Product.class, "IsSelfService", null);
 	String COLUMNNAME_IsSelfService = "IsSelfService";
+
+	/**
+	 * Set Require Serial No. on Picking.
+	 * If enabled, picking this product into a handling unit requires the operator to scan the serial number.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSerialNoPicked (boolean IsSerialNoPicked);
+
+	/**
+	 * Get Require Serial No. on Picking.
+	 * If enabled, picking this product into a handling unit requires the operator to scan the serial number.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSerialNoPicked();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IsSerialNoPicked = new ModelColumn<>(I_M_Product.class, "IsSerialNoPicked", null);
+	String COLUMNNAME_IsSerialNoPicked = "IsSerialNoPicked";
 
 	/**
 	 * Set Sold.
@@ -1786,6 +1858,29 @@ public interface I_M_Product
 	String COLUMNNAME_M_CustomsTariff_ID = "M_CustomsTariff_ID";
 
 	/**
+	 * Set Medical device type.
+	 * Medical device type
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMedicalDeviceType (@Nullable java.lang.String MedicalDeviceType);
+
+	/**
+	 * Get Medical device type.
+	 * Medical device type
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMedicalDeviceType();
+
+	ModelColumn<I_M_Product, Object> COLUMN_MedicalDeviceType = new ModelColumn<>(I_M_Product.class, "MedicalDeviceType", null);
+	String COLUMNNAME_MedicalDeviceType = "MedicalDeviceType";
+
+	/**
 	 * Set Freight Category.
 	 * Category of the Freight
 	 *
@@ -1902,6 +1997,7 @@ public interface I_M_Product
 
 	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1911,6 +2007,7 @@ public interface I_M_Product
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1944,6 +2041,7 @@ public interface I_M_Product
 
 	/**
 	 * Set Outer packaging weight (kg).
+	 * Weight of the entire outer package (e.g. one cardboard box), not per unit. The per-unit weight is calculated in the report by dividing by the Packaging Instruction Factor.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -1953,6 +2051,7 @@ public interface I_M_Product
 
 	/**
 	 * Get Outer packaging weight (kg).
+	 * Weight of the entire outer package (e.g. one cardboard box), not per unit. The per-unit weight is calculated in the report by dividing by the Packaging Instruction Factor.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2097,6 +2196,29 @@ public interface I_M_Product
 	String COLUMNNAME_PostControl = "PostControl";
 
 	/**
+	 * Set Preferential origin.
+	 * Preferential origin
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPreferentialOrigin (@Nullable java.lang.String PreferentialOrigin);
+
+	/**
+	 * Get Preferential origin.
+	 * Preferential origin
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPreferentialOrigin();
+
+	ModelColumn<I_M_Product, Object> COLUMN_PreferentialOrigin = new ModelColumn<>(I_M_Product.class, "PreferentialOrigin", null);
+	String COLUMNNAME_PreferentialOrigin = "PreferentialOrigin";
+
+	/**
 	 * Set Preparation.
 	 *
 	 * <br>Type: TextLong
@@ -2158,6 +2280,27 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_ProcurementStatus = new ModelColumn<>(I_M_Product.class, "ProcurementStatus", null);
 	String COLUMNNAME_ProcurementStatus = "ProcurementStatus";
+
+	/**
+	 * Set Product Life Cycle Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProductLifeCycleStatus (java.lang.String ProductLifeCycleStatus);
+
+	/**
+	 * Get Product Life Cycle Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getProductLifeCycleStatus();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ProductLifeCycleStatus = new ModelColumn<>(I_M_Product.class, "ProductLifeCycleStatus", null);
+	String COLUMNNAME_ProductLifeCycleStatus = "ProductLifeCycleStatus";
 
 	/**
 	 * Set Product Type.
@@ -2362,6 +2505,27 @@ public interface I_M_Product
 	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
+	 * Set Seed Cost.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeedCost (@Nullable BigDecimal SeedCost);
+
+	/**
+	 * Get Seed Cost.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getSeedCost();
+
+	ModelColumn<I_M_Product, Object> COLUMN_SeedCost = new ModelColumn<>(I_M_Product.class, "SeedCost", null);
+	String COLUMNNAME_SeedCost = "SeedCost";
+
+	/**
 	 * Set Expense Type.
 	 * Expense report type
 	 *
@@ -2526,6 +2690,7 @@ public interface I_M_Product
 
 	/**
 	 * Set Small packaging weight (kg).
+	 * Weight of the small (household) packaging per unit in kg.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2535,6 +2700,7 @@ public interface I_M_Product
 
 	/**
 	 * Get Small packaging weight (kg).
+	 * Weight of the small (household) packaging per unit in kg.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2843,26 +3009,6 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_Weight = new ModelColumn<>(I_M_Product.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
-
-	/**
-	 * Set Darreichungsform-Einheit .
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setWeight_UOM_ID (int Weight_UOM_ID);
-
-	/**
-	 * Get Darreichungsform-Einheit .
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getWeight_UOM_ID();
-
-	String COLUMNNAME_Weight_UOM_ID = "Weight_UOM_ID";
 
 	/**
 	 * Set Width In Cm.

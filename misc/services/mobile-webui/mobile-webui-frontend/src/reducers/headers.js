@@ -25,6 +25,8 @@ const isLaunchersPathname = (pathname) => launchersUrlRegExp.test(pathname);
 const getHeaderEntries = (state) => state.headers.entries ?? [];
 
 const getEntryItemsFromState = (state) => {
+  // console.group('getEntryItemsFromState');
+
   const headersEntries = getHeaderEntries(state);
 
   let nextUniqueId = 1;
@@ -36,13 +38,13 @@ const getEntryItemsFromState = (state) => {
     .reduce((acc, headersEntry) => acc.concat(headersEntry.values), [])
     .filter((entryItem) => !entryItem.hidden)
     .forEach((entryItem) => {
-      const caption = entryItem.caption;
-      const key = caption ? caption : 'unique-' + nextUniqueId++;
+      const key = entryItem.id ?? entryItem.caption ?? 'unique-' + nextUniqueId++;
 
       let isFieldRemoved;
       if (entryItem.hideField) {
         if (!hiddenFields.includes(key)) {
           hiddenFields.push(key);
+          // console.log(`getEntryItemsFromState - considering ${key} hidden from now on`, { entryItem, key, itemsByKey });
         }
         isFieldRemoved = true;
       } else {
@@ -51,11 +53,15 @@ const getEntryItemsFromState = (state) => {
 
       if (isFieldRemoved) {
         delete itemsByKey[key];
+        // console.log('getEntryItemsFromState - removed item', { entryItem, key, itemsByKey });
       } else {
         itemsByKey[key] = entryItem;
+        // console.log('getEntryItemsFromState - added item', { entryItem, key, itemsByKey });
       }
     });
 
+  // console.log('getEntryItemsFromState - final result', { result: Object.values(itemsByKey) });
+  // console.groupEnd();
   return Object.values(itemsByKey);
 };
 
@@ -157,7 +163,20 @@ export default function reducer(state = initialState, action) {
     case LOCATION_CHANGE: {
       const {
         location: { pathname },
+        action,
       } = payload;
+
+      // A POP is a device/browser Back press. Back is a no-op in this app (useDeviceBackButton absorbs
+      // it via history sentinels), so it must NOT mutate the header navigation stack — only real in-app
+      // navigations (PUSH / REPLACE) do. Without this guard, the sentinel's popstate fired a
+      // LOCATION_CHANGE(POP) that hit the "clear header on launchers/home url" branch below and wiped
+      // the current screen's header entry, dropping the screen's id (#WFLaunchersScreen) and blanking it.
+      // Note: the initial ConnectedRouter mount also dispatches LOCATION_CHANGE(POP, isFirstRendering);
+      // filtering it here is harmless — headers are seeded by initialState and set independently via
+      // HEADER_PUSH_ENTRY / HEADER_UPDATE_ENTRY dispatched by each screen on mount.
+      if (action === 'POP') {
+        return state;
+      }
 
       let newEntries = null;
 
@@ -252,36 +271,43 @@ const mergeEntries = (entry, newValues) => {
 };
 
 const mergeEntryValues = (valuesArray, newValuesArray) => {
+  // console.log('mergeEntryValues', { valuesArray, newValuesArray });
   if (!newValuesArray?.length) return valuesArray ? [...valuesArray] : [];
   if (!valuesArray?.length) return [...newValuesArray];
 
-  const newValuesByCaption = newValuesArray.reduce((accum, value) => {
-    accum[value.caption] = value;
+  const newValuesById = newValuesArray.reduce((accum, value) => {
+    const entryId = value.id ?? value.caption;
+    accum[entryId] = value;
     return accum;
   }, {});
+  // console.log('mergeEntryValues - 2', { newValuesById });
 
   const result = [];
 
   valuesArray.forEach((value) => {
-    const caption = value.caption;
-    const newValue = newValuesByCaption[caption];
-    delete newValuesByCaption[caption];
+    const entryId = value.id ?? value.caption;
+    const newValue = newValuesById[entryId];
+    delete newValuesById[entryId];
     if (newValue) {
       result.push(newValue);
+      // console.log('mergeEntryValues - replaced current with newValue', { value, newValue, result, newValuesById });
     } else {
       result.push(value);
+      // console.log('mergeEntryValues - preserved current value', { value, result, newValuesById });
     }
   });
 
   newValuesArray.forEach((value) => {
-    const caption = value.caption;
-    const newValue = newValuesByCaption[caption];
-    delete newValuesByCaption[caption];
+    const entryId = value.id ?? value.caption;
+    const newValue = newValuesById[entryId];
+    delete newValuesById[entryId];
     if (newValue) {
       result.push(newValue);
+      // console.log('mergeEntryValues - added newValue', { newValue, result, newValuesById });
     }
   });
 
+  // console.log('mergeEntryValues - final result', { result });
   return result;
 };
 

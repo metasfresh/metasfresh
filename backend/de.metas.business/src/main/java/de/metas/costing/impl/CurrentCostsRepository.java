@@ -29,6 +29,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -76,6 +77,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+/**
+ * Repository Tables: M_Cost
+ * Repository Cluster: CurrentCostsRepository
+ */
 @Component
 public class CurrentCostsRepository implements ICurrentCostsRepository
 {
@@ -136,6 +141,15 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.firstOnly();
 	}
 
+	@Nullable
+	private I_M_Cost getCostRecordForUpdateOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	{
+		return toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
+				.create()
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
+				.firstOnly();
+	}
+
 	@Override
 	public Stream<CurrentCost> stream(@NonNull final CurrentCostQuery query)
 	{
@@ -188,15 +202,17 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	@Override
-	public CurrentCost getOrCreate(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	public CurrentCost getOrCreateForUpdate(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		final CurrentCost currentCost = getOrNull(costSegmentAndElement);
-		if (currentCost != null)
+		final I_M_Cost costRecord = getCostRecordForUpdateOrNull(costSegmentAndElement);
+		if (costRecord != null)
 		{
-			return currentCost;
+			return newLoader().toCurrentCost(costRecord);
 		}
 		else
 		{
+			// A freshly INSERTed row is transaction-exclusive; no lock needed on the create branch.
+			// Note: the concurrent-create race (two transactions both find no row and both INSERT) is not handled here.
 			return create(costSegmentAndElement);
 		}
 	}
@@ -279,7 +295,10 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public void createIfMissing(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		getOrCreate(costSegmentAndElement);
+		if (getOrNull(costSegmentAndElement) == null)
+		{
+			create(costSegmentAndElement);
+		}
 	}
 
 	@Override

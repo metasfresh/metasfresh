@@ -438,6 +438,18 @@ public final class DocumentPath
 		}
 	}
 
+	public int getSingleRecordId()
+	{
+		if (isRootDocument())
+		{
+			return documentId.toIntOr(-1);
+		}
+		else
+		{
+			return getSingleRowId().toIntOr(-1);
+		}
+	}
+
 	public DocumentPath createChildPath(final DetailId detailId, final DocumentId rowId)
 	{
 		if (detailId == null)

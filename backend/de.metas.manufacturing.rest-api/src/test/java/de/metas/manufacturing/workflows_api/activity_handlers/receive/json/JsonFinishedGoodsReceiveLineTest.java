@@ -25,7 +25,8 @@ class JsonFinishedGoodsReceiveLineTest
 				.qtyToReceive(BigDecimal.TEN)
 				.qtyReceived(BigDecimal.ZERO)
 				.availableReceivingTargets(JsonNewLUTargetsList.emptyWithoutReason())
-				.availableReceivingTUTargets(JsonNewTUTargetList.ofList(ImmutableList.of()));
+				.availableReceivingTUTargets(JsonNewTUTargetList.ofList(ImmutableList.of()))
+				.editableAttributes(ImmutableList.of());
 	}
 
 	@Test

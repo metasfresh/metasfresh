@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import de.metas.adempiere.model.IPOReferenceAware;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -22,11 +23,14 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -148,20 +152,32 @@ public class LotNumberBL implements ILotNumberBL
 
 	private Evaluatee createEvaluationContext(@NonNull final LotNoContext context)
 	{
+		final Map<String, Object> variables = new HashMap<>();
+
+		// A CustomSequenceNoProvider (opt-in, configured on the sequence) may need the PP_Order behind this lot number.
+		// Expose it under the standard Record_ID context key. Without a PP_Order the context carries no Record_ID: a
+		// provider such as DBFunctionSequenceNoProvider then reports isApplicable=false, which makes
+		// DocumentNoBuilder.getSequenceNoToUse() throw unconditionally (independent of failOnError) - it does NOT
+		// silently fall back. Sequences with no provider are unaffected (empty context == today's behaviour).
+		final PPOrderId ppOrderId = context.getPpOrderId();
+		if (ppOrderId != null)
+		{
+			variables.put(IPOReferenceAware.COLUMNNAME_Record_ID, ppOrderId.getRepoId());
+		}
+
+		// The date is exposed under the sequence's AD_Sequence.DateColumn (e.g. for a DateSequenceProvider); ignored if that column is not set.
 		final LocalDate date = context.getDate();
-		if (date == null)
+		if (date != null)
 		{
-			return Evaluatees.empty();
+			final DocumentSequenceInfo sequenceInfo = documentSequenceDAO.retriveDocumentSequenceInfo(context.getSequenceId());
+			final String dateColumn = sequenceInfo != null ? sequenceInfo.getDateColumn() : null;
+			if (!Check.isBlank(dateColumn))
+			{
+				variables.put(dateColumn, TimeUtil.asTimestamp(date));
+			}
 		}
 
-		final DocumentSequenceInfo sequenceInfo = documentSequenceDAO.retriveDocumentSequenceInfo(context.getSequenceId());
-		final String dateColumn = sequenceInfo != null ? sequenceInfo.getDateColumn() : null;
-		if (Check.isBlank(dateColumn))
-		{
-			return Evaluatees.empty();
-		}
-
-		return Evaluatees.ofSingleton(dateColumn, TimeUtil.asTimestamp(date));
+		return variables.isEmpty() ? Evaluatees.empty() : Evaluatees.ofMap(variables);
 	}
 
 	@Override

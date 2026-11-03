@@ -187,7 +187,7 @@ class AsyncBatchServiceTest
 	}
 
 	/**
-	 * The async batch receives a foreign workpackage (e.g. the shipment schedule recompute) whose processing finishes
+	 * flaky case 35: the async batch receives a foreign workpackage (e.g. the shipment schedule recompute) whose processing finishes
 	 * while {@code executeBatch}'s own enqueue trx is not yet committed. Its notification reports "1 of 1 processed".
 	 * Once our enqueue is done, that stale snapshot must not complete the batch while the DB already knows about our own,
 	 * still unprocessed workpackage: {@code executeBatch} may return only after that workpackage was processed.

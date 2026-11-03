@@ -477,6 +477,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		return Optional.of(LotNoContext.builder()
 				.sequenceId(lotNoSequenceId)
 				.clientId(ClientId.ofRepoId(ppOrderBOM.getAD_Client_ID()))
+				.ppOrderId(ppOrderId)
 				.date(receiptDate)
 				.build());
 	}

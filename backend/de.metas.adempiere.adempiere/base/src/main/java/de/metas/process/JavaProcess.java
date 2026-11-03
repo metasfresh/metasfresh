@@ -376,7 +376,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	private Field getAnnotatedParamField(final ProcessClassParamInfo paramInfo)
 	{
 		final ArrayKey fieldKey = paramInfo.getFieldKey();
-		return ((Map<ArrayKey, Field>)_fieldsIndexedByFieldKey).get(fieldKey);
+		return _fieldsIndexedByFieldKey.get(fieldKey);
 	}
 
 	/**
@@ -803,7 +803,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return _processInfo;
 	}
 
-	protected final ProcessExecutionResult getResult()
+	@VisibleForTesting
+	public final ProcessExecutionResult getResult()
 	{
 		return getProcessInfo().getResult();
 	}

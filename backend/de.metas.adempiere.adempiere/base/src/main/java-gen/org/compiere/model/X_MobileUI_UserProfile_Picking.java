@@ -288,6 +288,30 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setIsMassPrinting (final boolean IsMassPrinting)
+	{
+		set_Value (COLUMNNAME_IsMassPrinting, IsMassPrinting);
+	}
+
+	@Override
+	public boolean isMassPrinting()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsMassPrinting);
+	}
+
+	@Override
+	public void setIsPickingSlotRequired (final boolean IsPickingSlotRequired)
+	{
+		set_Value (COLUMNNAME_IsPickingSlotRequired, IsPickingSlotRequired);
+	}
+
+	@Override
+	public boolean isPickingSlotRequired()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPickingSlotRequired);
+	}
+
+	@Override
 	public void setIsShipOnCloseLU (final boolean IsShipOnCloseLU)
 	{
 		set_Value (COLUMNNAME_IsShipOnCloseLU, IsShipOnCloseLU);
@@ -330,9 +354,21 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isWarnShelfLifeUndercut() 
+	public boolean isWarnShelfLifeUndercut()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsWarnShelfLifeUndercut);
+	}
+
+	@Override
+	public void setIsShowQtyAvailableForLines (final boolean IsShowQtyAvailableForLines)
+	{
+		set_Value (COLUMNNAME_IsShowQtyAvailableForLines, IsShowQtyAvailableForLines);
+	}
+
+	@Override
+	public boolean isShowQtyAvailableForLines()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShowQtyAvailableForLines);
 	}
 
 	@Override

@@ -13,19 +13,35 @@ import { receiptDayPlusDays } from '../../utils/receiptDay';
 // "receipt day + the product's total shelf life (BestBeforeDays)". It pre-fills the lot number only when
 // the BOM's lot-number sequence can be shown without consuming it (a purely date-based sequence);
 // otherwise the lot field starts empty and the lot is generated at receipt. Both fields stay editable.
+//
+// The lot number and best-before date are the receive dialog's editable-attribute rows (attr-<code>-field):
+// configured as editable attributes of the mobile manufacturing config, and instance attributes of the
+// attribute set of the product's category (the receive dialog takes the attribute set from the category).
 const BEST_BEFORE_DAYS = 10;
+const LOT_NO = 'Lot-Nummer';
+const BEST_BEFORE_DATE = 'HU_BestBeforeDate';
+// The default pair: the editable-attribute list is global, other specs rely on it.
+const DEFAULT_EDITABLE_ATTRIBUTES = [LOT_NO, BEST_BEFORE_DATE];
 
-// manufacturingConfig: the user's mobile manufacturing settings, e.g. { isLotNumberEditable: false }
-const createMasterdata = async ({ bestBeforeDays, lotNoSequence, manufacturingConfig } = {}) => {
+// editableAttributes: the global editable-attribute list of the mobile manufacturing config, e.g. [BEST_BEFORE_DATE] for a lot number that is not editable
+const createMasterdata = async ({ bestBeforeDays, lotNoSequence, editableAttributes = DEFAULT_EDITABLE_ATTRIBUTES } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
             login: { user: { language: 'en_US' } },
-            mobileConfig: manufacturingConfig ? { manufacturing: manufacturingConfig } : {},
+            productCategories: { 'mfgCat': { attributeSetName: 'mfgAttrSet' } },
+            attributes: {
+                'lotNumberAttr': { value: LOT_NO, attributeSetNames: ['mfgAttrSet'] },
+                'bestBeforeDateAttr': { value: BEST_BEFORE_DATE, attributeSetNames: ['mfgAttrSet'] },
+            },
+            mobileConfig: {
+                manufacturing: { editableAttributes },
+            },
             warehouses: { 'wh': {} },
             products: {
-                'COMP1': {},
+                'COMP1': { productCategory: 'mfgCat' },
                 'BOM': {
+                    productCategory: 'mfgCat',
                     bestBeforeDays,
                     bom: { lines: [{ product: 'COMP1', qty: 1 }], lotNoSequence },
                 },
@@ -65,6 +81,18 @@ const expectReceivedHU = async ({ bestBeforeDatesIso, expectation }) => {
     }
 };
 
+// A test that narrows the global editable-attribute list puts the default pair back, also if it fails part-way.
+let isEditableAttributesChanged = false;
+test.afterEach(async () => {
+    if (isEditableAttributesChanged) {
+        await Backend.createMasterdata({
+            language: 'en_US',
+            request: { mobileConfig: { manufacturing: { editableAttributes: DEFAULT_EDITABLE_ATTRIBUTES } } },
+        });
+        isEditableAttributesChanged = false;
+    }
+});
+
 const startReceiveFlow = async (masterdata) => {
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -95,14 +123,11 @@ test('Best-before date is pre-filled from the shelf life; edited best-before dat
 
     await MaterialReceiptLineScreen.clickReceiveQtyButton();
     await GetQuantityDialog.expectNoScanOffered();
-    await GetQuantityDialog.expectBestBeforeDateOneOf(distinct([defaultBefore.displayed, receiptDayPlusDays(BEST_BEFORE_DAYS).displayed]));
-    await GetQuantityDialog.expectLotNo('');
-    await GetQuantityDialog.fillAndPressDone({
-        expectQtyEntered: '4',
-        qtyEntered: '4',
-        lotNo: editedLotNo,
-        bestBeforeDate: editedBestBeforeDate.displayed,
-    });
+    await GetQuantityDialog.expectEditableAttributeValueOneOf(BEST_BEFORE_DATE, distinct([defaultBefore.displayed, receiptDayPlusDays(BEST_BEFORE_DAYS).displayed]));
+    await GetQuantityDialog.expectEditableAttributeValue(LOT_NO, '');
+    await GetQuantityDialog.typeEditableAttribute(LOT_NO, editedLotNo);
+    await GetQuantityDialog.typeEditableAttributeDate(BEST_BEFORE_DATE, editedBestBeforeDate.displayed);
+    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
     await ManufacturingJobScreen.waitForScreen();
     await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '4 Stk', qtyReceived: '4 Stk' });
 
@@ -141,8 +166,8 @@ test('Best-before date and lot left as pre-filled are received as receipt day + 
 
     // The operator confirms without touching the fields; the best-before date is set at receipt.
     await MaterialReceiptLineScreen.clickReceiveQtyButton();
-    await GetQuantityDialog.expectBestBeforeDateOneOf(distinct([before.displayed, receiptDayPlusDays(BEST_BEFORE_DAYS).displayed]));
-    await GetQuantityDialog.expectLotNo('');
+    await GetQuantityDialog.expectEditableAttributeValueOneOf(BEST_BEFORE_DATE, distinct([before.displayed, receiptDayPlusDays(BEST_BEFORE_DAYS).displayed]));
+    await GetQuantityDialog.expectEditableAttributeValue(LOT_NO, '');
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
     await ManufacturingJobScreen.waitForScreen();
     await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '4 Stk', qtyReceived: '4 Stk' });
@@ -185,9 +210,9 @@ test('Product without shelf life — best-before date is not pre-filled', async 
     const { jobId } = await startReceiveFlow(masterdata);
 
     await MaterialReceiptLineScreen.clickReceiveQtyButton();
-    await GetQuantityDialog.expectBestBeforeDateVisible();
-    await GetQuantityDialog.expectBestBeforeDate('');
-    await GetQuantityDialog.expectLotNo('');
+    await GetQuantityDialog.expectEditableAttributeVisible(BEST_BEFORE_DATE);
+    await GetQuantityDialog.expectEditableAttributeValue(BEST_BEFORE_DATE, '');
+    await GetQuantityDialog.expectEditableAttributeValue(LOT_NO, '');
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
     await ManufacturingJobScreen.waitForScreen();
 
@@ -227,7 +252,7 @@ test('Date-based lot-number sequence — the lot is pre-filled and received as s
     const { jobId } = await startReceiveFlow(masterdata);
 
     await MaterialReceiptLineScreen.clickReceiveQtyButton();
-    const shownLotNo = await GetQuantityDialog.expectLotNoMatching(new RegExp(`^${lotPrefix}.+$`));
+    const shownLotNo = await GetQuantityDialog.expectEditableAttributeValueMatching(LOT_NO, new RegExp(`^${lotPrefix}.+$`));
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
     await ManufacturingJobScreen.waitForScreen();
     const receiptDayAfter = receiptDayPlusDays(0).iso;
@@ -269,7 +294,7 @@ test('Counter lot-number sequence — the lot is not pre-filled and is generated
     const { jobId } = await startReceiveFlow(masterdata);
 
     await MaterialReceiptLineScreen.clickReceiveQtyButton();
-    await GetQuantityDialog.expectLotNo('');
+    await GetQuantityDialog.expectEditableAttributeValue(LOT_NO, '');
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
     await ManufacturingJobScreen.waitForScreen();
 
@@ -307,10 +332,12 @@ test('Lot number not editable, date-only lot sequence (own format yy-DDD): the l
     allure.severity('critical');
 
     // The lot sequence has its own date format, independent of the instance-wide date-sequence setting.
+    // The lot number is not editable: it is not one of the editable attributes.
+    isEditableAttributesChanged = true;
     const masterdata = await createMasterdata({
         bestBeforeDays: BEST_BEFORE_DAYS,
         lotNoSequence: { dateBased: true, dateFormat: 'yy-DDD' },
-        manufacturingConfig: { isLotNumberEditable: false },
+        editableAttributes: [BEST_BEFORE_DATE],
     });
     const receiptDayBefore = receiptDayPlusDays(0).iso;
     const { jobId } = await startReceiveFlow(masterdata);
@@ -320,11 +347,9 @@ test('Lot number not editable, date-only lot sequence (own format yy-DDD): the l
     await GetQuantityDialog.expectNoScanOffered();
     const shownLotNo = await GetQuantityDialog.expectLotNoMatching(/^\d{2}-\d{3}$/);
     await GetQuantityDialog.expectLotNoDisabled();
-    await GetQuantityDialog.fillAndPressDone({
-        expectQtyEntered: '4',
-        qtyEntered: '4',
-        bestBeforeDate: editedBestBeforeDate.displayed,
-    });
+    await GetQuantityDialog.expectEditableAttributeNotPresent(LOT_NO);
+    await GetQuantityDialog.typeEditableAttributeDate(BEST_BEFORE_DATE, editedBestBeforeDate.displayed);
+    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
     await ManufacturingJobScreen.waitForScreen();
     const receiptDayAfter = receiptDayPlusDays(0).iso;
 
