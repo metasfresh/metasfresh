@@ -4,14 +4,13 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.organization.OrgId;
-import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.springframework.stereotype.Service;
 
 /** HU Manager "create HU from a scanned label": the preview (writes nothing) and OK (one single-HU inventory, one CU). */
@@ -25,24 +24,13 @@ public class CreateHUFromLabelService
 	@NonNull private final HUQtyService huQtyService;
 	@NonNull private final LabelTargetLocatorResolver labelTargetLocatorResolver;
 
+	/** @return the command with the services set; the caller sets the scanned code, client, org, user and language, then {@code build().execute()} */
 	@NonNull
-	public JsonHUProposal propose(
-			@NonNull final JsonProposeHUFromScannedCodeRequest request,
-			@NonNull final ClientId clientId,
-			@NonNull final UserId userId,
-			@NonNull final OrgId orgId,
-			@NonNull final String adLanguage)
+	public ProposeHUFromScannedCodeCommand.ProposeHUFromScannedCodeCommandBuilder propose()
 	{
 		return ProposeHUFromScannedCodeCommand.builder()
 				.huQRCodesService(huQRCodesService)
-				.labelTargetLocatorResolver(labelTargetLocatorResolver)
-				.clientId(clientId)
-				.userId(userId)
-				.orgId(orgId)
-				.scannedCode(request.getScannedCode())
-				.adLanguage(adLanguage)
-				.build()
-				.execute();
+				.labelTargetLocatorResolver(labelTargetLocatorResolver);
 	}
 
 	/** @return the new HU, with its HU QR code created (so the standard actions, Move etc., work on it) */
@@ -50,7 +38,15 @@ public class CreateHUFromLabelService
 	public CreatedHU create(@NonNull final JsonCreateHUFromScannedCodeRequest request, @NonNull final ClientId clientId)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> {
-			final HuId huId = request.toCommand(huQRCodesService, huQtyService, clientId).execute();
+			final HuId huId = CreateHUFromScannedCodeCommand.builder()
+					.huQRCodesService(huQRCodesService)
+					.huQtyService(huQtyService)
+					.clientId(clientId)
+					.scannedCode(request.getScannedCode())
+					.qty(request.getQty())
+					.locatorId(LocatorQRCode.ofGlobalQRCodeJsonString(request.getLocatorQRCode()).getLocatorId())
+					.build()
+					.execute();
 			final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(huId); // creates the QR code if missing, like the HU lookup by value does
 			return new CreatedHU(huId, qrCode);
 		});

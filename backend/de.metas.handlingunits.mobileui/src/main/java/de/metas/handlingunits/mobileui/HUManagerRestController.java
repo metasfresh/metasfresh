@@ -188,12 +188,14 @@ public class HUManagerRestController
 	{
 		assertActionAccess(HUManagerAction.CreateHU);
 
-		return createHUFromLabelService.propose(
-				request,
-				Env.getClientId(),
-				Env.getLoggedUserId(),
-				Env.getOrgId(),
-				Env.getADLanguageOrBaseLanguage());
+		return createHUFromLabelService.propose()
+				.scannedCode(request.getScannedCode())
+				.clientId(Env.getClientId())
+				.userId(Env.getLoggedUserId())
+				.orgId(Env.getOrgId())
+				.adLanguage(Env.getADLanguageOrBaseLanguage())
+				.build()
+				.execute();
 	}
 
 	/** OK on the preview: creates the HU; answers the new HU in the same JSON as {@link #retrieveHUManagerConfig} */

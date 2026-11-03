@@ -110,7 +110,15 @@ class CreateHUFromScannedCodeCommandTest
 
 	private HuId create(final JsonCreateHUFromScannedCodeRequest request)
 	{
-		return request.toCommand(huQRCodesService, huQtyService, ClientId.METASFRESH).execute();
+		return CreateHUFromScannedCodeCommand.builder()
+				.huQRCodesService(huQRCodesService)
+				.huQtyService(huQtyService)
+				.clientId(ClientId.METASFRESH)
+				.scannedCode(request.getScannedCode())
+				.qty(request.getQty())
+				.locatorId(LocatorQRCode.ofGlobalQRCodeJsonString(request.getLocatorQRCode()).getLocatorId())
+				.build()
+				.execute();
 	}
 
 	/**
