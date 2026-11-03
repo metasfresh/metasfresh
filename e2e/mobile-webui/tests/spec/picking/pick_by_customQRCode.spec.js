@@ -500,12 +500,19 @@ test('partial unpick with a GTIN of no product → falls through, no exception',
 
     // the operator scans a label of no known article to say which article to unpick: the job's generic rejection, not the GTIN lookup exception
     await PickingJobScreen.clickUnpickItem();
+    // the generic toast is shared by every server error, so the unpick-resolve response itself must carry the job's rejection text
+    const resolvePromise = page.waitForResponse((r) => r.url().includes('/unpick/resolve') && r.request().method() === 'POST', { timeout: 30000 });
     await expectErrorToast('Scan label with the GTIN of no product to unpick', async () => {
         await PickingJobScreen.scanProductCodeToUnpick({ scannedCode: gtinLabel(unknownGtin) });
     }, ({ textContent }) => {
-        // falls through to the generic "no product of this job matches" rejection (shown as the app's generic error text); the GTIN lookup's own '@NotFound@ Product: GTIN' text must not appear
-        expect(textContent).not.toContain('Not found');
-        expect(textContent).not.toContain('GTIN');
+        expect(textContent).toMatch(/Please try again/);
     });
+    const resolveResponse = await resolvePromise;
+    expect(resolveResponse.status()).toBe(422); // AdempiereException
+    const errorMessage = JSON.stringify(await resolveResponse.json());
+    // falls through to the generic "no product of this job matches" rejection; the GTIN lookup's own '@NotFound@ Product: GTIN' text must not appear
+    expect(errorMessage).toContain('Cannot find a product matching the scanned code in this picking job');
+    expect(errorMessage).not.toContain('Not found');
+    expect(errorMessage).not.toContain('GTIN');
     await PickingJobScreen.expectOnProductScanStage();
 });
