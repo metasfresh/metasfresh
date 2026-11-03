@@ -23,6 +23,7 @@
 package de.metas.product.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
@@ -52,6 +53,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -81,6 +83,7 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -100,6 +103,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: M_Product, M_Product_Category, M_Product_SupplierApproval_Norm
+ * Repository Cluster: product master data
+ * <p>
+ * Also reads C_OrderLine / C_InvoiceLine / M_InOutLine / M_CostDetail, but only to answer
+ * {@link #isProductUsed(de.metas.product.ProductId)} — it owns none of those tables.
+ */
 public class ProductDAO implements IProductDAO
 {
 	final static int ONE_YEAR_DAYS = 365;
@@ -182,6 +192,13 @@ public class ProductDAO implements IProductDAO
 	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
 	{
 		return loadByRepoIdAwaresOutOfTrx(productIds, I_M_Product.class);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_M_Product> getByIdsInTrxIncludingInactive(@NonNull final Set<ProductId> productIds)
+	{
+		return ImmutableList.copyOf(InterfaceWrapperHelper.loadByRepoIdAwares(productIds, I_M_Product.class));
 	}
 
 	@Override
@@ -473,6 +490,42 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+	@NonNull
+	public ImmutableSet<ProductCategoryId> getProductCategoryIdAndAncestors(@NonNull final ProductCategoryId productCategoryId)
+	{
+		final ImmutableSet.Builder<ProductCategoryId> result = ImmutableSet.builder();
+
+		final Set<ProductCategoryId> seenIds = new HashSet<>();
+		ProductCategoryId currentId = productCategoryId;
+		while (currentId != null && seenIds.add(currentId))
+		{
+			result.add(currentId);
+
+			final I_M_Product_Category productCategory = getProductCategoryById(currentId);
+			currentId = ProductCategoryId.ofRepoIdOrNull(productCategory.getM_Product_Category_Parent_ID());
+		}
+
+		return result.build();
+	}
+
+	@Override
+	@NonNull
+	public ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> getProductCategoryIdAndAncestorsByProductIds(@NonNull final Set<ProductId> productIds)
+	{
+		if (productIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<ProductId, ImmutableSet<ProductCategoryId>> result = ImmutableMap.builder();
+		for (final ProductAndCategoryId productAndCategoryId : retrieveProductAndCategoryIdsByProductIds(productIds))
+		{
+			result.put(productAndCategoryId.getProductId(), getProductCategoryIdAndAncestors(productAndCategoryId.getProductCategoryId()));
+		}
+		return result.build();
+	}
+
+	@Override
 	public Stream<I_M_Product_Category> streamAllProductCategories()
 	{
 		return queryBL.createQueryBuilderOutOfTrx(I_M_Product_Category.class)
@@ -484,19 +537,15 @@ public class ProductDAO implements IProductDAO
 
 	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_S_Resource_ID)
 	@Override
-	public ProductId getProductIdByResourceId(@NonNull final ResourceId resourceId)
+	public Optional<ProductId> getProductIdByResourceId(@NonNull final ResourceId resourceId)
 	{
-		final ProductId productId = queryBL
-				.createQueryBuilderOutOfTrx(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.firstIdOnly(ProductId::ofRepoIdOrNull);
-		if (productId == null)
-		{
-			throw new AdempiereException("No product found for " + resourceId);
-		}
-		return productId;
+		return Optional.ofNullable(
+				queryBL
+						.createQueryBuilderOutOfTrx(I_M_Product.class)
+						.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.firstIdOnly(ProductId::ofRepoIdOrNull));
 	}
 
 	@Override
@@ -679,6 +728,27 @@ public class ProductDAO implements IProductDAO
 				.idsAsSet(ProductId::ofRepoIdOrNull);
 
 		return productIds.size() == 1 ? Optional.of(productIds.iterator().next()) : Optional.empty();
+	}
+
+	@Override
+	@NonNull
+	public Optional<ProductId> findFirstProductIdByGtin(@NonNull final GTIN gtin)
+	{
+		final String gtinStr = gtin.getAsString();
+		final ICompositeQueryFilter<I_M_Product> pFilter = queryBL.createCompositeQueryFilter(I_M_Product.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtinStr)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, gtinStr)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, gtinStr);
+
+		final ProductId productId = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(pFilter)
+				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
+				.create()
+				.firstIdOnly(ProductId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(productId);
 	}
 
 	@Override

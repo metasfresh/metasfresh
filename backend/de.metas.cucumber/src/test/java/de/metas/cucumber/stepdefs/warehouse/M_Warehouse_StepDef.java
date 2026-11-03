@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.warehouse;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
@@ -40,23 +41,33 @@ import de.metas.product.ResourceId;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.CreateWarehousePickingGroupRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse_PickingGroup;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_IsActive;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse;
+import static org.compiere.model.I_M_Warehouse.COLUMNNAME_IsPickingWarehouse;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
 
@@ -66,6 +77,13 @@ public class M_Warehouse_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
+	/** Shared seed-DB state per exclusive flag: ids cleared by this scenario (restored true) vs. ids this
+	 * scenario itself set (cleared back to false) — both undone in {@link #restoreExclusiveWarehouseFlags()}. */
+	private final List<Integer> clearedIssueWarehouseIds = new ArrayList<>();
+	private final Set<Integer> ownIssueWarehouseIds = new LinkedHashSet<>();
+	private final List<Integer> clearedQualityReturnWarehouseIds = new ArrayList<>();
+	private final Set<Integer> ownQualityReturnWarehouseIds = new LinkedHashSet<>();
+
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
@@ -74,6 +92,22 @@ public class M_Warehouse_StepDef
 	@NonNull private final DD_NetworkDistribution_StepDefData ddNetworkTable;
 	@NonNull private final TestContext restTestContext;
 
+	/**
+	 * Loads existing warehouses by their {@code Value}, optionally also registering each warehouse's default locator.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Warehouse_ID</b> — (required) identifier the loaded warehouse is stored under<br>
+	 *   <b>Value</b> — (required) the existing warehouse's Value<br>
+	 *   <b>M_Locator_ID</b> — (optional) identifier to store the warehouse's default locator under<br>
+	 * @cucumber.depends StepDefData: M_Warehouse_StepDefData, M_Locator_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And load M_Warehouse:
+	 *   | M_Warehouse_ID | Value        | M_Locator_ID |
+	 *   | warehouseStd   | StdWarehouse | locatorStd   |
+	 * </pre>
+	 */
 	@And("load M_Warehouse:")
 	public void load_M_Warehouse(@NonNull final DataTable dataTable)
 	{
@@ -87,8 +121,72 @@ public class M_Warehouse_StepDef
 							.create()
 							.firstOnlyNotNull(I_M_Warehouse.class);
 
+					// Resolve the locator only when the caller asked for it: this step LOADS existing master data, and
+					// getOrCreateDefaultLocator() may create a locator / flip IsDefault flags.
+					row.getAsOptionalIdentifier(I_M_Locator.COLUMNNAME_M_Locator_ID)
+							.ifPresent(locatorIdentifier -> locatorTable.put(
+									locatorIdentifier,
+									warehouseBL.getOrCreateDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()))));
+
 					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
+
+					// Optionally register the warehouse's BPartner location under the given identifier,
+					// so later steps can reference it (e.g. as the loading/delivery location of a delivery instruction).
+					row.getAsOptionalIdentifier(org.compiere.model.I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
+							.ifPresent(bpartnerLocationIdentifier -> {
+								final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.load(warehouseRecord.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
+								bpartnerLocationTable.putOrReplace(bpartnerLocationIdentifier, bPartnerLocation);
+							});
 				});
+	}
+
+	/**
+	 * Creates one {@code M_Warehouse_PickingGroup} and assigns every listed warehouse to it
+	 * (sets {@code M_Warehouse.M_Warehouse_PickingGroup_ID}).
+	 *
+	 * <p>Warehouses sharing a picking group are treated as a single picking scope: a picker working at a
+	 * workplace in one warehouse of the group may pick demand and stock located in any warehouse of the
+	 * same group. This mirrors the real-life setup where a storage warehouse and a packing/workplace
+	 * warehouse belong to the same physical picking area.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code Name} — the picking group's name (one group is created for the whole DataTable;
+	 *       the {@code Name} of the first row is used).</li>
+	 *   <li>{@code M_Warehouse_ID} — (identifier-ref) a previously created/loaded warehouse to assign to the
+	 *       group. One row per warehouse.</li>
+	 * </ul>
+	 *
+	 * <p>Gherkin usage:
+	 * <pre>
+	 * And the following warehouses share one M_Warehouse_PickingGroup:
+	 *   | Name        | M_Warehouse_ID |
+	 *   | pickingArea | warehouseStock |
+	 *   | pickingArea | warehouseWork  |
+	 * </pre>
+	 */
+	@And("the following warehouses share one M_Warehouse_PickingGroup:")
+	public void assign_warehouses_to_picking_group(@NonNull final DataTable dataTable)
+	{
+		final DataTableRows rows = DataTableRows.of(dataTable);
+
+		final String groupName = rows.stream()
+				.map(row -> row.getAsString(I_M_Warehouse_PickingGroup.COLUMNNAME_Name))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("At least one row with a Name is required"));
+
+		final ImmutableSet<WarehouseId> warehouseIds = rows.stream()
+				.map(row -> warehouseTable.getId(row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID)))
+				.collect(ImmutableSet.toImmutableSet());
+
+		// Create the group AND assign the warehouses to it in one BL call (the BL/DAO owns the record load+save).
+		// A per-run-unique Name keeps reusing the same group label across tests in the shared DB from colliding.
+		warehouseBL.createWarehousePickingGroup(
+				CreateWarehousePickingGroupRequest.builder()
+						.orgId(StepDefConstants.ORG_ID)
+						.name(groupName + "_" + System.currentTimeMillis())
+						.warehouseIds(warehouseIds)
+						.build());
 	}
 
 	/**
@@ -105,11 +203,15 @@ public class M_Warehouse_StepDef
 	 * <p>Optional columns (any missing column leaves the column at its default / unset value):
 	 * <ul>
 	 *   <li>{@code IsIssueWarehouse} — {@code Y} / {@code N}. When {@code Y}, all other warehouses are first
-	 *       updated to {@code IsIssueWarehouse=N} (only one issue warehouse is allowed at a time).</li>
+	 *       updated to {@code IsIssueWarehouse=N} (only one issue warehouse is allowed at a time); those other
+	 *       warehouses' flags are restored again after this scenario.</li>
+	 *   <li>{@code IsQualityReturnWarehouse} — {@code Y} / {@code N}. When {@code Y}, all other warehouses are
+	 *       first updated to {@code IsQualityReturnWarehouse=N} (only one quality-return warehouse is allowed
+	 *       at a time); those other warehouses' flags are restored again after this scenario.</li>
 	 *   <li>{@code IsDropShipWarehouse} — {@code Y} / {@code N}.</li>
 	 *   <li>{@code C_BPartner_ID} / {@code C_BPartner_Location_ID} — identifiers of a previously loaded
 	 *       BPartner / location; default to the metasfresh-AG defaults when absent.</li>
-	 *   <li>{@code IsInTransit}, {@code IsQuarantineWarehouse}, {@code IsQualityReturnWarehouse} — boolean flags.</li>
+	 *   <li>{@code IsInTransit}, {@code IsQuarantineWarehouse} — boolean flags.</li>
 	 *   <li>{@code MRP_Exclude} — Yes/No reference stored on the warehouse record. Accepts {@code "Y"} (warehouse is
 	 *       excluded from material disposition; no {@code MD_Candidate} rows are created for events on this
 	 *       warehouse), {@code "N"} (explicitly included; overrides legacy {@code IsDropShipWarehouse}), or blank /
@@ -146,12 +248,18 @@ public class M_Warehouse_StepDef
 
 					assertThat(warehouseRecord).isNotNull();
 
+					// captured BEFORE any mutation below: whether this row already carried the flag going into this
+					// scenario — see the own-set bookkeeping after saveRecord() further down
+					final boolean wasAlreadyIssueWarehouse = warehouseRecord.isIssueWarehouse();
+					final boolean wasAlreadyQualityReturnWarehouse = warehouseRecord.isQualityReturnWarehouse();
+
 					final boolean isIssueWarehouse = row.getAsOptionalBoolean(COLUMNNAME_IsIssueWarehouse).orElse(false);
 					if (isIssueWarehouse)
 					{ // we can have just one issue-warehouse, so make sure that all other WHs are not issue-warehouses
-						final ICompositeQueryUpdater<I_M_Warehouse> updater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(COLUMNNAME_IsIssueWarehouse, false);
-						queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(COLUMNNAME_IsIssueWarehouse, true).addEqualsFilter(COLUMNNAME_IsActive, true).create().updateDirectly(updater);
+						enforceExclusiveWarehouseFlag(COLUMNNAME_IsIssueWarehouse, warehouseRecord, ownIssueWarehouseIds, clearedIssueWarehouseIds);
 					}
+
+					final boolean isPickingWarehouse = row.getAsOptionalBoolean(COLUMNNAME_IsPickingWarehouse).orElse(false);
 
 					final boolean isDropShipWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsDropShipWarehouse).orElse(false);
 					warehouseRecord.setIsDropShipWarehouse(isDropShipWarehouse);
@@ -171,7 +279,12 @@ public class M_Warehouse_StepDef
 
 					final boolean isInTransit = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsInTransit).orElse(false);
 					final boolean isQuarantineWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse).orElse(false);
+
 					final boolean isQualityReturnWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse).orElse(false);
+					if (isQualityReturnWarehouse)
+					{ // we can have just one quality-return warehouse, so make sure that all other WHs are not quality-return warehouses
+						enforceExclusiveWarehouseFlag(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, warehouseRecord, ownQualityReturnWarehouseIds, clearedQualityReturnWarehouseIds);
+					}
 
 					warehouseRecord.setValue(valueAndName.getValue());
 					warehouseRecord.setName(valueAndName.getName());
@@ -179,6 +292,7 @@ public class M_Warehouse_StepDef
 					warehouseRecord.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 					warehouseRecord.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 					warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
+					warehouseRecord.setIsPickingWarehouse(isPickingWarehouse);
 					warehouseRecord.setIsInTransit(isInTransit);
 					warehouseRecord.setIsQuarantineWarehouse(isQuarantineWarehouse);
 					warehouseRecord.setIsQualityReturnWarehouse(isQualityReturnWarehouse);
@@ -202,6 +316,20 @@ public class M_Warehouse_StepDef
 					applyAutoDistributionOrderFields(row, warehouseRecord);
 
 					saveRecord(warehouseRecord);
+
+					// Track which warehouse THIS scenario itself flipped false->true (only possible to know the id
+					// after save, for a newly-created row) — never a row that already carried the flag going in,
+					// since that is pre-existing/ambient state this scenario did not actually change, and @After
+					// would otherwise wrongly clear it. See the class-level Javadoc on clearedIssueWarehouseIds /
+					// clearedQualityReturnWarehouseIds.
+					if (isIssueWarehouse && !wasAlreadyIssueWarehouse)
+					{
+						ownIssueWarehouseIds.add(warehouseRecord.getM_Warehouse_ID());
+					}
+					if (isQualityReturnWarehouse && !wasAlreadyQualityReturnWarehouse)
+					{
+						ownQualityReturnWarehouseIds.add(warehouseRecord.getM_Warehouse_ID());
+					}
 
 					final I_M_Locator locator = warehouseBL.getOrCreateDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
 					row.getAsOptionalIdentifier(I_M_Locator.COLUMNNAME_M_Locator_ID)
@@ -300,5 +428,76 @@ public class M_Warehouse_StepDef
 		row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_DD_NetworkDistribution_ID)
 				.map(identifier -> identifier.lookupIdIn(ddNetworkTable))
 				.ifPresent(networkId -> warehouseRecord.setDD_NetworkDistribution_ID(networkId.getRepoId()));
+	}
+
+	/** Clears the flag on every OTHER active warehouse (excluding THIS row by id, to avoid desyncing its
+	 * in-memory cache from the clear) so only one warehouse ends up carrying it. */
+	private void enforceExclusiveWarehouseFlag(
+			@NonNull final String columnName,
+			@NonNull final I_M_Warehouse warehouseRecord,
+			@NonNull final Set<Integer> ownFlaggedWarehouseIds,
+			@NonNull final List<Integer> clearedWarehouseIds)
+	{
+		final IQueryBuilder<I_M_Warehouse> otherFlaggedWarehousesQuery = queryBL.createQueryBuilder(I_M_Warehouse.class)
+				.addEqualsFilter(columnName, true)
+				.addEqualsFilter(COLUMNNAME_IsActive, true);
+		if (warehouseRecord.getM_Warehouse_ID() > 0)
+		{
+			otherFlaggedWarehousesQuery.addNotEqualsFilter(COLUMNNAME_M_Warehouse_ID, warehouseRecord.getM_Warehouse_ID());
+		}
+
+		// Record which OTHER warehouses we're about to clear (incl. the seed DB's own one) so
+		// restoreExclusiveWarehouseFlags() can put them back after this scenario — shared seed-DB state must not
+		// leak into the rest of the executor. Ids this scenario itself flagged earlier are skipped: restoring
+		// those after the scenario would just recreate the "two active flags" bug this method exists to prevent.
+		otherFlaggedWarehousesQuery.create().listIds().stream()
+				.filter(id -> !ownFlaggedWarehouseIds.contains(id))
+				.forEach(clearedWarehouseIds::add);
+
+		// Same query-builder instance for the read (listIds, above) and the write (updateDirectly, below), so
+		// both target the identical row set.
+		final ICompositeQueryUpdater<I_M_Warehouse> updater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(columnName, false);
+		otherFlaggedWarehousesQuery.create().updateDirectly(updater);
+	}
+
+	/** Undoes this scenario's touch on both exclusive flags regardless of pass/fail: clears its own warehouse(s)
+	 * back to false, then restores the seed warehouse(s) it cleared — that order matters for {@code IsIssueWarehouse},
+	 * which (unlike {@code IsQualityReturnWarehouse}) is enforced by a real DB unique index. */
+	@After
+	public void restoreExclusiveWarehouseFlags()
+	{
+		restoreExclusiveWarehouseFlag(COLUMNNAME_IsIssueWarehouse, ownIssueWarehouseIds, clearedIssueWarehouseIds);
+		restoreExclusiveWarehouseFlag(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, ownQualityReturnWarehouseIds, clearedQualityReturnWarehouseIds);
+	}
+
+	private void restoreExclusiveWarehouseFlag(
+			@NonNull final String columnName,
+			@NonNull final Set<Integer> ownWarehouseIds,
+			@NonNull final List<Integer> clearedWarehouseIds)
+	{
+		if (!ownWarehouseIds.isEmpty())
+		{
+			// undo what THIS scenario itself set, BEFORE restoring the seed warehouse below — see the class
+			// Javadoc on why order matters for a hard-unique flag like IsIssueWarehouse
+			final ICompositeQueryUpdater<I_M_Warehouse> clearOwnUpdater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(columnName, false);
+			queryBL.createQueryBuilder(I_M_Warehouse.class)
+					.addInArrayFilter(COLUMNNAME_M_Warehouse_ID, ownWarehouseIds)
+					.create()
+					.updateDirectly(clearOwnUpdater);
+			ownWarehouseIds.clear();
+		}
+
+		if (clearedWarehouseIds.isEmpty())
+		{
+			return;
+		}
+
+		final ICompositeQueryUpdater<I_M_Warehouse> updater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(columnName, true);
+		queryBL.createQueryBuilder(I_M_Warehouse.class)
+				.addInArrayFilter(COLUMNNAME_M_Warehouse_ID, clearedWarehouseIds)
+				.create()
+				.updateDirectly(updater);
+
+		clearedWarehouseIds.clear();
 	}
 }

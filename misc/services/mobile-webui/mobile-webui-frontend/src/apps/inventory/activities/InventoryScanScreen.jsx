@@ -106,7 +106,6 @@ const InventoryScanScreen = () => {
           key="scanLocator"
           inputPlaceholderText={trl('inventory.scanLocatorPlaceholder')}
           onResolvedResult={onLocatorScanned}
-          continuousRunning={true}
         />
       )}
       {status === STATUS_ScanHU && (
@@ -114,7 +113,6 @@ const InventoryScanScreen = () => {
           key="scanHU"
           inputPlaceholderText={trl('inventory.scanHUPlaceholder')}
           onResolvedResult={onHUScanned}
-          continuousRunning={true}
         />
       )}
       {status === STATUS_FillData && (

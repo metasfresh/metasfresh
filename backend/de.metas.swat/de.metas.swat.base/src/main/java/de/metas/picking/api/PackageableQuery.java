@@ -50,14 +50,25 @@ public class PackageableQuery
 {
 	public static final PackageableQuery ALL = PackageableQuery.builder().build();
 
-	@Nullable ProductId productId;
+	/** If non-empty, restrict to rows whose product_id is in this set (IN-filter, pushed to DB). */
+	@NonNull @Singular ImmutableSet<ProductId> productIds;
 	@NonNull @Singular ImmutableSet<BPartnerId> customerIds;
 	@NonNull @Singular ImmutableSet<BPartnerLocationId> handoverLocationIds;
 	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
 	@Nullable WarehouseId warehouseId;
 	@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
-	@Nullable LocalDate preparationDate;
+	/**
+	 * Filter on PreparationDate. Multi-value via Lombok {@code @Singular}: the mobile picking filter bar
+	 * adds several days ({@code preparationDays(...)}), the desktop Picking-V2 view adds exactly one
+	 * ({@code preparationDay(...)}). Empty means no filter.
+	 * <p>
+	 * STRICT, unlike {@link #deliveryDays} above: a row whose PreparationDate is unset does NOT pass.
+	 * That keeps the desktop view's long-standing behaviour unchanged, and "I filtered to the 11th" not
+	 * showing undated rows is what the operator expects. The asymmetry with {@code deliveryDays} is
+	 * deliberate and worth revisiting only with data on how often PreparationDate is actually unset.
+	 */
+	@NonNull @Singular ImmutableSet<LocalDate> preparationDays;
 	@Nullable ZonedDateTime maximumFixedPreparationDate;
 	@Nullable ZonedDateTime maximumFixedPromisedDate;
 	@Nullable ShipperId shipperId;
@@ -84,11 +95,11 @@ public class PackageableQuery
 	@Builder.Default boolean excludeLockedForProcessing = false; // false by default to be backward-compatibile
 
 	/**
-	 * Excludes records whose whole remaining quantity is already bound to a (draft) shipment, i.e.
-	 * {@code QtyToDeliver <= 0} AND there is at least one not-yet-processed picked qty linked to a shipment line
-	 * ({@code M_Packageable_V.IsPickQtyOnDraftShipment = 'Y'}). Such records have nothing left to pick.
+	 * Excludes records that have nothing left to pick, i.e. {@code QtyToDeliver <= 0} (the qty is already
+	 * fully picked - completed, shipped, or bound to a draft shipment - so there is nothing for the picker
+	 * to do). Records with {@code QtyToDeliver > 0} are kept.
 	 */
-	@Builder.Default boolean excludeFullyOnDraftShipment = false; // false by default to be backward-compatible
+	@Builder.Default boolean excludeNothingToPick = false; // false by default to be backward-compatible
 
 	@Nullable Set<ShipmentScheduleId> onlyShipmentScheduleIds;
 	@Nullable Set<ShipmentScheduleId> excludeShipmentScheduleIds;

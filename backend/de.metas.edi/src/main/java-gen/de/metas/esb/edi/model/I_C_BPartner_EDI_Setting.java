@@ -140,7 +140,7 @@ public interface I_C_BPartner_EDI_Setting
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set "CU pro TU" bei unbestimmter Verpackungskapazität.
+	 * Set "CU per TU" for Undefined Packing Capacity.
 	 * "CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.
 	 *
 	 * <br>Type: Quantity
@@ -150,7 +150,7 @@ public interface I_C_BPartner_EDI_Setting
 	void setEdiDESADVDefaultItemCapacity (@Nullable BigDecimal EdiDESADVDefaultItemCapacity);
 
 	/**
-	 * Get "CU pro TU" bei unbestimmter Verpackungskapazität.
+	 * Get "CU per TU" for Undefined Packing Capacity.
 	 * "CU pro TU"-Wert, den das System in einem DESADV-Dokument ausgeben soll, wenn zum Gebinde in metasfresh keine Gebindekapazität hinterlegt ist.
 	 *
 	 * <br>Type: Quantity
@@ -184,7 +184,7 @@ public interface I_C_BPartner_EDI_Setting
 	String COLUMNNAME_EdiDESADV_ExternalSystem_Config_ID = "EdiDESADV_ExternalSystem_Config_ID";
 
 	/**
-	 * Set EDI-ID des Dateiempfängers.
+	 * Set EDI ID of the DESADV Recipient.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -193,7 +193,7 @@ public interface I_C_BPartner_EDI_Setting
 	void setEdiDesadvRecipientGLN (@Nullable java.lang.String EdiDesadvRecipientGLN);
 
 	/**
-	 * Get EDI-ID des Dateiempfängers.
+	 * Get EDI ID of the DESADV Recipient.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -247,7 +247,7 @@ public interface I_C_BPartner_EDI_Setting
 	String COLUMNNAME_EdiINVOIC_ExternalSystem_Config_ID = "EdiINVOIC_ExternalSystem_Config_ID";
 
 	/**
-	 * Set EDI-ID des INVOIC-Empfängers.
+	 * Set EDI ID of the INVOIC Recipient.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -256,7 +256,7 @@ public interface I_C_BPartner_EDI_Setting
 	void setEdiInvoicRecipientGLN (@Nullable java.lang.String EdiInvoicRecipientGLN);
 
 	/**
-	 * Get EDI-ID des INVOIC-Empfängers.
+	 * Get EDI ID of the INVOIC Recipient.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -268,7 +268,7 @@ public interface I_C_BPartner_EDI_Setting
 	String COLUMNNAME_EdiInvoicRecipientGLN = "EdiInvoicRecipientGLN";
 
 	/**
-	 * Set EDI-INVOICSending Mode.
+	 * Set EDI-INVOIC Sending Mode.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -277,7 +277,7 @@ public interface I_C_BPartner_EDI_Setting
 	void setEdiINVOICSendingMode (java.lang.String EdiINVOICSendingMode);
 
 	/**
-	 * Get EDI-INVOICSending Mode.
+	 * Get EDI-INVOIC Sending Mode.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -352,6 +352,31 @@ public interface I_C_BPartner_EDI_Setting
 
 	ModelColumn<I_C_BPartner_EDI_Setting, Object> COLUMN_IsEdiInvoicRecipient = new ModelColumn<>(I_C_BPartner_EDI_Setting.class, "IsEdiInvoicRecipient", null);
 	String COLUMNNAME_IsEdiInvoicRecipient = "IsEdiInvoicRecipient";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_C_BPartner_EDI_Setting, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_BPartner_EDI_Setting.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Updated.

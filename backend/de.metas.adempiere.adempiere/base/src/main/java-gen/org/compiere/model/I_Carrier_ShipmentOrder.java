@@ -180,6 +180,50 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_CustomerReference = "CustomerReference";
 
 	/**
+	 * Set External system.
+	 * Name of an external system (e.g. Github )
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem (@Nullable java.lang.String ExternalSystem);
+
+	/**
+	 * Get External system.
+	 * Name of an external system (e.g. Github )
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalSystem();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_ExternalSystem = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "ExternalSystem", null);
+	String COLUMNNAME_ExternalSystem = "ExternalSystem";
+
+	/**
+	 * Set Incoterms Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermsValue (@Nullable java.lang.String IncotermsValue);
+
+	/**
+	 * Get Incoterms Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermsValue();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_IncotermsValue = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "IncotermsValue", null);
+	String COLUMNNAME_IncotermsValue = "IncotermsValue";
+
+	/**
 	 * Set International Delivery.
 	 *
 	 * <br>Type: YesNo
@@ -222,6 +266,27 @@ public interface I_Carrier_ShipmentOrder
 
 	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_IsActive = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Pre-Advice Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPreAdviceRequired (boolean IsPreAdviceRequired);
+
+	/**
+	 * Get Pre-Advice Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPreAdviceRequired();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_IsPreAdviceRequired = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "IsPreAdviceRequired", null);
+	String COLUMNNAME_IsPreAdviceRequired = "IsPreAdviceRequired";
 
 	/**
 	 * Set Shipper.

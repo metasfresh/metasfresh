@@ -22,6 +22,7 @@
 
 package de.metas.shipping;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -66,8 +67,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -78,6 +81,22 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PurchaseOrderToShipperTransportationService
 {
+	@VisibleForTesting
+	static final AdMessageKey MSG_NoLUPackingConfigForOrderLines = AdMessageKey.of("NoLUPackingConfigForOrderLines");
+
+	@VisibleForTesting
+	static final AdMessageKey MSG_WrongTransportDirectionForPurchaseOrder = AdMessageKey.of("WrongTransportDirectionForPurchaseOrder");
+
+	/**
+	 * Order in which assigned purchase orders are processed, so the "first order" that seeds the transport order's default dates is
+	 * deterministic: earliest {@code PreparationDate} (the departure date the header's ETD is seeded from) first, ties broken by
+	 * {@code DatePromised} (which seeds ETA) and then by {@code C_Order_ID}; missing dates sort last.
+	 */
+	private static final Comparator<I_C_Order> SEED_ORDER_COMPARATOR = Comparator
+			.comparing(I_C_Order::getPreparationDate, Comparator.nullsLast(Comparator.naturalOrder()))
+			.thenComparing(I_C_Order::getDatePromised, Comparator.nullsLast(Comparator.naturalOrder()))
+			.thenComparingInt(I_C_Order::getC_Order_ID);
+
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -89,11 +108,17 @@ public class PurchaseOrderToShipperTransportationService
 	private final ITUDistributionProvider tuDistributionProvider;
 	private final IPackageWeightProvider packageWeightProvider;
 
+	@VisibleForTesting
 	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting()
+	{
+		return newInstanceForUnitTesting((o, ol) -> 1);
+	}
+
+	@VisibleForTesting
+	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting(@NonNull final ILUQtyProvider luQtyProvider)
 	{
 		Adempiere.assertUnitTestMode();
 
-		final ILUQtyProvider luQtyProvider = (o, ol) -> 1;
 		final ITUDistributionProvider tuProvider = (order, orderLine, totalTU, luCount) -> {
 			final ArrayList<BigDecimal> tuDistribution = new ArrayList<>(luCount);
 			for (int i = 0; i < luCount; i++)
@@ -103,7 +128,11 @@ public class PurchaseOrderToShipperTransportationService
 			return tuDistribution;
 		};
 		final IPackageWeightProvider weightProvider = (order, orderLine, tuQtyForPackage) -> null;
-		return new PurchaseOrderToShipperTransportationService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), luQtyProvider, tuProvider, weightProvider);
+		return new PurchaseOrderToShipperTransportationService(
+				PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(),
+				luQtyProvider,
+				tuProvider,
+				weightProvider);
 	}
 
 	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper = "C_Order_SSCC_Print_Jasper";
@@ -132,11 +161,15 @@ public class PurchaseOrderToShipperTransportationService
 			Loggables.addLog("No purchase orders found for shipper transportation with ID: {}", shipperTransportationId);
 		}
 
-		for (final OrderId purchaseOrderId : validPurchaseOrdersIds)
-		{
-			Loggables.addLog("Adding purchase order with ID: {} to shipper transportation with ID: {}", purchaseOrderId, shipperTransportationId);
-			addPurchaseOrderToShipperTransportation(purchaseOrderId, shipperTransportationId);
-		}
+		// Process earliest-promised first (see SEED_ORDER_COMPARATOR) so the "first order" that seeds the transport order's default
+		// dates is deterministic even when several purchase orders are assigned in a single call (the DB/set encounter order is not meaningful).
+		orderDAO.getByIds(validPurchaseOrdersIds)
+				.stream()
+				.sorted(SEED_ORDER_COMPARATOR)
+				.forEach(order -> {
+					Loggables.addLog("Adding purchase order with ID: {} to shipper transportation with ID: {}", order.getC_Order_ID(), shipperTransportationId);
+					addPurchaseOrderToShipperTransportation(order, shipperTransportationId);
+				});
 	}
 
 	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Set<OrderLineId> orderLineIds)
@@ -145,6 +178,11 @@ public class PurchaseOrderToShipperTransportationService
 
 		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(shipperTransportationId);
 		orderToLinesMap.keySet()
+				.stream()
+				// Process earliest-promised first (see SEED_ORDER_COMPARATOR) so the "first order" that seeds the transport order's
+				// default dates is deterministic even when a single call carries lines from several purchase orders (the multimap key
+				// order is not meaningful). Mirrors the ordering applied in addPurchaseOrdersToShipperTransportation().
+				.sorted(SEED_ORDER_COMPARATOR)
 				.forEach(order -> addPurchaseOrderLines(shipperTransportation, order, orderToLinesMap.get(order)));
 	}
 
@@ -161,7 +199,7 @@ public class PurchaseOrderToShipperTransportationService
 
 		if (order.getM_Shipper_ID() > 0 && shipperId.getRepoId() != order.getM_Shipper_ID())
 		{
-			Loggables.addLog("Ignoring C_Order.M_Shipper_ID={} of C_Order_ID={}, because M_ShipperTransportation_ID={} takes precedence", order.getM_Shipper_ID(), order.getM_Shipper_ID(), ShipperTransportationId.toRepoId(shipperTransportationId));
+			Loggables.addLog("Ignoring C_Order.M_Shipper_ID={} of C_Order_ID={}, because M_ShipperTransportation_ID={} takes precedence", order.getM_Shipper_ID(), order.getC_Order_ID(), ShipperTransportationId.toRepoId(shipperTransportationId));
 		}
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
@@ -170,6 +208,12 @@ public class PurchaseOrderToShipperTransportationService
 
 	private void addPurchaseOrderLines(final @NonNull I_M_ShipperTransportation shipperTransportation, final @NonNull I_C_Order order, @NonNull final List<I_C_OrderLine> orderLines)
 	{
+		assertTransportOrderAcceptsPurchaseDocument(shipperTransportation, order);
+
+		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+		// Detect BEFORE any package is created whether this is the very first purchase order assigned to the transport order.
+		final boolean isFirstOrderOnTransportation = shipperTransportationDAO.retrieveOrderIds(shipperTransportationId).isEmpty();
+
 		final List<I_C_OrderLine> orderLinesWithLUQty = orderLines.stream()
 				.filter(orderBL::isLUQtySet)
 				.collect(Collectors.toList());
@@ -192,20 +236,143 @@ public class PurchaseOrderToShipperTransportationService
 				.orgId(orgId)
 				.build();
 
+		final List<I_C_OrderLine> skippedLines = new ArrayList<>();
+		int addedCount = 0;
+
 		for (final I_C_OrderLine ol : orderLinesWithoutLUQty)
 		{
 			final int requiredLUCount = qtyProvider.getRequiredLUCount(order, ol);
 			if (requiredLUCount <= 0)
 			{
+				skippedLines.add(ol);
 				continue;
 			}
 
 			addPurchaseOrderLineToShipperTransportationId(baseRequest, order, ol, requiredLUCount);
+			addedCount++;
 		}
 		for (final I_C_OrderLine ol : orderLinesWithLUQty)
 		{
 			final int qtyLUs = ol.getQtyLU().intValueExact();
 			addPurchaseOrderLineToShipperTransportationId(baseRequest, order, ol, qtyLUs);
+			addedCount++;
+		}
+
+		if (!skippedLines.isEmpty())
+		{
+			final String skippedLineNos = skippedLines.stream()
+					.map(ol -> String.valueOf(ol.getLine()))
+					.collect(Collectors.joining(", "));
+
+			if (addedCount == 0)
+			{
+				throw new AdempiereException(MSG_NoLUPackingConfigForOrderLines, skippedLineNos);
+			}
+			else
+			{
+				Loggables.addLog("Skipped {} PO line(s) with no LU packing configuration (lines: {})",
+						skippedLines.size(), skippedLineNos);
+			}
+		}
+
+		// addedCount > 0: a first order whose every line lacks LU packing config already throws above
+		// (MSG_NoLUPackingConfigForOrderLines), so on the normal first-order path this guard is a defensive no-op.
+		// It also keeps date-defaulting from firing should a future change let an all-lines-skipped call return without throwing.
+		if (isFirstOrderOnTransportation && addedCount > 0)
+		{
+			applyDefaultDatesFromFirstOrder(shipperTransportation, order);
+		}
+	}
+
+	/**
+	 * A purchase document is receipt-side: it may only join an Incoming or Dropship transport order, never an
+	 * Outgoing-only one no receipt could link to. A sales document is unconstrained and falls through.
+	 */
+	private void assertTransportOrderAcceptsPurchaseDocument(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
+	{
+		if (order.isSOTrx())
+		{
+			return;
+		}
+
+		final TransportDirection direction = TransportDirection.ofCode(shipperTransportation.getTransportDirection());
+		if (!direction.isIncomingOrDropship())
+		{
+			throw new AdempiereException(MSG_WrongTransportDirectionForPurchaseOrder, order.getDocumentNo(), shipperTransportation.getDocumentNo());
+		}
+	}
+
+	/**
+	 * Defaults the transport order's date fields from the first assigned purchase order (each value stays user-overridable afterwards):
+	 * <ul>
+	 *     <li>ETA = the purchase order's {@code DatePromised} (the promised arrival date)</li>
+	 *     <li>ETD = the purchase order's {@code PreparationDate} (its ready/provisioning date), taken as already calculated on the
+	 *         order &mdash; by tour planning, or its {@code DatePromised} minus the vendor transport days fallback. We do NOT re-derive
+	 *         it here, so the transport-days rule stays in exactly one place ({@code OrderDeliveryDayBL}). Left unset when the PO has none.</li>
+	 *     <li>ATD = ETD</li>
+	 *     <li>ATA = ETA</li>
+	 *     <li>B/L date = ATD</li>
+	 * </ul>
+	 * Only applies to purchase (inbound) transport orders; the sales flow is left untouched.
+	 */
+	private void applyDefaultDatesFromFirstOrder(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
+	{
+		// These defaults describe an inbound purchase arrival (ETA from DatePromised, ETD from PreparationDate),
+		// so only a purchase document may seed them.
+		if (order.isSOTrx())
+		{
+			return;
+		}
+
+		// isOutgoing(), NOT isOutgoingOrDropship(): Dropship carries a shipment too, but must fall through to the
+		// purchase-side defaults below.
+		if (TransportDirection.ofCode(shipperTransportation.getTransportDirection()).isOutgoing())
+		{
+			return;
+		}
+
+		// ETA = the PO's promised (arrival) date; guaranteed non-null here (the caller already dereferences it when building the base
+		// package request, and this runs only for completed/closed purchase orders). ETD = the PO's ready/provisioning date, taken
+		// straight from its PreparationDate exactly as already calculated on the order (may be null); we never recompute it.
+		final Timestamp eta = order.getDatePromised();
+		final Timestamp etd = order.getPreparationDate();
+
+		// Fill each field ONLY if the user has not already set it: these are defaults, so a value entered before the first PO
+		// was assigned must be kept. (After assignment every value stays freely editable as well.)
+		boolean changed = false;
+		if (etd != null && shipperTransportation.getETD() == null)
+		{
+			shipperTransportation.setETD(etd);
+			changed = true;
+		}
+		if (shipperTransportation.getETA() == null)
+		{
+			shipperTransportation.setETA(eta);
+			changed = true;
+		}
+		// ATD/ATA/B-L date derive from the transport order's ETD/ETA FIELDS (read after the fills above), not from the raw PO
+		// dates: if the user pre-set ETD/ETA to something other than the PO default, ATD/ATA/B-L date must follow that value.
+		// Each is filled only when its source field is non-null, so an unset ETD (PO without a PreparationDate) never triggers a
+		// pointless null-to-null write on ATD/B-L date.
+		if (shipperTransportation.getETD() != null && shipperTransportation.getATD() == null)
+		{
+			shipperTransportation.setATD(shipperTransportation.getETD()); // ATD = ETD
+			changed = true;
+		}
+		if (shipperTransportation.getETA() != null && shipperTransportation.getATA() == null)
+		{
+			shipperTransportation.setATA(shipperTransportation.getETA()); // ATA = ETA
+			changed = true;
+		}
+		if (shipperTransportation.getATD() != null && shipperTransportation.getBLDate() == null)
+		{
+			shipperTransportation.setBLDate(shipperTransportation.getATD()); // B/L date = ATD
+			changed = true;
+		}
+
+		if (changed)
+		{
+			shipperTransportationDAO.save(shipperTransportation);
 		}
 	}
 

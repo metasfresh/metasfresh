@@ -77,7 +77,8 @@ SELECT io.m_inout_id                                      AS "Shipment_ID",
                                                                     'QtyShipped', it.qtyshipped,
                                                                     'UOM', uom.uomsymbol,
                                                                     'TotalWeightInKg', it.totalweightinkg,
-                                                                    'CustomsTariffNumber', it.customstariffnumber
+                                                                    'CustomsTariffNumber', it.customstariffnumber,
+                                                                    'CountryOfOrigin', it.countryoforigin
                                                             ) ORDER BY it.carrier_shipmentorder_item_id)
                                            FROM carrier_shipmentorder_item it
                                                     LEFT JOIN c_uom uom ON uom.c_uom_id = it.c_uom_id

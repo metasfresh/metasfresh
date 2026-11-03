@@ -67,14 +67,14 @@ public class SourceHuDAOTest
 		save(wh);
 
 		locator = newInstance(I_M_Locator.class);
-		locator.setM_Warehouse(wh);
+		locator.setM_Warehouse_ID(wh.getM_Warehouse_ID());
 		save(locator);
 
 		final I_M_Warehouse otherWh = newInstance(I_M_Warehouse.class);
 		save(otherWh);
 
 		otherLocator = newInstance(I_M_Locator.class);
-		otherLocator.setM_Warehouse(otherWh);
+		otherLocator.setM_Warehouse_ID(otherWh.getM_Warehouse_ID());
 		save(otherLocator);
 
 		product = newInstance(I_M_Product.class);

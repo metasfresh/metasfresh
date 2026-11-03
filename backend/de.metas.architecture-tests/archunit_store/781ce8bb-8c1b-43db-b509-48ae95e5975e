@@ -1,0 +1,1 @@
+Method <de.metas.letter.process.C_Letter_CreateFrom_MKTG_ContactPerson.enqueue(de.metas.async.AsyncBatchId, java.lang.Integer)> calls method <org.adempiere.model.InterfaceWrapperHelper.load(int, java.lang.Class)> in (C_Letter_CreateFrom_MKTG_ContactPerson.java:97)

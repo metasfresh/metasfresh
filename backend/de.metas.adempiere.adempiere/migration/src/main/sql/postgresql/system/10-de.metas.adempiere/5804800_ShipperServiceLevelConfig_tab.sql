@@ -165,11 +165,19 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID = 780492;
 SELECT AD_Element_Link_Create_Missing_Field(780492);
 
 -- Field: AD_Org_ID
+-- DISABLED: AD_Field_ID 580485 and AD_UI_Element_ID 580486 below were not retrieved from the
+-- ID server (they sit far below the other freshly-allocated IDs in this script - 780489..780492
+-- for AD_Field, 651846..651849 for AD_UI_Element - and are consecutive across two tables, which
+-- the per-table ID server never produces). These low values already exist in downstream instances
+-- and cause "duplicate key value violates unique constraint ad_ui_element_key". The AD_Org field
+-- and UI element are removed by 5804799 (scoped to this tab) and re-added with fresh ID-server IDs
+-- by 5804801.
+/*
 INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
                       Created, CreatedBy, DisplayLength, EntityType,
                       IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly,
                       IsHeading, IsReadOnly, IsSameLine, Name, Updated, UpdatedBy)
-VALUES (0, 592628, 580485 /*From ID Server*/, 0, 549282,
+VALUES (0, 592628, 580485, 0, 549282,
         TO_TIMESTAMP('2026-05-26 14:12:04.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
         100, 10, 'D',
         'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'Sektion',
@@ -189,6 +197,7 @@ WHERE l.IsActive = 'Y'
 SELECT update_FieldTranslation_From_AD_Name_Element(113);
 DELETE FROM AD_Element_Link WHERE AD_Field_ID = 580485;
 SELECT AD_Element_Link_Create_Missing_Field(580485);
+*/
 
 -- UI Section
 INSERT INTO AD_UI_Section (AD_Client_ID, AD_Org_ID, AD_Tab_ID, AD_UI_Section_ID,
@@ -307,12 +316,15 @@ UPDATE AD_UI_Element SET IsDisplayedGrid = 'Y', SeqNoGrid = 40,
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 651849;
 
+-- DISABLED: see note above the AD_Org_ID field block. AD_UI_Element_ID 580486 is not from the
+-- ID server and collides downstream. Re-added with a fresh ID by 5804801.
+/*
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID,
                            AD_UI_ElementType, Created, CreatedBy,
                            IsActive, IsAdvancedField, IsAllowFiltering, IsDisplayed,
                            IsDisplayedGrid, IsDisplayed_SideList, IsMultiLine, MultiLine_LinesCount,
                            Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
-VALUES (0, 580485, 0, 549282, 555400, 580486 /*From ID Server*/,
+VALUES (0, 580485, 0, 549282, 555400, 580486,
         'F',
         TO_TIMESTAMP('2026-05-26 14:14:04.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
         100,
@@ -325,3 +337,4 @@ UPDATE AD_UI_Element SET IsDisplayedGrid = 'Y', SeqNoGrid = 50,
     Updated = TO_TIMESTAMP('2026-05-26 14:15:04.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 580486;
+*/

@@ -18,7 +18,7 @@ public class M_CostRevaluation_Run extends M_CostRevaluation_ProcessTemplate
 	@Override
 	protected String doIt()
 	{
-		costRevaluationService.createDetails(getCostRevaluationId());
+		costRevaluationService.runRevaluation(getCostRevaluationId());
 		return MSG_OK;
 	}
 }

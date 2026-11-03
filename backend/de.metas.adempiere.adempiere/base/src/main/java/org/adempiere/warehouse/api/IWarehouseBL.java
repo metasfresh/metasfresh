@@ -34,6 +34,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -121,6 +122,9 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
+
+	@NonNull
+	WarehousePickingGroupId createWarehousePickingGroup(@NonNull CreateWarehousePickingGroupRequest request);
 
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull WarehouseId warehouseId);

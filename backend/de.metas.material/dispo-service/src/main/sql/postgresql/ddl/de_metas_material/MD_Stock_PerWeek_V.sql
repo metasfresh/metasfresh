@@ -1,108 +1,38 @@
-﻿-- View MD_Stock_PerWeek_V (me03 25618 / F19100 — "Stock per week").
+-- View MD_Stock_PerWeek_V (me03 25618 / F19100 — "Stock per week").
 --
 -- Derives, per product x warehouse x ISO calendar week (Monday-anchored), the material
 -- outlook straight from the dispo engine's MD_Candidate timeline:
+--   QtyATPBegin          : projected stock as-of the START of the week (the Monday) —
+--                          latest STOCK candidate with DateProjected < WeekStartDate,
+--                          summed across attribute/customer subgroups. By construction,
+--                          QtyATPBegin(W) == QtyATP(W-1): the ATP at a week's start equals
+--                          the ATP at the prior week's end (same Monday boundary).
 --   QtyExpectedShipments : reserved demand   (DEMAND / SHIPMENT,  ABS(Qty))
 --   QtyExpectedReceipts  : purchased supply  (SUPPLY / PURCHASE,  Qty)
---   QtyATP               : projected stock   (latest STOCK candidate at/before week-end,
---                          summed across attribute/customer subgroups) — the authoritative
+--   QtyATP               : projected stock as-of the END of the week — latest STOCK
+--                          candidate at/before week-end (DateProjected < WeekStartDate + 7),
+--                          summed across attribute/customer subgroups — the authoritative
 --                          available-to-promise number; it reflects ALL streams (shipment,
 --                          purchase, production, distribution, forecast, inventory), so its
 --                          row-to-row delta need NOT equal receipts - shipments.
 --
 -- Horizon: current week .. current+N, where N = SysConfig
 --   'de.metas.material.stockperweek.HorizonWeeks' (default 12 => 13 rows).
--- Overdue activity (dated before the current week) is rolled into the current-week row
--- via GREATEST(week-of(DateProjected), current-week) so backlog is never hidden.
--- Only active, non-'simulated' candidates are considered.
+-- Overdue activity (dated before the current week) is NOT rolled into the current week's movement
+-- columns; it is already reflected in QtyATPBegin (the projected running balance), so backlog is
+-- shown once, not twice. Only active, non-'simulated' candidates are considered.
 --
 -- Aggregation defaults (DESIGN.md §7 — confirm with customer at UAT):
 --   * attributes : summed across StorageAttributesKey (latest STOCK per key, then SUM)
 --   * customer   : the customer dimension (C_BPartner_Customer_ID) is summed in too, i.e.
 --                  the overall projected stock is shown — no per-customer reserve carve-out.
-
--- Push-down-friendly synthetic primary key: a deterministic hash of (M_Product_ID, M_Warehouse_ID,
--- WeekStartDate) encoded as a 32-bit integer via MD5 truncation. This is a per-row scalar
--- expression — unlike row_number() OVER (...), it does NOT force the planner to materialise every
--- row before outer predicates are applied, so a single-product zoom (WHERE M_Product_ID = @x@)
--- is as cheap as ~94k planner cost (vs. ~1.05M with the row_number regression).
--- Canonical metasfresh-db pattern: ABS(('x'||SUBSTR(MD5(...),1,10))::bit(32)::int).
--- 10 hex digits → ~4 billion values; collision probability negligible below ~77k distinct combos.
+--
+-- Thin wrapper over the parameterized function:
+--   The view no longer owns the ATP algebra, the single-scan CTE rewrite, or the
+--   push-down-friendly synthetic primary key — those now live in MD_Stock_PerWeek_fn's DDL
+--   (see MD_Stock_PerWeek_fn.sql for the full query-mechanics documentation).
+--   fn(NULL, NULL) degrades to "no filter on either dimension", i.e. exactly this view's
+--   full, unfiltered result set. Any future algebra change belongs in the function's DDL.
 CREATE OR REPLACE VIEW MD_Stock_PerWeek_V AS
-WITH horizon AS (
-  SELECT GREATEST(1, COALESCE(NULLIF(
-           (SELECT Value FROM AD_SysConfig
-             WHERE Name = 'de.metas.material.stockperweek.HorizonWeeks' AND IsActive = 'Y'
-             ORDER BY AD_Client_ID DESC, AD_Org_ID DESC
-             LIMIT 1), '')::int, 12)) AS weeks
-),
--- distinct product/warehouse pairs that have any active, non-simulated candidate;
--- AD_Client_ID / AD_Org_ID are included so the security framework can filter by client.
-pw AS (
-  SELECT DISTINCT c.AD_Client_ID, c.AD_Org_ID, c.M_Product_ID, c.M_Warehouse_ID
-    FROM MD_Candidate c
-   WHERE c.IsActive = 'Y'
-     AND c.MD_Candidate_Status IS DISTINCT FROM 'simulated'
-),
--- one row per (product, warehouse, week) across the configured horizon
-weeks AS (
-  SELECT pw.AD_Client_ID,
-         pw.AD_Org_ID,
-         pw.M_Product_ID,
-         pw.M_Warehouse_ID,
-         (date_trunc('week', current_date)::date + (g.w * 7)) AS WeekStartDate
-    FROM pw
-   CROSS JOIN horizon h
-   CROSS JOIN generate_series(0, h.weeks) AS g(w)
-)
-SELECT
-  ABS((('x' || SUBSTR(MD5(CONCAT_WS('#',
-                               w.M_Product_ID::text,
-                               w.M_Warehouse_ID::text,
-                               w.WeekStartDate::text)), 1, 10))::bit(32)::int))
-           AS MD_Stock_PerWeek_V_ID,
-  w.AD_Client_ID,
-  w.AD_Org_ID,
-  w.M_Product_ID,
-  w.M_Warehouse_ID,
-  w.WeekStartDate,
-  -- expected shipments: DEMAND/SHIPMENT in this week (overdue rolled into current week)
-  COALESCE(( SELECT SUM(ABS(c.Qty))
-               FROM MD_Candidate c
-              WHERE c.IsActive = 'Y'
-                AND c.MD_Candidate_Status IS DISTINCT FROM 'simulated'
-                AND c.M_Product_ID  = w.M_Product_ID
-                AND c.M_Warehouse_ID = w.M_Warehouse_ID
-                AND c.MD_Candidate_Type = 'DEMAND'
-                AND c.MD_Candidate_BusinessCase = 'SHIPMENT'
-                AND GREATEST(date_trunc('week', c.DateProjected)::date,
-                             date_trunc('week', current_date)::date) = w.WeekStartDate ), 0)
-    AS QtyExpectedShipments,
-  -- expected receipts: SUPPLY/PURCHASE in this week (overdue rolled into current week)
-  COALESCE(( SELECT SUM(c.Qty)
-               FROM MD_Candidate c
-              WHERE c.IsActive = 'Y'
-                AND c.MD_Candidate_Status IS DISTINCT FROM 'simulated'
-                AND c.M_Product_ID  = w.M_Product_ID
-                AND c.M_Warehouse_ID = w.M_Warehouse_ID
-                AND c.MD_Candidate_Type = 'SUPPLY'
-                AND c.MD_Candidate_BusinessCase = 'PURCHASE'
-                AND GREATEST(date_trunc('week', c.DateProjected)::date,
-                             date_trunc('week', current_date)::date) = w.WeekStartDate ), 0)
-    AS QtyExpectedReceipts,
-  -- ATP at week-end: latest STOCK candidate at/before the end of this week, per
-  -- attribute/customer subgroup, then summed.
-  COALESCE(( SELECT SUM(latest.Qty)
-               FROM ( SELECT DISTINCT ON (c.StorageAttributesKey, c.C_BPartner_Customer_ID) c.Qty
-                        FROM MD_Candidate c
-                       WHERE c.IsActive = 'Y'
-                         AND c.MD_Candidate_Status IS DISTINCT FROM 'simulated'
-                         AND c.M_Product_ID  = w.M_Product_ID
-                         AND c.M_Warehouse_ID = w.M_Warehouse_ID
-                         AND c.MD_Candidate_Type = 'STOCK'
-                         AND c.DateProjected < (w.WeekStartDate + 7)::timestamptz
-                       ORDER BY c.StorageAttributesKey, c.C_BPartner_Customer_ID,
-                                c.DateProjected DESC, c.SeqNo DESC
-                    ) latest ), 0)
-    AS QtyATP
-FROM weeks w;
+SELECT * FROM MD_Stock_PerWeek_fn(NULL::numeric, NULL::numeric);
+

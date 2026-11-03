@@ -5,7 +5,7 @@ import lombok.experimental.UtilityClass;
 
 /**
  * Dedicated event topic for DD_Order picking replenishment events.
- * One event per distinct {@link de.metas.inout.ShipmentScheduleId} is published to this topic
+ * One event per distinct {@link de.metas.picking.api.PickingJobScheduleId} is published to this topic
  * after the originating transaction commits.
  */
 @UtilityClass

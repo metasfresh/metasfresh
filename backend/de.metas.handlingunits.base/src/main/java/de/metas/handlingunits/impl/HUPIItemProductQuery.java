@@ -23,6 +23,7 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
@@ -66,6 +67,15 @@ import java.util.Set;
 	@Getter
 	@Setter
 	private boolean defaultForProduct;
+
+	@Getter
+	@Setter
+	@Nullable
+	private GTIN gtin = null;
+
+	@Getter
+	@Setter
+	private boolean onlyActiveProduct = false;
 
 	@Override
 	public int getM_HU_PI_Item_ID()
