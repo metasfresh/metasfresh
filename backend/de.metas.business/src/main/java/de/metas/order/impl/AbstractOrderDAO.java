@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.order.WaitingPrepaySalesOrderQuery;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocBaseAndSubType;
@@ -52,6 +53,11 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_Order;
+import org.compiere.model.X_C_Payment;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -605,5 +611,55 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.create()
 				.iterateAndStreamIds(OrderLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static final String TABLENAME_C_BankStatementLine = "C_BankStatementLine";
+	private static final String COLUMNNAME_C_BankStatementLine_ID = "C_BankStatementLine_ID";
+	private static final String COLUMNNAME_Processed = "Processed";
+
+	@Override
+	public List<OrderId> getWaitingPrepaySalesOrderIds(@NonNull final WaitingPrepaySalesOrderQuery query)
+	{
+		if (query.getDocumentNos().isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final IQuery<I_C_DocType> prepayDocTypes = queryBL.createQueryBuilder(I_C_DocType.class)
+				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, X_C_DocType.DOCSUBTYPE_PrepayOrder)
+				.create();
+
+		final IQueryBuilder<I_C_Order> queryBuilder = queryBL.createQueryBuilder(I_C_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_IsSOTrx, true)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, X_C_Order.DOCSTATUS_WaitingPayment)
+				.addInSubQueryFilter(I_C_Order.COLUMNNAME_C_DocType_ID, I_C_DocType.COLUMNNAME_C_DocType_ID, prepayDocTypes)
+				.addInArrayFilter(I_C_Order.COLUMNNAME_DocumentNo, query.getDocumentNos())
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Currency_ID, query.getCurrencyId())
+				.addEqualsFilter(I_C_Order.COLUMNNAME_GrandTotal, query.getAmount());
+
+		if (query.getBpartnerId() != null)
+		{
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addEqualsFilter(I_C_Order.COLUMNNAME_Bill_BPartner_ID, query.getBpartnerId())
+					.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, query.getBpartnerId());
+		}
+
+		// not already carried by another unprocessed bank statement line
+		// (table name based, because the bank statement line model lives in a module this one cannot depend on)
+		final IQueryBuilder<Object> otherUnprocessedBankLines = queryBL.createQueryBuilder(TABLENAME_C_BankStatementLine)
+				.addEqualsFilter(COLUMNNAME_Processed, false)
+				.addNotEqualsFilter(COLUMNNAME_C_BankStatementLine_ID, query.getCurrentBankStatementLineId());
+		queryBuilder.addNotInSubQueryFilter(I_C_Order.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, otherUnprocessedBankLines.create());
+
+		// not already paid / carried by a payment, unless that payment is voided or reversed
+		final IQuery<I_C_Payment> activePayments = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addNotNull(I_C_Payment.COLUMNNAME_C_Order_ID)
+				.addNotInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, ImmutableSet.of(X_C_Payment.DOCSTATUS_Voided, X_C_Payment.DOCSTATUS_Reversed))
+				.create();
+		queryBuilder.addNotInSubQueryFilter(I_C_Order.COLUMNNAME_C_Order_ID, I_C_Payment.COLUMNNAME_C_Order_ID, activePayments);
+
+		return queryBuilder.create().listIds(OrderId::ofRepoId);
 	}
 }

@@ -187,6 +187,14 @@ public interface IOrderDAO extends ISingletonService
 
 	boolean isCalibrationRuleUsed(@NonNull CalibrationRuleId calibrationRuleId);
 
+	/**
+	 * @return the ids of the active, sales, {@code DocStatus='WP'} orders of a prepay document type ({@code C_DocType.DocSubType='PR'})
+	 * that match the given query and are not yet carried by another unprocessed {@code C_BankStatementLine.C_Order_ID}
+	 * or by a {@code C_Payment.C_Order_ID} whose {@code DocStatus} is neither 'VO' nor 'RE'.
+	 * All filters (incl. the amount) are applied in the query; no organization filter.
+	 */
+	List<OrderId> getWaitingPrepaySalesOrderIds(@NonNull WaitingPrepaySalesOrderQuery query);
+
 	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
 	List<I_C_Order> getByLineQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter);
 	Set<OrderLineId> getLineIdsByQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter);
