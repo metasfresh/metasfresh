@@ -115,6 +115,7 @@ const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode, onHUNotF
       <BarcodeScannerComponent
         resolveScannedBarcode={resolveHUScannedBarcode}
         onResolvedResult={onResolvedHUScannedResult}
+        errorToastOnce={!!onHUNotFound} // HU Manager create-from-label scan only
       />
     );
   }
