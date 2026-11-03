@@ -67,6 +67,9 @@ public interface ICostingService
 			CostSegment costSegment,
 			CostingMethod costingMethod);
 
+	/**
+	 * Takes the on-hand quantity and current cost price of the segment, locked for update, as the base of the new cost price; no cost detail is replayed.
+	 */
 	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
 
 	Optional<CurrentCost> getCurrentCost(@NonNull CostSegmentAndElement costSegmentAndElement);

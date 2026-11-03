@@ -9,7 +9,7 @@
  * 1. Create masterdata (BPartner, Product) via Backend API
  * 2. Create a new Test record
  * 3. Set ALL editable fields (except Processed)
- * 4. Reload page (F5) to verify persistence
+ * 4. Reload page to verify persistence
  * 5. Click "Process Now" button
  * 6. Set Processed = true (LAST field)
  * 7. Verify all other fields become read-only
@@ -279,7 +279,7 @@ testCases.forEach(({ language, label }) => {
       await TestWindowPage.reload();
 
       await test.step('Verify address persisted', async () => {
-        const value = await AddressWidget.getValue('C_Location_ID');
+        const value = await AddressWidget.waitForValue('C_Location_ID');
         console.log(`Address field after reload: "${value}"`);
         expect(value).toContain('Test Street');
       });
@@ -757,7 +757,7 @@ testCases.forEach(({ language, label }) => {
         expect(await ListWidget.getValue('C_Currency_ID')).toContain(TEST_DATA.currency);
 
         // Address field - button may display street or country depending on layout
-        const addressValue = await AddressWidget.getValue('C_Location_ID');
+        const addressValue = await AddressWidget.waitForValue('C_Location_ID');
         // Verify address is set (not empty, not default "---")
         expect(await AddressWidget.isEmpty('C_Location_ID')).toBe(false);
         console.log(`Address value after reload: "${addressValue}"`);
