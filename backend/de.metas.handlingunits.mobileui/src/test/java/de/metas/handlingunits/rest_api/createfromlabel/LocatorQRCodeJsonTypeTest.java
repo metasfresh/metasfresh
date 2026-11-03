@@ -24,8 +24,7 @@ class LocatorQRCodeJsonTypeTest
 
 		final JsonCreateHUFromScannedCodeRequest request = jsonObjectMapper.readValue(jsonObjectMapper.writeValueAsString(json), JsonCreateHUFromScannedCodeRequest.class);
 
-		assertThat((Object)request.getLocatorQRCode()).isInstanceOf(ScannedCode.class);
-		assertThat(request.getLocatorQRCode().toString()).isEqualTo(LOCATOR_QR_CODE);
+		assertThat(request.getLocatorQRCode().getAsString()).isEqualTo(LOCATOR_QR_CODE);
 		assertThat(jsonObjectMapper.readTree(jsonObjectMapper.writeValueAsString(request)).get("locatorQRCode").asText()).isEqualTo(LOCATOR_QR_CODE);
 	}
 
@@ -36,7 +35,7 @@ class LocatorQRCodeJsonTypeTest
 
 		final JsonHUProposal proposal = jsonObjectMapper.readValue(proposalJson, JsonHUProposal.class);
 
-		assertThat((Object)proposal.getLocatorQRCode()).isInstanceOf(ScannedCode.class);
+		assertThat(proposal.getLocatorQRCode().getAsString()).isEqualTo(LOCATOR_QR_CODE);
 		final JsonNode written = jsonObjectMapper.readTree(jsonObjectMapper.writeValueAsString(proposal)).get("locatorQRCode");
 		assertThat(written.isTextual()).isTrue();
 		assertThat(written.asText()).isEqualTo(LOCATOR_QR_CODE);
