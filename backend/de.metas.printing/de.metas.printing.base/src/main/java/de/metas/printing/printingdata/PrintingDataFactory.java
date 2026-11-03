@@ -94,15 +94,7 @@ public class PrintingDataFactory
 		final I_C_Doc_Outbound_Log outboundLogRecord = outboundDAO.retrieveLog(archiveId);
 		final I_AD_Archive archiveRecord = queueItem.getAD_Archive();
 
-		final String pdfFileName;
-		if (outboundLogRecord != null)
-		{
-			pdfFileName = archiveFileNameService.computePdfFileName(outboundLogRecord);
-		}
-		else
-		{
-			pdfFileName = archiveFileNameService.computePdfFileName(archiveRecord);
-		}
+		final String pdfFileName = archiveFileNameService.computePdfFileName(archiveRecord, outboundLogRecord);
 
 		final ImmutableList.Builder<PrintingData> result = ImmutableList.builder();
 

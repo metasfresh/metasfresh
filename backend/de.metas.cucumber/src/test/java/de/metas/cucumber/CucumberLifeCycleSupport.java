@@ -25,10 +25,10 @@ package de.metas.cucumber;
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
 import de.metas.acct.housekeeping.AddMissingAcctRecords;
-import de.metas.server.housekeep.SequenceCheckHouseKeepingTask;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
@@ -38,8 +38,16 @@ import org.compiere.model.I_S_PostgREST_Config;
 import org.compiere.util.Env;
 import org.springframework.util.SocketUtils;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import static de.metas.async.model.validator.Main.SYSCONFIG_ASYNC_INIT_DELAY_MILLIS;
 import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS;
+import static de.metas.cucumber.InfrastructureSupport.DB_NAME;
+import static de.metas.cucumber.InfrastructureSupport.DB_PASSWORD;
+import static de.metas.cucumber.InfrastructureSupport.DB_USER;
 import static de.metas.util.web.audit.ApiAuditService.CFG_INTERNAL_PORT;
 import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_HOUSE_KEEPING;
 
@@ -56,7 +64,7 @@ public class CucumberLifeCycleSupport
 	private static boolean beforeAllMethodDone;
 
 	public static void beforeAll()
-			{
+	{
 		synchronized (CucumberLifeCycleSupport.class)
 		{
 			if (beforeAllMethodDone)
@@ -84,9 +92,15 @@ public class CucumberLifeCycleSupport
 			// See https://www.mchange.com/projects/c3p0/#c3p0_properties for where in the classpath it needs to be
 			System.setProperty("c3p0.maxPoolSize", "99"); // set to a value different from c3p0.properties so it's clear from where the value is taken.
 
+			checkNativeSequencesBeforeBoot(dbHost, dbPort);
+
+			// pass the DB settings explicitly, so ServerBoot is guaranteed to use the same DB and user as checkNativeSequencesBeforeBoot
 			final String[] args = { //
 					"-dbHost", dbHost,
 					"-dbPort", dbPort,
+					"-dbName", DB_NAME,
+					"-dbUser", DB_USER,
+					"-dbPassword", DB_PASSWORD,
 					"-rabbitHost", infrastructureSupport.getRabbitHost(),
 					"-rabbitPort", Integer.toString(infrastructureSupport.getRabbitPort()),
 					"-rabbitUser", infrastructureSupport.getRabbitUser(),
@@ -99,10 +113,31 @@ public class CucumberLifeCycleSupport
 			update_ReplicationProcessors();
 			upsert_PostgRESTConfig(infrastructureSupport);
 
-			SpringContextHolder.instance.getBean(SequenceCheckHouseKeepingTask.class).executeTask();
 			SpringContextHolder.instance.getBean(AddMissingAcctRecords.class).executeTask();
 
 			beforeAllMethodDone = true;
+		}
+	}
+
+	/**
+	 * Same as {@code de.metas.server.housekeep.SequenceCheckHouseKeepingTask}, but run while nothing else writes to the database.
+	 * <p>
+	 * {@code dba_seq_check_native()} resets each native sequence to {@code max(ID) + 1}. It cannot see rows that another transaction has inserted
+	 * but not yet committed, so it can move a sequence back below an ID that was already handed out; the next insert then fails with a duplicate key.
+	 * Once {@link ServerBoot} runs, the async workpackage processors (started without delay, see {@code SYSCONFIG_ASYNC_INIT_DELAY_MILLIS} above)
+	 * already insert rows, so the check must run before the server is started.
+	 */
+	private static void checkNativeSequencesBeforeBoot(@NonNull final String dbHost, @NonNull final String dbPort)
+	{
+		final String dbUrl = "jdbc:postgresql://" + dbHost + ":" + dbPort + "/" + DB_NAME;
+		try (final Connection connection = DriverManager.getConnection(dbUrl, DB_USER, DB_PASSWORD);
+				final Statement statement = connection.createStatement())
+		{
+			statement.execute("SELECT dba_seq_check_native()");
+		}
+		catch (final SQLException e)
+		{
+			throw new AdempiereException("Failed to check the native sequences of " + dbUrl, e);
 		}
 	}
 

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Packageable_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -913012400L;
+	private static final long serialVersionUID = -1912803786L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (final Properties ctx, final int M_Packageable_V_ID, @Nullable final String trxName)
@@ -380,6 +380,8 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
 	/** CallOrder = CAO */
 	public static final String DOCSUBTYPE_CallOrder = "CAO";
+	/** Order on Commission = OOC */
+	public static final String DOCSUBTYPE_OrderOnCommission = "OOC";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -495,6 +497,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public boolean isFixedPreparationDate() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFixedPreparationDate);
+	}
+
+	@Override
+	public void setIsPickQtyOnDraftShipment (final boolean IsPickQtyOnDraftShipment)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsPickQtyOnDraftShipment, IsPickQtyOnDraftShipment);
+	}
+
+	@Override
+	public boolean isPickQtyOnDraftShipment() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPickQtyOnDraftShipment);
 	}
 
 	@Override

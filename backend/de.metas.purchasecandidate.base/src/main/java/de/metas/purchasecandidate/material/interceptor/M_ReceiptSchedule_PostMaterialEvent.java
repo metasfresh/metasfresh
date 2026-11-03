@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.purchasecandidate.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.purchasecandidate.material.interceptor;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -37,28 +59,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Objects;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Interceptor(I_M_ReceiptSchedule.class)
 @Component
 public class M_ReceiptSchedule_PostMaterialEvent
@@ -69,6 +69,8 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 	private final ReplenishInfoRepository replenishInfoRepository;
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
 
 	public M_ReceiptSchedule_PostMaterialEvent(
 			@NonNull final PostMaterialEventService postMaterialEventService,
@@ -114,7 +116,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 							+ " | QtyOrdered: {}>{}, QtyToMove: {}>{}"
 							+ " | event={}, orderedQtyDelta={}, reservedQtyDelta={}",
 					schedule.getM_ReceiptSchedule_ID(), timing,
-					oldSchedule.isIsClosed(), schedule.isIsClosed(),
+					oldSchedule.isClosed(), schedule.isClosed(),
 					oldSchedule.isProcessed(), schedule.isProcessed(),
 					oldSchedule.isActive(), schedule.isActive(),
 					oldSchedule.getQtyOrdered(), schedule.getQtyOrdered(),
@@ -161,23 +163,23 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	/** IsClosed changed from false to true — treat as deletion from material dispo perspective (lowers supply to already-received qty). */
 	private static boolean isJustClosed(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		if (!receiptSchedule.isIsClosed())
+		if (!receiptSchedule.isClosed())
 		{
 			return false;
 		}
 		final I_M_ReceiptSchedule old = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
-		return !old.isIsClosed();
+		return !old.isClosed();
 	}
 
 	/** IsClosed changed from true to false — treat as creation from material dispo perspective (restores supply). */
 	private static boolean isJustReopened(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		if (receiptSchedule.isIsClosed())
+		if (receiptSchedule.isClosed())
 		{
 			return false;
 		}
 		final I_M_ReceiptSchedule old = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
-		return old.isIsClosed();
+		return old.isClosed();
 	}
 
 	private AbstractReceiptScheduleEvent createCreatedEvent(
@@ -326,8 +328,6 @@ public class M_ReceiptSchedule_PostMaterialEvent
 
 	private MaterialDescriptor createOrderMaterialDescriptor(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		final BigDecimal orderedQuantity = receiptScheduleQtysBL.getQtyOrdered(receiptSchedule);
 
 		final Timestamp preparationDate = receiptSchedule.getMovementDate();

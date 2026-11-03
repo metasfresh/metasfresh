@@ -107,6 +107,7 @@ public class CurrencyDAO implements ICurrencyDAO
 				.id(CurrencyId.ofRepoId(record.getC_Currency_ID()))
 				.currencyCode(CurrencyCode.ofThreeLetterCode(record.getISO_Code()))
 				.symbol(trlMap.getColumnTrl(I_C_Currency.COLUMNNAME_CurSymbol, record.getCurSymbol()))
+				.description(record.getDescription())
 				.precision(CurrencyPrecision.ofInt(record.getStdPrecision()))
 				.costingPrecision(CurrencyPrecision.ofInt(record.getCostingPrecision()))
 				.build();

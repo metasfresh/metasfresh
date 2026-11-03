@@ -73,13 +73,23 @@ import java.util.Map;
  *   <li>{@code M_Warehouse_ID} — warehouse identifier</li>
  *   <li>{@code M_AttributeSetInstance_ID} — ASI identifier</li>
  *   <li>{@code simulated} — whether the candidate is simulated (defaults to false)</li>
- *   <li>Production detail columns: {@code PP_Order_Candidate_ID}, {@code PP_Order_ID}, etc.</li>
- *   <li>Distribution detail columns: {@code DD_Order_Candidate_ID}, {@code DD_Order_ID}, etc.</li>
+ *   <li>Production detail columns: {@code PP_Order_Candidate_ID}, {@code PP_OrderLine_Candidate_ID},
+ *       {@code PP_Order_ID}, {@code PP_Order_BOMLine_ID}</li>
+ *   <li>Distribution detail columns (stored in MD_Candidate_Dist_Detail):
+ *       {@code DD_Order_Candidate_ID} — identifier of the DD_Order_Candidate that created this candidate,
+ *       {@code DD_Order_ID} — identifier of the completed DD_Order,
+ *       {@code DD_OrderLine_ID} — identifier of the DD_OrderLine</li>
+ *   <li>Distribution forward PP_Order columns:
+ *       {@code Forward_PP_Order_Candidate_ID}, {@code Forward_PP_OrderLine_Candidate_ID},
+ *       {@code Forward_PP_Order_ID}, {@code Forward_PP_Order_BOMLine_ID}</li>
  * </ul>
  */
 @RequiredArgsConstructor
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
 {
+	/** ATP cell value of a row that does not verify the ATP */
+	public static final String ATP_NOT_VERIFIED = "*";
+
 	private final M_Product_StepDefData productTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 
@@ -118,8 +128,18 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 				.build();
 	}
 
+	/**
+	 * @return the expected ATP; {@code null} if the ATP cell is {@value #ATP_NOT_VERIFIED}, i.e. the row does not verify the ATP
+	 */
+	@Nullable
 	public static BigDecimal extractATP(final DataTableRow row)
 	{
+		final boolean isAtpVerified = !row.getAsOptionalString("ATP").map(ATP_NOT_VERIFIED::equals).orElse(false);
+		if (!isAtpVerified)
+		{
+			return null;
+		}
+
 		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> row.getAsOptionalBigDecimal("ATP").orElse(null),
 				() -> row.getAsOptionalBigDecimal("Qty_AvailableToPromise").orElse(null),

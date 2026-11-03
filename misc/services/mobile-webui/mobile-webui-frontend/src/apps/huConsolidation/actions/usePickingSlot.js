@@ -24,10 +24,10 @@ export const usePickingSlot = ({ wfProcessId, activityId, pickingSlotId }) => {
 
   // console.log('usePickingSlot', { pickingSlotId, pickingSlots: getPickingSlots({ activity }) });
 
-  const consolidate = ({ huId = null } = {}) => {
+  const consolidate = ({ huId = null, grai = null } = {}) => {
     setProcessing(true);
     return api
-      .consolidate({ wfProcessId, fromPickingSlotQRCode: toQRCodeString(pickingSlotQRCode), huId })
+      .consolidate({ wfProcessId, fromPickingSlotQRCode: toQRCodeString(pickingSlotQRCode), huId, grai })
       .then(({ wfProcess, pickingSlotContent }) => {
         dispatch(updateWFProcess({ wfProcess }));
         setPickingSlotContent(pickingSlotContent);

@@ -32,18 +32,18 @@ import lombok.NonNull;
  * This listener is invoked when the external system REST API receives an error callback
  * (e.g., from Camel route processing failures).
  * <p>
- * Listeners should implement {@link #applies(ExternalSystemErrorContext)} to check if they should handle errors
- * for a given error context.
+ * Listeners should implement {@link #applies(ExternalSystemInvocationContext)} to check if they should handle errors
+ * for a given invocation context.
  */
 public interface IExternalSystemInvocationErrorListener
 {
 	/**
-	 * Checks if this listener applies to the given error context.
+	 * Checks if this listener applies to the given invocation context.
 	 *
-	 * @param errorContext the error context (EDI, ShopwareSync, etc.), never null (defaults to UNKNOWN)
+	 * @param context the invocation context (EDI, Resend, etc.), never null (defaults to UNKNOWN)
 	 * @return true if this listener should handle errors for the given context
 	 */
-	boolean applies(@NonNull ExternalSystemErrorContext errorContext);
+	boolean applies(@NonNull ExternalSystemInvocationContext context);
 
 	/**
 	 * Called when external system invocation fails.
@@ -52,11 +52,11 @@ public interface IExternalSystemInvocationErrorListener
 	 * to find which record(s) are affected by this error.
 	 *
 	 * @param pInstanceId the process instance ID of the external system invocation
-	 * @param errorContext the error context (EDI, ShopwareSync, etc.), never null (defaults to UNKNOWN)
+	 * @param context     the invocation context (EDI, Resend, etc.), never null (defaults to UNKNOWN)
 	 * @param errorMessage the aggregated error message from external system
 	 */
 	void onInvocationError(
 			@NonNull PInstanceId pInstanceId,
-			@NonNull ExternalSystemErrorContext errorContext,
+			@NonNull ExternalSystemInvocationContext context,
 			@NonNull String errorMessage);
 }

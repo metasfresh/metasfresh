@@ -1360,6 +1360,12 @@ public final class Env
 		return getLoggedRoleId(getCtx());
 	}
 
+	public static void setLoggedRoleId(@NonNull final Properties ctx, @NonNull final RoleId roleId)
+	{
+		setContext(ctx, CTXNAME_AD_Role_ID, roleId.getRepoId());
+	}
+
+
 	public static IUserRolePermissions getUserRolePermissions()
 	{
 		final Properties ctx = getCtx();

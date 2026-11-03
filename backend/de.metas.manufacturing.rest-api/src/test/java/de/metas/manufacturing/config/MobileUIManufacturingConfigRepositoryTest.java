@@ -1,15 +1,25 @@
 package de.metas.manufacturing.config;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.user.UserId;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_MobileUI_MFG_Config;
+import org.compiere.model.I_MobileUI_MFG_Config_Attribute;
 import org.compiere.model.I_MobileUI_UserProfile_MFG;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,7 +38,7 @@ class MobileUIManufacturingConfigRepositoryTest
 		clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
 	}
 
-	private void createGlobalConfig(final ReceiveUnitType receiveUnitType)
+	private I_MobileUI_MFG_Config createGlobalConfig(final ReceiveUnitType receiveUnitType)
 	{
 		final I_MobileUI_MFG_Config record = InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class);
 		record.setIsActive(true);
@@ -36,6 +46,7 @@ class MobileUIManufacturingConfigRepositoryTest
 		record.setIsAllowIssuingAnyHU(false);
 		record.setReceiveUnitType(receiveUnitType != null ? receiveUnitType.getCode() : null);
 		InterfaceWrapperHelper.save(record);
+		return record;
 	}
 
 	private void createUserConfig(final UserId userId, final ReceiveUnitType receiveUnitType)
@@ -47,6 +58,30 @@ class MobileUIManufacturingConfigRepositoryTest
 		record.setIsAllowIssuingAnyHU(null);
 		record.setReceiveUnitType(receiveUnitType != null ? receiveUnitType.getCode() : null);
 		InterfaceWrapperHelper.save(record);
+	}
+
+	private I_M_Attribute createAttribute(final String code)
+	{
+		final I_M_Attribute record = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
+		record.setValue(code);
+		record.setName(code);
+		record.setAttributeValueType(AttributeValueType.STRING.getCode());
+		InterfaceWrapperHelper.saveRecord(record);
+		return record;
+	}
+
+	private void createConfigAttribute(
+			final I_MobileUI_MFG_Config config,
+			final I_M_Attribute attribute,
+			final int seqNo,
+			final boolean isActive)
+	{
+		final I_MobileUI_MFG_Config_Attribute record = InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config_Attribute.class);
+		record.setMobileUI_MFG_Config_ID(config.getMobileUI_MFG_Config_ID());
+		record.setM_Attribute_ID(attribute.getM_Attribute_ID());
+		record.setSeqNo(seqNo);
+		record.setIsActive(isActive);
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	@Nested
@@ -121,6 +156,122 @@ class MobileUIManufacturingConfigRepositoryTest
 
 			final MobileUIManufacturingConfig config = repo.getConfig(null, clientId);
 			assertThat(config.getReceiveUnitTypeEffective()).isEqualTo(ReceiveUnitType.TU);
+		}
+	}
+
+	@Nested
+	class getEditableAttributeCodesInOrder
+	{
+		@Test
+		void noConfigAtAll_defaultsToLotNumberAndBestBeforeDate()
+		{
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeConstants.ATTR_LotNumber, AttributeConstants.ATTR_BestBeforeDate);
+		}
+
+		@Test
+		void presentGlobalRowWithNoActiveChildRows_yieldsEmptyList_notDefault()
+		{
+			// A MobileUI_MFG_Config row EXISTS (even with no active child rows), so its active editable-attribute
+			// list is AUTHORITATIVE: an empty list means "nothing editable" and must NOT be silently re-enabled to
+			// the Lot/Best-before DEFAULT. The DEFAULT fallback applies only when NO global row exists at all
+			// (covered by noConfigAtAll_defaultsToLotNumberAndBestBeforeDate above).
+			createGlobalConfig(ReceiveUnitType.CU);
+
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributeCodesInOrder()).isEmpty();
+		}
+
+		@Test
+		void activeRowsOrderedBySeqNo_evenWhenInsertedOutOfOrder()
+		{
+			final I_MobileUI_MFG_Config globalConfig = createGlobalConfig(ReceiveUnitType.CU);
+			final I_M_Attribute attr1 = createAttribute("Attr1");
+			final I_M_Attribute attr2 = createAttribute("Attr2");
+
+			// insert out of SeqNo order on purpose - the effective list must still come back ordered
+			createConfigAttribute(globalConfig, attr2, 20, true);
+			createConfigAttribute(globalConfig, attr1, 10, true);
+
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr2"));
+		}
+
+		@Test
+		void inactiveChildRow_excludedFromEffectiveList()
+		{
+			final I_MobileUI_MFG_Config globalConfig = createGlobalConfig(ReceiveUnitType.CU);
+			final I_M_Attribute attr1 = createAttribute("Attr1");
+			final I_M_Attribute attr2 = createAttribute("Attr2");
+
+			createConfigAttribute(globalConfig, attr1, 10, true);
+			createConfigAttribute(globalConfig, attr2, 20, false);
+
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeCode.ofString("Attr1"));
+		}
+	}
+
+	@Nested
+	class saveGlobalEditableAttributeCodesInOrder
+	{
+		private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		private List<I_MobileUI_MFG_Config_Attribute> retrieveActiveChildRowsOrdered()
+		{
+			return queryBL.createQueryBuilder(I_MobileUI_MFG_Config_Attribute.class)
+					.addOnlyActiveRecordsFilter()
+					.orderBy(I_MobileUI_MFG_Config_Attribute.COLUMNNAME_SeqNo)
+					.create()
+					.list();
+		}
+
+		@Test
+		void reConfigWithDifferentList_replacesIt_deactivatingDroppedAttribute()
+		{
+			createAttribute("Attr1");
+			createAttribute("Attr2");
+
+			repo.saveGlobalEditableAttributeCodesInOrder(clientId, ImmutableList.of(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr2")));
+			repo.saveGlobalEditableAttributeCodesInOrder(clientId, ImmutableList.of(AttributeCode.ofString("Attr2")));
+
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeCode.ofString("Attr2"));
+		}
+
+		@Test
+		void reConfigReAddingADroppedAttribute_reactivatesTheSameRow_ratherThanCreatingADuplicate()
+		{
+			createAttribute("Attr1");
+			createAttribute("Attr2");
+
+			repo.saveGlobalEditableAttributeCodesInOrder(clientId, ImmutableList.of(AttributeCode.ofString("Attr1")));
+			repo.saveGlobalEditableAttributeCodesInOrder(clientId, ImmutableList.of(AttributeCode.ofString("Attr2")));
+			repo.saveGlobalEditableAttributeCodesInOrder(clientId, ImmutableList.of(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr2")));
+
+			assertThat(retrieveActiveChildRowsOrdered()).hasSize(2);
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr2"));
+		}
+
+		@Test
+		void duplicateAttributeCodeInOneCall_createsOnlyOneActiveRow()
+		{
+			createAttribute("Attr1");
+
+			repo.saveGlobalEditableAttributeCodesInOrder(
+					clientId,
+					ImmutableList.of(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr1")));
+
+			assertThat(retrieveActiveChildRowsOrdered()).hasSize(1);
+			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
+			assertThat(config.getEditableAttributeCodesInOrder())
+					.containsExactly(AttributeCode.ofString("Attr1"));
 		}
 	}
 }

@@ -57,6 +57,8 @@ public class CSVWriter
 
 	private static final String lineEnding = "\n";
 
+	private final boolean includeHeader;
+
 	private final ImmutableList<String> header;
 
 	private final DateFormat dateFormat;
@@ -75,7 +77,8 @@ public class CSVWriter
 			@NonNull final List<String> header,
 			@NonNull final String adLanguage,
 			@Nullable final String fieldDelimiter,
-			@Nullable final String fieldQualifier)
+			@Nullable final String fieldQualifier,
+			@Nullable final Boolean includeHeader)
 	{
 		Check.assume(!header.isEmpty(), "header not empty");
 
@@ -85,6 +88,7 @@ public class CSVWriter
 		this.header = ImmutableList.copyOf(header);
 		this.fieldDelimiter = CoalesceUtil.coalesceNotNull(fieldDelimiter, DEFAULT_FIELD_DELIMITER);
 		this.fieldQualifier = CoalesceUtil.coalesceNotNull(fieldQualifier, DEFAULT_FIELD_QUALIFIER);
+		this.includeHeader = includeHeader == null || includeHeader;
 
 		// we need to clone it because of concurrency issues
 		// see http://www.danielschneller.com/2007/04/calendar-dateformat-and-multi-threading.html
@@ -125,6 +129,12 @@ public class CSVWriter
 	{
 		if (headerAppended)
 		{
+			return;
+		}
+
+		if (!includeHeader)
+		{
+			headerAppended = true;
 			return;
 		}
 

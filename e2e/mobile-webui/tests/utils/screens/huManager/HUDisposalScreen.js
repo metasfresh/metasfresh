@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { page } from '../../common';
+import { page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 
@@ -13,7 +13,7 @@ const containerElement = () => page.locator('#HUDisposalScreen');
 
 export const HUDisposalScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
@@ -27,6 +27,15 @@ export const HUDisposalScreen = {
         await page.getByTestId(`qty-reason-radio-${reason}`).tap();
         await page.getByTestId('dispose-button').tap();
         await ApplicationsListScreen.waitForScreen(); // not sure if is right to get here after disposal, but atm this is how behaves
+    }),
+
+    expectReasonOffered: async ({ reason, offered = true }) => await test.step(`${NAME} - Expect disposal reason '${reason}' offered=${offered}`, async () => {
+        const radioButton = page.getByTestId(`qty-reason-radio-${reason}`);
+        if (offered) {
+            await expect(radioButton).toBeVisible();
+        } else {
+            await expect(radioButton).toHaveCount(0);
+        }
     }),
 
 };

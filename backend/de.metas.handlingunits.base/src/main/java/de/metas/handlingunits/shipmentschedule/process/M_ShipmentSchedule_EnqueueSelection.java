@@ -72,6 +72,10 @@ public class M_ShipmentSchedule_EnqueueSelection
 	@Param(parameterName = "IsShipToday", mandatory = true)
 	private boolean isShipToday; // introduced in task #2940
 
+	// Hidden param (DisplayLogic '1=0', default N); opted in per instance via DefaultValue.
+	@Param(parameterName = "IsOnTheFlyPickToPackingInstructions")
+	private boolean isOnTheFlyPickToPackingInstructions;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -99,6 +103,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 				.quantityType(quantityType)
 				.completeShipments(isCompleteShipments)
 				.isShipmentDateToday(isShipToday)
+				.onTheFlyPickToPackingInstructions(isOnTheFlyPickToPackingInstructions)
 				.build();
 
 		final Result result = ShipmentScheduleEnqueuer.newInstance(getCtx(), getTrxName())

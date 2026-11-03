@@ -1,23 +1,5 @@
 package de.metas.impexp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Table;
-import org.compiere.model.I_AD_Window;
-import org.compiere.model.I_C_DataImport;
-import org.junit.jupiter.api.Disabled;
-import org.mockito.Mockito;
-
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.impexp.config.DataImportConfigRepository;
 import de.metas.impexp.format.ImpFormatId;
@@ -30,6 +12,22 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_AD_Window;
+import org.compiere.model.I_C_DataImport;
+import org.junit.jupiter.api.Disabled;
+import org.mockito.Mockito;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -41,12 +39,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -93,7 +91,10 @@ class DataImportServiceTestContext<ImportRecordType, ImportProcessType extends I
 		importTableDescriptorRepo = Mockito.spy(new ImportTableDescriptorRepository());
 		importFormatsRepo = new ImpFormatRepository(importTableDescriptorRepo);
 		importProcessFactoryService = Services.get(IImportProcessFactory.class);
+
 		importTableAppenderService = new MockedInsertIntoImportTableService();
+		importTableAppenderService.registerImportModelClass(importTableName, importModelClass);
+		
 		dataImportService = new DataImportService(
 				new DataImportConfigRepository(),
 				importFormatsRepo,
