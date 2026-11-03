@@ -6,6 +6,7 @@ import de.metas.user.UserId;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -25,21 +26,12 @@ import java.util.stream.Collectors;
  * {@code WorkplaceService#getPickFromLocatorIdOrWarehouseDefault} (both can insert an {@code M_Locator}), nor
  * {@code IOrgDAO#getOrgWarehouseId} (throws for an organisation without an {@code AD_OrgInfo} row; {@code IOrgDAO#getOrgWarehouseIdIfExists} is used instead).
  */
+@RequiredArgsConstructor
 public class LabelTargetLocatorResolver
 {
 	@NonNull private final WorkplaceService workplaceService;
 	@NonNull private final IWarehouseDAO warehouseDAO;
 	@NonNull private final IOrgDAO orgDAO;
-
-	public LabelTargetLocatorResolver(
-			@NonNull final WorkplaceService workplaceService,
-			@NonNull final IWarehouseDAO warehouseDAO,
-			@NonNull final IOrgDAO orgDAO)
-	{
-		this.workplaceService = workplaceService;
-		this.warehouseDAO = warehouseDAO;
-		this.orgDAO = orgDAO;
-	}
 
 	@NonNull
 	public Optional<LocatorId> resolve(@NonNull final UserId userId, @NonNull final OrgId orgId)

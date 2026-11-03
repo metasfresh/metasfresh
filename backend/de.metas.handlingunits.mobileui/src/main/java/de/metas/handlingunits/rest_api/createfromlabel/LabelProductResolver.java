@@ -11,6 +11,7 @@ import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
@@ -29,20 +30,14 @@ import static de.metas.handlingunits.rest_api.createfromlabel.CreateFromLabelMes
  * command, so both read the label the same way (the create command re-parses on the server and never trusts the client).
  * <p>
  * Every refusal is a {@link LabelRejectionException} (one plain-language message).
+ * <p>
+ * Stateless: the services only; the per-request client is the argument of {@link #resolve(ScannedCode, ClientId)}.
  */
+@RequiredArgsConstructor
 public class LabelProductResolver
 {
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final IProductBL productBL;
-
-	/** stateless: the services only; the per-request client is the argument of {@link #resolve(ScannedCode, ClientId)} */
-	public LabelProductResolver(
-			@NonNull final HUQRCodesService huQRCodesService,
-			@NonNull final IProductBL productBL)
-	{
-		this.huQRCodesService = huQRCodesService;
-		this.productBL = productBL;
-	}
 
 	@NonNull
 	public LabelProduct resolve(@NonNull final ScannedCode scannedCode, @NonNull final ClientId clientId)

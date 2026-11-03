@@ -4,6 +4,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 import de.metas.workplace.WorkplaceService;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.context.annotation.Bean;
@@ -16,15 +17,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 class CreateFromLabelConfiguration
 {
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	@Bean
-	LabelProductResolver labelProductResolver(final HUQRCodesService huQRCodesService)
+	LabelProductResolver labelProductResolver(@NonNull final HUQRCodesService huQRCodesService)
 	{
-		return new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class));
+		return new LabelProductResolver(huQRCodesService, productBL);
 	}
 
 	@Bean
-	LabelTargetLocatorResolver labelTargetLocatorResolver(final WorkplaceService workplaceService)
+	LabelTargetLocatorResolver labelTargetLocatorResolver(@NonNull final WorkplaceService workplaceService)
 	{
-		return new LabelTargetLocatorResolver(workplaceService, Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class));
+		return new LabelTargetLocatorResolver(workplaceService, warehouseDAO, orgDAO);
 	}
 }
