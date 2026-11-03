@@ -11,13 +11,19 @@ const NAME = 'HOME';
 const containerElement = () => page.locator('#ApplicationsListScreen');
 
 export const ApplicationsListScreen = {
-    waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
-        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
+        await containerElement().waitFor({ timeout });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect to be displayed`, async () => {
         await expect(containerElement()).toBeVisible();
+    }),
+
+    // Assert the home menu is NOT displayed — used to prove a workflow start did not bounce the
+    // operator back to the root menu.
+    expectNotDisplayed: async () => await test.step(`${NAME} - Expect NOT to be displayed`, async () => {
+        await expect(containerElement()).toHaveCount(0);
     }),
 
     expectLogoutButtonReachable: async () => await test.step(`${NAME} - Expect logout button reachable by scrolling`, async () => {

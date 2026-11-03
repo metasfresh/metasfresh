@@ -30,7 +30,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Inputsource.
+	 * Set Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -39,7 +39,7 @@ public interface I_C_Invoice
 	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
-	 * Get Inputsource.
+	 * Get Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1449,8 +1449,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsPaid = "IsPaid";
 
 	/**
-	 * Set Teilrechnung.
-	 * Wenn aktiviert, ist diese Rechnung eine Teilrechnung.
+	 * Set Partial invoice.
+	 * When checked, this invoice is a partial invoice.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1459,8 +1459,8 @@ public interface I_C_Invoice
 	void setIsPartialInvoice (@Nullable java.lang.String IsPartialInvoice);
 
 	/**
-	 * Get Teilrechnung.
-	 * Wenn aktiviert, ist diese Rechnung eine Teilrechnung.
+	 * Get Partial invoice.
+	 * When checked, this invoice is a partial invoice.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2041,6 +2041,29 @@ public interface I_C_Invoice
 	int getSalesRep_ID();
 
 	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+
+	/**
+	 * Set Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setScriptedExport_Status (@Nullable java.lang.String ScriptedExport_Status);
+
+	/**
+	 * Get Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getScriptedExport_Status();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_ScriptedExport_Status = new ModelColumn<>(I_C_Invoice.class, "ScriptedExport_Status", null);
+	String COLUMNNAME_ScriptedExport_Status = "ScriptedExport_Status";
 
 	/**
 	 * Set Send EMail.

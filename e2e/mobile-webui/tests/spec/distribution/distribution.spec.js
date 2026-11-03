@@ -7,8 +7,11 @@ import { DistributionJobScreen } from '../../utils/screens/distribution/Distribu
 import { DistributionLineScreen } from '../../utils/screens/distribution/DistributionLineScreen';
 import { DistributionStepScreen } from '../../utils/screens/distribution/DistributionStepScreen';
 import { expectErrorToast } from '../../utils/common';
+import { DistributionLinePickFromScreen } from '../../utils/screens/distribution/DistributionLinePickFromScreen';
 import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
+import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
+import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 
 const createMasterdata = async ({ HU1_warehouse = 'wh1', HU1_product = 'P1', qtyToMove }) => {
     return await Backend.createMasterdata({
@@ -91,7 +94,36 @@ test('Try picking an HU from a different locator than pick from locator', async 
     await DistributionLineScreen.scanHUToMove({
         huQRCode: masterdata.handlingUnits.HU1.qrCode,
         expectedQtyToMove: '100',
-        expectedError: `The HU's locator does not match the order's locator.`
+        expectedError: `HU is not at the target trolley`
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan HU already at the drop-to location in distribution → user-friendly error', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
+    allure.story('Distribution error handling');
+    allure.severity('normal');
+
+    // HU1 is at wh2 (the drop-to warehouse). When the distribution job picks P1 from wh1 and
+    // drops to wh2, scanning HU1 shows the qty dialog. Pressing Done triggers the pick command
+    // which detects HU1 is already at the drop-to locator → DISTRIBUTION_HU_ALREADY_AT_TARGET.
+    const masterdata = await createMasterdata({ HU1_warehouse: 'wh2', qtyToMove: 100 });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
+    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+    await DistributionJobScreen.clickLineButton({ index: 1 });
+    await DistributionLineScreen.scanHUToMove({
+        huQRCode: masterdata.handlingUnits.HU1.qrCode,
+        qtyToMove: '100',
+        expectedQtyToMove: '100',
+        expectedError: 'DISTRIBUTION_HU_ALREADY_AT_TARGET',
     });
 });
 
@@ -113,19 +145,104 @@ test('Try picking an HU containing a different product than expected', async ({ 
     await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
+    await DistributionLineScreen.openPickFromScreen();
     await expectErrorToast(
         'Expect product not matching error',
         async () => {
-            await DistributionLineScreen.scanHUToMove({
-                huQRCode: masterdata.handlingUnits.HU1.qrCode,
-                expectedQtyToMove: '100',
-                expectedError: `The HU's locator does not match the order's locator.`
-            });
+            await DistributionLinePickFromScreen.typeHUQRCode(masterdata.handlingUnits.HU1.qrCode);
         },
         ({ textContent }) => {
             expect(textContent).toContain('The scanned QR Product does not match');
         }
-    )
+    );
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan HU reserved by picking job in distribution → user-friendly error', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
+    allure.story('Distribution error handling');
+    allure.severity('normal');
+
+    // A picking job reserves HU1 immediately on creation (PickingJobCreateCommand).
+    // Navigating back leaves the job open so HU1 stays reserved.
+    // When HU1 is then scanned in a distribution job and Done is pressed,
+    // assertHUCanBePickedFrom detects IsReserved=true and throws DISTRIBUTION_HU_RESERVED.
+    const masterdata = await Backend.createMasterdata({
+        language: "en_US",
+        request: {
+            login: { user: { language: "en_US" } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: "sales_order",
+                    allowPickingAnyCustomer: true,
+                    allowPickingAnyHU: false,
+                    createShipmentPolicy: 'NO',
+                    pickTo: ['TU'],
+                    allowCompletingPartialPickingJob: false,
+                },
+                distribution: {},
+            },
+            resources: { "plantId": { type: "PT" } },
+            bpartners: { "BP1": {} },
+            products: { "P1": { prices: [{ price: 1 }] } },
+            warehouses: {
+                "wh1": {},
+                "wh2": {},
+                "whInTransit": { inTransit: true },
+            },
+            packingInstructions: {
+                "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                "HU1": { product: 'P1', warehouse: 'wh1', qty: 100 }
+            },
+            salesOrders: {
+                "SO1": {
+                    bpartner: 'BP1',
+                    warehouse: 'wh1',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 100, piItemProduct: 'TU' }]
+                }
+            },
+            distributionOrders: {
+                "DD1": {
+                    warehouseFrom: "wh1",
+                    warehouseTo: "wh2",
+                    warehouseInTransit: "whInTransit",
+                    plant: "plantId",
+                    lines: [{ product: "P1", qtyEntered: 100 }],
+                }
+            },
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    await test.step('Reserve HU1 via picking job', async () => {
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        // Navigate back without completing — job stays open, HU1 remains reserved
+        await PickingJobScreen.goBack();
+        await PickingJobsListScreen.goBack();
+    });
+
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
+    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+    await DistributionJobScreen.clickLineButton({ index: 1 });
+    await DistributionLineScreen.scanHUToMove({
+        huQRCode: masterdata.handlingUnits.HU1.qrCode,
+        qtyToMove: '100',
+        expectedQtyToMove: '100',
+        expectedError: 'DISTRIBUTION_HU_RESERVED',
+    });
 });
 
 // noinspection JSUnusedLocalSymbols

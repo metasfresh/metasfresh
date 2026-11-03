@@ -136,14 +136,16 @@
         </dependency>
         
         <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
+        <!-- jp.osdn.ocra: kept for non-invoice reports that may use OCR-A -->
         <dependency>
             <groupId>jp.osdn.ocra</groupId>
             <artifactId>jp.osdn.ocra</artifactId>
         </dependency>
-        <dependency>
-            <groupId>jp.osdn.ocrb</groupId>
-            <artifactId>jp.osdn.ocrb</artifactId>
-        </dependency>
+        <!-- jp.osdn.ocrb intentionally NOT included in external-lib:
+             its font extension registers OCRB with pdfEmbedded=false, which would override
+             the metas.invoice extension (pdfEmbedded=true) when loaded via PropertiesLauncher
+             external-lib before BOOT-INF/classes. The metas.invoice extension in
+             metasfresh-report-service provides OCRB with pdfEmbedded=true for PDF/A-3 compliance. -->
 
     </dependencies>
 
@@ -395,7 +397,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${docker.build.directory}/report/external-lib</outputDirectory>
-                            <includeArtifactIds>jp.osdn.ocra,jp.osdn.ocrb</includeArtifactIds>
+                            <includeArtifactIds>jp.osdn.ocra</includeArtifactIds>
                             <excludeTransitive>true</excludeTransitive>
                             <overWriteReleases>true</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>

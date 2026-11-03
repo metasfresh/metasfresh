@@ -28,8 +28,12 @@ public class CreateShipperCommand
 		shipper.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
 		shipper.setName(name);
 		shipper.setIsActive(true);
+		shipper.setIsApiCarrierAdvise(request.isApiCarrierAdvise());
 		shipper.setPickupTimeFrom(Timestamp.valueOf("2025-01-01 08:00:00"));
 		shipper.setPickupTimeTo(Timestamp.valueOf("2025-01-01 18:00:00"));
+		// No ShipperGateway is set here: CarrierAdviseCommand.callAdvisor branches on the gateway;
+		// without one, it takes the local else-branch and synthesizes the advise (carrier product = shipper name).
+		// The IsApiCarrierAdvise flag governs the picking-side advise button, not this local resolution.
 		InterfaceWrapperHelper.save(shipper);
 
 		final ShipperId shipperId = ShipperId.ofRepoId(shipper.getM_Shipper_ID());

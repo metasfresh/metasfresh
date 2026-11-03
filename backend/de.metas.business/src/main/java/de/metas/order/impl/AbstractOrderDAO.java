@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.order.impl;
 
 import com.google.common.collect.ImmutableList;
@@ -19,6 +41,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderQuery;
+import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
@@ -58,28 +81,6 @@ import java.util.stream.Stream;
 import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public abstract class AbstractOrderDAO implements IOrderDAO
 {
@@ -347,6 +348,28 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.stream();
 	}
 
+	@Override
+	public Set<OrderId> retrieveNotProcessedOrderIds(@NonNull final BPartnerId bpartnerId)
+	{
+		return createQueryBuilder()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_Processed, false)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.idsAsSet(OrderId::ofRepoId);
+	}
+
+	@Override
+	public List<I_C_Order> getByLinkOrderId(@NonNull final OrderId linkOrderId)
+	{
+		return createQueryBuilder()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkOrderId)
+				.orderBy(I_C_Order.COLUMNNAME_C_Order_ID)
+				.create()
+				.list();
+	}
+
 	private IQueryBuilder<I_C_Order> createQueryBuilder()
 	{
 		return Services.get(IQueryBL.class)
@@ -513,6 +536,15 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.addCompareFilter(I_C_OrderLine.COLUMNNAME_QtyDelivered, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	public boolean isCalibrationRuleUsed(@NonNull final CalibrationRuleId calibrationRuleId)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_CompensationGroup_CalibrationRule_ID, calibrationRuleId)
 				.create()
 				.anyMatch();
 	}

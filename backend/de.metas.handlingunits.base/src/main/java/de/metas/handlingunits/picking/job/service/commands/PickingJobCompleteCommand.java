@@ -10,6 +10,7 @@ import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.commands.grai.PickingJobGRAIValidator;
+import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.i18n.AdMessageKey;
@@ -34,6 +35,7 @@ public class PickingJobCompleteCommand
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingShipmentService shipmentService;
+	@NonNull private final PickingJobBPartnerService bpartnerService;
 
 	@NonNull private final PickingJob initialPickingJob0;
 
@@ -46,6 +48,7 @@ public class PickingJobCompleteCommand
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUService huService,
 			final @NonNull PickingShipmentService shipmentService,
+			final @NonNull PickingJobBPartnerService bpartnerService,
 			//
 			final @NonNull PickingJob pickingJob)
 	{
@@ -56,6 +59,7 @@ public class PickingJobCompleteCommand
 		this.pickingSlotService = pickingSlotService;
 		this.huService = huService;
 		this.shipmentService = shipmentService;
+		this.bpartnerService = bpartnerService;
 
 		this.initialPickingJob0 = pickingJob;
 	}
@@ -121,6 +125,7 @@ public class PickingJobCompleteCommand
 
 		PickingJobGRAIValidator.builder()
 				.huService(huService)
+				.bpartnerService(bpartnerService)
 				.pickingJob(pickingJob)
 				.build()
 				.validate();

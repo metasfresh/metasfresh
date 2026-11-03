@@ -209,7 +209,11 @@ public interface ITrx
 	{
 		getProperty(propertyName, () -> {
 			final ListAccumulator<T> accum = new ListAccumulator<>();
-			runAfterCommit(() -> accum.flush(afterCommitListProcessor));
+			runAfterCommit(() -> {
+				// the trx can be started again after this commit; items added then need a new accumulator, since this listener runs only once
+				setProperty(propertyName, null);
+				accum.flush(afterCommitListProcessor);
+			});
 			return accum;
 		})
 				.addAll(itemsToAccumulate);

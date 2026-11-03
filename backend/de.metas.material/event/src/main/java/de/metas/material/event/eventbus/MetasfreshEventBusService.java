@@ -1,5 +1,6 @@
 package de.metas.material.event.eventbus;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -12,6 +13,8 @@ import de.metas.material.event.MaterialEventConfiguration;
 import de.metas.material.event.MaterialEventObserver;
 import lombok.NonNull;
 import org.slf4j.Logger;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -93,10 +96,29 @@ public final class MetasfreshEventBusService
 
 	public void enqueueEvent(@NonNull final MaterialEvent event)
 	{
-		materialEventObserver.reportEventEnqueued(event);
+		getEventBus().enqueueEvent(reportEnqueuedAndConvert(event));
+	}
 
-		final Event realEvent = materialEventConverter.fromMaterialEvent(event);
-		getEventBus().enqueueEvent(realEvent);
+	/**
+	 * Enqueues the given events as one batch, in the given order; see {@link IEventBus#enqueueEvents(java.util.List)}.
+	 */
+	public void enqueueEvents(@NonNull final Collection<MaterialEvent> events)
+	{
+		if (events.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableList<Event> realEvents = events.stream()
+				.map(this::reportEnqueuedAndConvert)
+				.collect(ImmutableList.toImmutableList());
+		getEventBus().enqueueEvents(realEvents);
+	}
+
+	private Event reportEnqueuedAndConvert(@NonNull final MaterialEvent event)
+	{
+		materialEventObserver.reportEventEnqueued(event);
+		return materialEventConverter.fromMaterialEvent(event);
 	}
 
 	public void subscribe(@NonNull final IEventListener internalListener)

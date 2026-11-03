@@ -329,6 +329,15 @@ Feature: Packing material invoice candidates: receipts
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
+
+    # Drain async queues before the receipt-creation step — the order-completion above schedules
+    # async events that UPDATE M_Cost on the same product. Without this drain, the receipt's
+    # MatchInv listener chain (deleteByInOutId → AcctMatchInvListener.onAfterDeleted → voidCosts)
+    # races on M_Cost and deadlocks (`org.adempiere.exceptions.DBDeadLockDetectedException`).
+    # Drain is a test-side band-aid; underlying concurrency bug tracked in
+    # https://github.com/metasfresh/mf15/issues/4160 — remove this drain once that issue is fixed.
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |

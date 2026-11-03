@@ -31,8 +31,10 @@ import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_C_Order;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.order.api.IHUOrderBL;
@@ -47,10 +49,14 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -67,6 +73,7 @@ import org.compiere.model.I_M_Forecast;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
@@ -83,10 +90,14 @@ public class HUOrderBL implements IHUOrderBL
 
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final HUReservationRepository huReservationRepository = SpringContextHolder.instance.getBean(HUReservationRepository.class);
 	private final ProjectRepository projectRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public void updateOrderLine(final de.metas.interfaces.I_C_OrderLine olPO, final String columnName)
@@ -584,6 +595,40 @@ public class HUOrderBL implements IHUOrderBL
 
 		orderLine.setC_Project_ID(ProjectId.toRepoId(projectId));
 		orderDAO.save(orderLine);
+	}
+
+	@Override
+	@Nullable
+	public Quantity getCapacityPerTUInStockUOMFallback(
+			@NonNull final OrderAndLineId salesOrderAndLineId,
+			@NonNull final ProductId productId)
+	{
+		final UomId stockUomId = productBL.getStockUOMId(productId);
+
+		final I_C_Order orderRecord = orderDAO.getById(salesOrderAndLineId.getOrderId(), I_C_Order.class);
+		final de.metas.handlingunits.model.I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.load(
+				salesOrderAndLineId.getOrderLineRepoId(),
+				de.metas.handlingunits.model.I_C_OrderLine.class);
+
+		final I_M_HU_PI_Item_Product tuPIItemProduct = hupiItemProductBL.extractHUPIItemProduct(orderRecord, orderLineRecord);
+		if (tuPIItemProduct == null)
+		{
+			return null;
+		}
+
+		final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM = lutuConfigurationFactory.createLUTUConfiguration(
+				tuPIItemProduct,
+				productId,
+				stockUomId,
+				null/* bpartnerId */,
+				false/* noLUForVirtualTU */);
+
+		// Pass a zero stock qty so the result reflects the packing instruction's CU-per-TU rather than
+		// any on-hand stock. The order-line-QtyItemCapacity branch is handled by the reservation command.
+		final Quantity zeroStockQty = Quantitys.of(BigDecimal.ZERO, stockUomId);
+		final Quantity capacityPerTU = IHUPIItemProductBL.getQtyCUsPerTUInStockUOM(orderLineRecord, zeroStockQty, lutuConfigurationInStockUOM);
+
+		return capacityPerTU != null && capacityPerTU.signum() > 0 ? capacityPerTU : null;
 	}
 
 }

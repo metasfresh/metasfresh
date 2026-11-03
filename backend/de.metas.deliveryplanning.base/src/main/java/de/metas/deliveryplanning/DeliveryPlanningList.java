@@ -1,0 +1,502 @@
+/*
+ * #%L
+ * de.metas.deliveryplanning.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.deliveryplanning;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.AdMessageKey;
+import de.metas.quantity.Quantity;
+import de.metas.shipping.TransportDirection;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
+
+/**
+ * An immutable selection of delivery plannings, loaded once per invocation, with every selection predicate the
+ * aggregation processes ask about answered against that in-memory list rather than its own query. The predicates
+ * return WHICH rows are the odd ones out, not just how many.
+ */
+@EqualsAndHashCode
+@ToString
+public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
+{
+	/** Earliest planned departure first, planning id as tie-break; a planning without an ETD sorts last. */
+	private static final Comparator<DeliveryPlanning> ALLOCATION_ORDER = Comparator
+			.comparing(DeliveryPlanning::getEtd, Comparator.nullsLast(Comparator.<Instant>naturalOrder()))
+			.thenComparingInt(deliveryPlanning -> deliveryPlanning.getId().getRepoId());
+
+	public static final DeliveryPlanningList EMPTY = new DeliveryPlanningList(ImmutableList.of());
+
+	private final ImmutableList<DeliveryPlanning> list;
+
+	private DeliveryPlanningList(@NonNull final Collection<DeliveryPlanning> list)
+	{
+		this.list = list.stream()
+				// so every derived message, allocation order and printed line is reproducible
+				.sorted(ALLOCATION_ORDER)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public static DeliveryPlanningList ofCollection(@NonNull final Collection<DeliveryPlanning> list)
+	{
+		return !list.isEmpty() ? new DeliveryPlanningList(list) : EMPTY;
+	}
+
+	public static DeliveryPlanningList of(final DeliveryPlanning... arr)
+	{
+		return ofCollection(ImmutableList.copyOf(arr));
+	}
+
+	public static Collector<DeliveryPlanning, ?, DeliveryPlanningList> collect()
+	{
+		return GuavaCollectors.collectUsingListAccumulator(DeliveryPlanningList::ofCollection);
+	}
+
+	public boolean isEmpty() {return list.isEmpty();}
+
+	public int size() {return list.size();}
+
+	public Stream<DeliveryPlanning> stream() {return list.stream();}
+
+	@Override
+	public @NonNull Iterator<DeliveryPlanning> iterator() {return list.iterator();}
+
+	/**
+	 * The ids in the order the plannings of one delivery instruction are allocated in, so the same selection
+	 * always yields the same allocation order.
+	 */
+	public ImmutableList<DeliveryPlanningId> getIdsInAllocationOrder()
+	{
+		return list.stream().map(DeliveryPlanning::getId).collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * The one transport direction the whole selection shares, or empty when it spans more than one or is empty -
+	 * the {@link AggregationKeyField#Direction} mismatch as a value rather than a flag, for callers that have to
+	 * correlate on the direction itself.
+	 */
+	public Optional<TransportDirection> getSingleTransportDirection()
+	{
+		return list.isEmpty() || isMismatch(AggregationKeyField.Direction)
+				? Optional.empty()
+				: Optional.of(list.get(0).getTransportDirection());
+	}
+
+	/**
+	 * Deliberately WEAKER than {@link #getSingleTransportDirection()}: {@code Incoming} and {@code Dropship} map
+	 * onto the same DISCHARGE end, so a selection holding both has no single direction yet nets one well-defined
+	 * end. Asking the direction instead would reject a mix that is perfectly computable.
+	 */
+	public Optional<PoolEnd> getSinglePoolEnd()
+	{
+		final ImmutableSet<PoolEnd> ends = list.stream()
+				.map(DeliveryPlanning::getTransportDirection)
+				.map(PoolEnd::forDirection)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return ends.size() == 1 ? Optional.of(ends.iterator().next()) : Optional.empty();
+	}
+
+	/**
+	 * The one value the whole selection carries for the given key field. Empty in all three cases the caller has
+	 * to treat alike - the selection is empty, it disagrees with itself on this field, or the one value it agrees
+	 * on is {@code null} (a field none of the plannings has set).
+	 */
+	public Optional<Object> getSingleAggregationKeyValue(@NonNull final AggregationKeyField field)
+	{
+		return list.isEmpty() || isMismatch(field)
+				? Optional.empty()
+				: Optional.ofNullable(field.extractValue(list.get(0)));
+	}
+
+	public boolean anyClosed() {return list.stream().anyMatch(DeliveryPlanning::isClosed);}
+
+	/**
+	 * Not the negation of {@link #anyClosed()}: a selection holding one open and one closed planning answers
+	 * {@code true} to both.
+	 */
+	public boolean anyOpen() {return list.stream().anyMatch(deliveryPlanning -> !deliveryPlanning.isClosed());}
+
+	public DeliveryPlanningList closedOnes() {return filter(DeliveryPlanning::isClosed);}
+
+	/**
+	 * The complement of {@link #closedOnes()}: what Re-Open refuses, as Close refuses the closed ones, so the two
+	 * actions' preconditions partition every selection between them.
+	 */
+	public DeliveryPlanningList openOnes() {return filter(deliveryPlanning -> !deliveryPlanning.isClosed());}
+
+	/**
+	 * ONE predicate rather than {@code anyClosed() || anyDelivered()}: the invariant
+	 * {@code Processed == (IsClosed || IsDelivered)} makes them the same question.
+	 * <p>
+	 * Affordable over a whole selection because {@code Processed} is a STORED column - deliberately NOT the shape
+	 * of {@link #anyAllocated()}, whose {@code IsAllocated} is a lazy-loading virtual column and costs a query per row.
+	 */
+	public boolean anyProcessed() {return list.stream().anyMatch(DeliveryPlanning::isProcessed);}
+
+	public DeliveryPlanningList processedOnes() {return filter(DeliveryPlanning::isProcessed);}
+
+	public boolean anyNotReadyForReceipt() {return list.stream().anyMatch(dp -> !dp.isReadyForReceipt());}
+
+	public DeliveryPlanningList notReadyForReceiptOnes() {return filter(dp -> !dp.isReadyForReceipt());}
+
+	public boolean anyAllocated() {return list.stream().anyMatch(DeliveryPlanning::isAllocated);}
+
+	public DeliveryPlanningList allocatedOnes() {return filter(DeliveryPlanning::isAllocated);}
+
+	/**
+	 * The complement of {@link #allocatedOnes()}: what Move refuses, as Add refuses the allocated ones, so the two
+	 * actions' preconditions partition every selection between them.
+	 */
+	public DeliveryPlanningList unallocatedOnes() {return filter(deliveryPlanning -> !deliveryPlanning.isAllocated());}
+
+	public DeliveryPlanningList withoutShipper() {return filter(DeliveryPlanning::isWithoutShipper);}
+
+	/**
+	 * An empty selection - an instruction with no active allocation - answers {@code NotDelivered}, vacuously.
+	 * <p>
+	 * The ONE place this is computed, so the stored {@code DeliveredState} column cannot drift from a second copy
+	 * of the derivation.
+	 */
+	public DeliveryInstructionDeliveredState getDeliveredState()
+	{
+		if (isEmpty())
+		{
+			return DeliveryInstructionDeliveredState.NotDelivered;
+		}
+
+		final boolean allDelivered = list.stream().allMatch(DeliveryPlanning::isDelivered);
+		if (allDelivered)
+		{
+			return DeliveryInstructionDeliveredState.FullyDelivered;
+		}
+
+		final boolean anyDelivered = list.stream().anyMatch(DeliveryPlanning::isDelivered);
+		return anyDelivered ? DeliveryInstructionDeliveredState.PartlyDelivered : DeliveryInstructionDeliveredState.NotDelivered;
+	}
+
+	private DeliveryPlanningList filter(@NonNull final Predicate<DeliveryPlanning> predicate)
+	{
+		return list.stream().filter(predicate).collect(collect());
+	}
+
+	/**
+	 * {@code coalesce(nullif(actual, 0), planned)}: a zero actual (nothing recorded yet) falls back to the
+	 * sibling's planned share, instead of being read as a real zero that would inflate the pool by that sibling's
+	 * whole planned amount.
+	 * <p>
+	 * NOT floored at zero here - the clamp belongs to the SPLIT's use of this figure, not to this shared
+	 * calculation, which a display column also reads unclamped.
+	 *
+	 * @param excludePlanningId {@code null} to count every planning, including the split target's own claim; the
+	 * 		target's id to leave its claim out because that share is still up for redistribution.
+	 */
+	public Quantity openPlanQty(@Nullable final DeliveryPlanningId excludePlanningId, @NonNull final PoolEnd end)
+	{
+		Check.assumeNotEmpty(list, "Cannot compute the distributable pool of an empty DeliveryPlanningList");
+
+		final Quantity qtyOrdered = list.get(0).getQtyOrdered();
+
+		Quantity claimed = null;
+		for (final DeliveryPlanning deliveryPlanning : list)
+		{
+			if (excludePlanningId != null && excludePlanningId.equals(deliveryPlanning.getId()))
+			{
+				continue;
+			}
+
+			final Quantity effectiveQty = end.effectiveQty(deliveryPlanning);
+			claimed = claimed == null ? effectiveQty : claimed.add(effectiveQty);
+		}
+
+		return claimed == null ? qtyOrdered : qtyOrdered.subtract(claimed);
+	}
+
+	/**
+	 * Summed straight - unlike {@link #openPlanQty} there is no nullif/coalesce fallback here, because a zero
+	 * actual means exactly what it says: nothing delivered yet. NOT floored at zero: an over-delivered line
+	 * legitimately shows negative (D16).
+	 */
+	public Quantity qtyTotalOpen(@NonNull final PoolEnd end)
+	{
+		Check.assumeNotEmpty(list, "Cannot compute QtyTotalOpen of an empty DeliveryPlanningList");
+
+		final Quantity qtyOrdered = list.get(0).getQtyOrdered();
+
+		Quantity actualSum = null;
+		for (final DeliveryPlanning deliveryPlanning : list)
+		{
+			final Quantity actual = end.actual(deliveryPlanning);
+			actualSum = actualSum == null ? actual : actualSum.add(actual);
+		}
+
+		return qtyOrdered.subtract(actualSum);
+	}
+
+	/**
+	 * {@code QtyTotalOpen}'s sibling figure: how much of the order line nobody has claimed yet, where a sibling's
+	 * claim is its ACTUAL once one is recorded and its PLANNED figure until then. Not floored at zero for the
+	 * same reason as {@code QtyTotalOpen}: an over-planned line legitimately shows negative (D16).
+	 * <p>
+	 * This is {@link #openPlanQty} with nothing excluded, and it DELEGATES rather than repeating the sum. Two
+	 * near-identical sums, one applying {@link PoolEnd#effectiveQty} and one reading the RAW planned figures,
+	 * drift apart the moment a sibling is received SHORT: on an order of 100 split 50/50 whose first planning
+	 * received only 40, the raw sum reports 0 open-planned where the honest figure is 10, while QtyTotalOpen
+	 * independently reports 60. One sum cannot disagree with itself.
+	 */
+	public Quantity qtyTotalOpenPlanned(@NonNull final PoolEnd end)
+	{
+		Check.assumeNotEmpty(list, "Cannot compute QtyTotalOpenPlanned of an empty DeliveryPlanningList");
+
+		return openPlanQty(null, end);
+	}
+
+	/**
+	 * Both order-line totals in one value, because they are always written together (the two
+	 * {@code QtyTotalOpen*} columns of every planning on the line). Returned as {@link BigDecimal} - the shape
+	 * the caller stores - so the pair cannot be produced with two mismatched pool ends.
+	 */
+	public OpenTotals openTotals(@NonNull final PoolEnd end)
+	{
+		return new OpenTotals(qtyTotalOpen(end).toBigDecimal(), qtyTotalOpenPlanned(end).toBigDecimal());
+	}
+
+	@Value
+	public static class OpenTotals
+	{
+		@NonNull BigDecimal qtyTotalOpen;
+		@NonNull BigDecimal qtyTotalOpenPlanned;
+	}
+
+	public enum PoolEnd
+	{
+		LOAD(DeliveryPlanning::getPlannedLoadedQty, DeliveryPlanning::getActualLoadedQty),
+		DISCHARGE(DeliveryPlanning::getPlannedDischargeQty, DeliveryPlanning::getActualDischargeQty);
+
+		private final Function<DeliveryPlanning, Quantity> plannedExtractor;
+		private final Function<DeliveryPlanning, Quantity> actualExtractor;
+
+		PoolEnd(
+				@NonNull final Function<DeliveryPlanning, Quantity> plannedExtractor,
+				@NonNull final Function<DeliveryPlanning, Quantity> actualExtractor)
+		{
+			this.plannedExtractor = plannedExtractor;
+			this.actualExtractor = actualExtractor;
+		}
+
+		/**
+		 * A sibling's effective claim: its actual once one is recorded ({@code nullif(actual, 0)}), otherwise its planned figure.
+		 * <p>
+		 * A CLOSED OR DELIVERED planning is the exception, and the zero is the whole point of it. The guard is
+		 * {@code isProcessed()}, which by this model's invariant is {@code IsClosed || IsDelivered}: a delivered
+		 * planning is as settled as a closed one, because a planning maps 1:1 onto its own document.
+		 * <p>
+		 * An OPEN planning that has taken nothing is still going to happen, so it keeps claiming its plan. A CLOSED
+		 * one never will - whatever it took is all it is ever going to take. Letting it fall back to its planned
+		 * figure lets a dead row keep reserving quantity that can never be delivered, so the order line reads fully
+		 * planned while part of it is in fact unplannable and needs a new planning.
+		 */
+		private Quantity effectiveQty(@NonNull final DeliveryPlanning deliveryPlanning)
+		{
+			final Quantity actual = actualExtractor.apply(deliveryPlanning);
+			if (deliveryPlanning.isProcessed())
+			{
+				return actual;
+			}
+			final Quantity planned = plannedExtractor.apply(deliveryPlanning);
+			return !actual.isZero() ? actual : planned;
+		}
+
+		/** This planning's own actual figure for this end - raw, no nullif fallback. */
+		public Quantity actual(@NonNull final DeliveryPlanning deliveryPlanning)
+		{
+			return actualExtractor.apply(deliveryPlanning);
+		}
+
+		/**
+		 * Decided by DIRECTION: a receipt (incoming or dropship) nets discharge, a shipment nets load.
+		 */
+		public static PoolEnd forDirection(@NonNull final TransportDirection transportDirection)
+		{
+			return transportDirection.isIncomingOrDropship() ? DISCHARGE : LOAD;
+		}
+	}
+
+	/**
+	 * This list and the given one as ONE list, so a rule about what a delivery instruction would hold after a move
+	 * can be answered against what it holds now together with what is being put on it. A planning in both is
+	 * carried once, keyed on its id, which is what makes re-adding a planning the target already holds a no-op
+	 * rather than a self-mismatch in {@link #aggregationKeyViolations()}.
+	 */
+	public DeliveryPlanningList union(@NonNull final DeliveryPlanningList other)
+	{
+		if (other.isEmpty())
+		{
+			return this;
+		}
+		if (isEmpty())
+		{
+			return other;
+		}
+
+		final LinkedHashMap<DeliveryPlanningId, DeliveryPlanning> byId = new LinkedHashMap<>();
+		for (final DeliveryPlanning deliveryPlanning : list)
+		{
+			byId.put(deliveryPlanning.getId(), deliveryPlanning);
+		}
+		for (final DeliveryPlanning deliveryPlanning : other.list)
+		{
+			byId.putIfAbsent(deliveryPlanning.getId(), deliveryPlanning);
+		}
+
+		return ofCollection(byId.values());
+	}
+
+	/**
+	 * Every field on which this selection disagrees, so one message can name them all at once. Empty means the
+	 * selection can share a single delivery instruction. Ordered by {@link AggregationKeyField} declaration order.
+	 */
+	public ImmutableSet<AggregationKeyField> aggregationKeyViolations()
+	{
+		return Arrays.stream(AggregationKeyField.values())
+				.filter(this::isMismatch)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private boolean isMismatch(@NonNull final AggregationKeyField field)
+	{
+		// NULL counts as a value here, on purpose: SQL's count(DISTINCT col) ignores NULLs, which would make
+		// "all rows have no forwarder" (admissible - they are all the same) indistinguishable from
+		// "some rows have a forwarder and some do not" (a mismatch - they are not).
+		final Set<Object> distinctValues = new HashSet<>();
+		for (final DeliveryPlanning deliveryPlanning : list)
+		{
+			distinctValues.add(field.extractValue(deliveryPlanning));
+			if (distinctValues.size() > 1)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Everything the delivery-instruction header can hold only one of, and which therefore has to match across the
+	 * whole selection.
+	 * <p>
+	 * ADDING A FIELD HERE IS HALF THE CHANGE. The Add-to / Move-to target picker filters on the same set through
+	 * the {@code AD_Val_Rule} "Delivery Instruction aggregation key matching", fed by one hidden process parameter
+	 * per field -- except {@link #Direction}, which is fed by the pre-existing TransportDirection parameter. A
+	 * field added here and not there leaves the picker offering targets this class then refuses -- the planner
+	 * picks one and is told no, which is the defect that filtering was introduced to remove.
+	 */
+	public enum AggregationKeyField
+	{
+		Organisation(DeliveryPlanning::getOrgId, "Organisation"),
+		Direction(DeliveryPlanning::getTransportDirection, "Direction"),
+		Forwarder(DeliveryPlanning::getShipperId, "Forwarder"),
+		Incoterms(DeliveryPlanning::getIncotermsId, "Incoterms"),
+		IncotermLocation(DeliveryPlanning::getIncotermLocation, "IncotermLocation"),
+		MeansOfTransportation(DeliveryPlanning::getMeansOfTransportationId, "MeansOfTransportation"),
+		LoadingAddress(DeliveryPlanning::getLoadingLocationId, "LoadingAddress"),
+		DeliveryAddress(DeliveryPlanning::getDeliveryLocationId, "DeliveryAddress");
+
+		private static final String LABEL_PREFIX = "de.metas.deliveryplanning.CombineIntoDeliveryInstruction.Field.";
+
+		private final Function<DeliveryPlanning, Object> valueExtractor;
+
+		/**
+		 * How this field is named in the rejection message. Carried on the enum constant so a field cannot be added
+		 * without a label. The suffix is spelled out rather than taken from {@link #name()} because the key is an
+		 * {@code AD_Message.Value} in the database, so renaming a constant must not move it.
+		 */
+		private final AdMessageKey label;
+
+		AggregationKeyField(@NonNull final Function<DeliveryPlanning, Object> valueExtractor, @NonNull final String labelSuffix)
+		{
+			this.valueExtractor = valueExtractor;
+			this.label = AdMessageKey.of(LABEL_PREFIX + labelSuffix);
+		}
+
+		@NonNull
+		public AdMessageKey getLabel()
+		{
+			return label;
+		}
+
+		@Nullable
+		Object extractValue(@NonNull final DeliveryPlanning deliveryPlanning)
+		{
+			return valueExtractor.apply(deliveryPlanning);
+		}
+
+		/**
+		 * A value read off this enum in the shape a process parameter carries it: a typed id as its repo id,
+		 * a String with its apostrophes doubled, anything else unchanged.
+		 * <p>
+		 * The doubling is not cosmetic. These parameters exist only to be read by the target picker's
+		 * {@code AD_Val_Rule}, which reaches them through {@code @Param@} substitution -- plain textual
+		 * splicing into the rule's SQL, with no escaping anywhere on the path: {@code CtxName.getValueAsString}
+		 * hands the value back verbatim, and the one available modifier ({@code QuotedIfNotDefault}) wraps in
+		 * quotes without escaping. So an incoterm place that carries an apostrophe -- L'Aquila, O'Hare,
+		 * Sant'Angelo, all ordinary in Europe -- would close the SQL string early and turn the picker's query
+		 * into a syntax error: the planner opens Add to / Move to and gets a server error instead of a target
+		 * list. Doubling is also what the statement converter expects, since it markers {@code ''} out before
+		 * it tokenises quoted strings.
+		 */
+		@Nullable
+		public static Object toProcessParameterValue(@Nullable final Object keyValue)
+		{
+			if (keyValue instanceof RepoIdAware)
+			{
+				return ((RepoIdAware)keyValue).getRepoId();
+			}
+			if (keyValue instanceof String)
+			{
+				return ((String)keyValue).replace("'", "''");
+			}
+			return keyValue;
+		}
+	}
+}

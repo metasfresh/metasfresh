@@ -34,16 +34,23 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.inoutcandidate.qty_reservation.CreateQtyReservationRequest;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationId;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
+import de.metas.inoutcandidate.qty_reservation.ReduceQtyReservationRequest;
 import de.metas.inoutcandidate.qty_reservation.SupplyType;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.order.OrderAndLineId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -93,11 +100,59 @@ import javax.annotation.Nullable;
  *   <li><b>QtyDelivered</b> — (optional) expected delivered quantity so far</li>
  *   <li><b>Processed</b> — (optional) expected value of the {@code Processed} flag</li>
  * </ul>
+ *
+ * <h3>{@code M_QtyReservation bucket is reduced:}</h3>
+ * <p>Partially reverses (reduces) the reservation bucket of an order line via {@code QtyReservationService#reduceReservation}, like the cockpit V2 "reverse reservation" overlay.
+ * <pre>
+ * When M_QtyReservation bucket is reduced:
+ *   | C_OrderLine_ID | OPT.SupplyType | QtyTU |
+ *   | orderLine_1    | OH             | 1     |
+ * </pre>
+ * <ul>
+ *   <li><b>C_OrderLine_ID</b> — (required, identifier-ref) the sales order line whose reservation is reduced</li>
+ *   <li><b>SupplyType</b> — (optional, default {@code OH}) supply type of the bucket: {@code OH} or {@code PS}</li>
+ *   <li><b>QtyTU</b> — (required) number of TUs to unreserve; must not exceed the bucket's reversible TUs</li>
+ * </ul>
+ *
+ * <h3>{@code M_QtyReservation bucket reduction is rejected:}</h3>
+ * <p>Same columns as {@code M_QtyReservation bucket is reduced:}, but expects the reduction to fail because more TUs are requested than are reversible.
+ * <pre>
+ * When M_QtyReservation bucket reduction is rejected:
+ *   | C_OrderLine_ID | OPT.SupplyType | QtyTU |
+ *   | orderLine_1    | OH             | 6     |
+ * </pre>
+ *
+ * <h3>{@code validate M_QtyReservation bucket:}</h3>
+ * <p>Validates the reservation bucket of an order line.
+ * <pre>
+ * Then validate M_QtyReservation bucket:
+ *   | C_OrderLine_ID | OPT.SupplyType | OPT.ReversibleQtyTU | OPT.ReservedQtyTU |
+ *   | orderLine_1    | OH             | 2                   | 3                 |
+ * </pre>
+ * <ul>
+ *   <li><b>C_OrderLine_ID</b> — (required, identifier-ref) the sales order line</li>
+ *   <li><b>SupplyType</b> — (optional, default {@code OH}) supply type of the bucket</li>
+ *   <li><b>ReversibleQtyTU</b> — (optional) expected reserved-minus-delivered TUs of the bucket</li>
+ *   <li><b>ReservedQtyTU</b> — (optional) expected total unprocessed reserved TUs of the order line</li>
+ * </ul>
+ *
+ * <h3>{@code M_QtyReservations are deleted:}</h3>
+ * <p>Asserts that the given reservations no longer exist in the DB (e.g. after the whole bucket was reversed).
+ * <pre>
+ * Then M_QtyReservations are deleted:
+ *   | Identifier       |
+ *   | qtyReservation_1 |
+ * </pre>
+ * <ul>
+ *   <li><b>Identifier</b> — (required) alias of the reservation that must be gone</li>
+ * </ul>
  */
 @RequiredArgsConstructor
 public class M_QtyReservation_StepDef
 {
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final QtyReservationService qtyReservationService = SpringContextHolder.instance.getBean(QtyReservationService.class);
 
 	@NonNull private final M_QtyReservation_StepDefData qtyReservationTable;
@@ -144,6 +199,94 @@ public class M_QtyReservation_StepDef
 						.map(asiTable::getId)
 						.flatMap(AttributesKeys::createAttributesKeyFromASIStorageAttributes)
 						.orElse(null));
+	}
+
+	/**
+	 * Partially reverses (reduces) the reservation bucket of an order line, like the cockpit V2 "reverse reservation" overlay.
+	 * <pre>
+	 * When M_QtyReservation bucket is reduced:
+	 *   | C_OrderLine_ID | OPT.SupplyType | QtyTU |
+	 *   | orderLine_1    | OH             | 1     |
+	 * </pre>
+	 *
+	 * @see M_QtyReservation_StepDef class JavaDoc, section {@code M_QtyReservation bucket is reduced:}
+	 */
+	@When("M_QtyReservation bucket is reduced:")
+	public void reduce_M_QtyReservation_bucket(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> trxManager.runInNewTrx(() -> qtyReservationService.reduceReservation(toReduceRequest(row))));
+	}
+
+	/**
+	 * Same as {@code M_QtyReservation bucket is reduced:}, but expects the request to be rejected (more TUs than reversible).
+	 *
+	 * @see M_QtyReservation_StepDef class JavaDoc, section {@code M_QtyReservation bucket reduction is rejected:}
+	 */
+	@When("M_QtyReservation bucket reduction is rejected:")
+	public void reduce_M_QtyReservation_bucket_is_rejected(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> Assertions.assertThatThrownBy(
+						() -> trxManager.runInNewTrx(() -> qtyReservationService.reduceReservation(toReduceRequest(row))))
+				.as("reduction of %s should be rejected", row)
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("Cannot unreserve"));
+	}
+
+	private ReduceQtyReservationRequest toReduceRequest(@NonNull final DataTableRow row)
+	{
+		return ReduceQtyReservationRequest.builder()
+				.orderAndLineId(orderLineTable.getOrderAndLineId(row.getAsIdentifier("C_OrderLine_ID")))
+				.supplyType(row.getAsOptionalEnum("SupplyType", SupplyType.class).orElse(SupplyType.ON_HAND))
+				.qtyToUnreserveTU(QtyTU.ofInt(row.getAsInt("QtyTU")))
+				.build();
+	}
+
+	/**
+	 * Validates the reservation bucket of an order line.
+	 * <pre>
+	 * Then validate M_QtyReservation bucket:
+	 *   | C_OrderLine_ID | OPT.SupplyType | OPT.ReversibleQtyTU | OPT.ReservedQtyTU |
+	 *   | orderLine_1    | OH             | 2                   | 3                 |
+	 * </pre>
+	 * {@code ReversibleQtyTU} = reserved minus delivered TUs of the bucket; {@code ReservedQtyTU} = all unprocessed reserved TUs of the order line.
+	 *
+	 * @see M_QtyReservation_StepDef class JavaDoc, section {@code validate M_QtyReservation bucket:}
+	 */
+	@Then("validate M_QtyReservation bucket:")
+	public void validate_M_QtyReservation_bucket(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final OrderAndLineId orderAndLineId = orderLineTable.getOrderAndLineId(row.getAsIdentifier("C_OrderLine_ID"));
+			final SupplyType supplyType = row.getAsOptionalEnum("SupplyType", SupplyType.class).orElse(SupplyType.ON_HAND);
+			final SoftAssertions softly = new SoftAssertions();
+			row.getAsOptionalInt("ReversibleQtyTU").ifPresent(expected ->
+					softly.assertThat(qtyReservationService.getTotalReversibleQtyTU(orderAndLineId, supplyType, null).toInt())
+							.as("reversible QtyTU of %s/%s", orderAndLineId, supplyType)
+							.isEqualTo(expected));
+			row.getAsOptionalInt("ReservedQtyTU").ifPresent(expected ->
+					softly.assertThat(qtyReservationService.getReservedQtyTU(orderAndLineId).toInt())
+							.as("reserved QtyTU of %s", orderAndLineId)
+							.isEqualTo(expected));
+			softly.assertAll();
+		});
+	}
+
+	/**
+	 * Asserts that the given reservations no longer exist in the DB (e.g. after the whole bucket was reversed).
+	 *
+	 * @see M_QtyReservation_StepDef class JavaDoc, section {@code M_QtyReservations are deleted:}
+	 */
+	@Then("M_QtyReservations are deleted:")
+	public void M_QtyReservations_are_deleted(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final QtyReservationId id = qtyReservationTable.get(row.getAsIdentifier());
+			final int count = queryBL.createQueryBuilder(I_M_QtyReservation.class)
+					.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID, id.getRepoId())
+					.create()
+					.count();
+			Assertions.assertThat(count).as("M_QtyReservation[%d] still exists", id.getRepoId()).isZero();
+		});
 	}
 
 	/**

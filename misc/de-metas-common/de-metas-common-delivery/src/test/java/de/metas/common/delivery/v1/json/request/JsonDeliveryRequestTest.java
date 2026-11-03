@@ -23,6 +23,7 @@
 package de.metas.common.delivery.v1.json.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
@@ -116,5 +117,57 @@ class JsonDeliveryRequestTest {
         final String json = mapper().writeValueAsString(req);
         final JsonDeliveryRequest back = mapper().readValue(json, JsonDeliveryRequest.class);
         assertThat(back).isEqualTo(req);
+    }
+
+    @Test
+    void getValue_receiverBPartnerAttention_returnsDeliveryAddressAttention()
+    {
+        // given
+        final JsonDeliveryRequest request = JsonDeliveryRequest.builder()
+                .pickupAddress(aPickupAddress())
+                .pickupDate("2025-10-01")
+                .timeFrom("09:00")
+                .timeTo("18:00")
+                .deliveryAddress(JsonAddress.builder()
+                        .companyName1("ACME GmbH")
+                        .street("Hauptstraße")
+                        .zipCode("10115")
+                        .city("Berlin")
+                        .country("DE")
+                        .attention("z. Hd. Max Mustermann")
+                        .build())
+                .deliveryOrderParcel(aParcel())
+                .shipperConfig(aConfig())
+                .build();
+
+        // when / then
+        assertThat(request.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_BPARTNER_ATTENTION))
+                .isEqualTo("z. Hd. Max Mustermann");
+    }
+
+    @Test
+    void getValue_senderBPartnerAttention_returnsPickupAddressAttention()
+    {
+        // given
+        final JsonDeliveryRequest request = JsonDeliveryRequest.builder()
+                .pickupAddress(JsonAddress.builder()
+                        .companyName1("Warehouse GmbH")
+                        .street("Lagerstraße")
+                        .zipCode("10115")
+                        .city("Berlin")
+                        .country("DE")
+                        .attention("Lager Eingang")
+                        .build())
+                .pickupDate("2025-10-01")
+                .timeFrom("09:00")
+                .timeTo("18:00")
+                .deliveryAddress(aDeliveryAddress())
+                .deliveryOrderParcel(aParcel())
+                .shipperConfig(aConfig())
+                .build();
+
+        // when / then
+        assertThat(request.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION))
+                .isEqualTo("Lager Eingang");
     }
 }

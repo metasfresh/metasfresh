@@ -53,6 +53,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -198,6 +199,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void setAsyncBatch(ShipmentScheduleId shipmentScheduleId, AsyncBatchId asyncBatchId);
 
 	I_M_ShipmentSchedule getByOrderLineId(@NonNull OrderLineId orderLineId);
+
+	List<I_M_ShipmentSchedule> getByOrderLineIds(@NonNull Set<OrderLineId> orderLineIds);
 
 	void assertSalesOrderCanBeReactivated(@NonNull OrderId salesOrderId);
 
