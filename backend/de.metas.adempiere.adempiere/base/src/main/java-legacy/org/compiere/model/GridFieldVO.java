@@ -43,8 +43,8 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.DisplayType;
@@ -382,7 +382,7 @@ public class GridFieldVO implements Serializable
 				{
 					vo.useDocSequence = DisplayType.toBoolean(rs.getString(i));
 				}
-				else if(columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_IsHideGridColumnIfEmpty))
+				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_IsHideGridColumnIfEmpty))
 				{
 					vo.hideGridColumnIfEmpty = DisplayType.toBoolean(rs.getString(i));
 				}
@@ -463,6 +463,7 @@ public class GridFieldVO implements Serializable
 				.defaultFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_SelectionColumnSeqNo))
 				.operator(rs.getString(I_AD_Column.COLUMNNAME_FilterOperator))
 				.showFilterIncrementButtons(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterIncrementButtons)))
+				.showInactiveValues(rs.getBoolean(I_AD_Field.COLUMNNAME_IsShowFilterInactiveValues))
 				.showFilterInline(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterInline)))
 				.defaultValue(rs.getString(I_AD_Column.COLUMNNAME_FilterDefaultValue))
 				//.adValRuleId(AdValRuleId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_Filter_Val_Rule_ID)))
@@ -619,7 +620,7 @@ public class GridFieldVO implements Serializable
 			final boolean isCreated,
 			final boolean isTimestamp)
 	{
-		GridFieldVO vo = new GridFieldVO(ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, tabReadOnly, applyRolePermissions);
+		final GridFieldVO vo = new GridFieldVO(ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, tabReadOnly, applyRolePermissions);
 		vo.ColumnName = isCreated ? "Created" : "Updated";
 		if (!isTimestamp)
 		{
@@ -664,9 +665,8 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Context
 	 * -- SETTER --
-	 *  Set Context including contained elements
+	 * Set Context including contained elements
 	 *
-
 	 */
 	@Setter @Getter private Properties ctx;
 	/**
@@ -909,7 +909,7 @@ public class GridFieldVO implements Serializable
 	@Getter private int AD_Sequence_ID = 0;
 
 	@Getter private boolean forbidNewRecordCreation = false;
-	
+
 	@Getter private boolean hideGridColumnIfEmpty = false;
 
 	/**
@@ -1003,7 +1003,7 @@ public class GridFieldVO implements Serializable
 							AD_Val_Rule_ID); // metas: 03271
 				}
 			}
-			catch (Exception e)     // Cannot create Lookup
+			catch (final Exception e)     // Cannot create Lookup
 			{
 				logger.warn("No LookupInfo for {}. Considering displayType=ID", ColumnName, e);
 				displayType = DisplayType.ID;

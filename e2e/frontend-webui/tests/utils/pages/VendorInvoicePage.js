@@ -111,8 +111,8 @@ export class VendorInvoicePage {
       // Double click to open detail view
       await firstRow.dblclick();
 
-      // Wait for navigation to detail view (URL pattern: /window/183/{id})
-      await page.waitForURL(/\/window\/183\/\d+/, {
+      // Wait for navigation to detail view (flexible pattern for window overrides)
+      await page.waitForURL(/\/window\/\d+\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
@@ -215,8 +215,8 @@ export class VendorInvoicePage {
       // Double click to open detail view
       await firstRow.dblclick();
 
-      // Wait for navigation to detail view (URL pattern: /window/183/{id})
-      await page.waitForURL(/\/window\/183\/\d+/, {
+      // Wait for navigation to detail view (flexible pattern for window overrides)
+      await page.waitForURL(/\/window\/\d+\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
@@ -370,9 +370,9 @@ export class VendorInvoicePage {
       let url = page.url();
 
       // Check if we're on a list view (no document ID in URL)
-      // List view: /window/183?filters...
-      // Detail view: /window/183/12345
-      const isListView = !url.match(/\/window\/183\/\d+/);
+      // List view: /window/{id}?filters...
+      // Detail view: /window/{id}/12345
+      const isListView = !url.match(/\/window\/\d+\/\d+/);
 
       if (isListView) {
         console.log('On list view, opening detail view by double-clicking first row');
@@ -384,8 +384,8 @@ export class VendorInvoicePage {
         // Double-click to open detail view
         await firstRow.dblclick();
 
-        // Wait for navigation to detail view
-        await page.waitForURL(/\/window\/183\/\d+/, { timeout: 15000 });
+        // Wait for navigation to detail view (flexible pattern for window overrides)
+        await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: 15000 });
         await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
 
         // Update URL after navigation
@@ -407,7 +407,7 @@ export class VendorInvoicePage {
         documentNo = await documentNoInput.first().inputValue();
       } catch {
         // Fallback: extract from URL (less reliable but better than nothing)
-        const documentId = url.match(/\/window\/183\/(\d+)/)?.[1];
+        const documentId = url.match(/\/window\/\d+\/(\d+)/)?.[1];
         console.log(`Warning: Could not get DocumentNo from page, using URL document ID: ${documentId}`);
         documentNo = documentId;
       }

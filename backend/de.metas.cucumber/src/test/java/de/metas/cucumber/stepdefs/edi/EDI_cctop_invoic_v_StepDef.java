@@ -22,15 +22,22 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_cctop_invoic_v;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -63,6 +70,8 @@ public class EDI_cctop_invoic_v_StepDef
 	private static final String TAGNAME_EDI_CCTOP_INVOIC_500_V = "EDI_cctop_invoic_500_v";
 	private static final String TAGNAME_EDI_CCTOP_119_V = "EDI_cctop_119_v";
 
+	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+
 	private final EDI_cctop_invoic_v_StepDefData cctopInvoiceTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final EDI_Desadv_StepDefData desadvTable;
@@ -85,6 +94,51 @@ public class EDI_cctop_invoic_v_StepDef
 		{
 			ediExportInvoice(row);
 		}
+	}
+
+	@Then("invoice is enqueued for EDI export")
+	public void enqueue_edi_export_invoice(@NonNull final DataTable table)
+	{
+		DataTableRows.of(table).forEach(this::enqueue_edi_export_invoice);
+	}
+
+	private void enqueue_edi_export_invoice(@NonNull final DataTableRow row)
+	{
+		final de.metas.edi.model.I_C_Invoice ediInvoiceRecord =
+				InterfaceWrapperHelper.create(
+						row.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable),
+						de.metas.edi.model.I_C_Invoice.class);
+
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(Env.getCtx(), EDIWorkpackageProcessor.class);
+
+		queue.newWorkPackage()
+				.setPriority(IWorkPackageQueue.PRIORITY_AUTO)
+				.addElement(ediInvoiceRecord)
+				.bindToThreadInheritedTrx()
+				.buildAndEnqueue();
+	}
+
+	@Then("^after not more than (.*)s, C_Invoice records have the following export status$")
+	public void validate_export_status(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	{
+		DataTableRows.of(table).forEach(row -> validateExportStatus(timeoutSec, row));
+	}
+
+	private void validateExportStatus(
+			final int timeoutSec,
+			@NonNull final DataTableRow tableRow) throws InterruptedException
+	{
+		final de.metas.edi.model.I_C_Invoice ediInvoiceRecord =
+				InterfaceWrapperHelper.create(
+						tableRow.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable),
+						de.metas.edi.model.I_C_Invoice.class);
+
+		final String exportStatus = tableRow.getAsString(I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus);
+
+		StepDefUtil.tryAndWait(timeoutSec, 1000, () -> {
+			InterfaceWrapperHelper.refresh(ediInvoiceRecord);
+			return exportStatus.equals(ediInvoiceRecord.getEDI_ExportStatus());
+		});
 	}
 
 	@Then("EDI_cctop_invoic_500_v of the following EDI_cctop_invoic_v is validated")

@@ -3,6 +3,8 @@ package de.metas.manufacturing.job.service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.IPostingService;
+import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
 import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
@@ -13,9 +15,12 @@ import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleCreateRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
@@ -23,7 +28,16 @@ import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.manufacturing.acct.PPOrderPostingService;
+import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
+import de.metas.manufacturing.config.ReceiveUnitType;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
@@ -40,61 +54,84 @@ import de.metas.manufacturing.job.service.commands.issue_what_was_received.Issue
 import de.metas.manufacturing.job.service.commands.receive.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.receive.ReceiveGoodsCommand.ReceiveGoodsCommandBuilder;
 import de.metas.manufacturing.job.service.commands.receive.SelectedReceivingTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptEditableAttributes;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.ResourceTypeId;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.lang.SeqNo;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.service.Constants;
+import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.trx.api.DeadlockRetryPolicy;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.ManufacturingOrderQuery;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class ManufacturingJobService
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	@NonNull private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 	@NonNull private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+	@NonNull private final IPostingService postingService = Services.get(IPostingService.class);
 	@NonNull private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final PPOrderSourceHUService ppOrderSourceHUService;
@@ -103,10 +140,46 @@ public class ManufacturingJobService
 	@NonNull private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
 	@NonNull private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
 	@NonNull private final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository;
+	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final MaterialReceiptEditableAttributes materialReceiptEditableAttributes;
+	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
+	@NonNull private final PPOrderPostingService ppOrderPostingService;
+	@NonNull private final DeadlockRetryPolicy deadlockRetryPolicy;
 
 	@VisibleForTesting
 	static final String SYSCONFIG_defaultFilters = "mobileui.manufacturing.defaultFilters";
 	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
+
+	@Autowired
+	public ManufacturingJobService(
+			@NonNull final PPOrderIssueScheduleService ppOrderIssueScheduleService,
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final PPOrderSourceHUService ppOrderSourceHUService,
+			@NonNull final SourceHUsService sourceHUsService,
+			@NonNull final DeviceAccessorsHubFactory deviceAccessorsHubFactory,
+			@NonNull final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
+			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices,
+			@NonNull final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository,
+			@NonNull final HUQRCodesService huQRCodesService,
+			@NonNull final MaterialReceiptEditableAttributes materialReceiptEditableAttributes,
+			@NonNull final PPOrderCostDifferenceDistributor costDifferenceDistributor,
+			@NonNull final PPOrderPostingService ppOrderPostingService)
+	{
+		this(
+				ppOrderIssueScheduleService,
+				huReservationService,
+				ppOrderSourceHUService,
+				sourceHUsService,
+				deviceAccessorsHubFactory,
+				deviceWebsocketNamingStrategy,
+				loadingAndSavingSupportServices,
+				mobileUIManufacturingConfigRepository,
+				huQRCodesService,
+				materialReceiptEditableAttributes,
+				costDifferenceDistributor,
+				ppOrderPostingService,
+				DeadlockRetryPolicy.DEFAULT);
+	}
 
 	public static ManufacturingJobService newInstanceForUnitTesting()
 	{
@@ -121,7 +194,12 @@ public class ManufacturingJobService
 						new DeviceAccessorsHubFactory(new DeviceConfigPoolFactory()),
 						new DeviceWebsocketNamingStrategy("/test/"),
 						ManufacturingJobLoaderAndSaverSupportingServices.newInstanceForUnitTesting(),
-						new MobileUIManufacturingConfigRepository()
+						new MobileUIManufacturingConfigRepository(),
+						SpringContextHolder.instance.getBean(HUQRCodesService.class),
+						new MaterialReceiptEditableAttributes(),
+						SpringContextHolder.instance.getBean(PPOrderCostDifferenceDistributor.class),
+						SpringContextHolder.instance.getBean(PPOrderPostingService.class),
+						DeadlockRetryPolicy.builder().backoffMillis(0).build()
 				)
 		);
 	}
@@ -431,17 +509,62 @@ public class ManufacturingJobService
 		final ManufacturingJobActivity jobActivity = job.getActivityById(jobActivityId);
 		final PPOrderRoutingActivityId orderRoutingActivityId = jobActivity.getOrderRoutingActivityId();
 
-		boolean jobNeedsReload = changeRoutingActivityStatusToCompleted(ppOrderId, orderRoutingActivityId);
-
-		if (job.isLastActivity(jobActivityId))
+		if (!job.isLastActivity(jobActivityId))
 		{
-			ppOrderBL.closeOrder(ppOrderId);
-			jobNeedsReload = true;
+			return changeRoutingActivityStatusToCompleted(ppOrderId, orderRoutingActivityId) ? getJobById(ppOrderId) : job;
 		}
 
-		//
-		return jobNeedsReload ? getJobById(ppOrderId) : job;
+		// Decided once, outside the transaction: a decision flipping inside a retry attempt would settle on unposted collectors.
+		// Without accounting, or with a costing method that keeps no order costs (e.g. Standard), there is never anything to settle.
+		final boolean isSettleWipCostDifference = postingService.isEnabled()
+				&& hasRawMaterialIssuedByHand(ppOrderId)
+				&& costDifferenceDistributor.hasOrderCosts(ppOrderBL.getById(ppOrderId));
+		if (isSettleWipCostDifference)
+		{
+			// The residual is read from PP_Order_Cost, which only posting fills; asynchronous posting may still be behind.
+			ppOrderPostingService.postOrderAndCostCollectorsIfNotPosted(ppOrderId);
+		}
 
+		runInOneTrxWithDeadlockRetry(() -> {
+			changeRoutingActivityStatusToCompleted(ppOrderId, orderRoutingActivityId);
+
+			// the distributor closes the order itself when it settles
+			final boolean isOrderClosedBySettlement = isSettleWipCostDifference && costDifferenceDistributor.distribute(ppOrderId);
+			if (!isOrderClosedBySettlement)
+			{
+				ppOrderBL.closeOrder(ppOrderId);
+			}
+		});
+
+		return getJobById(ppOrderId);
+	}
+
+	/**
+	 * Engine-owned transactions are retried on deadlock, each attempt in a fresh transaction; with an outer transaction open
+	 * the action runs once, joined to it, because a retry could not roll that transaction back.
+	 */
+	private void runInOneTrxWithDeadlockRetry(@NonNull final Runnable action)
+	{
+		if (trxManager.hasThreadInheritedTrx())
+		{
+			trxManager.runInThreadInheritedTrx(action);
+		}
+		else
+		{
+			deadlockRetryPolicy.run(() -> trxManager.runInThreadInheritedTrx(action));
+		}
+	}
+
+	/**
+	 * Only {@code QtyDeliveredActual} counts: issue collectors fill it, the close's usage variance fills {@code QtyDelivered} only.
+	 */
+	private boolean hasRawMaterialIssuedByHand(@NonNull final PPOrderId ppOrderId)
+	{
+		return ppOrderBOMBL.getOrderBOMLines(ppOrderId)
+				.stream()
+				.anyMatch(bomLine -> BOMComponentType.ofNullableCodeOrComponent(bomLine.getComponentType()).isIssue()
+						&& BOMComponentIssueMethod.ofNullableCode(bomLine.getIssueMethod()) != BOMComponentIssueMethod.IssueOnlyForReceived
+						&& bomLine.getQtyDeliveredActual().signum() != 0);
 	}
 
 	private boolean changeRoutingActivityStatusToCompleted(final PPOrderId ppOrderId, final PPOrderRoutingActivityId orderRoutingActivityId)
@@ -481,7 +604,9 @@ public class ManufacturingJobService
 		return IssueRawMaterialsCommand.builder()
 				.trxManager(trxManager)
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
-				.loadingAndSavingSupportServices(loadingAndSavingSupportServices);
+				.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
+				.ppOrderBL(ppOrderBL)
+				.mobileUIManufacturingConfigRepository(mobileUIManufacturingConfigRepository);
 	}
 
 	public ManufacturingJob receiveGoods(
@@ -489,6 +614,26 @@ public class ManufacturingJobService
 			@NonNull final ManufacturingJob job,
 			@NonNull final ZonedDateTime date)
 	{
+		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(job.getResponsibleId(), ClientId.METASFRESH);
+		@NonNull final ReceiveUnitType receiveUnitType = config.getReceiveUnitTypeEffective();
+
+		final FinishedGoodsReceiveLine receiveLine = job.getFinishedGoodsReceiveLineById(receiveFrom.getFinishedGoodsReceiveLineId());
+
+		// Validate the WHOLE submitted generic-attribute map ONCE, fail-loud, BEFORE any HU is written:
+		// (CHANGE 2) reject when the same producer-managed code is submitted through both the dedicated field
+		// and the generic map, then (CHANGE 1) reject any generic code not on the received product's editable
+		// allow-list. The dedicated scan fields themselves are never subject to the allow-list check.
+		final Map<AttributeCode, String> submittedAttributes = receiveFrom.getAttributesAsMap();
+		MaterialReceiptEditableAttributes.assertNoDualChannelConflict(
+				receiveFrom.getLotNo(),
+				receiveFrom.getBestBeforeDate(),
+				receiveFrom.getProductionDate(),
+				submittedAttributes);
+		materialReceiptEditableAttributes.assertOnlyEditableAttributesSubmitted(
+				receiveLine.getProductId(),
+				config,
+				submittedAttributes.keySet());
+
 		return newReceiveGoodsCommand()
 				.job(job)
 				.finishedGoodsReceiveLineId(receiveFrom.getFinishedGoodsReceiveLineId())
@@ -498,11 +643,15 @@ public class ManufacturingJobService
 						.build())
 				.qtyToReceiveBD(receiveFrom.getQtyReceived())
 				.date(date)
-				.bestBeforeDate(TimeUtil.asLocalDate(receiveFrom.getBestBeforeDate()))
-				.productionDate(TimeUtil.asLocalDate(receiveFrom.getProductionDate()))
+				.bestBeforeDate(TimeUtil.asLocalDate(StringUtils.trimBlankToNull(receiveFrom.getBestBeforeDate())))
+				.productionDate(TimeUtil.asLocalDate(StringUtils.trimBlankToNull(receiveFrom.getProductionDate())))
 				.lotNo(receiveFrom.getLotNo())
 				.catchWeight(extractTargetCatchWeight(receiveFrom).orElse(null))
+				.attributes(receiveFrom.getAttributesAsMap())
 				.barcode(receiveFrom.getBarcode())
+				.receiveUnitType(receiveUnitType)
+				.tuPIItemProductIdForTUMode(receiveLine.getTuPIItemProductId())
+				.receiveOnePiecePerScan(config.effectiveForReceiveLine(receiveLine).isReceiveOnePiecePerScan())
 				.build().execute();
 	}
 
@@ -512,6 +661,7 @@ public class ManufacturingJobService
 				.trxManager(trxManager)
 				.handlingUnitsBL(handlingUnitsBL)
 				.huStatusBL(huStatusBL)
+				.huAttributesBL(huAttributesBL)
 				.ppOrderBL(ppOrderBL)
 				.ppOrderBOMBL(ppOrderBOMBL)
 				.uomConversionBL(uomConversionBL)
@@ -628,19 +778,29 @@ public class ManufacturingJobService
 		Quantity qtyLeftToBeIssued = line.getQtyLeftToIssue().toZeroIfNegative();
 		final ImmutableList.Builder<RawMaterialsIssueStep> updatedStepsListBuilder = ImmutableList.builder();
 
+		final ProductId productId = line.getProductId();
+
 		for (final RawMaterialsIssueStep step : line.getSteps())
 		{
+			// A step consuming a whole HU is denominated in that HU's stocking UOM, which the line's
+			// remaining quantity is not, so the comparison below has to convert before it can compare.
+			final Quantity stepQtyToIssue = step.getQtyToIssue();
+			final Quantity stepQtyToIssueInLineUom = uomConversionBL.convertQuantityTo(stepQtyToIssue, productId, qtyLeftToBeIssued.getUomId());
+
 			if (step.isIssued())
 			{
 				updatedStepsListBuilder.add(step);
 			}
-			else if (qtyLeftToBeIssued.isGreaterThan(step.getQtyToIssue()))
+			else if (qtyLeftToBeIssued.isGreaterThan(stepQtyToIssueInLineUom))
 			{
 				updatedStepsListBuilder.add(step);
-				qtyLeftToBeIssued = qtyLeftToBeIssued.subtract(step.getQtyToIssue());
+				qtyLeftToBeIssued = qtyLeftToBeIssued.subtract(stepQtyToIssueInLineUom);
 			}
 			else
 			{
+				// What is left no longer covers this HU, so the step stops being a whole-HU consume and
+				// becomes a partial issue. It therefore takes the line's UOM: a partial issue reduces the
+				// HU's quantity and weight and leaves it standing, where consuming it whole destroys it.
 				ppOrderIssueScheduleService.updateQtyToIssue(step.getId(), qtyLeftToBeIssued);
 				updatedStepsListBuilder.add(step.withQtyToIssue(qtyLeftToBeIssued));
 				qtyLeftToBeIssued = qtyLeftToBeIssued.toZero();
@@ -668,6 +828,142 @@ public class ManufacturingJobService
 		return limitInt == -100
 				? Constants.DEFAULT_LaunchersLimit
 				: QueryLimit.ofInt(limitInt);
+	}
+
+	public ManufacturingJob createOnTheFlyIssueSchedule(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final UserId callerId,
+			@NonNull final String huQRCodeString)
+	{
+		return trxManager.callInThreadInheritedTrx(() -> createOnTheFlyIssueScheduleInTrx(ppOrderId, callerId, huQRCodeString));
+	}
+
+	private ManufacturingJob createOnTheFlyIssueScheduleInTrx(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final UserId callerId,
+			@NonNull final String huQRCodeString)
+	{
+		// Validate IsAllowIssuingAnyHU=Y using the PP_Order's client
+		final de.metas.handlingunits.model.I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		final ClientId clientId = ClientId.ofRepoId(ppOrder.getAD_Client_ID());
+		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(callerId, clientId);
+		if (!config.getIsAllowIssuingAnyHU().isTrue())
+		{
+			throw new AdempiereException("On-the-fly issue schedule creation is only allowed when IsAllowIssuingAnyHU=Y")
+					.markAsUserValidationError();
+		}
+
+		// Resolve HU from QR code
+		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(huQRCodeString);
+		final HuId huId = huQRCodesService.getHuIdByQRCode(huQRCode);
+
+		// Get top-level HU
+		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(huId);
+		final HuId topLevelHUId = HuId.ofRepoId(topLevelHU.getM_HU_ID());
+
+		// Validate HU status — only Active HUs can be issued
+		if (!huStatusBL.isStatusActive(topLevelHU))
+		{
+			throw new AdempiereException("HU is not active and cannot be issued")
+					.setParameter("huId", topLevelHUId)
+					.setParameter("huStatus", topLevelHU.getHUStatus())
+					.markAsUserValidationError();
+		}
+
+		// Validate HU has a locator
+		final int locatorRepoId = topLevelHU.getM_Locator_ID();
+		if (locatorRepoId <= 0)
+		{
+			throw new AdempiereException("HU has no locator assigned")
+					.setParameter("huId", topLevelHUId)
+					.markAsUserValidationError();
+		}
+
+		// Get all products stored in the HU
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		final List<IHUProductStorage> productStorages = storageFactory.getProductStorages(topLevelHU);
+
+		// Find a BOM line that matches one of the HU's products
+		final List<I_PP_Order_BOMLine> bomLines = ppOrderBOMBL.getOrderBOMLines(ppOrderId);
+		IHUProductStorage matchingStorage = null;
+		I_PP_Order_BOMLine matchingBomLine = null;
+		ProductId matchingProductId = null;
+
+		for (final I_PP_Order_BOMLine bomLine : bomLines)
+		{
+			final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+			matchingStorage = productStorages.stream()
+					.filter(ps -> ProductId.equals(ps.getProductId(), bomLineProductId))
+					.findFirst()
+					.orElse(null);
+			if (matchingStorage != null)
+			{
+				matchingBomLine = bomLine;
+				matchingProductId = bomLineProductId;
+				break;
+			}
+		}
+
+		if (matchingStorage == null)
+		{
+			throw new AdempiereException("HU does not contain any product matching the BOM lines")
+					.setParameter("huId", topLevelHUId)
+					.setParameter("ppOrderId", ppOrderId)
+					.markAsUserValidationError();
+		}
+
+		final PPOrderBOMLineId matchingBomLineId = PPOrderBOMLineId.ofRepoId(matchingBomLine.getPP_Order_BOMLine_ID());
+
+		// Determine how much to issue: whole stocking units, rounded up to cover the BOM line's remaining
+		// demand, capped at what the scanned HU actually holds. This avoids both mislabeling the UOM and
+		// over-issuing the HU's full qty when the product is stocked in whole units (e.g. pieces)
+		// but the BOM demands a fractional-unit UOM (e.g. kg).
+		final UomId stockingUomId = productBL.getStockUOMId(matchingProductId);
+		final Quantity remainingDemand = ppOrderBOMBL.getQuantities(matchingBomLine).getRemainingQtyToIssue();
+		final Quantity demandInStockingUOM = uomConversionBL.convertQuantityTo(
+				remainingDemand,
+				UOMConversionContext.of(matchingProductId),
+				stockingUomId);
+		final Quantity qtyAvailableInStockingUOM = matchingStorage.getQtyInStockingUOM();
+		final Quantity qtyToIssue = demandInStockingUOM.min(qtyAvailableInStockingUOM);
+
+		// Validate qty
+		if (qtyToIssue.isZero())
+		{
+			throw new AdempiereException("HU has zero quantity for the matching product")
+					.setParameter("huId", topLevelHUId)
+					.setParameter("productId", matchingProductId)
+					.markAsUserValidationError();
+		}
+
+		// Determine next seqNo
+		final ImmutableList<PPOrderIssueSchedule> existingSchedules = ppOrderIssueScheduleService.getByOrderId(ppOrderId);
+		final int maxSeqNo = existingSchedules.stream()
+				.mapToInt(s -> s.getSeqNo().toInt())
+				.max()
+				.orElse(0);
+		final SeqNo nextSeqNo = SeqNo.ofInt(maxSeqNo + 10);
+
+		// Get locator
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		final WarehouseId warehouseIdForLocator = warehouseDAO.getWarehouseIdByLocatorRepoId(locatorRepoId);
+		final LocatorId locatorId = LocatorId.ofRepoId(warehouseIdForLocator, locatorRepoId);
+
+		// Create schedule
+		ppOrderIssueScheduleService.createSchedule(
+				PPOrderIssueScheduleCreateRequest.builder()
+						.ppOrderId(ppOrderId)
+						.ppOrderBOMLineId(matchingBomLineId)
+						.seqNo(nextSeqNo)
+						.productId(matchingProductId)
+						.qtyToIssue(qtyToIssue)
+						.issueFromHUId(topLevelHUId)
+						.issueFromLocatorId(locatorId)
+						.isAlternativeIssue(false)
+						.build());
+
+		// Reload and return the updated job
+		return getJobById(ppOrderId);
 	}
 
 	public ManufacturingJob autoIssueWhatWasReceived(

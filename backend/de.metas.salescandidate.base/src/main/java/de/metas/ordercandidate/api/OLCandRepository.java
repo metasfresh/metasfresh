@@ -44,6 +44,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -53,7 +54,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
@@ -79,7 +82,8 @@ public class OLCandRepository
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
     private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
-	private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final CustomColumnService customColumnService;
 
 	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
 	{
@@ -347,6 +351,30 @@ public class OLCandRepository
 		if (request.getQtyItemCapacity() != null)
 		{
 			olCandWithIssuesInterface.setQtyItemCapacity(request.getQtyItemCapacity());
+		}
+
+		// first-class promo code / charge fields — set before the initial saveRecord so there is only one write
+		if (request.getPromotionCodeId() != null)
+		{
+			olCandPO.setC_PromotionCode_ID(request.getPromotionCodeId().getRepoId());
+		}
+		if (request.getPromotionCode2Id() != null)
+		{
+			olCandPO.setC_PromotionCode2_ID(request.getPromotionCode2Id().getRepoId());
+		}
+		olCandPO.setIsWithoutCharge(request.isWithoutCharge());
+		if (request.getReason() != null)
+		{
+			olCandPO.setReason(request.getReason());
+		}
+
+		// wire extendedProps: set custom REST API columns on the C_OLCand record before the single save below
+		if (!request.getExtendedProps().isEmpty()
+				&& !POJOWrapper.isHandled(olCandWithIssuesInterface))
+		{
+			customColumnService.setCustomColumns(
+					InterfaceWrapperHelper.getPO(olCandWithIssuesInterface),
+					request.getExtendedProps());
 		}
 
 		saveRecord(olCandWithIssuesInterface);

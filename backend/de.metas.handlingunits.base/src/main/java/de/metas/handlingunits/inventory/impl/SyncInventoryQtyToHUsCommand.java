@@ -366,7 +366,7 @@ public class SyncInventoryQtyToHUsCommand
 				huQRCodesService.assign(inventoryLineHU.getHuQRCode(), createdHUIds);
 			}
 
-			sourceHUsService.addSourceHUMarkerIfCarringComponents(
+			sourceHUsService.addSourceHUMarkerIfCarryingComponents(
 					createdHUIds,
 					inventoryLine.getProductId(),
 					inventoryLine.getLocatorId().getWarehouseId());

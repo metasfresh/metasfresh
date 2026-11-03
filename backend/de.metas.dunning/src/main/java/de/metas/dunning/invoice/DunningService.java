@@ -52,6 +52,9 @@ public class DunningService
 	final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 	final IBPartnerDAO partnersRepo = Services.get(IBPartnerDAO.class);
 
+	/**
+	 * @return the invoices dunned by the given dunning doc, ordered by invoice date, then document number, then id
+	 */
 	public List<I_C_Invoice> retrieveDunnedInvoices(@NonNull final DunningDocId dunningDocId)
 	{
 		return Services
@@ -62,6 +65,9 @@ public class DunningService
 				.andCollect(I_C_DunningDoc_Line_Source.COLUMN_C_Dunning_Candidate_ID)
 				.addEqualsFilter(I_C_Dunning_Candidate.COLUMN_AD_Table_ID, getTableId(I_C_Invoice.class))
 				.andCollect(I_C_Dunning_Candidate.COLUMN_Record_ID, I_C_Invoice.class)
+				.orderBy(I_C_Invoice.COLUMNNAME_DateInvoiced)
+				.orderBy(I_C_Invoice.COLUMNNAME_DocumentNo)
+				.orderBy(I_C_Invoice.COLUMNNAME_C_Invoice_ID)
 				.create()
 				.list();
 	}

@@ -23,6 +23,7 @@ public class JsonConsolidateRequest
 	@Nullable WFProcessId wfProcessId;
 	@NonNull String fromPickingSlotQRCode;
 	@Nullable HuId huId;
+	@Nullable String grai;
 
 	@JsonIgnore
 	@NonNull

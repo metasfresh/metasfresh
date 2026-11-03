@@ -22,8 +22,10 @@
 
 package de.metas.material.dispo.service.event.handler.simulation;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -31,7 +33,12 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.simulation.SimulatedDemandCreatedEvent;
+import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +50,9 @@ import static de.metas.common.util.IdConstants.UNSPECIFIED_REPO_ID;
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class SimulatedDemandCreatedHandler implements MaterialEventHandler<SimulatedDemandCreatedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(SimulatedDemandCreatedHandler.class);
+
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final CandidateChangeService candidateChangeHandler;
 
 	public SimulatedDemandCreatedHandler(@NonNull final CandidateChangeService candidateChangeHandler)
@@ -59,6 +69,16 @@ public class SimulatedDemandCreatedHandler implements MaterialEventHandler<Simul
 	@Override
 	public void handleEvent(@NonNull final SimulatedDemandCreatedEvent event)
 	{
+		final WarehouseId warehouseId = event.getMaterialDescriptor().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
+			return;
+		}
+
 		final DemandDetail demandDetail = DemandDetail.forDocumentLine(
 				UNSPECIFIED_REPO_ID,
 				event.getDocumentLineDescriptor(),

@@ -25,7 +25,8 @@ SELECT t.ad_client_id,
                                          p.m_product_id::text,
                                          p.c_uom_id::text,
                                          COALESCE(t.attributesKey, '')::text,
-                                         COALESCE(t.m_warehouse_id, 0)::text)), 1, 10))::bit(32)::int)) AS QtyDemand_QtySupply_V_ID
+                                         COALESCE(t.m_warehouse_id, 0)::text)), 1, 10))::bit(32)::int)) AS QtyDemand_QtySupply_V_ID,
+       getLastCostPrice(p.M_Product_ID) AS LastCostPrice
 FROM m_product p
          INNER JOIN
      (

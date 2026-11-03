@@ -1,9 +1,8 @@
 package de.metas.inoutcandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Packageable_V
  *  @author metasfresh (generated) 
@@ -370,7 +369,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_DatePromised = "DatePromised";
 
 	/**
-	 * Set Shipmentdate.
+	 * Set Delivery Date.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -379,7 +378,7 @@ public interface I_M_Packageable_V
 	void setDeliveryDate (@Nullable java.sql.Timestamp DeliveryDate);
 
 	/**
-	 * Get Shipmentdate.
+	 * Get Delivery Date.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -567,7 +566,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_IsDisplayed = "IsDisplayed";
 
 	/**
-	 * Set Ship After Date.
+	 * Set Ship after above date.
 	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
 	 *
 	 * <br>Type: YesNo
@@ -577,7 +576,7 @@ public interface I_M_Packageable_V
 	void setIsFixedDatePromised (boolean IsFixedDatePromised);
 
 	/**
-	 * Get Ship After Date.
+	 * Get Ship after above date.
 	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
 	 *
 	 * <br>Type: YesNo
@@ -590,8 +589,8 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_IsFixedDatePromised = "IsFixedDatePromised";
 
 	/**
-	 * Set Picking After Date.
-	 * Prevents picking before the provisioning date. Use when materials must not be staged or picked earlier than planned.
+	 * Set Pick after above date.
+	 * Prevents picking before the provisioning date. Use when materials or goods must not be staged or picked earlier than planned.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -600,8 +599,8 @@ public interface I_M_Packageable_V
 	void setIsFixedPreparationDate (boolean IsFixedPreparationDate);
 
 	/**
-	 * Get Picking After Date.
-	 * Prevents picking before the provisioning date. Use when materials must not be staged or picked earlier than planned.
+	 * Get Pick after above date.
+	 * Prevents picking before the provisioning date. Use when materials or goods must not be staged or picked earlier than planned.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -611,6 +610,27 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsFixedPreparationDate = new ModelColumn<>(I_M_Packageable_V.class, "IsFixedPreparationDate", null);
 	String COLUMNNAME_IsFixedPreparationDate = "IsFixedPreparationDate";
+
+	/**
+	 * Set Picked qty on draft shipment.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickQtyOnDraftShipment (boolean IsPickQtyOnDraftShipment);
+
+	/**
+	 * Get Picked qty on draft shipment.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickQtyOnDraftShipment();
+
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsPickQtyOnDraftShipment = new ModelColumn<>(I_M_Packageable_V.class, "IsPickQtyOnDraftShipment", null);
+	String COLUMNNAME_IsPickQtyOnDraftShipment = "IsPickQtyOnDraftShipment";
 
 	/**
 	 * Set Line Net Amount.
@@ -955,6 +975,31 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_ProductName = new ModelColumn<>(I_M_Packageable_V.class, "ProductName", null);
 	String COLUMNNAME_ProductName = "ProductName";
+
+	/**
+	 * Set Product Value.
+	 * Product identifier;
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductValue (@Nullable java.lang.String ProductValue);
+
+	/**
+	 * Get Product Value.
+	 * Product identifier;
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductValue();
+
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_ProductValue = new ModelColumn<>(I_M_Packageable_V.class, "ProductValue", null);
+	String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
 	 * Set Shipped Qty.
