@@ -61,7 +61,6 @@ pull_request_rules:
       - merged-at>2023-03-15T00:00:00Z # don't jump on every merged PR throughout history
       - or: &ALL_BASE_BRANCHES # this rule should apply to the project-branches from above
           - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
-              # Please keep in sync with the branches at .testspace.yml
               # UAT BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=keen_hawk_uat
               - base=task_force_uat
@@ -92,9 +91,15 @@ pull_request_rules:
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=galaxy_module_hotfix
+              - base=temporary_test202607_hotfix
+              - base=new_dawn_hotfix
+              - base=purple_mandolin_hotfix
+              - base=music_violin_hotfix
+              - base=catfish_takeover_hotfix
+              - base=knightly_ornament_hotfix
               - base=poster_flotilla_hotfix
               - base=favorable_esteem_hotfix
-              - base=temporary_test202607_hotfix
               - base=oasis_sun_hotfix
               - base=speedy_tiger_hotfix
               - base=neon_underwear_hotfix
@@ -130,9 +135,15 @@ pull_request_rules:
               - base=yoyo_hotfix
           - or: &PROJECT_BRANCHES_RELEASE
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=galaxy_module_release
+              - base=temporary_test202607_release
+              - base=new_dawn_release
+              - base=purple_mandolin_release
+              - base=music_violin_release
+              - base=catfish_takeover_release
+              - base=knightly_ornament_release
               - base=poster_flotilla_release
               - base=favorable_esteem_release
-              - base=temporary_test202607_release
               - base=oasis_sun_release
               - base=speedy_tiger_release
               - base=midnight_xylophone_release

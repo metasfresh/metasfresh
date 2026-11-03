@@ -345,6 +345,16 @@ const ScanHUAndGetQtyComponent = ({
     return onResult(result);
   };
 
+  // The dialog knows the qty context (entered qty, rejected qty, reason); the caller's prompt may also
+  // need what the SCANNED HU is (e.g. the manufacturing issue screen names the HU's remainder, not the
+  // order-side shortfall), so `resolvedBarcodeData` is handed over too. Memoised because this wrapper is
+  // the first dependency of GetQuantityDialog's own `getConfirmationPrompt` useCallback; an inline arrow
+  // would invalidate that memo on every render of this component.
+  const getConfirmationPromptForQtyWithHU = useCallback(
+    (qtyInput, context) => getConfirmationPromptForQty(qtyInput, { ...context, resolvedBarcodeData }),
+    [getConfirmationPromptForQty, resolvedBarcodeData]
+  );
+
   const onCloseDialog = () => {
     setProgressStatus(STATUS_READ_HU_BARCODE);
     onCloseCallback?.();
@@ -435,7 +445,9 @@ const ScanHUAndGetQtyComponent = ({
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
           //
-          getConfirmationPromptForQty={getConfirmationPromptForQty}
+          // `undefined` when the caller passes no prompt callback: GetQuantityDialog's "no prop -> no
+          // prompt" contract is a truthiness check, which a bare wrapper would always satisfy.
+          getConfirmationPromptForQty={getConfirmationPromptForQty ? getConfirmationPromptForQtyWithHU : undefined}
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
           onCloseDialog={onCloseDialog}

@@ -9,6 +9,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetId;
+import de.metas.shipping.CarrierProductId;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -31,6 +32,7 @@ public class DistributionFacetId
 	@Nullable ProductId productId;
 	@Nullable Quantity qty;
 	@Nullable ResourceId plantId;
+	@Nullable CarrierProductId carrierProductId;
 
 	private DistributionFacetId(@NonNull WorkflowLaunchersFacetId workflowLaunchersFacetId)
 	{
@@ -48,6 +50,7 @@ public class DistributionFacetId
 				this.productId = null;
 				this.qty = null;
 				this.plantId = null;
+				this.carrierProductId = null;
 				break;
 			}
 			case SALES_ORDER:
@@ -59,6 +62,7 @@ public class DistributionFacetId
 				this.productId = null;
 				this.qty = null;
 				this.plantId = null;
+				this.carrierProductId = null;
 				break;
 			}
 			case MANUFACTURING_ORDER_NO:
@@ -70,6 +74,7 @@ public class DistributionFacetId
 				this.productId = null;
 				this.qty = null;
 				this.plantId = null;
+				this.carrierProductId = null;
 				break;
 			}
 			case DATE_PROMISED:
@@ -81,6 +86,7 @@ public class DistributionFacetId
 				this.productId = null;
 				this.qty = null;
 				this.plantId = null;
+				this.carrierProductId = null;
 				break;
 			}
 			case PRODUCT:
@@ -92,6 +98,7 @@ public class DistributionFacetId
 				this.productId = workflowLaunchersFacetId.getAsId(ProductId.class);
 				this.qty = null;
 				this.plantId = null;
+				this.carrierProductId = null;
 				break;
 			}
 
@@ -103,6 +110,7 @@ public class DistributionFacetId
 				this.productId = null;
 				this.qty = getAsQuantity(workflowLaunchersFacetId);
 				this.plantId = null;
+				this.carrierProductId = null;
 				break;
 			case PLANT_RESOURCE_ID:
 				this.warehouseId = null;
@@ -112,6 +120,17 @@ public class DistributionFacetId
 				this.productId = null;
 				this.qty = null;
 				this.plantId = workflowLaunchersFacetId.getAsId(ResourceId.class);
+				this.carrierProductId = null;
+				break;
+			case CARRIER_PRODUCT:
+				this.warehouseId = null;
+				this.salesOrderId = null;
+				this.manufacturingOrderId = null;
+				this.datePromised = null;
+				this.productId = null;
+				this.qty = null;
+				this.plantId = null;
+				this.carrierProductId = workflowLaunchersFacetId.getAsId(CarrierProductId.class);
 				break;
 			default:
 			{
@@ -153,6 +172,11 @@ public class DistributionFacetId
 	public static DistributionFacetId ofProductId(@NonNull ProductId productId)
 	{
 		return ofRepoId(DistributionFacetGroupType.PRODUCT, productId);
+	}
+
+	public static DistributionFacetId ofCarrierProductId(@NonNull CarrierProductId carrierProductId)
+	{
+		return ofRepoId(DistributionFacetGroupType.CARRIER_PRODUCT, carrierProductId);
 	}
 
 	private static DistributionFacetId ofRepoId(@NonNull DistributionFacetGroupType groupType, @NonNull RepoIdAware id)

@@ -51,10 +51,13 @@ public class GroupTemplate
 	@Nullable ActivityId activityId;
 	@Nullable ProductCategoryId productCategoryId;
 
+	/** If {@code true}, every compensation line is computed on the regular-line total of its own applies-to category; if {@code false} (default), compensation lines of the same applies-to category compound with each other */
+	boolean additive;
+
 	@NonNull ImmutableList<GroupTemplateRegularLine> regularLinesToAdd;
 	@NonNull ImmutableList<GroupTemplateCompensationLine> compensationLines;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private GroupTemplate(
 			@Nullable final GroupTemplateId id,
 			@NonNull final String name,
@@ -62,6 +65,7 @@ public class GroupTemplate
 			final boolean isInheritPackingInstruction,
 			@Nullable final ActivityId activityId,
 			@Nullable final ProductCategoryId productCategoryId,
+			final boolean additive,
 			@NonNull final List<GroupTemplateRegularLine> regularLinesToAdd,
 			@NonNull final @Singular List<GroupTemplateCompensationLine> compensationLines)
 	{
@@ -71,6 +75,7 @@ public class GroupTemplate
 		this.isInheritPackingInstruction = isInheritPackingInstruction;
 		this.activityId = activityId;
 		this.productCategoryId = productCategoryId;
+		this.additive = additive;
 		this.regularLinesToAdd = ImmutableList.copyOf(regularLinesToAdd);
 		this.compensationLines = ImmutableList.copyOf(compensationLines);
 	}

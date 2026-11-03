@@ -58,6 +58,7 @@ import static org.mockito.ArgumentMatchers.eq;
 public class ScriptedImportConversionLocalFileImportFileNamePatternTest extends CamelTestSupport
 {
 	private static final String MOCK_ENDPOINT_NAME = "mock:endpointName";
+	private static final String IMPORTEUR_TOKEN = "importeur-token";
 	private static final String MOCK_SCRIPT_IDENTIFIER = "mock:scriptIdentifier";
 	private static final String MOCK_SCRIPT = "mock:script.js";
 	private static final long FREQUENCY_MS = 100L;
@@ -90,7 +91,8 @@ public class ScriptedImportConversionLocalFileImportFileNamePatternTest extends 
 				javaScriptExecutorService,
 				producerTemplate,
 				localProcessedDir.toAbsolutePath().toString(),
-				localErrorDir.toAbsolutePath().toString());
+				localErrorDir.toAbsolutePath().toString(),
+				IMPORTEUR_TOKEN);
 	}
 
 	@Test
@@ -154,7 +156,8 @@ public class ScriptedImportConversionLocalFileImportFileNamePatternTest extends 
 				javaScriptExecutorService,
 				producerTemplate,
 				localProcessedDir.toAbsolutePath().toString(),
-				localErrorDir.toAbsolutePath().toString());
+				localErrorDir.toAbsolutePath().toString(),
+				IMPORTEUR_TOKEN);
 
 		// Reference the route builder's own key constant rather than duplicating its literal, so a rename
 		// is a compile error here instead of a test that silently stops asserting anything.

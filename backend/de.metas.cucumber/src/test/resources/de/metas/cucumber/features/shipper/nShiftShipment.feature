@@ -959,6 +959,125 @@ Feature: nShift Shipment
       | cso_coo_130              | nShift Product | IT              | 6          | 10    | 60         | 12.6            | 12345678            |
       | cso_coo_130              | nShift Product | DE              | 9          | 10    | 90         | 18.9            | 12345678            |
 
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  @Id:S33252_TC4
+  Scenario: catch weight: pre-packed mixed-origin TU splits its weight over the per-COO InOutLines
+    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
+    And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob | IsCatchWeightTUPickingEnabled |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | Y                             |
+    And contains M_Shippers
+      | Identifier      | Value           | Name            | OPT.ShipperGateway |
+      | nShift_coo_test | nshift_coo_test | nShift COO Test | nshift             |
+    And metasfresh contains Carrier_Configs:
+      | M_Shipper_ID    |
+      | nShift_coo_test |
+    And metasfresh contains Carrier_Products:
+      | Identifier | M_Shipper_ID    |
+      | cp_cw      | nShift_coo_test |
+    And metasfresh contains Carrier_Goods_Types:
+      | Identifier | M_Shipper_ID    |
+      | cgt_cw     | nShift_coo_test |
+    And metasfresh contains M_Shipper_Mapping_Configs:
+      | M_Shipper_ID    | SeqNo | MappingAttributeType | MappingGroupKey | MappingAttributeKey | MappingAttributeValue |
+      | nShift_coo_test | 170   | LineDetailGroup      | 1               | 4                   | CountryOfOrigin       |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp_cw              | cgt_cw                |
+    And the nShift shipment service is stubbed to return a successful shipment creation response
+    # Own catch weight product: the Background product stays untouched (shared across scenarios and reruns).
+    And metasfresh contains M_Products:
+      | Identifier | Value         | Name              | WeightNet | WeightGross | M_CustomsTariff_ID | LengthInCm | WidthInCm | HeightInCm |
+      | product_cw | nshift_cw_prd | nShift CW Product | 2 KGM     | 2.1 KGM     | ct                 | 30         | 20        | 10         |
+    And metasfresh contains C_UOM_Conversions
+      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
+      | product_cw              | PCE                    | KGM                  | 2            | Y                        |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | InvoicableQtyBasedOn | C_TaxCategory_ID.InternalName |
+      | plv                    | product_cw   | 5.0      | KGM               | CatchWeight          | Normal                        |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
+      | product_cw_TU_10CU      | huPiItemTU      | product_cw   | 10  | 2021-01-01 |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | wh_cw          |
+    And metasfresh contains M_PickingSlot:
+      | Identifier     | PickingSlot | IsDynamic | M_Warehouse_ID |
+      | pickingSlot_cw | 510         | Y         | wh_cw          |
+    And metasfresh contains AD_Users:
+      | Identifier | Name                      | C_BPartner_ID | EMail                        | Phone            |
+      | contact_cw | nShift Customer Contact 5 | customer      | contact5@nshift-test.example | +41 79 123 45 72 |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_IT_cw":
+    """
+    {"attributeInstances": [{"attributeCode": "1000001", "valueStr": "IT"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_DE_cw":
+    """
+    {"attributeInstances": [{"attributeCode": "1000001", "valueStr": "DE"}]}
+    """
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_cw         | 2022-12-12   | wh_cw          |
+    And metasfresh contains M_InventoriesLines:
+      | Identifier  | M_Inventory_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID |
+      | inv_cw_l_it | inv_cw         | product_cw   | 0       | 1        | PCE          | asi_IT_cw                 |
+      | inv_cw_l_de | inv_cw         | product_cw   | 0       | 3        | PCE          | asi_DE_cw                 |
+    When the inventory identified by inv_cw is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID  |
+      | inv_cw_l_it        | cu_cw_it |
+      | inv_cw_l_de        | cu_cw_de |
+    # One TU that holds 1 PCE of origin IT and 3 PCE of origin DE
+    And transform CU to new TUs
+      | sourceCU | cuQty | M_HU_PI_Item_Product_ID | resultedNewTUs |
+      | cu_cw_it | 1     | product_cw_TU_10CU      | tu_mixed_cw    |
+    And move CU to existing TU
+      | sourceCU | targetTU    | qty |
+      | cu_cw_de | tu_mixed_cw | 3   |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID    | AD_User_ID |
+      | so_cw      | true    | customer      | 2025-04-01  | wh_cw          | nShift_coo_test | contact_cw |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_cw_l1   | so_cw      | product_cw   | 4          |
+    When the order identified by so_cw is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_cw      | so_cw_l1       | N             | cp_cw              | cgt_cw                |
+    When start picking job for sales order identified by so_cw
+    And scan picking slot identified by pickingSlot_cw
+    And set picking target as new TU identified by TU
+    # The whole TU (4 PCE) is picked with a typed weight of 8.000 kg
+    And pick lines
+      | PickingLine.byProduct | PickFromHU  | QtyPicked | CatchWeight |
+      | product_cw            | tu_mixed_cw | 4         | 8.000       |
+    # The weight is split over the origins in proportion to their quantity: 1/4 -> 2.000 kg (IT), 3/4 -> 6.000 kg (DE)
+    And validate M_ShipmentSchedule_QtyPicked records in any order for M_ShipmentSchedule identified by ss_cw
+      | QtyPicked | QtyDeliveredCatch | Catch_UOM_ID |
+      | 1         | 2.000             | KGM          |
+      | 3         | 6.000             | KGM          |
+    And complete picking job
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss_cw                 | inout_cw   | CO        |
+    And validate M_ShipmentSchedule_QtyPicked records in any order for M_ShipmentSchedule identified by ss_cw
+      | QtyPicked | QtyDeliveredCatch | Catch_UOM_ID |
+      | 1         | 2.000             | KGM          |
+      | 3         | 6.000             | KGM          |
+    And validate the created shipment lines
+      | M_InOutLine_ID | M_InOut_ID | M_Product_ID | MovementQty | M_AttributeSetInstance_ID |
+      | line_cw_it     | inout_cw   | product_cw   | 1           | asi_IT_cw                 |
+      | line_cw_de     | inout_cw   | product_cw   | 3           | asi_DE_cw                 |
+    And validate the created shipment lines by id
+      | Identifier | M_Product_ID | MovementQty | QtyDeliveredCatch | M_AttributeSetInstance_ID |
+      | line_cw_it | product_cw   | 1           | 2.000             | asi_IT_cw                 |
+      | line_cw_de | product_cw   | 3           | 6.000             | asi_DE_cw                 |
+
   @from:cucumber
   @Id:S0355_DeliveryOrder_140
   Scenario: nShift COO — same-COO picks of the same product merge; same-COO picks of different products do not

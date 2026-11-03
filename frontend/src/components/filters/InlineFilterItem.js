@@ -36,15 +36,36 @@ const InlineFilterItem = ({
     setParameterValue(value ? value : '');
   };
 
-  const handleApply = () => {
+  // `handlePatch` (passed to the widget as `handlePatch={handleApply}`) is called with the freshly
+  // produced value, WITHOUT that value having gone through `setValue`/`onChange` first. A Checkbox
+  // (a YesNo filter) only ever wires `handlePatch`, so for it that is the ONLY way the value
+  // arrives; a Text filter reaches the same path on Enter/blur (RawWidget#handleKeyDown /
+  // #handleBlurWithParams -> #handlePatch), where the value happens to match what `onChange` already
+  // tracked. So the value actually applied must be the one passed in here when present, falling back
+  // to the locally tracked `parameterValue` only when no value was passed. Also keep `parameterValue` itself in sync so a second
+  // toggle (e.g. turning the filter back off) does not read a stale value on the next call.
+  //
+  // Checkbox additionally expects `handlePatch(...)` to return a thenable - same contract as the
+  // redux `patch` action creator used for regular document fields - so this must return a Promise,
+  // never `undefined`.
+  const handleApply = (property, valueFromPatch) => {
+    const nextValue =
+      valueFromPatch !== undefined ? valueFromPatch : parameterValue;
+
+    if (valueFromPatch !== undefined) {
+      setValue(property, valueFromPatch);
+    }
+
     const filter = mergeParameterValueToFilter(
       filterProp,
       parameterName,
-      parameterValue
+      nextValue
     );
 
     clearFilters(filter, true);
     applyFilters(filter);
+
+    return Promise.resolve();
   };
 
   const widgetFields = useMemo(

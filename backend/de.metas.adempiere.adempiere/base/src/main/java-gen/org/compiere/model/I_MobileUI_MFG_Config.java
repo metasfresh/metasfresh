@@ -98,6 +98,29 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow emptying HUs.
+	 * Offers the reason "empty (auto. inventory)" on the raw-materials issue step. Choosing that reason books the HU's remaining quantity off stock automatically, through a completed inventory document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowEmptyingHUs (boolean IsAllowEmptyingHUs);
+
+	/**
+	 * Get Allow emptying HUs.
+	 * Offers the reason "empty (auto. inventory)" on the raw-materials issue step. Choosing that reason books the HU's remaining quantity off stock automatically, through a completed inventory document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowEmptyingHUs();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowEmptyingHUs = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowEmptyingHUs", null);
+	String COLUMNNAME_IsAllowEmptyingHUs = "IsAllowEmptyingHUs";
+
+	/**
 	 * Set Finished goods: allow receiving to LU.
 	 * Offer load-unit (pallet/LU) targets for the finished-goods production receipt.
 	 *
@@ -211,6 +234,52 @@ public interface I_MobileUI_MFG_Config
 
 	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsCaptureCatchWeightAtReceipt = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsCaptureCatchWeightAtReceipt", null);
 	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
+
+	/**
+	 * Set Confirm before booking.
+	 * Asks the operator to confirm, showing the quantity about to be written off and its unit of measure, before the HU's remaining quantity is booked off stock.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsConfirmEmptyingHU (boolean IsConfirmEmptyingHU);
+
+	/**
+	 * Get Confirm before booking.
+	 * Asks the operator to confirm, showing the quantity about to be written off and its unit of measure, before the HU's remaining quantity is booked off stock.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isConfirmEmptyingHU();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsConfirmEmptyingHU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsConfirmEmptyingHU", null);
+	String COLUMNNAME_IsConfirmEmptyingHU = "IsConfirmEmptyingHU";
+
+	/**
+	 * Set Finished goods: require catch-weight scan.
+	 * Receiving a catch-weight finished good at production receipt requires a scan.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFinishedGoodsCatchWeightScanRequired (boolean IsFinishedGoodsCatchWeightScanRequired);
+
+	/**
+	 * Get Finished goods: require catch-weight scan.
+	 * Receiving a catch-weight finished good at production receipt requires a scan.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFinishedGoodsCatchWeightScanRequired();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsFinishedGoodsCatchWeightScanRequired = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsFinishedGoodsCatchWeightScanRequired", null);
+	String COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired = "IsFinishedGoodsCatchWeightScanRequired";
 
 	/**
 	 * Set Workstation Scan Required.

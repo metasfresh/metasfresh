@@ -16,6 +16,8 @@ import {
   prepareWidgetData,
   shouldRenderColumn,
 } from '../../utils/tableHelpers';
+import { isDecimalNumberField } from '../../utils/widgetHelpers';
+import { normalizeDecimalNumberString } from '../../utils/locale';
 import TableCell from './TableCell';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
 import PropTypes from 'prop-types';
@@ -23,10 +25,13 @@ import PropTypes from 'prop-types';
 // A single letter or digit (any script), as reported by KeyboardEvent.key
 const ACTIVATION_KEY_REGEX = /^[\p{L}\p{N}]$/u;
 
-// widgets whose value is a {key, caption} object; Escape never writes their pre-edit value back
+// widgets whose value is a {key, caption} object or a list of them; leaving the cell never writes a
+// text into them, and Escape never writes their pre-edit value back
 const OBJECT_VALUED_WIDGET_TYPES = [
   ...COMBOBOX_WIDGET_TYPES,
   ...ATTRIBUTE_WIDGET_TYPES,
+  'MultiListValue',
+  'Labels',
 ];
 
 /**
@@ -102,10 +107,10 @@ class TableRow extends PureComponent {
 
   /**
    * @method isObjectValuedWidget
-   * @summary True when the field's value is a {key, caption} object, i.e. its widget is a
-   * Lookup, a List or an attribute widget (Address, ProductAttributes). An attribute widget's
-   * value is saved by its popup while the cell stays in edit mode, so the value captured on
-   * entering edit mode is stale by the time the cell is left.
+   * @summary True when the field's value is a {key, caption} object or a list of them, i.e. its
+   * widget is a Lookup, a List, an attribute widget (Address, ProductAttributes), a MultiListValue
+   * or Labels. An attribute widget's value is saved by its popup while the cell stays in edit
+   * mode, so the value captured on entering edit mode is stale by the time the cell is left.
    *
    * @param {string} fieldName - the cell's field name
    */
@@ -120,6 +125,9 @@ class TableRow extends PureComponent {
    * updatePropertyValue. Writes nothing for an object-valued field (see isObjectValuedWidget)
    * or when the value is undefined, i.e. the key event did not come from an input element (no
    * active editor, or an editor such as Labels whose key target is a contentEditable span).
+   * A decimal number cell is a text input, so it holds the number the way the user typed it
+   * (e.g. '12,50' in German); the row gets it as the dot-decimal text the cell renders ('12.50',
+   * the precision is not trimmed), else the cell would show 12,00.
    *
    * @param {string} property - the cell's field name
    * @param {*} value - a text or number value; undefined when there is none
@@ -130,11 +138,21 @@ class TableRow extends PureComponent {
       return false;
     }
 
-    const { rowId, tabId, entity, modalVisible, tableId, updatePropertyValue } =
-      this.props;
+    const {
+      fieldsByName,
+      rowId,
+      tabId,
+      entity,
+      modalVisible,
+      tableId,
+      updatePropertyValue,
+    } = this.props;
+    const widgetType = fieldsByName?.[property]?.widgetType;
     updatePropertyValue({
       property,
-      value,
+      value: isDecimalNumberField(widgetType)
+        ? normalizeDecimalNumberString(value)
+        : value,
       tabId,
       rowId,
       isModal: modalVisible,
@@ -364,7 +382,9 @@ class TableRow extends PureComponent {
 
       // Entering edit mode on a cell: remember its STORED value so Escape can
       // restore it. Display text is no substitute: it is locale-formatted
-      // ("10,00" in de_DE), which an <input type="number"> rejects as "".
+      // ("10,00" in de_DE, '1,234' with a thousands separator), which an
+      // <input type="number"> rejects as "" and which can not be told apart
+      // from a decimal number.
       if (property && this.state.edited !== property) {
         this.setState({
           valueBeforeEditing: this.getFieldValue(property) ?? '',

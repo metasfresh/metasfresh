@@ -1,5 +1,5 @@
 @from:cucumber
-@ghActions:run_on_executor6
+@ghActions:run_on_executor8
 Feature: Promotion Code Evaluation Report (gh#28565)
 
   The report function report.report_promotion_code_evaluation() returns completed/closed
