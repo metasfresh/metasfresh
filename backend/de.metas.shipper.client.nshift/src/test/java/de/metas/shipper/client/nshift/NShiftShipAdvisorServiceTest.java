@@ -23,6 +23,7 @@
 package de.metas.shipper.client.nshift;
 
 import au.com.origin.snapshots.Expect;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
@@ -44,6 +45,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
@@ -52,7 +54,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import de.metas.shipper.client.nshift.json.JsonAddressKind;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -121,6 +127,7 @@ public class NShiftShipAdvisorServiceTest
 			.customerReference("Customer reference")
 			.incotermsValue("incoterms")
 			.externalSystemValue("Other")
+			.preAdviceRequired("Y")
 			.grossWeightKg(BigDecimal.TEN)
 			.packageDimensions(JsonPackageDimensions.builder()
 					.lengthInCM(100)
@@ -145,6 +152,10 @@ public class NShiftShipAdvisorServiceTest
 	@Autowired
 	@NonNull
 	private NShiftShipAdvisorService nShiftShipAdvisorService;
+
+	@Autowired
+	@Qualifier(NShiftClientConfig.NSHIFT_OBJECT_MAPPER)
+	private ObjectMapper nShiftObjectMapper;
 
 	@SuppressWarnings("unused") // injected by SnapshotExtension via reflection
 	private Expect expect;
@@ -182,6 +193,14 @@ public class NShiftShipAdvisorServiceTest
 							.countryOfOrigin("DE")
 							.build()))
 			.build();
+
+	@Test
+	void serializedRequestHasNoEmptyLists() throws Exception
+	{
+		final JsonShipAdvisorRequest request = NShiftShipAdvisorService.buildRequest(ADVISOR_REQUEST);
+		final String json = nShiftObjectMapper.writeValueAsString(request);
+		NShiftTestAssertions.assertNoEmptyJsonArrays(json);
+	}
 
 	@Test
 	void build_request_test()
@@ -293,5 +312,48 @@ public class NShiftShipAdvisorServiceTest
 				ADVISOR_REQUEST.toBuilder().mappingConfigs(NShiftTestMappingConfigs.SHARED_DB).build());
 		assertNotNull(response);
 		assertFalse(response.isError());
+	}
+
+	@Test
+	void buildRequest_testModeOn_replacesBothAttentions()
+	{
+		final JsonDeliveryAdvisorRequest request = ADVISOR_REQUEST.toBuilder()
+				.shipperConfig(ADVISOR_REQUEST.getShipperConfig()
+						.withAdditionalProperty(NShiftConstants.TEST_MODE, "Y")
+						.withAdditionalProperty(NShiftConstants.TEST_MODE_ATTENTION, "TEST SHIPMENT"))
+				.build();
+
+		final JsonShipAdvisorRequest advisorRequest = NShiftShipAdvisorService.buildRequest(request);
+
+		assertEquals("TEST SHIPMENT", attentionOf(advisorRequest, JsonAddressKind.SENDER),
+				"Sender Attention must be the configured test text, not the mapping-resolved one");
+		assertEquals("TEST SHIPMENT", attentionOf(advisorRequest, JsonAddressKind.RECEIVER),
+				"Receiver Attention must be the configured test text, not the mapping-resolved one");
+	}
+
+	@Test
+	void buildRequest_testModeOff_keepsMappedAttentions()
+	{
+		final JsonDeliveryAdvisorRequest request = ADVISOR_REQUEST.toBuilder()
+				.shipperConfig(ADVISOR_REQUEST.getShipperConfig()
+						.withAdditionalProperty(NShiftConstants.TEST_MODE, "N")
+						.withAdditionalProperty(NShiftConstants.TEST_MODE_ATTENTION, "TEST SHIPMENT"))
+				.build();
+
+		final JsonShipAdvisorRequest advisorRequest = NShiftShipAdvisorService.buildRequest(request);
+
+		assertNotEquals("TEST SHIPMENT", attentionOf(advisorRequest, JsonAddressKind.SENDER),
+				"With test mode off the sender Attention must stay the mapping-resolved value");
+		assertNotEquals("TEST SHIPMENT", attentionOf(advisorRequest, JsonAddressKind.RECEIVER),
+				"With test mode off the receiver Attention must stay the mapping-resolved value");
+	}
+
+	private static String attentionOf(final JsonShipAdvisorRequest request, final JsonAddressKind kind)
+	{
+		return request.getData().getAddresses().stream()
+				.filter(a -> a.getKind() == kind)
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no " + kind + " address"))
+				.getAttention();
 	}
 }

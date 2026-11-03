@@ -51,6 +51,7 @@ import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -147,6 +148,7 @@ public class ShipmentOrderRepository
 				.customerReference(po.getCustomerReference())
 				.incotermsValue(po.getIncotermsValue())
 				.externalSystemValue(po.getExternalSystem())
+				.preAdviceRequired(StringUtils.ofBoolean(po.isPreAdviceRequired()))
 				.shipperId(shipperId)
 				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(po.getM_ShipperTransportation_ID()))
 				.pickupDate(PickupDate.builder()
@@ -287,6 +289,7 @@ public class ShipmentOrderRepository
 		po.setIncotermsValue(request.getIncotermsValue());
 		po.setExternalSystem(request.getExternalSystemValue());
 		po.setInternationalDelivery(!Objects.equals(request.getDeliveryAddress().getCountry(), request.getPickupAddress().getCountry()));
+		po.setIsPreAdviceRequired(StringUtils.toBoolean(request.getPreAdviceRequired()));
 		final ShipperId shipperId = request.getShipperId();
 		po.setM_Shipper_ID(ShipperId.toRepoId(shipperId));
 		po.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(request.getShipperTransportationId()));

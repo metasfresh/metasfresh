@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
@@ -63,7 +64,7 @@ public class ExternalSystemScriptedExportConversionServiceErrorContextTest
 				Mockito.mock(ExternalSystemScriptedExportConversionRepository.class),
 				Mockito.mock(de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository.class),
 				Mockito.mock(de.metas.externalsystem.audit.ExternalSystemExportAuditRepo.class),
-				Mockito.mock(de.metas.externalsystem.ExternalSystemConfigRepo.class));
+				Mockito.mock(ExternalSystemConfigRepository.class));
 	}
 
 	private ExternalSystemScriptedExportConversionConfig buildConfig()

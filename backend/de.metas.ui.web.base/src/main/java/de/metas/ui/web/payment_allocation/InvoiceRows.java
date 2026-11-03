@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.invoice.InvoiceId;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.template.IEditableRowsData;
 import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.view.template.SynchronizedRowsIndexHolder;
@@ -111,6 +112,9 @@ public class InvoiceRows implements IEditableRowsData<InvoiceRow>
 			return newRow;
 		}
 
+		// Carry only the prepared-for-allocation flag: a genuine invalidate (the C_Invoice record changed) must refresh
+		// all repository-computed amounts (openAmt, discount, service fee, payment bonus) from the fresh row, not keep stale values.
+		// The user's typed-but-not-yet-persisted amounts are preserved by not rebuilding on marking (see InvoicesView), not here.
 		return newRow.withPreparedForAllocation(oldRow.isPreparedForAllocation());
 	}
 
@@ -130,6 +134,11 @@ public class InvoiceRows implements IEditableRowsData<InvoiceRow>
 	{
 		final DocumentId rowIdToChange = ctx.getRowId();
 		rowsHolder.compute(rows -> rows.changingRow(rowIdToChange, row -> InvoiceRowReducers.reduce(row, fieldChangeRequests)));
+
+		// The allocate action of the payments view checks the invoice rows' amounts (e.g. the payment bonus against what the customer pays).
+		// Reporting the invoices view as changed makes the WebUI fetch its rows (the edited values are kept here) and, as it is the payments view's included view,
+		// the actions of both views again.
+		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(ctx.getViewId());
 	}
 
 	public ImmutableList<InvoiceRow> getRowsWithPreparedForAllocationFlagSet()

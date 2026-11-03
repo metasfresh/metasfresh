@@ -108,12 +108,13 @@ public class JsonPickingJobConverterCommand
 
 		// The LU/TU pick targets are already set by JsonPickingJob.builderFrom(pickingJob).
 
-		final CarrierAdviseTargetInfo jobCarrierAdvise = packedHUCarrierAdviseService.resolveInfo(pickingJob, null);
+		final CarrierAdviseTargetInfo jobCarrierAdvise = packedHUCarrierAdviseService.resolveInfo(pickingJob, null, jsonOpts.getAdLanguage());
 
 		// Job-level carrier-advise flags — the mobile UI reads these for the job view's advise button.
 		builder.carrierAdviseAvailable(jobCarrierAdvise.isAvailable())
 				.carrierAdviseReadOnly(jobCarrierAdvise.isReadOnly())
-				.carrierProductCaption(jobCarrierAdvise.getProductCaption());
+				.carrierProductCaption(jobCarrierAdvise.getProductCaption())
+				.carrierAdviseDisabledReason(jobCarrierAdvise.getDisabledReason());
 
 		return builder.build();
 	}
@@ -160,10 +161,11 @@ public class JsonPickingJobConverterCommand
 
 		// The carrier product is the line's own job-scoped persisted value (or the job's shared value for
 		// header-level aggregation).
-		final CarrierAdviseTargetInfo lineInfo = packedHUCarrierAdviseService.resolveInfo(pickingJob, line);
+		final CarrierAdviseTargetInfo lineInfo = packedHUCarrierAdviseService.resolveInfo(pickingJob, line, jsonOpts.getAdLanguage());
 		lineBuilder.carrierAdviseAvailable(lineInfo.isAvailable())
 				.carrierAdviseReadOnly(lineInfo.isReadOnly())
-				.carrierProductCaption(lineInfo.getProductCaption());
+				.carrierProductCaption(lineInfo.getProductCaption())
+				.carrierAdviseDisabledReason(lineInfo.getDisabledReason());
 
 		final LUPickingTarget existingLuTarget = currentPickingTarget.getLuPickingTarget()
 				.filter(LUPickingTarget::isExistingLU)

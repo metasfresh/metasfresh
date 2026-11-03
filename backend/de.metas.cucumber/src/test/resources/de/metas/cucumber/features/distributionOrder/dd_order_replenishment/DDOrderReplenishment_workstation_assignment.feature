@@ -103,22 +103,25 @@ Feature: DD_Order replenishment — create a distribution order when a picker is
       | jobSchedule               | shipmentSchedule      | workplace      | 5         |
 
     # Exactly one Completed DD_Order, qty 5, source stockWH, target locator = the workstation's pick-from locator,
-    # with both DD_Order.M_Picking_Job_Schedule_ID and DD_OrderLine.M_Picking_Job_Schedule_ID referencing the assignment.
+    # with the line's contributor set being exactly that assignment.
     Then after not more than 120s, the DD_Order linked to picking job schedule is found:
-      | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
-      | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
+      | Identifier | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
+      | ddOrder    | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
     # The async reconcile event handler records a Done AD_EventLog_Entry on success.
     And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
       | M_Picking_Job_Schedule_ID | IsError |
       | jobSchedule               | false   |
 
     # Removing the workstation assignment voids the DD_Order — there is nothing left to pick at this workstation.
-    # The delete→void runs synchronously in the delete transaction and also NULLs the assignment back-reference
-    # (M_Picking_Job_Schedule_ID) on the voided DD_Order header and line, so the deferrable FK
-    # mpickingjobschedule_ddorder passes at commit. The voided DD_Order is therefore asserted via its preserved
-    # M_ShipmentSchedule_ID link (not the now-cleared assignment link), matching the update/reverse delete scenario.
+    # The delete→void runs synchronously in the delete transaction and drops the assignment's contributor rows, so the
+    # deferrable FK on DD_OrderLine_PickingJobSchedule passes at commit. The departed assignment therefore no longer
+    # resolves the order, so the void is asserted on the captured ddOrder and the emptiness on the product group.
     When delete picking job schedules
       | M_ShipmentSchedule_ID |
       | shipmentSchedule      |
-    Then after not more than 120s, the DD_Order linked to M_ShipmentSchedule shipmentSchedule is Voided
-    And there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
+    Then after not more than 120s, following DD_Orders are found
+      | Identifier | DocStatus |
+      | ddOrder    | VO        |
+    And after not more than 30s, no live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID |
+      | product      | packingLocator |

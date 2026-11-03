@@ -123,13 +123,11 @@ Feature: DD_Order replenishment — update (in place) and reverse (void only)
       | M_Picking_Job_Schedule_ID | QtyToPick |
       | jobSchedule               | 0         |
 
-    # The existing DD_Order is voided and NO new live DD_Order is created.
-    # (the "is Voided" step already asserts a voided DD_Order exists AND no live one remains for the schedule)
-    Then after not more than 120s, the DD_Order linked to M_ShipmentSchedule shipmentSchedule is Voided
-    # The original DD_Order (captured in Background as ddOrder_v1) must now be Voided.
-    And after not more than 5s, following DD_Orders are found
+    # The existing DD_Order (captured in Background as ddOrder_v1) is voided and NO new live DD_Order is created.
+    Then after not more than 120s, following DD_Orders are found
       | Identifier | DocStatus |
       | ddOrder_v1 | VO        |
+    And there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
     # The async reconcile event handler records a Done AD_EventLog_Entry on success (no error).
     And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
       | M_Picking_Job_Schedule_ID | IsError |
@@ -143,18 +141,25 @@ Feature: DD_Order replenishment — update (in place) and reverse (void only)
       | M_ShipmentSchedule_ID |
       | shipmentSchedule      |
 
-    # The existing DD_Order is voided and NO new live DD_Order is created.
-    Then after not more than 120s, the DD_Order linked to M_ShipmentSchedule shipmentSchedule is Voided
-    And there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
+    # The existing DD_Order is voided and NO new live DD_Order is created. The departed assignment can no longer
+    # resolve the group, so what is left of it is asserted on the product group itself.
+    Then after not more than 120s, following DD_Orders are found
+      | Identifier | DocStatus |
+      | ddOrder_v1 | VO        |
+    And after not more than 30s, no live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID |
+      | product      | packingLocator |
 
   @from:cucumber
   Scenario: Movement-started guard blocks assignment change when goods are already in transit
     # The beforeChange interceptor (assertCanChange) checks whether any DD_OrderLine linked to the schedule
     # has QtyInTransit > 0 or QtyDelivered > 0 — indicating the movement is already in progress.
     # When the condition holds, a change to QtyToPick is rejected (DDOrderPickingReconcile_MovementStarted).
-    # The QtyInTransit is set directly on the DB record (test seam) to simulate the state after a movement
-    # document was dispatched from the DD_Order, without running the full movement-processing flow.
-    When simulate goods in transit on DD_Order linked to picking job schedule jobSchedule
+    # LEGACY-COLUMN SEAM ONLY: QtyInTransit is written directly on the DB record because no production flow ever
+    # writes it (the only writer is MDDOrderLine's zero-initialiser). It is therefore NOT the mover's real state —
+    # that one is an in-progress DD_Order_MoveSchedule — and this scenario pins the guard's arithmetic and message,
+    # not a state a live instance can reach.
+    When seed the legacy QtyInTransit column on DD_Order linked to picking job schedule jobSchedule
 
     # Any attempted qty change is blocked by the beforeChange movement-started guard.
     Then changing the picking job schedule quantity is rejected:

@@ -271,7 +271,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceOrderAdviceTest.build_order_
           "Width": 200
         }
       ],
-      "OrderNo": "1",
+      "OrderNo": "00000001",
       "PickupDt": "2025-10-02",
       "ProdConceptID": 10305,
       "References": [

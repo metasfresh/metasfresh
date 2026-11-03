@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 69509236L;
+	private static final long serialVersionUID = 2142738420L;
 
     /** Standard Constructor */
     public X_DD_Order (final Properties ctx, final int DD_Order_ID, @Nullable final String trxName)
@@ -759,21 +759,6 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	}
 
 	@Override
-	public void setM_Picking_Job_Schedule_ID (final int M_Picking_Job_Schedule_ID)
-	{
-		if (M_Picking_Job_Schedule_ID < 1) 
-			set_Value (COLUMNNAME_M_Picking_Job_Schedule_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Picking_Job_Schedule_ID, M_Picking_Job_Schedule_ID);
-	}
-
-	@Override
-	public int getM_Picking_Job_Schedule_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_Schedule_ID);
-	}
-
-	@Override
 	public void setMRP_AllowCleanup (final boolean MRP_AllowCleanup)
 	{
 		set_Value (COLUMNNAME_MRP_AllowCleanup, MRP_AllowCleanup);
@@ -807,21 +792,6 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public boolean isMRP_ToDelete() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_MRP_ToDelete);
-	}
-
-	@Override
-	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
-	{
-		if (M_ShipmentSchedule_ID < 1) 
-			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
-	}
-
-	@Override
-	public int getM_ShipmentSchedule_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 
 	@Override

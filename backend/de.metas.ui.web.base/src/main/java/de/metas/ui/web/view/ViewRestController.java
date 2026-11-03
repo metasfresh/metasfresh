@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.rest_api.utils.JsonErrors;
@@ -57,6 +59,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDisabledStandardAction;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
@@ -65,6 +68,7 @@ import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+import de.metas.ui.web.window.model.DocumentStandardAction;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoService;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -280,26 +284,49 @@ public class ViewRestController
 		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(rows);
 
 		final JSONViewResult json = JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
-		json.setAllowNew(isNewDocumentAllowed(viewId.getWindowId()));
+		setNewDocumentPermission(json, viewId.getWindowId(), jsonOpts.getAdLanguage());
 		return json;
 	}
 
-	private boolean isNewDocumentAllowed(@NonNull final WindowId windowId)
+	/**
+	 * Transmits whether a new record may be created from this view, and — where the role's per-table
+	 * permission is what forbids it — why, so the grid can grey the action instead of just hiding its cause.
+	 */
+	private void setNewDocumentPermission(
+			@NonNull final JSONViewResult json,
+			@NonNull final WindowId windowId,
+			@NonNull final String adLanguage)
 	{
 		if (windowId.toAdWindowIdOrNull() == null)
 		{
-			return false;
+			json.setAllowNew(false);
+			return;
 		}
 
 		try
 		{
 			final DocumentEntityDescriptor documentEntityDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId).getEntityDescriptor();
-			return DocumentPermissionsHelper.isNewDocumentAllowed(documentEntityDescriptor, userSession);
+
+			final BooleanWithReason allowNew = DocumentPermissionsHelper.checkNewDocumentAllowed(documentEntityDescriptor, userSession);
+			json.setAllowNew(allowNew.isTrue());
+
+			// checkNewDocumentAllowed short-circuits to a reasonless FALSE for the window-level refusals (write-access,
+			// allowCreateNewLogic) and only reaches the role check -- which alone carries a reason -- once those pass.
+			// JSONDisabledStandardAction.refusedByRole only returns null for a TRUE input, not for a reasonless FALSE,
+			// so gate on the reason here to let the window-level refusal win with no role message.
+			if (!TranslatableStrings.isBlank(allowNew.getReason()))
+			{
+				final JSONDisabledStandardAction newRefused = JSONDisabledStandardAction.refusedByRole(DocumentStandardAction.New, allowNew, adLanguage);
+				if (newRefused != null)
+				{
+					json.setDisabledStandardActions(ImmutableList.of(newRefused));
+				}
+			}
 		}
 		catch (Exception ex)
 		{
-			logger.warn("Failed checking if new document is allowed for windowId={}. Returning false.", windowId, ex);
-			return false;
+			logger.warn("Failed checking if new document is allowed for windowId={}. Not allowing it.", windowId, ex);
+			json.setAllowNew(false);
 		}
 	}
 

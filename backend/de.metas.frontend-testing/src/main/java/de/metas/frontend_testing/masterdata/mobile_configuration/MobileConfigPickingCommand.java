@@ -50,7 +50,8 @@ class MobileConfigPickingCommand
 					.isActiveWorkplaceRequired(request.getActiveWorkplaceRequired() != null ? request.getActiveWorkplaceRequired() : false)
 					.isConsiderOnlyJobScheduledToWorkplace(request.getConsiderOnlyJobScheduledToWorkplace() != null ? request.getConsiderOnlyJobScheduledToWorkplace() : false)
 					.isAllowQuickPackAll(request.getAllowQuickPackAll() != null ? request.getAllowQuickPackAll() : false)
-					.isMassPrinting(request.getMassPrinting() != null ? request.getMassPrinting() : false);
+					.isMassPrinting(request.getMassPrinting() != null ? request.getMassPrinting() : false)
+					.isShowQtyAvailableForLines(request.getShowQtyAvailableForLines() != null ? request.getShowQtyAvailableForLines() : false);
 
 			if (request.getAllowPickingAnyCustomer() != null)
 			{
@@ -151,6 +152,9 @@ class MobileConfigPickingCommand
 		builder.pickingSlotRequired(OptionalBoolean.ofNullableBoolean(from.getPickingSlotRequired()));
 
 		builder.displayPickingSlotSuggestions(OptionalBoolean.ofNullableBoolean(from.getDisplayPickingSlotSuggestions()));
+
+		// not sticky: a spec that omits it gets the default (false), so one spec enabling it does not leak into later specs
+		builder.isCatchWeightTUPickingEnabled(Boolean.TRUE.equals(from.getCatchWeightTUPickingEnabled()));
 
 		builder.isShowConfirmationPromptWhenOverPick(Boolean.TRUE.equals(from.getShowPromptWhenOverPicking()));
 
@@ -277,6 +281,7 @@ class MobileConfigPickingCommand
 				.isShowInSummary(field.getIsShowInSummary() != null ? field.getIsShowInSummary() : true)
 				.isShowInDetailed(field.getIsShowInDetailed() != null ? field.getIsShowInDetailed() : true)
 				.pattern(StringUtils.trimBlankToNull(field.getPattern()))
+				.isBlockLayout(field.getIsBlockLayout() != null && field.getIsBlockLayout())
 				.build();
 	}
 

@@ -35,6 +35,7 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -48,6 +49,7 @@ import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.serialno.SerialNoSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
@@ -128,6 +130,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	@NonNull private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
 	@NonNull private final DisplayValueProviderService displayValueProviderService;
 	@NonNull private final PackedHUCarrierAdviseService packedHUCarrierAdviseService;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	@Override
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
@@ -145,6 +148,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.showFilterByQtyAvailableAtPickFromLocator(true)
 				.applicationParameter("allowQuickPackAll", profile.isAllowQuickPackAll())
 				.applicationParameter("massPrinting", profile.isMassPrinting())
+				.applicationParameter("isShowQtyAvailableForLines", profile.isShowQtyAvailableForLines())
 				.build();
 	}
 
@@ -449,7 +453,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		return pickingJobRestService.processStepEvents(pickingJob, events);
 	}
 
-	private static PickingJobStepEvent fromJson(
+	private PickingJobStepEvent fromJson(
 			@NonNull final JsonPickingStepEvent json,
 			@NonNull final PickingJob pickingJob,
 			@NonNull final PickingJobOptions pickingJobOptions)
@@ -484,8 +488,14 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.graiCodes(json.getGraiCodes() != null ? GRAISet.parseStrings(json.getGraiCodes()) : null)
 				.isShelfLifeConfirmed(json.isShelfLifeConfirmed())
 				//
+				// Any supported HU label may identify the unpack target - a metasfresh global QR code, a
+				// configured scannable code format, or the plain M_HU.Value / ExternalBarcode printed on the
+				// unit. Resolving through the shared bridge keeps this in step with the pick-from side, which
+				// has always accepted all of them. A skipped target scan stays legal (unpick to the floor),
+				// so the blank-tolerant Optional chain is preserved.
 				.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
-						.map(HUQRCode::fromGlobalQRCodeJsonString)
+						.map(ScannedCode::ofString)
+						.map(huQRCodesService::getQRCodeByScannedCode)
 						.orElse(null))
 				.unpickProductId(ProductId.ofNullableString(json.getUnpickProductId()))
 				.qtyToUnpick(json.getUnpickQty())
@@ -724,5 +734,14 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	{
 		final PickingJobId pickingJobId = toPickingJobId(WFProcessId.ofString(request.getWfProcessId()));
 		return pickingJobRestService.resolveUnpick(pickingJobId, ScannedCode.ofString(request.getScannedCode()), callerId, adLanguage);
+	}
+
+	public HUInfo resolvePickFromHU(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		return pickingJobRestService.resolvePickFromHU(toPickingJobId(wfProcessId), lineId, scannedCode, callerId);
 	}
 }

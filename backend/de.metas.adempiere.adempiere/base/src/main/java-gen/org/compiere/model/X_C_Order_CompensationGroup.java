@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Order_CompensationGroup extends org.compiere.model.PO implements I_C_Order_CompensationGroup, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1127982364L;
+	private static final long serialVersionUID = 1720053754L;
 
     /** Standard Constructor */
     public X_C_Order_CompensationGroup (final Properties ctx, final int C_Order_CompensationGroup_ID, @Nullable final String trxName)
@@ -74,6 +74,21 @@ public class X_C_Order_CompensationGroup extends org.compiere.model.PO implement
 	public int getC_CompensationGroup_Schema_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_CompensationGroup_Schema_ID);
+	}
+
+	@Override
+	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
+	{
+		if (C_Flatrate_Term_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Term_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getC_Flatrate_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
 	}
 
 	@Override
