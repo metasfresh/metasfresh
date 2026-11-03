@@ -47,6 +47,7 @@ import org.compiere.util.Env;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -66,7 +67,7 @@ class HUManagerRestControllerCreateHUAccessTest
 {
 	private static final String LABEL = "01" + "02001234567817";
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private IQueryBL queryBL;
 	private HUManagerRestController controller;
 	private I_Mobile_Application application;
 	private I_Mobile_Application_Action createHUAction;
@@ -77,6 +78,7 @@ class HUManagerRestControllerCreateHUAccessTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		queryBL = Services.get(IQueryBL.class);
 		// the role's permissions are built with the client record
 		final I_AD_Client client = InterfaceWrapperHelper.newInstance(I_AD_Client.class);
 		client.setName("client");
@@ -114,7 +116,7 @@ class HUManagerRestControllerCreateHUAccessTest
 						inventoryCandidateService,
 						new HUGraiService(new HUPIGraiRepository())),
 				inventoryCandidateService,
-				new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelTargetLocatorResolver(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository()))));
+				new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelTargetLocatorResolver(new WorkplaceService(WorkplaceRepository.newInstanceForUnitTesting(), new WorkplaceUserAssignRepository()))));
 	}
 
 	private I_Mobile_Application_Action newAction(final String internalName)
@@ -136,7 +138,7 @@ class HUManagerRestControllerCreateHUAccessTest
 
 		final I_AD_Role role = InterfaceWrapperHelper.newInstance(I_AD_Role.class);
 		role.setName("role" + (++roleCounter));
-		role.setUserLevel("  O");
+		role.setUserLevel(X_AD_Role.USERLEVEL_Organization);
 		role.setPreferenceType(X_AD_Role.PREFERENCETYPE_Organization);
 		InterfaceWrapperHelper.saveRecord(role);
 		final I_Mobile_Application_Access access = InterfaceWrapperHelper.newInstance(I_Mobile_Application_Access.class);
@@ -153,7 +155,6 @@ class HUManagerRestControllerCreateHUAccessTest
 			InterfaceWrapperHelper.saveRecord(actionAccess);
 		}
 
-		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(user.getAD_User_ID()));
 		Env.setLoggedRoleId(Env.getCtx(), RoleId.ofRepoId(role.getAD_Role_ID()));
 
 		// the role resolves from the records, so the controller below reads its real mobile-application permissions
@@ -196,69 +197,72 @@ class HUManagerRestControllerCreateHUAccessTest
 		void run() throws Exception;
 	}
 
-	// (1) application access, but no createHU grant
-
-	@Test
-	void propose_appAccessWithoutCreateHUGrant_accessDenied() throws IOException
+	/** (1) application access, but no createHU grant; (2) allow-all role: createHU like every other action; (3) explicit createHU grant */
+	@Nested
+	class ProposeFromScannedCode
 	{
-		loginWithHUManagerAccess(false, disposeAction); // another action granted, createHU not
-		final JsonProposeHUFromScannedCodeRequest request = proposeRequest();
+		@Test
+		void appAccessWithoutCreateHUGrant_accessDenied() throws IOException
+		{
+			loginWithHUManagerAccess(false, disposeAction); // another action granted, createHU not
+			final JsonProposeHUFromScannedCodeRequest request = proposeRequest();
 
-		assertThatThrownBy(() -> controller.proposeFromScannedCode(request))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessage("Access denied");
-		assertNothingBooked();
+			assertThatThrownBy(() -> controller.proposeFromScannedCode(request))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessage("Access denied");
+			assertNothingBooked();
+		}
+
+		@Test
+		void allowAllRole_passesAccessCheck() throws IOException
+		{
+			loginWithHUManagerAccess(true, null);
+			final JsonProposeHUFromScannedCodeRequest request = proposeRequest();
+
+			assertPassesAccessCheck(() -> controller.proposeFromScannedCode(request));
+		}
+
+		@Test
+		void createHUGranted_passesAccessCheck() throws IOException
+		{
+			loginWithHUManagerAccess(false, createHUAction);
+			final JsonProposeHUFromScannedCodeRequest request = proposeRequest();
+
+			assertPassesAccessCheck(() -> controller.proposeFromScannedCode(request));
+		}
 	}
 
-	@Test
-	void create_appAccessWithoutCreateHUGrant_accessDenied() throws IOException
+	@Nested
+	class CreateFromScannedCode
 	{
-		loginWithHUManagerAccess(false, null);
-		final JsonCreateHUFromScannedCodeRequest request = createRequest();
+		@Test
+		void appAccessWithoutCreateHUGrant_accessDenied() throws IOException
+		{
+			loginWithHUManagerAccess(false, null);
+			final JsonCreateHUFromScannedCodeRequest request = createRequest();
 
-		assertThatThrownBy(() -> controller.createFromScannedCode(request))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessage("Access denied");
-		assertNothingBooked();
-	}
+			assertThatThrownBy(() -> controller.createFromScannedCode(request))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessage("Access denied");
+			assertNothingBooked();
+		}
 
-	// (2) allow-all role: createHU like every other action
+		@Test
+		void allowAllRole_passesAccessCheck() throws IOException
+		{
+			loginWithHUManagerAccess(true, null);
+			final JsonCreateHUFromScannedCodeRequest request = createRequest();
 
-	@Test
-	void propose_allowAllRole_passesAccessCheck() throws IOException
-	{
-		loginWithHUManagerAccess(true, null);
-		final JsonProposeHUFromScannedCodeRequest request = proposeRequest();
+			assertPassesAccessCheck(() -> controller.createFromScannedCode(request));
+		}
 
-		assertPassesAccessCheck(() -> controller.proposeFromScannedCode(request));
-	}
+		@Test
+		void createHUGranted_passesAccessCheck() throws IOException
+		{
+			loginWithHUManagerAccess(false, createHUAction);
+			final JsonCreateHUFromScannedCodeRequest request = createRequest();
 
-	@Test
-	void create_allowAllRole_passesAccessCheck() throws IOException
-	{
-		loginWithHUManagerAccess(true, null);
-		final JsonCreateHUFromScannedCodeRequest request = createRequest();
-
-		assertPassesAccessCheck(() -> controller.createFromScannedCode(request));
-	}
-
-	// (3) explicit createHU grant
-
-	@Test
-	void propose_createHUGranted_passesAccessCheck() throws IOException
-	{
-		loginWithHUManagerAccess(false, createHUAction);
-		final JsonProposeHUFromScannedCodeRequest request = proposeRequest();
-
-		assertPassesAccessCheck(() -> controller.proposeFromScannedCode(request));
-	}
-
-	@Test
-	void create_createHUGranted_passesAccessCheck() throws IOException
-	{
-		loginWithHUManagerAccess(false, createHUAction);
-		final JsonCreateHUFromScannedCodeRequest request = createRequest();
-
-		assertPassesAccessCheck(() -> controller.createFromScannedCode(request));
+			assertPassesAccessCheck(() -> controller.createFromScannedCode(request));
+		}
 	}
 }
