@@ -23,6 +23,7 @@ public class MobileQRCodeMessages
 	public static final AdMessageKey HU_AMBIGUOUS           = AdMessageKey.of("de.metas.mobile.qr.HuAmbiguous");
 	public static final AdMessageKey HU_DESTROYED           = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_HU_DESTROYED_ERROR_MSG");
 	public static final AdMessageKey HU_PRODUCT_NOT_MATCHING = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
+	public static final AdMessageKey HU_CANNOT_SPLIT_NO_QR_CODE = AdMessageKey.of("de.metas.mobile.qr.HuCannotSplitNoQRCode");
 
 	// Distribution business-check errors
 	public static final AdMessageKey HU_RESERVED_BY_OTHER  = AdMessageKey.of("de.metas.distribution.HuReservedByOtherDocument");

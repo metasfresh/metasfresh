@@ -35,6 +35,25 @@ export const DistributionStepScreen = {
         await DistributionLineScreen.waitForScreen();
     }),
 
+    // Opens the unpick dialog and leaves it open on the target-HU scan stage. Split out from
+    // unpickToTarget so a test can assert what happens between the scan and the commit (e.g. a
+    // rejected code must leave the dialog usable) — the decomposition pattern in
+    // e2e/mobile-webui/CLAUDE.md § "Decomposing Helper Methods for Assertions".
+    openUnpickDialog: async () => await test.step(`${NAME} - Open unpick dialog`, async () => {
+        await DistributionStepScreen.expectVisible();
+        await page.getByTestId('unpick-button').tap();
+        await UnpickDialog.waitForDialog();
+    }),
+
+    // Unpick, returning the moved HU onto an explicit target HU identified by any supported label
+    // (a metasfresh global QR code, a legacy ExternalBarcode, or the plain M_HU.Value) instead of
+    // skipping to the floor.
+    unpickToTarget: async ({ targetHUQRCode }) => await test.step(`${NAME} - Unpick to target HU`, async () => {
+        await DistributionStepScreen.openUnpickDialog();
+        await UnpickDialog.scanTargetHU(targetHUQRCode);
+        await DistributionLineScreen.waitForScreen();
+    }),
+
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await DistributionStepScreen.expectVisible();
         await page.locator(ID_BACK_BUTTON).tap();
