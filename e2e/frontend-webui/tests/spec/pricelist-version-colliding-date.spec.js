@@ -7,8 +7,10 @@ import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, FAST_ACTION_TIMEOUT } from '../
 import { DateWidget } from '../utils/widgets/DateWidget';
 
 /**
- * Regression test: creating a new Price List Version whose ValidFrom collides with an existing one
- * must not break the WebUI (the Price List Schema dropdown must still resolve).
+ * Regression test: creating (or editing) a Price List Version whose ValidFrom collides with an existing one
+ * must not break the WebUI (the Price List Schema dropdown must still resolve), and the server's friendly
+ * rejection reason must be READABLE INSIDE the input dialog while it is still open — then clear again once
+ * the input is corrected or the dialog is closed.
  *
  * Bug: creating a new Price List Version (PLV) whose ValidFrom collides with an existing PLV on the same
  * price list fails the INSERT on the unique index `validfromuniqueindexonpricelist`. Before the fix, the
@@ -124,9 +126,9 @@ const uniqueFarFutureValidFrom = () => {
 
 /**
  * Normalise the target price list to its clean, CI-equivalent state: exactly the seed 2015-01-01 PLV.
- * Call this in every test AFTER login and BEFORE touching the included tab — both tests here depend on it,
- * so it must run at the start of each (the first test leaves a residual errored row the second must clear,
- * and either test can inherit a wedge from a prior local run).
+ * Call this in every test AFTER login and BEFORE touching the included tab — all tests here depend on it,
+ * so it must run at the start of each (every test leaves at least one residual non-seed PLV row behind that
+ * the next one must clear, and any test can inherit a wedge from a prior local run or a manual UAT).
  *
  * A prior colliding run — or the manual UAT of this very fix — can leave a NON-seed PLV row cached with a
  * KEPT user-validation error (an unsaved in-memory edit to a colliding date). That kept error is precisely
@@ -136,8 +138,8 @@ const uniqueFarFutureValidFrom = () => {
  * that is not the CLEAN seed 2015 row — via the same WebUI rows endpoint the frontend uses (trailing slash
  * + orderBy), so cached in-memory-errored rows are visible, unlike the plain rows GET — discards the wedge
  * and restores the clean state. On a fresh seed DB (a clean CI shard) the GET returns only the seed row, so
- * the loop deletes nothing; within this file the first test leaves a residual same-date errored row, which
- * the second test's call then removes — so the loop does real work on the normal in-file run, not only on a
+ * the loop deletes nothing; within this file every test leaves a persisted far-future PLV row behind, which
+ * the next test's call then removes — so the loop does real work on the normal in-file run, not only on a
  * wedged stack.
  * NOTE: price list 2008396 ("Testpreise Kunden") is a dedicated automated-test fixture — this loop deletes
  * every PLV on it that is not the clean 2015 seed; do not create unrelated PLVs there.
@@ -155,7 +157,7 @@ const normalizePriceListToSeed = async (page) => {
 
   // Guard the self-heal: the clean 2015 seed PLV MUST be recognized before we delete anything. If a future
   // backend change alters the row-value shape (adds a time/zone component, changes the envelope),
-  // isCleanSeedRow would stop matching the seed and the loop below would delete the shared fixture both
+  // isCleanSeedRow would stop matching the seed and the loop below would delete the shared fixture all
   // tests depend on — with no failure pinpointing the cause. Fail loud here instead, before any delete.
   expect(
     existingRows.some(isCleanSeedRow),
@@ -226,28 +228,94 @@ const openSchemaDropdownAndAwaitList = async (page) => {
     .catch(() => false);
 };
 
-// The Indicator component renders the ERROR state as `<div class="bar error">` inside
-// `.window-indicator-container` (IndicatorState.ERROR === 'error'; see components/app/Indicator.js) —
-// a language-invariant selector, no localized text involved.
-const windowErrorIndicator = (page) => page.locator('.window-indicator-container .bar.error').first();
+// ---------------------------------------------------------------------------
+// UI layer — the save-error surface (the Indicator) inside the record dialog
+// ---------------------------------------------------------------------------
+
+// The record dialog renders its own Indicator inside its panel — `<div class="panel panel-modal
+// panel-modal-primary">` (Modal.renderPanel) — and the Indicator renders the ERROR state as
+// `<div class="bar error">` plus the reason as `<span class="text">` inside
+// `.window-indicator-container .message-bar` (IndicatorState.ERROR === 'error'; see
+// components/app/Indicator.js). All three are structural classes — no localized text involved.
+//
+// Scoping to `.panel-modal` is what makes an assertion mean "IN the dialog": the master window
+// renders the very same `.window-indicator-container` markup in its Header, so an unscoped,
+// page-wide locator would be satisfied by the master window's indicator just as well. (Today the
+// master Header's Indicator happens not to be rendered while a modal is open — MasterWindow passes
+// `modalHidden={!modal.visible}` to Container, which forwards it as Header's `showIndicator` — but
+// that is an implementation detail of another component; scoping pins the requirement instead of
+// depending on it.)
+const modalErrorIndicator = (page) => page.locator('.panel-modal .window-indicator-container .bar.error');
+const modalErrorReasonText = (page) => page.locator('.panel-modal .window-indicator-container .message-bar .text');
+const openDialogPanel = (page) => page.locator('.panel-modal');
+/** Every save-error surface on the page — the dialog's AND the master window's Header indicator. */
+const anyErrorIndicator = (page) => page.locator('.window-indicator-container .bar.error');
+
+/**
+ * The user-visible half of the fix: the friendly rejection reason must be READABLE INSIDE the input
+ * dialog WHILE IT IS STILL OPEN (the customer's complaint was that it appeared only *after* the
+ * dialog closed, too briefly to read).
+ *
+ * `expectedReason` is the reason the SERVER actually returned on the rejecting save, captured from
+ * the response recorder — never a hardcoded localized literal. So the assertion pins the exact text
+ * the user reads while staying language-independent.
+ */
+const expectRejectionReasonShownInOpenDialog = async (page, expectedReason) => {
+  expect(
+    expectedReason,
+    'the rejecting save must carry a non-empty friendly reason — there would be nothing to display otherwise',
+  ).toBeTruthy();
+  await expect(openDialogPanel(page), 'the input dialog must still be OPEN while the reason is asserted').toHaveCount(1);
+  await expect(modalErrorIndicator(page), 'the error indicator must be shown INSIDE the still-open input dialog').toBeVisible({
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
+  await expect(
+    modalErrorReasonText(page),
+    'the friendly reason text must be READABLE inside the still-open input dialog (not merely an error-coloured bar)',
+  ).toHaveText(expectedReason, { timeout: SLOW_ACTION_TIMEOUT });
+};
+
+/** The dialog is still open, but the rejecting condition is gone — its error surface must be empty. */
+const expectErrorSurfaceClearedInOpenDialog = async (page) => {
+  await expect(openDialogPanel(page), 'the input dialog must still be OPEN for this check').toHaveCount(1);
+  await expect(modalErrorIndicator(page), 'the error indicator must clear once the corrected save succeeds').toHaveCount(0, {
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
+  await expect(modalErrorReasonText(page), 'the reason text must disappear once the corrected save succeeds').toHaveCount(0, {
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
+};
+
+/** Close the dialog, accepting the "abandon changes?" confirm the pending rejected edit triggers. */
+const closeDialogAbandoningChanges = async (page) => {
+  page.on('dialog', (dialog) => dialog.accept());
+  // Language-invariant Done/close button of the record modal (Modal.js — data-testid).
+  const doneButton = page.locator('[data-testid="process-modal-cancel-button"]').first();
+  await doneButton.click();
+  await doneButton.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+  await waitForSpinnersToSettle(page);
+};
 
 test.describe('PriceListVersion — colliding ValidFrom', () => {
-  test('colliding new PLV: friendly error AND the Preislisten-Schema dropdown still resolves (no 404)', async ({ page }) => {
+  test('colliding new PLV: the friendly reason is shown IN the open dialog, clears on correction, AND the Preislisten-Schema dropdown still resolves (no 404)', async ({ page }) => {
     allure.epic('E0260: Pricing');
     allure.tag('F32070: Price List Copy using Price List Schema');
     allure.tag('F32070');
-    allure.story('Creating a PLV with a duplicate ValidFrom must not break the document (no 404 on the schema dropdown)');
+    allure.story('Creating a PLV with a duplicate ValidFrom shows the reason in the dialog and must not break the document (no 404 on the schema dropdown)');
     allure.severity('critical');
     allure.description(`
-After a colliding-ValidFrom PLV save fails on the unique index, the
-\`Preislisten-Schema\` (M_DiscountSchema_ID) dropdown must still open — before the fix it returned
-HTTP 404 (DocumentNotFoundException) because the document-cache evicted the root owning the unsaved
-new child PLV.
+After a colliding-ValidFrom PLV save fails on the unique index:
+1. the friendly translated reason must be READABLE INSIDE the input dialog while it is still open
+   (the reported bug: the reason surfaced only after the dialog closed, too briefly to read),
+2. correcting the date to a free value must make the save succeed and the reason disappear, and
+3. the \`Preislisten-Schema\` (M_DiscountSchema_ID) dropdown must still open — before the fix it
+   returned HTTP 404 (DocumentNotFoundException) because the document-cache evicted the root owning
+   the unsaved new child PLV.
     `);
 
     test.setTimeout(120000);
 
-    const { recordedResponses, notFoundUrls } = recordPlvPathResponses(page);
+    const { recordedResponses, notFoundUrls, currentSeq } = recordPlvPathResponses(page);
 
     await loginAndOpenCleanPriceList(page);
     await addNewPlvRow(page);
@@ -261,6 +329,21 @@ new child PLV.
         message: 'colliding PLV save should fail server-side with the duplicate-date error',
       })
       .toBeGreaterThan(0);
+
+    // ON SCREEN, IN THE OPEN DIALOG: the friendly reason the server returned must be readable right
+    // there, while the dialog is still open — the half of the bug the user actually experiences.
+    // Gate on the post-failure re-fetch GET having landed FIRST (the frontend reacts to the
+    // staleRootDocument websocket event and re-GETs the document): that is the exact moment at which
+    // the old behaviour replaced the errored document with a clean one and the on-screen reason
+    // vanished. Asserting only *before* it would be satisfiable by the ~1s pre-fix flash.
+    const rejectingSave = failedSaveResponses(recordedResponses).pop();
+    await expect
+      .poll(() => recordedResponses.some((r) => r.seq > rejectingSave.seq && r.method === 'GET' && r.isError !== null), {
+        timeout: SLOW_ACTION_TIMEOUT,
+        message: 'the post-failure re-fetch GET on the PLV path should arrive before the on-screen reason is asserted',
+      })
+      .toBeTruthy();
+    await expectRejectionReasonShownInOpenDialog(page, rejectingSave.reason);
 
     // THE FIX UNDER TEST: open the Preislisten-Schema dropdown. Before the fix this triggered a 404
     // (DocumentNotFoundException) on the evicted document; now the list resolves.
@@ -280,9 +363,29 @@ new child PLV.
     expect(notFoundUrls, `no 404 on the PLV document path (the colliding-ValidFrom bug). Captured: ${JSON.stringify(notFoundUrls)}`).toEqual([]);
     // (c) user-visible proof: the Preislisten-Schema dropdown still opens after the failed save.
     expect(dropdownOpened, 'the Preislisten-Schema dropdown opens (document not lost)').toBe(true);
+
+    // (d) THE ERROR CLEARS ON CORRECTION: the displayed reason must not outlive the rejecting
+    //     condition. Correct ValidFrom to a free, unique date -> the save succeeds -> the dialog's
+    //     error surface (bar + reason text) goes away, without closing the dialog.
+    const correctedValidFrom = uniqueFarFutureValidFrom();
+    const beforeCorrectionSeq = currentSeq();
+    await setValidFrom(correctedValidFrom);
+    await expect
+      .poll(
+        () =>
+          recordedResponses.some(
+            (r) => r.seq > beforeCorrectionSeq && r.method === 'PATCH' && r.isSaved === true && r.isError === false,
+          ),
+        {
+          timeout: SLOW_ACTION_TIMEOUT,
+          message: `correcting ValidFrom to the free date ${correctedValidFrom} should save successfully`,
+        },
+      )
+      .toBeTruthy();
+    await expectErrorSurfaceClearedInOpenDialog(page);
   });
 
-  test('edit-existing PLV to a colliding date: the USER-VALIDATION error PERSISTS — the document is NOT self-heal-evicted', async ({ page }) => {
+  test('edit-existing PLV to a colliding date: the USER-VALIDATION error PERSISTS (not self-heal-evicted), its reason is shown IN the open dialog, and it clears when the dialog is closed', async ({ page }) => {
     allure.epic('E0260: Pricing');
     allure.tag('F32070: Price List Copy using Price List Schema');
     allure.tag('F32070');
@@ -295,7 +398,8 @@ errored root on the child invalidation that follows — so the error and the rej
 the fix the root was evicted, so the stale-triggered re-fetch returned a CLEAN saveStatus and the on-screen
 error flashed ~1s then reverted. This test proves the failing edit's PATCH reports \`saveStatus.error===true\`
 AND the subsequent GET on the PLV document path STILL reports \`saveStatus.error===true\` (document not evicted),
-with no 404 on that path.
+with no 404 on that path. On screen it proves the friendly reason is readable INSIDE the still-open dialog, and
+that closing the dialog clears the error surface again (kept-visible must not mean stuck).
     `);
 
     test.setTimeout(120000);
@@ -347,14 +451,13 @@ with no 404 on that path.
     allure.attachment('PLV-path responses (arrival order)', JSON.stringify(recordedResponses, null, 2), 'application/json');
     const postFailureGets = recordedResponses.filter((r) => r.seq > failingEditPatch.seq && r.method === 'GET' && r.isError !== null);
 
-    // SECONDARY PROOF (on screen): the user actually SEES the error indicator (the user-visible half of the
-    // bug, "nicht oder nur sehr kurz angezeigt"). Persistence (no revert) is proven deterministically by
-    // assertion (b): the post-failure GET STILL reports error===true, so no clean document arrives to revert
-    // the render. toBeVisible auto-waits, so this is a hard assertion that still tolerates render timing.
+    // SECONDARY PROOF (on screen): the user actually SEES the friendly reason, inside the still-open dialog
+    // (the user-visible half of the bug, "nicht oder nur sehr kurz angezeigt"). Persistence (no revert) is
+    // proven deterministically by assertion (b): the post-failure GET STILL reports error===true, so no clean
+    // document arrives to revert the render. The locators auto-wait, so these are hard assertions that still
+    // tolerate render timing.
     await page.waitForLoadState('networkidle', { timeout: FAST_ACTION_TIMEOUT }).catch(() => {});
-    await expect(windowErrorIndicator(page), 'the on-screen window error indicator must be shown after the failed edit').toBeVisible({
-      timeout: SLOW_ACTION_TIMEOUT,
-    });
+    await expectRejectionReasonShownInOpenDialog(page, failingEditPatch.reason);
 
     // (a) bug condition hit: the colliding edit failed server-side with a USER-VALIDATION (friendly) rejection.
     expect(
@@ -368,6 +471,18 @@ with no 404 on that path.
     ).toBe(true);
     // (c) the exact old symptom must be absent: no 404 on the PLV document path.
     expect(notFoundUrls, `no 404 on the PLV document path. Captured: ${JSON.stringify(notFoundUrls)}`).toEqual([]);
+
+    // (d) THE ERROR CLEARS WHEN THE DIALOG IS CLOSED: kept-visible must not mean stuck. Closing the
+    //     dialog (abandoning the rejected edit) must leave NO error surface anywhere — neither the
+    //     dialog's (it is gone) nor the master window's Header indicator, which takes over rendering
+    //     once the dialog closes. toHaveCount(0) auto-retries, so it tolerates the brief moment (~0.5s,
+    //     observed) in which the closing dialog's error state is still mirrored on the master indicator.
+    await closeDialogAbandoningChanges(page);
+    await expect(openDialogPanel(page), 'the input dialog must be closed').toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+    await expect(
+      anyErrorIndicator(page),
+      'closing the dialog must clear the error surface everywhere (dialog gone, master window indicator not in error)',
+    ).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
   });
 
   test('abandon after a persisted PLV colliding edit: the persisted row STAYS in the parent grid without reload (DB row intact)', async ({ page }) => {
@@ -445,12 +560,18 @@ reload, showing its reverted DB value.
       );
 
     // (3) Press Done and ACCEPT the abandon-changes confirm (dirty window modal → window.confirm dialog).
-    page.on('dialog', (dialog) => dialog.accept());
-    // Language-invariant Done/close button of the record modal (Modal.js — data-testid, translate('modal.actions.done')).
-    await page.locator('[data-testid="process-modal-cancel-button"]').first().click();
-    // Wait for the modal to close so the parent included-tab grid is the visible/queried DOM.
-    await page.locator('[data-testid="process-modal-cancel-button"]').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-    await waitForSpinnersToSettle(page);
+    //     The helper also waits for the modal to close, so the parent included-tab grid is the queried DOM.
+    //     `Modal.closeModal()` deliberately does NOT await `MasterWindow.closeModalCallback`, so the
+    //     abandon's server-side `POST .../discardChanges` is still IN FLIGHT once the modal is gone. Until
+    //     it completes, the WebUI rows endpoint still reports the row's rejected in-memory ValidFrom, so
+    //     the rows read in (a) below would race it and see the colliding date instead of the reverted DB
+    //     value. Await that round-trip explicitly — the deterministic boundary, not a sleep.
+    const discardChangesResponse = page.waitForResponse(
+      (response) => response.url().includes('/discardChanges') && response.request().method() === 'POST',
+      { timeout: SLOW_ACTION_TIMEOUT },
+    );
+    await closeDialogAbandoningChanges(page);
+    await discardChangesResponse;
 
     // ============ ASSERT THE FIXED (DESIRED) BEHAVIOR ============
     // (a) DATA IS INTACT: a direct rows GET on the PLV tab still returns the persisted row (DB row never deleted,

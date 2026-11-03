@@ -25,6 +25,7 @@ import de.metas.product.PackageDimensions;
 import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.product.ProductRepository;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
@@ -84,6 +85,8 @@ public class PurchaseCandidateRequestedHandlerTest
 
 		productBL = mock(IProductBL.class);
 		Services.registerService(IProductBL.class, productBL);
+		// permissive default so the life-cycle-status guard does not block existing tests
+		when(productBL.isAllowed(any(ProductId.class), any(ProductLifeCycleAction.class))).thenReturn(true);
 
 		bpartnerProductEffectiveBL = mock(BPartnerProductEffectiveBL.class);
 		productRepository = mock(ProductRepository.class);
@@ -183,6 +186,40 @@ public class PurchaseCandidateRequestedHandlerTest
 		when(productRepository.getById(PRODUCT_ID)).thenReturn(notPurchasedProduct);
 		when(productBL.isPurchased(PRODUCT_ID)).thenReturn(false);
 		when(productBL.isPurchaseSalesEnforcementEnabled(any(ClientId.class), any(OrgId.class))).thenReturn(true);
+
+		final PurchaseCandidateRequestedEvent event = PurchaseCandidateRequestedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(5, ORG_ID.getRepoId()))
+				.supplyCandidateRepoId(10)
+				.purchaseMaterialDescriptor(buildMaterialDescriptorForProduct(PRODUCT_ID))
+				.build();
+
+		// when
+		handler.handleEvent(event);
+
+		// then: no candidate is saved
+		verify(purchaseCandidateRepository, never()).save(any(PurchaseCandidate.class));
+	}
+
+	@Test
+	public void handleEvent_blockedLifeCycleStatus_doesNotCreateCandidate()
+	{
+		// given: a purchased product (IsPurchased gate passes) that is BLOCKED for PURCHASE by its life-cycle status
+		final Product blockedProduct = Product.builder()
+				.id(PRODUCT_ID)
+				.orgId(ORG_ID)
+				.uomId(UomId.ofRepoId(1))
+				.value("TEST")
+				.productCategoryId(ProductCategoryId.ofRepoId(1))
+				.name(TranslatableStrings.anyLanguage("Test Product"))
+				.productType("I")
+				.packageDimensions(PackageDimensions.UNSPECIFIED)
+				.build();
+		when(productRepository.getById(PRODUCT_ID)).thenReturn(blockedProduct);
+		// IsPurchased skip must NOT fire: product is purchased and enforcement is enabled
+		when(productBL.isPurchased(PRODUCT_ID)).thenReturn(true);
+		when(productBL.isPurchaseSalesEnforcementEnabled(any(ClientId.class), any(OrgId.class))).thenReturn(true);
+		// but the life-cycle status blocks PURCHASE
+		when(productBL.isAllowed(PRODUCT_ID, ProductLifeCycleAction.PURCHASE)).thenReturn(false);
 
 		final PurchaseCandidateRequestedEvent event = PurchaseCandidateRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(5, ORG_ID.getRepoId()))

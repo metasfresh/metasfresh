@@ -135,10 +135,12 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter: PreparationDate
-		if (query.getPreparationDate() != null)
+		// Filter: PreparationDays
+		// Strict, unlike DeliveryDays above: an unset PreparationDate does not pass. See PackageableQuery.
+		if (!query.getPreparationDays().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
+			final ICompositeQueryFilter<I_M_Packageable_V> preparationDaysFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+			query.getPreparationDays().forEach(preparationDay -> preparationDaysFilter.addEqualsFilter(I_M_Packageable_V.COLUMN_PreparationDate, preparationDay, DateTruncQueryFilterModifier.DAY));
 		}
 
 		//

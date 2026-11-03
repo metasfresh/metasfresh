@@ -6,18 +6,22 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.methods.CostAmountType;
 import de.metas.costrevaluation.CostRevaluationLine;
 import de.metas.costrevaluation.CostRevaluationRepository;
+import de.metas.costrevaluation.CostRevaluationService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostRevaluationLine;
 
 public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 {
+	@NonNull private final CostRevaluationService costRevaluationService = SpringContextHolder.instance.getBean(CostRevaluationService.class);
 	private final CostRevaluationLine costRevaluationLine;
 
 	public DocLine_CostRevaluation(final @NonNull I_M_CostRevaluationLine lineRecord, final @NonNull Doc_CostRevaluation doc)
@@ -44,35 +48,45 @@ public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 		}
 		else
 		{
-			final CostDetailCreateResultsList results = services.createCostDetail(
+			// Only the revaluation's own cost element is revalued.
+			final CostElement costElement = services.getCostElementById(costSegmentAndElement.getCostElementId());
+			final CostingDocumentRef documentRef = CostingDocumentRef.ofCostRevaluationLineId(costRevaluationLine.getId());
+			// The amount booked is determined by the costing handler from the stock on hand at posting, not from the request's amount.
+			final CostDetailCreateResultsList costDetailResults = services.createCostDetail(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(costSegmentAndElement.getAcctSchemaId())
 							.clientId(costSegmentAndElement.getClientId())
 							.orgId(costSegmentAndElement.getOrgId())
-							.costElement(services.getCostElementById(costSegmentAndElement.getCostElementId()))
 							.productId(costSegmentAndElement.getProductId())
 							.attributeSetInstanceId(costSegmentAndElement.getAttributeSetInstanceId())
-							.documentRef(CostingDocumentRef.ofCostRevaluationLineId(costRevaluationLine.getId()))
+							.costElement(costElement)
+							.documentRef(documentRef)
 							.qty(costRevaluationLine.getCurrentQty().toZero())
 							.amt(costRevaluationLine.getDeltaAmountToBook())
 							.explicitCostPrice(costRevaluationLine.getNewCostPrice())
 							.date(getDateAcctAsInstant())
 							.build());
 
-			if (getDoc().isCopyFromCostElementSource())
+			if (!getDoc().isManualSource())
 			{
 				// Value-neutral switch: the target element (e.g. MovingAverageInvoice) is intentionally not yet the
 				// acct-schema's accountable method (seed first, activate later), so there is no accountable amount to
 				// post and the copy books nothing. Tolerating the empty result is scoped to this source ONLY.
-				return results.getAmtAndQtyToPost(CostAmountType.MAIN, as)
+				return costDetailResults.getAmtAndQtyToPost(CostAmountType.MAIN, as)
 						.map(CostAmountAndQty::getAmt)
 						.orElseGet(() -> CostAmount.zero(as.getCurrencyId()));
 			}
 
-			// Calculated (history-replay): the target element must be the acct-schema's accountable method;
-			// fail loud (getMainAmountToPost throws) if it is not, rather than silently book zero to the GL.
-			return results.getMainAmountToPost(as);
+			// The line and its before-row show what was booked (stock on hand at posting × price difference).
+			costRevaluationService.writeBookedValues(costRevaluationLine);
+
+			// A revaluation of a cost element which is not posted by the accounting schema changes that cost only, with no GL impact.
+			if (!costElement.isAccountable(as.getCosting()))
+			{
+				return CostAmount.zero(as.getCurrencyId());
+			}
+
+			return costDetailResults.getMainAmountToPost(as);
 		}
 	}
-
 }

@@ -41,7 +41,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,6 +91,37 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
+	 * Manually changes the export status of (config, sourceRecord) to {@code targetStatus} by recording a
+	 * NEW attempt row, stamped with the triggering process instance ({@code pInstanceId}) for a who/when
+	 * audit trail. Prior attempt rows are kept as history. Used by the "Change EPCIS Export Status" process.
+	 */
+	public void recordManualStatusChange(
+			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
+			@NonNull final TableRecordReference sourceRecord,
+			@NonNull final ExternalSystemExportStatus targetStatus,
+			@NonNull final PInstanceId pInstanceId)
+	{
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId)
+				.sourceRecord(sourceRecord)
+				.status(targetStatus)
+				.pInstanceId(pInstanceId)
+				.build());
+	}
+
+	/**
+	 * The current status per config for the given source record: the LATEST attempt row per config
+	 * (one row per config, all states). Deduped via {@link ExternalSystemExportStatusRepository#getLatestPerConfigBySourceRecord}
+	 * — NOT the raw per-attempt history, so a config that has been re-sent (>=2 rows) reports only its
+	 * newest attempt, never a stale earlier one.
+	 */
+	@NonNull
+	public List<ScriptedExportConversionStatus> getLatestStatusesBySourceRecord(@NonNull final TableRecordReference sourceRecord)
+	{
+		return repo.getLatestPerConfigBySourceRecord(sourceRecord);
+	}
+
+	/**
 	 * Records that the source record was included by the config WhereClause.
 	 * Status {@link ExternalSystemExportStatus#Pending}, no PInstance yet.
 	 */
@@ -124,55 +154,85 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Returns the config IDs whose latest status row for the given source record is re-sendable
-	 * ({@link ExternalSystemExportStatus#isResendable()} — {@link ExternalSystemExportStatus#Error},
-	 * {@link ExternalSystemExportStatus#Invalid} or {@link ExternalSystemExportStatus#DontSend}). A
-	 * DontSend row is included so a suppressed record can be re-evaluated on re-send. Sent and in-flight
-	 * rows (Pending, Enqueued, SendingStarted) are excluded to prevent double-sending.
+	 * Returns the config IDs whose latest status row for the given source record is re-sendable:
+	 * a terminal {@link ExternalSystemExportStatus#Error}/{@link ExternalSystemExportStatus#Invalid} or a
+	 * suppressed {@link ExternalSystemExportStatus#DontSend} (re-offered so a suppressed record can be
+	 * re-evaluated), OR an operator-parked {@link ExternalSystemExportStatus#Pending} — a Pending row that
+	 * carries an {@code AD_PInstance_ID}, i.e. was set deliberately via the "Change EPCIS Export Status"
+	 * action. {@link ExternalSystemExportStatus#Sent} and the actively-in-flight
+	 * {@link ExternalSystemExportStatus#Enqueued}/{@link ExternalSystemExportStatus#SendingStarted} rows —
+	 * and a transient auto-flow Pending (no PInstance, momentarily awaiting Enqueued) — are excluded to
+	 * prevent double-sending.
 	 */
 	@NonNull
 	public List<ExternalSystemScriptedExportConversionConfigId> getResendableConfigsBySourceRecord(
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		// Reduce the per-attempt history to the LATEST attempt per config (getLatestBySourceRecord
-		// returns ALL rows newest-first, so putIfAbsent keeps the newest), then offer only configs whose
-		// latest attempt is resendable — Error/Invalid OR DontSend (a suppressed attempt is re-offered so
-		// a re-send can re-evaluate relevance). Without the latest-per-config dedup a config whose latest
-		// attempt already SUCCEEDED would still be offered because an OLDER attempt errored — re-triggering
-		// an already-delivered export. Mirrors getConfigsWithNonSentAttemptBySourceRecord's dedup.
-		final LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ScriptedExportConversionStatus> latestPerConfig =
-				new LinkedHashMap<>();
-		for (final ScriptedExportConversionStatus entry : repo.getLatestBySourceRecord(sourceRecord))
-		{
-			latestPerConfig.putIfAbsent(entry.getConfigId(), entry);
-		}
-
-		return latestPerConfig.values().stream()
-				.filter(s -> s.getStatus().isResendable())
+		// Only the LATEST attempt per config decides. Without that reduction a config whose latest attempt
+		// already SUCCEEDED would still be offered because an OLDER attempt errored — re-triggering an
+		// already-delivered export.
+		return repo.getLatestPerConfigBySourceRecord(sourceRecord).stream()
+				.filter(ExternalSystemExportStatusService::isResendableAttempt)
 				.map(ScriptedExportConversionStatus::getConfigId)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
-	 * Returns all config IDs in a re-triggerable terminal state for the given source record.
-	 * Excluded:
+	 * Whether a config's LATEST attempt row may be re-sent. Terminal Error/Invalid/DontSend qualify on
+	 * status alone ({@link ExternalSystemExportStatus#isResendable()}); an operator-parked Pending qualifies
+	 * per row (see {@link #isOperatorParkedPending(ScriptedExportConversionStatus)}).
+	 */
+	private static boolean isResendableAttempt(@NonNull final ScriptedExportConversionStatus latest)
+	{
+		return latest.getStatus().isResendable() || isOperatorParkedPending(latest);
+	}
+
+	/**
+	 * Whether the attempt is a {@link ExternalSystemExportStatus#Pending} row that an operator parked
+	 * deliberately via the "Change EPCIS Export Status" action — the distinguishing mark is the
+	 * {@code AD_PInstance_ID} that {@link #recordManualStatusChange} stamps on it. Such a row is NOT in
+	 * flight (nothing is being sent), so a re-send is the first send, not a double-send.
+	 *
+	 * <p>A Pending row WITHOUT a PInstance is the transient auto-flow attempt that
+	 * {@link #recordPending}/{@link #recordPendingAsResend} write momentarily before the Pending→Enqueued
+	 * transition; re-sending that one WOULD double-send, so it does not qualify.
+	 */
+	private static boolean isOperatorParkedPending(@NonNull final ScriptedExportConversionStatus attempt)
+	{
+		return attempt.getStatus().isPending() && attempt.getPInstanceId() != null;
+	}
+
+	/**
+	 * Returns all config IDs in a re-triggerable state for the given source record — the force-resend
+	 * selection ({@code IsOnlyNotSentSuccessfully=N}), which deliberately includes
+	 * {@link ExternalSystemExportStatus#Sent}: re-triggering a successfully-sent record is intentional
+	 * (e.g. the external system lost its data).
+	 * <p>
+	 * Only the config's LATEST attempt decides. Excluded:
 	 * <ul>
 	 *   <li>{@link ExternalSystemExportStatus#DontSend} — WhereClause explicitly excluded this record; must not be re-triggered.</li>
-	 *   <li>In-flight rows ({@link ExternalSystemExportStatus#Pending}, {@link ExternalSystemExportStatus#Enqueued},
-	 *       {@link ExternalSystemExportStatus#SendingStarted}) — already being processed; re-triggering would cause a duplicate send.</li>
+	 *   <li>Actively-in-flight attempts — {@link ExternalSystemExportStatus#Enqueued},
+	 *       {@link ExternalSystemExportStatus#SendingStarted}, and a transient auto-flow
+	 *       {@link ExternalSystemExportStatus#Pending} — already being processed; re-triggering would cause a duplicate send.</li>
 	 * </ul>
-	 * {@link ExternalSystemExportStatus#Sent} rows <em>are</em> included: re-triggering a successfully-sent record is
-	 * intentional (e.g. the external system lost its data).
+	 * An operator-parked Pending ({@link #isOperatorParkedPending}) is NOT in flight and IS included — as in
+	 * {@link #getResendableConfigsBySourceRecord}; otherwise this broader mode would send LESS than the
+	 * not-yet-sent-only mode and silently skip a shipment the operator had parked.
+	 * <p>
+	 * DontSend is the one state this mode deliberately does NOT share with
+	 * {@link #getResendableConfigsBySourceRecord}: there it is re-offered so a re-send can RE-EVALUATE a
+	 * suppressed record against the WhereClause, whereas this mode re-transmits without re-evaluating — and
+	 * the WhereClause explicitly excluded that record, so firing the export anyway would contradict the config.
 	 */
 	@NonNull
 	public List<ExternalSystemScriptedExportConversionConfigId> getMatchingConfigIdsBySourceRecord(
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		return repo.getLatestBySourceRecord(sourceRecord)
-				.stream()
-				.filter(s -> !s.getStatus().isDontSend() && !s.getStatus().isPending() && !s.getStatus().isProcessing())
+		return repo.getLatestPerConfigBySourceRecord(sourceRecord).stream()
+				.filter(latest -> !latest.getStatus().isDontSend())
+				.filter(latest -> !latest.getStatus().isProcessing())
+				.filter(latest -> !latest.getStatus().isPending() || isOperatorParkedPending(latest))
 				.map(ScriptedExportConversionStatus::getConfigId)
-				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
 

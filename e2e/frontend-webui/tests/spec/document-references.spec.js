@@ -12,10 +12,8 @@ import { ReceiptCandidatesPage } from '../utils/pages/ReceiptCandidatesPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID, PURCHASE_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import {
-  openReferencesPanel,
+  openReferencesPanelComplete,
   openRelatedDocument,
-  waitForReferences,
-  waitForSpinnersToDisappear,
   getVisibleReferences,
   REFERENCE_DATA_CY,
 } from '../utils/DocumentReferences';
@@ -35,18 +33,18 @@ import {
  */
 
 /**
- * Helper: Open Alt+6 panel and collect all visible references.
+ * Helper: Open Alt+6 panel and collect all visible references once the reference stream has completed
+ * (a mid-stream read can miss references or see interim data-cy values - see openReferencesPanelComplete).
  * Retries if no references load (SSE can be slow).
  */
 async function collectReferences(page, stepName, maxRetries = 5, retryDelay = 2000) {
   return await test.step(stepName, async () => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      await openReferencesPanel();
-      await waitForSpinnersToDisappear();
-      const loaded = await waitForReferences({ timeout: 5000 });
+      // once the stream has completed the list is final: no further wait for a first reference is needed
+      const completed = await openReferencesPanelComplete({ maxAttempts: 1 });
+      const refs = completed ? await getVisibleReferences() : [];
 
-      if (loaded) {
-        const refs = await getVisibleReferences();
+      if (refs.length > 0) {
         console.log(`[${stepName}] Found ${refs.length} references (attempt ${attempt}):`);
         refs.forEach((ref) => console.log(`  - ${ref.dataCy}: "${ref.text}"`));
 
@@ -88,10 +86,9 @@ async function collectReferences(page, stepName, maxRetries = 5, retryDelay = 20
  */
 async function clickReferenceAndVerify(page, dataCy, stepName) {
   return await test.step(stepName, async () => {
-    // Open references panel
-    await openReferencesPanel();
-    await waitForSpinnersToDisappear();
-    await waitForReferences({ timeout: 5000 });
+    // Open references panel and wait until the reference stream has completed: before that, the link may not be
+    // rendered yet or may still carry an interim data-cy (see openReferencesPanelComplete)
+    await openReferencesPanelComplete();
 
     const link = page.locator(`[data-cy="${dataCy}"]`);
     const visible = await link.isVisible().catch(() => false);

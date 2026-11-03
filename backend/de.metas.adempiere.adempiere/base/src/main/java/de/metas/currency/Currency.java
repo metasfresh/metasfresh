@@ -42,6 +42,9 @@ public class Currency
 	ITranslatableString symbol;
 
 	@NonNull
+	String description;
+
+	@NonNull
 	CurrencyPrecision precision;
 
 	@NonNull

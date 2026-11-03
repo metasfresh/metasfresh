@@ -1,5 +1,6 @@
 package de.metas.manufacturing.job.service.commands.issue;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
@@ -69,8 +70,12 @@ class IssueRawMaterialsCommandTest
 			return MobileUIManufacturingConfig.builder()
 					.isScanResourceRequired(OptionalBoolean.FALSE)
 					.isAllowIssuingAnyHU(OptionalBoolean.FALSE)
-					.isBestBeforeDateEditable(OptionalBoolean.TRUE)
-					.isLotNumberEditable(OptionalBoolean.TRUE)
+					.editableAttributeCodesInOrder(ImmutableList.of())
+					.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.UNKNOWN)
+					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.UNKNOWN)
+					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.UNKNOWN)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.UNKNOWN)
+					.isAllowReceiveWithoutPackingItem(OptionalBoolean.UNKNOWN)
 					.isAllowEmptyingHUs(offerEmptyingHUs ? OptionalBoolean.TRUE : OptionalBoolean.FALSE)
 					.build();
 		}

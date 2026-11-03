@@ -29,11 +29,15 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.api.APIRequest;
 import de.metas.cucumber.stepdefs.api.RESTUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.edi.api.impl.EpcisExportStatusChangeService;
+import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_ScriptedExportConversion_Status;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.process.M_InOut_ReSend_ScriptedExportConversion;
+import de.metas.inout.InOutId;
 import de.metas.process.AdProcessId;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutor;
@@ -46,6 +50,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.compiere.SpringContextHolder;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,8 +63,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Step definitions for {@code ExternalSystem_ScriptedExportConversion_Status} assertions,
  * scripted-export /ok callback simulation, {@code M_InOut.EPCIS_ExportStatus} roll-up checks,
- * the {@code M_InOut_ReSend_ScriptedExportConversion} process invocation, and deactivating a
- * shipment's status row (the escape-hatch that releases a shipment blocked by an in-flight export).
+ * the {@code M_InOut_ReSend_ScriptedExportConversion} and "Change EPCIS Export Status" process
+ * invocations, and deactivating a shipment's status row (the escape-hatch that releases a shipment
+ * blocked by an in-flight export).
  *
  * <p>The status table holds one row per export ATTEMPT: each enqueue / re-send inserts a fresh
  * row (the per-attempt history), and the transitions of that attempt (Pending → Enqueued →
@@ -74,6 +80,8 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final EpcisExportStatusChangeService epcisExportStatusChangeService = SpringContextHolder.instance.getBean(EpcisExportStatusChangeService.class);
 
 	// ------------------------------------------------------------------
 	// Status-row assertion (polling)
@@ -94,6 +102,7 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 	 *   <b>IsResend</b> — (optional) expected IsResend flag (Y/N)<br>
 	 *   <b>HttpResponseCode</b> — (optional) expected HTTP response code; blank cell = not asserted<br>
 	 *   <b>HasAD_Issue</b> — (optional) Y if AD_Issue_ID must be &gt; 0, N if it must be 0<br>
+	 *   <b>HasAD_PInstance</b> — (optional) Y if AD_PInstance_ID must be &gt; 0 (who/when audit stamp), N if it must be 0<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, ExternalSystem_Config_ScriptedExportConversion_StepDefData
 	 * @cucumber.example <pre>
 	 * Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
@@ -131,7 +140,8 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 					// blank cell for an optional column ⇒ that column is not asserted
 					row.getAsOptionalString(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_IsResend).map(String::trim).filter(s -> !s.isEmpty()).orElse(null),
 					row.getAsOptionalString(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_HttpResponseCode).map(String::trim).filter(s -> !s.isEmpty()).orElse(null),
-					row.getAsOptionalString("HasAD_Issue").map(String::trim).filter(s -> !s.isEmpty()).orElse(null)));
+					row.getAsOptionalString("HasAD_Issue").map(String::trim).filter(s -> !s.isEmpty()).orElse(null),
+					row.getAsOptionalString("HasAD_PInstance").map(String::trim).filter(s -> !s.isEmpty()).orElse(null)));
 		}
 
 		StepDefUtil.<Boolean>tryAndWaitForItem()
@@ -168,6 +178,10 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 						{
 							return Optional.empty();
 						}
+						if (expected.hasPInstance != null && "Y".equals(expected.hasPInstance) != (statusRow.getAD_PInstance_ID() > 0))
+						{
+							return Optional.empty();
+						}
 					}
 					return Optional.of(Boolean.TRUE);
 				})
@@ -183,6 +197,7 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 		private final String isResend;
 		private final String httpResponseCode;
 		private final String hasIssue;
+		private final String hasPInstance;
 
 		private ExpectedStatusRow(
 				final int inoutId,
@@ -190,7 +205,8 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 				@NonNull final String exportStatus,
 				final String isResend,
 				final String httpResponseCode,
-				final String hasIssue)
+				final String hasIssue,
+				final String hasPInstance)
 		{
 			this.inoutId = inoutId;
 			this.cfgId = cfgId;
@@ -198,6 +214,7 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 			this.isResend = isResend;
 			this.httpResponseCode = httpResponseCode;
 			this.hasIssue = hasIssue;
+			this.hasPInstance = hasPInstance;
 		}
 	}
 
@@ -333,6 +350,49 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 				.buildAndPrepareExecution()
 				.executeSync();
 		executor.getResult().propagateErrorIfAny();
+	}
+
+	// ------------------------------------------------------------------
+	// Change-export-status process invocation
+	// ------------------------------------------------------------------
+
+	/**
+	 * Marks a shipment's EPCIS scripted-export status via the "Change EPCIS Export Status" shipment action —
+	 * writing a new, process-instance-stamped attempt row per EPCIS config (prior attempts kept as history).
+	 *
+	 * <p><b>Direct-service invocation (documented exemption).</b> In production this fires when an operator
+	 * runs the "Change EPCIS Export Status" process from the shipment action menu (the
+	 * {@code ChangeEpcisExportStatus_M_InOut_SingleView} AD_Process). That process class lives in
+	 * {@code de.metas.ui.web.base}, which this cucumber module does not (and should not) depend on.
+	 * The process is a thin parameter-reader that delegates to {@link EpcisExportStatusChangeService#changeStatus},
+	 * so invoking that service directly exercises the same transition + who/when-audit behaviour. A real
+	 * {@code AD_PInstance} for the actual process (resolved by its AD_Process Value) is created and passed,
+	 * so the audit stamp on the written row is faithful to production.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example <pre>
+	 * When Change EPCIS Export Status process is run for shipment io_050 with target status DontSend
+	 * </pre>
+	 */
+	@When("^Change EPCIS Export Status process is run for shipment (.*) with target status (.*)$")
+	public void runChangeEpcisExportStatusProcess(final String inoutIdentifierStr, final String targetStatusStr)
+	{
+		final org.compiere.model.I_M_InOut inout = inoutTable.get(StepDefDataIdentifier.ofString(inoutIdentifierStr));
+		assertThat(inout).isNotNull();
+
+		final ExternalSystemExportStatus targetStatus = ExternalSystemExportStatus.valueOf(targetStatusStr.trim());
+
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue("ChangeEpcisExportStatus_M_InOut_SingleView");
+		assertThat(processId).as("AD_Process not found for Value=ChangeEpcisExportStatus_M_InOut_SingleView").isNotNull();
+
+		final PInstanceId pInstanceId = PInstanceId.ofRepoId(
+				pInstanceDAO.createAD_PInstance(processId).getAD_PInstance_ID());
+
+		epcisExportStatusChangeService.changeStatus(
+				InOutId.ofRepoId(inout.getM_InOut_ID()),
+				targetStatus,
+				pInstanceId);
 	}
 
 	/**

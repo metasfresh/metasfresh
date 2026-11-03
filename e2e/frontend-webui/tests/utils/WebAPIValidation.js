@@ -31,6 +31,210 @@ import { expect } from '@playwright/test';
 export const WEBAPI_BASE_URL = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
 
 /**
+ * Get a window's LIST-VIEW layout (grid columns + filter descriptors) from the WebAPI.
+ *
+ * This is the language-invariant way to assert what the backend actually builds for a list view:
+ * grid columns arrive as `elements[].fields[].field` and filter parameters as
+ * `filters[].parameters[].parameterName` — both are AD_Column ColumnNames, not localized captions.
+ *
+ * @param {number|string} windowId - AD_Window_ID (e.g., 140 for Product)
+ * @param {string} viewType - 'grid' (default) or 'list'
+ * @returns {Promise<Object>} the view layout JSON
+ */
+export async function getViewLayout(windowId, viewType = 'grid') {
+  const page = getPage();
+
+  const response = await page.request.get(
+      `${WEBAPI_BASE_URL}/documentView/${windowId}/layout?viewType=${viewType}`,
+      { headers: { 'Content-Type': 'application/json' } },
+  );
+
+  if (!response.ok()) {
+    throw new Error(`HTTP ${response.status()}: ${response.statusText()} — view layout of window ${windowId}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * Grid column ColumnNames of a view layout (see {@link getViewLayout}).
+ * @returns {string[]}
+ */
+export function getViewLayoutColumnNames(layout) {
+  return (layout.elements || []).flatMap((element) => (element.fields || []).map((field) => field.field));
+}
+
+/**
+ * Filter parameter ColumnNames of a view layout (see {@link getViewLayout}).
+ *
+ * The backend nests the standard filter descriptors one level deeper than a filter group:
+ * `filters[].includedFilters[].parameters[]`. A filter group's own `parameters[]` is normally empty,
+ * so BOTH levels are collected here — reading only the outer one silently yields an empty list and
+ * turns every "is this field filterable?" assertion into a false negative.
+ *
+ * @returns {string[]}
+ */
+export function getViewLayoutFilterParameterNames(layout) {
+  const parameterNames = (parameters) => (parameters || []).map((param) => param.parameterName);
+
+  return (layout.filters || []).flatMap((filter) => [
+    ...parameterNames(filter.parameters),
+    ...(filter.includedFilters || []).flatMap((includedFilter) => parameterNames(includedFilter.parameters)),
+  ]);
+}
+
+/**
+ * Get a window's SINGLE-RECORD (detail) layout from the WebAPI.
+ *
+ * Unlike {@link getViewLayout} (the list/grid layout), this is the detail-form layout the desktop
+ * frontend renders field labels from. Elements arrive nested under
+ * `sections[].columns[].elementGroups[].elementsLine[].elements[]`; each element carries its
+ * localized `caption` (the AD_Element_Trl.Name for the SESSION's AD_Language — exactly the caption
+ * the frontend paints as the field's `label.form-control-label`) and its `fields[].field` (the
+ * language-invariant AD_Column ColumnName).
+ *
+ * @param {number|string} windowId - AD_Window_ID (e.g., 344 for Product Costs)
+ * @returns {Promise<Object>} the window layout JSON
+ */
+export async function getWindowLayout(windowId) {
+  const page = getPage();
+
+  const response = await page.request.get(
+      `${WEBAPI_BASE_URL}/window/${windowId}/layout`,
+      { headers: { 'Content-Type': 'application/json' } },
+  );
+
+  if (!response.ok()) {
+    throw new Error(`HTTP ${response.status()}: ${response.statusText()} — window layout of ${windowId}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * The localized field LABEL the backend serves for a given ColumnName in a window's detail layout
+ * (see {@link getWindowLayout}) — i.e. the AD_Element_Trl.Name in the current session's AD_Language,
+ * which is exactly the caption the frontend renders. Returns `undefined` if the field is not laid out.
+ *
+ * This is the language-INDEPENDENT source of truth for a field's label: the expectation is fetched
+ * per session/language at runtime from the backend, never hardcoded per language. Use it to assert a
+ * rendered label without pinning a caption string literal (see
+ * `e2e/frontend-webui/CLAUDE.md` § "Specs MUST be language-independent").
+ *
+ * @param {Object} layout - a layout object from {@link getWindowLayout}
+ * @param {string} fieldName - AD_Column ColumnName (e.g. 'CoProductCostDistributionPercent')
+ * @returns {string|undefined} the element caption, or undefined if the field is not in the layout
+ */
+export function getFieldLabelFromLayout(layout, fieldName) {
+  let found;
+
+  const walk = (node) => {
+    if (found !== undefined || node == null) {
+      return;
+    }
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    if (typeof node === 'object') {
+      const fields = node.fields;
+      if (
+        Array.isArray(fields) &&
+        fields.some((f) => f && f.field === fieldName) &&
+        typeof node.caption === 'string'
+      ) {
+        found = node.caption;
+        return;
+      }
+      Object.values(node).forEach(walk);
+    }
+  };
+
+  walk(layout);
+  return found;
+}
+
+/**
+ * Get the related-document references of a record (the Alt+6 "related documents" list) from the WebAPI.
+ *
+ * Reads the same server-sent-events endpoint the WebUI uses; the stream ends with a COMPLETED event,
+ * so the whole response body is available once the request returns.
+ *
+ * @param {string} windowId - Window ID
+ * @param {string} recordId - Record ID
+ * @returns {Promise<Object[]>} the references (`internalName`, `id`, `targetWindowId`, `documentsCount`, ...)
+ */
+export async function getDocumentReferences(windowId, recordId) {
+  const page = getPage();
+
+  const response = await page.request.get(`${WEBAPI_BASE_URL}/window/${windowId}/${recordId}/references/sse`, {
+    headers: { Accept: 'text/event-stream' },
+  });
+  if (!response.ok()) {
+    throw new Error(`HTTP ${response.status()} reading references of window ${windowId} record ${recordId}`);
+  }
+
+  const events = (await response.text())
+    .split('\n')
+    .filter((line) => line.startsWith('data:'))
+    .map((line) => JSON.parse(line.substring('data:'.length).trim()));
+  if (!events.some((event) => event.type === 'COMPLETED')) {
+    throw new Error(`References stream of window ${windowId} record ${recordId} ended without its COMPLETED event`);
+  }
+  return events
+    .filter((event) => event.type === 'PARTIAL_RESULT' && event.partialGroup)
+    .flatMap((event) => event.partialGroup.references || []);
+}
+
+/**
+ * Get the accounting facts (Fact_Acct rows) a document was posted with, read through its "Accounting facts"
+ * related-document reference — the same path the WebUI's Alt+6 zoom takes. Independent of whether the
+ * document's window shows a Posted field.
+ *
+ * @param {string} windowId - Window ID of the posted document
+ * @param {string} recordId - Record ID of the posted document
+ * The server lists a reference only when it has at least one record, so "no Fact_Acct reference" means "no facts
+ * (yet)": an unposted document and one whose facts reference is not configured look the same here. A test that
+ * expects facts is the positive control for the latter.
+ *
+ * @returns {Promise<Object[]>} the fact rows' `fieldsByName`; empty while the document has no facts
+ */
+export async function getAccountingFacts(windowId, recordId) {
+  const page = getPage();
+
+  const reference = (await getDocumentReferences(windowId, recordId)).find((ref) => ref.internalName === 'Fact_Acct');
+  if (!reference || !reference.documentsCount) {
+    return [];
+  }
+
+  const viewResponse = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${reference.targetWindowId}`, {
+    data: {
+      documentType: String(reference.targetWindowId),
+      viewType: 'grid',
+      referencing: { documentType: String(windowId), documentId: String(recordId), referenceId: reference.id },
+    },
+  });
+  if (!viewResponse.ok()) {
+    throw new Error(`HTTP ${viewResponse.status()} creating the accounting facts view of window ${windowId} record ${recordId}`);
+  }
+  const { viewId } = await viewResponse.json();
+
+  const rowsResponse = await page.request.get(
+    `${WEBAPI_BASE_URL}/documentView/${reference.targetWindowId}/${viewId}?firstRow=0&pageLength=500`
+  );
+  if (!rowsResponse.ok()) {
+    throw new Error(`HTTP ${rowsResponse.status()} reading the accounting facts of window ${windowId} record ${recordId}`);
+  }
+  const rows = (await rowsResponse.json()).result || [];
+  if (rows.length !== reference.documentsCount) {
+    throw new Error(
+      `Accounting facts view of window ${windowId} record ${recordId} returned ${rows.length} rows, its reference counts ${reference.documentsCount}`
+    );
+  }
+  return rows.map((row) => row.fieldsByName);
+}
+
+/**
  * Get complete record data including validation status from WebAPI.
  *
  * @param {string} windowId - Window ID (e.g., '143' for Sales Order)
@@ -118,6 +322,51 @@ export async function assertRecordIsValid(windowId, recordId, context = '') {
 
   console.log(`Record ${windowId}/${recordId} is VALID${context ? ` (${context})` : ''}`);
   return true;
+}
+
+/**
+ * Get complete record data for an INCLUDED (child-tab) row from the WebAPI.
+ *
+ * The included-row endpoint is /window/{windowId}/{parentId}/{tabId}/{rowId}
+ * (the top-level {@link getRecordData} hits /window/{windowId}/{recordId}). Use this
+ * to read a child-tab row back as the system of record — e.g. asserting a persisted
+ * value key: `(await getIncludedRecordData(...)).fieldsByName.<Col>.value.key`.
+ *
+ * @param {string} windowId - Parent window ID (e.g. '123' for Business Partner)
+ * @param {string} parentId - Parent record ID (e.g. the C_BPartner_ID)
+ * @param {string} tabId - Included tab ID (e.g. 'AD_Tab-540653')
+ * @param {string} rowId - Included row ID
+ * @returns {Promise<Object>} Row data including fieldsByName, validStatus, saveStatus
+ *
+ * @example
+ * const row = await getIncludedRecordData('123', bpartnerId, 'AD_Tab-540653', rowId);
+ * expect(row.fieldsByName.IsAutoPrint.value.key).toBe('Y');
+ */
+export async function getIncludedRecordData(windowId, parentId, tabId, rowId) {
+  try {
+    const page = getPage();
+
+    const response = await page.request.get(
+      `${WEBAPI_BASE_URL}/window/${windowId}/${parentId}/${tabId}/${rowId}`,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+
+    if (!response.ok()) {
+      throw new Error(`HTTP ${response.status()}: ${response.statusText()}`);
+    }
+
+    const data = await response.json();
+
+    // The included-row endpoint may return the row directly or wrapped in a
+    // single-element array; unwrap defensively.
+    return Array.isArray(data) ? data[0] : data;
+  } catch (error) {
+    console.error(
+      `Failed to fetch included record data for window ${windowId}, parent ${parentId}, tab ${tabId}, row ${rowId}:`,
+      error.message
+    );
+    throw error;
+  }
 }
 
 /**
@@ -209,6 +458,36 @@ export async function getTabInfo(windowId, recordId, tabId) {
   }
 
   return recordData.includedTabsInfo[tabId];
+}
+
+/**
+ * Fetch the included-tab rows of a record: GET /window/{windowId}/{recordId}/{tabId}
+ * (WindowRestController). Returns the array of row documents (each with fieldsByName).
+ *
+ * The endpoint's JSON body is a JSONDocumentList ({ result, missingIds, orderBys }), not a
+ * bare array — unwrap `.result`.
+ *
+ * @param {string|number} windowId - Window ID
+ * @param {string|number} recordId - Record ID
+ * @param {string} tabId - Tab ID (e.g., 'AD_Tab-187' for Sales Order Lines)
+ * @returns {Promise<Array>} Array of row documents (each with fieldsByName)
+ */
+export async function getTabRows(windowId, recordId, tabId) {
+  try {
+    const page = getPage();
+    const response = await page.request.get(
+      `${WEBAPI_BASE_URL}/window/${windowId}/${recordId}/${tabId}`,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+    if (!response.ok()) {
+      throw new Error(`HTTP ${response.status()} fetching rows of ${windowId}/${recordId}/${tabId}`);
+    }
+    const data = await response.json();
+    return data.result;
+  } catch (error) {
+    console.error(`Failed to fetch tab rows for window ${windowId}, record ${recordId}, tab ${tabId}:`, error.message);
+    throw error;
+  }
 }
 
 /**

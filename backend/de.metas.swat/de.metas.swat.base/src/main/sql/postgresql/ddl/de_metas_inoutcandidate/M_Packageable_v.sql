@@ -37,8 +37,8 @@ FROM (SELECT
 
           --
           -- BPartner location
-          l.C_BPartner_Location_ID,
-          l.Name                                                                  AS BPartnerLocationName,
+          bpl.C_BPartner_Location_ID,
+          bpl.Name                                                                AS BPartnerLocationName,
           (CASE
                WHEN s.BPartnerAddress_Override IS NOT NULL AND s.BPartnerAddress_Override != ''
                    THEN s.BPartnerAddress_Override
@@ -59,7 +59,7 @@ FROM (SELECT
                   (CASE WHEN o.IsUseHandOver_Location = 'Y' THEN o.Handover_Partner_ID ELSE o.C_BPartner_ID END),
                   o.C_BPartner_ID
           )                                                                       AS HandOver_Partner_ID,
-          cast_to_numeric_or_null(l.Setup_Place_No)                               AS Setup_Place_No,
+          cast_to_numeric_or_null(bpl.Setup_Place_No)                             AS Setup_Place_No,
           dt.DocSubType,
           s.DateOrdered,
           s.C_OrderLine_ID                                                        AS C_OrderLineSO_ID,
@@ -171,12 +171,15 @@ FROM (SELECT
           s.CreatedBy,
           s.Updated,
           s.UpdatedBy,
-          s.IsActive
+          s.IsActive,
+          l.c_country_id,
+          Product_GrossWeight_KG(s.M_Product_ID) as GrossWeight
       FROM M_ShipmentSchedule s
                JOIN M_Warehouse w ON (w.M_Warehouse_ID = COALESCE(s.M_Warehouse_Override_ID, s.M_Warehouse_ID)) -- s.M_Warehouse_ID is mandatory
                JOIN C_BPartner p ON (p.C_BPartner_ID = COALESCE(s.C_BPartner_Override_ID, s.C_BPartner_ID))
                LEFT JOIN C_BPartner_Stats stats ON (p.C_BPartner_ID = stats.C_BPartner_ID)
-               JOIN C_BPartner_Location l ON (l.C_BPartner_Location_ID = COALESCE(s.C_BP_Location_Override_ID, s.C_BPartner_Location_ID))
+               JOIN C_BPartner_Location bpl ON (bpl.C_BPartner_Location_ID = COALESCE(s.C_BP_Location_Override_ID, s.C_BPartner_Location_ID))
+               JOIN c_location l ON l.c_location_id = COALESCE(s.C_BP_Location_Override_Value_ID, s.C_BPartner_Location_Value_ID)
                JOIN M_Product prod ON (prod.M_Product_ID = s.M_Product_ID)
                LEFT JOIN C_OrderLine ol ON (ol.C_OrderLine_ID = s.C_OrderLine_ID)
                LEFT JOIN M_Shipper sh ON (sh.M_Shipper_ID = COALESCE(s.M_Shipper_ID, ol.M_Shipper_ID))

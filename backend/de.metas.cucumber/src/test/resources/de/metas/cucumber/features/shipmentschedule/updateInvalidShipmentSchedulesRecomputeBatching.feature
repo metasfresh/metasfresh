@@ -126,3 +126,17 @@ Feature: tag invalid shipment schedules for a recompute pass in whole-product ba
       | schedA1               |
       | schedA2               |
     And 0 M_ShipmentSchedule_Recompute markers remain untagged
+
+  @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00130_Shipment_Schedule
+  @Id:S31050_TC7
+  Scenario: an orphaned recompute marker is reaped and does not livelock the recompute queue
+  # M_ShipmentSchedule_Recompute has no FK to M_ShipmentSchedule, so a marker can
+  # outlive its schedule. Before the fix, existsUntaggedRecomputeMarkers() counted this untaggable orphan
+  # forever, so a bounded recompute pass never saw its backlog reach zero and kept re-enqueueing a follow-up
+  # workpackage -- an endless loop. The fix also reaps the orphan so it stops accumulating in the queue table.
+    Given an orphaned untagged M_ShipmentSchedule_Recompute marker exists for "orphanSchedule"
+    When a shipment-schedule recompute pass is enqueued
+    Then no untagged M_ShipmentSchedule_Recompute marker remains for "orphanSchedule"
+    And the shipment-schedule recompute work queue drains to zero pending workpackages

@@ -144,7 +144,7 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
       max-width: 100%;
 
       // Caption swap: .scan-prompt-text-idle shown by default; .scan-prompt-text-progress
-      // takes its place while the input has content (see :has() rule below). Same DOM slot,
+      // takes its place while a scan is in progress (see .scan-in-progress below). Same DOM slot,
       // no layout shift on the transition.
       .scan-prompt-text-progress {
         display: none;
@@ -152,13 +152,11 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
     }
   }
 
-  // In-progress scan signal — when the off-screen hardware input has content (i.e. the
-  // useKeyboardBarcodeReader hook is mid-burst, chars accumulating), switch the icon to a
-  // yellow "scanning" hue and double the pulse rate. CSS-only — :placeholder-shown evaluates
-  // against the input's current `value`, including imperative `inputTextRef.current.value`
-  // writes from the hook's onReadInProgress. When the buffer is cleared on scan completion
-  // the input falls back to placeholder-shown ⇒ icon returns to the idle green/slow pulse.
-  .hardware-mode-panel.scan-prompt:has(.input-text:not(:placeholder-shown)) {
+  // In-progress scan signal — while the useKeyboardBarcodeReader hook is mid-scan (its
+  // isReadInProgress state, set by HardwareModePanel as .scan-in-progress), switch the icon to a
+  // yellow "scanning" hue and double the pulse rate. When the scan completes or is dropped the
+  // class goes away ⇒ icon returns to the idle green/slow pulse.
+  .hardware-mode-panel.scan-prompt.scan-in-progress {
     .scan-prompt-icon {
       // Darker amber — $indicator-yellow (#ffd500) on white is 1.42:1, fails WCAG AA and
       // is effectively invisible on a white scanner background. #c8900a is ~4.1:1, passes

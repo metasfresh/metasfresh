@@ -3,7 +3,11 @@ import { useEffect, useState } from 'react';
 import { useApplicationLaunchers } from '../../reducers/launchers';
 import { useFilterByQRCode } from './useFilterByQRCode';
 import { toQRCodeString } from '../../utils/qrCode/hu';
-import { clearLaunchers, populateLaunchersComplete } from '../../actions/LauncherActions';
+import {
+  clearLaunchers,
+  populateLaunchersComplete,
+  populateLaunchersPushedByServer,
+} from '../../actions/LauncherActions';
 import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
 import { getTokenFromState } from '../../reducers/appHandler';
 import { useApplicationInfo } from '../../reducers/applications';
@@ -54,9 +58,9 @@ export const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filter
     filters,
     facets,
     onWebsocketMessage: ({ applicationId, applicationLaunchers }) => {
-      // A websocket push carries no request-issued time; it reflects current server state, so use
-      // receipt time. This preserves the pre-existing GC behaviour for pushed snapshots.
-      onNewLaunchers({ applicationId, applicationLaunchers, requestTimestamp: Date.now() });
+      // Refreshes the visible list only. Must not go through populateLaunchersComplete, whose action type
+      // carries the power to prune workflow processes.
+      dispatch(populateLaunchersPushedByServer({ applicationId, applicationLaunchers }));
     },
   });
 

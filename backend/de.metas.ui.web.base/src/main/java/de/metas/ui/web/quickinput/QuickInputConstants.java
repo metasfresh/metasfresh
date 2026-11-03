@@ -1,10 +1,18 @@
 package de.metas.ui.web.quickinput;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.service.ISysConfigBL;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.NoSuchElementException;
 
 /*
  * #%L
@@ -37,6 +45,9 @@ public class QuickInputConstants
 	private static final String SYSCONFIG_EnableVatCodeField = "webui.quickinput.EnableVatCodeField";
 	private static final String SYSCONFIG_EnableContractConditionsField = "webui.quickinput.EnableContractConditionsField";
 	private static final String SYSCONFIG_IsContractConditionsFieldMandatory = "webui.quickinput.IsContractConditionsFieldMandatory";
+	private static final String SYSCONFIG_ProductFieldWidgetSize = "webui.quickinput.ProductFieldWidgetSize";
+
+	private static final Logger logger = LogManager.getLogger(QuickInputConstants.class);
 
 	/**
 	 * Created for https://github.com/metasfresh/metasfresh/issues/14009 where we want batch entry dropdown to contain "ALL" potential matches,
@@ -73,5 +84,45 @@ public class QuickInputConstants
 	public static boolean isContractConditionsFieldMandatory()
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_IsContractConditionsFieldMandatory, false);
+	}
+
+	/**
+	 * Widget size (width) of the Product field in the order-line quick-input panel.
+	 * blank / unset / "-" => null (Default width, unchanged). See webui.quickinput.ProductFieldWidgetSize.
+	 */
+	@Nullable
+	public static WidgetSize getProductFieldWidgetSize()
+	{
+		final String value = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ProductFieldWidgetSize, (String)null);
+		return parseProductFieldWidgetSize(value);
+	}
+
+	@Nullable
+	@VisibleForTesting
+	static WidgetSize parseProductFieldWidgetSize(@Nullable final String value)
+	{
+		if (Check.isBlank(value))
+		{
+			return null;
+		}
+		final String trimmed = value.trim();
+		if ("-".equals(trimmed))
+		{
+			return null; // empty-sentinel: Check.isBlank("-") is false, so map it explicitly
+		}
+		try
+		{
+			return WidgetSize.fromNullableADRefListValue(trimmed); // S/M/L/XL/XXL
+		}
+		catch (final NoSuchElementException e)
+		{
+			// This is a cosmetic, default-off setting: a bad value (typo, wrong case e.g. "l", "Large", "30em")
+			// must NEVER break order-line batch entry. The descriptor is memoized per node (QuickInputDescriptors
+			// CCache) with no client/org key, so a throw here would brick the batch-entry panel for every user on
+			// that node until the value is fixed and caches are reset. Degrade to Default width and warn instead.
+			logger.warn("Ignoring invalid {}=\"{}\" (expected one of S/M/L/XL/XXL); using Default width",
+					SYSCONFIG_ProductFieldWidgetSize, trimmed, e);
+			return null;
+		}
 	}
 }

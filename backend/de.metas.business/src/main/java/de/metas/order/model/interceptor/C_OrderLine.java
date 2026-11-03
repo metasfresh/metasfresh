@@ -22,6 +22,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -214,6 +215,11 @@ public class C_OrderLine
 		}
 
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+
+		// Product life-cycle status enforcement — self-gating (O/null => no-op), independent of the
+		// M_Product_EnforcePurchaseSalesFlags SysConfig gate below, so it applies in core regardless of that flag.
+		productBL.assertAllowed(productId, order.isSOTrx() ? ProductLifeCycleAction.SELL : ProductLifeCycleAction.PURCHASE);
 
 		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
@@ -222,7 +228,6 @@ public class C_OrderLine
 			return;
 		}
 
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		if (order.isSOTrx())
 		{
 			productBL.assertSellable(productId);

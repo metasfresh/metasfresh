@@ -6,6 +6,7 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { DistributionLinePickFromScreen } from '../../utils/screens/distribution/DistributionLinePickFromScreen';
+import { DistributionUtils } from '../../utils/screens/distribution/DistributionUtils';
 import { generateEAN13 } from '../../utils/ean13';
 
 //
@@ -88,6 +89,14 @@ const createMasterdata = async () => {
                     completeJobAutomatically: true,
                     requireScanningProductCode: true,
                     allowStartNextJobOnly: true,
+                    // Each DD order must be pre-allocated to its OWN source HU — that is the whole
+                    // premise of this scenario (see the auto-advance comment in the pick loop below);
+                    // the backend only builds that move plan when this is false
+                    // (DistributionJobCreateCommand). Set explicitly because allowPickingAnyHU is a
+                    // sticky, global config row the masterdata API leaves untouched when omitted, and
+                    // its seeded value is 'Y' — omitting it would silently run this spec plan-less.
+                    // See e2e/mobile-webui/CLAUDE.md § "Debugging Flaky Tests" rule 3.
+                    allowPickingAnyHU: false,
                     maxLaunchers: 20,
                     maxStartedLaunchers: 3,
                     orderBys: 'Priority, LocatorPriority',
@@ -185,9 +194,27 @@ test('Packing-table operator: orders sorted by priority then locator priority an
         await assertHeaderOnPickFromScreen(2);
     });
 
+    // Assert the order the app just auto-advanced to is the "different source HU" case of
+    // postDistributionPickFromThunk (case 2), then that the operator is asked to scan an HU.
+    //
+    // DD<i> has a pre-allocated move plan drawing from HU<i>, while the operator just picked HU<i-1>:
+    // the just-picked HU is therefore NOT in the next order's plan, so the app must not carry it
+    // forward and must ask for this order's own HU instead of dropping the operator on the product
+    // scan with the previous HU applied. The backend assertion is what makes that literal — without
+    // it the same Scan-HU prompt would also appear for a job with NO move plan at all (case 3, what
+    // this spec silently ran before it set allowPickingAnyHU), which proves nothing about case 2.
+    const assertDifferentSourceHUAndHUScanRequested = async (i) => {
+        await DistributionUtils.expectMovePlanSourceHUs({
+            wfProcessId: `distribution-${masterdata.distributionOrders[`DD${i}`].jobId}`,
+            expectedHUQRCodes: [masterdata.handlingUnits[`HU${i}`].qrCode],
+        });
+        await DistributionLinePickFromScreen.expectHUScanReady();
+    };
+
     for (let i = 2; i < N; i++) {
         const next = i + 1;
         await test.step(`Pick DD${i} (scan HU${i} + product P${i}, confirm qty ${i * 10}) → auto-advance to DD${next} pick-from (assert DD${next} header)`, async () => {
+            await assertDifferentSourceHUAndHUScanRequested(i);
             await DistributionLinePickFromScreen.scanHUToMove({
                 huQRCode: masterdata.externalBarcodes[i],
                 productScannedCode: masterdata.products[`P${i}`].gtin,
@@ -200,6 +227,9 @@ test('Packing-table operator: orders sorted by priority then locator priority an
     }
 
     await test.step(`Pick DD${N} (scan HU${N} + product P${N}, confirm qty ${N * 10}) → no more orders, return to jobs list`, async () => {
+        // Same screen in the same state as every loop iteration above — the last order is not special
+        // in how it was reached, so it gets the same case-2 assertions.
+        await assertDifferentSourceHUAndHUScanRequested(N);
         await DistributionLinePickFromScreen.scanHUToMove({
             huQRCode: masterdata.externalBarcodes[N],
             productScannedCode: masterdata.products[`P${N}`].gtin,

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useRef, useState } from 'react';
 import { useDispatch, useStore } from 'react-redux';
 import PropTypes from 'prop-types';
 
@@ -38,7 +38,14 @@ function useProvideAuth() {
   const store = useStore();
 
   // controls if user is authenticated and stores in the local storage as well as local value
-  const [isLoggedIn, setLoggedIn] = useState(localStorage.isLogged);
+  const [isLoggedIn, setLoggedInState] = useState(localStorage.isLogged);
+  // mirrors `isLoggedIn` so callbacks captured by long-lived closures (ie. the
+  // axios interceptor) read the current value instead of a stale render's one
+  const isLoggedInRef = useRef(isLoggedIn);
+  const setLoggedIn = (value) => {
+    isLoggedInRef.current = value;
+    setLoggedInState(value);
+  };
 
   // flag indicating if there's an ongoing authentication request
   const [authRequestPending, setAuthRequestPending] =
@@ -158,13 +165,15 @@ function useProvideAuth() {
    * @summary run the logout request on the backend
    */
   const logout = () => {
-    if (isLoggedIn) {
+    if (isLoggedInRef.current) {
       setAuthRequestPending(true);
 
       return logoutRequest().finally(() => _logoutSuccess());
     }
 
-    return Promise.resolve(() => _logoutSuccess());
+    _logoutSuccess();
+
+    return Promise.resolve();
   };
 
   return {

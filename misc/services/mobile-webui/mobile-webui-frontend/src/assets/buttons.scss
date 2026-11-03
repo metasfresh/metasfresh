@@ -1,5 +1,16 @@
 @import './variables.scss';
 
+// Draws the FontAwesome icon from its SVG file, scaled to fit the content box (like the former SVG+JS build),
+// instead of as a font glyph, which is sized by font-size and snaps to whole pixels.
+@mixin indicator-icon($name) {
+  background: currentColor content-box;
+  mask: url('~@fortawesome/fontawesome-free/svgs/solid/#{$name}.svg') center / contain no-repeat content-box;
+
+  &::before {
+    content: none;
+  }
+}
+
 .button {
   height: 2.5em;
 
@@ -98,12 +109,26 @@
       padding-bottom: 0.2em;
 
       .indicator-box {
-        flex: 0;
+        flex: none;
 
         display: block;
         width: 0.7em;
         height: 0.7em;
         padding: 0.1em;
+        box-sizing: content-box;
+
+        &.fa-lock {
+          @include indicator-icon('lock');
+        }
+        &.fa-warehouse {
+          @include indicator-icon('warehouse');
+        }
+        &.fa-circle {
+          @include indicator-icon('circle');
+        }
+        &.fa-circle-half-stroke {
+          @include indicator-icon('circle-half-stroke');
+        }
       }
 
       .indicator-color-red {

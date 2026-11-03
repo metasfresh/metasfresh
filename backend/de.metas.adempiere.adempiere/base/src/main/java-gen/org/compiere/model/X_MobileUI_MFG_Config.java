@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_MobileUI_MFG_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1580592606L;
+	private static final long serialVersionUID = -1696759892L;
 
     /** Standard Constructor */
     public X_MobileUI_MFG_Config (final Properties ctx, final int MobileUI_MFG_Config_ID, @Nullable final String trxName)
@@ -47,6 +47,30 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
+	public void setIsAllowFinishedGoodsReceiveToLU (final boolean IsAllowFinishedGoodsReceiveToLU)
+	{
+		set_Value (COLUMNNAME_IsAllowFinishedGoodsReceiveToLU, IsAllowFinishedGoodsReceiveToLU);
+	}
+
+	@Override
+	public boolean isAllowFinishedGoodsReceiveToLU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowFinishedGoodsReceiveToLU);
+	}
+
+	@Override
+	public void setIsAllowFinishedGoodsReceiveToTU (final boolean IsAllowFinishedGoodsReceiveToTU)
+	{
+		set_Value (COLUMNNAME_IsAllowFinishedGoodsReceiveToTU, IsAllowFinishedGoodsReceiveToTU);
+	}
+
+	@Override
+	public boolean isAllowFinishedGoodsReceiveToTU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowFinishedGoodsReceiveToTU);
+	}
+
+	@Override
 	public void setIsAllowIssuingAnyHU (final boolean IsAllowIssuingAnyHU)
 	{
 		set_Value (COLUMNNAME_IsAllowIssuingAnyHU, IsAllowIssuingAnyHU);
@@ -59,15 +83,27 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
-	public void setIsBestBeforeDateEditable (final boolean IsBestBeforeDateEditable)
+	public void setIsAllowReceiveWithoutPackingItem (final boolean IsAllowReceiveWithoutPackingItem)
 	{
-		set_Value (COLUMNNAME_IsBestBeforeDateEditable, IsBestBeforeDateEditable);
+		set_Value (COLUMNNAME_IsAllowReceiveWithoutPackingItem, IsAllowReceiveWithoutPackingItem);
 	}
 
 	@Override
-	public boolean isBestBeforeDateEditable() 
+	public boolean isAllowReceiveWithoutPackingItem() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsBestBeforeDateEditable);
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowReceiveWithoutPackingItem);
+	}
+
+	@Override
+	public void setIsCaptureCatchWeightAtReceipt (final boolean IsCaptureCatchWeightAtReceipt)
+	{
+		set_Value (COLUMNNAME_IsCaptureCatchWeightAtReceipt, IsCaptureCatchWeightAtReceipt);
+	}
+
+	@Override
+	public boolean isCaptureCatchWeightAtReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCaptureCatchWeightAtReceipt);
 	}
 
 	@Override
@@ -83,15 +119,15 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	}
 
 	@Override
-	public void setIsLotNumberEditable (final boolean IsLotNumberEditable)
+	public void setIsFinishedGoodsCatchWeightScanRequired (final boolean IsFinishedGoodsCatchWeightScanRequired)
 	{
-		set_Value (COLUMNNAME_IsLotNumberEditable, IsLotNumberEditable);
+		set_Value (COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired, IsFinishedGoodsCatchWeightScanRequired);
 	}
 
 	@Override
-	public boolean isLotNumberEditable() 
+	public boolean isFinishedGoodsCatchWeightScanRequired() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsLotNumberEditable);
+		return get_ValueAsBoolean(COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired);
 	}
 
 	@Override
@@ -104,6 +140,18 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	public boolean isScanResourceRequired() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsScanResourceRequired);
+	}
+
+	@Override
+	public void setIsSkipFinishedGoodsReceiveTargetStep (final boolean IsSkipFinishedGoodsReceiveTargetStep)
+	{
+		set_Value (COLUMNNAME_IsSkipFinishedGoodsReceiveTargetStep, IsSkipFinishedGoodsReceiveTargetStep);
+	}
+
+	@Override
+	public boolean isSkipFinishedGoodsReceiveTargetStep() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSkipFinishedGoodsReceiveTargetStep);
 	}
 
 	@Override

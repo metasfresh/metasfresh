@@ -55,6 +55,9 @@ public class DocumentReportInfo
 	@Builder.Default
 	DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;
 
+	@Builder.Default
+	boolean suppressAutoPrint = false;
+
 	public DocumentReportInfo withPrintOptionsFallback(@NonNull final DocumentPrintOptions printOptionsFallback)
 	{
 		final DocumentPrintOptions newPrintOptions = this.printOptions.mergeWithFallback(printOptionsFallback);

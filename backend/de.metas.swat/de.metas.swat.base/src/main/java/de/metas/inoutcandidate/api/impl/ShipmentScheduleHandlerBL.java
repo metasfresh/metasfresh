@@ -379,14 +379,21 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	@Override
 	public ShipmentScheduleHandler getHandlerFor(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
-
-		final ShipmentScheduleHandler shipmentScheduleHandler = tableName2Handler.get(tableName);
+		final ShipmentScheduleHandler shipmentScheduleHandler = getHandlerForOrNull(sched);
 		if (shipmentScheduleHandler == null)
 		{
+			final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
 			throw new AdempiereException("No shipment schedule handler defined for " + tableName + " (" + sched + ")");
 		}
 
 		return shipmentScheduleHandler;
+	}
+
+	@Override
+	@Nullable
+	public ShipmentScheduleHandler getHandlerForOrNull(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
+		return tableName2Handler.get(tableName);
 	}
 }
