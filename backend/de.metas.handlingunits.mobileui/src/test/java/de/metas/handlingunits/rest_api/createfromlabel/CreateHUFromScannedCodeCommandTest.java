@@ -1,0 +1,270 @@
+package de.metas.handlingunits.rest_api.createfromlabel;
+
+import de.metas.JsonObjectMapperHolder;
+import de.metas.handlingunits.CreateHUFromInventoryRequest;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.impl.HUQtyService;
+import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
+import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
+import de.metas.scannable_code.format.ScannableCodeFormatPartType;
+import de.metas.scannable_code.format.service.ScannableCodeFormatService;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
+import de.metas.util.time.PatternedDateTimeFormatter;
+import com.google.common.collect.ImmutableList;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+/**
+ * Only the two server-side guards of the create command that the UI cannot produce (the handheld never opens a preview for a shared
+ * barcode and sends only the editable fields); everything else is proven by the HU Manager Playwright specs
+ * (e2e/mobile-webui/tests/spec/humanager/createFromLabel.spec.js).
+ */
+class CreateHUFromScannedCodeCommandTest
+{
+	private static final String SHARED_GTIN = "04251674473003";
+
+	private RecordingHUQtyService huQtyService;
+	private HUQRCodesService huQRCodesService;
+	private I_M_Product product1;
+	private I_M_Product product2;
+	private LocatorQRCode locatorQRCode;
+
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
+		Env.setOrgId(Env.getCtx(), AdempiereTestHelper.createOrgWithTimeZone());
+		huQRCodesService = HUQRCodesService.newInstanceForUnitTesting();
+		huQtyService = new RecordingHUQtyService();
+
+		// the parser also looks a code up as an HU value / external barcode
+		final I_M_Attribute externalBarcode = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
+		externalBarcode.setValue(AttributeConstants.ATTR_ExternalBarcode.getCode());
+		externalBarcode.setName("ExternalBarcode");
+		externalBarcode.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
+		InterfaceWrapperHelper.saveRecord(externalBarcode);
+
+		final I_C_UOM uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		uom.setX12DE355(X12DE355.EACH.getCode());
+		uom.setName("Each");
+		InterfaceWrapperHelper.saveRecord(uom);
+
+		product1 = newProduct("P1", SHARED_GTIN, uom);
+		product2 = newProduct("P2", SHARED_GTIN, uom);
+
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setValue("wh");
+		warehouse.setName("wh");
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		final I_M_Locator locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
+		locator.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		locator.setValue("wh_l1");
+		locator.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(locator);
+		locatorQRCode = LocatorQRCode.ofLocator(locator);
+	}
+
+	private static I_M_Product newProduct(final String value, final String gtin, final I_C_UOM uom)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setIsActive(true);
+		product.setValue(value);
+		product.setName(value);
+		product.setGTIN(gtin);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
+		InterfaceWrapperHelper.saveRecord(product);
+		return product;
+	}
+
+	private JsonCreateHUFromScannedCodeRequest readRequest(final String json) throws IOException
+	{
+		return JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(json, JsonCreateHUFromScannedCodeRequest.class);
+	}
+
+	private HuId create(final JsonCreateHUFromScannedCodeRequest request)
+	{
+		return request.toCommand(huQRCodesService, huQtyService, ClientId.METASFRESH).execute();
+	}
+
+	/**
+	 * Failure scenario: a second product got the GTIN between the preview and OK (or a direct API call): the re-parse then yields two
+	 * products and create must refuse instead of booking one of them.
+	 */
+	@Test
+	void gtinFitsSeveralProducts_createRefused() throws IOException
+	{
+		final JsonCreateHUFromScannedCodeRequest request = readRequest("{\"scannedCode\":\"01" + SHARED_GTIN + "\",\"qty\":\"1\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\"}");
+
+		assertThatThrownBy(() -> create(request))
+				.isInstanceOf(LabelRejectionException.class)
+				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.BARCODE_FITS_SEVERAL_PRODUCTS);
+		assertThat(huQtyService.requests).isEmpty();
+	}
+
+	/**
+	 * Failure scenario: a client (or a direct API call) sends a product: it is ignored, the product comes only from the re-parse of the
+	 * scanned code; quantity and location are the client's.
+	 */
+	@Test
+	void clientValuesOnlyForQtyLocator() throws IOException
+	{
+		// only product1 keeps the GTIN, so the re-parse yields exactly one product
+		product2.setGTIN("04251674410206");
+		InterfaceWrapperHelper.saveRecord(product2);
+
+		final JsonCreateHUFromScannedCodeRequest request = readRequest("{\"scannedCode\":\"01" + SHARED_GTIN + "\",\"qty\":\"3\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\",\"productId\":" + product2.getM_Product_ID() + "}");
+		create(request);
+
+		assertThat(huQtyService.requests).hasSize(1);
+		final CreateHUFromInventoryRequest booked = huQtyService.requests.get(0);
+		assertThat(booked.getProductId()).isEqualTo(ProductId.ofRepoId(product1.getM_Product_ID()));
+		assertThat(booked.getQty().toBigDecimal()).isEqualByComparingTo("3");
+		assertThat(booked.getLocatorId()).isEqualTo(locatorQRCode.getLocatorId());
+	}
+
+	private static I_M_Attribute newAttribute(final String code, final String valueType)
+	{
+		final I_M_Attribute attribute = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
+		attribute.setValue(code);
+		attribute.setName(code);
+		attribute.setAttributeValueType(valueType);
+		InterfaceWrapperHelper.saveRecord(attribute);
+		return attribute;
+	}
+
+	/** custom label: product code (2) + lot (6) + best-before yyMMdd (6) + production date yyMMdd (6) */
+	private void newCustomLabelFormat()
+	{
+		ScannableCodeFormatService.newInstanceForUnitTesting().create(ScannableCodeFormatCreateRequest.builder()
+				.name("test label")
+				.parts(ImmutableList.of(
+						ScannableCodeFormatCreateRequest.Part.builder().startPosition(1).endPosition(2).type(ScannableCodeFormatPartType.ProductCode).build(),
+						ScannableCodeFormatCreateRequest.Part.builder().startPosition(3).endPosition(8).type(ScannableCodeFormatPartType.LotNo).build(),
+						ScannableCodeFormatCreateRequest.Part.builder().startPosition(9).endPosition(14).type(ScannableCodeFormatPartType.BestBeforeDate).dateFormat(PatternedDateTimeFormatter.ofPattern("yyMMdd")).build(),
+						ScannableCodeFormatCreateRequest.Part.builder().startPosition(15).endPosition(20).type(ScannableCodeFormatPartType.ProductionDate).dateFormat(PatternedDateTimeFormatter.ofPattern("yyMMdd")).build()))
+				.build());
+	}
+
+	private JsonCreateHUFromScannedCodeRequest requestOf(final String label) throws IOException
+	{
+		return readRequest("{\"scannedCode\":\"" + label + "\",\"qty\":\"1\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\"}");
+	}
+
+	/**
+	 * Failure scenario: the lot, best-before date and production date of the label must be on the inventory line (its ASI), so the
+	 * inventory document and the stock carry the lot from the start and the new CU inherits it when the inventory completes.
+	 */
+	@Test
+	void labelValues_areBookedAsInventoryAttributes() throws IOException
+	{
+		newAttribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
+		newAttribute(AttributeConstants.ATTR_BestBeforeDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date);
+		newAttribute(AttributeConstants.ProductionDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date);
+		newCustomLabelFormat();
+
+		create(requestOf("P1LOT001271231251101"));
+
+		assertThat(huQtyService.requests).hasSize(1);
+		final ImmutableAttributeSet attributes = huQtyService.requests.get(0).getAttributes();
+		assertThat(attributes.getValueAsString(AttributeConstants.ATTR_LotNumber)).isEqualTo("LOT001");
+		assertThat(attributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate)).isEqualTo(LocalDate.of(2027, 12, 31));
+		assertThat(attributes.getValueAsLocalDate(AttributeConstants.ProductionDate)).isEqualTo(LocalDate.of(2025, 11, 1));
+	}
+
+	/**
+	 * Failure scenario: an attribute the installation does not define (here the production date) must not fail the booking: the
+	 * preview does not show it either, so it is neither shown nor stored.
+	 */
+	@Test
+	void attributeNotDefinedInInstallation_skipped_restBooked() throws IOException
+	{
+		newAttribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
+		newAttribute(AttributeConstants.ATTR_BestBeforeDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date);
+		newCustomLabelFormat();
+
+		create(requestOf("P1LOT001271231251101"));
+
+		final ImmutableAttributeSet attributes = huQtyService.requests.get(0).getAttributes();
+		assertThat(attributes.hasAttribute(AttributeConstants.ATTR_LotNumber)).isTrue();
+		assertThat(attributes.hasAttribute(AttributeConstants.ProductionDate)).isFalse();
+	}
+
+	/**
+	 * Failure scenario: two {@code C_UOM} rows share the X12DE355 code; the booking must use the product's own stock unit, not
+	 * whichever row the code lookup finds.
+	 */
+	@Test
+	void booksInTheProductsStockUomId_evenWhenAnotherUomHasTheSameX12Code() throws IOException
+	{
+		final I_C_UOM otherUomSameCode = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		otherUomSameCode.setX12DE355(X12DE355.EACH.getCode());
+		otherUomSameCode.setName("Each (second)");
+		InterfaceWrapperHelper.saveRecord(otherUomSameCode);
+
+		product2.setGTIN("04251674410206");
+		product2.setC_UOM_ID(otherUomSameCode.getC_UOM_ID());
+		InterfaceWrapperHelper.saveRecord(product2);
+		product1.setGTIN("04251674410299");
+		InterfaceWrapperHelper.saveRecord(product1);
+
+		create(readRequest("{\"scannedCode\":\"0104251674410206\",\"qty\":\"2\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\"}"));
+
+		assertThat(huQtyService.requests.get(0).getQty().getUomId()).isEqualTo(UomId.ofRepoId(otherUomSameCode.getC_UOM_ID()));
+	}
+
+	/** Failure scenario: a product code on the label that matches no product is "product not found", not "label not recognized" (a different mistake for the user). */
+	@Test
+	void productCodeOfNoProduct_productNotFound() throws IOException
+	{
+		newCustomLabelFormat();
+
+		assertThatThrownBy(() -> create(requestOf("ZZLOT001271231251101")))
+				.isInstanceOf(LabelRejectionException.class)
+				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE);
+		assertThat(huQtyService.requests).isEmpty();
+	}
+
+	private static class RecordingHUQtyService extends HUQtyService
+	{
+		final List<CreateHUFromInventoryRequest> requests = new ArrayList<>();
+
+		RecordingHUQtyService()
+		{
+			super(InventoryService.newInstanceForUnitTesting());
+		}
+
+		@Override
+		public HuId createHUFromInventory(final CreateHUFromInventoryRequest request)
+		{
+			requests.add(request);
+			return HuId.ofRepoId(1000);
+		}
+	}
+}

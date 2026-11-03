@@ -148,4 +148,37 @@ class ProductBLTest
 			assertThat(productBL.getProductIdByGTIN(GTIN.ofString("7617027667210"))).contains(p);
 		}
 	}
+
+	@Nested
+	class getProductIdsByLabelGTIN
+	{
+		@Test
+		void labelGtin_noExactMatch_fallsBackToClientAwareLookup()
+		{
+			// no M_Product.GTIN match; found only through its EAN-13 product code (same value as fixedPrefix_fallsBackToEAN13ProductCode_whenNoGTINMatch)
+			final I_M_Product p = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			p.setValue("F3");
+			p.setEAN13_ProductCode("702766721");
+			InterfaceWrapperHelper.saveRecord(p);
+
+			assertThat(productBL.getProductIdsByLabelGTIN(GTIN.ofString("7617027667210"), null, ClientId.METASFRESH))
+					.containsExactly(ProductId.ofRepoId(p.getM_Product_ID()));
+		}
+
+		@Test
+		void labelGtin_sharedByTwoProducts_exactMatchesWinOverStrictFallback()
+		{
+			final I_M_Product a = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			a.setValue("S1");
+			a.setGTIN("04251674473003");
+			InterfaceWrapperHelper.saveRecord(a);
+			final I_M_Product b = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			b.setValue("S2");
+			b.setGTIN("04251674473003");
+			InterfaceWrapperHelper.saveRecord(b);
+
+			assertThat(productBL.getProductIdsByLabelGTIN(GTIN.ofString("04251674473003"), null, ClientId.METASFRESH))
+					.containsExactly(ProductId.ofRepoId(a.getM_Product_ID()), ProductId.ofRepoId(b.getM_Product_ID()));
+		}
+	}
 }

@@ -28,11 +28,13 @@ import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.handlingunits.CreateHUFromInventoryRequest;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryHeaderCreateRequest;
+import de.metas.handlingunits.inventory.InventoryLineCreateRequest;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateRequest;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
@@ -44,20 +46,25 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.inventory.AggregationType;
+import de.metas.inventory.HUAggregationType;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
@@ -143,13 +150,51 @@ public class HUQtyService
 				.markAsCounted(true)
 				.build();
 
-		final Inventory inventoryHeader = inventoryService.createInventoryHeader(InventoryHeaderCreateRequest.builder()
-				.orgId(inventoryLineCandidate.getOrgId())
-				.docTypeId(getInventoryDocTypeId(clientAndOrgId))
-				.movementDate(request.getDate())
-				.warehouseId(inventoryLineCandidate.getLocatorId().getWarehouseId())
-				.description(request.getDescription())
+		return bookInventory(inventoryLineCandidate, clientAndOrgId, request.getDate(), request.getDescription());
+	}
+
+	/**
+	 * Creates ONE new HU for the given product, with the given quantity and attributes, at the given locator, by booking and
+	 * completing a single-HU inventory with a count of the quantity and a book quantity of zero. The line is created directly,
+	 * like {@code InventoryService#createInventoryForMissingQty}, because a new HU has no HU id / HU QR code to key a draft line on.
+	 * The line is marked {@link HUAggregationType#SINGLE_HU}, like the draft lines of {@link #updateQty(UpdateHUQtyRequest)}.
+	 * The HU is a virtual HU (a CU): the inventory line carries no packing instructions.
+	 *
+	 * @return the created HU
+	 */
+	@NonNull
+	public HuId createHUFromInventory(@NonNull final CreateHUFromInventoryRequest request)
+	{
+		final LocatorId locatorId = request.getLocatorId();
+		final ClientAndOrgId clientAndOrgId = warehouseDAO.getClientAndOrgIdByLocatorId(locatorId);
+
+		final Inventory inventoryHeader = createInventoryHeader(clientAndOrgId, locatorId.getWarehouseId(), request.getDate(), request.getDescription());
+
+		// A new HU has neither an HU id nor an HU QR code to key a draft line on (SingleHUInventoryLineAggregator needs one of them),
+		// so the line is created directly with a "no HU yet" placeholder; completing the inventory creates the HU
+		// (same as InventoryService#createInventoryForMissingQty).
+		inventoryService.createInventoryLine(InventoryLineCreateRequest.builder()
+				.inventoryId(inventoryHeader.getId())
+				.productId(request.getProductId())
+				.qtyBooked(request.getQty().toZero())
+				.qtyCount(request.getQty())
+				.attributeSetId(AttributesKeys.createAttributeSetInstanceFromAttributesKey(handlingUnitsBL.getAttributesKeyForInventory(request.getAttributes())))
+				.locatorId(locatorId)
+				.aggregationType(AggregationType.SINGLE_HU.getHuAggregationType()) // same as the doc type (SingleHUInventory) and the draft-lines path
 				.build());
+
+		inventoryService.completeDocument(inventoryHeader.getId());
+		return CollectionUtils.singleElement(inventoryService.getById(inventoryHeader.getId()).getHuIds());
+	}
+
+	@NonNull
+	private Inventory bookInventory(
+			@NonNull final HuForInventoryLine inventoryLineCandidate,
+			@NonNull final ClientAndOrgId clientAndOrgId,
+			@NonNull final ZonedDateTime date,
+			@Nullable final String description)
+	{
+		final Inventory inventoryHeader = createInventoryHeader(clientAndOrgId, inventoryLineCandidate.getLocatorId().getWarehouseId(), date, description);
 
 		inventoryService.createDraftLines(
 				DraftInventoryLinesCreateRequest.builder()
@@ -161,6 +206,22 @@ public class HUQtyService
 
 		inventoryService.completeDocument(inventoryHeader.getId());
 		return inventoryService.getById(inventoryHeader.getId());
+	}
+
+	@NonNull
+	private Inventory createInventoryHeader(
+			@NonNull final ClientAndOrgId clientAndOrgId,
+			@NonNull final WarehouseId warehouseId,
+			@NonNull final ZonedDateTime date,
+			@Nullable final String description)
+	{
+		return inventoryService.createInventoryHeader(InventoryHeaderCreateRequest.builder()
+				.orgId(clientAndOrgId.getOrgId())
+				.docTypeId(getInventoryDocTypeId(clientAndOrgId))
+				.movementDate(date)
+				.warehouseId(warehouseId)
+				.description(description)
+				.build());
 	}
 
 	private static ImmutableAttributeSet extractAttributeSet(@NonNull HUQRCode huQRCode)

@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useCallback, useRef, useState } from 'react';
+import { toast } from 'react-toastify';
 import { toastError, toastErrorFromObj } from '../utils/toast';
 import { useIsSettingsLoaded, useNumber, usePositiveNumberSetting } from '../reducers/settings';
 import { beep } from '../utils/audio';
@@ -12,6 +13,19 @@ import HardwareModePanel from './BarcodeScanner/HardwareModePanel';
 import BarcodeScannerFooter from './BarcodeScanner/BarcodeScannerFooter';
 
 const TOAST_ID = 'BarcodeScannerComponentError';
+
+// One error toast at a time (a repeated scan error must not stack), but every toast gets its own id: a toast shown right
+// after the previous one was closed must not reuse that id, else it flashes and disappears (the closed toast's removal
+// still hits the same id).
+let lastErrorToastId = null;
+let errorToastSeq = 0;
+const showErrorToastOnce = (showToast) => {
+  if (lastErrorToastId && toast.isActive(lastErrorToastId)) {
+    return;
+  }
+  lastErrorToastId = `${TOAST_ID}-${++errorToastSeq}`;
+  showToast(lastErrorToastId);
+};
 
 const BarcodeScannerComponent = ({
   testId,
@@ -76,7 +90,7 @@ const BarcodeScannerComponent = ({
       console.debug('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
-        toastError({ plainMessage: resolvedResult.error, toastId: TOAST_ID });
+        showErrorToastOnce((toastId) => toastError({ plainMessage: resolvedResult.error, toastId }));
         beep(errorBeepParams);
         scanningStatus.done = false; // not done yet
         onError?.();
@@ -87,7 +101,7 @@ const BarcodeScannerComponent = ({
       }
     } catch (error) {
       beep(errorBeepParams);
-      toastErrorFromObj(error, TOAST_ID);
+      showErrorToastOnce((toastId) => toastErrorFromObj(error, toastId));
       onError?.();
     } finally {
       scanningStatus.running = false;

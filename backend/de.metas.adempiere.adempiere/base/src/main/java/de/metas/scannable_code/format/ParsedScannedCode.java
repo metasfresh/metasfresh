@@ -20,6 +20,7 @@ public class ParsedScannedCode
 	@Nullable String lotNo;
 	@Nullable LocalDate bestBeforeDate;
 	@Nullable LocalDate productionDate;
+	@Nullable String gtin;
 
 	public String getAsString()
 	{

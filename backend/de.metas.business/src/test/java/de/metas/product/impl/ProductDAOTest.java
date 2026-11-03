@@ -22,10 +22,13 @@
 
 package de.metas.product.impl;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -192,4 +195,53 @@ public class ProductDAOTest
 		}
 	}
 
+	@Nested
+	class labelGtinLookup
+	{
+		private I_M_Product productWithGtin(final String value, final String gtin)
+		{
+			final I_M_Product p = newInstance(I_M_Product.class);
+			p.setIsActive(true);
+			p.setValue(value);
+			p.setName(value);
+			p.setGTIN(gtin);
+			save(p);
+			return p;
+		}
+
+		@Test
+		void labelGtin_14digit_exactMatch()
+		{
+			final I_M_Product p = productWithGtin("L1", "04251674410206");
+			productWithGtin("L2", "04251674473003");
+
+			assertThat(productDAO.getProductIdsByLabelGTIN(GTIN.ofString("04251674410206"), ClientId.METASFRESH))
+					.containsExactly(ProductId.ofRepoId(p.getM_Product_ID()));
+		}
+
+		@Test
+		void labelGtin_twoArticles_bothReturnedOrderedById()
+		{
+			final I_M_Product lowerId = productWithGtin("L3", "04251674473003");
+			final I_M_Product higherId = productWithGtin("L4", "04251674473003");
+
+			final ImmutableList<ProductId> result = productDAO.getProductIdsByLabelGTIN(GTIN.ofString("04251674473003"), ClientId.METASFRESH);
+
+			assertThat(result).containsExactly(ProductId.ofRepoId(lowerId.getM_Product_ID()), ProductId.ofRepoId(higherId.getM_Product_ID()));
+			assertThat(lowerId.getM_Product_ID()).isLessThan(higherId.getM_Product_ID());
+		}
+
+		@Test
+		void strictLookup_unchangedForSharedAndUniqueGtin()
+		{
+			final I_M_Product unique = productWithGtin("L5", "04251674410206");
+			assertThat(productDAO.getProductIdByGTINStrictly(GTIN.ofString("04251674410206"), ClientId.METASFRESH))
+					.contains(ProductId.ofRepoId(unique.getM_Product_ID()));
+
+			productWithGtin("L6", "04251674473003");
+			productWithGtin("L7", "04251674473003");
+			assertThatThrownBy(() -> productDAO.getProductIdByGTINStrictly(GTIN.ofString("04251674473003"), ClientId.METASFRESH))
+					.isInstanceOf(DBException.class);
+		}
+	}
 }

@@ -1,11 +1,10 @@
 import { trl } from '../../../utils/translations';
 import React from 'react';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import { isLocatorQRCodeString, parseLocatorQRCodeString } from '../../../utils/qrCode/locator';
 import PropTypes from 'prop-types';
 import DialogButton from '../../../components/dialogs/DialogButton';
 import Dialog from '../../../components/dialogs/Dialog';
-import * as warehouseAPI from '../../../api/warehouse';
+import { resolveLocatorQRCode } from '../../../api/warehouse';
 import { toastError } from '../../../utils/toast';
 
 const ChangeCurrentLocatorDialog = ({ onOK, onClose }) => {
@@ -34,23 +33,3 @@ ChangeCurrentLocatorDialog.propTypes = {
 };
 
 export default ChangeCurrentLocatorDialog;
-
-//
-//
-//
-//
-//
-
-const resolveLocatorQRCode = ({ scannedBarcode }) => {
-  if (isLocatorQRCodeString(scannedBarcode)) {
-    return Promise.resolve(parseLocatorQRCodeString(scannedBarcode));
-  }
-
-  return warehouseAPI.resolveLocatorScannedCode({ scannedBarcode }).then((response) => {
-    if (response.error) {
-      throw response.error;
-    } else {
-      return parseLocatorQRCodeString(response.locator.qrCode);
-    }
-  });
-};

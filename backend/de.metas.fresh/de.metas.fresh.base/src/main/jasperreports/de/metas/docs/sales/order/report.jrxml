@@ -68,10 +68,6 @@
 	</variable>
 	<background>
 		<band height="842" splitType="Stretch">
-			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
-				<reportElement key="reportBackgroundImage" x="0" y="0" width="595" height="842" uuid="04b74ec9-7aec-4250-a1e0-d3e8d7ce9319"/>
-				<imageExpression><![CDATA["de/metas/org/images/ReportBackground_Image_ID.png"]]></imageExpression>
-			</image>
 			<textField evaluationTime="Auto" isBlankWhenNull="true">
 				<reportElement key="textField-61" x="34" y="209" width="518" height="63" forecolor="#CCCCCC" uuid="d4734805-d23e-4857-a9e2-7b3710f71390"/>
 				<box>

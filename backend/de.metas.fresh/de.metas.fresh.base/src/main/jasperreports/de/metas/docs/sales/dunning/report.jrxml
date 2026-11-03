@@ -52,12 +52,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 		<property name="com.jaspersoft.studio.field.label" value="showesr_qr"/>
 	</field>
 	<background>
-		<band height="842" splitType="Stretch">
-			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
-				<reportElement key="reportBackgroundImage" x="0" y="0" width="595" height="842" uuid="cc8dc29b-a7a4-4790-bd00-c494b8218d43"/>
-				<imageExpression><![CDATA["de/metas/org/images/ReportBackground_Image_ID.png"]]></imageExpression>
-			</image>
-		</band>
+		<band height="842" splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="298" splitType="Stretch">

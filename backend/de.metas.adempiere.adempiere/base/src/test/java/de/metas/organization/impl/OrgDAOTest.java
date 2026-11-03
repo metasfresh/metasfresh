@@ -5,15 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Optional;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.X_AD_OrgInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import de.metas.image.AdImageId;
 import de.metas.organization.OrgId;
-import de.metas.organization.OrgImagesMap;
 import de.metas.organization.OrgIdNotFoundException;
 import de.metas.organization.OrgQuery;
 import de.metas.organization.impl.OrgDAO;
@@ -75,24 +70,6 @@ class OrgDAOTest
 
 		final Optional<OrgId> result = orgDAO.retrieveOrgIdBy(query);
 		assertThat(result).isEmpty();
-	}
-
-	@Test
-	void toOrgInfo_imagesMap_contains_all_image_columns()
-	{
-		final I_AD_OrgInfo record = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
-		record.setAD_Org_ID(1000000);
-		record.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_NichtSpeichern);
-		record.setLogo_ID(101);
-		record.setReportBottom_Logo_ID(102);
-		record.setReportBackground_Image_ID(103);
-		InterfaceWrapperHelper.saveRecord(record);
-
-		final OrgImagesMap imagesMap = OrgDAO.toOrgInfo(record).getImagesMap();
-
-		assertThat(imagesMap.getLogoId()).contains(AdImageId.ofRepoId(101));
-		assertThat(imagesMap.getImageId(I_AD_OrgInfo.COLUMNNAME_ReportBottom_Logo_ID)).contains(AdImageId.ofRepoId(102));
-		assertThat(imagesMap.getImageId(I_AD_OrgInfo.COLUMNNAME_ReportBackground_Image_ID)).contains(AdImageId.ofRepoId(103));
 	}
 
 }

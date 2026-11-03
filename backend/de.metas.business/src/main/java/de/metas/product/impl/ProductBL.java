@@ -133,6 +133,13 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	@Nullable
+	public ProductId getProductIdByValue(@NonNull final String productValue)
+	{
+		return productsRepo.retrieveProductIdByValue(productValue);
+	}
+
+	@Override
 	public UOMPrecision getUOMPrecision(final I_M_Product product)
 	{
 		final UomId uomId = UomId.ofRepoId(product.getC_UOM_ID());
@@ -888,6 +895,18 @@ public final class ProductBL implements IProductBL
 				() -> ean13 != null ? getProductIdByEAN13ProductCode(ean13.getProductNo(), bpartnerId, clientId) : null,
 				() -> ean13 != null && ean13.isVariableWeight() ? productsRepo.getProductIdByValueStartsWith(ean13.getProductNo().getAsString(), clientId) : null
 		);
+	}
+
+	@Override
+	public ImmutableList<ProductId> getProductIdsByLabelGTIN(@NonNull final GTIN gtin, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)
+	{
+		final ImmutableList<ProductId> exactMatches = productsRepo.getProductIdsByLabelGTIN(gtin, clientId);
+		if (!exactMatches.isEmpty())
+		{
+			return exactMatches;
+		}
+
+		return getProductIdByGTIN(gtin, bpartnerId, clientId).map(ImmutableList::of).orElseGet(ImmutableList::of);
 	}
 
 	private Optional<ProductId> getProductIdByGTINStrictly(@NonNull final GTIN gtin, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)

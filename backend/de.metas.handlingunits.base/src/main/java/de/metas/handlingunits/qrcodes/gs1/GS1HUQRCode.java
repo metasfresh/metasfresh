@@ -63,6 +63,9 @@ public class GS1HUQRCode implements IHUQRCode
 	@Override
 	public Optional<LocalDate> getBestBeforeDate() {return elements.getBestBeforeDate();}
 
+	/** Expiration date (AI 17) */
+	public Optional<LocalDate> getExpirationDate() {return elements.getExpirationDate();}
+
 	@Override
 	public Optional<String> getLotNumber() {return elements.getLotNumber();}
 }

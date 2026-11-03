@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_OrgInfo
  *  @author metasfresh (generated) 
@@ -99,8 +100,8 @@ public interface I_AD_OrgInfo
 	String COLUMNNAME_AD_OrgType_ID = "AD_OrgType_ID";
 
 	/**
-	 * Set Workflow Responsible.
-	 * Responsible for Workflow Execution
+	 * Set Workflow - Verantwortlicher.
+	 * Verantwortlicher für die Ausführung des Workflow
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -109,8 +110,8 @@ public interface I_AD_OrgInfo
 	void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID);
 
 	/**
-	 * Get Workflow Responsible.
-	 * Responsible for Workflow Execution
+	 * Get Workflow - Verantwortlicher.
+	 * Verantwortlicher für die Ausführung des Workflow
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -268,7 +269,7 @@ public interface I_AD_OrgInfo
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Auto Invoice Contract.
+	 * Set Automatische Abrechnung.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -277,7 +278,7 @@ public interface I_AD_OrgInfo
 	void setIsAutoInvoiceFlatrateTerm (boolean IsAutoInvoiceFlatrateTerm);
 
 	/**
-	 * Get Auto Invoice Contract.
+	 * Get Automatische Abrechnung.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -356,7 +357,8 @@ public interface I_AD_OrgInfo
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Purchase Warehouse.
+	 * Set Liefer-Lager.
+	 * Lager, an das der Lieferant eine Bestellung liefern soll.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -365,7 +367,8 @@ public interface I_AD_OrgInfo
 	void setM_WarehousePO_ID (int M_WarehousePO_ID);
 
 	/**
-	 * Get Purchase Warehouse.
+	 * Get Liefer-Lager.
+	 * Lager, an das der Lieferant eine Bestellung liefern soll.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -418,7 +421,7 @@ public interface I_AD_OrgInfo
 	String COLUMNNAME_OrgBP_Location_ID = "OrgBP_Location_ID";
 
 	/**
-	 * Set Parent Organization.
+	 * Set Übergeordnete Organisation.
 	 * Parent (superior) Organization
 	 *
 	 * <br>Type: Table
@@ -428,7 +431,7 @@ public interface I_AD_OrgInfo
 	void setParent_Org_ID (int Parent_Org_ID);
 
 	/**
-	 * Get Parent Organization.
+	 * Get Übergeordnete Organisation.
 	 * Parent (superior) Organization
 	 *
 	 * <br>Type: Table
@@ -461,33 +464,6 @@ public interface I_AD_OrgInfo
 
 	ModelColumn<I_AD_OrgInfo, Object> COLUMN_ReceiptFooterMsg = new ModelColumn<>(I_AD_OrgInfo.class, "ReceiptFooterMsg", null);
 	String COLUMNNAME_ReceiptFooterMsg = "ReceiptFooterMsg";
-
-	/**
-	 * Set Report Background Image.
-	 * Full-page image that is printed behind the content on every page of the documents, e.g. as a watermark.
-	 *
-	 * <br>Type: Image
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setReportBackground_Image_ID (int ReportBackground_Image_ID);
-
-	/**
-	 * Get Report Background Image.
-	 * Full-page image that is printed behind the content on every page of the documents, e.g. as a watermark.
-	 *
-	 * <br>Type: Image
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getReportBackground_Image_ID();
-
-	@Nullable org.compiere.model.I_AD_Image getReportBackground_Image();
-
-	void setReportBackground_Image(@Nullable org.compiere.model.I_AD_Image ReportBackground_Image);
-
-	ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_Image> COLUMN_ReportBackground_Image_ID = new ModelColumn<>(I_AD_OrgInfo.class, "ReportBackground_Image_ID", org.compiere.model.I_AD_Image.class);
-	String COLUMNNAME_ReportBackground_Image_ID = "ReportBackground_Image_ID";
 
 	/**
 	 * Set Report Bottom Logo.
@@ -559,7 +535,7 @@ public interface I_AD_OrgInfo
 	String COLUMNNAME_StoreCreditCardData = "StoreCreditCardData";
 
 	/**
-	 * Set Supervisor.
+	 * Set Vorgesetzter.
 	 * Supervisor for this user/organization - used for escalation and approval
 	 *
 	 * <br>Type: Search
@@ -569,7 +545,7 @@ public interface I_AD_OrgInfo
 	void setSupervisor_ID (int Supervisor_ID);
 
 	/**
-	 * Get Supervisor.
+	 * Get Vorgesetzter.
 	 * Supervisor for this user/organization - used for escalation and approval
 	 *
 	 * <br>Type: Search

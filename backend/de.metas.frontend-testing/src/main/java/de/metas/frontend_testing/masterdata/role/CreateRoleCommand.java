@@ -1,11 +1,17 @@
 package de.metas.frontend_testing.masterdata.role;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.mobile.application.MobileApplicationActionId;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
+import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.security.requests.CreateTableAccessRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -16,6 +22,7 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 
@@ -34,6 +41,8 @@ public class CreateRoleCommand
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
+	@NonNull private final MobileApplicationInfoRepository mobileApplicationInfoRepository;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonCreateRoleRequest request;
@@ -58,6 +67,7 @@ public class CreateRoleCommand
 		context.putIdentifier(identifier, roleId);
 
 		createTableAccessRecords(roleId);
+		createMobileApplicationAccessRecords(roleId);
 
 		return JsonCreateRoleResponse.builder()
 				.roleId(roleId)
@@ -145,5 +155,67 @@ public class CreateRoleCommand
 					.canCreateNewRecords(tableAccessRequest.isCanCreateNewRecords())
 					.build());
 		}
+	}
+
+	private void createMobileApplicationAccessRecords(@NonNull final RoleId roleId)
+	{
+		final List<JsonRoleMobileApplicationAccessRequest> accessRequests = request.getMobileApplicationAccess();
+		if (accessRequests == null)
+		{
+			return;
+		}
+
+		// A role has one access row per application, so an application listed twice would fail with a raw unique
+		// violation (Mobile_Application_Access_UC); say which one it is instead.
+		final HashSet<String> seenApplications = new HashSet<>();
+
+		for (final JsonRoleMobileApplicationAccessRequest accessRequest : accessRequests)
+		{
+			final String applicationValue = accessRequest.getApplication();
+			if (!seenApplications.add(applicationValue))
+			{
+				throw new AdempiereException("mobileApplicationAccess: application `" + applicationValue
+						+ "` is listed more than once; a role has one access row per application, so state it in that one entry");
+			}
+
+			final List<String> grantedActions = accessRequest.getGrantedActions();
+			if (accessRequest.isAllowAllActions() && grantedActions != null && !grantedActions.isEmpty())
+			{
+				throw new AdempiereException("mobileApplicationAccess: application `" + applicationValue
+						+ "` has grantedActions but allowAllActions is true, which makes them meaningless; set allowAllActions to false");
+			}
+
+			final MobileApplicationInfo application = mobileApplicationInfoRepository.getById(MobileApplicationId.ofString(applicationValue));
+
+			// The role already has an allow-all access row to every application (role_access_update() creates them when
+			// the role is created), so this is an upsert by the DAO that owns the table.
+			userRolePermissionsDAO.createMobileApplicationAccess(CreateMobileApplicationAccessRequest.builder()
+					.roleId(roleId)
+					.clientId(MasterdataContext.CLIENT_ID)
+					.orgId(MasterdataContext.ORG_ID)
+					.applicationId(application.getRepoId())
+					.allowAllActions(accessRequest.isAllowAllActions())
+					.allowedActionIds(getActionIds(application, grantedActions))
+					.build());
+		}
+	}
+
+	private static ImmutableSet<MobileApplicationActionId> getActionIds(
+			@NonNull final MobileApplicationInfo application,
+			@Nullable final List<String> actionInternalNames)
+	{
+		if (actionInternalNames == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		return actionInternalNames.stream()
+				.map(actionInternalName -> application.getActions().stream()
+						.filter(candidate -> actionInternalName.equals(candidate.getInternalName()))
+						.findFirst()
+						.orElseThrow(() -> new AdempiereException("mobileApplicationAccess: application `" + application.getId().getAsString()
+								+ "` has no action `" + actionInternalName + "`"))
+						.getId())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

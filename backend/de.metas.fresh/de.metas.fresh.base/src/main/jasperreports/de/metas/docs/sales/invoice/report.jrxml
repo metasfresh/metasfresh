@@ -72,10 +72,6 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 	</field>
 	<background>
 		<band height="842" splitType="Stretch">
-			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
-				<reportElement key="reportBackgroundImage" x="0" y="0" width="595" height="842" uuid="157eada7-eca3-4c91-8cef-c64111d673f5"/>
-				<imageExpression><![CDATA["de/metas/org/images/ReportBackground_Image_ID.png"]]></imageExpression>
-			</image>
 			<textField evaluationTime="Auto" isBlankWhenNull="false">
 				<reportElement key="textField-61" x="33" y="206" width="518" height="63" forecolor="#CCCCCC" uuid="9892a88d-b029-4f36-8ffb-0591144a39aa"/>
 				<box>

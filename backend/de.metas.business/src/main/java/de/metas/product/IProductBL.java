@@ -74,6 +74,10 @@ public interface IProductBL extends ISingletonService
 
 	ProductId getProductIdByValue(OrgId orgId, String productValue);
 
+	/** @return the active product of the context client with this search key (any organisation), or {@code null} */
+	@Nullable
+	ProductId getProductIdByValue(@NonNull String productValue);
+
 	UOMPrecision getUOMPrecision(I_M_Product product);
 
 	UOMPrecision getUOMPrecision(ProductId productId);
@@ -303,6 +307,14 @@ public interface IProductBL extends ISingletonService
 	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin);
 
 	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
+
+	/**
+	 * Product lookup for a scanned label: all products whose GTIN equals the scanned GTIN exactly (ordered by M_Product_ID);
+	 * when none does, the single product found by {@link #getProductIdByGTIN(GTIN, BPartnerId, ClientId)}, if any.
+	 * Note: unlike {@link #getProductIdByGTIN(GTIN, BPartnerId, ClientId)}, the {@code M_Product.GTIN} match comes first;
+	 * a partner-specific GTIN mapping ({@code C_BPartner_Product.GTIN}) is consulted only when no {@code M_Product.GTIN} matches.
+	 */
+	ImmutableList<ProductId> getProductIdsByLabelGTIN(@NonNull GTIN gtin, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
 
 	Optional<ProductId> getProductIdByGTINStrictly(@NonNull GTIN gtin, @NonNull ClientId clientId);
 

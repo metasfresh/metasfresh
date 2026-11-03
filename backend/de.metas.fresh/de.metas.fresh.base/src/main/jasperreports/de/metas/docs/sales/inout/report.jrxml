@@ -45,10 +45,6 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 	<field name="isfactoringpartner" class="java.lang.String"/>
 	<background>
 		<band height="842" splitType="Stretch">
-			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
-				<reportElement key="reportBackgroundImage" x="0" y="0" width="595" height="842" uuid="96563889-16f1-4e98-87be-0418fa2b9ce3"/>
-				<imageExpression><![CDATA["de/metas/org/images/ReportBackground_Image_ID.png"]]></imageExpression>
-			</image>
 			<textField evaluationTime="Auto" isBlankWhenNull="true">
 				<reportElement key="textField-61" x="34" y="209" width="518" height="63" forecolor="#CCCCCC" uuid="898d3e7f-d520-434c-a54b-8c4906fc1817"/>
 				<box>

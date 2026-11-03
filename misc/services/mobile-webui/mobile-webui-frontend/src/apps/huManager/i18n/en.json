@@ -68,5 +68,17 @@
         "buttonCaption": "Undo"
       }
     }
+  },
+  "newHU": {
+    "title": "New HU",
+    "product": "Product",
+    "qty": "Quantity",
+    "changeQty": "Change quantity",
+    "locator": "Locator",
+    "noLocator": "No locator - scan one",
+    "weight": "Weight",
+    "ok": "OK",
+    "notALocator": "Scan a locator or press OK",
+    "created": "HU %(huValue)s created: %(qty)s"
   }
 }

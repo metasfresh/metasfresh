@@ -34,6 +34,12 @@ export const HUManagerScreen = {
         await HUManagerScreen.waitForHUInfoPanel();
     }),
 
+    /** scans a code that is no existing HU (e.g. a product label) — the HU info panel is NOT awaited */
+    scanLabel: async ({ label }) => await test.step(`${NAME} - Scan label`, async () => {
+        await HUManagerScreen.expectVisible();
+        await BarcodeScannerComponent.type(label);
+    }),
+
     expectValue: async ({ name, expectedValue, expectedInternalValue, missing }) => {
         const stepValue = expectedValue ?? expectedInternalValue ?? (missing ? '*missing*' : undefined);
         return await test.step(`${NAME} - Expect "${name}" to be "${stepValue}"`, async () => {
@@ -95,6 +101,10 @@ export const HUManagerScreen = {
 
     expectButtonVisible: async ({ testId }) => await test.step(`${NAME} - Expect "${testId}" button visible`, async () => {
         await expect(page.getByTestId(testId)).toBeVisible();
+    }),
+
+    expectButtonMissing: async ({ testId }) => await test.step(`${NAME} - Expect "${testId}" button NOT present`, async () => {
+        await expect(page.getByTestId(testId)).toHaveCount(0);
     }),
 
     openGRAIScreen: async () => await test.step(`${NAME} - Open GRAI Screen`, async () => {

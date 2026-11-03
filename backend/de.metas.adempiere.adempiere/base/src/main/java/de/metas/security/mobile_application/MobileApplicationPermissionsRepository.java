@@ -100,8 +100,40 @@ public class MobileApplicationPermissionsRepository
 		}
 
 		accessRecord.setIsActive(true);
+		if (request.getAllowAllActions() != null)
+		{
+			accessRecord.setIsAllowAllActions(request.getAllowAllActions());
+		}
 
 		InterfaceWrapperHelper.save(accessRecord);
+
+		for (final MobileApplicationActionId actionId : request.getAllowedActionIds())
+		{
+			createActionAccessIfMissing(request, actionId);
+		}
+	}
+
+	private void createActionAccessIfMissing(@NonNull final CreateMobileApplicationAccessRequest request, @NonNull final MobileApplicationActionId actionId)
+	{
+		I_Mobile_Application_Action_Access actionAccess = queryBL
+				.createQueryBuilder(I_Mobile_Application_Action_Access.class)
+				.addEqualsFilter(I_Mobile_Application_Action_Access.COLUMNNAME_AD_Role_ID, request.getRoleId())
+				.addEqualsFilter(I_Mobile_Application_Action_Access.COLUMNNAME_Mobile_Application_Action_ID, actionId)
+				.create()
+				.firstOnly(I_Mobile_Application_Action_Access.class);
+
+		if (actionAccess == null)
+		{
+			actionAccess = InterfaceWrapperHelper.newInstance(I_Mobile_Application_Action_Access.class);
+			InterfaceWrapperHelper.setValue(actionAccess, I_Mobile_Application_Action_Access.COLUMNNAME_AD_Client_ID, request.getClientId().getRepoId());
+			actionAccess.setAD_Org_ID(request.getOrgId().getRepoId());
+			actionAccess.setAD_Role_ID(request.getRoleId().getRepoId());
+			actionAccess.setMobile_Application_ID(request.getApplicationId().getRepoId());
+			actionAccess.setMobile_Application_Action_ID(actionId.getRepoId());
+		}
+
+		actionAccess.setIsActive(true);
+		InterfaceWrapperHelper.save(actionAccess);
 	}
 
 	public void deleteMobileApplicationAccess(@NonNull final MobileApplicationRepoId applicationId)

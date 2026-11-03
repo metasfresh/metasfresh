@@ -37,6 +37,7 @@ import de.metas.handlingunits.mobileui.config.HUManagerProfileLayoutSectionList;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileRepository;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.GetByIdRequest;
 import de.metas.handlingunits.rest_api.GetByQRCodeRequest;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
@@ -47,6 +48,10 @@ import de.metas.handlingunits.rest_api.JsonHUQtyChangeRequest;
 import de.metas.handlingunits.rest_api.JsonMoveHURequest;
 import de.metas.handlingunits.rest_api.JsonPrintHULabelRequest;
 import de.metas.handlingunits.rest_api.JsonPrintHULabelResponse;
+import de.metas.handlingunits.rest_api.createfromlabel.CreateHUFromLabelService;
+import de.metas.handlingunits.rest_api.createfromlabel.JsonCreateHUFromScannedCodeRequest;
+import de.metas.handlingunits.rest_api.createfromlabel.JsonHUProposal;
+import de.metas.handlingunits.rest_api.createfromlabel.JsonProposeHUFromScannedCodeRequest;
 import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
@@ -92,6 +97,8 @@ public class HUManagerRestController
 	@NonNull private final HUManagerProfileRepository profileRepository;
 	@NonNull private final HandlingUnitsService handlingUnitsService;
 	@NonNull private final InventoryCandidateService inventoryCandidateService;
+	@NonNull private final CreateHUFromLabelService createHUFromLabelService;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	private void assertApplicationAccess()
 	{
@@ -175,6 +182,33 @@ public class HUManagerRestController
 		final HuId huId = HuId.ofRepoId(huRepoId);
 		final QtyRejectedReasonCode reasonCode = QtyRejectedReasonCode.ofCode(reasonCodeStr);
 		inventoryCandidateService.createDisposeCandidates(huId, reasonCode);
+	}
+
+	/** Called after {@link #retrieveHUManagerConfig} found no HU for the scanned code: what would the label create? Writes nothing. */
+	@PostMapping("/proposeFromScannedCode")
+	public JsonHUProposal proposeFromScannedCode(@RequestBody @NonNull final JsonProposeHUFromScannedCodeRequest request)
+	{
+		assertActionAccess(HUManagerAction.CreateHU);
+
+		return createHUFromLabelService.propose(request);
+	}
+
+	/** OK on the preview: creates the HU; answers the new HU in the same JSON as {@link #retrieveHUManagerConfig} */
+	@PostMapping("/createFromScannedCode")
+	public ResponseEntity<JsonGetSingleHUResponse> createFromScannedCode(@RequestBody @NonNull final JsonCreateHUFromScannedCodeRequest request)
+	{
+		assertActionAccess(HUManagerAction.CreateHU);
+
+		final CreateHUFromLabelService.CreatedHU createdHU = createHUFromLabelService.create(request);
+
+		return handlingUnitsService.getByIdSupplier(
+				() -> GetByIdRequest.builder()
+						.huId(createdHU.getHuId())
+						.expectedQRCode(createdHU.getQrCode())
+						.orderedAttributeCodes(getDisplayedAttributeCodes())
+						.layoutSections(getLayoutSections())
+						.build()
+		);
 	}
 
 	@PostMapping("/changeQty")

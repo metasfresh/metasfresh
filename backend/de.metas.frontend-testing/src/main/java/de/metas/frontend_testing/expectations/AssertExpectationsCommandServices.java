@@ -10,7 +10,9 @@ import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_Inventory_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -53,6 +55,7 @@ import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.returns.POSReturnRepository;
 import de.metas.product.ProductId;
+import org.adempiere.ad.dao.IQueryBL;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
@@ -66,6 +69,8 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mmovement.MovementLineQuery;
 import org.adempiere.mmovement.api.IMovementDAO;
@@ -95,6 +100,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AssertExpectationsCommandServices
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -111,6 +117,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
@@ -184,6 +191,11 @@ public class AssertExpectationsCommandServices
 	public IHUProductStorage getSingleProductStorage(@NonNull final I_M_HU hu)
 	{
 		return handlingUnitsBL.getSingleHUProductStorage(hu);
+	}
+
+	public ImmutableAttributeSet getAsiAttributes(@NonNull final AttributeSetInstanceId asiId)
+	{
+		return attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
 	}
 
 	public ImmutableAttributeSet getAttributes(@NonNull final I_M_HU hu)
@@ -286,6 +298,33 @@ public class AssertExpectationsCommandServices
 				.filter(line -> line.getM_HU_ID() == huId.getRepoId())
 				.sorted(Comparator.comparing(I_M_InventoryLine::getM_InventoryLine_ID))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public List<I_M_Inventory_Candidate> getInventoryCandidatesByHUId(@NonNull final HuId huId)
+	{
+		return queryBL.createQueryBuilder(I_M_Inventory_Candidate.class)
+				.addEqualsFilter(I_M_Inventory_Candidate.COLUMNNAME_M_HU_ID, huId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+	}
+
+	public int countHUStoragesByProductId(@NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_Storage.class)
+				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, productId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.count();
+	}
+
+	public int countInventoryLinesByProductId(@NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_M_InventoryLine.class)
+				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Product_ID, productId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.count();
 	}
 
 	public Inventory getInventoryById(@NonNull final InventoryId inventoryId)

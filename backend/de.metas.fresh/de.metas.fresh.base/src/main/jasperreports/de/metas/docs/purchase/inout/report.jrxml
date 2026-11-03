@@ -31,14 +31,6 @@
 	<field name="displayhu" class="java.lang.String"/>
 	<field name="c_order_id" class="java.lang.Integer"/>
 	<field name="movementdate" class="java.sql.Date"/>
-	<background>
-		<band height="842" splitType="Stretch">
-			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
-				<reportElement key="reportBackgroundImage" x="0" y="0" width="595" height="842" uuid="df2e86be-e2c0-42fa-ab85-15341a622a46"/>
-				<imageExpression><![CDATA["de/metas/org/images/ReportBackground_Image_ID.png"]]></imageExpression>
-			</image>
-		</band>
-	</background>
 	<title>
 		<band height="269" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>

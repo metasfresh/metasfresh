@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_OrgInfo
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 364973766L;
+	private static final long serialVersionUID = 1622689770L;
 
     /** Standard Constructor */
     public X_AD_OrgInfo (final Properties ctx, final int AD_OrgInfo_ID, @Nullable final String trxName)
@@ -326,33 +326,6 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	public java.lang.String getReceiptFooterMsg() 
 	{
 		return get_ValueAsString(COLUMNNAME_ReceiptFooterMsg);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Image getReportBackground_Image()
-	{
-		return get_ValueAsPO(COLUMNNAME_ReportBackground_Image_ID, org.compiere.model.I_AD_Image.class);
-	}
-
-	@Override
-	public void setReportBackground_Image(final org.compiere.model.I_AD_Image ReportBackground_Image)
-	{
-		set_ValueFromPO(COLUMNNAME_ReportBackground_Image_ID, org.compiere.model.I_AD_Image.class, ReportBackground_Image);
-	}
-
-	@Override
-	public void setReportBackground_Image_ID (final int ReportBackground_Image_ID)
-	{
-		if (ReportBackground_Image_ID < 1) 
-			set_Value (COLUMNNAME_ReportBackground_Image_ID, null);
-		else 
-			set_Value (COLUMNNAME_ReportBackground_Image_ID, ReportBackground_Image_ID);
-	}
-
-	@Override
-	public int getReportBackground_Image_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_ReportBackground_Image_ID);
 	}
 
 	@Override

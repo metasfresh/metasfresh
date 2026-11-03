@@ -43,15 +43,6 @@ env:
   # under *ALL_BASE_BRANCHES (UAT, HOTFIX, or RELEASE lists). If you onboard a new
   # group with a _release branch, add it to PROJECT_BRANCHES_RELEASE in .mergify.yml.
 
-# Serialize auto-port runs per source branch so two cicd completions on the same
-# _hotfix/_release branch don't race on the same merge/<source>-to-<target> branch
-# (both reset+push it, last-writer-wins). cancel-in-progress:false queues the
-# second run instead of cancelling a mid-push one. Different source branches target
-# different merge branches, so they still run in parallel.
-concurrency:
-  group: auto-port-${{ github.event.workflow_run.head_branch }}
-  cancel-in-progress: false
-
 jobs:
   auto-port:
     # Only run when cicd succeeded on a _hotfix or _release branch.
@@ -389,8 +380,8 @@ jobs:
           MERGE_BRANCH: ${{ steps.check.outputs.merge_branch }}
         run: |
           if [[ -z "$DISPATCH_TOKEN" ]]; then
-            echo "::error::CICD_TRIGGER_DISPATCH not configured — cannot dispatch cicd for $MERGE_BRANCH. Merge Gate will never appear and the merge-up PR would stall silently; failing loudly so this is visible instead of a green no-op."
-            exit 1
+            echo "::warning::CICD_TRIGGER_DISPATCH not configured — cannot dispatch cicd. Merge Gate will not appear and auto-merge will not work."
+            exit 0
           fi
           echo "Dispatching cicd workflow for: $MERGE_BRANCH"
           GH_TOKEN="$DISPATCH_TOKEN" gh workflow run cicd.yaml --ref "$MERGE_BRANCH"

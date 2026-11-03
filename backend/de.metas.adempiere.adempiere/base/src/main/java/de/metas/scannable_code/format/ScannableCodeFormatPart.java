@@ -113,6 +113,9 @@ public class ScannableCodeFormatPart
 				case ProductionDate:
 					result.productionDate(toLocalDate(valueStr));
 					break;
+				case GTIN:
+					result.gtin(valueStr.trim());
+					break;
 			}
 
 			return BooleanWithReason.TRUE;

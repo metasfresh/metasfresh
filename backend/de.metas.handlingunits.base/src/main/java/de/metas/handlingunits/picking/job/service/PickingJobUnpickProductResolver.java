@@ -88,6 +88,16 @@ public class PickingJobUnpickProductResolver
 					}
 				}
 			}
+
+			final GTIN scannedGTIN = customQRCode.getGTIN().orElse(null);
+			if (scannedGTIN != null)
+			{
+				final ProductId productId = productService.getProductIdByGTINStrictlyNotNull(scannedGTIN, ClientId.METASFRESH);
+				if (pickingJob.getProductIds().contains(productId))
+				{
+					return productId;
+				}
+			}
 		}
 		else if (parsedQRCode instanceof HUQRCode)
 		{

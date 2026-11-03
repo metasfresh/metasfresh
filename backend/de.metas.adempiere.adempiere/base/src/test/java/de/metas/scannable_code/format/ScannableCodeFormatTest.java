@@ -94,4 +94,60 @@ class ScannableCodeFormatTest
 					.hasMessageStartingWith("Invalid constant marker, expected `E` but was `X`");
 		}
 	}
+
+	@Nested
+	class gtin_part
+	{
+		@Test
+		void gtinPart_extractsGtin()
+		{
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(14).type(ScannableCodeFormatPartType.GTIN).build()
+					))
+					.build();
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("04251674410206")).orElseThrow();
+			assertThat(parsed.getGtin()).isEqualTo("04251674410206");
+		}
+
+		@Test
+		void gtinPart_withLotAndBestBefore()
+		{
+			// [1..14] GTIN, [15..19] LOT, [20..25] BEST_BEFORE_DATE (yyMMdd)
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(14).type(ScannableCodeFormatPartType.GTIN).build(),
+							ScannableCodeFormatPart.builder().startPosition(15).endPosition(19).type(ScannableCodeFormatPartType.LotNo).build(),
+							ScannableCodeFormatPart.builder().startPosition(20).endPosition(25).type(ScannableCodeFormatPartType.BestBeforeDate).build()
+					))
+					.build();
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("04251674410206L2311271231")).orElseThrow();
+			assertThat(parsed.getGtin()).isEqualTo("04251674410206");
+			assertThat(parsed.getLotNo()).isEqualTo("L2311");
+			assertThat(parsed.getBestBeforeDate()).isEqualTo("2027-12-31");
+		}
+
+		@Test
+		void allPartTypes_constantMismatch_notRecognized()
+		{
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(1).type(ScannableCodeFormatPartType.Constant).constantValue("A").build(),
+							ScannableCodeFormatPart.builder().startPosition(2).endPosition(15).type(ScannableCodeFormatPartType.GTIN).build()
+					))
+					.build();
+
+			assertThatThrownBy(() -> format.parse(ScannedCode.ofString("X04251674410206")).orElseThrow())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith("Invalid constant marker, expected `A` but was `X`");
+		}
+	}
 }
