@@ -8,7 +8,7 @@ import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { NewHUPreviewScreen } from '../../utils/screens/huManager/NewHUPreviewScreen';
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
-import { expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../utils/common';
+import { expectErrorToast, page, SLOW_ACTION_TIMEOUT } from '../../utils/common';
 
 // HU Manager "create from label" and picking: a GS1 label booked in the HU Manager is refused by picking as pick-from code;
 // rescanning the same label in the HU Manager opens a new preview, not the HU created from it.
@@ -81,12 +81,14 @@ const createHUFromLabel = async ({ label }) => {
         NewHUPreviewScreen.clickOK(),
     ]);
     const hu = (await response.json()).result;
-    await HUManagerScreen.waitForHUInfoPanel();
+    // after OK the user is back on the scan screen (the new HU is not opened)
+    await HUManagerScreen.waitForScreen();
+    await NewHUPreviewScreen.expectNotDisplayed();
     return hu.id;
 };
 
 const goBackToApplications = async () => {
-    await page.locator(ID_BACK_BUTTON).tap();
+    await HUManagerScreen.goBack();
     await ApplicationsListScreen.expectVisible();
 };
 
@@ -115,8 +117,7 @@ test('custom label books a CU in the HU Manager; HU Manager scan of the same lab
     await Backend.expect({ hus: { [huId]: { huStatus: 'A', storages: { 'P1': '1 PCE' } } } });
 
     // (c) the HU Manager does not resolve labels to the HU created from them: the same label gives a new preview, not the first HU.
-    // After OK the app shows the info of the new HU; the scan step is back after "Scan again".
-    await HUManagerScreen.clickButton({ testId: 'scan-again-button' });
+    // After OK the app is back on the scan screen.
     await HUManagerScreen.scanLabel({ label });
     await NewHUPreviewScreen.waitForScreen();
     await NewHUPreviewScreen.clickCancel();

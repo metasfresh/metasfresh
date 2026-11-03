@@ -7,7 +7,8 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { NewHUPreviewScreen } from '../../utils/screens/huManager/NewHUPreviewScreen';
-import { expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../utils/common';
+import { expectErrorToast, page, SLOW_ACTION_TIMEOUT } from '../../utils/common';
+import { ErrorToast } from '../../utils/dialogs/ErrorToast';
 import { DISPOSAL_REASON_DAMAGED } from '../../utils/screens/huManager/HUDisposalScreen';
 
 // HU Manager: scan a product label that is no existing HU -> "New HU" preview -> OK -> one single-HU
@@ -116,7 +117,7 @@ const expectBackOnScanScreenAfterOK = async ({ created, qty = '1 PCE', locatorCo
     if (locatorCode !== undefined) expect(created.locatorValue).toBe(locatorCode);
     await HUManagerScreen.waitForScreen();
     await NewHUPreviewScreen.expectNotDisplayed();
-    await expect(page.locator('.Toastify__toast--success').filter({ hasText: `HU ${created.huValue}` }).filter({ hasText: qty }).first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await ErrorToast.expectSuccessToast({ hasText: [`HU ${created.huValue}`, qty] });
     await BarcodeScannerComponent.expectAttached({});
     await HUManagerScreen.expectValueMissing({ name: 'huinfo-table' });
     await HUManagerScreen.expectValueMissing({ name: 'qty-value' });
@@ -146,7 +147,7 @@ const countPostCalls = (...urlParts) => {
 const countCreateCalls = () => countPostCalls('createFromScannedCode');
 
 const goBackToApplicationsAndLogout = async () => {
-    await page.locator(ID_BACK_BUTTON).tap();
+    await HUManagerScreen.goBack();
     await ApplicationsListScreen.logout();
 };
 
@@ -427,8 +428,7 @@ test('location changed with the Change locator button, not remembered; a non-loc
 
     // (e) a product label scanned in the dialog -> refused with an error toast, dialog stays open; Cancel keeps the location
     await NewHUPreviewScreen.openChangeLocatorDialog();
-    await NewHUPreviewScreen.scanInChangeLocatorDialog(customLabel(gtin));
-    await expect(page.locator('.Toastify__toast--error').first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await expectErrorToast('a product label is no location', async () => await NewHUPreviewScreen.scanInChangeLocatorDialog(customLabel(gtin)));
     await NewHUPreviewScreen.cancelChangeLocatorDialog();
     await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: wh1_l1.code });
 
@@ -470,7 +470,7 @@ test('inline quantity on the preview: typed digits stay in the field, emptied fi
         await NewHUPreviewScreen.setQty(7);
         await page.waitForTimeout(2500); // past the 2 s refocus of a scanner's hidden input (there is none now)
         await NewHUPreviewScreen.expectQty({ qty: '7', uom: 'PCE' });
-        await expect(page.locator('.Toastify__toast--error')).toHaveCount(0);
+        await ErrorToast.expectNoErrorToast();
         await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: wh1_l1.code });
         await NewHUPreviewScreen.expectOKEnabled();
     });
@@ -748,8 +748,8 @@ test('the same label twice -> two previews alike, two HUs, two completed invento
         await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: locatorCode });
         await NewHUPreviewScreen.expectValue({ name: 'attribute-Lot-Nummer-value', expectedValue: 'L2311' });
         // no note or warning of any kind (the success toast of the previous HU is no note)
-        await expect(page.locator('.Toastify__toast:not(.Toastify__toast--success)')).toHaveCount(0);
-        if (i === 2) await expect(page.locator('.Toastify__toast--success').filter({ hasNotText: `HU ${created[0].huValue}` })).toHaveCount(0); // the only toast left is the previous HU's success message
+        await ErrorToast.expectNoToastOtherThanSuccess();
+        if (i === 2) await ErrorToast.expectNoSuccessToastWithoutText(`HU ${created[0].huValue}`); // the only toast left is the previous HU's success message
         created.push(await clickOKAndGetCreatedHU());
         await expectBackOnScanScreenAfterOK({ created: created[i - 1], locatorCode }); // straight back on the scan screen for the next label
     }
