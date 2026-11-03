@@ -2,14 +2,10 @@ package de.metas.handlingunits.rest_api.createfromlabel;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.gs1.GTIN;
-import de.metas.handlingunits.qrcodes.custom.CustomHUQRCode;
-import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
-import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
-import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.model.ProductLabelCodes;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
@@ -18,7 +14,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
-import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static de.metas.handlingunits.rest_api.createfromlabel.CreateFromLabelMessages.BARCODE_FITS_SEVERAL_PRODUCTS;
@@ -51,35 +47,43 @@ public class LabelProductResolver
 	@NonNull
 	public LabelProduct resolve(@NonNull final ScannedCode scannedCode, @NonNull final ClientId clientId)
 	{
-		final IHUQRCode code = parse(scannedCode);
+		return resolve(parse(scannedCode), scannedCode, clientId);
+	}
 
-		if (code instanceof PickOnTheFlyQRCode
-				|| code instanceof HUQRCode // an HU QR code not (yet) assigned to an HU: the HU lookup found nothing
-				|| code instanceof LMQRCode)
+	/**
+	 * The code decides what it says about its product ({@link IHUQRCode#getProductLabelCodes()}); this method never asks what kind of code it is.
+	 * The first code present decides, there is no fallback to the next one.
+	 */
+	@NonNull
+	LabelProduct resolve(@NonNull final IHUQRCode code, @NonNull final ScannedCode scannedCode, @NonNull final ClientId clientId)
+	{
+		final ProductLabelCodes labelCodes = code.getProductLabelCodes()
+				.orElseThrow(() -> new LabelRejectionException(NOT_A_PRODUCT_LABEL, trunc(scannedCode)));
+		if (labelCodes.isEmpty())
 		{
-			throw new LabelRejectionException(NOT_A_PRODUCT_LABEL, trunc(scannedCode));
+			throw new LabelRejectionException(LABEL_HAS_NO_PRODUCT, trunc(scannedCode));
 		}
-		else if (code instanceof CustomHUQRCode)
+
+		final ProductId productId;
+		if (labelCodes.getProductNo() != null)
 		{
-			return resolveCustom(scannedCode, (CustomHUQRCode)code, clientId);
+			productId = productBL.getProductIdByValue(labelCodes.getProductNo());
+			if (productId == null)
+			{
+				throw new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE, labelCodes.getProductNo());
+			}
 		}
-		else if (code instanceof GS1HUQRCode)
+		else if (labelCodes.getGTIN() != null)
 		{
-			final GTIN gtin = ((GS1HUQRCode)code).getGTIN()
-					.orElseThrow(() -> new LabelRejectionException(LABEL_HAS_NO_PRODUCT, trunc(scannedCode)));
-			return LabelProduct.builder().code(code).productId(resolveByGTIN(gtin, clientId)).build();
-		}
-		else if (code instanceof EAN13HUQRCode)
-		{
-			final EAN13HUQRCode ean13Code = (EAN13HUQRCode)code;
-			final ProductId productId = productBL.getProductIdByEAN13(ean13Code.unbox(), null, clientId)
-					.orElseThrow(() -> new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_GTIN, ean13Code.getAsString()));
-			return LabelProduct.builder().code(code).productId(productId).build();
+			productId = resolveByGTIN(labelCodes.getGTIN(), clientId);
 		}
 		else
 		{
-			throw new LabelRejectionException(LABEL_NOT_RECOGNIZED, trunc(scannedCode));
+			final EAN13 ean13 = Objects.requireNonNull(labelCodes.getEAN13());
+			productId = productBL.getProductIdByEAN13(ean13, null, clientId)
+					.orElseThrow(() -> new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_GTIN, ean13.getAsString()));
 		}
+		return LabelProduct.builder().code(code).productId(productId).build();
 	}
 
 	private IHUQRCode parse(@NonNull final ScannedCode scannedCode)
@@ -98,27 +102,6 @@ public class LabelProductResolver
 			}
 			throw new LabelRejectionException(LABEL_NOT_RECOGNIZED, trunc(scannedCode));
 		}
-	}
-
-	private LabelProduct resolveCustom(@NonNull final ScannedCode scannedCode, @NonNull final CustomHUQRCode code, @NonNull final ClientId clientId)
-	{
-		final String productNo = code.getProductNo().orElse(null);
-		if (productNo != null)
-		{
-			final ProductId productId = productBL.getProductIdByValue(productNo);
-			if (productId == null)
-			{
-				throw new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE, productNo);
-			}
-			return LabelProduct.builder().code(code).productId(productId).build();
-		}
-
-		final Optional<GTIN> gtin = code.getGTIN();
-		if (!gtin.isPresent())
-		{
-			throw new LabelRejectionException(LABEL_HAS_NO_PRODUCT, trunc(scannedCode));
-		}
-		return LabelProduct.builder().code(code).productId(resolveByGTIN(gtin.get(), clientId)).build();
 	}
 
 	/** exactly one active product with this GTIN, else a rejection (none: no product found; several: the barcode fits several products, never picks one) */

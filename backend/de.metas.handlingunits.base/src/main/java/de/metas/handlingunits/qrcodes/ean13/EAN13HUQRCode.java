@@ -2,6 +2,7 @@ package de.metas.handlingunits.qrcodes.ean13;
 
 import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.model.ProductLabelCodes;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.scannable_code.ScannedCode;
 import lombok.EqualsAndHashCode;
@@ -61,4 +62,10 @@ public class EAN13HUQRCode implements IHUQRCode
 
 	@NonNull
 	public EAN13 unbox() {return ean13;}
+
+	@Override
+	public Optional<ProductLabelCodes> getProductLabelCodes()
+	{
+		return Optional.of(ProductLabelCodes.builder().EAN13(ean13).build());
+	}
 }

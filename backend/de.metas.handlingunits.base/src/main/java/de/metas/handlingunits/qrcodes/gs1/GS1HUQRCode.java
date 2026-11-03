@@ -4,6 +4,7 @@ import de.metas.gs1.GS1Elements;
 import de.metas.gs1.GS1Parser;
 import de.metas.gs1.GTIN;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.model.ProductLabelCodes;
 import de.metas.scannable_code.ScannedCode;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -64,8 +65,15 @@ public class GS1HUQRCode implements IHUQRCode
 	public Optional<LocalDate> getBestBeforeDate() {return elements.getBestBeforeDate();}
 
 	/** Expiration date (AI 17) */
+	@Override
 	public Optional<LocalDate> getExpirationDate() {return elements.getExpirationDate();}
 
 	@Override
 	public Optional<String> getLotNumber() {return elements.getLotNumber();}
+
+	@Override
+	public Optional<ProductLabelCodes> getProductLabelCodes()
+	{
+		return Optional.of(ProductLabelCodes.builder().GTIN(elements.getGTIN().orElse(null)).build());
+	}
 }
