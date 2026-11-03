@@ -20,12 +20,12 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Objects;
 
 @Value
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
@@ -133,8 +133,17 @@ public class DDOrderCandidateData
 
 	public DDOrderCandidateData withPPOrderId(@Nullable final PPOrderId forwardPPOrderIdNew)
 	{
-		final PPOrderRef forwardPPOrderRefNew = PPOrderRef.withPPOrderId(forwardPPOrderRef, forwardPPOrderIdNew);
-		if (Objects.equals(this.forwardPPOrderRef, forwardPPOrderRefNew))
+		return withForwardPPOrderRef(PPOrderRef.withPPOrderId(forwardPPOrderRef, forwardPPOrderIdNew));
+	}
+
+	public DDOrderCandidateData withPPOrderAndBOMLineId(@Nullable final PPOrderAndBOMLineId forwardPPOrderAndBOMLineIdNew)
+	{
+		return withForwardPPOrderRef(PPOrderRef.withPPOrderAndBOMLineId(forwardPPOrderRef, forwardPPOrderAndBOMLineIdNew));
+	}
+
+	private DDOrderCandidateData withForwardPPOrderRef(@Nullable final PPOrderRef forwardPPOrderRefNew)
+	{
+		if (PPOrderRef.equals(this.forwardPPOrderRef, forwardPPOrderRefNew))
 		{
 			return this;
 		}

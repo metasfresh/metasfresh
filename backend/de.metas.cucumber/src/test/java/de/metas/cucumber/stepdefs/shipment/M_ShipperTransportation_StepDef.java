@@ -22,18 +22,25 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Package_StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.deliveryplanning.DeliveryPlanningRejectionHelper;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.pickingterminal.M_ShippingPackage_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.shipping.InOutToTransportationOrderService;
+import de.metas.inout.InOutId;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.order.OrderId;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.shipping.api.IShipperTransportationBL;
@@ -45,24 +52,39 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_Val_Rule;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
+import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Map;
+import java.util.Properties;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for M_ShipperTransportation, the transport order ("Speditionslieferung"). Allows scenarios to:
@@ -93,12 +115,16 @@ public class M_ShipperTransportation_StepDef
 
 	private final M_InOut_StepDefData shipmentTable;
 	private final C_Order_StepDefData orderTable;
+	private final M_Product_StepDefData productTable;
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	@NonNull private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
+	@NonNull private final DeliveryPlanningRejectionHelper rejectionHelper;
+	@NonNull private final InOutToTransportationOrderService inOutToTransportationOrderService = SpringContextHolder.instance.getBean(InOutToTransportationOrderService.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 
 	@And("validate M_ShipperTransportation:")
@@ -154,6 +180,13 @@ public class M_ShipperTransportation_StepDef
 			if (Check.isNotBlank(docStatus))
 			{
 				softly.assertThat(deliveryInstruction.getDocStatus()).as(I_M_ShipperTransportation.COLUMNNAME_DocStatus).isEqualTo(docStatus);
+			}
+
+			// DeliveredState: the three-state delivered indicator, e.g. "NotDelivered" / "PartlyDelivered" / "FullyDelivered".
+			final String deliveredState = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_DeliveredState);
+			if (Check.isNotBlank(deliveredState))
+			{
+				softly.assertThat(deliveryInstruction.getDeliveredState()).as(I_M_ShipperTransportation.COLUMNNAME_DeliveredState).isEqualTo(deliveredState);
 			}
 
 			softly.assertAll();
@@ -291,6 +324,70 @@ public class M_ShipperTransportation_StepDef
 		deliveryInstructionTable.putOrReplace(row.getAsIdentifier(), shipperTransportationRecord);
 	}
 
+	/**
+	 * Calls {@link InOutToTransportationOrderService#addShipmentsToTransportationOrder} directly for one shipment.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And M_ShipperTransportation_AddShipments is invoked for shipment ship_1 and transportation order: to_1
+	 * </pre>
+	 * @see #addOrderToShipperTransportation
+	 */
+	@And("^M_ShipperTransportation_AddShipments is invoked for shipment (.*) and transportation order: (.*)$")
+	public void addShipmentToShipperTransportation(@NonNull final String shipmentIdentifier, @NonNull final String transportationOrderIdentifier)
+	{
+		final InOutId inOutId = InOutId.ofRepoId(shipmentTable.get(shipmentIdentifier).getM_InOut_ID());
+		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(deliveryInstructionTable.get(transportationOrderIdentifier)
+				.getM_ShipperTransportation_ID());
+
+		inOutToTransportationOrderService.addShipmentsToTransportationOrder(shipperTransportationId, ImmutableList.of(inOutId));
+	}
+
+	/**
+	 * Locates the {@code M_ShippingPackage} linking the given shipment to the given transportation order and
+	 * deletes it via {@link InterfaceWrapperHelper#delete(Object)}, so the real
+	 * {@code @ModelChange(TYPE_AFTER_DELETE)} interceptor chain runs.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And delete the M_ShippingPackage for shipment ship_3a and transportation order: to_3a
+	 * </pre>
+	 */
+	@And("^delete the M_ShippingPackage for shipment (.*) and transportation order: (.*)$")
+	public void deleteShippingPackageForShipmentAndTransportationOrder(@NonNull final String shipmentIdentifier, @NonNull final String transportationOrderIdentifier)
+	{
+		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+		final int shipperTransportationId = deliveryInstructionTable.get(transportationOrderIdentifier).getM_ShipperTransportation_ID();
+
+		final I_M_ShippingPackage shippingPackage = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID())
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
+				.create()
+				.firstOnlyNotNull(I_M_ShippingPackage.class);
+
+		InterfaceWrapperHelper.delete(shippingPackage);
+	}
+
+	/**
+	 * Deletes the transport order directly via {@link InterfaceWrapperHelper#delete(Object)}. Only succeeds while
+	 * the TO is un-processed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And delete Transport Order identified by to_3b
+	 * </pre>
+	 */
+	@And("^delete Transport Order identified by (.*)$")
+	public void deleteTransportOrder(@NonNull final String transportationOrderIdentifier)
+	{
+		final I_M_ShipperTransportation transportOrder = deliveryInstructionTable.get(transportationOrderIdentifier);
+		InterfaceWrapperHelper.delete(transportOrder);
+	}
+
 	@And("^metasfresh contains exactly (.*) M_ShippingPackages for transportation order: (.*)$")
 	public void validateShippingPackagesForTransportationOrder(final int expectedShippingPackages, @NonNull final String transportationOrderIdentifier)
 	{
@@ -321,6 +418,38 @@ public class M_ShipperTransportation_StepDef
 				.getM_ShipperTransportation_ID());
 
 		purchaseOrderToShipperTransportationService.addPurchaseOrderToShipperTransportation(orderId, shipperTransportationId);
+	}
+
+	/**
+	 * Same call as {@link #addOrderToShipperTransportation(String, String)}, but asserts the add is REFUSED —
+	 * used for the direction guard in {@link PurchaseOrderToShipperTransportationService}: a purchase order is a
+	 * receipt-side document and must not join a transport order whose direction has no receipt leg (Outgoing-only).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>ErrorAdMessage</b> — (optional) the {@code AD_Message} the add is expected to be rejected with<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And C_Order_AddTo_M_ShipperTransportation is invoked for order order_PO and transportation order outgoingTransportOrder, and is refused:
+	 *   | ErrorAdMessage                              |
+	 *   | WrongTransportDirectionForPurchaseOrder      |
+	 * </pre>
+	 */
+	@And("^C_Order_AddTo_M_ShipperTransportation is invoked for order (.*) and transportation order (.*), and is refused:$")
+	public void addOrderToShipperTransportation_refused(
+			@NonNull final String orderIdentifier,
+			@NonNull final String transportationOrderIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		final OrderId orderId = OrderId.ofRepoId(orderTable.get(orderIdentifier)
+				.getC_Order_ID());
+		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(deliveryInstructionTable.get(transportationOrderIdentifier)
+				.getM_ShipperTransportation_ID());
+
+		rejectionHelper.runExpectingRejectionIfAny(
+				DataTableRows.of(dataTable).singleRow(),
+				ImmutableSet.of(),
+				() -> purchaseOrderToShipperTransportationService.addPurchaseOrderToShipperTransportation(orderId, shipperTransportationId));
 	}
 
 
@@ -395,6 +524,10 @@ public class M_ShipperTransportation_StepDef
 	 *   <b>ETD</b> — (optional) new estimated departure<br>
 	 *   <b>ETA</b> — (optional) new estimated arrival<br>
 	 *   <b>BLDate</b> — (optional) new bill-of-lading date<br>
+	 *   <b>ContainerNo</b> — (optional) new container number<br>
+	 *   <b>IsBLReceived</b> — (optional) new bill-of-lading-received flag<br>
+	 *   <b>IsBookingConfirmed</b> — (optional) new booking-confirmed flag<br>
+	 *   <b>IsWENotice</b> — (optional) new goods-receipt-notice flag<br>
 	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -425,6 +558,19 @@ public class M_ShipperTransportation_StepDef
 
 		tableRow.getAsOptionalInstant(I_M_ShipperTransportation.COLUMNNAME_BLDate)
 				.ifPresent(expected -> record.setBLDate(Timestamp.from(expected)));
+
+		tableRow.getAsOptionalString(I_M_ShipperTransportation.COLUMNNAME_ContainerNo)
+				.ifPresent(record::setContainerNo);
+
+		tableRow.getAsOptionalBoolean(I_M_ShipperTransportation.COLUMNNAME_IsBLReceived)
+				.ifPresent(record::setIsBLReceived);
+
+		tableRow.getAsOptionalBoolean(I_M_ShipperTransportation.COLUMNNAME_IsBookingConfirmed)
+				.ifPresent(record::setIsBookingConfirmed);
+
+		tableRow.getAsOptionalBoolean(I_M_ShipperTransportation.COLUMNNAME_IsWENotice)
+				.ifPresent(record::setIsWENotice);
+
 		saveRecord(record);
 
 		deliveryInstructionTable.putOrReplace(tableRow.getAsIdentifier(), record);
@@ -436,6 +582,170 @@ public class M_ShipperTransportation_StepDef
 		final I_M_ShipperTransportation transportOrder = deliveryInstructionTable.get(orderIdentifier);
 		transportOrder.setDocAction(IDocument.ACTION_Complete);
 		documentBL.processEx(transportOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
+	/**
+	 * Evaluates the M_ShipperTransportation_ID picker of the given AddTo process (the incoming/outgoing direction filter) -
+	 * the SAME persisted {@code AD_Val_Rule.Code} the WebUI process-parameter picker evaluates, substituted
+	 * through the real {@link Env#parseContext} context mechanism (never a re-implemented query) - and asserts
+	 * which named transport orders it does/doesn't offer. Pass {@code "no order"} for {@code orderIdentifierOrNoOrder}
+	 * to assert the "no order in context" fallback (must offer everything, unchanged).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — the transport order, from "metasfresh contains Transport Order"<br>
+	 *   <b>Offered</b> — {@code true}/{@code false}, whether the picker must offer it<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then the M_ShipperTransportation_ID picker on M_ReceiptSchedule_AddTo_M_ShipperTransportation, for order order_PO_Wrong, offers:
+	 *   | Identifier             | Offered |
+	 *   | outgoingTransportOrder | false   |
+	 *   | incomingTransportOrder | true    |
+	 * </pre>
+	 */
+	@Then("^the M_ShipperTransportation_ID picker on (.*), for order (.*), offers:$")
+	public void picker_offers_for_order(
+			@NonNull final String processValue,
+			@NonNull final String orderIdentifierOrNoOrder,
+			@NonNull final DataTable dataTable)
+	{
+		final Integer orderRepoId = "no order".equals(orderIdentifierOrNoOrder)
+				? null
+				: orderTable.get(orderIdentifierOrNoOrder).getC_Order_ID();
+
+		final ImmutableSet<Integer> offeredIds = evaluatePickerOfferedIds(processValue, orderRepoId);
+
+		final SoftAssertions softly = new SoftAssertions();
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String identifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
+			final boolean expectedOffered = DataTableUtil.extractBooleanForColumnName(row, "Offered");
+			final int transportOrderId = deliveryInstructionTable.get(identifier).getM_ShipperTransportation_ID();
+
+			softly.assertThat(offeredIds.contains(transportOrderId))
+					.as("picker on %s offers %s (M_ShipperTransportation_ID=%s) for order context %s",
+							processValue, identifier, transportOrderId, orderIdentifierOrNoOrder)
+					.isEqualTo(expectedOffered);
+		}
+		softly.assertAll();
+	}
+
+	private ImmutableSet<Integer> evaluatePickerOfferedIds(@NonNull final String processValue, @Nullable final Integer orderRepoId)
+	{
+		final I_AD_Process process = queryBL.createQueryBuilder(I_AD_Process.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Process.COLUMNNAME_Value, processValue)
+				.create()
+				.firstOnlyNotNull(I_AD_Process.class);
+
+		final I_AD_Process_Para para = queryBL.createQueryBuilder(I_AD_Process_Para.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, process.getAD_Process_ID())
+				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_ColumnName, I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
+				.create()
+				.firstOnlyNotNull(I_AD_Process_Para.class);
+
+		assertThat(para.getAD_Val_Rule_ID())
+				.as("the M_ShipperTransportation_ID parameter of %s is narrowed by a value rule", processValue)
+				.isNotZero();
+
+		final I_AD_Val_Rule valRule = load(para.getAD_Val_Rule_ID(), I_AD_Val_Rule.class);
+
+		// scratch WindowNo, private to this evaluation - a copy of the shared ctx so we never leak the
+		// C_Order_ID we set here into any other scenario's context
+		final Properties ctx = new Properties(Env.getCtx());
+		final int windowNo = 999999;
+		if (orderRepoId != null)
+		{
+			Env.setContext(ctx, windowNo, I_C_Order.COLUMNNAME_C_Order_ID, orderRepoId);
+		}
+		final String whereClause = Env.parseContext(ctx, windowNo, valRule.getCode(), true);
+		assertThat(whereClause).as("substituted %s WHERE clause must not be blank", valRule.getName()).isNotBlank();
+
+		return ImmutableSet.copyOf(
+				queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+						.filter(TypedSqlQueryFilter.of(whereClause))
+						.create()
+						.listIds());
+	}
+
+	/**
+	 * Asserts whether the shipment's {@code M_ShipperTransportation_ID} FK is cleared or still set, after
+	 * refreshing the record (the FK may have been changed by a DB-level hook, not through this
+	 * {@code StepDefData}'s cached in-memory instance).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And validate M_ShipperTransportation_ID for shipment ship_3a is null
+	 * And validate M_ShipperTransportation_ID for shipment ship_1 is set
+	 * </pre>
+	 */
+	@And("^validate M_ShipperTransportation_ID for shipment (.*) is (null|set)$")
+	public void validateShipperTransportationIdForShipment(@NonNull final String shipmentIdentifier, @NonNull final String expectation)
+	{
+		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+		InterfaceWrapperHelper.refresh(shipment);
+		final int shipperTransportationRepoId = getShipperTransportationRepoId(shipment);
+
+		if ("null".equals(expectation))
+		{
+			assertThat(shipperTransportationRepoId).as("M_ShipperTransportation_ID").isZero();
+		}
+		else
+		{
+			assertThat(shipperTransportationRepoId).as("M_ShipperTransportation_ID").isPositive();
+		}
+	}
+
+	/**
+	 * Reads {@code M_ShipperTransportation_ID} through the {@code de.metas.inout} subinterface — the plain
+	 * {@code org.compiere.model.I_M_InOut} imported by this class does not declare that column, and the two
+	 * types share a simple name, so the fully-qualified name is confined to this one helper.
+	 */
+	private static int getShipperTransportationRepoId(@NonNull final I_M_InOut shipment)
+	{
+		final de.metas.inout.model.I_M_InOut inOutShipment = InterfaceWrapperHelper.create(shipment, de.metas.inout.model.I_M_InOut.class);
+		return inOutShipment.getM_ShipperTransportation_ID();
+	}
+
+	/**
+	 * Adds one plain {@code M_InOutLine} (product + quantity, no {@code M_HU_Assignment}) to a shipment header
+	 * created via {@code metasfresh contains M_InOut:}. The resulting line has no HU assignment, which is exactly
+	 * what {@code IHUInOutDAO#retrieveShippedHandlingUnits} treats as "no shipped HUs".
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the shipment header to add the line to<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the line's product<br>
+	 *   <b>MovementQty</b> — (required) quantity shipped<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains M_InOutLine without HU:
+	 *   | M_InOut_ID | M_Product_ID | MovementQty |
+	 *   | ship_1     | p_noHu       | 1           |
+	 * </pre>
+	 */
+	@And("metasfresh contains M_InOutLine without HU:")
+	public void add_M_InOutLine_withoutHU(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_InOut shipment = row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_InOut_ID).lookupNotNullIn(shipmentTable);
+
+			final I_M_InOutLine line = newInstance(I_M_InOutLine.class);
+			line.setM_InOut_ID(shipment.getM_InOut_ID());
+			line.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(shipment.getM_Warehouse_ID())).getRepoId());
+
+			final I_M_Product product = row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
+			line.setM_Product_ID(product.getM_Product_ID());
+			line.setC_UOM_ID(product.getC_UOM_ID());
+
+			final BigDecimal movementQty = row.getAsBigDecimal(I_M_InOutLine.COLUMNNAME_MovementQty);
+			line.setMovementQty(movementQty);
+			line.setQtyEntered(movementQty);
+
+			saveRecord(line);
+		});
 	}
 
 }

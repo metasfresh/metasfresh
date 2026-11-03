@@ -17,13 +17,18 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -136,6 +141,50 @@ public class PostingServiceTest
 
 			verify(documentPostingLogService).logPostingError(any(), any());
 			verify(userNotificationService).notifyPostingError(eq(NOTIFY_USER_ID), eq(documentRef), any(Exception.class));
+		}
+	}
+
+	@Nested
+	@DisplayName("postNowAndThrow: synchronous posting that surfaces the error to the caller")
+	class PostNowAndThrow
+	{
+		@Test
+		void postsUnderTheClientsOwnContext_andRestoresTheCallersContext()
+		{
+			final TableRecordReference documentRef = createInvoiceReference();
+			final List<ClientId> clientsSeenWhilePosting = new ArrayList<>();
+			final AdempiereException postingError = new AdempiereException("stop here: Doc.post is final, so the success path cannot be stubbed");
+			when(acctDocRegistry.get(any(), eq(documentRef))).thenAnswer(invocation -> {
+				clientsSeenWhilePosting.add(Env.getClientId());
+				throw postingError;
+			});
+			final ClientId callersClientId = ClientId.ofRepoId(4711);
+			Env.setClientId(Env.getCtx(), callersClientId);
+
+			assertThatThrownBy(() -> postingService.postNowAndThrow(DocumentPostRequest.builder().record(documentRef).clientId(CLIENT_ID).build()))
+					.isSameAs(postingError);
+
+			assertThat(clientsSeenWhilePosting).containsExactly(CLIENT_ID);
+			assertThat(Env.getClientId()).isEqualTo(callersClientId);
+		}
+
+		@Test
+		void postingError_isThrown_notLoggedNorNotified()
+		{
+			final TableRecordReference documentRef = createInvoiceReference();
+			final AdempiereException postingError = new AdempiereException("account determination failed");
+			when(acctDocRegistry.get(any(), eq(documentRef))).thenThrow(postingError);
+
+			assertThatThrownBy(() -> postingService.postNowAndThrow(DocumentPostRequest.builder()
+					.record(documentRef)
+					.clientId(CLIENT_ID)
+					.onErrorNotifyUserId(NOTIFY_USER_ID)
+					.build()))
+					.isSameAs(postingError);
+
+			verify(documentPostingLogService, never()).logPostingOK(any());
+			verify(documentPostingLogService, never()).logPostingError(any(), any());
+			verify(userNotificationService, never()).notifyPostingError(any(UserId.class), any(), any(Exception.class));
 		}
 	}
 }

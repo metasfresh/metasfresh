@@ -26,7 +26,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * The six date/time fields shared by the delivery instruction and an allocated planning.
@@ -35,10 +35,10 @@ import java.sql.Timestamp;
 @Builder
 class DeliveryInstructionDates
 {
-	@Nullable Timestamp etd;
-	@Nullable Timestamp eta;
-	@Nullable Timestamp atd;
-	@Nullable Timestamp ata;
+	@Nullable Instant etd;
+	@Nullable Instant eta;
+	@Nullable Instant atd;
+	@Nullable Instant ata;
 	@Nullable String loadingTime;
 	@Nullable String deliveryTime;
 }

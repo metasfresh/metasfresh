@@ -18,6 +18,9 @@ import { page, SLOW_ACTION_TIMEOUT, FAST_ACTION_TIMEOUT } from '../common';
 const containerElement = () => page.locator('.Toastify .Toastify__toast--error div[role="alert"].Toastify__toast-body');
 
 export const ErrorToast = {
+    /** @returns {import('@playwright/test').Locator} */
+    locator: () => containerElement(),
+
     waitToPopup: (callback, timeout) => {
         // Wait for the FIRST error toast to attach, then hand it to the caller. The count is
         // enforced separately in closePopup (exactly one), so .first() here only picks the element

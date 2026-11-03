@@ -69,6 +69,51 @@ const playBeep = () => {
   }
 };
 
+const NON_TEXT_INPUT_TYPES = [
+  'checkbox',
+  'radio',
+  'button',
+  'submit',
+  'reset',
+  'hidden',
+  'image',
+  'file',
+];
+
+/**
+ * @returns true if the element is a field the user can type in: an editable text input, textarea, select or contenteditable
+ */
+const isTextEntryElement = (element) => {
+  if (!element) {
+    return false;
+  }
+  if (element.isContentEditable) {
+    return true;
+  }
+  const tagName = element.tagName ? element.tagName.toLowerCase() : '';
+  if (tagName === 'select') {
+    return !element.disabled;
+  }
+  if (tagName === 'textarea') {
+    return !element.readOnly && !element.disabled;
+  }
+  if (tagName === 'input') {
+    const type = (element.type || 'text').toLowerCase();
+    return (
+      !NON_TEXT_INPUT_TYPES.includes(type) &&
+      !element.readOnly &&
+      !element.disabled
+    );
+  }
+  return false;
+};
+
+/**
+ * @returns true if the dataId is the id of a saved document (not empty and not 'NEW')
+ */
+const isDocumentId = (dataId) =>
+  !!dataId && String(dataId).toUpperCase() !== 'NEW';
+
 /**
  * Simple lookup field, part of a composed lookup field (see Lookup.js).
  */
@@ -90,6 +135,8 @@ export class RawLookup extends Component {
     const debounceTime = props.item.lookupSearchStartDelayMillis || 100;
     //this.minQueryLength = props.item.lookupSearchStringMinLength || 0;
 
+    this.isFocusArmedBySwitchToAnotherDocument = false;
+
     this.typeaheadRequest = this.typeaheadRequest.bind(this);
     this.autocompleteSearchDebounced = debounce(
       debounceTime,
@@ -105,12 +152,21 @@ export class RawLookup extends Component {
 
     this.handleValueChanged();
 
-    const { defaultValue, initialFocus } = this.props;
+    const { autoFocus, defaultValue, initialFocus } = this.props;
     if (defaultValue) {
       this.inputSearch.value = computeInputTextFromSelectedItem(defaultValue);
     }
     if (initialFocus && !this.inputSearch.value) {
-      this.focus();
+      this.focus({ shouldYieldToFocusedField: this.isDocumentHeaderLookup() });
+    } else if (
+      autoFocus &&
+      this.state.shouldBeFocused &&
+      !this.inputSearch.value
+    ) {
+      // The document data may already be there when this widget mounts, so no update has to follow: take the
+      // one-shot focus now instead of waiting for componentDidUpdate.
+      this.focus({ shouldYieldToFocusedField: this.isDocumentHeaderLookup() });
+      this.setState({ shouldBeFocused: false });
     }
   }
 
@@ -122,7 +178,6 @@ export class RawLookup extends Component {
     const {
       autoFocus,
       defaultValue,
-      handleInputEmptyStatus,
       filterWidget,
       lookupEmpty,
       localClearing,
@@ -134,8 +189,41 @@ export class RawLookup extends Component {
       this.inputSearch.value = '';
     }
 
+    // The constructor's one-shot arming was spent on the previous document, and a new document
+    // reconciles this widget instead of remounting it. Re-arm - but only for a first field the
+    // arriving document leaves empty (`handleValueChanged()` above has already applied its
+    // value), so the caret is never pulled into a value the user entered. Not in a modal, where
+    // `dataId` is a pinstance id rather than a document, and not in a quick-input row, where the
+    // header's first field is the one that must get the focus.
+    if (
+      autoFocus &&
+      !this.props.isModal &&
+      this.props.subentity !== 'quickInput' &&
+      prevProps.dataId !== this.props.dataId &&
+      !!this.props.dataId && // no document yet (e.g. briefly while the window reloads): nothing to arm for
+      !shouldBeFocused &&
+      !this.inputSearch.value
+    ) {
+      // Leaving a saved document (Alt+N or "New" from an existing document) takes the focus even
+      // from a field of the previous document, whether the widget sees the next saved id directly
+      // (the usual case: createWindow redirects a NEW document to its id before its data is shown)
+      // or 'NEW' first. Only a NEW (or not yet known) document getting its id is the same document:
+      // there the user may already be typing in another field.
+      this.isFocusArmedBySwitchToAnotherDocument = isDocumentId(
+        prevProps.dataId
+      );
+      this.setState({ shouldBeFocused: true });
+    }
+
     if (autoFocus && !this.inputSearch.value && shouldBeFocused) {
-      this.focus();
+      // On mount, and when the same document arrives again (it got its id, or the window reloaded it
+      // after a websocket "document changed" event), do not take the focus from another field.
+      this.focus({
+        shouldYieldToFocusedField:
+          this.isDocumentHeaderLookup() &&
+          !this.isFocusArmedBySwitchToAnotherDocument,
+      });
+      this.isFocusArmedBySwitchToAnotherDocument = false;
       this.setState({ shouldBeFocused: false });
     }
 
@@ -145,7 +233,7 @@ export class RawLookup extends Component {
         (prevProps.defaultValue &&
           prevProps.defaultValue.caption !== defaultValue.caption))
     ) {
-      handleInputEmptyStatus && handleInputEmptyStatus(false);
+      this.notifyInputEmptyStatus(false);
     }
 
     if (
@@ -185,13 +273,43 @@ export class RawLookup extends Component {
   handleSelect = (selectedItem, isMouseEvent = false) => {
     this.setState({ selected: null });
 
-    if (selectedItem?.key === KEY_New) {
+    if (this.isNothingSelectedForTypedText(selectedItem)) {
+      this.restorePreviousValue(isMouseEvent);
+    } else if (selectedItem?.key === KEY_New) {
       this.handleSelect_AddNew();
     } else if (selectedItem?.key === KEY_AdvancedSearch) {
       this.handleSelect_AdvancedSearch();
     } else {
       this.handleSelect_RegularItem(selectedItem, isMouseEvent);
     }
+  };
+
+  /**
+   * @method isNothingSelectedForTypedText
+   * @summary True when Enter was pressed on typed text that matched nothing: the dropdown
+   * hands over no item at all (`null`, or `undefined` in a modal) while the input still holds
+   * text. A deliberate clear is different and stays a clear: the input is blank, or the
+   * "none" entry (an item with key `null`) was picked.
+   */
+  isNothingSelectedForTypedText = (selectedItem) => {
+    return (
+      selectedItem == null &&
+      !!this.inputSearch &&
+      !isBlank(this.inputSearch.value)
+    );
+  };
+
+  /**
+   * @method restorePreviousValue
+   * @summary Puts the last valid value back into the input and closes the dropdown, without
+   * committing anything - the same outcome as leaving the field (`handleInputTextBlur`).
+   */
+  restorePreviousValue = (isMouseEvent) => {
+    const { defaultValue } = this.props;
+
+    this.inputSearch.value = computeInputTextFromSelectedItem(defaultValue);
+
+    this.handleDropdownBlur(isMouseEvent);
   };
 
   handleSelect_AddNew = () => {
@@ -228,6 +346,20 @@ export class RawLookup extends Component {
     );
   };
 
+  /**
+   * Tell the parent composite Lookup that this sub-field's input is (not) empty.
+   * Only the PRIMARY sub-field gets a real `handleInputEmptyStatus` callback from Lookup.js;
+   * secondary sub-fields get none — so every call site must go through this guard.
+   * Optional chaining (`handleInputEmptyStatus?.(false)`) is NOT a sufficient guard: it lets
+   * the literal `false` through and throws.
+   */
+  notifyInputEmptyStatus = (isEmpty) => {
+    const { handleInputEmptyStatus } = this.props;
+    if (typeof handleInputEmptyStatus === 'function') {
+      handleInputEmptyStatus(isEmpty);
+    }
+  };
+
   handleSelect_AdvancedSearch = () => {
     const {
       dispatch,
@@ -260,7 +392,6 @@ export class RawLookup extends Component {
   handleSelect_RegularItem = (selectedItemParam, isMouseEvent = false) => {
     const {
       onChange,
-      handleInputEmptyStatus,
       mainProperty,
       setNextProperty,
       filterWidget,
@@ -301,7 +432,7 @@ export class RawLookup extends Component {
     this.inputSearch.value = computeInputTextFromSelectedItem(selectedItemNorm);
     this.setState({ inputTextOnFocus: this.inputSearch.value });
 
-    handleInputEmptyStatus && handleInputEmptyStatus(false);
+    this.notifyInputEmptyStatus(false);
 
     if (shouldKeepFocus) {
       this.focus();
@@ -411,6 +542,7 @@ export class RawLookup extends Component {
 
     const query = this.inputSearch.value;
     if (!query || !query.trim()) {
+      this.commitEmptyValueAndAdvance();
       return;
     }
 
@@ -451,11 +583,38 @@ export class RawLookup extends Component {
         }
       }
     } else {
-      // No match
+      // No match: on a non-mandatory sub-field, confirm the empty entry and advance
+      // instead of dead-ending the keyboard flow (TC8). Mandatory fields keep the beep.
+      if (this.commitEmptyValueAndAdvance()) {
+        return;
+      }
+
       if (this.props.beepOnInvalidProduct) {
         playBeep();
       }
     }
+  };
+
+  /**
+   * @method commitEmptyValueAndAdvance
+   * @summary Quick input: confirm the empty ("none") entry and advance focus — the same
+   * outcome `Tab` already produces on this field, and the same payload the mouse sends when
+   * the synthetic empty row is clicked (`handleSelect_RegularItem` normalises it to `null`).
+   *
+   * Only for NON-MANDATORY sub-fields: `!mandatory` is exactly the condition under which that
+   * synthetic empty row is offered at all (see `handleValueChanged`), so a mandatory field
+   * (the quick-input product, `MandatoryLogic.TRUE`) keeps beeping and holding focus.
+   *
+   * @return {boolean} true when the Enter was handled here, false when the caller must fall
+   *                   back to its previous no-match behaviour.
+   */
+  commitEmptyValueAndAdvance = () => {
+    if (this.props.mandatory) {
+      return false;
+    }
+
+    this.handleAutoSelectAndAdvance(null);
+    return true;
   };
 
   /**
@@ -537,8 +696,7 @@ export class RawLookup extends Component {
    * Unlike handleSelect_RegularItem, this does NOT refocus the current lookup input.
    */
   handleAutoSelectAndAdvance = (selectedItem) => {
-    const { onChange, handleInputEmptyStatus, mainProperty, filterWidget } =
-      this.props;
+    const { onChange, mainProperty, filterWidget } = this.props;
 
     const fieldName = filterWidget
       ? mainProperty.parameterName
@@ -547,7 +705,7 @@ export class RawLookup extends Component {
     this.inputSearch.value = computeInputTextFromSelectedItem(selectedItem);
     this.setState({ inputTextOnFocus: this.inputSearch.value });
 
-    handleInputEmptyStatus?.(false);
+    this.notifyInputEmptyStatus(false);
 
     this.handleDropdownBlur();
 
@@ -828,13 +986,35 @@ export class RawLookup extends Component {
   };
 
   /**
+   * @returns true for a lookup of a document window's header: not in a modal (process parameters, overlays, "New" from
+   *   a lookup) and not in a quick-input row, where the widget is opened from another field and must take the focus
+   */
+  isDocumentHeaderLookup = () =>
+    !this.props.isModal && this.props.subentity !== 'quickInput';
+
+  /**
    * @method focus
    * @summary this is a method called from a top level component to focus the widget field
+   * @param {boolean} [shouldYieldToFocusedField] for the automatic focus of a document header's first field (on mount,
+   *   or when the document gets its id or is reloaded after a websocket "document changed" event): do not take the
+   *   focus from another field the user is already typing in
    */
-  focus = () => {
+  focus = ({ shouldYieldToFocusedField = false } = {}) => {
     // Because we want to make sure the focus() function is called after the component is rendered and displayed,
     // we just enqueue a request to be executed after this one
-    setTimeout(() => this.inputSearch && this.inputSearch.focus(), 0);
+    setTimeout(() => {
+      if (!this.inputSearch) {
+        return;
+      }
+      if (
+        shouldYieldToFocusedField &&
+        isTextEntryElement(document.activeElement) &&
+        document.activeElement !== this.inputSearch
+      ) {
+        return;
+      }
+      this.inputSearch.focus();
+    }, 0);
   };
 
   render() {
@@ -974,7 +1154,7 @@ RawLookup.propTypes = {
   defaultValue: PropTypes.any,
   initialFocus: PropTypes.bool,
   autoFocus: PropTypes.bool,
-  handleInputEmptyStatus: PropTypes.any,
+  handleInputEmptyStatus: PropTypes.func,
   isOpen: PropTypes.bool,
   selected: PropTypes.object,
   forcedWidth: PropTypes.number,
