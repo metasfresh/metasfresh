@@ -39,6 +39,7 @@ public class ProposeHUFromScannedCodeCommand
 	@NonNull private final IWarehouseDAO warehouseDAO;
 	@NonNull private final LabelProductResolver labelProductResolver;
 	@NonNull private final LabelTargetLocatorResolver labelTargetLocatorResolver;
+	@NonNull private final LabelQtyAndWeightService labelQtyAndWeightService;
 
 	// params
 	@NonNull private final ClientId clientId;
@@ -54,6 +55,7 @@ public class ProposeHUFromScannedCodeCommand
 			@NonNull final IWarehouseDAO warehouseDAO,
 			@NonNull final LabelProductResolver labelProductResolver,
 			@NonNull final LabelTargetLocatorResolver labelTargetLocatorResolver,
+			@NonNull final LabelQtyAndWeightService labelQtyAndWeightService,
 			@NonNull final ClientId clientId,
 			@NonNull final UserId userId,
 			@NonNull final OrgId orgId,
@@ -65,6 +67,7 @@ public class ProposeHUFromScannedCodeCommand
 		this.warehouseDAO = warehouseDAO;
 		this.labelProductResolver = labelProductResolver;
 		this.labelTargetLocatorResolver = labelTargetLocatorResolver;
+		this.labelQtyAndWeightService = labelQtyAndWeightService;
 		this.clientId = clientId;
 		this.userId = userId;
 		this.orgId = orgId;
@@ -91,7 +94,7 @@ public class ProposeHUFromScannedCodeCommand
 		final LabelValues labelValues = LabelValues.of(labelProduct.getCode());
 
 		final I_M_Product product = productBL.getById(productId);
-		final LabelQtyAndWeight qtyAndWeight = LabelQtyAndWeight.of(productId, labelValues.getWeightKg());
+		final LabelQtyAndWeight qtyAndWeight = labelQtyAndWeightService.compute(productId, labelValues.getWeightKg());
 
 		final LocatorQRCode locatorQRCode = labelTargetLocatorResolver.resolve(userId, orgId)
 				.map(locatorId -> LocatorQRCode.ofLocator(warehouseDAO.getLocatorById(locatorId)))

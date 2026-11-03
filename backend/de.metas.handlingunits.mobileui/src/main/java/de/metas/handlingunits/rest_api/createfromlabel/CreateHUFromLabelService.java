@@ -34,6 +34,7 @@ public class CreateHUFromLabelService
 	@NonNull private final HUQtyService huQtyService;
 	@NonNull private final LabelProductResolver labelProductResolver;
 	@NonNull private final LabelTargetLocatorResolver labelTargetLocatorResolver;
+	@NonNull private final LabelQtyAndWeightService labelQtyAndWeightService;
 
 	/** @return the command with the services set; the caller sets the scanned code, client, org, user and language, then {@code build().execute()} */
 	@NonNull
@@ -44,7 +45,8 @@ public class CreateHUFromLabelService
 				.attributeDAO(attributeDAO)
 				.warehouseDAO(warehouseDAO)
 				.labelProductResolver(labelProductResolver)
-				.labelTargetLocatorResolver(labelTargetLocatorResolver);
+				.labelTargetLocatorResolver(labelTargetLocatorResolver)
+				.labelQtyAndWeightService(labelQtyAndWeightService);
 	}
 
 	/** @return the new HU with its HU QR code (created if missing, so the standard actions, Move etc., work on it) */
@@ -60,6 +62,7 @@ public class CreateHUFromLabelService
 					.huQtyService(huQtyService)
 					.huQRCodesService(huQRCodesService)
 					.labelProductResolver(labelProductResolver)
+					.labelQtyAndWeightService(labelQtyAndWeightService)
 					.clientId(clientId)
 					.adLanguage(adLanguage)
 					.scannedCode(request.getScannedCode())

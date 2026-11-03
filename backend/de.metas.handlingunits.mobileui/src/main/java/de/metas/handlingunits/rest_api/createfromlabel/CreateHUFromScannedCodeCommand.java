@@ -47,6 +47,7 @@ public class CreateHUFromScannedCodeCommand
 	@NonNull private final HUQtyService huQtyService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final LabelProductResolver labelProductResolver;
+	@NonNull private final LabelQtyAndWeightService labelQtyAndWeightService;
 
 	// params
 	@NonNull private final ClientId clientId;
@@ -65,6 +66,7 @@ public class CreateHUFromScannedCodeCommand
 			@NonNull final HUQtyService huQtyService,
 			@NonNull final HUQRCodesService huQRCodesService,
 			@NonNull final LabelProductResolver labelProductResolver,
+			@NonNull final LabelQtyAndWeightService labelQtyAndWeightService,
 			@NonNull final ClientId clientId,
 			@NonNull final String adLanguage,
 			@NonNull final ScannedCode scannedCode,
@@ -79,6 +81,7 @@ public class CreateHUFromScannedCodeCommand
 		this.huQtyService = huQtyService;
 		this.huQRCodesService = huQRCodesService;
 		this.labelProductResolver = labelProductResolver;
+		this.labelQtyAndWeightService = labelQtyAndWeightService;
 		this.clientId = clientId;
 		this.adLanguage = adLanguage;
 		this.scannedCode = scannedCode;
@@ -99,7 +102,7 @@ public class CreateHUFromScannedCodeCommand
 		final LabelProduct labelProduct = labelProductResolver.resolve(scannedCode, clientId);
 		final ProductId productId = labelProduct.getProductId();
 		final LabelValues labelValues = LabelValues.of(labelProduct.getCode());
-		final LabelQtyAndWeight qtyAndWeight = LabelQtyAndWeight.of(productId, labelValues.getWeightKg());
+		final LabelQtyAndWeight qtyAndWeight = labelQtyAndWeightService.compute(productId, labelValues.getWeightKg());
 
 		final HuId huId = huQtyService.createHUFromInventory(CreateHUFromInventoryRequest.builder()
 				.date(date)

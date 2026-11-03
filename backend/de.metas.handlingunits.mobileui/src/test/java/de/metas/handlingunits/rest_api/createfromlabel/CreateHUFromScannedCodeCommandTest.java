@@ -29,6 +29,7 @@ import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
@@ -144,7 +145,7 @@ class CreateHUFromScannedCodeCommandTest
 
 	private HuId create(final JsonCreateHUFromScannedCodeRequest request, final String adLanguage)
 	{
-		final CreateHUFromLabelService service = new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)), new LabelTargetLocatorResolver(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class)));
+		final CreateHUFromLabelService service = new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)), new LabelTargetLocatorResolver(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class)), new LabelQtyAndWeightService(Services.get(IProductBL.class), Services.get(IUOMDAO.class)));
 		return service.create(request, ClientId.METASFRESH, adLanguage, BOOKING_DATE).getHuId();
 	}
 
@@ -163,6 +164,7 @@ class CreateHUFromScannedCodeCommandTest
 				.huQtyService(huQtyService)
 				.huQRCodesService(huQRCodesService)
 				.labelProductResolver(new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)))
+				.labelQtyAndWeightService(new LabelQtyAndWeightService(Services.get(IProductBL.class), Services.get(IUOMDAO.class)))
 				.clientId(ClientId.METASFRESH)
 				.adLanguage("en_US")
 				.scannedCode(ScannedCode.ofString("01" + SHARED_GTIN))

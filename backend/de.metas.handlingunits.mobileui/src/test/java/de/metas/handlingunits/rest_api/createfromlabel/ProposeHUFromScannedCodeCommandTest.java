@@ -6,6 +6,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.workplace.WorkplaceRepository;
@@ -56,6 +57,7 @@ class ProposeHUFromScannedCodeCommandTest
 						new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository()),
 						Services.get(IWarehouseDAO.class),
 						Services.get(IOrgDAO.class)))
+				.labelQtyAndWeightService(new LabelQtyAndWeightService(Services.get(IProductBL.class), Services.get(IUOMDAO.class)))
 				.clientId(ClientId.METASFRESH)
 				.userId(UserId.ofRepoId(1_000_001))
 				.orgId(OrgId.ofRepoId(1_000_010))
