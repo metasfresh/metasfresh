@@ -191,6 +191,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		purchaseCandidateRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		purchaseCandidateRecord.setQtyToPurchase(QTY_TO_PURCHASE_NINE);
 		purchaseCandidateRecord.setPurchaseDatePromised(SystemTime.asTimestamp());
+		purchaseCandidateRecord.setSource(PurchaseCandidateSource.SalesOrder.getCode());
 		saveRecord(purchaseCandidateRecord);
 
 		//noinspection UnnecessaryLocalVariable

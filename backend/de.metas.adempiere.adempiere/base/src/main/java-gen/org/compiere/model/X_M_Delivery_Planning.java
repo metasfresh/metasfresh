@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2115867192L;
+	private static final long serialVersionUID = -961137356L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -231,11 +231,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setDeliveryStatus_Color_ID (final int DeliveryStatus_Color_ID)
 	{
-		if (DeliveryStatus_Color_ID < 1) 
-			set_Value (COLUMNNAME_DeliveryStatus_Color_ID, null);
-		else 
-			set_Value (COLUMNNAME_DeliveryStatus_Color_ID, DeliveryStatus_Color_ID);
-	}
+		throw new IllegalArgumentException ("DeliveryStatus_Color_ID is virtual column");	}
 
 	@Override
 	public int getDeliveryStatus_Color_ID() 
@@ -292,15 +288,15 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setIsB2B (final boolean IsB2B)
+	public void setIsAllocated (final boolean IsAllocated)
 	{
-		set_Value (COLUMNNAME_IsB2B, IsB2B);
+		set_ValueNoCheck (COLUMNNAME_IsAllocated, IsAllocated);
 	}
 
 	@Override
-	public boolean isB2B() 
+	public boolean isAllocated() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsB2B);
+		return get_ValueAsBoolean(COLUMNNAME_IsAllocated);
 	}
 
 	@Override
@@ -313,6 +309,29 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public boolean isClosed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
+	}
+
+	@Override
+	public void setIsDelivered (final boolean IsDelivered)
+	{
+		throw new IllegalArgumentException ("IsDelivered is virtual column");	}
+
+	@Override
+	public boolean isDelivered() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDelivered);
+	}
+
+	@Override
+	public void setIsReadyForReceipt (final boolean IsReadyForReceipt)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsReadyForReceipt, IsReadyForReceipt);
+	}
+
+	@Override
+	public boolean isReadyForReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReadyForReceipt);
 	}
 
 	@Override
@@ -340,27 +359,6 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public int getM_Delivery_Planning_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Delivery_Planning_ID);
-	}
-
-	/** 
-	 * M_Delivery_Planning_Type AD_Reference_ID=541689
-	 * Reference name: M_Delivery_Planning_Types
-	 */
-	public static final int M_DELIVERY_PLANNING_TYPE_AD_Reference_ID=541689;
-	/** Incoming = Incoming */
-	public static final String M_DELIVERY_PLANNING_TYPE_Incoming = "Incoming";
-	/** Outgoing = Outgoing */
-	public static final String M_DELIVERY_PLANNING_TYPE_Outgoing = "Outgoing";
-	@Override
-	public void setM_Delivery_Planning_Type (final java.lang.String M_Delivery_Planning_Type)
-	{
-		set_Value (COLUMNNAME_M_Delivery_Planning_Type, M_Delivery_Planning_Type);
-	}
-
-	@Override
-	public java.lang.String getM_Delivery_Planning_Type() 
-	{
-		return get_ValueAsString(COLUMNNAME_M_Delivery_Planning_Type);
 	}
 
 	@Override
@@ -626,6 +624,19 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
+	public void setQtyTotalOpenPlanned (final @Nullable BigDecimal QtyTotalOpenPlanned)
+	{
+		set_Value (COLUMNNAME_QtyTotalOpenPlanned, QtyTotalOpenPlanned);
+	}
+
+	@Override
+	public BigDecimal getQtyTotalOpenPlanned() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTotalOpenPlanned);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setReleaseNo (final @Nullable java.lang.String ReleaseNo)
 	{
 		set_Value (COLUMNNAME_ReleaseNo, ReleaseNo);
@@ -635,6 +646,28 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public java.lang.String getReleaseNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_ReleaseNo);
+	}
+
+	@Override
+	public void setShipFrom_Location_ID (final int ShipFrom_Location_ID)
+	{
+		throw new IllegalArgumentException ("ShipFrom_Location_ID is virtual column");	}
+
+	@Override
+	public int getShipFrom_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ShipFrom_Location_ID);
+	}
+
+	@Override
+	public void setShipTo_Location_ID (final int ShipTo_Location_ID)
+	{
+		throw new IllegalArgumentException ("ShipTo_Location_ID is virtual column");	}
+
+	@Override
+	public int getShipTo_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ShipTo_Location_ID);
 	}
 
 	@Override
@@ -658,6 +691,29 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public java.lang.String getTransportDetails() 
 	{
 		return get_ValueAsString(COLUMNNAME_TransportDetails);
+	}
+
+	/** 
+	 * TransportDirection AD_Reference_ID=541689
+	 * Reference name: TransportDirection
+	 */
+	public static final int TRANSPORTDIRECTION_AD_Reference_ID=541689;
+	/** Incoming = Incoming */
+	public static final String TRANSPORTDIRECTION_Incoming = "Incoming";
+	/** Outgoing = Outgoing */
+	public static final String TRANSPORTDIRECTION_Outgoing = "Outgoing";
+	/** Dropship = Dropship */
+	public static final String TRANSPORTDIRECTION_Dropship = "Dropship";
+	@Override
+	public void setTransportDirection (final java.lang.String TransportDirection)
+	{
+		set_Value (COLUMNNAME_TransportDirection, TransportDirection);
+	}
+
+	@Override
+	public java.lang.String getTransportDirection() 
+	{
+		return get_ValueAsString(COLUMNNAME_TransportDirection);
 	}
 
 	@Override

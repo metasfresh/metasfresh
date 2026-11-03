@@ -67,8 +67,12 @@ import java.util.Properties;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IPA_SSCC18;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_BestBeforeDate;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_DesadvLine_ID;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOutLine_ID;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyItemCapacity;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -758,6 +762,24 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		InterfaceWrapperHelper.refresh(result);
 		assertThat(result.getSumDeliveredInStockingUOM()).isEqualByComparingTo("3");
 		assertThat(result.getFulfillmentPercent()).isEqualByComparingTo("100");
+
+		// the EDI export is rejected by the clearing centre when a DESADV carries delivered qtys
+		// but no packs -- so the fallback-created DESADV must also get its EDI_Desadv_Pack(_Item) rows.
+		final List<I_EDI_Desadv_Pack> packRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack.class);
+		assertThat(packRecords)
+				.as("exactly one pack must have been created for the DESADV that was built at shipment completion (one TU, one pack)")
+				.hasSize(1);
+		assertThat(packRecords)
+				.as("every pack found must belong to the DESADV created for this shipment")
+				.allMatch(pack -> pack.getEDI_Desadv_ID() == result.getEDI_Desadv_ID());
+
+		final List<I_EDI_Desadv_Pack_Item> packItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
+		assertThat(packItemRecords)
+				.as("a pack item must reference both the created DESADV line and the shipment line, with its shipped qty, TU count and TU capacity")
+				.extracting(COLUMNNAME_EDI_DesadvLine_ID, COLUMNNAME_M_InOutLine_ID, COLUMNNAME_MovementQty, COLUMNNAME_QtyTU, COLUMNNAME_QtyItemCapacity)
+				.containsOnly(
+						tuple(createdLine.getEDI_DesadvLine_ID(), shipmentLine.getM_InOutLine_ID(), new BigDecimal("3"), 1, new BigDecimal("5"))
+				);
 	}
 
 	private void changeDesadvLineToCOLIasUOM()

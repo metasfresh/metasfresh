@@ -268,4 +268,29 @@ public class CurrentCostTest
 		}
 
 	}
+
+	@Nested
+	public class addToCurrentQtyAndCumulate
+	{
+		/**
+		 * The shared addToCurrentQtyAndCumulate floors CurrentQty at zero on an over-issue. Every costing
+		 * method routes through it, so this pins that an over-issue never leaves a negative on-hand quantity.
+		 */
+		@Test
+		public void overIssue_floorsCurrentQtyToZero()
+		{
+			final CurrentCost currentCost = currentCost()
+					.ownCostPrice("1000")
+					.currentQty("1")
+					.build();
+
+			currentCost.addToCurrentQtyAndCumulate(
+					Quantity.of(-5, uomEach),
+					CostAmount.of(0, currencyId));
+
+			assertThat(currentCost.getCurrentQty())
+					.as("the shared variant must floor CurrentQty at zero on over-issue")
+					.isEqualTo(Quantity.of(0, uomEach));
+		}
+	}
 }

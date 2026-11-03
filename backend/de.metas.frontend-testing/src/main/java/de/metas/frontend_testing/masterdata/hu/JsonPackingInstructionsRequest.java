@@ -53,6 +53,14 @@ public class JsonPackingInstructionsRequest
 	@Nullable String graiAssetType;
 
 	/**
+	 * Binds the LU->TU packing instruction item ({@code M_HU_PI_Item.C_BPartner_ID}) to this partner.
+	 * Identifier of a partner created in the same request's {@code bpartners} section.
+	 * <p>
+	 * LU requests only.
+	 */
+	@Nullable Identifier bpartner;
+
+	/**
 	 * Sets {@code M_HU_PI_Item_Product.IsDefaultForProduct} on the created CU-TU allocation — the
 	 * "Standard-Packvorschrift" that gets auto-defaulted onto document lines for this product.
 	 * <p>
@@ -109,6 +117,13 @@ public class JsonPackingInstructionsRequest
 	 * the "No Packing Item" virtual target, which has no per-run PI of its own. Idempotent per attribute.
 	 */
 	@Nullable List<AttributeCode> cuAttributes;
+
+	/**
+	 * Packing material (e.g. a crate/pallet product) to attach to the TU's PI version, as an
+	 * {@code M_HU_PI_Item} of {@code ItemType = PackingMaterial}. When set, every HU created from
+	 * this TU PI carries an {@code M_HU_PackingMaterial}. Not applicable when {@link #cu} is set.
+	 */
+	@Nullable Identifier tuPackingMaterial;
 
 	public Identifier getTuNotNull() {return Check.assumeNotNull(tu, "tu must be set");}
 

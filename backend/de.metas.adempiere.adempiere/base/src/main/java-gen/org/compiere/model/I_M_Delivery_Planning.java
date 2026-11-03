@@ -18,7 +18,7 @@ public interface I_M_Delivery_Planning
 
 
 	/**
-	 * Set Act Delivered Qty.
+	 * Set Actual Discharge Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -27,7 +27,7 @@ public interface I_M_Delivery_Planning
 	void setActualDischargeQuantity (BigDecimal ActualDischargeQuantity);
 
 	/**
-	 * Get Act Delivered Qty.
+	 * Get Actual Discharge Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -39,7 +39,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ActualDischargeQuantity = "ActualDischargeQuantity";
 
 	/**
-	 * Set Act Load Qty.
+	 * Set Actual Load Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -48,7 +48,7 @@ public interface I_M_Delivery_Planning
 	void setActualLoadQty (BigDecimal ActualLoadQty);
 
 	/**
-	 * Get Act Load Qty.
+	 * Get Actual Load Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -189,7 +189,7 @@ public interface I_M_Delivery_Planning
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_BPartner_ID (int C_BPartner_ID);
@@ -198,7 +198,7 @@ public interface I_M_Delivery_Planning
 	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_BPartner_ID();
@@ -207,7 +207,6 @@ public interface I_M_Delivery_Planning
 
 	/**
 	 * Set Location.
-	 * Identifies the address of the business partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -217,7 +216,6 @@ public interface I_M_Delivery_Planning
 
 	/**
 	 * Get Location.
-	 * Identifies the address of the business partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -386,8 +384,10 @@ public interface I_M_Delivery_Planning
 	 *
 	 * <br>Type: Color
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setDeliveryStatus_Color_ID (int DeliveryStatus_Color_ID);
 
 	/**
@@ -395,7 +395,7 @@ public interface I_M_Delivery_Planning
 	 *
 	 * <br>Type: Color
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
 	 */
 	int getDeliveryStatus_Color_ID();
 
@@ -516,25 +516,27 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set B2B.
+	 * Set Allocated.
+	 * Indicates whether the delivery planning is already allocated to a delivery instruction.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsB2B (boolean IsB2B);
+	void setIsAllocated (boolean IsAllocated);
 
 	/**
-	 * Get B2B.
+	 * Get Allocated.
+	 * Indicates whether the delivery planning is already allocated to a delivery instruction.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isB2B();
+	boolean isAllocated();
 
-	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsB2B = new ModelColumn<>(I_M_Delivery_Planning.class, "IsB2B", null);
-	String COLUMNNAME_IsB2B = "IsB2B";
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsAllocated = new ModelColumn<>(I_M_Delivery_Planning.class, "IsAllocated", null);
+	String COLUMNNAME_IsAllocated = "IsAllocated";
 
 	/**
 	 * Set Closed.
@@ -556,6 +558,54 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsClosed = new ModelColumn<>(I_M_Delivery_Planning.class, "IsClosed", null);
 	String COLUMNNAME_IsClosed = "IsClosed";
+
+	/**
+	 * Set Is Delivered.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsDelivered (boolean IsDelivered);
+
+	/**
+	 * Get Is Delivered.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isDelivered();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsDelivered = new ModelColumn<>(I_M_Delivery_Planning.class, "IsDelivered", null);
+	String COLUMNNAME_IsDelivered = "IsDelivered";
+
+	/**
+	 * Set Ready for Receipt.
+	 * Indicates whether the material receipt can be done for this row. A delivery planning is ready once it is allocated to a completed delivery instruction;
+ a row with no delivery planning is always ready.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReadyForReceipt (boolean IsReadyForReceipt);
+
+	/**
+	 * Get Ready for Receipt.
+	 * Indicates whether the material receipt can be done for this row. A delivery planning is ready once it is allocated to a completed delivery instruction;
+ a row with no delivery planning is always ready.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReadyForReceipt();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsReadyForReceipt = new ModelColumn<>(I_M_Delivery_Planning.class, "IsReadyForReceipt", null);
+	String COLUMNNAME_IsReadyForReceipt = "IsReadyForReceipt";
 
 	/**
 	 * Set Load Time.
@@ -598,27 +648,6 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_M_Delivery_Planning_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Delivery_Planning_ID", null);
 	String COLUMNNAME_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
-
-	/**
-	 * Set Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_Delivery_Planning_Type (java.lang.String M_Delivery_Planning_Type);
-
-	/**
-	 * Get Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getM_Delivery_Planning_Type();
-
-	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_M_Delivery_Planning_Type = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Delivery_Planning_Type", null);
-	String COLUMNNAME_M_Delivery_Planning_Type = "M_Delivery_Planning_Type";
 
 	/**
 	 * Set Shipment/ Receipt.
@@ -754,7 +783,7 @@ public interface I_M_Delivery_Planning
 	/**
 	 * Set Transportation Order.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -763,7 +792,7 @@ public interface I_M_Delivery_Planning
 	/**
 	 * Get Transportation Order.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -843,7 +872,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_OrderStatus = "OrderStatus";
 
 	/**
-	 * Set Origin Country.
+	 * Set Country Of Origin.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -854,7 +883,7 @@ public interface I_M_Delivery_Planning
 	void setOriginCountry (@Nullable java.lang.String OriginCountry);
 
 	/**
-	 * Get Origin Country.
+	 * Get Country Of Origin.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -868,7 +897,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_OriginCountry = "OriginCountry";
 
 	/**
-	 * Set Plan Delivered Qty.
+	 * Set Planned Discharge Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -877,7 +906,7 @@ public interface I_M_Delivery_Planning
 	void setPlannedDischargeQuantity (BigDecimal PlannedDischargeQuantity);
 
 	/**
-	 * Get Plan Delivered Qty.
+	 * Get Planned Discharge Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -889,7 +918,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_PlannedDischargeQuantity = "PlannedDischargeQuantity";
 
 	/**
-	 * Set Plan Load Qty.
+	 * Set Planned Load Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -898,7 +927,7 @@ public interface I_M_Delivery_Planning
 	void setPlannedLoadedQuantity (BigDecimal PlannedLoadedQuantity);
 
 	/**
-	 * Get Plan Load Qty.
+	 * Get Planned Load Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1037,7 +1066,8 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set Qty Total Open.
+	 * Set Open Quantity (delivered).
+	 * Quantity of the order line not yet delivered: ordered quantity less the actual quantity — discharge for a receipt, load for a shipment.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1046,7 +1076,8 @@ public interface I_M_Delivery_Planning
 	void setQtyTotalOpen (BigDecimal QtyTotalOpen);
 
 	/**
-	 * Get Qty Total Open.
+	 * Get Open Quantity (delivered).
+	 * Quantity of the order line not yet delivered: ordered quantity less the actual quantity — discharge for a receipt, load for a shipment.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1056,6 +1087,29 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_QtyTotalOpen = new ModelColumn<>(I_M_Delivery_Planning.class, "QtyTotalOpen", null);
 	String COLUMNNAME_QtyTotalOpen = "QtyTotalOpen";
+
+	/**
+	 * Set Open Quantity (planned).
+	 * Quantity of the order line not yet covered by any delivery planning: ordered quantity less the planned quantities of all plannings for that line.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyTotalOpenPlanned (@Nullable BigDecimal QtyTotalOpenPlanned);
+
+	/**
+	 * Get Open Quantity (planned).
+	 * Quantity of the order line not yet covered by any delivery planning: ordered quantity less the planned quantities of all plannings for that line.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyTotalOpenPlanned();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_QtyTotalOpenPlanned = new ModelColumn<>(I_M_Delivery_Planning.class, "QtyTotalOpenPlanned", null);
+	String COLUMNNAME_QtyTotalOpenPlanned = "QtyTotalOpenPlanned";
 
 	/**
 	 * Set Release No.
@@ -1079,6 +1133,58 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_ReleaseNo = new ModelColumn<>(I_M_Delivery_Planning.class, "ReleaseNo", null);
 	String COLUMNNAME_ReleaseNo = "ReleaseNo";
+
+	/**
+	 * Set Loading Address.
+	 * The address where goods are loaded for this delivery planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setShipFrom_Location_ID (int ShipFrom_Location_ID);
+
+	/**
+	 * Get Loading Address.
+	 * The address where goods are loaded for this delivery planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getShipFrom_Location_ID();
+
+	String COLUMNNAME_ShipFrom_Location_ID = "ShipFrom_Location_ID";
+
+	/**
+	 * Set Delivery Address.
+	 * The address goods are delivered to for this delivery planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setShipTo_Location_ID (int ShipTo_Location_ID);
+
+	/**
+	 * Get Delivery Address.
+	 * The address goods are delivered to for this delivery planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getShipTo_Location_ID();
+
+	String COLUMNNAME_ShipTo_Location_ID = "ShipTo_Location_ID";
 
 	/**
 	 * Set Ship-to location.
@@ -1125,6 +1231,29 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_TransportDetails = new ModelColumn<>(I_M_Delivery_Planning.class, "TransportDetails", null);
 	String COLUMNNAME_TransportDetails = "TransportDetails";
+
+	/**
+	 * Set Direction.
+	 * Direction of the transport: Incoming, Outgoing or Dropship.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTransportDirection (java.lang.String TransportDirection);
+
+	/**
+	 * Get Direction.
+	 * Direction of the transport: Incoming, Outgoing or Dropship.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getTransportDirection();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_TransportDirection = new ModelColumn<>(I_M_Delivery_Planning.class, "TransportDirection", null);
+	String COLUMNNAME_TransportDirection = "TransportDirection";
 
 	/**
 	 * Get Updated.

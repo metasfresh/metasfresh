@@ -22,6 +22,7 @@
 
 package de.metas.deliveryplanning.process;
 
+import de.metas.deliveryplanning.DeliveryPlanningList;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -34,6 +35,14 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
 
+/**
+ * Closes the selected delivery plannings: "I am done with this cargo, leave it alone".
+ * <p>
+ * Deliberately says nothing about the {@code ReleaseNo}: an ALLOCATED planning is exactly the one a planner needs
+ * to call off, so a release number - which every allocated planning carries - must not make the action
+ * unavailable. The only condition is the one {@link #checkNoneClosed} states: not one selected planning is
+ * already closed.
+ */
 public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPrecondition
 {
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
@@ -41,28 +50,29 @@ public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPr
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
+		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+				() -> DeliveryPlanningProcessHelper.checkAnySelection(context),
+				() -> checkNoneClosed(context),
+				() -> checkNoBlockedPartner(context));
+	}
 
-		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = context.getQueryFilter(I_M_Delivery_Planning.class);
+	/**
+	 * Refuses the button as soon as ONE selected planning is already closed, which is the same thing
+	 * {@code doIt} does - see {@link DeliveryPlanningService#getCloseRejectionReason(DeliveryPlanningList)} for
+	 * why the two have to say it alike.
+	 */
+	private ProcessPreconditionsResolution checkNoneClosed(@NonNull final IProcessPreconditionsContext context)
+	{
+		final DeliveryPlanningList selectedDeliveryPlannings = deliveryPlanningService.getBySelection(context.getQueryFilter(I_M_Delivery_Planning.class));
 
-		final boolean isExistsOpenDeliveryPlannings = deliveryPlanningService.isExistsOpenDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		return deliveryPlanningService.getCloseRejectionReason(selectedDeliveryPlannings)
+				.map(ProcessPreconditionsResolution::reject)
+				.orElseGet(ProcessPreconditionsResolution::accept);
+	}
 
-		if (!isExistsOpenDeliveryPlannings)
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllClosed));
-		}
-
-		final boolean isExistDeliveryPlanningsWithoutReleaseNo = deliveryPlanningService.isExistDeliveryPlanningsWithoutReleaseNo(selectedDeliveryPlanningsFilter);
-
-		if (!isExistDeliveryPlanningsWithoutReleaseNo)
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllHaveReleaseNo));
-		}
-
-		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlannings(selectedDeliveryPlanningsFilter);
+	private ProcessPreconditionsResolution checkNoBlockedPartner(@NonNull final IProcessPreconditionsContext context)
+	{
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlannings(context.getQueryFilter(I_M_Delivery_Planning.class));
 
 		if (existsBlockedPartnerDeliveryPlannings)
 		{

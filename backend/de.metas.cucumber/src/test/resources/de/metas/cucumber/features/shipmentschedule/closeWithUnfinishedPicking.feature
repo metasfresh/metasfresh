@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0100_Sales
 @allure.label.feature:F00130_Shipment_Schedule
-@ghActions:run_on_executor7
+@ghActions:run_on_executor8
 Feature: Closing a shipment schedule with an unfinished picking order
 ## F00130: Shipment Schedule
 ##
