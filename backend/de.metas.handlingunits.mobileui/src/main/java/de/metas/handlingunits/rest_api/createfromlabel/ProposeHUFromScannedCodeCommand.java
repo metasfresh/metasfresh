@@ -133,7 +133,8 @@ public class ProposeHUFromScannedCodeCommand
 	private JsonRejection toJsonRejection(@NonNull final LabelRejectionException rejection)
 	{
 		return JsonRejection.builder()
-				.errorCode(rejection.getErrorCode())
+				// AdempiereException.getErrorCode() is @Nullable; the rejection always has its message key
+				.errorCode(rejection.getErrorCode() != null ? rejection.getErrorCode() : rejection.getMessageKey().toAD_Message())
 				.message(TranslatableStrings.adMessage(rejection.getMessageKey(), rejection.getMessageParams()).translate(adLanguage))
 				.build();
 	}

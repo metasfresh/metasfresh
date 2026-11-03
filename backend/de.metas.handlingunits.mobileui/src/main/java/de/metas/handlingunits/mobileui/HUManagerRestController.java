@@ -205,7 +205,7 @@ public class HUManagerRestController
 	{
 		assertActionAccess(HUManagerAction.CreateHU);
 
-		final CreateHUFromLabelService.CreatedHU createdHU = createHUFromLabelService.create(request, Env.getClientId(), SystemTime.asZonedDateTime());
+		final CreateHUFromLabelService.CreatedHU createdHU = createHUFromLabelService.create(request, Env.getClientId(), Env.getADLanguageOrBaseLanguage(), SystemTime.asZonedDateTime());
 
 		return handlingUnitsService.getByIdSupplier(
 				() -> GetByIdRequest.builder()

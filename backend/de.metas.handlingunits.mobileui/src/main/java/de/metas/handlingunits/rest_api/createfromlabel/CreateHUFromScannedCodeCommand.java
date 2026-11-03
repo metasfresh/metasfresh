@@ -6,6 +6,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -36,9 +37,6 @@ import java.time.ZonedDateTime;
  */
 public class CreateHUFromScannedCodeCommand
 {
-	/** origin marker on the inventory document: "Change Qty" books the same inventory sub-type */
-	static final String INVENTORY_DESCRIPTION = "HU Manager: created from scanned label";
-
 	// services
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
 	@NonNull private final IUOMConversionBL uomConversionBL;
@@ -49,6 +47,7 @@ public class CreateHUFromScannedCodeCommand
 
 	// params
 	@NonNull private final ClientId clientId;
+	@NonNull private final String adLanguage;
 	@NonNull private final ScannedCode scannedCode;
 	@NonNull private final BigDecimal qty;
 	@NonNull private final LocatorId locatorId;
@@ -63,6 +62,7 @@ public class CreateHUFromScannedCodeCommand
 			@NonNull final HUQtyService huQtyService,
 			@NonNull final LabelProductResolver labelProductResolver,
 			@NonNull final ClientId clientId,
+			@NonNull final String adLanguage,
 			@NonNull final ScannedCode scannedCode,
 			@NonNull final BigDecimal qty,
 			@NonNull final LocatorId locatorId,
@@ -75,6 +75,7 @@ public class CreateHUFromScannedCodeCommand
 		this.huQtyService = huQtyService;
 		this.labelProductResolver = labelProductResolver;
 		this.clientId = clientId;
+		this.adLanguage = adLanguage;
 		this.scannedCode = scannedCode;
 		this.qty = qty;
 		this.locatorId = locatorId;
@@ -86,7 +87,7 @@ public class CreateHUFromScannedCodeCommand
 	{
 		if (qty.signum() <= 0)
 		{
-			throw new AdempiereException("Quantity must be greater than zero: " + qty);
+			throw new AdempiereException(CreateFromLabelMessages.QTY_MUST_BE_POSITIVE, qty);
 		}
 		assertActiveLocatorOfClient();
 
@@ -101,7 +102,8 @@ public class CreateHUFromScannedCodeCommand
 				.qty(Quantitys.of(qty, qtyAndWeight.getStockUomId()))
 				.locatorId(locatorId)
 				.attributes(toInventoryAttributes(labelValues))
-				.description(INVENTORY_DESCRIPTION)
+				// origin marker on the inventory document, in the language of the creating user; "Change Qty" books the same inventory sub-type
+				.description(TranslatableStrings.adMessage(CreateFromLabelMessages.INVENTORY_DESCRIPTION).translate(adLanguage))
 				.build());
 
 		// the weight cannot go through the inventory (its attribute key drops weight attributes): set it on the completed CU
@@ -118,7 +120,7 @@ public class CreateHUFromScannedCodeCommand
 		final I_M_Locator locator = warehouseDAO.getLocatorById(locatorId);
 		if (locator == null || !locator.isActive() || locator.getAD_Client_ID() != clientId.getRepoId())
 		{
-			throw new AdempiereException("Not an active locator: " + locatorId);
+			throw new AdempiereException(CreateFromLabelMessages.NOT_AN_ACTIVE_LOCATOR, locatorId.getRepoId());
 		}
 	}
 

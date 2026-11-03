@@ -1,7 +1,6 @@
 package de.metas.handlingunits.rest_api.createfromlabel;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
@@ -28,9 +27,8 @@ class LabelValues
 	@NonNull
 	static LabelValues of(@NonNull final IHUQRCode code)
 	{
-		// a GS1 label's use-by date (17) is stored as the best-before date (working default)
-		final LocalDate bestBeforeDate = code.getBestBeforeDate()
-				.orElseGet(() -> code instanceof GS1HUQRCode ? ((GS1HUQRCode)code).getExpirationDate().orElse(null) : null);
+		// a label's use-by date (e.g. GS1 AI 17) is stored as the best-before date (working default)
+		final LocalDate bestBeforeDate = code.getBestBeforeDate().orElseGet(() -> code.getExpirationDate().orElse(null));
 
 		return builder()
 				.lotNo(code.getLotNumber().orElse(null))
