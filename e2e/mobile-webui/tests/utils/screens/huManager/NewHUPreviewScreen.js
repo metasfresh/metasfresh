@@ -26,6 +26,16 @@ export const NewHUPreviewScreen = {
         await expect(containerElement().getByTestId(name)).toHaveText(expectedValue);
     }),
 
+    /** The product row contains the product name (the row may carry more than the name, e.g. the product value). */
+    expectProductContains: async (productName) => await test.step(`${NAME} - Expect the product to contain "${productName}"`, async () => {
+        await expect(containerElement().getByTestId('product-value')).toContainText(productName);
+    }),
+
+    /** An attribute row is exactly the given display text (e.g. a date as the screen renders it). */
+    expectAttributeValue: async ({ code, expectedValue }) => await test.step(`${NAME} - Expect attribute "${code}" to be "${expectedValue}"`, async () => {
+        await expect(containerElement().getByTestId(`attribute-${code}-value`)).toHaveText(expectedValue);
+    }),
+
     /**
      * The proposed location is not hard-coded by tests that log in a user without a workplace: for such a user the location rule
      * ends at the organisation's default warehouse (preset stack data, never a fixture warehouse). This waits for a non-empty

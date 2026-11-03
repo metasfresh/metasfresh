@@ -205,11 +205,11 @@ test('reference case with an invented GS1 label -> preview -> OK -> back on the 
 
     // scan -> preview, everything asserted on screen
     await scanLabelAndWaitForPreview({ label: gs1Label(gtin) });
-    await expect(page.getByTestId('product-value')).toContainText(masterdata.products.P1.productName);
+    await NewHUPreviewScreen.expectProductContains(masterdata.products.P1.productName);
     await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '1 PCE' });
     await NewHUPreviewScreen.expectValue({ name: 'attribute-Lot-Nummer-value', expectedValue: 'L2311' });
-    // the best-before date of the label (use-by 31.12.2027) is shown on the preview
-    await expect(page.getByTestId('attribute-HU_BestBeforeDate-value')).toContainText('2027');
+    // the best-before date of the label (use-by 31.12.2027) is shown on the preview, exactly (en_US display MM/DD/YYYY)
+    await NewHUPreviewScreen.expectAttributeValue({ code: 'HU_BestBeforeDate', expectedValue: '12/31/2027' });
     await NewHUPreviewScreen.expectOKEnabled();
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
     // the preview books nothing
@@ -248,9 +248,9 @@ test('reference label shape (bracketed, fixed positions) -> preview -> enter qua
     await openHUManager({ user: masterdata.login.user });
 
     await scanLabelAndWaitForPreview({ label: bracketedLabel(gtin) });
-    await expect(page.getByTestId('product-value')).toContainText(masterdata.products.P1.productName);
+    await NewHUPreviewScreen.expectProductContains(masterdata.products.P1.productName);
     await NewHUPreviewScreen.expectValue({ name: 'attribute-Lot-Nummer-value', expectedValue: '481732' });
-    await expect(page.getByTestId('attribute-ProductionDate-value')).toContainText('2027');
+    await NewHUPreviewScreen.expectAttributeValue({ code: 'ProductionDate', expectedValue: '03/15/2027' });
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
 
     // the label carries no quantity: the user enters it
