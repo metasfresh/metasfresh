@@ -50,6 +50,17 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.Comparison;
+import org.xmlunit.diff.ComparisonResult;
+import org.xmlunit.diff.ComparisonType;
+import org.xmlunit.diff.DefaultNodeMatcher;
+import org.xmlunit.diff.Diff;
+import org.xmlunit.diff.DifferenceEvaluators;
+import org.xmlunit.diff.ElementSelectors;
+import org.xmlunit.diff.NodeFilters;
+import org.xmlunit.diff.NodeMatcher;
 
 import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
@@ -61,16 +72,15 @@ import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -88,7 +98,7 @@ import static org.assertj.core.api.Assertions.fail;
 public class SEPA_Export_StepDef
 {
 	private static final String SPACE_TOKEN = "<SPACE>";
-	private static final String ABSENT = "-";
+	private static final String IGNORE_PLACEHOLDER = "${ignore}";
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
@@ -96,8 +106,8 @@ public class SEPA_Export_StepDef
 	@NonNull private final C_PaySelection_StepDefData paySelectionTable;
 
 	@Nullable private ProcessExecutionResult result;
-	/** parsed documents of the last run, by scheme = text of {@code PmtTpInf/LclInstrm/Cd} */
-	private final Map<String, Document> documentsByScheme = new LinkedHashMap<>();
+	/** the files of the last run as exported, by scheme = text of {@code PmtTpInf/LclInstrm/Cd} */
+	private final Map<String, byte[]> filesByScheme = new LinkedHashMap<>();
 	private final List<String> filenames = new ArrayList<>();
 
 	/**
@@ -120,7 +130,7 @@ public class SEPA_Export_StepDef
 	public void run(@NonNull final String paySelectionIdentifier) throws Exception
 	{
 		result = null;
-		documentsByScheme.clear();
+		filesByScheme.clear();
 		filenames.clear();
 
 		result = ProcessInfo.builder()
@@ -206,155 +216,56 @@ public class SEPA_Export_StepDef
 	}
 
 	/**
-	 * Asserts the header data of the exported file of the given scheme. The table has exactly one row.
-	 * In every expected-value cell, {@code <SPACE>} stands for one space (Cucumber trims cells).
+	 * Compares the exported file of the given scheme with the expected pain.008 XML (the DocString), as a whole.
 	 * <ul>
-	 *   <li><b>Namespace</b> - namespace URI of the root element; the only namespace assertion, all XPaths ignore namespaces</li>
-	 *   <li><b>NbOfTxs</b> - checked against {@code GrpHdr/NbOfTxs} and the number of {@code DrctDbtTxInf}</li>
-	 *   <li><b>CtrlSum</b> - checked against {@code GrpHdr/CtrlSum} and the sum of {@code InstdAmt}; compared scale-insensitively</li>
-	 *   <li><b>Cdtr.Nm</b>, <b>CdtrSchmeId</b> ({@code CdtrSchmeId/Id/PrvtId/Othr/Id}), <b>ReqdColltnDt</b> - checked on every {@code PmtInf}</li>
-	 *   <li><b>Cdtr.PstlAdr</b> - (optional) {@code -} = the whole address is absent; any other value = it is present</li>
-	 *   <li><b>Cdtr.PstlAdr.TwnNm</b>, <b>.Ctry</b>, <b>.StrtNm</b>, <b>.PstCd</b> - (optional) {@code -} = the element is absent, otherwise its text</li>
+	 *   <li>Whitespace between elements (indentation, line breaks) is ignored; the text of an element is compared exactly, including its spaces.</li>
+	 *   <li>XML comments are ignored, so the expected file may explain its elements with {@code <!-- ... -->}.</li>
+	 *   <li>The comparison is for similarity: a namespace prefix, the order of sibling elements, the {@code xsi:schemaLocation} and the {@code standalone} flag may differ.</li>
+	 *   <li>{@code ${ignore}} as the whole text of an element accepts any text (the element must still exist).
+	 *   Use it for the values that differ from run to run: {@code MsgId} (the SEPA_Export DocumentNo), and {@code PmtInfId} and {@code EndToEndId}, which are derived from it.</li>
+	 *   <li>{@code PmtInf} blocks are paired by their transaction (all texts of {@code DrctDbtTxInf} except {@code PmtId}), not by position,
+	 *   because the order of the transactions in the file is not defined; a {@code PmtInf} without an equal transaction is paired by position.</li>
 	 * </ul>
-	 * Always checked, without a column: the number of {@code PmtInf} = NbOfTxs; each {@code PmtInf} holds exactly one {@code DrctDbtTxInf},
-	 * has {@code NbOfTxs} = 1 and {@code CtrlSum} = its {@code InstdAmt}; there is no {@code BtchBookg} element.
+	 * On a mismatch, the step fails with all differences, the actual file and the expected file.
 	 *
-	 * @param scheme the scheme of the file, e.g. CORE or B2B
+	 * @param scheme      the scheme of the file, e.g. CORE or B2B
+	 * @param expectedXml the expected file
 	 * @cucumber.example
 	 * <pre>{@code
-	 * Then the SEPA direct debit file for scheme B2B has header:
-	 *   | Namespace                                       | NbOfTxs | CtrlSum | Cdtr.Nm | CdtrSchmeId        | ReqdColltnDt | Cdtr.PstlAdr.TwnNm |
-	 *   | urn:iso:std:iso:20022:tech:xsd:pain.008.001.08  | 2       | 150.00  | Creditor | DE98ZZZ09999999999 | 2026-11-02   | -                  |
+	 * Then the SEPA direct debit file for scheme B2B is:
+	 *   """
+	 *   <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+	 *   <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.08">
+	 *       <CstmrDrctDbtInitn>
+	 *           <GrpHdr>
+	 *               <MsgId>${ignore}</MsgId>
+	 *               <CreDtTm>2026-10-28T10:00:00.000+01:00</CreDtTm>
+	 *               ...
+	 *   </Document>
+	 *   """
 	 * }</pre>
 	 */
-	@Then("the SEPA direct debit file for scheme {word} has header:")
-	public void assertHeader(@NonNull final String scheme, @NonNull final DataTable dataTable) throws Exception
+	@Then("the SEPA direct debit file for scheme {word} is:")
+	public void assertFile(@NonNull final String scheme, @NonNull final String expectedXml)
 	{
-		final Document doc = getDocument(scheme);
-		final DataTableRow expected = DataTableRows.of(dataTable).singleRow();
-		final XPath xpath = XPathFactory.newInstance().newXPath();
-		final SoftAssertions softly = new SoftAssertions();
+		final String actualXml = new String(getFile(scheme), StandardCharsets.UTF_8);
 
-		softly.assertThat(doc.getDocumentElement().getNamespaceURI()).as("Namespace").isEqualTo(expectedValue(expected, "Namespace"));
+		final Diff diff = DiffBuilder.compare(Input.fromString(expectedXml))
+				.withTest(Input.fromString(actualXml))
+				.withNodeFilter(node -> NodeFilters.Default.test(node) && node.getNodeType() != Node.COMMENT_NODE && !isFormattingWhitespace(node))
+				.withNodeMatcher(new PmtInfByTransactionNodeMatcher())
+				.withDifferenceEvaluator(DifferenceEvaluators.chain(DifferenceEvaluators.Default, SEPA_Export_StepDef::evaluateIgnorePlaceholder))
+				.checkForSimilar()
+				.build();
 
-		final int expectedNbOfTxs = Integer.parseInt(expectedValue(expected, "NbOfTxs"));
-		final BigDecimal expectedCtrlSum = new BigDecimal(expectedValue(expected, "CtrlSum"));
-
-		final NodeList txs = nodes(xpath, doc, "//DrctDbtTxInf");
-		final NodeList pmtInfs = nodes(xpath, doc, "//PmtInf");
-		BigDecimal txSum = BigDecimal.ZERO;
-		for (int i = 0; i < txs.getLength(); i++)
+		if (diff.hasDifferences())
 		{
-			txSum = txSum.add(new BigDecimal(text(xpath, txs.item(i), "InstdAmt")));
+			final StringBuilder differences = new StringBuilder();
+			diff.getDifferences().forEach(difference -> differences.append("- ").append(difference).append('\n'));
+			throw new AssertionError("The SEPA direct debit file for scheme " + scheme + " is not as expected:\n" + differences
+					+ "==================\nActual file:\n" + actualXml
+					+ "\n==================\nExpected file:\n" + expectedXml);
 		}
-
-		softly.assertThat(Integer.parseInt(text(xpath, doc, "//GrpHdr/NbOfTxs"))).as("GrpHdr/NbOfTxs").isEqualTo(expectedNbOfTxs);
-		softly.assertThat(txs.getLength()).as("number of DrctDbtTxInf").isEqualTo(expectedNbOfTxs);
-		assertDecimal(softly, "GrpHdr/CtrlSum", new BigDecimal(text(xpath, doc, "//GrpHdr/CtrlSum")), expectedCtrlSum);
-		assertDecimal(softly, "sum of DrctDbtTxInf/InstdAmt", txSum, expectedCtrlSum);
-
-		// one PmtInf per transaction, no batch booking
-		softly.assertThat(pmtInfs.getLength()).as("number of PmtInf").isEqualTo(expectedNbOfTxs);
-		softly.assertThat(nodes(xpath, doc, "//BtchBookg").getLength()).as("number of BtchBookg elements").isZero();
-
-		for (int i = 0; i < pmtInfs.getLength(); i++)
-		{
-			final Node pmtInf = pmtInfs.item(i);
-			final String p = "PmtInf[" + (i + 1) + "]";
-			final NodeList pmtInfTxs = nodes(xpath, pmtInf, "DrctDbtTxInf");
-			softly.assertThat(pmtInfTxs.getLength()).as(p + " number of DrctDbtTxInf").isEqualTo(1);
-			softly.assertThat(text(xpath, pmtInf, "NbOfTxs")).as(p + "/NbOfTxs").isEqualTo("1");
-			if (pmtInfTxs.getLength() == 1)
-			{
-				assertDecimal(softly, p + "/CtrlSum", new BigDecimal(text(xpath, pmtInf, "CtrlSum")), new BigDecimal(text(xpath, pmtInfTxs.item(0), "InstdAmt")));
-			}
-
-			softly.assertThat(text(xpath, pmtInf, "Cdtr/Nm")).as(p + "/Cdtr/Nm").isEqualTo(expectedValue(expected, "Cdtr.Nm"));
-			softly.assertThat(text(xpath, pmtInf, "CdtrSchmeId/Id/PrvtId/Othr/Id")).as(p + "/CdtrSchmeId").isEqualTo(expectedValue(expected, "CdtrSchmeId"));
-			softly.assertThat(text(xpath, pmtInf, "ReqdColltnDt")).as(p + "/ReqdColltnDt").isEqualTo(expectedValue(expected, "ReqdColltnDt"));
-
-			final String expectedAdr = optionalCell(expected, "Cdtr.PstlAdr");
-			if (expectedAdr != null)
-			{
-				if (ABSENT.equals(expectedAdr))
-				{
-					softly.assertThat(nodes(xpath, pmtInf, "Cdtr/PstlAdr").getLength()).as(p + "/Cdtr/PstlAdr is absent").isZero();
-				}
-				else
-				{
-					softly.assertThat(nodes(xpath, pmtInf, "Cdtr/PstlAdr").getLength()).as(p + "/Cdtr/PstlAdr is present").isEqualTo(1);
-				}
-			}
-			assertOptionalElement(softly, xpath, pmtInf, p, expected, "Cdtr.PstlAdr.TwnNm", "Cdtr/PstlAdr/TwnNm");
-			assertOptionalElement(softly, xpath, pmtInf, p, expected, "Cdtr.PstlAdr.Ctry", "Cdtr/PstlAdr/Ctry");
-			assertOptionalElement(softly, xpath, pmtInf, p, expected, "Cdtr.PstlAdr.StrtNm", "Cdtr/PstlAdr/StrtNm");
-			assertOptionalElement(softly, xpath, pmtInf, p, expected, "Cdtr.PstlAdr.PstCd", "Cdtr/PstlAdr/PstCd");
-		}
-
-		softly.assertAll();
-	}
-
-	/**
-	 * Asserts that the file of the given scheme contains exactly the given transactions: every {@code DrctDbtTxInf} must match exactly one row and vice versa.
-	 * Only the columns present in the table are compared; {@code <SPACE>} stands for one space.
-	 * <ul>
-	 *   <li><b>Dbtr.Nm</b>, <b>DbtrAcct.IBAN</b>, <b>MndtId</b>, <b>DtOfSgntr</b> - the element texts</li>
-	 *   <li><b>InstdAmt</b> - compared scale-insensitively</li>
-	 *   <li><b>SeqTp</b> - read from the enclosing {@code PmtInf}</li>
-	 *   <li><b>DbtrAgt</b> - the BIC ({@code FinInstnId/BICFI}), or {@code NOTPROVIDED} ({@code FinInstnId/Othr/Id}); {@code -} if the file has neither</li>
-	 *   <li><b>Ustrd</b> - the unstructured remittance information; {@code -} = absent</li>
-	 * </ul>
-	 *
-	 * @param scheme the scheme of the file, e.g. CORE or B2B
-	 * @cucumber.example
-	 * <pre>{@code
-	 * Then the SEPA direct debit file for scheme B2B contains exactly the transactions:
-	 *   | Dbtr.Nm  | DbtrAcct.IBAN          | InstdAmt | MndtId | DtOfSgntr  | SeqTp | DbtrAgt     | Ustrd |
-	 *   | Debtor 1 | DE89370400440532013000 | 100.00   | M-1    | 2026-01-15 | RCUR  | NOTPROVIDED | -     |
-	 * }</pre>
-	 */
-	@Then("the SEPA direct debit file for scheme {word} contains exactly the transactions:")
-	public void assertTransactions(@NonNull final String scheme, @NonNull final DataTable dataTable) throws Exception
-	{
-		final Document doc = getDocument(scheme);
-		final XPath xpath = XPathFactory.newInstance().newXPath();
-
-		final List<Map<String, String>> actualRows = new ArrayList<>();
-		final NodeList txs = nodes(xpath, doc, "//DrctDbtTxInf");
-		for (int i = 0; i < txs.getLength(); i++)
-		{
-			final Node tx = txs.item(i);
-			final Node pmtInf = tx.getParentNode();
-			final Map<String, String> row = new LinkedHashMap<>();
-			row.put("Dbtr.Nm", text(xpath, tx, "Dbtr/Nm"));
-			row.put("DbtrAcct.IBAN", text(xpath, tx, "DbtrAcct/Id/IBAN"));
-			row.put("InstdAmt", text(xpath, tx, "InstdAmt"));
-			row.put("MndtId", text(xpath, tx, "DrctDbtTx/MndtRltdInf/MndtId"));
-			row.put("DtOfSgntr", text(xpath, tx, "DrctDbtTx/MndtRltdInf/DtOfSgntr"));
-			row.put("SeqTp", text(xpath, pmtInf, "PmtTpInf/SeqTp"));
-			row.put("DbtrAgt", extractDebtorAgent(xpath, tx));
-			row.put("Ustrd", nodes(xpath, tx, "RmtInf/Ustrd").getLength() == 0 ? ABSENT : text(xpath, tx, "RmtInf/Ustrd"));
-			actualRows.add(row);
-		}
-
-		final List<DataTableRow> expectedRows = DataTableRows.of(dataTable).toList();
-		final List<Map<String, String>> unmatchedActual = new ArrayList<>(actualRows);
-		final List<DataTableRow> unmatchedExpected = new ArrayList<>();
-		for (final DataTableRow expected : expectedRows)
-		{
-			final Map<String, String> match = unmatchedActual.stream().filter(actual -> rowMatches(expected, actual)).findFirst().orElse(null);
-			if (match == null)
-			{
-				unmatchedExpected.add(expected);
-			}
-			else
-			{
-				unmatchedActual.remove(match);
-			}
-		}
-
-		assertThat(unmatchedExpected).as("expected transactions not found in the file (file has: " + actualRows + ")").isEmpty();
-		assertThat(unmatchedActual).as("file transactions not matched by any expected row").isEmpty();
 	}
 
 	/**
@@ -485,12 +396,12 @@ public class SEPA_Export_StepDef
 		}
 	}
 
-	private Document getDocument(final String scheme)
+	private byte[] getFile(final String scheme)
 	{
 		assertSuccess();
-		final Document doc = documentsByScheme.get(scheme);
-		assertThat(doc).as("exported file for scheme " + scheme + " (available: " + documentsByScheme.keySet() + ")").isNotNull();
-		return doc;
+		final byte[] file = filesByScheme.get(scheme);
+		assertThat(file).as("exported file for scheme " + scheme + " (available: " + filesByScheme.keySet() + ")").isNotNull();
+		return file;
 	}
 
 	private List<I_SEPA_Export> retrieveSepaExports(final String paySelectionIdentifier)
@@ -516,8 +427,8 @@ public class SEPA_Export_StepDef
 
 		final XPath xpath = XPathFactory.newInstance().newXPath();
 		final String scheme = text(xpath, doc, "//PmtTpInf/LclInstrm/Cd");
-		assertThat(documentsByScheme).as("two exported files with the same scheme " + scheme + ": " + name).doesNotContainKey(scheme);
-		documentsByScheme.put(scheme, doc);
+		assertThat(filesByScheme).as("two exported files with the same scheme " + scheme + ": " + name).doesNotContainKey(scheme);
+		filesByScheme.put(scheme, bytes);
 		filenames.add(simpleName);
 	}
 
@@ -545,80 +456,126 @@ public class SEPA_Export_StepDef
 		return cell.replace(SPACE_TOKEN, " ");
 	}
 
-	/**
-	 * @return {@code null} if the table has no such column; otherwise the cell text; an empty cell fails loudly (use {@code -} for "absent")
-	 */
-	@Nullable
-	private static String optionalCell(final DataTableRow row, final String column)
-	{
-		// DataTableRow's own lookup (it honours the "OPT." column prefix): empty = the column is missing; for a present column it throws on an empty cell.
-		// The comma-split result is discarded, the value is read unsplit below.
-		return row.getAsOptionalCommaSeparatedString(column).isPresent() ? row.getAsString(column) : null;
-	}
-
 	private static String expectedValue(final DataTableRow row, final String column)
 	{
 		return unspace(row.getAsString(column));
 	}
 
-	private static void assertDecimal(final SoftAssertions softly, final String desc, final BigDecimal actual, final BigDecimal expected)
+	/**
+	 * @return whether the node is whitespace between elements (the file's formatting), as opposed to the text of an element, which is compared exactly
+	 */
+	private static boolean isFormattingWhitespace(@NonNull final Node node)
 	{
-		softly.assertThat(actual.compareTo(expected)).as(desc + ": expected " + expected + " but was " + actual).isZero();
-	}
-
-	private static void assertOptionalElement(final SoftAssertions softly, final XPath xpath, final Node context, final String prefix, final DataTableRow expected, final String column, final String path) throws Exception
-	{
-		final String expectedCell = optionalCell(expected, column);
-		if (expectedCell == null)
+		if (node.getNodeType() != Node.TEXT_NODE || !node.getNodeValue().trim().isEmpty())
 		{
-			return;
+			return false;
 		}
-		if (ABSENT.equals(expectedCell))
+		final NodeList siblings = node.getParentNode().getChildNodes();
+		for (int i = 0; i < siblings.getLength(); i++)
 		{
-			softly.assertThat(nodes(xpath, context, path).getLength()).as(prefix + "/" + path + " is absent").isZero();
-		}
-		else
-		{
-			softly.assertThat(nodes(xpath, context, path).getLength()).as(prefix + "/" + path + " is present").isEqualTo(1);
-			softly.assertThat(text(xpath, context, path)).as(prefix + "/" + path).isEqualTo(unspace(expectedCell));
-		}
-	}
-
-	private static String extractDebtorAgent(final XPath xpath, final Node tx) throws Exception
-	{
-		for (final String path : new String[] { "DbtrAgt/FinInstnId/BICFI", "DbtrAgt/FinInstnId/Othr/Id" })
-		{
-			if (nodes(xpath, tx, path).getLength() > 0)
+			if (siblings.item(i).getNodeType() == Node.ELEMENT_NODE)
 			{
-				return text(xpath, tx, path);
+				return true;
 			}
 		}
-		return ABSENT;
+		return false;
 	}
 
-	private static boolean rowMatches(final DataTableRow expected, final Map<String, String> actual)
+	private static ComparisonResult evaluateIgnorePlaceholder(@NonNull final Comparison comparison, @NonNull final ComparisonResult outcome)
 	{
-		for (final String column : expected.asMap().keySet())
+		if (outcome != ComparisonResult.EQUAL
+				&& comparison.getType() == ComparisonType.TEXT_VALUE
+				&& IGNORE_PLACEHOLDER.equals(comparison.getControlDetails().getValue()))
 		{
-			final String expectedValue = expectedValue(expected, column);
-			final String actualValue = actual.get(column);
-			if (actualValue == null)
+			return ComparisonResult.EQUAL;
+		}
+		return outcome;
+	}
+
+	/**
+	 * Pairs the {@code PmtInf} elements by their transaction, then everything else (and the {@code PmtInf} without an equal transaction) by name, in document order.
+	 */
+	private static final class PmtInfByTransactionNodeMatcher implements NodeMatcher
+	{
+		private final NodeMatcher byName = new DefaultNodeMatcher(ElementSelectors.byName);
+
+		@Override
+		public Iterable<Map.Entry<Node, Node>> match(final Iterable<Node> controlNodes, final Iterable<Node> testNodes)
+		{
+			final List<Node> unmatchedControl = new ArrayList<>();
+			controlNodes.forEach(unmatchedControl::add);
+			final List<Node> unmatchedTest = new ArrayList<>();
+			testNodes.forEach(unmatchedTest::add);
+
+			final List<Map.Entry<Node, Node>> matches = new ArrayList<>();
+			for (final Node control : new ArrayList<>(unmatchedControl))
 			{
-				return false;
-			}
-			if ("InstdAmt".equals(column))
-			{
-				if (new BigDecimal(expectedValue).compareTo(new BigDecimal(actualValue)) != 0)
+				if (!isPmtInf(control))
 				{
-					return false;
+					continue;
+				}
+				final String transactionKey = toTransactionKey(control);
+				final Node test = unmatchedTest.stream()
+						.filter(candidate -> isPmtInf(candidate) && transactionKey.equals(toTransactionKey(candidate)))
+						.findFirst()
+						.orElse(null);
+				if (test != null)
+				{
+					matches.add(new AbstractMap.SimpleImmutableEntry<>(control, test));
+					unmatchedControl.remove(control);
+					unmatchedTest.remove(test);
 				}
 			}
-			else if (!Objects.equals(expectedValue, actualValue))
+
+			byName.match(unmatchedControl, unmatchedTest).forEach(matches::add);
+			return matches;
+		}
+
+		private static boolean isPmtInf(final Node node)
+		{
+			return node.getNodeType() == Node.ELEMENT_NODE && "PmtInf".equals(node.getLocalName());
+		}
+
+		/**
+		 * @return the texts of the {@code DrctDbtTxInf} of the given {@code PmtInf}, without its {@code PmtId}, with the element names
+		 */
+		private static String toTransactionKey(final Node pmtInf)
+		{
+			final StringBuilder key = new StringBuilder();
+			final NodeList children = pmtInf.getChildNodes();
+			for (int i = 0; i < children.getLength(); i++)
 			{
-				return false;
+				final Node child = children.item(i);
+				if (child.getNodeType() == Node.ELEMENT_NODE && "DrctDbtTxInf".equals(child.getLocalName()))
+				{
+					appendLeafTexts(child, key);
+				}
+			}
+			return key.toString();
+		}
+
+		private static void appendLeafTexts(final Node element, final StringBuilder key)
+		{
+			if ("PmtId".equals(element.getLocalName()))
+			{
+				return;
+			}
+			boolean hasChildElements = false;
+			final NodeList children = element.getChildNodes();
+			for (int i = 0; i < children.getLength(); i++)
+			{
+				final Node child = children.item(i);
+				if (child.getNodeType() == Node.ELEMENT_NODE)
+				{
+					hasChildElements = true;
+					appendLeafTexts(child, key);
+				}
+			}
+			if (!hasChildElements)
+			{
+				key.append(element.getLocalName()).append('=').append(element.getTextContent()).append('|');
 			}
 		}
-		return true;
 	}
 
 	// --- namespace-agnostic XPath helpers: "A/B//C" -> *[local-name()='A']/*[local-name()='B']//*[local-name()='C'] ---
