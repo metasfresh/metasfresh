@@ -1,5 +1,7 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
+import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -38,15 +40,29 @@ import de.metas.util.Services;
  */
 class CreatePOLineFromSOLinesAggregationKeyBuilder extends AbstractOrderLineAggregationKeyBuilder
 {
+	/** Merges sales order lines with the same product and attributes into one purchase order line. */
+	private static final CreatePOLineFromSOLinesAggregationKeyBuilder MERGE_SAME_PRODUCT_AND_ATTRIBUTES = new CreatePOLineFromSOLinesAggregationKeyBuilder(false);
 
-	/*package*/ static CreatePOLineFromSOLinesAggregationKeyBuilder INSTANCE = new CreatePOLineFromSOLinesAggregationKeyBuilder();
+	/**
+	 * One purchase order line per sales order line. Used for drop-ship purchase orders: the drop-ship receipt
+	 * books each received HU onto the shipment schedule of the one sales order line its purchase order line is allocated to.
+	 */
+	private static final CreatePOLineFromSOLinesAggregationKeyBuilder ONE_PER_SALES_ORDER_LINE = new CreatePOLineFromSOLinesAggregationKeyBuilder(true);
 
-	private CreatePOLineFromSOLinesAggregationKeyBuilder()
+	private final boolean onePerSalesOrderLine;
+
+	private CreatePOLineFromSOLinesAggregationKeyBuilder(final boolean onePerSalesOrderLine)
 	{
+		this.onePerSalesOrderLine = onePerSalesOrderLine;
+	}
+
+	static CreatePOLineFromSOLinesAggregationKeyBuilder forPurchaseType(@NonNull final PurchaseTypeEnum purchaseType)
+	{
+		return purchaseType.isDropship() ? ONE_PER_SALES_ORDER_LINE : MERGE_SAME_PRODUCT_AND_ATTRIBUTES;
 	}
 
 	/**
-	 * @return a key consisting of the given line's product and ASI.
+	 * @return a key consisting of the given line's product and ASI, plus the line itself if there is one purchase order line per sales order line.
 	 */
 	@Override
 	public String buildKey(final I_C_OrderLine salesOrderLine)
@@ -55,10 +71,11 @@ class CreatePOLineFromSOLinesAggregationKeyBuilder extends AbstractOrderLineAggr
 		final boolean verboseDescription = true;
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		final ArrayKey poLineKey = Util.mkKey(
-				salesOrderLine.getM_Product_ID(),
-				attributeSetInstanceBL.buildDescription(attributeSetInstance, verboseDescription)
-				);
+		final String asiDescription = attributeSetInstanceBL.buildDescription(attributeSetInstance, verboseDescription);
+
+		final ArrayKey poLineKey = onePerSalesOrderLine
+				? Util.mkKey(salesOrderLine.getM_Product_ID(), asiDescription, salesOrderLine.getC_OrderLine_ID())
+				: Util.mkKey(salesOrderLine.getM_Product_ID(), asiDescription);
 
 		return poLineKey.toString();
 	}

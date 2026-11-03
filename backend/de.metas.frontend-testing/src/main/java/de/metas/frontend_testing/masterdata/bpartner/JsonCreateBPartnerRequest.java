@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.bpartner;
 
+import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.order.InvoiceRule;
 import lombok.Builder;
@@ -17,6 +18,12 @@ public class JsonCreateBPartnerRequest
 	// Allow custom bpartner code and name (if null, use timestamp-based generation)
 	@Nullable String bpartnerCode;
 	@Nullable String name;
+
+	/**
+	 * The {@code C_BP_Group} (map key of the {@code bpGroups} section) this partner belongs to.
+	 * If null, the "Standard" group is used.
+	 */
+	@Nullable Identifier bpGroup;
 
 	@Nullable String gln;
 	@Nullable Map<String, Location> locations;
@@ -90,6 +97,15 @@ public class JsonCreateBPartnerRequest
 	 * Default: true (sales price list)
 	 */
 	@Builder.Default boolean isSoPriceList = true;
+
+	/**
+	 * ISO currency code (e.g. {@code "CHF"}) of the price list created for this business partner.
+	 * Only used when this request creates the pricing system (the first business partner of a masterdata request).
+	 * Costs of purchased goods are valued from the purchase price, converted to the accounting currency: a price list in
+	 * another currency than the accounting schema's one makes the costed price differ from the entered price.
+	 * Default: EUR
+	 */
+	@Nullable String priceListCurrencyCode;
 
 	/**
 	 * Bank accounts to create for this business partner.

@@ -1,14 +1,19 @@
 package de.metas.manufacturing.config;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 @Value
 @Builder(toBuilder = true)
@@ -30,6 +35,9 @@ public class MobileUIManufacturingConfig
 	@NonNull OptionalBoolean isSkipFinishedGoodsReceiveTargetStep;
 	@NonNull OptionalBoolean isCaptureCatchWeightAtReceipt;
 	@NonNull OptionalBoolean isAllowReceiveWithoutPackingItem;
+	@NonNull @Builder.Default OptionalBoolean isAllowEmptyingHUs = OptionalBoolean.UNKNOWN;
+	@NonNull @Builder.Default OptionalBoolean isConfirmEmptyingHU = OptionalBoolean.UNKNOWN;
+	@NonNull @Builder.Default OptionalBoolean isFinishedGoodsCatchWeightScanRequired = OptionalBoolean.UNKNOWN;
 
 	@NonNull
 	public ReceiveUnitType getReceiveUnitTypeEffective()
@@ -63,14 +71,27 @@ public class MobileUIManufacturingConfig
 		return isAllowReceiveWithoutPackingItem.orElseFalse();
 	}
 
+	public boolean getIsFinishedGoodsCatchWeightScanRequiredEffective()
+	{
+		return isFinishedGoodsCatchWeightScanRequired.orElseFalse();
+	}
+
+	@NonNull
+	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(@NonNull final FinishedGoodsReceiveLine line)
+	{
+		return effectiveForReceiveLine(line.isMainFinishedGood(), line.getCatchWeightUOMId() != null);
+	}
+
 	/**
-	 * @param isMainFinishedGood {@code false} for a co-/by-product line. Three of the five flags exempt such a line;
-	 *                           catch weight and receive-without-packing-item do not — they apply to every line.
+	 * @param isMainFinishedGood   {@code false} for a co-/by-product line. The three FinishedGoods* target flags and the
+	 *                             catch-weight scan requirement exempt such a line; catch weight and
+	 *                             receive-without-packing-item do not — they apply to every line.
+	 * @param isCatchWeightProduct {@code true} if the line's product has a catch-weight UOM
 	 */
 	@NonNull
-	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(final boolean isMainFinishedGood)
+	public FinishedGoodsReceiveLineConfig effectiveForReceiveLine(final boolean isMainFinishedGood, final boolean isCatchWeightProduct)
 	{
-		// Three of the four flags exempt co-/by-products, and the polarity differs because "exempt" means the
+		// The three FinishedGoods* target flags exempt co-/by-products, and the polarity differs because "exempt" means the
 		// opposite thing per flag: for the two allow-flags the co-/by-product must stay PERMITTED (it is
 		// legitimately received into a TU, including an infinite-capacity one), whereas for the skip-flag it must
 		// keep its target chooser, i.e. NOT skip. That exemption is a deliberately conservative default - those
@@ -90,7 +111,25 @@ public class MobileUIManufacturingConfig
 				.captureCatchWeight(getIsCaptureCatchWeightAtReceiptEffective())
 				.skipReceiveTargetStep(isMainFinishedGood && getIsSkipFinishedGoodsReceiveTargetStepEffective())
 				.allowReceiveWithoutPackingItem(getIsAllowReceiveWithoutPackingItemEffective())
+				// Main finished good only: co-/by-product lines keep receive-on-scan and manual input.
+				// Independent of capturing the weight at receipt: without it the scan takes over lot and best-before date
+				// only, and the weight is captured later at picking.
+				.catchWeightScanRequired(isMainFinishedGood
+						&& isCatchWeightProduct
+						&& getIsFinishedGoodsCatchWeightScanRequiredEffective())
 				.build();
+	}
+
+	/**
+	 * @return the receipt attributes the operator cannot edit and the receipt sets itself: {@link PickAttribute#LotNo} if the
+	 * lot number ({@code Lot-Nummer}) is not one of the {@link #editableAttributeCodesInOrder}, else empty. The best-before date is never in this set.
+	 */
+	@NonNull
+	public Set<PickAttribute> getReadOnlyAttributes()
+	{
+		return editableAttributeCodesInOrder.contains(AttributeConstants.ATTR_LotNumber)
+				? ImmutableSet.of()
+				: ImmutableSet.of(PickAttribute.LotNo);
 	}
 
 	public MobileUIManufacturingConfig fallbackTo(@NonNull final MobileUIManufacturingConfig other)
@@ -105,6 +144,9 @@ public class MobileUIManufacturingConfig
 				.isSkipFinishedGoodsReceiveTargetStep(this.isSkipFinishedGoodsReceiveTargetStep.ifUnknown(other.isSkipFinishedGoodsReceiveTargetStep))
 				.isCaptureCatchWeightAtReceipt(this.isCaptureCatchWeightAtReceipt.ifUnknown(other.isCaptureCatchWeightAtReceipt))
 				.isAllowReceiveWithoutPackingItem(this.isAllowReceiveWithoutPackingItem.ifUnknown(other.isAllowReceiveWithoutPackingItem))
+				.isAllowEmptyingHUs(this.isAllowEmptyingHUs.ifUnknown(other.isAllowEmptyingHUs))
+				.isConfirmEmptyingHU(this.isConfirmEmptyingHU.ifUnknown(other.isConfirmEmptyingHU))
+				.isFinishedGoodsCatchWeightScanRequired(this.isFinishedGoodsCatchWeightScanRequired.ifUnknown(other.isFinishedGoodsCatchWeightScanRequired))
 				.build();
 		if (result.equals(this))
 		{

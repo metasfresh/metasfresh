@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.payment;
 
+import com.google.common.base.Throwables;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerBankAccountId;
@@ -49,6 +50,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
@@ -66,6 +68,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.PeriodClosedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
@@ -87,6 +90,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_C_DocType_ID;
@@ -94,6 +98,7 @@ import static org.compiere.model.I_C_Payment.COLUMNNAME_DiscountAmt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsAllocated;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsReceipt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_PayAmt;
+import static org.compiere.model.I_C_Payment.COLUMNNAME_PaymentBonusAmt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_TenderType;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_WriteOffAmt;
 
@@ -109,6 +114,7 @@ public class C_Payment_StepDef
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Payment_StepDefData paymentTable;
@@ -127,7 +133,9 @@ public class C_Payment_StepDef
 	 * @cucumber.columns
 	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
 	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) vendor or customer BPartner<br>
-	 *   <b>PayAmt</b> — (required) amount with currency code, e.g. {@code 5000 EUR}<br>
+	 *   <b>PayAmt</b> — (required unless C_Invoice_ID is given) amount with currency code, e.g. {@code 5000 EUR};
+	 *                   without it the payment is a draft of 0 in the invoice's currency, whose amounts can then come from its invoice
+	 *                   ({@link #updateAmountsFromInvoice(String)})<br>
 	 *   <b>IsReceipt</b> — (required) {@code true} = inbound (AR), {@code false} = outbound (AP)<br>
 	 *   <b>C_BP_BankAccount_ID</b> — (optional, identifier-ref) bank account; defaults to the org's EUR account<br>
 	 *   <b>Proforma_Invoice_ID</b> — (optional, identifier-ref) links the payment to a proforma invoice;
@@ -156,12 +164,12 @@ public class C_Payment_StepDef
 	}
 
 	/**
-	 * Completes or reverses the payment referenced by {@code paymentIdentifier}.
+	 * Completes, reverses or voids the payment referenced by {@code paymentIdentifier}.
 	 * For {@code reversed}, the reversal is stored under {@code <identifier>^}.
 	 *
 	 * @see #reversePayment(StepDefDataIdentifier, StepDefDataIdentifier)
 	 */
-	@And("^the payment identified by (.*) is (completed|reversed)$")
+	@And("^the payment identified by (.*) is (completed|reversed|voided)$")
 	public void payment_action(@NonNull final String paymentIdentifier, @NonNull final String action) throws InterruptedException
 	{
 		switch (StepDefDocAction.valueOf(action))
@@ -169,6 +177,13 @@ public class C_Payment_StepDef
 			case reversed:
 			{
 				reversePayment(StepDefDataIdentifier.ofString(paymentIdentifier), StepDefDataIdentifier.ofString(paymentIdentifier + "^"));
+				break;
+			}
+			case voided:
+			{
+				final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+				payment.setDocAction(IDocument.ACTION_Void);
+				documentBL.processEx(payment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
 			}
 			case completed:
@@ -185,6 +200,58 @@ public class C_Payment_StepDef
 						.setParameter("action:", action);
 			}
 		}
+	}
+
+	/**
+	 * Completes the payment referenced by {@code paymentIdentifier} and asserts that the completion is refused with the given {@code AD_Message.ErrorCode}.
+	 * Afterwards the payment is reloaded, so later steps see what the failed completion left in the database.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>paymentIdentifier</b> — identifier of a {@code C_Payment} created earlier in the scenario<br>
+	 *   <b>errorCode</b> — the expected {@code AD_Message.ErrorCode}
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * Then the payment identified by payment is completed expecting error code PAYMENT_BONUS_NOT_DEDUCTIBLE
+	 * </pre>
+	 */
+	@And("^the payment identified by (.*) is completed expecting error code (.*)$")
+	public void completePaymentExpectingErrorCode(@NonNull final String paymentIdentifier, @NonNull final String errorCode)
+	{
+		final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+		payment.setDocAction(IDocument.ACTION_Complete);
+
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
+
+		paymentTable.putOrReplace(paymentIdentifier, paymentBL.getById(PaymentId.ofRepoId(payment.getC_Payment_ID())));
+	}
+
+	/**
+	 * Completes the payment referenced by {@code paymentIdentifier} and asserts that the completion fails because an accounting period is closed.
+	 * Afterwards the payment is reloaded, so later steps see what the failed completion left in the database.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>paymentIdentifier</b> — identifier of a {@code C_Payment} created earlier in the scenario
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * When the payment identified by payment is completed expecting a closed accounting period
+	 * </pre>
+	 */
+	@And("^the payment identified by (.*) is completed expecting a closed accounting period$")
+	public void completePaymentExpectingClosedPeriod(@NonNull final String paymentIdentifier)
+	{
+		final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+		payment.setDocAction(IDocument.ACTION_Complete);
+
+		assertThatThrownBy(() -> documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed))
+				.satisfies(exception -> assertThat(Throwables.getCausalChain(exception))
+						.as("causal chain of %s", exception)
+						.hasAtLeastOneElementOfType(PeriodClosedException.class));
+
+		paymentTable.putOrReplace(paymentIdentifier, paymentBL.getById(PaymentId.ofRepoId(payment.getC_Payment_ID())));
 	}
 
 	/**
@@ -227,6 +294,115 @@ public class C_Payment_StepDef
 	}
 
 	/**
+	 * Changes fields of a saved draft payment and saves it once, like the WebUI: for each changed amount field it first runs what the field's
+	 * {@code CalloutPayment.amounts} callout runs ({@link IPaymentBL#updateAmounts(I_C_Payment, String, boolean)}), then the save runs the same
+	 * {@code BEFORE_CHANGE} interceptors as the WebUI's save after a field edit.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PayAmt</b> — (optional) new amount, a plain number in the currency of the payment, e.g. {@code 163.72}<br>
+	 *   <b>IsOverUnderPayment</b> — (optional) new value of the "over/under payment" flag<br>
+	 *   <b>PaymentBonusAmt</b> — (optional) new payment bonus, a plain number in the currency of the payment<br>
+	 *   <b>DateTrx</b> — (optional) new payment date, e.g. {@code 2026-07-26}<br>
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * And the draft payment identified by payment is changed
+	 *   | PayAmt |
+	 *   | 163.72 |
+	 * </pre>
+	 */
+	@And("^the draft payment identified by (.*) is changed$")
+	public void changeDraftPayment(@NonNull final String paymentIdentifier, @NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+
+		final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(paymentTable.get(paymentIdentifier).getC_Payment_ID()));
+		assertThat(payment.getDocStatus()).as("DocStatus of the payment to change").isEqualTo(DocStatus.Drafted.getCode());
+
+		row.getAsOptionalBigDecimal(COLUMNNAME_PayAmt).ifPresent(payAmt -> {
+			payment.setPayAmt(payAmt);
+			runAmountsCallout(payment, COLUMNNAME_PayAmt);
+		});
+		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsOverUnderPayment).ifPresent(isOverUnderPayment -> {
+			payment.setIsOverUnderPayment(isOverUnderPayment);
+			runAmountsCallout(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment);
+		});
+		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt).ifPresent(paymentBonusAmt -> {
+			payment.setPaymentBonusAmt(paymentBonusAmt);
+			runAmountsCallout(payment, COLUMNNAME_PaymentBonusAmt);
+		});
+		row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateTrx)
+				.map(dateTrx -> TimeUtil.asTimestamp(dateTrx, orgDAO.getTimeZone(OrgId.ofRepoId(payment.getAD_Org_ID()))))
+				.ifPresent(payment::setDateTrx);
+
+		paymentBL.save(payment);
+		paymentTable.putOrReplace(paymentIdentifier, payment);
+	}
+
+	/**
+	 * Changes fields of a saved draft payment and saves it once, <b>without</b> running any WebUI callout: like a process, the REST API or any other
+	 * non-WebUI save. Only the {@code BEFORE_CHANGE} interceptors run.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PayAmt</b> — (optional) new amount, a plain number in the currency of the payment<br>
+	 *   <b>PaymentBonusAmt</b> — (optional) new payment bonus, a plain number in the currency of the payment<br>
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * And the draft payment identified by payment is saved without UI callouts
+	 *   | PaymentBonusAmt |
+	 *   | 0               |
+	 * </pre>
+	 */
+	@And("^the draft payment identified by (.*) is saved without UI callouts$")
+	public void saveDraftPaymentWithoutCallouts(@NonNull final String paymentIdentifier, @NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+
+		final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(paymentTable.get(paymentIdentifier).getC_Payment_ID()));
+		assertThat(payment.getDocStatus()).as("DocStatus of the payment to change").isEqualTo(DocStatus.Drafted.getCode());
+
+		row.getAsOptionalBigDecimal(COLUMNNAME_PayAmt).ifPresent(payment::setPayAmt);
+		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt).ifPresent(payment::setPaymentBonusAmt);
+
+		paymentBL.save(payment);
+		paymentTable.putOrReplace(paymentIdentifier, payment);
+	}
+
+	/**
+	 * What the WebUI's {@code CalloutPayment.amounts} runs when the user changes the given field.
+	 */
+	private void runAmountsCallout(@NonNull final I_C_Payment payment, @NonNull final String columnName)
+	{
+		paymentBL.updateAmounts(payment, columnName, true);
+	}
+
+	/**
+	 * Sets the amounts of a saved draft payment from its invoice (open amount, Skonto, payment bonus) and saves it.
+	 * Runs the same code as the {@code C_Payment} interceptor on a {@code DateTrx} change, i.e. {@link IPaymentBL#updateDiscountAndPayAmtFromInvoiceIfAny(I_C_Payment)};
+	 * the WebUI callout on „Rechnung“ ({@code CalloutPayment.invoice}) has its own SQL and is not driven by this step.
+	 *
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 * @cucumber.example
+	 * <pre>
+	 * And the payment identified by payment gets its amounts from its invoice
+	 * </pre>
+	 */
+	@And("^the payment identified by (.*) gets its amounts from its invoice$")
+	public void updateAmountsFromInvoice(@NonNull final String paymentIdentifier)
+	{
+		final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(paymentTable.get(paymentIdentifier).getC_Payment_ID()));
+		assertThat(payment.getDocStatus()).as("DocStatus of the payment").isEqualTo(DocStatus.Drafted.getCode());
+
+		paymentBL.updateDiscountAndPayAmtFromInvoiceIfAny(payment);
+
+		paymentBL.save(payment);
+		paymentTable.putOrReplace(paymentIdentifier, payment);
+	}
+
+	/**
 	 * Asserts the given payments' current state (reloaded from the DB).
 	 *
 	 * @cucumber.stepdef
@@ -236,7 +412,8 @@ public class C_Payment_StepDef
 	 *   <b>Posted</b> — (optional) expected posting status code (e.g. {@code Y} posted, {@code E} posting error)<br>
 	 *   <b>PostingError</b> — (optional) the payment must carry a {@code PostingError_Issue_ID} whose issue summary contains this text<br>
 	 *   (further optional columns: IsAllocated, PayAmt, OpenAmt, DiscountAmt, WriteOffAmt, C_Invoice_ID, DateTrx, C_BPartner_ID,
-	 *   C_BP_BankAccount_ID, C_DocType_ID, IsReceipt, DocStatus, TenderType, IsPrepayment, Proforma_Invoice_ID)
+	 *   C_BP_BankAccount_ID, C_DocType_ID, IsReceipt, DocStatus, TenderType, IsPrepayment, Proforma_Invoice_ID, PaymentBonusAmt)<br>
+	 *   <b>PaymentBonus_CreditMemo_ID</b> — (optional, identifier) registers the payment's payment bonus credit memo under the given invoice identifier; {@code null} expects none
 	 * @cucumber.depends StepDefData: C_Payment_StepDefData, C_Charge_StepDefData, C_Invoice_StepDefData, C_BPartner_StepDefData,
 	 * C_BP_BankAccount_StepDefData, C_DocType_StepDefData
 	 * @cucumber.example
@@ -275,6 +452,10 @@ public class C_Payment_StepDef
 				.ifPresent(discountAmt -> softly.assertThat(payment.getDiscountAmt()).as("DiscountAmt").isEqualByComparingTo(discountAmt));
 		row.getAsOptionalBigDecimal(COLUMNNAME_WriteOffAmt)
 				.ifPresent(writeOffAmt -> softly.assertThat(payment.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo(writeOffAmt));
+		row.getAsOptionalBigDecimal(I_C_Payment.COLUMNNAME_OverUnderAmt)
+				.ifPresent(overUnderAmt -> softly.assertThat(payment.getOverUnderAmt()).as("OverUnderAmt").isEqualByComparingTo(overUnderAmt));
+		row.getAsOptionalBigDecimal(COLUMNNAME_PaymentBonusAmt)
+				.ifPresent(paymentBonusAmt -> softly.assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo(paymentBonusAmt));
 
 		row.getAsOptionalString(I_C_Payment.COLUMNNAME_C_Invoice_ID)
 				.ifPresent(rawValue -> {
@@ -286,6 +467,24 @@ public class C_Payment_StepDef
 					{
 						final InvoiceId expectedInvoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(rawValue));
 						softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID").isEqualTo(expectedInvoiceId.getRepoId());
+					}
+				});
+
+		// the payment bonus credit memo is registered under the given identifier, so later steps can validate it; "null" expects no credit memo
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_PaymentBonus_CreditMemo_ID)
+				.ifPresent(creditMemoIdentifier -> {
+					final InvoiceId creditMemoId = InvoiceId.ofRepoIdOrNull(payment.getPaymentBonus_CreditMemo_ID());
+					if (creditMemoIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(creditMemoId).as("PaymentBonus_CreditMemo_ID should not be set").isNull();
+					}
+					else if (creditMemoId == null)
+					{
+						softly.fail("PaymentBonus_CreditMemo_ID is not set; expected the payment bonus credit memo %s", creditMemoIdentifier);
+					}
+					else
+					{
+						invoiceTable.putOrReplace(creditMemoIdentifier, invoiceBL.getById(creditMemoId));
 					}
 				});
 
@@ -411,7 +610,16 @@ public class C_Payment_StepDef
 		final OrgId orgId = Env.getOrgId();
 		final BPartnerId bpartnerId = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID).lookupNotNullIdIn(bpartnerTable);
 
-		final Money payAmt = row.getAsMoney(COLUMNNAME_PayAmt, currencyRepository::getCurrencyIdByCurrencyCode);
+		final InvoiceId invoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
+				.map(invoiceTable::getId)
+				.orElse(null);
+
+		final Money payAmt = row.getAsOptionalMoney(COLUMNNAME_PayAmt, currencyRepository::getCurrencyIdByCurrencyCode)
+				.orElseGet(() -> {
+					// a draft for an invoice whose amounts are not set yet
+					Check.assumeNotNull(invoiceId, "PayAmt is required for a payment without C_Invoice_ID: {}", row);
+					return Money.zero(CurrencyId.ofRepoId(invoiceBL.getById(invoiceId).getC_Currency_ID()));
+				});
 		final Money discountAmt = row.getAsOptionalMoney(COLUMNNAME_DiscountAmt, currencyRepository::getCurrencyIdByCurrencyCode).orElse(null);
 		final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(payAmt, discountAmt);
 		final boolean isReceipt = row.getAsBoolean(COLUMNNAME_IsReceipt);
@@ -421,10 +629,6 @@ public class C_Payment_StepDef
 		final BankAccountId orgBankAccountId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID)
 				.map(bpBankAccountTable::getOrgBankAccountId)
 				.orElseGet(() -> retrieveDefaultOrgBankAccountId(orgId, payAmt.getCurrencyId()));
-
-		final InvoiceId invoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
-				.map(invoiceTable::getId)
-				.orElse(null);
 
 		final InvoiceId proformaInvoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
 				.map(invoiceTable::getId)

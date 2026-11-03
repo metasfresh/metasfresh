@@ -6,14 +6,22 @@ import de.metas.frontend_testing.masterdata.adprocess.SetAdProcessFlagsCommand;
 import de.metas.frontend_testing.masterdata.attribute.CreateAttributeCommand;
 import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeRequest;
 import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeResponse;
+import de.metas.frontend_testing.masterdata.bpartner.CreateBPGroupCommand;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
+import de.metas.frontend_testing.masterdata.bpartner.JsonBPGroupRequest;
+import de.metas.frontend_testing.masterdata.bpartner.JsonBPGroupResponse;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
+import de.metas.frontend_testing.masterdata.compensation_group.CreateCalibrationRuleCommand;
 import de.metas.frontend_testing.masterdata.compensation_group.CreateCompensationGroupSchemaCommand;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCalibrationRuleRequest;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCalibrationRuleResponse;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaResponse;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.CustomQRCodeFormatCommand;
 import de.metas.frontend_testing.masterdata.dd_order.DDOrderCommand;
+import de.metas.frontend_testing.masterdata.dd_order.DDOrderFromCandidatesCommand;
+import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderFromCandidatesRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderResponse;
 import de.metas.frontend_testing.masterdata.hu.CreateHUCommand;
@@ -22,6 +30,9 @@ import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageRequest;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageResponse;
+import de.metas.frontend_testing.masterdata.hu_package.PackageCommand;
 import de.metas.frontend_testing.masterdata.huQRCodes.GenerateHUQRCodeCommand;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeResponse;
@@ -66,6 +77,9 @@ import de.metas.frontend_testing.masterdata.receipt.ReceiptCreateCommand;
 import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
+import de.metas.frontend_testing.masterdata.role.CreateRoleCommand;
+import de.metas.frontend_testing.masterdata.role.JsonCreateRoleRequest;
+import de.metas.frontend_testing.masterdata.role.JsonCreateRoleResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
@@ -75,7 +89,9 @@ import de.metas.frontend_testing.masterdata.shipment.ShipmentCreateCommand;
 import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.PreviousSysconfigsCollector;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
+import de.metas.frontend_testing.masterdata.sysconfig.SystemSysconfigCommand;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
@@ -83,6 +99,7 @@ import de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest;
 import de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogResponse;
 import de.metas.frontend_testing.masterdata.vatid.VATaxIDCheckLogCreateCommand;
 import de.metas.frontend_testing.masterdata.warehouse.ConfigureWarehouseReplenishmentCommand;
+import de.metas.frontend_testing.masterdata.warehouse.ConfigureWarehouseEmptiesCommand;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
@@ -94,7 +111,6 @@ import lombok.Builder;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -112,23 +128,36 @@ public class CreateMasterdataCommand
 
 	private final MasterdataContext context = new MasterdataContext();
 	/**
-	 * Previous values of every sysconfig changed by this request (the request's own {@code sysconfigs} and those set by sub-commands).
+	 * Previous values of every sysconfig row changed by this request (the request's {@code sysconfigs}, {@code systemSysconfigs} and those set by sub-commands).
 	 */
-	private final LinkedHashMap<String, String> previousSysconfigs = new LinkedHashMap<>();
+	private final PreviousSysconfigsCollector previousSysconfigs = new PreviousSysconfigsCollector();
 
 	public JsonCreateMasterdataResponse execute()
 	{
 		this.context.putFromJson(request.getContext());
 
-		// Apply sysconfigs early (before any masterdata creation)
-		previousSysconfigs.putAll(applySysconfigs());
+		return previousSysconfigs.callAndRestoreOnFailure(() -> {
+			// Apply sysconfigs early (before any masterdata creation)
+			applySysconfigs();
+			applySystemSysconfigs();
 
+			return createMasterdata();
+		});
+	}
+
+	private JsonCreateMasterdataResponse createMasterdata()
+	{
 		// Apply AD_Process flag overrides (e.g. IsPdfA3Output for the sales-invoice report process)
 		applyAdProcessFlags();
 
 		// IMPORTANT: the order is very important
+		// Roles come BEFORE login: a login user may reference a role by identifier (JsonLoginUserRequest.role),
+		// which must already exist in the context. Everything created below may then be reachable through that role.
+		final ImmutableMap<String, JsonCreateRoleResponse> roles = createRoles();
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonMailboxResponse> mailboxes = createMailboxes();
+		// BP groups come BEFORE bpartners: a bpartner joins one via JsonCreateBPartnerRequest.bpGroup.
+		final ImmutableMap<String, JsonBPGroupResponse> bpGroups = createBPGroups();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		configureOrgSeller();
 		final ImmutableMap<String, JsonVATaxIDCheckLogResponse> vatIdChecks = createVatIdChecks();
@@ -141,6 +170,8 @@ public class CreateMasterdataCommand
 		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
 		// for products that named a schema identifier. Keep this call directly after createCompensationGroupSchemas().
 		linkProductsToCompensationGroupSchemas();
+		// Calibration rules reference bpartners, BP groups, products, categories and schemas: they all exist by now.
+		final ImmutableMap<String, JsonCalibrationRuleResponse> calibrationRules = createCalibrationRules();
 		// POS terminals: applied after bpartners (walk-in customer identifier) and products (priced into the
 		// terminal's own M_PriceList_Version).
 		final ImmutableMap<String, JsonPOSTerminalResponse> posTerminals = createPOSTerminals();
@@ -158,7 +189,11 @@ public class CreateMasterdataCommand
 		// (the DD_NetworkDistributionLine requires one). Keep it before the sales orders, whose picking-job
 		// schedules trigger the replenishment.
 		configureWarehouseReplenishment();
+
+		// Post-pass: needs every warehouse AND the shippers (a DD_NetworkDistributionLine requires one).
+		configureWarehouseEmpties();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
+		final ImmutableMap<String, JsonPackageResponse> packages = createPackages();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
 		registerOrderIdsInContext(salesOrders);
@@ -169,6 +204,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonInvoiceCreateResponse> invoices = createInvoices();
 		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
+		final ImmutableMap<String, JsonDDOrderResponse> distributionOrdersFromCandidates = createDistributionOrdersFromCandidates();
 		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
 		createCustomQRCodeFormats();
 
@@ -179,13 +215,16 @@ public class CreateMasterdataCommand
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
-				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : ImmutableMap.copyOf(previousSysconfigs))
+				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : previousSysconfigs.toList())
 				.mobileConfig(mobileConfig)
 				.login(login)
+				.roles(roles.isEmpty() ? null : roles)
 				.mailboxes(mailboxes.isEmpty() ? null : mailboxes)
+				.bpGroups(bpGroups.isEmpty() ? null : bpGroups)
 				.bpartners(bpartners)
 				.vatIdChecks(vatIdChecks.isEmpty() ? null : vatIdChecks)
 				.compensationGroupSchemas(compensationGroupSchemas.isEmpty() ? null : compensationGroupSchemas)
+				.calibrationRules(calibrationRules.isEmpty() ? null : calibrationRules)
 				.productCategories(productCategories.isEmpty() ? null : productCategories)
 				.attributes(attributes.isEmpty() ? null : attributes)
 				.products(products)
@@ -198,6 +237,7 @@ public class CreateMasterdataCommand
 				.packingInstructions(packingInstructions)
 				.shippers(shippers)
 				.handlingUnits(hus)
+				.packages(packages)
 				.generatedHUQRCodes(generatedHUQRCodes)
 				.salesOrders(salesOrders)
 				.purchaseOrders(purchaseOrders)
@@ -205,6 +245,7 @@ public class CreateMasterdataCommand
 				.receipts(receipts)
 				.invoices(invoices)
 				.distributionOrders(distributionOrders)
+				.distributionOrdersFromCandidates(distributionOrdersFromCandidates)
 				.manufacturingOrders(manufacturingOrders)
 				.inventories(inventories)
 				.build();
@@ -236,6 +277,36 @@ public class CreateMasterdataCommand
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
 				.build().execute();
+	}
+
+	private ImmutableMap<String, JsonCreateRoleResponse> createRoles()
+	{
+		return process(request.getRoles(), this::createRole);
+	}
+
+	private JsonCreateRoleResponse createRole(final String identifier, final JsonCreateRoleRequest request)
+	{
+		return CreateRoleCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonBPGroupResponse> createBPGroups()
+	{
+		return process(request.getBpGroups(), this::createBPGroup);
+	}
+
+	private JsonBPGroupResponse createBPGroup(final String identifier, final JsonBPGroupRequest request)
+	{
+		return CreateBPGroupCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
 	}
 
 	private ImmutableMap<String, JsonCreateBPartnerResponse> createBPartners()
@@ -279,6 +350,21 @@ public class CreateMasterdataCommand
 	private JsonCompensationGroupSchemaResponse createCompensationGroupSchema(final String identifier, final JsonCompensationGroupSchemaRequest request)
 	{
 		return CreateCompensationGroupSchemaCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonCalibrationRuleResponse> createCalibrationRules()
+	{
+		return process(request.getCalibrationRules(), this::createCalibrationRule);
+	}
+
+	private JsonCalibrationRuleResponse createCalibrationRule(final String identifier, final JsonCalibrationRuleRequest request)
+	{
+		return CreateCalibrationRuleCommand.builder()
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
@@ -355,6 +441,7 @@ public class CreateMasterdataCommand
 	{
 		return CreateProductCommand.builder()
 				.productRepository(services.productRepository)
+				.currentCostsRepository(services.currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
@@ -472,6 +559,25 @@ public class CreateMasterdataCommand
 				.build().execute();
 	}
 
+	/**
+	 * Post-pass: needs every warehouse (the empties target is named by identifier) and the shippers
+	 * (the DD_NetworkDistributionLine requires one).
+	 */
+	private void configureWarehouseEmpties()
+	{
+		if (request.getWarehouses() == null)
+		{
+			return;
+		}
+
+		ConfigureWarehouseEmptiesCommand.builder()
+				.distributionNetworkRepository(services.distributionNetworkRepository)
+				.context(context)
+				.requests(request.getWarehouses())
+				.build()
+				.execute();
+	}
+
 	private ImmutableMap<String, JsonWorkplaceResponse> createWorkplaces()
 	{
 		if (request.getWorkplaces() == null) {return ImmutableMap.of();}
@@ -546,6 +652,22 @@ public class CreateMasterdataCommand
 				.context(context)
 				.request(request)
 				.identifier(identifier)
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonPackageResponse> createPackages()
+	{
+		return process(request.getPackages(), this::createPackage);
+	}
+
+	private JsonPackageResponse createPackage(final String identifier, final JsonPackageRequest request)
+	{
+		return PackageCommand.builder()
+				.inOutPackageRepository(services.inOutPackageRepository)
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
 	}
@@ -638,6 +760,7 @@ public class CreateMasterdataCommand
 	private JsonReceiptCreateResponse createReceipt(final String identifier, final JsonReceiptCreateRequest request)
 	{
 		return ReceiptCreateCommand.builder()
+				.huQRCodesService(services.huQRCodesService)
 				.context(context)
 				.request(request)
 				.build()
@@ -668,6 +791,26 @@ public class CreateMasterdataCommand
 	{
 		return DDOrderCommand.builder()
 				.ddOrderService(services.ddOrderService)
+				.distributionJobLoaderSupportingServices(services.distributionJobLoaderSupportingServices)
+				.captionProvider(services.distributionLauncherCaptionProvider)
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonDDOrderResponse> createDistributionOrdersFromCandidates()
+	{
+		return process(request.getDistributionOrdersFromCandidates(), this::createDistributionOrderFromCandidates);
+	}
+
+	private JsonDDOrderResponse createDistributionOrderFromCandidates(final String identifier, final JsonDDOrderFromCandidatesRequest request)
+	{
+		return DDOrderFromCandidatesCommand.builder()
+				.ddOrderService(services.ddOrderService)
+				.ddOrderCandidateService(services.ddOrderCandidateService)
+				.ddOrderCandidateAllocRepository(services.ddOrderCandidateAllocRepository)
 				.distributionJobLoaderSupportingServices(services.distributionJobLoaderSupportingServices)
 				.captionProvider(services.distributionLauncherCaptionProvider)
 				.context(context)
@@ -740,10 +883,20 @@ public class CreateMasterdataCommand
 
 	}
 
-	private ImmutableMap<String, String> applySysconfigs()
+	private void applySysconfigs()
 	{
-		return SysconfigCommand.builder()
+		SysconfigCommand.builder()
 				.sysconfigs(request.getSysconfigs())
+				.previousSysconfigsCollector(previousSysconfigs)
+				.build()
+				.execute();
+	}
+
+	private void applySystemSysconfigs()
+	{
+		SystemSysconfigCommand.builder()
+				.systemSysconfigs(request.getSystemSysconfigs())
+				.previousSysconfigsCollector(previousSysconfigs)
 				.build()
 				.execute();
 	}

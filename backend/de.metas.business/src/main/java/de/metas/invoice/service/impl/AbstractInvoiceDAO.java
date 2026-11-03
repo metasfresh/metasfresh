@@ -519,15 +519,28 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 			return ImmutableSet.of();
 		}
 
+		return streamReferencingCompletedInvoices(invoiceIds, targetDocType)
+				.map(I_C_Invoice::getRef_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_C_Invoice> retrieveReferencingCompletedInvoices(@NonNull final InvoiceId invoiceId, @NonNull final DocBaseAndSubType targetDocType)
+	{
+		return streamReferencingCompletedInvoices(ImmutableSet.of(invoiceId), targetDocType)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private Stream<I_C_Invoice> streamReferencingCompletedInvoices(@NonNull final Collection<InvoiceId> invoiceIds, @Nullable final DocBaseAndSubType targetDocType)
+	{
 		return queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addInArrayFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoiceIds)
 				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.create()
 				.stream()
-				.filter(invoice -> matchesDocType(invoice, targetDocType))
-				.map(I_C_Invoice::getRef_Invoice_ID)
-				.map(InvoiceId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+				.filter(invoice -> matchesDocType(invoice, targetDocType));
 	}
 
 	@Override
@@ -606,6 +619,31 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		if (query.getAdditionalFilter() != null)
 		{
 			queryBuilder.filter(query.getAdditionalFilter());
+		}
+
+		if (query.getOnlyInvoiceId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, query.getOnlyInvoiceId());
+		}
+
+		if (query.getOnlyDocumentNos() != null)
+		{
+			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, query.getOnlyDocumentNos());
+		}
+
+		if (query.getOnlyOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, query.getOnlyOrgId());
+		}
+
+		if (query.getOnlyBPartnerId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, query.getOnlyBPartnerId());
+		}
+
+		if (query.getOnlySOTrx() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsSOTrx, query.getOnlySOTrx().toBoolean());
 		}
 
 		if (!query.getOnlyDocStatuses().isEmpty())

@@ -50,7 +50,7 @@ public class CreateBPartnerCommand
 	@NonNull private final MasterdataContext context;
 	@NonNull final JsonCreateBPartnerRequest request;
 
-	@NonNull private final BPGroupId bpGroupId = MasterdataContext.BP_GROUP_ID;
+	@NonNull private final BPGroupId bpGroupId;
 	@NonNull private final OrgId orgId = MasterdataContext.ORG_ID;
 	@NonNull private final CountryId countryId = MasterdataContext.COUNTRY_ID;
 	@NonNull private final Identifier bpIdentifier;
@@ -68,6 +68,9 @@ public class CreateBPartnerCommand
 		this.priceListVersionRepository = priceListVersionRepository;
 		this.context = context;
 		this.request = request;
+		this.bpGroupId = request.getBpGroup() != null
+				? context.getId(request.getBpGroup(), BPGroupId.class)
+				: MasterdataContext.BP_GROUP_ID;
 
 		final String customCode = request.getBpartnerCode();
 
@@ -406,7 +409,9 @@ public class CreateBPartnerCommand
 		}
 
 		final Identifier pricingSystemIdentifier = Identifier.unique("PS");
-		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.EUR);
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(request.getPriceListCurrencyCode() != null
+				? CurrencyCode.ofThreeLetterCode(request.getPriceListCurrencyCode())
+				: CurrencyCode.EUR);
 
 		final PricingSetupHelper.PricingSetupResult setup = PricingSetupHelper.createPricingSystemAndPriceList(
 				priceListVersionRepository,

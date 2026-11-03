@@ -32,13 +32,15 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Step definitions for creating {@link de.metas.acct.model.I_C_VAT_Code} records tied to an existing {@code C_Tax}.
@@ -62,21 +64,26 @@ public class C_VAT_Code_StepDef
 	 * <ul>
 	 *     <li>{@code Identifier} — unique identifier used to look the VAT code up later (e.g., in the report step)</li>
 	 *     <li>{@code C_Tax_ID} — identifier of an existing {@code C_Tax} record (from {@link C_Tax_StepDefData})</li>
-	 *     <li>{@code IsSOTrx} — {@code Y}/{@code N}/{@code true}/{@code false}: sales-side vs purchase-side code</li>
 	 * </ul>
 	 *
 	 * <p><b>Optional columns</b>:
 	 * <ul>
+	 *     <li>{@code IsSOTrx} — {@code Y}/{@code N}/{@code true}/{@code false}: sales-side vs purchase-side code;
+	 *         left empty, the code applies to both sides ({@code C_VAT_Code.IsSOTrx} is NULL)</li>
 	 *     <li>{@code AmountType} — {@code T} (tax amount, default) or {@code N} (net/base amount).
 	 *         If omitted, defaults to {@code T}. Use {@code N} only for VAT codes that represent the net
 	 *         base amount in reverse-charge scenarios (e.g., KZ 84/85 base-amount buckets).</li>
+	 *     <li>{@code Description} — the VAT code's description</li>
+	 *     <li>{@code SameVATCodeAs} — identifier of another VAT code whose code string is reused (instead of a random one), so a net row and a tax row form one VAT code</li>
 	 * </ul>
 	 *
 	 * <p>The {@code C_AcctSchema_ID} is always the primary accounting schema of
 	 * {@link StepDefConstants#CLIENT_ID} (resolved via {@link IAcctSchemaBL#getPrimaryAcctSchema}). The
-	 * {@code VATCode} value is a 10-char UUID prefix (the {@code C_VAT_Code.VATCode} column is
-	 * {@code VARCHAR(10)}) so that two codes created for the same {@code C_Tax} within the same
-	 * scenario (sales + purchase) have distinct values and the tax report can group by them.
+	 * {@code VATCode} value has 10 digits (the {@code C_VAT_Code.VATCode} column is {@code VARCHAR(10)}):
+	 * a random 8-digit prefix per data table plus the 2-digit row position. So two codes created for the same
+	 * {@code C_Tax} within the same scenario (sales + purchase) have distinct values, and the codes of one
+	 * data table sort in row order under any collation (equal length, digits only) — a report ordered by
+	 * VAT code lists them in the order of the table.
 	 *
 	 * <p>Multiple {@code C_VAT_Code} rows per {@code (AcctSchema, C_Tax)} are allowed — one per
 	 * {@code IsSOTrx} side. The §13b reverse-charge posting routes T_Due_Acct (output, UStVA KZ 84/85)
@@ -96,19 +103,27 @@ public class C_VAT_Code_StepDef
 	@And("metasfresh contains C_VAT_Codes:")
 	public void metasfresh_contains_c_vat_codes(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::createVATCode);
+		final String codePrefix = String.format("%08d", ThreadLocalRandom.current().nextInt(100_000_000));
+		final AtomicInteger rowPosition = new AtomicInteger(0);
+		DataTableRows.of(dataTable).forEach(row -> createVATCode(row, codePrefix, rowPosition.getAndIncrement()));
 	}
 
-	private void createVATCode(@NonNull final DataTableRow row)
+	private void createVATCode(@NonNull final DataTableRow row, @NonNull final String codePrefix, final int rowPosition)
 	{
+		Check.assume(rowPosition < 100, "At most 100 VAT codes per data table, so the code keeps 10 digits");
 		final Tax tax = taxTable.get(row.getAsIdentifier("C_Tax_ID"));
 		final TaxId taxId = tax.getTaxId();
-		final boolean isSOTrx = row.getAsBoolean("IsSOTrx");
+		// empty IsSOTrx => the code applies to both the sales and the purchase side
+		final Boolean isSOTrx = row.getAsOptionalBoolean("IsSOTrx").toBooleanOrNull();
 		final AcctSchema acctSchema = acctSchemaBL.getPrimaryAcctSchema(StepDefConstants.CLIENT_ID);
 
 		// C_VAT_Code.VATCode is VARCHAR(10) — any longer value is silently truncated by the PO
 		// setter, making two codes for the same C_Tax collide on the truncated prefix.
-		final String vatCodeValue = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+		// Optional SameVATCodeAs: reuse the code string of another identifier, so that a net row and a tax row
+		// (or a sales row and a purchase row) form ONE VAT code, like one Kennzahl on the official form.
+		final String vatCodeValue = row.getAsOptionalIdentifier("SameVATCodeAs")
+				.map(sameAs -> sameAs.lookupNotNullIn(vatCodeTable).getCode())
+				.orElseGet(() -> codePrefix + String.format("%02d", rowPosition));
 
 		// AmountType: optional column; defaults to 'T' (tax amount).
 		// getAsOptionalEnum resolves by ReferenceListAwareEnum code ('N'/'T'), so invalid values fail fast
@@ -122,6 +137,7 @@ public class C_VAT_Code_StepDef
 				.vatCode(vatCodeValue)
 				.isSOTrx(isSOTrx)
 				.amountType(amountType)
+				.description(row.getAsOptionalString("Description").filter(d -> !d.trim().isEmpty()).orElse(null))
 				.validFrom(StepDefConstants.DEFAULT_ValidFrom)
 				.build());
 

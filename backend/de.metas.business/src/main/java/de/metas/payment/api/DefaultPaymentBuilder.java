@@ -276,6 +276,13 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
+	public final DefaultPaymentBuilder paymentBonusAmt(@Nullable final BigDecimal paymentBonusAmt)
+	{
+		assertNotBuilt();
+		payment.setPaymentBonusAmt(CoalesceUtil.coalesceNotNull(paymentBonusAmt, BigDecimal.ZERO));
+		return this;
+	}
+
 	public final DefaultPaymentBuilder writeoffAmt(@Nullable final BigDecimal writeoffAmt)
 	{
 		assertNotBuilt();

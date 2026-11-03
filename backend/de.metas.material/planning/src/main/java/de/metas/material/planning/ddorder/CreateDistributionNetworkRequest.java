@@ -17,6 +17,8 @@ public class CreateDistributionNetworkRequest
 	@NonNull OrgId orgId;
 	@NonNull String name;
 	@NonNull @Singular List<Line> lines;
+	/** Flags the network as THE client's empties network ({@code DD_NetworkDistribution.IsHUDestroyed}). */
+	@Builder.Default boolean huDestroyed = false;
 
 	//
 	//
