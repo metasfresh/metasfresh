@@ -23,6 +23,11 @@
   &.wrap-values {
     table-layout: fixed;
 
+    tbody tr th {
+      width: 40%;
+      overflow-wrap: anywhere; // long captions (e.g. "Mindesthaltbarkeitsdatum") wrap instead of running into the value
+    }
+
     tbody tr td {
       white-space: normal;
       overflow-wrap: anywhere;

@@ -67,6 +67,7 @@ export const NewHUPreviewScreen = {
      * visible without scrolling (the page is not scrolled when this runs: it just opened).
      */
     expectFitsViewport: async () => await test.step(`${NAME} - Expect values and OK/Cancel inside the viewport`, async () => {
+        await containerElement().locator('table').evaluate((el) => el.scrollIntoView({ block: 'start' })); // OK/Cancel must be reachable from the top of the screen, without scrolling
         const viewport = page.viewportSize();
         const container = containerElement();
         const cells = container.locator('td');
