@@ -1,15 +1,19 @@
 package de.metas.cucumber.stepdefs.accounting;
 
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
+import de.metas.util.Services;
 import de.metas.util.text.tabular.Row;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,11 +22,13 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.util.TimeUtil;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_Fact_Acct;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,6 +44,12 @@ public class FactAcctLineMatcher
 	@Nullable private final Money amtSourceDr;
 	@Nullable private final Money amtSourceCr;
 	@Nullable private final Quantity qty;
+	/**
+	 * When {@code true}, assert {@code Fact_Acct.Qty} is zero UOM-agnostically (the UOM-equality check is skipped) —
+	 * for amount-only postings (e.g. a cost revaluation) whose fact lines carry no {@code C_UOM_ID}.
+	 * Set by a bare {@code 0} or {@code -} in the {@code Qty} column.
+	 */
+	private final boolean expectZeroQty;
 	@NonNull @Getter private final TableRecordReference documentRef;
 	@Nullable private final Optional<TaxId> taxId;
 	@Nullable private final Optional<String> vatCode;
@@ -47,6 +59,10 @@ public class FactAcctLineMatcher
 	/** Expected {@code Fact_Acct.Account_ID} (the GL account posted to); {@code null} = skip check. */
 	@Nullable private final Optional<ElementValueId> accountId;
 	@Nullable private final Optional<LocatorId> locatorId;
+	/** Expected {@code Fact_Acct.DateAcct}, as a date in the time zone of the fact line's org; {@code null} = skip check. */
+	@Nullable private final LocalDate dateAcct;
+	/** Expected {@code Fact_Acct.C_AcctSchema_ID}; {@code null} = skip check. */
+	@Nullable private final AcctSchemaId acctSchemaId;
 
 	@Override
 	public String toString() {return row.toTabularString();}
@@ -156,7 +172,13 @@ public class FactAcctLineMatcher
 						.isEqualByComparingTo(BigDecimal.ZERO);
 			}
 		}
-		if (qty != null)
+		if (expectZeroQty)
+		{
+			softly.assertThat(record.getQty())
+					.as(description.newWithMessage("Qty (expected zero, UOM-agnostic)"))
+					.isEqualByComparingTo(BigDecimal.ZERO);
+		}
+		else if (qty != null)
 		{
 			softly.assertThat(record.getQty())
 					.as(description.newWithMessage("Qty"))
@@ -218,6 +240,19 @@ public class FactAcctLineMatcher
 			softly.assertThat(actualLocatorRepoId)
 					.as(description.newWithMessage("M_Locator_ID"))
 					.isEqualTo(locatorId.map(LocatorId::getRepoId).orElse(null));
+		}
+		if (dateAcct != null)
+		{
+			final OrgId orgId = OrgId.ofRepoIdOrAny(record.getAD_Org_ID());
+			softly.assertThat(TimeUtil.asLocalDate(record.getDateAcct(), Services.get(IOrgDAO.class).getTimeZone(orgId)))
+					.as(description.newWithMessage("DateAcct"))
+					.isEqualTo(dateAcct);
+		}
+		if (acctSchemaId != null)
+		{
+			softly.assertThat(AcctSchemaId.ofRepoIdOrNull(record.getC_AcctSchema_ID()))
+					.as(description.newWithMessage("C_AcctSchema_ID"))
+					.isEqualTo(acctSchemaId);
 		}
 	}
 }

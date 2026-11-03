@@ -2,7 +2,7 @@
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5110_Distribution_Order_Candidate
 @F5110
-@ghActions:run_on_executor6
+@ghActions:run_on_executor9
 Feature: sales order interaction with material cockpit - no product planning
 ## F5110: Material Cockpit
 

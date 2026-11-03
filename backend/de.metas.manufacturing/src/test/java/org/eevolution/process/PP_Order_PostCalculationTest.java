@@ -39,6 +39,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessInfo;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.X_AD_Process;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
@@ -78,9 +83,46 @@ class PP_Order_PostCalculationTest
 
 		finishedGoodId = BusinessTestHelper.createProductId("finished good", BusinessTestHelper.createUomEach());
 
-		// the process resolves it in a field initializer; doIt() is not under test here
+		// the process resolves it in a field initializer
 		costDifferenceDistributor = Mockito.mock(PPOrderCostDifferenceDistributor.class);
 		SpringContextHolder.registerJUnitBean(PPOrderCostDifferenceDistributor.class, costDifferenceDistributor);
+		// default to "something was issued" so each test exercises only the condition it names
+		Mockito.when(costDifferenceDistributor.hasInboundCosts(Mockito.any())).thenReturn(true);
+	}
+
+	/**
+	 * Pins the two flags {@code doIt()} sets — see {@code ProcessExecutionResult.recreateViewSelectionAfterExecution}.
+	 * Dropping either one silently leaves the discharged order sitting in the monitor.
+	 */
+	@Test
+	void doIt_asksTheClientToRebuildItsView()
+	{
+		final I_PP_Order ppOrder = ppOrder(DocStatus.Completed);
+
+		final I_AD_Process adProcess = InterfaceWrapperHelper.newInstance(I_AD_Process.class);
+		adProcess.setValue("PP_Order_PostCalculation");
+		adProcess.setName("Nachberechnung");
+		adProcess.setClassname(PP_Order_PostCalculation.class.getName());
+		adProcess.setType(X_AD_Process.TYPE_Java);
+		InterfaceWrapperHelper.saveRecord(adProcess);
+
+		final I_AD_PInstance pinstance = InterfaceWrapperHelper.newInstance(I_AD_PInstance.class);
+		InterfaceWrapperHelper.saveRecord(pinstance);
+
+		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setPInstanceId(PInstanceId.ofRepoId(pinstance.getAD_PInstance_ID()))
+				.setAD_Process_ID(adProcess.getAD_Process_ID())
+				.setRecord(I_PP_Order.Table_Name, ppOrder.getPP_Order_ID())
+				.build();
+
+		final PP_Order_PostCalculation process = new PP_Order_PostCalculation();
+		process.init(processInfo);
+
+		process.doIt();
+
+		assertThat(processInfo.getResult().isRecreateViewSelectionAfterExecution()).isTrue();
+		assertThat(processInfo.getResult().isRefreshAllAfterExecution()).isTrue();
 	}
 
 	@Test
@@ -97,6 +139,24 @@ class PP_Order_PostCalculationTest
 		givenOrderHasCosts(false);
 
 		assertThat(checkPreconditions(ppOrder(DocStatus.Completed)).isRejected()).isTrue();
+	}
+
+	/**
+	 * A completed order with zero inbound cost carries a receipt, not a cost difference, so the action must be
+	 * refused - running it would remove the whole manufactured value from stock and close the order.
+	 */
+	@Test
+	void notOffered_whenNothingWasIssued()
+	{
+		givenOrderHasCosts(true);
+		Mockito.when(costDifferenceDistributor.hasInboundCosts(Mockito.any())).thenReturn(false);
+
+		final ProcessPreconditionsResolution resolution = checkPreconditions(ppOrder(DocStatus.Completed));
+
+		assertThat(resolution.isRejected()).isTrue();
+		// NOT internal is the point: every other branch rejects reason-lessly, so isRejected() alone would
+		// still pass if the reason were dropped.
+		assertThat(resolution.isInternal()).isFalse();
 	}
 
 	@Test

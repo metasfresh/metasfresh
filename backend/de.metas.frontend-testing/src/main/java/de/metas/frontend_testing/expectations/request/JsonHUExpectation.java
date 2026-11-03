@@ -34,8 +34,30 @@ public class JsonHUExpectation
 	 * Matched via {@code HUType.ofCode(huType)}.
 	 */
 	@Nullable String huType;
+	/**
+	 * Optional identifier to BIND the HU this expectation matches, so a later call can resolve it
+	 * (e.g. {@code Backend.getHUQRCodeByIdentifier}). Registered when this expectation is a nested
+	 * LU-child TU (see {@code AssertHUExpectationsCommand.assertTUs}); the manufacturing
+	 * {@code receivedHUs.tu} binder only walks UPWARD and returns {@code null} from an LU, so this is
+	 * the way to bind an LU's inner concrete TU. Reuses the same register-or-verify semantics as
+	 * {@code receivedHUs} ({@code MasterdataContext.putSameOrMissingId}): binds if new, asserts equal
+	 * if already known. Purely additive — an expectation that omits it is unaffected.
+	 */
+	@Nullable Identifier tu;
 	@Nullable Map<String, String> storages;
 	@Nullable Map<String, String> attributes;
+	/**
+	 * Attribute codes that MUST be ABSENT on this HU (the HU carries no value for each listed code).
+	 * <p>
+	 * Additive to {@link #attributes} (which asserts a code is present with a given value). This is the
+	 * explicit, positive way to assert that a container HU (TU / LU) stays size-/attribute-neutral —
+	 * i.e. a mixed-size container is never mislabelled with a single size.
+	 * <p>
+	 * Note: a {@code null} value inside {@link #attributes} keeps its long-standing "don't assert"
+	 * (skip) meaning and is deliberately NOT overloaded to mean "absent"; absence is expressed only
+	 * here, so no existing expectation changes behaviour.
+	 */
+	@Nullable List<String> attributesAbsent;
 	@Nullable List<JsonHUExpectation> tus;
 	@Nullable List<CU> cus;
 	@Nullable Boolean isAggregatedTU;
@@ -59,5 +81,9 @@ public class JsonHUExpectation
 	{
 		@Nullable QtyAndUOMString qty;
 		@Nullable Map<String, String> attributes;
+		/**
+		 * Attribute codes that MUST be ABSENT on this CU. See {@link JsonHUExpectation#attributesAbsent}.
+		 */
+		@Nullable List<String> attributesAbsent;
 	}
 }

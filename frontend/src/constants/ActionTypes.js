@@ -153,6 +153,18 @@ export const DELETE_NOTIFICATION = 'DELETE_NOTIFICATION';
  * @type {string} ToDo: Description for the constant.
  */
 export const CLEAR_NOTIFICATIONS = 'CLEAR_NOTIFICATIONS';
+
+/**
+ * @constant
+ * @type {string} ToDo: Description for the constant.
+ */
+export const SHOW_ACKNOWLEDGE_DIALOG = 'SHOW_ACKNOWLEDGE_DIALOG';
+
+/**
+ * @constant
+ * @type {string} ToDo: Description for the constant.
+ */
+export const HIDE_ACKNOWLEDGE_DIALOG = 'HIDE_ACKNOWLEDGE_DIALOG';
 // END OF NOTIFICATION ACTIONS
 
 //AUTH ACTIONS

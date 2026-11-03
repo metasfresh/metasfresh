@@ -3,6 +3,7 @@ package de.metas.deliveryplanning;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.document.dimension.DimensionService;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,11 +48,13 @@ public class DeliveryPlanningAutoCreateGateTest
 	{
 		final ShipperRepository shipperRepository = new ShipperRepository();
 		final DeliveryPlanningRepository repo = Mockito.mock(DeliveryPlanningRepository.class);
-		final DeliveryStatusColorPaletteService colorPaletteService = Mockito.mock(DeliveryStatusColorPaletteService.class);
+		final DeliveryPlanningAllocRepository allocRepo = new DeliveryPlanningAllocRepository();
+		final DeliveryInstructionRepository instructionRepo = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		final DeliveryInstructionService instructionService = new DeliveryInstructionService(repo, allocRepo, instructionRepo, new MPackageRepository());
 		final DimensionService dimensionService = Mockito.mock(DimensionService.class);
 		final MeansOfTransportationService meansOfTransportationService = Mockito.mock(MeansOfTransportationService.class);
 		final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard = new ShipperTransportationDocSubTypeGuard();
-		return new DeliveryPlanningService(shipperRepository, repo, colorPaletteService, dimensionService, meansOfTransportationService, shipperTransportationDocSubTypeGuard);
+		return new DeliveryPlanningService(shipperRepository, repo, allocRepo, instructionService, dimensionService, meansOfTransportationService, shipperTransportationDocSubTypeGuard);
 	}
 
 	// ------------------------------------------------------------------ tests

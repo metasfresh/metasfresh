@@ -199,4 +199,11 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 */
 	@NonNull
 	Optional<ProductAndHUPIItemProductId> findFirstByGtin(@NonNull GTIN gtin, @Nullable BPartnerId bpartnerId, @Nullable ZonedDateTime date);
+
+	/**
+	 * Same matching as {@link #findFirstByGtin(GTIN, BPartnerId, ZonedDateTime)} (GTIN, partner scope, active rows of active products)
+	 * but without the validity-date filter. Ordered by {@code ValidFrom} ascending, then by ID.
+	 */
+	@NonNull
+	List<I_M_HU_PI_Item_Product> retrieveByGtinIgnoringDate(@NonNull GTIN gtin, @Nullable BPartnerId bpartnerId);
 }

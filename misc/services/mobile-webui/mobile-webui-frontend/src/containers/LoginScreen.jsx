@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import ScreenToaster from '../components/ScreenToaster';
 import LogoHeader from '../components/LogoHeader';
 import { useMobileConfiguration } from '../api/configuration';
 import ButtonWithIndicator from '../components/buttons/ButtonWithIndicator';
@@ -68,7 +67,6 @@ const LoginScreen = () => {
           onSetAuthMethodClicked={handleSetAuthMethod}
         />
       )}
-      <ScreenToaster />
     </div>
   );
 };

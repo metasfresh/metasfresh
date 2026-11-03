@@ -11,7 +11,6 @@ import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
-import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.service.impl.BankStatementBL;
 import de.metas.banking.service.impl.C_BankStatementLine_MockedInterceptor;
@@ -113,13 +112,11 @@ public class BankStatementDocumentHandlerTest
 		final MoneyService moneyService = new MoneyService(currencyRepository);
 		SpringContextHolder.registerJUnitBean(moneyService);
 
-		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
-
 		// bankStatementListenerService = Services.get(IBankStatementListenerService.class);
 		final BankStatementPaymentBL bankStatementPaymentBL = new BankStatementPaymentBL(
 				bankStatementBL,
 				moneyService,
-				new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()));
+				PaymentAllocationService.newInstanceForUnitTesting());
 
 		final BankStatementDocumentHandlerRequiredServicesFacade servicesFacade = new BankStatementDocumentHandlerRequiredServicesFacade(
 				bankStatementPaymentBL,
