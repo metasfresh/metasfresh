@@ -10,6 +10,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.QueryBL;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -156,7 +157,9 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 
 		assertThatThrownBy(() -> repository.createMobileApplicationAccess(request().allowAllActions(false)
 				.allowedActionIds(ImmutableSet.of(actionId)).build()))
-				.isInstanceOf(IllegalArgumentException.class);
+				.isInstanceOf(DBMoreThanOneRecordsFoundException.class)
+				.hasMessageContaining(I_Mobile_Application_Action_Access.Table_Name)
+				.hasMessageContaining(I_Mobile_Application_Action_Access.COLUMNNAME_AD_Role_ID);
 	}
 
 	private MobileApplicationActionId createAction(final String internalName)
