@@ -13,6 +13,8 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
+
 /** HU Manager "create HU from a scanned label": the preview (writes nothing) and OK (one single-HU inventory, one CU). */
 @Service
 @RequiredArgsConstructor
@@ -35,7 +37,7 @@ public class CreateHUFromLabelService
 
 	/** @return the new HU, with its HU QR code created (so the standard actions, Move etc., work on it) */
 	@NonNull
-	public CreatedHU create(@NonNull final JsonCreateHUFromScannedCodeRequest request, @NonNull final ClientId clientId)
+	public CreatedHU create(@NonNull final JsonCreateHUFromScannedCodeRequest request, @NonNull final ClientId clientId, @NonNull final ZonedDateTime date)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> {
 			final HuId huId = CreateHUFromScannedCodeCommand.builder()
@@ -45,6 +47,7 @@ public class CreateHUFromLabelService
 					.scannedCode(request.getScannedCode())
 					.qty(request.getQty())
 					.locatorId(LocatorQRCode.ofScannedCode(request.getLocatorQRCode()).getLocatorId())
+					.date(date)
 					.build()
 					.execute();
 			final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(huId); // creates the QR code if missing, like the HU lookup by value does

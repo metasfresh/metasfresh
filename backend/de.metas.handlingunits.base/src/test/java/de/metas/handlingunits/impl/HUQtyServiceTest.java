@@ -31,6 +31,9 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Attribute;
+import org.compiere.util.TimeUtil;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +48,8 @@ import static org.mockito.Mockito.doAnswer;
 @ExtendWith(AdempiereTestWatcher.class)
 class HUQtyServiceTest
 {
+	private static final ZonedDateTime MOVEMENT_DATE = ZonedDateTime.of(2026, 1, 15, 10, 30, 0, 0, ZoneId.of("Europe/Berlin"));
+
 	private InventoryService inventoryService;
 	private HUQtyService huQtyService;
 
@@ -117,6 +122,7 @@ class HUQtyServiceTest
 		}).when(inventoryService).completeDocument(any());
 
 		final HuId huId = huQtyService.createHUFromInventory(CreateHUFromInventoryRequest.builder()
+				.date(MOVEMENT_DATE)
 				.productId(ProductId.ofRepoId(12345))
 				.qty(Quantity.of("12.345", uomRecord))
 				.locatorId(locatorId)
@@ -140,6 +146,8 @@ class HUQtyServiceTest
 		// the document is the single-HU inventory doc type
 		final I_M_Inventory header = Services.get(IQueryBL.class).createQueryBuilder(I_M_Inventory.class).create().firstOnlyNotNull(I_M_Inventory.class);
 		assertThat(header.getC_DocType_ID()).isEqualTo(singleHUDocTypeId.getRepoId());
+		// the movement date is the date the caller set
+		assertThat(header.getMovementDate()).isEqualTo(TimeUtil.asTimestamp(MOVEMENT_DATE));
 		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine_HU.class).create().count()).isZero();
 	}
 }

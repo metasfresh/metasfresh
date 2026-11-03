@@ -24,6 +24,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 /**
  * OK on the HU Manager "New HU" preview: re-reads the scanned label on the server and books ONE single-HU inventory that creates ONE CU.
@@ -49,6 +50,7 @@ public class CreateHUFromScannedCodeCommand
 	@NonNull private final ScannedCode scannedCode;
 	@NonNull private final BigDecimal qty;
 	@NonNull private final LocatorId locatorId;
+	@NonNull private final ZonedDateTime date;
 
 	@Builder
 	private CreateHUFromScannedCodeCommand(
@@ -57,7 +59,8 @@ public class CreateHUFromScannedCodeCommand
 			@NonNull final ClientId clientId,
 			@NonNull final ScannedCode scannedCode,
 			@NonNull final BigDecimal qty,
-			@NonNull final LocatorId locatorId)
+			@NonNull final LocatorId locatorId,
+			@NonNull final ZonedDateTime date)
 	{
 		this.huQtyService = huQtyService;
 		this.labelProductResolver = LabelProductResolver.builder().huQRCodesService(huQRCodesService).clientId(clientId).build();
@@ -65,6 +68,7 @@ public class CreateHUFromScannedCodeCommand
 		this.scannedCode = scannedCode;
 		this.qty = qty;
 		this.locatorId = locatorId;
+		this.date = date;
 	}
 
 	@NonNull
@@ -82,6 +86,7 @@ public class CreateHUFromScannedCodeCommand
 		final LabelQtyAndWeight qtyAndWeight = LabelQtyAndWeight.of(productId, labelValues.getWeightKg());
 
 		final HuId huId = huQtyService.createHUFromInventory(CreateHUFromInventoryRequest.builder()
+				.date(date)
 				.productId(productId)
 				.qty(Quantitys.of(qty, qtyAndWeight.getStockUomId()))
 				.locatorId(locatorId)

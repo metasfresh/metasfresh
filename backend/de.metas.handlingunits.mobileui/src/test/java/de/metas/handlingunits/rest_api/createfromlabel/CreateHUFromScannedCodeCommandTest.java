@@ -55,6 +55,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class CreateHUFromScannedCodeCommandTest
 {
+	private static final java.time.ZonedDateTime BOOKING_DATE = java.time.ZonedDateTime.of(2026, 1, 15, 10, 30, 0, 0, java.time.ZoneId.of("Europe/Berlin"));
+
 	private static final String SHARED_GTIN = "02001234567817";
 
 	private RecordingHUQtyService huQtyService;
@@ -120,7 +122,7 @@ class CreateHUFromScannedCodeCommandTest
 	private HuId create(final JsonCreateHUFromScannedCodeRequest request)
 	{
 		final CreateHUFromLabelService service = new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelTargetLocatorResolver(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository())));
-		return service.create(request, ClientId.METASFRESH).getHuId();
+		return service.create(request, ClientId.METASFRESH, BOOKING_DATE).getHuId();
 	}
 
 	/**
@@ -157,6 +159,7 @@ class CreateHUFromScannedCodeCommandTest
 		assertThat(booked.getProductId()).isEqualTo(ProductId.ofRepoId(product1.getM_Product_ID()));
 		assertThat(booked.getQty().toBigDecimal()).isEqualByComparingTo("3");
 		assertThat(booked.getLocatorId()).isEqualTo(locatorQRCode.getLocatorId());
+		assertThat(booked.getDate()).isEqualTo(BOOKING_DATE); // the date the caller set, not a clock read of the command
 	}
 
 	private static I_M_Attribute newAttribute(final String code, final String valueType)

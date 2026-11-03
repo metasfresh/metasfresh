@@ -1,6 +1,5 @@
 package de.metas.handlingunits;
 
-import de.metas.common.util.time.SystemTime;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -17,7 +16,8 @@ import java.time.ZonedDateTime;
 @Builder
 public class CreateHUFromInventoryRequest
 {
-	@NonNull @Builder.Default ZonedDateTime date = SystemTime.asZonedDateTime();
+	/** the movement date of the inventory document: the caller owns the time source */
+	@NonNull ZonedDateTime date;
 	@NonNull ProductId productId;
 	@NonNull Quantity qty;
 	@NonNull LocatorId locatorId;

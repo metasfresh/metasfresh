@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.mobileui;
 
+import de.metas.common.util.time.SystemTime;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
@@ -204,7 +205,7 @@ public class HUManagerRestController
 	{
 		assertActionAccess(HUManagerAction.CreateHU);
 
-		final CreateHUFromLabelService.CreatedHU createdHU = createHUFromLabelService.create(request, Env.getClientId());
+		final CreateHUFromLabelService.CreatedHU createdHU = createHUFromLabelService.create(request, Env.getClientId(), SystemTime.asZonedDateTime());
 
 		return handlingUnitsService.getByIdSupplier(
 				() -> GetByIdRequest.builder()
