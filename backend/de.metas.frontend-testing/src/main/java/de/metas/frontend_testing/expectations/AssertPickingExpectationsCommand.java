@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.expectations;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -33,6 +34,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
 import static de.metas.frontend_testing.expectations.assertions.Assertions.softly;
@@ -59,16 +61,41 @@ class AssertPickingExpectationsCommand
 		}
 	}
 
-	private void assertPicking(@NonNull String matcherStr, @NonNull final JsonPickingExpectation pickingExpectation) throws Exception
+	private void assertPicking(@NonNull final String matcherStr, @NonNull final JsonPickingExpectation pickingExpectation) throws Exception
 	{
 		final PickingJobId pickingJobId = getPickingJobIdByMatcherString(matcherStr);
 		final PickingJob pickingJob = services.getPickingJobById(pickingJobId);
 
 		if (pickingExpectation.getShipmentSchedules() != null)
 		{
-			final Collection<I_M_ShipmentSchedule> shipmentSchedules = services.getShipmentSchedulesByIds(pickingJob.getScheduleIds().getShipmentScheduleIds());
+			final Set<ShipmentScheduleId> shipmentScheduleIdSet = pickingJob.getScheduleIds().getShipmentScheduleIds();
+			waitShipmentSchedulesValid(shipmentScheduleIdSet);
+
+			final Collection<I_M_ShipmentSchedule> shipmentSchedules = services.getShipmentSchedulesByIds(shipmentScheduleIdSet);
 			assertShipmentSchedules(pickingExpectation.getShipmentSchedules(), shipmentSchedules);
 		}
+	}
+
+	private void waitShipmentSchedulesValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds) throws InterruptedException
+	{
+		final Supplier<Boolean> noRecomputeRecords = () -> services.isAllValid(shipmentScheduleIds);
+
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		// using do-while because otherwise the first check could be done before invalidation
+		do
+		{
+			logger.info("Waiting for shipment schedules to become valid: {}", shipmentScheduleIds);
+			//noinspection BusyWait
+			Thread.sleep(1000);
+		} while((!noRecomputeRecords.get() && stopwatch.elapsed().compareTo(DEFAULT_TIMEOUT) < 0));
+
+		if (!noRecomputeRecords.get())
+		{
+			throw new AdempiereException(
+					"Shipment schedules not valid after " + stopwatch + ": " + shipmentScheduleIds);
+		}
+
+		logger.info("Shipment schedules are now valid after {}", stopwatch);
 	}
 
 	private PickingJobId getPickingJobIdByMatcherString(@NotNull final String matcherStr)
@@ -125,7 +152,8 @@ class AssertPickingExpectationsCommand
 			@NonNull final List<I_M_ShipmentSchedule> actuals) throws Exception
 	{
 		if (expectation.getIsScheduledForPicking() != null
-				|| expectation.getQtyScheduledForPicking() != null)
+				|| expectation.getQtyScheduledForPicking() != null
+				|| expectation.getQtyScheduledForPickingOfProcessed() != null)
 		{
 			assertThat(actuals).isNotEmpty();
 			actuals.forEach(actual -> softly(() -> {
@@ -139,6 +167,10 @@ class AssertPickingExpectationsCommand
 				{
 					assertThat(actual.getQtyScheduledForPicking()).isEqualTo(expectation.getQtyScheduledForPicking());
 				}
+				if (expectation.getQtyScheduledForPickingOfProcessed() != null)
+				{
+					assertThat(actual.getQtyScheduledForPickingOfProcessed()).isEqualTo(expectation.getQtyScheduledForPickingOfProcessed());
+				}
 			}));
 		}
 
@@ -148,6 +180,60 @@ class AssertPickingExpectationsCommand
 			final List<I_M_ShipmentSchedule_QtyPicked> actualQtyPickedRecords = services.getShipmentScheduleQtyPickedRecords(actualsById.keySet());
 			assertQtyPickedList(expectation.getQtyPicked(), actualQtyPickedRecords, actualsById);
 		}
+
+		if (expectation.getIsClosed() != null)
+		{
+			assertThat(actuals).isNotEmpty();
+			waitShipmentSchedulesClosed(actuals, expectation.getIsClosed());
+			actuals.forEach(actual -> softly(() -> {
+				softlyPutContext("shipmentSchedule", actual);
+				assertThat(actual.isClosed()).as("IsClosed").isEqualTo(expectation.getIsClosed());
+			}));
+		}
+	}
+
+	private void waitShipmentSchedulesClosed(
+			@NonNull final List<I_M_ShipmentSchedule> actuals,
+			final boolean expectedClosed) throws InterruptedException
+	{
+		if (!expectedClosed)
+		{
+			return; // no need to wait if we expect them NOT closed
+		}
+
+		final ArrayList<I_M_ShipmentSchedule> notYetClosed = new ArrayList<>();
+		for (final I_M_ShipmentSchedule actual : actuals)
+		{
+			if (!actual.isClosed())
+			{
+				notYetClosed.add(actual);
+			}
+		}
+
+		if (notYetClosed.isEmpty())
+		{
+			return;
+		}
+
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		while (!notYetClosed.isEmpty() && stopwatch.elapsed().compareTo(DEFAULT_TIMEOUT) < 0)
+		{
+			logger.info("Waiting for {}/{} shipment schedules to be closed", notYetClosed.size(), actuals.size());
+			//noinspection BusyWait
+			Thread.sleep(1000);
+
+			InterfaceWrapperHelper.refreshAll(notYetClosed);
+			notYetClosed.removeIf(I_M_ShipmentSchedule::isClosed);
+		}
+		stopwatch.stop();
+
+		if (!notYetClosed.isEmpty())
+		{
+			throw new AdempiereException("Not all shipment schedules were closed after " + stopwatch + ": " + notYetClosed);
+		}
+
+		// Refresh all actuals so subsequent assertions see updated state
+		InterfaceWrapperHelper.refreshAll(actuals);
 	}
 
 	private void assertQtyPickedList(

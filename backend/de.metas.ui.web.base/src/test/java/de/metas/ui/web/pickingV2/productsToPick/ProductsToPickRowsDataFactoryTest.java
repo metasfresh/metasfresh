@@ -31,12 +31,14 @@ import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
 import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableList;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
@@ -67,7 +69,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductsToPickRowsDataFactoryTest
 {
@@ -134,12 +136,18 @@ public class ProductsToPickRowsDataFactoryTest
 										.bestBeforePolicy(Optional.ofNullable(bestBeforePolicy))
 										//
 										.productId(productId)
+										.productValueAndName(productValueAndName(productId))
 										.asiId(AttributeSetInstanceId.NONE)
 										//
 										.build()
 						)
 				)
 				.build();
+	}
+
+	private static ProductValueAndName productValueAndName(ProductId productId)
+	{
+		return ProductValueAndName.of(productId.getAsString(), TranslatableStrings.anyLanguage("Product " + productId.getAsString()));
 	}
 
 	@Nested

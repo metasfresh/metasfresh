@@ -25,7 +25,7 @@ AS
 $$
 SELECT COALESCE(reft.name, ref.name)                                          AS paymentrule,
        CASE
-           WHEN report.IsHiddenReportElement(o.C_DocType_ID, 'Payment_Term') = 'N' THEN
+           WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Payment_Term') = 'N' THEN
                REPLACE(REPLACE(REPLACE(COALESCE(ptt.name, pt.name),
                                        '$datum_netto',
                                        TO_CHAR(o.dateordered + pt.netdays, 'DD.MM.YYYY')),
@@ -50,7 +50,7 @@ SELECT COALESCE(reft.name, ref.name)                                          AS
        o.descriptionbottom,
        COALESCE(o_dr_trl.name, o_dr.name)                                     AS deliveryrule,
        CASE
-           WHEN report.IsHiddenReportElement(o.C_DocType_ID, 'Delivery_Via_Rule') = 'N' THEN
+           WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Delivery_Via_Rule') = 'N' THEN
                COALESCE(o_dvr_trl.name, o_dvr.name)
        END                                                                              AS deliveryviarule,
        report.getBPartner_CustomDocumentText(o.C_DocTypeTarget_ID, o.c_bpartner_id)       AS AdditionalText,

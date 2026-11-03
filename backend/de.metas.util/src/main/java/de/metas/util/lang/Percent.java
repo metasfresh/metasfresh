@@ -117,6 +117,7 @@ public class Percent implements Comparable<Percent>
 	 * @param denominator if zero, then ZERO percent is returned.
 	 * @return a percent instance with max. two digits after the decimal point.
 	 */
+	@NonNull
 	public static Percent of(
 			@NonNull final BigDecimal numerator,
 			@NonNull final BigDecimal denominator,
@@ -125,6 +126,7 @@ public class Percent implements Comparable<Percent>
 		return of(numerator, denominator, precision, RoundingMode.HALF_UP);
 	}
 
+	@NonNull
 	public static Percent of(
 			@NonNull final BigDecimal numerator,
 			@NonNull final BigDecimal denominator,
@@ -178,7 +180,7 @@ public class Percent implements Comparable<Percent>
 	/**
 	 * 100 based value
 	 */
-	@Getter(AccessLevel.NONE) BigDecimal value;
+	@Getter(AccessLevel.NONE) @NonNull BigDecimal value;
 
 	private Percent(@NonNull final BigDecimal valueAsBigDecimal)
 	{
@@ -190,13 +192,14 @@ public class Percent implements Comparable<Percent>
 	@Override
 	public String toString()
 	{
-		return "" + value + "%";
+		return value + "%";
 	}
 
 	/**
 	 * @return 100 based value
 	 */
 	@JsonValue
+	@NonNull
 	public BigDecimal toBigDecimal()
 	{
 		return value;
@@ -223,6 +226,12 @@ public class Percent implements Comparable<Percent>
 	public boolean isOneHundred()
 	{
 		return ONE_HUNDRED_VALUE.compareTo(value) == 0;
+	}
+
+	/** @return {@code true} if this is strictly greater than 100%. */
+	public boolean isOverOneHundred()
+	{
+		return value.compareTo(ONE_HUNDRED_VALUE) > 0;
 	}
 
 	public Percent add(@NonNull final Percent percent)

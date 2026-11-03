@@ -461,8 +461,10 @@ END $$;
 
 DO $$
 DECLARE
+    v_func_oid oid;
+    v_func_def TEXT;
+    v_fixed_def TEXT;
     v_func_body TEXT;
-    v_fixed_body TEXT;
     v_has_operator_dep BOOLEAN;
     v_operator_oids oid[];
 BEGIN
@@ -477,14 +479,14 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Get function body
-    SELECT prosrc INTO v_func_body
+    -- Get function OID and body
+    SELECT p.oid, p.prosrc INTO v_func_oid, v_func_body
     FROM pg_proc p
     JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'de_metas_endcustomer_fresh_reports'
       AND p.proname = 'docs_sales_order_details_footer';
 
-    IF v_func_body IS NULL THEN
+    IF v_func_oid IS NULL THEN
         RAISE NOTICE 'Function Docs_Sales_Order_Details_Footer does not exist - skipping';
         RETURN;
     END IF;
@@ -514,48 +516,31 @@ BEGIN
 
     RAISE NOTICE 'Fixing Docs_Sales_Order_Details_Footer...';
 
+    -- Get the full function definition dynamically to preserve actual signature
+    SELECT pg_get_functiondef(v_func_oid) INTO v_func_def;
+
+    v_fixed_def := v_func_def;
+
     -- Replace (o.DateOrdered - DiscountDays) with subtractdays(o.DateOrdered, DiscountDays)
-    v_fixed_body := regexp_replace(v_func_body,
+    v_fixed_def := regexp_replace(v_fixed_def,
         E'\\(o\\.DateOrdered\\s*-\\s*DiscountDays\\)',
         'subtractdays(o.DateOrdered, DiscountDays)',
         'gi');
 
     -- Replace (o.DateOrdered - DiscountDays2) with subtractdays(o.DateOrdered, DiscountDays2)
-    v_fixed_body := regexp_replace(v_fixed_body,
+    v_fixed_def := regexp_replace(v_fixed_def,
         E'\\(o\\.DateOrdered\\s*-\\s*DiscountDays2\\)',
         'subtractdays(o.DateOrdered, DiscountDays2)',
         'gi');
 
-    IF v_fixed_body = v_func_body THEN
+    IF v_fixed_def = v_func_def THEN
         RAISE WARNING 'No replacements made in Docs_Sales_Order_Details_Footer - pattern may have changed';
         RETURN;
     END IF;
 
-    -- Recreate the function with fixed body
-    EXECUTE '
-    CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer(
-        IN p_Order_ID numeric,
-        IN p_Language Character Varying(6)
-    )
-    RETURNS TABLE (
-        paymentrule character varying(60),
-        paymentterm character varying(60),
-        discount1 numeric,
-        discount2 numeric,
-        discount_date1 text,
-        discount_date2 text,
-        cursymbol character varying(10),
-        documentnote text,
-        descriptionbottom text,
-        subject character varying,
-        textsnippet character varying,
-        Incoterms character varying,
-        incotermlocation character varying,
-        additionaltext text,
-        isoffer character,
-        taxnote text
-    )
-    AS $f$' || v_fixed_body || '$f$ LANGUAGE sql STABLE';
+    -- Drop and recreate the function with the fixed definition
+    DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_sales_order_details_footer(numeric, character varying);
+    EXECUTE v_fixed_def;
 
     RAISE NOTICE 'Function Docs_Sales_Order_Details_Footer fixed successfully';
 END $$;
@@ -567,8 +552,10 @@ END $$;
 
 DO $$
 DECLARE
+    v_func_oid oid;
+    v_func_def TEXT;
+    v_fixed_def TEXT;
     v_func_body TEXT;
-    v_fixed_body TEXT;
     v_has_operator_dep BOOLEAN;
     v_operator_oids oid[];
 BEGIN
@@ -583,14 +570,14 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Get function body
-    SELECT prosrc INTO v_func_body
+    -- Get function OID and body
+    SELECT p.oid, p.prosrc INTO v_func_oid, v_func_body
     FROM pg_proc p
     JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'de_metas_endcustomer_fresh_reports'
       AND p.proname = 'docs_purchase_order_details_footer';
 
-    IF v_func_body IS NULL THEN
+    IF v_func_oid IS NULL THEN
         RAISE NOTICE 'Function Docs_Purchase_Order_Details_Footer does not exist - skipping';
         RETURN;
     END IF;
@@ -620,46 +607,31 @@ BEGIN
 
     RAISE NOTICE 'Fixing Docs_Purchase_Order_Details_Footer...';
 
+    -- Get the full function definition dynamically to preserve actual signature
+    SELECT pg_get_functiondef(v_func_oid) INTO v_func_def;
+
+    v_fixed_def := v_func_def;
+
     -- Replace (o.DateOrdered - DiscountDays) with subtractdays(o.DateOrdered, DiscountDays)
-    v_fixed_body := regexp_replace(v_func_body,
+    v_fixed_def := regexp_replace(v_fixed_def,
         E'\\(o\\.DateOrdered\\s*-\\s*DiscountDays\\)',
         'subtractdays(o.DateOrdered, DiscountDays)',
         'gi');
 
     -- Replace (o.DateOrdered - DiscountDays2) with subtractdays(o.DateOrdered, DiscountDays2)
-    v_fixed_body := regexp_replace(v_fixed_body,
+    v_fixed_def := regexp_replace(v_fixed_def,
         E'\\(o\\.DateOrdered\\s*-\\s*DiscountDays2\\)',
         'subtractdays(o.DateOrdered, DiscountDays2)',
         'gi');
 
-    IF v_fixed_body = v_func_body THEN
+    IF v_fixed_def = v_func_def THEN
         RAISE WARNING 'No replacements made in Docs_Purchase_Order_Details_Footer - pattern may have changed';
         RETURN;
     END IF;
 
-    -- Recreate the function with fixed body
-    EXECUTE '
-    CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer(
-        IN p_Order_ID numeric,
-        IN p_language Character Varying(6)
-    )
-    RETURNS TABLE (
-        paymentrule character varying(60),
-        paymentterm character varying(60),
-        discount1 numeric,
-        discount2 numeric,
-        discount_date1 text,
-        discount_date2 text,
-        cursymbol character varying(10),
-        Incoterms character varying,
-        incotermlocation character varying,
-        descriptionbottom character varying,
-        deliveryrule character varying,
-        deliveryviarule character varying,
-        additionaltext text,
-        taxnote text
-    )
-    AS $f$' || v_fixed_body || '$f$ LANGUAGE sql STABLE';
+    -- Drop and recreate the function with the fixed definition
+    DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_order_details_footer(numeric, character varying);
+    EXECUTE v_fixed_def;
 
     RAISE NOTICE 'Function Docs_Purchase_Order_Details_Footer fixed successfully';
 END $$;

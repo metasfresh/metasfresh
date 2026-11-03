@@ -24,30 +24,25 @@ package de.metas.order.interceptor;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.BPartnerSupplierApprovalRepository;
-import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.effective.BPartnerEffectiveBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.doctype.CopyDescriptionAndDocumentNote;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParamsRepository;
-import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
-import de.metas.shipping.PurchaseOrderToShipperTransportationService;
-import de.metas.user.UserGroupRepository;
-import de.metas.user.UserRepository;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -75,15 +70,12 @@ public class OrderTest
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		SpringContextHolder.registerJUnitBean(BPartnerOrderParamsRepository.newInstanceForUnitTesting());
+		// C_Order.newInstanceForUnitTesting() transitively builds OrderPayScheduleLCStepService ->
+		// OrderPayScheduleRegularInvoiceService, whose Services.get(IInvoiceLineBL.class) instantiates
+		// InvoiceLineBL, which pulls ProductTaxCategoryService out of the spring context on construction.
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
-		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
-		final BPartnerEffectiveBL bpartnerEffectiveBL = BPartnerEffectiveBL.newInstanceForUnitTesting();
-		final DocumentLocationBL documentLocationBL = DocumentLocationBL.newInstanceForUnitTesting();
-		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
-		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
-		final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting();
-		final OrderPayScheduleService orderPayScheduleService = OrderPayScheduleService.newInstanceForUnitTesting();
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, bpartnerEffectiveBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, purchaseOrderToShipperTransportationService, orderPayScheduleService));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Order.newInstanceForUnitTesting());
 
 		defaultIncoterm = newInstance(I_C_Incoterms.class);
 		defaultIncoterm.setName("System Default Incoterm");
@@ -182,6 +174,8 @@ public class OrderTest
 		doctype.setName(name);
 		doctype.setDescription(description);
 		doctype.setDocumentNote(documentNote);
+		doctype.setDocBaseType(DocBaseType.SalesOrder.getCode());
+		doctype.setDocSubType(DocSubType.StandardOrder.getCode());
 
 		doctype.setCopyDescriptionAndDocumentNote(CopyDescriptionAndDocumentNote.CopyDescAndDocumentNote.getCode());
 
@@ -365,6 +359,162 @@ public class OrderTest
 		save(order);
 
 		Assertions.assertEquals(centralBilling.getC_BPartner_ID(), order.getBill_BPartner_ID());
+	}
+
+	/**
+	 * A partner may have one active bill-to relation per partner location (unique index C_BP_Relation_UC_IsBillTo).
+	 * The order takes Bill_BPartner/Bill_Location from the relation of the order's own bpartner location.
+	 */
+	@Test
+	public void setBillBPartner_usesBillToRelationOfOrderLocation_whenPartnerHasPerLocationRelations()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner member = createBPartnerInGroup("Member", plainGroup);
+		final I_C_BPartner_Location memberLocA = createBPartnerLocation(member);
+		final I_C_BPartner_Location memberLocB = createBPartnerLocation(member);
+
+		final I_C_BPartner billPartnerX = createBPartnerInGroup("BillPartnerX", plainGroup);
+		final I_C_BPartner_Location billLocX1 = createBPartnerLocation(billPartnerX);
+		final I_C_BPartner billPartnerY = createBPartnerInGroup("BillPartnerY", plainGroup);
+		final I_C_BPartner_Location billLocY1 = createBPartnerLocation(billPartnerY);
+
+		createBillToRelation(memberLocA, billLocX1);
+		createBillToRelation(memberLocB, billLocY1);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member.getC_BPartner_ID());
+		order.setC_BPartner_Location_ID(memberLocB.getC_BPartner_Location_ID());
+		order.setIsSOTrx(true);
+		save(order);
+
+		Assertions.assertEquals(billPartnerY.getC_BPartner_ID(), order.getBill_BPartner_ID());
+		Assertions.assertEquals(billLocY1.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
+	/**
+	 * Changing the order's bpartner location re-resolves the bill partner from the new location's bill-to relation.
+	 */
+	@Test
+	public void setBillBPartner_reResolvesBillToRelation_whenOrderLocationChanges()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner member = createBPartnerInGroup("Member", plainGroup);
+		final I_C_BPartner_Location memberLocA = createBPartnerLocation(member);
+		final I_C_BPartner_Location memberLocB = createBPartnerLocation(member);
+
+		final I_C_BPartner billPartnerX = createBPartnerInGroup("BillPartnerX", plainGroup);
+		final I_C_BPartner_Location billLocX1 = createBPartnerLocation(billPartnerX);
+		final I_C_BPartner billPartnerY = createBPartnerInGroup("BillPartnerY", plainGroup);
+		final I_C_BPartner_Location billLocY1 = createBPartnerLocation(billPartnerY);
+
+		createBillToRelation(memberLocA, billLocX1);
+		createBillToRelation(memberLocB, billLocY1);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member.getC_BPartner_ID());
+		order.setC_BPartner_Location_ID(memberLocA.getC_BPartner_Location_ID());
+		order.setIsSOTrx(true);
+		save(order);
+		Assertions.assertEquals(billPartnerX.getC_BPartner_ID(), order.getBill_BPartner_ID());
+		Assertions.assertEquals(billLocX1.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+
+		// non-UI save (a POJO save is never a UI action): the bill partner X was derived from location A's relation,
+		// so it is not a "provided" bill partner and is re-resolved for location B
+		order.setC_BPartner_Location_ID(memberLocB.getC_BPartner_Location_ID());
+		save(order);
+
+		Assertions.assertEquals(billPartnerY.getC_BPartner_ID(), order.getBill_BPartner_ID());
+		Assertions.assertEquals(billLocY1.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
+	/**
+	 * On a non-UI location change where the bill partner was derived from the previous location's relation and the new
+	 * location resolves to nothing, the bill partner falls back to the order partner's own bill-to location.
+	 */
+	@Test
+	public void setBillBPartner_resetsToOwnBillTo_whenNewOrderLocationResolvesNothing()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner member = createBPartnerInGroup("Member", plainGroup);
+		final I_C_BPartner_Location memberLocA = createBPartnerLocation(member);
+		final I_C_BPartner_Location memberLocB = createBPartnerLocation(member);
+		final I_C_BPartner_Location memberOwnBillToLoc = createBPartnerLocation(member);
+		memberOwnBillToLoc.setIsBillTo(true);
+		memberOwnBillToLoc.setIsBillToDefault(true);
+		save(memberOwnBillToLoc);
+
+		final I_C_BPartner billPartnerX = createBPartnerInGroup("BillPartnerX", plainGroup);
+		final I_C_BPartner_Location billLocX1 = createBPartnerLocation(billPartnerX);
+		createBillToRelation(memberLocA, billLocX1);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member.getC_BPartner_ID());
+		order.setC_BPartner_Location_ID(memberLocA.getC_BPartner_Location_ID());
+		order.setIsSOTrx(true);
+		save(order);
+		Assertions.assertEquals(billPartnerX.getC_BPartner_ID(), order.getBill_BPartner_ID());
+
+		order.setC_BPartner_Location_ID(memberLocB.getC_BPartner_Location_ID());
+		save(order);
+
+		Assertions.assertEquals(member.getC_BPartner_ID(), order.getBill_BPartner_ID());
+		Assertions.assertEquals(memberOwnBillToLoc.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
+	/**
+	 * On a non-UI location change, a bill partner that was explicitly provided (not the previous location's resolution) is preserved.
+	 */
+	@Test
+	public void setBillBPartner_keepsProvidedBillBPartner_whenOrderLocationChanges()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner member = createBPartnerInGroup("Member", plainGroup);
+		final I_C_BPartner_Location memberLocA = createBPartnerLocation(member);
+		final I_C_BPartner_Location memberLocB = createBPartnerLocation(member);
+
+		final I_C_BPartner billPartnerX = createBPartnerInGroup("BillPartnerX", plainGroup);
+		final I_C_BPartner_Location billLocX1 = createBPartnerLocation(billPartnerX);
+		final I_C_BPartner billPartnerY = createBPartnerInGroup("BillPartnerY", plainGroup);
+		final I_C_BPartner_Location billLocY1 = createBPartnerLocation(billPartnerY);
+		final I_C_BPartner providedBillPartnerZ = createBPartnerInGroup("ProvidedBillPartnerZ", plainGroup);
+		final I_C_BPartner_Location providedBillLocZ1 = createBPartnerLocation(providedBillPartnerZ);
+
+		createBillToRelation(memberLocA, billLocX1);
+		createBillToRelation(memberLocB, billLocY1);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member.getC_BPartner_ID());
+		order.setC_BPartner_Location_ID(memberLocA.getC_BPartner_Location_ID());
+		order.setBill_BPartner_ID(providedBillPartnerZ.getC_BPartner_ID());
+		order.setBill_Location_ID(providedBillLocZ1.getC_BPartner_Location_ID());
+		order.setIsSOTrx(true);
+		save(order);
+		Assertions.assertEquals(providedBillPartnerZ.getC_BPartner_ID(), order.getBill_BPartner_ID());
+
+		order.setC_BPartner_Location_ID(memberLocB.getC_BPartner_Location_ID());
+		save(order);
+
+		Assertions.assertEquals(providedBillPartnerZ.getC_BPartner_ID(), order.getBill_BPartner_ID());
+		Assertions.assertEquals(providedBillLocZ1.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
+	private I_C_BPartner_Location createBPartnerLocation(final I_C_BPartner bpartner)
+	{
+		final I_C_BPartner_Location location = newInstance(I_C_BPartner_Location.class);
+		location.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		save(location);
+		return location;
+	}
+
+	private void createBillToRelation(final I_C_BPartner_Location fromLocation, final I_C_BPartner_Location billLocation)
+	{
+		final I_C_BP_Relation relation = newInstance(I_C_BP_Relation.class);
+		relation.setC_BPartner_ID(fromLocation.getC_BPartner_ID());
+		relation.setC_BPartner_Location_ID(fromLocation.getC_BPartner_Location_ID());
+		relation.setC_BPartnerRelation_ID(billLocation.getC_BPartner_ID());
+		relation.setC_BPartnerRelation_Location_ID(billLocation.getC_BPartner_Location_ID());
+		relation.setIsBillTo(true);
+		save(relation);
 	}
 
 	private I_C_BP_Group createPlainBPGroup()

@@ -23,13 +23,13 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.ITUDistributionProvider;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -49,6 +49,7 @@ public class TUDistributionProviderImpl implements ITUDistributionProvider
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Override
 	public ImmutableList<BigDecimal> distributeTuUsingLutu(
@@ -70,7 +71,7 @@ public class TUDistributionProviderImpl implements ITUDistributionProvider
 				tuPIItemProduct,
 				ProductId.ofRepoId(orderLine.getM_Product_ID()),
 				qtyOrderedCU.getUomId(),
-				BPartnerId.ofRepoId(order.getC_BPartner_ID()),
+				orderBL.getEffectiveDropshipPartnerId(order),
 				false,
 				HuPackingInstructionsId.ofRepoIdOrNull(huOrderLine.getM_LU_HU_PI_ID()),
 				huOrderLine.getQtyLU());

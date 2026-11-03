@@ -31,11 +31,13 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 import javax.annotation.Nullable;
 
 @ApiModel("Response to a a single mater data upsert request entity")
 @Value
+@NonFinal
 public class JsonResponseUpsertItem
 {
 	public enum SyncOutcome

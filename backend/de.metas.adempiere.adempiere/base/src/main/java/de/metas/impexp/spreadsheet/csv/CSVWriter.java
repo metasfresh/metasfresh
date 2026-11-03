@@ -23,6 +23,7 @@
 package de.metas.impexp.spreadsheet.csv;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.Language;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -45,13 +46,18 @@ import java.util.List;
 
 public class CSVWriter
 {
+	public static final String DEFAULT_FIELD_QUALIFIER = "\"";
+	public static final String DEFAULT_FIELD_DELIMITER = ";";
+
 	private static final String encoding = "UTF-8";
 	private static final boolean enforceUTF8BOM = true; // #12334 to be modified accordingly if other encodings are supported in the future
-	private static final String fieldQuote = "\"";
+
+	private final String fieldQualifier;
+	private final String fieldDelimiter;
+
 	private static final String lineEnding = "\n";
 
-	private final String fieldDelimiter;
-	public static final String DEFAULT_FieldDelimiter = ";";
+	private final boolean includeHeader;
 
 	private final ImmutableList<String> header;
 
@@ -70,7 +76,9 @@ public class CSVWriter
 			@NonNull final File outputFile,
 			@NonNull final List<String> header,
 			@NonNull final String adLanguage,
-			@Nullable final String fieldDelimiter)
+			@Nullable final String fieldDelimiter,
+			@Nullable final String fieldQualifier,
+			@Nullable final Boolean includeHeader)
 	{
 		Check.assume(!header.isEmpty(), "header not empty");
 
@@ -78,7 +86,9 @@ public class CSVWriter
 		this.writer = createWriter(outputFile);
 
 		this.header = ImmutableList.copyOf(header);
-		this.fieldDelimiter = fieldDelimiter != null ? fieldDelimiter : DEFAULT_FieldDelimiter;
+		this.fieldDelimiter = CoalesceUtil.coalesceNotNull(fieldDelimiter, DEFAULT_FIELD_DELIMITER);
+		this.fieldQualifier = CoalesceUtil.coalesceNotNull(fieldQualifier, DEFAULT_FIELD_QUALIFIER);
+		this.includeHeader = includeHeader == null || includeHeader;
 
 		// we need to clone it because of concurrency issues
 		// see http://www.danielschneller.com/2007/04/calendar-dateformat-and-multi-threading.html
@@ -92,7 +102,7 @@ public class CSVWriter
 		{
 			final FileOutputStream out = new FileOutputStream(outputFile, false);
 
-			if(enforceUTF8BOM)
+			if (enforceUTF8BOM)
 			{
 				try
 				{
@@ -119,6 +129,12 @@ public class CSVWriter
 	{
 		if (headerAppended)
 		{
+			return;
+		}
+
+		if (!includeHeader)
+		{
+			headerAppended = true;
 			return;
 		}
 
@@ -209,9 +225,13 @@ public class CSVWriter
 
 	private String quoteCsvValue(@NonNull final String valueStr)
 	{
-		return fieldQuote
-				+ valueStr.replace(fieldQuote, fieldQuote + fieldQuote)
-				+ fieldQuote;
+		if (fieldQualifier.isEmpty())
+		{
+			return valueStr;
+		}
+		return fieldQualifier
+				+ valueStr.replace(fieldQualifier, fieldQualifier + fieldQualifier)
+				+ fieldQualifier;
 	}
 
 	public void close()

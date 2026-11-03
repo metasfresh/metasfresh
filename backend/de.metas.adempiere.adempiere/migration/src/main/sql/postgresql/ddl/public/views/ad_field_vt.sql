@@ -11,64 +11,66 @@ SELECT c_trl.ad_language
      , f.ad_field_id
      , tbl.ad_table_id
      , c.ad_column_id
-     , COALESCE(f.name, c.name)                                   AS name_BaseLang
-     , COALESCE(f_trl.name, f.name, c_trl.name, c.name)           AS name
-     , COALESCE(f.description, c.description)                     AS description_BaseLang
-     , COALESCE(f.help, t.help)                                   AS help_BaseLang
-     , COALESCE(f_trl.description, f.description, c.description)  AS description
-     , COALESCE(f_trl.help, f.help, t.help)                       AS help
+     , COALESCE(f.name, c.name)                                                                                                                   AS name_BaseLang
+     , COALESCE(f_trl.name, f.name, c_trl.name, c.name)                                                                                           AS name
+     , COALESCE(f.description, c.description)                                                                                                     AS description_BaseLang
+     , COALESCE(f.help, t.help)                                                                                                                   AS help_BaseLang
+     , COALESCE(f_trl.description, f.description, c.description)                                                                                  AS description
+     , COALESCE(f_trl.help, f.help, t.help)                                                                                                       AS help
      , f.isdisplayed
      , f.isdisplayedgrid
      , f.IsHideGridColumnIfEmpty
      , f.displaylogic
-     , COALESCE(f.displaylength, 0::numeric)                      AS displaylength
+     , COALESCE(f.displaylength, 0::numeric)                                                                                                      AS displaylength
      , f.columndisplaylength
      , f.seqno
      , f.seqnogrid
      , f.sortno
-     , COALESCE(f.issameline, 'N'::bpchar)                        AS issameline
-     , COALESCE(f.isheading, 'N'::bpchar)                         AS isheading
-     , COALESCE(f.isfieldonly, 'N'::bpchar)                       AS isfieldonly
-     , COALESCE(f.isreadonly, 'Y'::bpchar)                        AS isreadonly
-     , COALESCE(f.isencrypted, c.isencrypted)                     AS isencryptedfield
+     , COALESCE(f.issameline, 'N'::bpchar)                                                                                                        AS issameline
+     , COALESCE(f.isheading, 'N'::bpchar)                                                                                                         AS isheading
+     , COALESCE(f.isfieldonly, 'N'::bpchar)                                                                                                       AS isfieldonly
+     , COALESCE(f.isreadonly, 'Y'::bpchar)                                                                                                        AS isreadonly
+     , COALESCE(f.isencrypted, c.isencrypted)                                                                                                     AS isencryptedfield
      , f.obscuretype
      , c.columnname
      , c.columnsql
      , c.fieldlength
      , c.vformat
-     , COALESCE(f.defaultvalue, c.defaultvalue)                   AS defaultvalue
+     , COALESCE(f.defaultvalue, c.defaultvalue)                                                                                                   AS defaultvalue
      , c.iskey
      , c.isparent
-     , COALESCE(f.ismandatory, c.ismandatory)                     AS ismandatory
-     , c.IsMandatory                                              AS IsMandatoryDB
+     , COALESCE(f.ismandatory, c.ismandatory)                                                                                                     AS ismandatory
+     , c.IsMandatory                                                                                                                              AS IsMandatoryDB
      , c.isidentifier
      , c.istranslated
-     , COALESCE(f.ad_reference_value_id, c.ad_reference_value_id) AS ad_reference_value_id
+     , COALESCE(f.ad_reference_value_id, c.ad_reference_value_id)                                                                                 AS ad_reference_value_id
      , c.callout
-     , COALESCE(f.ad_reference_id, c.ad_reference_id)             AS ad_reference_id
-     , COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)               AS ad_val_rule_id
+     , COALESCE(f.ad_reference_id, c.ad_reference_id)                                                                                             AS ad_reference_id
+     , COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)                                                                                               AS ad_val_rule_id
      , c.ad_process_id
      , c.isalwaysupdateable
-     , c.readonlylogic
+     -- mf15#4157: honour AD_Field-level ReadOnlyLogic override; fall back to AD_Column when the field has no override.
+     -- NULLIF treats empty-string as "not overridden" (legacy AD_Field rows often carry ''-default instead of NULL).
+     , COALESCE(NULLIF(f.readonlylogic, ''), c.readonlylogic)                                                                                    AS readonlylogic
      , c.mandatorylogic
      , c.isupdateable
-     , c.isencrypted                                              AS isencryptedcolumn
+     , c.isencrypted                                                                                                                              AS isencryptedcolumn
      , tbl.tablename
      , c.valuemin
      , c.valuemax
-     , fg.name                                                    AS fieldgroup_BaseLang
-     , COALESCE(fg_trl.name, fg.name)                             AS fieldgroup
-     , vr.code                                                    AS validationcode
+     , fg.name                                                                                                                                    AS fieldgroup_BaseLang
+     , COALESCE(fg_trl.name, fg.name)                                                                                                             AS fieldgroup
+     , vr.code                                                                                                                                    AS validationcode
      , f.included_tab_id
      , fg.fieldgrouptype
      , fg.iscollapsedbydefault
-     , COALESCE(f.infofactoryclass, c.infofactoryclass)           AS infofactoryclass
+     , COALESCE(f.infofactoryclass, c.infofactoryclass)                                                                                           AS infofactoryclass
      , c.isautocomplete
      , f.includedtabheight
      , c.iscalculated
      , f.SpanX
      , f.SpanY
-     , f.EntityType                                               AS FieldEntityType
+     , f.EntityType                                                                                                                               AS FieldEntityType
      , c.FormatPattern
      , c.IsUseDocSequence
      --
@@ -79,10 +81,11 @@ SELECT c_trl.ad_language
      , (CASE WHEN f.IsFilterField = 'Y' AND f.FilterOperator IS NOT NULL THEN f.FilterOperator ELSE c.FilterOperator END)                         AS FilterOperator
      , c.IsShowFilterIncrementButtons
      , (CASE WHEN f.IsFilterField = 'Y' AND f.IsShowFilterInline IS NOT NULL THEN f.IsShowFilterInline ELSE c.IsShowFilterInline END)             AS IsShowFilterInline
-     , (CASE WHEN f.IsFilterField = 'Y' AND f.IsOverrideFilterDefaultValue = 'Y' THEN f.FilterDefaultValue ELSE c.FilterDefaultValue END)           AS FilterDefaultValue
+     , (CASE WHEN f.IsFilterField = 'Y' AND f.IsOverrideFilterDefaultValue = 'Y' THEN f.FilterDefaultValue ELSE c.FilterDefaultValue END)         AS FilterDefaultValue
      , (CASE WHEN f.IsFacetFilter = 'Y' THEN f.IsFacetFilter ELSE c.IsFacetFilter END)                                                            AS IsFacetFilter
      , (CASE WHEN f.IsFacetFilter = 'Y' AND COALESCE(f.FacetFilterSeqNo, 0) != 0 THEN f.FacetFilterSeqNo ELSE c.FacetFilterSeqNo END)             AS FacetFilterSeqNo
      , (CASE WHEN f.IsFacetFilter = 'Y' AND COALESCE(f.MaxFacetsToFetch, 0) != 0 THEN f.MaxFacetsToFetch ELSE c.MaxFacetsToFetch END)             AS MaxFacetsToFetch
+     , (CASE WHEN f.IsShowFilterInactiveValues = 'Y' THEN f.IsShowFilterInactiveValues ELSE c.IsShowFilterInactiveValues END)                     AS IsShowFilterInactiveValues
 --
 FROM ad_tab t
          JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id
