@@ -22,5 +22,5 @@ public class JsonCreateHUFromScannedCodeRequest
 	@NonNull ScannedCode scannedCode;
 	@NonNull BigDecimal qty;
 	/** global QR code of the location, as proposed by the preview or scanned on it */
-	@NonNull String locatorQRCode;
+	@NonNull ScannedCode locatorQRCode;
 }

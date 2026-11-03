@@ -99,7 +99,7 @@ public class ProposeHUFromScannedCodeCommand
 				.uom(qtyAndWeight.getStockUom().getCode())
 				.attributes(toJsonAttributes(labelValues))
 				.weightKg(qtyAndWeight.getWeightKgForCU())
-				.locatorQRCode(locatorQRCode != null ? locatorQRCode.toGlobalQRCodeJsonString() : null)
+				.locatorQRCode(locatorQRCode != null ? locatorQRCode.toScannedCode() : null)
 				.locatorCaption(locatorQRCode != null ? locatorQRCode.getCaption() : null)
 				.weightNote(qtyAndWeight.isWeightNotUsed() ? TranslatableStrings.adMessage(WEIGHT_NOT_USED).translate(adLanguage) : null)
 				.build();

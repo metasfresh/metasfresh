@@ -2,6 +2,7 @@ package de.metas.handlingunits.rest_api.createfromlabel;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
+import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -33,7 +34,7 @@ public class JsonHUProposal
 	/** translated note shown instead of the weight when the label carries a weight that this product does not use */
 	@Nullable String weightNote;
 	/** proposed target location (a global QR code, as a scanned location QR code would be); null = none, OK stays disabled until one is scanned */
-	@Nullable String locatorQRCode;
+	@Nullable ScannedCode locatorQRCode;
 	@Nullable String locatorCaption;
 	@Nullable JsonRejection rejection;
 

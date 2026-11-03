@@ -44,7 +44,7 @@ public class CreateHUFromLabelService
 					.clientId(clientId)
 					.scannedCode(request.getScannedCode())
 					.qty(request.getQty())
-					.locatorId(LocatorQRCode.ofGlobalQRCodeJsonString(request.getLocatorQRCode()).getLocatorId())
+					.locatorId(LocatorQRCode.ofScannedCode(request.getLocatorQRCode()).getLocatorId())
 					.build()
 					.execute();
 			final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(huId); // creates the QR code if missing, like the HU lookup by value does
