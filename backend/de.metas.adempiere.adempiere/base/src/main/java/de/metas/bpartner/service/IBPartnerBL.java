@@ -24,6 +24,7 @@ package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -62,6 +63,13 @@ public interface IBPartnerBL extends ISingletonService
 	I_C_BPartner getById(BPartnerId bpartnerId);
 
 	<T extends I_C_BPartner> T getById(@NonNull BPartnerId bpartnerId, @NonNull Class<T> type);
+
+	/**
+	 * @return the partner's own sales order type ({@code C_BPartner.SO_DocTypeTarget_ID}), or empty if the partner has none.
+	 * Only reads the partner's setting: it does not check that the doc type is active, a sales order type or fits an organisation.
+	 * The result is cached per partner and reset when {@code C_BPartner} changes.
+	 */
+	Optional<DocTypeId> getSalesOrderDocTypeId(@NonNull BPartnerId bpartnerId);
 
 	String getBPartnerValue(final BPartnerId bpartnerId);
 

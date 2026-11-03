@@ -16,13 +16,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.Optional;
+
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -55,15 +56,13 @@ class OLCandBLGetOrderDocTypeIdTest
 	{
 		final DocTypeId ownDocTypeId = createSalesOrderDocType();
 		final BPartnerId partnerId = createPartnerId();
-		final I_C_BPartner partner = newInstanceOutOfTrx(I_C_BPartner.class);
-		partner.setSO_DocTypeTarget_ID(createSalesOrderDocType().getRepoId());
-		when(bpartnerBL.getById(partnerId)).thenReturn(partner); // so that an eager partner load fails the verify below, not with an NPE
+		when(bpartnerBL.getSalesOrderDocTypeId(partnerId)).thenReturn(Optional.of(createSalesOrderDocType())); // so that an eager partner load fails the verify below, not with an NPE
 		final I_C_OLCand olCand = createOLCand(ownDocTypeId, partnerId);
 
 		final DocTypeId result = olCandBL.getOrderDocTypeId(null, olCand);
 
 		assertThat(result).isEqualTo(ownDocTypeId);
-		verify(bpartnerBL, never()).getById(any(BPartnerId.class));
+		verify(bpartnerBL, never()).getSalesOrderDocTypeId(any(BPartnerId.class));
 	}
 
 	@Test
@@ -71,9 +70,7 @@ class OLCandBLGetOrderDocTypeIdTest
 	{
 		final DocTypeId partnerDocTypeId = createSalesOrderDocType();
 		final BPartnerId partnerId = createPartnerId();
-		final I_C_BPartner partner = newInstanceOutOfTrx(I_C_BPartner.class);
-		partner.setSO_DocTypeTarget_ID(partnerDocTypeId.getRepoId());
-		when(bpartnerBL.getById(partnerId)).thenReturn(partner);
+		when(bpartnerBL.getSalesOrderDocTypeId(partnerId)).thenReturn(Optional.of(partnerDocTypeId));
 
 		final DocTypeId result = olCandBL.getOrderDocTypeId(null, createOLCand(null, partnerId));
 
@@ -85,30 +82,13 @@ class OLCandBLGetOrderDocTypeIdTest
 	{
 		final DocTypeId defaultDocTypeId = createSalesOrderDocType();
 		final BPartnerId partnerId = createPartnerId();
-		when(bpartnerBL.getById(partnerId)).thenReturn(newInstanceOutOfTrx(I_C_BPartner.class));
+		when(bpartnerBL.getSalesOrderDocTypeId(partnerId)).thenReturn(Optional.empty());
 
 		final DocTypeId result = olCandBL.getOrderDocTypeId(
 				OLCandOrderDefaults.builder().docTypeTargetId(defaultDocTypeId).build(),
 				createOLCand(null, partnerId));
 
 		assertThat(result).isEqualTo(defaultDocTypeId);
-	}
-
-	@Test
-	void candidatesOfTheSamePartner_loadThePartnerOnlyOnce()
-	{
-		final DocTypeId partnerDocTypeId = createSalesOrderDocType();
-		final BPartnerId partnerId = createPartnerId();
-		final I_C_BPartner partner = newInstanceOutOfTrx(I_C_BPartner.class);
-		partner.setSO_DocTypeTarget_ID(partnerDocTypeId.getRepoId());
-		when(bpartnerBL.getById(partnerId)).thenReturn(partner);
-
-		final DocTypeId result1 = olCandBL.getOrderDocTypeId(null, createOLCand(null, partnerId));
-		final DocTypeId result2 = olCandBL.getOrderDocTypeId(null, createOLCand(null, partnerId));
-
-		assertThat(result1).isEqualTo(partnerDocTypeId);
-		assertThat(result2).isEqualTo(partnerDocTypeId);
-		verify(bpartnerBL, times(1)).getById(partnerId);
 	}
 
 	private DocTypeId createSalesOrderDocType()
