@@ -125,8 +125,9 @@ public class DistributionWorkflow_RestController_StepDef
 					final WFActivityId wfActivityId = WFActivityId.ofString(activityNode.at("/activityId").asText());
 					result.wfActivityId(wfActivityId);
 
-					final JsonNode linesArrayNode = activityNode.at("/componentProps/lines");
-					assertThat(linesArrayNode.size()).isOne();
+					// The lines live under /componentProps/job/lines, not directly under componentProps — a wrong path silently yields an empty node instead of erroring.
+					final JsonNode linesArrayNode = activityNode.at("/componentProps/job/lines");
+					assertThat(linesArrayNode.size()).as("lines of the distribution move activity").isOne();
 					final JsonNode lineNode = linesArrayNode.get(0);
 
 					final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();

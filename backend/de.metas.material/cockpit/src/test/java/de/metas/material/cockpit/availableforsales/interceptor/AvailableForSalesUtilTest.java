@@ -2,14 +2,13 @@ package de.metas.material.cockpit.availableforsales.interceptor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
-import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
-import de.metas.material.cockpit.availableforsales.AvailableForSalesRepository;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesService;
 import de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil.CheckAvailableForSalesRequest;
 import de.metas.material.cockpit.availableforsales.model.I_C_OrderLine;
 import de.metas.material.cockpit.model.I_MD_Available_For_Sales_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -158,7 +157,7 @@ class AvailableForSalesUtilTest
 				.warehouseId(qtyPerWarehouseWarehouseId)
 				.build();
 
-		availableForSalesUtil = new AvailableForSalesUtil(new AvailableForSalesService(new AvailableForSalesConfigRepo(), new AvailableForSalesRepository()));
+		availableForSalesUtil = new AvailableForSalesUtil(AvailableForSalesService.newInstanceForUnitTesting());
 	}
 
 	@Test
@@ -168,7 +167,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(FOUR, null/* qtyOnHandStock */, null);
 
 		// invoke the method under test
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config, OrgId.MAIN);
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config, ClientAndOrgId.MAIN);
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 
@@ -183,7 +182,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(THREE, null/* qtyOnHandStock */, null);
 
 		// invoke the method under test
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config, OrgId.MAIN);
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config, ClientAndOrgId.MAIN);
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 
@@ -199,7 +198,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(THREE/* qtyToBeShipped */, FOUR/* qtyOnHandStock */, null);
 
 		// invoke the method under test
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config, OrgId.MAIN);
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config, ClientAndOrgId.MAIN);
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 
@@ -214,7 +213,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(THREE/* qtyToBeShipped */, null/* qtyOnHandStock */, null);
 		createQueryResultRecord(THREE/* qtyToBeShipped */, TEN/* qtyOnHandStock */, null);
 
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config, OrgId.MAIN);
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config, ClientAndOrgId.MAIN);
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 
@@ -229,7 +228,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(THREE/* qtyToBeShipped */, null/* qtyOnHandStock */, warehouseId);
 		createQueryResultRecord(SEVEN/* qtyToBeShipped */, TEN/* qtyOnHandStock */, qtyPerWarehouseWarehouseId);
 
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(qtyPerWarehouseRequest), qtyPerWarehouseConfig, OrgId.MAIN);
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(qtyPerWarehouseRequest), qtyPerWarehouseConfig, ClientAndOrgId.MAIN);
 
 		final I_C_OrderLine updatedOrderRecord = load(qtyPerWarehouseOrderLineId, I_C_OrderLine.class);
 
@@ -244,7 +243,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(THREE/* qtyToBeShipped */, null/* qtyOnHandStock */, warehouseId);
 		createQueryResultRecord(SEVEN/* qtyToBeShipped */, ONE/* qtyOnHandStock */, qtyPerWarehouseWarehouseId);
 
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(qtyPerWarehouseRequest), qtyPerWarehouseConfig, OrgId.MAIN);
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(qtyPerWarehouseRequest), qtyPerWarehouseConfig, ClientAndOrgId.MAIN);
 
 		final I_C_OrderLine updatedOrderRecord = load(qtyPerWarehouseOrderLineId, I_C_OrderLine.class);
 
@@ -252,7 +251,7 @@ class AvailableForSalesUtilTest
 		assertThat(updatedOrderRecord.getQtyAvailableForSales()).isEqualByComparingTo(THREE.negate());
 		assertThat(updatedOrderRecord.getInsufficientQtyAvailableForSalesColor_ID()).isEqualTo(colorId.getRepoId());
 	}
-	
+
 	private void createQueryResultRecord(
 			@Nullable final BigDecimal qtyToBeShipped,
 			@Nullable final BigDecimal qtyOnHandStock,

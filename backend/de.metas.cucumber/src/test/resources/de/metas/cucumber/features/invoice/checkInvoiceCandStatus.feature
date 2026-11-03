@@ -100,7 +100,6 @@ Feature: check invoice candidates status
       | ExternalHeaderId | ExternalLineId | QtyEntered | QtyToInvoice | QtyInvoiced | Processed |
       | ExtHeader_1      | ExtLine_1      | 5          | 0            | 5           | true      |
 
-  #@flaky 2025-11-13-metas-ts: I believe I unflakied it
   @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00700_Invoicing

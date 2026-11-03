@@ -84,7 +84,6 @@ public class OrderPayScheduleService
 
 		OrderPayScheduleCreateCommand.builder()
 				.orderPayScheduleService(this)
-				.paymentTermService(paymentTermService)
 				.context(context)
 				.build()
 				.execute();

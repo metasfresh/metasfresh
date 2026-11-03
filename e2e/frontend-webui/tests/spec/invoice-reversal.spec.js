@@ -163,7 +163,7 @@ which is essential for handling billing errors and credit adjustments.
                 .catch(() => {});
             await page.waitForTimeout(500);
 
-            await SalesOrderPage.openRelatedInvoiceCandidate(5000);
+            await SalesOrderPage.openRelatedInvoiceCandidate({ retryDelay: 5000 });
             await InvoiceCandidatePage.expectVisibleForSalesOrder();
             await InvoiceCandidatePage.createInvoiceForSalesOrder();
             console.log(`[${language}] Invoice created from invoice candidates`);

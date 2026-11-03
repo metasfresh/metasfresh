@@ -1,5 +1,6 @@
 package de.metas.invoice.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationBL;
@@ -21,6 +22,7 @@ import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
@@ -32,12 +34,15 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +51,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -53,29 +59,48 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Interceptor(I_C_Invoice.class)
 @Component
 @RequiredArgsConstructor
 public class C_Invoice // 03771
 {
+	private static final Logger log = LogManager.getLogger(C_Invoice.class);
+
 	/**
 	 * Error key for the readonly-after-Complete guard on IsPartialInvoice.
 	 */
 	static final AdMessageKey MSG_IsPartialInvoiceReadOnlyAfterComplete = AdMessageKey.of("de.metas.invoice.IsPartialInvoiceReadOnlyAfterComplete");
+
+	/**
+	 * Error shown when a credit memo is completed while at least one line is missing its {@code Line_CreditMemoReason}.
+	 * The single parameter is the comma-separated list of offending line numbers.
+	 */
+	static final AdMessageKey MSG_CreditMemoReasonMandatory = AdMessageKey.of("de.metas.invoice.CreditMemoReasonMandatory");
+
+	/**
+	 * CSV of {@code C_DocType_ID}s for which the {@code Line_CreditMemoReason} is mandatory before a credit memo can be
+	 * completed. Empty/unset (the core default) disables the validation entirely.
+	 */
+	static final String SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs = "C_Invoice.CreditMemoReasonMandatory_DocTypeIDs";
 
 	@NonNull private final PaymentReservationService paymentReservationService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 	@NonNull private final InvoiceDueDateProviderService invoiceDueDateProviderService;
 
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
@@ -86,6 +111,7 @@ public class C_Invoice // 03771
 	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	// ==========================================================================
 	// Default IsPartialInvoice from C_DocType on BEFORE_NEW
@@ -521,6 +547,50 @@ public class C_Invoice // 03771
 		invoice.setIsFinancial(invoiceBL.getInvoiceDocBaseType(invoice).isFinancial());
 	}
 
+	/**
+	 * Blocks completing a credit memo while any of its lines is missing the {@code Line_CreditMemoReason}.
+	 * <p>
+	 * Only applies to credit memos ({@code DocBaseType} ARC/APC) whose document type is listed in the
+	 * {@link #SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs} SysConfig. The SysConfig is empty by default, so the
+	 * validation is disabled unless an instance explicitly opts in (see dt204/me03#31242).
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void validateCreditMemoReason(@NonNull final I_C_Invoice invoice)
+	{
+		if (!invoiceBL.isCreditMemo(invoice))
+		{
+			return;
+		}
+
+		final ImmutableSet<DocTypeId> mandatoryDocTypeIds = sysConfigBL.getCommaSeparatedRepoIdAwares(
+				SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs, DocTypeId::ofRepoIdOrNull);
+		if (mandatoryDocTypeIds.isEmpty())
+		{
+			return; // validation disabled
+		}
+
+		// The effective doc type resolves C_DocType_ID (post-prepareIt) and falls back to C_DocTypeTarget_ID
+		// (pre-complete state), so we never have to probe the set with a null key.
+		final DocTypeId docTypeId = invoiceBL.getDocTypeIdEffectiveOrNull(invoice);
+		if (!mandatoryDocTypeIds.contains(docTypeId))
+		{
+			return;
+		}
+
+		// I_C_InvoiceLine (de.metas.adempiere.model) extends org.compiere.model.I_C_InvoiceLine, so
+		// getLine_CreditMemoReason()/getLine() are inherited directly — no re-wrapping needed.
+		final String linesWithoutReason = invoiceBL.getLines(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.stream()
+				.filter(line -> Check.isBlank(line.getLine_CreditMemoReason()))
+				.map(line -> Integer.toString(line.getLine()))
+				.collect(Collectors.joining(", "));
+
+		if (!linesWithoutReason.isEmpty())
+		{
+			throw new AdempiereException(MSG_CreditMemoReasonMandatory, linesWithoutReason);
+		}
+	}
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void validateNonFinancialInvoices(@NonNull final I_C_Invoice invoice)
 	{
@@ -552,16 +622,68 @@ public class C_Invoice // 03771
 	}
 
 	/**
-	 * This shall set the Due Date in the invoice considering payment term or contracts, but only if the due date was not set previously
+	 * Sets the DueDate on the invoice at AFTER_PREPARE, honouring the payment term's
+	 * IsAllowOverrideDueDate flag and writing with the org's timezone.
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_PREPARE })
 	public void setDueDate(final I_C_Invoice invoice)
 	{
+		final Timestamp dueDateBefore = invoice.getDueDate();
+		setDueDateOnInvoice(invoice, invoiceDueDateProviderService, paymentTermRepository, orgDAO);
+		if (!Objects.equals(dueDateBefore, invoice.getDueDate()))
+		{
+			InterfaceWrapperHelper.save(invoice);
+		}
+	}
+
+	/**
+	 * When DueDate is null, it is computed via the provider chain and written using the org's timezone.
+	 * When DueDate is already set and the payment term does not allow overriding it (IsAllowOverrideDueDate=N),
+	 * the computed value replaces the stored one.
+	 * UI readonly logic is client-side only; REST/EDI calls and stale drafts bypass it and
+	 * can store a value that does not match the payment term. Enforcing here keeps the stored
+	 * date consistent with the payment term regardless of how the invoice was completed.
+	 * When IsAllowOverrideDueDate=Y, the user-supplied date is left untouched — the override is intentional.
+	 * When no payment term is set, flag enforcement is skipped; the provider chain owns fallbacks
+	 * for the null-DueDate case.
+	 */
+	static void setDueDateOnInvoice(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final InvoiceDueDateProviderService invoiceDueDateProviderService,
+			@NonNull final IPaymentTermRepository paymentTermRepository,
+			@NonNull final IOrgDAO orgDAO)
+	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		final ZoneId orgZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
+
 		if (invoice.getDueDate() == null)
 		{
-			final LocalDate dueDate = invoiceDueDateProviderService.provideDueDateFor(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
-			invoice.setDueDate(TimeUtil.asTimestamp(dueDate));
-			InterfaceWrapperHelper.save(invoice);
+			final LocalDate computed = invoiceDueDateProviderService.provideDueDateFor(invoiceId);
+			invoice.setDueDate(TimeUtil.asTimestamp(computed, orgZone));
+			return;
+		}
+
+		// DueDate already set — only enforce the flag when a payment term is present
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(invoice.getC_PaymentTerm_ID());
+		if (paymentTermId == null)
+		{
+			// Defensive: no payment term → nothing to enforce
+			return;
+		}
+
+		if (paymentTermRepository.isAllowOverrideDueDate(paymentTermId))
+		{
+			return;
+		}
+
+		// flag=N — recompute and replace if the stored value differs
+		final LocalDate computed = invoiceDueDateProviderService.provideDueDateFor(invoiceId);
+		final Timestamp computedTs = TimeUtil.asTimestamp(computed, orgZone);
+		if (!computedTs.equals(invoice.getDueDate()))
+		{
+			log.info("Overriding DueDate on invoice {} because IsAllowOverrideDueDate=N: {} -> {}",
+					invoiceId, invoice.getDueDate(), computedTs);
+			invoice.setDueDate(computedTs);
 		}
 	}
 }

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-dispo-service
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
 import ch.qos.logback.classic.Level;
@@ -17,6 +39,9 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -25,33 +50,13 @@ import java.util.Collection;
 
 import static java.math.BigDecimal.ZERO;
 
-/*
- * #%L
- * metasfresh-material-dispo
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class ShipmentScheduleDeletedHandler implements MaterialEventHandler<ShipmentScheduleDeletedEvent>
 {
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleDeletedHandler.class);
 
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepository;
 
@@ -72,10 +77,13 @@ public class ShipmentScheduleDeletedHandler implements MaterialEventHandler<Ship
 	@Override
 	public void handleEvent(@NonNull final ShipmentScheduleDeletedEvent event)
 	{
-		// dropship-warehouse shipment-schedules bypass material-disposition entirely —
-		// the C_Order_DropshipPO interceptor creates a direct SO→PO instead of going through MD_Candidate.
-		if (event.isDropShipWarehouse())
+		final WarehouseId warehouseId = event.getMaterialDescriptor().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
 			return;
 		}
 

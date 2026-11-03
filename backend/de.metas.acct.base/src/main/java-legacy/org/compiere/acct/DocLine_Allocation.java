@@ -371,6 +371,34 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		Check.assume(added, "Line should not be already compensated: {}", this);
 	}
 
+	/**
+	 * @return true if this line is a <b>sales</b> credit memo whose counter-line is a sales invoice.
+	 * <p>
+	 * For such a pair, the credit memo's receivable is cleared by
+	 * {@code Doc_AllocationHdr.createCreditMemoCompensationFacts()} while the <i>invoice</i> line is iterated,
+	 * so all that is left to book on this line is its own discount / write-off.
+	 * <p>
+	 * Unlike {@link #isInvoiceWithCreditMemoCounterLine(AcctSchemaId)} this is purely structural, i.e. it does not
+	 * depend on the order in which the allocation's lines are iterated.
+	 */
+	public boolean isSalesCreditMemoWithInvoiceCounterLine()
+	{
+		if (!hasInvoiceDocument() || !isCreditMemoInvoice() || !isSOTrxInvoice())
+		{
+			return false;
+		}
+
+		final DocLine_Allocation counterLine = getCounterDocLine();
+		if (counterLine == null || !counterLine.hasInvoiceDocument())
+		{
+			return false;
+		}
+
+		// Same SOTrx, counter is a regular invoice
+		return counterLine.isSOTrxInvoice()
+				&& !counterLine.isCreditMemoInvoice();
+	}
+
 	public boolean hasInvoiceDocument()
 	{
 		return getC_Invoice() != null;
@@ -486,7 +514,17 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	}
 
 	/**
-	 * Get Payment (Unallocated Payment or Payment Selection) Acct of Bank Account
+	 * Get the bank/clearing account that the {@link org.compiere.model.I_C_Payment} was originally posted to,
+	 * so the allocation can reverse it correctly.
+	 *
+	 * MUST stay in sync with {@link Doc_Payment#createFacts(AcctSchema)} — same decision tree:
+	 * <ul>
+	 *     <li>ARReceipt + IsPrepayment=Y → {@code C_Prepayment}</li>
+	 *     <li>ARReceipt + IsPrepayment=N → {@code B_UnallocatedCash_Acct}</li>
+	 *     <li>PurchasePayment + IsPrepayment=Y → {@code V_Prepayment}</li>
+	 *     <li>PurchasePayment + IsPrepayment=N → {@code B_PaymentSelect_Acct}</li>
+	 * </ul>
+	 * Charge-based payments are handled by {@link Doc_Payment} only; allocation of a charge payment is out of scope here.
 	 */
 	@NonNull
 	private Account getPaymentAcct(@NonNull final AcctSchema as, @NonNull final PaymentId paymentId)
@@ -508,15 +546,9 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			{
 				doc.setBPBankAccountId(BankAccountId.ofRepoIdOrNull(rs.getInt(1)));
 
-				final DocBaseType docBaseType = DocBaseType.ofCode(rs.getString(2));
-				if (DocBaseType.PurchasePayment.equals(docBaseType))
-				{
-					return doc.getBankAccountAccount(BankAccountAcctType.B_PaymentSelect_Acct, as);
-				}
-
-				// Prepayment
+				// IsPrepayment must come first — see method Javadoc
 				final boolean isPrepayment = StringUtils.toBoolean(rs.getString(4));
-				if (isPrepayment)        // Prepayment
+				if (isPrepayment)
 				{
 					final boolean isReceipt = StringUtils.toBoolean(rs.getString(3));
 					if (isReceipt)
@@ -527,6 +559,12 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 					{
 						return doc.getVendorAccount(BPartnerVendorAccountType.V_Prepayment, as);
 					}
+				}
+
+				final DocBaseType docBaseType = DocBaseType.ofCode(rs.getString(2));
+				if (DocBaseType.PurchasePayment.equals(docBaseType))
+				{
+					return doc.getBankAccountAccount(BankAccountAcctType.B_PaymentSelect_Acct, as);
 				}
 			}
 

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1413846951L;
+	private static final long serialVersionUID = -391288279L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -1428,6 +1428,36 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getSalesRep_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SalesRep_ID);
+	}
+
+	/** 
+	 * ScriptedExport_Status AD_Reference_ID=542104
+	 * Reference name: ExternalSystem_ExportStatus
+	 */
+	public static final int SCRIPTEDEXPORT_STATUS_AD_Reference_ID=542104;
+	/** Pending = P */
+	public static final String SCRIPTEDEXPORT_STATUS_Pending = "P";
+	/** Enqueued = U */
+	public static final String SCRIPTEDEXPORT_STATUS_Enqueued = "U";
+	/** SendingStarted = D */
+	public static final String SCRIPTEDEXPORT_STATUS_SendingStarted = "D";
+	/** Sent = S */
+	public static final String SCRIPTEDEXPORT_STATUS_Sent = "S";
+	/** Error = E */
+	public static final String SCRIPTEDEXPORT_STATUS_Error = "E";
+	/** Invalid = I */
+	public static final String SCRIPTEDEXPORT_STATUS_Invalid = "I";
+	/** DontSend = N */
+	public static final String SCRIPTEDEXPORT_STATUS_DontSend = "N";
+	@Override
+	public void setScriptedExport_Status (final @Nullable java.lang.String ScriptedExport_Status)
+	{
+		throw new IllegalArgumentException ("ScriptedExport_Status is virtual column");	}
+
+	@Override
+	public java.lang.String getScriptedExport_Status() 
+	{
+		return get_ValueAsString(COLUMNNAME_ScriptedExport_Status);
 	}
 
 	@Override

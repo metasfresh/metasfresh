@@ -1,9 +1,10 @@
 package de.metas.handlingunits.grai;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.model.X_C_BPartner;
@@ -12,7 +13,6 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-@Getter
 public enum GRAIRequired implements ReferenceListAwareEnum
 {
 	No(X_C_BPartner.GRAIREQUIRED_No),
@@ -24,6 +24,12 @@ public enum GRAIRequired implements ReferenceListAwareEnum
 
 	@NonNull private final String code;
 
+	@Override
+	@JsonValue
+	@NonNull
+	public String getCode() {return code;}
+
+	@JsonCreator
 	@NonNull
 	public static GRAIRequired ofCode(@NonNull final String code)
 	{

@@ -228,6 +228,7 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 		return price;
 	}
 
+	@Nullable
 	public I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return orderLine.getM_AttributeSetInstance();

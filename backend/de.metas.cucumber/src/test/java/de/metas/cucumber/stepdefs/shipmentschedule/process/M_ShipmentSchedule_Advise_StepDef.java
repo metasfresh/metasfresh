@@ -66,8 +66,11 @@ public class M_ShipmentSchedule_Advise_StepDef
 	@And("Process M_ShipmentSchedule_Advise_Manual is run")
 	public void runM_ShipmentSchedule_Advise_Manual(@NonNull final DataTable dataTable)
 	{
+		DataTableRows.of(dataTable).forEach(this::runManualAdviseForRow);
+	}
 
-		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+	private void runManualAdviseForRow(@NonNull final DataTableRow row)
+	{
 		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID));
 		final ShipperId shipperId = shipperTable.getId(row.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID));
 		final CarrierProductId carrierProductId = carrierProductTable.getId(row.getAsIdentifier(I_Carrier_Product.COLUMNNAME_Carrier_Product_ID));
@@ -75,9 +78,8 @@ public class M_ShipmentSchedule_Advise_StepDef
 
 		final List<CarrierServiceId> carrierServiceIds = new ArrayList<>();
 		row.getAsOptionalIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID)
-				.ifPresent(identifier -> carrierServiceIds.add(identifier.lookupNotNullIdIn(carrierServiceTable)));
-		row.getAsOptionalIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID + "2")
-				.ifPresent(identifier -> carrierServiceIds.add(identifier.lookupNotNullIdIn(carrierServiceTable)));
+				.ifPresent(identifier -> identifier.toCommaSeparatedList()
+						.forEach(id -> carrierServiceIds.add(id.lookupNotNullIdIn(carrierServiceTable))));
 
 		carrierAdviseProcessService.updateEligibleShipmentSchedules(
 				CarrierAdviseUpdateRequest.builder()

@@ -3,6 +3,7 @@ package org.eevolution.api;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
@@ -13,6 +14,7 @@ import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_Candidate;
@@ -93,7 +95,7 @@ public class PPOrderCreateRequestBuilder
 				.warehouseId(warehouseId.getAggregatedValue((list) -> throwErrorOnMoreThanOneUniqueValue("warehouseId", list)))
 				//
 				.productId(productId.getAggregatedValue((list) -> throwErrorOnMoreThanOneUniqueValue("productId", list)))
-				.attributeSetInstanceId(attributeSetInstanceId.getAggregatedValue(PPOrderCreateRequestBuilder::returnNullOnMoreThanOneUniqueValue))
+				.attributeSetInstanceId(attributeSetInstanceId.getAggregatedValue(PPOrderCreateRequestBuilder::aggregateStorageRelevantAttributeSetInstanceId))
 				//
 				.dateOrdered(SystemTime.asInstant())
 				.datePromised(datePromised.getAggregatedValue((list) -> throwErrorOnMoreThanOneUniqueValue("datePromised", list)))
@@ -119,6 +121,30 @@ public class PPOrderCreateRequestBuilder
 	private static <T> T returnNullOnMoreThanOneUniqueValue(@NonNull final List<T> values)
 	{
 		return null;
+	}
+
+	/**
+	 * Called by {@link ValueAggregator} only when candidates hold more than one distinct ASI repo-id. Compares by
+	 * storage-relevant {@link AttributesKey} (same identity as the candidate/shipment paths): all equal keeps the
+	 * first candidate's real ASI id; a genuine difference nulls it (NONE), preserving prior behaviour.
+	 */
+	@Nullable
+	private static AttributeSetInstanceId aggregateStorageRelevantAttributeSetInstanceId(@NonNull final List<AttributeSetInstanceId> asiIds)
+	{
+		final AttributesKey firstKey = toStorageRelevantAttributesKey(asiIds.get(0));
+		for (final AttributeSetInstanceId asiId : asiIds.subList(1, asiIds.size()))
+		{
+			if (!firstKey.equals(toStorageRelevantAttributesKey(asiId)))
+			{
+				return null;
+			}
+		}
+		return asiIds.get(0);
+	}
+
+	private static AttributesKey toStorageRelevantAttributesKey(@NonNull final AttributeSetInstanceId asiId)
+	{
+		return AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
 	}
 
 	private static class ValueAggregator<T>

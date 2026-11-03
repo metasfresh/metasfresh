@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 80621533L;
+	private static final long serialVersionUID = -1213707682L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -327,6 +327,12 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_AnalysisReport = "QMA";
 	/** APProFormaInvoice = APF */
 	public static final String DOCBASETYPE_APProFormaInvoice = "APF";
+	/** Tax Declaration = TXD */
+	public static final String DOCBASETYPE_TaxDeclaration = "TXD";
+	/** Order Checkup Production = BKP */
+	public static final String DOCBASETYPE_OrderCheckupProduction = "BKP";
+	/** Order Checkup Office = BKB */
+	public static final String DOCBASETYPE_OrderCheckupOffice = "BKB";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
 	{
@@ -471,8 +477,16 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
 	/** CallOrder = CAO */
 	public static final String DOCSUBTYPE_CallOrder = "CAO";
+	/** Delivery Instruction = DI */
+	public static final String DOCSUBTYPE_DeliveryInstruction = "DI";
+	/** InventoryShortageDocument = ISD */
+	public static final String DOCSUBTYPE_InventoryShortageDocument = "ISD";
+	/** InventoryOverageDocument = IOD */
+	public static final String DOCSUBTYPE_InventoryOverageDocument = "IOD";
 	/** Order on Commission = OOC */
 	public static final String DOCSUBTYPE_OrderOnCommission = "OOC";
+	/** PaymentBonusCreditMemo = PB */
+	public static final String DOCSUBTYPE_PaymentBonusCreditMemo = "PB";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{

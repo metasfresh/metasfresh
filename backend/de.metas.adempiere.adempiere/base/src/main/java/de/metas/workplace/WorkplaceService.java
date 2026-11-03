@@ -35,7 +35,6 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -94,15 +93,39 @@ public class WorkplaceService
 		return workplaceRepository.isAnyWorkplaceActive();
 	}
 
-	public Set<LocatorId> getPickFromLocatorIds(final Workplace workplace)
+	public ImmutableSet<LocatorId> getAllPackingPlacePickFromLocatorIds()
 	{
-		if (workplace.getPickFromLocatorId() != null)
-		{
-			return ImmutableSet.of(workplace.getPickFromLocatorId());
-		}
-		else
-		{
-			return warehouseBL.getLocatorIdsByWarehouseId(workplace.getWarehouseId());
-		}
+		return workplaceRepository.getAllPackingPlacePickFromLocatorIds();
+	}
+
+	/**
+	 * The single target locator to deliver to for this workplace: the configured {@code PickFrom_Locator_ID} if set,
+	 * otherwise the workplace warehouse's default locator (always resolvable via
+	 * {@link IWarehouseBL#getOrCreateDefaultLocatorId(WarehouseId)}). Use this when exactly one delivery locator is
+	 * required (e.g. the DD_Order picking-replenishment target).
+	 */
+	@NonNull
+	public LocatorId getPickFromLocatorIdOrWarehouseDefault(@NonNull final Workplace workplace)
+	{
+		final LocatorId pickFromLocatorId = workplace.getPickFromLocatorId();
+		return pickFromLocatorId != null
+				? pickFromLocatorId
+				: warehouseBL.getOrCreateDefaultLocatorId(workplace.getWarehouseId());
+	}
+
+	/**
+	 * Filters to the locator's own warehouse only — safe because a configured pick-from locator is asserted to belong to its workplace's warehouse, so no other warehouse's workplace can resolve to this locator.
+	 */
+	@NonNull
+	public ImmutableSet<WorkplaceId> getWorkplaceIdsByEffectivePickFromLocatorId(@NonNull final LocatorId locatorId)
+	{
+		final WarehouseId warehouseId = locatorId.getWarehouseId();
+
+		return workplaceRepository.getAllActive()
+				.stream()
+				.filter(workplace -> WarehouseId.equals(workplace.getWarehouseId(), warehouseId))
+				.filter(workplace -> LocatorId.equals(getPickFromLocatorIdOrWarehouseDefault(workplace), locatorId))
+				.map(Workplace::getId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }
