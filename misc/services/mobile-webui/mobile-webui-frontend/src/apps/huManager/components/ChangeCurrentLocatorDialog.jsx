@@ -4,7 +4,7 @@ import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent
 import PropTypes from 'prop-types';
 import DialogButton from '../../../components/dialogs/DialogButton';
 import Dialog from '../../../components/dialogs/Dialog';
-import { resolveLocatorQRCode } from '../../../api/warehouse';
+import { toLocatorQRCode } from '../../../api/warehouse';
 import { toastError } from '../../../utils/toast';
 
 const ChangeCurrentLocatorDialog = ({ onOK, onClose }) => {
@@ -14,7 +14,7 @@ const ChangeCurrentLocatorDialog = ({ onOK, onClose }) => {
         <BarcodeScannerComponent
           inputPlaceholderText={trl('huManager.locator')}
           onResolvedResult={({ scannedBarcode }) => {
-            resolveLocatorQRCode({ scannedBarcode })
+            toLocatorQRCode({ scannedBarcode })
               .then((locatorQRCode) => onOK(locatorQRCode))
               .catch((axiosError) => toastError({ axiosError }));
           }}

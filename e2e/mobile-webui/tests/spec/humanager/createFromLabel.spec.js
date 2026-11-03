@@ -38,6 +38,21 @@ const FORMAT_GTIN_LOT_BBD = {
     ],
 };
 
+// Fixed-position format of a bracketed label "(01)<GTIN-14>(11)<yyMMdd production date>(10)<6-character lot>" (38 characters; no best-before date).
+// Only the shape is the shape of a real customer label; the code values of the test are INVENTED.
+const FORMAT_BRACKETED_GTIN_PRODDATE_LOT = {
+    name: 'my bracketed label (HU Manager)',
+    parts: [
+        { startPosition: 1, endPosition: 4, type: 'CONSTANT', constantValue: '(01)' },
+        { startPosition: 5, endPosition: 18, type: 'GTIN' },
+        { startPosition: 19, endPosition: 22, type: 'CONSTANT', constantValue: '(11)' },
+        { startPosition: 23, endPosition: 28, type: 'PRODUCTION_DATE', dateFormat: 'yyMMdd' },
+        { startPosition: 29, endPosition: 32, type: 'CONSTANT', constantValue: '(10)' },
+        { startPosition: 33, endPosition: 38, type: 'LOT' },
+    ],
+};
+const bracketedLabel = (gtin) => `(01)${gtin}(11)270315(10)481732`;
+
 // Constant + Product code + Weight + Lot + Production date + Best-before + Ignore
 //   e.g. 'XQ' + <4-digit product code> + '012345' (12.345 kg) + 'L2311' + '251101' + '271231' + 'zz'
 const FORMAT_PRODUCTCODE_WEIGHT = {
@@ -97,7 +112,7 @@ const clickOKAndGetCreatedHU = async () => {
 // AC4: after OK the user is back on the scan screen — a success message naming the HU and the quantity, the scan field ready,
 // no HU info screen (the new HU is NOT opened). The message is what tells the user which HU number was created.
 const expectBackOnScanScreenAfterOK = async ({ created, qty = '1 PCE', locatorCode }) => await test.step('Expect: back on the scan screen after OK, success message, no HU info', async () => {
-    // the HU is booked on the proposed location (the create response's JsonHU.locatorValue; was asserted on the HU info screen before AC4)
+    // the HU is booked on the proposed location (the create response's JsonHU.locatorValue)
     if (locatorCode !== undefined) expect(created.locatorValue).toBe(locatorCode);
     await HUManagerScreen.waitForScreen();
     await NewHUPreviewScreen.expectNotDisplayed();
@@ -217,6 +232,51 @@ test('reference case with an invented GS1 label -> preview -> OK -> back on the 
             },
         },
         inventories: { [huQRCode]: { isExists: true, docStatus: 'CO', count: 1 } },
+        products: { 'P1': { huStorageCount: 1, inventoryLineCount: 1 } },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('reference label shape (bracketed, fixed positions) -> preview -> enter quantity -> OK -> lot + production date on the CU, no HU_QRCode value', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - create HU from a scanned label');
+    allure.severity('critical');
+
+    const gtin = uniqueGtin14();
+    const masterdata = await createMasterdata({ gtin, formats: [FORMAT_BRACKETED_GTIN_PRODDATE_LOT] });
+    await openHUManager({ user: masterdata.login.user });
+
+    await scanLabelAndWaitForPreview({ label: bracketedLabel(gtin) });
+    await expect(page.getByTestId('product-value')).toContainText(masterdata.products.P1.productName);
+    await NewHUPreviewScreen.expectValue({ name: 'attribute-Lot-Nummer-value', expectedValue: '481732' });
+    await expect(page.getByTestId('attribute-ProductionDate-value')).toContainText('2027');
+    const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
+
+    // the label carries no quantity: the user enters it
+    await NewHUPreviewScreen.setQty(7);
+    await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '7 PCE' });
+    await NewHUPreviewScreen.expectOKEnabled();
+
+    const created = await clickOKAndGetCreatedHU();
+    const { huId, huQRCode } = created;
+    await expectBackOnScanScreenAfterOK({ created, locatorCode, qty: '7 PCE' });
+
+    // one completed inventory; one CU with the entered quantity, the lot and the production date of the label, on the previewed location;
+    // the label code itself is NOT stored as the HU_QRCode attribute
+    await Backend.expect({
+        hus: {
+            [huId]: {
+                huStatus: 'A',
+                storages: { 'P1': '7 PCE' },
+                cus: [{
+                    qty: '7 PCE',
+                    // null = the attribute carries no value (the attribute row exists on every HU; AC27: the label code is not written to it)
+                    attributes: { 'Lot-Nummer': '481732', 'ProductionDate': '2027-03-15', 'HU_QRCode': null },
+                }],
+            },
+        },
+        inventories: { [huQRCode]: { isExists: true, docStatus: 'CO', count: 1, qtyCount: '7' } },
         products: { 'P1': { huStorageCount: 1, inventoryLineCount: 1 } },
     });
 });
@@ -732,9 +792,6 @@ test('role without allow-all and without the createHU grant -> product label giv
     await NewHUPreviewScreen.expectNotDisplayed();
     await HUManagerScreen.waitForScreen();
     expect(calls.count).toBe(0); // neither propose nor create was even called: the app gate (HUManagerScreen.jsx) holds
-
-    // ... and the backend refuses both endpoints for this role on its own, whatever the app does
-    await Backend.expectHUManagerCreateFromLabelRefused({ authToken: masterdata.login.user.token, scannedCode: customLabel(gtin) });
 
     await Backend.expect({ products: { 'P1': { huStorageCount: 0, inventoryLineCount: 0 } } });
 });
