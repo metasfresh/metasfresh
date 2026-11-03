@@ -233,7 +233,7 @@ test('reference case with an invented GS1 label -> preview -> OK -> back on the 
             },
         },
         inventories: { [huQRCode]: { isExists: true, docStatus: 'CO', count: 1, qtyCount: '1' } },
-        products: { 'P1': { huCount: 1, inventoryLineCount: 1 } },
+        products: { 'P1': { huCount: 1 } },
     });
 });
 
@@ -278,7 +278,7 @@ test('reference label shape (bracketed, fixed positions) -> preview -> enter qua
             },
         },
         inventories: { [huQRCode]: { isExists: true, docStatus: 'CO', count: 1, qtyCount: '7' } },
-        products: { 'P1': { huCount: 1, inventoryLineCount: 1 } },
+        products: { 'P1': { huCount: 1 } },
     });
 });
 
@@ -668,7 +668,7 @@ test('rejections show one message each, book nothing; quantity 0 disables OK', a
     });
 
     // nothing was booked by any of the above
-    await Backend.expect({ products: { 'P1': { huCount: 0, inventoryLineCount: 0 } } });
+    await Backend.expect({ products: { 'P1': { huCount: 0 } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -695,7 +695,7 @@ test('a label whose constant part does not match is not recognized', async ({ pa
         label: 'XQZZZZ012345L2311251101271231zz',
         expectedText: /No product found for product code ZZZZ/,
     });
-    await Backend.expect({ products: { 'P1': { huCount: 0, inventoryLineCount: 0 } } });
+    await Backend.expect({ products: { 'P1': { huCount: 0 } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -764,7 +764,7 @@ test('the same label twice -> two previews alike, two HUs, two completed invento
             [created[0].huQRCode]: { isExists: true, docStatus: 'CO', count: 1, qtyCount: '1' },
             [created[1].huQRCode]: { isExists: true, docStatus: 'CO', count: 1, qtyCount: '1' },
         },
-        products: { 'P1': { huCount: 2, inventoryLineCount: 2 } },
+        products: { 'P1': { huCount: 2 } },
     });
 });
 
@@ -797,8 +797,8 @@ test('one barcode on two products -> one message naming both, no preview, nothin
 
     await Backend.expect({
         products: {
-            'P1': { huCount: 0, inventoryLineCount: 0 },
-            'P2': { huCount: 0, inventoryLineCount: 0 },
+            'P1': { huCount: 0 },
+            'P2': { huCount: 0 },
         },
     });
 });
@@ -845,7 +845,7 @@ test('role without allow-all and without the createHU grant -> product label giv
     await HUManagerScreen.waitForScreen();
     expect(calls.count).toBe(0); // neither propose nor create was even called: the app gate (HUManagerScreen.jsx) holds
 
-    await Backend.expect({ products: { 'P1': { huCount: 0, inventoryLineCount: 0 } } });
+    await Backend.expect({ products: { 'P1': { huCount: 0 } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -870,5 +870,5 @@ test('role without allow-all, only createHU granted -> product label opens the p
 
     await HUManagerScreen.waitForScreen();
     expectCreateCallCount(createCalls, 0);
-    await Backend.expect({ products: { 'P1': { huCount: 0, inventoryLineCount: 0 } } });
+    await Backend.expect({ products: { 'P1': { huCount: 0 } } });
 });

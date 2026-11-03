@@ -309,11 +309,6 @@ public class AssertExpectationsCommandServices
 		return handlingUnitsBL.countActiveHUsByProductId(productId);
 	}
 
-	public int countInventoryLinesByProductId(@NonNull final ProductId productId)
-	{
-		return inventoryService.countLinesByProductId(productId);
-	}
-
 	public Inventory getInventoryById(@NonNull final InventoryId inventoryId)
 	{
 		return inventoryService.getById(inventoryId);

@@ -380,11 +380,6 @@ public class InventoryService
 		return inventoryRepository.retrieveAllLinesForHU(huId);
 	}
 
-	public int countLinesByProductId(@NonNull final ProductId productId)
-	{
-		return inventoryRepository.countLinesByProductId(productId);
-	}
-
 	public void saveInventoryLineHURecords(final InventoryLine inventoryLine, final @NonNull InventoryId inventoryId)
 	{
 		inventoryRepository.saveInventoryLineHURecords(inventoryLine, inventoryId);
