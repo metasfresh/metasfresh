@@ -49,4 +49,10 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(@Nullable DeliveryPlanningId deliveryPlanningId);
 
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
+
+	/**
+	 * If {@code true}, candidates whose schedules differ only in their {@code C_Async_Batch_ID} go into the same shipment.
+	 * Default {@code false}.
+	 */
+	IInOutProducerFromShipmentScheduleWithHU setIgnoreScheduleAsyncBatch(boolean ignoreScheduleAsyncBatch);
 }

@@ -53,6 +53,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
@@ -133,7 +134,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 
 	private final InOutGenerateResult result;
-	private final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder;
+	private IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder;
 	private final IAggregationKeyBuilder<ShipmentScheduleWithHU> huShipmentScheduleKeyBuilder;
 
 	private final ShipmentLineNoInfo shipmentLineNoInfo = new ShipmentLineNoInfo();
@@ -757,6 +758,15 @@ public class InOutProducerFromShipmentScheduleWithHU
 	public IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{
 		this.deliveryPlanningId = deliveryPlanningId;
+		return this;
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setIgnoreScheduleAsyncBatch(final boolean ignoreScheduleAsyncBatch)
+	{
+		this.shipmentScheduleKeyBuilder = ignoreScheduleAsyncBatch
+				? ShipmentScheduleHeaderAggregationKeyBuilder.withoutAsyncBatch()
+				: shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
 		return this;
 	}
 

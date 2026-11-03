@@ -1,6 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -29,6 +31,7 @@ import de.metas.inoutcandidate.api.impl.DefaultInOutGenerateResult;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderId;
@@ -62,6 +65,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -439,7 +443,8 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 				@NonNull final String qtyOrdered,
 				@NonNull final String qtyToDeliver,
 				@NonNull final DeliveryRule deliveryRule,
-				final OrderId orderId)
+				final OrderId orderId,
+				@Nullable final AsyncBatchId asyncBatchId)
 		{
 			final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 			saveRecord(orderLine);
@@ -459,6 +464,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			shipmentSchedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 			shipmentSchedule.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_OrderLine.class));
 			shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
+			shipmentSchedule.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
 
 			saveRecord(shipmentSchedule);
 
@@ -469,11 +475,22 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 					M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 		}
 
+		private AsyncBatchId asyncBatch()
+		{
+			final I_C_Async_Batch asyncBatch = newInstance(I_C_Async_Batch.class);
+			saveRecord(asyncBatch);
+			return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+		}
+
 		private InOutGenerateResult process(final List<ShipmentScheduleWithHU> candidates)
+		{
+			return process(candidates, new InOutProducerFromShipmentScheduleWithHU(new DefaultInOutGenerateResult(true)));
+		}
+
+		private InOutGenerateResult process(final List<ShipmentScheduleWithHU> candidates, final InOutProducerFromShipmentScheduleWithHU producer)
 		{
 			System.out.println("Processing: " + candidates);
 
-			final InOutProducerFromShipmentScheduleWithHU producer = new InOutProducerFromShipmentScheduleWithHU(new DefaultInOutGenerateResult(true));
 			final InOutGenerateResult result = trxItemProcessorExecutorService
 					.<ShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
 					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
@@ -566,6 +583,46 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			assertThat(result.getInOuts()).hasSize(1);
 		}
 
+
+		@Nested
+		public class schedulesWithDifferentAsyncBatches
+		{
+			private List<ShipmentScheduleWithHU> candidates;
+
+			@BeforeEach
+			public void beforeEach()
+			{
+				InOutCandidateValidator.registerSSAggregationKeyDependencies();
+
+				final ShipmentScheduleBuilder candidateBuilder = shipmentSchedule()
+						.deliveryRule(DeliveryRule.AVAILABILITY)
+						.orderId(order())
+						.productId(product("product", uom("uom")))
+						.qtyOrdered("10")
+						.qtyToDeliver("10");
+
+				candidates = Arrays.asList(
+						candidateBuilder.asyncBatchId(asyncBatch()).build(),
+						candidateBuilder.asyncBatchId(null).build());
+			}
+
+			@Test
+			public void splitByDefault()
+			{
+				final InOutGenerateResult result = process(candidates);
+				assertThat(result.getInOuts()).hasSize(2);
+			}
+
+			@Test
+			public void oneShipment_ifScheduleAsyncBatchIsIgnored()
+			{
+				final InOutProducerFromShipmentScheduleWithHU producer = new InOutProducerFromShipmentScheduleWithHU(new DefaultInOutGenerateResult(true));
+				producer.setIgnoreScheduleAsyncBatch(true);
+
+				final InOutGenerateResult result = process(candidates, producer);
+				assertThat(result.getInOuts()).hasSize(1);
+			}
+		}
 	}
 
 }

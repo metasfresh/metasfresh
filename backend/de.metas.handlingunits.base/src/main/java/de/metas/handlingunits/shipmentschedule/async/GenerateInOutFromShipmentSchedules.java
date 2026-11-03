@@ -120,6 +120,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.computeShipmentDate(calculateShippingDateRule)
 				.setScheduleIdToExternalInfo(scheduleId2ExternalInfo)
 				.setDeliveryPlanningId(deliveryPlanningId)
+				// The enqueuer already split the workpackages by the schedules' header key, async batch included.
+				// A schedule recompute that ran since then may have cleared the batch of only some schedules; that must not split this run.
+				.setIgnoreScheduleAsyncBatch(true)
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs that are linked to multiple shipments: you will not see them in Aggregation POS because they are already assigned, but you're not able to create a shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)

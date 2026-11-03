@@ -46,6 +46,21 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 {
 	private static final String VERSION = "1";
 
+	private final boolean includeAsyncBatch;
+
+	public ShipmentScheduleKeyValueHandler()
+	{
+		this(true);
+	}
+
+	/**
+	 * @param includeAsyncBatch whether the schedule's {@code C_Async_Batch_ID} is part of the values
+	 */
+	public ShipmentScheduleKeyValueHandler(final boolean includeAsyncBatch)
+	{
+		this.includeAsyncBatch = includeAsyncBatch;
+	}
+
 	@Override
 	public List<Object> getValues(@NonNull final I_M_ShipmentSchedule sched)
 	{
@@ -79,7 +94,7 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 			values.add(sched.getM_Shipper_ID());
 		}
 
-		if (sched.getC_Async_Batch_ID() > 0)
+		if (includeAsyncBatch && sched.getC_Async_Batch_ID() > 0)
 		{
 			values.add(sched.getC_Async_Batch_ID());
 		}
