@@ -132,6 +132,26 @@ class ScannableCodeFormatTest
 		}
 
 		@Test
+		void gtinPart_blankSegment_parsesWithoutGtin()
+		{
+			// a label whose GTIN area is blank must still be recognised (lot etc. kept), just without a GTIN
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(6).endPosition(19).type(ScannableCodeFormatPartType.GTIN).build(),
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(5).type(ScannableCodeFormatPartType.LotNo).build(),
+							ScannableCodeFormatPart.builder().startPosition(20).endPosition(22).type(ScannableCodeFormatPartType.ProductCode).build()
+					))
+					.build();
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("L2311              ABC")).orElseThrow();
+			assertThat(parsed.getGtin()).isNull();
+			assertThat(parsed.getLotNo()).isEqualTo("L2311");
+			assertThat(parsed.getProductNo()).isEqualTo("ABC");
+		}
+
+		@Test
 		void gtinPart_withLotAndBestBefore()
 		{
 			// [1..14] GTIN, [15..19] LOT, [20..25] BEST_BEFORE_DATE (yyMMdd)

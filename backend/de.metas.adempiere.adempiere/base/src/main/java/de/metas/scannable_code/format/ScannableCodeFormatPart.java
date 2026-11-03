@@ -115,7 +115,7 @@ public class ScannableCodeFormatPart
 					result.productionDate(toLocalDate(valueStr));
 					break;
 				case GTIN:
-					result.gtin(GTIN.ofString(valueStr.trim()));
+					result.gtin(GTIN.ofNullableString(valueStr));
 					break;
 			}
 
