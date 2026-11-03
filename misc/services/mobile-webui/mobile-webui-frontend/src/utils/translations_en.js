@@ -13,6 +13,11 @@ const translations = {
   errorScreen: {
     retryButton: 'Retry...',
   },
+  attributes: {
+    list: {
+      pleaseSelect: 'Please select...',
+    },
+  },
   general: {
     Yes: 'Yes',
     No: 'No',
@@ -79,6 +84,14 @@ const translations = {
       appName: 'Picking',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Workplace/workstation is currently unavailable',
+        retry: 'Retry',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
@@ -113,6 +126,9 @@ const translations = {
           scanTargetPlaceholder: 'Scan target location',
         },
       },
+    },
+    manufacturing: {
+      confirmEmptyHUPrompt: 'This will write off the remaining %(qty)s and empty the HU. Continue?',
     },
     picking: {
       PickingLine: 'Packing line',
@@ -151,6 +167,10 @@ const translations = {
       qrcode: {
         missingQty: 'The scanned QR contains no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',
+        invalidQRCode: 'The scanned QR code is not readable!',
+        missingLotNo: 'The scanned QR code contains no lot number!',
+        missingBestBeforeDate: 'The scanned QR code contains no best-before date!',
+        invalidBestBeforeDate: 'The scanned QR code contains an invalid best-before date!',
         differentProduct: 'The scanned QR Product does not match',
       },
       pickingTarget: {
@@ -167,6 +187,17 @@ const translations = {
       },
       graiScan: {
         multipleScanned: 'Multiple GRAIs detected. Move reader closer to a single crate and scan again.',
+        count: '%(scanned)s / %(total)s GRAIs scanned',
+        countExtra: '(%(extra)s extra)',
+        countSkipped: '(%(count)s skipped — already on this loading unit)',
+        skippedNotice: '%(count)s crate(s) already on this loading unit were skipped',
+        save: {
+          buttonCaption: 'Save',
+        },
+        clearAll: {
+          buttonCaption: 'Clear All',
+          confirmQuestion: 'Remove all %(count)s GRAIs?',
+        },
       },
       overPickConfirmationPrompt: 'Do you really want to pack more than ordered?',
       reopenLU: 'Reopen LU',
@@ -184,6 +215,7 @@ const translations = {
         unitsOfOpenDemandRemaining: 'Open demand remaining',
         skippedProducts: 'Skipped products',
       },
+      rlzConfirmDeclined: 'Pick skipped — shelf life too short',
       adviseCarrier: 'Carrier Advise',
     },
     distribution: {

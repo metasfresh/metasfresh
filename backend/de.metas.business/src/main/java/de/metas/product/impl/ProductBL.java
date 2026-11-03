@@ -597,6 +597,16 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	@Nullable
+	public I_M_Product_Category getProductCategoryByProductId(@NonNull final ProductId productId)
+	{
+		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+		return productCategoryId != null
+				? productsRepo.getProductCategoryById(productCategoryId)
+				: null;
+	}
+
+	@Override
 	public String getProductValueAndName(@Nullable final ProductId productId)
 	{
 		if (productId == null)
@@ -874,7 +884,8 @@ public final class ProductBL implements IProductBL
 		//noinspection OptionalAssignedToNull
 		return Optionals.firstPresentOfSuppliers(
 				() -> gtin.isFixed() ? getProductIdByGTINStrictly(gtin, bpartnerId, clientId) : null,
-				() -> ean13 != null && ean13.isVariable() ? getProductIdByEAN13ProductCode(ean13.getProductNo(), bpartnerId, clientId) : null,
+				// fixed prefixes also fall back to EAN13_ProductCode when no exact GTIN matches
+				() -> ean13 != null ? getProductIdByEAN13ProductCode(ean13.getProductNo(), bpartnerId, clientId) : null,
 				() -> ean13 != null && ean13.isVariableWeight() ? productsRepo.getProductIdByValueStartsWith(ean13.getProductNo().getAsString(), clientId) : null
 		);
 	}

@@ -75,34 +75,38 @@ public class ExternalSystemExportStatusRepositoryTest
 	}
 
 	// -----------------------------------------------------------------------
-	// upsert — creates one row, then updates in-place on the same key
+	// insertNewAttempt — one row PER ATTEMPT (per-attempt history)
 	// -----------------------------------------------------------------------
 
 	@Test
-	void upsert_createsOneRow()
+	void insertNewAttempt_createsOneRow()
 	{
-		repo.upsert(requestBuilder().build());
+		repo.insertNewAttempt(requestBuilder().build());
 
 		assertThat(countStatusRows(configId, sourceRecord)).isEqualTo(1);
 	}
 
 	@Test
-	void upsert_updateInPlace_onSameKey()
+	void insertNewAttempt_createsNewRowPerAttempt_onSameKey()
 	{
-		repo.upsert(requestBuilder().status(ExternalSystemExportStatus.Pending).build());
+		// first attempt
+		repo.insertNewAttempt(requestBuilder().status(ExternalSystemExportStatus.Pending).build());
 
+		// a second attempt on the SAME (config, sourceRecord) — e.g. a re-send — is its own row
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(777);
-		repo.upsert(requestBuilder()
+		repo.insertNewAttempt(requestBuilder()
 				.pInstanceId(pInstanceId)
 				.status(ExternalSystemExportStatus.Enqueued)
 				.build());
 
-		assertThat(countStatusRows(configId, sourceRecord)).isEqualTo(1);
+		// two rows now coexist (the per-attempt history), NOT a single upserted row
+		assertThat(countStatusRows(configId, sourceRecord)).isEqualTo(2);
 
-		final Optional<ScriptedExportConversionStatus> reloaded = repo.getLatestByPInstanceId(pInstanceId);
-		assertThat(reloaded).isPresent();
-		assertThat(reloaded.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Enqueued);
-		assertThat(reloaded.get().getPInstanceId()).isEqualTo(pInstanceId);
+		// the pInstance-correlated (latest) attempt is the Enqueued one
+		final Optional<ScriptedExportConversionStatus> latest = repo.getLatestByPInstanceId(pInstanceId);
+		assertThat(latest).isPresent();
+		assertThat(latest.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Enqueued);
+		assertThat(latest.get().getPInstanceId()).isEqualTo(pInstanceId);
 	}
 
 	// -----------------------------------------------------------------------
@@ -110,10 +114,43 @@ public class ExternalSystemExportStatusRepositoryTest
 	// -----------------------------------------------------------------------
 
 	@Test
+	void updateLatestByPInstanceId_targetsThePInstanceBoundAttempt_notMerelyTheNewestRow()
+	{
+		// attempt 1 — errored, bound to pInstance P1 (the OLDER row)
+		final PInstanceId p1 = PInstanceId.ofRepoId(501);
+		repo.insertNewAttempt(requestBuilder()
+				.pInstanceId(p1)
+				.status(ExternalSystemExportStatus.Error)
+				.build());
+
+		// attempt 2 — a later re-send, bound to pInstance P2, same (config, sourceRecord) — the NEWER row
+		final PInstanceId p2 = PInstanceId.ofRepoId(502);
+		repo.insertNewAttempt(requestBuilder()
+				.pInstanceId(p2)
+				.status(ExternalSystemExportStatus.Enqueued)
+				.build());
+
+		// a (late / duplicate) transition for attempt 1 must update ATTEMPT 1's row — never the newer attempt 2
+		repo.updateLatestByPInstanceId(p1, e -> e.withStatus(ExternalSystemExportStatus.Sent));
+
+		final Optional<ScriptedExportConversionStatus> a1 = repo.getLatestByPInstanceId(p1);
+		assertThat(a1).isPresent();
+		assertThat(a1.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Sent);
+
+		// attempt 2 is untouched — still Enqueued and still bound to P2
+		final Optional<ScriptedExportConversionStatus> a2 = repo.getLatestByPInstanceId(p2);
+		assertThat(a2).as("attempt 2's row must not be clobbered by a transition meant for attempt 1").isPresent();
+		assertThat(a2.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Enqueued);
+
+		// exactly two attempt rows still coexist
+		assertThat(countStatusRows(configId, sourceRecord)).isEqualTo(2);
+	}
+
+	@Test
 	void updateLatestByPInstanceId_appliesOperator()
 	{
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(888);
-		repo.upsert(requestBuilder()
+		repo.insertNewAttempt(requestBuilder()
 				.pInstanceId(pInstanceId)
 				.status(ExternalSystemExportStatus.Enqueued)
 				.build());
@@ -176,10 +213,10 @@ public class ExternalSystemExportStatusRepositoryTest
 	// -----------------------------------------------------------------------
 
 	@Test
-	void upsert_persists_httpResponseCode_and_adIssueId()
+	void insertNewAttempt_persists_httpResponseCode_and_adIssueId()
 	{
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(1234);
-		repo.upsert(requestBuilder()
+		repo.insertNewAttempt(requestBuilder()
 				.pInstanceId(pInstanceId)
 				.status(ExternalSystemExportStatus.Error)
 				.httpResponseCode(HttpStatus.SERVICE_UNAVAILABLE)
@@ -201,14 +238,14 @@ public class ExternalSystemExportStatusRepositoryTest
 	@Test
 	void getConfigsWithNonSentAttempt_returnsNonSentConfig()
 	{
-		repo.upsert(ScriptedExportConversionStatusCreateRequest.builder()
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
 				.configId(configId)
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Error)
 				.build());
 
 		final ExternalSystemScriptedExportConversionConfigId configId2 = ExternalSystemScriptedExportConversionConfigId.ofRepoId(1002);
-		repo.upsert(ScriptedExportConversionStatusCreateRequest.builder()
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
 				.configId(configId2)
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Sent)
@@ -226,11 +263,11 @@ public class ExternalSystemExportStatusRepositoryTest
 	// -----------------------------------------------------------------------
 
 	@Test
-	void getLatestByPInstanceId_returnsRow_afterUpsert()
+	void getLatestByPInstanceId_returnsRow_afterInsert()
 	{
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(4242);
 
-		repo.upsert(requestBuilder()
+		repo.insertNewAttempt(requestBuilder()
 				.pInstanceId(pInstanceId)
 				.status(ExternalSystemExportStatus.Sent)
 				.httpResponseCode(HttpStatus.OK)

@@ -84,6 +84,77 @@ export function getViewLayoutFilterParameterNames(layout) {
 }
 
 /**
+ * Get a window's SINGLE-RECORD (detail) layout from the WebAPI.
+ *
+ * Unlike {@link getViewLayout} (the list/grid layout), this is the detail-form layout the desktop
+ * frontend renders field labels from. Elements arrive nested under
+ * `sections[].columns[].elementGroups[].elementsLine[].elements[]`; each element carries its
+ * localized `caption` (the AD_Element_Trl.Name for the SESSION's AD_Language — exactly the caption
+ * the frontend paints as the field's `label.form-control-label`) and its `fields[].field` (the
+ * language-invariant AD_Column ColumnName).
+ *
+ * @param {number|string} windowId - AD_Window_ID (e.g., 344 for Product Costs)
+ * @returns {Promise<Object>} the window layout JSON
+ */
+export async function getWindowLayout(windowId) {
+  const page = getPage();
+
+  const response = await page.request.get(
+      `${WEBAPI_BASE_URL}/window/${windowId}/layout`,
+      { headers: { 'Content-Type': 'application/json' } },
+  );
+
+  if (!response.ok()) {
+    throw new Error(`HTTP ${response.status()}: ${response.statusText()} — window layout of ${windowId}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * The localized field LABEL the backend serves for a given ColumnName in a window's detail layout
+ * (see {@link getWindowLayout}) — i.e. the AD_Element_Trl.Name in the current session's AD_Language,
+ * which is exactly the caption the frontend renders. Returns `undefined` if the field is not laid out.
+ *
+ * This is the language-INDEPENDENT source of truth for a field's label: the expectation is fetched
+ * per session/language at runtime from the backend, never hardcoded per language. Use it to assert a
+ * rendered label without pinning a caption string literal (see
+ * `e2e/frontend-webui/CLAUDE.md` § "Specs MUST be language-independent").
+ *
+ * @param {Object} layout - a layout object from {@link getWindowLayout}
+ * @param {string} fieldName - AD_Column ColumnName (e.g. 'CoProductCostDistributionPercent')
+ * @returns {string|undefined} the element caption, or undefined if the field is not in the layout
+ */
+export function getFieldLabelFromLayout(layout, fieldName) {
+  let found;
+
+  const walk = (node) => {
+    if (found !== undefined || node == null) {
+      return;
+    }
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    if (typeof node === 'object') {
+      const fields = node.fields;
+      if (
+        Array.isArray(fields) &&
+        fields.some((f) => f && f.field === fieldName) &&
+        typeof node.caption === 'string'
+      ) {
+        found = node.caption;
+        return;
+      }
+      Object.values(node).forEach(walk);
+    }
+  };
+
+  walk(layout);
+  return found;
+}
+
+/**
  * Get the related-document references of a record (the Alt+6 "related documents" list) from the WebAPI.
  *
  * Reads the same server-sent-events endpoint the WebUI uses; the stream ends with a COMPLETED event,
@@ -254,6 +325,51 @@ export async function assertRecordIsValid(windowId, recordId, context = '') {
 }
 
 /**
+ * Get complete record data for an INCLUDED (child-tab) row from the WebAPI.
+ *
+ * The included-row endpoint is /window/{windowId}/{parentId}/{tabId}/{rowId}
+ * (the top-level {@link getRecordData} hits /window/{windowId}/{recordId}). Use this
+ * to read a child-tab row back as the system of record — e.g. asserting a persisted
+ * value key: `(await getIncludedRecordData(...)).fieldsByName.<Col>.value.key`.
+ *
+ * @param {string} windowId - Parent window ID (e.g. '123' for Business Partner)
+ * @param {string} parentId - Parent record ID (e.g. the C_BPartner_ID)
+ * @param {string} tabId - Included tab ID (e.g. 'AD_Tab-540653')
+ * @param {string} rowId - Included row ID
+ * @returns {Promise<Object>} Row data including fieldsByName, validStatus, saveStatus
+ *
+ * @example
+ * const row = await getIncludedRecordData('123', bpartnerId, 'AD_Tab-540653', rowId);
+ * expect(row.fieldsByName.IsAutoPrint.value.key).toBe('Y');
+ */
+export async function getIncludedRecordData(windowId, parentId, tabId, rowId) {
+  try {
+    const page = getPage();
+
+    const response = await page.request.get(
+      `${WEBAPI_BASE_URL}/window/${windowId}/${parentId}/${tabId}/${rowId}`,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+
+    if (!response.ok()) {
+      throw new Error(`HTTP ${response.status()}: ${response.statusText()}`);
+    }
+
+    const data = await response.json();
+
+    // The included-row endpoint may return the row directly or wrapped in a
+    // single-element array; unwrap defensively.
+    return Array.isArray(data) ? data[0] : data;
+  } catch (error) {
+    console.error(
+      `Failed to fetch included record data for window ${windowId}, parent ${parentId}, tab ${tabId}, row ${rowId}:`,
+      error.message
+    );
+    throw error;
+  }
+}
+
+/**
  * Get validation status for a record.
  *
  * @param {string} windowId - Window ID
@@ -342,6 +458,36 @@ export async function getTabInfo(windowId, recordId, tabId) {
   }
 
   return recordData.includedTabsInfo[tabId];
+}
+
+/**
+ * Fetch the included-tab rows of a record: GET /window/{windowId}/{recordId}/{tabId}
+ * (WindowRestController). Returns the array of row documents (each with fieldsByName).
+ *
+ * The endpoint's JSON body is a JSONDocumentList ({ result, missingIds, orderBys }), not a
+ * bare array — unwrap `.result`.
+ *
+ * @param {string|number} windowId - Window ID
+ * @param {string|number} recordId - Record ID
+ * @param {string} tabId - Tab ID (e.g., 'AD_Tab-187' for Sales Order Lines)
+ * @returns {Promise<Array>} Array of row documents (each with fieldsByName)
+ */
+export async function getTabRows(windowId, recordId, tabId) {
+  try {
+    const page = getPage();
+    const response = await page.request.get(
+      `${WEBAPI_BASE_URL}/window/${windowId}/${recordId}/${tabId}`,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+    if (!response.ok()) {
+      throw new Error(`HTTP ${response.status()} fetching rows of ${windowId}/${recordId}/${tabId}`);
+    }
+    const data = await response.json();
+    return data.result;
+  } catch (error) {
+    console.error(`Failed to fetch tab rows for window ${windowId}, record ${recordId}, tab ${tabId}:`, error.message);
+    throw error;
+  }
 }
 
 /**

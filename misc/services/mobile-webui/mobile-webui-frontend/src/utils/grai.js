@@ -35,10 +35,14 @@ export const parseGraiFromGs1Barcode = (barcodeString) => {
     const base = graiData.substring(1, 13);
     const serial = graiData.substring(14);
 
-    // For GRAI, the company prefix is typically 7 digits (GS1 standard for most European prefixes)
-    // We use a heuristic: GS1 prefixes starting with 76 (Switzerland) are 7 digits
-    const companyPrefix = base.substring(0, 7);
-    const assetType = base.substring(7);
+    // The 12-digit base is split into a fixed 7-digit company prefix + the remaining asset type,
+    // matching the backend parser (de.metas.handlingunits.grai.GRAI.GS1_COMPANY_PREFIX_LENGTH = 7).
+    // GS1 allows variable-length company prefixes, but this scan path is calibrated for the 7-digit
+    // prefixes in use; the frontend and backend MUST stay on the same split so a scanned GRAI parses
+    // to the same canonical value on both sides.
+    const COMPANY_PREFIX_LENGTH = 7;
+    const companyPrefix = base.substring(0, COMPANY_PREFIX_LENGTH);
+    const assetType = base.substring(COMPANY_PREFIX_LENGTH);
 
     if (!serial) return null;
 
@@ -72,13 +76,6 @@ export const parseGraiFromRawInput = (inputString) => {
 };
 
 /**
- * Validate a GRAI string in dot-separated format.
- * Expected format: {companyPrefix}.{assetType}.{serial}
- *
- * @param {string} graiString
- * @returns {boolean}
- */
-/**
  * Parse a raw input string that may contain one or more GRAIs
  * separated by newlines or tabs (e.g., RFID scanner batch output).
  *
@@ -96,6 +93,13 @@ export const parseGraiArrayFromRawInput = (rawInput) => {
     .filter(Boolean);
 };
 
+/**
+ * Validate a GRAI string in dot-separated format.
+ * Expected format: {companyPrefix}.{assetType}.{serial}
+ *
+ * @param {string} graiString
+ * @returns {boolean}
+ */
 export const isValidGrai = (graiString) => {
   if (!graiString || typeof graiString !== 'string') return false;
 
@@ -107,7 +111,7 @@ export const isValidGrai = (graiString) => {
 };
 
 //
-// GRAI list helpers (HU-Manager GRAI screen)
+// GRAI list helpers (shared between picking and HU-Manager hooks)
 //
 
 /**
@@ -131,18 +135,59 @@ export const getAssignedGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes
 export const getExtraGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.slice(tuCount) : []);
 
 /**
- * Append the GRAIs of `newGrais` that are not yet in `prev`.
- * Returns the SAME array reference if nothing was added (no unnecessary re-render).
+ * Merge newGrais into the existing list, deduplicating by value — both against the existing list
+ * AND within newGrais itself. Preserves existing order; appends new items at the end.
+ * Returns the SAME array reference (as `merged`) if nothing was added (no unnecessary re-render).
  *
- * @param {string[]} prev - existing GRAI list
+ * Within-batch dedup matters for RFID mass-scan: a single burst can re-read the same physical
+ * crate's tag more than once, and a GRAI uniquely identifies one returnable asset — so a repeated
+ * code in one batch is the same crate, not a second one, and must collapse to a single entry. This
+ * same-buffer re-read case stays a SILENT no-op — it is never counted in `skipped`.
+ *
+ * `existingCodes` is a second exclusion set — GRAIs already assigned elsewhere (e.g. to another
+ * crate of the same loading unit, per the server-side LU-wide GRAI dedupe) that this batch must
+ * also drop, but — unlike a same-buffer re-read — the caller DOES want to know about it (to advance
+ * a "N skipped" notice), so those codes are reported back in `skipped`. A code repeated within the
+ * batch against `existingCodes` is only reported once (marked seen on first occurrence).
+ *
+ * `alreadySkipped` are codes a PRIOR call already reported in `skipped` and the caller is still
+ * showing. They are treated exactly like same-buffer re-reads (silent no-op, never re-reported), so a
+ * code that gets delivered more than once — e.g. the dual-reader race where `BarcodeScannerComponent`
+ * and `useKeyboardBarcodeReader` both emit the same physical scan — is counted at most once. (Merged
+ * codes need no such list because they already live in `prev`; a skipped code is dropped from `prev`,
+ * so it needs its own memory to stay idempotent across calls.)
+ *
+ * @param {string[]} prev - existing GRAI list (accumulated, deduped)
  * @param {string[]} newGrais - GRAIs to add
- * @returns {string[]}
+ * @param {string[]} [existingCodes] - GRAIs to drop-and-report (already assigned elsewhere on the LU)
+ * @param {string[]} [alreadySkipped] - codes already reported in a prior call's `skipped` (silent on repeat)
+ * @returns {{merged: string[], skipped: string[]}} `merged` is the same ref as `prev` when nothing was
+ *   added; `skipped` lists only the NEWLY-skipped codes (excludes `alreadySkipped`)
  */
-export const mergeGraiArrays = (prev, newGrais) => {
-  const existingSet = new Set(prev);
-  const toAdd = newGrais.filter((g) => !existingSet.has(g));
-  if (toAdd.length === 0) return prev;
-  return [...prev, ...toAdd];
+export const mergeGraiArrays = (prev, newGrais, existingCodes = [], alreadySkipped = []) => {
+  // `seen` = everything already decided: accumulated codes (prev) AND already-reported skips.
+  const seen = new Set(prev);
+  for (const g of alreadySkipped) {
+    seen.add(g);
+  }
+  const existing = existingCodes.length ? new Set(existingCodes) : null;
+  const toAdd = [];
+  const skipped = [];
+  for (const g of newGrais) {
+    if (seen.has(g)) {
+      // same-buffer re-read OR an already-reported LU-skip redelivered: silent no-op, never (re)counted
+      continue;
+    }
+    if (existing && existing.has(g)) {
+      seen.add(g); // avoid double-reporting a repeat of the same already-assigned code within this batch
+      skipped.push(g);
+      continue;
+    }
+    seen.add(g);
+    toAdd.push(g);
+  }
+  const merged = toAdd.length === 0 ? prev : [...prev, ...toAdd];
+  return { merged, skipped };
 };
 
 /**
@@ -154,7 +199,6 @@ export const mergeGraiArrays = (prev, newGrais) => {
  *   the baseline's extras (beyond `tuCount`), as before;
  * - a GRAI of the baseline that has been removed since stays removed;
  * - a GRAI added since the baseline is kept, appended at the end.
- * Each GRAI appears only once in the result.
  * When nothing changed since the baseline, the result is the backend answer plus the extras.
  *
  * @param {Object} params
@@ -175,6 +219,5 @@ export const mergeGraisAfterSend = ({ baselineGrais, currentGrais, backendGrais,
   );
   const addedSinceBaseline = currentGrais.filter((grai) => !baseline.has(grai));
 
-  // Set keeps the first occurrence of each GRAI, in order
-  return [...new Set([...saved, ...addedSinceBaseline])];
+  return mergeGraiArrays(mergeGraiArrays([], saved).merged, addedSinceBaseline).merged;
 };

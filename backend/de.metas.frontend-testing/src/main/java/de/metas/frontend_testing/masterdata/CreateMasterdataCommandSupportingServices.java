@@ -1,8 +1,12 @@
 package de.metas.frontend_testing.masterdata;
 
+import de.metas.banking.api.BankRepository;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
 import de.metas.distribution.mobileui.launchers.DistributionLauncherCaptionProvider;
@@ -12,9 +16,14 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.mobile.MobileConfigService;
+import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
+import de.metas.pos.POSTerminalRepository;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
+import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.product.ProductRepository;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.web.security.UserAuthTokenService;
@@ -40,10 +49,13 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final InventoryService inventoryService;
 	@NonNull public final HUQRCodesService huQRCodesService;
 	@NonNull public final SourceHUsService sourceHUsService;
+	@NonNull public final InOutPackageRepository inOutPackageRepository;
 	@NonNull public final CurrencyRepository currencyRepository;
+	@NonNull public final DistributionNetworkRepository distributionNetworkRepository;
 
 	@NonNull public final DDOrderService ddOrderService;
-	@NonNull public final DistributionNetworkRepository distributionNetworkRepository;
+	@NonNull public final DDOrderCandidateService ddOrderCandidateService;
+	@NonNull public final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 	@NonNull public final DistributionLauncherCaptionProvider distributionLauncherCaptionProvider;
 	@NonNull public final DistributionJobLoaderSupportingServices distributionJobLoaderSupportingServices;
 
@@ -52,4 +64,10 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull public final WarehouseRepository warehouseRepository;
 	@NonNull public final VATaxIDCheckRepository vataxIDCheckRepository;
+	@NonNull public final ProductPriceRepository productPriceRepository;
+	@NonNull public final MobileApplicationInfoRepository mobileApplicationInfoRepository;
+	@NonNull public final POSTerminalRepository posTerminalRepository;
+	@NonNull public final PriceListVersionRepository priceListVersionRepository;
+	@NonNull public final ChargeRepository chargeRepository;
+	@NonNull public final BankRepository bankRepository;
 }

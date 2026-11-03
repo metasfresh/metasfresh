@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0226_Costing
 @allure.label.feature:F1500_Costing
-@ghActions:run_on_executor7
+@ghActions:run_on_executor10
 @Id:CostRevaluation
 Feature: Cost Revaluation / Kosten Neubewertung
 ## F1500: Costing

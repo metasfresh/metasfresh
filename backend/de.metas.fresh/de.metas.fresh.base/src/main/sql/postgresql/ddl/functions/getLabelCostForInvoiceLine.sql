@@ -36,6 +36,15 @@ FROM (SELECT il.C_InvoiceLine_ID,
                JOIN M_Product_Labelcost pcl ON il.M_Product_ID = pcl.M_Product_ID
                JOIN C_UOM u ON pcl.C_UOM_ID = u.C_UOM_ID
                JOIN C_Currency c ON pcl.C_Currency_ID = c.C_Currency_ID
+               JOIN report.fresh_Attributes att ON pcl.m_attributesetinstance_id = att.m_attributesetinstance_id
+                JOIN (SELECT DISTINCT il.C_InvoiceLine_ID, att.ai_value as Attribute
+                      FROM c_invoiceline il
+                               JOIN m_matchinv mi ON mi.c_invoiceline_id = il.c_invoiceline_id AND mi.isActive = 'Y'
+                               JOIN report.fresh_Attributes att ON mi.m_attributesetinstance_id = att.m_attributesetinstance_id
+                      WHERE att.IsPrintedInDocument = 'Y'
+                         AND il.C_InvoiceLine_ID = p_C_InvoiceLine_ID
+                        AND il.isActive = 'Y'
+      ) il_att ON att.ai_value = il_att.Attribute
       WHERE pcl.IsActive = 'Y'
         AND il.C_InvoiceLine_ID = p_C_InvoiceLine_ID) base
 $$

@@ -22,28 +22,73 @@
 
 package de.metas.externalsystem.endpoint;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.cache.CCache;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.util.Check;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
 
+/**
+ * Repository Tables: ExternalSystem_Endpoint
+ * Repository Cluster: sole owner of {@code ExternalSystem_Endpoint}.
+ */
 @Repository
 public class ExternalSystemEndpointRepository
 {
-	CCache<ExternalSystemEndpointId, ExternalSystemEndpoint> endpointsCache = CCache.<ExternalSystemEndpointId, ExternalSystemEndpoint>builder().tableName(I_ExternalSystem_Endpoint.Table_Name)
+	private final CCache<ExternalSystemEndpointId, ExternalSystemEndpoint> endpointsCache = CCache.<ExternalSystemEndpointId, ExternalSystemEndpoint>builder().tableName(I_ExternalSystem_Endpoint.Table_Name)
 			.build();
 
 	@NonNull
 	public ExternalSystemEndpoint getById(@NonNull final ExternalSystemEndpointId id)
 	{
 		return endpointsCache.getOrLoad(id, this::retrieveById);
+	}
+
+	/**
+	 * Batch-load endpoints in a single query, to avoid a {@link #getById(ExternalSystemEndpointId)}-per-item N+1
+	 * when resolving endpoints for a collection of items (e.g. inside a stream).
+	 */
+	@NonNull
+	public ImmutableMap<ExternalSystemEndpointId, ExternalSystemEndpoint> getByIds(@NonNull final Collection<ExternalSystemEndpointId> ids)
+	{
+		final ImmutableSet<ExternalSystemEndpointId> distinctIds = ImmutableSet.copyOf(ids);
+		if (distinctIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<I_ExternalSystem_Endpoint> endpointRecords = InterfaceWrapperHelper.loadByRepoIdAwares(distinctIds, I_ExternalSystem_Endpoint.class);
+
+		return endpointRecords.stream()
+				.map(ExternalSystemEndpointRepository::fromRecord)
+				.collect(ImmutableMap.toImmutableMap(ExternalSystemEndpoint::getId, Function.identity()));
+	}
+
+	/**
+	 * Writes the given values onto the record, a {@code null} value taking the column's value away.
+	 * Goes through {@link InterfaceWrapperHelper#setValue}, since no typed setter can be selected from an
+	 * {@code Object} -- and a typed setter cannot express "clear it" and "put the column default back" alike.
+	 * <p>
+	 * Does NOT save: the caller is a {@code TYPE_BEFORE_CHANGE} handler, and the save it runs inside stores
+	 * these values.
+	 */
+	public void setColumnValues(
+			@NonNull final I_ExternalSystem_Endpoint endpoint,
+			@NonNull final List<ColumnValue> values)
+	{
+		values.forEach(columnValue -> InterfaceWrapperHelper.setValue(endpoint, columnValue.getColumnName(), columnValue.getValue()));
 	}
 
 	@NonNull
@@ -64,8 +109,8 @@ public class ExternalSystemEndpointRepository
 				.id(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
 				.value(endpointRecord.getValue())
 				.transportType(TransportType.ofCode(endpointRecord.getTransportType()))
-				// HTTP transport fields (nullable — only set for HTTP transport)
-				.endpointUrl(endpointRecord.getOutboundHttpEP())
+				// HTTP transport fields
+				.endpointUrl(endpointRecord.getHttpEndPoint())
 				.method(parseHttpMethod(endpointRecord.getOutboundHttpMethod()))
 				.contentType(parseMediaType(endpointRecord.getContentType()))
 				// HTTP authentication fields
@@ -76,14 +121,21 @@ public class ExternalSystemEndpointRepository
 				.user(endpointRecord.getLoginUsername())
 				.password(endpointRecord.getPassword())
 				.sasSignature(endpointRecord.getSasSignature())
-				// SFTP transport fields (nullable — only set for SFTP transport)
+				// SFTP transport fields
 				.sftpHost(endpointRecord.getSftpHost())
-				.sftpPort(endpointRecord.getSftpPort())
+				.sftpPort(endpointRecord.getSftpPort() > 0 ? endpointRecord.getSftpPort() : null)
 				.sftpUsername(endpointRecord.getSftpUsername())
 				.sftpAuthType(parseSftpAuthType(endpointRecord.getSftpAuthType()))
 				.sshPrivateKey(endpointRecord.getSshPrivateKey())
 				.sftpRemotePath(endpointRecord.getSftpRemotePath())
 				.sftpFilenamePattern(endpointRecord.getSftpFilenamePattern())
+				.sftpPollingIntervalMs(endpointRecord.getSftpPollingIntervalMs() > 0 ? endpointRecord.getSftpPollingIntervalMs() : null)
+				// LOCAL_FILE transport fields
+				.localRootLocation(endpointRecord.getLocalRootLocation())
+				.frequency(endpointRecord.getFrequency() > 0 ? endpointRecord.getFrequency() : null)
+				.importFileNamePattern(endpointRecord.getImportFileNamePattern())
+				.processedDirectory(endpointRecord.getProcessedDirectory())
+				.errorDirectory(endpointRecord.getErrorDirectory())
 				.isArrayFanOut(endpointRecord.isArrayFanOut())
 				// OAuth2 + file-upload fields
 				.oauthTokenUrl(endpointRecord.getOAuthTokenUrl())
@@ -120,5 +172,14 @@ public class ExternalSystemEndpointRepository
 			return null;
 		}
 		return SftpAuthType.ofCode(code);
+	}
+
+	/** One column of {@code ExternalSystem_Endpoint} and the value to write into it; {@code null} clears it. */
+	@Value(staticConstructor = "of")
+	public static class ColumnValue
+	{
+		@NonNull String columnName;
+
+		@Nullable Object value;
 	}
 }

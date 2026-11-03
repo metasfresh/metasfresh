@@ -6,6 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
+import { reactivateDocument } from '../utils/DocumentStatus';
 
 /**
  * Grid inline edit — single-click "type to edit" must be saved.
@@ -71,67 +72,11 @@ testCases.forEach(({ language, label }) => {
 
       await openRecord();
 
-      // reactivate so the line grid becomes editable — every wait below is on a state, never on
-      // a fixed sleep. The status tag's class follows the document status (`tag-success` = CO),
-      // and the action list is fetched when the status dropdown gains focus, so it is only
-      // current if the dropdown is (re)opened after the status changed.
+      // reactivate so the line grid becomes editable. The helper awaits the reactivate PATCH
+      // and then the server offering "Complete" (status-CO) again, i.e. the document is back
+      // in a completable state.
       await test.step('reactivate order', async () => {
-        const statusButton = page.getByTestId('status-button');
-        const statusTag = statusButton.locator('.tag').first();
-        // (re)open the status dropdown: Escape only hides the list and keeps focus, and a click
-        // on an already-focused button fires no focus event, so blur first to force a fresh
-        // focus -> action-list fetch -> open.
-        const openStatusDropdown = async () => {
-          await statusButton.blur();
-          // bounded: while a document process is pending the button is `.disabled`
-          // (pointer-events: none), and an unbounded click would outlive the toPass timeout
-          await statusButton.click({ timeout: 5000 });
-          await expect(statusButton).toHaveClass(/dropdown-status-open/, { timeout: 5000 });
-        };
-
-        await expect(statusTag, 'the order starts Completed').toHaveClass(/tag-success/, {
-          timeout: SLOW_ACTION_TIMEOUT,
-        });
-
-        // Trigger Reactivate. A retry only re-opens the dropdown and re-clicks while the order is
-        // still Completed; once it left Completed (a click went through) it is already
-        // reactivated and the try succeeds. A click that went through sends the DocAction=RE
-        // PATCH, which is awaited below either way.
-        const reactivatePatch = page
-          .waitForResponse(
-            (resp) =>
-              resp.request().method() === 'PATCH' &&
-              new URL(resp.url()).pathname.endsWith(`/window/${SALES_ORDER_WINDOW_ID}/${orderId}`) &&
-              (resp.request().postData() || '').includes('"DocAction"'),
-            { timeout: SLOW_ACTION_TIMEOUT * 2 }
-          )
-          .catch(() => null);
-        await expect(async () => {
-          if (!/tag-success/.test((await statusTag.getAttribute('class')) ?? '')) return;
-          await openStatusDropdown();
-          await page.getByTestId('status-RE').click({ timeout: 5000 });
-        }, 'the Reactivate action is offered on the Completed order').toPass({
-          timeout: SLOW_ACTION_TIMEOUT,
-        });
-        const reactivateResponse = await reactivatePatch;
-        expect(reactivateResponse, 'the Reactivate (DocAction=RE) PATCH was sent').not.toBeNull();
-        expect(reactivateResponse.ok(), 'the Reactivate PATCH succeeded').toBe(true);
-
-        // the document left Completed ...
-        await expect(statusTag, 'the order left the Completed status').not.toHaveClass(
-          /tag-success/,
-          { timeout: SLOW_ACTION_TIMEOUT }
-        );
-        // ... and is completable again (back to Drafted): the Complete action is offered.
-        // Each try re-opens the dropdown, so a list fetched mid-transition is never re-read.
-        await expect(async () => {
-          await openStatusDropdown();
-          await expect(page.getByTestId('status-CO')).toBeVisible({ timeout: 5000 });
-        }, 'order did not reactivate to a Drafted (completable) state').toPass({
-          timeout: SLOW_ACTION_TIMEOUT,
-        });
-        await page.keyboard.press('Escape');
-        await statusButton.blur();
+        await reactivateDocument({ windowId: SALES_ORDER_WINDOW_ID, documentId: orderId });
       });
 
       const qtyCell = () =>

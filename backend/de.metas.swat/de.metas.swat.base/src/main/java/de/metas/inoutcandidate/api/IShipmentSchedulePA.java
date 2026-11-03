@@ -67,9 +67,9 @@ public interface IShipmentSchedulePA extends ISingletonService
 	Set<ShipmentScheduleId> retrieveUnprocessedIdsByShipperId(@NonNull final ShipperId shipperId);
 
 	/**
-	 * @return the shipment schedule entries that refer to given record
+	 * @return those of the given records that are referenced by at least one active, unprocessed shipment schedule
 	 */
-	List<I_M_ShipmentSchedule> retrieveUnprocessedForRecord(TableRecordReference recordRef);
+	ImmutableSet<TableRecordReference> retrieveRecordsWithUnprocessedSchedules(@NonNull Collection<TableRecordReference> recordRefs);
 
 	Stream<I_M_ShipmentSchedule> streamUnprocessedByPartnerIdAndAllowConsolidateInOut(BPartnerId bpartnerId, boolean allowConsolidateInOut);
 

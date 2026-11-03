@@ -128,7 +128,10 @@ test('fork_lift_1 (IsPackingPlace=N) is offered the intra-storage groundfill ord
     await openDistributionLaunchers(masterdata.login.user);
 
     await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.wpForkLift.name });
-    await DistributionJobsListScreen.expectJobButtons([
+    // This is a *filtering* assertion (fork_lift is offered both intra-storage groundfill orders),
+    // not an ordering assertion — DD3/DD4 slot order is not part of what this test proves. Assert the
+    // set order-independently so a non-deterministic launcher render order cannot flake it.
+    await DistributionJobsListScreen.expectJobButtonsInAnyOrder([
         { testId: masterdata.distributionOrders.DD3.launcherTestId },
         { testId: masterdata.distributionOrders.DD4.launcherTestId },
     ]);

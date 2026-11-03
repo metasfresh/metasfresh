@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.qty_reservation;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.QtyTU;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -9,6 +10,9 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +22,14 @@ import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +38,7 @@ public class QtyReservationService
 	private static final String SYSCONFIG_COPY_STORAGE_RELEVANT_ATTRS_TO_ORDER_LINE_ASI = "de.metas.handlingunits.order.CopyStorageRelevantAttributesToOrderLineASI";
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 	@NonNull private final QtyReservationRepository repository;
 
@@ -85,6 +96,90 @@ public class QtyReservationService
 		}
 	}
 
+	/**
+	 * Partially reduces the reservation of one bucket (order line + supply type + date promised) by
+	 * {@code request.qtyToUnreserveTU} TUs, spread across the bucket's rows in reservation-id order.
+	 * A row is never shrunk below its already-delivered qty; rows that reach zero are deleted.
+	 * Shipment schedules of the order line are invalidated afterwards.
+	 * <p>
+	 * Like {@link #deleteReservation}, this assumes an ambient (caller-provided) transaction: the update and the delete are
+	 * not wrapped here.
+	 */
+	public void reduceReservation(@NonNull final ReduceQtyReservationRequest request)
+	{
+		final ImmutableList<QtyReservation> rows = repository.getActiveByBucket(
+				request.getOrderAndLineId(), request.getSupplyType(), request.getDatePromised());
+
+		final int totalReversibleTU = sumReversibleTU(rows);
+		int remainingTU = request.getQtyToUnreserveTU().toInt();
+		if (remainingTU > totalReversibleTU)
+		{
+			throw new AdempiereException("Cannot unreserve " + remainingTU + " TU: only " + totalReversibleTU
+					+ " TU of the reservation are reversible (the rest is already delivered)")
+					.setParameter("request", request);
+		}
+
+		final Map<QtyReservationId, QtyReservationShrinker.Result> resultsById = new HashMap<>();
+		for (final QtyReservation row : rows)
+		{
+			if (remainingTU <= 0)
+			{
+				break;
+			}
+			final int takeTU = Math.min(remainingTU, QtyReservationShrinker.getReversibleTU(row));
+			if (takeTU <= 0)
+			{
+				continue; // nothing reducible on this row (e.g. fully delivered)
+			}
+
+			resultsById.put(row.getId(), QtyReservationShrinker.shrinkByTU(row, takeTU));
+			remainingTU -= takeTU;
+		}
+
+		if (resultsById.isEmpty())
+		{
+			return;
+		}
+
+		final Set<QtyReservationId> idsToDelete = resultsById.entrySet().stream()
+				.filter(e -> e.getValue().isDelete())
+				.map(Map.Entry::getKey)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (resultsById.size() > idsToDelete.size())
+		{
+			repository.updateByOrderLineIds(
+					ImmutableSet.of(request.getOrderAndLineId().getOrderLineId()),
+					before -> {
+						final QtyReservationShrinker.Result result = resultsById.get(before.getId());
+						return result != null && !result.isDelete()
+								? before.withQty(result.getNewQty(), result.getNewQtyTU())
+								: before;
+					});
+		}
+		repository.deleteByIds(idsToDelete);
+
+		invalidateShipmentSchedulesForSalesOrderLineId(request.getOrderAndLineId());
+	}
+
+	/**
+	 * Total TUs of the bucket (order line + supply type + optional date promised) that can still be unreserved,
+	 * i.e. reserved minus already delivered. This is the upper bound {@link #reduceReservation} enforces.
+	 */
+	@NonNull
+	public QtyTU getTotalReversibleQtyTU(
+			@NonNull final OrderAndLineId orderAndLineId,
+			@NonNull final SupplyType supplyType,
+			@Nullable final Instant datePromised)
+	{
+		return QtyTU.ofInt(sumReversibleTU(repository.getActiveByBucket(orderAndLineId, supplyType, datePromised)));
+	}
+
+	private static int sumReversibleTU(@NonNull final List<QtyReservation> rows)
+	{
+		return rows.stream().mapToInt(QtyReservationShrinker::getReversibleTU).sum();
+	}
+
 	private void invalidateShipmentSchedulesForSalesOrderLineId(@NonNull final OrderAndLineId orderLineId)
 	{
 		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(orderLineId);
@@ -103,14 +198,46 @@ public class QtyReservationService
 		);
 	}
 
-	public QtyTU getReservedQtyTU(final @NotNull DeleteQtyReservationRequest request)
-	{
-		return repository.getReservedQtyTU(request);
-	}
-
 	public QtyTU getReservedQtyTU(@NonNull final OrderAndLineId orderLineId)
 	{
 		return repository.getReservedQtyTU(orderLineId);
+	}
+
+	/**
+	 * The sales-order line's <b>remaining unreserved ordered qty</b>, expressed in {@code targetUomId}:
+	 * {@code QtyOrdered − Σ(active, unprocessed reservations' Qty on the line)}, floored at 0.
+	 * <p>
+	 * Used as the order-need upper bound when creating a new reservation (REQUIREMENTS AC3a), so the
+	 * line's TOTAL reserved CU never exceeds its {@code QtyOrdered}. The bound is the <i>remaining</i>
+	 * qty (not the full {@code QtyOrdered}) so multiple reservations on one line are supported without
+	 * over-counting. All arithmetic is performed in {@code targetUomId}; each reservation's Qty and the
+	 * line's QtyOrdered are converted into it.
+	 *
+	 * @param orderAndLineId the sales order line
+	 * @param targetUomId    the UOM the result is expressed in (typically the new reservation's stock UOM)
+	 * @return the remaining ordered qty in {@code targetUomId}; never negative
+	 */
+	public Quantity computeRemainingOrderedQty(
+			@NonNull final OrderAndLineId orderAndLineId,
+			@NonNull final UomId targetUomId)
+	{
+		// de.metas.interfaces.I_C_OrderLine (the richer type getOrderLineById returns) so the already-loaded
+		// record can be passed to getQtyOrdered(I_C_OrderLine) — the OrderAndLineId overload would re-fetch it.
+		final de.metas.interfaces.I_C_OrderLine orderLine = orderLineBL.getOrderLineById(orderAndLineId);
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+
+		final Quantity qtyOrdered = orderLineBL.getQtyOrdered(orderLine);
+		Quantity remaining = uomConversionBL.convertQuantityTo(qtyOrdered, productId, targetUomId);
+
+		for (final QtyReservation reservation : repository.getActiveByOrderLineId(orderAndLineId.getOrderLineId()))
+		{
+			final Quantity reservedInTarget = uomConversionBL.convertQuantityTo(
+					reservation.getQty(), reservation.getProductId(), targetUomId);
+			remaining = remaining.subtract(reservedInTarget);
+		}
+
+		// floor at 0: a fully/over-reserved line has no remaining ordered qty
+		return remaining.toZeroIfNegative();
 	}
 
 	/**

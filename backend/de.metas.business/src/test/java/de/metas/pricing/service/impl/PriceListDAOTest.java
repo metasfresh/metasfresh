@@ -15,6 +15,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.MutateCustomerPricesResult;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -42,6 +43,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -1372,6 +1374,223 @@ public class PriceListDAOTest
 
 		assertThat(productPrice3.getPriceStd()).isEqualByComparingTo(customPriceProduct3.add(baseSurcharge3));
 
+	}
+
+	/*
+	 * Note on the retrieveCustomPLVsToMutate_* tests: they run through PlainPriceListDAO, which replaces the real SQL
+	 * "latest ValidFrom among the list's active versions" subquery (including its v.IsActive='Y' condition in PriceListDAO)
+	 * with an in-memory version step. The version rule is therefore covered against the real SQL only by the cucumber
+	 * scenario TC15 of derivative_price_lists.feature; the query for the eligible derivative lists is shared by both implementations.
+	 */
+	@Test
+	public void retrieveCustomPLVsToMutate_baseWithoutCountry_noCountryRestriction()
+	{
+		final I_M_PricingSystem derivativePS = createPricingSystem("DERIV PS", "DERIV PS");
+		createPartner("customer", true, true, derivativePS.getM_PricingSystem_ID());
+
+		final I_M_PriceList base = createPriceList(pricingSystem, null, "base", true, null, EURO);
+		final I_M_PriceList derivativeWithCountry = createPriceList(derivativePS, base, "derivative with country", true, country, EURO);
+		final I_M_PriceList derivativeWithoutCountry = createPriceList(derivativePS, base, "derivative without country", true, null, EURO);
+		final I_M_PriceList_Version plvWithCountry = createPLV(derivativeWithCountry.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+		final I_M_PriceList_Version plvWithoutCountry = createPLV(derivativeWithoutCountry.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+
+		assertThat(retrieveCustomPLVsToMutate(base))
+				.extracting(I_M_PriceList_Version::getM_PriceList_Version_ID)
+				.containsExactlyInAnyOrder(plvWithCountry.getM_PriceList_Version_ID(), plvWithoutCountry.getM_PriceList_Version_ID());
+	}
+
+	@Test
+	public void retrieveCustomPLVsToMutate_baseWithCountry_onlySameCountry()
+	{
+		final I_M_PricingSystem derivativePS = createPricingSystem("DERIV PS", "DERIV PS");
+		createPartner("customer", true, true, derivativePS.getM_PricingSystem_ID());
+
+		final I_M_PriceList base = createPriceList(pricingSystem, null, "base", true, country, EURO);
+		final I_M_PriceList sameCountry = createPriceList(derivativePS, base, "same country", true, country, EURO);
+		final I_M_PriceList otherCountry = createPriceList(derivativePS, base, "other country", true, createCountry(), EURO);
+		final I_M_PriceList noCountry = createPriceList(derivativePS, base, "no country", true, null, EURO);
+		final I_M_PriceList_Version plvSameCountry = createPLV(sameCountry.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+		createPLV(otherCountry.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+		createPLV(noCountry.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+
+		assertThat(retrieveCustomPLVsToMutate(base))
+				.extracting(I_M_PriceList_Version::getM_PriceList_Version_ID)
+				.containsExactly(plvSameCountry.getM_PriceList_Version_ID());
+	}
+
+	@Test
+	public void retrieveCustomPLVsToMutate_inactiveAndPurchaseLists_areSkipped()
+	{
+		final I_M_PricingSystem derivativePS = createPricingSystem("DERIV PS", "DERIV PS");
+		createPartner("customer", true, true, derivativePS.getM_PricingSystem_ID());
+
+		final I_M_PriceList base = createPriceList(pricingSystem, null, "base", true, null, EURO);
+		final I_M_PriceList active = createPriceList(derivativePS, base, "active sales", true, null, EURO);
+		final I_M_PriceList inactive = createPriceList(derivativePS, base, "inactive sales", true, null, EURO);
+		inactive.setIsActive(false);
+		save(inactive);
+		final I_M_PriceList purchase = createPriceList(derivativePS, base, "purchase", false, null, EURO);
+		final I_M_PriceList_Version plvActive = createPLV(active.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+		createPLV(inactive.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+		createPLV(purchase.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+
+		assertThat(retrieveCustomPLVsToMutate(base))
+				.extracting(I_M_PriceList_Version::getM_PriceList_Version_ID)
+				.containsExactly(plvActive.getM_PriceList_Version_ID());
+	}
+
+	@Test
+	public void retrieveCustomPLVsToMutate_inactiveLatestVersion_previousActiveVersionIsUsed()
+	{
+		final I_M_PricingSystem derivativePS = createPricingSystem("DERIV PS", "DERIV PS");
+		createPartner("customer", true, true, derivativePS.getM_PricingSystem_ID());
+
+		final I_M_PriceList base = createPriceList(pricingSystem, null, "base", true, null, EURO);
+		final I_M_PriceList derivative = createPriceList(derivativePS, base, "derivative", true, null, EURO);
+		final I_M_PriceList_Version activeVersion = createPLV(derivative.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+		final I_M_PriceList_Version inactiveLaterVersion = createPLV(derivative.getM_PriceList_ID(), TimeUtil.getDay(2019, 6, 1), -1, -1);
+		inactiveLaterVersion.setIsActive(false);
+		save(inactiveLaterVersion);
+
+		assertThat(retrieveCustomPLVsToMutate(base))
+				.extracting(I_M_PriceList_Version::getM_PriceList_Version_ID)
+				.containsExactly(activeVersion.getM_PriceList_Version_ID());
+	}
+
+	@Test
+	public void retrieveCustomPLVsToMutate_noActiveVersion_derivativeIsSkipped()
+	{
+		final I_M_PricingSystem derivativePS = createPricingSystem("DERIV PS", "DERIV PS");
+		createPartner("customer", true, true, derivativePS.getM_PricingSystem_ID());
+
+		final I_M_PriceList base = createPriceList(pricingSystem, null, "base", true, null, EURO);
+		final I_M_PriceList derivative = createPriceList(derivativePS, base, "derivative", true, null, EURO);
+		final I_M_PriceList_Version onlyVersion = createPLV(derivative.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+		onlyVersion.setIsActive(false);
+		save(onlyVersion);
+
+		assertThat(retrieveCustomPLVsToMutate(base)).isEmpty();
+	}
+
+	@Test
+	public void retrieveCustomPLVsToMutate_derivativeWithOtherCurrency_isSkipped()
+	{
+		final I_M_PricingSystem derivativePS = createPricingSystem("DERIV PS", "DERIV PS");
+		createPartner("customer", true, true, derivativePS.getM_PricingSystem_ID());
+
+		final I_M_PriceList base = createPriceList(pricingSystem, null, "base", true, null, EURO);
+		final I_M_PriceList sameCurrency = createPriceList(derivativePS, base, "same currency", true, null, EURO);
+		final I_M_PriceList otherCurrency = createPriceList(derivativePS, base, "other currency", true, null, PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF));
+		final I_M_PriceList_Version plvSameCurrency = createPLV(sameCurrency.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+		createPLV(otherCurrency.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+
+		assertThat(retrieveCustomPLVsToMutate(base))
+				.extracting(I_M_PriceList_Version::getM_PriceList_Version_ID)
+				.containsExactly(plvSameCurrency.getM_PriceList_Version_ID());
+	}
+
+	/** Base list + one derivative list (of an active customer that allows price mutation), both with one version dated 2019-01-01. */
+	private I_M_PriceList[] createBaseAndDerivativeList()
+	{
+		final I_M_PriceList base = createPriceList(pricingSystem, null, "base", true, country, EURO);
+		final I_M_PricingSystem derivativePS = createPricingSystem("DERIVATIVE PS", "DERIVATIVE PS");
+		createPartner("Customer", true, true, derivativePS.getM_PricingSystem_ID());
+		final I_M_PriceList derivative = createPriceList(derivativePS, base, "derivative", true, country, EURO);
+		createPLV(base.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+		createPLV(derivative.getM_PriceList_ID(), TimeUtil.getDay(2019, 1, 1), -1, -1);
+		return new I_M_PriceList[] { base, derivative };
+	}
+
+	@Test
+	public void mutateCustomerPrices_reportsNewVersion_thenSkipsSecondRunOnSameBaseVersion()
+	{
+		final I_AD_User user = createUser("User");
+		final I_M_PriceList[] lists = createBaseAndDerivativeList();
+		final I_M_PriceList_Version newBasePLV = createPLV(lists[0].getM_PriceList_ID(), TimeUtil.getDay(2020, 3, 1), -1, -1);
+		final PriceListVersionId newBasePLVId = PriceListVersionId.ofRepoId(newBasePLV.getM_PriceList_Version_ID());
+		final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
+
+		final MutateCustomerPricesResult firstRun = priceListDAO.mutateCustomerPrices(newBasePLVId, userId);
+
+		final I_M_PriceList_Version newestVersion = priceListDAO.retrieveNewestPriceListVersion(PriceListId.ofRepoId(lists[1].getM_PriceList_ID()));
+		assertThat(firstRun.getNewVersionsCount()).isEqualTo(1);
+		assertThat(firstRun.getOutcomes()).singleElement().satisfies(outcome -> {
+			assertThat(outcome.getPriceListId().getRepoId()).isEqualTo(lists[1].getM_PriceList_ID());
+			assertThat(outcome.getNewPriceListVersionId().getRepoId()).isEqualTo(newestVersion.getM_PriceList_Version_ID());
+			assertThat(outcome.getSkipReason()).isNull();
+		});
+
+		final MutateCustomerPricesResult secondRun = priceListDAO.mutateCustomerPrices(newBasePLVId, userId);
+
+		assertThat(countPLVs(lists[1])).isEqualTo(2);
+		assertThat(secondRun.getNewVersionsCount()).isZero();
+		assertThat(secondRun.getOutcomes()).singleElement().satisfies(outcome -> {
+			assertThat(outcome.getPriceListId().getRepoId()).isEqualTo(lists[1].getM_PriceList_ID());
+			assertThat(outcome.getNewPriceListVersionId()).isNull();
+			assertThat(outcome.getSkipReason()).isEqualTo(MutateCustomerPricesResult.SkipReason.SAME_DAY_VERSION_EXISTS);
+		});
+	}
+
+	@Test
+	public void mutateCustomerPrices_skipsDerivativeWithActiveVersionOnSameDayAtOtherTime()
+	{
+		final I_AD_User user = createUser("User");
+		final I_M_PriceList[] lists = createBaseAndDerivativeList();
+		// same day, 13:00 vs 00:00: the DB index would not object, but it is the same day
+		createPLV(lists[1].getM_PriceList_ID(), Timestamp.valueOf("2020-03-01 13:00:00"), -1, -1);
+		final I_M_PriceList_Version newBasePLV = createPLV(lists[0].getM_PriceList_ID(), TimeUtil.getDay(2020, 3, 1), -1, -1);
+
+		final MutateCustomerPricesResult result = priceListDAO.mutateCustomerPrices(
+				PriceListVersionId.ofRepoId(newBasePLV.getM_PriceList_Version_ID()),
+				UserId.ofRepoId(user.getAD_User_ID()));
+
+		assertThat(countPLVs(lists[1])).isEqualTo(2);
+		assertThat(result.getOutcomes()).singleElement()
+				.extracting(MutateCustomerPricesResult.Outcome::getSkipReason)
+				.isEqualTo(MutateCustomerPricesResult.SkipReason.SAME_DAY_VERSION_EXISTS);
+	}
+
+	@Test
+	public void mutateCustomerPrices_inactiveVersionOnSameDayDoesNotPreventNewVersion()
+	{
+		final I_AD_User user = createUser("User");
+		final I_M_PriceList[] lists = createBaseAndDerivativeList();
+		final I_M_PriceList_Version inactiveSameDay = createPLV(lists[1].getM_PriceList_ID(), TimeUtil.getDay(2020, 3, 1), -1, -1);
+		inactiveSameDay.setIsActive(false);
+		save(inactiveSameDay);
+		final I_M_PriceList_Version newBasePLV = createPLV(lists[0].getM_PriceList_ID(), TimeUtil.getDay(2020, 3, 1), -1, -1);
+
+		final MutateCustomerPricesResult result = priceListDAO.mutateCustomerPrices(
+				PriceListVersionId.ofRepoId(newBasePLV.getM_PriceList_Version_ID()),
+				UserId.ofRepoId(user.getAD_User_ID()));
+
+		assertThat(result.getNewVersionsCount()).isEqualTo(1);
+		assertThat(countPLVs(lists[1])).isEqualTo(3);
+	}
+
+	@Test
+	public void mutateCustomerPrices_skipsDerivativeWithoutActiveVersion()
+	{
+		final I_AD_User user = createUser("User");
+		final I_M_PriceList[] lists = createBaseAndDerivativeList();
+		final I_M_PriceList_Version onlyVersion = priceListDAO.retrieveNewestPriceListVersion(PriceListId.ofRepoId(lists[1].getM_PriceList_ID()));
+		onlyVersion.setIsActive(false);
+		save(onlyVersion);
+		final I_M_PriceList_Version newBasePLV = createPLV(lists[0].getM_PriceList_ID(), TimeUtil.getDay(2020, 3, 1), -1, -1);
+
+		final MutateCustomerPricesResult result = priceListDAO.mutateCustomerPrices(
+				PriceListVersionId.ofRepoId(newBasePLV.getM_PriceList_Version_ID()),
+				UserId.ofRepoId(user.getAD_User_ID()));
+
+		assertThat(countPLVs(lists[1])).isEqualTo(1);
+		assertThat(result.getOutcomes()).singleElement()
+				.extracting(MutateCustomerPricesResult.Outcome::getSkipReason)
+				.isEqualTo(MutateCustomerPricesResult.SkipReason.NO_ACTIVE_VERSION);
+	}
+
+	private List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(final I_M_PriceList basePriceList)
+	{
+		return new PlainPriceListDAO().retrieveCustomPLVsToMutate(PriceListId.ofRepoId(basePriceList.getM_PriceList_ID()));
 	}
 
 	private I_M_PricingSystem createPricingSystem(final String value, final String name)

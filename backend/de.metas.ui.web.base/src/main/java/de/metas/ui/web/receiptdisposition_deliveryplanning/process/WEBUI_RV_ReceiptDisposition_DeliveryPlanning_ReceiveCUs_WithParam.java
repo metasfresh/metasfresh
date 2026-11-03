@@ -40,9 +40,9 @@ import java.math.BigDecimal;
 public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs_WithParam extends WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs
 		implements IProcessDefaultParametersProvider
 {
-	private static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
-	@Param(parameterName = PARAM_QtyCUsPerTU, mandatory = true)
-	private BigDecimal p_QtyCUsPerTU;
+	private static final String PARAM_QtyCUsReceived = "QtyCUsReceived";
+	@Param(parameterName = PARAM_QtyCUsReceived, mandatory = true)
+	private BigDecimal p_QtyCUsReceived;
 
 	@Override
 	protected boolean isQtyToReceiveKnownUpfront()
@@ -55,7 +55,7 @@ public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs_WithParam e
 	{
 		// Pre-filled with what pressing the quantity-less variant would receive - the ROW's own figure, so the
 		// operator of a split planned row is offered its share rather than the whole order line's remainder.
-		return PARAM_QtyCUsPerTU.equals(parameter.getColumnName())
+		return PARAM_QtyCUsReceived.equals(parameter.getColumnName())
 				? getQtyToReceive().toBigDecimal()
 				: DEFAULT_VALUE_NOTAVAILABLE;
 	}
@@ -63,10 +63,10 @@ public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs_WithParam e
 	@Override
 	protected BigDecimal getQtyToReceiveOverrideOrNull()
 	{
-		if (p_QtyCUsPerTU == null || p_QtyCUsPerTU.signum() <= 0)
+		if (p_QtyCUsReceived == null || p_QtyCUsReceived.signum() <= 0)
 		{
-			throw new FillMandatoryException(PARAM_QtyCUsPerTU);
+			throw new FillMandatoryException(PARAM_QtyCUsReceived);
 		}
-		return p_QtyCUsPerTU;
+		return p_QtyCUsReceived;
 	}
 }

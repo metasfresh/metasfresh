@@ -1,0 +1,52 @@
+package de.metas.contracts.compensationGroup.contract;
+
+import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocTypeId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigId;
+import de.metas.order.compensationGroup.GroupTemplateId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+/**
+ * The resolved content of a {@code C_CompensationGroup_ContractSettings} record: the compensation-group
+ * schema it triggers and the order document types it fires on.
+ */
+@Value
+@Builder
+public class ContractCompensationGroupSettings
+{
+	@NonNull ContractCompensationGroupSettingsId settingsId;
+	@NonNull GroupTemplateId schemaId;
+	@NonNull ImmutableSet<DocTypeId> docTypeIds;
+
+	/**
+	 * The {@code InvoiceProcessingServiceCompany} record whose service company's payment-service fee the vendor passes on.
+	 * {@code null} = no fee is passed on.
+	 */
+	@Nullable InvoiceProcessingServiceCompanyConfigId passOnServiceCompanyConfigId;
+}

@@ -44,7 +44,8 @@ class DummyGRAITemplateTest
 	void migros_tooLongSerialPrefix_throws()
 	{
 		assertThatThrownBy(() -> DummyGRAITemplate.migros("12345678901"))
-				.isInstanceOf(AdempiereException.class);
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(DummyGRAITemplate.MSG_DUMMY_GRAI_SERIAL_PREFIX_TOO_LONG.toAD_Message());
 	}
 
 	@Test

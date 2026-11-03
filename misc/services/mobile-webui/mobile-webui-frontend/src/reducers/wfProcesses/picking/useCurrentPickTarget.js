@@ -10,8 +10,11 @@ import {
   removePickToStructure,
 } from './PickToStructure';
 
-export const useCurrentPickingTargetInfo = ({ wfProcessId, activityId, lineId }) => {
-  return useSelector((state) => getCurrentPickingTargetInfo({ state, wfProcessId, activityId, lineId }), shallowEqual);
+export const useCurrentPickingTargetInfo = ({ wfProcessId, activityId, lineId, fallbackToHeader = false }) => {
+  return useSelector(
+    (state) => getCurrentPickingTargetInfo({ state, wfProcessId, activityId, lineId, fallbackToHeader }),
+    shallowEqual
+  );
 };
 
 const computeIsAllowReopeningLU = ({ allowedPickToStructures }) =>

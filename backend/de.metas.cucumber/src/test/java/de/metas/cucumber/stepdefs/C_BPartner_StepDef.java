@@ -36,6 +36,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.bpgroup.C_BP_Group_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
@@ -97,6 +98,7 @@ import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_PO_Invoice
 import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_AllowConsolidateInOut;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
@@ -111,6 +113,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsTaxExempt;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Lookup_Label;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
@@ -138,6 +141,7 @@ public class C_BPartner_StepDef
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final C_Aggregation_StepDefData aggregationTable;
 	@NonNull private final AD_User_StepDefData userTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final TestContext restTestContext;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
@@ -168,6 +172,9 @@ public class C_BPartner_StepDef
 	 *   <li>{@code IsFactorer} — {@code Y}/{@code N}; marks the partner as the factorer resolved for its {@code AD_Org_ID}</li>
 	 *   <li>{@code IsInvoiceEmailEnabled} — {@code Y}/{@code N}; when {@code Y}, invoices are emailable to the bill-to location email even without a bill contact</li>
 	 * </ul>
+	 * {@code M_DiscountSchema_ID} (optional, identifier-ref) — the sales-side discount schema (resolved via
+	 * {@link M_DiscountSchema_StepDefData}); mirrors the already-supported {@code PO_DiscountSchema_ID} column but on
+	 * the sales side, so a customer partner's discount schema can be exercised end-to-end via the pricing engine.
 	 */
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
@@ -253,6 +260,7 @@ public class C_BPartner_StepDef
 	 *                   <b>C_Dunning_ID</b> — (optional) step-def identifier of the dunning schema<br>
 	 *                   <b>VATaxID</b> — (optional) new VAT-ID value; use {@code null} token to clear<br>
 	 *                   <b>Name</b> — (optional) new partner name<br>
+	 *                   <b>IsActive</b> — (optional) {@code Y}/{@code N}; activates or deactivates the partner<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_BPartner:
@@ -334,6 +342,12 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setValue(valueAndName.getValue());
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name2).ifPresent(bPartnerRecord::setName2);
 		row.getAsOptionalString(COLUMNNAME_Lookup_Label).ifPresent(bPartnerRecord::setLookup_Label);
+		// no generated accessor for this column
+		final Boolean isReplicationLookupDefault = row.getAsOptionalBoolean("IsReplicationLookupDefault").toBooleanOrNull();
+		if (isReplicationLookupDefault != null)
+		{
+			InterfaceWrapperHelper.setValue(bPartnerRecord, "IsReplicationLookupDefault", isReplicationLookupDefault);
+		}
 
 		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
 		bPartnerRecord.setIsVendor(row.getAsOptionalBoolean(COLUMNNAME_IsVendor).orElseFalse());
@@ -355,11 +369,23 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setPO_DiscountSchema_ID(discountSchemaRecord.getM_DiscountSchema_ID());
 		}
 
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation).ifPresent(bPartnerRecord::setIsAllowPriceMutation);
+
+		final StepDefDataIdentifier soDiscountSchemaIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_DiscountSchema_ID).orElse(null);
+		if (soDiscountSchemaIdentifier != null)
+		{
+			final I_M_DiscountSchema soDiscountSchemaRecord = discountSchemaTable.get(soDiscountSchemaIdentifier);
+			bPartnerRecord.setM_DiscountSchema_ID(soDiscountSchemaRecord.getM_DiscountSchema_ID());
+		}
+
 		row.getAsOptionalEnum(COLUMNNAME_InvoiceRule, InvoiceRule.class)
 				.ifPresent(invoiceRule -> bPartnerRecord.setInvoiceRule(invoiceRule.getCode()));
 
 		final DeliveryRule deliveryRule = row.getAsOptionalEnum(COLUMNNAME_DeliveryRule, DeliveryRule.class).orElse(DeliveryRule.FORCE);
 		bPartnerRecord.setDeliveryRule(deliveryRule.getCode());
+
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_GRAIRequired)
+				.ifPresent(bPartnerRecord::setGRAIRequired);
 
 		final StepDefDataIdentifier pricingSystemIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_PricingSystem_ID).orElse(null);
 		if (pricingSystemIdentifier != null)
@@ -433,6 +459,8 @@ public class C_BPartner_StepDef
 		row.getAsOptionalEnum(COLUMNNAME_PO_InvoiceRule, InvoiceRule.class).ifPresent(poInvoiceRule -> bPartnerRecord.setPO_InvoiceRule(poInvoiceRule.getCode()));
 		row.getAsOptionalBoolean(COLUMNNAME_IsAllowActionPrice).ifPresent(bPartnerRecord::setIsAllowActionPrice);
 
+		row.getAsOptionalBoolean(COLUMNNAME_AllowConsolidateInOut).ifPresent(bPartnerRecord::setAllowConsolidateInOut);
+
 		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_AD_OrgBP_ID)
 				.map(orgTable::getIdAsInt)
 				.ifPresent(bPartnerRecord::setAD_OrgBP_ID);
@@ -454,6 +482,10 @@ public class C_BPartner_StepDef
 
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID)
 				.ifPresent(vatId -> bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vatId)));
+
+		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseTable::getId)
+				.ifPresent(warehouseId -> bPartnerRecord.setM_Warehouse_ID(warehouseId.getRepoId()));
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 
@@ -618,6 +650,9 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name)
 				.filter(EmptyUtil::isNotBlank)
 				.ifPresent(bPartner::setName);
+
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsActive)
+				.ifPresent(bPartner::setIsActive);
 
 		InterfaceWrapperHelper.save(bPartner);
 

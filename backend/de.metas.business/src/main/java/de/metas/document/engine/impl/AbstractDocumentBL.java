@@ -1,5 +1,6 @@
 package de.metas.document.engine.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
@@ -57,9 +58,24 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 {
 	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
-	private static final DeadlockRetryPolicy DEADLOCK_RETRY_POLICY = DeadlockRetryPolicy.DEFAULT;
+	@NonNull private final DeadlockRetryPolicy deadlockRetryPolicy;
+	@NonNull private final RetryStateSnapshotter retryStateSnapshotter;
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	protected AbstractDocumentBL()
+	{
+		this(DeadlockRetryPolicy.DEFAULT, RetryStateSnapshotter.PO_SNAPSHOTTER);
+	}
+
+	@VisibleForTesting
+	AbstractDocumentBL(
+			@NonNull final DeadlockRetryPolicy deadlockRetryPolicy,
+			@NonNull final RetryStateSnapshotter retryStateSnapshotter)
+	{
+		this.deadlockRetryPolicy = deadlockRetryPolicy;
+		this.retryStateSnapshotter = retryStateSnapshotter;
+	}
 
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
 
@@ -122,7 +138,39 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	{
 		final String trxName = getTrxName(document.getDocumentModel(), true /* ignoreIfNotHandled */);
 
-		final TrxCallable<Boolean> processCallable = new TrxCallable<Boolean>()
+		final Boolean processed;
+		if (isEngineOwnsTheTransaction(trxName))
+		{
+			// engine-owned trxName => trxManager.call is REQUIRES_NEW: each retry attempt opens its own fresh trx
+			// and runs on the same document, reset to its state before the first attempt
+			final DocumentProcessingAttempts attempts = DocumentProcessingAttempts.of(document, retryStateSnapshotter);
+			try
+			{
+				processed = deadlockRetryPolicy.call(
+						() -> trxManager.call(trxName, newProcessCallable(attempts.nextAttemptDocument(), action, throwExIfNotSuccess, trxName)),
+						document.getDocumentInfo());
+			}
+			catch (final RuntimeException ex)
+			{
+				attempts.onFailure();
+				throw ex;
+			}
+		}
+		else
+		{
+			processed = trxManager.call(trxName, newProcessCallable(document, action, throwExIfNotSuccess, trxName));
+		}
+
+		return processed != null && processed;
+	}
+
+	private TrxCallable<Boolean> newProcessCallable(
+			@NonNull final IDocument document,
+			@NonNull final String action,
+			final boolean throwExIfNotSuccess,
+			@Nullable final String initialTrxName)
+	{
+		return new TrxCallable<Boolean>()
 		{
 			@Override
 			public Boolean call() throws Exception
@@ -149,24 +197,9 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			public void doFinally()
 			{
 				// put back the transaction which document had initially
-				setTrxName(document.getDocumentModel(), trxName, true /* ignoreIfNotHandled */);
+				setTrxName(document.getDocumentModel(), initialTrxName, true /* ignoreIfNotHandled */);
 			}
 		};
-
-		final Boolean processed;
-		if (isEngineOwnsTheTransaction(trxName))
-		{
-			// engine-owned trxName => trxManager.call is REQUIRES_NEW: each retry attempt opens its own fresh trx
-			processed = DEADLOCK_RETRY_POLICY.call(
-					() -> trxManager.call(trxName, processCallable),
-					document.getDocumentInfo());
-		}
-		else
-		{
-			processed = trxManager.call(trxName, processCallable);
-		}
-
-		return processed != null && processed;
 	}
 
 	private boolean isEngineOwnsTheTransaction(@Nullable final String trxName)
