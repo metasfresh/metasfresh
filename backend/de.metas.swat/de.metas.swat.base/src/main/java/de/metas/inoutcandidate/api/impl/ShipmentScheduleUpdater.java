@@ -44,6 +44,7 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
+import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidResult;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
@@ -79,6 +80,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
@@ -179,7 +181,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	}
 
 	@Override
-	public int updateShipmentSchedules(@NonNull final ShipmentScheduleUpdateInvalidRequest request)
+	public ShipmentScheduleUpdateInvalidResult updateShipmentSchedules(@NonNull final ShipmentScheduleUpdateInvalidRequest request)
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		loggable.addLog("ShipmentScheduleUpdater - Invoked with ShipmentScheduleUpdateInvalidRequest={}", request);
@@ -204,7 +206,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				loggable.addLog("ShipmentScheduleUpdater - created {} missing candidates", shipmentSchedulesNewIds.size());
 			}
 
-			final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId);
+			final QueryLimit maxToProcess = request.getMaxToProcess();
+			final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId, maxToProcess);
 			loggable.addLog("Found {} invalid shipment schedules and tagged them with {}", olsAndScheds.size(), selectionId);
 
 			invalidatePickingBOMProducts(olsAndScheds, selectionId);
@@ -214,8 +217,17 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// cleanup the marker/pointer tables
 			invalidSchedulesRepo.deleteRecomputeMarkersOutOfTrx(selectionId);
 
+			// NOTE: deliberately NOT "olsAndScheds.size() >= maxToProcess" -- the tag unit is a whole product
+			// (see markAllToRecomputeOutOfTrx), so a bounded pass can retrieve fewer, exactly as many, or MORE
+			// schedules than maxToProcess. The reliable signal is whether untagged markers still remain.
+			// Always false for NO_LIMIT, regardless of that signal, so the manual (single-shot) path never regresses.
+			final boolean limitReached = maxToProcess.isLimited() && invalidSchedulesRepo.existsUntaggedRecomputeMarkers();
+
 			logger.debug("Done");
-			return olsAndScheds.size();
+			return ShipmentScheduleUpdateInvalidResult.builder()
+					.updatedCount(olsAndScheds.size())
+					.limitReached(limitReached)
+					.build();
 		}
 		finally
 		{
@@ -600,7 +612,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	}
 
 	@NonNull
-	private BigDecimal computeQtyRequiredForOlAndSched(
+	@VisibleForTesting
+	BigDecimal computeQtyRequiredForOlAndSched(
 			final @NonNull OlAndSched olAndSched,
 			final @NonNull DeliveryRule deliveryRule)
 	{
@@ -610,7 +623,13 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		if (olAndSched.getQtyOverride() != null)
 		{
 			final BigDecimal qtyToDeliverOverrideFulFilled = ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched, shipmentScheduleAllocDAO);
-			if (olAndSched.getQtyOverride().compareTo(qtyToDeliverOverrideFulFilled) > 0)
+			if (olAndSched.getQtyOverride().signum() == 0)
+			{
+				// an explicit override of zero means "deliver nothing"; don't fall back to QtyOrdered - QtyDelivered
+				qtyRequired = BigDecimal.ZERO;
+				logger.debug("QtyOverride is explicitly zero; => qtyRequired={}", qtyRequired);
+			}
+			else if (olAndSched.getQtyOverride().compareTo(qtyToDeliverOverrideFulFilled) > 0)
 			{
 				qtyRequired = olAndSched.getQtyOverride().subtract(qtyToDeliverOverrideFulFilled);
 				logger.debug("QtyOverride={} is greater than QtyToDeliverOverrideFulFilled={}; => use the delta as QtyRequired={}", olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired);
@@ -815,7 +834,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			return;
 
 		}
-		final boolean noQtyOverride = sched.getQtyToDeliver_Override().signum() <= 0;
+		final boolean noQtyOverride = InterfaceWrapperHelper.isNull(sched, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 		final boolean noQtyReserved = sched.getQtyReserved().signum() <= 0;
 		final boolean noQtyPickedAndNotDelivered = sched.getQtyPickList().signum() <= 0;
 

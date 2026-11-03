@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -250,5 +251,11 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 				.andCollect(de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc.COLUMN_M_ReceiptSchedule_ID)
 				.create()
 				.firstOnly(I_M_ReceiptSchedule.class);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_ReceiptSchedule_Alloc receiptScheduleAllocRecord)
+	{
+		InterfaceWrapperHelper.save(receiptScheduleAllocRecord);
 	}
 }

@@ -131,10 +131,14 @@ test.describe('Vendor Invoice line - GL account override (F01010.4)', () => {
       // In the WebUI document API a child row is addressed by (parent id, tabId, rowId): the doc's
       // own `id` is the PARENT invoice id, while the new line's id is in `rowId`.
       const lineDoc = docs.find((d) => d.rowId) || docs[0];
-      lineId = lineDoc.rowId || lineDoc.id;
+      // Assert the new line actually carries its own `rowId` — never silently fall back to the parent
+      // `id`, which would make every later line PATCH target the header. Do NOT assert lineId !==
+      // invoiceId: C_Invoice_ID and C_InvoiceLine_ID are independent per-table sequences that
+      // legitimately coincide on a fresh DB (both start at 1000000), so numeric id-inequality is a false
+      // invariant that fails purely on test-ordering luck (e.g. when this spec runs first in its shard).
+      expect(lineDoc.rowId, 'the new invoice-line document must carry its own rowId').toBeTruthy();
+      lineId = lineDoc.rowId;
       console.log(`[STEP] invoice line rowId=${lineId} (parent invoice ${invoiceId})`);
-      expect(lineId).toBeTruthy();
-      expect(String(lineId), 'line id must differ from the parent invoice id').not.toBe(String(invoiceId));
 
       const patchLine = (changes) =>
         page.request.patch(`${REST}/window/${CRUD_WIN}/${invoiceId}/${crudLineTabId}/${lineId}`, { data: changes });

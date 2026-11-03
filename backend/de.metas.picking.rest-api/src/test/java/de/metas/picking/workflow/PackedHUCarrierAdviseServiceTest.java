@@ -7,7 +7,10 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestParcel;
 import de.metas.currency.CurrencyRepository;
 import de.metas.customstariff.CustomsTariffRepository;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.impl.PlainMsgBL;
 import de.metas.money.MoneyService;
+import de.metas.util.Services;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
@@ -26,14 +29,19 @@ import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
+import de.metas.organization.OrgId;
+import de.metas.product.PackageDimensions;
 import de.metas.product.ProductRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProduct;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -88,6 +96,7 @@ public class PackedHUCarrierAdviseServiceTest
 	public void init()
 	{
 		data = new LUTUProducerDestinationTestSupport();
+		Services.registerService(IMsgBL.class, new PlainMsgBL());
 
 		packedHUShippingInfoService = PackedHUShippingInfoService.newInstanceForUnitTesting();
 		huShipmentScheduleResolver = mock(HUShipmentScheduleResolver.class);
@@ -376,7 +385,7 @@ public class PackedHUCarrierAdviseServiceTest
 		final PickingJobLine line1 = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701));
 		final PickingJobLine line2 = mockLine(data.helper.pSaladProductId, CarrierProductId.ofRepoId(702));
 
-		final CarrierAdviseTargetInfo info = service.resolveInfo(mockJobLevelJob(ImmutableList.of(line1, line2)), null);
+		final CarrierAdviseTargetInfo info = service.resolveInfo(mockJobLevelJob(ImmutableList.of(line1, line2)), null, "en_US");
 		assertThat(info.isAvailable()).isTrue();
 		assertThat(info.isReadOnly()).isTrue();
 	}
@@ -402,7 +411,7 @@ public class PackedHUCarrierAdviseServiceTest
 		final PickingJob job = mockJobLevelJob(ImmutableList.of(apiLine, nonApiLine));
 		when(job.getCarrierProductId()).thenReturn(apiCarrierProductId);
 
-		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null, "en_US");
 		assertThat(info.isAvailable()).isTrue();
 		assertThat(info.getProductCaption()).isEqualTo("carrier");
 	}
@@ -416,7 +425,7 @@ public class PackedHUCarrierAdviseServiceTest
 	{
 		final PickingJobLine line = mockLine(data.helper.pTomatoProductId, null);
 
-		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line)), null).isAvailable())
+		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line)), null, "en_US").isAvailable())
 				.isFalse();
 	}
 
@@ -429,7 +438,7 @@ public class PackedHUCarrierAdviseServiceTest
 	{
 		final PickingJobLine line = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701), false);
 
-		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line)), null).isAvailable())
+		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line)), null, "en_US").isAvailable())
 				.isFalse();
 	}
 
@@ -514,5 +523,75 @@ public class PackedHUCarrierAdviseServiceTest
 	private static ArgumentCaptor<UnaryOperator<PickingJobLine>> lineMapperCaptor()
 	{
 		return ArgumentCaptor.forClass((Class<UnaryOperator<PickingJobLine>>) (Class<?>) UnaryOperator.class);
+	}
+
+	/**
+	 * SysConfig gate for the single-CU baseline branch in {@link PackedHUCarrierAdviseService#buildRequestParcel}.
+	 * When {@code de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked=Y},
+	 * a non-self-packed single-CU HU with dims → {@link PackageDimensions#UNSPECIFIED}.
+	 * When absent / 'N' (default), dims are used.
+	 */
+	@Nested
+	class IsSelfPackedGate
+	{
+		private static final String SYSCONFIG_CHECK_IS_SELF_PACKED
+				= "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
+
+		@Test
+		public void whenSysConfigY_nonSelfPacked_singleCU_dimensionsUnspecified()
+		{
+			// Arrange: SysConfig Y → legacy gate active
+			Services.get(ISysConfigBL.class).setValue(SYSCONFIG_CHECK_IS_SELF_PACKED, true, ClientId.SYSTEM, OrgId.ANY);
+
+			// pSalad is NOT self-packed; give it dims
+			data.helper.pSalad.setIsSelfPacked(false);
+			data.helper.pSalad.setLengthInCm(10);
+			data.helper.pSalad.setWidthInCm(20);
+			data.helper.pSalad.setHeightInCm(30);
+			save(data.helper.pSalad);
+
+			final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+			producer.setLocatorId(data.defaultLocatorId);
+			data.helper.load(producer, data.helper.pSaladProductId, new BigDecimal("1"), data.helper.uomEach);
+			final I_M_HU cu = producer.getCreatedHUs().get(0);
+
+			final ShipmentSchedule saladSched = mockSchedule(SCHED_SALAD, data.helper.pSaladProductId);
+			final JsonDeliveryAdvisorRequestParcel parcel = service.buildRequestParcel(
+					cu, ImmutableMap.of(SCHED_SALAD, saladSched));
+
+			// Gate active: non-self-packed → PackageDimensions.UNSPECIFIED → all three dims = -1
+			assertThat(parcel.getPackageDimensions()).isNotNull();
+			assertThat(parcel.getPackageDimensions().getLengthInCM()).isEqualTo(-1);
+			assertThat(parcel.getPackageDimensions().getWidthInCM()).isEqualTo(-1);
+			assertThat(parcel.getPackageDimensions().getHeightInCM()).isEqualTo(-1);
+		}
+
+		@Test
+		public void whenSysConfigN_nonSelfPacked_singleCU_dimensionsReturned()
+		{
+			// Arrange: SysConfig N (default) → gate off
+			Services.get(ISysConfigBL.class).setValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false, ClientId.SYSTEM, OrgId.ANY);
+
+			data.helper.pSalad.setIsSelfPacked(false);
+			data.helper.pSalad.setLengthInCm(10);
+			data.helper.pSalad.setWidthInCm(20);
+			data.helper.pSalad.setHeightInCm(30);
+			save(data.helper.pSalad);
+
+			final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+			producer.setLocatorId(data.defaultLocatorId);
+			data.helper.load(producer, data.helper.pSaladProductId, new BigDecimal("1"), data.helper.uomEach);
+			final I_M_HU cu = producer.getCreatedHUs().get(0);
+
+			final ShipmentSchedule saladSched = mockSchedule(SCHED_SALAD, data.helper.pSaladProductId);
+			final JsonDeliveryAdvisorRequestParcel parcel = service.buildRequestParcel(
+					cu, ImmutableMap.of(SCHED_SALAD, saladSched));
+
+			// Gate off: dims returned
+			assertThat(parcel.getPackageDimensions()).isNotNull();
+			assertThat(parcel.getPackageDimensions().getLengthInCM()).isEqualTo(10);
+			assertThat(parcel.getPackageDimensions().getWidthInCM()).isEqualTo(20);
+			assertThat(parcel.getPackageDimensions().getHeightInCM()).isEqualTo(30);
+		}
 	}
 }

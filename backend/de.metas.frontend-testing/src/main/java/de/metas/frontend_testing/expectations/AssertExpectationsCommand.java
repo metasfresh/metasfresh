@@ -97,6 +97,42 @@ public class AssertExpectationsCommand
 						.build()
 						.execute();
 			}
+			if (expectations.getInventories() != null)
+			{
+				AssertInventoryExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getInventories())
+						.build()
+						.execute();
+			}
+			if (expectations.getMovements() != null)
+			{
+				AssertMovementExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getMovements())
+						.build()
+						.execute();
+			}
+			if (expectations.getPosOrders() != null)
+			{
+				AssertPOSOrderExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getPosOrders())
+						.build()
+						.execute();
+			}
+			if (expectations.getPos() != null)
+			{
+				AssertPOSExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectation(expectations.getPos())
+						.build()
+						.execute();
+			}
 
 			return newJsonExpectationsResponse().build().toResponseEntity();
 		}

@@ -41,6 +41,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.quantity.Quantity;
@@ -579,6 +580,7 @@ public class OrderAttachmentRowsLoaderTest
 				.productId(productId)
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.vendorProductNo(String.valueOf(productId.getRepoId()))
+				.source(PurchaseCandidateSource.SalesOrder)
 				.vendorId(BPartnerId.ofRepoId(7))
 				.qtyToPurchase(Quantity.zero(newInstance(I_C_UOM.class)))
 				.purchaseDatePromised(SystemTime.asZonedDateTime().truncatedTo(ChronoUnit.DAYS))

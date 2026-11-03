@@ -28,14 +28,20 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
+import de.metas.bpartner.effective.BPartnerAddressEffective;
+import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
 import de.metas.bpartner.effective.BillBPartnerResolution;
 import de.metas.bpartner.effective.BPartnerEffectiveBL;
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -50,8 +56,11 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.user.UserGroupRepository;
+import de.metas.user.UserRepository;
 import de.metas.order.location.OrderLocationsUpdater;
 import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.steps.letter_of_credit.OrderPayScheduleLCStepService;
 import de.metas.promotioncode.PromotionCodeId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -63,6 +72,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
+import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -79,6 +89,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
@@ -112,11 +123,13 @@ public class C_Order
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IBPartnerBL bpartnerBL;
 	@NonNull private final BPartnerEffectiveBL bpartnerEffectiveBL;
+	@NonNull private final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL;
 	@NonNull private final OrderLineDetailRepository orderLineDetailRepository;
 	@NonNull private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 	@NonNull private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService;
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
+	@NonNull private final OrderPayScheduleLCStepService orderPayScheduleLCStepService;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
@@ -126,22 +139,43 @@ public class C_Order
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final BPartnerEffectiveBL bpartnerEffectiveBL,
+			@NonNull final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
 			@NonNull final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService,
-			@NonNull final OrderPayScheduleService orderPayScheduleService)
+			@NonNull final OrderPayScheduleService orderPayScheduleService,
+			@NonNull final OrderPayScheduleLCStepService orderPayScheduleLCStepService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.bpartnerEffectiveBL = bpartnerEffectiveBL;
+		this.bpartnerAddressEffectiveBL = bpartnerAddressEffectiveBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
 		this.purchaseOrderToShipperTransportationService = purchaseOrderToShipperTransportationService;
 		this.orderPayScheduleService = orderPayScheduleService;
+		this.orderPayScheduleLCStepService = orderPayScheduleLCStepService;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
+	}
+
+	@VisibleForTesting
+	public static C_Order newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(C_Order.class, () -> new C_Order(
+				SpringContextHolder.getBeanOrSupply(IBPartnerBL.class, () -> new BPartnerBL(new UserRepository())),
+				BPartnerEffectiveBL.newInstanceForUnitTesting(),
+				BPartnerAddressEffectiveBL.newInstanceForUnitTesting(),
+				new OrderLineDetailRepository(),
+				DocumentLocationBL.newInstanceForUnitTesting(),
+				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
+				PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting(),
+				OrderPayScheduleService.newInstanceForUnitTesting(),
+				OrderPayScheduleLCStepService.newInstanceForUnitTesting()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_M_PriceList_ID })
@@ -579,7 +613,7 @@ public class C_Order
 	}
 
 	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID })
-	public void updateShipper(@NonNull final I_C_Order order)
+	public void updateDeliveryPartnerDefaults(@NonNull final I_C_Order order)
 	{
 		if(InterfaceWrapperHelper.isCopying(order))
 		{
@@ -591,7 +625,9 @@ public class C_Order
 			return;
 		}
 
-		orderBL.setShipperId(order);
+		final BPartnerAddressEffective addressEffective = bpartnerAddressEffectiveBL.getDeliveryEffective(order);
+		order.setM_Shipper_ID(ShipperId.toRepoId(addressEffective.getShipperId()));
+		order.setIsPreAdviceRequired(addressEffective.isPreAdviceRequired());
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_DropShip_Location_ID)
@@ -720,7 +756,7 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID }, skipIfCopying = true)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID }, skipIfCopying = true)
 	public void setBillBPartnerIdFromEffectiveResolution(final I_C_Order order)
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
@@ -732,28 +768,86 @@ public class C_Order
 		// Preserve a bill partner that was explicitly provided programmatically (e.g. by OLCandOrderFactory) —
 		// i.e. a bill partner DIFFERENT from the order's own partner. The standard own-bill-to default
 		// (Bill_BPartner == C_BPartner, set by setBillLocation) is NOT a "provided" value and is still
-		// (re)resolved. On a UI action we always (re)resolve.
+		// (re)resolved, and neither is the bill partner resolved for the previous order location.
+		// On a UI action we always (re)resolve.
 		final BPartnerId providedBillBPartnerId = BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID());
 		if (!InterfaceWrapperHelper.isUIAction(order)
 				&& providedBillBPartnerId != null
-				&& !BPartnerId.equals(providedBillBPartnerId, bPartnerId))
+				&& !BPartnerId.equals(providedBillBPartnerId, bPartnerId)
+				&& !isBillPartnerResolvedForPreviousLocation(order))
 		{
 			return;
 		}
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId);
+		final BillBPartnerResolution resolution = resolveEffectiveBillBPartner(order);
 		if (resolution != null)
 		{
 			order.setBill_BPartner_ID(resolution.getBillBPartnerId().getRepoId());
 			order.setBill_Location_ID(BPartnerLocationId.toRepoId(resolution.getBillLocationId()));
 			order.setBill_User_ID(UserId.toRepoId(resolution.getBillUserId()));
 		}
+		else if (isOnlyBPartnerLocationChanged(order))
+		{
+			// the new location resolves to nothing => don't keep the previous location's bill partner; use the partner's own bill-to
+			orderBL.setBillLocation(order);
+		}
+	}
+
+	private static boolean isOnlyBPartnerLocationChanged(@NonNull final I_C_Order order)
+	{
+		return !InterfaceWrapperHelper.isNew(order)
+				&& !InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_C_BPartner_ID)
+				&& InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	/**
+	 * The order's own location (if set) decides via {@link BPartnerAddressEffectiveBL#getEffectiveBillBPartner(BPartnerLocationId)};
+	 * without a location only the partner-level {@link BPartnerEffectiveBL#getEffectiveBillBPartner(BPartnerId)} applies.
+	 * Partner and location are read from the same order record, so they always belong together.
+	 *
+	 * @param order the current order, or its old values (see {@link InterfaceWrapperHelper#createOld(Object, Class)})
+	 */
+	@Nullable
+	private BillBPartnerResolution resolveEffectiveBillBPartner(@NonNull final I_C_Order order)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, order.getC_BPartner_Location_ID());
+		return bPartnerLocationId != null
+				? bpartnerAddressEffectiveBL.getEffectiveBillBPartner(bPartnerLocationId)
+				: bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId);
+	}
+
+	/**
+	 * @return true if only the order's bpartner location changed and the current bill partner/location is exactly what
+	 * {@link #resolveEffectiveBillBPartner(I_C_Order)} resolves for the previous location,
+	 * i.e. it was derived from that location and not explicitly provided.
+	 */
+	private boolean isBillPartnerResolvedForPreviousLocation(@NonNull final I_C_Order order)
+	{
+		if (!isOnlyBPartnerLocationChanged(order))
+		{
+			return false;
+		}
+
+		final I_C_Order orderOld = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
+		final BillBPartnerResolution previousResolution = resolveEffectiveBillBPartner(orderOld);
+		return previousResolution != null
+				&& BPartnerId.equals(previousResolution.getBillBPartnerId(), BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID()))
+				&& BPartnerLocationId.equals(previousResolution.getBillLocationId(), BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID()));
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createOrderPaySchedules(final I_C_Order order)
 	{
 		orderPayScheduleService.createOrderPaySchedules(order);
+
+		// Reactivate deletes every C_OrderPaySchedule row (see deleteOrderPaySchedules below), so a
+		// reactivate -> re-complete round trip rebuilds the schedule from the payment-term breaks alone,
+		// losing any proforma/prepayment-derived state (Paid/Awaiting_Pay, DueAmt_Actual, ReferenceDate,
+		// DueDate, LC_Date). Re-derive it here from the surviving C_Proforma_Order_Alloc / completed
+		// prepayment so a paid proforma allocation is restored rather than silently dropped.
+		// Only orders that carry a proforma allocation are touched — see the method's javadoc.
+		orderPayScheduleLCStepService.recomputeLCStepAfterOrderCompleted(OrderId.ofRepoId(order.getC_Order_ID()));
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)

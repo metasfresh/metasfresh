@@ -91,6 +91,7 @@ public class JsonShipperConverter
 				.customerReference(order.getCustomerReference())
 				.incotermsValue(order.getIncotermsValue())
 				.externalSystemValue(order.getExternalSystemValue())
+				.preAdviceRequired(order.getPreAdviceRequired())
 				.deliveryOrderParcels(order.getDeliveryOrderParcels().stream().map(this::toJsonDeliveryOrderLine).collect(ImmutableList.toImmutableList()))
 				.shipperProduct(toJsonShipperProductOrNull(order.getShipperProduct()))
 				.shipperEORI(order.getShipperEORI())

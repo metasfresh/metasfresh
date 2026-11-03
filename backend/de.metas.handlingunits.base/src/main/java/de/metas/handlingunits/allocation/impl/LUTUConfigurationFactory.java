@@ -25,6 +25,7 @@ package de.metas.handlingunits.allocation.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -757,7 +758,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			final I_M_HU_PI_Version luPIV = handlingUnitsDAO.retrievePICurrentVersion(luPI);
 			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
 							tuPI,
-							X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
+							HuUnitType.LU,
 							ILUTUConfigurationFactory.extractBPartnerIdOrNull(lutuConfigurationNew))
 					//
 					.stream()

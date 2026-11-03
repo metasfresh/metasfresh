@@ -11,7 +11,9 @@ import { setupServiceWorker } from './services/serviceWorker/serviceWorkerRegist
 import { installMutatingApiTraceIdInterceptor } from './utils/ui_trace/mutatingApiInterceptor';
 
 import './assets/index.scss';
-import '@fortawesome/fontawesome-free/js/all.min';
+// CSS web font, not the SVG+JS build (js/all): that one rewrites every <i> into an <svg> on each DOM change,
+// which stalls long lists on handhelds. all.min.css does not compile with react-scripts 4.
+import '@fortawesome/fontawesome-free/css/all.css';
 import { ErrorBoundary } from 'react-error-boundary';
 import { logErrorToBackend } from './api/applications';
 import ErrorScreen from './components/ErrorScreen';

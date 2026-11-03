@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
-@ghActions:run_on_executor6
+@ghActions:run_on_executor9
 Feature: Production + Distribution material dispo scenarios
 ## F5100: Material Disposition
 
