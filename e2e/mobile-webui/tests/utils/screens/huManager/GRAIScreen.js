@@ -42,6 +42,15 @@ export const GRAIScreen = {
         await BarcodeScannerComponent.waitForInputFieldToGetEmpty();
     }),
 
+    // Scans the GRAIs one after the other as separate scans (each one ends with Enter), as fast as an
+    // operator can trigger them: no waiting in between for the previous scan to be consumed.
+    scanGraiBarcodesBackToBack: async ({ barcodeStrings }) => await test.step(`${NAME} - Scan ${barcodeStrings.length} GRAI barcodes back to back`, async () => {
+        await GRAIScreen.expectVisible();
+        for (const barcodeString of barcodeStrings) {
+            await BarcodeScannerComponent.type(barcodeString);
+        }
+    }),
+
     expectGraiChipWithText: async ({ text }) => await test.step(`${NAME} - Expect GRAI chip containing "${text}"`, async () => {
         await expect(page.locator('.grai-chip-text').filter({ hasText: text })).toBeVisible();
     }),
