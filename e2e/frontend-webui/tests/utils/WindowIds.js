@@ -309,3 +309,14 @@ export const VIEW_INVALIDATE_ON_CHANGE_WINDOW_ID = 542178;
  * - ProductAttributes: M_AttributeSetInstance_ID
  */
 export const TEST_WINDOW_ID = 127;
+
+// ============================================================================
+// MANUFACTURING WINDOWS
+// ============================================================================
+
+/**
+ * Manufacturing Order window (Produktionsauftrag)
+ * Table: PP_Order
+ * Window ID: 53009
+ */
+export const MANUFACTURING_ORDER_WINDOW_ID = 53009;
