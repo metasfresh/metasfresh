@@ -10,13 +10,13 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -97,19 +97,38 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 		// * negative means qty was un-allocated(removed) from VHU
 		final Quantity qtyPicked = Quantity.of(trxLine.getQty(), IHUTrxBL.extractUOMOrNull(trxLine));
 
-		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(huContext,
-																				  ProductId.ofRepoId(trxLine.getM_Product_ID()),
-																				  qtyPicked,
-																				  vhu,
-																				  trxLine);
-
 		//
 		// Link VHU to shipment schedule
-		final boolean anonymousHuPickedOnTheFly = false;
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, vhu, huContext, anonymousHuPickedOnTheFly);
+		final AddQtyPickedRequest request = AddQtyPickedRequest.builder()
+				.shipmentSchedule(shipmentSchedule)
+				.qtyPicked(CatchWeightHelper.extractQtys(
+						huContext,
+						ProductId.ofRepoId(trxLine.getM_Product_ID()),
+						qtyPicked,
+						vhu,
+						trxLine))
+				.hu(vhu)
+				.huContext(huContext)
+				.anonymousHuPickedOnTheFly(false)
+				.build();
+
+		// On aggregate-HU snapshot replay (e.g. shipment reversal), the same VHU node receives
+		// multiple HU-trx lines in one transaction. Without consolidation, that produces N
+		// QtyPicked rows that share the same (VHU, TU, LU, QtyLU, QtyTU, QtyPicked) tuple and
+		// later collide on the M_ShipmentSchedule_QtyPicked_UI partial unique index when the
+		// next shipment is generated.
+		// The FIRST trx-line for a (schedule, VHU) pair finds no existing row, so tryMerge returns
+		// false and the addQtyPickedAndUpdateHU below creates it; the 2nd..Nth lines merge into it.
+		if (huShipmentScheduleBL.tryMergeQtyPickedIntoExistingForVHU(request))
+		{
+			return;
+		}
+
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(request);
 	}
 
+	@Nullable
 	private I_M_ShipmentSchedule findShipmentSchedule(final I_M_HU_Trx_Line trxLine)
 	{
 		//
@@ -124,14 +143,7 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 		//
 		// Get the shipment schedule from VHU (if any)
 		final I_M_ShipmentSchedule shipmentSchedule_FromVHU = getM_ShipmentScheduleFromVHU(trxLine);
-		if (shipmentSchedule_FromVHU != null)
-		{
-			return shipmentSchedule_FromVHU;
-		}
-
-		//
-		// No shipment schedule was found
-		return null;
+		return shipmentSchedule_FromVHU;
 	}
 
 	/**

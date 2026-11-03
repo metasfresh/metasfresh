@@ -25,7 +25,7 @@ package de.metas.handlingunits.picking.config.mobileui;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -39,14 +39,34 @@ import java.util.stream.Collector;
 @EqualsAndHashCode
 public class PickingFiltersList
 {
+	/**
+	 * Sequence number first, then the group itself in its declaration order.
+	 * <p>
+	 * The secondary key is what makes the order a property of the configuration rather than of the order
+	 * the rows happen to be stored in: sequence numbers are only assigned automatically when the profile is
+	 * saved through the repository, so rows entered by hand in the profile window all keep the column
+	 * default of 0 and tie.
+	 * <p>
+	 * Declared before {@link #EMPTY} / {@link #DEFAULT} on purpose — those call the constructor from their
+	 * own static initializers, so a comparator declared below them would still be null by then.
+	 */
+	private static final Comparator<PickingFilter> ORDERING = Comparator
+			.comparingInt(PickingFilter::getSeqNo)
+			.thenComparing(PickingFilter::getOption);
+
 	public static final PickingFiltersList EMPTY = new PickingFiltersList(ImmutableList.of());
+
+	public static final PickingFiltersList DEFAULT = new PickingFiltersList(ImmutableList.of(
+			PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
+			PickingFilter.of(PickingJobFacetGroup.DELIVERY_DATE, 20)
+	));
 
 	@NonNull @Getter private final ImmutableList<PickingJobFacetGroup> groupsInOrder;
 	@NonNull private final ImmutableMap<PickingJobFacetGroup, PickingFilter> filtersByGroup;
 
 	private PickingFiltersList(@NonNull final List<PickingFilter> list)
 	{
-		this.groupsInOrder = list.stream().sorted(Comparator.comparing(PickingFilter::getSeqNo)).map(PickingFilter::getOption).distinct().collect(ImmutableList.toImmutableList());
+		this.groupsInOrder = list.stream().sorted(ORDERING).map(PickingFilter::getOption).distinct().collect(ImmutableList.toImmutableList());
 		this.filtersByGroup = Maps.uniqueIndex(list, PickingFilter::getOption);
 
 	}

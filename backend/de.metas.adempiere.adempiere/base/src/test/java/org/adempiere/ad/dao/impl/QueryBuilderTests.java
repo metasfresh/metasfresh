@@ -22,12 +22,7 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.process.PInstanceId;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -39,14 +34,20 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.process.PInstanceId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class QueryBuilderTests
 {
 	private I_M_Product product0;
 	private I_M_Product product1_NotActive;
 	private I_M_Product product2;
-	/** all products */
+	/**
+	 * all products
+	 */
 	private List<I_M_Product> products;
 	private Properties ctx;
 
@@ -312,7 +313,7 @@ public class QueryBuilderTests
 		final IQueryBuilder<I_M_Product> queryBuilder = new QueryBuilder<>(I_M_Product.class, null) // tableName=null
 				.setJoinAnd()
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
-				.filter(new CompositeQueryFilter<>(I_M_Product.class)
+				.filter(CompositeQueryFilter.newInstance(I_M_Product.class)
 						.setJoinOr()
 						.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product0.getM_Product_ID())
 						.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product1.getM_Product_ID())

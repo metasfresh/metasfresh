@@ -22,11 +22,12 @@
 
 package de.metas.externalreference;
 
+import de.metas.externalsystem.ExternalSystem;
 import lombok.NonNull;
 import lombok.Value;
 
 /**
- * Intended for testing only. "Real" instances of {@link IExternalSystem} should be enum values.
+ * Intended for testing only. "Real" instances of {@link ExternalSystem} should be enum values.
  */
 @Value
 public class PlainExternalReferenceType implements IExternalReferenceType

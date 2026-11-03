@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Developer friendly Query Builder which is oriented on Handling Units concerns.
@@ -88,6 +89,8 @@ public interface IHUQueryBuilder
 
 	ImmutableSet<HuId> listIds();
 
+	Stream<I_M_HU> stream();
+
 	/** Retrieves all HUs which are matching our criteria, but no more than <code>limit</code> number. */
 	List<I_M_HU> list(final int limit);
 
@@ -104,6 +107,8 @@ public interface IHUQueryBuilder
 	I_M_HU first();
 
 	Optional<HuId> firstId();
+
+	Optional<HuId> firstIdOnly();
 
 	/** Counts how many {@link I_M_HU}s are matched by our criteria */
 	int count();
@@ -148,7 +153,7 @@ public interface IHUQueryBuilder
 	 * <li>by default, HUs with an <b>empty</b> storage for the given products are <b>not</b> returned. To return those HUs as well, also call {@link #setAllowEmptyStorage()}</li>
 	 * </ul>
 	 */
-	IHUQueryBuilder addOnlyWithProductIds(final Collection<Integer> productIds);
+	IHUQueryBuilder addOnlyWithProductIds(final Collection<ProductId> productIds);
 
 	/**
 	 * See {@link #addOnlyWithProductIds(Collection)}.

@@ -27,26 +27,36 @@ import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
-import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
+import de.metas.handlingunits.picking.job.model.PickingJobQtyAvailable;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingJobUnpickResolveResult;
 import de.metas.handlingunits.picking.job.model.PickingSlotSuggestions;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.handlingunits.picking.job.model.facets.CollectingParameters;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacets;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.picking.rest_api.json.JsonUnpickResolveResponse;
+import de.metas.quantity.Quantity;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -65,7 +75,7 @@ public class PickingJobRestService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final PickingJobService pickingJobService;
-	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
+	private final MobileUIPickingUserProfileService configService;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -86,7 +96,7 @@ public class PickingJobRestService
 	@NonNull
 	public PickingJobFacets getFacets(
 			@NonNull final PickingJobQuery query,
-			@NonNull final PickingJobFacets.CollectingParameters collectingParameters)
+			@NonNull final CollectingParameters collectingParameters)
 	{
 		return pickingJobService.streamPackageable(query)
 				.collect(PickingJobFacets.collectFromPackageables(collectingParameters));
@@ -109,7 +119,7 @@ public class PickingJobRestService
 				.deliveryBPLocationId(params.getDeliveryBPLocationId())
 				.warehouseTypeId(params.getWarehouseTypeId())
 				.isAllowPickingAnyHU(allowPickingAnyHU)
-				.shipmentScheduleIds(params.getShipmentScheduleIds())
+				.scheduleIds(params.getScheduleIds())
 				.build());
 	}
 
@@ -144,6 +154,11 @@ public class PickingJobRestService
 		return pickingJobService.openLine(pickingJob, pickingLineId);
 	}
 
+	public PickingJob complete(@NonNull final PickingJobId pickingJobId, @NonNull final UserId callerId)
+	{
+		return pickingJobService.complete(pickingJobId, callerId);
+	}
+
 	public void abort(@NonNull final PickingJob pickingJob)
 	{
 		pickingJobService.abort(pickingJob);
@@ -166,8 +181,7 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
-		return pickingJobService.prepareToComplete(pickingJob)
-				.execute();
+		return pickingJobService.complete(pickingJob);
 	}
 
 	public ADRefList getQtyRejectedReasons()
@@ -205,11 +219,41 @@ public class PickingJobRestService
 		return pickingJobService.setTUPickingTarget(pickingJob, lineId, target);
 	}
 
-	public PickingJob closeLUPickingTarget(
+	/**
+	 * Processes the GRAI-scan TU-target assignment.
+	 * Resolves the TU type/capacity from the scanned GRAI, builds a new-TU target carrying the
+	 * GRAI, and stores it on the line (or at job/header level when {@code lineId == null}).
+	 * No physical HU is created here.
+	 *
+	 * @param lineId the picking-job line; {@code null} → header-level (no-line) scan: ONLY the per-product
+	 *               capacity check is skipped (no single line product at header level; capacity resolves
+	 *               per-line at pick time). The TU-allowed-on-LU check STILL runs against the job-level LU.
+	 *               The TU target is stored at job level.
+	 */
+	public PickingJob setTUPickingTargetFromGRAI(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedGrai)
+	{
+		return pickingJobService.createTUFromGRAI(pickingJob, lineId, scannedGrai);
+	}
+
+	public boolean isGraiScanEnabled(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.isGraiScanEnabled(pickingJob.getCustomerId());
+	}
+
+	@NonNull
+	public List<GRAI> getExistingLuGrais(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	{
+		return pickingJobService.getExistingLuGrais(pickingJob, lineId);
+	}
+
+	public PickingJob closeLUAndTUPickingTargets(
 			@NonNull final PickingJob pickingJob,
 			@Nullable final PickingJobLineId lineId)
 	{
-		return pickingJobService.closeLUPickingTarget(pickingJob, lineId);
+		return pickingJobService.closeLUAndTUPickingTargets(pickingJob, lineId);
 	}
 
 	public PickingJob closeTUPickingTarget(
@@ -220,7 +264,13 @@ public class PickingJobRestService
 	}
 
 	@NonNull
-	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
+	public MobileUIPickingUserProfile getProfile()
+	{
+		return configService.getProfile();
+	}
+
+	@NonNull
+	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return configService.getPickingJobOptions(customerId);}
 
 	@NonNull
 	public List<HuId> getClosedLUs(
@@ -251,5 +301,48 @@ public class PickingJobRestService
 	public PickingSlotSuggestions getPickingSlotsSuggestions(@NonNull final PickingJob pickingJob)
 	{
 		return pickingJobService.getPickingSlotsSuggestions(pickingJob);
+	}
+
+	public PickingJob pickAll(@NonNull final PickingJobId pickingJobId, final @NonNull UserId callerId)
+	{
+		return pickingJobService.pickAll(pickingJobId, callerId);
+	}
+
+	public PickingJobQtyAvailable getQtyAvailable(@NonNull final PickingJobId pickingJobId, final @NonNull UserId callerId)
+	{
+		return pickingJobService.getQtyAvailable(pickingJobId, callerId);
+	}
+
+	public GetNextEligibleLineToPackResponse getNextEligibleLineToPack(final @NonNull GetNextEligibleLineToPackRequest request)
+	{
+		return pickingJobService.getNextEligibleLineToPack(request);
+	}
+
+	public HUInfo resolvePickFromHU(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		return pickingJobService.resolvePickFromHU(pickingJobId, lineId, scannedCode, callerId);
+	}
+
+	@NonNull
+	public JsonUnpickResolveResponse resolveUnpick(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId,
+			@NonNull final String adLanguage)
+	{
+		final PickingJobUnpickResolveResult result = pickingJobService.resolveUnpick(pickingJobId, scannedCode, callerId);
+
+		final Quantity packedQty = result.getPackedQty();
+		return JsonUnpickResolveResponse.builder()
+				.productId(String.valueOf(result.getProductId().getRepoId()))
+				.productName(result.getProductName().translate(adLanguage))
+				.packedQty(packedQty != null ? packedQty.toBigDecimal() : null)
+				.packedQtyUom(packedQty != null ? packedQty.getUOMSymbol() : null)
+				.unpickable(result.isUnpickable())
+				.build();
 	}
 }

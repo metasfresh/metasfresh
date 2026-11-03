@@ -33,6 +33,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Orde
                 order_description    character varying(1024),
                 PricePattern         text,
                 AmountPattern        text,
+                QtyPattern           text,
+                PriceQtyPattern      text,
                 week_year            character varying
             )
 AS
@@ -54,9 +56,12 @@ SELECT ol.line,
        piv.name                                                                AS LU_Name,
        ol.QtyEnteredInPriceUOM                                                 AS QtyEnteredInPriceUOM,
        ol.PriceEntered                                                         AS PriceEntered,
-       COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                                 AS UOMSymbol,
+       COALESCE(puomt.UOMSymbol, puom.UOMSymbol)                               AS UOMSymbol,
        uom.StdPrecision,
-       ol.linenetamt                                                           AS linenetamt,
+       CASE
+           WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Net_Sum') = 'N'
+               THEN ol.linenetamt
+       END                                                    AS linenetamt,
        CASE
            WHEN ROUND(discount, 0) = discount THEN ROUND(discount, 0)
            WHEN ROUND(discount, 1) = discount THEN ROUND(discount, 1)
@@ -64,10 +69,13 @@ SELECT ol.line,
        END                                                                     AS discount,
        bp.isDiscountPrinted,
        CASE
-           WHEN ROUND(rate, 0) = rate THEN ROUND(rate, 0)
-           WHEN ROUND(rate, 1) = rate THEN ROUND(rate, 1)
-                                      ELSE ROUND(rate, 2)
-       END::character varying                                                  AS rate,
+           WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Tax_Rate') = 'N'
+               THEN CASE
+                        WHEN ROUND(rate, 0) = rate THEN ROUND(rate, 0)
+                        WHEN ROUND(rate, 1) = rate THEN ROUND(rate, 1)
+                                                   ELSE ROUND(rate, 2)
+                    END::character varying
+       END                                                    AS rate,
        isPrintTax,
        ol.Description,
        -- in case there is no C_BPartner_Product, fallback to the default ones
@@ -75,11 +83,13 @@ SELECT ol.line,
        COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)                  AS bp_product_name,
        c.cursymbol,
        p.value                                                                 AS p_value,
-       p.description                                                           AS p_description,
+       COALESCE(pt.description, p.description)                                 AS p_description,
        p.documentnote                                                          AS p_documentnote,
        o.description                                                           AS order_description,
        report.getPricePatternForJasper(o.m_pricelist_id)                       AS PricePattern,
        report.getAmountPatternForJasper(c.c_currency_id)                       AS AmountPattern,
+       report.getQtyPattern(uom.StdPrecision)                                  AS QtyPattern,
+       report.getQtyPattern(puom.StdPrecision)                                 AS PriceQtyPattern,
        TO_CHAR(ol.datepromised, 'WW') || '.' || TO_CHAR(ol.datepromised, 'YY') AS week_year
 
 FROM C_OrderLine ol
@@ -90,7 +100,7 @@ FROM C_OrderLine ol
          LEFT OUTER JOIN M_HU_PI_Item piit ON ip.M_HU_PI_Item_ID = piit.M_HU_PI_Item_ID AND piit.isActive = 'Y'
 
     -- LU details
-         LEFT OUTER JOIN M_HU_PI_Version piv ON piv.M_HU_PI_ID = ol.m_lu_hu_pi_id AND piv.hu_unittype IN ('LU', 'V')
+         LEFT OUTER JOIN M_HU_PI_Version piv ON piv.M_HU_PI_ID = ol.m_lu_hu_pi_id AND piv.hu_unittype IN ('LU', 'V') AND piv.iscurrent = 'Y'
 
     -- Product and its translation
          LEFT OUTER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
@@ -99,9 +109,15 @@ FROM C_OrderLine ol
 
          LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
     AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y' AND bpp.UsedForVendor = 'Y'
+    -- Price Unit of measurement and its translation
+         LEFT OUTER JOIN C_UOM puom ON ol.Price_UOM_ID = puom.C_UOM_ID
+         LEFT OUTER JOIN C_UOM_Trl puomt ON ol.Price_UOM_ID = puomt.C_UOM_ID AND puomt.AD_Language = p_ad_language
+
     -- Unit of measurement and its translation
-         LEFT OUTER JOIN C_UOM uom ON ol.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
-         LEFT OUTER JOIN C_UOM_Trl uomt ON ol.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_ad_language AND uomt.isActive = 'Y'
+         LEFT OUTER JOIN C_UOM uom ON ol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+         LEFT OUTER JOIN C_UOM_Trl uomt ON ol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_ad_language AND uomt.isActive = 'Y'
+
+    --
     -- Tax
          LEFT OUTER JOIN C_Tax t ON ol.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
     -- Get Attributes

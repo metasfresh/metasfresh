@@ -22,6 +22,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -35,12 +36,14 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -72,6 +75,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
+@Component
 public class C_OrderLine
 {
 	public static final AdMessageKey ERR_NEGATIVE_QTY_RESERVED = AdMessageKey.of("MSG_NegativeQtyReserved");
@@ -83,6 +87,7 @@ public class C_OrderLine
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final OrderLineDetailRepository orderLineDetailRepository;
@@ -194,6 +199,43 @@ public class C_OrderLine
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		bPartnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_OrderLine.COLUMNNAME_M_Product_ID
+	})
+	public void validateProductIsPurchasedOrSold(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.getM_Product_ID() <= 0)
+		{
+			return;
+		}
+
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+
+		// Product life-cycle status enforcement — self-gating (O/null => no-op), independent of the
+		// M_Product_EnforcePurchaseSalesFlags SysConfig gate below, so it applies in core regardless of that flag.
+		productBL.assertAllowed(productId, order.isSOTrx() ? ProductLifeCycleAction.SELL : ProductLifeCycleAction.PURCHASE);
+
+		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		if (!productBL.isPurchaseSalesEnforcementEnabled(clientId, orgId))
+		{
+			return;
+		}
+
+		if (order.isSOTrx())
+		{
+			productBL.assertSellable(productId);
+		}
+		else
+		{
+			productBL.assertPurchasable(productId);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
@@ -433,6 +475,13 @@ public class C_OrderLine
 		saveRecord(order);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID, I_C_OrderLine.COLUMNNAME_QtyOrdered })
+	public void updateGrossWeightInKg(@NonNull final I_C_OrderLine orderLine)
+	{
+		orderLineBL.setGrossWeightInKg(orderLine);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge, I_C_OrderLine.COLUMNNAME_PriceActual, I_C_OrderLine.COLUMNNAME_PriceEntered })
 	public void updatePriceToZero(final I_C_OrderLine orderLine)
@@ -446,5 +495,27 @@ public class C_OrderLine
 			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge })
+	public void updatePriceToStd(final I_C_OrderLine orderLine)
+	{
+		if (!orderLine.isWithoutCharge())
+		{
+			orderLine.setPriceActual(orderLine.getPriceStd());
+			orderLine.setPriceEntered(orderLine.getPriceStd());
+			orderLine.setIsManualPrice(false);
+
+			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_Project_ID })
+	public void updateASIFromProjectId(@NonNull final I_C_OrderLine orderLine)
+	{
+		orderBL.updateASIFromProjectId(orderLine);
 	}
 }

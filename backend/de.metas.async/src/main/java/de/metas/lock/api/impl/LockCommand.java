@@ -34,6 +34,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
@@ -43,6 +44,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Future;
 
 /* package */class LockCommand implements ILockCommand
@@ -257,20 +259,27 @@ import java.util.concurrent.Future;
 	}
 
 	@Override
-	public <T> ILockCommand setSetRecordsByFilter(final Class<T> clazz, final IQueryFilter<T> filters)
+	public <T> ILockCommand setRecordsByFilter(final Class<T> clazz, final IQueryFilter<T> filters)
 	{
-		_recordsToLock.setSetRecordsByFilter(clazz, filters);
+		_recordsToLock.setRecordsByFilter(clazz, filters);
 		return this;
 	}
 
 	@Override
-	public IQueryFilter<?> getSelectionToLock_Filters()
+	public <T> ILockCommand addRecordsByFilter(final Class<T> clazz, final IQueryFilter<T> filters)
+	{
+		_recordsToLock.addRecordsByFilter(clazz, filters);
+		return this;
+	}
+
+	@Override
+	public List<LockRecordsByFilter> getSelectionToLock_Filters()
 	{
 		return _recordsToLock.getSelection_Filters();
 	}
 
 	@Override
-	public final int getSelectionToLock_AD_Table_ID()
+	public final AdTableId getSelectionToLock_AD_Table_ID()
 	{
 		return _recordsToLock.getSelection_AD_Table_ID();
 	}

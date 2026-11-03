@@ -19,36 +19,42 @@ import org.compiere.model.I_M_InOutLine;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 {
-
 	@Override
 	public I_M_ShipmentSchedule_QtyPicked createNewQtyPickedRecord(
 			@NonNull final I_M_ShipmentSchedule sched,
-			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty)
+			@NonNull final StockQtyAndUOMQty qty)
 	{
-		final I_M_ShipmentSchedule_QtyPicked schedQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class, sched);
+		final I_M_ShipmentSchedule_QtyPicked record = createNewQtyPickedRecordNoSave(sched, qty, I_M_ShipmentSchedule_QtyPicked.class);
+		saveRecord(record);
+		return record;
+	}
 
-		schedQtyPicked.setAD_Org_ID(sched.getAD_Org_ID());
-		schedQtyPicked.setM_ShipmentSchedule(sched);
-		schedQtyPicked.setIsActive(true);
-		schedQtyPicked.setQtyPicked(stockQtyAndCatchQty.getStockQty().toBigDecimal());
+	@Override
+	public <T extends I_M_ShipmentSchedule_QtyPicked> T createNewQtyPickedRecordNoSave(
+			@NonNull final I_M_ShipmentSchedule sched,
+			@NonNull final StockQtyAndUOMQty qty,
+			@NonNull final Class<T> type)
+	{
+		final T record = newInstance(type, sched);
+		record.setAD_Org_ID(sched.getAD_Org_ID());
+		record.setM_ShipmentSchedule(sched);
+		record.setIsActive(true);
+		record.setQtyPicked(qty.getStockQty().toBigDecimal());
 
-		final Optional<Quantity> uomQty = stockQtyAndCatchQty.getUOMQtyOpt();
-		if (uomQty.isPresent())
-		{
-			schedQtyPicked.setCatch_UOM_ID(uomQty.get().getUomId().getRepoId());
-			schedQtyPicked.setQtyDeliveredCatch(uomQty.get().toBigDecimal());
-		}
+		qty.getUOMQtyOpt().ifPresent(uomQty -> {
+			record.setCatch_UOM_ID(uomQty.getUomId().getRepoId());
+			record.setQtyDeliveredCatch(uomQty.toBigDecimal());
+		});
 
-		saveRecord(schedQtyPicked);
+		//saveRecord(record);
 
-		return schedQtyPicked;
+		return record;
 	}
 
 	@Override

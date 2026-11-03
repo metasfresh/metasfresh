@@ -3,7 +3,7 @@ package de.metas.handlingunits.picking.job.shipment;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
@@ -25,7 +25,7 @@ import static de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_Qua
 @RequiredArgsConstructor
 public class PickingShipmentService
 {
-	@NonNull private final MobileUIPickingUserProfileRepository configRepository;
+	@NonNull private final MobileUIPickingUserProfileService profileService;
 	@NonNull private final IShipmentService shipmentService;
 
 	@VisibleForTesting
@@ -33,7 +33,7 @@ public class PickingShipmentService
 	{
 		Adempiere.assertUnitTestMode();
 		return new PickingShipmentService(
-				new MobileUIPickingUserProfileRepository(),
+				MobileUIPickingUserProfileService.newInstanceForUnitTesting(),
 				ShipmentService.getInstance()
 		);
 	}
@@ -46,12 +46,6 @@ public class PickingShipmentService
 
 	public void createShipmentForLUs(@NonNull final PickingJob pickingJob, @NonNull final Set<HuId> luIds)
 	{
-		// waitForShipments=false on purpose: the caller is inside an open trx that has just updated
-		// M_ShipmentSchedule_QtyPicked (LU assignment) and not yet committed. Setting waitForShipments=true
-		// routes the enqueue through AsyncBatchService.executeBatch -> trxManager.callInNewTrx, which commits
-		// the C_Queue_WorkPackage in a separate trx and lets the worker pick it up before the caller commits.
-		// The worker then can't see the QtyPicked LU assignment and fails with MSG_NoQtyPicked
-		// at ShipmentScheduleWithHUService.prepareAndValidateCandidatesForPick. See me03#27448.
 		prepareShipmentCandidates(pickingJob, ImmutableSet.copyOf(luIds))
 				.forEach(this::createShipment);
 	}
@@ -67,7 +61,7 @@ public class PickingShipmentService
 			PickingShipmentCandidate shipmentCandidate = shipmentCandidates.get(key);
 			if (shipmentCandidate == null)
 			{
-				final CreateShipmentPolicy createShipmentPolicyEffective = configRepository.getPickingJobOptions(key.getCustomerId()).getCreateShipmentPolicy();
+				final CreateShipmentPolicy createShipmentPolicyEffective = profileService.getPickingJobOptions(key.getCustomerId()).getCreateShipmentPolicy();
 				if (!createShipmentPolicyEffective.isCreateShipment())
 				{
 					continue;
@@ -96,7 +90,7 @@ public class PickingShipmentService
 		}
 
 		shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
-				.scheduleIds(shipmentCandidate.getShipmentScheduleIds())
+				.scheduleIds(shipmentCandidate.getScheduleIds())
 				.quantityTypeToUse(TYPE_PICKED_QTY)
 				.onlyLUIds(shipmentCandidate.getOnlyLUIds())
 				.onTheFlyPickToPackingInstructions(true)

@@ -41,6 +41,8 @@ import org.compiere.model.I_API_Request_Audit;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -110,6 +112,21 @@ public class API_Request_Audit_StepDef
 				.toBuilder()
 				.requestId(apiRequestAuditId)
 				.build());
+	}
+
+	@And("^get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath (.*) and store that path in context$")
+	public void store_auditRequestResponse_endpointPath_in_context(@NonNull final String endpointPath)
+	{
+		final String regex = "@[a-zA-Z\\d_-]+@";
+
+		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+		final Matcher matcher = pattern.matcher(endpointPath);
+
+		final ApiRequestAuditId requestId = testContext.getApiResponse().getRequestId();
+		assertThat(requestId).isNotNull();
+		final String resolvedEndpointPath = matcher.replaceAll(String.valueOf(requestId.getRepoId()));
+
+		testContext.setEndpointPath(resolvedEndpointPath);
 	}
 
 	private boolean isApiAuditRequestFound(@NonNull final ApiRequestAuditId apiRequestAuditId, @NonNull final String[] allowedStatuses)

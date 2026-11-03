@@ -1,0 +1,10 @@
+PUT {{baseURL}}/api/v2/orders/sales/revert
+Authorization: {{authToken}}
+Content-Type: application/json;charset=UTF-8
+accept: application/json;charset=UTF-8
+
+{
+  "orgCode": "001",
+  "externalId": "external_id_6",
+  "dataSource": "int-DEST.de.metas.ordercandidate"
+}

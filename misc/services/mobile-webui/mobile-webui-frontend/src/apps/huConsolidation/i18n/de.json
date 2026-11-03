@@ -14,6 +14,7 @@
     "caption": "QR scannen"
   },
   "PickingSlotScreen": {
-    "consolidateAll": "Consolidate All"
+    "consolidateAll": "Consolidate All",
+    "scanGRAI": "GRAI scannen, um TU auszuwählen"
   }
 }

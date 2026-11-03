@@ -9,7 +9,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineHU;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -26,12 +26,11 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.ad.dao.IQueryBL;
-import de.metas.material.event.commons.AttributesKey;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
@@ -64,12 +63,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -82,8 +81,6 @@ public class HUTraceEventsServiceTests
 
 	private HUAccessService huAccessService;
 
-	private InventoryRepository inventoryRepository;
-
 	private I_C_UOM uom;
 
 	@BeforeEach
@@ -92,8 +89,11 @@ public class HUTraceEventsServiceTests
 		AdempiereTestHelper.get().init();
 
 		huAccessService = Mockito.spy(new HUAccessService());
-		inventoryRepository = Mockito.spy(new InventoryRepository());
-		huTraceEventsService = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryRepository);
+		huTraceEventsService = new HUTraceEventsService(
+				new HUTraceRepository(),
+				huAccessService,
+				InventoryService.newInstanceForUnitTesting()
+		);
 
 		LogManager.setLoggerLevel(HUTraceRepository.class, Level.INFO);
 
@@ -117,25 +117,25 @@ public class HUTraceEventsServiceTests
 		save(user2);
 
 		final I_M_HU luHu11 = saveFluent(newInstance(I_M_HU.class));
-		final I_M_HU vhu11 = createVHU(X_M_HU.HUSTATUS_Active);
+		final I_M_HU vhu11 = createVHU();
 
 		final ProductId prod11 = newProduct("prod11");
 		final Quantity qty11 = Quantity.of(11, uom);
 
 		final I_M_HU luHu12 = saveFluent(newInstance(I_M_HU.class));
-		final I_M_HU vhu12 = createVHU(X_M_HU.HUSTATUS_Active);
+		final I_M_HU vhu12 = createVHU();
 
 		final ProductId prod12 = newProduct("prod12");
 		// final Quantity qty12 = Quantity.of(12, uom);
 
 		final I_M_HU luHu21 = saveFluent(newInstance(I_M_HU.class));
-		final I_M_HU vhu21 = createVHU(X_M_HU.HUSTATUS_Active);
+		final I_M_HU vhu21 = createVHU();
 
 		final ProductId prod21 = newProduct("prod21");
 		// final Quantity qty21 = Quantity.of(21, uom);
 
 		final I_M_HU luHu22 = saveFluent(newInstance(I_M_HU.class));
-		final I_M_HU vhu22 = createVHU(X_M_HU.HUSTATUS_Active);
+		final I_M_HU vhu22 = createVHU();
 		vhu22.setHUStatus(X_M_HU.HUSTATUS_Active);
 
 		final ProductId prod22 = newProduct("prod22");
@@ -221,18 +221,13 @@ public class HUTraceEventsServiceTests
 		assertThat(allHuTraceRecords.get(3).getM_HU_ID()).isEqualTo(luHu22.getM_HU_ID());
 	}
 
-	private I_M_HU createVHU(final String huStatus)
+	private I_M_HU createVHU()
 	{
 		final I_M_HU vhu = saveFluent(newInstance(I_M_HU.class));
 		vhu.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
-		vhu.setHUStatus(huStatus);
+		vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		saveRecord(vhu);
 		return vhu;
-	}
-
-	private I_M_HU createVHU()
-	{
-		return createVHU(X_M_HU.HUSTATUS_Active);
 	}
 
 	private List<I_M_HU_Trace> retrieveAllHUTraceRecords()
@@ -301,6 +296,95 @@ public class HUTraceEventsServiceTests
 				.as("There shall be no HU_Trace records for HUs with stautus='planned'")
 				.isEmpty();
 	}
+
+	/**
+	 * Test that when the same VHU is referenced by multiple M_HU_Assignment records with different specificity levels,
+	 * only one trace event is created, and the most specific assignment (highest assignmentDetail) wins.
+	 * <p>
+	 * assignmentDetail priority: VHU_ID=3 > M_TU_HU_ID=2 > M_LU_HU_ID=1 > M_HU_ID=0
+	 */
+	@Test
+	public void createAndAddEvents_SameVhuDifferentAssignmentPaths()
+	{
+		// Create a model to associate assignments with
+		final I_M_InOut inout = newInstance(I_M_InOut.class);
+		save(inout);
+
+		final TableRecordReference inoutRef = TableRecordReference.of(inout);
+
+		// Create HU hierarchy: LU -> VHU (simplified for this test)
+		final I_M_HU luHu = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU vhu = createVHU();
+
+		final ProductId product = newProduct("testProduct");
+		final Quantity qty = Quantity.of(10, uom);
+
+		// Create first assignment with M_HU_ID only (low specificity, assignmentDetail=0)
+		// This uses an earlier timestamp
+		final long time1 = System.currentTimeMillis() - 10000; // 10 seconds ago
+		SystemTime.setTimeSource(() -> time1);
+		final I_M_HU_Assignment assignmentGeneric = newInstance(I_M_HU_Assignment.class);
+		assignmentGeneric.setM_HU_ID(luHu.getM_HU_ID());
+		assignmentGeneric.setAD_Table_ID(inoutRef.getAD_Table_ID());
+		assignmentGeneric.setRecord_ID(inoutRef.getRecord_ID());
+		save(assignmentGeneric);
+
+		// Create second assignment with VHU_ID set (high specificity, assignmentDetail=3)
+		// This uses a later timestamp
+		final long time2 = System.currentTimeMillis();
+		SystemTime.setTimeSource(() -> time2);
+		final I_M_HU_Assignment assignmentSpecific = newInstance(I_M_HU_Assignment.class);
+		assignmentSpecific.setM_HU_ID(luHu.getM_HU_ID());
+		assignmentSpecific.setVHU_ID(vhu.getM_HU_ID());
+		assignmentSpecific.setAD_Table_ID(inoutRef.getAD_Table_ID());
+		assignmentSpecific.setRecord_ID(inoutRef.getRecord_ID());
+		save(assignmentSpecific);
+
+		SystemTime.resetTimeSource();
+
+		// Mock huAccessService to return both assignments
+		Mockito.doReturn(ImmutableList.of(assignmentGeneric, assignmentSpecific))
+				.when(huAccessService).retrieveHuAssignments(inout);
+
+		// Mock to return the VHU when retrieving from LU
+		Mockito.doReturn(ImmutableList.of(vhu))
+				.when(huAccessService).retrieveVhus(HuId.ofRepoId(luHu.getM_HU_ID()));
+
+		// Mock top-level HU retrieval
+		Mockito.doReturn(luHu.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(luHu);
+
+		// Mock product and qty retrieval for VHU
+		Mockito.doReturn(Optional.of(ImmutablePair.of(product, qty)))
+				.when(huAccessService).retrieveProductAndQty(vhu);
+
+		// Create builder
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.orgId(OrgId.ofRepoId(10))
+				.inOutId(123)
+				.type(HUTraceType.MATERIAL_RECEIPT);
+
+		// Execute
+		huTraceEventsService.createAndAddEvents(builder, ImmutableList.of(inout));
+
+		// Verify
+		final List<I_M_HU_Trace> allHuTraceRecords = retrieveAllHUTraceRecords();
+
+		assertThat(allHuTraceRecords)
+				.as("Should create only 1 trace record despite 2 assignments pointing to the same VHU")
+				.hasSize(1);
+
+		final I_M_HU_Trace trace = allHuTraceRecords.get(0);
+
+		assertThat(trace.getVHU_ID()).isEqualTo(vhu.getM_HU_ID());
+		assertThat(trace.getM_HU_ID()).isEqualTo(luHu.getM_HU_ID());
+
+		// Verify the trace uses the eventTime from the SPECIFIC assignment (assignmentDetail=3)
+		// not the generic one (assignmentDetail=0)
+		assertThat(trace.getEventTime().getTime())
+				.as("EventTime should be from the more specific assignment (VHU_ID set)")
+				.isEqualTo(time2);
+	}
+
 
 	@Test
 	public void createAndAddForShipmentScheduleQtyPicked()
@@ -457,6 +541,7 @@ public class HUTraceEventsServiceTests
 				.huId(HuId.ofRepoId(vhu.getM_HU_ID()))
 				.qtyBook(Quantity.of(BigDecimal.ZERO, uom))
 				.qtyCount(Quantity.of(new BigDecimal("3"), uom))
+				.isCounted(true)
 				.build();
 
 		final InventoryLine inventoryLine = buildTestInventoryLine(inventoryLineHU, product);
@@ -467,10 +552,10 @@ public class HUTraceEventsServiceTests
 		inventoryLineRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		save(inventoryLineRecord);
 
-		final InventoryRepository inventoryRepoMock = Mockito.mock(InventoryRepository.class);
-		Mockito.doReturn(inventoryLine).when(inventoryRepoMock).toInventoryLine(inventoryLineRecord);
+		final InventoryService inventoryServiceMock = Mockito.mock(InventoryService.class);
+		Mockito.doReturn(inventoryLine).when(inventoryServiceMock).toInventoryLine(inventoryLineRecord);
 
-		final HUTraceEventsService svc = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryRepoMock);
+		final HUTraceEventsService svc = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryServiceMock);
 
 		// VHU has no parent → retrieveTopLevelHuId returns its own ID
 		Mockito.doReturn(vhu.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(Mockito.any(I_M_HU.class));
@@ -506,6 +591,7 @@ public class HUTraceEventsServiceTests
 		final InventoryLineHU inventoryLineHU = InventoryLineHU.builder()
 				.huId(HuId.ofRepoId(vhu.getM_HU_ID()))
 				.qtyInternalUse(Quantity.of(new BigDecimal("4"), uom))
+				.isCounted(true)
 				.build();
 
 		final InventoryLine inventoryLine = buildTestInventoryLine(inventoryLineHU, product);
@@ -517,10 +603,10 @@ public class HUTraceEventsServiceTests
 		inventoryLineRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		save(inventoryLineRecord);
 
-		final InventoryRepository inventoryRepoMock = Mockito.mock(InventoryRepository.class);
-		Mockito.doReturn(inventoryLine).when(inventoryRepoMock).toInventoryLine(inventoryLineRecord);
+		final InventoryService inventoryServiceMock = Mockito.mock(InventoryService.class);
+		Mockito.doReturn(inventoryLine).when(inventoryServiceMock).toInventoryLine(inventoryLineRecord);
 
-		final HUTraceEventsService svc = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryRepoMock);
+		final HUTraceEventsService svc = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryServiceMock);
 
 		// VHU has no parent → retrieveTopLevelHuId returns its own ID
 		Mockito.doReturn(vhu.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(Mockito.any(I_M_HU.class));
@@ -725,7 +811,6 @@ public class HUTraceEventsServiceTests
 		return InventoryLine.builder()
 				.orgId(OrgId.ofRepoId(10))
 				.productId(productId)
-				.storageAttributesKey(AttributesKey.NONE)
 				.locatorId(LocatorId.ofRepoId(1, 100))
 				.asiId(AttributeSetInstanceId.NONE)
 				.inventoryLineHU(inventoryLineHU)

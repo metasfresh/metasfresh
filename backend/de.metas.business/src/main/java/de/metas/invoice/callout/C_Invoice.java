@@ -20,6 +20,7 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PriceList;
@@ -124,10 +125,13 @@ public class C_Invoice
 	{
 		final I_C_DocType docTypeRecord = loadOutOfTrx(invoice.getC_DocTypeTarget_ID(), I_C_DocType.class);
 
+		final I_C_Invoice oldInvoice = InterfaceWrapperHelper.createOld(invoice, I_C_Invoice.class);
+
 		final IDocumentNoInfo documentNoInfo = documentNoBuilderFactory
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(docTypeRecord)
 				.setOldDocumentNo(invoice.getDocumentNo())
+				.setOldDocType_ID(oldInvoice.getC_DocTypeTarget_ID())
 				.setDocumentModel(invoice)
 				.buildOrNull();
 		if (documentNoInfo == null)

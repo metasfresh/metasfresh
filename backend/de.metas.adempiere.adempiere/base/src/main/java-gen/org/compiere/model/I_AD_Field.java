@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for AD_Field
  *  @author metasfresh (generated) 
@@ -940,6 +941,27 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, Object> COLUMN_IsSameLine = new ModelColumn<>(I_AD_Field.class, "IsSameLine", null);
 	String COLUMNNAME_IsSameLine = "IsSameLine";
+
+	/**
+	 * Set Show inactive values in filter.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowFilterInactiveValues (@Nullable java.lang.String IsShowFilterInactiveValues);
+
+	/**
+	 * Get Show inactive values in filter.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsShowFilterInactiveValues();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_IsShowFilterInactiveValues = new ModelColumn<>(I_AD_Field.class, "IsShowFilterInactiveValues", null);
+	String COLUMNNAME_IsShowFilterInactiveValues = "IsShowFilterInactiveValues";
 
 	/**
 	 * Set Show filter inline.

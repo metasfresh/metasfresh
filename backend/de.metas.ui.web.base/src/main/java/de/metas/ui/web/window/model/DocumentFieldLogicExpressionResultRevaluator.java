@@ -3,7 +3,9 @@ package de.metas.ui.web.window.model;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.user.UserId;
 import de.metas.util.StringUtils;
+import org.adempiere.service.ClientId;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -11,6 +13,7 @@ import org.adempiere.ad.expression.api.LogicExpressionResultWithReason;
 import org.adempiere.ad.expression.api.impl.LogicExpressionEvaluator;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
@@ -32,7 +35,12 @@ public class DocumentFieldLogicExpressionResultRevaluator
 
 	private static final Logger logger = LogManager.getLogger(DocumentFieldLogicExpressionResultRevaluator.class);
 
+	// `#AD_Role_Group` is not declared in Env.java — kept local. The other three reuse the Env constants
+	// as the single source of truth for the context-variable name strings (review note on #24231).
 	private static final CtxName CTXNAME_AD_Role_Group = CtxNames.parse("#AD_Role_Group");
+	private static final CtxName CTXNAME_AD_Role_ID = CtxNames.parse(Env.CTXNAME_AD_Role_ID);
+	private static final CtxName CTXNAME_AD_User_ID = CtxNames.parse(Env.CTXNAME_AD_User_ID);
+	private static final CtxName CTXNAME_AD_Client_ID = CtxNames.parse(Env.CTXNAME_AD_Client_ID);
 
 	private final LogicExpressionResultWithReason alwaysReturnResult;
 	@Nullable private final IUserRolePermissions userRolePermissions;
@@ -93,6 +101,42 @@ public class DocumentFieldLogicExpressionResultRevaluator
 				{
 					newParameters = newParameters == null ? copyToNewParameters(usedParameters) : newParameters;
 					newParameters.put(CTXNAME_AD_Role_Group.getName(), newValue);
+				}
+			}
+			else if (CTXNAME_AD_Role_ID.equalsByName(usedParameterName))
+			{
+				// mf15#4157: the result of a layout expression that depends on @#AD_Role_ID@ is cached at
+				// descriptor-build time with the FIRST loading user's role ID baked in. Without re-substituting
+				// per request, every subsequent user with a different role sees the cached evaluation — turning
+				// role-specific ReadOnlyLogic into a coin flip that depends on who logged in first.
+				final String usedValue = StringUtils.trimBlankToNull(usedParameterEntry.getValue());
+				final String newValue = String.valueOf(userRolePermissions.getRoleId().getRepoId());
+				if (!Objects.equals(usedValue, newValue))
+				{
+					newParameters = newParameters == null ? copyToNewParameters(usedParameters) : newParameters;
+					newParameters.put(CTXNAME_AD_Role_ID.getName(), newValue);
+				}
+			}
+			else if (CTXNAME_AD_User_ID.equalsByName(usedParameterName))
+			{
+				// mirrors the #AD_Role_ID handling for #AD_User_ID
+				final String usedValue = StringUtils.trimBlankToNull(usedParameterEntry.getValue());
+				final String newValue = String.valueOf(userRolePermissions.getUserId().getRepoId());
+				if (!Objects.equals(usedValue, newValue))
+				{
+					newParameters = newParameters == null ? copyToNewParameters(usedParameters) : newParameters;
+					newParameters.put(CTXNAME_AD_User_ID.getName(), newValue);
+				}
+			}
+			else if (CTXNAME_AD_Client_ID.equalsByName(usedParameterName))
+			{
+				// mirrors the #AD_Role_ID handling for #AD_Client_ID
+				final String usedValue = StringUtils.trimBlankToNull(usedParameterEntry.getValue());
+				final String newValue = String.valueOf(userRolePermissions.getClientId().getRepoId());
+				if (!Objects.equals(usedValue, newValue))
+				{
+					newParameters = newParameters == null ? copyToNewParameters(usedParameters) : newParameters;
+					newParameters.put(CTXNAME_AD_Client_ID.getName(), newValue);
 				}
 			}
 		}

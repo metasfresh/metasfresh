@@ -1,10 +1,8 @@
-package de.metas.handlingunits.shipmentschedule.spi.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +20,15 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  * #L%
  */
 
+package de.metas.handlingunits.shipmentschedule.spi.impl;
+
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -51,12 +54,14 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.project.ProjectId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -70,12 +75,15 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import javax.annotation.Nullable;
@@ -93,6 +101,7 @@ import java.util.stream.Collectors;
 
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE;
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 
 /**
  * Create Shipments from {@link ShipmentScheduleWithHU} records.
@@ -102,6 +111,8 @@ import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShipping
 public class InOutProducerFromShipmentScheduleWithHU
 		implements IInOutProducerFromShipmentScheduleWithHU, ITrxItemChunkProcessor<ShipmentScheduleWithHU, InOutGenerateResult>
 {
+	private static final String SYSCONFIG_SHIPMENT_SCHEDULE_DEBUG = "de.metas.handlingunits.shipmentschedule.debug";
+	private static final Logger logger = LogManager.getLogger(InOutProducerFromShipmentScheduleWithHU.class);
 	// Services
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
@@ -115,6 +126,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
@@ -125,6 +137,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final IAggregationKeyBuilder<ShipmentScheduleWithHU> huShipmentScheduleKeyBuilder;
 
 	private final ShipmentLineNoInfo shipmentLineNoInfo = new ShipmentLineNoInfo();
+	private final TextLineShipmentCopier textLineShipmentCopier = new TextLineShipmentCopier();
 
 	private ITrxItemProcessorContext processorCtx;
 	private ITrxItemExceptionHandler trxItemExceptionHandler = FailTrxItemExceptionHandler.instance;
@@ -164,6 +177,15 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
 
 	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
+
+	/**
+	 * The planning to stamp onto each shipment LINE this producer creates, or {@code null} for none.
+	 * Every candidate of one run belongs to the one planning the request names, so the run-level scalar is
+	 * the line-level value.
+	 *
+	 * @see #setDeliveryPlanningId(DeliveryPlanningId)
+	 */
+	@Nullable private DeliveryPlanningId deliveryPlanningId = null;
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
@@ -328,13 +350,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// Document Type
 		{
-			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
-					.adClientId(shipmentSchedule.getAD_Client_ID())
-					.adOrgId(shipmentSchedule.getAD_Org_ID())
-					.build();
-			final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
-			shipment.setC_DocType_ID(docTypeId);
+			shipment.setC_DocType_ID(getInoutDoctypeID(shipmentSchedule));
 			shipment.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
 			shipment.setIsSOTrx(true);
 
@@ -369,8 +385,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		//
 		// C_Order reference
+		if (shipmentSchedule.getC_Order_ID() > 0)
 		{
-			final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
+			final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoId(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
 			if (order != null && order.getC_Order_ID() > 0)
 			{
 				shipment.setDateOrdered(order.getDateOrdered());
@@ -383,13 +400,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
 				shipment.setM_Tour_ID(shipmentSchedule.getM_Tour_ID());
 
-
 				if (orderEmailPropagationSysConfigRepo.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID())))
 				{
 					shipment.setEMail(order.getEMail());
 				}
 
 				shipment.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+				shipment.setExternalSystem_ID(order.getExternalSystem_ID());
 
 				shipment.setSalesRep_ID(order.getSalesRep_ID());
 			}
@@ -419,6 +436,29 @@ public class InOutProducerFromShipmentScheduleWithHU
 		InterfaceWrapperHelper.save(shipment);
 
 		return shipment;
+	}
+
+	private int getInoutDoctypeID(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+
+		final DocTypeId shipmentScheduleDocTypeId = DocTypeId.ofRepoIdOrNull(shipmentSchedule.getC_DocType_ID());
+		if (shipmentScheduleDocTypeId != null)
+		{
+			final I_C_DocType shipmentScheduleDocType = docTypeDAO.getById(shipmentScheduleDocTypeId);
+
+			if (shipmentScheduleDocType.getC_DocTypeShipment_ID() > 0)
+			{
+				return shipmentScheduleDocType.getC_DocTypeShipment_ID();
+			}
+		}
+
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+				.adClientId(shipmentSchedule.getAD_Client_ID())
+				.adOrgId(shipmentSchedule.getAD_Org_ID())
+				.build();
+
+		return docTypeDAO.getDocTypeId(query).getRepoId();
 	}
 
 	/**
@@ -477,6 +517,12 @@ public class InOutProducerFromShipmentScheduleWithHU
 		final ImmutableList<InOutLineId> shipmentLineIdsWithLineNoCollisions = shipmentLineNoInfo.getShipmentLineIdsWithLineNoCollisions();
 		inOutDAO.unsetLineNos(shipmentLineIdsWithLineNoCollisions);
 
+		// must run AFTER unsetLineNos: nothing else writes a shipment line's Line between here and document
+		// completion. The collision set itself -- not a shipment line's Line value -- is what the copier uses
+		// to tell a genuinely-usable run member from one a collision has renumbered away from its real
+		// position; see TextLineShipmentCopier's javadoc for why the Line value itself cannot be used for that.
+		textLineShipmentCopier.copyTextLinesToShipment(currentShipment, ImmutableSet.copyOf(shipmentLineIdsWithLineNoCollisions));
+
 		final HUShipmentPackingMaterialLinesBuilder packingMaterialLinesBuilder = huInOutBL.createHUShipmentPackingMaterialLinesBuilder(currentShipment);
 
 		// because this is the time when we are actually generating the shipment lines,
@@ -493,6 +539,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		{
 			packingMaterialLinesBuilder.collectPackingMaterialsAndUpdateShipmentLines();
 		}
+		currentShipment.setC_Project_ID(ProjectId.toRepoId(huShipmentScheduleBL.extractSingleProjectIdOrNull(currentCandidates)));
 
 		//
 		// Process current shipment
@@ -633,12 +680,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 			return true;
 		}
 
-		else if (isCandidateSoonerThanMovementDate)
-		{
-			return true;
-		}
-
-		return false;
+		else
+			return isCandidateSoonerThanMovementDate;
 	}
 
 	private void createUpdateShipmentLine(@NonNull final ShipmentScheduleWithHU candidate)
@@ -646,9 +689,17 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// If we cannot add this "candidate" to current shipment line builder
 		// then create shipment line (if any) and reset the builder
-		if (currentShipmentLineBuilder != null && !currentShipmentLineBuilder.canAdd(candidate))
+		if (currentShipmentLineBuilder != null)
 		{
-			createShipmentLineIfAny(); // => currentShipmentLineBuilder is null after this
+			final BooleanWithReason canAdd = currentShipmentLineBuilder.canAdd(candidate);
+			if (canAdd.isFalse())
+			{
+				if (sysConfigBL.getBooleanValue(SYSCONFIG_SHIPMENT_SCHEDULE_DEBUG, false))
+				{
+					Loggables.withLogger(logger, Level.DEBUG).addLog("Cannot add {} to current shipment line builder because: {}", candidate, canAdd.getReason());
+				}
+				createShipmentLineIfAny(); // => currentShipmentLineBuilder is null after this
+			}
 		}
 
 		//
@@ -657,6 +708,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		if (currentShipmentLineBuilder == null)
 		{
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment, shipmentLineNoInfo);
+			currentShipmentLineBuilder.setDeliveryPlanningId(deliveryPlanningId);
 			currentShipmentLineBuilder.setManualPackingMaterial(candidate.isAdviseManualPackingMaterial());
 			currentShipmentLineBuilder.setQtyTypeToUse(candidate.getQtyTypeToUse());
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
@@ -698,6 +750,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 	public IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(@NonNull final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo)
 	{
 		this.scheduleId2ExternalInfo.putAll(scheduleId2ExternalInfo);
+		return this;
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(@Nullable final DeliveryPlanningId deliveryPlanningId)
+	{
+		this.deliveryPlanningId = deliveryPlanningId;
 		return this;
 	}
 

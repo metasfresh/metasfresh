@@ -10,32 +10,31 @@ package org.adempiere.mm.attributes.countryattribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Properties;
 
 public class CountryAttributeDAO implements ICountryAttributeDAO
 {
@@ -50,7 +49,7 @@ public class CountryAttributeDAO implements ICountryAttributeDAO
 			return null;
 		}
 
-		final I_M_Attribute countryAttribute = retrieveCountryAttribute(ctx);
+		final Attribute countryAttribute = retrieveCountryAttribute(ctx);
 		if (countryAttribute == null)
 		{
 			return null;
@@ -79,7 +78,7 @@ public class CountryAttributeDAO implements ICountryAttributeDAO
 	}
 
 	@Override
-	public I_M_Attribute retrieveCountryAttribute(final Properties ctx)
+	public Attribute retrieveCountryAttribute(final Properties ctx)
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);

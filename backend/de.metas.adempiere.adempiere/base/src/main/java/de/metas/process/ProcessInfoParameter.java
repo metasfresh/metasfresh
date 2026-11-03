@@ -72,6 +72,11 @@ public final class ProcessInfoParameter implements Serializable
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
 
+	public static ProcessInfoParameter of(final String parameterName, final LocalDate parameterValueLD)
+	{
+		return of(parameterName, TimeUtil.asTimestamp(parameterValueLD));
+	}
+
 	public static ProcessInfoParameter of(final String parameterName, final java.util.Date parameterValue, final java.util.Date parameterValueTo)
 	{
 		final String info = null;

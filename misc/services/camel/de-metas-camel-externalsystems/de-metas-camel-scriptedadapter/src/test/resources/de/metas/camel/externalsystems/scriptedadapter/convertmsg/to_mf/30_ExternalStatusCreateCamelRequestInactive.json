@@ -1,0 +1,9 @@
+{
+  "externalSystemConfigType": "ScriptedImportConversion",
+  "externalSystemChildConfigValue": "childValue",
+  "serviceValue": "defaultRestAPIScriptedImportConversion",
+  "jsonStatusRequest": {
+    "status": "Inactive",
+    "adPInstanceId": 123
+  }
+}

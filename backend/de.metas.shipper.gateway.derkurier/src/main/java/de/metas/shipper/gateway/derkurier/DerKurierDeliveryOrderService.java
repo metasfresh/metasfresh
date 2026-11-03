@@ -29,6 +29,7 @@ import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.AllArgsConstructor;
@@ -63,7 +64,7 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 
 	@Override
 	@NonNull
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return SHIPPER_GATEWAY_ID;
 	}

@@ -1,5 +1,9 @@
 @ghActions:run_on_executor5
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
 Feature: Validate BPartner is sent to RabbitMQ
+## F00802: External System
+## F00802: External System
 
   Background:
     Given infrastructure and metasfresh are running
@@ -8,8 +12,8 @@ Feature: Validate BPartner is sent to RabbitMQ
 
   Scenario: Export bpartner when created via rest-api
     Given metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name     | OPT.EMail          | OPT.Login |
-      | testUser_1            | testUser | testUser@email.com | testUser  |
+      | Identifier | Name     | OPT.EMail          | OPT.Login |
+      | testUser_1 | testUser | testUser@email.com | testUser  |
     And load AD_Roles
       | AD_Role_ID.Identifier | Name  |
       | userRole              | WebUI |
@@ -50,8 +54,8 @@ Feature: Validate BPartner is sent to RabbitMQ
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code         | Name             | OPT.CompanyName     | OPT.CreatedBy | OPT.Language |
-      | created_bpartner         | ext-Shopware6-001  | test_code_export | test_name_export | test_company_export | testUser_1    | de           |
+      | C_BPartner_ID.Identifier | externalIdentifier | code             | name             | companyName         | CreatedBy   | language |
+      | created_bpartner         | ext-Shopware6-001  | test_code_export | test_name_export | test_company_export | testUser_1  | de       |
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
       | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
       | created_bpartner         | config_1                            |

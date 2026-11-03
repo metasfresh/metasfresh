@@ -37,13 +37,13 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
-import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.OrgIdAccessList;
 import de.metas.security.RoleGroup;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
 import de.metas.security.permissions.Constraints;
@@ -103,7 +103,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @ToString(of = { "name", "roleId", "userId", "clientId" })
 class UserRolePermissions implements IUserRolePermissions
 {
-	private static final transient Logger logger = LogManager.getLogger(UserRolePermissions.class);
+	private static final Logger logger = LogManager.getLogger(UserRolePermissions.class);
 
 	private static final AdMessageKey MSG_AccessTableNoView = AdMessageKey.of("AccessTableNoView");
 	private static final AdMessageKey MSG_AccessTableNoUpdate = AdMessageKey.of("AccessTableNoUpdate");
@@ -184,8 +184,8 @@ class UserRolePermissions implements IUserRolePermissions
 	@Getter(AccessLevel.PACKAGE)
 	private final GenericPermissions miscPermissions;
 
-	@Getter(AccessLevel.PACKAGE)
-	private final ElementPermissions mobileApplicationPermissions;
+	@Getter
+	private final MobileApplicationPermissions mobileApplicationPermissions;
 
 	private final ConcurrentHashMap<ArrayKey, Set<String>> docActionsAllowed = new ConcurrentHashMap<>();
 
@@ -518,12 +518,13 @@ class UserRolePermissions implements IUserRolePermissions
 			logger.warn("Role denied");
 			return false;
 		}
-		if (!isTableAccess(AD_Table_ID, Access.READ))
+		final AdTableId adTableId = AdTableId.ofRepoId(AD_Table_ID);
+		if (!isTableAccess(adTableId, Access.READ))
 		{
 			return false;
 		}
 		//
-		return getTablePermissions().isCanReport(AD_Table_ID);
+		return getTablePermissions().isCanReport(adTableId);
 	}
 
 	@Override
@@ -534,7 +535,8 @@ class UserRolePermissions implements IUserRolePermissions
 			logger.warn("Role denied");
 			return false;
 		}
-		if (!isTableAccess(AD_Table_ID, Access.READ))
+		final AdTableId adTableId = AdTableId.ofRepoId(AD_Table_ID);
+		if (!isTableAccess(adTableId, Access.READ))
 		{
 			return false;
 		}
@@ -543,21 +545,32 @@ class UserRolePermissions implements IUserRolePermissions
 			return false;
 		}
 		//
-		return tablePermissions.isCanExport(AD_Table_ID);
+		return tablePermissions.isCanExport(adTableId);
+	}
+
+	@Override
+	public boolean isCanCreateNewRecords(@NonNull final AdTableId adTableId)
+	{
+		// "WRITE exclusion includes no CREATE, but not the other way around": creating a record is a write,
+		// so removing WRITE (IsReadOnly='Y') also removes CREATE; removing CREATE alone (IsCanCreateNewRecords='N')
+		// leaves WRITE - and thus editing existing records - intact.
+		return isTableAccess(adTableId, Access.WRITE)
+				&& isTableAccess(adTableId, Access.CREATE);
 	}
 
 	/**
-	 * @return has RO/RW access to table
+	 * @return has RO/RW access to the table.
 	 */
 	@Override
-	public boolean isTableAccess(final int AD_Table_ID, @NonNull final Access access)
+	public boolean isTableAccess(@NonNull final AdTableId adTableId, @NonNull final Access access)
 	{
 		if (Access.WRITE.equals(access))
 		{
-			final TableAccessLevel roleAccessLevel = tablesAccessInfo.getTableAccessLevel(AD_Table_ID);
+			// WRITE additionally requires the table's UserLevel to be compatible with the role's.
+			final TableAccessLevel roleAccessLevel = tablesAccessInfo.getTableAccessLevel(adTableId);
 			if (roleAccessLevel == null)
 			{
-				logger.debug("NO - No AccessLevel - AD_Table_ID={}", AD_Table_ID);
+				logger.debug("NO - No AccessLevel - adTableId={}", adTableId);
 				return false;
 			}
 
@@ -568,14 +581,13 @@ class UserRolePermissions implements IUserRolePermissions
 			}
 		}
 
-		//
-		return tablePermissions.hasAccess(AD_Table_ID, access);
+		return tablePermissions.hasAccess(adTableId, access);
 	}
 
 	@Override
 	public boolean isColumnAccess(final int AD_Table_ID, final int AD_Column_ID, final Access access)
 	{
-		if (!isTableAccess(AD_Table_ID, access))
+		if (!isTableAccess(AdTableId.ofRepoId(AD_Table_ID), access))
 		{
 			return false;
 		}
@@ -729,12 +741,6 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public ElementPermission checkMobileApplicationPermission(@NonNull final MobileApplicationRepoId applicationId)
-	{
-		return mobileApplicationPermissions.getPermission(applicationId.getRepoId());
-	}
-
-	@Override
 	public String addAccessSQL(
 			final String sql,
 			final String tableNameIn,
@@ -868,7 +874,7 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 
 		// Table Access
-		if (missingAccesses.isEmpty() && !isTableAccess(AD_Table_ID, access))
+		if (missingAccesses.isEmpty() && !isTableAccess(AdTableId.ofRepoId(AD_Table_ID), access))
 		{
 			missingAccesses.add("table access");
 		}

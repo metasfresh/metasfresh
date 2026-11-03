@@ -27,7 +27,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.process.IProcessPrecondition;
@@ -59,7 +59,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 		implements IProcessPrecondition
 {
 	private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
-	
+
 	private final Instant nowInstant = Env.getZonedDateTime().toInstant();
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -71,6 +71,10 @@ public class M_ShipmentSchedule_EnqueueSelection
 
 	@Param(parameterName = "IsShipToday", mandatory = true)
 	private boolean isShipToday; // introduced in task #2940
+
+	// Hidden param (DisplayLogic '1=0', default N); opted in per instance via DefaultValue.
+	@Param(parameterName = "IsOnTheFlyPickToPackingInstructions")
+	private boolean isOnTheFlyPickToPackingInstructions;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -99,10 +103,10 @@ public class M_ShipmentSchedule_EnqueueSelection
 				.quantityType(quantityType)
 				.completeShipments(isCompleteShipments)
 				.isShipmentDateToday(isShipToday)
+				.onTheFlyPickToPackingInstructions(isOnTheFlyPickToPackingInstructions)
 				.build();
 
-		final Result result = new ShipmentScheduleEnqueuer()
-				.setContext(getCtx(), getTrxName())
+		final Result result = ShipmentScheduleEnqueuer.newInstance(getCtx(), getTrxName())
 				.createWorkpackages(workPackageParameters);
 
 		return "@Created@: " + result.getEnqueuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " + result.getSkippedPackagesCount();

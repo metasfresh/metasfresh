@@ -36,4 +36,9 @@ public class PrintableQRCode
 				.displayable(getDisplayableString())
 				.build();
 	}
+
+	public String toGlobalQRCodeJsonString()
+	{
+		return getQrCode();
+	}
 }

@@ -1,7 +1,7 @@
 package de.metas.pos;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.gs1.GS1Elements;
 import de.metas.gs1.GS1Parser;
 import de.metas.gs1.GTIN;
@@ -72,7 +72,7 @@ class POSProductsSearchCommand
 			return null;
 		}
 
-		final ProductId productId = productBL.getProductIdByGTIN(gtin, ClientId.METASFRESH).orElse(null);
+		final ProductId productId = productBL.getProductIdByGTIN(gtin).orElse(null);
 		final POSProduct product = getPOSProduct(productId);
 		if (product == null)
 		{

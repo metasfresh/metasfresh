@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_Picking_Job_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1628110248L;
+	private static final long serialVersionUID = -152289796L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Line (final Properties ctx, final int M_Picking_Job_Line_ID, @Nullable final String trxName)
@@ -33,6 +33,36 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setCarrier_Goods_Type_ID (final int Carrier_Goods_Type_ID)
+	{
+		if (Carrier_Goods_Type_ID < 1) 
+			set_Value (COLUMNNAME_Carrier_Goods_Type_ID, null);
+		else 
+			set_Value (COLUMNNAME_Carrier_Goods_Type_ID, Carrier_Goods_Type_ID);
+	}
+
+	@Override
+	public int getCarrier_Goods_Type_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Goods_Type_ID);
+	}
+
+	@Override
+	public void setCarrier_Product_ID (final int Carrier_Product_ID)
+	{
+		if (Carrier_Product_ID < 1) 
+			set_Value (COLUMNNAME_Carrier_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Carrier_Product_ID, Carrier_Product_ID);
+	}
+
+	@Override
+	public int getCarrier_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Product_ID);
 	}
 
 	@Override
@@ -81,18 +111,6 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
-	}
-
-	@Override
-	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
-	}
-
-	@Override
 	public void setC_Order_ID (final int C_Order_ID)
 	{
 		if (C_Order_ID < 1) 
@@ -105,18 +123,6 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public int getC_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
-	}
-
-	@Override
-	public void setC_OrderLine(final org.compiere.model.I_C_OrderLine C_OrderLine)
-	{
-		set_ValueFromPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine);
 	}
 
 	@Override
@@ -150,18 +156,6 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getCurrent_PickTo_LU()
-	{
-		return get_ValueAsPO(COLUMNNAME_Current_PickTo_LU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setCurrent_PickTo_LU(final de.metas.handlingunits.model.I_M_HU Current_PickTo_LU)
-	{
-		set_ValueFromPO(COLUMNNAME_Current_PickTo_LU_ID, de.metas.handlingunits.model.I_M_HU.class, Current_PickTo_LU);
-	}
-
-	@Override
 	public void setCurrent_PickTo_LU_ID (final int Current_PickTo_LU_ID)
 	{
 		if (Current_PickTo_LU_ID < 1) 
@@ -174,18 +168,6 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public int getCurrent_PickTo_LU_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Current_PickTo_LU_ID);
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI getCurrent_PickTo_LU_PI()
-	{
-		return get_ValueAsPO(COLUMNNAME_Current_PickTo_LU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
-	}
-
-	@Override
-	public void setCurrent_PickTo_LU_PI(final de.metas.handlingunits.model.I_M_HU_PI Current_PickTo_LU_PI)
-	{
-		set_ValueFromPO(COLUMNNAME_Current_PickTo_LU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, Current_PickTo_LU_PI);
 	}
 
 	@Override
@@ -216,15 +198,30 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI getCurrent_PickTo_TU_PI()
+	public void setCurrent_PickTo_TU_GRAI (final @Nullable java.lang.String Current_PickTo_TU_GRAI)
 	{
-		return get_ValueAsPO(COLUMNNAME_Current_PickTo_TU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
+		set_Value (COLUMNNAME_Current_PickTo_TU_GRAI, Current_PickTo_TU_GRAI);
 	}
 
 	@Override
-	public void setCurrent_PickTo_TU_PI(final de.metas.handlingunits.model.I_M_HU_PI Current_PickTo_TU_PI)
+	public java.lang.String getCurrent_PickTo_TU_GRAI() 
 	{
-		set_ValueFromPO(COLUMNNAME_Current_PickTo_TU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, Current_PickTo_TU_PI);
+		return get_ValueAsString(COLUMNNAME_Current_PickTo_TU_GRAI);
+	}
+
+	@Override
+	public void setCurrent_PickTo_TU_ID (final int Current_PickTo_TU_ID)
+	{
+		if (Current_PickTo_TU_ID < 1) 
+			set_Value (COLUMNNAME_Current_PickTo_TU_ID, null);
+		else 
+			set_Value (COLUMNNAME_Current_PickTo_TU_ID, Current_PickTo_TU_ID);
+	}
+
+	@Override
+	public int getCurrent_PickTo_TU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Current_PickTo_TU_ID);
 	}
 
 	@Override
@@ -240,6 +237,42 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public int getCurrent_PickTo_TU_PI_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Current_PickTo_TU_PI_ID);
+	}
+
+	@Override
+	public void setCurrent_PickTo_TU_QRCode (final @Nullable java.lang.String Current_PickTo_TU_QRCode)
+	{
+		set_Value (COLUMNNAME_Current_PickTo_TU_QRCode, Current_PickTo_TU_QRCode);
+	}
+
+	@Override
+	public java.lang.String getCurrent_PickTo_TU_QRCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_Current_PickTo_TU_QRCode);
+	}
+
+	@Override
+	public void setIsCarrierAdviseManual (final boolean IsCarrierAdviseManual)
+	{
+		set_Value (COLUMNNAME_IsCarrierAdviseManual, IsCarrierAdviseManual);
+	}
+
+	@Override
+	public boolean isCarrierAdviseManual() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCarrierAdviseManual);
+	}
+
+	@Override
+	public void setIsCarrierAdviseReadOnly (final boolean IsCarrierAdviseReadOnly)
+	{
+		set_Value (COLUMNNAME_IsCarrierAdviseReadOnly, IsCarrierAdviseReadOnly);
+	}
+
+	@Override
+	public boolean isCarrierAdviseReadOnly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCarrierAdviseReadOnly);
 	}
 
 	@Override
@@ -270,18 +303,6 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_Picking_Job getM_Picking_Job()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Picking_Job_ID, de.metas.handlingunits.model.I_M_Picking_Job.class);
-	}
-
-	@Override
-	public void setM_Picking_Job(final de.metas.handlingunits.model.I_M_Picking_Job M_Picking_Job)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Picking_Job_ID, de.metas.handlingunits.model.I_M_Picking_Job.class, M_Picking_Job);
-	}
-
-	@Override
 	public void setM_Picking_Job_ID (final int M_Picking_Job_ID)
 	{
 		if (M_Picking_Job_ID < 1) 
@@ -309,6 +330,21 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public int getM_Picking_Job_Line_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_Line_ID);
+	}
+
+	@Override
+	public void setM_Picking_Job_Schedule_ID (final int M_Picking_Job_Schedule_ID)
+	{
+		if (M_Picking_Job_Schedule_ID < 1) 
+			set_Value (COLUMNNAME_M_Picking_Job_Schedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Picking_Job_Schedule_ID, M_Picking_Job_Schedule_ID);
+	}
+
+	@Override
+	public int getM_Picking_Job_Schedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_Schedule_ID);
 	}
 
 	@Override
@@ -354,18 +390,6 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public int getM_ShipmentSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
-	}
-
-	@Override
-	public org.eevolution.model.I_PP_Order getPP_Order()
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
-	}
-
-	@Override
-	public void setPP_Order(final org.eevolution.model.I_PP_Order PP_Order)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class, PP_Order);
 	}
 
 	@Override

@@ -25,6 +25,7 @@ package de.metas.handlingunits.picking.candidate.commands;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
@@ -135,6 +136,11 @@ public class PackedHUWeightNetUpdater
 	public void updatePackToHU(@NonNull final I_M_HU hu)
 	{
 		updatePackToHUs(ImmutableList.of(hu));
+	}
+
+	public void updatePackToHUs(@NonNull final LUTUResult lutu)
+	{
+		updatePackToHUs(lutu.getAllTUOrCURecords());
 	}
 
 	public void updatePackToHUs(@NonNull final List<I_M_HU> hus)

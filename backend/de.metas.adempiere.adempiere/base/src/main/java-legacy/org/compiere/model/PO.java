@@ -1,19 +1,24 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.model;
 
 import de.metas.ad_reference.ADRefList;
@@ -22,6 +27,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheSourceModelFactory;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.SequenceUtil;
@@ -1962,7 +1968,7 @@ public abstract class PO
 	{
 		final Properties ctx = getCtx();
 		final UserId loggedUserId = Env.getLoggedUserIdIfExists(ctx).orElse(UserId.SYSTEM);
-		final Timestamp now = new Timestamp(System.currentTimeMillis());
+		final Timestamp now = new Timestamp(SystemTime.millis()); // putting the time under control of SystemTime to facilitate testing
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
 
@@ -3165,7 +3171,7 @@ public abstract class PO
 		}
 		else if (idNew <= 0)
 		{
-			idNew = DB.getNextID(getAD_Client_ID(), p_info.getTableName(), m_trxName);
+			idNew = DB.getNextID(getAD_Client_ID(), p_info.getTableName());
 			if (idNew <= 0)
 			{
 				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ") for " + p_info.getTableName());
@@ -4058,7 +4064,7 @@ public abstract class PO
 			@Nullable final String whereClause)
 	{
 		final POAccountingInfo acctInfo = POAccountingInfoRepository.instance.getPOAccountingInfo(acctTable).orElse(null);
-		if(acctInfo == null)
+		if (acctInfo == null)
 		{
 			log.warn("No accounting info found for {}. Skipping", acctTable);
 			return false;
@@ -4081,7 +4087,7 @@ public abstract class PO
 				.append(getUpdatedBy());
 		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
-			if(acctBaseTableInfo.hasColumnName(acctColumnName))
+			if (acctBaseTableInfo.hasColumnName(acctColumnName))
 			{
 				sb.append("\n, p.").append(acctColumnName);
 			}
@@ -4092,7 +4098,8 @@ public abstract class PO
 		}
 		// .. FROM
 		sb.append("\n FROM ").append(acctBaseTable)
-				.append(" p WHERE p.AD_Client_ID=").append(getAD_Client_ID());
+				.append(" p WHERE p.AD_Client_ID=").append(getAD_Client_ID())
+				.append(" AND p.C_AcctSchema_ID=").append(acctTable).append(".C_AcctSchema_ID");
 
 		if (whereClause != null && whereClause.length() > 0)
 		{
@@ -4108,8 +4115,7 @@ public abstract class PO
 		//
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), get_TrxName());
 		return no > 0;
-	}	// update_Accounting
-
+	}    // update_Accounting
 
 	/**
 	 * Delete Accounting records.
@@ -5141,6 +5147,72 @@ public abstract class PO
 		// poCopy.m_windowNo = this.m_windowNo;
 
 		return poCopy;
+	}
+
+	/**
+	 * In-memory column state of a {@link PO}, see {@link #snapshotStateForRetry()}.
+	 */
+	public static final class RetryStateSnapshot
+	{
+		private final Object[] oldValues;
+		private final Object[] newValues;
+		private final boolean[] valueLoaded;
+		private final boolean stale;
+		@Nullable private final HashMap<String, String> custom;
+		@Nullable private final Set<Integer> markedChangedColumns;
+		@Nullable private final HashMap<String, Object> dynAttrs;
+		@Nullable private final ArrayList<PO_LOB> lobInfo;
+
+		private RetryStateSnapshot(@NonNull final PO po)
+		{
+			this.oldValues = copyOf(po.m_oldValues);
+			this.newValues = copyOf(po.m_newValues);
+			this.valueLoaded = copyOf(po.m_valueLoaded);
+			this.stale = po.m_stale;
+			this.custom = po.m_custom == null ? null : new HashMap<>(po.m_custom);
+			this.markedChangedColumns = po.markedChangedColumns == null ? null : new HashSet<>(po.markedChangedColumns);
+			this.dynAttrs = po.m_dynAttrs == null ? null : new HashMap<>(po.m_dynAttrs);
+			this.lobInfo = po.m_lobInfo == null ? null : new ArrayList<>(po.m_lobInfo);
+		}
+
+		private void restoreTo(@NonNull final PO po)
+		{
+			po.m_oldValues = copyOf(oldValues);
+			po.m_newValues = copyOf(newValues);
+			po.m_valueLoaded = copyOf(valueLoaded);
+			po.m_stale = stale;
+			po.m_custom = custom == null ? null : new HashMap<>(custom);
+			po.markedChangedColumns = markedChangedColumns == null ? null : new HashSet<>(markedChangedColumns);
+			po.m_dynAttrs = dynAttrs == null ? null : new HashMap<>(dynAttrs);
+			po.m_lobInfo = lobInfo == null ? null : new ArrayList<>(lobInfo);
+			po.m_poCacheLocals = null; // may hold records loaded in the rolled back transaction
+		}
+
+		@Nullable
+		private static Object[] copyOf(@Nullable final Object[] values) {return values == null ? null : Arrays.copyOf(values, values.length);}
+
+		@Nullable
+		private static boolean[] copyOf(@Nullable final boolean[] values) {return values == null ? null : Arrays.copyOf(values, values.length);}
+	}
+
+	/**
+	 * Captures this instance's column values (incl. the not yet saved changes and custom columns), its columns marked as changed, its dynamic attributes
+	 * and its pending LOBs, so that {@link #restoreStateForRetry(RetryStateSnapshot)} can undo what a rolled back document action did to this instance.
+	 * The value arrays and collections are copied, the values in them (incl. dynamic attribute values and LOBs) are shared.
+	 * Not captured, because a document action does not change them: identity and key, ctx, trxName, the "manual user action" / window settings.
+	 */
+	public final RetryStateSnapshot snapshotStateForRetry()
+	{
+		return new RetryStateSnapshot(this);
+	}
+
+	/**
+	 * Puts back the state captured by {@link #snapshotStateForRetry()}, and drops the cached referenced records.
+	 * The snapshot can be restored several times.
+	 */
+	public final void restoreStateForRetry(@NonNull final RetryStateSnapshot snapshot)
+	{
+		snapshot.restoreTo(this);
 	}
 
 	/**

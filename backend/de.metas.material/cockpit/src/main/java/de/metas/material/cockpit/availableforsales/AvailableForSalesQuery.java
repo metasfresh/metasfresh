@@ -1,10 +1,15 @@
 package de.metas.material.cockpit.availableforsales;
 
-import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -33,20 +38,39 @@ import java.time.Instant;
  */
 
 @Value
-@Builder
 public class AvailableForSalesQuery
 {
 	@NonNull ProductId productId;
-
 	@Nullable WarehouseId warehouseId;
-
-	@NonNull
-	AttributesKeyPattern storageAttributesKeyPattern;
-
-	@NonNull
-	Instant dateOfInterest;
-
+	@NonNull AttributesKeyPattern storageAttributesKeyPattern;
+	@NonNull ClientAndOrgId clientAndOrgId;
+	@NonNull Instant dateOfInterest;
 	int shipmentDateLookAheadHours;
-
 	int salesOrderLookBehindHours;
+
+	@Builder
+	@Jacksonized
+	private AvailableForSalesQuery(
+			@NonNull final ProductId productId,
+			@Nullable final WarehouseId warehouseId,
+			@NonNull final AttributesKeyPattern storageAttributesKeyPattern,
+			@NonNull final ClientAndOrgId clientAndOrgId,
+			@NonNull final Instant dateOfInterest,
+			final int shipmentDateLookAheadHours,
+			final int salesOrderLookBehindHours)
+	{
+		Check.errorUnless(clientAndOrgId.getOrgId().isRegular(), "AD_Org_Id={} must be regular! M_Product_ID={}, M_Warehouse_ID={}, AttributesKey={}, dateOfInterest={}",
+				clientAndOrgId.getOrgId(), productId, warehouseId, storageAttributesKeyPattern, dateOfInterest);
+
+		this.productId = productId;
+		this.warehouseId = warehouseId;
+		this.storageAttributesKeyPattern = storageAttributesKeyPattern;
+		this.clientAndOrgId = clientAndOrgId;
+		this.dateOfInterest = dateOfInterest;
+		this.shipmentDateLookAheadHours = shipmentDateLookAheadHours;
+		this.salesOrderLookBehindHours = salesOrderLookBehindHours;
+	}
+
+	@JsonIgnore
+	public OrgId getOrgId() {return clientAndOrgId.getOrgId();}
 }

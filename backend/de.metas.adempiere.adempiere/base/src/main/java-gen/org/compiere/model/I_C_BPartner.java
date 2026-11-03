@@ -257,6 +257,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_BPartner_Parent_ID = "BPartner_Parent_ID";
 
 	/**
+	 * Set Notizen/Anmerkungen.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPInfo (@Nullable java.lang.String BPInfo);
+
+	/**
+	 * Get Notizen/Anmerkungen.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPInfo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_BPInfo = new ModelColumn<>(I_C_BPartner.class, "BPInfo", null);
+	String COLUMNNAME_BPInfo = "BPInfo";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: ID
@@ -967,6 +988,50 @@ public interface I_C_BPartner
 	String COLUMNNAME_DUNS = "DUNS";
 
 	/**
+	 * Set Buyer Reference.
+	 * Addressing number in the context of electronic invoicing
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEInvoice_BuyerReference (@Nullable java.lang.String EInvoice_BuyerReference);
+
+	/**
+	 * Get Buyer Reference.
+	 * Addressing number in the context of electronic invoicing
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEInvoice_BuyerReference();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_EInvoice_BuyerReference = new ModelColumn<>(I_C_BPartner.class, "EInvoice_BuyerReference", null);
+	String COLUMNNAME_EInvoice_BuyerReference = "EInvoice_BuyerReference";
+
+	/**
+	 * Set Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEInvoiceType (@Nullable java.lang.String EInvoiceType);
+
+	/**
+	 * Get Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEInvoiceType();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_EInvoiceType = new ModelColumn<>(I_C_BPartner.class, "EInvoiceType", null);
+	String COLUMNNAME_EInvoiceType = "EInvoiceType";
+
+	/**
 	 * Set eMail.
 	 *
 	 * <br>Type: String
@@ -1051,6 +1116,52 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_BPartner.class, "ExternalId", null);
 	String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
+	 * Set Factoring Client Account ID.
+	 * Factoring client account ID at the factor
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFactoringClientAccountId (@Nullable java.lang.String FactoringClientAccountId);
+
+	/**
+	 * Get Factoring Client Account ID.
+	 * Factoring client account ID at the factor
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFactoringClientAccountId();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_FactoringClientAccountId = new ModelColumn<>(I_C_BPartner.class, "FactoringClientAccountId", null);
+	String COLUMNNAME_FactoringClientAccountId = "FactoringClientAccountId";
+
+	/**
+	 * Set Factoring Contract No..
+	 * Factoring contract number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFactoringContractNo (@Nullable java.lang.String FactoringContractNo);
+
+	/**
+	 * Get Factoring Contract No..
+	 * Factoring contract number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFactoringContractNo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_FactoringContractNo = new ModelColumn<>(I_C_BPartner.class, "FactoringContractNo", null);
+	String COLUMNNAME_FactoringContractNo = "FactoringContractNo";
 
 	/**
 	 * Set Firstname.
@@ -1208,6 +1319,29 @@ public interface I_C_BPartner
 	String COLUMNNAME_GlobalId = "GlobalId";
 
 	/**
+	 * Set GRAI Required.
+	 * Determines whether GRAIs are required at picking completion
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGRAIRequired (java.lang.String GRAIRequired);
+
+	/**
+	 * Get GRAI Required.
+	 * Determines whether GRAIs are required at picking completion
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getGRAIRequired();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_GRAIRequired = new ModelColumn<>(I_C_BPartner.class, "GRAIRequired", null);
+	String COLUMNNAME_GRAIRequired = "GRAIRequired";
+
+	/**
 	 * Set Haddex Control Nr..
 	 *
 	 * <br>Type: String
@@ -1227,6 +1361,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_HaddexControlNr = new ModelColumn<>(I_C_BPartner.class, "HaddexControlNr", null);
 	String COLUMNNAME_HaddexControlNr = "HaddexControlNr";
+
+	/**
+	 * Set Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_C_BPartner.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
 	 * Set Internal Name.
@@ -1250,6 +1407,31 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_InternalName = new ModelColumn<>(I_C_BPartner.class, "InternalName", null);
 	String COLUMNNAME_InternalName = "InternalName";
+
+	/**
+	 * Set Invoice Email.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInvoice_Email (@Nullable java.lang.String Invoice_Email);
+
+	/**
+	 * Get Invoice Email.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getInvoice_Email();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Invoice_Email = new ModelColumn<>(I_C_BPartner.class, "Invoice_Email", null);
+	String COLUMNNAME_Invoice_Email = "Invoice_Email";
 
 	/**
 	 * Set Invoice Print Format.
@@ -1438,6 +1620,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsArchived = "IsArchived";
 
 	/**
+	 * Set Auto Invoice.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoInvoice (@Nullable java.lang.String IsAutoInvoice);
+
+	/**
+	 * Get Auto Invoice.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsAutoInvoice();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsAutoInvoice = new ModelColumn<>(I_C_BPartner.class, "IsAutoInvoice", null);
+	String COLUMNNAME_IsAutoInvoice = "IsAutoInvoice";
+
+	/**
 	 * Set Company.
 	 *
 	 * <br>Type: YesNo
@@ -1526,25 +1729,25 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
 
 	/**
-	 * Set EDI DESADV Receipient.
+	 * Set e-invoice Receipient.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsEdiDesadvRecipient (boolean IsEdiDesadvRecipient);
+	void setIsEInvoiceRecipeint (boolean IsEInvoiceRecipeint);
 
 	/**
-	 * Get EDI DESADV Receipient.
+	 * Get e-invoice Receipient.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isEdiDesadvRecipient();
+	boolean isEInvoiceRecipeint();
 
-	ModelColumn<I_C_BPartner, Object> COLUMN_IsEdiDesadvRecipient = new ModelColumn<>(I_C_BPartner.class, "IsEdiDesadvRecipient", null);
-	String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsEInvoiceRecipeint = new ModelColumn<>(I_C_BPartner.class, "IsEInvoiceRecipeint", null);
+	String COLUMNNAME_IsEInvoiceRecipeint = "IsEInvoiceRecipeint";
 
 	/**
 	 * Set Employee.
@@ -1568,6 +1771,52 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_IsEmployee = new ModelColumn<>(I_C_BPartner.class, "IsEmployee", null);
 	String COLUMNNAME_IsEmployee = "IsEmployee";
+
+	/**
+	 * Set Factorer.
+	 * Factoring is a financial transaction and a type of debtor finance in which a business sells its accounts receivable (i.e., invoices) to a third party (called a Factorer).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFactorer (boolean IsFactorer);
+
+	/**
+	 * Get Factorer.
+	 * Factoring is a financial transaction and a type of debtor finance in which a business sells its accounts receivable (i.e., invoices) to a third party (called a Factorer).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFactorer();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsFactorer = new ModelColumn<>(I_C_BPartner.class, "IsFactorer", null);
+	String COLUMNNAME_IsFactorer = "IsFactorer";
+
+	/**
+	 * Set Factoring.
+	 * The business partner sells its receivables (invoices) to a factor to obtain immediate liquidity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFactoring (boolean IsFactoring);
+
+	/**
+	 * Get Factoring.
+	 * The business partner sells its receivables (invoices) to a factor to obtain immediate liquidity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFactoring();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsFactoring = new ModelColumn<>(I_C_BPartner.class, "IsFactoring", null);
+	String COLUMNNAME_IsFactoring = "IsFactoring";
 
 	/**
 	 * Set Full LU Required.
@@ -1614,6 +1863,29 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsHaddexCheck = "IsHaddexCheck";
 
 	/**
+	 * Set Invoice Email CC to Member.
+	 * If active, invoice emails are also sent as CC to the member.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoiceEmailCcToMember (boolean IsInvoiceEmailCcToMember);
+
+	/**
+	 * Get Invoice Email CC to Member.
+	 * If active, invoice emails are also sent as CC to the member.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInvoiceEmailCcToMember();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsInvoiceEmailCcToMember = new ModelColumn<>(I_C_BPartner.class, "IsInvoiceEmailCcToMember", null);
+	String COLUMNNAME_IsInvoiceEmailCcToMember = "IsInvoiceEmailCcToMember";
+
+	/**
 	 * Set Manufacturer.
 	 *
 	 * <br>Type: YesNo
@@ -1656,6 +1928,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsOneTime = "IsOneTime";
 
 	/**
+	 * Set Verpackungslizenzierung befreit.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPackageLicensingExempt (boolean IsPackageLicensingExempt);
+
+	/**
+	 * Get Verpackungslizenzierung befreit.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isPackageLicensingExempt();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsPackageLicensingExempt = new ModelColumn<>(I_C_BPartner.class, "IsPackageLicensingExempt", null);
+	String COLUMNNAME_IsPackageLicensingExempt = "IsPackageLicensingExempt";
+
+	/**
 	 * Set PO Tax exempt.
 	 * Business partner is exempt from tax on purchases
 	 *
@@ -1677,6 +1970,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_IsPOTaxExempt = new ModelColumn<>(I_C_BPartner.class, "IsPOTaxExempt", null);
 	String COLUMNNAME_IsPOTaxExempt = "IsPOTaxExempt";
+
+	/**
+	 * Set Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setIsPreAdviceRequired (@Nullable java.lang.String IsPreAdviceRequired);
+
+	/**
+	 * Get Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	@Nullable java.lang.String getIsPreAdviceRequired();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsPreAdviceRequired = new ModelColumn<>(I_C_BPartner.class, "IsPreAdviceRequired", null);
+	String COLUMNNAME_IsPreAdviceRequired = "IsPreAdviceRequired";
 
 	/**
 	 * Set Prospect.
@@ -2212,6 +2526,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2221,6 +2536,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2459,6 +2775,48 @@ public interface I_C_BPartner
 	String COLUMNNAME_Old_Value_Vendor = "Old_Value_Vendor";
 
 	/**
+	 * Set Verpackungsliz. befreit ab.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackageLicensingExemptFrom (@Nullable java.sql.Timestamp PackageLicensingExemptFrom);
+
+	/**
+	 * Get Verpackungsliz. befreit ab.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPackageLicensingExemptFrom();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PackageLicensingExemptFrom = new ModelColumn<>(I_C_BPartner.class, "PackageLicensingExemptFrom", null);
+	String COLUMNNAME_PackageLicensingExemptFrom = "PackageLicensingExemptFrom";
+
+	/**
+	 * Set Verpackungsliz. befreit bis.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackageLicensingExemptTo (@Nullable java.sql.Timestamp PackageLicensingExemptTo);
+
+	/**
+	 * Get Verpackungsliz. befreit bis.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPackageLicensingExemptTo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PackageLicensingExemptTo = new ModelColumn<>(I_C_BPartner.class, "PackageLicensingExemptTo", null);
+	String COLUMNNAME_PackageLicensingExemptTo = "PackageLicensingExemptTo";
+
+	/**
 	 * Set Payment Rule.
 	 * How you pay the invoice
 	 *
@@ -2639,6 +2997,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_PO_Incoterm = "PO_Incoterm";
 
 	/**
+	 * Set PO Incoterm Location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_IncotermLocation (@Nullable java.lang.String PO_IncotermLocation);
+
+	/**
+	 * Get PO Incoterm Location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPO_IncotermLocation();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PO_IncotermLocation = new ModelColumn<>(I_C_BPartner.class, "PO_IncotermLocation", null);
+	String COLUMNNAME_PO_IncotermLocation = "PO_IncotermLocation";
+
+	/**
 	 * Set Rechnungsstellung (Kreditoren).
 	 *
 	 * <br>Type: List
@@ -2814,6 +3193,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_PotentialLifeTimeValue = new ModelColumn<>(I_C_BPartner.class, "PotentialLifeTimeValue", null);
 	String COLUMNNAME_PotentialLifeTimeValue = "PotentialLifeTimeValue";
+
+	/**
+	 * Set Purchase Transport Days.
+	 * Vendor transport time in days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_TransportDays (int PO_TransportDays);
+
+	/**
+	 * Get Purchase Transport Days.
+	 * Vendor transport time in days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPO_TransportDays();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PO_TransportDays = new ModelColumn<>(I_C_BPartner.class, "PO_TransportDays", null);
+	String COLUMNNAME_PO_TransportDays = "PO_TransportDays";
 
 	/**
 	 * Set QMS Certificate.
@@ -3297,7 +3699,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_SO_DocTypeTarget_ID = "SO_DocTypeTarget_ID";
 
 	/**
-	 * Set Notiz Auftragsart.
+	 * Set SO_TargetDocTypeReason.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3306,7 +3708,7 @@ public interface I_C_BPartner
 	void setSO_TargetDocTypeReason (@Nullable java.lang.String SO_TargetDocTypeReason);
 
 	/**
-	 * Get Notiz Auftragsart.
+	 * Get SO_TargetDocTypeReason.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3498,6 +3900,102 @@ public interface I_C_BPartner
 	String COLUMNNAME_VATaxID = "VATaxID";
 
 	/**
+	 * Set VAT-ID Last Checked On.
+	 * Point in time of the most recent VAT-ID check (request or response).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxIDCheckedAt (@Nullable java.sql.Timestamp VATaxIDCheckedAt);
+
+	/**
+	 * Get VAT-ID Last Checked On.
+	 * Point in time of the most recent VAT-ID check (request or response).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getVATaxIDCheckedAt();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_VATaxIDCheckedAt = new ModelColumn<>(I_C_BPartner.class, "VATaxIDCheckedAt", null);
+	String COLUMNNAME_VATaxIDCheckedAt = "VATaxIDCheckedAt";
+
+	/**
+	 * Set VAT-ID Check Log.
+	 * Log of individual VAT-ID online check attempts against VIES.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxID_CheckLog_ID (int VATaxID_CheckLog_ID);
+
+	/**
+	 * Get VAT-ID Check Log.
+	 * Log of individual VAT-ID online check attempts against VIES.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getVATaxID_CheckLog_ID();
+
+	@Nullable org.compiere.model.I_VATaxID_CheckLog getVATaxID_CheckLog();
+
+	void setVATaxID_CheckLog(@Nullable org.compiere.model.I_VATaxID_CheckLog VATaxID_CheckLog);
+
+	ModelColumn<I_C_BPartner, org.compiere.model.I_VATaxID_CheckLog> COLUMN_VATaxID_CheckLog_ID = new ModelColumn<>(I_C_BPartner.class, "VATaxID_CheckLog_ID", org.compiere.model.I_VATaxID_CheckLog.class);
+	String COLUMNNAME_VATaxID_CheckLog_ID = "VATaxID_CheckLog_ID";
+
+	/**
+	 * Set VAT-ID Last Attempted On.
+	 * Point in time of the most recent VAT-ID check attempt, regardless of outcome (internal scheduling only).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxIDLastAttemptedAt (@Nullable java.sql.Timestamp VATaxIDLastAttemptedAt);
+
+	/**
+	 * Get VAT-ID Last Attempted On.
+	 * Point in time of the most recent VAT-ID check attempt, regardless of outcome (internal scheduling only).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getVATaxIDLastAttemptedAt();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_VATaxIDLastAttemptedAt = new ModelColumn<>(I_C_BPartner.class, "VATaxIDLastAttemptedAt", null);
+	String COLUMNNAME_VATaxIDLastAttemptedAt = "VATaxIDLastAttemptedAt";
+
+	/**
+	 * Set VAT-ID Check Status.
+	 * Result of the VAT-ID check.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxIDStatus (java.lang.String VATaxIDStatus);
+
+	/**
+	 * Get VAT-ID Check Status.
+	 * Result of the VAT-ID check.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getVATaxIDStatus();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_VATaxIDStatus = new ModelColumn<>(I_C_BPartner.class, "VATaxIDStatus", null);
+	String COLUMNNAME_VATaxIDStatus = "VATaxIDStatus";
+
+	/**
 	 * Set Vendor Category.
 	 * Vendor Category
 	 *
@@ -3519,4 +4017,46 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_VendorCategory = new ModelColumn<>(I_C_BPartner.class, "VendorCategory", null);
 	String COLUMNNAME_VendorCategory = "VendorCategory";
+
+	/**
+	 * Set Waste disposer number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWasteDisposerNo (@Nullable java.lang.String WasteDisposerNo);
+
+	/**
+	 * Get Waste disposer number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getWasteDisposerNo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_WasteDisposerNo = new ModelColumn<>(I_C_BPartner.class, "WasteDisposerNo", null);
+	String COLUMNNAME_WasteDisposerNo = "WasteDisposerNo";
+
+	/**
+	 * Set Waste producer number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWasteProducerNo (@Nullable java.lang.String WasteProducerNo);
+
+	/**
+	 * Get Waste producer number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getWasteProducerNo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_WasteProducerNo = new ModelColumn<>(I_C_BPartner.class, "WasteProducerNo", null);
+	String COLUMNNAME_WasteProducerNo = "WasteProducerNo";
 }

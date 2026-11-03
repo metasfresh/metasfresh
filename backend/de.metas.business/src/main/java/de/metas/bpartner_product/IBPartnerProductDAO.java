@@ -26,7 +26,8 @@ package de.metas.bpartner_product;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.ean13.EAN13ProductCode;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
@@ -35,6 +36,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,7 +45,6 @@ import java.util.Set;
 
 /**
  * @author cg
- *
  */
 public interface IBPartnerProductDAO extends ISingletonService
 {
@@ -75,6 +76,7 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 *
 	 * @return first entry, order by BP vendor and org_ID, nulls last
 	 */
+	@Nullable
 	I_C_BPartner_Product retrieveBPProductForCustomer(@NonNull I_C_BPartner customerPartner, @NonNull I_M_Product product, @NonNull OrgId orgId);
 
 	List<I_C_BPartner_Product> retrieveForProductIds(Set<ProductId> productIds);
@@ -89,6 +91,8 @@ public interface IBPartnerProductDAO extends ISingletonService
 
 	I_C_BPartner_Product retrieveByVendorId(BPartnerId vendorId, ProductId productId, OrgId orgId);
 
+	Optional<Integer> getDeliveryTimePromised(BPartnerId vendorId, ProductId productId, OrgId orgId);
+
 	List<I_C_BPartner_Product> retrieveAllBPartnerProductAssociations(Properties ctx, BPartnerId bpartnerId, ProductId productId, OrgId orgId, String trxName);
 
 	Optional<ProductId> getProductIdByCustomerProductNo(BPartnerId customerId, String customerProductNo);
@@ -97,6 +101,20 @@ public interface IBPartnerProductDAO extends ISingletonService
 
 	List<I_C_BPartner_Product> retrieveByBPartnerId(BPartnerId bPartnerId);
 
+	@NonNull List<I_C_BPartner_Product> retrieveByEAN13ProductCode(@NonNull EAN13ProductCode ean13ProductCode, @NonNull BPartnerId bpartnerId);
+
 	@NonNull
-	List<I_C_BPartner_Product> retrieveByEAN13ProductCode(@NonNull EAN13ProductCode ean13ProductCode, @NonNull BPartnerId bpartnerId);
+	List<I_C_BPartner_Product> retrieveByGTIN(@NonNull GTIN gtin, @NonNull BPartnerId bpartnerId);
+
+	/**
+	 * Finds the first active {@link I_C_BPartner_Product} row matching the given barcode value
+	 * against {@code GTIN}, {@code EAN_CU}, or {@code UPC} columns (OR logic).
+	 * Only rows with a non-null {@code M_Product_ID} are considered.
+	 * Ordered by {@code C_BPartner_Product_ID} ascending; the first row's product is returned.
+	 *
+	 * @param gtin the GTIN/EAN_CU/UPC value to match
+	 * @return the product ID of the first matching row, or {@link Optional#empty()} if none found
+	 */
+	@NonNull
+	Optional<ProductId> findFirstProductIdByGtin(@NonNull GTIN gtin);
 }

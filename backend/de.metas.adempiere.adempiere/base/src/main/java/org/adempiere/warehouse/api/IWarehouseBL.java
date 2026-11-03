@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,11 +34,15 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -69,6 +73,8 @@ public interface IWarehouseBL extends ISingletonService
 	 */
 	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
 
+	LocatorId createOrUpdateLocator(@NonNull CreateOrUpdateLocatorRequest request);
+
 	@NonNull
 	CountryId getCountryId(WarehouseId warehouseId);
 
@@ -88,6 +94,8 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsByRepoIds(Set<Integer> locatorRepoIds);
+
+	ImmutableSet<LocatorId> getLocatorIdsByWarehouseId(@NonNull WarehouseId warehouseId);
 
 	I_M_Locator getLocatorByRepoId(int locatorRepoId);
 
@@ -116,6 +124,9 @@ public interface IWarehouseBL extends ISingletonService
 	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
 
 	@NonNull
+	WarehousePickingGroupId createWarehousePickingGroup(@NonNull CreateWarehousePickingGroupRequest request);
+
+	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull WarehouseId warehouseId);
 
 	@NonNull
@@ -125,4 +136,8 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	ExplainedOptional<LocatorQRCode> getLocatorQRCodeByValue(@NonNull String locatorValue);
+
+	List<I_M_Locator> getActiveLocatorsByValue(@NotNull String locatorValue);
+
+	boolean isIgnoreInMaterialDispo(@Nullable WarehouseId warehouseId);
 }

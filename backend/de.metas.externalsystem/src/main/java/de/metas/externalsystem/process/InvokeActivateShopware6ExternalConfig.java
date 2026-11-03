@@ -66,7 +66,7 @@ public class InvokeActivateShopware6ExternalConfig extends InvokeActivateExterna
 				.childConfig(childConfig)
 				.build();
 
-		externalSystemConfigRepo.saveConfig(recordUpdated);
+		externalSystemConfigRepository.saveConfig(recordUpdated);
 	}
 
 	@Override

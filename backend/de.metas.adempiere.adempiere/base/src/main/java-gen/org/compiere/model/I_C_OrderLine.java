@@ -332,6 +332,33 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
+	 * Set Calibration rule.
+	 * Rule that scales the component quantities of a compensation group for a customer or a business partner group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CompensationGroup_CalibrationRule_ID (int C_CompensationGroup_CalibrationRule_ID);
+
+	/**
+	 * Get Calibration rule.
+	 * Rule that scales the component quantities of a compensation group for a customer or a business partner group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CompensationGroup_CalibrationRule_ID();
+
+	@Nullable de.metas.order.model.I_C_CompensationGroup_CalibrationRule getC_CompensationGroup_CalibrationRule();
+
+	void setC_CompensationGroup_CalibrationRule(@Nullable de.metas.order.model.I_C_CompensationGroup_CalibrationRule C_CompensationGroup_CalibrationRule);
+
+	ModelColumn<I_C_OrderLine, de.metas.order.model.I_C_CompensationGroup_CalibrationRule> COLUMN_C_CompensationGroup_CalibrationRule_ID = new ModelColumn<>(I_C_OrderLine.class, "C_CompensationGroup_CalibrationRule_ID", de.metas.order.model.I_C_CompensationGroup_CalibrationRule.class);
+	String COLUMNNAME_C_CompensationGroup_CalibrationRule_ID = "C_CompensationGroup_CalibrationRule_ID";
+
+	/**
 	 * Set Compensations.
 	 * Compensation lines are lines which are added at the bottom of the group (when created or updated) in order to apply discounts or surcharges.
 	 *
@@ -850,6 +877,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -859,6 +887,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -983,6 +1012,33 @@ public interface I_C_OrderLine
 	String COLUMNNAME_ExternalSeqNo = "ExternalSeqNo";
 
 	/**
+	 * Set Frame agreement with open quantity exists.
+	 * This indicator shows the shipping status of quantities related to a frame agreement. It is displayed in both frame agreements and their related call-off orders within the sales order window. The status is represented using the following color codes:  Red – No quantity from the frame agreement has been shipped.  Yellow – A partial quantity from the frame agreement has been shipped.  Green – The full frame agreement quantity has been shipped.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setFA_OpenQty_Exists_Color_ID (int FA_OpenQty_Exists_Color_ID);
+
+	/**
+	 * Get Frame agreement with open quantity exists.
+	 * This indicator shows the shipping status of quantities related to a frame agreement. It is displayed in both frame agreements and their related call-off orders within the sales order window. The status is represented using the following color codes:  Red – No quantity from the frame agreement has been shipped.  Yellow – A partial quantity from the frame agreement has been shipped.  Green – The full frame agreement quantity has been shipped.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getFA_OpenQty_Exists_Color_ID();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_FA_OpenQty_Exists_Color_ID = new ModelColumn<>(I_C_OrderLine.class, "FA_OpenQty_Exists_Color_ID", null);
+	String COLUMNNAME_FA_OpenQty_Exists_Color_ID = "FA_OpenQty_Exists_Color_ID";
+
+	/**
 	 * Set Freight Amount.
 	 * Freight Amount
 	 *
@@ -1029,6 +1085,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_FrequencyType = "FrequencyType";
 
 	/**
+	 * Set Gross Weight (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGrossWeightKg (BigDecimal GrossWeightKg);
+
+	/**
+	 * Get Gross Weight (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGrossWeightKg();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_GrossWeightKg = new ModelColumn<>(I_C_OrderLine.class, "GrossWeightKg", null);
+	String COLUMNNAME_GrossWeightKg = "GrossWeightKg";
+
+	/**
 	 * Set Compensation Amount Type.
 	 *
 	 * <br>Type: List
@@ -1073,6 +1150,29 @@ public interface I_C_OrderLine
 	String COLUMNNAME_GroupCompensationBaseAmt = "GroupCompensationBaseAmt";
 
 	/**
+	 * Set Calibration factor.
+	 * Calibration in percent: the quantity of a compensation group component is set to this percentage. 100 = unchanged, 0 = component line with quantity 0.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGroupCompensationCalibrationFactor (@Nullable BigDecimal GroupCompensationCalibrationFactor);
+
+	/**
+	 * Get Calibration factor.
+	 * Calibration in percent: the quantity of a compensation group component is set to this percentage. 100 = unchanged, 0 = component line with quantity 0.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGroupCompensationCalibrationFactor();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationCalibrationFactor = new ModelColumn<>(I_C_OrderLine.class, "GroupCompensationCalibrationFactor", null);
+	String COLUMNNAME_GroupCompensationCalibrationFactor = "GroupCompensationCalibrationFactor";
+
+	/**
 	 * Set Compensation percentage.
 	 *
 	 * <br>Type: Number
@@ -1092,6 +1192,51 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationPercentage = new ModelColumn<>(I_C_OrderLine.class, "GroupCompensationPercentage", null);
 	String COLUMNNAME_GroupCompensationPercentage = "GroupCompensationPercentage";
+
+	/**
+	 * Set Compensation base product category.
+	 * Product category whose lines a compensation line without schema line is computed on.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGroupCompensation_Product_Category_ID (int GroupCompensation_Product_Category_ID);
+
+	/**
+	 * Get Compensation base product category.
+	 * Product category whose lines a compensation line without schema line is computed on.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getGroupCompensation_Product_Category_ID();
+
+	String COLUMNNAME_GroupCompensation_Product_Category_ID = "GroupCompensation_Product_Category_ID";
+
+	/**
+	 * Set Uncalibrated quantity.
+	 * Quantity of the compensation group component before the calibration factor was applied.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGroupCompensationQtyEnteredUncalibrated (@Nullable BigDecimal GroupCompensationQtyEnteredUncalibrated);
+
+	/**
+	 * Get Uncalibrated quantity.
+	 * Quantity of the compensation group component before the calibration factor was applied.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGroupCompensationQtyEnteredUncalibrated();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationQtyEnteredUncalibrated = new ModelColumn<>(I_C_OrderLine.class, "GroupCompensationQtyEnteredUncalibrated", null);
+	String COLUMNNAME_GroupCompensationQtyEnteredUncalibrated = "GroupCompensationQtyEnteredUncalibrated";
 
 	/**
 	 * Set Compensation Type.
@@ -1986,6 +2131,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
 
 	/**
+	 * Set Date ready.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPreparationDate (@Nullable java.sql.Timestamp PreparationDate);
+
+	/**
+	 * Get Date ready.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPreparationDate();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_PreparationDate = new ModelColumn<>(I_C_OrderLine.class, "PreparationDate", null);
+	String COLUMNNAME_PreparationDate = "PreparationDate";
+
+	/**
 	 * Set Preset Date Invoiced.
 	 *
 	 * <br>Type: Date
@@ -2399,7 +2565,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Packaging capacity.
-	 * Capacity in the respective product's unit of measuerement
+	 * Capacity in the respective product's unit of measurement
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2409,7 +2575,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Packaging capacity.
-	 * Capacity in the respective product's unit of measuerement
+	 * Capacity in the respective product's unit of measurement
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

@@ -24,10 +24,10 @@ package de.metas.inoutcandidate.model;
 
 public interface I_M_ShipmentSchedule_Lock
 {
-	public static final String Table_Name = "M_ShipmentSchedule_Lock";
+	String Table_Name = "M_ShipmentSchedule_Lock";
 
-	public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
-	public static final String COLUMNNAME_LockedBy_User_ID = "LockedBy_User_ID";
-	public static final String COLUMNNAME_LockType = "LockType";
-	public static final String COLUMNNAME_Created = "Created";
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+	String COLUMNNAME_LockedBy_User_ID = "LockedBy_User_ID";
+	String COLUMNNAME_LockType = "LockType";
+	String COLUMNNAME_Created = "Created";
 }

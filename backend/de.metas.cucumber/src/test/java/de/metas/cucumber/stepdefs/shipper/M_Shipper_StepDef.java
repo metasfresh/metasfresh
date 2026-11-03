@@ -38,10 +38,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import java.time.LocalTime;
 
 @RequiredArgsConstructor
 public class M_Shipper_StepDef
 {
+	private final static LocalTime DEFAULT_PICKUP_TIME_FROM = LocalTime.of(8, 0);
+	private final static LocalTime DEFAULT_PICKUP_TIME_TO = LocalTime.of(17, 0);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@NonNull private final M_Shipper_StepDefData shipperTable;
@@ -63,6 +68,28 @@ public class M_Shipper_StepDef
 		shipperTable.put(row.getAsIdentifier(), shipperRecord);
 	}
 
+	/**
+	 * Creates or updates {@code M_Shipper} records.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (optional) alias to store the shipper under<br>
+	 *   <b>PickupTimeFrom</b> — (optional) defaults to 08:00<br>
+	 *   <b>PickupTimeTo</b> — (optional) defaults to 17:00<br>
+	 *   <b>InternalName</b> — (optional)<br>
+	 *   <b>ShipperGateway</b> — (optional)<br>
+	 *   <b>IsApiCarrierAdvise</b> — (optional)<br>
+	 *   <b>IsCreateDeliveryPlanning</b> — (optional)<br>
+	 *   <b>PriorityRule</b> — (optional) the shipper's priority rule code (1=Urgent, 3=High, 5=Medium,
+	 *     7=Low, 9=Minor); left empty (the AD column default) when omitted<br>
+	 * @cucumber.depends StepDefData: M_Shipper_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And contains M_Shippers
+	 *   | Identifier | PriorityRule |
+	 *   | express    | 1            |
+	 * </pre>
+	 */
 	@And("contains M_Shippers")
 	public void createOrUpdateShippers(@NonNull final DataTable dataTable)
 	{
@@ -85,15 +112,72 @@ public class M_Shipper_StepDef
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setValue(valueAndName.getValue());
 		record.setName(valueAndName.getName());
+		final LocalTime pickupTimeFrom = row.getAsOptionalLocalTime(I_M_Shipper.COLUMNNAME_PickupTimeFrom)
+				.orElse(DEFAULT_PICKUP_TIME_FROM);
+		record.setPickupTimeFrom(TimeUtil.asTimestamp(pickupTimeFrom));
+
+		final LocalTime pickupTimeTo = row.getAsOptionalLocalTime(I_M_Shipper.COLUMNNAME_PickupTimeTo)
+				.orElse(DEFAULT_PICKUP_TIME_TO);
+		record.setPickupTimeTo(TimeUtil.asTimestamp(pickupTimeTo));
 
 		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_InternalName)
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(record::setInternalName);
 
+		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_ShipperGateway)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(record::setShipperGateway);
+
+		row.getAsOptionalBoolean(I_M_Shipper.COLUMNNAME_IsApiCarrierAdvise)
+				.ifPresent(record::setIsApiCarrierAdvise);
+
+		row.getAsOptionalBoolean(I_M_Shipper.COLUMNNAME_IsCreateDeliveryPlanning)
+				.ifPresent(record::setIsCreateDeliveryPlanning);
+
+		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_PriorityRule)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(record::setPriorityRule);
+
 		InterfaceWrapperHelper.save(record);
 
 		row.getAsOptionalIdentifier()
 				.ifPresent(identifier -> shipperTable.put(identifier, record));
+	}
+
+	/**
+	 * Updates an already-known {@code M_Shipper} record — e.g. a carrier-service employee changing the
+	 * shipper's priority in the *Lieferweg* window.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required, identifier-ref) alias from a prior {@code contains M_Shippers}<br>
+	 *   <b>PriorityRule</b> — (optional) the shipper's new priority rule code (1=Urgent, 3=High, 5=Medium,
+	 *     7=Low, 9=Minor)<br>
+	 * @cucumber.depends StepDefData: M_Shipper_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_Shipper:
+	 *   | Identifier | PriorityRule |
+	 *   | express    | 1            |
+	 * </pre>
+	 */
+	@And("update M_Shipper:")
+	public void updateShipper(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::updateShipper);
+	}
+
+	private void updateShipper(@NonNull final DataTableRow row)
+	{
+		final I_M_Shipper record = row.getAsIdentifier().lookupNotNullIn(shipperTable);
+
+		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_PriorityRule)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(record::setPriorityRule);
+
+		InterfaceWrapperHelper.save(record);
+
+		shipperTable.putOrReplace(row.getAsIdentifier(), record);
 	}
 
 }

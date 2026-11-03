@@ -87,7 +87,8 @@ public interface IPriceListDAO extends ISingletonService
 	PriceListId retrievePriceListIdByPricingSyst(
 			@Nullable PricingSystemId pricingSystemId,
 			CountryId countryId,
-			SOTrx soTrx);
+			SOTrx soTrx,
+			@Nullable CurrencyId currencyId);
 
 	@NonNull
 	I_M_PriceList retrievePriceListbyId(@NonNull PriceListId priceListId);
@@ -99,7 +100,7 @@ public interface IPriceListDAO extends ISingletonService
 	 *
 	 * @param soTrx           sales, purchase or null to return both
 	 */
-	List<I_M_PriceList> retrievePriceLists(PricingSystemId pricingSystemId, CountryId countryId, SOTrx soTrx);
+	List<I_M_PriceList> retrievePriceLists(PricingSystemId pricingSystemId, CountryId countryId, SOTrx soTrx, @Nullable CurrencyId currencyId);
 
 	/**
 	 * @return the price list for the given pricing system and location or <code>null</code>.
@@ -198,6 +199,10 @@ public interface IPriceListDAO extends ISingletonService
 	@Nullable
 	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(PriceListVersionId priceListVersionId, ZonedDateTime date);
 
+	PricingSystemId createPricingSystem(@NonNull CreatePricingSystemRequest request);
+
+	PriceListId createPriceList(@NonNull CreatePriceListRequest request);
+
 	ProductPriceId addProductPrice(AddProductPriceRequest request);
 
 	ProductPriceId copyProductPrice(CopyProductPriceRequest request);
@@ -212,7 +217,7 @@ public interface IPriceListDAO extends ISingletonService
 	@Nullable
 	I_M_PriceList_Version retrieveNextVersionOrNull(I_M_PriceList_Version plv, final boolean onlyProcessed);
 
-	void mutateCustomerPrices(PriceListVersionId priceListVersionId, UserId userId);
+	MutateCustomerPricesResult mutateCustomerPrices(PriceListVersionId priceListVersionId, UserId userId);
 
 	Optional<TaxCategoryId> getDefaultTaxCategoryByPriceListVersionId(final PriceListVersionId priceListVersionId);
 

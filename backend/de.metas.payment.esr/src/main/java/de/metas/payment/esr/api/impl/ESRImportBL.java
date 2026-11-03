@@ -127,6 +127,8 @@ public class ESRImportBL implements IESRImportBL
 
 	private static final AdMessageKey ESR_NO_HAS_WRONG_ORG_2P = AdMessageKey.of("de.metas.payment.esr.EsrNoHasWrongOrg");
 
+	private static final AdMessageKey ESR_INVOICE_ALREADY_PAID_1P = AdMessageKey.of("de.metas.payment.esr.InvoiceAlreadyPaid");
+
 	/**
 	 * Filled by {@link #registerActionHandler(String, IESRActionHandler)}.
 	 */
@@ -660,11 +662,11 @@ public class ESRImportBL implements IESRImportBL
 		final PaymentId paymentId = fetchDuplicatePaymentIfExists(line);
 		if (paymentId != null)
 		{
+			// Flag the duplicate for the accountant, but deliberately do NOT attach the payment we found: it
+			// belongs to the earlier transaction, while this line is money that arrived a second time and
+			// needs its own C_Payment. Returning false lets the regular handling create it.
 			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
-			handleUnsupportedTrxType(line);
-			line.setC_Payment_ID(paymentId.getRepoId());
 			esrImportDAO.save(line);
-			return true;
 		}
 		return false;
 	}
@@ -1017,6 +1019,16 @@ public class ESRImportBL implements IESRImportBL
 		}
 	}
 
+	/**
+	 * Actions the IMPORT sets by itself, which therefore must not be treated as a decision by
+	 * {@link #handleEsrImportLine(String, I_ESR_ImportLine)}. See the comment at the guard for why each
+	 * one is in here -- and why {@code Unable_To_Assign_Income} is not.
+	 */
+	private static final ImmutableSet<String> SYSTEM_SET_ACTIONS_AWAITING_DECISION = ImmutableSet.of(
+			X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment,
+			X_ESR_ImportLine.ESR_PAYMENT_ACTION_Control_Line,
+			X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking);
+
 	private void handleEsrImportLine(final String message, final I_ESR_ImportLine line)
 	{
 		if (line.isProcessed())
@@ -1072,6 +1084,21 @@ public class ESRImportBL implements IESRImportBL
 		}
 
 		final String actionType = line.getESR_Payment_Action();
+
+		// A SYSTEM-SET flag is not a user decision:
+		//   Duplicate_Payment: the import flags it, the accountant must still pick an overpayment
+		//     action. It is not even selectable -- ESRPaymentActionValidationRule accepts it in no
+		//     group -- so skipping it here cannot block a deliberate choice.
+		//   Control_Line / Reverse_Booking: no handler is registered for either, so this pass would
+		//     only append a "not supported" message to the line on every run. Reverse bookings are
+		//     documented as something the admin deals with manually.
+		// Unable_To_Assign_Income is deliberately NOT in this set: it IS offered in the dropdown, so
+		// it can be a genuine user choice and must keep being processed.
+		if (SYSTEM_SET_ACTIONS_AWAITING_DECISION.contains(actionType))
+		{
+			return;
+		}
+
 		if (Check.isEmpty(actionType, true))
 		{
 			final AdempiereException ex = AdempiereException.newWithTranslatableMessage("@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@");
@@ -1129,10 +1156,7 @@ public class ESRImportBL implements IESRImportBL
 		// cg: if we have a payment and the open amount matches pay amount set status allocate with current invoice
 		if (importLine.getC_Invoice_ID() == invoice.getC_Invoice_ID() && importLine.getC_Payment_ID() > 0)
 		{
-			// services
-
-			final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
-			final BigDecimal externalAllocationsSum = allocationDAO.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, linesOwnPaymentIDs);
+			final BigDecimal externalAllocationsSum = allocationDAO.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, ImmutableSet.of()).toBigDecimal();
 			final BigDecimal invoiceOpenAmt = invoice.getGrandTotal().subtract(externalAllocationsSum);
 			final PaymentId paymentId = fetchDuplicatePaymentIfExists(importLine);
 			if (importLine.getAmount().compareTo(invoiceOpenAmt) == 0)
@@ -1160,14 +1184,12 @@ public class ESRImportBL implements IESRImportBL
 
 			if (invoice.isPaid() && !paymentBL.isMatchInvoice(payment, invoice))
 			{
-				ESRDataLoaderUtil.addMatchErrorMsg(importLine, "Rechnung " + invoice.getDocumentNo() + " wurde im System als bereits bezahlt markiert");
-				importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
+				markInvoiceAlreadyPaid(importLine, invoice);
 			}
 		}
 		else if (invoice.isPaid())
 		{
-			ESRDataLoaderUtil.addMatchErrorMsg(importLine, "Rechnung " + invoice.getDocumentNo() + " wurde im System als bereits bezahlt markiert");
-			importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
+			markInvoiceAlreadyPaid(importLine, invoice);
 		}
 
 		if (invoice.getAD_Org_ID() != importLine.getAD_Org_ID())
@@ -1188,6 +1210,19 @@ public class ESRImportBL implements IESRImportBL
 
 		importLine.setESR_Invoice_Grandtotal(invoice.getGrandTotal());
 
+	}
+
+	/**
+	 * {@code setInvoice} runs twice for one line — once while it is evaluated, once from the
+	 * {@code C_Payment_ID} interceptor after the line's payment is created — so this note has to be as
+	 * idempotent as the document status it accompanies.
+	 */
+	private void markInvoiceAlreadyPaid(@NonNull final I_ESR_ImportLine importLine, @NonNull final I_C_Invoice invoice)
+	{
+		final Properties ctx = getCtx(importLine);
+		ESRDataLoaderUtil.addMatchErrorMsg(importLine,
+														msgBL.getMsg(ctx, ESR_INVOICE_ALREADY_PAID_1P, new Object[] { invoice.getDocumentNo() }));
+		importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 	}
 
 	@Override
@@ -1238,7 +1273,7 @@ public class ESRImportBL implements IESRImportBL
 		final IAllocationDAO allocationDAOLocal = Services.get(IAllocationDAO.class);
 
 		// We start by collecting the C_Payment_IDs from our lines
-		final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
+		final Set<PaymentId> linesOwnPaymentIDs = new HashSet<>();
 		for (final I_ESR_ImportLine importLine : linesWithSameInvoice)
 		{
 			final PaymentId importLinePaymentId = PaymentId.ofRepoIdOrNull(importLine.getC_Payment_ID());
@@ -1248,14 +1283,14 @@ public class ESRImportBL implements IESRImportBL
 			// if the invoice is paid with the current line, exclude it from computing
 			if (importLinePayment != null && paymentBL.isMatchInvoice(importLinePayment, invoice))
 			{
-				linesOwnPaymentIDs.add(importLine.getC_Payment_ID());
+				linesOwnPaymentIDs.add(importLinePaymentId);
 			}
 		}
 
 		// Then we get the invoice GrandTotal MINUS the amounts that were already allocated from UNRELATED payments, credit-memos etc.
 		// So in invoiceOpenAmt we IGNORE the payments of our lines..if there are no other payments or credit-memos, then the open amount is the invoice's GrandTotal, even if our lines actually paid
 		// the whole invoice.
-		final BigDecimal externalAllocationsSum = allocationDAOLocal.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, linesOwnPaymentIDs);
+		final BigDecimal externalAllocationsSum = allocationDAOLocal.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, linesOwnPaymentIDs).toBigDecimal();
 		final BigDecimal invoiceOpenAmt = invoice.getGrandTotal().subtract(externalAllocationsSum);
 
 		boolean openAmtTrhesholdCrossed = false;

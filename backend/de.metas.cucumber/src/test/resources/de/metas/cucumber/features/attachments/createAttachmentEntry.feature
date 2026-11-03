@@ -1,5 +1,6 @@
 @ghActions:run_on_executor3
 Feature: attachment creation using metasfresh api
+## F00850: Attachments
   As a REST-API invoker
   As an API user I want to be able to create attachment entries
 
@@ -8,6 +9,9 @@ Feature: attachment creation using metasfresh api
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
   Scenario: Attachment entry and attachment multiRef given base64 data
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/attachment' and fulfills with '200' status code
@@ -40,6 +44,9 @@ Feature: attachment creation using metasfresh api
 
 
   @from:cucumber
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
   Scenario:  Attachment entry and attachment multiRef given URL
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/attachment' and fulfills with '200' status code
@@ -71,6 +78,9 @@ Feature: attachment creation using metasfresh api
 
 
   @from:cucumber
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
   Scenario:  Attachment entry and attachment multiRef given LocalFileURL
 
     Given an existing local file
@@ -94,6 +104,9 @@ Feature: attachment creation using metasfresh api
       | attachmentEntry_1                | 2156425   | C_BPartner |
 
   @from:cucumber
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
   Scenario:  Add a 'LocalFileURL' type attachment to multiple targets
     Given an existing local file
       | File.Identifier | FileName |
@@ -116,6 +129,9 @@ Feature: attachment creation using metasfresh api
       | attachmentEntry_1                | 2005577   | M_Product  |
 
   @from:cucumber
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
   Scenario:  Attachment entry with JsonTableRecordReference and attachment at a given LocalFileURL
     Given an existing local file
       | File.Identifier | FileName |
@@ -139,6 +155,9 @@ Feature: attachment creation using metasfresh api
 
 
   @from:cucumber
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
   Scenario:  Attachment entry with JsonTableRecordReference and JsonExternalReferenceTarget with base64 payload
     Given store JsonAttachmentRequest in context
       | orgCode | AD_AttachmentEntry.Type | OPT.FileName | OPT.BinaryData | OPT.references                                   | OPT.targets                                                                                                                                                  |
@@ -157,3 +176,108 @@ Feature: attachment creation using metasfresh api
       | attachmentEntry_1                | 2156425   | C_BPartner  |
       | attachmentEntry_1                | 2005577   | M_Product   |
       | attachmentEntry_1                | 540008    | M_Warehouse |
+
+  @from:cucumber
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
+  Scenario:  Attach by adTableId to a non-order table
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/attachment' and fulfills with '200' status code
+    """
+{
+    "orgCode": "001",
+    "attachment": {
+        "type": "Data",
+        "fileName": "Data.png",
+        "data": "QmFzZTY0LVN0cmluZ0RhdGE=",
+        "mimeType": "image/png"
+    },
+    "references": [
+        {
+            "adTableId": 291,
+            "recordId": 2156425
+        }
+    ]
+}
+"""
+    Then process attachment response
+      | AD_AttachmentEntry_ID.Identifier |
+      | attachmentEntry_1                |
+    And validate the created attachment multiref
+      | AD_AttachmentEntry_ID.Identifier | Record_ID | TableName  |
+      | attachmentEntry_1                | 2156425   | C_BPartner |
+
+  @from:cucumber
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
+  Scenario:  Reject a reference supplying neither tableName nor adTableId
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/attachment' and fulfills with '422' status code
+    """
+{
+    "orgCode": "001",
+    "attachment": {
+        "type": "Data",
+        "fileName": "Data.png",
+        "data": "QmFzZTY0LVN0cmluZ0RhdGE=",
+        "mimeType": "image/png"
+    },
+    "references": [
+        {
+            "recordId": 2156425
+        }
+    ]
+}
+"""
+
+  @from:cucumber
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
+  Scenario:  Reject a reference supplying both tableName and adTableId
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/attachment' and fulfills with '422' status code
+    """
+{
+    "orgCode": "001",
+    "attachment": {
+        "type": "Data",
+        "fileName": "Data.png",
+        "data": "QmFzZTY0LVN0cmluZ0RhdGE=",
+        "mimeType": "image/png"
+    },
+    "references": [
+        {
+            "tableName": "C_BPartner",
+            "adTableId": 291,
+            "recordId": 2156425
+        }
+    ]
+}
+"""
+
+  @from:cucumber
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
+  Scenario:  Reject an externalReference target with no orgCode
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/attachment' and fulfills with '422' status code
+    """
+{
+    "targets": [
+        {
+            "externalReferenceType":"BPartner",
+            "externalReferenceIdentifier":"2156425"
+        }
+    ],
+    "attachment": {
+        "type": "Data",
+        "fileName": "Data.png",
+        "data": "QmFzZTY0LVN0cmluZ0RhdGE=",
+        "mimeType": "image/png"
+    }
+}
+"""

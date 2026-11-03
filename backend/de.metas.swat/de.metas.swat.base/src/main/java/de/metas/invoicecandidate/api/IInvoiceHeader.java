@@ -4,12 +4,14 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
-import de.metas.impex.InputDataSourceId;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.user.UserId;
 import lombok.NonNull;
 
@@ -91,8 +93,37 @@ public interface IInvoiceHeader
 
 	String getIncotermLocation();
 
+	@Nullable
+	PromotionCodeId getPromotionCodeId();
+
+	void setPromotionCodeId(@Nullable PromotionCodeId promotionCodeId);
+
+	@Nullable
+	PromotionCodeId getPromotionCode2Id();
+
+	void setPromotionCode2Id(@Nullable PromotionCodeId promotionCode2Id);
+
 	String getPaymentRule();
 
 	@Nullable
 	InputDataSourceId getAD_InputDataSource_ID();
+
+	@Nullable
+	ExternalSystemId getExternalSystemId();
+
+	@Nullable
+	LocalDate getOverrideDueDate();
+
+	/**
+	 * Caller's explicit Y/N intent for {@code C_Invoice.IsPartialInvoice}; {@code null} means no
+	 * explicit intent (NA — let the C_Invoice interceptor default from doctype).
+	 *
+	 * <p>Propagated directly from {@code PlainInvoicingParams.partialInvoice} through
+	 * {@code AggregationEngine} to the invoice creation in {@code InvoiceCandBLCreateInvoices},
+	 * bypassing the doctype-swap path. See me03 #29369 (iter-3 split-payment).
+	 */
+	@Nullable
+	Boolean getIsPartialInvoice();
+
+	void setIsPartialInvoice(@Nullable Boolean isPartialInvoice);
 }

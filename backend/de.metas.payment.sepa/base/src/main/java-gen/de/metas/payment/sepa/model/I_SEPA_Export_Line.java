@@ -1,6 +1,5 @@
 package de.metas.payment.sepa.model;
 
-
 /** Generated Interface for SEPA_Export_Line
  *  @author Adempiere (generated) 
  */
@@ -557,4 +556,48 @@ public interface I_SEPA_Export_Line
 
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Group Line.
+	 * Group Transactions per Business Partner
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsGroupLine (boolean IsGroupLine);
+
+	/**
+	 * Get Group Line.
+	 * Group Transactions per Business Partner
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isGroupLine();
+
+	org.adempiere.model.ModelColumn<I_SEPA_Export_Line, Object> COLUMN_IsGroupLine = new org.adempiere.model.ModelColumn<>(I_SEPA_Export_Line.class, "IsGroupLine", null);
+	String COLUMNNAME_IsGroupLine = "IsGroupLine";
+
+	/**
+	 * Set Number of references.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNumberOfReferences (int NumberOfReferences);
+
+	/**
+	 * Get Number of references.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getNumberOfReferences();
+
+	org.adempiere.model.ModelColumn<I_SEPA_Export_Line, Object> COLUMN_NumberOfReferences = new org.adempiere.model.ModelColumn<>(I_SEPA_Export_Line.class, "NumberOfReferences", null);
+	String COLUMNNAME_NumberOfReferences = "NumberOfReferences";
 }

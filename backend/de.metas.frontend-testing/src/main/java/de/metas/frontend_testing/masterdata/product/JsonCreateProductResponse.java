@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.product;
 
-import de.metas.ean13.EAN13ProductCode;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -16,5 +17,7 @@ public class JsonCreateProductResponse
 {
 	@NonNull ProductId id;
 	@NonNull String productCode;
+	@NonNull String productName;
+	@Nullable GTIN gtin;
 	@Nullable EAN13ProductCode ean13ProductCode;
 }

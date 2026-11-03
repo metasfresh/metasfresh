@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
@@ -19,6 +20,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.process.AdProcessId;
@@ -201,13 +203,25 @@ public class HUQRCodesService
 	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
 	{
 		return getHuIdByQRCodeIfExists(qrCode)
-				.orElseThrow(() -> new AdempiereException("No HU attached to QR Code `" + qrCode.toDisplayableQRCode() + "`"));
+				.orElseThrow(() -> new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND)
+						.setParameter("qrCode", qrCode.toDisplayableQRCode()));
 	}
 
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final HUQRCode qrCode)
 	{
 		return getHUAssignmentByQRCode(qrCode)
 				.map(HUQRCodeAssignment::getSingleHUId);
+	}
+
+	/**
+	 * Variant of {@link #getHuIdByQRCodeIfExists(HUQRCode)} that also resolves through soft-deleted
+	 * assignments. Use when a stale sticker scan needs to surface a more specific cause than the
+	 * generic "no HU attached" exception (e.g. the HU was destroyed and the destroy interceptor
+	 * deactivated the assignment).
+	 */
+	public Optional<HuId> getHuIdByQRCodeIncludingInactiveIfExists(@NonNull final HUQRCode qrCode)
+	{
+		return huQRCodesRepository.getHuIdByQRCodeIncludingInactive(qrCode);
 	}
 
 	public Optional<HUQRCodeAssignment> getHUAssignmentByQRCode(@NonNull final HUQRCode huQRCode)
@@ -232,6 +246,32 @@ public class HUQRCodesService
 		}
 	}
 
+	/**
+	 * Batch, cache-warm-up variant of {@link #getQRCodeByHuId(HuId)}: resolves the assigned QR codes for many HUs in a
+	 * single DB round-trip instead of one query per HU.
+	 * <p>
+	 * Returns a mapping only for HUs that have <b>exactly one</b> assigned QR code — the unambiguous, overwhelmingly
+	 * common case. HUs with no assigned QR code, or with more than one, are intentionally omitted so the caller falls
+	 * back to the single-HU {@link #getQRCodeByHuId(HuId)}, which preserves the exact generate-if-missing and
+	 * first-QR-by-id semantics for those edge cases. Because of that fallback this method never changes behaviour; it
+	 * only removes the per-HU query for the common case.
+	 */
+	public Map<HuId, HUQRCode> getSingleQRCodeByHuIds(@NonNull final Collection<HuId> huIds)
+	{
+		final ImmutableSetMultimap<HuId, HUQRCode> qrCodesByHuId = huQRCodesRepository.getQRCodeByHuIds(huIds);
+
+		final ImmutableMap.Builder<HuId, HUQRCode> result = ImmutableMap.builder();
+		for (final HuId huId : qrCodesByHuId.keySet())
+		{
+			final ImmutableSet<HUQRCode> qrCodes = qrCodesByHuId.get(huId);
+			if (qrCodes.size() == 1)
+			{
+				result.put(huId, qrCodes.iterator().next());
+			}
+		}
+		return result.build();
+	}
+
 	@NonNull
 	public HUQRCode getFirstQRCodeByHuId(@NonNull final HuId huId)
 	{
@@ -240,10 +280,9 @@ public class HUQRCodesService
 		{
 			return existingQRCode;
 		}
-		else if (sysConfigBL.getBooleanValue(SYSCONFIG_GenerateQRCodeIfMissing, true))
+		else if (isGenerateQRCodesIfMissing())
 		{
-			return generateForExistingHUs(ImmutableSet.of(huId))
-					.getFirstQRCode(huId);
+			return generateForExistingHUs(ImmutableSet.of(huId)).getFirstQRCode(huId);
 		}
 		else
 		{
@@ -292,6 +331,15 @@ public class HUQRCodesService
 		return getOrCreateQRCodesByHuId(huId, isGenerateQRCodesIfMissing());
 	}
 
+	/**
+	 * Soft-delete every active {@code M_HU_QRCode_Assignment} row pointing at the given HU.
+	 * Preserves the row for audit/traceability; existing scan-time lookups already filter on {@code IsActive='Y'}.
+	 */
+	public void deactivateAssignmentsByHuId(@NonNull final HuId huId)
+	{
+		huQRCodesRepository.deactivateAssignmentsByHuId(huId);
+	}
+
 	private List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId, boolean isGenerateQRCodesIfMissing)
 	{
 		if (isGenerateQRCodesIfMissing)
@@ -323,7 +371,8 @@ public class HUQRCodesService
 	{
 		if (!huQRCodesRepository.isQRCodeAssignedToHU(qrCode, huId))
 		{
-			throw new AdempiereException("QR Code " + qrCode.toDisplayableQRCode() + " is not assigned to HU " + huId);
+			throw new AdempiereException("QR Code " + qrCode.toDisplayableQRCode() + " is not assigned to HU " + huId
+					+ " (" + huQRCodesRepository.diagnoseAssignmentFailure(qrCode, huId) + ")");
 		}
 	}
 
@@ -382,13 +431,25 @@ public class HUQRCodesService
 		final GlobalQRCode globalQRCode = scannedCode.toGlobalQRCodeIfMatching().orNullIfError();
 		if (globalQRCode != null)
 		{
-			if (HUQRCode.isHandled(globalQRCode))
+			try
 			{
-				return HUQRCode.fromGlobalQRCode(globalQRCode);
+				if (HUQRCode.isHandled(globalQRCode))
+				{
+					return HUQRCode.fromGlobalQRCode(globalQRCode);
+				}
+				else if (LMQRCode.isHandled(globalQRCode))
+				{
+					return LMQRCode.fromGlobalQRCode(globalQRCode);
+				}
 			}
-			else if (LMQRCode.isHandled(globalQRCode))
+			catch (final RuntimeException ex)
 			{
-				return LMQRCode.fromGlobalQRCode(globalQRCode);
+				// The type prefix (HU#/LM#) matched but the payload could not be converted into a QR code. This
+				// covers a long QR code split mid-stream on a slow scanner device (the head fragment keeps the valid
+				// prefix but carries truncated JSON) as well as an incompatible version field - the user can fix
+				// neither in the field. Surface the same user-friendly "not recognized" message as any other bad
+				// code instead of leaking the raw conversion error.
+				throw MobileQRCodeMessages.newNotRecognizedException(scannedCode, ex);
 			}
 		}
 
@@ -398,6 +459,15 @@ public class HUQRCodesService
 		if (customHUQRCode != null)
 		{
 			return customHUQRCode;
+		}
+
+		// M_HU.Value / ExternalBarcode attribute
+		{
+			final HuId huId = handlingUnitsBL.getHUIdByValueOrExternalBarcode(scannedCode).orElse(null);
+			if (huId != null)
+			{
+				return getFirstQRCodeByHuId(huId);
+			}
 		}
 
 		final GS1HUQRCode gs1HUQRCode = GS1HUQRCode.fromScannedCodeOrNullIfNotHandled(scannedCode);
@@ -412,6 +482,48 @@ public class HUQRCodesService
 			return ean13HUQRCode;
 		}
 
-		throw new AdempiereException("QR code is not handled: " + scannedCode);
+		if (globalQRCode != null)
+		{
+			throw MobileQRCodeMessages.newWrongGlobalQRTypeException(globalQRCode);
+		}
+		throw MobileQRCodeMessages.newNotRecognizedException(scannedCode);
+	}
+
+	/**
+	 * Returns the {@link HUQRCode} of the handling unit that the scanned code refers to.
+	 * <p>
+	 * Accepted are the two code kinds that identify one specific unit: a metasfresh global QR code, and
+	 * the plain {@code M_HU.Value} / {@code ExternalBarcode} printed on the unit (which
+	 * {@link #parse(ScannedCode)} resolves by looking the unit up and returning <em>its</em> QR code).
+	 * <p>
+	 * Every other {@link IHUQRCode} that {@code parse} can return describes goods or an intent rather
+	 * than a unit — {@code PickOnTheFlyQRCode}, {@code LMQRCode}, {@code CustomHUQRCode} (a configured
+	 * scannable code format), {@code GS1HUQRCode}, {@code EAN13HUQRCode} — and is rejected here. Such a
+	 * code is deliberately not retried as an {@code M_HU.Value} / {@code ExternalBarcode} lookup: it
+	 * could coincidentally equal some unit's value, and picking from the wrong unit would be worse than
+	 * a clear rejection.
+	 * <p>
+	 * Note that resolving a product-scoped code to a unit is possible where a product context exists —
+	 * {@code PickFromHUQRCodeResolveCommand} does it for the pick-from side — but that needs a
+	 * {@code ProductId}, which a caller identifying a bare target unit does not have.
+	 */
+	@NonNull
+	public HUQRCode getQRCodeByScannedCode(@NonNull final ScannedCode scannedCode)
+	{
+		final IHUQRCode huQRCode = parse(scannedCode);
+		if (huQRCode instanceof HUQRCode)
+		{
+			return (HUQRCode)huQRCode;
+		}
+
+		// huQRCodeType is the load-bearing parameter: it names WHY the code was rejected (a GS1,
+		// EAN13, LM, custom-format or pick-on-the-fly code identifies no existing unit). The instance
+		// alone would not convey that - every IHUQRCode reachable here renders via getAsString(),
+		// which echoes back the scanned string, so it would just duplicate scannedCode.
+		throw new AdempiereException("Invalid HU QR code")
+				.appendParametersToMessage()
+				.setParameter("scannedCode", scannedCode)
+				.setParameter("huQRCodeType", huQRCode.getClass().getSimpleName())
+				.setParameter("huQRCode", huQRCode);
 	}
 }

@@ -67,6 +67,8 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -76,12 +78,15 @@ import org.compiere.model.I_AD_WF_Node_Template;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnable;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderCloseResult;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
@@ -89,6 +94,8 @@ import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.api.PPOrderScheduleChangeRequest;
+import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -107,6 +114,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 public class PPOrderBL implements IPPOrderBL
@@ -125,6 +133,7 @@ public class PPOrderBL implements IPPOrderBL
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -145,6 +154,24 @@ public class PPOrderBL implements IPPOrderBL
 	public String getDocumentNoById(@NonNull final PPOrderId ppOrderId)
 	{
 		return getById(ppOrderId).getDocumentNo();
+	}
+
+	@Override
+	public I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId)
+	{
+		return orderBOMService.getOrderBOMLineById(orderBOMLineId);
+	}
+
+	@Override
+	public List<I_PP_Order_BOMLine> getOrderBOMLinesByIds(final Set<PPOrderBOMLineId> orderBOMLineIds)
+	{
+		return orderBOMService.getOrderBOMLinesByIds(orderBOMLineIds);
+	}
+
+	@Override
+	public List<I_PP_Order_BOMLine> getOrderBOMLines(final PPOrderId orderId)
+	{
+		return orderBOMService.getOrderBOMLines(orderId);
 	}
 
 	@Override
@@ -273,7 +300,13 @@ public class PPOrderBL implements IPPOrderBL
 		//
 		// Update PP Order Dates
 		final Timestamp date = TimeUtil.asTimestamp(request.getDate());
-		order.setDateDelivered(date); // overwrite=last
+		// Keep a manually-set effective production date: when IsFixedProductionDate='Y' the
+		// "Eff. Prod. Datum" (DateDelivered) is user-managed, so it must not be overwritten
+		// by the reported receipt date. When 'N' (default) the previous behaviour applies.
+		if (!order.isFixedProductionDate())
+		{
+			order.setDateDelivered(date); // overwrite=last
+		}
 		if (order.getDateStart() == null)
 		{
 			order.setDateStart(date);
@@ -361,6 +394,63 @@ public class PPOrderBL implements IPPOrderBL
 		// ppOrdersRepo.save(ppOrder);
 
 		documentBL.processEx(ppOrder, X_PP_Order.DOCACTION_Close);
+	}
+
+	@Override
+	public PPOrderCloseResult closeOrdersInSelection(@NonNull final PInstanceId selectionId)
+	{
+		final AtomicInteger countClosed = new AtomicInteger(0);
+		final AtomicInteger countFailed = new AtomicInteger(0);
+		final AtomicReference<String> firstFailureMessage = new AtomicReference<>(null);
+
+		queryBL.createQueryBuilder(I_PP_Order.class)
+				.setOnlySelection(selectionId)
+				// predictable order, so which failure is reported as "the first" is reproducible
+				.orderBy(I_PP_Order.COLUMNNAME_PP_Order_ID)
+				.create()
+				.iterateAndStream()
+				.forEach(ppOrder -> {
+					try
+					{
+						closeInOwnTrx(ppOrder);
+
+						countClosed.incrementAndGet();
+						Loggables.withLogger(logger, Level.INFO).addLog("PP_Order {}: closed", ppOrder.getDocumentNo());
+					}
+					catch (final RuntimeException e)
+					{
+						countFailed.incrementAndGet();
+
+						final String failureMessage = AdempiereException.extractMessage(e);
+						firstFailureMessage.compareAndSet(null, ppOrder.getDocumentNo() + ": " + failureMessage);
+
+						Loggables.withLogger(logger, Level.WARN).addLog("PP_Order {}: failed - {}", ppOrder.getDocumentNo(), failureMessage);
+					}
+				});
+
+		return PPOrderCloseResult.builder()
+				.countClosed(countClosed.get())
+				.countFailed(countFailed.get())
+				.firstFailureMessage(firstFailureMessage.get())
+				.build();
+	}
+
+	private void closeInOwnTrx(@NonNull final I_PP_Order ppOrder)
+	{
+		// Own transaction, so this order's close commits - or fully rolls back - independently of the others:
+		// a later order's failure must not undo the ones already closed, nor may a half-closed order survive.
+		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
+			InterfaceWrapperHelper.refresh(ppOrder, localTrxName);
+			closeOrder(ppOrder);
+
+			// closeOrder() runs the document action without asserting the outcome, so without this check a
+			// close that silently did not take effect would count as a success.
+			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
+			if (!docStatus.isClosed())
+			{
+				throw new AdempiereException("@Invalid@ @DocStatus@: " + docStatus);
+			}
+		});
 	}
 
 	@Override
@@ -677,5 +767,25 @@ public class PPOrderBL implements IPPOrderBL
 	public String getResourceName(@NonNull final ResourceId resourceId)
 	{
 		return resourceDAO.getById(resourceId).getName();
+	}
+
+	@Override
+	public void updateDraftedOrdersMatchingBOM(@NonNull final ProductBOMVersionsId bomVersionsId, @NonNull final ProductBOMId newVersionId)
+	{
+		ppOrdersRepo.streamDraftedPPOrdersFor(bomVersionsId)
+				.filter(draftedOrder -> !isSomethingProcessed(draftedOrder))
+				.forEach(draftedOrder -> {
+					draftedOrder.setPP_Product_BOM_ID(newVersionId.getRepoId());
+					try
+					{
+						trxManager.runInNewTrx(() -> ppOrdersRepo.save(draftedOrder));
+					}
+					catch (final Exception e)
+					{
+						Loggables.withLogger(logger, Level.ERROR)
+								.addLog("Failed updating PP_Order (PP_Order_ID = {}) with the latest PP_Product_BOM version (PP_Product_BOM = {})",
+										draftedOrder.getPP_Order_ID(), newVersionId, e);
+					}
+				});
 	}
 }

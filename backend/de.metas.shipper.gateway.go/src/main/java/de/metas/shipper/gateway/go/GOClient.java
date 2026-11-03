@@ -1,30 +1,18 @@
 package de.metas.shipper.gateway.go;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import javax.xml.bind.JAXBElement;
-
 import com.google.common.annotations.VisibleForTesting;
-import org.adempiere.exceptions.AdempiereException;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.ws.client.core.WebServiceTemplate;
-import org.springframework.ws.transport.http.HttpComponentsMessageSender;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.go.GOClientLogEvent.GOClientLogEventBuilder;
 import de.metas.shipper.gateway.go.schema.Fehlerbehandlung;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
 import de.metas.shipper.gateway.go.schema.GOPackageLabelType;
+import de.metas.shipper.gateway.go.schema.GOShipperProduct;
 import de.metas.shipper.gateway.go.schema.Label;
 import de.metas.shipper.gateway.go.schema.ObjectFactory;
 import de.metas.shipper.gateway.go.schema.Sendung;
@@ -40,14 +28,28 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.HWBNumber;
 import de.metas.shipper.gateway.spi.model.OrderId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PhoneNumber;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.ws.client.core.WebServiceTemplate;
+import org.springframework.ws.transport.http.HttpComponentsMessageSender;
+
+import javax.xml.bind.JAXBElement;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -95,7 +97,7 @@ public class GOClient implements ShipperGatewayClient
 		final HttpComponentsMessageSender messageSender = createMessageSender(config.getAuthUsername(), config.getAuthPassword());
 
 		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-		marshaller.setPackagesToScan(de.metas.shipper.gateway.go.schema.ObjectFactory.class.getPackage().getName());
+		marshaller.setPackagesToScan(ObjectFactory.class.getPackage().getName());
 
 		webServiceTemplate = new WebServiceTemplate();
 		webServiceTemplate.setDefaultUri(config.getUrl());
@@ -114,7 +116,7 @@ public class GOClient implements ShipperGatewayClient
 		{
 			messageSender.afterPropertiesSet(); // to make sure credentials are set to HttpClient
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
@@ -131,13 +133,12 @@ public class GOClient implements ShipperGatewayClient
 
 	@NonNull
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Deprecated
-	@Override
 	@VisibleForTesting
 	public DeliveryOrder createDeliveryOrder(@NonNull final DeliveryOrder draftDeliveryOrder)
 	{
@@ -224,8 +225,8 @@ public class GOClient implements ShipperGatewayClient
 	}
 
 	private Object sendAndReceive(final JAXBElement<?> goRequestElement,
-			final String action, // for logging
-			final int deliveryOrderRepoId // for logging
+								  final String action, // for logging
+								  final int deliveryOrderRepoId // for logging
 	)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -310,7 +311,7 @@ public class GOClient implements ShipperGatewayClient
 		goRequest.setZustelldatum(createGODeliveryDateOrNull(request.getDeliveryDate())); // Delivery date (not mandatory)
 		goRequest.setZustellhinweise(request.getDeliveryNote()); // Delivery note (an128, not mandatory)
 
-		goRequest.setService(request.getShipperProduct().getCode()); // Service type (mandatory)
+		goRequest.setService(request.getShipperProduct() != null ? request.getShipperProduct().getCode() : null); // Service type (mandatory)
 		goRequest.setUnfrei(goDeliveryOrderData.getPaidMode().getCode()); // Flag unpaid (mandatory)
 		goRequest.setSelbstanlieferung(goDeliveryOrderData.getSelfDelivery().getCode()); // Flag self delivery (mandatory)
 		goRequest.setSelbstabholung(goDeliveryOrderData.getSelfPickup().getCode()); // Flag self pickup (mandatory)
@@ -541,6 +542,17 @@ public class GOClient implements ShipperGatewayClient
 						.fileName(GOPackageLabelType.DIN_A6_ROUTER_LABEL_ZEBRA.toString())
 						.contentType(PackageLabel.CONTENTTYPE_PDF)
 						.labelData(pdfs.getRouterlabelZebra())
+						.build())
+				.build();
+	}
+
+	@Override
+	public @NonNull JsonDeliveryAdvisorResponse adviseShipment(final @NonNull JsonDeliveryAdvisorRequest request)
+	{
+		return JsonDeliveryAdvisorResponse.builder()
+				.requestId(request.getId())
+				.shipperProduct(JsonShipperProduct.builder()
+						.code(GOShipperProduct.Overnight.getCode())
 						.build())
 				.build();
 	}

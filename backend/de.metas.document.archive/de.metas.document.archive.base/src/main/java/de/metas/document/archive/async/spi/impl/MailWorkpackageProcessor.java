@@ -1,20 +1,23 @@
 package de.metas.document.archive.async.spi.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.document.archive.notification.delay.DocOutboundNotificationDelayService;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailAttachment;
 import de.metas.email.EMailRequest;
@@ -29,6 +32,7 @@ import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letter.BoilerPlateRepository;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
@@ -48,6 +52,7 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
@@ -87,10 +92,15 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient ArchiveFileNameService archiveFileNameService = SpringContextHolder.instance.getBean(ArchiveFileNameService.class);
 	private final transient MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final transient BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
-	private final transient DocOutBoundRecipientRepository docOutBoundRecipientRepository = SpringContextHolder.instance.getBean(DocOutBoundRecipientRepository.class);
+	private final transient DocOutBoundRecipientService docOutBoundRecipientService = SpringContextHolder.instance.getBean(DocOutBoundRecipientService.class);
 	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final transient DocOutboundNotificationDelayService notificationDelayService = SpringContextHolder.instance.getBean(DocOutboundNotificationDelayService.class);
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
+	/** Max time (ms) to hold a mail notification waiting for readiness (e.g. carrier tracking URL); 0 = never delay. Replaces the former hardcoded 60s cap + boolean switch. */
+	private static final String SYSCONFIG_MailNotificationMaxDelayMillis = "mailNotificationMaxDelayMillis";
+	private static final int NOTIFICATION_DELAY_RETRY_MILLIS = 2 * 1000;
 
 	private static final AdMessageKey MSG_EmailSubject = AdMessageKey.of("MailWorkpackageProcessor.EmailSubject");
 	private static final AdMessageKey MSG_EmailMessage = AdMessageKey.of("MailWorkpackageProcessor.EmailMessage");
@@ -99,6 +109,9 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	public Result processWorkPackage(final @NonNull I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		final List<I_C_Doc_Outbound_Log_Line> logLines = queueDAO.retrieveAllItems(workpackage, I_C_Doc_Outbound_Log_Line.class);
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(workpackage.getAD_Client_ID(), workpackage.getAD_Org_ID());
+		final int maxDelayMillis = sysConfigBL.getIntValue(SYSCONFIG_MailNotificationMaxDelayMillis, 0, clientAndOrgId);
+		assertNotificationReadyOrSkip(notificationDelayService, workpackage, logLines, maxDelayMillis);
 		for (final I_C_Doc_Outbound_Log_Line logLine : logLines)
 		{
 			final I_AD_Archive archive = logLine.getAD_Archive();
@@ -117,6 +130,38 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		}
 
 		return Result.SUCCESS;
+	}
+
+	@VisibleForTesting
+	static void assertNotificationReadyOrSkip(
+			@NonNull final DocOutboundNotificationDelayService notificationDelayService,
+			@NonNull final I_C_Queue_WorkPackage workpackage,
+			@NonNull final List<I_C_Doc_Outbound_Log_Line> logLines,
+			final int maxDelayMillis)
+	{
+		if (maxDelayMillis <= 0)
+		{
+			return; // feature off (SysConfig mailNotificationMaxDelayMillis=0): never delay
+		}
+
+		final boolean anyNeedsDelay = logLines.stream()
+				.map(I_C_Doc_Outbound_Log_Line::getC_Doc_Outbound_Log)
+				.anyMatch(notificationDelayService::shouldDelaySending);
+		if (!anyNeedsDelay)
+		{
+			return;
+		}
+
+		final long elapsedMillis = SystemTime.millis() - workpackage.getCreated().getTime();
+		if (elapsedMillis >= maxDelayMillis)
+		{
+			Loggables.get().addLog("Notification max delay ({}ms) reached for C_Queue_WorkPackage_ID={}; sending anyway",
+					maxDelayMillis, workpackage.getC_Queue_WorkPackage_ID());
+			return;
+		}
+
+		throw WorkpackageSkipRequestException.createWithTimeout(
+				"Waiting for shipment tracking URL(s) before sending notification", NOTIFICATION_DELAY_RETRY_MILLIS);
 	}
 
 	private void sendEMail(
@@ -168,13 +213,16 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final EMailAddress mailTo = EMailAddress.optionalOfNullable(docOutboundLogRecord.getCurrentEMailAddress())
 				.orElseThrow(() -> new AdempiereException("C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log=" + docOutboundLogRecord));
 
+
+		final EMailAddress mailCc = EMailAddress.ofNullableString(docOutboundLogRecord.getCurrentEMailAddressCC());
+
 		// Create and send email
 		final ArchiveEmailSentStatus status;
 		{
 			final ArrayList<EMailAttachment> emailAttachments = extractAttachments(docOutboundLogRecord, archive);
 			if (emailAttachments.isEmpty())
 			{
-				status = ArchiveEmailSentStatus.MESSAGE_NOT_SENT;
+				status = ArchiveEmailSentStatus.Failure;
 				Loggables.addLog("No documents to attach on email for C_Doc_Outbound_Log_ID={}; -> not sending mail", docOutboundLogRecord.getC_Doc_Outbound_Log_ID());
 			}
 			else
@@ -183,13 +231,14 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				mailService.sendEMail(EMailRequest.builder()
 						.mailbox(mailbox)
 						.to(mailTo)
+						.cc(mailCc)
 						.subject(emailParams.getSubject())
 						.message(emailParams.getMessage())
 						.html(emailParams.isHtml())
 						.attachments(emailAttachments)
 						.build());
 
-				status = ArchiveEmailSentStatus.MESSAGE_SENT;
+				status = ArchiveEmailSentStatus.Success;
 			}
 		}
 
@@ -202,7 +251,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 					null,
 					mailbox.getEmail(),
 					mailTo,
-					null,
+					mailCc,
 					null,
 					status);
 		}
@@ -229,7 +278,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		return result;
 	}
 
-	private static EMailAttachment toEmailAttachment(@NonNull de.metas.attachments.EmailAttachment attachment)
+	private static EMailAttachment toEmailAttachment(@NonNull final de.metas.attachments.EmailAttachment attachment)
 	{
 		final String filename = attachment.getFilename();
 		final EMailAttachment emailAttachment = EMailAttachment.ofNullable(filename, attachment.getAttachmentDataSupplier().get());
@@ -294,7 +343,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		DocOutBoundRecipient recipient = null;
 		if (docOutboundLogRecord.getCurrentEMailRecipient_ID() > 0)
 		{
-			recipient = docOutBoundRecipientRepository.getById(DocOutBoundRecipientId.ofRepoId(docOutboundLogRecord.getCurrentEMailRecipient_ID()));
+			recipient = docOutBoundRecipientService.getById(DocOutBoundRecipientId.ofRepoId(docOutboundLogRecord.getCurrentEMailRecipient_ID()));
 			final Language userLanguage = recipient.getUserLanguage();
 			if (userLanguage != null)
 			{

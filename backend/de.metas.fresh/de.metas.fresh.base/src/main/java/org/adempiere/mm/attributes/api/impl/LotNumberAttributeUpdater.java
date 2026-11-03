@@ -1,18 +1,17 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -42,8 +41,6 @@ public class LotNumberAttributeUpdater
 	private Object sourceModel;
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
-	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
 
 	public void updateASI()
 	{
@@ -61,7 +58,7 @@ public class LotNumberAttributeUpdater
 		}
 
 		final AttributeId lotNoAttributeId = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttributeId();
-		if(lotNoAttributeId == null)
+		if (lotNoAttributeId == null)
 		{
 			return;
 		}
@@ -75,7 +72,7 @@ public class LotNumberAttributeUpdater
 
 		attributeSetInstanceBL.getCreateASI(asiAware);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asiAware.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, lotNoAttributeId);
+		final I_M_AttributeInstance ai = attributeSetInstanceBL.getAttributeInstance(asiId, lotNoAttributeId);
 
 		if (ai != null)
 		{
@@ -92,7 +89,7 @@ public class LotNumberAttributeUpdater
 		return this;
 	}
 
-	private final Object getSourceModel()
+	private Object getSourceModel()
 	{
 		Check.assumeNotNull(sourceModel, "sourceModel not null");
 		return sourceModel;

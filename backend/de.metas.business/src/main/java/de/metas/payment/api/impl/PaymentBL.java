@@ -25,6 +25,12 @@ package de.metas.payment.api.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.DocumentPostRequest;
+import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.acct.api.IPostingService;
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
@@ -45,6 +51,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
@@ -74,6 +81,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -117,6 +125,10 @@ public class PaymentBL implements IPaymentBL
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	private final IPostingService postingService = Services.get(IPostingService.class);
+	// looked up when needed, because PaymentBL is not a Spring bean and can be used before the application context is complete
+	@NonNull private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	private static final AdMessageKey MSG_PaymentDocTypeInvoiceInconsistent = AdMessageKey.of("PaymentDocTypeInvoiceInconsistent");
 
@@ -241,6 +253,15 @@ public class PaymentBL implements IPaymentBL
 			{
 				payment.setOverUnderAmt(ZERO);
 			}
+			if (payment.getPaymentBonusAmt().signum() != 0)
+			{
+				payment.setPaymentBonusAmt(ZERO);
+			}
+		}
+		// Changed Column PaymentBonusAmt: the user's bonus is kept, PayAmt is what the customer paid; only the write-off (or over/under) changes
+		else if (I_C_Payment.COLUMNNAME_PaymentBonusAmt.equals(colName))
+		{
+			updateWriteOffOrOverUnderAmtIfDraftedWithInvoice(payment, creditMemoAdjusted);
 		}
 		// Changed Column C_Currency_ID or C_ConversionType_ID
 		else if (I_C_Payment.COLUMNNAME_C_Currency_ID.equals(colName) || I_C_Payment.COLUMNNAME_C_ConversionType_ID.equals(colName))
@@ -259,8 +280,9 @@ public class PaymentBL implements IPaymentBL
 			final BigDecimal DiscountAmt = payment.getDiscountAmt();
 			final BigDecimal WriteOffAmt = payment.getWriteOffAmt();
 			final BigDecimal OverUnderAmt = payment.getOverUnderAmt();
+			final BigDecimal paymentBonusAmt = payment.getPaymentBonusAmt();
 
-			final BigDecimal PayAmt = InvoiceOpenAmt.subtract(DiscountAmt).subtract(WriteOffAmt).subtract(OverUnderAmt);
+			final BigDecimal PayAmt = InvoiceOpenAmt.subtract(DiscountAmt).subtract(paymentBonusAmt).subtract(WriteOffAmt).subtract(OverUnderAmt);
 			payment.setPayAmt(PayAmt);
 		}
 
@@ -270,6 +292,12 @@ public class PaymentBL implements IPaymentBL
 	public void onIsOverUnderPaymentChange(final I_C_Payment payment, final boolean creditMemoAdjusted)
 	{
 		payment.setOverUnderAmt(ZERO);
+		if (payment.getC_Invoice_ID() <= 0)
+		{
+			// without an invoice there is no open amount to compare the payment with
+			return;
+		}
+
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
 
 		if (docStatus.isDrafted())
@@ -277,16 +305,17 @@ public class PaymentBL implements IPaymentBL
 			final BigDecimal InvoiceOpenAmt = fetchOpenAmount(payment, creditMemoAdjusted);
 			final BigDecimal DiscountAmt = payment.getDiscountAmt();
 			final BigDecimal PayAmt = payment.getPayAmt();
+			final BigDecimal paymentBonusAmt = payment.getPaymentBonusAmt();
 
 			if (payment.isOverUnderPayment())
 			{
-				final BigDecimal OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt);
+				final BigDecimal OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(paymentBonusAmt);
 				payment.setWriteOffAmt(ZERO);
 				payment.setOverUnderAmt(OverUnderAmt);
 			}
 			else
 			{
-				final BigDecimal WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt);
+				final BigDecimal WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(paymentBonusAmt);
 				payment.setWriteOffAmt(WriteOffAmt);
 				payment.setOverUnderAmt(ZERO);
 			}
@@ -326,6 +355,7 @@ public class PaymentBL implements IPaymentBL
 		BigDecimal DiscountAmt = payment.getDiscountAmt();
 		BigDecimal WriteOffAmt = payment.getWriteOffAmt();
 		BigDecimal OverUnderAmt = payment.getOverUnderAmt();
+		BigDecimal paymentBonusAmt = payment.getPaymentBonusAmt();
 
 		final CurrencyPrecision precision = currencyId != null
 				? currencyDAO.getStdPrecision(currencyId)
@@ -343,6 +373,12 @@ public class PaymentBL implements IPaymentBL
 		OverUnderAmt = precision.round(OverUnderAmt.multiply(currencyRate));
 		payment.setOverUnderAmt(OverUnderAmt);
 
+		if (paymentBonusAmt.signum() != 0) // a payment without bonus stays untouched
+		{
+			paymentBonusAmt = precision.round(paymentBonusAmt.multiply(currencyRate));
+			payment.setPaymentBonusAmt(paymentBonusAmt);
+		}
+
 		// No Invoice or Order - Set Discount, Witeoff, Under/Over to 0
 		if (C_Invoice_ID <= 0 && C_Order_ID <= 0)
 		{
@@ -359,6 +395,16 @@ public class PaymentBL implements IPaymentBL
 			{
 				payment.setOverUnderAmt(ZERO);
 			}
+			if (ZERO.compareTo(paymentBonusAmt) != 0)
+			{
+				payment.setPaymentBonusAmt(ZERO);
+			}
+		}
+		else if (C_Invoice_ID > 0
+				// the payment bonus is only deducted in the invoice's currency; a deductible bonus stays as it is, like the Skonto
+				&& paymentBonusOnPaymentService.get().clearPaymentBonusIfNotDeductible(payment))
+		{
+			updateWriteOffOrOverUnderAmtIfDraftedWithInvoice(payment, true);
 		}
 
 	}
@@ -366,26 +412,66 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public void onPayAmtChange(final I_C_Payment payment, final boolean creditMemoAdjusted)
 	{
+		if (payment.getC_Invoice_ID() <= 0)
+		{
+			// without an invoice there is no open amount to compare the payment with
+			return;
+		}
+
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
 		if (docStatus.isDrafted())
 		{
-			final BigDecimal DiscountAmt = payment.getDiscountAmt();
-			final BigDecimal PayAmt = payment.getPayAmt();
-			final BigDecimal InvoiceOpenAmt = fetchOpenAmount(payment, creditMemoAdjusted);
-			BigDecimal WriteOffAmt = payment.getWriteOffAmt();
-			BigDecimal OverUnderAmt = payment.getOverUnderAmt();
+			// the payment bonus is at most what the payment leaves open
+			paymentBonusOnPaymentService.get().capPaymentBonusToShortfall(payment);
 
-			if (payment.isOverUnderPayment())
-			{
-				OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(WriteOffAmt);
-				payment.setOverUnderAmt(OverUnderAmt);
-			}
+			updateWriteOffOrOverUnderAmtIfDraftedWithInvoice(payment, creditMemoAdjusted);
+		}
+	}
 
-			WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(OverUnderAmt);
-			payment.setWriteOffAmt(WriteOffAmt);
-			payment.setDiscountAmt(DiscountAmt);
+	@Override
+	public void onPaymentBonusAmtChange(@NonNull final I_C_Payment payment)
+	{
+		// deliberately no capPaymentBonusToShortfall here: the bonus the user entered stays
+		updateWriteOffOrOverUnderAmtIfDraftedWithInvoice(payment, true);
+	}
+
+	/**
+	 * Books what the payment leaves open of a drafted payment's invoice as write-off, or as over/under amount if the payment is an over/under payment:
+	 * {@code open - PayAmt - DiscountAmt - PaymentBonusAmt - (OverUnderAmt or WriteOffAmt)}. PayAmt is not changed.
+	 */
+	private void updateWriteOffOrOverUnderAmtIfDraftedWithInvoice(@NonNull final I_C_Payment payment, final boolean creditMemoAdjusted)
+	{
+		if (payment.getC_Invoice_ID() <= 0)
+		{
+			// without an invoice there is no open amount to compare the payment with
+			return;
 		}
 
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
+		if (docStatus.isDrafted())
+		{
+			updateWriteOffOrOverUnderAmt(payment, fetchOpenAmount(payment, creditMemoAdjusted));
+		}
+	}
+
+	@Override
+	public void updateWriteOffOrOverUnderAmt(@NonNull final I_C_Payment payment, @NonNull final BigDecimal invoiceOpenAmt)
+	{
+		final BigDecimal DiscountAmt = payment.getDiscountAmt();
+		final BigDecimal PayAmt = payment.getPayAmt();
+		final BigDecimal paymentBonusAmt = payment.getPaymentBonusAmt();
+		BigDecimal WriteOffAmt = payment.getWriteOffAmt();
+		BigDecimal OverUnderAmt = payment.getOverUnderAmt();
+
+		if (payment.isOverUnderPayment())
+		{
+			OverUnderAmt = invoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(paymentBonusAmt).subtract(WriteOffAmt);
+			payment.setOverUnderAmt(OverUnderAmt);
+		}
+
+		WriteOffAmt = invoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(paymentBonusAmt).subtract(OverUnderAmt);
+		payment.setWriteOffAmt(WriteOffAmt);
+		payment.setDiscountAmt(DiscountAmt);
 	}
 
 	@Override
@@ -404,6 +490,12 @@ public class PaymentBL implements IPaymentBL
 	public DefaultPaymentBuilder newBuilderOfInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		return DefaultPaymentBuilder.newBuilderOfInvoice(invoice);
+	}
+
+	@Override
+	public DefaultPaymentBuilder newBuilderOfOrder(@NonNull final I_C_Order order)
+	{
+		return DefaultPaymentBuilder.newBuilderOfOrder(order);
 	}
 
 	@Override
@@ -685,6 +777,7 @@ public class PaymentBL implements IPaymentBL
 		}
 		final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID()));
 		paymentDAO.updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), docType);
+		paymentBonusOnPaymentService.get().updatePaymentBonusFromInvoice(payment);
 	}
 
 	@Override
@@ -786,20 +879,22 @@ public class PaymentBL implements IPaymentBL
 					.appendParametersToMessage();
 		}
 
-		payment.setIsReconciled(true);
-
 		final PaymentReconcileReference.Type type = reconcileRef.getType();
+		final BankStatementId bankStatementId = reconcileRef.getBankStatementId();
+		final BankStatementLineId bankStatementLineId = reconcileRef.getBankStatementLineId();
+		final BankStatementLineRefId bankStatementLineRefId = reconcileRef.getBankStatementLineRefId();
+		final SAPGLJournalLineId glJournalLineId = reconcileRef.getGlJournalLineId();
+		final SAPGLJournalId glJournalId = glJournalLineId != null ? glJournalLineId.getGlJournalId() : null;
 		if (PaymentReconcileReference.Type.BANK_STATEMENT_LINE.equals(type))
 		{
-			payment.setC_BankStatement_ID(reconcileRef.getBankStatementId().getRepoId());
-			payment.setC_BankStatementLine_ID(reconcileRef.getBankStatementLineId().getRepoId());
-			payment.setC_BankStatementLine_Ref_ID(-1);
+			Check.assumeNotNull(bankStatementId, "bankStatementId is set in {}", reconcileRef);
+			Check.assumeNotNull(bankStatementLineId, "bankStatementLineId is set in {}", reconcileRef);
 		}
 		else if (PaymentReconcileReference.Type.BANK_STATEMENT_LINE_REF.equals(type))
 		{
-			payment.setC_BankStatement_ID(reconcileRef.getBankStatementId().getRepoId());
-			payment.setC_BankStatementLine_ID(reconcileRef.getBankStatementLineId().getRepoId());
-			payment.setC_BankStatementLine_Ref_ID(reconcileRef.getBankStatementLineRefId().getRepoId());
+			Check.assumeNotNull(bankStatementId, "bankStatementId is set in {}", reconcileRef);
+			Check.assumeNotNull(bankStatementLineId, "bankStatementLineId is set in {}", reconcileRef);
+			Check.assumeNotNull(bankStatementLineRefId, "bankStatementLineRefId is set in {}", reconcileRef);
 		}
 		else if (PaymentReconcileReference.Type.REVERSAL.equals(type))
 		{
@@ -814,22 +909,58 @@ public class PaymentBL implements IPaymentBL
 			{
 				throw new AdempiereException("Payment shall be reversed by `" + reconcileRef.getReversalId() + "` but it was reversed by `" + reversalId + "`: " + payment);
 			}
-
-			payment.setC_BankStatement_ID(-1);
-			payment.setC_BankStatementLine_ID(-1);
-			payment.setC_BankStatementLine_Ref_ID(-1);
+		}
+		else if (PaymentReconcileReference.Type.GL_Journal.equals(type))
+		{
+			Check.assumeNotNull(glJournalId, "glJournalId is set in {}", reconcileRef);
+			Check.assumeNotNull(glJournalLineId, "glJournalLineId is set in {}", reconcileRef);
 		}
 		else
 		{
 			throw new AdempiereException("Unknown reconciliation type: " + type);
 		}
 
+		payment.setIsReconciled(true);
+		payment.setC_BankStatement_ID(BankStatementId.toRepoId(bankStatementId));
+		payment.setC_BankStatementLine_ID(BankStatementLineId.toRepoId(bankStatementLineId));
+		payment.setC_BankStatementLine_Ref_ID(BankStatementLineRefId.toRepoId(bankStatementLineRefId));
+		payment.setReconciledBy_SAP_GLJournal_ID(SAPGLJournalId.toRepoId(glJournalId));
+		payment.setReconciledBy_SAP_GLJournalLine_ID(SAPGLJournalLineId.toRepoId(glJournalLineId));
+
 		paymentDAO.save(payment);
+
+		repostPaymentIfForeignCurrency(payment);
+	}
+
+	private void repostPaymentIfForeignCurrency(@NonNull final I_C_Payment payment)
+	{
+		final CurrencyId paymentCurrencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
+
+		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
+
+		final AcctSchema primaryAcctSchema = acctSchemaBL.getPrimaryAcctSchema(clientId);
+		final CurrencyId acctSchemaCurrencyId = primaryAcctSchema.getCurrencyId();
+
+		if(!CurrencyId.equals(paymentCurrencyId, acctSchemaCurrencyId))
+		{
+			logger.debug("Scheduling repost for payment {} because currency {} differs from accounting schema currency {}",
+					payment.getC_Payment_ID(), paymentCurrencyId, acctSchemaCurrencyId);
+
+			postingService.schedule(DocumentPostRequest.builder()
+					.record(TableRecordReference.of(I_C_Payment.Table_Name, payment.getC_Payment_ID()))
+					.clientId(clientId)
+					.build());
+		}
 	}
 
 	@VisibleForTesting
 	static PaymentReconcileReference extractPaymentReconcileReference(final I_C_Payment payment)
 	{
+		if (!payment.isReconciled())
+		{
+			throw new AdempiereException("Payment is not reconciled");
+		}
+
 		try
 		{
 			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
@@ -839,17 +970,29 @@ public class PaymentBL implements IPaymentBL
 				return PaymentReconcileReference.reversal(reversalId);
 			}
 
-			final BankStatementId bankStatementId = BankStatementId.ofRepoId(payment.getC_BankStatement_ID());
-			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(payment.getC_BankStatementLine_ID());
-			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
-			if (bankStatementLineRefId == null)
+			final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(payment.getC_BankStatement_ID());
+			if (bankStatementId != null)
 			{
-				return PaymentReconcileReference.bankStatementLine(bankStatementId, bankStatementLineId);
+				final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(payment.getC_BankStatementLine_ID());
+				final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
+				if (bankStatementLineRefId == null)
+				{
+					return PaymentReconcileReference.bankStatementLine(bankStatementId, bankStatementLineId);
+				}
+				else
+				{
+					return PaymentReconcileReference.bankStatementLineRef(bankStatementId, bankStatementLineId, bankStatementLineRefId);
+				}
 			}
-			else
+
+			final SAPGLJournalId glJournalId = SAPGLJournalId.ofRepoIdOrNull(payment.getReconciledBy_SAP_GLJournal_ID());
+			if (glJournalId != null)
 			{
-				return PaymentReconcileReference.bankStatementLineRef(bankStatementId, bankStatementLineId, bankStatementLineRefId);
+				final SAPGLJournalLineId glJournalLineId = SAPGLJournalLineId.ofRepoId(glJournalId, payment.getReconciledBy_SAP_GLJournalLine_ID());
+				return PaymentReconcileReference.glJournalLine(glJournalLineId);
 			}
+
+			throw new AdempiereException("Cannot determine de reconciling document");
 		}
 		catch (final Exception ex)
 		{

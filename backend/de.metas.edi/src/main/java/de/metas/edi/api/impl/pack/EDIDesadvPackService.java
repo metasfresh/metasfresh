@@ -25,7 +25,6 @@ package de.metas.edi.api.impl.pack;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.SimpleSequence;
 import de.metas.edi.api.EDIDesadvId;
@@ -57,6 +56,8 @@ import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
+import de.metas.product.asidata.ProductASIData;
+import de.metas.product.asidata.ProductASIDataRepository;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -75,13 +76,13 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -99,6 +100,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.isNotBlank;
 
 @Service
+@RequiredArgsConstructor
 public class EDIDesadvPackService
 {
 	private final static Logger logger = LogManager.getLogger(EDIDesadvPackService.class);
@@ -107,39 +109,35 @@ public class EDIDesadvPackService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-	private final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-
 	private final HURepository huRepository;
 	private final EDIDesadvPackRepository ediDesadvPackRepository;
+	private final ProductASIDataRepository productASIDataRepository;
 
-	public EDIDesadvPackService(
-			@NonNull final HURepository huRepository,
-			@NonNull final EDIDesadvPackRepository ediDesadvPackRepository)
+	@VisibleForTesting
+	public static EDIDesadvPackService newInstanceForUnitTesting()
 	{
-		this.huRepository = huRepository;
-		this.ediDesadvPackRepository = ediDesadvPackRepository;
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		final ProductASIDataRepository productASIDataRepository = new ProductASIDataRepository(Services.get(org.adempiere.ad.dao.IQueryBL.class));
+		return SpringContextHolder.getBeanOrSupply(EDIDesadvPackService.class,
+				() -> new EDIDesadvPackService(HURepository.newInstanceForUnitTesting(productASIDataRepository),
+						EDIDesadvPackRepository.newInstanceForUnitTesting(),
+						productASIDataRepository)
+		);
 	}
 
 	@NonNull
 	public EDIDesadvPackService.Sequences createSequences(@NonNull final EDIDesadvId desadvId)
 	{
-		final int maxDesadvPackSeqNo = desadvDAO.retrieveMaxDesadvPackSeqNo(desadvId);
-		final SimpleSequence packSeqNoSequence = SimpleSequence.builder()
-				.initial(maxDesadvPackSeqNo)
-				.increment(1).build();
-
-		final int maxDesadvPackItemLine = desadvDAO.retrieveMaxDesadvPackItemLine(desadvId);
-		final SimpleSequence packItemLineSequence = SimpleSequence.builder()
-				.initial(maxDesadvPackItemLine)
-				.increment(10).build();
-
-		return new EDIDesadvPackService.Sequences(packSeqNoSequence, packItemLineSequence);
+		return new EDIDesadvPackService.Sequences(
+				desadvDAO.retrievePackSeqNoSequence(desadvId),
+				desadvDAO.retrievePackItemLineSequence(desadvId));
 	}
 
 	public void removePackAndItemRecords(@NonNull final I_M_InOutLine inOutLineRecord)
@@ -312,14 +310,11 @@ public class EDIDesadvPackService
 		final List<I_M_HU_PackingMaterial> huPackingMaterials = packingMaterialDAO.retrievePackingMaterials(tuPIItemProduct);
 		if (huPackingMaterials.size() == 1)
 		{
-			final I_C_BPartner_Product bPartnerProductRecord = bPartnerProductDAO
-					.retrieveBPartnerProductAssociation(Env.getCtx(),
-							bPartnerId,
-							ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
-							OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
-			if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
+			final ProductId packingMaterialProductId = ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID());
+			final ProductASIData asiData = productASIDataRepository.retrieveBestMatch(packingMaterialProductId, bPartnerId, null);
+			if (asiData != null && isNotBlank(asiData.getGtin()))
 			{
-				createEDIDesadvPackItemRequestBuilder.gtinTUPackingMaterial(bPartnerProductRecord.getGTIN());
+				createEDIDesadvPackItemRequestBuilder.gtinTUPackingMaterial(asiData.getGtin());
 			}
 		}
 		else
@@ -333,7 +328,7 @@ public class EDIDesadvPackService
 	private Optional<Timestamp> extractBestBeforeDate(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
-		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(asiId);
 		if (attributeSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 		{
 			final Date bestBeforeDate = attributeSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate);
@@ -346,7 +341,7 @@ public class EDIDesadvPackService
 	private Optional<String> extractLotNumber(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
-		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(asiId);
 		if (attributeSet.hasAttribute(AttributeConstants.ATTR_LotNumber))
 		{
 			final String lotNumber = attributeSet.getValueAsString(AttributeConstants.ATTR_LotNumber);
@@ -385,7 +380,7 @@ public class EDIDesadvPackService
 					.setParameter("EDI_DesadvLine.EDI_Desadv_ID", desadvLineRecord.getEDI_Desadv_ID())
 					.setParameter("EDI_DesadvLine.Line", desadvLineRecord.getLine())
 					.setParameter("EDI_DesadvLine_ID", desadvLineRecord.getEDI_DesadvLine_ID());
-				// no need for a parameter with the InOutLine-ID, because the InOutLine is rolled back anyways
+			// no need for a parameter with the InOutLine-ID, because the InOutLine is rolled back anyways
 		}
 
 		final StockQtyAndUOMQty inOutLineQty = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
@@ -406,7 +401,8 @@ public class EDIDesadvPackService
 				sequences.getPackSeqNoSequence(),
 				sequences.getPackItemLineSequence());
 
-		final EDIDesadvPack packByHUId = ediDesadvPackRepository.getPackByDesadvLineAndHUId(topLevelHU.getId());
+		final EDIDesadvId desadvId = EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID());
+		final EDIDesadvPack packByHUId = ediDesadvPackRepository.getPackByDesadvAndHUId(desadvId, topLevelHU.getId());
 
 		if (packByHUId == null)
 		{
@@ -486,12 +482,7 @@ public class EDIDesadvPackService
 	{
 		final Quantity qtyCUInStockUOM = parameters.topLevelHU.extractMedianCUQtyPerChildHU(parameters.productId);
 
-		// get minimum best before of all HUs and sub-HUs
-		final Date bestBefore = parameters.topLevelHU.extractSingleAttributeValue(
-				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
-						? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate)
-						: null,
-				TimeUtil::min);
+		final Timestamp bestBefore = extractBestBeforeDate(parameters.getInOutLineRecord()).orElse(null);
 
 		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createPackItemRequestBuilder =
 				CreateEDIDesadvPackItemRequest.builder()
@@ -500,10 +491,11 @@ public class EDIDesadvPackService
 						.inOutLineId(InOutLineId.ofRepoId(parameters.inOutLineRecord.getM_InOutLine_ID()))
 						.line(parameters.packItemLineSequence.next())
 						.qtyItemCapacity(qtyCUInStockUOM.toBigDecimal())
-						.bestBeforeDate(TimeUtil.asTimestamp(bestBefore))
+						.bestBeforeDate(bestBefore)
 						.qtyTu(parameters.topLevelHU.getChildHUs().size());
 
-		final String lotNumber = parameters.topLevelHU.extractLotNumber();
+		final String lotNumber = extractLotNumber(parameters.getInOutLineRecord()).orElse(null);
+
 		if (Check.isNotBlank(lotNumber))
 		{
 			createPackItemRequestBuilder.lotNumber(lotNumber);

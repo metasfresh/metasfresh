@@ -22,37 +22,55 @@
 
 package de.metas.common.util;
 
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 public class EmptyUtilTest
 {
 	@Test
-	public void test_isEmpty_collection()
+	public void test_isEmpty()
 	{
-		test_isEmpty_collection(true, null);
-		test_isEmpty_collection(true, Collections.emptyList());
-		test_isEmpty_collection(true, Collections.emptySet());
-		test_isEmpty_collection(true, new ArrayList<Object>());
-		test_isEmpty_collection(true, new HashSet<Object>());
+		test_isEmpty(true, null);
+		test_isEmpty(true, Collections.emptyList());
+		test_isEmpty(true, Collections.emptySet());
+		test_isEmpty(true, new ArrayList<>());
+		test_isEmpty(true, new HashSet<>());
 
-		test_isEmpty_collection(false, Arrays.asList("1"));
+		test_isEmpty(false, Collections.singletonList("1"));
 
-		final List<Object> listNotEmpty = new ArrayList<Object>();
-		listNotEmpty.add("one element");
-		test_isEmpty_collection(false, listNotEmpty);
+		test_isEmpty(true, PlainIterable.of());
+		test_isEmpty(false, PlainIterable.of("1"));
 	}
 
-	public void test_isEmpty_collection(final boolean emptyExpected, final Collection<?> collection)
+	public void test_isEmpty(final boolean emptyExpected, final Object object)
 	{
-		final boolean emptyActual = EmptyUtil.isEmpty(collection);
-		Assertions.assertEquals(emptyExpected, emptyActual, "Invalid isEmpty result for collection: " + collection);
+		final boolean emptyActual = EmptyUtil.isEmpty(object);
+		Assertions.assertEquals(emptyExpected, emptyActual, "Invalid isEmpty result for object: " + object);
+	}
+
+	@EqualsAndHashCode
+	@ToString
+	private static class PlainIterable<T> implements Iterable<T>
+	{
+		private final List<T> list;
+
+		private PlainIterable(@NonNull final List<T> list) {this.list = list;}
+
+		@SafeVarargs
+		public static <T> PlainIterable<T> of(@NonNull final T... items) {return new PlainIterable<>(Arrays.asList(items));}
+
+		@Override
+		public @NotNull Iterator<T> iterator() {return list.iterator();}
 	}
 }

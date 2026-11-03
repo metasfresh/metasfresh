@@ -1,20 +1,25 @@
 package de.metas.handlingunits.pporder.api.impl;
 
-import java.util.Collection;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
+import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order;
+
+import java.util.Collection;
+import java.util.function.Supplier;
 
 final class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderReceiptHUProducer
 {
@@ -24,9 +29,10 @@ final class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRec
 	private final ProductId productId;
 
 	public CostCollectorCandidateCoProductHUProducer(
-			final org.eevolution.model.I_PP_Order_BOMLine coByProductOrderBOMLine)
+			final org.eevolution.model.I_PP_Order_BOMLine coByProductOrderBOMLine,
+			@NonNull final Supplier<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker)
 	{
-		super(PPOrderId.ofRepoId(coByProductOrderBOMLine.getPP_Order_ID()));
+		super(PPOrderId.ofRepoId(coByProductOrderBOMLine.getPP_Order_ID()), packingInstructionChecker);
 
 		// TODO: validate:
 		// * if is a completed PP_Order
@@ -94,5 +100,13 @@ final class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRec
 	{
 		final I_PP_Order_BOMLine bomLine = getCoByProductOrderBOMLine();
 		huPPOrderBL.addAssignedHandlingUnits(bomLine, hus);
+	}
+
+	@Override
+	public IPPOrderReceiptHUProducer withPPOrderLocatorId()
+	{
+		final I_PP_Order order = huPPOrderBL.getById(PPOrderId.ofRepoId(coByProductOrderBOMLine.getPP_Order_ID()));
+
+		return locatorId(LocatorId.ofRepoId(order.getM_Warehouse_ID(), order.getM_Locator_ID()));
 	}
 }

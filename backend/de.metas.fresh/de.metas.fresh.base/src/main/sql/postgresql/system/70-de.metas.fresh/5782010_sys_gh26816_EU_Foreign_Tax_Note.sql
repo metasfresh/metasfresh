@@ -1,0 +1,2 @@
+UPDATE C_Tax SET AD_BoilerPlate_ID=540034,Updated=TO_TIMESTAMP('2025-12-18 12:28:57.824000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE TypeOfDestCountry='WITHIN_COUNTRY_AREA'
+;

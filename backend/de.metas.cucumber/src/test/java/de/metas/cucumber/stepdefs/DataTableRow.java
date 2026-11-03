@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.location.CountryCode;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
@@ -58,13 +59,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -90,27 +91,27 @@ public class DataTableRow
 	@SuppressWarnings("unused")
 	public static class DataTableRowBuilder
 	{
-		public DataTableRowBuilder value(final String name, String value)
+		public DataTableRowBuilder value(final String name, @Nullable final String value)
 		{
 			return _value(name, value);
 		}
 
-		public DataTableRowBuilder value(final String name, int value)
+		public DataTableRowBuilder value(final String name, final int value)
 		{
 			return value(name, Integer.toString(value));
 		}
 
-		public DataTableRowBuilder value(final String name, BigDecimal value)
+		public DataTableRowBuilder value(final String name, final BigDecimal value)
 		{
 			return value(name, value != null ? value.toPlainString() : null);
 		}
 
-		public DataTableRowBuilder value(final String name, RepoIdAware value)
+		public DataTableRowBuilder value(final String name, final RepoIdAware value)
 		{
 			return value(name, value != null ? Integer.toString(value.getRepoId()) : null);
 		}
 
-		public DataTableRowBuilder value(final String name, boolean value)
+		public DataTableRowBuilder value(final String name, final boolean value)
 		{
 			return value(name, StringUtils.ofBoolean(value));
 		}
@@ -152,6 +153,17 @@ public class DataTableRow
 					.setParameter("row", this);
 		}
 		return string;
+	}
+
+	@NonNull
+	public Optional<List<String>> getAsOptionalCommaSeparatedString(@NonNull final String columnName)
+	{
+		final String columnNameEffective = findEffectiveColumnName(columnName);
+		if (columnNameEffective == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(getAsCommaSeparatedString(columnName));
 	}
 
 	@NonNull
@@ -312,8 +324,42 @@ public class DataTableRow
 						.setParameter("row", map));
 	}
 
+	@Nullable
+	public StepDefDataIdentifier getAsIdentifierOrNull(@NonNull final String columnName)
+	{
+		return getAsOptionalIdentifier(columnName)
+				.orElse(null);
+	}
+
 	@NonNull
 	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier(@NonNull final String columnName)
+	{
+		final String string = getAsOptionalIdentifierString(columnName);
+
+		if (string == null || Check.isBlank(string))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(StepDefDataIdentifier.ofString(string));
+	}
+
+	@NonNull
+	public ImmutableList<StepDefDataIdentifier> getAsIdentifierList(@NonNull final String columnName)
+	{
+		final String string = getAsOptionalIdentifierString(columnName);
+
+		if (string == null || Check.isBlank(string))
+		{
+			return ImmutableList.of();
+		}
+		return StepDefUtil.extractIdentifiers(string);
+	}
+
+	/**
+	 * Not to be used directly, but extracts the common logic identifier lookup
+	 */
+	private String getAsOptionalIdentifierString(final @NonNull String columnName)
 	{
 		String string = null;
 		if (!columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
@@ -337,13 +383,7 @@ public class DataTableRow
 		{
 			string = map.get(columnName);
 		}
-
-		if (string == null || Check.isBlank(string))
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(StepDefDataIdentifier.ofString(string));
+		return string;
 	}
 
 	public BigDecimal getAsBigDecimal(@NonNull final String columnName)
@@ -376,23 +416,22 @@ public class DataTableRow
 	}
 
 	@NonNull
-	public OptionalInt getAsOptionalInt(@NonNull final String columnName)
+	public Optional<Integer> getAsOptionalInt(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName)
-				.map(valueStr -> parseOptionalInt(valueStr, columnName))
-				.orElseGet(OptionalInt::empty);
+				.flatMap(valueStr -> parseOptionalInt(valueStr, columnName));
 	}
 
-	private static OptionalInt parseOptionalInt(@Nullable final String valueStr, final String columnInfo)
+	private static Optional<Integer> parseOptionalInt(@Nullable final String valueStr, final String columnInfo)
 	{
 		final String valueStrNorm = StringUtils.trimBlankToNull(valueStr);
 		if (valueStrNorm == null)
 		{
-			return OptionalInt.empty();
+			return Optional.empty();
 		}
 
 		final int valueInt = parseInt(valueStrNorm, columnInfo);
-		return OptionalInt.of(valueInt);
+		return Optional.of(valueInt);
 	}
 
 	private static int parseInt(@Nullable final String valueStr, final String columnInfo)
@@ -542,6 +581,15 @@ public class DataTableRow
 				.map(CurrencyCode::ofThreeLetterCode);
 	}
 
+	public Optional<CountryCode> getAsOptionalCountryCode(@NonNull final String columnName)
+	{
+		return Optionals.firstPresentOfSuppliers(
+						() -> getAsOptionalString(columnName),
+						() -> getAsOptionalString(columnName + ".CountryCode")
+				)
+				.map(CountryCode::ofAlpha2);
+	}
+
 	public Money getAsMoney(
 			@NonNull final String valueColumnName,
 			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
@@ -651,6 +699,11 @@ public class DataTableRow
 		return getAsOptionalLocalDate(columnName).map(DataTableRow::toTimestamp);
 	}
 
+	public Optional<Instant> getAsOptionalLocalDateInstant(@NonNull final String columnName)
+	{
+		return getAsOptionalLocalDate(columnName).map(DataTableRow::toInstant);
+	}
+
 	@SuppressWarnings("unused")
 	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
 	{
@@ -733,6 +786,11 @@ public class DataTableRow
 		}
 	}
 
+	private static Instant toInstant(@NonNull final LocalDate ld)
+	{
+		return toInstant(ld.atStartOfDay());
+	}
+
 	private static Instant toInstant(@NonNull final LocalDateTime ldt)
 	{
 		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()
@@ -745,6 +803,23 @@ public class DataTableRow
 	public Optional<LocalDateTime> getAsOptionalLocalDateTime(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName).map(valueStr -> parseLocalDateTime(valueStr, columnName));
+	}
+
+	public Optional<LocalTime> getAsOptionalLocalTime(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseLocalTime(valueStr, columnName));
+	}
+
+	private LocalTime parseLocalTime(@NonNull final String valueStr, final @NonNull String columnName)
+	{
+		try
+		{
+			return LocalTime.parse(valueStr);
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnName + "` has invalid LocalTime `" + valueStr + "`");
+		}
 	}
 
 	@NonNull
@@ -810,7 +885,7 @@ public class DataTableRow
 		return ImmutableList.copyOf(map.keySet());
 	}
 
-	public void setValueIfMissing(@NonNull String columnName, @NonNull Supplier<String> valueSupplier)
+	public void setValueIfMissing(@NonNull final String columnName, @NonNull final Supplier<String> valueSupplier)
 	{
 		final String existingValue = map.get(columnName);
 		if (existingValue != null)

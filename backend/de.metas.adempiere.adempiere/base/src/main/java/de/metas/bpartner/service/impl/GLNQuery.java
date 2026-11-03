@@ -10,6 +10,8 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -40,10 +42,21 @@ public class GLNQuery
 	@Singular
 	ImmutableSet<GLN> glns;
 
+	
+	@Nullable
+	String glnLookupLabel;
+	
 	@NonNull
 	@Singular
 	ImmutableSet<OrgId> onlyOrgIds;
 
 	@Default
 	boolean outOfTrx = true;
+
+	/**
+	 * When {@code true}, only GLN matches where both the {@code C_BPartner_Location} and its {@code C_BPartner} are active are returned.
+	 * When {@code false} (default), also includes matches on inactive locations or partners.
+	 */
+	@Default
+	boolean onlyActive = false;
 }

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,7 +25,6 @@ package de.metas.ordercandidate.api.async;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
-import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -43,6 +42,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.CreateSelectionResponse;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -51,7 +51,13 @@ import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
 
 public class C_OLCandToOrderWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
-	public static final String OLCandProcessor_ID = I_C_OLCandAggAndOrder.COLUMNNAME_C_OLCandProcessor_ID;
+	public static final String PARAM_OLCandProcessor_ID = I_C_OLCandAggAndOrder.COLUMNNAME_C_OLCandProcessor_ID;
+
+	/**
+	 * If we propagate the async-batch-Id to the order, it means that a bunch of future workpackages are going to inherit that ID and will therefore be part of the batch.
+	 * This means that it will take much longer until the batch is done.
+	 */
+	public static final String PARAM_PROPAGATE_ASYNC_BATCH_ID_TO_ORDER_RECORD = "PROPAGATE_ASYNC_BATCH_ID_TO_ORDER_RECORD";
 
 	private final static Logger logger = LogManager.getLogger(C_OLCandToOrderWorkpackageProcessor.class);
 
@@ -79,15 +85,28 @@ public class C_OLCandToOrderWorkpackageProcessor extends WorkpackageProcessorAda
 		final PInstanceId enqueuedSelection = queryBL.createQueryBuilder(I_C_OLCand.class)
 				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, candidateIds)
 				.create()
-				.createSelection();
+				.createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
+				.orElse(null);
+		if (enqueuedSelection == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No OLCands enqueued to be processed for C_Queue_WorkPackage_ID={}", workPackage.getC_Queue_WorkPackage_ID());
+			return Result.SUCCESS;
+		}
 
-		final int olCandProcessorId = getParameters().getParameterAsInt(OLCandProcessor_ID, C_OlCandProcessor_ID_Default);
+		final int olCandProcessorId = getParameters().getParameterAsInt(PARAM_OLCandProcessor_ID, C_OlCandProcessor_ID_Default);
+		final boolean propagateAsyncBatchIdToOrderRecord = getParameters().getParameterAsBool(PARAM_PROPAGATE_ASYNC_BATCH_ID_TO_ORDER_RECORD);
 
 		final OLCandProcessorDescriptor olCandProcessorDescriptor = olCandProcessorRepo.getById(olCandProcessorId);
 
 		try
 		{
-			olCandBL.process(olCandProcessorDescriptor, enqueuedSelection, AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
+			olCandBL.process(IOLCandBL.OLCandProcessRequest.builder()
+					.processor(olCandProcessorDescriptor)
+					.selectionId(enqueuedSelection)
+					.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()))
+					.propagateAsyncBatchIdToOrderRecord(propagateAsyncBatchIdToOrderRecord)
+					.build());
 		}
 		catch (final Exception ex)
 		{

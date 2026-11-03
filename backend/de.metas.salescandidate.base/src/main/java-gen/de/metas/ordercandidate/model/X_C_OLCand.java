@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2054107940L;
+	private static final long serialVersionUID = 42001297L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -68,14 +68,14 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setAD_Issue_ID (final int AD_Issue_ID)
 	{
-		if (AD_Issue_ID < 1)
+		if (AD_Issue_ID < 1) 
 			set_Value (COLUMNNAME_AD_Issue_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_AD_Issue_ID, AD_Issue_ID);
 	}
 
 	@Override
-	public int getAD_Issue_ID()
+	public int getAD_Issue_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
 	}
@@ -242,7 +242,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public java.lang.String getBPartnerName()
+	public java.lang.String getBPartnerName() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerName);
 	}
@@ -363,14 +363,14 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setC_BPartner_SalesRep_Internal_ID (final int C_BPartner_SalesRep_Internal_ID)
 	{
-		if (C_BPartner_SalesRep_Internal_ID < 1)
+		if (C_BPartner_SalesRep_Internal_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_SalesRep_Internal_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_BPartner_SalesRep_Internal_ID, C_BPartner_SalesRep_Internal_ID);
 	}
 
 	@Override
-	public int getC_BPartner_SalesRep_Internal_ID()
+	public int getC_BPartner_SalesRep_Internal_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_Internal_ID);
 	}
@@ -381,7 +381,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		throw new IllegalArgumentException ("C_BP_Location_Effective_ID is virtual column");	}
 
 	@Override
-	public int getC_BP_Location_Effective_ID()
+	public int getC_BP_Location_Effective_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Effective_ID);
 	}
@@ -389,14 +389,14 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setC_BP_Location_Override_ID (final int C_BP_Location_Override_ID)
 	{
-		if (C_BP_Location_Override_ID < 1)
+		if (C_BP_Location_Override_ID < 1) 
 			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_BP_Location_Override_ID, C_BP_Location_Override_ID);
 	}
 
 	@Override
-	public int getC_BP_Location_Override_ID()
+	public int getC_BP_Location_Override_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_ID);
 	}
@@ -416,14 +416,14 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setC_BP_Location_Override_Value_ID (final int C_BP_Location_Override_Value_ID)
 	{
-		if (C_BP_Location_Override_Value_ID < 1)
+		if (C_BP_Location_Override_Value_ID < 1) 
 			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, C_BP_Location_Override_Value_ID);
 	}
 
 	@Override
-	public int getC_BP_Location_Override_Value_ID()
+	public int getC_BP_Location_Override_Value_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_Value_ID);
 	}
@@ -504,6 +504,33 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public org.compiere.model.I_C_Incoterms getC_Incoterms()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class);
+	}
+
+	@Override
+	public void setC_Incoterms(final org.compiere.model.I_C_Incoterms C_Incoterms)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class, C_Incoterms);
+	}
+
+	@Override
+	public void setC_Incoterms_ID (final int C_Incoterms_ID)
+	{
+		if (C_Incoterms_ID < 1) 
+			set_Value (COLUMNNAME_C_Incoterms_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Incoterms_ID, C_Incoterms_ID);
+	}
+
+	@Override
+	public int getC_Incoterms_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
+	}
+
+	@Override
 	public void setC_OLCand_ID (final int C_OLCand_ID)
 	{
 		if (C_OLCand_ID < 1) 
@@ -525,7 +552,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public java.lang.String getCompensationGroupKey()
+	public java.lang.String getCompensationGroupKey() 
 	{
 		return get_ValueAsString(COLUMNNAME_CompensationGroupKey);
 	}
@@ -543,6 +570,60 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getC_PaymentTerm_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PromotionCode getC_PromotionCode2()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class);
+	}
+
+	@Override
+	public void setC_PromotionCode2(final org.compiere.model.I_C_PromotionCode C_PromotionCode2)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode2);
+	}
+
+	@Override
+	public void setC_PromotionCode2_ID (final int C_PromotionCode2_ID)
+	{
+		if (C_PromotionCode2_ID < 1) 
+			set_Value (COLUMNNAME_C_PromotionCode2_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PromotionCode2_ID, C_PromotionCode2_ID);
+	}
+
+	@Override
+	public int getC_PromotionCode2_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PromotionCode2_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PromotionCode getC_PromotionCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class);
+	}
+
+	@Override
+	public void setC_PromotionCode(final org.compiere.model.I_C_PromotionCode C_PromotionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode);
+	}
+
+	@Override
+	public void setC_PromotionCode_ID (final int C_PromotionCode_ID)
+	{
+		if (C_PromotionCode_ID < 1) 
+			set_Value (COLUMNNAME_C_PromotionCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PromotionCode_ID, C_PromotionCode_ID);
+	}
+
+	@Override
+	public int getC_PromotionCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PromotionCode_ID);
 	}
 
 	@Override
@@ -914,7 +995,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public java.lang.String getEMail()
+	public java.lang.String getEMail() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
 	}
@@ -929,6 +1010,33 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public java.lang.String getErrorMsg() 
 	{
 		return get_ValueAsString(COLUMNNAME_ErrorMsg);
+	}
+
+	@Override
+	public void setErrorMsgJSON (final @Nullable java.lang.String ErrorMsgJSON)
+	{
+		set_Value (COLUMNNAME_ErrorMsgJSON, ErrorMsgJSON);
+	}
+
+	@Override
+	public java.lang.String getErrorMsgJSON() 
+	{
+		return get_ValueAsString(COLUMNNAME_ErrorMsgJSON);
+	}
+
+	@Override
+	public void setEXP_ReplicationTrx_ID (final int EXP_ReplicationTrx_ID)
+	{
+		if (EXP_ReplicationTrx_ID < 1) 
+			set_Value (COLUMNNAME_EXP_ReplicationTrx_ID, null);
+		else 
+			set_Value (COLUMNNAME_EXP_ReplicationTrx_ID, EXP_ReplicationTrx_ID);
+	}
+
+	@Override
+	public int getEXP_ReplicationTrx_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_EXP_ReplicationTrx_ID);
 	}
 
 	@Override
@@ -953,6 +1061,21 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public java.lang.String getExternalLineId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalLineId);
+	}
+
+	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 
 	@Override
@@ -1138,7 +1261,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public java.lang.String getHeaderAggregationKey()
+	public java.lang.String getHeaderAggregationKey() 
 	{
 		return get_ValueAsString(COLUMNNAME_HeaderAggregationKey);
 	}
@@ -1153,6 +1276,18 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public java.lang.String getImportWarningMessage() 
 	{
 		return get_ValueAsString(COLUMNNAME_ImportWarningMessage);
+	}
+
+	@Override
+	public void setIncotermLocation (final @Nullable java.lang.String IncotermLocation)
+	{
+		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
+	}
+
+	@Override
+	public java.lang.String getIncotermLocation() 
+	{
+		return get_ValueAsString(COLUMNNAME_IncotermLocation);
 	}
 
 	/** 
@@ -1193,6 +1328,8 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
 	/** After Pick = P */
 	public static final String INVOICERULE_AfterPick = "P";
+	/** Manual = M */
+	public static final String INVOICERULE_Manual = "M";
 	@Override
 	public void setInvoiceRule (final @Nullable java.lang.String InvoiceRule)
 	{
@@ -1203,6 +1340,18 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public java.lang.String getInvoiceRule() 
 	{
 		return get_ValueAsString(COLUMNNAME_InvoiceRule);
+	}
+
+	@Override
+	public void setIsAutoInvoice (final boolean IsAutoInvoice)
+	{
+		set_Value (COLUMNNAME_IsAutoInvoice, IsAutoInvoice);
+	}
+
+	@Override
+	public boolean isAutoInvoice() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoInvoice);
 	}
 
 	@Override
@@ -1287,6 +1436,40 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public boolean isManualQtyItemCapacity() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManualQtyItemCapacity);
+	}
+
+	@Override
+	public void setIsReplicationTrxError (final boolean IsReplicationTrxError)
+	{
+		throw new IllegalArgumentException ("IsReplicationTrxError is virtual column");	}
+
+	@Override
+	public boolean isReplicationTrxError() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReplicationTrxError);
+	}
+
+	@Override
+	public void setIsReplicationTrxFinished (final boolean IsReplicationTrxFinished)
+	{
+		throw new IllegalArgumentException ("IsReplicationTrxFinished is virtual column");	}
+
+	@Override
+	public boolean isReplicationTrxFinished() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReplicationTrxFinished);
+	}
+
+	@Override
+	public void setIsWithoutCharge (final boolean IsWithoutCharge)
+	{
+		set_Value (COLUMNNAME_IsWithoutCharge, IsWithoutCharge);
+	}
+
+	@Override
+	public boolean isWithoutCharge() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWithoutCharge);
 	}
 
 	@Override
@@ -1591,9 +1774,9 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public static final String PAYMENTRULE_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
-	/** Rückerstattung = E */
+	/** Reimbursement = E */
 	public static final String PAYMENTRULE_Reimbursement = "E";
-	/** Verrechnung = F */
+	/** Settlement = F */
 	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
@@ -1614,7 +1797,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public java.lang.String getPhone()
+	public java.lang.String getPhone() 
 	{
 		return get_ValueAsString(COLUMNNAME_Phone);
 	}
@@ -1709,14 +1892,14 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setPrice_UOM_Internal_ID (final int Price_UOM_Internal_ID)
 	{
-		if (Price_UOM_Internal_ID < 1)
+		if (Price_UOM_Internal_ID < 1) 
 			set_Value (COLUMNNAME_Price_UOM_Internal_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Price_UOM_Internal_ID, Price_UOM_Internal_ID);
 	}
 
 	@Override
-	public int getPrice_UOM_Internal_ID()
+	public int getPrice_UOM_Internal_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Price_UOM_Internal_ID);
 	}
@@ -1838,6 +2021,35 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return get_ValueAsInt(COLUMNNAME_QtyShipped_CatchWeight_UOM_ID);
 	}
 
+	/** 
+	 * Reason AD_Reference_ID=541968
+	 * Reference name: Reason for without charge
+	 */
+	public static final int REASON_AD_Reference_ID=541968;
+	/** Warranty = W */
+	public static final String REASON_Warranty = "W";
+	/** Goodwill = G */
+	public static final String REASON_Goodwill = "G";
+	/** FullService = F */
+	public static final String REASON_FullService = "F";
+	/** PromotionalCampaign = P */
+	public static final String REASON_PromotionalCampaign = "P";
+	/** InternalUse = I */
+	public static final String REASON_InternalUse = "I";
+	/** Bestandteil Handelsstückliste = B */
+	public static final String REASON_BestandteilHandelsstueckliste = "B";
+	@Override
+	public void setReason (final @Nullable java.lang.String Reason)
+	{
+		set_Value (COLUMNNAME_Reason, Reason);
+	}
+
+	@Override
+	public java.lang.String getReason() 
+	{
+		return get_ValueAsString(COLUMNNAME_Reason);
+	}
+
 	@Override
 	public void setRecord_ID (final int Record_ID)
 	{
@@ -1851,5 +2063,16 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
+	}
+
+	@Override
+	public void setReplicationTrxErrorMsg (final @Nullable java.lang.String ReplicationTrxErrorMsg)
+	{
+		throw new IllegalArgumentException ("ReplicationTrxErrorMsg is virtual column");	}
+
+	@Override
+	public java.lang.String getReplicationTrxErrorMsg() 
+	{
+		return get_ValueAsString(COLUMNNAME_ReplicationTrxErrorMsg);
 	}
 }

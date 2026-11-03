@@ -381,7 +381,9 @@ public class PickingCandidateService implements PickingSlotListener
 
 	public ADRefList getQtyRejectedReasons()
 	{
-		return adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+		return QtyRejectedReasonCode.reasonsFor(
+				adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID),
+				QtyRejectedReasonContext.Picking);
 	}
 
 	@NonNull
