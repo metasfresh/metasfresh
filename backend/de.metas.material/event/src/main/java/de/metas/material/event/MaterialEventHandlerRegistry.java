@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
 import de.metas.logging.LogManager;
+import de.metas.material.event.tracking.AllEventsProcessedEvent;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -94,7 +95,11 @@ public class MaterialEventHandlerRegistry
 			}
 		}
 
-		if (!handlersForEventClass.isEmpty())
+		// AllEventsProcessedEvent is a bookkeeping signal, not tracked work: it was never enqueue()d for its trace,
+		// so counting it as "processed" here would add a spurious entry to that trace's EventProgress (see
+		// MaterialEventObserver.reportEventProcessed). Handler dispatch above is unaffected -- this only skips the
+		// tracking side-effect for this one event type.
+		if (!handlersForEventClass.isEmpty() && !(event instanceof AllEventsProcessedEvent))
 		{
 			materialEventObserver.reportEventProcessed(event);
 		}

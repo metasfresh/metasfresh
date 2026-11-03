@@ -23,11 +23,16 @@
 package de.metas.shipping.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
-import de.metas.lang.SOTrx;
+import de.metas.inout.InOutId;
+import de.metas.inout.model.I_M_InOut;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -47,6 +52,8 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,7 +70,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	@Override
 	public I_M_ShipperTransportation getById(@NonNull final ShipperTransportationId shipperItransportationId)
 	{
-		final I_M_ShipperTransportation shipperTransportation = load(shipperItransportationId.getRepoId(), I_M_ShipperTransportation.class);
+		final I_M_ShipperTransportation shipperTransportation = retrieve(shipperItransportationId);
 		if (shipperTransportation == null)
 		{
 			throw new AdempiereException("@NotFound@: " + shipperItransportationId);
@@ -125,16 +132,24 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		final I_M_ShipperTransportation shipperTransportation = newInstance(I_M_ShipperTransportation.class);
 
 		shipperTransportation.setAD_Org_ID(request.getOrgId().getRepoId());
+		shipperTransportation.setTransportDirection(request.getTransportDirection().getCode());
 		shipperTransportation.setM_Shipper_ID(request.getShipperId().getRepoId());
+		shipperTransportation.setPickupTimeFrom(TimeUtil.asTimestamp(request.getPickupTimeFrom()));
+		shipperTransportation.setPickupTimeTo(TimeUtil.asTimestamp(request.getPickupTimeTo()));
 		shipperTransportation.setShipper_BPartner_ID(request.getShipperBPartnerAndLocationId().getBpartnerId().getRepoId());
 		shipperTransportation.setShipper_Location_ID(request.getShipperBPartnerAndLocationId().getRepoId());
 		shipperTransportation.setDateDoc(TimeUtil.asTimestamp(request.getShipDate()));
-		shipperTransportation.setIsSOTrx(SOTrx.toBoolean(request.getIsSOTrx()));
 		shipperTransportation.setAssignAnonymouslyPickedHUs(request.isAssignAnonymouslyPickedHUs());
 
 		saveRecord(shipperTransportation);
 
 		return ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+	}
+
+	@Override
+	public void save(@NonNull final I_M_ShipperTransportation shipperTransportation)
+	{
+		saveRecord(shipperTransportation);
 	}
 
 	@NonNull
@@ -145,13 +160,81 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 
 	private IQuery<I_M_ShipperTransportation> toSqlQuery(final @NonNull ShipperTransportationQuery query)
 	{
-		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, query.getShipperId())
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID, query.getShipperBPartnerAndLocationId().getBpartnerId())
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_Location_ID, query.getShipperBPartnerAndLocationId().getRepoId())
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DateDoc, TimeUtil.asTimestamp(query.getShipDate()))
-				.create();
+		if (query.isAny())
+		{
+			throw new AdempiereException("Any query is not allowed");
+		}
+		final IQueryBuilder<I_M_ShipperTransportation> builder;
+
+		final Collection<OrderId> orderIds = query.getOrderIds();
+		final Collection<OrderLineId> orderLineIds = query.getOrderLineIds();
+		if (!orderIds.isEmpty() || !orderLineIds.isEmpty())
+		{
+			final IQueryBuilder<I_M_ShippingPackage> shippingPackageBuilder = queryBL.createQueryBuilder(I_M_ShippingPackage.class);
+
+			if (!orderIds.isEmpty())
+			{
+				shippingPackageBuilder.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderIds);
+			}
+			if (!orderLineIds.isEmpty())
+			{
+				shippingPackageBuilder.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID, orderLineIds);
+			}
+
+			builder = shippingPackageBuilder
+					.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
+					.addOnlyActiveRecordsFilter();
+		}
+		else
+		{
+			builder = queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+					.addOnlyActiveRecordsFilter();
+		}
+
+		final ShipperId shipperId = query.getShipperId();
+		if (shipperId != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, shipperId);
+		}
+
+		final BPartnerLocationId shipperBPartnerAndLocationId = query.getShipperBPartnerAndLocationId();
+		if (shipperBPartnerAndLocationId != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID, shipperBPartnerAndLocationId.getBpartnerId())
+					.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_Location_ID, shipperBPartnerAndLocationId.getRepoId());
+		}
+
+		final OrgId orgId = query.getOrgId();
+		if (orgId != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_AD_Org_ID, orgId);
+		}
+
+		final LocalDate shipDate = query.getShipDate();
+		if (shipDate != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DateDoc, TimeUtil.asTimestamp(shipDate));
+		}
+
+		final ShipperTransportationId shipperTransportationToExclude = query.getShipperTransportationToExclude();
+		if (shipperTransportationToExclude != null)
+		{
+			builder.addNotEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationToExclude);
+		}
+
+		final Boolean processed = query.getProcessed();
+		if (processed != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, processed);
+		}
+
+		final TransportDirection transportDirection = query.getTransportDirection();
+		if (transportDirection != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_TransportDirection, transportDirection);
+		}
+
+		return builder.create();
 	}
 
 	@Override
@@ -162,6 +245,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.shipperBPartnerAndLocationId(request.getShipperBPartnerAndLocationId())
 				.shipDate(request.getShipDate())
 				.orgId(request.getOrgId())
+				.transportDirection(request.getTransportDirection())
 				.build())
 				.orElseGet(() -> create(request));
 	}
@@ -176,5 +260,44 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.create()
 				.listDistinct(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, OrderId.class);
 
+	}
+
+	@Override
+	public Collection<I_M_ShipperTransportation> getByQuery(@NonNull final ShipperTransportationQuery query)
+	{
+		return toSqlQuery(query)
+				.list();
+	}
+
+	@Override
+	public boolean anyMatch(@NonNull final ShipperTransportationQuery query)
+	{
+		return toSqlQuery(query)
+				.anyMatch();
+	}
+
+	@Override
+	public boolean hasActiveShippingPackage(@NonNull final InOutId inOutId, @NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, inOutId)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	public void clearShipperTransportationIdIfMatches(@NonNull final InOutId inOutId, @NonNull final ShipperTransportationId expectedCurrentValue)
+	{
+		final I_M_InOut shipment = load(inOutId, I_M_InOut.class);
+		if (shipment.getM_ShipperTransportation_ID() != expectedCurrentValue.getRepoId())
+		{
+			// already relinked to something else (or already cleared) meanwhile - don't clobber
+			return;
+		}
+		shipment.setM_ShipperTransportation_ID(-1);
+		saveRecord(shipment);
 	}
 }

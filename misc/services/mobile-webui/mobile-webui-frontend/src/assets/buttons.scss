@@ -1,5 +1,16 @@
 @import './variables.scss';
 
+// Draws the FontAwesome icon from its SVG file, scaled to fit the content box (like the former SVG+JS build),
+// instead of as a font glyph, which is sized by font-size and snaps to whole pixels.
+@mixin indicator-icon($name) {
+  background: currentColor content-box;
+  mask: url('~@fortawesome/fontawesome-free/svgs/solid/#{$name}.svg') center / contain no-repeat content-box;
+
+  &::before {
+    content: none;
+  }
+}
+
 .button {
   height: 2.5em;
 
@@ -90,14 +101,47 @@
     }
 
     .right-btn-side {
-      //border: 1px dotted blue;
-
       flex: 0;
-      height: 100%;
 
       display: flex;
-      align-items: center;
-      justify-content: right;
+      flex-direction: column;
+      padding-top: 0.2em;
+      padding-bottom: 0.2em;
+
+      .indicator-box {
+        flex: none;
+
+        display: block;
+        width: 0.7em;
+        height: 0.7em;
+        padding: 0.1em;
+        box-sizing: content-box;
+
+        &.fa-lock {
+          @include indicator-icon('lock');
+        }
+        &.fa-warehouse {
+          @include indicator-icon('warehouse');
+        }
+        &.fa-circle {
+          @include indicator-icon('circle');
+        }
+        &.fa-circle-half-stroke {
+          @include indicator-icon('circle-half-stroke');
+        }
+      }
+
+      .indicator-color-red {
+        color: $indicator-red;
+      }
+
+      .indicator-color-yellow {
+        color: $indicator-yellow;
+      }
+
+      .indicator-color-green {
+        color: $indicator-green;
+      }
     }
   }
 }
@@ -106,32 +150,29 @@
   height: 4em !important;
 }
 
-
-.indicator-red, .indicator-yellow, .indicator-green {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border: 1px solid #000;
-  border-radius: 100%;
-  margin: 4px;
+// Carrier caption + disabled-reason live in one info row (like .picking-row-info), stacked as
+// centered lines that ellipsis-clip so a long carrier/product name truncates instead of breaking
+// the outlined border. When the reason line is present the two-line info row does not fit the fixed
+// 2.5em button, so grow it — mirrors the per-line qtyAvailable grow-rule for .picking-row-available
+// in pick-products.scss.
+.carrier-advise-info {
+  width: 100%;
 }
 
-.indicator-red {
-  background-color: $indicator-red;
-  border-color: $indicator-red-border;
-  box-shadow: 0 0 4px 1px $indicator-red;
+.carrier-advise-line {
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.indicator-green {
-  background-color: $indicator-green;
-  border-color: $indicator-green-border;
-  box-shadow: 0 0 4px 1px $indicator-green;
+.advise-carrier-disabled-reason {
+  font-style: italic;
 }
 
-.indicator-yellow {
-  background-color: $indicator-yellow;
-  border-color: $indicator-yellow-border;
-  box-shadow: 0 0 4px 1px $indicator-yellow;
+.button:has(.advise-carrier-disabled-reason),
+.full-size-btn:has(.advise-carrier-disabled-reason) {
+  height: 4.5em !important;
 }
 
 .warning-sign {

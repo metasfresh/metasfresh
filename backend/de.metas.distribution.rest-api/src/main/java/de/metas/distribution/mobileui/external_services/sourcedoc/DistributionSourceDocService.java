@@ -1,0 +1,136 @@
+package de.metas.distribution.mobileui.external_services.sourcedoc;
+
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
+import de.metas.product.ResourceId;
+import de.metas.shipper.gateway.commons.model.CarrierProduct;
+import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
+import de.metas.shipping.CarrierProductId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Order;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+
+@Service
+@RequiredArgsConstructor
+public class DistributionSourceDocService
+{
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final CarrierProductRepository carrierProductRepository;
+
+	@NonNull
+	public PlantInfo getPlantInfo(@NonNull final ResourceId plantId)
+	{
+		return PlantInfo.builder()
+				.resourceId(plantId)
+				.caption(getPlantName(plantId))
+				.build();
+	}
+
+	public String getPlantName(@NonNull final ResourceId plantId)
+	{
+		return ppOrderBL.getResourceName(plantId);
+	}
+
+	@NonNull
+	public String getCarrierProductName(@NonNull final CarrierProductId carrierProductId)
+	{
+		final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
+		if (carrierProduct == null)
+		{
+			// A dangling Carrier_Product_ID (the M_ShipmentSchedule row outlived its referenced Carrier_Product)
+			// must not NPE and blank the whole launcher screen: over-showing is preferred to under-showing
+			// (REQUIREMENTS.md §3).
+			return "Carrier product " + carrierProductId.getRepoId();
+		}
+		return carrierProduct.getName();
+	}
+
+	public ImmutablePair<ITranslatableString, String> getDocumentTypeAndName(@NonNull OrderId salesOrderId)
+	{
+		final I_C_Order order = orderBL.getById(salesOrderId);
+		final ITranslatableString docTypeName = docTypeBL.getNameById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+		final String documentNo = order.getDocumentNo();
+		return ImmutablePair.of(docTypeName, documentNo);
+	}
+
+	public String getDocumentNoById(@NonNull OrderId salesOrderId)
+	{
+		final I_C_Order order = orderBL.getById(salesOrderId);
+		return order.getDocumentNo();
+	}
+
+	public ImmutablePair<ITranslatableString, String> getDocumentTypeAndName(@NonNull PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		final ITranslatableString docTypeName = docTypeBL.getNameById(DocTypeId.ofRepoId(ppOrder.getC_DocType_ID()));
+		final String documentNo = ppOrder.getDocumentNo();
+		return ImmutablePair.of(docTypeName, documentNo);
+	}
+
+	public String getDocumentNoById(@NonNull PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		return ppOrder.getDocumentNo();
+	}
+
+	@Nullable
+	public SalesOrderRef getSalesOderRef(@NonNull final OrderId salesOrderId)
+	{
+		return SalesOrderRef.builder()
+				.id(salesOrderId)
+				.documentNo(orderBL.getDocumentNoById(salesOrderId))
+				.build();
+	}
+
+	@Nullable
+	public ManufacturingOrderRef getManufacturingOrderRef(@NonNull final PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+
+		return ManufacturingOrderRef.builder()
+				.id(ppOrderId)
+				.documentNo(ppOrder.getDocumentNo())
+				.build();
+	}
+
+	/**
+	 * @return e.g. "Manufacturing Order 1000123"
+	 */
+	@NonNull
+	public static ITranslatableString toDocTypeAndNoCaption(@NonNull final ITranslatableString docTypeName, @NonNull final String documentNo)
+	{
+		return TranslatableStrings.builder()
+				.append(docTypeName)
+				.append(" ")
+				.append(documentNo)
+				.build();
+	}
+
+	@NonNull
+	public ITranslatableString getPickingInstruction(@NonNull final PPOrderBOMLineId ppOrderBOMLineId)
+	{
+		final I_PP_Order_BOMLine orderBOMLine = ppOrderBL.getOrderBOMLineById(ppOrderBOMLineId);
+		final IModelTranslationMap trl = InterfaceWrapperHelper.getModelTranslationMap(orderBOMLine);
+
+		final ITranslatableString pickingInstruction = trl.getColumnTrl(I_PP_Order_BOMLine.COLUMNNAME_PickingInstruction, orderBOMLine.getPickingInstruction());
+		return TranslatableStrings.blankToEmpty(pickingInstruction);
+	}
+}

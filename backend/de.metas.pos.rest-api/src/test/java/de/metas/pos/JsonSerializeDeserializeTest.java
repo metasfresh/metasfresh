@@ -2,17 +2,29 @@ package de.metas.pos;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.costing.ChargeId;
+import de.metas.invoice.InvoiceId;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentDetail;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentMethodSummary;
+import de.metas.pos.rest_api.json.JsonCashWithdrawalRequest;
+import de.metas.pos.rest_api.json.JsonCashWithdrawalResponse;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleRequest;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleResponse;
+import de.metas.pos.rest_api.json.JsonPOSOpenInvoice;
+import de.metas.pos.rest_api.json.JsonPOSOpenInvoicesList;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
 import de.metas.pos.rest_api.json.JsonPOSOrderLine;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
 import de.metas.pos.rest_api.json.JsonPOSPayment;
 import de.metas.pos.rest_api.json.JsonPOSPaymentStatus;
+import de.metas.pos.rest_api.json.JsonPOSReturnLine;
+import de.metas.pos.rest_api.json.JsonPOSReturnRequest;
+import de.metas.pos.rest_api.json.JsonPOSReturnResponse;
 import de.metas.pos.rest_api.json.JsonPOSTerminal;
 import de.metas.pos.rest_api.json.JsonProduct;
 import de.metas.pos.rest_api.json.JsonProductsSearchResult;
@@ -26,6 +38,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -127,6 +141,122 @@ class JsonSerializeDeserializeTest
 										))
 										.build()
 						))
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonCashWithdrawalRequest() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonCashWithdrawalRequest.builder()
+						.posTerminalId(POSTerminalId.ofRepoId(1))
+						.chargeId(ChargeId.ofRepoId(2))
+						.amount(new BigDecimal("50.00"))
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonCashWithdrawalResponse() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonCashWithdrawalResponse.builder()
+						.documentNo("PAY-001")
+						.category("Travel expenses")
+						.amount(new BigDecimal("50.00"))
+						.date(Instant.parse("2026-09-24T10:15:30Z"))
+						.cashier("John Cashier")
+						.terminal("Terminal 1")
+						.journal(JsonCashJournalSummary.builder()
+								.closed(false)
+								.currencySymbol("€")
+								.currencyPrecision(2)
+								.paymentMethods(ImmutableList.of(
+										JsonPaymentMethodSummary.builder()
+												.paymentMethod(POSPaymentMethod.CASH)
+												.amount(new BigDecimal("123.45"))
+												.details(ImmutableList.of(
+														JsonPaymentDetail.builder()
+																.type(JsonCashJournalSummary.JsonPaymentDetailType.OPENING_BALANCE)
+																.amount(new BigDecimal("100.00"))
+																.build()
+												))
+												.build()
+								))
+								.build())
+						.build()
+		);
+	}
+
+	/**
+	 * The REST API's object mapper writes dates as timestamps (epoch seconds); the slip needs a date the client can parse as-is.
+	 */
+	@Test
+	void test_JsonCashWithdrawalResponse_dateIsISO8601_evenWhenTheMapperWritesDatesAsTimestamps() throws JsonProcessingException
+	{
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper()
+				.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+		final String json = jsonObjectMapper.writeValueAsString(JsonCashWithdrawalResponse.builder()
+				.documentNo("PAY-001")
+				.category("Travel expenses")
+				.amount(new BigDecimal("50.00"))
+				.date(Instant.parse("2026-09-24T10:15:30Z"))
+				.cashier("John Cashier")
+				.terminal("Terminal 1")
+				.journal(JsonCashJournalSummary.builder()
+						.closed(false)
+						.currencySymbol("€")
+						.currencyPrecision(2)
+						.paymentMethods(ImmutableList.of())
+						.build())
+				.build());
+
+		assertThat(json).contains("\"date\":\"2026-09-24T10:15:30Z\"");
+	}
+
+	@Test
+	void test_JsonPOSReturnRequest() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSReturnRequest.builder()
+						.posTerminalId(POSTerminalId.ofRepoId(1))
+						.externalId(UUID.randomUUID())
+						.lines(ImmutableList.of(
+								JsonPOSReturnLine.builder()
+										.productId(ProductId.ofRepoId(2))
+										.qty(new BigDecimal("0.300"))
+										.build()
+						))
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonPOSReturnResponse() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSReturnResponse.builder()
+						.creditMemoDocumentNo("GS-001")
+						.refundAmount(new BigDecimal("4.65"))
+						.journal(JsonCashJournalSummary.builder()
+								.closed(false)
+								.currencySymbol("€")
+								.currencyPrecision(2)
+								.paymentMethods(ImmutableList.of(
+										JsonPaymentMethodSummary.builder()
+												.paymentMethod(POSPaymentMethod.CASH)
+												.amount(new BigDecimal("95.35"))
+												.details(ImmutableList.of(
+														JsonPaymentDetail.builder()
+																.type(JsonCashJournalSummary.JsonPaymentDetailType.OPENING_BALANCE)
+																.amount(new BigDecimal("100.00"))
+																.build()
+												))
+												.build()
+								))
+								.build())
 						.build()
 		);
 	}
@@ -239,6 +369,74 @@ class JsonSerializeDeserializeTest
 		testSerializeDeserialize(
 				JsonPOSOrderChangedWebSocketEvent.builder()
 						.posOrder(newJsonPOSOrder())
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonPOSOpenInvoicesList() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSOpenInvoicesList.builder()
+						.list(ImmutableList.of(
+								JsonPOSOpenInvoice.builder()
+										.invoiceId(InvoiceId.ofRepoId(1))
+										.documentNo("INV-001")
+										.bpartnerName("Customer Name")
+										.dateInvoiced(LocalDate.of(2026, 9, 24))
+										.grandTotal(new BigDecimal("100.00"))
+										.openAmt(new BigDecimal("75.50"))
+										.build(),
+								JsonPOSOpenInvoice.builder()
+										.invoiceId(InvoiceId.ofRepoId(2))
+										.documentNo("INV-002")
+										.bpartnerName("Another Customer")
+										.dateInvoiced(LocalDate.of(2026, 9, 23))
+										.grandTotal(new BigDecimal("250.00"))
+										.openAmt(new BigDecimal("250.00"))
+										.build()
+						))
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonPOSInvoiceSettleRequest() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSInvoiceSettleRequest.builder()
+						.posTerminalId(POSTerminalId.ofRepoId(1))
+						.invoiceId(InvoiceId.ofRepoId(2))
+						.cashTenderedAmount(new BigDecimal("100.00"))
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonPOSInvoiceSettleResponse() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSInvoiceSettleResponse.builder()
+						.documentNo("INV-001")
+						.amount(new BigDecimal("75.50"))
+						.change(new BigDecimal("24.50"))
+						.journal(JsonCashJournalSummary.builder()
+								.closed(false)
+								.currencySymbol("€")
+								.currencyPrecision(2)
+								.paymentMethods(ImmutableList.of(
+										JsonPaymentMethodSummary.builder()
+												.paymentMethod(POSPaymentMethod.CASH)
+												.amount(new BigDecimal("175.50"))
+												.details(ImmutableList.of(
+														JsonPaymentDetail.builder()
+																.type(JsonCashJournalSummary.JsonPaymentDetailType.OPENING_BALANCE)
+																.amount(new BigDecimal("100.00"))
+																.build()
+												))
+												.build()
+								))
+								.build())
 						.build()
 		);
 	}

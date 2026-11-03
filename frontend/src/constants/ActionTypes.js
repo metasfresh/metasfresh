@@ -153,6 +153,18 @@ export const DELETE_NOTIFICATION = 'DELETE_NOTIFICATION';
  * @type {string} ToDo: Description for the constant.
  */
 export const CLEAR_NOTIFICATIONS = 'CLEAR_NOTIFICATIONS';
+
+/**
+ * @constant
+ * @type {string} ToDo: Description for the constant.
+ */
+export const SHOW_ACKNOWLEDGE_DIALOG = 'SHOW_ACKNOWLEDGE_DIALOG';
+
+/**
+ * @constant
+ * @type {string} ToDo: Description for the constant.
+ */
+export const HIDE_ACKNOWLEDGE_DIALOG = 'HIDE_ACKNOWLEDGE_DIALOG';
 // END OF NOTIFICATION ACTIONS
 
 //AUTH ACTIONS
@@ -360,30 +372,6 @@ export const ALLOW_OUTSIDE_CLICK = 'ALLOW_OUTSIDE_CLICK';
  * @type {string} ToDo: Description for the constant.
  */
 export const DISABLE_OUTSIDE_CLICK = 'DISABLE_OUTSIDE_CLICK';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const INIT_KEYMAP = 'INIT_KEYMAP';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const UPDATE_KEYMAP = 'UPDATE_KEYMAP';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const INIT_HOTKEYS = 'INIT_HOTKEYS';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const UPDATE_HOTKEYS = 'UPDATE_HOTKEYS';
 
 /**
  * @constant

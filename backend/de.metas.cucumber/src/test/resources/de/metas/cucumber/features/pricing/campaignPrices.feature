@@ -1,9 +1,14 @@
 @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
 @ghActions:run_on_executor6
 Feature: campaign prices
+## F32000: Pricing
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-05-17T13:30:13+01:00[Europe/Berlin]
 
@@ -21,6 +26,9 @@ Feature: campaign prices
       | bpartner_1 | BPartnerTest | 1000000           | Y              | defaultPricingSystem          | true                   |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0133_150
   @Id:S0133_160
   @Id:S0133_190
@@ -53,6 +61,9 @@ Feature: campaign prices
       | ol_190                    | o_190                 | 2022-05-30  | salesProduct_1          | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0133_100
   @Id:S0133_110
   @Id:S0133_170
@@ -93,6 +104,9 @@ Feature: campaign prices
       | ol_200                    | o_200                 | 2022-05-28  | salesProduct_2          | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0133_120
   @Id:S0133_130
   @Id:S0133_140

@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.sequence.AD_Sequence_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.product.ProductId;
@@ -37,6 +38,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -55,37 +57,52 @@ import org.eevolution.model.X_PP_Product_BOM;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
+import static de.metas.cucumber.stepdefs.util.SqlQueryTestUtil.queryRows;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_M_AttributeSetInstance_ID;
 
+/**
+ * Creates and updates bills of materials ({@code PP_Product_BOM}, {@code PP_Product_BOMVersions}, {@code PP_Product_BOMLine}) for cucumber scenarios.
+ *
+ * @see PP_Product_BOM_StepDefData
+ * @see PP_Product_BOMVersions_StepDefData
+ * @see PP_Product_BOMLine_StepDefData
+ */
 public class PP_Product_Bom_StepDef
 {
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
-	private static final LocalDate DEFAULT_ValidFrom = LocalDate.parse("2000-01-01");
+	/** The report function rounds Cost to 6 decimals and QtyBOM derives from unrounded percentage quantities. */
+	private static final BigDecimal REPORT_TOLERANCE = new BigDecimal("0.000001");
 
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_BOM_StepDefData productBOMTable;
 	private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
 	private final PP_Product_BOMLine_StepDefData productBOMLineTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final AD_Sequence_StepDefData adSequenceTable;
 
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public PP_Product_Bom_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final PP_Product_BOM_StepDefData productBOMTable,
 			@NonNull final PP_Product_BOMVersions_StepDefData productBomVersionsTable,
 			@NonNull final PP_Product_BOMLine_StepDefData productBOMLineTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final AD_Sequence_StepDefData adSequenceTable
 	)
 	{
 		this.productTable = productTable;
@@ -93,14 +110,50 @@ public class PP_Product_Bom_StepDef
 		this.productBomVersionsTable = productBomVersionsTable;
 		this.productBOMLineTable = productBOMLineTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.adSequenceTable = adSequenceTable;
 	}
 
+	/**
+	 * Creates (or updates the existing) PP_Product_BOM of a product.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (optional) identifier of the BOM<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the finished good<br>
+	 *   <b>PP_Product_BOMVersions_ID</b> — (optional) identifier of the BOM versions record<br>
+	 *   <b>ValidFrom</b>, <b>BOMType</b>, <b>M_AttributeSetInstance_ID</b> — (optional)
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains PP_Product_BOM
+	 *   | Identifier | M_Product_ID | PP_Product_BOMVersions_ID |
+	 *   | bom        | finishedGood | bomVersions               |
+	 * </pre>
+	 */
 	@Given("metasfresh contains PP_Product_BOM")
 	public void add_PP_Product_Bom(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::createPP_Product_BOM);
 	}
 
+	/**
+	 * Creates the lines of a PP_Product_BOM. A row updates the existing line of the same product in the same BOM, unless <b>IsAdditionalLine</b> is Y.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (optional) identifier of the line<br>
+	 *   <b>PP_Product_BOM_ID</b> — (required, identifier-ref) the BOM<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the component<br>
+	 *   <b>QtyBatch</b> — (required) qty per finished good (percentage if IsQtyPercentage is Y)<br>
+	 *   <b>IsAdditionalLine</b> — (optional, default N) Y always adds another line, e.g. the same component twice in one BOM<br>
+	 *   <b>ValidTo</b> — (optional, local date) the line is left out when a PP_Order's BOM lines are created for a later start date<br>
+	 *   <b>ComponentType</b>, <b>ValidFrom</b>, <b>IsQtyPercentage</b>, <b>C_UOM_ID.X12DE355</b>, <b>M_AttributeSetInstance_ID</b> — (optional)
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains PP_Product_BOMLines
+	 *   | Identifier | PP_Product_BOM_ID | M_Product_ID | QtyBatch | IsAdditionalLine |
+	 *   | bomLineTwo | bom               | component    | 2        | Y                |
+	 * </pre>
+	 */
 	@Given("metasfresh contains PP_Product_BOMLines")
 	public void add_PP_Product_BOMLine(@NonNull final DataTable dataTable)
 	{
@@ -117,6 +170,38 @@ public class PP_Product_Bom_StepDef
 		documentBL.processEx(productBOM, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
+	/**
+	 * Updates attributes of an existing PP_Product_BOM record (identified by its identifier alias).
+	 * Currently supports setting the lot-number sequence ({@code LotNo_Sequence_ID}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>PP_Product_BOM_ID</b> — (required, identifier-ref) BOM to update<br>
+	 *   <b>OPT.LotNo_Sequence_ID</b> — (optional, identifier-ref) AD_Sequence to use for lot-number generation<br>
+	 * @cucumber.depends StepDefData: PP_Product_BOM_StepDefData, AD_Sequence_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update PP_Product_BOM:
+	 *   | PP_Product_BOM_ID | OPT.LotNo_Sequence_ID |
+	 *   | bom               | seq_provider          |
+	 * </pre>
+	 */
+	@And("update PP_Product_BOM:")
+	public void update_PP_Product_BOM(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_PP_Product_BOM bom = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupNotNullIn(productBOMTable);
+
+			// only persist when a supported column is actually present, to avoid a no-op UPDATE on the (just-completed) document
+			row.getAsOptionalIdentifier(I_PP_Product_BOM.COLUMNNAME_LotNo_Sequence_ID)
+					.map(id -> id.lookupNotNullIn(adSequenceTable))
+					.ifPresent(seq -> {
+						bom.setLotNo_Sequence_ID(seq.getAD_Sequence_ID());
+						saveRecord(bom);
+					});
+		});
+	}
+
 	private void createPP_Product_BOMLine(@NonNull final DataTableRow row)
 	{
 		final I_PP_Product_BOM bom = row.getAsIdentifier(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID).lookupNotNullIn(productBOMTable);
@@ -124,7 +209,11 @@ public class PP_Product_Bom_StepDef
 
 		final I_M_Product productRecord = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
 
-		final I_PP_Product_BOMLine bomLine = CoalesceUtil.coalesceSuppliersNotNull(
+		// By default an existing line of the same product in the same BOM is updated; IsAdditionalLine=Y always adds another line (a BOM with the same component twice)
+		final boolean isAdditionalLine = row.getAsOptionalBoolean("IsAdditionalLine").orElseFalse();
+		final I_PP_Product_BOMLine bomLine = isAdditionalLine
+				? newInstance(I_PP_Product_BOMLine.class)
+				: CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
 						.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 						.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bomId)
@@ -154,11 +243,16 @@ public class PP_Product_Bom_StepDef
 				.orElseGet(bom::getValidFrom);
 		bomLine.setValidFrom(validFrom);
 
+		row.getAsOptionalLocalDate(I_PP_Product_BOMLine.COLUMNNAME_ValidTo)
+				.map(localDate -> Timestamp.valueOf(localDate.atStartOfDay()))
+				.ifPresent(bomLine::setValidTo);
+
 		final boolean isPercentage = row.getAsOptionalBoolean(I_PP_Product_BOMLine.COLUMNNAME_IsQtyPercentage).orElseFalse();
 		final BigDecimal qty = row.getAsBigDecimal(I_PP_Product_BOMLine.COLUMNNAME_QtyBatch);
+		// the column is nullable with no DB/AD default; SQL functions such as PP_Product_BOM_Recursive read QtyBOM only when IsQtyPercentage = 'N', so always set the flag explicitly
+		bomLine.setIsQtyPercentage(isPercentage);
 		if (isPercentage)
 		{
-			bomLine.setIsQtyPercentage(true);
 			bomLine.setQtyBatch(qty);
 		}
 		else
@@ -169,6 +263,8 @@ public class PP_Product_Bom_StepDef
 		row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
 				.map(attributeSetInstanceTable::getId)
 				.ifPresent(asiId -> bomLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
+
+		row.getAsOptionalString(I_PP_Product_BOMLine.COLUMNNAME_PickingInstruction).ifPresent(bomLine::setPickingInstruction);
 
 		saveRecord(bomLine);
 
@@ -294,5 +390,94 @@ public class PP_Product_Bom_StepDef
 
 		saveRecord(bomVersionsRecord);
 		return bomVersionsRecord;
+	}
+
+	/**
+	 * Calls {@code PP_Product_BOM_Recursive(<bom>, NULL)} and compares its rows, in the order of the function's {@code path}, with the table.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Line</b> — (required) tree position, e.g. "1.2."<br>
+	 *   <b>cumulative_qty</b> — (required) expected quantity of the node per one unit of the top BOM product<br>
+	 * @cucumber.depends StepDefData: PP_Product_BOM_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the BOM recursive explosion of bom_1 returns:
+	 *   | Line | cumulative_qty |
+	 *   | 1.   | 1              |
+	 *   | 1.1. | 2              |
+	 * </pre>
+	 */
+	@Then("the BOM recursive explosion of {word} returns:")
+	public void the_BOM_recursive_explosion_returns(@NonNull final String bomIdentifier, @NonNull final DataTable dataTable)
+	{
+		final int bomId = productBOMTable.getId(bomIdentifier).getRepoId();
+		final List<String> actualLines = new ArrayList<>();
+		final List<BigDecimal> actualCumulativeQtys = new ArrayList<>();
+		queryRows("SELECT Line, cumulative_qty FROM PP_Product_BOM_Recursive(" + bomId + "::numeric, NULL::varchar) ORDER BY path",
+				rs -> {
+					actualLines.add(rs.getString(1));
+					actualCumulativeQtys.add(rs.getBigDecimal(2));
+				});
+
+		final List<String> expectedLines = new ArrayList<>();
+		final List<BigDecimal> expectedCumulativeQtys = new ArrayList<>();
+		DataTableRows.of(dataTable).forEach(row -> {
+			expectedLines.add(row.getAsString("Line"));
+			expectedCumulativeQtys.add(row.getAsBigDecimal("cumulative_qty"));
+		});
+
+		assertThat(actualLines).as("Line of PP_Product_BOM_Recursive rows of " + bomIdentifier).containsExactlyElementsOf(expectedLines);
+		for (int i = 0; i < expectedLines.size(); i++)
+		{
+			assertThat(actualCumulativeQtys.get(i)).as("cumulative_qty of line " + expectedLines.get(i)).isEqualByComparingTo(expectedCumulativeQtys.get(i));
+		}
+	}
+
+	/**
+	 * Calls {@code PP_Product_BOM_Recursive_Report(<bom>, <today>)} and compares its rows (ordered as returned) with the table.
+	 * An empty cell means "not asserted"; QtyBOM and Cost match within 0.000001.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Line</b> — (required) tree position, e.g. "1.2."<br>
+	 *   <b>QtyBOM</b> — (optional) expected quantity<br>
+	 *   <b>Cost</b> — (optional) expected cost<br>
+	 * @cucumber.depends StepDefData: PP_Product_BOM_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the BOM recursive report of bom_1 returns:
+	 *   | Line | QtyBOM | Cost |
+	 *   | 1.   | 1      |      |
+	 *   | 1.1. | 2      | 10   |
+	 * </pre>
+	 */
+	@Then("the BOM recursive report of {word} returns:")
+	public void the_BOM_recursive_report_returns(@NonNull final String bomIdentifier, @NonNull final DataTable dataTable)
+	{
+		final int bomId = productBOMTable.getId(bomIdentifier).getRepoId();
+		final List<String> actualLines = new ArrayList<>();
+		final List<BigDecimal> actualQtyBOMs = new ArrayList<>();
+		final List<BigDecimal> actualCosts = new ArrayList<>();
+		queryRows("SELECT Line, QtyBOM, Cost FROM PP_Product_BOM_Recursive_Report(" + bomId + "::numeric, now()::date)",
+				rs -> {
+					actualLines.add(rs.getString(1));
+					actualQtyBOMs.add(rs.getBigDecimal(2));
+					actualCosts.add(rs.getBigDecimal(3));
+				});
+
+		final List<DataTableRow> expectedRows = DataTableRows.of(dataTable).toList();
+
+		assertThat(actualLines).as("Line of PP_Product_BOM_Recursive_Report rows of " + bomIdentifier)
+				.containsExactlyElementsOf(expectedRows.stream().map(row -> row.getAsString("Line")).collect(Collectors.toList()));
+		for (int i = 0; i < expectedRows.size(); i++)
+		{
+			final int index = i;
+			final String line = actualLines.get(i);
+			expectedRows.get(i).getAsOptionalBigDecimal("QtyBOM")
+					.ifPresent(expected -> assertThat(actualQtyBOMs.get(index)).as("QtyBOM of line " + line).isCloseTo(expected, within(REPORT_TOLERANCE)));
+			expectedRows.get(i).getAsOptionalBigDecimal("Cost")
+					.ifPresent(expected -> assertThat(actualCosts.get(index)).as("Cost of line " + line).isCloseTo(expected, within(REPORT_TOLERANCE)));
+		}
 	}
 }

@@ -16,25 +16,25 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy) VALUES (0,591429,0,542004,542218,TO_TIMESTAMP('2025-10-23 18:18:55.588000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','N',TO_TIMESTAMP('2025-10-23 18:18:55.588000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- Name: M_ReceiptSchedule target for QtyDemand_QtySupply_V
+-- Name: M_ShipmentSchedule target for QtyDemand_QtySupply_V
 -- 2025-10-23T18:19:45.764Z
-INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,542005,TO_TIMESTAMP('2025-10-23 18:19:45.582000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','M_ReceiptSchedule target for QtyDemand_QtySupply_V',TO_TIMESTAMP('2025-10-23 18:19:45.582000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'T')
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,542005,TO_TIMESTAMP('2025-10-23 18:19:45.582000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','M_ShipmentSchedule target for QtyDemand_QtySupply_V',TO_TIMESTAMP('2025-10-23 18:19:45.582000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'T')
 ;
 
 -- 2025-10-23T18:19:45.765Z
 INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Reference_ID=542005 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
 ;
 
--- Reference: M_ReceiptSchedule target for QtyDemand_QtySupply_V
+-- Reference: M_ShipmentSchedule target for QtyDemand_QtySupply_V
 -- Table: M_ReceiptSchedule
--- Key: M_ReceiptSchedule.M_ReceiptSchedule_ID
+-- Key: M_ShipmentSchedule.M_ReceiptSchedule_ID
 -- 2025-10-23T18:24:50.639Z
 INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,549487,0,542005,540524,TO_TIMESTAMP('2025-10-23 18:24:50.633000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','N',TO_TIMESTAMP('2025-10-23 18:24:50.633000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'EXISTS (SELECT 1               from M_ShipmentSchedule ss               where ss.M_ShipmentSchedule_ID = M_ShipmentSchedule.M_ShipmentSchedule_ID     AND ((IsActive = ''Y'')         AND (M_Product_ID = @M_Product_ID/-1@)         AND (M_Warehouse_ID = @M_Warehouse_ID/-1@)         AND (AD_Org_ID = @AD_Org_ID/-1@)         AND (generateASIStorageAttributesKey(M_AttributeSetInstance_ID) = @AttributesKey/''''@)         AND ((QtyReserved <> 0 OR QtyReserved IS NULL))))')
 ;
 
 -- Name: QtyDemand_QtySupply_V_to_Shipment_Schedule
 -- Source Reference: QtyDemand_QtySupply_V
--- Target Reference: M_ReceiptSchedule target for QtyDemand_QtySupply_V
+-- Target Reference: M_ShipmentSchedule target for QtyDemand_QtySupply_V
 -- 2025-10-23T18:25:17.725Z
 INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,542004,542005,540464,TO_TIMESTAMP('2025-10-23 18:25:17.534000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','QtyDemand_QtySupply_V_to_Shipment_Schedule',TO_TIMESTAMP('2025-10-23 18:25:17.534000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
@@ -68,30 +68,30 @@ UPDATE AD_Reference SET Name='QtyDemand_QtySupply_V ->M_ReceiptSchedule ',Update
 UPDATE AD_Reference_Trl trl SET Name='QtyDemand_QtySupply_V ->M_ReceiptSchedule ' WHERE AD_Reference_ID=542005 AND AD_Language='de_DE'
 ;
 
--- Name: M_ReceiptSchedule target for QtyDemand_QtySupply_V
+-- Name: M_ShipmentSchedule target for QtyDemand_QtySupply_V
 -- 2025-10-23T18:57:25.496Z
-UPDATE AD_Reference SET Name='M_ReceiptSchedule target for QtyDemand_QtySupply_V',Updated=TO_TIMESTAMP('2025-10-23 18:57:25.494000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Reference_ID=542005
+UPDATE AD_Reference SET Name='M_ShipmentSchedule target for QtyDemand_QtySupply_V',Updated=TO_TIMESTAMP('2025-10-23 18:57:25.494000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Reference_ID=542005
 ;
 
 -- 2025-10-23T18:57:25.497Z
-UPDATE AD_Reference_Trl trl SET Name='M_ReceiptSchedule target for QtyDemand_QtySupply_V' WHERE AD_Reference_ID=542005 AND AD_Language='de_DE'
+UPDATE AD_Reference_Trl trl SET Name='M_ShipmentSchedule target for QtyDemand_QtySupply_V' WHERE AD_Reference_ID=542005 AND AD_Language='de_DE'
 ;
 
--- Reference: M_ReceiptSchedule target for QtyDemand_QtySupply_V
+-- Reference: M_ShipmentSchedule target for QtyDemand_QtySupply_V
 -- Table: M_ShipmentSchedule
 -- Key: M_ShipmentSchedule.M_ShipmentSchedule_ID
 -- 2025-10-23T18:58:01.904Z
 UPDATE AD_Ref_Table SET AD_Key=500232, AD_Table_ID=500221,Updated=TO_TIMESTAMP('2025-10-23 18:58:01.904000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Reference_ID=542005
 ;
 
--- Reference: M_ReceiptSchedule target for QtyDemand_QtySupply_V
+-- Reference: M_ShipmentSchedule target for QtyDemand_QtySupply_V
 -- Table: M_ShipmentSchedule
 -- Key: M_ShipmentSchedule.M_ShipmentSchedule_ID
 -- 2025-10-23T18:59:09.470Z
 UPDATE AD_Ref_Table SET WhereClause='EXISTS (SELECT 1               from M_ShipmentSchedule ss               where ss.M_ShipmentSchedule_ID = M_ShipmentSchedule.M_ShipmentSchedule_ID     AND ((IsActive = ''Y'')         AND (M_Product_ID = @M_Product_ID/-1@)         AND (M_Warehouse_ID = @M_Warehouse_ID/-1@)         AND (AD_Org_ID = @AD_Org_ID/-1@)         AND (generateASIStorageAttributesKey(M_AttributeSetInstance_ID) = ''@AttributesKey/@'')         AND ((QtyReserved <> 0 OR QtyReserved IS NULL))))',Updated=TO_TIMESTAMP('2025-10-23 18:59:09.470000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Reference_ID=542005
 ;
 
--- Reference: M_ReceiptSchedule target for QtyDemand_QtySupply_V
+-- Reference: M_ShipmentSchedule target for QtyDemand_QtySupply_V
 -- Table: M_ShipmentSchedule
 -- Key: M_ShipmentSchedule.M_ShipmentSchedule_ID
 -- 2025-10-23T18:59:16.310Z
@@ -367,6 +367,28 @@ UPDATE AD_UI_Element SET SeqNo=60,Updated=TO_TIMESTAMP('2025-10-24 10:18:24.6490
 -- 2025-10-24T10:18:29.947Z
 UPDATE AD_UI_Element SET SeqNo=70,Updated=TO_TIMESTAMP('2025-10-24 10:18:29.947000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637936
 ;
+
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 -- UI Element: Material Cockpit v2(541963,D) -> MD_Cockpit QtyDemand and QtySupply(548476,D) -> Main -> 10 -> main.Produkt Kategorie
 -- Column: QtyDemand_QtySupply_V.M_Product_Category_ID

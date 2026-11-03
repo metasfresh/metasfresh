@@ -35,8 +35,7 @@ import java.util.Objects;
 @Builder
 public class BPartnerLocationAddressPart
 {
-	@With
-	@Nullable LocationId existingLocationId;
+	@Nullable @With LocationId existingLocationId;
 	@Nullable String address1;
 	@Nullable String address2;
 	@Nullable String address3;

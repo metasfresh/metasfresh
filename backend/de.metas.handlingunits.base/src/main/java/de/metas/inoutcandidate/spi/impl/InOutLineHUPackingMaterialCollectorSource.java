@@ -2,9 +2,12 @@ package de.metas.inoutcandidate.spi.impl;
 
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -28,7 +31,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@EqualsAndHashCode(of= {"productId", "recordId"})
+@EqualsAndHashCode(of = { "productId", "recordId" })
 public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMaterialCollectorSource
 {
 	public static InOutLineHUPackingMaterialCollectorSource of(final I_M_InOutLine inoutLine)
@@ -43,6 +46,7 @@ public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMate
 	private final int recordId;
 	private final I_M_InOutLine inoutLine;
 	private final boolean collectHUPipToSource;
+	@Nullable private final ProjectId projectId;
 
 	@Builder
 	private InOutLineHUPackingMaterialCollectorSource(@NonNull final I_M_InOutLine inoutLine, final boolean collectHUPipToSource)
@@ -51,6 +55,7 @@ public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMate
 		recordId = inoutLine.getM_InOutLine_ID();
 		this.inoutLine = inoutLine;
 		this.collectHUPipToSource = collectHUPipToSource;
+		this.projectId = ProjectId.ofRepoIdOrNull(inoutLine.getC_Project_ID());
 	}
 
 	@Override
@@ -69,6 +74,12 @@ public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMate
 	public boolean isCollectHUPipToSource()
 	{
 		return collectHUPipToSource;
+	}
+
+	@Override
+	public ProjectId getProjectId()
+	{
+		return projectId;
 	}
 
 	public I_M_InOutLine getM_InOutLine()

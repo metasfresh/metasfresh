@@ -1,0 +1,2 @@
+Field <de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil$CheckAvailableForSalesRequest$CheckAvailableForSalesRequestBuilder.preparationDate> has raw type java.sql.Timestamp in (AvailableForSalesUtil.java:0)
+Field <de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil$CheckAvailableForSalesRequest.preparationDate> has raw type java.sql.Timestamp in (AvailableForSalesUtil.java:0)

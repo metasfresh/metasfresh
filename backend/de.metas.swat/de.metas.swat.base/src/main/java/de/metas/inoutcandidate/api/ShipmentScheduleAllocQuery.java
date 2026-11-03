@@ -16,12 +16,14 @@ public class ShipmentScheduleAllocQuery
 {
 	@Nullable ShipmentScheduleAndJobScheduleIdSet scheduleIds;
 	@Nullable Boolean alreadyShipped;
+	@Nullable Boolean processed;
 	@Nullable ImmutableSet<HuId> onlyLUIds;
 
 	@Builder
 	private ShipmentScheduleAllocQuery(
 			@Nullable final ShipmentScheduleAndJobScheduleIdSet scheduleIds,
 			@NonNull final Boolean alreadyShipped,
+			@Nullable final Boolean processed,
 			@Nullable final Set<HuId> onlyLUIds)
 	{
 		if ((scheduleIds == null || scheduleIds.isEmpty())
@@ -32,6 +34,7 @@ public class ShipmentScheduleAllocQuery
 
 		this.scheduleIds = scheduleIds;
 		this.alreadyShipped = alreadyShipped;
+		this.processed = processed;
 		this.onlyLUIds = onlyLUIds != null ? ImmutableSet.copyOf(onlyLUIds) : null;
 	}
 }

@@ -72,6 +72,8 @@ public enum CostingLevel
 	private static final ImmutableMap<String, CostingLevel> code2type = Stream.of(values())
 			.collect(GuavaCollectors.toImmutableMapByKey(CostingLevel::getCode));
 
+	public boolean isOrg() {return this == Organization;}
+
 	public ClientId effectiveValue(@NonNull final ClientId clientId)
 	{
 		if (clientId.isSystem())

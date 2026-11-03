@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Shipper
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 479216404L;
+	private static final long serialVersionUID = -1364471192L;
 
     /** Standard Constructor */
     public X_M_Shipper (final Properties ctx, final int M_Shipper_ID, @Nullable final String trxName)
@@ -74,6 +74,30 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	}
 
 	@Override
+	public void setIsApiCarrierAdvise (final boolean IsApiCarrierAdvise)
+	{
+		set_Value (COLUMNNAME_IsApiCarrierAdvise, IsApiCarrierAdvise);
+	}
+
+	@Override
+	public boolean isApiCarrierAdvise() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsApiCarrierAdvise);
+	}
+
+	@Override
+	public void setIsCreateDeliveryPlanning (final boolean IsCreateDeliveryPlanning)
+	{
+		set_Value (COLUMNNAME_IsCreateDeliveryPlanning, IsCreateDeliveryPlanning);
+	}
+
+	@Override
+	public boolean isCreateDeliveryPlanning() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCreateDeliveryPlanning);
+	}
+
+	@Override
 	public void setIsDefault (final boolean IsDefault)
 	{
 		set_Value (COLUMNNAME_IsDefault, IsDefault);
@@ -110,6 +134,57 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setPickupTimeFrom (final java.sql.Timestamp PickupTimeFrom)
+	{
+		set_Value (COLUMNNAME_PickupTimeFrom, PickupTimeFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getPickupTimeFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PickupTimeFrom);
+	}
+
+	@Override
+	public void setPickupTimeTo (final java.sql.Timestamp PickupTimeTo)
+	{
+		set_Value (COLUMNNAME_PickupTimeTo, PickupTimeTo);
+	}
+
+	@Override
+	public java.sql.Timestamp getPickupTimeTo() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PickupTimeTo);
+	}
+
+	/** 
+	 * PriorityRule AD_Reference_ID=154
+	 * Reference name: _PriorityRule
+	 */
+	public static final int PRIORITYRULE_AD_Reference_ID=154;
+	/** High = 3 */
+	public static final String PRIORITYRULE_High = "3";
+	/** Medium = 5 */
+	public static final String PRIORITYRULE_Medium = "5";
+	/** Low = 7 */
+	public static final String PRIORITYRULE_Low = "7";
+	/** Urgent = 1 */
+	public static final String PRIORITYRULE_Urgent = "1";
+	/** Minor = 9 */
+	public static final String PRIORITYRULE_Minor = "9";
+	@Override
+	public void setPriorityRule (final @Nullable java.lang.String PriorityRule)
+	{
+		set_Value (COLUMNNAME_PriorityRule, PriorityRule);
+	}
+
+	@Override
+	public java.lang.String getPriorityRule() 
+	{
+		return get_ValueAsString(COLUMNNAME_PriorityRule);
 	}
 
 	/** 

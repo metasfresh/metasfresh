@@ -22,109 +22,103 @@
 
 package de.metas.externalsystem.scriptedexportconversion.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.AdTableAndClientId;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.Objects;
 
 @Interceptor(I_ExternalSystem_Config_ScriptedExportConversion.class)
 @Component
 @RequiredArgsConstructor
 public class ExternalSystem_Config_ScriptedExportConversion
 {
-	@NonNull
-	private final ExternalSystemScriptedExportConversionService externalSystemScriptedExportConversionService;
-	@NonNull
-	private final ExternalSystemScriptedExportConversionInterceptorRegistry externalSystemScriptedExportConversionInterceptorRegistry;
+	// Services
+	@NonNull private static final Logger logger = LogManager.getLogger(ExternalSystem_Config_ScriptedExportConversion.class);
+	@NonNull private final ExternalSystemScriptedExportConversionService externalSystemScriptedExportConversionService;
+	@NonNull private final ExternalSystemScriptedExportConversionInterceptorRegistry externalSystemScriptedExportConversionInterceptorRegistry;
 
-	private ModelValidationEngine engine;
+    // States
+	@NonNull private ImmutableSet<AdTableAndClientId> tableAndClientIds = ImmutableSet.of();
+	@NonNull private final HashSet<AdTableAndClientId> registeredTableAndClientIds = new HashSet<>();
+	@Nullable private ModelValidationEngine engine;
+
+	@NonNull private ModelValidationEngine getEngine() {return Check.assumeNotNull(this.engine, "engine is set");}
 
 	@Init
-	public void initialize()
+	public void init()
 	{
 		this.engine = ModelValidationEngine.get();
+		externalSystemScriptedExportConversionService.addCacheResetListener(this::updateFromRepository);
 
-		final Set<AdTableAndClientId> alreadyRegisteredTableIds = new HashSet<>();
-
-		externalSystemScriptedExportConversionService.retrieveActiveConfigs()
-				.forEach(activeConfig -> {
-					final AdTableAndClientId adTableAndClientId = AdTableAndClientId.of(activeConfig.getAdTableId(), activeConfig.getClientId());
-					if (!alreadyRegisteredTableIds.contains(adTableAndClientId))
-					{
-						registerInterceptor(activeConfig);
-						alreadyRegisteredTableIds.add(AdTableAndClientId.of(activeConfig.getAdTableId(), activeConfig.getClientId()));
-					}
-				});
+		updateFromRepository();
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
-			ifColumnsChanged = { I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_IsActive,
-					I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_AD_Table_ID })
-	public void manageRecordInterceptors(@NonNull final I_ExternalSystem_Config_ScriptedExportConversion config)
+	private synchronized void updateFromRepository()
 	{
-		final I_ExternalSystem_Config_ScriptedExportConversion oldRecord = InterfaceWrapperHelper.createOld(config, I_ExternalSystem_Config_ScriptedExportConversion.class);
-		final AdTableAndClientId oldTableAndClientId = Optional.ofNullable(AdTableId.ofRepoIdOrNull(oldRecord.getAD_Table_ID()))
-				.map(tableId -> AdTableAndClientId.of(tableId, ClientId.ofRepoId(oldRecord.getAD_Client_ID())))
-				.orElse(null);
-		final AdTableAndClientId tableAndClientId = AdTableAndClientId.of(AdTableId.ofRepoId(config.getAD_Table_ID()), ClientId.ofRepoId(config.getAD_Client_ID()));
-		if (config.isActive())
+		final ImmutableSet<AdTableAndClientId> tableAndClientIdsPrev = ImmutableSet.copyOf(this.tableAndClientIds);
+		this.tableAndClientIds = externalSystemScriptedExportConversionService.getTriggerOnCompleteDistinctTableAndClientIds();
+		if(Objects.equals(this.tableAndClientIds, tableAndClientIdsPrev))
 		{
-			if (oldTableAndClientId != null && !oldTableAndClientId.equals(tableAndClientId) &&
-					!externalSystemScriptedExportConversionService.existsActive(oldTableAndClientId))
-			{
-				externalSystemScriptedExportConversionInterceptorRegistry.unregisterInterceptorByTableAndClientId(oldTableAndClientId);
-			}
-
-			if (externalSystemScriptedExportConversionService.existsActiveOutOfTrx(tableAndClientId))
-			{
-				return;
-			}
-
-			registerInterceptor(config);
+			return;
 		}
-		else
+
+		updateRegisteredInterceptors();
+	}
+
+	private synchronized void updateRegisteredInterceptors()
+	{
+		final HashSet<AdTableAndClientId> registeredClientAndTableIdsNoLongerNeeded = new HashSet<>(this.registeredTableAndClientIds);
+
+		for (final AdTableAndClientId tableAndClientId : this.tableAndClientIds)
 		{
-			if (!externalSystemScriptedExportConversionService.existsActive(tableAndClientId) && oldRecord.isActive())
+			registeredClientAndTableIdsNoLongerNeeded.remove(tableAndClientId);
+
+			if (registeredTableAndClientIds.contains(tableAndClientId))
 			{
-				externalSystemScriptedExportConversionInterceptorRegistry.unregisterInterceptorByTableAndClientId(tableAndClientId);
+				// already registered
+				continue;
 			}
+
+			registerInterceptor(tableAndClientId);
+		}
+
+		//
+		// Remove no longer necessary interceptors
+		for (final AdTableAndClientId tableAndClientId : registeredClientAndTableIdsNoLongerNeeded)
+		{
+			unregisterInterceptor(tableAndClientId);
 		}
 	}
 
-	private void registerInterceptor(@NonNull final ExternalSystemScriptedExportConversionConfig config)
+	private void registerInterceptor(@NonNull final AdTableAndClientId tableAndClientId)
 	{
 		final ExternalSystemScriptedExportConversionInterceptor interceptor = new ExternalSystemScriptedExportConversionInterceptor(
-				engine,
+				getEngine(),
 				externalSystemScriptedExportConversionService,
-				AdTableAndClientId.of(config.getAdTableId(), config.getClientId()));
+				tableAndClientId);
 
 		externalSystemScriptedExportConversionInterceptorRegistry.registerInterceptor(interceptor);
+		registeredTableAndClientIds.add(tableAndClientId);
+		logger.info("Registered producer for {}", tableAndClientId);
 	}
 
-	private void registerInterceptor(@NonNull final I_ExternalSystem_Config_ScriptedExportConversion config)
+	private void unregisterInterceptor(@NonNull final AdTableAndClientId tableAndClientId)
 	{
-		final ExternalSystemScriptedExportConversionInterceptor interceptor = new ExternalSystemScriptedExportConversionInterceptor(
-				engine,
-				externalSystemScriptedExportConversionService,
-				AdTableAndClientId.of(
-						AdTableId.ofRepoId(config.getAD_Table_ID()),
-						ClientId.ofRepoId(config.getAD_Client_ID())));
-
-		externalSystemScriptedExportConversionInterceptorRegistry.registerInterceptor(interceptor);
+		externalSystemScriptedExportConversionInterceptorRegistry.unregisterInterceptorByTableAndClientId(tableAndClientId);
+		registeredTableAndClientIds.remove(tableAndClientId);
+		logger.info("Unregistered trigger for {}", tableAndClientId);
 	}
 }

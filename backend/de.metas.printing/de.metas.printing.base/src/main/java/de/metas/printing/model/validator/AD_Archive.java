@@ -22,11 +22,11 @@ package de.metas.printing.model.validator;
  * #L%
  */
 
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.impl.PrintArchiveParameters;
 import de.metas.printing.model.I_AD_Archive;
-import de.metas.printing.model.I_C_Doc_Outbound_Config;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;

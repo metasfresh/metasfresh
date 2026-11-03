@@ -16,6 +16,9 @@ import { getPage, FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEO
  * @param {number} windowId - AD_Window_ID
  */
 export async function navigateToViewWindow(windowId) {
+  if (!windowId || typeof windowId !== 'number') {
+    throw new Error(`navigateToViewWindow: windowId must be a number, got ${JSON.stringify(windowId)}. Check that the constant is exported from WindowIds.js`);
+  }
   const page = getPage();
   await page.goto(`${FRONTEND_BASE_URL}/window/${windowId}`);
 

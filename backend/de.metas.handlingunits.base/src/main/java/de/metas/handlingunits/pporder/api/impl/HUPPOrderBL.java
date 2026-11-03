@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -12,6 +13,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -44,12 +47,16 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.api.LotNoContext;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
+import org.apache.commons.lang3.StringUtils;
 import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
@@ -57,13 +64,16 @@ import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
+import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -81,10 +91,12 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL attributesBL = Services.get(IHUAttributesBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
 
 	private final SpringContextHolder.Lazy<HUQRCodesService> huqrCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class);
 	private final SpringContextHolder.Lazy<MaturingConfigRepository> maturingConfigRepository = SpringContextHolder.lazyBean(MaturingConfigRepository.class);
 	private final SpringContextHolder.Lazy<PPOrderCandidateDAO> ppOrderCandidateDAO = SpringContextHolder.lazyBean(PPOrderCandidateDAO.class);
+	@NonNull private final SpringContextHolder.Lazy<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker = SpringContextHolder.lazyBean(LUTUConfigurationPackingInstructionChecker.class);
 
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
@@ -132,14 +144,14 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	public IPPOrderReceiptHUProducer receivingMainProduct(@NonNull final PPOrderId ppOrderId)
 	{
 		final I_PP_Order ppOrder = getById(ppOrderId);
-		return new CostCollectorCandidateFinishedGoodsHUProducer(ppOrder);
+		return new CostCollectorCandidateFinishedGoodsHUProducer(ppOrder, packingInstructionChecker::get);
 	}
 
 	@Override
 	public IPPOrderReceiptHUProducer receivingByOrCoProduct(@NonNull final PPOrderBOMLineId orderBOMLineId)
 	{
 		final I_PP_Order_BOMLine orderBOMLine = ppOrderBOMsRepo.getOrderBOMLineById(orderBOMLineId);
-		return new CostCollectorCandidateCoProductHUProducer(orderBOMLine);
+		return new CostCollectorCandidateCoProductHUProducer(orderBOMLine, packingInstructionChecker::get);
 	}
 
 	@Override
@@ -317,7 +329,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 			@NonNull final I_M_HU hu,
 			@NonNull final ProductId maturedProductId)
 	{
-		if (!hu.isActive() || !hu.isReserved() || !hu.isLocked() || !huStatusBL.isStatusActiveOrIssued(hu))
+		if (!hu.isActive() || hu.isReserved() || hu.isLocked() || !huStatusBL.isStatusActiveOrIssued(hu))
 		{
 			return false;
 		}
@@ -343,6 +355,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 						.productId(maturedProductId)
 						.warehouseId(locatorId.getWarehouseId())
 						.maturingConfigLineId(maturingConfigLine.getId())
+						.orgId(maturingConfigLine.getOrgId())
 						.build())
 				.map(ProductPlanning::isMatured)
 				.orElse(false);
@@ -372,9 +385,12 @@ public class HUPPOrderBL implements IHUPPOrderBL
 
 		final ProductId maturedProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 
-		if (isHUEligibleForMaturing(maturingHU, maturedProductId))
+		if (!isHUEligibleForMaturing(maturingHU, maturedProductId))
 		{
-			throw new AdempiereException("Issue HU is not eligible for maturing !");
+			throw new AdempiereException("Issue HU is not eligible for maturing!")
+					.appendParametersToMessage()
+					.setParameter("maturingHUId", maturingHUId)
+					.setParameter("maturedProductId", maturedProductId);
 		}
 
 		return maturingHU;
@@ -392,11 +408,77 @@ public class HUPPOrderBL implements IHUPPOrderBL
 				.receiveVHU(Quantitys.of(ppOrder.getQtyOrdered(), UomId.ofRepoId(ppOrder.getC_UOM_ID())));
 
 		attributesBL.transferAttributesForSingleProductHUs(huToBeIssued, receivedHu);
-		attributesBL.updateHUAttribute(HuId.ofRepoId(receivedHu.getM_HU_ID()), AttributeConstants.ProductionDate, SystemTime.asTimestamp());
+		final HuId receivedHuId = HuId.ofRepoId(receivedHu.getM_HU_ID());
+		attributesBL.updateHUAttribute(receivedHuId, AttributeConstants.ProductionDate, SystemTime.asTimestamp());
+		// When maturing, the new HU's ProductionDate is set to NOW(), which would reset its calculated age to 0.
+		// To preserve the original aging timeline, we copy the source HU's current Age as AgeOffset.
+		// The AgeOffset is then used in PP_Maturing_Candidate_v to adjust the DateStartSchedule calculation.
+		final String ageString = attributesBL.getHUAttributeValue(huToBeIssued, HUAttributeConstants.ATTR_Age);
+		if (StringUtils.isNumeric(ageString))
+		{
 
-		final HUQRCode huqrCode = huqrCodesService.get().getQRCodeByHuId(HuId.ofRepoId(huToBeIssued.getM_HU_ID()));
-		huqrCodesService.get().assign(huqrCode, ImmutableSet.of(HuId.ofRepoId(receivedHu.getM_HU_ID())));
+			attributesBL.updateHUAttribute(receivedHuId, HUAttributeConstants.ATTR_AgeOffset, ageString);
+		}
+
+		final HUQRCodesService qrCodeService = huqrCodesService.get();
+		final HuId huToBeIssuedId = HuId.ofRepoId(huToBeIssued.getM_HU_ID());
+		final HUQRCode huqrCode = qrCodeService.getQRCodeByHuId(huToBeIssuedId);
+		if (huqrCode != null)
+		{
+			qrCodeService.assign(huqrCode, ImmutableSet.of(receivedHuId));
+			try
+			{
+				qrCodeService.removeAssignment(huqrCode, ImmutableSet.of(huToBeIssuedId));
+			}
+			catch (final Exception e)
+			{
+				// Compensating action: remove the assignment we just made
+				qrCodeService.removeAssignment(huqrCode, ImmutableSet.of(receivedHuId));
+				throw AdempiereException.wrapIfNeeded(e)
+						.appendParametersToMessage()
+						.setParameter("huqrCode", huqrCode.toDisplayableQRCode())
+						.setParameter("sourceHuId", huToBeIssuedId)
+						.setParameter("targetHuId", receivedHuId);
+			}
+		}
 
 		processPlanning(PPOrderPlanningStatus.COMPLETE, ppOrderId);
+	}
+
+	@Override
+	public Optional<String> getAndIncrementLotNumberFromSequence(@NonNull final PPOrderId ppOrderId, @NonNull final LocalDate receiptDate)
+	{
+		return getLotNoContext(ppOrderId, receiptDate).flatMap(lotNumberBL::getAndIncrementLotNo);
+	}
+
+	@Override
+	public Optional<String> previewLotNumberFromSequence(@NonNull final PPOrderId ppOrderId, @NonNull final LocalDate receiptDate)
+	{
+		return getLotNoContext(ppOrderId, receiptDate).flatMap(lotNumberBL::previewLotNo);
+	}
+
+	/**
+	 * @return the context of the lot-number sequence of the given order's BOM (<code>PP_Order_BOM.LotNo_Sequence_ID</code>), or empty if there is none
+	 */
+	private Optional<LotNoContext> getLotNoContext(@NonNull final PPOrderId ppOrderId, @NonNull final LocalDate receiptDate)
+	{
+		final I_PP_Order_BOM ppOrderBOM = ppOrderBOMsRepo.getByOrderIdOrNull(ppOrderId);
+		if (ppOrderBOM == null)
+		{
+			return Optional.empty();
+		}
+
+		final DocSequenceId lotNoSequenceId = DocSequenceId.ofRepoIdOrNull(ppOrderBOM.getLotNo_Sequence_ID());
+		if (lotNoSequenceId == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(LotNoContext.builder()
+				.sequenceId(lotNoSequenceId)
+				.clientId(ClientId.ofRepoId(ppOrderBOM.getAD_Client_ID()))
+				.ppOrderId(ppOrderId)
+				.date(receiptDate)
+				.build());
 	}
 }

@@ -1,0 +1,24 @@
+{
+  "name": "metasfresh-k6-load-tests",
+  "version": "1.0.0",
+  "description": "K6 load testing tools for metasfresh with API audit replay capability",
+  "type": "module",
+  "scripts": {
+    "extract": "node audit-replay/extract-api-audit.js",
+    "extract:help": "node audit-replay/extract-api-audit.js --help"
+  },
+  "keywords": [
+    "k6",
+    "load-testing",
+    "metasfresh",
+    "api-audit",
+    "performance"
+  ],
+  "dependencies": {
+    "pg": "^8.11.3",
+    "yargs": "^17.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

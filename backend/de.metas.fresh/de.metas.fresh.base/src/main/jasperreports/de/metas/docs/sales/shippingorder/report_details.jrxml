@@ -70,24 +70,24 @@ from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details( $P{RE
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="20" splitType="Stretch">
+		<band height="26" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="37" y="0" width="115" height="12" forecolor="#000000" uuid="eb476af4-b073-4070-9a1a-c2c973a60b7e"/>
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="37" y="0" width="115" height="22" forecolor="#000000" uuid="eb476af4-b073-4070-9a1a-c2c973a60b7e"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BPName}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="151" y="0" width="115" height="12" forecolor="#000000" uuid="b4bb8f27-47ed-4754-bbb5-b589345bda20"/>
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="151" y="0" width="115" height="22" forecolor="#000000" uuid="b4bb8f27-47ed-4754-bbb5-b589345bda20"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BPAddress}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="314" y="0" width="50" height="12" forecolor="#000000" uuid="f43638ed-8f3f-49ac-878e-7f6761b08abb">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="314" y="0" width="50" height="22" forecolor="#000000" uuid="f43638ed-8f3f-49ac-878e-7f6761b08abb">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -96,28 +96,28 @@ from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details( $P{RE
 				<textFieldExpression><![CDATA[$R{Time}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="450" y="0" width="140" height="12" forecolor="#000000" uuid="67f56434-f07d-4084-a473-3d829e5e4940"/>
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="450" y="0" width="140" height="22" forecolor="#000000" uuid="67f56434-f07d-4084-a473-3d829e5e4940"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Notes}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" evaluationTime="Auto" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="365" y="0" width="40" height="12" forecolor="#000000" uuid="d7b0b45b-414a-4168-afde-b26a1728aeb3"/>
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="365" y="0" width="40" height="22" forecolor="#000000" uuid="d7b0b45b-414a-4168-afde-b26a1728aeb3"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QtyTU}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" evaluationTime="Auto" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="406" y="0" width="42" height="12" forecolor="#000000" uuid="5b9d534e-70d3-42f5-975f-1c727d42eda6"/>
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="406" y="0" width="42" height="22" forecolor="#000000" uuid="5b9d534e-70d3-42f5-975f-1c727d42eda6"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QtyLU}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="266" y="0" width="48" height="12" forecolor="#000000" uuid="a797d798-096b-4f98-af2a-eeee43b0f85f">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="266" y="0" width="48" height="22" forecolor="#000000" uuid="a797d798-096b-4f98-af2a-eeee43b0f85f">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -126,7 +126,7 @@ from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details( $P{RE
 				<textFieldExpression><![CDATA[$R{IsPickupLocation}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="33" y="16" width="560" height="1" uuid="a19cf48a-bf70-4b4c-be7a-fd8478e54651">
+				<reportElement x="33" y="23" width="560" height="1" uuid="a19cf48a-bf70-4b4c-be7a-fd8478e54651">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>

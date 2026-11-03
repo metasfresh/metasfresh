@@ -27,19 +27,19 @@ import de.metas.logging.LogManager;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 
-import de.metas.printing.model.I_C_Doc_Outbound_Config;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import org.slf4j.Logger;
 
 @Callout(I_C_Doc_Outbound_Config.class)
 public class C_Doc_Outbound_Config
 {
-	private final static transient Logger logger = LogManager.getLogger(C_Doc_Outbound_Config.class);
+	private final static Logger logger = LogManager.getLogger(C_Doc_Outbound_Config.class);
 
 	public static final C_Doc_Outbound_Config instance = new C_Doc_Outbound_Config();
 
 	private C_Doc_Outbound_Config()
 	{
-	};
+	}
 
 	/**
 	 * If <code>IsCreatePrintJob</code> is set to <code>true</code>, then also set <code>IsDirectEnqueue</code>, because without a printing queue, there is no print job.

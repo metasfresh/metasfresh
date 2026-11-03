@@ -52,6 +52,8 @@ public final class ProcessPreconditionsResolution
 	 */
 	public static final AdMessageKey MSG_NO_ROWS_SELECTED = AdMessageKey.of("ProcessPreconditionsResolution_NoRowsSelected");
 
+	public final static AdMessageKey MSG_TOO_MANY_RECORDS_SELECTED = AdMessageKey.of("ProcessPreconditionsResolution_TooManyRecordsSelected");
+
 	public static ProcessPreconditionsResolution accept()
 	{
 		return ACCEPTED;
@@ -151,6 +153,17 @@ public final class ProcessPreconditionsResolution
 	{
 		final boolean accepted = false;
 		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ONLY_ONE_SELECTED_ROW_ALLOWED);
+		final boolean internal = false;
+		final ProcessCaptionMapper captionMapper = null;
+		final OptionalInt sortNo = OptionalInt.empty();
+		//noinspection ConstantConditions
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper, sortNo);
+	}
+
+	public static ProcessPreconditionsResolution rejectBecauseTooManyRecordsSelected(final int maxAllowedSelectionSize)
+	{
+		final boolean accepted = false;
+		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_TOO_MANY_RECORDS_SELECTED, maxAllowedSelectionSize);
 		final boolean internal = false;
 		final ProcessCaptionMapper captionMapper = null;
 		final OptionalInt sortNo = OptionalInt.empty();

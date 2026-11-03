@@ -5,6 +5,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
@@ -28,6 +29,7 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -40,7 +42,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.adempiere.model.InterfaceWrapperHelper.*;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
 {
@@ -229,7 +232,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 			queryBuilder.addNotInArrayFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, query.getExcludePaymentIds());
 		}
 
-		if(query.getDateTrx() != null)
+		if (query.getDateTrx() != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_DateTrx, query.getDateTrx());
 		}
@@ -266,11 +269,38 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.addBetweenFilter(I_C_Payment.COLUMNNAME_DateTrx, startDate, endDate)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, true)
 				.addInSubQueryFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID,
-									 I_C_BPartner.COLUMNNAME_C_BPartner_ID,
-									 employeePartnerQuery)
+						I_C_BPartner.COLUMNNAME_C_BPartner_ID,
+						employeePartnerQuery)
 				.create()
 				.iterate(I_C_Payment.class);
 
 		return paymentsForEmployees;
 	}
+
+	@Override
+	@NonNull
+	public Optional<I_C_Payment> findCompletedOrClosedByProformaInvoiceId(@NonNull final InvoiceId proformaInvoiceId)
+	{
+		return queryCompletedOrClosedByProformaInvoiceId(proformaInvoiceId)
+				.create()
+				.firstOnlyOptional(I_C_Payment.class);
+	}
+
+	@Override
+	@NonNull
+	public Optional<PaymentId> findCompletedOrClosedPaymentIdByProformaInvoiceId(@NonNull final InvoiceId proformaInvoiceId)
+	{
+		return queryCompletedOrClosedByProformaInvoiceId(proformaInvoiceId)
+				.create()
+				.firstIdOnlyOptional(PaymentId::ofRepoIdOrNull);
+	}
+
+	private IQueryBuilder<I_C_Payment> queryCompletedOrClosedByProformaInvoiceId(final @NotNull InvoiceId proformaInvoiceId)
+	{
+		return queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID, proformaInvoiceId)
+				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses());
+	}
+
 }

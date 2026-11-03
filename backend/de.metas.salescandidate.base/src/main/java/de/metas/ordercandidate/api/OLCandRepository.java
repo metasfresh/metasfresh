@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api;
 
 import com.google.common.collect.ImmutableList;
@@ -22,6 +44,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -31,7 +54,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
@@ -48,28 +73,6 @@ import java.util.Set;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Repository
 @RequiredArgsConstructor
 public class OLCandRepository
@@ -79,7 +82,8 @@ public class OLCandRepository
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
     private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
-	private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final CustomColumnService customColumnService;
 
 	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
 	{
@@ -103,8 +107,6 @@ public class OLCandRepository
 
 	public OLCand create(@NonNull final OLCandCreateRequest request)
 	{
-		Check.assumeNotNull(request, "request is not null");
-
 		final OLCandFactory olCandFactory = new OLCandFactory();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -283,6 +285,8 @@ public class OLCandRepository
 			olCandPO.setInvoiceRule(invoiceRule.getCode());
 		}
 
+		olCandPO.setIsAutoInvoice(request.isAutoInvoice());
+
 		final PaymentRule paymentRule = request.getPaymentRule();
 		if (paymentRule != null)
 		{
@@ -308,6 +312,12 @@ public class OLCandRepository
 		olCandPO.setDescription(request.getDescription());
 		olCandPO.setDeliveryRule(request.getDeliveryRule());
 		olCandPO.setDeliveryViaRule(request.getDeliveryViaRule());
+		if (request.getIncotermsId() != null)
+		{
+            olCandPO.setC_Incoterms_ID(request.getIncotermsId().getRepoId());
+			olCandPO.setIncotermLocation(request.getIncotermsLocation());
+		}
+
 		olCandPO.setImportWarningMessage(request.getImportWarningMessage());
 		if (request.getPrice() == null)
 		{
@@ -341,6 +351,30 @@ public class OLCandRepository
 		if (request.getQtyItemCapacity() != null)
 		{
 			olCandWithIssuesInterface.setQtyItemCapacity(request.getQtyItemCapacity());
+		}
+
+		// first-class promo code / charge fields — set before the initial saveRecord so there is only one write
+		if (request.getPromotionCodeId() != null)
+		{
+			olCandPO.setC_PromotionCode_ID(request.getPromotionCodeId().getRepoId());
+		}
+		if (request.getPromotionCode2Id() != null)
+		{
+			olCandPO.setC_PromotionCode2_ID(request.getPromotionCode2Id().getRepoId());
+		}
+		olCandPO.setIsWithoutCharge(request.isWithoutCharge());
+		if (request.getReason() != null)
+		{
+			olCandPO.setReason(request.getReason());
+		}
+
+		// wire extendedProps: set custom REST API columns on the C_OLCand record before the single save below
+		if (!request.getExtendedProps().isEmpty()
+				&& !POJOWrapper.isHandled(olCandWithIssuesInterface))
+		{
+			customColumnService.setCustomColumns(
+					InterfaceWrapperHelper.getPO(olCandWithIssuesInterface),
+					request.getExtendedProps());
 		}
 
 		saveRecord(olCandWithIssuesInterface);

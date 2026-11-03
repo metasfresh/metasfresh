@@ -22,7 +22,6 @@
 package de.metas.ui.web.session;
 
 import com.google.common.base.MoreObjects;
-import de.metas.i18n.Language;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -46,10 +45,6 @@ public final class UserPreference implements Serializable
 {
 	private static final long serialVersionUID = -3434473097915381994L;
 
-	/** Language */
-	public static final String P_LANGUAGE = "Language";
-	private static final String DEFAULT_LANGUAGE = Language.getName(System.getProperty("user.language") + "_" + System.getProperty("user.country"));
-
 	/** Role */
 	public static final String P_ROLE = "Role";
 	private static final String DEFAULT_ROLE = "";
@@ -66,9 +61,6 @@ public final class UserPreference implements Serializable
 	/** Auto Commit */
 	public static final String P_AUTO_COMMIT = "AutoCommit";
 	private static final String DEFAULT_AUTO_COMMIT = "Y";
-
-	/** Language Name Context **/
-	public static final String LANGUAGE_NAME = "#LanguageName";
 
 	/** window tab placement **/
 	public static final String P_WINDOW_TAB_PLACEMENT = "WindowTabPlacement";
@@ -88,7 +80,6 @@ public final class UserPreference implements Serializable
 
 	/** Ini Properties */
 	private static final String[] PROPERTIES = new String[] {
-			P_LANGUAGE,
 			P_ROLE,
 			P_CLIENT,
 			P_ORG,
@@ -100,7 +91,6 @@ public final class UserPreference implements Serializable
 			P_MENU_COLLAPSED };
 	/** Ini Property Values */
 	private static final String[] DEFAULT_VALUES = new String[] {
-			DEFAULT_LANGUAGE,
 			DEFAULT_ROLE,
 			DEFAULT_CLIENT,
 			DEFAULT_ORG,

@@ -41,6 +41,10 @@ import java.time.LocalDate;
  * #L%
  */
 
+/**
+ * @deprecated  pls replace it with org.adempiere.mm.attributes.api.impl.ASIDescriptionBuilderCommand
+ */
+@Deprecated
 public class AttributeSetDescriptionBuilderCommand
 {
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);

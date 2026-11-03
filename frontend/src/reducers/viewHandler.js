@@ -1,11 +1,11 @@
-import { get, find } from 'lodash';
+import { find, get } from 'lodash';
 import { createSelector } from 'reselect';
 
 import {
   ADD_VIEW_LOCATION_DATA,
   CREATE_VIEW,
-  CREATE_VIEW_SUCCESS,
   CREATE_VIEW_ERROR,
+  CREATE_VIEW_SUCCESS,
   DELETE_VIEW,
   FETCH_DOCUMENT_ERROR,
   FETCH_DOCUMENT_PENDING,
@@ -15,9 +15,9 @@ import {
   FETCH_LAYOUT_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   FETCH_LOCATION_CONFIG_SUCCESS,
+  FILTER_VIEW_ERROR,
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
-  FILTER_VIEW_ERROR,
   RESET_VIEW,
   SET_INCLUDED_VIEW,
   TOGGLE_INCLUDED_VIEW,
@@ -70,16 +70,16 @@ export const initialState = {
   },
 };
 
-const selectView = (state, id, isModal) => {
+const selectView = (state, windowId, isModal) => {
   return isModal
-    ? get(state, ['viewHandler', 'modals', id], viewState)
-    : get(state, ['viewHandler', 'views', id], viewState);
+    ? get(state, ['viewHandler', 'modals', windowId], viewState)
+    : get(state, ['viewHandler', 'views', windowId], viewState);
 };
 
-const selectLocalView = (state, id, isModal) => {
+const selectLocalView = (state, windowId, isModal) => {
   return isModal
-    ? get(state, ['modals', id], viewState)
-    : get(state, ['views', id], viewState);
+    ? get(state, ['modals', windowId], viewState)
+    : get(state, ['views', windowId], viewState);
 };
 
 export const getView = createSelector([selectView], (view) => view);
@@ -87,6 +87,15 @@ export const getView = createSelector([selectView], (view) => view);
 const getLocalView = createSelector([selectLocalView], (view) => view);
 
 const getViewType = (isModal) => (isModal ? 'modals' : 'views');
+
+export const isMasterView = ({ state, windowId, viewId }) => {
+  if (!windowId || !viewId) {
+    return false;
+  }
+
+  const view = selectView(state, windowId, false);
+  return view.viewId === viewId;
+};
 
 /**
  * @method findViewByViewId

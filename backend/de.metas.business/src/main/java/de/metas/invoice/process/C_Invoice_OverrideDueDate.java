@@ -1,0 +1,97 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.invoice.process;
+
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Collection;
+
+public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
+{
+	private final static String PARAM_OVERRIDE_DUE_DATE = "OverrideDueDate";
+	public static final AdMessageKey PAID_INVOICES_MESSAGE = AdMessageKey.of("Invoices_already_paid");
+	public static final AdMessageKey DUE_DATE_OVERRIDE_NOT_ALLOWED_MESSAGE = AdMessageKey.of("DueDateOverrideNotAllowed");
+	@Param(parameterName = PARAM_OVERRIDE_DUE_DATE, mandatory = true)
+	private LocalDate p_OverrideDueDate;
+
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+		final IQueryFilter<I_C_Invoice> selectionFilter = context.getQueryFilter(I_C_Invoice.class);
+
+		final Collection<String> paidInvoiceDocNos = invoiceDAO.retrievePaidInvoiceDocNosForFilter(selectionFilter);
+		if (!paidInvoiceDocNos.isEmpty())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(PAID_INVOICES_MESSAGE, paidInvoiceDocNos));
+		}
+
+		final Collection<String> disallowedDocNos = invoiceDAO.retrieveDocNosWithPaymentTermIn(selectionFilter, paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(false));
+		if (!disallowedDocNos.isEmpty())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DUE_DATE_OVERRIDE_NOT_ALLOWED_MESSAGE, disallowedDocNos));
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Override
+	protected String doIt() throws Exception
+	{
+		invoiceDAO.setDueDateWherePaymentTermIn(getProcessInfo().getQueryFilterOrElseFalse(), paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(true), p_OverrideDueDate);
+		return MSG_OK;
+	}
+
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if (PARAM_OVERRIDE_DUE_DATE.equals(parameter.getColumnName()))
+		{
+			return invoiceDAO.retrieveFirstDueDate(getProcessInfo().getQueryFilterOrElseFalse());
+		}
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+	}
+}

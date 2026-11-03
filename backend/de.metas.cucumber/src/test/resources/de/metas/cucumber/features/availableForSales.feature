@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00107
 @ghActions:run_on_executor4
 Feature: available for sales
+## F00107: Available For Sales
 
   Background:
     Given infrastructure and metasfresh are running
@@ -14,6 +17,8 @@ Feature: available for sales
       | warehouseStd              | StdWarehouse |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales when C_OrderLine's qtyOrdered changes
     Given metasfresh contains M_Products:
       | Identifier |
@@ -50,6 +55,8 @@ Feature: available for sales
       | p_1                     | 0              | 20             | -1002                           | warehouseStd   |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales when C_OrderLine's M_AttributeSetInstance_ID changes
     Given metasfresh contains M_Products:
       | Identifier |
@@ -105,6 +112,8 @@ Feature: available for sales
       | p_1                     | 0              | 10             | -1002                           | warehouseStd   |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales when MD_Stock is created and then move qtyToBeShipped in the future
     Given metasfresh contains M_Products:
       | Identifier |
@@ -154,6 +163,8 @@ Feature: available for sales
       | p_1                     | 10             | 0              | -1002                           | warehouseStd   |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales when M_ShipmentSchedule's preparationDate_Override is changed
     Given metasfresh contains M_Products:
       | Identifier |
@@ -192,6 +203,8 @@ Feature: available for sales
     Then after not more than 30s, MD_Available_For_Sales table is empty for product: p_1
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales when M_ShipmentSchedule is processed
     Given metasfresh contains M_Products:
       | Identifier |
@@ -234,6 +247,8 @@ Feature: available for sales
     Then after not more than 30s, MD_Available_For_Sales table is empty for product: p_1
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales
     Given metasfresh contains M_Products:
       | Identifier |
@@ -273,6 +288,8 @@ Feature: available for sales
       | p_1                     | 10             | 8              | -1002                           | warehouseStd   |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales and export it via API
     Given metasfresh contains M_Products:
       | Identifier | REST.Context | REST.Context.Value |
@@ -379,8 +396,35 @@ Feature: available for sales
     }
 ]
     """
+    And a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Available_For_Sales_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "ProductValue",
+      "value": "@productValue_1@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+[
+    {
+    "ProductExternalReference": "availableForSales_09102025_1",
+    "Product_ID": @productId_1@,
+    "ProductValue": "@productValue_1@",
+    "QtyOnHandStock": 10,
+    "QtyToBeShipped": 8,
+    "StorageAttributesKey": "-1002",
+    "ExternalSystem": "GRSSignum"
+    }
+]
+    """
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales with multiple warehouses
     Given metasfresh contains M_Products:
       | Identifier |
@@ -442,6 +486,8 @@ Feature: available for sales
       | p_1                     | 12             | 10             | -1002                           | wh             |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales with multiple warehouses and export it via API
     Given metasfresh contains M_Warehouse:
       | M_Warehouse_ID | REST.Context.Value |
@@ -579,6 +625,38 @@ Feature: available for sales
     "StorageAttributesKey": "-1002",
     "ExternalSystem": "GRSSignum",
     "WarehouseCode": "@warehouseValue@"
+  }
+  ]
+  """
+
+    And a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Available_For_Sales_JSON/invoke' and fulfills with '200' status code
+    """
+    {
+  "processParameters": [
+    {
+      "name": "ExternalSystem",
+      "value": "GRSSignum"
+    },
+    {
+      "name": "ProductExternalReference",
+      "value": "availableForSales_09292025_1"
+    }
+  ]
+}
+    """
+
+    And the metasfresh REST-API responds with
+    """
+  [
+  {
+    "ProductExternalReference": "availableForSales_09292025_1",
+    "Product_ID": @productId_1@,
+    "ProductValue": "@productValue_1@",
+    "QtyOnHandStock": 10,
+    "QtyToBeShipped": 8,
+    "StorageAttributesKey": "-1002",
+    "ExternalSystem": "GRSSignum",
+    "WarehouseCode": "StdWarehouse"
   }
   ]
   """

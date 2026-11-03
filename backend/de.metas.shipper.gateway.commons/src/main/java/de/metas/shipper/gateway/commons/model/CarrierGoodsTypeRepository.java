@@ -36,6 +36,10 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 
+/**
+ * Repository Tables: Carrier_Goods_Type
+ * Repository Cluster: CarrierGoodsTypeRepository
+ */
 @Repository
 public class CarrierGoodsTypeRepository
 {
@@ -44,7 +48,7 @@ public class CarrierGoodsTypeRepository
 	final CCache<String, CarrierGoodsType> carrierGoodsTypesByExternalId = CCache.newLRUCache(I_Carrier_Goods_Type.Table_Name + "#by#M_Shipper_ID#ExternalId", 100, 0);
 	final CCache<String, CarrierGoodsType> carrierGoodsTypesById = CCache.newLRUCache(I_Carrier_Goods_Type.Table_Name + "#byId", 100, 0);
 
-	@Nullable
+	@NonNull
 	public CarrierGoodsType getOrCreateGoodsType(@NonNull final ShipperId shipperId, @NonNull final String externalId, @NonNull final String name)
 	{
 		final CarrierGoodsType cachedGoodsTypeByExternalId = getCachedGoodsTypeByShipperExternalId(shipperId, externalId);
@@ -79,7 +83,7 @@ public class CarrierGoodsTypeRepository
 				queryBL.createQueryBuilder(I_Carrier_Goods_Type.class)
 						.addEqualsFilter(I_Carrier_Goods_Type.COLUMNNAME_M_Shipper_ID, shipperId)
 						.addEqualsFilter(I_Carrier_Goods_Type.COLUMNNAME_ExternalId, externalId)
-						.firstOptional()
+						.firstOnlyOptional()
 						.map(CarrierGoodsTypeRepository::fromRecord)
 						.orElse(null));
 	}

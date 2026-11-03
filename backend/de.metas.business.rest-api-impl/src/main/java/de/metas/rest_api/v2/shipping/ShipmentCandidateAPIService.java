@@ -66,7 +66,7 @@ import de.metas.impexp.InputDataSourceId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
-import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
+import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
@@ -425,7 +425,7 @@ class ShipmentCandidateAPIService
 		final Product product = productId2Product.get(shipmentSchedule.getProductId());
 
 		return JsonProduct.builder()
-				.productNo(product.getProductNo())
+				.productNo(product.getValue())
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
@@ -736,6 +736,7 @@ class ShipmentCandidateAPIService
 				.onlyIfAllFromOrderExportable(true)
 				.exportStatus(APIExportStatus.Pending)
 				.includeWithQtyToDeliverZero(true)
+				.includeInvalid(false)
 				.fromCompleteOrderOrNullOrder(true)
 				.orderByOrderId(true)
 				.build();

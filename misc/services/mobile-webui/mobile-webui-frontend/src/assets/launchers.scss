@@ -24,12 +24,17 @@
       .row {
         span {
           white-space: break-spaces !important;
+
+          &.caption-multiline {
+            width: 100%;
+            text-align: left;
+          }
         }
       }
     }
   }
 
-  .filter-button {
+  .action-button {
     color: white;
     background-color: $base-mf-green;
   }

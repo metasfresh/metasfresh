@@ -35,6 +35,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_InvoiceProcessingServiceCompany;
 import org.compiere.model.I_InvoiceProcessingServiceCompany_BPartnerAssignment;
 import org.compiere.util.TimeUtil;
@@ -44,6 +45,10 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * Repository Tables: InvoiceProcessingServiceCompany, InvoiceProcessingServiceCompany_BPartnerAssignment
+ * Repository Cluster: InvoiceProcessingServiceCompanyConfigRepository
+ */
 @Repository
 public class InvoiceProcessingServiceCompanyConfigRepository
 {
@@ -52,6 +57,10 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 	private final CCache<Integer, InvoiceProcessingServiceCompanyConfigMap> configMapCache = CCache.<Integer, InvoiceProcessingServiceCompanyConfigMap>builder()
 			.tableName(I_InvoiceProcessingServiceCompany.Table_Name)
 			.additionalTableNameToResetFor(I_InvoiceProcessingServiceCompany_BPartnerAssignment.Table_Name)
+			.build();
+
+	private final CCache<InvoiceProcessingServiceCompanyConfigId, BPartnerId> serviceCompanyBPartnerIdByConfigId = CCache.<InvoiceProcessingServiceCompanyConfigId, BPartnerId>builder()
+			.tableName(I_InvoiceProcessingServiceCompany.Table_Name)
 			.build();
 
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerId(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime evaluationDate)
@@ -64,6 +73,20 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 	{
 		return getInvoiceProcessingServiceCompanyConfigMap()
 				.getByServiceCompanyBPartnerIdAndDateIncludingInvalidDates(serviceCompanyBPartnerId, evaluationDate);
+	}
+
+	/** @return the service company of the given config record, whether or not the record is active */
+	@NonNull
+	public BPartnerId getServiceCompanyBPartnerIdByConfigId(@NonNull final InvoiceProcessingServiceCompanyConfigId configId)
+	{
+		return serviceCompanyBPartnerIdByConfigId.getOrLoad(configId, this::retrieveServiceCompanyBPartnerId);
+	}
+
+	@NonNull
+	private BPartnerId retrieveServiceCompanyBPartnerId(@NonNull final InvoiceProcessingServiceCompanyConfigId configId)
+	{
+		final I_InvoiceProcessingServiceCompany record = InterfaceWrapperHelper.loadNotNull(configId, I_InvoiceProcessingServiceCompany.class);
+		return BPartnerId.ofRepoId(record.getServiceCompany_BPartner_ID());
 	}
 
 	private InvoiceProcessingServiceCompanyConfigMap getInvoiceProcessingServiceCompanyConfigMap()

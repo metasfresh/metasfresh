@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_Field
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1867521920L;
+	private static final long serialVersionUID = -1852391052L;
 
     /** Standard Constructor */
     public X_AD_Field (final Properties ctx, final int AD_Field_ID, @Nullable final String trxName)
@@ -649,6 +649,27 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public boolean isSameLine() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSameLine);
+	}
+
+	/** 
+	 * IsShowFilterInactiveValues AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISSHOWFILTERINACTIVEVALUES_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISSHOWFILTERINACTIVEVALUES_Yes = "Y";
+	/** No = N */
+	public static final String ISSHOWFILTERINACTIVEVALUES_No = "N";
+	@Override
+	public void setIsShowFilterInactiveValues (final @Nullable java.lang.String IsShowFilterInactiveValues)
+	{
+		set_Value (COLUMNNAME_IsShowFilterInactiveValues, IsShowFilterInactiveValues);
+	}
+
+	@Override
+	public java.lang.String getIsShowFilterInactiveValues() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsShowFilterInactiveValues);
 	}
 
 	/** 

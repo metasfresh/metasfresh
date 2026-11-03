@@ -24,11 +24,15 @@ public class JsonMobileApplication
 	@NonNull String id;
 	@NonNull String caption;
 	@NonNull ImmutableSet<String> actions;
+	int maxStartedLaunchers;
+	boolean allowStartNextJobOnly;
 	boolean requiresWorkstation;
 	boolean requiresWorkplace;
+	boolean requiresTrolley;
 	boolean showFilterByQRCode;
 	boolean showFilters;
 	boolean showFilterByDocumentNo;
+	boolean showFilterByQtyAvailableAtPickFromLocator;
 	boolean showInMainMenu;
 	int sortNo;
 	@Nullable ImmutableMap<String, Object> applicationParameters;
@@ -46,11 +50,15 @@ public class JsonMobileApplication
 						.filter(action -> mobileApplicationPermissions.isAllowAction(appInfo.getRepoId(), action.getId()))
 						.map(MobileApplicationAction::getInternalName)
 						.collect(ImmutableSet.toImmutableSet()))
+				.maxStartedLaunchers(appInfo.getMaxStartedLaunchers().toIntOrZero())
+				.allowStartNextJobOnly(appInfo.isAllowStartNextJobOnly())
 				.requiresWorkstation(appInfo.isRequiresWorkstation())
 				.requiresWorkplace(appInfo.isRequiresWorkplace())
+				.requiresTrolley(appInfo.isRequiresTrolley())
 				.showFilterByQRCode(appInfo.isShowFilterByQRCode())
 				.showFilters(appInfo.isShowFilters())
 				.showFilterByDocumentNo(appInfo.isShowFilterByDocumentNo())
+				.showFilterByQtyAvailableAtPickFromLocator(appInfo.isShowFilterByQtyAvailableAtPickFromLocator())
 				.showInMainMenu(appInfo.isShowInMainMenu())
 				.sortNo(appInfo.getSortNo())
 				.applicationParameters(toJsonApplicationParameters(appInfo.getApplicationParameters()))

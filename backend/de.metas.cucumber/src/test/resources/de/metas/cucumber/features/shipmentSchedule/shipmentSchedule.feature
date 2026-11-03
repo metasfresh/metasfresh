@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00105_Sales_Order_Document
+@F00105
 @topic:shipmentScheduleExport
 Feature: Shipment schedule updating
+## F00105: Shipment Schedule
   Verifies that M_ShipmentSchedule is properly updated on various cases
 
   Background:
@@ -11,6 +15,9 @@ Feature: Shipment schedule updating
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     # we don't care about the export, and don't want it to interject in any way
     And set sys config int value 999999 for sys config de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds
+    # the scheduled MD_Stock reset (every 15 min) must not run between an inventory's HU commit and its async MD_Stock delta;
+    # it would count that inventory twice, so QtyOnHand and QtyToDeliver would never reach the expected values
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
     # set up masterdata
     And metasfresh contains M_Products:

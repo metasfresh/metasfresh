@@ -53,9 +53,9 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
 import de.metas.organization.OrgQuery;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
@@ -88,6 +88,7 @@ import de.metas.util.web.exception.InvalidEntityException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.compiere.util.Env;
@@ -105,37 +106,21 @@ import static de.metas.util.Check.isEmpty;
 import static java.math.BigDecimal.ZERO;
 
 @Service
+@RequiredArgsConstructor
 public class CreateInvoiceCandidatesService
 {
-	private final BPartnerQueryService bPartnerQueryService;
-	private final BPartnerCompositeRepository bpartnerCompositeRepository;
-	private final DocTypeService docTypeService;
-	private final CurrencyService currencyService;
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-
-	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
-	private final ManualCandidateService manualCandidateService;
-
-	public CreateInvoiceCandidatesService(
-			@NonNull final BPartnerQueryService bPartnerQueryService,
-			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
-			@NonNull final DocTypeService docTypeService,
-			@NonNull final CurrencyService currencyService,
-			@NonNull final ManualCandidateService manualCandidateService,
-			@NonNull final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository)
-	{
-		this.bPartnerQueryService = bPartnerQueryService;
-		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
-		this.currencyService = currencyService;
-		this.docTypeService = docTypeService;
-		this.manualCandidateService = manualCandidateService;
-		this.externallyReferencedCandidateRepository = externallyReferencedCandidateRepository;
-	}
+	@NonNull private final BPartnerQueryService bPartnerQueryService;
+	@NonNull private final BPartnerCompositeRepository bpartnerCompositeRepository;
+	@NonNull private final DocTypeService docTypeService;
+	@NonNull private final CurrencyService currencyService;
+	@NonNull private final ManualCandidateService manualCandidateService;
+	@NonNull private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
 
 	public JsonCreateInvoiceCandidatesResponse createInvoiceCandidates(@NonNull final JsonCreateInvoiceCandidatesRequest request)
 	{
@@ -301,7 +286,7 @@ public class CreateInvoiceCandidatesService
 											  final @NonNull NewManualInvoiceCandidateBuilder candidate)
 	{
 		final String paymentTerm = item.getPaymentTerm();
-		final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermId(PaymentTermQuery.builder()
+		final PaymentTermId paymentTermId = paymentTermRepository.firstIdOnly(PaymentTermQuery.builder()
 						.value(paymentTerm)
 						.orgId(orgId)
 						.build())

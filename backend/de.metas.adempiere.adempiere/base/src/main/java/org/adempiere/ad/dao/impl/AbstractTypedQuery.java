@@ -28,7 +28,9 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -52,6 +54,17 @@ import java.util.function.IntFunction;
  */
 public abstract class AbstractTypedQuery<T> implements IQuery<T>
 {
+	@Getter
+	@NonNull
+	private ForUpdate forUpdate = ForUpdate.NONE;
+
+	@Override
+	public AbstractTypedQuery<T> setForUpdate(@NonNull final ForUpdate forUpdate)
+	{
+		this.forUpdate = forUpdate;
+		return this;
+	}
+
 	@Nullable
 	@Override
 	public T firstOnly() throws DBException
@@ -85,8 +98,9 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		final ET model = firstOnly(clazz, throwExIfMoreThenOneFound);
 		if (model == null)
 		{
-			throw new DBException("@NotFound@ @" + getTableName() + "@"
-					+ "\n\n@Query@: " + this);
+			throw new DBException("No records found for query")
+					.setParameter("query", this)
+					.appendParametersToMessage();
 		}
 		return model;
 	}
@@ -165,6 +179,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		final List<ET> list = list(modelClass);
 		return Maps.uniqueIndex(list, keyFunction::apply);
 	}
+
 	@Override
 	public <K> ImmutableMap<K, T> map(@NonNull final Function<T, K> keyFunction)
 	{

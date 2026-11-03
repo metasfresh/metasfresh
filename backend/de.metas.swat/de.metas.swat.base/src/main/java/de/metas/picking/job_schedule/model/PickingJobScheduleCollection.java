@@ -1,7 +1,9 @@
 package de.metas.picking.job_schedule.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
@@ -30,11 +32,13 @@ public class PickingJobScheduleCollection implements Iterable<PickingJobSchedule
 
 	@NonNull private final ImmutableList<PickingJobSchedule> list;
 	@NonNull @Getter private final ImmutableSet<PickingJobScheduleId> jobScheduleIds;
+	@NonNull private final ImmutableListMultimap<ShipmentScheduleId, PickingJobSchedule> byShipmentScheduleId;
 
 	private PickingJobScheduleCollection(@NonNull final ImmutableList<PickingJobSchedule> list)
 	{
 		this.list = list;
 		this.jobScheduleIds = list.stream().map(PickingJobSchedule::getId).collect(ImmutableSet.toImmutableSet());
+		this.byShipmentScheduleId = Multimaps.index(list, PickingJobSchedule::getShipmentScheduleId);
 	}
 
 	public static PickingJobScheduleCollection ofCollection(@NonNull final Collection<PickingJobSchedule> list)
@@ -72,16 +76,17 @@ public class PickingJobScheduleCollection implements Iterable<PickingJobSchedule
 
 	public Set<ShipmentScheduleId> getShipmentScheduleIds()
 	{
-		return list.stream()
-				.map(PickingJobSchedule::getShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
+		return byShipmentScheduleId.keySet();
 	}
 
 	public ShipmentScheduleId getSingleShipmentScheduleId()
 	{
-		return list.stream()
-				.map(PickingJobSchedule::getShipmentScheduleId)
-				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Expected only one shipment schedule").setParameter("list", list)));
+		final Set<ShipmentScheduleId> shipmentScheduleIds = getShipmentScheduleIds();
+		if (shipmentScheduleIds.size() != 1)
+		{
+			throw new AdempiereException("Expected only one shipment schedule").setParameter("list", list);
+		}
+		return shipmentScheduleIds.iterator().next();
 	}
 
 	public ShipmentScheduleAndJobScheduleIdSet toShipmentScheduleAndJobScheduleIdSet()
@@ -91,15 +96,36 @@ public class PickingJobScheduleCollection implements Iterable<PickingJobSchedule
 				.collect(ShipmentScheduleAndJobScheduleIdSet.collect());
 	}
 
-	public boolean isAllProcessed()
-	{
-		return list.stream().allMatch(PickingJobSchedule::isProcessed);
-	}
-
 	public Optional<Quantity> getQtyToPick()
 	{
 		return list.stream()
+				.filter(sched -> !sched.isProcessed())
 				.map(PickingJobSchedule::getQtyToPick)
 				.reduce(Quantity::add);
+	}
+
+	public Optional<Quantity> getQtyToPickOfProcessed()
+	{
+		return list.stream()
+				.filter(PickingJobSchedule::isProcessed)
+				.map(PickingJobSchedule::getQtyToPick)
+				.reduce(Quantity::add);
+	}
+
+	public Optional<PickingJobSchedule> getSingleScheduleByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final ImmutableList<PickingJobSchedule> schedules = byShipmentScheduleId.get(shipmentScheduleId);
+		if (schedules.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (schedules.size() == 1)
+		{
+			return Optional.of(schedules.get(0));
+		}
+		else
+		{
+			throw new AdempiereException("Only one schedule was expected for " + shipmentScheduleId + " but found " + schedules);
+		}
 	}
 }

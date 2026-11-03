@@ -40,7 +40,10 @@ import java.math.RoundingMode;
 
 public class RedistributeQtyHUAttributeTransferStrategy implements IHUAttributeTransferStrategy
 {
-	public static final RedistributeQtyHUAttributeTransferStrategy instance = new RedistributeQtyHUAttributeTransferStrategy();
+	public static RedistributeQtyHUAttributeTransferStrategy newInstance()
+	{
+		return new RedistributeQtyHUAttributeTransferStrategy();
+	}
 
 	private RedistributeQtyHUAttributeTransferStrategy()
 	{
@@ -96,10 +99,8 @@ public class RedistributeQtyHUAttributeTransferStrategy implements IHUAttributeT
 
 		final BigDecimal transferRatio = getTransferRatio(request, attribute);
 
-		final boolean isTransferrable = BigDecimal.ZERO.compareTo(transferRatio) < 0 // transferRatio > 0
+		return BigDecimal.ZERO.compareTo(transferRatio) < 0 // transferRatio > 0
 				&& BigDecimal.ONE.compareTo(transferRatio) >= 0; // transferRatio <= 1
-
-		return isTransferrable;
 	}
 
 	/**

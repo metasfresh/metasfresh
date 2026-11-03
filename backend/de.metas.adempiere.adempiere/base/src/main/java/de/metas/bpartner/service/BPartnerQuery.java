@@ -3,6 +3,7 @@ package de.metas.bpartner.service;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
@@ -16,6 +17,7 @@ import javax.annotation.Nullable;
 import java.util.Set;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /*
  * #%L
@@ -50,6 +52,7 @@ public class BPartnerQuery
 	ExternalId externalId;
 	String bpartnerValue;
 	String bpartnerName;
+	String glnLookupLabel;
 	ImmutableSet<GLN> glns;
 
 	/**
@@ -64,31 +67,60 @@ public class BPartnerQuery
 	@Nullable
 	Boolean userSalesRepSet;
 
+	/**
+	 * Optional tie-breaker filters for IsCustomer/IsVendor.
+	 * Used as a fallback when a Value-based lookup returns multiple BPartners:
+	 * 1. First try WITHOUT the filter
+	 * 2. If exactly 1 result -> use it
+	 * 3. If >1 results -> retry WITH the filter
+	 * 4. If still >1 or 0 -> return empty / throw
+	 */
+	@Nullable Boolean isCustomerFilter;
+	@Nullable Boolean isVendorFilter;
+
+	/**
+	 * If {@code true}, the GLN lookup (only that branch) returns matches where both the {@code C_BPartner} and its {@code C_BPartner_Location} are active.
+	 * If {@code false} (default), also includes matches on inactive bpartners or locations.
+	 */
+	boolean glnLookupOnlyActive;
+
 	@Builder(toBuilder = true)
 	private BPartnerQuery(
 			@Nullable final BPartnerId bPartnerId,
 			@Nullable final ExternalId externalId,
 			@Nullable final String bpartnerValue,
 			@Nullable final String bpartnerName,
+			@Nullable final String glnLookupLabel,
 			@NonNull @Singular final Set<GLN> glns,
 			//
 			@NonNull @Singular final Set<OrgId> onlyOrgIds,
 			//
 			@Nullable final Boolean failIfNotExists,
-			@Nullable final Boolean userSalesRepSet)
+			@Nullable final Boolean userSalesRepSet,
+			//
+			@Nullable final Boolean isCustomerFilter,
+			@Nullable final Boolean isVendorFilter,
+			//
+			@Nullable final Boolean glnLookupOnlyActive)
 	{
 
 		this.bPartnerId = bPartnerId;
 		this.bpartnerValue = bpartnerValue;
 		this.bpartnerName = bpartnerName;
+		this.glnLookupLabel = glnLookupLabel;
 		this.glns = ImmutableSet.copyOf(glns);
 		this.externalId = externalId;
 
 		this.onlyOrgIds = ImmutableSet.copyOf(onlyOrgIds);
 
-		this.failIfNotExists = coalesce(failIfNotExists, false);
+		this.failIfNotExists = coalesceNotNull(failIfNotExists, false);
 
 		this.userSalesRepSet = userSalesRepSet;
+
+		this.isCustomerFilter = isCustomerFilter;
+		this.isVendorFilter = isVendorFilter;
+
+		this.glnLookupOnlyActive = coalesceNotNull(glnLookupOnlyActive, false);
 
 		validate();
 	}
@@ -109,17 +141,5 @@ public class BPartnerQuery
 				&& externalId == null
 				&& Check.isEmpty(glns)
 				&& userSalesRepSet == null;
-	}
-
-	public BPartnerQuery withNoGLNs()
-	{
-		if (glns.isEmpty())
-		{
-			return this;
-		}
-		else
-		{
-			return toBuilder().clearGlns().build();
-		}
 	}
 }

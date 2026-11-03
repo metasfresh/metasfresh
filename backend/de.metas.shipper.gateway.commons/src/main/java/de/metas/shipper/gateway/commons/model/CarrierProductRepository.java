@@ -23,7 +23,7 @@
 package de.metas.shipper.gateway.commons.model;
 
 import de.metas.cache.CCache;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -35,6 +35,10 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 
+/**
+ * Repository Tables: Carrier_Product
+ * Repository Cluster: CarrierProductRepository
+ */
 @Repository
 public class CarrierProductRepository
 {
@@ -47,12 +51,13 @@ public class CarrierProductRepository
 	{
 		return CarrierProduct.builder()
 				.id(CarrierProductId.ofRepoId(product.getCarrier_Product_ID()))
+				.shipperId(ShipperId.ofRepoId(product.getM_Shipper_ID()))
 				.code(product.getExternalId())
 				.name(product.getName())
 				.build();
 	}
 
-	@Nullable
+	@NonNull
 	public CarrierProduct getOrCreateCarrierProduct(@NonNull final ShipperId shipperId, @NonNull final String code, @NonNull final String name)
 	{
 		final CarrierProduct cachedShipperProductByCode = getCachedShipperProductByCode(shipperId, code);
@@ -74,7 +79,7 @@ public class CarrierProductRepository
 				queryBL.createQueryBuilder(I_Carrier_Product.class)
 						.addEqualsFilter(I_Carrier_Product.COLUMNNAME_M_Shipper_ID, shipperId)
 						.addEqualsFilter(I_Carrier_Product.COLUMNNAME_ExternalId, code)
-						.firstOptional()
+						.firstOnlyOptional()
 						.map(CarrierProductRepository::fromProductRecord)
 						.orElse(null));
 	}
@@ -94,6 +99,7 @@ public class CarrierProductRepository
 						.orElse(null));
 	}
 
+	@NonNull
 	private CarrierProduct createShipperProduct(@NonNull final ShipperId shipperId, @NonNull final String code, @NonNull final String name)
 	{
 		final I_Carrier_Product po = InterfaceWrapperHelper.newInstance(I_Carrier_Product.class);

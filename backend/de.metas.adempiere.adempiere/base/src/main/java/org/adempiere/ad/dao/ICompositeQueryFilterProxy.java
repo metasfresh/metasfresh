@@ -1,5 +1,6 @@
 package org.adempiere.ad.dao;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import de.metas.util.InSetPredicate;
 import de.metas.util.lang.RepoIdAware;
@@ -20,6 +21,7 @@ import org.adempiere.ad.dao.impl.InstantRangeQueryFilter;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
+import org.adempiere.ad.dao.impl.NullQueryFilterModifier;
 import org.adempiere.ad.dao.impl.StringLikeFilter;
 import org.adempiere.ad.dao.impl.StringStartsWithFilter;
 import org.adempiere.ad.dao.impl.ValidFromToMatchesQueryFilter;
@@ -131,7 +133,13 @@ public interface ICompositeQueryFilterProxy<T, RT>
 
 	default RT addCoalesceEqualsFilter(final Object value, final String... columnNames)
 	{
-		final CoalesceEqualsQueryFilter<T> filter = new CoalesceEqualsQueryFilter<>(value, columnNames);
+		final CoalesceEqualsQueryFilter<T> filter = new CoalesceEqualsQueryFilter<>(value, ImmutableList.copyOf(columnNames), NullQueryFilterModifier.instance);
+		return addFilter(filter);
+	}
+
+	default RT addCoalesceEqualsFilter(@Nullable final Object value, @NonNull final IQueryFilterModifier modifier, @NonNull final String... columnNames)
+	{
+		final CoalesceEqualsQueryFilter<T> filter = new CoalesceEqualsQueryFilter<>(value, ImmutableList.copyOf(columnNames), modifier);
 		return addFilter(filter);
 	}
 

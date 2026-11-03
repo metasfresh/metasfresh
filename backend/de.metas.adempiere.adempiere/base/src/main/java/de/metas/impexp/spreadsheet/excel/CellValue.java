@@ -34,7 +34,7 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Cell value.
- *
+ * <p>
  * For more helpers please check {@link CellValues} utility class.
  */
 @Immutable
@@ -80,7 +80,9 @@ public class CellValue
 
 	public java.util.Date dateValue()
 	{
-		return TimeUtil.asDate(valueObj);
+		//Excel is dumb and rounds 23:59 timestamps to the next day.
+		//To ensure the date is correctly represented regardless of reader, we're trimming the time portion from it.
+		return TimeUtil.asStartOfDay(valueObj);
 	}
 
 	public boolean isNumber()

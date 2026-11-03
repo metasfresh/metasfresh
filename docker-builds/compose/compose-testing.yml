@@ -1,0 +1,15 @@
+# Testing overlay for compose.yml
+#
+# This file enables frontend testing APIs and other test-specific configurations.
+# Use with: docker compose -f compose.yml -f compose-testing.yml up -d
+#
+# Or set COMPOSE_FILE environment variable:
+#   export COMPOSE_FILE=compose.yml:compose-testing.yml
+#   docker compose up -d
+
+services:
+  app:
+    environment:
+      # Enable frontend testing REST endpoints (/api/v2/frontendTesting)
+      # Required for Playwright E2E tests that create test data via Backend.createMasterdata()
+      - "FRONTEND_TESTING=true"

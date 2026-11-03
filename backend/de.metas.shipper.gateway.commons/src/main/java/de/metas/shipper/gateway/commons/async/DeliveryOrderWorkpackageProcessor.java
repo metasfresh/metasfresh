@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.shipper.gateway.commons
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.shipper.gateway.commons.async;
 
 import de.metas.async.AsyncBatchId;
@@ -21,6 +43,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
@@ -29,28 +52,6 @@ import org.compiere.util.MimeType;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
-
-/*
- * #%L
- * de.metas.shipper.gateway.go
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -64,7 +65,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		workPackageQueueFactory
 				.getQueueForEnqueuing(DeliveryOrderWorkpackageProcessor.class)
 				.newWorkPackage()
-				.setC_Async_Batch_ID(asyncBatchId)
+				.setAsyncBatchId(asyncBatchId)
 				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 				.bindToThreadInheritedTrx()
 				.parameters()
@@ -77,8 +78,16 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	private static final String PARAM_DeliveryOrderRepoId = "DeliveryOrderRepoId";
 	private static final String PARAM_ShipperGatewayId = "ShipperGatewayId";
 
+	/**
+	 * When {@code false}, suppresses the {@code AD_Archive} auto-print step (the label PDF is still
+	 * persisted on {@code Carrier_ShipmentOrder_Parcel}). Lets test environments without an
+	 * {@code AD_Printer_Config} for the system user avoid "No Printer Configuration defined" failures.
+	 */
+	private static final String SYSCONFIG_PrintLabelsEnabled = "de.metas.shipper.gateway.printLabels.enabled";
+
 	// Services
 	private final ShipperGatewayServicesRegistry shipperRegistry = SpringContextHolder.instance.getBean(ShipperGatewayServicesRegistry.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public boolean isRunInTransaction()
@@ -102,12 +111,20 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(draftedDeliveryOrder);
 		deliveryOrderRepo.save(completedDeliveryOrder);
 
-		final List<PackageLabels> packageLabelsList = client.getPackageLabelsList(completedDeliveryOrder);
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID());
+		if (isPrintLabelsEnabled())
+		{
+			final List<PackageLabels> packageLabelsList = client.getPackageLabelsList(completedDeliveryOrder);
+			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID());
 
-		printLabels(completedDeliveryOrder, packageLabelsList, deliveryOrderRepo, asyncBatchId);
+			printLabels(completedDeliveryOrder, packageLabelsList, deliveryOrderRepo, asyncBatchId);
+		}
 
 		return Result.SUCCESS;
+	}
+
+	private boolean isPrintLabelsEnabled()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_PrintLabelsEnabled, true);
 	}
 
 	private @NonNull ShipperGatewayId getShipperGatewayId()

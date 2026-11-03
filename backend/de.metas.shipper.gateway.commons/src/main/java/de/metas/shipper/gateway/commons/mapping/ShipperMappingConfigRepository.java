@@ -24,7 +24,7 @@ package de.metas.shipper.gateway.commons.mapping;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.cache.CCache;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;

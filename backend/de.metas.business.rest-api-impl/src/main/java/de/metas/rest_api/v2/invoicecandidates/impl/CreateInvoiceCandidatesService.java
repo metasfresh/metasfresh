@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business.rest-api-impl
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.rest_api.v2.invoicecandidates.impl;
 
 import com.google.common.collect.ImmutableList;
@@ -56,7 +78,9 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v1.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.v2.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.v2.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
+import de.metas.rest_api.v2.invoicecandidates.request.JsonTaxOverride;
 import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -84,28 +108,6 @@ import java.util.stream.Collectors;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.isEmpty;
 import static java.math.BigDecimal.ZERO;
-
-/*
- * #%L
- * de.metas.business.rest-api-impl
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Service
 @RequiredArgsConstructor
@@ -185,6 +187,8 @@ public class CreateInvoiceCandidatesService
 		syncPriceEnteredOverrideToCandidate(candidate, productId, item);
 
 		syncPaymentTermIdToCandidate(candidate, item, masterdataProvider, orgId);
+
+		syncTaxOverrideToCandidate(candidate, item, masterdataProvider);
 
 		// poReference
 		if (!isEmpty(item.getPoReference(), true))
@@ -453,6 +457,41 @@ public class CreateInvoiceCandidatesService
 		candidate.discountOverride(Percent.ofNullable(discountOverride));
 	}
 
+	private static void syncTaxOverrideToCandidate(
+			@NonNull final NewManualInvoiceCandidateBuilder candidate,
+			@NonNull final JsonCreateInvoiceCandidatesRequestItem item,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final JsonTaxOverride taxOverride = item.getTaxOverride();
+		if (taxOverride == null)
+		{
+			return;
+		}
+		if (taxOverride.getRate() == null)
+		{
+			throw new MissingPropertyException("taxOverride.rate", item);
+		}
+		if (isEmpty(taxOverride.getTaxCategoryIdentifier(), true))
+		{
+			throw new MissingPropertyException("taxOverride.taxCategoryIdentifier", item);
+		}
+		// Zero is deliberately allowed: exempt, intra-community and reverse-charge taxes are all stored at 0%.
+		// A negative rate matches no C_Tax, so without this it would surface as an opaque "no tax found" instead of
+		// naming the property the caller got wrong.
+		if (taxOverride.getRate().signum() < 0)
+		{
+			throw new InvalidEntityException(TranslatableStrings.constant(
+					"taxOverride.rate must not be negative, but was " + taxOverride.getRate().toPlainString()));
+		}
+
+		final IdentifierString taxCategoryIdentifier = IdentifierString.of(taxOverride.getTaxCategoryIdentifier());
+		final TaxCategoryId taxCategoryId = masterdataProvider.getTaxCategoryId(taxCategoryIdentifier, item);
+
+		candidate.taxOverrideRate(Percent.of(taxOverride.getRate()));
+		candidate.taxOverrideCategoryId(taxCategoryId);
+		candidate.taxOverrideCategoryIdentifier(taxOverride.getTaxCategoryIdentifier());
+	}
+
 	private void syncInvoiceRuleOverrideToCandidate(
 			@NonNull final NewManualInvoiceCandidateBuilder candidate,
 			@Nullable final JsonInvoiceRule invoiceRuleOverride)
@@ -472,6 +511,7 @@ public class CreateInvoiceCandidatesService
 
 	}
 
+	@Nullable
 	private ProductPrice createProductPriceOrNull(
 			@Nullable final JsonPrice jsonPrice,
 			@NonNull final ProductId productId,
@@ -489,12 +529,11 @@ public class CreateInvoiceCandidatesService
 				productId,
 				item);
 
-		final ProductPrice price = ProductPrice.builder()
+		return ProductPrice.builder()
 				.money(Money.of(jsonPrice.getValue(), currencyId))
 				.productId(productId)
 				.uomId(priceUomId)
 				.build();
-		return price;
 	}
 
 	private CurrencyId lookupCurrencyId(@NonNull final JsonPrice jsonPrice)

@@ -25,7 +25,7 @@ package de.metas.cucumber.stepdefs.material.dispo;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -44,7 +44,10 @@ import de.metas.cucumber.stepdefs.pporder.PP_OrderLine_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.dispo.commons.SimulatedCandidateService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -57,17 +60,28 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
+import de.metas.material.event.stock.ResetStockPInstanceId;
+import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessCalledFrom;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.text.tabular.Table;
@@ -86,20 +100,24 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.material.dispo.CandidatesToTabularStringConverter.toTabularStringFromCandidateRows;
@@ -113,11 +131,19 @@ import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+/**
+ * Step definitions for {@code MD_Candidate} — the material-disposition candidates that carry the
+ * projected ATP. Covers creating and asserting candidates and their detail rows, posting material
+ * events that make the dispo engine build a candidate chain, and reading the resulting running ATP
+ * off the {@code STOCK} candidates.
+ */
 @RequiredArgsConstructor
 public class MD_Candidate_StepDef
 {
 	@NonNull private final static Logger logger = LogManager.getLogger(MD_Candidate_StepDef.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 	@NonNull private final PostMaterialEventService postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 	@NonNull private final MaterialDispoRecordRepository materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
@@ -138,6 +164,8 @@ public class MD_Candidate_StepDef
 	@NonNull private final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
+
+	@NonNull private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	@When("metasfresh initially has this MD_Candidate data")
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table) throws Throwable
@@ -174,7 +202,7 @@ public class MD_Candidate_StepDef
 			{
 				mdStockCandidateRecord.setMD_Candidate_Parent_ID(mdCandidateRecord.getMD_Candidate_ID());
 			}
-			mdStockCandidateRecord.setQty(tableRow.getAtp());
+			mdStockCandidateRecord.setQty(tableRow.getAtpNotNull());
 			mdStockCandidateRecord.setDateProjected(TimeUtil.asTimestamp(tableRow.getTime()));
 			InterfaceWrapperHelper.saveRecord(mdStockCandidateRecord);
 
@@ -206,7 +234,7 @@ public class MD_Candidate_StepDef
 			assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).isEqualTo(tableRow.getProductId().getRepoId());
 			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).isEqualTo(tableRow.getTime());
 			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
-			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
+			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtpNotNull());
 
 			materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoRecord);
 		});
@@ -231,7 +259,7 @@ public class MD_Candidate_StepDef
 			assertThat(materialDispoDataItem.getBusinessCase()).isEqualTo(tableRow.getBusinessCase());
 			assertThat(materialDispoDataItem.getMaterialDescriptor().getProductId()).isEqualTo(tableRow.getProductId().getRepoId());
 			assertThat(materialDispoDataItem.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
-			assertThat(materialDispoDataItem.getAtp()).isEqualByComparingTo(tableRow.getAtp());
+			assertThat(materialDispoDataItem.getAtp()).isEqualByComparingTo(tableRow.getAtpNotNull());
 
 			materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoDataItem);
 		});
@@ -381,9 +409,108 @@ public class MD_Candidate_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, candidateDetailWasDeleted);
 	}
 
+	/**
+	 * Asserts that no {@code MD_Candidate} rows (excluding STOCK-type) exist for the given product.
+	 * Use after draining the RabbitMQ queue to verify that a dropship-warehouse SO did not trigger
+	 * any material-disposition demand candidates.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   (none — product identifier is provided directly in the step text)
+	 * @cucumber.example
+	 * <pre>
+	 * Then no MD_Candidate exists for M_Product_ID product_dw
+	 * </pre>
+	 */
+	@Then("^no MD_Candidate exists for M_Product_ID (.*)$")
+	public void no_md_candidate_exists_for_product(@NonNull final String productIdentifier)
+	{
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+		assertThat(productRecord).as("Product for identifier=%s", productIdentifier).isNotNull();
+
+		final int count = queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate.class)
+				.addEqualsFilter(COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+				.addNotEqualsFilter(COLUMNNAME_MD_Candidate_Type, de.metas.material.dispo.commons.candidate.CandidateType.STOCK.getCode())
+				.create()
+				.count();
+
+		assertThat(count)
+				.as("Expected zero non-STOCK MD_Candidate rows for product %s (M_Product_ID=%s) — dropship-warehouse SO must bypass material disposition",
+						productIdentifier, productRecord.getM_Product_ID())
+				.isZero();
+	}
+
+	/**
+	 * Asserts that at least one {@code MD_Candidate} row matching each given type / business-case combination
+	 * exists for the given product. The step polls the DB for up to ~10 seconds to tolerate async settle
+	 * (purchase-candidate-advised → requested → PO completion → MD_Candidate creation chain).
+	 * <p>
+	 * Counterpart to {@code no MD_Candidate exists for M_Product_ID …}: use this on a regular (non-dropship)
+	 * warehouse to verify that the material-disposition bypass does <em>not</em> over-fire — i.e. that the
+	 * standard SUPPLY/PURCHASE chain still creates the expected MD_Candidate rows.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code MD_Candidate_Type} — required, one of {@link CandidateType} (e.g. {@code SUPPLY}, {@code DEMAND}, {@code STOCK_UP})</li>
+	 *     <li>{@code MD_Candidate_BusinessCase} — required, one of {@link CandidateBusinessCase} (e.g. {@code PURCHASE}, {@code FORECAST}, {@code PRODUCTION})</li>
+	 *   </ul>
+	 *   Each row must match at least one MD_Candidate row for the product; no row-count assertion is performed.
+	 * @cucumber.example
+	 * <pre>
+	 * Then MD_Candidates exist for M_Product_ID product_dw:
+	 *   | MD_Candidate_Type | MD_Candidate_BusinessCase |
+	 *   | SUPPLY            | PURCHASE                  |
+	 * </pre>
+	 */
+	@Then("^MD_Candidates exist for M_Product_ID (.*):$")
+	public void md_candidates_exist_for_product(@NonNull final String productIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+		assertThat(productRecord).as("Product for identifier=%s", productIdentifier).isNotNull();
+		final int productRepoId = productRecord.getM_Product_ID();
+
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
+		for (final DataTableRow row : rows)
+		{
+			final CandidateType candidateType = row.getAsEnum(COLUMNNAME_MD_Candidate_Type, CandidateType.class);
+			final CandidateBusinessCase businessCase = row.getAsEnum(COLUMNNAME_MD_Candidate_BusinessCase, CandidateBusinessCase.class);
+
+			final Supplier<Boolean> matchExists = () -> queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate.class)
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, productRepoId)
+					.addEqualsFilter(COLUMNNAME_MD_Candidate_Type, candidateType.getCode())
+					.addEqualsFilter(COLUMNNAME_MD_Candidate_BusinessCase, businessCase.getCode())
+					.create()
+					.anyMatch();
+
+			try
+			{
+				StepDefUtil.tryAndWait(10, 500, matchExists);
+			}
+			catch (final InterruptedException ie)
+			{
+				Thread.currentThread().interrupt();
+				throw ie;
+			}
+			catch (final RuntimeException ex)
+			{
+				throw new AdempiereException(
+						"No MD_Candidate found for product=" + productIdentifier
+								+ " (M_Product_ID=" + productRepoId + ")"
+								+ " with Type=" + candidateType.getCode()
+								+ " and BusinessCase=" + businessCase.getCode(),
+						ex);
+			}
+		}
+	}
+
 	@And("^after not more than (.*)s, the MD_Candidate table has only the following records$")
 	public void validate_md_candidate_records(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
+		// "has only" is exact-set, so drain the material then async queue first — the whole
+		// ShipmentSchedule -> SupplyRequired -> PPOrderCandidate chain must settle before the snapshot.
+		rabbitMQStepDef.wait_empty_all_queues();
+
 		validate_md_candidates(timeoutSec, table);
 
 		StepDefUtil.<Boolean>tryAndWaitForItem()
@@ -415,10 +542,118 @@ public class MD_Candidate_StepDef
 				.execute();
 	}
 
+	/**
+	 * Waits until at least one DISTRIBUTION MD_Candidate exists for the product and every one of them forwards to the given PP_Order_BOMLine.
+	 * Does not pin the candidates' count or qty.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, PP_Order_BOMLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, all DISTRIBUTION MD_Candidates of product component supply PP_Order_BOMLine newBOMLine
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, all DISTRIBUTION MD_Candidates of product (\\S+) supply PP_Order_BOMLine (\\S+)$")
+	public void assertAllDistributionCandidatesSupplyBOMLine(final int timeoutSec, @NonNull final String productIdentifierStr, @NonNull final String bomLineIdentifierStr) throws InterruptedException
+	{
+		final ProductId productId = StepDefDataIdentifier.ofString(productIdentifierStr).lookupIdIn(productTable);
+		final PPOrderBOMLineId expectedBOMLineId = StepDefDataIdentifier.ofString(bomLineIdentifierStr).lookupIdIn(ppOrderBOMLineTable);
+
+		StepDefUtil.<Boolean>tryAndWaitForItem()
+				.worker(() -> checkAllDistributionCandidatesSupplyBOMLine(productId, productIdentifierStr, expectedBOMLineId))
+				.maxWaitSeconds(timeoutSec)
+				.execute();
+	}
+
+	private ProviderResult<Boolean> checkAllDistributionCandidatesSupplyBOMLine(
+			@NonNull final ProductId productId,
+			@NonNull final String productIdentifierStr,
+			@NonNull final PPOrderBOMLineId expectedBOMLineId)
+	{
+		final List<I_MD_Candidate> candidates = queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(COLUMNNAME_MD_Candidate_BusinessCase, X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION)
+				.orderBy(COLUMNNAME_MD_Candidate_ID)
+				.create()
+				.list();
+		if (candidates.isEmpty())
+		{
+			return ProviderResult.resultWasNotFound("No DISTRIBUTION MD_Candidate found for product " + productIdentifierStr);
+		}
+
+		final List<String> notSupplyingBOMLine = new ArrayList<>();
+		for (final I_MD_Candidate candidate : candidates)
+		{
+			final I_MD_Candidate_Dist_Detail detail = queryBL.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
+					.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMNNAME_MD_Candidate_ID, candidate.getMD_Candidate_ID())
+					.create()
+					.firstOnly(I_MD_Candidate_Dist_Detail.class);
+			final PPOrderBOMLineId forwardBOMLineId = detail != null ? PPOrderBOMLineId.ofRepoIdOrNull(detail.getPP_Order_BOMLine_ID()) : null;
+			if (!PPOrderBOMLineId.equals(forwardBOMLineId, expectedBOMLineId))
+			{
+				notSupplyingBOMLine.add("MD_Candidate_ID=" + candidate.getMD_Candidate_ID() + " type=" + candidate.getMD_Candidate_Type()
+						+ " qty=" + candidate.getQty() + " forwardBOMLine=" + forwardBOMLineId);
+			}
+		}
+		if (!notSupplyingBOMLine.isEmpty())
+		{
+			return ProviderResult.resultWasNotFound("DISTRIBUTION MD_Candidate(s) not forwarding to PP_Order_BOMLine " + expectedBOMLineId + ": " + notSupplyingBOMLine);
+		}
+		return ProviderResult.resultWasFound(true);
+	}
+
+	/**
+	 * Waits (up to {@code timeoutSec} seconds) for each expected {@code MD_Candidate} row to appear, then
+	 * asserts it against the given DataTable row.
+	 * <p>
+	 * Drains the {@code de.metas.material} RabbitMQ queue before validating, rather than leaving that as a
+	 * standalone feature-file step (see {@code de.metas.cucumber/CLAUDE.md} rule 7).
+	 * <p>
+	 * <b>Neither the drain nor this poll is a settle barrier.</b> The drain consumes only events already
+	 * produced, and a matching row proves only that <em>a</em> write landed - never that it was the last one
+	 * (a re-write carrying identical values is indistinguishable here). So a scenario whose next step
+	 * <em>mutates</em> the candidate must first wait at the producing point, in the feature file - rule 7's
+	 * own carve-out.
+	 * <p>
+	 * DataTable columns (one row per expected candidate):
+	 * <ul>
+	 * <li>{@code Identifier} - registers the matched candidate under this name for later steps</li>
+	 * <li>{@code MD_Candidate_Type} - required; a {@link CandidateType} (e.g. {@code DEMAND}, {@code SUPPLY},
+	 * {@code INVENTORY_UP})</li>
+	 * <li>{@code OPT.MD_Candidate_BusinessCase} - a {@link CandidateBusinessCase} (e.g. {@code SHIPMENT},
+	 * {@code PURCHASE}, {@code PRODUCTION}); omit for a plain {@code STOCK}/inventory candidate with no
+	 * business case</li>
+	 * <li>{@code M_Product_ID} - required; a product identifier</li>
+	 * <li>{@code DateProjected} - required (or {@code OPT.DateProjected_LocalTimeZone} as a local-timezone
+	 * alternative)</li>
+	 * <li>{@code Qty} - required; the candidate's own quantity (sign is normalized internally for
+	 * decreasing-stock candidate types, e.g. {@code DEMAND})</li>
+	 * <li>{@code OPT.ATP} (or the older {@code OPT.Qty_AvailableToPromise}) - the running ATP on the
+	 * candidate's STOCK parent/child; defaults to {@code 0} if neither is given. The cell may be {@code *}: the row then
+	 * does not verify the ATP. Only this step and {@code the following MD_Candidates are validated} support {@code *};
+	 * the other MD_Candidate steps fail if a table uses it</li>
+	 * <li>{@code OPT.M_Warehouse_ID}, {@code OPT.M_AttributeSetInstance_ID}, {@code OPT.simulated} - optional
+	 * refinements</li>
+	 * <li>{@code OPT.DD_Order_Candidate_ID} / {@code DD_Order_ID} / {@code DD_OrderLine_ID}, and the
+	 * {@code Forward_PP_*} / {@code PP_Order_Candidate_ID} family - optional distribution/production linkage
+	 * columns</li>
+	 * </ul>
+	 * <p>
+	 * Gherkin:
+	 * <pre>
+	 * {@code
+	 * Then after not more than 60s, MD_Candidates are found
+	 *   | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+	 *   | d_1        | DEMAND            | SHIPMENT                  | p_1          | 2024-09-21T21:00:00Z | -30 | 70  | WH_1           |
+	 * }
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, MD_Candidates are found$")
 	public void validate_md_candidates(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
+
+		rabbitMQStepDef.waitEmptyMaterialQueue();
 
 		final HashMap<CandidateId, StepDefDataIdentifier> candidateIdsAlreadyMatched = new HashMap<>();
 		table.forEach((row) -> {
@@ -502,7 +737,19 @@ public class MD_Candidate_StepDef
 			final Map<CandidateId, StepDefDataIdentifier> candidateIdsToExclude)
 	{
 		final CandidatesQuery candidatesQuery = row.toCandidatesQuery();
-		final ImmutableList<MaterialDispoDataItem> items = materialDispoRecordRepository.getAllBy(candidatesQuery);
+		final ImmutableList<MaterialDispoDataItem> items;
+		try
+		{
+			items = materialDispoRecordRepository.getAllBy(candidatesQuery);
+		}
+		catch (final RuntimeException ex)
+		{
+			// getAllBy() loads the candidates, then each one's STOCK candidate and detail with separate statements; a material event committing
+			// in between (e.g. a StockEstimateDeletedEvent deleting a candidate with its STOCK candidate) makes it see a candidate whose related
+			// records are already gone. That torn read is not a settled state => retry; if the error persists, the timeout reports it.
+			logger.warn("Failed loading MD_Candidates for {}; will retry: {}", candidatesQuery, ex.toString());
+			return ProviderResult.resultWasNotFound(ex.toString());
+		}
 		return newValidator().findValidItem(items, row, candidateIdsToExclude);
 	}
 
@@ -565,7 +812,7 @@ public class MD_Candidate_StepDef
 		final ProductId productId = productTable.getId(row.getAsIdentifier(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID));
 		final String dateProjected = row.getAsString(COLUMNNAME_DateProjected);
 		final BigDecimal qty = row.getAsBigDecimal(COLUMNNAME_Qty);
-		final BigDecimal atp = MD_Candidate_StepDefTableTransformer.extractATP(row);
+		@Nullable final BigDecimal atp = MD_Candidate_StepDefTableTransformer.extractATP(row);
 		final CandidateType type = row.getAsEnum(COLUMNNAME_MD_Candidate_Type, CandidateType.class);
 
 		final MaterialDispoDataItem materialDispoDataItem = getFreshMaterialDispoItem(materialDispoDataIdentifier, qty, timeoutSec);
@@ -601,9 +848,12 @@ public class MD_Candidate_StepDef
 		softly.assertThat(materialDispoDataItem.getMaterialDescriptor().getQuantity().abs())
 				.as(description.newWithMessage("Qty.abs"))
 				.isEqualByComparingTo(qty.abs()); // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
-		softly.assertThat(materialDispoDataItem.getAtp())
-				.as(description.newWithMessage("ATP"))
-				.isEqualByComparingTo(atp);
+		if (atp != null)
+		{
+			softly.assertThat(materialDispoDataItem.getAtp())
+					.as(description.newWithMessage("ATP"))
+					.isEqualByComparingTo(atp);
+		}
 
 		final AttributeSetInstanceId expectedAsiId = row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
 				.map(attributeSetInstanceTable::getId)
@@ -713,4 +963,279 @@ public class MD_Candidate_StepDef
 				.build();
 	}
 
+	/**
+	 * Executes the MD_Candidate_RemoveFromATP process for the specified candidate.
+	 * This removes the candidate from ATP calculations by setting its qty to 0
+	 * and recalculating subsequent ATP values.
+	 *
+	 * @param row DataTable row containing MD_Candidate_ID and optional process value
+	 */
+	@And("the MD_Candidate_Remove_From_ATP process is run")
+	public void run_md_candidate_remove_from_atp_processes(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::run_md_candidate_remove_from_atp_process);
+	}
+
+	public void run_md_candidate_remove_from_atp_process(@NonNull final DataTableRow row)
+	{
+		final String value = row.getAsOptionalString(I_AD_Process.COLUMNNAME_Value)
+				.orElse("MD_Candidate_RemoveFromATP");
+		final AdProcessId processId = processDAO.retrieveProcessIdByValue(value);
+		assertThat(processId).isNotNull();
+
+		// Get the MD_Candidate_ID from either the MD_Candidate table or the MaterialDispoDataItem table
+		final CandidateId candidateId;
+		if (row.getAsOptionalIdentifier(COLUMNNAME_MD_Candidate_ID).isPresent())
+		{
+			// Check if it's in the MD_Candidate table first
+			candidateId = row.getAsOptionalIdentifier(COLUMNNAME_MD_Candidate_ID)
+					.flatMap(stockCandidateTable::getIdOptional)
+					// Otherwise check the MaterialDispoDataItem table
+					.orElseGet(() -> materialDispoDataItemStepDefData.get(row.getAsIdentifier(COLUMNNAME_MD_Candidate_ID)).getCandidateId());
+		}
+		else
+		{
+			throw new IllegalArgumentException("MD_Candidate_ID is required");
+		}
+
+		final TableRecordReference recordRef = TableRecordReference.of("MD_Candidate", candidateId.getRepoId());
+
+		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setProcessCalledFrom(ProcessCalledFrom.Unknown)
+				.setAD_Process_ID(processId)
+				.setAD_PInstance(pInstanceDAO.createAD_PInstance(processId))
+				.setReportLanguage(Language.getBaseLanguage())
+				.setRecord(recordRef)
+				.build();
+
+		pInstanceDAO.saveProcessInfoOnly(processInfo);
+
+		final ProcessExecutionResult result = ProcessExecutor.builder(processInfo)
+				.executeSync()
+				.getResult();
+		assertThat(result).isNotNull();
+		assertThat(result.isError()).isFalse();
+	}
+
+	/**
+	 * Runs the {@code MD_Candidate_RemoveFromATP} process for a raw {@code MD_Candidate_ID} - one the
+	 * scenario does not have to own - and asserts that it FAILS, carrying the given text.
+	 * <p>
+	 * Guards the process's error contract: its SQL function raises on each of its three preconditions
+	 * (candidate missing or inactive, candidate is itself a STOCK candidate, no STOCK sibling) before it
+	 * writes anything. Reporting those as an ordinary result would make the process succeed having changed
+	 * nothing.
+	 * <p>
+	 * Gherkin:
+	 * <pre>
+	 * {@code
+	 * Then the MD_Candidate_Remove_From_ATP process is run for MD_Candidate_ID 999999999 and fails with 'not found or not active'
+	 * }
+	 * </pre>
+	 */
+	@And("^the MD_Candidate_Remove_From_ATP process is run for MD_Candidate_ID (.*) and fails with '(.*)'$")
+	public void run_md_candidate_remove_from_atp_process_expecting_failure(
+			final int mdCandidateId,
+			@NonNull final String expectedMessagePart)
+	{
+		final AdProcessId processId = processDAO.retrieveProcessIdByValue("MD_Candidate_RemoveFromATP");
+		assertThat(processId).isNotNull();
+
+		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setProcessCalledFrom(ProcessCalledFrom.Unknown)
+				.setAD_Process_ID(processId)
+				.setAD_PInstance(pInstanceDAO.createAD_PInstance(processId))
+				.setReportLanguage(Language.getBaseLanguage())
+				.setRecord(TableRecordReference.of("MD_Candidate", mdCandidateId))
+				.build();
+
+		pInstanceDAO.saveProcessInfoOnly(processInfo);
+
+		String actualMessage;
+		try
+		{
+			final ProcessExecutionResult result = ProcessExecutor.builder(processInfo)
+					.executeSync()
+					.getResult();
+			assertThat(result).isNotNull();
+			assertThat(result.isError())
+					.as("MD_Candidate_RemoveFromATP for MD_Candidate_ID=%s must report an error; summary was: %s",
+						mdCandidateId, result.getSummary())
+					.isTrue();
+			actualMessage = result.getSummary();
+		}
+		catch (final RuntimeException e)
+		{
+			// an outright throw is an equally loud failure - keep its message for the text assertion below
+			actualMessage = e.getMessage();
+		}
+
+		assertThat(actualMessage)
+				.as("error reported by MD_Candidate_RemoveFromATP for MD_Candidate_ID=%s", mdCandidateId)
+				.contains(expectedMessagePart);
+	}
+
+	/**
+	 * Deletes the {@code MD_Candidate_Demand_Detail} row(s) of the given candidate, leaving its
+	 * {@code M_ShipmentSchedule} referenced by no active candidate at all - simulating the drift the
+	 * divergence report's uncovered-document check exists to find (e.g. a candidate purged by a cleanup job
+	 * while its source document survives).
+	 * <p>
+	 * Gherkin: {@code the MD_Candidate_Demand_Detail of <candidateIdentifier> is deleted}
+	 */
+	@And("^the MD_Candidate_Demand_Detail of (.*) is deleted$")
+	public void delete_md_candidate_demand_detail(@NonNull final String candidateIdentifier)
+	{
+		final CandidateId candidateId = materialDispoDataItemStepDefData.get(candidateIdentifier).getCandidateId();
+
+		final List<I_MD_Candidate_Demand_Detail> detailRecords = queryBL.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMNNAME_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.list();
+		assertThat(detailRecords).as("MD_Candidate_Demand_Detail of %s", candidateIdentifier).isNotEmpty();
+
+		detailRecords.forEach(InterfaceWrapperHelper::delete);
+	}
+
+	/**
+	 * Sets the ATP baseline from MD_Stock: for the given product, posts one reset-stock
+	 * {@link StockChangedEvent} per MD_Stock row,
+	 * carrying that row's current QtyOnHand. Mirrors what
+	 * StockDataUpdateRequestHandler.fireStockChangedEvent builds, but WITHOUT the old==new guard.
+	 * <p>
+	 * Note: <code>qtyOnHandOld</code> is the quantity the refresh found <em>stored</em> before it wrote the one the
+	 * event now carries. It defaults to the very <code>MD_Stock.QtyOnHand</code> the event's <code>qtyOnHand</code>
+	 * is taken from, because this step never changes <code>MD_Stock</code>: a scenario that says nothing therefore
+	 * posts a refresh that found the stored quantity exactly where it was, and the event's physical movement
+	 * (<code>qtyOnHand - qtyOnHandOld</code>) is genuinely zero. Use the optional <code>QtyOnHandOld</code> column
+	 * to model a refresh that found the stored quantity off by that much - which is the only shape the reset-stock
+	 * process actually emits, since it recomputes <code>MD_Stock</code> from the HUs and skips every key whose
+	 * quantity did not move.
+	 * <p>
+	 * That difference is load-bearing, not cosmetic. Two consumers read it:
+	 * <ul>
+	 * <li><code>StockChangedEventHandler.computeQtyDifference</code>: for a chain that carries an unfulfilled
+	 * <code>DEMAND</code>/<code>SUPPLY</code> at or before the event date, the created candidate's <b>type and
+	 * quantity</b> are that difference - <code>INVENTORY_UP</code>/<code>INVENTORY_DOWN</code> of its absolute
+	 * value, or no candidate at all when it is zero;
+	 * <li>the <code>MovementQty</code> persisted on the resulting <code>MD_Candidate_Transaction_Detail</code> row;
+	 * no scenario asserts that column, but do not rely on it.
+	 * </ul>
+	 * <p>
+	 * Drains the {@code de.metas.material} RabbitMQ queue before posting the event (see
+	 * {@code de.metas.cucumber/CLAUDE.md} rule 7): a still-pending event from an earlier step (e.g. an
+	 * open-demand order completion) must have finished materializing its {@code MD_Candidate} before this
+	 * step's own {@link StockChangedEvent} enters the chain, or the reconciliation the event triggers
+	 * builds forward from an incomplete chain.
+	 * <p>
+	 * Gherkin:
+	 * <pre>
+	 * When metasfresh receives a StockChangedEvent for the current MD_Stock
+	 *   | M_Product_ID | OPT.ChangeDate       | OPT.QtyOnHandOld |
+	 *   | p_od_1       | 2024-09-23T06:00:00Z | 150              |
+	 * </pre>
+	 */
+	@And("^metasfresh receives a StockChangedEvent for the current MD_Stock$")
+	public void metasfresh_receives_stock_changed_event(@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		rabbitMQStepDef.waitEmptyMaterialQueue();
+
+		DataTableRows.of(dataTable).forEach(this::postStockChangedEventsForCurrentStock);
+	}
+
+	/**
+	 * Posts one reset-stock {@link StockChangedEvent} per {@code MD_Stock} row of the row's product.
+	 * See {@link #metasfresh_receives_stock_changed_event(DataTable)} for the {@code qtyOnHandOld} caveat.
+	 */
+	private void postStockChangedEventsForCurrentStock(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID);
+		final int productId = productTable.get(productIdentifier).getM_Product_ID();
+
+		final Instant changeDate = row.getAsOptionalInstant("ChangeDate").orElse(null);
+		final BigDecimal qtyOnHandOldOverride = row.getAsOptionalBigDecimal("QtyOnHandOld").orElse(null);
+
+		final List<I_MD_Stock> stockRecords = queryBL.createQueryBuilderOutOfTrx(I_MD_Stock.class)
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.list(I_MD_Stock.class);
+		assertThat(stockRecords).as("MD_Stock rows for product %s", productIdentifier).isNotEmpty();
+
+		for (final I_MD_Stock stockRecord : stockRecords)
+		{
+			final AttributesKey attributesKey = AttributesKeys.pruneEmptyParts(AttributesKey.ofString(stockRecord.getAttributesKey()));
+			final AttributeSetInstanceId asiId = AttributesKeys.createAttributeSetInstanceFromAttributesKey(attributesKey);
+
+			final StockChangedEvent event = StockChangedEvent.builder()
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(stockRecord.getAD_Client_ID(), stockRecord.getAD_Org_ID()))
+					.productDescriptor(ProductDescriptor.forProductAndAttributes(productId, attributesKey, asiId.getRepoId()))
+					.warehouseId(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()))
+					.qtyOnHand(stockRecord.getQtyOnHand())
+					// A ZERO default measured ATP 1200 instead of 170 on the open-demand-before-the-baseline scenario.
+					.qtyOnHandOld(CoalesceUtil.coalesce(qtyOnHandOldOverride, stockRecord.getQtyOnHand()))
+					.changeDate(changeDate)
+					.stockChangeDetails(StockChangedEvent.StockChangeDetails.builder()
+							.resetStockPInstanceId(ResetStockPInstanceId.ofRepoId(nextResetStockPInstanceRepoId()))
+							.stockId(stockRecord.getMD_Stock_ID())
+							.build())
+					.build();
+
+			postMaterialEventService.enqueueEventNow(event);
+		}
+	}
+
+	/**
+	 * Overwrites the running ATP of one candidate's STOCK record, to set up a chain that has drifted
+	 * away from the physical stock.
+	 * <p>
+	 * Gherkin: {@code the ATP of the STOCK candidate of <candidateIdentifier> is manually set to <newAtp>}
+	 */
+	@And("^the ATP of the STOCK candidate of (.*) is manually set to (.*)$")
+	public void set_stock_candidate_atp(@NonNull final String candidateIdentifier, @NonNull final String newAtpStr)
+	{
+		final BigDecimal newAtp = new BigDecimal(newAtpStr.trim());
+
+		final CandidateId candidateId = materialDispoDataItemStepDefData.get(candidateIdentifier).getCandidateId();
+		final I_MD_Candidate candidateRecord = InterfaceWrapperHelper.load(candidateId.getRepoId(), I_MD_Candidate.class);
+		assertThat(candidateRecord).isNotNull();
+
+		I_MD_Candidate stockRecord = null;
+
+		final int parentId = candidateRecord.getMD_Candidate_Parent_ID();
+		if (parentId > 0)
+		{
+			final I_MD_Candidate parentRecord = InterfaceWrapperHelper.load(parentId, I_MD_Candidate.class);
+			if (parentRecord != null && CandidateType.STOCK.getCode().equals(parentRecord.getMD_Candidate_Type()))
+			{
+				stockRecord = parentRecord;
+			}
+		}
+		if (stockRecord == null)
+		{
+			stockRecord = queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate.class)
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidateId.getRepoId())
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, CandidateType.STOCK.getCode())
+					.create()
+					.firstOnly(I_MD_Candidate.class);
+		}
+		assertThat(stockRecord).as("STOCK candidate of %s", candidateIdentifier).isNotNull();
+
+		stockRecord.setQty(newAtp);
+		InterfaceWrapperHelper.save(stockRecord);
+	}
+
+	/**
+	 * A UNIQUE synthetic reset-stock pinstance id per posted event. It must be unique: the engine looks
+	 * its own MD_Candidate_Transaction_Detail up by AD_PInstance_ResetStock_ID, so a constant makes that
+	 * lookup throw QueryMoreThanOneRecordsFound on the second event and the STOCK chain is never built.
+	 */
+	private static final AtomicInteger RESET_STOCK_PINSTANCE_SEQ =
+			new AtomicInteger((int)(System.currentTimeMillis() / 1000L));
+
+	private static int nextResetStockPInstanceRepoId()
+	{
+		return RESET_STOCK_PINSTANCE_SEQ.incrementAndGet();
+	}
 }

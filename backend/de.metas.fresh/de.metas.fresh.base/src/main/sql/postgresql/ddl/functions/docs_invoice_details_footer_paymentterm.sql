@@ -28,7 +28,7 @@ BEGIN
     -- The main logic: construct the output text.
     -- RETURN QUERY is used to execute a SELECT statement and return its result set.
     RETURN QUERY
-        SELECT COALESCE(line1 || '<br>', '') || COALESCE(line2 || '<br>', '') || COALESCE(line3 || '<br>', '') || COALESCE(line4, '')
+        SELECT COALESCE(line1 || '<br/>', '') || COALESCE(line2 || '<br/>', '') || COALESCE(line3 || '<br/>', '') || COALESCE(line4, '')
         FROM (
                  -- Select distinct payment term details to avoid duplicates.
                  SELECT DISTINCT discountdays,
