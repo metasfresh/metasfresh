@@ -6,6 +6,7 @@ import { combineReducers, createStore } from 'redux';
 
 import NewHUPreviewScreen from '../../../apps/huManager/containers/NewHUPreviewScreen';
 import { huManagerReducer } from '../../../apps/huManager/reducers';
+import { newHUPreviewLoaded } from '../../../apps/huManager/actions';
 import { putSettingsAction, reducer as settings } from '../../../reducers/settings';
 import { toastNotification } from '../../../utils/toast';
 import * as api from '../../../apps/huManager/api';
@@ -161,6 +162,36 @@ describe('NewHUPreviewScreen inline quantity field', () => {
       qty: 3,
       locatorQRCode: OTHER_LOCATOR_QR,
     });
+  });
+});
+
+// A preview that is replaced while the screen stays mounted (a new proposal in the store) must show the NEW quantity and location,
+// not the ones the first proposal initialised the state with.
+describe('NewHUPreviewScreen with a replaced proposal', () => {
+  it('shows the quantity and the location of the new proposal', async () => {
+    const store = renderPreview();
+    await act(async () => {});
+    expect(screen.getByTestId('qty-input')).toHaveValue('1');
+    expect(screen.getByTestId('locator-value')).toHaveTextContent('Hauptlager');
+
+    await act(async () => {
+      store.dispatch(
+        newHUPreviewLoaded({
+          scannedCode: 'LABEL-2',
+          proposal: {
+            product: { productId: 2, value: 'P2', name: 'Product 2' },
+            qty: 4,
+            uom: 'PCE',
+            attributes: [],
+            locatorQRCode: OTHER_LOCATOR_QR,
+            locatorCaption: 'Nebenlager',
+          },
+        })
+      );
+    });
+
+    expect(screen.getByTestId('qty-input')).toHaveValue('4');
+    expect(screen.getByTestId('locator-value')).toHaveTextContent('Nebenlager');
   });
 });
 

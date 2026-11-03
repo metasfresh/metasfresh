@@ -14,6 +14,12 @@ import { trl } from '../../../utils/translations';
 import { toastError, toastNotification } from '../../../utils/toast';
 import PropTypes from 'prop-types';
 
+const toQtyInfo = (proposal) =>
+  proposal?.qty != null
+    ? qtyInfos.of({ qty: proposal.qty, qtyStr: `${proposal.qty}` })
+    : qtyInfos.invalidOfNumber(null);
+const toLocator = (proposal) => ({ qrCode: proposal?.locatorQRCode, caption: proposal?.locatorCaption });
+
 /**
  * The "New HU" preview of the HU Manager: shown after a scanned product label found no existing HU.
  * Shows what the label would create (quantity editable inline, location changed with the "Change locator" button, which opens the scan
@@ -33,22 +39,24 @@ const NewHUPreviewScreen = () => {
   const { scannedCode, proposal } = preview ?? {};
 
   // the quantity field is prefilled with the proposed quantity; it forwards its qtyInfo on mount and on every keystroke
-  const [qtyInfo, setQtyInfo] = useState(() =>
-    proposal?.qty != null
-      ? qtyInfos.of({ qty: proposal.qty, qtyStr: `${proposal.qty}` })
-      : qtyInfos.invalidOfNumber(null)
-  );
+  const [qtyInfo, setQtyInfo] = useState(() => toQtyInfo(proposal));
   const [isChangeLocatorDialogOpen, setChangeLocatorDialogOpen] = useState(false);
-  const [locator, setLocator] = useState({ qrCode: proposal?.locatorQRCode, caption: proposal?.locatorCaption });
+  const [locator, setLocator] = useState(() => toLocator(proposal));
   const [isCreating, setCreating] = useState(false);
   const isCreatingRef = useRef(false); // synchronous guard against a double tap on OK (state updates are async)
+
+  // a replaced proposal (a new preview in the store while the screen stays mounted) restarts from its quantity and location
+  useEffect(() => {
+    setQtyInfo(toQtyInfo(proposal));
+    setLocator(toLocator(proposal));
+  }, [proposal]);
 
   useEffect(() => {
     // no preview (e.g. a page reload) -> back to the scan screen; not after OK, which leaves the screen itself (history.replace below)
     if (!preview && !isCreatingRef.current) {
       history.goBack();
     }
-  }, [preview]);
+  }, [preview, history]);
 
   if (!preview) return <></>;
 
