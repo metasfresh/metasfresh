@@ -313,15 +313,6 @@ public class AssertExpectationsCommandServices
 		return handlingUnitsDAO.countActiveHUsByProductId(productId);
 	}
 
-	public int countInventoryLinesByProductId(@NonNull final ProductId productId)
-	{
-		return queryBL.createQueryBuilder(I_M_InventoryLine.class)
-				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Product_ID, productId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.count();
-	}
-
 	public Inventory getInventoryById(@NonNull final InventoryId inventoryId)
 	{
 		return inventoryService.getById(inventoryId);

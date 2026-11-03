@@ -14,6 +14,4 @@ public class JsonProductExpectation
 {
 	/** exact number of active HUs ({@code M_HU}) holding the product, i.e. having an active {@code M_HU_Storage} of it */
 	@Nullable Integer huCount;
-	/** exact number of {@code M_InventoryLine} of the product */
-	@Nullable Integer inventoryLineCount;
 }
