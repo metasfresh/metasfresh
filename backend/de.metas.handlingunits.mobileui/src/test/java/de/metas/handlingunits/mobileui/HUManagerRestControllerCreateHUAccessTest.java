@@ -17,6 +17,7 @@ import de.metas.handlingunits.rest_api.createfromlabel.CreateHUFromLabelService;
 import de.metas.handlingunits.rest_api.createfromlabel.JsonCreateHUFromScannedCodeRequest;
 import de.metas.handlingunits.rest_api.createfromlabel.JsonProposeHUFromScannedCodeRequest;
 import de.metas.handlingunits.rest_api.createfromlabel.LabelProductResolver;
+import de.metas.handlingunits.rest_api.createfromlabel.LabelQtyAndWeightService;
 import de.metas.handlingunits.rest_api.createfromlabel.LabelTargetLocatorResolver;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.mobile.application.MobileApplicationRepoId;
@@ -25,6 +26,7 @@ import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
 import de.metas.security.RoleId;
+import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.workplace.WorkplaceRepository;
@@ -120,7 +122,7 @@ class HUManagerRestControllerCreateHUAccessTest
 						inventoryCandidateService,
 						new HUGraiService(new HUPIGraiRepository())),
 				inventoryCandidateService,
-				new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)), new LabelTargetLocatorResolver(new WorkplaceService(WorkplaceRepository.newInstanceForUnitTesting(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class))));
+				new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)), new LabelTargetLocatorResolver(new WorkplaceService(WorkplaceRepository.newInstanceForUnitTesting(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class)), new LabelQtyAndWeightService(Services.get(IProductBL.class), Services.get(IUOMDAO.class))));
 	}
 
 	private I_Mobile_Application_Action newAction(final String internalName)

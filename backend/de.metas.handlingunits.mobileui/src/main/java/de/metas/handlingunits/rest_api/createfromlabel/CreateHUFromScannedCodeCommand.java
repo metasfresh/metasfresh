@@ -5,6 +5,8 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
@@ -43,7 +45,9 @@ public class CreateHUFromScannedCodeCommand
 	@NonNull private final IWarehouseDAO warehouseDAO;
 	@NonNull private final IAttributeDAO attributeDAO;
 	@NonNull private final HUQtyService huQtyService;
+	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final LabelProductResolver labelProductResolver;
+	@NonNull private final LabelQtyAndWeightService labelQtyAndWeightService;
 
 	// params
 	@NonNull private final ClientId clientId;
@@ -60,7 +64,9 @@ public class CreateHUFromScannedCodeCommand
 			@NonNull final IWarehouseDAO warehouseDAO,
 			@NonNull final IAttributeDAO attributeDAO,
 			@NonNull final HUQtyService huQtyService,
+			@NonNull final HUQRCodesService huQRCodesService,
 			@NonNull final LabelProductResolver labelProductResolver,
+			@NonNull final LabelQtyAndWeightService labelQtyAndWeightService,
 			@NonNull final ClientId clientId,
 			@NonNull final String adLanguage,
 			@NonNull final ScannedCode scannedCode,
@@ -73,7 +79,9 @@ public class CreateHUFromScannedCodeCommand
 		this.warehouseDAO = warehouseDAO;
 		this.attributeDAO = attributeDAO;
 		this.huQtyService = huQtyService;
+		this.huQRCodesService = huQRCodesService;
 		this.labelProductResolver = labelProductResolver;
+		this.labelQtyAndWeightService = labelQtyAndWeightService;
 		this.clientId = clientId;
 		this.adLanguage = adLanguage;
 		this.scannedCode = scannedCode;
@@ -83,7 +91,7 @@ public class CreateHUFromScannedCodeCommand
 	}
 
 	@NonNull
-	public HuId execute()
+	public CreatedHU execute()
 	{
 		if (qty.signum() <= 0)
 		{
@@ -94,7 +102,7 @@ public class CreateHUFromScannedCodeCommand
 		final LabelProduct labelProduct = labelProductResolver.resolve(scannedCode, clientId);
 		final ProductId productId = labelProduct.getProductId();
 		final LabelValues labelValues = LabelValues.of(labelProduct.getCode());
-		final LabelQtyAndWeight qtyAndWeight = LabelQtyAndWeight.of(productId, labelValues.getWeightKg());
+		final LabelQtyAndWeight qtyAndWeight = labelQtyAndWeightService.compute(productId, labelValues.getWeightKg());
 
 		final HuId huId = huQtyService.createHUFromInventory(CreateHUFromInventoryRequest.builder()
 				.date(date)
@@ -111,7 +119,8 @@ public class CreateHUFromScannedCodeCommand
 		{
 			setWeight(handlingUnitsBL.getById(huId), productId, qtyAndWeight);
 		}
-		return huId;
+		final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(huId); // creates the QR code if missing, like the HU lookup by value does
+		return new CreatedHU(huId, qrCode);
 	}
 
 	/** the location comes from the client (proposed or scanned): it must be an active location of the client, and the create step never makes one */
