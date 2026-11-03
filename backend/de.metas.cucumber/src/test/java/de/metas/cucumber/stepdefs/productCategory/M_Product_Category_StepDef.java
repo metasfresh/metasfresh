@@ -41,6 +41,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_AttributeSet_ID;
 import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Category_ID;
+import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Category_Parent_ID;
 
 @RequiredArgsConstructor
 public class M_Product_Category_StepDef
@@ -113,6 +114,10 @@ public class M_Product_Category_StepDef
 					row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSet_ID)
 							.map(attributeSetTable::getId)
 							.ifPresent(attributeSetId -> productCategoryRecord.setM_AttributeSet_ID(attributeSetId.getRepoId()));
+
+					row.getAsOptionalIdentifier(COLUMNNAME_M_Product_Category_Parent_ID)
+							.map(parentIdentifier -> parentIdentifier.lookupNotNullIn(productCategoryTable))
+							.ifPresent(parent -> productCategoryRecord.setM_Product_Category_Parent_ID(parent.getM_Product_Category_ID()));
 
 					InterfaceWrapperHelper.saveRecord(productCategoryRecord);
 
