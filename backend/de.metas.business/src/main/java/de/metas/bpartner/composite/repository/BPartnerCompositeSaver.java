@@ -6,6 +6,8 @@ import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.CreditorId;
+import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartner;
@@ -40,7 +42,6 @@ import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.title.TitleId;
 import de.metas.user.api.IUserBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ExternalId;
@@ -173,7 +174,7 @@ final class BPartnerCompositeSaver
 				|| !isBlank(bpartner.getCompanyName())) // kept this logic here for legacy purpose
 		{
 			bpartnerRecord.setIsCompany(true);
-			bpartnerRecord.setCompanyName(bpartner.getCompanyName().trim());
+			bpartnerRecord.setCompanyName(StringUtils.trimBlankToNull(bpartner.getCompanyName()));
 		}
 		else
 		{
@@ -258,6 +259,8 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setReferrer(bpartner.getReferrer());
 		bpartnerRecord.setMKTG_Campaign_ID(CampaignId.toRepoId(bpartner.getCampaignId()));
 
+		bpartnerRecord.setIsDiscountPrinted(bpartner.isDiscountPrinted());
+
 		if (bpartner.getPaymentRule() != null)
 		{
 			bpartnerRecord.setPaymentRule(bpartner.getPaymentRule().getCode());
@@ -274,6 +277,14 @@ final class BPartnerCompositeSaver
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}
+		if (bpartner.getDebtorId() != null)
+		{
+			bpartnerRecord.setDebtorId(bpartner.getDebtorId().toInt());
+		}
+		if (bpartner.getCreditorId() != null)
+		{
+			bpartnerRecord.setCreditorId(bpartner.getCreditorId().toInt());
+		}
 		if (validatePermissions)
 		{
 			assertCanCreateOrUpdate(bpartnerRecord);
@@ -285,6 +296,9 @@ final class BPartnerCompositeSaver
 		bpartner.setId(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()));
 		bpartner.setValue(bpartnerRecord.getValue());
 		bpartner.setCompany(bpartnerRecord.isCompany());
+		// Copy back generated debtor/creditor numbers so the upsert response reflects interceptor-assigned values.
+		bpartner.setDebtorId(DebtorId.ofNullableNo(bpartnerRecord.getDebtorId()));
+		bpartner.setCreditorId(CreditorId.ofNullableNo(bpartnerRecord.getCreditorId()));
 	}
 
 	private void saveBPartnerLocations(@NonNull final BPartnerComposite bPartnerComposite, final boolean validatePermissions)
@@ -350,11 +364,11 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setPhone2(partnerLocation.getMobile());
 			bpartnerLocationRecord.setFax(partnerLocation.getFax());
 			bpartnerLocationRecord.setEMail(partnerLocation.getEmail());
+			bpartnerLocationRecord.setAttention(partnerLocation.getAttention());
 
 			bpartnerLocationRecord.setSetup_Place_No(partnerLocation.getSetupPlaceNo());
 			bpartnerLocationRecord.setIsHandOverLocation(partnerLocation.isHandOverLocation());
 			bpartnerLocationRecord.setIsRemitTo(partnerLocation.isRemitTo());
-			bpartnerLocationRecord.setVisitorsAddress(partnerLocation.isVisitorsAddress());
 			bpartnerLocationRecord.setIsReplicationLookupDefault(partnerLocation.isReplicationLookupDefault());
 
 			final BPartnerLocationType locationType = partnerLocation.getLocationType();
@@ -557,6 +571,12 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setExternalId(ExternalId.toValue(bpartnerContact.getExternalId()));
 			bpartnerContactRecord.setIsActive(bpartnerContact.isActive());
 			bpartnerContactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+			// FIXME: disabled — AD_User.Value has no unique constraint, and BPartnerDAO.getBPartnerContactIdBy queries by Value
+			// using firstOnlyOrNull which would throw on duplicates. Add a unique constraint on AD_User.Value before enabling.
+			// if (!isBlank(bpartnerContact.getValue()))
+			// {
+			// 	bpartnerContactRecord.setValue(bpartnerContact.getValue());
+			// }
 
 			final String name = CoalesceUtil.coalesce(
 					StringUtils.trimBlankToNull(bpartnerContact.getName()),

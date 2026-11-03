@@ -4064,7 +4064,7 @@ public abstract class PO
 			@Nullable final String whereClause)
 	{
 		final POAccountingInfo acctInfo = POAccountingInfoRepository.instance.getPOAccountingInfo(acctTable).orElse(null);
-		if(acctInfo == null)
+		if (acctInfo == null)
 		{
 			log.warn("No accounting info found for {}. Skipping", acctTable);
 			return false;
@@ -4087,7 +4087,7 @@ public abstract class PO
 				.append(getUpdatedBy());
 		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
-			if(acctBaseTableInfo.hasColumnName(acctColumnName))
+			if (acctBaseTableInfo.hasColumnName(acctColumnName))
 			{
 				sb.append("\n, p.").append(acctColumnName);
 			}
@@ -4098,7 +4098,8 @@ public abstract class PO
 		}
 		// .. FROM
 		sb.append("\n FROM ").append(acctBaseTable)
-				.append(" p WHERE p.AD_Client_ID=").append(getAD_Client_ID());
+				.append(" p WHERE p.AD_Client_ID=").append(getAD_Client_ID())
+				.append(" AND p.C_AcctSchema_ID=").append(acctTable).append(".C_AcctSchema_ID");
 
 		if (whereClause != null && whereClause.length() > 0)
 		{
@@ -4114,8 +4115,7 @@ public abstract class PO
 		//
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), get_TrxName());
 		return no > 0;
-	}	// update_Accounting
-
+	}    // update_Accounting
 
 	/**
 	 * Delete Accounting records.
@@ -5147,6 +5147,72 @@ public abstract class PO
 		// poCopy.m_windowNo = this.m_windowNo;
 
 		return poCopy;
+	}
+
+	/**
+	 * In-memory column state of a {@link PO}, see {@link #snapshotStateForRetry()}.
+	 */
+	public static final class RetryStateSnapshot
+	{
+		private final Object[] oldValues;
+		private final Object[] newValues;
+		private final boolean[] valueLoaded;
+		private final boolean stale;
+		@Nullable private final HashMap<String, String> custom;
+		@Nullable private final Set<Integer> markedChangedColumns;
+		@Nullable private final HashMap<String, Object> dynAttrs;
+		@Nullable private final ArrayList<PO_LOB> lobInfo;
+
+		private RetryStateSnapshot(@NonNull final PO po)
+		{
+			this.oldValues = copyOf(po.m_oldValues);
+			this.newValues = copyOf(po.m_newValues);
+			this.valueLoaded = copyOf(po.m_valueLoaded);
+			this.stale = po.m_stale;
+			this.custom = po.m_custom == null ? null : new HashMap<>(po.m_custom);
+			this.markedChangedColumns = po.markedChangedColumns == null ? null : new HashSet<>(po.markedChangedColumns);
+			this.dynAttrs = po.m_dynAttrs == null ? null : new HashMap<>(po.m_dynAttrs);
+			this.lobInfo = po.m_lobInfo == null ? null : new ArrayList<>(po.m_lobInfo);
+		}
+
+		private void restoreTo(@NonNull final PO po)
+		{
+			po.m_oldValues = copyOf(oldValues);
+			po.m_newValues = copyOf(newValues);
+			po.m_valueLoaded = copyOf(valueLoaded);
+			po.m_stale = stale;
+			po.m_custom = custom == null ? null : new HashMap<>(custom);
+			po.markedChangedColumns = markedChangedColumns == null ? null : new HashSet<>(markedChangedColumns);
+			po.m_dynAttrs = dynAttrs == null ? null : new HashMap<>(dynAttrs);
+			po.m_lobInfo = lobInfo == null ? null : new ArrayList<>(lobInfo);
+			po.m_poCacheLocals = null; // may hold records loaded in the rolled back transaction
+		}
+
+		@Nullable
+		private static Object[] copyOf(@Nullable final Object[] values) {return values == null ? null : Arrays.copyOf(values, values.length);}
+
+		@Nullable
+		private static boolean[] copyOf(@Nullable final boolean[] values) {return values == null ? null : Arrays.copyOf(values, values.length);}
+	}
+
+	/**
+	 * Captures this instance's column values (incl. the not yet saved changes and custom columns), its columns marked as changed, its dynamic attributes
+	 * and its pending LOBs, so that {@link #restoreStateForRetry(RetryStateSnapshot)} can undo what a rolled back document action did to this instance.
+	 * The value arrays and collections are copied, the values in them (incl. dynamic attribute values and LOBs) are shared.
+	 * Not captured, because a document action does not change them: identity and key, ctx, trxName, the "manual user action" / window settings.
+	 */
+	public final RetryStateSnapshot snapshotStateForRetry()
+	{
+		return new RetryStateSnapshot(this);
+	}
+
+	/**
+	 * Puts back the state captured by {@link #snapshotStateForRetry()}, and drops the cached referenced records.
+	 * The snapshot can be restored several times.
+	 */
+	public final void restoreStateForRetry(@NonNull final RetryStateSnapshot snapshot)
+	{
+		snapshot.restoreTo(this);
 	}
 
 	/**

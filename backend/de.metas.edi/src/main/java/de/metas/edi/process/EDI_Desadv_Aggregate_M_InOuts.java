@@ -40,9 +40,9 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 
 import de.metas.document.engine.IDocument;
-import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
+import de.metas.esb.edi.model.I_C_BPartner_EDI_Setting;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
@@ -70,11 +70,11 @@ public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 		// this process is supposed to run "globally" on all matching M_InOuts
 		final IQueryFilter<I_M_InOut> processQueryFilter = pi.getQueryFilterOrElseTrue();
 
-		// subquery to select only inOuts with EDI-partners
-		final IQuery<I_C_BPartner> ediRecipient = queryBL
-				.createQueryBuilder(I_C_BPartner.class, getCtx(), getTrxName())
+		// subquery to select only inOuts whose BPartner (or BPartner+Location) has an active DESADV EDI setting
+		final IQuery<I_C_BPartner_EDI_Setting> ediRecipient = queryBL
+				.createQueryBuilder(I_C_BPartner_EDI_Setting.class, getCtx(), getTrxName())
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient, true).create();
+				.addEqualsFilter(I_C_BPartner_EDI_Setting.COLUMNNAME_IsEdiDesadvRecipient, true).create();
 
 		final Iterator<I_M_InOut> inOuts = queryBL
 				.createQueryBuilder(I_M_InOut.class, getCtx(), getTrxName())
@@ -94,7 +94,7 @@ public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 
 		.addNotEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_POReference, null)
 
-		.addInSubQueryFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID, ediRecipient)
+		.addInSubQueryFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, I_C_BPartner_EDI_Setting.COLUMNNAME_C_BPartner_ID, ediRecipient)
 
 		// the specific process filter (if any)
 				.filter(processQueryFilter)

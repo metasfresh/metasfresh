@@ -27,6 +27,10 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.organization.OrgId;
+import org.adempiere.mm.attributes.AttributeId;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
@@ -85,6 +89,7 @@ import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 
 /**
  * Aggregates given {@link ShipmentScheduleWithHU}s (see {@link #add(ShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
@@ -148,6 +153,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	//
 	// Manual packing materials related:
 	private boolean _manualPackingMaterial = false;
+
+	/** The planning this line is shipped out of, or {@code null} for none. */
+	@Nullable private DeliveryPlanningId _deliveryPlanningId = null;
 
 	private final TreeSet<I_M_HU_PI_Item_Product> packingMaterial_huPIItemProducts = new TreeSet<>(Comparator.comparing(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID));
 
@@ -420,7 +428,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		final AttributeSetInstanceId newAsiId;
 		if (attributeValues.isEmpty())
 		{
-			newAsiId = AttributeSetInstanceId.NONE;
+			newAsiId = getShipmentScheduleAsiFromCandidates();
 		}
 		else
 		{
@@ -453,6 +461,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		}
 
 		optimisticallySetLineNo(shipmentLine);
+		// captured now, before the save below: on a real database, saving a shipment line whose Line is still
+		// 0 (no order line link) rewrites it to a synthetic end-of-document value, which is never a genuine
+		// Line-number collision and must not be registered as one.
+		final int lineNoBeforeSave = shipmentLine.getLine();
 
 		//
 		// Qty Entered and UOM
@@ -524,12 +536,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 				.map(FlatrateTermId::getRepoId)
 				.ifPresent(shipmentLine::setC_Flatrate_Term_ID);
 
+		shipmentLine.setM_Delivery_Planning_ID(DeliveryPlanningId.toRepoId(_deliveryPlanningId));
+
 		// Save Shipment Line
 		inoutDAO.save(shipmentLine);
 
 		try (final MDCCloseable shipmentLineMDC = TableRecordMDC.putTableRecordReference(shipmentLine))
 		{
-			shipmentLineNoInfo.put(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()), shipmentLine.getLine());
+			shipmentLineNoInfo.put(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()), lineNoBeforeSave);
 
 			//
 			// Notify candidates that we have a shipment line
@@ -615,7 +629,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			}
 			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(asi);
 
-			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes();
+			final Collection<I_M_Attribute> attributes = filterAttributesForHUTransfer(shipmentLineAttributeStorageTo.getAttributes());
 			final ImmutableAttributeSet fromAttributes = extractAttributeValuesToTransfer(attributes, attributeStorageFactory);
 
 			trxAttributesBuilder.transferAttributes(
@@ -630,6 +644,28 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 			return IHUContextProcessor.NULL_RESULT;
 		});
+	}
+
+	/**
+	 * Filters out attributes where {@code IsHUAttributeOverridesASI=N} in {@link I_M_ShipmentSchedule_AttributeConfig}.
+	 * For those attributes, the schedule ASI value (already set on the shipment line by
+	 * {@link ShipmentScheduleWithHU#computeAttributeValues()}) must not be overwritten by HU attribute transfer.
+	 */
+	private Collection<I_M_Attribute> filterAttributesForHUTransfer(@NonNull final Collection<I_M_Attribute> allAttributes)
+	{
+		if (candidates.isEmpty())
+		{
+			return allAttributes;
+		}
+
+		final ShipmentScheduleWithHU firstCandidate = candidates.get(0);
+		final OrgId orgId = OrgId.ofRepoId(firstCandidate.getM_ShipmentSchedule().getAD_Org_ID());
+		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class)
+				.getHandlerFor(firstCandidate.getM_ShipmentSchedule());
+
+		return allAttributes.stream()
+				.filter(attr -> handler.isHUAttributeOverridesASI(orgId, AttributeId.ofRepoId(attr.getM_Attribute_ID())))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private ImmutableAttributeSet extractAttributeValuesToTransfer(final Collection<I_M_Attribute> attributes, final IAttributeStorageFactory attributeStorageFactory)
@@ -693,6 +729,20 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	}
 
 	/**
+	 * When no HU attribute values are available (e.g. no HUs were picked on-the-fly),
+	 * fall back to the shipment schedule's own ASI so that storage attributes
+	 * (e.g. Herkunft, Kaliber) are still propagated to the shipment line.
+	 */
+	private AttributeSetInstanceId getShipmentScheduleAsiFromCandidates()
+	{
+		return candidates.stream()
+				.map(c -> AttributeSetInstanceId.ofRepoIdOrNone(c.getM_AttributeSetInstance_ID()))
+				.filter(id -> id.isRegular())
+				.findFirst()
+				.orElse(AttributeSetInstanceId.NONE);
+	}
+
+	/**
 	 * {@code false} by default. Set to {@code} true if there aren't any real picked HUs, but we still want to createa a shipment line.
 	 */
 	public void setManualPackingMaterial(final boolean manualPackingMaterial)
@@ -716,6 +766,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	public void setAlreadyAssignedTUIds(final Set<HuId> alreadyAssignedTUIds)
 	{
 		this.alreadyAssignedTUIds = alreadyAssignedTUIds;
+	}
+
+	/**
+	 * On the LINE rather than the header because a shipment can aggregate lines of several plannings - and,
+	 * when it consolidates onto an already-drafted document, lines of no planning at all.
+	 */
+	public void setDeliveryPlanningId(@Nullable final DeliveryPlanningId deliveryPlanningId)
+	{
+		this._deliveryPlanningId = deliveryPlanningId;
 	}
 
 	public void setQtyTypeToUse(final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)

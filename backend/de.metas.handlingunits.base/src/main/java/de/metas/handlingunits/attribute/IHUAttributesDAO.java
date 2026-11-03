@@ -33,12 +33,18 @@ public interface IHUAttributesDAO extends ISingletonService
 
 	/**
 	 * Load the given <code>hu</code>'s attributes, ordered by their <code>M_HU_PI_Attribute</code>'s <code>SeqNo</code> (see {@link HUAttributesBySeqNoComparator}).
+	 * <p>
+	 * Returns active attribute rows only, EXCEPT for a <b>destroyed</b> HU: the HU-attribute archival job deactivates
+	 * all attributes of a destroyed HU, so for a destroyed HU the archived (inactive) rows are returned intentionally
+	 * (rather than an empty set), so destroyed-HU attribute consumers keep working as before the job existed.
 	 *
 	 * @return sorted HU attributes
 	 */
 	HUAndPIAttributes retrieveAttributesOrdered(I_M_HU hu);
 
 	/**
+	 * Active attribute rows only, EXCEPT for a destroyed HU (see {@link #retrieveAttributesOrdered(I_M_HU)}).
+	 *
 	 * @return the attribute or <code>null</code>
 	 */
 	@Nullable

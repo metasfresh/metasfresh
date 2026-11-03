@@ -214,6 +214,16 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 		);
 	}
 
+	public WFProcess createOnTheFlyIssueSchedule(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final UserId callerId,
+			@NonNull final String huQRCode)
+	{
+		final PPOrderId ppOrderId = toPPOrderId(wfProcessId);
+		final ManufacturingJob job = manufacturingRestService.createOnTheFlyIssueSchedule(ppOrderId, callerId, huQRCode);
+		return ManufacturingRestService.toWFProcess(job);
+	}
+
 	public JsonFinishGoodsReceiveQRCodesGenerateResponse generateFinishGoodsReceiveQRCodes(@NonNull final JsonFinishGoodsReceiveQRCodesGenerateRequest request)
 	{
 		final ManufacturingJob manufacturingJob = getManufacturingJob(getWFProcessById(request.getWfProcessId()));

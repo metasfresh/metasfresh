@@ -68,6 +68,7 @@ test('Check action buttons order', async ({ page }) => {
         'bulk-actions-button',
         'change-qty-button',
         'print-labels-button',
+        'scan-grai-button',
         'dispose-button',
         'scan-again-button'
     ]);
