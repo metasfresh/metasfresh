@@ -53,14 +53,14 @@ public interface IDocTypeDAO extends ISingletonService
 	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
 
 	/**
-	 * @return the translatable display name of the DocType (translations come from {@code C_DocType_Trl}).
-	 */
-	/**
 	 * @return the ids of all document types of the given {@code C_DocType.DocSubType}
 	 */
 	@NonNull
 	ImmutableSet<DocTypeId> getDocTypeIdsByDocSubType(@NonNull DocSubType docSubType);
 
+	/**
+	 * @return the translatable display name of the DocType (translations come from {@code C_DocType_Trl}).
+	 */
 	@NonNull
 	ITranslatableString getDocTypeNameTrl(@NonNull DocTypeId docTypeId);
 
