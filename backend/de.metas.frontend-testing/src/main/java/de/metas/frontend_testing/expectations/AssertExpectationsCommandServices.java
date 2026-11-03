@@ -56,7 +56,6 @@ import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.returns.POSReturnRepository;
 import de.metas.product.ProductId;
-import org.adempiere.ad.dao.IQueryBL;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
@@ -101,7 +100,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AssertExpectationsCommandServices
 {
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
