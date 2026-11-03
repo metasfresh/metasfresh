@@ -28,7 +28,7 @@ import de.metas.ui.web.process.WEBUI_CloneLine;
 import de.metas.util.Services;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class CloneLineProcessConfig

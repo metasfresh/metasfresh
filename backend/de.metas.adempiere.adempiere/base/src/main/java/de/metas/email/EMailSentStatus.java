@@ -16,10 +16,10 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import javax.mail.Address;
-import javax.mail.AuthenticationFailedException;
-import javax.mail.MessagingException;
-import javax.mail.SendFailedException;
+import jakarta.mail.Address;
+import jakarta.mail.AuthenticationFailedException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.SendFailedException;
 import java.io.Serializable;
 import java.util.function.Consumer;
 

@@ -1,8 +1,8 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3;
 
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPConstants;
-import javax.xml.soap.SOAPException;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.http.auth.UsernamePasswordCredentials;

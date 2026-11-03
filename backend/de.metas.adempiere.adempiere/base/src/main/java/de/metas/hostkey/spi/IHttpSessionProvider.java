@@ -22,8 +22,8 @@
 
 package de.metas.hostkey.spi;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import de.metas.util.ISingletonService;
 

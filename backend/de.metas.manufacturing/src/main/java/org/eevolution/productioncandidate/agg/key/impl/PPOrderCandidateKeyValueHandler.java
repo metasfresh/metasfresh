@@ -30,7 +30,7 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 

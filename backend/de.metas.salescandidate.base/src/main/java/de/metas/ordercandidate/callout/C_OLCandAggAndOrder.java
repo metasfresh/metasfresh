@@ -12,7 +12,7 @@ import de.metas.ordercandidate.model.X_C_OLCandAggAndOrder;
 import de.metas.util.Check;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Callout(I_C_OLCandAggAndOrder.class)
 @Component

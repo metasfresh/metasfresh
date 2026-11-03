@@ -17,7 +17,7 @@ import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
+import jakarta.validation.constraints.Null;
 
 /*
  * #%L

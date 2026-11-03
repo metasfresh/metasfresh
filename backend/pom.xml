@@ -52,7 +52,7 @@
         <poi.version>4.1.2</poi.version>
         <zxing.version>2.3.0</zxing.version>
 
-        <spring-boot.version>2.4.3</spring-boot.version>
+        <spring-boot.version>3.5.16</spring-boot.version>
         <lucene.version>8.6.2</lucene.version>
 
         <!-- Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base for some reason. -->
@@ -128,8 +128,6 @@
         <module>de.metas.dlm</module>
 
         <module>de.metas.edi</module>
-
-        <module>de.metas.elasticsearch</module>
 
         <module>de.metas.banking</module>
         <module>de.metas.contracts</module>
@@ -251,6 +249,24 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <!-- Spring Boot 3's BOM no longer manages these (httpclient4 → httpclient5;
+                 codehaus-groovy dropped). Pin them here to preserve behaviour. -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.5.14</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-jsr223</artifactId>
+                <version>3.0.22</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-console</artifactId>
+                <version>3.0.22</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.mchange</groupId>

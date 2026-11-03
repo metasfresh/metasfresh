@@ -53,7 +53,8 @@
 
     <properties>
         <!-- this is our default; individual projects might need to specify their own settings -->
-        <metasfresh.java.version>1.8</metasfresh.java.version>
+        <metasfresh.java.version>25</metasfresh.java.version>
+        <lombok.version>1.18.48</lombok.version>
 
         <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
         <jackson.version>2.14.1</jackson.version>
@@ -64,7 +65,7 @@
         <itextpdf.version>5.5.13.3</itextpdf.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
-        <spring-boot-admin.version>2.3.1</spring-boot-admin.version>
+        <spring-boot-admin.version>3.5.6</spring-boot-admin.version>
 
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
@@ -104,6 +105,38 @@
     </modules>
 
     <dependencies>
+        <!-- JAXB shipped inside the JDK through Java 8 and was removed in Java 11+.
+             The committed src/main/java-xjc sources (and other JAXB users) use the
+             javax.xml.bind namespace, so provide the API + runtime explicitly.
+             Versions are PINNED to the 2.3.x javax-namespace line on purpose: when
+             Spring Boot is later bumped to 3.x its BOM would otherwise force the 4.x
+             jakarta-namespace artifacts, which would not match the generated sources. -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>2.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>2.3.9</version>
+        </dependency>
+        <!-- SOAP/SAAJ was part of the JDK through Java 8 and removed in Java 11+, so provide
+             the API + impl explicitly. Unlike JAXB above, SOAP moves to the jakarta.xml.soap
+             namespace: under Spring Boot 3 the only API consumer is Spring-WS 4.x
+             (SaajSoapMessageFactory), which is jakarta-only, so these are pinned to the
+             jakarta-namespace 3.0.x line matching the spring-boot-dependencies BOM
+             (jakarta-xml-soap 3.0.2 / saaj-impl 3.0.6). -->
+        <dependency>
+            <groupId>jakarta.xml.soap</groupId>
+            <artifactId>jakarta.xml.soap-api</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.messaging.saaj</groupId>
+            <artifactId>saaj-impl</artifactId>
+            <version>3.0.6</version>
+        </dependency>
         <dependency>
             <groupId>io.github.origin-energy</groupId>
             <artifactId>java-snapshot-testing-junit5</artifactId>
@@ -140,7 +173,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.18</version>
+                <version>${lombok.version}</version>
             </dependency>
 
             <dependency>
@@ -342,7 +375,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.14.0</version>
                     <configuration>
                         <encoding>UTF-8</encoding>
                         <source>${metasfresh.java.version}</source>
@@ -354,6 +387,17 @@
                         <compilerArgs>
                             <arg>-Xpkginfo:always</arg>
                         </compilerArgs>
+                        <!-- JDK 23+ changed the default annotation-processing policy to "none": javac no longer
+                             runs processors discovered only on the classpath. Lombok is a plain dependency here,
+                             so without this explicit path its @UtilityClass/@Data/... transforms silently stop
+                             running on JDK 25. See projectlombok/lombok#3967, #3949. -->
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
                 <plugin>
