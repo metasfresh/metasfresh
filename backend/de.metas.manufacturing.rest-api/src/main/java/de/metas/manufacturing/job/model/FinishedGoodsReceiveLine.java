@@ -67,6 +67,11 @@ public class FinishedGoodsReceiveLine
 		this.status = computeStatus(qtyToReceive, qtyReceived);
 	}
 
+	/**
+	 * @return {@code true} for the main finished good, {@code false} for a co- or by-product line
+	 */
+	public boolean isMainFinishedGood() {return coProductBOMLineId == null;}
+
 	private static WFActivityStatus computeStatus(
 			@NonNull final Quantity qtyToReceive,
 			@NonNull final Quantity qtyReceived)

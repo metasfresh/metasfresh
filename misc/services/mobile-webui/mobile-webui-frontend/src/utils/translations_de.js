@@ -38,7 +38,7 @@ const translations = {
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'verworfen',
-    Qty: 'Qty',
+    Qty: 'Menge',
     QtyTU: 'Gebindemenge',
     CatchWeight: 'Gewicht',
     PackingItemName: 'Packvorschrift',
@@ -131,6 +131,9 @@ const translations = {
         },
       },
     },
+    manufacturing: {
+      confirmEmptyHUPrompt: 'Die verbleibende Menge %(qty)s wird abgeschrieben und die HU geleert. Fortfahren?',
+    },
     picking: {
       PickingLine: 'Packzeile',
       PickFromManufacturingOrder: 'Produzieren',
@@ -153,6 +156,7 @@ const translations = {
       scanSerialNoAgain: 'Erneut scannen',
       serialNoCount: '%(scanned)s von %(total)s gescannt',
       serialNoCountExtra: '(%(extra)s zu viele)',
+      serialNoAlreadyScanned: 'Seriennummer bereits gescannt',
       serialNoScanDone: 'Fertig',
       skip: 'Überspringen',
       scanTargetHU: 'Ziel HU scannen',
@@ -167,6 +171,10 @@ const translations = {
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
+        invalidQRCode: 'Der gescannte QR-Code ist nicht lesbar!',
+        missingLotNo: 'Der gescannte QR-Code enthält keine Lot-Nr!',
+        missingBestBeforeDate: 'Der gescannte QR-Code enthält kein Mindesthaltbarkeitsdatum!',
+        invalidBestBeforeDate: 'Der gescannte QR-Code enthält ein ungültiges Mindesthaltbarkeitsdatum!',
         differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem in der Packzeile überein',
       },
       pickingTarget: {

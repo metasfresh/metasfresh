@@ -80,6 +80,10 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 .claude
 **/CLAUDE.md
 **/CLAUDE.md.backup
+docs/coding-rules
+docs/manual
+docs/REVIEW.md
+docs/documentation-naming.md
 .mcp.json
 **/claude-docs
 **/REVIEW.md

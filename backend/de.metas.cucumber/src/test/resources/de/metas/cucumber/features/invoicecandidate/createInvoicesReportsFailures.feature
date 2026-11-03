@@ -4,7 +4,7 @@
 @allure.label.epic:E0225_Accounting
 @allure.label.feature:F01010.3_Match_Invoice
 @F00701
-@ghActions:run_on_executor5
+@ghActions:run_on_executor8
 Feature: A failing "Create Invoices" run reports back to the user who started it
 ## F00701: Invoice Candidates
 

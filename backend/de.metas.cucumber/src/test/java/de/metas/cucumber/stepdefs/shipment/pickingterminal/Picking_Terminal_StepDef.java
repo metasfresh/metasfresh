@@ -117,6 +117,23 @@ public class Picking_Terminal_StepDef
 		processPickingCandidatesCommand.execute();
 	}
 
+	/**
+	 * Creates one {@code M_Picking_Candidate} per row, picking from the given HU for the given shipment schedule.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_HU_ID</b> — (required, identifier-ref) the HU to pick from<br>
+	 * <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the shipment schedule to pick for<br>
+	 * <b>QtyPicked</b> — (required) picked quantity<br>
+	 * <b>Status</b> — (required) candidate status, e.g. IP<br>
+	 * <b>PickStatus</b> — (required) pick status, e.g. P<br>
+	 * <b>ApprovalStatus</b> — (required) approval status, e.g. ?<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_ShipmentSchedule_StepDefData
+	 * @cucumber.example <pre>
+	 * And create M_PickingCandidate for M_HU
+	 *   | M_HU_ID | M_ShipmentSchedule_ID | QtyPicked | Status | PickStatus | ApprovalStatus |
+	 *   | hu_1    | shipmentSchedule_1    | 10        | IP     | P          | ?              |
+	 * </pre>
+	 */
 	@And("create M_PickingCandidate for M_HU")
 	public void create_M_PickingCandidate_for_M_HU(@NonNull final DataTable dataTable)
 	{
@@ -137,6 +154,20 @@ public class Picking_Terminal_StepDef
 		});
 	}
 
+	/**
+	 * Processes the picking of each row's HU for the row's shipment schedule.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_HU_ID</b> — (required, identifier-ref) the picked HU<br>
+	 * <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the shipment schedule it was picked for<br>
+	 * <b>ErrorMessage</b> — (optional) expected error message; the processing must fail with it<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_ShipmentSchedule_StepDefData
+	 * @cucumber.example <pre>
+	 * And process picking
+	 *   | M_HU_ID | M_ShipmentSchedule_ID |
+	 *   | hu_1    | shipmentSchedule_1    |
+	 * </pre>
+	 */
 	@And("process picking")
 	public void process_picking(@NonNull final DataTable dataTable)
 	{

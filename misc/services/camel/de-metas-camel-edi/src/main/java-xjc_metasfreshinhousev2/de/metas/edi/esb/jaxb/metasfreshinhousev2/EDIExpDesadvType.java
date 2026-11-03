@@ -50,6 +50,7 @@ import java.util.List;
  *         &lt;element name="EDI_Exp_Desadv_Pack" type="{}EDI_Exp_Desadv_PackType" maxOccurs="unbounded" minOccurs="0"/&gt;
  *         &lt;element name="EDI_Exp_DesadvLineWithNoPack" type="{}EDI_Exp_DesadvLineWithNoPackType" maxOccurs="unbounded" minOccurs="0"/&gt;
  *         &lt;element name="M_InOut_ID" type="{http://www.w3.org/2001/XMLSchema}integer"/&gt;
+ *         &lt;element name="shipment_documentno" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *         &lt;element name="DatePromised" type="{http://www.w3.org/2001/XMLSchema}date" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
  *       &lt;attribute ref="{}AD_Client_Value"/&gt;
@@ -89,6 +90,7 @@ import java.util.List;
     "ediExpDesadvPack",
     "ediExpDesadvLineWithNoPack",
     "mInOutID",
+    "shipmentDocumentno",
     "datePromised"
 })
 public class EDIExpDesadvType {
@@ -138,6 +140,8 @@ public class EDIExpDesadvType {
     protected List<EDIExpDesadvLineWithNoPackType> ediExpDesadvLineWithNoPack;
     @XmlElement(name = "M_InOut_ID", required = true)
     protected BigInteger mInOutID;
+    @XmlElement(name = "shipment_documentno")
+    protected String shipmentDocumentno;
     @XmlElement(name = "DatePromised")
     @XmlSchemaType(name = "date")
     protected XMLGregorianCalendar datePromised;
@@ -646,6 +650,30 @@ public class EDIExpDesadvType {
      */
     public void setMInOutID(BigInteger value) {
         this.mInOutID = value;
+    }
+
+    /**
+     * Gets the value of the shipmentDocumentno property.
+     *
+     * @return
+     *     possible object is
+     *     {@link String }
+     *
+     */
+    public String getShipmentDocumentno() {
+        return shipmentDocumentno;
+    }
+
+    /**
+     * Sets the value of the shipmentDocumentno property.
+     *
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *
+     */
+    public void setShipmentDocumentno(String value) {
+        this.shipmentDocumentno = value;
     }
 
     /**

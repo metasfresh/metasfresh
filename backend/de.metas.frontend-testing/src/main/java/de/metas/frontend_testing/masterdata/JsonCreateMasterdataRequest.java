@@ -2,18 +2,23 @@ package de.metas.frontend_testing.masterdata;
 
 import de.metas.frontend_testing.masterdata.adprocess.JsonSetAdProcessFlagsRequest;
 import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeRequest;
+import de.metas.frontend_testing.masterdata.bpartner.JsonBPGroupRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCalibrationRuleRequest;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.JsonCustomQRCodeFormatRequest;
+import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderFromCandidatesRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonProductCategoryRequest;
@@ -48,6 +53,12 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, String> sysconfigs;
 
 	/**
+	 * Sysconfigs written as SYSTEM rows (AD_Client_ID=0, AD_Org_ID=0) instead of at their declared configuration level.
+	 * Use for sysconfigs that the code reads only at SYSTEM level.
+	 */
+	@Nullable Map<String, String> systemSysconfigs;
+
+	/**
 	 * Sets flag columns on {@code AD_Process} records matched by a {@code JasperReport} substring.
 	 * Used to enable {@code IsPdfA3Output=Y} on the sales-invoice report process so that the mock
 	 * report service returns a valid PDF/A-3 and ZUGFeRD assembly can embed the CII XML into it.
@@ -73,12 +84,22 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateRoleRequest> roles;
 
 	@Nullable Map<String, JsonMailboxRequest> mailboxes;
+	/**
+	 * Per-run {@code C_BP_Group}s; created BEFORE {@code bpartners}, which join one via {@code bpGroup}.
+	 */
+	@Nullable Map<String, JsonBPGroupRequest> bpGroups;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;
 	@Nullable Map<String, JsonWarehouseRequest> warehouses;
 	@Nullable Map<String, JsonUOMRequest> uoms;
 	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest> vatIdChecks;
 	@Nullable Map<String, JsonCompensationGroupSchemaRequest> compensationGroupSchemas;
+
+	/**
+	 * {@code C_CompensationGroup_CalibrationRule}s. Created AFTER {@code bpartners}, {@code bpGroups},
+	 * {@code productCategories}, {@code products} and {@code compensationGroupSchemas}, whose identifiers they reference.
+	 */
+	@Nullable Map<String, JsonCalibrationRuleRequest> calibrationRules;
 
 	/**
 	 * Creates a per-run {@code M_Product_Category} and (optionally) an {@code M_AttributeSet} as its attribute set.
@@ -102,6 +123,14 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateProductRequest> products;
 
 	/**
+	 * Creates a POS terminal ({@code C_POS}) for frontend/mobile testing. Applied AFTER {@code products}
+	 * (whose identifiers it may reference to price them into its own {@code M_PriceList_Version}) and
+	 * {@code bpartners} (whose identifiers it may reference as the walk-in customer). See
+	 * {@link de.metas.frontend_testing.masterdata.pos.CreatePOSTerminalCommand}.
+	 */
+	@Nullable Map<String, JsonPOSTerminalRequest> posTerminals;
+
+	/**
 	 * Updates {@code M_Product.ProductLifeCycleStatus} (BBS-Status) on already-created products:
 	 * product identifier → status code ({@code O}/{@code A}/{@code G}/{@code N}). Applied late
 	 * (after order creation) so a product can be flipped to a blocking status only once its
@@ -116,6 +145,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonPackingInstructionsRequest> packingInstructions;
 	@Nullable Map<String, JsonCreateShipperRequest> shippers;
 	@Nullable Map<String, JsonCreateHURequest> handlingUnits;
+	@Nullable Map<String, JsonPackageRequest> packages;
 	@Nullable Map<String, JsonGenerateHUQRCodeRequest> generatedHUQRCodes;
 	@Nullable Map<String, JsonSalesOrderCreateRequest> salesOrders;
 	@Nullable Map<String, JsonPurchaseOrderCreateRequest> purchaseOrders;
@@ -124,6 +154,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonInvoiceCreateRequest> invoices;
 	@Nullable Map<String, JsonPPOrderRequest> manufacturingOrders;
 	@Nullable Map<String, JsonDDOrderRequest> distributionOrders;
+	@Nullable Map<String, JsonDDOrderFromCandidatesRequest> distributionOrdersFromCandidates;
 	@Nullable List<JsonCustomQRCodeFormatRequest> customQRCodeFormats;
 	@Nullable Map<String, JsonInventoryRequest> inventories;
 }

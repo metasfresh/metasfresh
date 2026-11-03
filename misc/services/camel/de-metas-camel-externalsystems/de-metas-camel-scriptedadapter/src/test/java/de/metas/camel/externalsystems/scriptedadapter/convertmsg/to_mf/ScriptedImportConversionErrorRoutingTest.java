@@ -24,10 +24,14 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.http.base.HttpOperationFailedException;
+import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -72,6 +76,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 public class ScriptedImportConversionErrorRoutingTest extends CamelTestSupport
 {
 	private static final String MOCK_ENDPOINT_NAME = "errorRoutingTestEndpoint";
+	private static final String IMPORTEUR_TOKEN = "importeur-token";
 	private static final String MOCK_SCRIPT_IDENTIFIER = "mock:scriptIdentifier";
 	private static final String MOCK_SCRIPT = "mock:script.js";
 	private static final String MOCK_ERROR_ROUTE_URI = "mock:mfErrorRoute";
@@ -102,7 +107,8 @@ public class ScriptedImportConversionErrorRoutingTest extends CamelTestSupport
 				javaScriptExecutorService,
 				producerTemplate,
 				localProcessedDir.toAbsolutePath().toString(),
-				localErrorDir.toAbsolutePath().toString());
+				localErrorDir.toAbsolutePath().toString(),
+				IMPORTEUR_TOKEN);
 	}
 
 	@Test
@@ -124,8 +130,13 @@ public class ScriptedImportConversionErrorRoutingTest extends CamelTestSupport
 				.thenReturn(scriptResponse);
 
 		// The downstream endpoint rejects the request (e.g. an HttpOperationFailedException wrapped by Camel)
-		Mockito.when(producerTemplate.requestBody(anyString(), any(), any()))
-				.thenThrow(new RuntimeCamelException("rejected by endpoint"));
+		Mockito.when(producerTemplate.request(anyString(), any(Processor.class)))
+				.thenAnswer(invocation -> {
+					final Exchange itemExchange = new DefaultExchange(context);
+					invocation.<Processor>getArgument(1).process(itemExchange);
+					itemExchange.setException(new RuntimeCamelException("rejected by endpoint"));
+					return itemExchange;
+				});
 
 		// A rejected item does not fail the exchange: it is recorded, so that the remaining items of a
 		// multi-item import still get dispatched.
@@ -152,6 +163,53 @@ public class ScriptedImportConversionErrorRoutingTest extends CamelTestSupport
 		// doCatch(Exception.class) already sends there when its per-item verdict is a total failure.
 		getMockEndpoint(MOCK_ERROR_ROUTE_URI).expectedMessageCount(0);
 		MockEndpoint.assertIsSatisfied(context);
+	}
+
+	/**
+	 * An HTTP failure whose response body says nothing (here a 500 with an empty body) must still route the payload to the error
+	 * folder. The per-item outcome is the caught failure itself, never a scan of the reply text: an empty or unstructured error body
+	 * carries no marker a text check could find.
+	 */
+	@Test
+	void httpFailureWithEmptyBody_landsInErrorArchive_notProcessed() throws Exception
+	{
+		registerErrorRouteForwardingToMock();
+
+		context.start();
+
+		Mockito.when(javaScriptRepo.get(MOCK_SCRIPT_IDENTIFIER)).thenReturn(MOCK_SCRIPT);
+
+		final String inputPayload = "{\"orderId\":\"empty-500-body-test\"}";
+
+		final InputStream jsonOneValidItemScriptResponse = this.getClass().getResourceAsStream(JSON_ONE_VALID_ITEM_SCRIPT_RESPONSE);
+		assertThat(jsonOneValidItemScriptResponse).isNotNull();
+		final String scriptResponse = new String(jsonOneValidItemScriptResponse.readAllBytes(), StandardCharsets.UTF_8);
+
+		Mockito.when(javaScriptExecutorService.executeScript(MOCK_SCRIPT_IDENTIFIER, MOCK_SCRIPT, inputPayload))
+				.thenReturn(scriptResponse);
+
+		Mockito.when(producerTemplate.request(anyString(), any(Processor.class)))
+				.thenAnswer(invocation -> {
+					final Exchange itemExchange = new DefaultExchange(context);
+					invocation.<Processor>getArgument(1).process(itemExchange);
+					itemExchange.setException(new HttpOperationFailedException("http://localhost:8282/api/v2/orders/sales/candidates/bulk", 500, "Internal Server Error", null, null, ""));
+					return itemExchange;
+				});
+
+		assertThatNoException().isThrownBy(() -> template.sendBody("direct:" + MOCK_ENDPOINT_NAME, inputPayload));
+
+		final List<Path> errorFiles;
+		try (var files = Files.list(localErrorDir))
+		{
+			errorFiles = files.toList();
+		}
+		assertThat(errorFiles).hasSize(1);
+		assertThat(Files.readString(errorFiles.get(0), StandardCharsets.UTF_8)).isEqualTo(inputPayload);
+
+		try (var files = Files.list(localProcessedDir))
+		{
+			assertThat(files.findAny()).isEmpty();
+		}
 	}
 
 	/**

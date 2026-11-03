@@ -16,7 +16,7 @@ const POSCashJournalOpenModal = () => {
   };
 
   return (
-    <div className="modal is-active pos-journal-open-panel">
+    <div className="modal is-active pos-journal-open-panel" data-testid="pos-cash-journal-open-modal">
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
@@ -28,6 +28,7 @@ const POSCashJournalOpenModal = () => {
             <div className="field">
               <input
                 type="number"
+                data-testid="pos-cash-journal-opening-balance-input"
                 value={cashBeginningBalance}
                 onChange={(e) => {
                   setCashBeginningBalance(e.target.value);
@@ -44,7 +45,7 @@ const POSCashJournalOpenModal = () => {
         </section>
         <footer className="modal-card-foot">
           <div className="buttons">
-            <button className="button is-large" onClick={onOpenClick}>
+            <button className="button is-large" data-testid="pos-cash-journal-open-button" onClick={onOpenClick}>
               {_('actions.open')}
             </button>
           </div>

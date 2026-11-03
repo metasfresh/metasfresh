@@ -2,7 +2,7 @@
 @allure.label.epic:E0106_Distribution
 @allure.label.feature:F5114_MobileUI_Distribution
 @allure.label.feature:F5111_DDOrder_Replenishment
-@ghActions:run_on_executor7
+@ghActions:run_on_executor8
 Feature: DD_Order replenishment — one distribution order per product group
   As a mover replenishing a packing workplace,
   I want the demand that shares product, UOM and target locator to arrive as ONE distribution order carrying the summed quantity,
