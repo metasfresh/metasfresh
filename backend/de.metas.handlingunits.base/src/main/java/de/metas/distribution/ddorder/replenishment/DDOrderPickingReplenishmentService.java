@@ -787,6 +787,14 @@ public class DDOrderPickingReplenishmentService
 	{
 		final LinkedHashMap<LocatorId, Quantity> refusedQtyByLocator = new LinkedHashMap<>();
 
+		// N+1 budget: freeze state cannot change during a reconcile, so resolve the frozen lines ONCE here — in a single
+		// batched query — and test set membership inside the fixed-point loop rather than re-asking the service on every
+		// iteration.
+		final ImmutableSet<DDOrderLineId> candidateLineIds = existingLineByLocator.values().stream()
+				.map(line -> DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<DDOrderLineId> frozenLineIds = ddOrderMoveScheduleService.retrieveLineIdsWithInProgressSchedules(candidateLineIds);
+
 		while (true)
 		{
 			final Map<PickingJobScheduleId, Quantity> alreadyServedByContributor = mergeServed(
@@ -809,7 +817,7 @@ public class DDOrderPickingReplenishmentService
 				}
 
 				final Quantity plannedQty = sumOfShares(attribution.get(entry.getKey()), entry.getValue());
-				if (isShrinkRefusedByDeliveredQty(existingLine, plannedQty))
+				if (isWriteRefusedByMoveInProgress(existingLine, plannedQty, frozenLineIds))
 				{
 					newlyRefused.put(entry.getKey(), plannedQty);
 				}
@@ -1175,7 +1183,8 @@ public class DDOrderPickingReplenishmentService
 	 * @return {@code false} when the already-delivered guard left the line at its old quantity; the caller must then
 	 * leave the line's contributor set alone too, so line quantity and shares stay in sync.
 	 */
-	private boolean updateDDOrderLineQtyInPlace(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
+	@VisibleForTesting
+	boolean updateDDOrderLineQtyInPlace(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
 	{
 		final BigDecimal newQtyBD = newQty.toBigDecimal();
 		if (alreadyCarriesQty(line, newQtyBD))
@@ -1183,15 +1192,15 @@ public class DDOrderPickingReplenishmentService
 			return true;
 		}
 
-		if (isShrinkRefusedByDeliveredQty(line, newQty))
+		if (isWriteRefusedByMoveInProgress(line, newQty))
 		{
 			Loggables.addLog(
-					"DD_Order picking replenishment: not shrinking DD_OrderLine_ID={0} (DD_Order_ID={1}) in place:"
-							+ " QtyDelivered={2} > 0 and the new qty {3} is lower than the ordered qty {4}; left untouched"
-							+ " (its contributor shares are left untouched too)",
+					"DD_Order picking replenishment: not writing DD_OrderLine_ID={0} (DD_Order_ID={1}) in place:"
+							+ " it has an in-progress DD_Order_MoveSchedule (the mover has picked and not yet dropped),"
+							+ " so the line is under movement and its qty is frozen; refusing to change it from the ordered qty {3}"
+							+ " to the new qty {2}; left untouched (its contributor shares are left untouched too)",
 					line.getDD_OrderLine_ID(),
 					line.getDD_Order_ID(),
-					line.getQtyDelivered(),
 					newQtyBD,
 					line.getQtyOrdered());
 			return false;
@@ -1217,18 +1226,31 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * Shared with {@link #computeFrozenSplit}, so the attribution and the write cannot disagree about which lines are frozen.
-	 * <p>
-	 * SUPERSEDED: keys on {@code QtyDelivered}, which no production flow writes (only MDDOrderLine's zero-initialiser), so it
-	 * never freezes anything on a live instance. The freeze is being re-keyed onto {@link #ordersHoldingMovedGoods} — the same live
-	 * movement signal the disposal sites already use — in a follow-up change; left as-is here to keep that swap in one place.
+	 * Shared with {@link #computeFrozenSplit}, so the attribution and the write cannot disagree about which lines are
+	 * frozen: a line under movement refuses <em>any</em> qty change, a no-op rewrite excepted.
+	 *
+	 * <p>Keyed on an IN_PROGRESS {@code DD_Order_MoveSchedule} and not on {@code DD_OrderLine.QtyDelivered} /
+	 * {@code QtyInTransit}, which no production flow writes at all — a refusal keyed on those would never fire.</p>
 	 */
-	private static boolean isShrinkRefusedByDeliveredQty(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
+	private boolean isWriteRefusedByMoveInProgress(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
 	{
-		final BigDecimal newQtyBD = newQty.toBigDecimal();
-		return !alreadyCarriesQty(line, newQtyBD)
-				&& line.getQtyDelivered().signum() > 0
-				&& newQtyBD.compareTo(line.getQtyOrdered()) < 0;
+		return !alreadyCarriesQty(line, newQty.toBigDecimal())
+				&& ddOrderMoveScheduleService.hasInProgressSchedules(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()));
+	}
+
+	/**
+	 * The {@link #computeFrozenSplit} fixed-point-loop form of {@link #isWriteRefusedByMoveInProgress(I_DD_OrderLine, Quantity)}:
+	 * the freeze verdict is pre-resolved into {@code frozenLineIds} once before the loop (N+1 budget)
+	 * and this only tests membership — never re-asking the service per iteration. Same freeze signal, same no-op guard,
+	 * so the two forms cannot disagree about which lines are frozen.
+	 */
+	private static boolean isWriteRefusedByMoveInProgress(
+			@NonNull final I_DD_OrderLine line,
+			@NonNull final Quantity newQty,
+			@NonNull final Set<DDOrderLineId> frozenLineIds)
+	{
+		return !alreadyCarriesQty(line, newQty.toBigDecimal())
+				&& frozenLineIds.contains(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()));
 	}
 
 	private I_DD_OrderLine saveDraftDDOrder(@NonNull final CreateDDOrderReplenishmentRequest request)
