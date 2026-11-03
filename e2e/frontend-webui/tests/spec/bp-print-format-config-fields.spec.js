@@ -27,23 +27,27 @@ import { getIncludedRecordData } from '../utils/WebAPIValidation';
  *      (fieldsByName.IsAutoPrint.value.key === 'Y') after a full page reload.
  *
  * Selectors are language-invariant (data-testid / data-cy / DB ColumnName /
- * structural class); the "Yes" option is picked by its `data-test-id`, which begins with the
- * language-invariant AD_Ref_List VALUE key ("Y"). The persisted value is verified
- * language-invariantly via the WebAPI value key ("Y").
+ * structural class); the "Yes" option is picked by the language-invariant AD_Ref_List VALUE
+ * key ("Y"). The persisted value is verified language-invariantly via the WebAPI value
+ * key ("Y").
  */
 
 const PRINT_FORMAT_TAB = 'AD_Tab-540653'; // C_BP_PrintFormat included tab of window 123
 
 // A List (_YesNo) widget renders its options at document level (tethered) as
-// `.input-dropdown-list-option`. Each option carries data-test-id = `${key}${caption}`
-// (SelectionDropdown.renderOption), so it ALWAYS begins with the AD_Ref_List VALUE key
-// ("Y" for Yes, "N" for No) — a truly language-invariant handle. This matters beyond
-// language: the *visible caption* also varies with developer mode — MLookupFactory renders
-// list captions as "Value_Name" (e.g. "Y_Yes") when de.metas.adempiere.debug is on and as
-// the plain translated name (e.g. "Yes" / "Ja") when off (the CI/production default). Only
-// the data-test-id key prefix is stable across BOTH, so selecting by it — mirroring
-// cost-revaluation-copyfrom-field.spec.js — is the correct, config-independent approach.
+// `.input-dropdown-list-option`, each carrying the AD_Ref_List VALUE key ("Y" for Yes, "N"
+// for No) — a truly language-invariant handle. That matters beyond language: the *visible
+// caption* also varies with developer mode — MLookupFactory renders list captions as
+// "Value_Name" (e.g. "Y_Yes") when de.metas.adempiere.debug is on and as the plain
+// translated name (e.g. "Yes" / "Ja") when off (the CI/production default). Only the key is
+// stable across BOTH, so selecting by it is the correct, config-independent approach.
+//
+// SelectionDropdown renders that key under a different ATTRIBUTE per branch line —
+// `data-testid` = `option-${key}` on one, `data-test-id` = `${key}${caption}` on the other —
+// so match both: this spec lives on every branch of the propagation chain, and a
+// single-contract selector is green on one and deterministically red on the rest.
 const YES_OPTION_BY_KEY =
+  '.input-dropdown-list .input-dropdown-list-option[data-testid="option-Y"], ' +
   '.input-dropdown-list .input-dropdown-list-option[data-test-id^="Y"]';
 
 /**

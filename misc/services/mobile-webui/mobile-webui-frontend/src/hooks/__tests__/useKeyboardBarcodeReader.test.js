@@ -28,20 +28,22 @@ let now;
 function mountReader(props = {}) {
   const onReadDone = jest.fn();
   const onReadInProgress = jest.fn();
+  // Latest isReadInProgress the hook returned (read after each act()).
+  const readState = { isReadInProgress: undefined };
 
   function TestComponent() {
-    useKeyboardBarcodeReader({
+    readState.isReadInProgress = useKeyboardBarcodeReader({
       onReadDone,
       onReadInProgress,
       rateMs: RATE_MS,
       minLength: MIN_LENGTH,
       ...props,
-    });
+    }).isReadInProgress;
     return null;
   }
 
   const utils = render(<TestComponent />);
-  return { onReadDone, onReadInProgress, ...utils };
+  return { onReadDone, onReadInProgress, readState, ...utils };
 }
 
 function pressKey(key, opts = {}) {
@@ -52,6 +54,11 @@ function pressKey(key, opts = {}) {
       cancelable: true,
       ...opts,
     });
+    // A real KeyboardEvent is stamped by the browser when it is CREATED. Synthetic events get the
+    // real clock, which ignores this suite's mocked Date.now() - so without this every event would
+    // look as though it arrived in the same instant, and the deliberate inter-scan gaps below
+    // (which model an operator pausing between two scans) would be invisible.
+    Object.defineProperty(event, 'timeStamp', { value: now, configurable: true });
     window.dispatchEvent(event);
   });
 }
@@ -88,6 +95,32 @@ afterEach(() => {
 });
 
 describe('useKeyboardBarcodeReader', () => {
+  describe('isReadInProgress', () => {
+    it('is true from the first character of a plain code until the idle flush completes it', () => {
+      // Production Zebra devices send no terminator: a plain code completes only via the idle flush.
+      const { onReadDone, readState } = mountReader();
+      expect(readState.isReadInProgress).toBe(false);
+
+      typeString('4012345678901');
+      expect(readState.isReadInProgress).toBe(true);
+
+      goIdleAndTick();
+      expect(onReadDone).toHaveBeenCalledWith('4012345678901', expect.anything());
+      expect(readState.isReadInProgress).toBe(false);
+    });
+
+    it('is true while an HU QR code streams in and false once its content completes it', () => {
+      const { onReadDone, readState } = mountReader();
+
+      typeString(HU_QR.slice(0, -1));
+      expect(readState.isReadInProgress).toBe(true);
+
+      typeString(HU_QR.slice(-1));
+      expect(onReadDone).toHaveBeenCalledWith(HU_QR, expect.anything());
+      expect(readState.isReadInProgress).toBe(false);
+    });
+  });
+
   it('force-completes a complete HU QR on JSON-close WITHOUT waiting for the idle timer, despite a mid-scan gap', () => {
     const { onReadDone } = mountReader();
 
@@ -98,7 +131,7 @@ describe('useKeyboardBarcodeReader', () => {
     // The closing '}' makes the buffer a complete, terminal HU QR → force-completed immediately,
     // with NO idle-timer advance (no goIdleAndTick), exactly once, with the full code.
     expect(onReadDone).toHaveBeenCalledTimes(1);
-    expect(onReadDone).toHaveBeenCalledWith(HU_QR);
+    expect(onReadDone).toHaveBeenCalledWith(HU_QR, expect.any(Object));
   });
 
   it('holds a partial HU QR back across an idle tick (mid-scan gap), then force-completes when the final chunk closes the JSON', () => {
@@ -120,7 +153,7 @@ describe('useKeyboardBarcodeReader', () => {
     // The remaining chunk arrives and closes the JSON → force-completed on content (no idle wait).
     typeString(secondChunk);
     expect(onReadDone).toHaveBeenCalledTimes(1);
-    expect(onReadDone).toHaveBeenCalledWith(HU_QR);
+    expect(onReadDone).toHaveBeenCalledWith(HU_QR, expect.any(Object));
   });
 
   it('separates back-to-back scans: a complete HU QR force-completes at its close even if another code follows immediately', () => {
@@ -133,12 +166,12 @@ describe('useKeyboardBarcodeReader', () => {
 
     // Exactly the HU QR was emitted (the trailing code did not merge into it).
     expect(onReadDone).toHaveBeenCalledTimes(1);
-    expect(onReadDone).toHaveBeenCalledWith(HU_QR);
+    expect(onReadDone).toHaveBeenCalledWith(HU_QR, expect.any(Object));
 
     // The trailing (NOT_APPLICABLE) code then completes via the idle-flush, on its own.
     goIdleAndTick();
     expect(onReadDone).toHaveBeenCalledTimes(2);
-    expect(onReadDone).toHaveBeenNthCalledWith(2, NEXT_CODE);
+    expect(onReadDone).toHaveBeenNthCalledWith(2, NEXT_CODE, expect.any(Object));
   });
 
   it('separates two back-to-back plain codes split by a real gap shorter than one interval tick (must NOT merge)', () => {
@@ -155,12 +188,12 @@ describe('useKeyboardBarcodeReader', () => {
 
     // The gap flushed CODE1 as its own completed scan (not merged with CODE2).
     expect(onReadDone).toHaveBeenCalledTimes(1);
-    expect(onReadDone).toHaveBeenCalledWith(CODE1);
+    expect(onReadDone).toHaveBeenCalledWith(CODE1, expect.any(Object));
 
     // CODE2 then completes on its own via the idle fallback — two distinct scans, never merged.
     goIdleAndTick();
     expect(onReadDone).toHaveBeenCalledTimes(2);
-    expect(onReadDone).toHaveBeenNthCalledWith(2, CODE2);
+    expect(onReadDone).toHaveBeenNthCalledWith(2, CODE2, expect.any(Object));
   });
 
   it('completes on an Enter keydown with the full buffer (reacts to the device terminator)', () => {
@@ -175,7 +208,7 @@ describe('useKeyboardBarcodeReader', () => {
     pressKey('Enter');
 
     expect(onReadDone).toHaveBeenCalledTimes(1);
-    expect(onReadDone).toHaveBeenCalledWith(CODE);
+    expect(onReadDone).toHaveBeenCalledWith(CODE, expect.any(Object));
   });
 
   it('completes a Tab-terminated scan with the full buffer', () => {
@@ -189,7 +222,7 @@ describe('useKeyboardBarcodeReader', () => {
     pressKey('Tab');
 
     expect(onReadDone).toHaveBeenCalledTimes(1);
-    expect(onReadDone).toHaveBeenCalledWith(CODE);
+    expect(onReadDone).toHaveBeenCalledWith(CODE, expect.any(Object));
   });
 
   it('a plain (non-QR) barcode completes via the idle-timer fallback', () => {
@@ -202,7 +235,7 @@ describe('useKeyboardBarcodeReader', () => {
     goIdleAndTick();
 
     expect(onReadDone).toHaveBeenCalledTimes(1);
-    expect(onReadDone).toHaveBeenCalledWith(CODE);
+    expect(onReadDone).toHaveBeenCalledWith(CODE, expect.any(Object));
   });
 
   it('the FAST idle tier does NOT flush a recognised, still-incomplete HU QR (no mid-scan truncation)', () => {
@@ -231,7 +264,7 @@ describe('useKeyboardBarcodeReader', () => {
     typeString(HU_QR_RESCAN);
 
     // The new scan completed as itself; nothing was emitted as "stuck-partial + new" merged garbage.
-    expect(onReadDone).toHaveBeenCalledWith(HU_QR_RESCAN);
+    expect(onReadDone).toHaveBeenCalledWith(HU_QR_RESCAN, expect.any(Object));
     const emittedCodes = onReadDone.mock.calls.map((call) => call[0]);
     expect(emittedCodes).not.toContain(PARTIAL_HU_QR + HU_QR_RESCAN);
     // No emitted code is longer than the re-scan (a merge would carry the stuck partial's chars too).
@@ -254,7 +287,7 @@ describe('useKeyboardBarcodeReader', () => {
     now += IDLE_ABANDON_MS + RATE_MS;
     pressKey('X');
 
-    expect(onReadDone).toHaveBeenCalledWith(SHORT_PARTIAL);
+    expect(onReadDone).toHaveBeenCalledWith(SHORT_PARTIAL, expect.any(Object));
   });
 
   it('eventually ABANDONS and flushes a genuinely stuck / truncated HU QR after the long idle deadline (surfaces the app error instead of hanging)', () => {
@@ -275,7 +308,7 @@ describe('useKeyboardBarcodeReader', () => {
       jest.advanceTimersByTime(RATE_MS * 2);
     });
     expect(onReadDone).toHaveBeenCalledTimes(1);
-    expect(onReadDone).toHaveBeenCalledWith(PARTIAL_HU_QR);
+    expect(onReadDone).toHaveBeenCalledWith(PARTIAL_HU_QR, expect.any(Object));
   });
 
   it('honours an explicit idleAbandonMs param: a stuck partial is abandoned after the CONFIGURED window, not IDLE_ABANDON_MS', () => {
@@ -295,6 +328,6 @@ describe('useKeyboardBarcodeReader', () => {
       jest.advanceTimersByTime(RATE_MS * 2);
     });
     expect(onReadDone).toHaveBeenCalledTimes(1);
-    expect(onReadDone).toHaveBeenCalledWith(PARTIAL_HU_QR);
+    expect(onReadDone).toHaveBeenCalledWith(PARTIAL_HU_QR, expect.any(Object));
   });
 });

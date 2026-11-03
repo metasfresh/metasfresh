@@ -186,12 +186,14 @@ public class NShiftShipmentService
 
 		final NShiftMappingConfigs mappingConfigs = NShiftMappingConfigs.ofJson(deliveryRequest.getMappingConfigs());
 
-		// Add Addresses
-		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
-				deliveryRequest.getPickupAddress(), deliveryRequest.getPickupContact(), JsonAddressKind.SENDER, mappingConfigs, deliveryRequest::getValue));
+		// Add Addresses. While test mode is on, the configured text IS the Attention for both roles.
+		final String testModeAttention = NShiftUtil.resolveTestModeAttention(config);
 
 		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
-				deliveryRequest.getDeliveryAddress(), deliveryRequest.getDeliveryContact(), JsonAddressKind.RECEIVER, mappingConfigs, deliveryRequest::getValue));
+				deliveryRequest.getPickupAddress(), deliveryRequest.getPickupContact(), JsonAddressKind.SENDER, mappingConfigs, deliveryRequest::getValue, testModeAttention));
+
+		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
+				deliveryRequest.getDeliveryAddress(), deliveryRequest.getDeliveryContact(), JsonAddressKind.RECEIVER, mappingConfigs, deliveryRequest::getValue, testModeAttention));
 
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, deliveryRequest::getValue));
 

@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_C_BP_Relation;
 
 import javax.annotation.Nullable;
 
@@ -46,5 +47,25 @@ public class BillBPartnerResolution
 			@Nullable final UserId billUserId)
 	{
 		return new BillBPartnerResolution(billBPartnerId, billLocationId, billUserId);
+	}
+
+	/**
+	 * @return the relation's related partner and location as bill-to, or {@code null} if the relation is {@code null} or has no related partner.
+	 * {@code C_BP_Relation} has no bill user column, so the bill user is always {@code null} here.
+	 */
+	@Nullable
+	public static BillBPartnerResolution ofBillToRelationOrNull(@Nullable final I_C_BP_Relation billToRelation)
+	{
+		if (billToRelation == null)
+		{
+			return null;
+		}
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(billToRelation.getC_BPartnerRelation_ID());
+		if (billBPartnerId == null)
+		{
+			return null;
+		}
+		final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, billToRelation.getC_BPartnerRelation_Location_ID());
+		return of(billBPartnerId, billLocationId, null);
 	}
 }

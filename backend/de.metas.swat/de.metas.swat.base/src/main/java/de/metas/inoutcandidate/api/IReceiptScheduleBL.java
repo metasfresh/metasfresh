@@ -221,7 +221,7 @@ public interface IReceiptScheduleBL extends ISingletonService
 	void reopen(I_M_ReceiptSchedule receiptSchedule);
 
 	/**
-	 * Checks if given receipt schedule is closed (i.e. {@link I_M_ReceiptSchedule#isIsClosed()}).
+	 * Checks if given receipt schedule is closed (i.e. {@link I_M_ReceiptSchedule#isClosed()}).
 	 *
 	 * @return true if receipt schedule is closed
 	 */

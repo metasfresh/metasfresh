@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 import GetQuantityDialog from '../../../components/dialogs/GetQuantityDialog';
 import { PickAttribute } from '../../../reducers/wfProcesses/picking/PickAttribute';
+import { toastError } from '../../../utils/toast';
 
 // NOTE: this unit test asserts the i18n-INDEPENDENT gating logic (chip counts, confirm gating,
 // payload shape, dedup). The exact "X of N" count TEXT depends on counterpart being bootstrapped
@@ -23,6 +24,11 @@ jest.mock('../../../utils/ui_trace', () => ({
   trace: jest.fn(),
   traceFunction: (fn) => fn,
 }));
+
+// toastError is the assertion target for the duplicate-scan error toast; toastErrorFromObj is also
+// imported by GetQuantityDialog.jsx (fireOnQtyChange's catch) — omitting it leaves it undefined and
+// can break unrelated paths. Automock both as jest.fn()s.
+jest.mock('../../../utils/toast');
 
 // Stub the scanner: a button that simulates a hardware/camera scan returning `mockNextScan`
 // (jest allows out-of-scope refs prefixed with `mock` inside the factory).
@@ -71,9 +77,10 @@ describe('GetQuantityDialog — SerialNo (multi-serial)', () => {
     scan('SN-1');
     expect(screen.getAllByTestId('serialNo-chip')).toHaveLength(1);
 
-    // Scanning the same serial again is silently deduped → still 1 chip.
+    // Scanning the same serial again is deduped, with an error toast → still 1 chip.
     scan('SN-1');
     expect(screen.getAllByTestId('serialNo-chip')).toHaveLength(1);
+    expect(toastError).toHaveBeenCalled();
 
     // Scan a 2nd distinct serial → 2 chips.
     scan('SN-2');

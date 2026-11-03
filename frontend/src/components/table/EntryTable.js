@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 
 import { getTable, getTableId } from '../../reducers/tables';
 import { updateTableRowProperty } from '../../actions/TableActions';
+import { addNotification } from '../../actions/AppActions';
 import {
   allowShortcut,
   disableShortcut,
@@ -70,6 +71,7 @@ class EntryTable extends PureComponent {
       openModal,
       patch,
       updatePropertyValue,
+      addNotification,
       allowShortcut,
       disableShortcut,
       modalVisible,
@@ -134,6 +136,7 @@ class EntryTable extends PureComponent {
                 openModal={openModal}
                 patch={patch}
                 updatePropertyValue={updatePropertyValue}
+                addNotification={addNotification}
                 allowShortcut={allowShortcut}
                 disableShortcut={disableShortcut}
                 modalVisible={modalVisible}
@@ -197,6 +200,7 @@ EntryTable.propTypes = {
   addRefToWidgets: PropTypes.func.isRequired,
   onBlurWidget: PropTypes.func.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
+  addNotification: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
   patch: PropTypes.func.isRequired,
   allowShortcut: PropTypes.func.isRequired,
@@ -221,6 +225,7 @@ export default connect(mapStateToProps, {
   openModal,
   patch,
   updatePropertyValue,
+  addNotification,
   allowShortcut,
   disableShortcut,
   updateTableRowProperty,

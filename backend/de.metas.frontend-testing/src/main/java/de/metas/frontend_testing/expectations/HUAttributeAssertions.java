@@ -23,10 +23,19 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
 /**
  * Asserts an HU's attributes against a code -> expected-value map,
  * shared by the HU and the manufacturing expectations.
+ * <p>
+ * An expected value is compared exactly, except for these in-band forms:
+ * <ul>
+ * <li>string and list attributes: {@code startsWith:<prefix>} - the actual value must start with {@code <prefix>}</li>
+ * <li>date attributes: {@code today} - the current date; {@code -} - no value</li>
+ * </ul>
+ * A {@code null} expected value means "no value" for every attribute type.
  */
 @UtilityClass
 final class HUAttributeAssertions
 {
+	private static final String EXPECTED_STARTS_WITH = "startsWith:";
+
 	public static void assertAttributes(
 			@NonNull final AssertExpectationsCommandServices services,
 			@NonNull final Map<String, String> expectations,
@@ -90,6 +99,11 @@ final class HUAttributeAssertions
 	private static void assertAttributeValue_String(final String expectedValueStr, final ImmutableAttributeSet actualAttributes, final AttributeCode attributeCode)
 	{
 		final String actualValueStr = actualAttributes.getValueAsString(attributeCode);
+		if (expectedValueStr != null && expectedValueStr.startsWith(EXPECTED_STARTS_WITH))
+		{
+			assertThat(actualValueStr).as("String attribute " + attributeCode).startsWith(expectedValueStr.substring(EXPECTED_STARTS_WITH.length()));
+			return;
+		}
 		assertThat(actualValueStr).as("String attribute " + attributeCode).isEqualTo(expectedValueStr);
 	}
 
