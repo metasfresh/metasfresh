@@ -52,11 +52,16 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
 import javax.annotation.Nullable;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 @RequiredArgsConstructor
 public class C_PaySelection_StepDef
@@ -172,21 +177,30 @@ public class C_PaySelection_StepDef
 	}
 
 	/**
-	 * Asserts the lines of the pay selection: the table must have exactly as many rows as the pay selection has lines, and row N is compared with line N
-	 * (ordered by Line, then C_PaySelectionLine_ID). So the order is only defined for lines that were created by different "Create from..." runs;
-	 * for several invoices of one partner the line order is not defined by the process. Only the columns present in the table are compared.
+	 * Asserts the lines of the pay selection: the table must have exactly as many rows as the pay selection has lines.
+	 * <p>
+	 * Matching of rows to lines:
+	 * <ul>
+	 *   <li>If every row has a <b>C_Invoice_ID</b> identifier (not the null placeholder), each row is matched to the line of that invoice, independent of the line order.
+	 *   Each row must match exactly one line and each line exactly one row; otherwise the step fails and lists the unmatched rows and lines.
+	 *   Use this when the line order is not defined, e.g. for several invoices of one partner selected by one "Create from..." run.</li>
+	 *   <li>Otherwise row N is compared with line N (ordered by Line, then C_PaySelectionLine_ID).</li>
+	 * </ul>
+	 * Only the columns present in the table are compared.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>C_Invoice_ID</b> - (optional, identifier-ref) the invoice of the line; the null placeholder = the line has no invoice<br>
+	 *   <b>C_Invoice_ID</b> - (optional, identifier-ref) the invoice of the line; the null placeholder = the line has no invoice; if present in every row (not the null placeholder), rows are matched to lines by invoice<br>
 	 *   <b>C_BP_BankAccount_ID</b> - (optional, identifier-ref) the bank account of the line<br>
 	 *   <b>C_Payment_ID</b> - (optional, identifier-ref) the payment of the line; the null placeholder = no payment; an unknown identifier is registered with the line's payment<br>
 	 *   <b>PayAmt</b>, <b>OpenAmt</b> - (optional) amounts of the line
 	 * @cucumber.example
 	 * <pre>
+	 * # two invoices of one partner: the rows are matched to the lines by C_Invoice_ID, in any order
 	 * And the Pay selection identified by paySelection has exactly the following lines
 	 *   | C_Invoice_ID | OpenAmt | PayAmt | C_BP_BankAccount_ID |
-	 *   | invoice      | 100.00  | 100.00 | debtorAcct          |
+	 *   | invoice1     | 100.00  | 100.00 | debtorAcct          |
+	 *   | invoice2     | 50.00   | 50.00  | debtorAcct          |
 	 * </pre>
 	 */
 	@And("^the Pay selection identified by (.*) has exactly the following lines$")
@@ -197,10 +211,79 @@ public class C_PaySelection_StepDef
 		final List<I_C_PaySelectionLine> lines = paySelectionBL.retrievePaySelectionLines(paySelectionId);
 
 		assertThat(lines).hasSize(rows.size());
-		rows.forEach((row, index) -> {
-			final I_C_PaySelectionLine line = lines.get(index);
-			verifyPaySelectionLine(line, row);
-		});
+		if (isEveryRowIdentifyingAnInvoice(rows))
+		{
+			verifyPaySelectionLinesMatchedByInvoice(rows, lines);
+		}
+		else
+		{
+			rows.forEach((row, index) -> verifyPaySelectionLine(lines.get(index), row));
+		}
+	}
+
+	private static boolean isEveryRowIdentifyingAnInvoice(@NonNull final DataTableRows rows)
+	{
+		return rows.stream().allMatch(row -> row.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID)
+				.filter(invoiceIdentifier -> !invoiceIdentifier.isNullPlaceholder())
+				.isPresent());
+	}
+
+	/**
+	 * Pairs each row with the line of its invoice; fails listing the unmatched rows and lines, unless every row matches exactly one line and every line exactly one row.
+	 */
+	private void verifyPaySelectionLinesMatchedByInvoice(@NonNull final DataTableRows rows, @NonNull final List<I_C_PaySelectionLine> lines)
+	{
+		final Map<DataTableRow, I_C_PaySelectionLine> lineByRow = new LinkedHashMap<>();
+		final Map<I_C_PaySelectionLine, Integer> matchingRowsCountByLine = new IdentityHashMap<>();
+		final StringBuilder unmatchedRows = new StringBuilder();
+		for (final DataTableRow row : rows.toList())
+		{
+			final InvoiceId expectedInvoiceId = invoiceTable.getId(row.getAsIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID));
+			final List<I_C_PaySelectionLine> matchingLines = lines.stream()
+					.filter(line -> expectedInvoiceId.equals(InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID())))
+					.collect(Collectors.toList());
+			matchingLines.forEach(line -> matchingRowsCountByLine.merge(line, 1, Integer::sum));
+			if (matchingLines.size() == 1)
+			{
+				lineByRow.put(row, matchingLines.get(0));
+			}
+			else
+			{
+				unmatchedRows.append("\n  ").append(matchingLines.size()).append(" lines for row ").append(row.toTabularString());
+			}
+		}
+
+		final StringBuilder unmatchedLines = new StringBuilder();
+		for (final I_C_PaySelectionLine line : lines)
+		{
+			final int matchingRowsCount = matchingRowsCountByLine.getOrDefault(line, 0);
+			if (matchingRowsCount != 1)
+			{
+				unmatchedLines.append("\n  ").append(matchingRowsCount).append(" rows for line ").append(toDisplayString(line));
+			}
+		}
+
+		if (unmatchedRows.length() > 0 || unmatchedLines.length() > 0)
+		{
+			fail("Rows and pay selection lines do not match one to one by C_Invoice_ID."
+					+ "\nUnmatched rows:" + (unmatchedRows.length() > 0 ? unmatchedRows : " none")
+					+ "\nUnmatched lines:" + (unmatchedLines.length() > 0 ? unmatchedLines : " none"));
+		}
+
+		rows.forEach(row -> verifyPaySelectionLine(lineByRow.get(row), row));
+	}
+
+	@NonNull
+	private String toDisplayString(@NonNull final I_C_PaySelectionLine line)
+	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
+		final String invoiceIdentifier = invoiceId != null
+				? invoiceTable.getFirstIdentifierById(invoiceId).map(StepDefDataIdentifier::getAsString).orElse("?")
+				: null;
+		return "Line=" + line.getLine()
+				+ ", C_PaySelectionLine_ID=" + line.getC_PaySelectionLine_ID()
+				+ ", C_Invoice_ID=" + invoiceId + " (identifier " + invoiceIdentifier + ")"
+				+ ", PayAmt=" + line.getPayAmt();
 	}
 
 	private void verifyPaySelectionLine(@NonNull final I_C_PaySelectionLine line, @NonNull final DataTableRow expectation)

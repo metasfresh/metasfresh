@@ -132,8 +132,13 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
     And "Create from..." is invoked for pay selection schemesPaySelection, using following parameters:
       | MatchRequirement | C_BPartner_ID | PayDate    |
       | CDD              | oneOffDebtor  | 2026-11-02 |
-    # no check of the pay selection lines here: the line order of the two invoices of b2bDebtor is not defined; the files below prove that all invoices were selected
     And the pay selection identified by schemesPaySelection is completed
+    And the Pay selection identified by schemesPaySelection has exactly the following lines
+      | C_Invoice_ID | OpenAmt | PayAmt | C_BP_BankAccount_ID |
+      | b2bInv1      | 100.00  | 100.00 | b2bAcct             |
+      | b2bInv2      | 50.00   | 50.00  | b2bAcct             |
+      | coreInv      | 80.00   | 80.00  | coreAcct            |
+      | oneOffInv    | 30.00   | 30.00  | oneOffAcct          |
 
     When the SEPA export process is run for pay selection "schemesPaySelection"
 
