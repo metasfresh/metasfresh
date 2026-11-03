@@ -73,7 +73,10 @@ public class DocumentReportResult
 
 	@Nullable
 	String poReference;
-	
+
+	@Builder.Default
+	boolean suppressAutoPrint = false;
+
 	@Nullable
 	public String getFilename()
 	{

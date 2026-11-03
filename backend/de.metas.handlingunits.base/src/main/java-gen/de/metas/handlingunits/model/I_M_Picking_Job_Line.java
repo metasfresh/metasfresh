@@ -52,6 +52,48 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Carrier Material Assignment.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Goods_Type_ID (int Carrier_Goods_Type_ID);
+
+	/**
+	 * Get Carrier Material Assignment.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Goods_Type_ID();
+
+	ModelColumn<I_M_Picking_Job_Line, org.compiere.model.I_Carrier_Goods_Type> COLUMN_Carrier_Goods_Type_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Carrier_Goods_Type_ID", org.compiere.model.I_Carrier_Goods_Type.class);
+	String COLUMNNAME_Carrier_Goods_Type_ID = "Carrier_Goods_Type_ID";
+
+	/**
+	 * Set Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Product_ID (int Carrier_Product_ID);
+
+	/**
+	 * Get Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Product_ID();
+
+	ModelColumn<I_M_Picking_Job_Line, org.compiere.model.I_Carrier_Product> COLUMN_Carrier_Product_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Carrier_Product_ID", org.compiere.model.I_Carrier_Product.class);
+	String COLUMNNAME_Carrier_Product_ID = "Carrier_Product_ID";
+
+	/**
 	 * Set Catch UOM.
 	 * Catch weight UOM as taken from the product master data.
 	 *
@@ -375,6 +417,48 @@ public interface I_M_Picking_Job_Line
 
 	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Picking_Job_Line.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Carrier Advise Manual.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCarrierAdviseManual (boolean IsCarrierAdviseManual);
+
+	/**
+	 * Get Carrier Advise Manual.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCarrierAdviseManual();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_IsCarrierAdviseManual = new ModelColumn<>(I_M_Picking_Job_Line.class, "IsCarrierAdviseManual", null);
+	String COLUMNNAME_IsCarrierAdviseManual = "IsCarrierAdviseManual";
+
+	/**
+	 * Set Carrier Advise Read-Only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCarrierAdviseReadOnly (boolean IsCarrierAdviseReadOnly);
+
+	/**
+	 * Get Carrier Advise Read-Only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCarrierAdviseReadOnly();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_IsCarrierAdviseReadOnly = new ModelColumn<>(I_M_Picking_Job_Line.class, "IsCarrierAdviseReadOnly", null);
+	String COLUMNNAME_IsCarrierAdviseReadOnly = "IsCarrierAdviseReadOnly";
 
 	/**
 	 * Set Manually closed.

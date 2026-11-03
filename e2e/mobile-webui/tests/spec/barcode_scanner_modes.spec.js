@@ -5,6 +5,7 @@ import { ApplicationsListScreen } from '../utils/screens/ApplicationsListScreen'
 import { HUManagerScreen } from '../utils/screens/huManager/HUManagerScreen';
 import { BarcodeScannerComponent } from '../utils/components/BarcodeScannerComponent';
 import { allure } from 'allure-playwright';
+import { expectErrorToast } from '../utils/common';
 
 
 // Mode-engine sysconfigs (new per-mode knobs introduced by the BarcodeScannerModes redesign).
@@ -140,7 +141,7 @@ test('Honeywell CT60 keystroke-wedge mode — input is off-screen + readOnly, no
 
     await BarcodeScannerComponent.expectAttributes({ type: 'text', inputmode: 'none', readonly: true });
     await BarcodeScannerComponent.expectCssClass({ present: 'input-text-offscreen' });
-    await BarcodeScannerComponent.expectCameraVideoAbsent();
+    await BarcodeScannerComponent.expectCameraModeInactive();
 });
 
 // Each test drives one real-world way a barcode reaches the app, end to end:
@@ -153,8 +154,8 @@ test.describe('Scan paths', () => {
     // (see e2e/mobile-webui/CLAUDE.md "Barcode Scanner Testing"), breaking unrelated picking scans.
     //
     // No explicit reset is needed here: SysconfigCommand resets the scanner sysconfigs to their
-    // mobile defaults at the start of every createMasterdata call, so each test starts from
-    // a clean scanner state regardless of what a prior test left behind.
+    // mobile defaults at the start of every createMasterdata call, and the page fixture restores
+    // every sysconfig a test changed after the test.
 
     // noinspection JSUnusedLocalSymbols
     test('DataWedge IME — InputConnection injection forwards barcode', async ({ page }) => {
@@ -330,7 +331,7 @@ test.describe('Modes', () => {
         // readonly PRESENT — hard suppression for Android 11 firmware that ignores inputMode="none".
         await BarcodeScannerComponent.expectAttributes({ type: 'text', inputmode: 'none', readonly: true });
         await BarcodeScannerComponent.expectCssClass({ present: 'input-text-offscreen' });
-        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        await BarcodeScannerComponent.expectCameraModeInactive();
     });
 
     // invisible=true (ApplicationsListScreen / BarcodeScannerButton callers):
@@ -353,7 +354,7 @@ test.describe('Modes', () => {
         // invisible=true → useBarcodeScannerModes returns hardware-only, no camera, no manual.
         // The component renders ONLY the off-screen #input-text and the keyboard listener.
         await BarcodeScannerComponent.expectAttached({});
-        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        await BarcodeScannerComponent.expectCameraModeInactive();
         await BarcodeScannerComponent.expectFooterAbsent();
     });
 
@@ -390,7 +391,7 @@ test.describe('Modes', () => {
         await BarcodeScannerComponent.expectManualEntryInputPresent();
         // The manual-entry input must NOT be readOnly — the user must be able to type.
         await BarcodeScannerComponent.expectManualEntryInputNotReadOnly();
-        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        await BarcodeScannerComponent.expectCameraModeInactive();
         // Hardware scanner is enabled → manual mode offers the "Use hardware scanner" button
         // (testId barcode-scanner-back-to-scanner) so the operator can return to the scanner.
         await BarcodeScannerComponent.expectButtonPresent('barcode-scanner-back-to-scanner');
@@ -398,13 +399,18 @@ test.describe('Modes', () => {
 
     // camera toggle: hardware + camera both enabled →
     //   • footer toggle button present
-    //   • clicking toggle → <video> renders
+    //   • clicking toggle → camera mode becomes active (camera panel shown)
     // noinspection JSUnusedLocalSymbols
-    test('camera toggle — clicking hw/camera toggle renders <video>', async ({ page }) => {
+    test('camera toggle — clicking hw/camera toggle activates camera mode', async ({ page }) => {
         await allure.epic('E0295: Frontend MobileUI');
         await allure.feature('F12000: Frontend MobileUI');
         await allure.story('Barcode scanning modes');
         await allure.severity('critical');
+
+        // Must run BEFORE login so the getUserMedia stub is installed before the app's first camera
+        // request. Stabilises this camera-toggle test against a flaky panel teardown — mechanism in
+        // BarcodeScannerComponent.stubCameraStream.
+        await BarcodeScannerComponent.stubCameraStream();
 
         const masterdata = await createLoginMasterdata({
             extraSysconfigs: modeSysconfigs({
@@ -419,12 +425,12 @@ test.describe('Modes', () => {
         await ApplicationsListScreen.startApplication('huManager');
         await HUManagerScreen.waitForScreen();
 
-        // Starting in hardware mode — no video yet.
-        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        // Starting in hardware mode — camera mode not active.
+        await BarcodeScannerComponent.expectCameraModeInactive();
         // Toggle to camera mode via footer button.
         await BarcodeScannerComponent.clickFooterButton('barcode-scanner-toggle-hw-camera');
-        // After toggle, <video> element must be rendered.
-        await BarcodeScannerComponent.expectCameraVideoPresent();
+        // After toggle, camera mode must be active (the camera panel is shown).
+        await BarcodeScannerComponent.expectCameraModeActive();
     });
 
     // THE canonical hardware-handheld deployment: hardware scanner is the default, manual typing is
@@ -454,9 +460,9 @@ test.describe('Modes', () => {
         await ApplicationsListScreen.startApplication('huManager');
         await HUManagerScreen.waitForScreen();
 
-        // Boots in hardware mode: off-screen scan input present, device camera absent.
+        // Boots in hardware mode: off-screen scan input present, camera mode not active.
         await BarcodeScannerComponent.expectAttached({});
-        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        await BarcodeScannerComponent.expectCameraModeInactive();
 
         // Footer contract for this deployment: manual-entry fallback shown, camera toggle hidden
         // (camera toggle needs BOTH hardware and camera enabled).
@@ -473,4 +479,86 @@ test.describe('Modes', () => {
         await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
     });
 
+});
+
+// "Scanning…" indicator of the visible hardware scan prompt. It is driven by the reader hook's explicit
+// isReadInProgress state (not by text in the off-screen input), so it must appear for every scan, never
+// write the scan into the input, and disappear on EVERY way a scan ends.
+test.describe('Scan in progress indicator', () => {
+
+    const huManagerInHardwareMode = async ({ manualEnabled = 'N' } = {}) => {
+        const masterdata = await createMasterdataWithHU({
+            extraSysconfigs: modeSysconfigs({
+                hardwareEnabled: 'Y',
+                cameraEnabled: 'N',
+                manualEnabled,
+                defaultMode: 'hardware',
+            }),
+        });
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huManager');
+        await HUManagerScreen.waitForScreen();
+        await BarcodeScannerComponent.expectScanInProgressShown(false);
+        return masterdata;
+    };
+
+    // noinspection JSUnusedLocalSymbols
+    test('shows "scanning" while an HU QR code streams in, without writing it into the input', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('critical');
+
+        const masterdata = await huManagerInHardwareMode();
+        const qrCode = masterdata.handlingUnits.HU1.qrCode;
+        const splitAt = 20; // inside the JSON payload, so the first part is an incomplete (still streaming) HU QR code
+
+        await BarcodeScannerComponent.typePartial(qrCode.substring(0, splitAt));
+        await BarcodeScannerComponent.expectScanInProgressShown(true);
+        await BarcodeScannerComponent.expectHardwareInputEmpty();
+
+        await BarcodeScannerComponent.typePartial(qrCode.substring(splitAt));
+        await HUManagerScreen.waitForHUInfoPanel();
+        await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('"scanning" does not stay after switching to manual and back mid-scan', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('normal');
+
+        const masterdata = await huManagerInHardwareMode({ manualEnabled: 'Y' });
+        const qrCode = masterdata.handlingUnits.HU1.qrCode;
+
+        await BarcodeScannerComponent.typePartial(qrCode.substring(0, 20));
+        await BarcodeScannerComponent.expectScanInProgressShown(true);
+
+        await BarcodeScannerComponent.clickFooterButton('barcode-scanner-enter-manually');
+        await BarcodeScannerComponent.expectManualEntryInputPresent();
+        await BarcodeScannerComponent.clickFooterButton('barcode-scanner-back-to-scanner');
+
+        await BarcodeScannerComponent.expectScanInProgressShown(false);
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('"scanning" disappears when an incomplete scan ends with an error', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('normal');
+
+        const masterdata = await huManagerInHardwareMode();
+        const truncatedQrCode = masterdata.handlingUnits.HU1.qrCode.substring(0, 40);
+
+        await expectErrorToast('Truncated HU QR code is rejected', async () => {
+            await BarcodeScannerComponent.typePartial(truncatedQrCode);
+            await BarcodeScannerComponent.expectScanInProgressShown(true);
+            await BarcodeScannerComponent.typeTerminator('Enter');
+        });
+
+        await BarcodeScannerComponent.expectScanInProgressShown(false);
+    });
 });

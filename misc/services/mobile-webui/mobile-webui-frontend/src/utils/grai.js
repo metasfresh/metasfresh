@@ -137,25 +137,87 @@ export const getExtraGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.sl
 /**
  * Merge newGrais into the existing list, deduplicating by value — both against the existing list
  * AND within newGrais itself. Preserves existing order; appends new items at the end.
- * Returns the same array reference if nothing was added (no unnecessary re-render).
+ * Returns the SAME array reference (as `merged`) if nothing was added (no unnecessary re-render).
  *
  * Within-batch dedup matters for RFID mass-scan: a single burst can re-read the same physical
  * crate's tag more than once, and a GRAI uniquely identifies one returnable asset — so a repeated
- * code in one batch is the same crate, not a second one, and must collapse to a single entry.
+ * code in one batch is the same crate, not a second one, and must collapse to a single entry. This
+ * same-buffer re-read case stays a SILENT no-op — it is never counted in `skipped`.
  *
- * @param {string[]} prev - existing GRAI list
+ * `existingCodes` is a second exclusion set — GRAIs already assigned elsewhere (e.g. to another
+ * crate of the same loading unit, per the server-side LU-wide GRAI dedupe) that this batch must
+ * also drop, but — unlike a same-buffer re-read — the caller DOES want to know about it (to advance
+ * a "N skipped" notice), so those codes are reported back in `skipped`. A code repeated within the
+ * batch against `existingCodes` is only reported once (marked seen on first occurrence).
+ *
+ * `alreadySkipped` are codes a PRIOR call already reported in `skipped` and the caller is still
+ * showing. They are treated exactly like same-buffer re-reads (silent no-op, never re-reported), so a
+ * code that gets delivered more than once — e.g. the dual-reader race where `BarcodeScannerComponent`
+ * and `useKeyboardBarcodeReader` both emit the same physical scan — is counted at most once. (Merged
+ * codes need no such list because they already live in `prev`; a skipped code is dropped from `prev`,
+ * so it needs its own memory to stay idempotent across calls.)
+ *
+ * @param {string[]} prev - existing GRAI list (accumulated, deduped)
  * @param {string[]} newGrais - GRAIs to add
+ * @param {string[]} [existingCodes] - GRAIs to drop-and-report (already assigned elsewhere on the LU)
+ * @param {string[]} [alreadySkipped] - codes already reported in a prior call's `skipped` (silent on repeat)
+ * @returns {{merged: string[], skipped: string[]}} `merged` is the same ref as `prev` when nothing was
+ *   added; `skipped` lists only the NEWLY-skipped codes (excludes `alreadySkipped`)
+ */
+export const mergeGraiArrays = (prev, newGrais, existingCodes = [], alreadySkipped = []) => {
+  // `seen` = everything already decided: accumulated codes (prev) AND already-reported skips.
+  const seen = new Set(prev);
+  for (const g of alreadySkipped) {
+    seen.add(g);
+  }
+  const existing = existingCodes.length ? new Set(existingCodes) : null;
+  const toAdd = [];
+  const skipped = [];
+  for (const g of newGrais) {
+    if (seen.has(g)) {
+      // same-buffer re-read OR an already-reported LU-skip redelivered: silent no-op, never (re)counted
+      continue;
+    }
+    if (existing && existing.has(g)) {
+      seen.add(g); // avoid double-reporting a repeat of the same already-assigned code within this batch
+      skipped.push(g);
+      continue;
+    }
+    seen.add(g);
+    toAdd.push(g);
+  }
+  const merged = toAdd.length === 0 ? prev : [...prev, ...toAdd];
+  return { merged, skipped };
+};
+
+/**
+ * Build the list to show once the backend has answered a Send, keeping what the user changed while
+ * the request was in flight. Scanning, removing and Clear All all stay possible while sending, so
+ * the list on screen may already differ from the baseline (the list that was sent, or the list an
+ * Undo showed while the request was in flight):
+ * - the backend's answer is taken as the saved state (the assigned GRAIs it persisted), followed by
+ *   the baseline's extras (beyond `tuCount`), as before;
+ * - a GRAI of the baseline that has been removed since stays removed;
+ * - a GRAI added since the baseline is kept, appended at the end.
+ * When nothing changed since the baseline, the result is the backend answer plus the extras.
+ *
+ * @param {Object} params
+ * @param {string[]} params.baselineGrais - the full list on screen when Send was tapped, or the list
+ *   shown by an Undo made while the request was in flight
+ * @param {string[]} params.currentGrais - the list on screen now, when the answer arrives
+ * @param {string[]} params.backendGrais - the GRAIs the backend reports as saved
+ * @param {number} params.tuCount - the TU count from the backend answer (0 = unlimited)
  * @returns {string[]}
  */
-export const mergeGraiArrays = (prev, newGrais) => {
-  const seen = new Set(prev);
-  const toAdd = [];
-  for (const g of newGrais) {
-    if (!seen.has(g)) {
-      seen.add(g);
-      toAdd.push(g);
-    }
-  }
-  if (toAdd.length === 0) return prev;
-  return [...prev, ...toAdd];
+export const mergeGraisAfterSend = ({ baselineGrais, currentGrais, backendGrais, tuCount }) => {
+  const baseline = new Set(baselineGrais);
+  const current = new Set(currentGrais);
+  const removedSinceBaseline = (grai) => baseline.has(grai) && !current.has(grai);
+
+  const saved = [...backendGrais, ...getExtraGrais(baselineGrais, tuCount)].filter(
+    (grai) => !removedSinceBaseline(grai)
+  );
+  const addedSinceBaseline = currentGrais.filter((grai) => !baseline.has(grai));
+
+  return mergeGraiArrays(mergeGraiArrays([], saved).merged, addedSinceBaseline).merged;
 };

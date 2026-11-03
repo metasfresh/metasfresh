@@ -51,6 +51,27 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Product_ID (int Carrier_Product_ID);
+
+	/**
+	 * Get Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Product_ID();
+
+	ModelColumn<I_M_Picking_Job, org.compiere.model.I_Carrier_Product> COLUMN_Carrier_Product_ID = new ModelColumn<>(I_M_Picking_Job.class, "Carrier_Product_ID", org.compiere.model.I_Carrier_Product.class);
+	String COLUMNNAME_Carrier_Product_ID = "Carrier_Product_ID";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
@@ -305,6 +326,27 @@ public interface I_M_Picking_Job
 
 	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsAllowPickingAnyHU = new ModelColumn<>(I_M_Picking_Job.class, "IsAllowPickingAnyHU", null);
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
+
+	/**
+	 * Set Carrier Advise Read-Only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCarrierAdviseReadOnly (boolean IsCarrierAdviseReadOnly);
+
+	/**
+	 * Get Carrier Advise Read-Only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCarrierAdviseReadOnly();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsCarrierAdviseReadOnly = new ModelColumn<>(I_M_Picking_Job.class, "IsCarrierAdviseReadOnly", null);
+	String COLUMNNAME_IsCarrierAdviseReadOnly = "IsCarrierAdviseReadOnly";
 
 	/**
 	 * Set LU.

@@ -193,7 +193,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
       ],
       "Lines": [
         {
-          "GoodsType": 5,
+          "GoodsTypeID": 5,
           "GoodsTypeName": "Packet",
           "Height": 150,
           "Length": 1000,
@@ -230,7 +230,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
           "Width": 200
         },
         {
-          "GoodsType": 5,
+          "GoodsTypeID": 5,
           "GoodsTypeName": "Packet",
           "Height": 150,
           "Length": 1000,
@@ -271,7 +271,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
           "Width": 200
         }
       ],
-      "OrderNo": "1",
+      "OrderNo": "00000001",
       "PickupDt": "2025-10-02",
       "ProdConceptID": 10305,
       "References": [
@@ -290,6 +290,18 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
         {
           "Kind": 7,
           "Value": "Customer reference"
+        },
+        {
+          "Kind": 63,
+          "Value": "DAP"
+        },
+        {
+          "Kind": 64,
+          "Value": "Other"
+        },
+        {
+          "Kind": 65,
+          "Value": "Y"
         }
       ],
       "Services": [
@@ -298,7 +310,8 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
     },
     "options": {
       "Labels": "PDF",
-      "TrackingURL": 1
+      "TrackingURL": 1,
+      "UseShippingRules": 0
     }
   }
 ]
