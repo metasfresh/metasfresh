@@ -150,7 +150,18 @@ public class HUQtyService
 				.markAsCounted(true)
 				.build();
 
-		return bookInventory(inventoryLineCandidate, clientAndOrgId, request.getDate(), request.getDescription());
+		final Inventory inventoryHeader = createInventoryHeader(clientAndOrgId, locatorId.getWarehouseId(), request.getDate(), request.getDescription());
+
+		inventoryService.createDraftLines(
+				DraftInventoryLinesCreateRequest.builder()
+						.lineAggregator(InventoryLineAggregatorFactory.getForAggregationMode(AggregationType.SINGLE_HU))
+						.inventory(inventoryHeader)
+						.strategy(HUsForInventoryStrategies.of(inventoryLineCandidate))
+						.build()
+		);
+
+		inventoryService.completeDocument(inventoryHeader.getId());
+		return inventoryService.getById(inventoryHeader.getId());
 	}
 
 	/**
@@ -185,27 +196,6 @@ public class HUQtyService
 
 		inventoryService.completeDocument(inventoryHeader.getId());
 		return CollectionUtils.singleElement(inventoryService.getById(inventoryHeader.getId()).getHuIds());
-	}
-
-	@NonNull
-	private Inventory bookInventory(
-			@NonNull final HuForInventoryLine inventoryLineCandidate,
-			@NonNull final ClientAndOrgId clientAndOrgId,
-			@NonNull final ZonedDateTime date,
-			@Nullable final String description)
-	{
-		final Inventory inventoryHeader = createInventoryHeader(clientAndOrgId, inventoryLineCandidate.getLocatorId().getWarehouseId(), date, description);
-
-		inventoryService.createDraftLines(
-				DraftInventoryLinesCreateRequest.builder()
-						.lineAggregator(InventoryLineAggregatorFactory.getForAggregationMode(AggregationType.SINGLE_HU))
-						.inventory(inventoryHeader)
-						.strategy(HUsForInventoryStrategies.of(inventoryLineCandidate))
-						.build()
-		);
-
-		inventoryService.completeDocument(inventoryHeader.getId());
-		return inventoryService.getById(inventoryHeader.getId());
 	}
 
 	@NonNull

@@ -10,7 +10,6 @@ import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_Inventory_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -36,6 +35,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inventory.InventoryCandidateRepository;
 import de.metas.inventory.InventoryId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -55,7 +55,6 @@ import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.returns.POSReturnRepository;
 import de.metas.product.ProductId;
-import org.adempiere.ad.dao.IQueryBL;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
@@ -100,7 +99,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AssertExpectationsCommandServices
 {
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -119,6 +117,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final InventoryCandidateRepository inventoryCandidateRepository;
 	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
@@ -302,29 +301,12 @@ public class AssertExpectationsCommandServices
 
 	public List<I_M_Inventory_Candidate> getInventoryCandidatesByHUId(@NonNull final HuId huId)
 	{
-		return queryBL.createQueryBuilder(I_M_Inventory_Candidate.class)
-				.addEqualsFilter(I_M_Inventory_Candidate.COLUMNNAME_M_HU_ID, huId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
+		return inventoryCandidateRepository.getByHuId(huId);
 	}
 
-	public int countHUStoragesByProductId(@NonNull final ProductId productId)
+	public int countActiveHUsByProductId(@NonNull final ProductId productId)
 	{
-		return queryBL.createQueryBuilder(I_M_HU_Storage.class)
-				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, productId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.count();
-	}
-
-	public int countInventoryLinesByProductId(@NonNull final ProductId productId)
-	{
-		return queryBL.createQueryBuilder(I_M_InventoryLine.class)
-				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Product_ID, productId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.count();
+		return handlingUnitsBL.countActiveHUsByProductId(productId);
 	}
 
 	public Inventory getInventoryById(@NonNull final InventoryId inventoryId)
