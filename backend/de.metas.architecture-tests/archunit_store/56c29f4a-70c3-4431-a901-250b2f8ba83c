@@ -1,0 +1,2 @@
+Field <de.metas.deliveryplanning.impexp.DeliveryPlanningData$DeliveryPlanningDataBuilder.importedTimestamp> has raw type java.sql.Timestamp in (DeliveryPlanningData.java:0)
+Field <de.metas.deliveryplanning.impexp.DeliveryPlanningData.importedTimestamp> has raw type java.sql.Timestamp in (DeliveryPlanningData.java:0)

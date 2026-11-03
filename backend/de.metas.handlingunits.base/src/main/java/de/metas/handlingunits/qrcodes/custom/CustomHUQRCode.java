@@ -34,7 +34,7 @@ public class CustomHUQRCode implements IHUQRCode
 
 	public Optional<String> getProductNo() {return Optional.ofNullable(parsedScannedCode.getProductNo());}
 
-	public Optional<GTIN> getGTIN() {return GTIN.optionalOfNullableString(parsedScannedCode.getGtin());}
+	public Optional<GTIN> getGTIN() {return Optional.ofNullable(parsedScannedCode.getGtin());}
 
 	@Override
 	public Optional<BigDecimal> getWeightInKg()

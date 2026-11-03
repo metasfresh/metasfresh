@@ -1,6 +1,7 @@
 package de.metas.scannable_code.format;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.gs1.GTIN;
 import de.metas.scannable_code.ScannedCode;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.BeforeEach;
@@ -110,7 +111,24 @@ class ScannableCodeFormatTest
 					.build();
 
 			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("02001234567893")).orElseThrow();
-			assertThat(parsed.getGtin()).isEqualTo("02001234567893");
+			assertThat(parsed.getGtin()).isEqualTo(GTIN.ofString("02001234567893"));
+		}
+
+		@Test
+		void gtinPart_nonNumericText_isKeptAsIs_noExceptionAtParseTime()
+		{
+			// GTIN.ofString accepts any non-blank text (GTIN.java), so an invalid GTIN is not rejected at parse time;
+			// the product lookup simply finds nothing for it.
+			final ScannableCodeFormat format = ScannableCodeFormat.builder()
+					.id(ScannableCodeFormatId.ofRepoId(1))
+					.name("Test")
+					.parts(ImmutableList.of(
+							ScannableCodeFormatPart.builder().startPosition(1).endPosition(14).type(ScannableCodeFormatPartType.GTIN).build()
+					))
+					.build();
+
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("ABCDEFGHIJKLMN")).orElseThrow();
+			assertThat(parsed.getGtin()).isEqualTo(GTIN.ofString("ABCDEFGHIJKLMN"));
 		}
 
 		@Test
@@ -128,7 +146,7 @@ class ScannableCodeFormatTest
 					.build();
 
 			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("02001234567893L2311271231")).orElseThrow();
-			assertThat(parsed.getGtin()).isEqualTo("02001234567893");
+			assertThat(parsed.getGtin()).isEqualTo(GTIN.ofString("02001234567893"));
 			assertThat(parsed.getLotNo()).isEqualTo("L2311");
 			assertThat(parsed.getBestBeforeDate()).isEqualTo("2027-12-31");
 		}

@@ -1,5 +1,6 @@
 package de.metas.scannable_code.format;
 
+import de.metas.gs1.GTIN;
 import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
@@ -20,7 +21,7 @@ public class ParsedScannedCode
 	@Nullable String lotNo;
 	@Nullable LocalDate bestBeforeDate;
 	@Nullable LocalDate productionDate;
-	@Nullable String gtin;
+	@Nullable GTIN gtin;
 
 	public String getAsString()
 	{
