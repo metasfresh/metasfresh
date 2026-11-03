@@ -23,6 +23,16 @@
   &.wrap-values {
     table-layout: fixed;
 
+    // compact rows: the preview has up to 5 rows and OK must stay above the fold of a 640-700 px high handheld screen
+    tbody {
+      font-size: 1.1rem;
+
+      tr th,
+      tr td {
+        padding: 0.3rem 0.5rem;
+      }
+    }
+
     tbody tr th {
       width: 40%;
       overflow-wrap: anywhere; // long captions (e.g. "Mindesthaltbarkeitsdatum") wrap instead of running into the value

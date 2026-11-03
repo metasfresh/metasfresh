@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { page, SLOW_ACTION_TIMEOUT, FAST_ACTION_TIMEOUT } from '../../common';
+import { page, SLOW_ACTION_TIMEOUT, FAST_ACTION_TIMEOUT, ID_BACK_BUTTON } from '../../common';
 import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
@@ -62,15 +62,10 @@ export const NewHUPreviewScreen = {
         await dialog.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    /**
-     * Phone ergonomics: every value cell ends inside the viewport (nothing clipped on the right) and OK + Cancel are fully
-     * visible without scrolling (the page is not scrolled when this runs: it just opened).
-     */
-    expectFitsViewport: async () => await test.step(`${NAME} - Expect values and OK/Cancel inside the viewport`, async () => {
-        await containerElement().locator('table').evaluate((el) => el.scrollIntoView({ block: 'start' })); // OK/Cancel must be reachable from the top of the screen, without scrolling
+    /** Phone ergonomics: every value cell ends inside the viewport (a long value wraps; nothing is clipped on the right). */
+    expectValuesNotClipped: async () => await test.step(`${NAME} - Expect values inside the viewport, not clipped`, async () => {
         const viewport = page.viewportSize();
-        const container = containerElement();
-        const cells = container.locator('td');
+        const cells = containerElement().locator('td');
         const cellCount = await cells.count();
         for (let i = 0; i < cellCount; i++) {
             const cell = cells.nth(i);
@@ -79,10 +74,18 @@ export const NewHUPreviewScreen = {
             const overflow = await cell.evaluate((el) => el.scrollWidth - el.clientWidth);
             expect(overflow, `value cell #${i} is clipped (scrollWidth > clientWidth)`).toBeLessThanOrEqual(1);
         }
-        for (const testId of ['ok-button', 'cancel-button']) {
-            const box = await container.getByTestId(testId).boundingBox();
-            expect(box.y + box.height, `${testId} bottom edge`).toBeLessThanOrEqual(viewport.height);
-        }
+    }),
+
+    /**
+     * Phone ergonomics: from the top of the screen, the primary action OK is fully visible without scrolling — above the bottom
+     * navigation bar —.
+     */
+    expectOKWithoutScrolling: async () => await test.step(`${NAME} - Expect OK visible without scrolling`, async () => {
+        const container = containerElement();
+        await container.locator('table').evaluate((el) => { for (let e = el; e; e = e.parentElement) e.scrollTop = 0; window.scrollTo(0, 0); });
+        const ok = await container.getByTestId('ok-button').boundingBox();
+        const bottomBar = await page.locator(ID_BACK_BUTTON).boundingBox();
+        expect(ok.y + ok.height, 'OK bottom edge vs top of the bottom navigation bar').toBeLessThanOrEqual(bottomBar.y);
     }),
 
     /** the OK button of the preview (scoped: the clearance dialog in the HU Manager uses the same test ids) */

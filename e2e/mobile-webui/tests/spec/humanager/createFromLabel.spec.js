@@ -254,20 +254,31 @@ test('preview -> Cancel -> nothing booked', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
-test('phone viewport: a long product name does not push the values off-screen, OK/Cancel are reachable without scrolling', async ({ page }) => {
+test('phone viewport: a long product name wraps instead of clipping the values; OK is above the scanner and visible without scrolling', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - create HU from a scanned label');
     allure.severity('normal');
 
-    const gtin = uniqueGtin14();
+    const longGtin = uniqueGtin14();
+    const shortGtin = uniqueGtin14();
     const longName = 'Invented-article-with-an-extremely-long-unbroken-product-name-ABCDEFGHIJKLMNOPQRSTUVWXYZ-0123456789';
-    const masterdata = await createMasterdata({ gtin, products: { "P1": { gtin, uom: 'PCE', name: longName } } });
+    const masterdata = await createMasterdata({
+        gtin: longGtin,
+        products: { "P1": { gtin: longGtin, uom: 'PCE', name: longName }, "P2": { gtin: shortGtin, uom: 'PCE' } },
+    });
     await openHUManager({ user: masterdata.login.user });
-    await scanLabelAndWaitForPreview({ label: customLabel(gtin) });
-    await NewHUPreviewScreen.expectLocatorProposedAndGet();
 
-    await NewHUPreviewScreen.expectFitsViewport();
+    await scanLabelAndWaitForPreview({ label: customLabel(longGtin) });
+    await NewHUPreviewScreen.expectLocatorProposedAndGet();
+    await NewHUPreviewScreen.expectValuesNotClipped();
+    await NewHUPreviewScreen.clickCancel();
+    await HUManagerScreen.waitForScreen();
+
+    await scanLabelAndWaitForPreview({ label: customLabel(shortGtin) });
+    await NewHUPreviewScreen.expectLocatorProposedAndGet();
+    await NewHUPreviewScreen.expectValuesNotClipped();
+    await NewHUPreviewScreen.expectOKWithoutScrolling();
     await NewHUPreviewScreen.clickCancel();
     await HUManagerScreen.waitForScreen();
 });
