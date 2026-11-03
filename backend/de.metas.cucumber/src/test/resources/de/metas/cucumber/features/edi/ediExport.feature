@@ -460,10 +460,19 @@ Feature: EDI_cctop_invoic_v export format
     # resolved from bp_150's partner-default C_BPartner_EDI_Setting row (edi_setting_S150_bp1).
     # Regression: the element vanished when #30238 dropped the C_BPartner GLN column without
     # repointing the replication (EXP_Format) export path.
+    # DESADV table-path (EXP_Format 540405) export must emit the shipment document-number element
+    # under BOTH its tag spellings (<ShipmentDocumentNo> and <shipment_documentno>), alongside
+    # <DatePromised>. This guards the backend (replication-XML) side: the clearing-center transform
+    # downstream forwards whichever elements the export produces, so the export must keep producing
+    # all three. e_dA_150 is the primary DESADV (its M_InOut.EDI_Desadv_ID is set), a completed
+    # shipment FK-linked to its EDI_Desadv exported via the table path.
     And the following EDI_Exp_Desadv XML carries the expected elements:
-      | EDI_Exp_Desadv_ID.Identifier | OPT.UnderTag  | TagName         | OPT.Value     |
-      | e_dA_150                     | C_BPartner_ID | EdiRecipientGLN | 1234567890123 |
-      | e_dB_150                     | C_BPartner_ID | EdiRecipientGLN | 1234567890123 |
+      | EDI_Exp_Desadv_ID.Identifier | OPT.UnderTag  | TagName             | OPT.Value     |
+      | e_dA_150                     | C_BPartner_ID | EdiRecipientGLN     | 1234567890123 |
+      | e_dB_150                     | C_BPartner_ID | EdiRecipientGLN     | 1234567890123 |
+      | e_dA_150                     |               | ShipmentDocumentNo  |               |
+      | e_dA_150                     |               | shipment_documentno |               |
+      | e_dA_150                     |               | DatePromised        |               |
 
   # ─── S31978_TC1 — attribute-less ASI on both sides ────────────────────────────────────────────
   @from:cucumber

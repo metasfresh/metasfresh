@@ -65,6 +65,11 @@ public class AD_SysConfig_StepDef
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
 	/**
+	 * {@code ReportsClient} memoizes the report server built from this sys config and rebuilds it only on a reset of all caches.
+	 */
+	private static final String SYSCONFIG_ReportsServerClass = "de.metas.report.jasper.client.JRServerClass";
+
+	/**
 	 * Sets a SYSTEM-level AD_SysConfig to the given value — permanently, for the rest of the scenario
 	 * (and, if the scenario doesn't restore it itself, for whatever runs after it on the same executor).
 	 * Prefer {@link #temporarily_set_sys_config_boolean_value} instead whenever the override must not outlive this
@@ -242,6 +247,23 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
+	 * Sets a sys config to a String value for the current scenario; its prior value is restored after the scenario, and a sys config that had no value before is deleted again.
+	 * The value may be the null token, see {@link DataTableUtil#nullToken2Null(String)}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And temporarily set sys config String value 'de.metas.report.server.LocalReportServer' for sys config 'de.metas.report.jasper.client.JRServerClass'
+	 * </pre>
+	 */
+	@And("temporarily set sys config String value {string} for sys config {string}")
+	public void temporarily_set_sys_config_string_value(@NonNull final String value, @NonNull final String sysConfigName)
+	{
+		rememberPriorValue(sysConfigName);
+		applySysConfigValue("String", value, sysConfigName);
+	}
+
+	/**
 	 * Sets a sys config to the repo id of a scenario-created {@code M_Product_Category}, for the current scenario; its prior value is restored after the scenario, and a sys config that had no value before is deleted again.
 	 *
 	 * @cucumber.stepdef
@@ -328,7 +350,15 @@ public class AD_SysConfig_StepDef
 			}
 		}
 
+		final boolean reportServerChanged = priorValueBySysConfigName.containsKey(SYSCONFIG_ReportsServerClass);
 		priorValueBySysConfigName.clear();
-		resetSysConfigCache();
+		if (reportServerChanged)
+		{
+			CacheMgt.get().reset();
+		}
+		else
+		{
+			resetSysConfigCache();
+		}
 	}
 }

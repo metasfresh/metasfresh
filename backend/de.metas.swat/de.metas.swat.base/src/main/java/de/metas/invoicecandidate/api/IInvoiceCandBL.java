@@ -295,11 +295,33 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <li>there is at least one not-reversed {@link I_C_InvoiceLine} allocated to the candidate</li>
 	 * </ul>
 	 * The second condition is important because we might e.g. have a <code>C_OrderLine</code> with <code>QtyOrdered=0</code>, either because the order was reactivated, or because the user simply
-	 * needs to document that a Qty or ZERO was ordered for a certain product. In both case we don't want the candidate to be flagged as processed.
+	 * needs to document that a Qty or ZERO was ordered for a certain product. In both case we don't want the candidate to be flagged as processed by these two conditions.
+	 * <p>
+	 * <code>Processed_Calc</code> is also <code>true</code> if {@link #isProcessedByDeliveryClosedRule(I_C_Invoice_Candidate)} holds, i.e. the candidate's delivery is closed
+	 * and it can never be invoiced because nothing was delivered or invoiced. This also applies to the undelivered lines of a reactivated order whose dispositions were closed.
+	 * Unlike <code>Processed_Override</code>, it follows the current state: a later delivery or a reopened disposition makes the candidate invoiceable again.
+	 * A candidate that is processed only by this rule keeps its <code>ApprovalForInvoicing</code>; otherwise, a processed candidate's approval is reset.
 	 * <p>
 	 * Note that if <code>Processed_Override</code> is set, then its value shall be copied to <code>Processed</code>, no matter what (issue <a href="https://github.com/metasfresh/metasfresh/issues/243">#243</a>).
 	 */
 	void updateProcessedFlag(I_C_Invoice_Candidate candidate);
+
+	/**
+	 * @return {@code true} if the candidate's {@code IsDeliveryClosed} is set, its effective invoice rule ({@link #getInvoiceRule(I_C_Invoice_Candidate)}) takes the quantity to invoice
+	 * from the delivered quantity ({@code O} for any product; {@code D}, {@code C}, {@code S}, {@code M} for stock items only),
+	 * and nothing is delivered (neither on the candidate nor on its order line, if any) or invoiced.
+	 * The order line is read because a shipment's/receipt's completion raises its {@code QtyDelivered} before the candidate's own {@code QtyDelivered} follows.
+	 */
+	boolean isProcessedByDeliveryClosedRule(@NonNull I_C_Invoice_Candidate ic);
+
+	/**
+	 * Delete all invoice candidates (active or not) that reference the given {@code model} via their {@code AD_Table_ID} and {@code Record_ID}.
+	 * A processed candidate without invoice lines is unprocessed first if it was processed only to be out of the way,
+	 * i.e. manually ({@code Processed_Override}) or by {@link #isProcessedByDeliveryClosedRule(I_C_Invoice_Candidate)}.
+	 *
+	 * @return number of deleted invoice candidates.
+	 */
+	int deleteAllReferencingInvoiceCandidates(@NonNull Object model);
 
 	/**
 	 * Resets {@link I_C_Invoice_Candidate#COLUMNNAME_IsError} field together with some other depending fields:
@@ -392,9 +414,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	CurrencyPrecision extractPricePrecision(I_C_Invoice_Candidate ic);
 
 	void closeInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
-
-	/** Undo of {@link #closeInvoiceCandidatesByOrderLineId(OrderLineId)}: clears {@code Processed_Override} and invalidates the candidates. */
-	void openInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
 
 	/**
 	 * Close the given invoice candidate.

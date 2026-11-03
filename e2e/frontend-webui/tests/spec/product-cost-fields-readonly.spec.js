@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import { getRecordData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { PRODUCT_COST_M_COST_TAB_ID, PRODUCT_COST_WINDOW_ID, ProductCostPage } from '../utils/pages/ProductCostPage';
 
 /**
@@ -15,7 +15,13 @@ import { PRODUCT_COST_M_COST_TAB_ID, PRODUCT_COST_WINDOW_ID, ProductCostPage } f
  *
  * Asserted on the language-invariant `readonly` flag (grid and single-row), plus a UI attempt to edit
  * Current Cost Price that must be refused.
+ *
+ * Product cost rows are created by the system only: neither the M_Cost tab of window 344 nor the stand-alone window
+ * Produkt aktuelle Kosten (540900) offers "New", while an existing row keeps its editable fields.
  */
+
+/** Window Produkt aktuelle Kosten: the same M_Cost rows as the tab of window 344, as a stand-alone window. */
+const PRODUCT_CURRENT_COST_WINDOW_ID = '540900';
 
 /**
  * The Standard costing cost element of the standard setup. Selected by its name:
@@ -89,5 +95,77 @@ renders from, plus a UI attempt to edit Current Cost Price that is refused.
     await ProductCostPage.open(productId);
     await ProductCostPage.attemptEditCurrentCostPrice(standardCostingRowId, '999');
     allure.attachment('Product Cost (Produktkosten, window 344)', await page.screenshot({ fullPage: true }), 'image/png');
+  });
+
+  // eslint-disable-next-line no-unused-vars
+  test(`Product cost rows cannot be created by hand: window 344 tab and window 540900 offer no New (${label})`, async ({ page }) => {
+    test.setTimeout(120000);
+    allure.epic('E0226: Costing');
+    allure.tag('F1500: Costing');
+    allure.tag('F1500');
+    allure.story('Product Cost rows are created by the system only');
+    allure.severity('critical');
+    allure.description(`
+## F1500: Costing — no manual product cost rows
+
+A product cost row (M_Cost) is created by the system for each cost element of a product. A row created by hand
+would carry a cost price no cost detail explains, so:
+- the tab Produkt aktuelle Kosten of Product Cost (Produktkosten, window 344) does not allow a new row;
+- the window Produkt aktuelle Kosten (540900) does not allow a new record;
+- an existing row keeps its editable fields (Description is not read-only).
+
+Asserted on the language-invariant flags the WebUI renders "New" from: \`includedTabsInfo[tab].allowCreateNew\`
+of the product document, and \`allowNew\` of the window's list view.
+    `);
+
+    const md = await Backend.createMasterdata({
+      request: {
+        login: { user: { language, firstname: 'PK', lastname: 'NoNew' } },
+        products: { P: { name: 'PK_NO_NEW', type: 'Item' } },
+      },
+    });
+    const productId = md.products.P.id;
+
+    await LoginPage.goto();
+    await LoginPage.login(md.login.user);
+    await DashboardPage.expectVisible();
+
+    await test.step('Window 344: the M_Cost tab of the product does not allow a new row', async () => {
+      const product = await getRecordData(PRODUCT_COST_WINDOW_ID, productId);
+      const tabInfo = (product.includedTabsInfo || {})[PRODUCT_COST_M_COST_TAB_ID];
+      console.log(`[INFO] window 344 ${PRODUCT_COST_M_COST_TAB_ID}: ${JSON.stringify(tabInfo)}`);
+      expect(tabInfo, `includedTabsInfo of ${PRODUCT_COST_M_COST_TAB_ID}`).toBeTruthy();
+      // soft: the 540900 check below runs as well, so a run reports every place that still offers New
+      expect.soft(tabInfo.allowCreateNew, 'window 344 M_Cost tab allows a new row').toBe(false);
+    });
+
+    await test.step('Window 344: an existing M_Cost row keeps Description editable', async () => {
+      const rowsResp = await page.request.get(
+        `${WEBAPI_BASE_URL}/window/${PRODUCT_COST_WINDOW_ID}/${productId}/${PRODUCT_COST_M_COST_TAB_ID}`
+      );
+      expect(rowsResp.status()).toBe(200);
+      const rows = (await rowsResp.json()).result || [];
+      expect(rows.length, 'the product has its system-created cost rows').toBeGreaterThan(0);
+      for (const row of rows) {
+        expect(row.fieldsByName.Description, 'Description field of the M_Cost row').toBeTruthy();
+        expect(row.fieldsByName.Description.readonly).toBe(false);
+      }
+    });
+
+    await test.step('Window 540900: the list view does not allow a new record', async () => {
+      const viewResp = await page.request.post(`${WEBAPI_BASE_URL}/documentView/${PRODUCT_CURRENT_COST_WINDOW_ID}`, {
+        data: { documentType: PRODUCT_CURRENT_COST_WINDOW_ID, viewType: 'grid', filters: [] },
+        headers: { 'Content-Type': 'application/json' },
+      });
+      expect(viewResp.ok(), `open a view on window ${PRODUCT_CURRENT_COST_WINDOW_ID}`).toBe(true);
+      const { viewId } = await viewResp.json();
+      const pageResp = await page.request.get(
+        `${WEBAPI_BASE_URL}/documentView/${PRODUCT_CURRENT_COST_WINDOW_ID}/${viewId}?firstRow=0&pageLength=1`
+      );
+      expect(pageResp.ok(), `read view ${viewId}`).toBe(true);
+      const viewResult = await pageResp.json();
+      console.log(`[INFO] window ${PRODUCT_CURRENT_COST_WINDOW_ID} view: allowNew=${viewResult.allowNew}`);
+      expect.soft(viewResult.allowNew, `window ${PRODUCT_CURRENT_COST_WINDOW_ID} allows a new record`).toBe(false);
+    });
   });
 });

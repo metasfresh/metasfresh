@@ -143,6 +143,7 @@ test('Manual', async ({ page }) => {
             lu1: { huStatus: 'E', storages: { P1: '7 PCE' }, attributes: { 'WeightNet': '0.789', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
+    await Backend.expect({ salesOrders: { SO1: { shipments: [{ lines: [{ product: 'P1', movementQty: 7, qtyDeliveredCatch: 0.789 }] }] } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -242,6 +243,7 @@ test('Leich+Mehl', async ({ page }) => {
             cu5: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
+    await Backend.expect({ salesOrders: { SO1: { shipments: [{ lines: [{ product: 'P1', movementQty: 5, qtyDeliveredCatch: 0.505 }] }] } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -353,6 +355,7 @@ test('GS1', async ({ page }) => {
             tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '7.520', 'Lot-Nummer': '501', 'HU_BestBeforeDate': '2027-08-09' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
+    await Backend.expect({ salesOrders: { SO1: { shipments: [{ lines: [{ product: 'P1', movementQty: 1, qtyDeliveredCatch: 7.520 }] }] } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -426,6 +429,7 @@ test('EAN13 with prefix 28', async ({ page }) => {
             tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.261', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
+    await Backend.expect({ salesOrders: { SO1: { shipments: [{ lines: [{ product: 'P1', movementQty: 1, qtyDeliveredCatch: 0.261 }] }] } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -530,6 +534,7 @@ test('EAN13 with prefix 29', async ({ page }) => {
             tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.574', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
+    await Backend.expect({ salesOrders: { SO1: { shipments: [{ lines: [{ product: 'P1', movementQty: 1, qtyDeliveredCatch: 0.574 }] }] } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -651,6 +656,7 @@ test('Custom QR code format', async ({ page }) => {
             tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '9.999', 'Lot-Nummer': '123', 'HU_BestBeforeDate': '2026-04-10' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
+    await Backend.expect({ salesOrders: { SO1: { shipments: [{ lines: [{ product: 'P1', movementQty: 1, qtyDeliveredCatch: 9.999 }] }] } } });
 });
 
 // noinspection JSUnusedLocalSymbols
