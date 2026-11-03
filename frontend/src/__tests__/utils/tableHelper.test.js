@@ -1,4 +1,5 @@
 import {
+  buildTabRowsDataUpdate,
   createAmount,
   createSpecialField,
   fieldValueToString,
@@ -325,5 +326,36 @@ describe('Table helpers', () => {
       isGerman,
     });
     expect(fieldToCheck.props.style.backgroundColor).toBe('DDDDDD');
+  });
+
+  describe('buildTabRowsDataUpdate', () => {
+    it('maps result rows into `changed` (rowId -> row) and missingIds into `removed` (rowId -> true)', () => {
+      const result = [
+        { rowId: '10', fieldsByName: { Name: { value: 'A' } } },
+        { rowId: '11', fieldsByName: { Name: { value: 'B' } } },
+      ];
+      const missingIds = ['99'];
+
+      const payload = buildTabRowsDataUpdate({ result, missingIds });
+
+      expect(payload).toEqual({
+        changed: {
+          10: { rowId: '10', fieldsByName: { Name: { value: 'A' } } },
+          11: { rowId: '11', fieldsByName: { Name: { value: 'B' } } },
+        },
+        removed: { 99: true },
+      });
+    });
+
+    it('omits the `changed`/`removed` keys when the corresponding input is empty or absent', () => {
+      expect(buildTabRowsDataUpdate({ result: [], missingIds: [] })).toEqual(
+        {}
+      );
+      expect(buildTabRowsDataUpdate({})).toEqual({});
+      expect(buildTabRowsDataUpdate()).toEqual({});
+      expect(buildTabRowsDataUpdate({ missingIds: ['5'] })).toEqual({
+        removed: { 5: true },
+      });
+    });
   });
 });

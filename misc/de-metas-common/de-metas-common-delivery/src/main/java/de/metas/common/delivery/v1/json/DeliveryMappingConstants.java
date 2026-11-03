@@ -32,6 +32,8 @@ public class DeliveryMappingConstants
 	// attributeTypes
 	public static final String ATTRIBUTE_TYPE_SENDER_ATTENTION = "SenderAttention";
 	public static final String ATTRIBUTE_TYPE_RECEIVER_ATTENTION = "ReceiverAttention";
+	public static final String ATTRIBUTE_TYPE_SENDER_CUSTNO = "SenderCustNo";
+	public static final String ATTRIBUTE_TYPE_RECEIVER_CUSTNO = "ReceiverCustNo";
 	public static final String ATTRIBUTE_TYPE_REFERENCE = "Reference";
 	public static final String ATTRIBUTE_TYPE_LINE_REFERENCE = "LineReference";
 	public static final String ATTRIBUTE_TYPE_DETAIL_GROUP = "DetailGroup";
@@ -55,6 +57,17 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_VALUE_RECEIVER_BPARTNER_ATTENTION = "ReceiverBPartnerAttention";
 	public static final String ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION = "SenderBPartnerAttention";
 
+	public static final String ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED = "IsPreAdviceRequired";
+	public static final String ATTRIBUTE_VALUE_INCOTERMS_VALUE = "IncotermsValue";
+	public static final String ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE = "ExternalSystemValue";
+
+	// Generic pass-through of a shipper-config additional property (the Carrier_Config column of the same name).
+	// Carrier-agnostic on purpose: e.g. for DHL Freight the consignee id is stored here and a SenderCustNo /
+	// ReceiverCustNo mapping rule routes it into the nShift address CustNo. Three interchangeable slots.
+	public static final String ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1 = "CustomValueString1";
+	public static final String ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_2 = "CustomValueString2";
+	public static final String ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_3 = "CustomValueString3";
+
 	// attributeValuesLine
 	public static final String ATTRIBUTE_VALUE_PARCEL_ID = "ParcelId";
 
@@ -75,6 +88,7 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_VALUE_TOTAL_WEIGHT_G = "TotalWeightG";
 
 	// attributeValuesParcel
+	public static final String ATTRIBUTE_VALUE_TOP_LEVEL_TYPE = "TopLevelType";
 	public static final String ATTRIBUTE_VALUE_GROSS_WEIGHT_KG = "GrossWeightKg";
 	public static final String ATTRIBUTE_VALUE_GROSS_WEIGHT_G = "GrossWeightG";
 	public static final String ATTRIBUTE_VALUE_PACKAGE_LENGTH_CM = "PackageLengthCm";

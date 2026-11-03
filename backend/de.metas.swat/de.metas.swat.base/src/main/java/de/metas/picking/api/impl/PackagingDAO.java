@@ -135,10 +135,12 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter: PreparationDate
-		if (query.getPreparationDate() != null)
+		// Filter: PreparationDays
+		// Strict, unlike DeliveryDays above: an unset PreparationDate does not pass. See PackageableQuery.
+		if (!query.getPreparationDays().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
+			final ICompositeQueryFilter<I_M_Packageable_V> preparationDaysFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+			query.getPreparationDays().forEach(preparationDay -> preparationDaysFilter.addEqualsFilter(I_M_Packageable_V.COLUMN_PreparationDate, preparationDay, DateTruncQueryFilterModifier.DAY));
 		}
 
 		//
@@ -154,7 +156,8 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter: IsFixedDatePromised
+		// Filter: IsFixedDatePromised (header flag, applies to ALL lines) — compares the per-line DatePromised
+		// (override-inclusive; see M_Packageable_V). Keep in sync with de.metas.handlingunits...ShipmentService.
 		final ZonedDateTime maximumFixedPromisedDate = query.getMaximumFixedPromisedDate();
 		if (maximumFixedPromisedDate != null)
 		{

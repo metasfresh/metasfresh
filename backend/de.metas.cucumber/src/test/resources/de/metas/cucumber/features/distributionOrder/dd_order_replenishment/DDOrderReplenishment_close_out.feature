@@ -5,7 +5,7 @@
 Feature: DD_Order replenishment — shipment close-out disposes the obsolete replenishment (packing is GOD)
   - Shipment close-out (M_Picking_Job_Schedule.Processed=Y) must always succeed, even while a picking order is open.
   - No replenishment move in progress: the obsolete DD_Order is CLOSED and the picker is released.
-  - A replenishment move in progress: the DD_Order is DISCONNECTED (IsPickingDisconnected=Y, FKs retained) so the worker finishes it.
+  - A replenishment move in progress: the DD_Order is DISCONNECTED (IsPickingDisconnected=Y, contributor rows retained) so the worker finishes it.
 
   # Test seams: the picker is made busy via the real mobile picking REST workflow; the close-out is real shipment
   # generation (which marks the workstation assignment Processed=Y); disposal is driven via the after-commit reconcile
@@ -166,7 +166,7 @@ Feature: DD_Order replenishment — shipment close-out disposes the obsolete rep
       | ddOrder    | CO        | false                 |
 
   @from:cucumber
-  Scenario: In-progress replenishment move at close-out → DISCONNECT (not Closed), FKs retained, still pickable
+  Scenario: In-progress replenishment move at close-out → DISCONNECT (not Closed), contributor rows retained, still pickable
     # A worker has started moving the replenishment stock (picked the source HU), so the move is in progress — a
     # half-done move must not be corrupted by a CLOSE (which would hit the BEFORE_CLOSE clearSchedules guard).
     Given pick from the DD_Order linked to picking job schedule:
@@ -180,7 +180,7 @@ Feature: DD_Order replenishment — shipment close-out disposes the obsolete rep
       | shipmentSchedule      | jobSchedule               |
     And the reconcile event for M_Picking_Job_Schedule jobSchedule is processed
 
-    # ... and the DD_Order is DISCONNECTED, not Closed: IsPickingDisconnected=Y, still Completed, FK to the schedule
+    # ... and the DD_Order is DISCONNECTED, not Closed: IsPickingDisconnected=Y, still Completed, contributor rows
     # retained for traceability so the worker can finish it as a standalone replenishment.
     Then after not more than 10s, following DD_Orders are found
       | Identifier | DocStatus | IsPickingDisconnected |

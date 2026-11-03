@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Shipper_Mapping_Config extends org.compiere.model.PO implements I_M_Shipper_Mapping_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -761301745L;
+	private static final long serialVersionUID = 57347542L;
 
     /** Standard Constructor */
     public X_M_Shipper_Mapping_Config (final Properties ctx, final int M_Shipper_Mapping_Config_ID, @Nullable final String trxName)
@@ -90,6 +90,10 @@ public class X_M_Shipper_Mapping_Config extends org.compiere.model.PO implements
 	public static final String MAPPINGATTRIBUTETYPE_DetailGroup = "DetailGroup";
 	/** LineDetailGroup = LineDetailGroup */
 	public static final String MAPPINGATTRIBUTETYPE_LineDetailGroup = "LineDetailGroup";
+	/** SenderCustNo = SenderCustNo */
+	public static final String MAPPINGATTRIBUTETYPE_SenderCustNo = "SenderCustNo";
+	/** ReceiverCustNo = ReceiverCustNo */
+	public static final String MAPPINGATTRIBUTETYPE_ReceiverCustNo = "ReceiverCustNo";
 	@Override
 	public void setMappingAttributeType (final java.lang.String MappingAttributeType)
 	{
@@ -185,6 +189,20 @@ public class X_M_Shipper_Mapping_Config extends org.compiere.model.PO implements
 	public static final String MAPPINGATTRIBUTEVALUE_SenderBPartnerAttention = "SenderBPartnerAttention";
 	/** CountryOfOrigin = CountryOfOrigin */
 	public static final String MAPPINGATTRIBUTEVALUE_CountryOfOrigin = "CountryOfOrigin";
+	/** IncotermsValue = IncotermsValue */
+	public static final String MAPPINGATTRIBUTEVALUE_IncotermsValue = "IncotermsValue";
+	/** ExternalSystemValue = ExternalSystemValue */
+	public static final String MAPPINGATTRIBUTEVALUE_ExternalSystemValue = "ExternalSystemValue";
+	/** IsPreAdviceRequired = IsPreAdviceRequired */
+	public static final String MAPPINGATTRIBUTEVALUE_IsPreAdviceRequired = "IsPreAdviceRequired";
+	/** TopLevelType = TopLevelType */
+	public static final String MAPPINGATTRIBUTEVALUE_TopLevelType = "TopLevelType";
+	/** CustomValueString1 = CustomValueString1 */
+	public static final String MAPPINGATTRIBUTEVALUE_CustomValueString1 = "CustomValueString1";
+	/** CustomValueString2 = CustomValueString2 */
+	public static final String MAPPINGATTRIBUTEVALUE_CustomValueString2 = "CustomValueString2";
+	/** CustomValueString3 = CustomValueString3 */
+	public static final String MAPPINGATTRIBUTEVALUE_CustomValueString3 = "CustomValueString3";
 	@Override
 	public void setMappingAttributeValue (final java.lang.String MappingAttributeValue)
 	{

@@ -53,7 +53,10 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                 weight_uom                 character varying(10),
                 customs_number             text,
                 iswithoutcharge            character(1),
-                reason                     character varying(4000)
+                reason                     character varying(4000),
+                Is_TotalAmount_Hidden      char,
+                Is_Weight_Hidden           char,
+                IsShowCustomsTariffNumber  char
             )
 AS
 $$
@@ -128,7 +131,10 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        w.weight_uom,
        pcus.value || ' ' || COALESCE(pcus.name, '')           AS customs_number,
        il.iswithoutcharge,
-       il.reason
+       il.reason,
+       report.IsHiddenReportElement(i.C_DocType_ID, 'TotalAmount') AS Is_TotalAmount_Hidden,
+       report.IsHiddenReportElement(i.C_DocType_ID, 'Weight') AS Is_Weight_Hidden,
+       bp.IsShowCustomsTariffNumber
 FROM C_InvoiceLine il
          INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
          INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID

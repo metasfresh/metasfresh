@@ -11,6 +11,7 @@ import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
 import de.metas.customstariff.CustomsTariffId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.i18n.IModelTranslationMap;
@@ -225,7 +226,7 @@ public class ProductRepository
 		bPartnerProduct.setCustomerLabelName(request.getCustomerLabelName());
 		bPartnerProduct.setIngredients(request.getIngredients());
 		bPartnerProduct.setShelfLifeMinPct(0); // FIXME
-		bPartnerProduct.setShelfLifeMinDays(0); // FIXME
+		bPartnerProduct.setShelfLifeMinDays(CoalesceUtil.coalesceNotNull(request.getShelfLifeMinDays(), 0));
 
 		if (request.getUsedForVendor() != null)
 		{

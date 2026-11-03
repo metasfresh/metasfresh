@@ -37,6 +37,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Map.Entry;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 
 @Value
 @Builder
@@ -71,6 +72,14 @@ public class GenerateShipmentsRequest
 	 * @see ShipmentService#generateShipments(GenerateShipmentsRequest)
 	 */
 	@Builder.Default boolean waitForShipments = true;
+
+	/**
+	 * The planning to stamp onto every shipment LINE created for this request, or {@code null} for none. It has
+	 * to travel with the REQUEST rather than being set on the finished shipment, because the shipment
+	 * is completed inside the generation workpackage: an id written afterwards is invisible to the document's
+	 * {@code TIMING_AFTER_COMPLETE} interceptor, which is what derives the planning's state from the completion.
+	 */
+	@Nullable DeliveryPlanningId deliveryPlanningId;
 
 	public ImmutableMap<ShipmentScheduleId, String> extractShipmentDocumentNos()
 	{

@@ -74,7 +74,7 @@ BEGIN
     RETURN;
 END;
 $BODY$
-    LANGUAGE plpgsql STABLE
+    LANGUAGE plpgsql STABLE ROWS 1
 ;
 
 COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(numeric, numeric, numeric)
