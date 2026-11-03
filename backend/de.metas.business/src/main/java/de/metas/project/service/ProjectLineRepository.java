@@ -49,6 +49,11 @@ public class ProjectLineRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	public static ProjectLineRepository newInstanceForUnitTesting()
+	{
+		return new ProjectLineRepository();
+	}
+
 	public List<ProjectLine> retrieveLines(@NonNull final ProjectId projectId)
 	{
 		return queryLineRecordsByProjectId(projectId)

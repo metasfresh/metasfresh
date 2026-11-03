@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
 @ghActions:run_on_executor5
 Feature: check invoice candidates status
+## F00700: Invoice
 
   Background:
     Given infrastructure and metasfresh are running
@@ -9,6 +13,9 @@ Feature: check invoice candidates status
     And metasfresh has date and time 2021-12-21T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: Generate invoice from order and validate check invoice candidate status EP
     Given a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -16,6 +23,7 @@ Feature: check invoice candidates status
     "orgCode": "001",
     "externalLineId": "ExtLine_1",
     "externalHeaderId": "ExtHeader_1",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "2156425",
@@ -42,7 +50,7 @@ Feature: check invoice candidates status
    """
 {
     "externalHeaderId": "ExtHeader_1",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": true
@@ -92,8 +100,10 @@ Feature: check invoice candidates status
       | ExternalHeaderId | ExternalLineId | QtyEntered | QtyToInvoice | QtyInvoiced | Processed |
       | ExtHeader_1      | ExtLine_1      | 5          | 0            | 5           | true      |
 
-  @flaky
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: Generate invoice candidate from order and validate that checking the invoice candidate status works via order document number
     And metasfresh contains M_Products:
       | Identifier |
@@ -143,6 +153,9 @@ Feature: check invoice candidates status
       | ExtHeader_07162025_2 | ExtLine_07162025_3 | 5          | 0            | 0           | false     |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: Generate invoice candidate from order and validate that checking the invoice candidate status works via order document number and order line
     And metasfresh contains M_Products:
       | Identifier |

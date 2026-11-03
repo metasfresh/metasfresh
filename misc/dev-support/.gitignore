@@ -1,1 +1,4 @@
 *.log
+
+# Local CI/CD secrets (never commit credentials!)
+local-cicd/.secrets

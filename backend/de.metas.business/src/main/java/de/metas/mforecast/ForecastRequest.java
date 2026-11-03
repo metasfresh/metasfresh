@@ -34,6 +34,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -58,6 +59,7 @@ public class ForecastRequest
 		@NonNull ProductId productId;
 		@NonNull Quantity quantity;
 		@Nullable Quantity quantityCalculated;
+		@Nullable AttributeSetInstanceId attributeSetInstanceId;
 		@Nullable ActivityId activityId;
 		@Nullable CampaignId campaignId;
 		@Nullable ProjectId projectId;

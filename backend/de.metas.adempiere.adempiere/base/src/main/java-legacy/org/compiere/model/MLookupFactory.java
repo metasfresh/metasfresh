@@ -269,10 +269,20 @@ public class MLookupFactory
 		// List
 		if (AD_Reference_ID == DisplayType.List)
 		{
+			if (AD_Reference_Value_ID == null)
+			{
+				throw new AdempiereException("Invalid List Lookup: AD_Reference_Value_ID is null")
+						.setParameter("ctxTableName", ctxTableName)
+						.setParameter("ctxColumnName", ctxColumnName)
+						.setParameter("IsParent", IsParent)
+						.setParameter("AD_Val_Rule_ID", AD_Val_Rule_ID)
+						.setParameter("WindowNo", WindowNo)
+						.appendParametersToMessage();
+			}
 			info = getLookup_List(AD_Reference_Value_ID);
 		}
 		//
-		// Button with attached list or table
+		// Button with an attached list or table
 		else if (AD_Reference_ID == DisplayType.Button && AD_Reference_Value_ID != null)
 		{
 			final boolean isTableReference = adReferenceService.isTableReference(AD_Reference_Value_ID);

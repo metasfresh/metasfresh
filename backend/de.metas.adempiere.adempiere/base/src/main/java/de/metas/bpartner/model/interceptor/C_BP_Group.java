@@ -22,6 +22,9 @@
 
 package de.metas.bpartner.model.interceptor;
 
+import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -38,6 +41,8 @@ public class C_BP_Group
 {
 	public static final int MAX_INHERITANCE_LEVELS = 2;
 
+	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_BP_Group.COLUMNNAME_Parent_BP_Group_ID)
 	public void limitGroupInheritance(@NonNull final I_C_BP_Group bpGroup)
 	{
@@ -50,6 +55,30 @@ public class C_BP_Group
 		if (maxInheritanceLevels > MAX_INHERITANCE_LEVELS)
 		{
 			throw new AdempiereException("@Invalid@ @Parent_BP_Group_ID@");
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BP_Group.COLUMNNAME_IsDefault)
+	public void unsetPreviousDefault(@NonNull final I_C_BP_Group bpGroup)
+	{
+		if (!bpGroup.isDefault())
+		{
+			return;
+		}
+
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(bpGroup.getAD_Client_ID(), bpGroup.getAD_Org_ID());
+		final I_C_BP_Group previousDefault = bpGroupDAO.getDefaultByClientOrgId(clientAndOrgId);
+		if (previousDefault == null)
+		{
+			return;
+		}
+
+		final ClientAndOrgId previousClientAndOrgId = ClientAndOrgId.ofClientAndOrg(previousDefault.getAD_Client_ID(), previousDefault.getAD_Org_ID());
+		if (clientAndOrgId.equals(previousClientAndOrgId))
+		{
+			//unset previous default
+			previousDefault.setIsDefault(false);
+			bpGroupDAO.save(previousDefault);
 		}
 
 	}

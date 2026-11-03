@@ -1,13 +1,8 @@
-/**
- *
- */
-package de.metas.printing.api.impl;
-
 /*
  * #%L
  * de.metas.printing.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +19,11 @@ package de.metas.printing.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/**
+ *
+ */
+package de.metas.printing.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
@@ -65,7 +65,9 @@ import de.metas.util.collections.IteratorUtils;
 import de.metas.util.collections.PeekIterator;
 import de.metas.util.collections.SingletonIterator;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.Value;
 import lombok.experimental.Delegate;
 import org.adempiere.ad.trx.api.ITrx;
@@ -74,7 +76,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -102,20 +103,12 @@ public class PrintJobBL implements IPrintJobBL
 
 	private final AdMessageKey MSG_NotFound_AD_Printer_Config = AdMessageKey.of("NotFound_AD_Printer_Config");
 
-	private int maxLinesPerJob = -1;
-
 	/**
-	 * Allows it to set maxLinesPerJob from outside (intended use is for testing). If set, then this value overrides the <code>AD_SysConfig</code> setting {@value #SYSCONFIG_MAX_LINES_PER_JOB}.
+	 * -- GETTER --
+	 * -- SETTER --
+	 *  Allows it to set maxLinesPerJob from outside (intended use is for testing). If set, then this value overrides the <code>AD_SysConfig</code> setting.
 	 */
-	public int getMaxLinesPerJob()
-	{
-		return maxLinesPerJob;
-	}
-
-	public void setMaxLinesPerJob(final int maxLinesPerJob)
-	{
-		this.maxLinesPerJob = maxLinesPerJob;
-	}
+	@Getter @Setter private int maxLinesPerJob = -1;
 
 	@Override
 	public void createPrintJobs(@NonNull final IPrintingQueueSource source, @NonNull final ContextForAsyncProcessing printJobContext)
@@ -235,6 +228,7 @@ public class PrintJobBL implements IPrintJobBL
 		return count;
 	}
 
+	@Nullable
 	private List<I_C_Print_Job_Instructions> createPrintJobInstructionsAndPrintJobs(final IPrintingQueueSource source,
 																					final Iterator<I_C_Printing_Queue> items,
 																					final PrintingQueueProcessingInfo printingQueueProcessingInfo)
@@ -327,7 +321,7 @@ public class PrintJobBL implements IPrintJobBL
 		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, PDFDocPrintingWorkpackageProcessor.class);
 		queue
 				.newWorkPackage()
-				.setC_Async_Batch_ID(asyncBatchId) // set the async batch in workpackage in order to track it
+				.setAsyncBatchId(asyncBatchId) // set the async batch in workpackage in order to track it
 				.addElement(jobInstructions)
 				.buildAndEnqueue();
 	}
@@ -419,9 +413,6 @@ public class PrintJobBL implements IPrintJobBL
 	/**
 	 * If a value has been set via {@link #setMaxLinesPerJob(int)}, then value is returned; otherwise use <code>AD_SysConfig</code> ({@value #SYSCONFIG_MAX_LINES_PER_JOB} with default value
 	 * {@value #DEFAULT_MAX_JOBPRINTLINES}).
-	 *
-	 * @param printJob
-	 * @return
 	 */
 	private int getMaxLinesPerJob(final I_C_Print_Job printJob)
 	{

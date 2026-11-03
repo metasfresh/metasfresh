@@ -29,7 +29,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -49,12 +49,14 @@ import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -65,6 +67,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -160,6 +163,7 @@ public class AvailableForSalesUtil
 		return result.build();
 	}
 
+	@NonNull
 	public CheckAvailableForSalesRequest createRequest(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		final I_C_Order orderRecord = orderLineRecord.getC_Order();
@@ -171,6 +175,8 @@ public class AvailableForSalesUtil
 				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(orderLineRecord.getM_AttributeSetInstance_ID()))
 				.preparationDate(preparationDate)
+				.warehouseId(Optional.ofNullable(WarehouseId.ofRepoIdOrNull(orderLineRecord.getM_Warehouse_ID()))
+						.orElse(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID())))
 				.build();
 	}
 
@@ -189,41 +195,57 @@ public class AvailableForSalesUtil
 	}
 
 	@NonNull
-	public EnqueueAvailableForSalesRequest createRequestWithPreparationDateNow(
+	@Builder(builderMethodName = "requestWithPreparationDateNow", builderClassName = "$RequestWithPreparationDateNowBuilder")
+	private EnqueueAvailableForSalesRequest createRequestWithPreparationDateNow0(
 			@NonNull final Properties ctx,
 			@NonNull final AvailableForSalesConfig config,
 			@NonNull final ProductId productId,
-			@NonNull final OrgId orgId,
-			@NonNull final AttributesKey storageAttributesKey)
+			@NonNull final ClientAndOrgId clientAndOrgId,
+			@NonNull final AttributesKey storageAttributesKey,
+			@NonNull final WarehouseId warehouseId)
 	{
-		return EnqueueAvailableForSalesRequest.of(AvailableForSalesQuery
-						.builder()
+		return EnqueueAvailableForSalesRequest.builder()
+				.availableForSalesQuery(AvailableForSalesQuery.builder()
 						.dateOfInterest(SystemTime.asInstant())
 						.productId(productId)
 						.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(storageAttributesKey))
-						.orgId(orgId)
+						.clientAndOrgId(clientAndOrgId)
 						.shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours())
 						.salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
-						.build(),
-				ctx);
+						.warehouseId(warehouseId)
+						.build())
+				.contextUserId(Env.getLoggedUserIdIfExists(ctx).orElse(null))
+				.contextRoleId(Env.getLoggedRoleIdIfExists(ctx).orElse(null))
+				.build();
 	}
 
 	public void syncAvailableForSalesForOrderLine(
 			@NonNull final I_C_OrderLine orderLineRecord,
 			@NonNull final AvailableForSalesConfig config)
 	{
-		final Properties ctx = Env.copyCtx(InterfaceWrapperHelper.getCtx(orderLineRecord));
-		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
-		final OrgId orgId = OrgId.ofRepoId(orderLineRecord.getAD_Org_ID());
+		availableForSalesService.enqueueAvailableForSalesRequestAfterCommit(
+				requestWithPreparationDateNow()
+						.ctx(InterfaceWrapperHelper.getCtx(orderLineRecord))
+						.config(config)
+						.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
+						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(orderLineRecord.getAD_Client_ID(), orderLineRecord.getAD_Org_ID()))
+						.storageAttributesKey(extractStorageAttributesKey(orderLineRecord))
+						.warehouseId(extractWarehouseId(orderLineRecord))
+						.build()
+		);
+	}
 
-		final AttributesKey storageAttributesKey = AttributesKeys
+	private WarehouseId extractWarehouseId(final @NotNull I_C_OrderLine orderLineRecord)
+	{
+		return Optional.ofNullable(WarehouseId.ofRepoIdOrNull(orderLineRecord.getM_Warehouse_ID()))
+				.orElseGet(() -> WarehouseId.ofRepoId(ordersDAO.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID())).getM_Warehouse_ID()));
+	}
+
+	private static AttributesKey extractStorageAttributesKey(final @NotNull I_C_OrderLine orderLineRecord)
+	{
+		return AttributesKeys
 				.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoIdOrNone(orderLineRecord.getM_AttributeSetInstance_ID()))
 				.orElse(AttributesKey.NONE);
-
-		final EnqueueAvailableForSalesRequest enqueueAvailableForSalesRequest = createRequestWithPreparationDateNow(ctx, config, productId, orgId, storageAttributesKey);
-
-		trxManager.runAfterCommit(() -> availableForSalesService
-				.enqueueAvailableForSalesRequest(enqueueAvailableForSalesRequest));
 	}
 
 	@Value
@@ -236,6 +258,8 @@ public class AvailableForSalesUtil
 
 		AttributeSetInstanceId attributeSetInstanceId;
 
+		WarehouseId warehouseId;
+
 		Timestamp preparationDate;
 	}
 
@@ -243,14 +267,9 @@ public class AvailableForSalesUtil
 	@Builder
 	private static class CheckAvailableForSalesRequestContext
 	{
-		@NonNull
-		AvailableForSalesConfig config;
-
-		@NonNull
-		UserId errorNotificationRecipient;
-
-		@NonNull
-		OrgId orgId;
+		@NonNull AvailableForSalesConfig config;
+		@NonNull UserId errorNotificationRecipient;
+		@NonNull ClientAndOrgId clientAndOrgId;
 	}
 
 	private class CheckAvailableForSalesRequestsCollector
@@ -261,12 +280,12 @@ public class AvailableForSalesUtil
 				@NonNull final List<CheckAvailableForSalesRequest> requests,
 				@NonNull final AvailableForSalesConfig config,
 				@NonNull final UserId errorNotificationRecipient,
-				@NonNull final OrgId orgId)
+				@NonNull final ClientAndOrgId clientAndOrgId)
 		{
 			final CheckAvailableForSalesRequestContext context = CheckAvailableForSalesRequestContext.builder()
 					.config(config)
 					.errorNotificationRecipient(errorNotificationRecipient)
-					.orgId(orgId)
+					.clientAndOrgId(clientAndOrgId)
 					.build();
 
 			this.requests.putAll(context, requests);
@@ -279,11 +298,7 @@ public class AvailableForSalesUtil
 
 		private void processAsync(final CheckAvailableForSalesRequestContext context, final Collection<CheckAvailableForSalesRequest> requests)
 		{
-			final AvailableForSalesConfig config = context.getConfig();
-			final UserId errorNotificationRecipient = context.getErrorNotificationRecipient();
-			final OrgId orgId = context.getOrgId();
-
-			retrieveDataAndUpdateOrderLinesAsync(requests, config, errorNotificationRecipient, orgId);
+			retrieveDataAndUpdateOrderLinesAsync(requests, context.getConfig(), context.getErrorNotificationRecipient(), context.getClientAndOrgId());
 		}
 
 	}
@@ -291,7 +306,7 @@ public class AvailableForSalesUtil
 	public void checkAndUpdateOrderLineRecords(
 			@NonNull final List<CheckAvailableForSalesRequest> requests,
 			@NonNull final AvailableForSalesConfig config,
-			@NonNull final OrgId orgId)
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		if (requests.isEmpty())
 		{
@@ -310,16 +325,16 @@ public class AvailableForSalesUtil
 						CheckAvailableForSalesRequestsCollector::new,
 						CheckAvailableForSalesRequestsCollector::processAsync);
 
-				collector.collect(requests, config, errorNotificationRecipient, orgId);
+				collector.collect(requests, config, errorNotificationRecipient, clientAndOrgId);
 			}
 			else
 			{
-				retrieveDataAndUpdateOrderLinesAsync(requests, config, errorNotificationRecipient, orgId);
+				retrieveDataAndUpdateOrderLinesAsync(requests, config, errorNotificationRecipient, clientAndOrgId);
 			}
 		}
 		else
 		{
-			retrieveDataAndUpdateOrderLines(requests, config, orgId);
+			retrieveDataAndUpdateOrderLines(requests, config, clientAndOrgId);
 		}
 	}
 
@@ -330,12 +345,12 @@ public class AvailableForSalesUtil
 			@NonNull final Collection<CheckAvailableForSalesRequest> requests,
 			@NonNull final AvailableForSalesConfig config,
 			@NonNull final UserId errorNotificationRecipient,
-			@NonNull final OrgId orgId)
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		// We cannot use a thread-inherited transaction that would otherwise be used by default.
 		// Because when this method is called, it means that the thread-inherited transaction is already committed
 		// Therefore, let's create our own trx to work in
-		final Runnable runnable = () -> trxManager.runInNewTrx(() -> retrieveDataAndUpdateOrderLines(requests, config, orgId));
+		final Runnable runnable = () -> trxManager.runInNewTrx(() -> retrieveDataAndUpdateOrderLines(requests, config, clientAndOrgId));
 
 		final ExecutorService executor = Executors.newSingleThreadExecutor();
 		try
@@ -377,10 +392,10 @@ public class AvailableForSalesUtil
 	void retrieveDataAndUpdateOrderLines(
 			@NonNull final Collection<CheckAvailableForSalesRequest> requests,
 			@NonNull final AvailableForSalesConfig config,
-			@NonNull final OrgId orgId)
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final ImmutableMultimap<AvailableForSalesQuery, OrderLineId> //
-				query2OrderLineIds = createQueries(requests, config, orgId);
+				query2OrderLineIds = createQueries(requests, config, clientAndOrgId);
 
 		final AvailableForSalesMultiQuery availableForSalesMultiQuery = AvailableForSalesMultiQuery
 				.builder()
@@ -404,7 +419,7 @@ public class AvailableForSalesUtil
 	private ImmutableMultimap<AvailableForSalesQuery, OrderLineId> createQueries(
 			@NonNull final Collection<CheckAvailableForSalesRequest> requests,
 			@NonNull final AvailableForSalesConfig config,
-			@NonNull final OrgId orgId)
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final ImmutableMultimap.Builder<AvailableForSalesQuery, OrderLineId> query2OrderLineId = ImmutableMultimap.builder();
 
@@ -416,14 +431,14 @@ public class AvailableForSalesUtil
 					.createAttributesKeyFromASIStorageAttributes(request.getAttributeSetInstanceId())
 					.orElse(AttributesKey.NONE);
 
-			final AvailableForSalesQuery availableForSalesQuery = AvailableForSalesQuery
-					.builder()
-					.orgId(orgId)
+			final AvailableForSalesQuery availableForSalesQuery = AvailableForSalesQuery.builder()
+					.clientAndOrgId(clientAndOrgId)
 					.dateOfInterest(dateOfInterest)
 					.productId(productId)
 					.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(storageAttributesKey))
 					.shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours())
 					.salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
+					.warehouseId(config.isQtyPerWarehouse() ? request.getWarehouseId() : null)
 					.build();
 
 			query2OrderLineId.put(availableForSalesQuery, request.getOrderLineId());

@@ -83,10 +83,13 @@ public class HUDescriptorService
 					.toBigDecimal()
 					.max(BigDecimal.ZERO); // guard against the quantity being e.g. -0.001 for whatever reason
 
+			// Always use the actual HU storage quantity. Previously, deleted events used BigDecimal.ZERO,
+			// which caused TransactionDeletedEvent.getQuantityDelta() to return 0 and MD_Stock to not be
+			// updated when M_Transactions were deleted (e.g., during shipment reactivation RA).
 			final HUDescriptor descriptor = HUDescriptor.builder()
 					.huId(huRecord.getM_HU_ID())
 					.productDescriptor(productDescriptor)
-					.quantity(deleted ? BigDecimal.ZERO : quantity)
+					.quantity(quantity)
 					.build();
 			descriptors.add(descriptor);
 		}

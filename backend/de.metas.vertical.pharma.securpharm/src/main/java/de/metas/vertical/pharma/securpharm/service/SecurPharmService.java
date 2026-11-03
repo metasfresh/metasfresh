@@ -23,30 +23,17 @@
 
 package de.metas.vertical.pharma.securpharm.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLineHU;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.inventory.InventoryId;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.actions.DecommissionResponse;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmActionsDispatcher;
-import de.metas.vertical.pharma.securpharm.actions.SecurPharmActionsHandler;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRepository;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRequest;
 import de.metas.vertical.pharma.securpharm.actions.UndoDecommissionResponse;
@@ -68,6 +55,15 @@ import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProductRepository;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class SecurPharmService
@@ -78,9 +74,7 @@ public class SecurPharmService
 	private final SecurPharmaActionRepository actionsRepo;
 	private final SecurPharmLogRepository logsRepo;
 	private final SecurPharmUserNotifications userNotifications;
-
-	private final InventoryRepository inventoryRepo;
-
+	private final InventoryService inventoryService;
 	private final SecurPharmActionsDispatcher actionRequestDispatcher;
 
 	@Builder
@@ -92,7 +86,7 @@ public class SecurPharmService
 			@NonNull final SecurPharmLogRepository logsRepo,
 			@NonNull final SecurPharmActionsDispatcher actionRequestDispatcher,
 			@NonNull final SecurPharmUserNotifications userNotifications,
-			@NonNull final InventoryRepository inventoryRepo)
+			@NonNull final InventoryService inventoryService)
 	{
 		this.clientFactory = clientFactory;
 		this.configRespository = configRespository;
@@ -101,9 +95,10 @@ public class SecurPharmService
 		this.actionsRepo = actionsRepo;
 		this.logsRepo = logsRepo;
 		this.userNotifications = userNotifications;
-		this.inventoryRepo = inventoryRepo;
+		this.inventoryService = inventoryService;
 
 		this.actionRequestDispatcher = actionRequestDispatcher;
+		this.actionRequestDispatcher.setSecurPharmService(this);
 	}
 
 	public boolean hasConfig()
@@ -127,7 +122,7 @@ public class SecurPharmService
 
 	public Collection<SecurPharmProduct> findProductsToDecommissionForInventoryId(@NonNull final InventoryId inventoryId)
 	{
-		final Inventory inventory = inventoryRepo.getById(inventoryId);
+		final Inventory inventory = inventoryService.getById(inventoryId);
 
 		//
 		// Applies only to internal use inventory
@@ -138,7 +133,7 @@ public class SecurPharmService
 
 		final List<InventoryLineHU> lineHUs = inventory.getLineHUs()
 				.stream()
-				.filter(lineHU -> isEligibleForDecommission(lineHU))
+				.filter(this::isEligibleForDecommission)
 				.collect(ImmutableList.toImmutableList());
 		final Set<HuId> vhuIds = getVHUIds(lineHUs);
 		if (vhuIds.isEmpty())
@@ -199,11 +194,6 @@ public class SecurPharmService
 	public void scheduleAction(@NonNull final SecurPharmaActionRequest request)
 	{
 		actionRequestDispatcher.post(request);
-	}
-
-	public void subscribeOnActions(@NonNull final SecurPharmActionsHandler handler)
-	{
-		actionRequestDispatcher.subscribe(handler);
 	}
 
 	public void decommissionProductsByInventoryId(@NonNull final InventoryId inventoryId)
@@ -285,7 +275,7 @@ public class SecurPharmService
 		return product.isFraud() // fraud product
 				&& !product.isDecommissioned() // was not already decommissioned
 				&& !product.isError() // no errors
-		;
+				;
 	}
 
 	public void undoDecommissionProductsByInventoryId(final InventoryId inventoryId)
@@ -355,7 +345,7 @@ public class SecurPharmService
 	{
 		return product.isDecommissioned() // was already decommissioned
 				&& !product.isError() // no errors
-		;
+				;
 	}
 
 	public SecurPharmHUAttributesScanner newHUScanner()

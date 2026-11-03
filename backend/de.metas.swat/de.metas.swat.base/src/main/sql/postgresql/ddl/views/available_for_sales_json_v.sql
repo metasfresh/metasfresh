@@ -5,13 +5,16 @@ CREATE OR REPLACE VIEW available_for_sales_json_v AS
 
 SELECT COALESCE(externalReference.externalreference, '') AS "ProductExternalReference",
        product.m_product_id                              AS "Product_ID",
+       product.value                                     AS "ProductValue",
        availableForSales.qtyonhandstock                  AS "QtyOnHandStock",
        availableForSales.qtytobeshipped                  AS "QtyToBeShipped",
        availableForSales.storageattributeskey            AS "StorageAttributesKey",
-       COALESCE(externalreference.externalsystem, '')    AS "ExternalSystem"
+       COALESCE(externalreference.externalsystem, '')    AS "ExternalSystem",
+       warehouse.value                                   AS "WarehouseCode"
 
 FROM MD_Available_For_Sales availableForSales
          INNER JOIN m_product product ON availableForSales.m_product_id = product.m_product_id
+         INNER JOIN m_warehouse warehouse ON availableForSales.m_warehouse_id = warehouse.m_warehouse_id
          LEFT JOIN (SELECT e.record_id,
                            CASE WHEN COUNT(*) = 1 THEN MAX(e.externalreference) END  AS externalreference,
                            CASE WHEN COUNT(*) = 1 THEN MAX(externalsystem.value) END AS externalsystem

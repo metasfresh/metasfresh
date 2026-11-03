@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for S_Resource
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 664197132L;
+	private static final long serialVersionUID = 2055189460L;
 
     /** Standard Constructor */
     public X_S_Resource (final Properties ctx, final int S_Resource_ID, @Nullable final String trxName)
@@ -48,33 +48,6 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	public int getAD_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Workplace getC_Workplace()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class);
-	}
-
-	@Override
-	public void setC_Workplace(final org.compiere.model.I_C_Workplace C_Workplace)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class, C_Workplace);
-	}
-
-	@Override
-	public void setC_Workplace_ID (final int C_Workplace_ID)
-	{
-		if (C_Workplace_ID < 1) 
-			set_Value (COLUMNNAME_C_Workplace_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Workplace_ID, C_Workplace_ID);
-	}
-
-	@Override
-	public int getC_Workplace_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Workplace_ID);
 	}
 
 	@Override
@@ -116,6 +89,33 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeableQty);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public org.compiere.model.I_C_Workplace getC_Workplace()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class);
+	}
+
+	@Override
+	public void setC_Workplace(final org.compiere.model.I_C_Workplace C_Workplace)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class, C_Workplace);
+	}
+
+	@Override
+	public void setC_Workplace_ID (final int C_Workplace_ID)
+	{
+		if (C_Workplace_ID < 1) 
+			set_Value (COLUMNNAME_C_Workplace_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Workplace_ID, C_Workplace_ID);
+	}
+
+	@Override
+	public int getC_Workplace_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Workplace_ID);
 	}
 
 	@Override
@@ -180,6 +180,18 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	public boolean isManufacturingResource() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManufacturingResource);
+	}
+
+	@Override
+	public void setLotNumberCode (final @Nullable java.lang.String LotNumberCode)
+	{
+		set_Value (COLUMNNAME_LotNumberCode, LotNumberCode);
+	}
+
+	@Override
+	public java.lang.String getLotNumberCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_LotNumberCode);
 	}
 
 	/** 

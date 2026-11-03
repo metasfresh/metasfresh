@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /*
@@ -80,6 +81,12 @@ final class ADMessageTranslatableString implements ITranslatableString
 	public Set<String> getAD_Languages()
 	{
 		return Services.get(ILanguageBL.class).getAvailableLanguages().getAD_Languages();
+	}
+
+	@Override
+	public Optional<AdMessageKey> getAdMessageKey()
+	{
+		return Optional.of(adMessage);
 	}
 
 }

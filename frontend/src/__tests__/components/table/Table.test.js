@@ -5,21 +5,26 @@ import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
 
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
-import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
+import {
+  initialState as windowHandlerState
+} from '../../../reducers/windowHandler';
 import viewHandler from '../../../reducers/viewHandler';
-import tablesHandler, { getTableId, initialTableState } from '../../../reducers/tables';
+import tablesHandler, {
+  getTableId,
+  initialTableState
+} from '../../../reducers/tables';
 import { createTableData } from '../../../actions/TableActions';
 import propsData from '../../../../test_setup/fixtures/table/props.json';
 import tableData from '../../../../test_setup/fixtures/table/data.json';
-import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../../test_setup/fixtures/keymap.json';
-import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
+import {
+  ShortcutProvider
+} from '../../../components/keyshortcuts/ShortcutProvider';
 import Table from '../../../components/table/Table';
 
 const mockStore = configureStore([]);
 
 const createStore = function(state = {}) {
-  const res = merge(
+  return merge(
     {
       appHandler: {
         ...appHandlerState,
@@ -31,8 +36,6 @@ const createStore = function(state = {}) {
     },
     state
   );
-
-  return res;
 };
 
 const initialState = createStore({
@@ -98,7 +101,7 @@ describe('Table component', () => {
 
   it('renders without errors with store data', () => {
     const tableWrapper = mount(
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+      <ShortcutProvider>
         <Provider store={store}>
           <Table {...tableProps} />
         </Provider>
@@ -113,7 +116,7 @@ describe('Table component', () => {
 
   it('No row is selected if selection is empty', async () => {
     const tableWrapper = mount(
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+      <ShortcutProvider>
         <Provider store={store}>
           <Table {...tableProps} selected={[]} />
         </Provider>
@@ -126,7 +129,7 @@ describe('Table component', () => {
 
   it('Cell is selected and row focused', async () => {
     const tableWrapper = mount(
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+      <ShortcutProvider>
         <Provider store={store}>
           <Table {...tableProps} selected={['1000194']} />
         </Provider>

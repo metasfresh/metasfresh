@@ -1,6 +1,6 @@
 {
   "externalHeaderId": "externalHeaderId",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false,
   "closeOrder": false

@@ -22,6 +22,8 @@ package de.metas.pricing.rules;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.lang.SOTrx;
@@ -44,8 +46,8 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
@@ -184,7 +186,24 @@ public class Discount implements IPricingRule
 
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 		final LocalDate validFrom = TimeUtil.asLocalDate(pricingConditions.getValidFrom(), timeZone);
-		return date.isAfter(validFrom) || date.isEqual(validFrom) ;
+		final LocalDate validTo = pricingConditions.getValidTo() != null
+				? TimeUtil.asLocalDate(pricingConditions.getValidTo(), timeZone)
+				: null;
+
+		return isDateWithinValidity(date, validFrom, validTo);
+	}
+
+	@VisibleForTesting
+	static boolean isDateWithinValidity(
+			@NonNull final LocalDate date,
+			@NonNull final LocalDate validFrom,
+			@Nullable final LocalDate validTo)
+	{
+		if (date.isBefore(validFrom))
+		{
+			return false;
+		}
+		return validTo == null || !date.isAfter(validTo);
 	}
 
 	private ImmutableAttributeSet getAttributes(final IPricingContext pricingCtx)
@@ -196,7 +215,7 @@ public class Discount implements IPricingRule
 		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
-		return Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
+		return Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asiId);
 	}
 
 	private static void updatePricingResultFromPricingConditionsResult(

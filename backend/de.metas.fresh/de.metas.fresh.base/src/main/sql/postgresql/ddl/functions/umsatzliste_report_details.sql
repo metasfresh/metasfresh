@@ -13,13 +13,14 @@ CREATE FUNCTION report.umsatzliste_report_details(IN C_BPartner_ID numeric, IN S
 	IsPackingMaterial boolean,
 	Month timestamp with time zone,
 	ISO_Code char(3),
-	ad_org_id numeric
+	ad_org_id numeric,
+	delivery_bp_name character varying(100)
 	)
 AS 
 $$
 SELECT
 	bp.Value AS BP_Value,
-	bp.Name AS BP_Name,
+	report._merge_bp_name(bp.Name, COALESCE(CASE WHEN ord.IsDropShip = 'Y' THEN bp_dropship.Name END, bp_orderer.Name)) AS BP_Name,
 	p.value AS P_Value,
 	p.Name AS P_Name,
 	SUM( ic.QtyInvoiced * ic.PriceActual ) AS TotalInvoiced,
@@ -28,7 +29,11 @@ SELECT
 	p.M_Product_Category_ID =  getSysConfigAsNumeric('PackingMaterialProductCategoryID', ic.AD_Client_ID, ic.AD_Org_ID) AS IsPackingMaterial,
 	date_trunc( 'month', ic.Date ) AS Month,
 	c.ISO_Code,
-	ic.ad_org_id
+	ic.ad_org_id,
+	COALESCE(
+		CASE WHEN ord.IsDropShip = 'Y' THEN bp_dropship.Name END,
+		bp_orderer.Name
+	) AS delivery_bp_name
 FROM
 	(
 		SELECT
@@ -44,7 +49,8 @@ FROM
 
 			-- Date for filtering
 			COALESCE ( i.DateAcct, ic.DeliveryDate, icq.DatePromised ) AS Date,
-			ic.AD_Org_ID, ic.AD_Client_ID
+			ic.AD_Org_ID, ic.AD_Client_ID,
+			icq.C_Order_ID
 		FROM
 			C_Invoice_Candidate ic
 			INNER JOIN (
@@ -56,7 +62,8 @@ FROM
 					CASE WHEN s_Delivered != Sign( ic.QtyInvoicable ) THEN 0 ELSE ic.QtyInvoicable END AS QtyInvoicable,
 					-- Ordered, Calculation must be done later. If the datePromised hasn't passed, QtyOrdered is considered 0
 					ic.QtyOrderedInPriceUOM * CASE WHEN ol.DatePromised::date <= Now()::date THEN 1 ELSE 0 END AS QtyOrderedInPriceUOM,
-					ol.DatePromised
+					ol.DatePromised,
+					ol.C_Order_ID
 				FROM
 					(
 						SELECT 	ic.C_Invoice_Candidate_ID, Record_ID, AD_Table_ID,
@@ -75,7 +82,7 @@ FROM
 								WHERE ila.isActive = 'Y'
 								GROUP BY	ila.C_Invoice_Candidate_ID
 							) il ON ic.C_Invoice_Candidate_ID = il.C_Invoice_Candidate_ID
-						WHERE 	IsSOTrx = $4
+						WHERE 	ic.IsSOTrx = $4
 							AND ( CASE WHEN $1 IS NULL THEN TRUE ELSE $1 = Bill_BPartner_ID END )
 							AND PriceActual_Net_Effective != 0
 							AND ic.isActive = 'Y'
@@ -100,6 +107,11 @@ FROM
 	INNER JOIN C_BPartner bp ON ic.Bill_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 	INNER JOIN M_Product p ON ic.M_Product_ID = p.M_Product_ID
 	INNER JOIN C_Currency c ON ic.Base_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
+
+	-- DropShip / delivery recipient joins
+	LEFT JOIN C_Order ord ON ic.C_Order_ID = ord.C_Order_ID AND ord.isActive = 'Y'
+	LEFT JOIN C_BPartner bp_dropship ON ord.DropShip_BPartner_ID = bp_dropship.C_BPartner_ID AND bp_dropship.isActive = 'Y'
+	LEFT JOIN C_BPartner bp_orderer ON ord.C_BPartner_ID = bp_orderer.C_BPartner_ID AND bp_orderer.isActive = 'Y'
 WHERE
 	ic.AD_Org_ID = $5
 	AND Date::date >= $2 AND Date::date <= $3
@@ -116,7 +128,8 @@ GROUP BY
 	date_trunc( 'month', ic.Date ),
 	c.ISO_Code,
 	ic.ad_org_id,
-	ic.ad_client_id
+	ic.ad_client_id,
+	COALESCE(CASE WHEN ord.IsDropShip = 'Y' THEN bp_dropship.Name END, bp_orderer.Name)
 ORDER BY
 	date_trunc( 'month', ic.Date ),
 	bp.Value,

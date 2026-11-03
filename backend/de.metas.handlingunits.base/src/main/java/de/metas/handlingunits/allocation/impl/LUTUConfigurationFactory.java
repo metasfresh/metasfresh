@@ -25,6 +25,7 @@ package de.metas.handlingunits.allocation.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -279,7 +280,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	public boolean isNoLU(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 
-		return lutuConfiguration.getM_LU_HU_PI_Item_ID() <= 0;
+		return HuPackingInstructionsId.ofRepoIdOrNull(lutuConfiguration.getM_LU_HU_PI_Item_ID()) == null;
 	}
 
 	private ArrayKey createKeyForHUProducer(final I_M_HU_LUTU_Configuration lutuConfiguration)
@@ -496,6 +497,11 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			return 0;
 		}
 
+		if (lutuConfiguration.isInfiniteQtyTU() || lutuConfiguration.isInfiniteQtyCU())
+		{
+			return 1;
+		}
+
 		//
 		// Calculate how many CUs we need for an LU
 		final BigDecimal qtyCUsPerLU = lutuConfiguration.getQtyCUsPerTU().multiply(lutuConfiguration.getQtyTU());
@@ -510,8 +516,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// Calculate how many LUs we need for given total QtyCU (converted to our capacity UOM)
-		final int qtyLUs = qtyCUsTotal_Converted.toBigDecimal().divide(qtyCUsPerLU, 0, RoundingMode.UP).intValueExact();
-		return qtyLUs;
+		return qtyCUsTotal_Converted.toBigDecimal().divide(qtyCUsPerLU, 0, RoundingMode.UP).intValueExact();
 	}
 
 	@Override
@@ -753,7 +758,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			final I_M_HU_PI_Version luPIV = handlingUnitsDAO.retrievePICurrentVersion(luPI);
 			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
 							tuPI,
-							X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
+							HuUnitType.LU,
 							ILUTUConfigurationFactory.extractBPartnerIdOrNull(lutuConfigurationNew))
 					//
 					.stream()

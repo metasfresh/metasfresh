@@ -33,6 +33,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IHUReceiptScheduleDAO extends ISingletonService
 {
@@ -72,8 +73,10 @@ public interface IHUReceiptScheduleDAO extends ISingletonService
 	void updateAllocationLUForTU(I_M_HU tuHU);
 
 	/**
-	 * 
+	 *
 	 * @param vhu may not be {@code null} and has to be a virtual HU according to {@link IHandlingUnitsBL#isVirtual(I_M_HU)}
 	 */
 	I_M_ReceiptSchedule retrieveReceiptScheduleForVHU(I_M_HU vhu);
+
+	void save(@NonNull I_M_ReceiptSchedule_Alloc receiptScheduleAllocRecord);
 }

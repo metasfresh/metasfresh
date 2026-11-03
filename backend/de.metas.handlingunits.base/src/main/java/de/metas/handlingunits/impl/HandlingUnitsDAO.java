@@ -40,6 +40,8 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.HuPackingMaterialId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -63,6 +65,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
@@ -113,6 +116,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HandlingUnitsDAO implements IHandlingUnitsDAO
 {
+	private static final AdMessageKey ERR_NoCurrentVersionFound = AdMessageKey.of("de.metas.handlingunits.HUPI.NoCurrentVersionFound");
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
@@ -549,6 +554,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public ImmutableSet<HuPackingMaterialId> retrievePackingMaterialIds(@NonNull final HuPackingInstructionsId huPIId, @Nullable final BPartnerId bpartnerId)
+	{
+		return retrievePIItems(getPackingInstructionById(huPIId), bpartnerId)
+				.stream()
+				.map(piItem -> HuPackingMaterialId.ofRepoIdOrNull(piItem.getM_HU_PackingMaterial_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI_Version version,
 			@Nullable final BPartnerId bpartnerId)
@@ -740,7 +755,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(pi);
 		if (piVersion == null)
 		{
-			throw new HUException("No current version found for " + pi);
+			throw new HUException(ERR_NoCurrentVersionFound, pi)
+					.markAsUserValidationError();
 		}
 		return piVersion;
 	}
@@ -752,7 +768,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(Env.getCtx(), piId, ITrx.TRXNAME_None);
 		if (piVersion == null)
 		{
-			throw new HUException("No current version found for " + piId);
+			throw new HUException(ERR_NoCurrentVersionFound, piId)
+					.markAsUserValidationError();
 		}
 		return piVersion;
 	}
@@ -823,7 +840,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull final I_M_HU_PI huPI,
-			@Nullable final String huUnitType,
+			@Nullable final HuUnitType huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPI);
@@ -836,7 +853,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
-			@Nullable final String huUnitType,
+			@Nullable final HuUnitType huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		return retrieveParentPIItemsForParentPI(Env.getCtx(), packingInstructionsId, huUnitType, bpartnerId, ITrx.TRXNAME_None);
@@ -845,7 +862,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@CacheCtx final Properties ctx,
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
-			@Nullable final String huUnitType,
+			@Nullable final HuUnitType huUnitType,
 			@Nullable final BPartnerId bpartnerId,
 			@CacheTrx final String trxName)
 	{
@@ -900,8 +917,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 			//
 			// Make sure the HU UnitType is matching
-			final String parentUnitType = parentVersion.getHU_UnitType();
-			if (!Check.isEmpty(huUnitType, true) && !Objects.equals(parentUnitType, huUnitType))
+			if (huUnitType != null && !huUnitType.getCode().equals(parentVersion.getHU_UnitType()))
 			{
 				// required unit type not matched
 				continue;
@@ -1064,6 +1080,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public void save(@NonNull final I_M_HU_PI_Item piItem)
+	{
+		InterfaceWrapperHelper.save(piItem);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_HU hu)
+	{
+		InterfaceWrapperHelper.save(hu);
+	}
+
+	@Override
 	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI_Version piVersion,
 														  @Nullable final BPartnerId bpartnerId)
 	{
@@ -1141,6 +1169,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	@Nullable
 	public I_M_HU_PI_Item retrieveDefaultParentPIItem(
 			@NonNull final I_M_HU_PI huPI,
 			@Nullable final String huUnitType,
@@ -1148,7 +1177,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		//
 		// Fetch all eligible parent PI Items
-		final List<I_M_HU_PI_Item> parentPIItems = retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
+		final List<I_M_HU_PI_Item> parentPIItems = retrieveParentPIItemsForParentPI(huPI, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
 
 		//
 		// Case: no parent PI items found
@@ -1248,6 +1277,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.stream()
 				.filter(warehouse -> !huWarehouseIds.contains(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID())))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public Set<LocatorId> getLocatorIds(final List<I_M_HU> hus)
+	{
+		final Set<Integer> locatorRepoIds = hus.stream()
+				.map(I_M_HU::getM_Locator_ID)
+				.filter(locatorRepoId -> locatorRepoId > 0)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		return warehouseDAO.getLocatorIdsByRepoIds(locatorRepoIds);
 	}
 
 	@Override

@@ -10,16 +10,38 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import de.metas.quantity.Quantity;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderId;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.process.PInstanceId;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.eevolution.api.PPOrderCloseResult;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.X_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -127,5 +149,221 @@ public class PPOrderBLTest
 			assertThat(order.getCanBeExportedFrom()).isEqualTo(Env.MAX_DATE);
 		}
 
+	}
+
+	/**
+	 * The IsFixedProductionDate flag must stop the automatic overwrite of the
+	 * effective production date (DateDelivered) done by {@link PPOrderBL#addQty}.
+	 */
+	@Nested
+	public class addQty
+	{
+		private I_C_UOM uom;
+		private I_PP_Order order;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			uom = newInstance(I_C_UOM.class);
+			uom.setName("Each");
+			uom.setStdPrecision(0);
+			saveRecord(uom);
+
+			final I_M_Product product = newInstance(I_M_Product.class);
+			product.setName("ProductUnderTest");
+			product.setC_UOM_ID(uom.getC_UOM_ID());
+			saveRecord(product);
+
+			order = newInstance(I_PP_Order.class);
+			order.setM_Product_ID(product.getM_Product_ID());
+			order.setC_UOM_ID(uom.getC_UOM_ID());
+			order.setQtyOrdered(new BigDecimal("10"));
+			saveRecord(order);
+		}
+
+		private void reportReceipt(final ZonedDateTime date)
+		{
+			ppOrderBL.addQty(OrderQtyChangeRequest.builder()
+					.ppOrderId(PPOrderId.ofRepoId(order.getPP_Order_ID()))
+					.qtyReceivedToAdd(Quantity.of(new BigDecimal("2"), uom))
+					.date(date)
+					.build());
+		}
+
+		private I_PP_Order reload()
+		{
+			return ppOrderBL.getById(PPOrderId.ofRepoId(order.getPP_Order_ID()));
+		}
+
+		@Test
+		public void dateDelivered_isUpdatedToReceiptDate_whenNotFixedProductionDate()
+		{
+			order.setIsFixedProductionDate(false);
+			saveRecord(order);
+
+			final ZonedDateTime receiptDate = ZonedDateTime.parse("2026-06-15T10:00:00Z");
+			reportReceipt(receiptDate);
+
+			assertThat(reload().getDateDelivered()).isEqualTo(TimeUtil.asTimestamp(receiptDate));
+		}
+
+		@Test
+		public void dateDelivered_isPreserved_whenFixedProductionDate()
+		{
+			final Timestamp manualProdDate = TimeUtil.asTimestamp(ZonedDateTime.parse("2026-01-01T00:00:00Z"));
+			order.setIsFixedProductionDate(true);
+			order.setDateDelivered(manualProdDate);
+			saveRecord(order);
+
+			reportReceipt(ZonedDateTime.parse("2026-06-15T10:00:00Z"));
+
+			assertThat(reload().getDateDelivered()).isEqualTo(manualProdDate);
+		}
+	}
+
+	/**
+	 * The failure split of {@link PPOrderBL#closeOrdersInSelection}, which is only reachable here: it is carried by
+	 * the returned {@link PPOrderCloseResult} and never surfaces as document state. The all-orders-close path is
+	 * covered by the cucumber scenario running the {@code PP_Order_CloseSelection} process.
+	 *
+	 * <p>The in-memory test framework commits every save immediately, so a failed order only proves that
+	 * nothing was written for it, not that a half-applied close was rolled back.
+	 */
+	@Nested
+	public class closeOrdersInSelection
+	{
+		private static final String CLOSE_FAILURE_MESSAGE = "Cannot issue less than 5 PCE";
+
+		/** The close outcome to play back per order, keyed by DocumentNo. */
+		private final Map<String, Consumer<I_PP_Order>> closeOutcomeByDocumentNo = new HashMap<>();
+
+		private PPOrderBL ppOrderBLUnderTest;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			final IDocumentBL documentBL = Mockito.mock(IDocumentBL.class);
+
+			// The two-argument processEx is the overload PPOrderBL calls (expectedDocStatus=null); stubbing exactly
+			// it is what makes a close that quietly does nothing reproducible.
+			Mockito.doAnswer(invocation -> {
+				final I_PP_Order ppOrder = invocation.getArgument(0);
+				closeOutcomeByDocumentNo.get(ppOrder.getDocumentNo()).accept(ppOrder);
+				return null;
+			}).when(documentBL).processEx(ArgumentMatchers.any(), ArgumentMatchers.eq(X_PP_Order.DOCACTION_Close));
+
+			Services.registerService(IDocumentBL.class, documentBL);
+
+			// constructed after the service is registered, so that it picks up the mock
+			ppOrderBLUnderTest = new PPOrderBL();
+		}
+
+		@Test
+		public void oneOrderFails_theOtherOneIsStillClosed()
+		{
+			final I_PP_Order closeable = completedOrder("MO-1");
+			final I_PP_Order notCloseable = completedOrder("MO-2");
+			final I_PP_Order outsideTheSelection = completedOrder("MO-3");
+			closeOutcomeByDocumentNo.put("MO-1", this::closes);
+			closeOutcomeByDocumentNo.put("MO-2", this::failsToClose);
+			closeOutcomeByDocumentNo.put("MO-3", this::closes);
+
+			final Map<String, Object> notCloseableBefore = persistedValuesOf(notCloseable);
+
+			final PPOrderCloseResult result = ppOrderBLUnderTest.closeOrdersInSelection(selectionOf(closeable, notCloseable));
+
+			assertThat(persistedDocStatusOf(closeable)).isEqualTo(DocStatus.Closed);
+			assertThat(persistedDocStatusOf(notCloseable)).isEqualTo(DocStatus.Completed);
+			assertThat(persistedValuesOf(notCloseable)).as("failed order is left exactly as it was").isEqualTo(notCloseableBefore);
+			assertThat(persistedDocStatusOf(outsideTheSelection)).as("orders outside the selection are not touched").isEqualTo(DocStatus.Completed);
+
+			assertThat(result.getCountClosed()).isEqualTo(1);
+			assertThat(result.getCountFailed()).isEqualTo(1);
+			assertThat(result.getFirstFailureMessage()).startsWith("MO-2: ").contains(CLOSE_FAILURE_MESSAGE);
+		}
+
+		@Test
+		public void closeThatSilentlyDidNotTakeEffect_countsAsAFailure()
+		{
+			final I_PP_Order closeable = completedOrder("MO-1");
+			final I_PP_Order silentlyNotClosed = completedOrder("MO-2");
+			closeOutcomeByDocumentNo.put("MO-1", this::closes);
+			closeOutcomeByDocumentNo.put("MO-2", this::doesNothing);
+
+			final PPOrderCloseResult result = ppOrderBLUnderTest.closeOrdersInSelection(selectionOf(closeable, silentlyNotClosed));
+
+			assertThat(persistedDocStatusOf(closeable)).isEqualTo(DocStatus.Closed);
+			assertThat(persistedDocStatusOf(silentlyNotClosed)).isEqualTo(DocStatus.Completed);
+
+			assertThat(result.getCountClosed()).isEqualTo(1);
+			assertThat(result.getCountFailed()).isEqualTo(1);
+			assertThat(result.getFirstFailureMessage()).startsWith("MO-2: ");
+		}
+
+		@Test
+		public void firstFailureMessage_namesTheFailingOrderWithTheLowestId()
+		{
+			final I_PP_Order firstFailure = completedOrder("MO-1");
+			final I_PP_Order secondFailure = completedOrder("MO-2");
+			closeOutcomeByDocumentNo.put("MO-1", this::failsToClose);
+			closeOutcomeByDocumentNo.put("MO-2", this::failsToClose);
+			assertThat(firstFailure.getPP_Order_ID()).isLessThan(secondFailure.getPP_Order_ID());
+
+			// selection listed the other way round, so only the query's ordering can decide which failure is reported
+			final PPOrderCloseResult result = ppOrderBLUnderTest.closeOrdersInSelection(selectionOf(secondFailure, firstFailure));
+
+			assertThat(result.getCountClosed()).isZero();
+			assertThat(result.getCountFailed()).isEqualTo(2);
+			assertThat(result.getFirstFailureMessage()).startsWith("MO-1: ");
+		}
+
+		private I_PP_Order completedOrder(final String documentNo)
+		{
+			final I_PP_Order ppOrder = newInstance(I_PP_Order.class);
+			ppOrder.setDocumentNo(documentNo);
+			ppOrder.setDocStatus(DocStatus.Completed.getCode());
+			ppOrder.setDocAction(IDocument.ACTION_Close);
+			ppOrder.setProcessed(true);
+			saveRecord(ppOrder);
+
+			return ppOrder;
+		}
+
+		private PInstanceId selectionOf(final I_PP_Order... ppOrders)
+		{
+			return POJOLookupMap.get().createSelectionFromModels(ppOrders);
+		}
+
+		private void closes(final I_PP_Order ppOrder)
+		{
+			ppOrder.setDocStatus(DocStatus.Closed.getCode());
+			ppOrder.setDocAction(IDocument.ACTION_None);
+			saveRecord(ppOrder);
+		}
+
+		private void failsToClose(final I_PP_Order ppOrder)
+		{
+			throw new AdempiereException(CLOSE_FAILURE_MESSAGE);
+		}
+
+		/** A close that reports no error yet leaves the order open. */
+		private void doesNothing(final I_PP_Order ppOrder)
+		{
+		}
+
+		private DocStatus persistedDocStatusOf(final I_PP_Order ppOrder)
+		{
+			return DocStatus.ofNullableCodeOrUnknown(reload(ppOrder).getDocStatus());
+		}
+
+		private Map<String, Object> persistedValuesOf(final I_PP_Order ppOrder)
+		{
+			return new HashMap<>(POJOWrapper.getWrapper(reload(ppOrder)).getValuesMap());
+		}
+
+		private I_PP_Order reload(final I_PP_Order ppOrder)
+		{
+			return InterfaceWrapperHelper.load(ppOrder.getPP_Order_ID(), I_PP_Order.class);
+		}
 	}
 }

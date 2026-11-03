@@ -6,6 +6,7 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -35,7 +36,13 @@ import java.util.Objects;
 @Value
 public class AttributeSetInstanceId implements RepoIdAware
 {
+	public static final AttributeSetInstanceId NONE = new AttributeSetInstanceId();
 	int repoId;
+
+	private AttributeSetInstanceId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 
 	@JsonCreator
 	public static AttributeSetInstanceId ofRepoId(final int repoId)
@@ -71,16 +78,11 @@ public class AttributeSetInstanceId implements RepoIdAware
 		}
 	}
 
+	public static AttributeSetInstanceId nullToNone(@Nullable final AttributeSetInstanceId asiId) {return asiId != null ? asiId : NONE;}
+
 	public static int toRepoId(@Nullable final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		return attributeSetInstanceId != null ? attributeSetInstanceId.getRepoId() : -1;
-	}
-
-	public static final AttributeSetInstanceId NONE = new AttributeSetInstanceId();
-
-	private AttributeSetInstanceId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
 
 	private AttributeSetInstanceId()
@@ -124,6 +126,7 @@ public class AttributeSetInstanceId implements RepoIdAware
 		return Objects.equals(id1, id2);
 	}
 
+	@SuppressWarnings("unused")
 	public void assertRegular()
 	{
 		if (!isRegular())
@@ -131,4 +134,7 @@ public class AttributeSetInstanceId implements RepoIdAware
 			throw new AdempiereException("Expected regular ASI but got " + this);
 		}
 	}
+
+	@Contract("!null -> !null")
+	public AttributeSetInstanceId orElseIfNone(final AttributeSetInstanceId other) {return isNone() ? other : this;}
 }

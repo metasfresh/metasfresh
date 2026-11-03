@@ -6,9 +6,11 @@ import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -48,10 +50,10 @@ import java.util.List;
 @Builder
 public class NewManualInvoiceCandidate
 {
-	private OrgId orgId;
+	OrgId orgId;
 
-	private ExternalId externalHeaderId;
-	private ExternalId externalLineId;
+	ExternalId externalHeaderId;
+	ExternalId externalLineId;
 
 	String poReference;
 
@@ -78,7 +80,21 @@ public class NewManualInvoiceCandidate
 
 	Percent discountOverride;
 
+	/** If set, the {@code C_Tax} matching this rate within {@link #taxOverrideCategoryId} is stored as {@code C_Tax_Override_ID}. */
+	@Nullable Percent taxOverrideRate;
+
+	/** Set exactly when {@link #taxOverrideRate} is set; already resolved by the caller. */
+	@Nullable TaxCategoryId taxOverrideCategoryId;
+
+	/**
+	 * The raw identifier the API caller sent for {@link #taxOverrideCategoryId}; carried along only to make a no-match error actionable.
+	 * It is a plain {@code String} because this module has no dependency on the REST-API module that resolves the tax-category identifier.
+	 */
+	@Nullable String taxOverrideCategoryIdentifier;
+
 	DocTypeId invoiceDocTypeId;
+
+	PaymentTermId paymentTermId;
 
 	String lineDescription;
 
@@ -102,7 +118,11 @@ public class NewManualInvoiceCandidate
 			@NonNull final UomId invoicingUomId,
 			@Nullable final ProductPrice priceEnteredOverride,
 			@Nullable final Percent discountOverride,
+			@Nullable final Percent taxOverrideRate,
+			@Nullable final TaxCategoryId taxOverrideCategoryId,
+			@Nullable final String taxOverrideCategoryIdentifier,
 			@Nullable final DocTypeId invoiceDocTypeId,
+			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final String lineDescription,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
@@ -121,8 +141,12 @@ public class NewManualInvoiceCandidate
 		this.qtyOrdered = qtyOrdered;
 		this.qtyDelivered = qtyDelivered;
 		this.invoicingUomId = invoicingUomId;
+		this.paymentTermId = paymentTermId;
 		this.priceEnteredOverride = priceEnteredOverride;
 		this.discountOverride = discountOverride;
+		this.taxOverrideRate = taxOverrideRate;
+		this.taxOverrideCategoryId = taxOverrideCategoryId;
+		this.taxOverrideCategoryIdentifier = taxOverrideCategoryIdentifier;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
 		this.invoiceDetailItems = invoiceDetailItems;
@@ -141,6 +165,13 @@ public class NewManualInvoiceCandidate
 						.appendParametersToMessage()
 						.setParameter("newManualInvoiceCandidate", this);
 			}
+		}
+
+		if ((taxOverrideRate == null) != (taxOverrideCategoryId == null))
+		{
+			throw new AdempiereException("taxOverrideRate and taxOverrideCategoryId need to be both set or both unset")
+					.appendParametersToMessage()
+					.setParameter("newManualInvoiceCandidate", this);
 		}
 	}
 

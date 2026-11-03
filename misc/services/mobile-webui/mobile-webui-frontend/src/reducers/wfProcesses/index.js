@@ -12,6 +12,9 @@ import { shallowEqual, useSelector } from 'react-redux';
 
 export const QTY_REJECTED_REASON_TO_IGNORE_KEY = 'IgnoreReason';
 
+/** Reject-reason code for "empty (auto. inventory)" — cf. `QtyRejectedReasonCode.EMPTIED` (backend value `E`). */
+export const QTY_REJECTED_REASON_EMPTIED_KEY = 'E';
+
 export const getWfProcess = (globalState, wfProcessId) => {
   if (!wfProcessId) {
     console.trace(`getWfProcess called with wfProcessId=${wfProcessId}`);
@@ -89,11 +92,6 @@ export const getStepsArrayFromLine = (line) => {
   return Object.values(stepsById);
 };
 
-export const getSteps = (state, wfProcessId, activityId, lineId) => {
-  const line = getLineById(state, wfProcessId, activityId, lineId);
-  return getStepsArrayFromLine(line);
-};
-
 export const getStepById = (state, wfProcessId, activityId, lineId, stepId) => {
   const line = getLineById(state, wfProcessId, activityId, lineId);
   return getStepByIdFromLine(line, stepId);
@@ -127,10 +125,21 @@ export const getQtyRejectedReasonsFromActivity = (activity) => {
   return reasons;
 };
 
-export const computeQtyToPickRemaining = ({ line }) => {
-  const stepsArray = getStepsArrayFromLine(line);
-  const qtyPicked = stepsArray.reduce((sum, step) => sum + (step.qtyPicked || 0), 0);
-  return Math.max(line.qtyToMove - qtyPicked, 0);
+/**
+ * Same as {@link getQtyRejectedReasonsFromActivity}, but drops the "empty (auto. inventory)" reason
+ * unless the given step's own `allowEmptying` flag allows it.
+ *
+ * The activity's `qtyRejectedReasons` list is global to the activity — gated only by the client
+ * config (`IsAllowEmptyingHUs`) — so it may offer the reason even for a step whose own source HU must
+ * refuse it (e.g. the primary step of a pallet-sourced line, see `JsonRawMaterialsIssueLineStep`).
+ * The per-step wire flag is `allowEmptying` (Lombok/Jackson strip the `is` from `isAllowEmptying`).
+ */
+export const getQtyRejectedReasonsForStep = (activity, step) => {
+  const reasons = getQtyRejectedReasonsFromActivity(activity);
+  if (step?.allowEmptying) {
+    return reasons;
+  }
+  return reasons.filter((reason) => reason.key !== QTY_REJECTED_REASON_EMPTIED_KEY);
 };
 
 export const getScaleDeviceFromActivity = (activity) => {

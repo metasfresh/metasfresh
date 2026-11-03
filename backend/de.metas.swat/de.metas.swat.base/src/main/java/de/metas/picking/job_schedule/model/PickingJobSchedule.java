@@ -1,6 +1,7 @@
 package de.metas.picking.job_schedule.model;
 
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.quantity.Quantity;
@@ -14,11 +15,14 @@ import lombok.Value;
 public class PickingJobSchedule
 {
 	@NonNull PickingJobScheduleId id;
+	@NonNull ClientAndOrgId clientAndOrgId;
 	@NonNull ShipmentScheduleId shipmentScheduleId;
 	@NonNull WorkplaceId workplaceId;
 	@NonNull Quantity qtyToPick;
+	boolean active;
 	boolean processed;
 
+	@NonNull
 	public ShipmentScheduleAndJobScheduleId getShipmentScheduleAndJobScheduleId()
 	{
 		return ShipmentScheduleAndJobScheduleId.of(shipmentScheduleId, id);

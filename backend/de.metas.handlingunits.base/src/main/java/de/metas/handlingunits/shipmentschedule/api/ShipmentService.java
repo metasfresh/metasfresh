@@ -2,7 +2,7 @@
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
@@ -69,6 +70,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -122,10 +124,9 @@ public class ShipmentService implements IShipmentService
 		if (request.isWaitForShipments())
 		{
 			// The thread will wait until the schedules are processed, because the next call might contain the same shipment schedules as the current one.
-			return asyncBatchService.executeBatch(() -> {
-				validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
-				return enqueueShipmentSchedules(request);
-			}, request.getAsyncBatchId());
+			return asyncBatchService.executeBatch(
+					() -> enqueueShipmentSchedules(request),
+					request.getAsyncBatchId());
 		}
 		else
 		{
@@ -156,10 +157,7 @@ public class ShipmentService implements IShipmentService
 				.isShipDateToday(request.getIsShipDateToday())
 				.isCompleteShipment(request.getIsCompleteShipment())
 				.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
-				.waitForShipments(request.isWaitForShipments())
-				// .asyncBatchId()
-				// .scheduleIds()
-				;
+				.waitForShipments(request.isWaitForShipments());
 
 		groupSchedulesByAsyncBatch(allScheduleIds)
 				.forEach((asyncBatchId, scheduleIds) -> generateShipments(
@@ -272,7 +270,7 @@ public class ShipmentService implements IShipmentService
 				.map(asyncBatchId -> {
 					final ImmutableSet<OLCandId> olCandIdImmutableSet = ImmutableSet.copyOf(asyncBatchId2OLCandIds.get(asyncBatchId));
 
-					return generateShipmentForBatch(olCandIdImmutableSet, asyncBatchId);
+					return generateShipmentOlCands(olCandIdImmutableSet, asyncBatchId);
 				})
 				.flatMap(Set::stream)
 				.collect(ImmutableSet.toImmutableSet());
@@ -292,6 +290,9 @@ public class ShipmentService implements IShipmentService
 
 		if (nowInstant != null)
 		{
+			// Per-line "hold each line until its own date" gate. PreparationDate and DatePromised are per line in
+			// M_Packageable_V (DatePromised = the override-inclusive per-line date — see the view); IsFixedPreparationDate
+			// and IsFixedDatePromised are header flags that apply to ALL lines of the order.
 			final IQuery<I_M_Packageable_V> subQueryPackageable = queryBL.createQueryBuilder(I_M_Packageable_V.class)
 					.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
 							.setJoinOr()
@@ -335,6 +336,7 @@ public class ShipmentService implements IShipmentService
 	{
 		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(adPInstanceDAO.createSelectionId())
+				.asyncBatchId(request.getAsyncBatchId())
 				.scheduleIds(request.getScheduleIds())
 				.onlyLUIds(request.getOnlyLUIds())
 				.quantityType(request.getQuantityTypeToUse())
@@ -344,18 +346,42 @@ public class ShipmentService implements IShipmentService
 				.isShipmentDateToday(Boolean.TRUE.equals(request.getIsShipDateToday()))
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
 				.qtysToDeliverOverride(request.getScheduleToQuantityToDeliverOverride())
+				.deliveryPlanningId(request.getDeliveryPlanningId())
 				.build();
 
 		return ShipmentScheduleEnqueuer.newInstance()
 				.createWorkpackages(workPackageParameters);
 	}
 
+	/** Groups the given schedules by async-batch (assigning a fresh {@code C_Async_Batch_ID} where missing). */
+	@SuppressWarnings("deprecation") // intentional callInNewTrx — see the inline rationale below
 	@NonNull
 	public ImmutableMap<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> groupSchedulesByAsyncBatch(@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
 	{
+		// callInNewTrx (NOT the caller's trx) — verified, and NOT a deadlock workaround:
+		// The async-batch assignment written below (M_ShipmentSchedule.C_Async_Batch_ID) must be COMMITTED
+		// before the consumers that read it run, and those consumers run in SEPARATE transactions:
+		//   - the shipment-generation workpackage enqueued right after (processed async by the WP processor), and
+		//   - EDI/DESADV pack creation, which re-queries the schedule's C_Async_Batch grouping.
+		// If this ran in the caller's still-open trx the assignment would be invisible to them and EDI breaks:
+		// ediExport.feature regressed (EDI_Exp_Desadv_Pack null / stale QtyCUsPerTU) when this was
+		// callInThreadInheritedTrx — confirmed by CI run 27154568913, cucumber profile5 (failure);
+		// restoring callInNewTrx fixed it.
+		// NO M_ShipmentSchedule row-lock self-deadlock exists here (an earlier revision claimed one and forced
+		// callInThreadInheritedTrx for mass-printing): PickingJobCompleteCommand releases its picking-job
+		// schedule locks BEFORE calling shipment generation and holds no RowExclusiveLock on M_ShipmentSchedule
+		// at that point — verified by local reproduction (mass-printing runs under callInNewTrx with no hang).
+		// To drop this dedicated trx someday (remove the cross-trx visibility dependency): either pass the
+		// computed async-batch grouping in-memory to the shipment WP + DESADV-pack creation instead of
+		// re-querying C_Async_Batch_ID from the DB, or trigger shipment generation only AFTER the caller's
+		// trx commits (a trx after-commit hook) so the assignment is already committed.
 		return trxManager.callInNewTrx(() -> groupSchedulesByAsyncBatch0(scheduleIds));
 	}
 
+	/**
+	 * Group the given shipmentschedules according to their async-batch-id, <b>but</b> create a new async-batch-id for each old one.
+	 * That's because we will want to register an async-batch-observer for each group, and therefore we need new "unspend" async batches.
+	 */
 	@NonNull
 	private ImmutableMap<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> groupSchedulesByAsyncBatch0(@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds2)
 	{
@@ -365,6 +391,8 @@ public class ShipmentService implements IShipmentService
 		final HashSet<ShipmentScheduleAndJobScheduleId> scheduleIdsWithoutAsyncBatchId = new HashSet<>();
 		final ArrayList<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedulesWithoutAsyncBatchId = new ArrayList<>();
 
+		final HashMap<AsyncBatchId,AsyncBatchId> oldToNewAsyncBatchId = new HashMap<>();
+		
 		for (final ShipmentScheduleAndJobScheduleId shipmentScheduleAndJobScheduleId : scheduleIds2)
 		{
 			final ShipmentScheduleId shipmentScheduleId = shipmentScheduleAndJobScheduleId.getShipmentScheduleId();
@@ -374,15 +402,16 @@ public class ShipmentService implements IShipmentService
 				continue;
 			}
 
-			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID());
-			if (asyncBatchId == null)
+			final AsyncBatchId oldAsyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID());
+			if (oldAsyncBatchId == null)
 			{
 				scheduleIdsWithoutAsyncBatchId.add(shipmentScheduleAndJobScheduleId);
 				shipmentSchedulesWithoutAsyncBatchId.add(shipmentSchedule);
 			}
 			else
 			{
-				scheduleIdsByAsyncBatchId.put(asyncBatchId, shipmentScheduleAndJobScheduleId);
+				final AsyncBatchId newAsyncBatchId = oldToNewAsyncBatchId.computeIfAbsent(oldAsyncBatchId, k -> asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule));
+				scheduleIdsByAsyncBatchId.put(newAsyncBatchId, shipmentScheduleAndJobScheduleId);
 			}
 		}
 
@@ -410,7 +439,7 @@ public class ShipmentService implements IShipmentService
 	}
 
 	@NonNull
-	private Set<InOutId> generateShipmentForBatch(@NonNull final Set<OLCandId> olCandIds, @NonNull final AsyncBatchId olCandsAsyncBatchId)
+	private Set<InOutId> generateShipmentOlCands(@NonNull final Set<OLCandId> olCandIds, @NonNull final AsyncBatchId olCandsAsyncBatchId)
 	{
 		if (olCandIds.isEmpty())
 		{
@@ -424,9 +453,12 @@ public class ShipmentService implements IShipmentService
 			return ImmutableSet.of();
 		}
 
+		// create a new async-batch for this. the C_Async_Batch record of olCandsAsyncBatchId is already "spend" 
+		final AsyncBatchId newAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule);
+
 		//dev-note: if we came this far, we know all shipment schedules are assigned to the async batch identified by the input param:"asyncBatchId"
 		final GenerateShipmentsRequest generateShipmentsRequest = GenerateShipmentsRequest.builder()
-				.asyncBatchId(olCandsAsyncBatchId)
+				.asyncBatchId(newAsyncBatchId)
 				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(qtyToDeliverMap.getShipmentScheduleIds()))
 				.scheduleToExternalInfo(ImmutableMap.of())
 				.scheduleToQuantityToDeliverOverride(qtyToDeliverMap)
@@ -444,9 +476,9 @@ public class ShipmentService implements IShipmentService
 			@NonNull final Set<OLCandId> olCandIds,
 			@NonNull final AsyncBatchId asyncBatchId)
 	{
-		final Map<OLCandId, OrderLineId> olCandId2OrderLineId = olCandDAO.retrieveOLCandIdToOrderLineId(olCandIds);
+		final ImmutableSetMultimap<OLCandId, OrderLineId> olCandId2OrderLineId = olCandDAO.retrieveOLCandIdToOrderLineId(olCandIds);
 
-		if (olCandId2OrderLineId == null || olCandId2OrderLineId.isEmpty())
+		if (olCandId2OrderLineId.isEmpty())
 		{
 			return QtyToDeliverMap.EMPTY;
 		}
@@ -455,7 +487,7 @@ public class ShipmentService implements IShipmentService
 
 		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> scheduleId2QtyShipped = ImmutableMap.builder();
 
-		for (final Map.Entry<OLCandId, OrderLineId> olCand2OrderLineEntry : olCandId2OrderLineId.entrySet())
+		for (final Map.Entry<OLCandId, OrderLineId> olCand2OrderLineEntry : olCandId2OrderLineId.entries())
 		{
 			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getByOrderLineId(olCand2OrderLineEntry.getValue());
 

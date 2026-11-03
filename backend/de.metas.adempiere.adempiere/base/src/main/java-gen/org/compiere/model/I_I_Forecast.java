@@ -96,7 +96,7 @@ public interface I_I_Forecast
 	 * Set Partner Value.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setBPValue (java.lang.String BPValue);
@@ -105,7 +105,7 @@ public interface I_I_Forecast
 	 * Get Partner Value.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	java.lang.String getBPValue();

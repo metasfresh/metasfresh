@@ -1,10 +1,31 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import de.metas.async.AsyncBatchId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
@@ -29,35 +50,11 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 /**
  * Processes sales order candidates and produces sales orders
@@ -76,8 +73,12 @@ public class OLCandsProcessorExecutor
 	private final OLCandAggregation aggregationInfo;
 	private final OLCandOrderDefaults orderDefaults;
 	private final PInstanceId selectionId;
+	
+	/** If provided, then only OLCands with this async batch ID are processed */
 	private final AsyncBatchId asyncBatchId;
-	private final LocalDate defaultDateOrdered = SystemTime.asLocalDate();
+	
+	/** If true, then the async batch ID of the processed OLCands will be propagated to {@code C_Order.C_Async_Batch_ID} */
+	private final boolean propagateAsyncBatchIdToOrderRecord;
 
 	@Builder
 	private OLCandsProcessorExecutor(
@@ -86,7 +87,8 @@ public class OLCandsProcessorExecutor
 			@NonNull final IOLCandGroupingProvider groupingValuesProviders,
 			@NonNull final OLCandProcessingHelper olCandProcessingHelper,
 			@NonNull final PInstanceId selectionId,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final AsyncBatchId asyncBatchId, 
+			final boolean propagateAsyncBatchIdToOrderRecord)
 	{
 		this.orderDefaults = processorDescriptor.getDefaults();
 		this.olCandListeners = olCandListeners;
@@ -96,6 +98,7 @@ public class OLCandsProcessorExecutor
 
 		this.selectionId = selectionId;
 		this.asyncBatchId = asyncBatchId;
+		this.propagateAsyncBatchIdToOrderRecord = propagateAsyncBatchIdToOrderRecord;
 		this.loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		this.olCandProcessorId = processorDescriptor.getId();
@@ -202,16 +205,6 @@ public class OLCandsProcessorExecutor
 		Check.assume(processedIds.size() == candidates.size(), "All candidates have been processed");
 	}
 
-	private OLCand prepareOLCandBeforeProcessing(@NonNull final OLCand candidate)
-	{
-		if (candidate.getDateOrdered() == null)
-		{
-			candidate.setDateOrdered(defaultDateOrdered);
-		}
-
-		return candidate;
-	}
-
 	private OLCandOrderFactory newOrderFactory()
 	{
 		return OLCandOrderFactory.builder()
@@ -220,56 +213,8 @@ public class OLCandsProcessorExecutor
 				.loggable(loggable)
 				.olCandProcessorId(olCandProcessorId)
 				.olCandListeners(olCandListeners)
+				.propagateAsyncBatchIdToOrderRecord(propagateAsyncBatchIdToOrderRecord)
 				.build();
-	}
-
-	/**
-	 * Decides if there needs to be a new order for 'candidate'.
-	 */
-	private boolean isOrderSplit(@NonNull final OLCand candidate, @NonNull final OLCand previousCandidate)
-	{
-		// We keep this block for the time being because as of now we did not make sure that the aggAndOrderList is complete to ensure that all
-		// C_OLCands with different C_Order-"header"-columns will be split into different orders (think of e.g. C_OLCands with different currencies).
-		if (previousCandidate.getAD_Org_ID() != candidate.getAD_Org_ID()
-				|| !Objects.equals(previousCandidate.getPOReference(), candidate.getPOReference())
-				|| !Objects.equals(previousCandidate.getC_Currency_ID(), candidate.getC_Currency_ID())
-				//
-				|| !Objects.equals(previousCandidate.getBPartnerInfo(), candidate.getBPartnerInfo())
-				|| !Objects.equals(previousCandidate.getBillBPartnerInfo(), candidate.getBillBPartnerInfo())
-				//
-				// task 06269: note that for now we set DatePromised only in the header, so different DatePromised values result in different orders, and all ols have the same DatePromised
-				|| !Objects.equals(previousCandidate.getDateOrdered(), candidate.getDateOrdered())
-				|| !Objects.equals(previousCandidate.getDatePromised(), candidate.getDatePromised())
-				|| !Objects.equals(previousCandidate.getHandOverBPartnerInfo(), candidate.getHandOverBPartnerInfo())
-				|| !Objects.equals(previousCandidate.getDropShipBPartnerInfo(), candidate.getDropShipBPartnerInfo())
-				//
-				|| !Objects.equals(previousCandidate.getDeliveryRule(), candidate.getDeliveryRule())
-				|| !Objects.equals(previousCandidate.getDeliveryViaRule(), candidate.getDeliveryViaRule())
-				|| !Objects.equals(previousCandidate.getFreightCostRule(), candidate.getFreightCostRule())
-				|| !Objects.equals(previousCandidate.getInvoiceRule(), candidate.getInvoiceRule())
-				|| !Objects.equals(previousCandidate.getPaymentRule(), candidate.getPaymentRule())
-				|| !Objects.equals(previousCandidate.getPaymentTermId(), candidate.getPaymentTermId())
-				|| !Objects.equals(previousCandidate.getPricingSystemId(), candidate.getPricingSystemId())
-				|| !Objects.equals(previousCandidate.getShipperId(), candidate.getShipperId())
-				|| !Objects.equals(previousCandidate.getSalesRepId(), candidate.getSalesRepId())
-				|| !Objects.equals(previousCandidate.getOrderDocTypeId(), candidate.getOrderDocTypeId()))
-
-		{
-			return true;
-		}
-
-		for (final OLCandAggregationColumn column : aggregationInfo.getSplitOrderDiscriminatorColumns())
-		{
-			final Object value = candidate.getValueByColumn(column);
-			final Object previousValue = previousCandidate.getValueByColumn(column);
-			if (!Objects.equals(value, previousValue))
-			{
-				return true;
-			}
-		}
-
-		// between 'candidate' and 'previousCandidate' there are no differences that require a new order to be created
-		return false;
 	}
 
 	/**

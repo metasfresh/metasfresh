@@ -47,10 +47,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.ASICopy;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.PlainAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
@@ -145,7 +144,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 						.attributeSetInstanceAware(attributeSetIinstanceAware)
 						.locator(storageRecord.getLocator())
 						.build();
-				
+
 				key2candidate.put(key, candidate);
 			}
 
@@ -296,9 +295,9 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		// Product, UOM, Qty
 		ddOrderline.setM_Product_ID(attributeSetInstanceAware.getM_Product_ID());
 
-		final ASICopy asiCopy = ASICopy.newInstance(attributeSetInstanceAware.getM_AttributeSetInstance());
-		ddOrderline.setM_AttributeSetInstance(asiCopy.copy());
-		ddOrderline.setM_AttributeSetInstanceTo(asiCopy.copy());
+		final I_M_AttributeSetInstance asi = attributeSetInstanceAware.getM_AttributeSetInstance();
+		ddOrderline.setM_AttributeSetInstance(attributeSetInstanceBL.copy(asi));
+		ddOrderline.setM_AttributeSetInstanceTo(attributeSetInstanceBL.copy(asi));
 
 		ddOrderline.setC_UOM_ID(qtyToMove.getUomId().getRepoId());
 		ddOrderline.setQtyEntered(qtyToMove.toBigDecimal());

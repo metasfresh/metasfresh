@@ -28,8 +28,10 @@ import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.api.PPOrderId;
@@ -39,15 +41,22 @@ import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-@Component
+/**
+ * Repository Tables: PP_Order_Candidate, PP_OrderLine_Candidate, PP_OrderCandidate_PP_Order
+ * Repository Cluster: PPOrderCandidateDAO (main reader/writer); also PPMaturingCandidatesViewRepo (read),
+ * CreateUpdateOrderCandidateCommand and PPOrderCandidatePojoConverter (write), PPOrderCandidateAdvisedEventCreator
+ * (read/write), PPOrderCandidateRepository (read; material-planning, dispo-reachable).
+ */
+@Repository
 public class PPOrderCandidateDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -223,5 +232,39 @@ public class PPOrderCandidateDAO
 				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId)
 				.create()
 				.deleteDirectly();
+	}
+
+	public List<PPOrderCandidateId> listIdsByQuery(@NonNull final PPOrderCandidatesQuery query)
+	{
+		return buildQuery(query)
+				.create()
+				.listIds(PPOrderCandidateId::ofRepoId);
+	}
+
+	/**
+	 * @return {@code true} if at least one production candidate matches the given query. Uses {@code anyMatch()},
+	 * which does not fail when multiple records match, so it is safe to use as a plain existence probe.
+	 */
+	public boolean existsByQuery(@NonNull final PPOrderCandidatesQuery query)
+	{
+		return buildQuery(query)
+				.create()
+				.anyMatch();
+	}
+
+	@NonNull
+	private IQueryBuilder<I_PP_Order_Candidate> buildQuery(@NonNull final PPOrderCandidatesQuery query)
+	{
+		final IQueryBuilder<I_PP_Order_Candidate> builder = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, query.getProductId())
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId())
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_AD_Org_ID, query.getOrgId())
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance);
+		if (query.isOnlyNonZeroQty())
+		{
+			builder.addNotEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, 0);
+		}
+		return builder;
 	}
 }

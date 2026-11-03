@@ -44,16 +44,21 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoBooking;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentTrxType;
 import de.metas.payment.TenderType;
@@ -63,8 +68,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -128,6 +133,19 @@ public final class MPayment extends X_C_Payment
 	 *
 	 */
 	private static final long serialVersionUID = 5273805787122033169L;
+
+	private static final AdMessageKey PAYMENT_BPARTNERMISMATCH_ORDER = AdMessageKey.of("Payment_BPartnerMismatch_Order");
+	private static final AdMessageKey PAYMENT_BPARTNERMISMATCH_INVOICE = AdMessageKey.of("Payment_BPartnerMismatch_Invoice");
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	/**
+	 * Lazy because a PO can be instantiated before the Spring context is up.
+	 */
+	@NonNull private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	/**
 	 * Get Payments Of BPartner
@@ -227,7 +245,7 @@ public final class MPayment extends X_C_Payment
 	 */
 	public boolean isCashTrx()
 	{
-		return Services.get(IPaymentBL.class).isCashTrx(this);
+		return paymentBL.isCashTrx(this);
 	}    // isCashTrx
 
 	@Override
@@ -242,24 +260,14 @@ public final class MPayment extends X_C_Payment
 			{
 				setTenderType(TenderType.Cash.getCode());
 			}
-		}
-
-		// metas: tsa: us025b: end
-		// @Trifon - CashPayments
-		// if ( getTenderType().equals("X") ) {
-		if (isCashTrx() && !Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
-		{
-			// Cash Book Is mandatory
-			if (getC_CashBook_ID() <= 0)
+			else
 			{
-				throw new FillMandatoryException("C_CashBook_ID");
+				setTenderType(TenderType.DirectDeposit.getCode());
 			}
 		}
 
-		// end @Trifon - CashPayments
-
 		// We have a charge
-		if (getC_Charge_ID() != 0)
+		if (getC_Charge_ID() > 0)
 		{
 			if (newRecord || is_ValueChanged("C_Charge_ID"))
 			{
@@ -288,15 +296,19 @@ public final class MPayment extends X_C_Payment
 				throw new AdempiereException("@NotFound@: @C_BPartner_ID@");
 			}
 		}
-		// Prepayment: No charge and order or project (not as acct dimension)
+		// Prepayment: no charge and (order, or project without invoice, or proforma invoice).
+		// Proforma_Invoice_ID covers the reversal case where C_Order_ID/C_Invoice_ID are cleared
+		// but the payment must remain a prepayment.
 		if (newRecord
 				|| is_ValueChanged("C_Charge_ID") || is_ValueChanged("C_Invoice_ID")
-				|| is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID"))
+				|| is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID")
+				|| is_ValueChanged("Proforma_Invoice_ID"))
 		{
 			setIsPrepayment(getC_Charge_ID() == 0
 					&& getC_BPartner_ID() != 0
 					&& (getC_Order_ID() != 0
-					|| (getC_Project_ID() != 0 && getC_Invoice_ID() == 0)));
+					|| (getC_Project_ID() != 0 && getC_Invoice_ID() == 0)
+					|| getProforma_Invoice_ID() > 0));
 			// metas: commented - Write off amount must not be set to 0.
 			/*
 			 * if (isPrepayment()) { if (newRecord || is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID")) { setWriteOffAmt(Env.ZERO); setDiscountAmt(Env.ZERO); setIsOverUnderPayment(false);
@@ -334,17 +346,19 @@ public final class MPayment extends X_C_Payment
 		{
 			if (getC_Invoice_ID() != 0)
 			{
-				final I_C_Invoice inv = getC_Invoice();
-				Check.errorIf(inv.getC_BPartner_ID() != getC_BPartner_ID(),
-						"Payment {} has C_BPartner_ID={}, but invoice {} has C_BPartner_ID={}",
-						this, getC_BPartner_ID(), inv, inv.getC_BPartner_ID());
+				final I_C_Invoice inv = invoiceBL.getById(InvoiceId.ofRepoId(getC_Invoice_ID()));
+				if (getC_BPartner_ID()!= inv.getC_BPartner_ID())
+				{
+					throw new AdempiereException(PAYMENT_BPARTNERMISMATCH_INVOICE, getC_BPartner_ID(), inv.getC_BPartner_ID(), inv.getDocumentNo());
+				}
 			}
 			if (getC_Order_ID() != 0)
 			{
-				final I_C_Order ord = getC_Order();
-				Check.errorIf(ord.getC_BPartner_ID() != getC_BPartner_ID(),
-						"Payment {} has C_BPartner_ID={}, but order {} has C_BPartner_ID={}",
-						this, getC_BPartner_ID(), ord, ord.getC_BPartner_ID());
+				final I_C_Order ord = orderBL.getById(OrderId.ofRepoId(getC_Order_ID()));
+				if (getC_BPartner_ID()!= ord.getBill_BPartner_ID())
+				{
+					throw new AdempiereException(PAYMENT_BPARTNERMISMATCH_ORDER, getC_BPartner_ID(), ord.getBill_BPartner_ID(), ord.getDocumentNo());
+				}
 			}
 		}
 
@@ -359,7 +373,7 @@ public final class MPayment extends X_C_Payment
 	@Deprecated
 	public boolean testAllocation()
 	{
-		return Services.get(IPaymentBL.class).testAllocation(this);
+		return paymentBL.testAllocation(this);
 	}    // testAllocation
 
 	/**
@@ -367,8 +381,8 @@ public final class MPayment extends X_C_Payment
 	 *
 	 * @param ctx           context
 	 * @param C_BPartner_ID if 0 all
-	 * @param trxName       trx
-	 */
+     * @param trxName       trx
+     */
 	public static void setIsAllocated(final Properties ctx, final int C_BPartner_ID, final String trxName)
 	{
 		String sql = "SELECT * FROM C_Payment "
@@ -429,10 +443,10 @@ public final class MPayment extends X_C_Payment
 	}    // setCreditCardNumber
 
 	/**
-	 * Verification Code
-	 *
-	 * @param newCreditCardVV CC verification
-	 */
+     * Verification Code
+     *
+     * @param newCreditCardVV CC verification
+     */
 	@Override
 	public void setCreditCardVV(final String newCreditCardVV)
 	{
@@ -445,10 +459,10 @@ public final class MPayment extends X_C_Payment
 	}    // setCreditCardVV
 
 	/**
-	 * Two Digit CreditCard MM
-	 *
-	 * @param CreditCardExpMM Exp month
-	 */
+     * Two Digit CreditCard MM
+     *
+     * @param CreditCardExpMM Exp month
+     */
 	@Override
 	public void setCreditCardExpMM(final int CreditCardExpMM)
 	{
@@ -463,10 +477,10 @@ public final class MPayment extends X_C_Payment
 	}    // setCreditCardExpMM
 
 	/**
-	 * Two digit CreditCard YY (til 2020)
-	 *
-	 * @param newCreditCardExpYY 2 or 4 digit year
-	 */
+     * Two digit CreditCard YY (til 2020)
+     *
+     * @param newCreditCardExpYY 2 or 4 digit year
+     */
 	@Override
 	public void setCreditCardExpYY(final int newCreditCardExpYY)
 	{
@@ -479,11 +493,11 @@ public final class MPayment extends X_C_Payment
 	}    // setCreditCardExpYY
 
 	/**
-	 * CreditCard Exp MMYY
-	 *
-	 * @param mmyy Exp in form of mmyy
-	 * @return true if valid
-	 */
+     * CreditCard Exp MMYY
+     *
+     * @param mmyy Exp in form of mmyy
+     * @return true if valid
+     */
 	public boolean setCreditCardExp(final String mmyy)
 	{
 		if (MPaymentValidate.validateCreditCardExp(mmyy).length() != 0)
@@ -500,11 +514,11 @@ public final class MPayment extends X_C_Payment
 	}   // setCreditCardExp
 
 	/**
-	 * CreditCard Exp MMYY
-	 *
-	 * @param delimiter / - or null
-	 * @return Exp
-	 */
+     * CreditCard Exp MMYY
+     *
+     * @param delimiter / - or null
+     * @return Exp
+     */
 	public String getCreditCardExp(final String delimiter)
 	{
 		final String mm = String.valueOf(getCreditCardExpMM());
@@ -532,10 +546,10 @@ public final class MPayment extends X_C_Payment
 	}   // getCreditCardExp
 
 	/**
-	 * MICR
-	 *
-	 * @param MICR MICR
-	 */
+     * MICR
+     *
+     * @param MICR MICR
+     */
 	@Override
 	public void setMicr(final String MICR)
 	{
@@ -543,10 +557,10 @@ public final class MPayment extends X_C_Payment
 	}    // setBankMICR
 
 	/**
-	 * Routing No
-	 *
-	 * @param RoutingNo Routing No
-	 */
+     * Routing No
+     *
+     * @param RoutingNo Routing No
+     */
 	@Override
 	public void setRoutingNo(final String RoutingNo)
 	{
@@ -554,10 +568,10 @@ public final class MPayment extends X_C_Payment
 	}    // setBankRoutingNo
 
 	/**
-	 * Bank Account No
-	 *
-	 * @param AccountNo AccountNo
-	 */
+     * Bank Account No
+     *
+     * @param AccountNo AccountNo
+     */
 	@Override
 	public void setAccountNo(final String AccountNo)
 	{
@@ -565,10 +579,10 @@ public final class MPayment extends X_C_Payment
 	}    // setBankAccountNo
 
 	/**
-	 * Check No
-	 *
-	 * @param CheckNo Check No
-	 */
+     * Check No
+     *
+     * @param CheckNo Check No
+     */
 	@Override
 	public void setCheckNo(final String CheckNo)
 	{
@@ -576,8 +590,8 @@ public final class MPayment extends X_C_Payment
 	}    // setBankCheckNo
 
 	/**
-	 * Set DocumentNo to Payment info. If there is a R_PnRef that is set automatically
-	 */
+     * Set DocumentNo to Payment info. If there is a R_PnRef that is set automatically
+     */
 	private void setDocumentNo()
 	{
 		// Cash Transfer
@@ -663,10 +677,10 @@ public final class MPayment extends X_C_Payment
 	}    // setDocumentNo
 
 	/**
-	 * Set Refernce No (and Document No)
-	 *
-	 * @param R_PnRef reference
-	 */
+     * Set Refernce No (and Document No)
+     *
+     * @param R_PnRef reference
+     */
 	@Override
 	public void setR_PnRef(final String R_PnRef)
 	{
@@ -685,10 +699,10 @@ public final class MPayment extends X_C_Payment
 	// ---------------
 
 	/**
-	 * Set Payment Amount
-	 *
-	 * @param PayAmt Pay Amt
-	 */
+     * Set Payment Amount
+     *
+     * @param PayAmt Pay Amt
+     */
 	@Override
 	public void setPayAmt(final BigDecimal PayAmt)
 	{
@@ -696,12 +710,12 @@ public final class MPayment extends X_C_Payment
 	}    // setPayAmt
 
 	/**
-	 * Set Payment Amount
-	 *
-	 * @param currencyId currency (optional, may be <= 0)
-	 * @param payAmt     amount
-	 * @deprecated Will be deleted because it's used only by legacy API
-	 */
+     * Set Payment Amount
+     *
+     * @param currencyId currency (optional, may be <= 0)
+     * @param payAmt     amount
+     * @deprecated Will be deleted because it's used only by legacy API
+     */
 	@Deprecated
 	public void setAmount(final int currencyId, final BigDecimal payAmt)
 	{
@@ -720,10 +734,10 @@ public final class MPayment extends X_C_Payment
 	}   // setAmount
 
 	/**
-	 * Discount Amt
-	 *
-	 * @param DiscountAmt Discount
-	 */
+     * Discount Amt
+     *
+     * @param DiscountAmt Discount
+     */
 	@Override
 	public void setDiscountAmt(final BigDecimal DiscountAmt)
 	{
@@ -731,10 +745,10 @@ public final class MPayment extends X_C_Payment
 	}    // setDiscountAmt
 
 	/**
-	 * WriteOff Amt
-	 *
-	 * @param WriteOffAmt WriteOff
-	 */
+     * WriteOff Amt
+     *
+     * @param WriteOffAmt WriteOff
+     */
 	@Override
 	public void setWriteOffAmt(final BigDecimal WriteOffAmt)
 	{
@@ -742,10 +756,10 @@ public final class MPayment extends X_C_Payment
 	}    // setWriteOffAmt
 
 	/**
-	 * OverUnder Amt
-	 *
-	 * @param OverUnderAmt OverUnder
-	 */
+     * OverUnder Amt
+     *
+     * @param OverUnderAmt OverUnder
+     */
 	@Override
 	public void setOverUnderAmt(final BigDecimal OverUnderAmt)
 	{
@@ -753,10 +767,10 @@ public final class MPayment extends X_C_Payment
 	}    // setOverUnderAmt
 
 	/**
-	 * Tax Amt
-	 *
-	 * @param TaxAmt Tax
-	 */
+     * Tax Amt
+     *
+     * @param TaxAmt Tax
+     */
 	@Override
 	public void setTaxAmt(final BigDecimal TaxAmt)
 	{
@@ -764,8 +778,8 @@ public final class MPayment extends X_C_Payment
 	}    // setTaxAmt
 
 	/**
-	 * Set Doc Type bases on IsReceipt
-	 */
+     * Set Doc Type bases on IsReceipt
+     */
 	private void setC_DocType_ID()
 	{
 		setIsReceiptAndUpdateDocType(isReceipt());
@@ -786,11 +800,11 @@ public final class MPayment extends X_C_Payment
 	}
 
 	/**
-	 * Verify Document Type with Invoice
-	 *
-	 * @param pAllocs
-	 * @return true if ok
-	 */
+     * Verify Document Type with Invoice
+     *
+     * @param pAllocs
+     * @return true if ok
+     */
 	private boolean verifyDocType(final MPaymentAllocate[] pAllocs)
 	{
 		if (getC_DocType_ID() <= 0)
@@ -983,11 +997,11 @@ public final class MPayment extends X_C_Payment
 	}    // verifyDocType
 
 	/**
-	 * Verify Payment Allocate is ignored (must not exists) if the payment header has charge/invoice/order
-	 *
-	 * @param pAllocs
-	 * @return true if ok
-	 */
+     * Verify Payment Allocate is ignored (must not exists) if the payment header has charge/invoice/order
+     *
+     * @param pAllocs
+     * @return true if ok
+     */
 	private boolean verifyPaymentAllocateVsHeader(final MPaymentAllocate[] pAllocs)
 	{
 		if (pAllocs.length > 0)
@@ -1001,11 +1015,11 @@ public final class MPayment extends X_C_Payment
 	}
 
 	/**
-	 * Verify Payment Allocate Sum must be equal to the Payment Amount
-	 *
-	 * @param pAllocs
-	 * @return true if ok
-	 */
+     * Verify Payment Allocate Sum must be equal to the Payment Amount
+     *
+     * @param pAllocs
+     * @return true if ok
+     */
 	private boolean verifyPaymentAllocateSum(final MPaymentAllocate[] pAllocs)
 	{
 		BigDecimal sumPaymentAllocates = BigDecimal.ZERO;
@@ -1024,10 +1038,10 @@ public final class MPayment extends X_C_Payment
 	}
 
 	/**
-	 * Get Name of Credit Card
-	 *
-	 * @return Name
-	 */
+     * Get Name of Credit Card
+     *
+     * @return Name
+     */
 	public String getCreditCardName()
 	{
 		return getCreditCardName(getCreditCardType());
@@ -1071,10 +1085,10 @@ public final class MPayment extends X_C_Payment
 	}    // getCreditCardName
 
 	/**
-	 * Add to Description
-	 *
-	 * @param description text
-	 */
+     * Add to Description
+     *
+     * @param description text
+     */
 	public void addDescription(final String description)
 	{
 		final String desc = getDescription();
@@ -1089,11 +1103,11 @@ public final class MPayment extends X_C_Payment
 	}    // addDescription
 
 	/**
-	 * Get Pay Amt
-	 *
-	 * @param absolute if true the absolute amount (i.e. negative if payment)
-	 * @return amount
-	 */
+     * Get Pay Amt
+     *
+     * @param absolute if true the absolute amount (i.e. negative if payment)
+     * @return amount
+     */
 	public BigDecimal getPayAmt(final boolean absolute)
 	{
 		if (isReceipt())
@@ -1110,13 +1124,20 @@ public final class MPayment extends X_C_Payment
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}    // process
 
+	@Override
+	public void resetEngineStateForRetry()
+	{
+		m_justPrepared = false;
+		m_processMsg = null;
+	}
+
 	/**
-	 * Process Message
-	 */
+     * Process Message
+     */
 	private String m_processMsg = null;
 	/**
-	 * Just Prepared Flag
-	 */
+     * Just Prepared Flag
+     */
 	private boolean m_justPrepared = false;
 
 	@Override
@@ -1291,6 +1312,18 @@ public final class MPayment extends X_C_Payment
 	@Override
 	public String completeIt()
 	{
+		try
+		{
+			return completeIt0();
+		}
+		finally
+		{
+			m_justPrepared = false; // consumed; a later completion of this instance has to prepare again
+		}
+	}
+
+	private String completeIt0()
+	{
 		// Re-Check
 		if (!m_justPrepared)
 		{
@@ -1347,55 +1380,6 @@ public final class MPayment extends X_C_Payment
 			m_processMsg += " @CounterDoc@: @C_Payment_ID@=" + counter.getDocumentNo();
 		}
 
-		// @Trifon - CashPayments
-		// if ( getTenderType().equals("X") ) {
-		if (isCashTrx() && !Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
-		{
-			// Create Cash Book entry
-			if (getC_CashBook_ID() <= 0)
-			{
-				throw new FillMandatoryException("C_CashBook_ID");
-				// m_processMsg = "@NoCashBook@";
-				// return DocAction.STATUS_Invalid;
-			}
-			final MCash cash = MCash.get(getCtx(), getAD_Org_ID(), getDateAcct(), getC_Currency_ID(), get_TrxName());
-			if (cash == null || cash.get_ID() == 0)
-			{
-				m_processMsg = "@NoCashBook@";
-				return DocStatus.Invalid.getCode();
-			}
-			final MCashLine cl = new MCashLine(cash);
-			cl.setCashType(X_C_CashLine.CASHTYPE_GeneralReceipts);
-			cl.setDescription("Generated From Payment #" + getDocumentNo());
-			cl.setC_Currency_ID(getC_Currency_ID());
-			cl.setC_Payment_ID(getC_Payment_ID()); // Set Reference to payment.
-			final StringBuffer info = new StringBuffer();
-			info.append("Cash journal ( ")
-					.append(cash.getDocumentNo()).append(" )");
-			m_processMsg = info.toString();
-			// Amount
-			final BigDecimal amt = this.getPayAmt();
-			/*
-			 * MDocType dt = MDocType.get(getCtx(), invoice.getC_DocType_ID()); if (MDocType.DOCBASETYPE_APInvoice.equals( dt.getDocBaseType() ) || MDocType.DOCBASETYPE_ARCreditMemo.equals(
-			 * dt.getDocBaseType() ) ) { amt = amt.negate(); }
-			 */
-			cl.setAmount(amt);
-			//
-			cl.setDiscountAmt(BigDecimal.ZERO);
-			cl.setWriteOffAmt(BigDecimal.ZERO);
-			cl.setIsGenerated(true);
-
-			if (!cl.save(get_TrxName()))
-			{
-				m_processMsg = "Could not save Cash Journal Line";
-				return DocStatus.Invalid.getCode();
-			}
-		}
-		// End Trifon - CashPayments
-		// metas: begin: CashPayments
-		// NOTE: cash as payment is handled in de.metas.banking module. See de.metas.banking.payment.modelvalidator.C_Payment.createCashStatementLineIfNeeded(I_C_Payment).
-		// metas: end: CashPayments
-
 		// User Validation
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -1414,8 +1398,8 @@ public final class MPayment extends X_C_Payment
 	}    // completeIt
 
 	/**
-	 * Set the definite document number after completed
-	 */
+     * Set the definite document number after completed
+     */
 	private void setDefiniteDocumentNo()
 	{
 		final I_C_DocType dt = MDocType.get(getCtx(), getC_DocType_ID());
@@ -1438,10 +1422,10 @@ public final class MPayment extends X_C_Payment
 	}
 
 	/**
-	 * Create Counter Document
-	 *
-	 * @return payment
-	 */
+     * Create Counter Document
+     *
+     * @return payment
+     */
 	private MPayment createCounterDoc()
 	{
 		// Is this a counter doc ?
@@ -1540,10 +1524,10 @@ public final class MPayment extends X_C_Payment
 	}    // createCounterDoc
 
 	/**
-	 * Allocate It. Only call when there is NO allocation as it will create duplicates. If an invoice exists, it allocates that otherwise it allocates Payment Selection.
-	 *
-	 * @return true if allocated
-	 */
+     * Allocate It. Only call when there is NO allocation as it will create duplicates. If an invoice exists, it allocates that otherwise it allocates Payment Selection.
+     *
+     * @return true if allocated
+     */
 	public boolean allocateIt()
 	{
 		// Create invoice Allocation - See also MCash.completeIt
@@ -1608,21 +1592,27 @@ public final class MPayment extends X_C_Payment
 	}    // allocateIt
 
 	/**
-	 * Allocate single AP/AR Invoice
-	 *
-	 * @return true if allocated
-	 */
+     * Allocate single AP/AR Invoice
+     *
+     * @return true if allocated
+     */
 	private boolean allocateInvoice(@NonNull final InvoiceId invoiceId)
 	{
 		// 04627 begin (commented out old code)
 		// calculate actual allocation
 		// BigDecimal allocationAmt = getPayAmt(); // underpayment
 		// when allocating an invoice, we don't want to allocate more than the invoice's open amount
-		final I_C_Invoice invoice = Services.get(IInvoiceBL.class).getById(invoiceId);
+		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 
 		Check.errorIf(invoice == null, "Invoice cannot be null since C_Invoice_ID > 0, C_Invoice_ID = {}", invoiceId);
 
-		final Money invoiceOpenAmt = Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, false);
+		// allocation's trx date must be the max between the invoice date and payment date
+		final Timestamp allocationDateTrx = invoice.getDateInvoiced().after(getDateTrx()) ? invoice.getDateInvoiced() : getDateTrx();
+
+		// the payment bonus is booked by a credit memo that allocates itself against the invoice; so it has to be created before the open amount is retrieved
+		generatePaymentBonusCreditMemoIfAny(allocationDateTrx);
+
+		final Money invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, false);
 		final Money payAmt = getPayAmtAsMoney();
 
 		// note: zero is ok, but with negative, i don't see the case and don't know what to do
@@ -1675,18 +1665,7 @@ public final class MPayment extends X_C_Payment
 
 		alloc.setDateAcct(dateAcct);
 
-		// allocation's trx date must e the max between the invoice date and payment date
-
-		Timestamp dateTrx = getDateTrx();
-
-		final Timestamp invoiceDateTrx = invoice.getDateInvoiced();
-
-		if (invoiceDateTrx.after(dateTrx))
-		{
-			dateTrx = invoiceDateTrx;
-		}
-
-		alloc.setDateTrx(dateTrx);
+		alloc.setDateTrx(allocationDateTrx);
 
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		alloc.saveEx();
@@ -1735,6 +1714,68 @@ public final class MPayment extends X_C_Payment
 		}
 		return true;
 	}    // allocateInvoice
+
+	/**
+	 * Books the payment bonus of this payment with a payment bonus credit memo, in this payment's transaction: a failure fails the payment's completion and nothing stays half-booked.
+	 */
+	private void generatePaymentBonusCreditMemoIfAny(@NonNull final Timestamp allocationDateTrx)
+	{
+		if (getPaymentBonusAmt().signum() == 0)
+		{
+			return;
+		}
+
+		final String trxName = getActiveTrxNameForPaymentBonusCreditMemo();
+		final LocalDate allocationDate = TimeUtil.asLocalDate(allocationDateTrx, orgDAO.getTimeZone(OrgId.ofRepoId(getAD_Org_ID())));
+
+		// with this payment's transaction as the thread-inherited one, which the credit memo needs; never in a new transaction
+		trxManager.call(trxName, () -> paymentBonusOnPaymentService.get().generateCreditMemoIfAny(this, allocationDate))
+				.ifPresent(this::alignPaymentBonusAmtWithCreditMemo);
+	}
+
+	/**
+	 * Reverses this payment's payment bonus credit memo, if any, in this payment's transaction: a failure fails the payment's reversal and nothing stays half-reversed.
+	 */
+	private void reversePaymentBonusCreditMemoIfAny()
+	{
+		if (getPaymentBonus_CreditMemo_ID() <= 0)
+		{
+			return;
+		}
+
+		final String trxName = getActiveTrxNameForPaymentBonusCreditMemo();
+
+		// with this payment's transaction as the thread-inherited one; never in a new transaction
+		trxManager.run(trxName, () -> paymentBonusOnPaymentService.get().reverseCreditMemoIfAny(this));
+	}
+
+	private String getActiveTrxNameForPaymentBonusCreditMemo()
+	{
+		final String trxName = get_TrxName();
+		if (!trxManager.isActive(trxName))
+		{
+			throw new AdempiereException("The payment bonus credit memo has to be booked in the transaction of the payment's document action, but there is none")
+					.appendParametersToMessage()
+					.setParameter("C_Payment_ID", getC_Payment_ID())
+					.setParameter("trxName", trxName);
+		}
+		return trxName;
+	}
+
+	/**
+	 * Makes the payment bonus the credit memo's grand total, so that this payment, the credit memo and the allocation agree.
+	 */
+	private void alignPaymentBonusAmtWithCreditMemo(@NonNull final PaymentBonusCreditMemoBooking booking)
+	{
+		final BigDecimal creditMemoGrandTotalBD = booking.getCreditMemoGrandTotal().toBigDecimal();
+		if (creditMemoGrandTotalBD.compareTo(getPaymentBonusAmt()) == 0)
+		{
+			return;
+		}
+
+		setPaymentBonusAmt(creditMemoGrandTotalBD);
+		paymentBL.updateWriteOffOrOverUnderAmt(this, booking.getInvoiceOpenAmtBeforeCreditMemo().toBigDecimal());
+	}
 
 	/**
 	 * De-allocate Payment. Unkink Invoices and Orders and delete Allocations
@@ -1839,6 +1880,7 @@ public final class MPayment extends X_C_Payment
 			setDiscountAmt(BigDecimal.ZERO);
 			setWriteOffAmt(BigDecimal.ZERO);
 			setOverUnderAmt(BigDecimal.ZERO);
+			setPaymentBonusAmt(BigDecimal.ZERO);
 			setIsAllocated(false);
 			// Unlink & De-Allocate
 			deAllocate();
@@ -1915,6 +1957,9 @@ public final class MPayment extends X_C_Payment
 			throw new AdempiereException("@void.payment@");
 		}
 
+		// the payment bonus credit memo is reversed first, then the payment: the invoice gets its bonus back before the payment's allocation is undone
+		reversePaymentBonusCreditMemoIfAny();
+
 		// Create Reversal
 		final MPayment reversal = new MPayment(getCtx(), 0, get_TrxName());
 		copyValues(this, reversal);
@@ -1931,6 +1976,8 @@ public final class MPayment extends X_C_Payment
 		reversal.setDiscountAmt(getDiscountAmt().negate());
 		reversal.setWriteOffAmt(getWriteOffAmt().negate());
 		reversal.setOverUnderAmt(getOverUnderAmt().negate());
+		reversal.setPaymentBonusAmt(getPaymentBonusAmt().negate());
+		reversal.setPaymentBonus_CreditMemo_ID(-1); // copyValues copied the link; only the original payment is linked to the credit memo
 		//
 		reversal.setIsAllocated(true);
 		// reversal.setIsReconciled(reconciled); // will be handled by banking module
@@ -2061,6 +2108,7 @@ public final class MPayment extends X_C_Payment
 	@Override
 	public boolean reActivateIt()
 	{
+		m_justPrepared = false; // a reactivated document has to be prepared again when it is completed
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)

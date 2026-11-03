@@ -17,9 +17,6 @@ export const manufacturingReducer = ({ draftState, action }) => {
     case types.UPDATE_MANUFACTURING_TU_RECEIPT_TARGET: {
       return reduceOnUpdateTUReceiptTarget(draftState, action.payload);
     }
-    case types.UPDATE_MANUFACTURING_RECEIPT_QTY: {
-      return reduceOnUpdateQtyReceived(draftState, action.payload);
-    }
     default: {
       return draftState;
     }
@@ -92,28 +89,10 @@ const getAggregateToTU = ({ tuTarget }) => {
   };
 };
 
-const reduceOnUpdateQtyReceived = (draftState, { wfProcessId, activityId, lineId, qtyReceived }) => {
-  if (qtyReceived > 0) {
-    const draftWFProcess = draftState[wfProcessId];
-    const draftActivityLine = getLineByIdFromWFProcess(draftWFProcess, activityId, lineId);
-
-    draftActivityLine.qtyReceived = qtyReceived;
-
-    updateLineStatusAndRollup({
-      draftWFProcess,
-      activityId,
-      lineId,
-    });
-  }
-
-  return draftState;
-};
-
 const updateLineStatusAndRollup = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
 
   draftLine.completeStatus = computeLineStatus(draftLine);
-  console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
 
   //
   // Rollup:
@@ -194,6 +173,25 @@ registerHandler({
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
     draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
     draftActivityDataStored.customQRCodeFormats = fromActivity.componentProps.customQRCodeFormats;
+    // NOTE: each line already carries its own `editableAttributes` (JsonAttribute[], SeqNo-ordered)
+    // straight from the backend line contract - normalizeLines' `...line` spread threads it through
+    // as-is, so no explicit per-line wiring is needed here (see MaterialReceiptLineScreen).
+    draftActivityDataStored.readOnlyAttributes = fromActivity.componentProps.readOnlyAttributes ?? [];
     return draftActivityDataStored;
   },
 });
+
+/**
+ * Converts the operator-entered `{ [attributeCode]: value }` map (as emitted by
+ * `EditableAttributesSection.onFieldChange`, already excluding empty/invalid entries) into the
+ * `[{ code, value }]` array shape `JsonManufacturingOrderEvent.ReceiveFrom.attributes` expects.
+ * Defensively drops empty/nullish values again so a caller can pass an unfiltered map too.
+ */
+export const attributesMapToArray = (attributeValuesByCode) => {
+  if (!attributeValuesByCode) {
+    return [];
+  }
+  return Object.entries(attributeValuesByCode)
+    .filter(([, value]) => value !== '' && value !== null && value !== undefined)
+    .map(([code, value]) => ({ code, value }));
+};

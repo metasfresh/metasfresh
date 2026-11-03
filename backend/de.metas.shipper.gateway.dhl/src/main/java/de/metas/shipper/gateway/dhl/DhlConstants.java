@@ -22,13 +22,14 @@
 
 package de.metas.shipper.gateway.dhl;
 
+import de.metas.shipping.ShipperGatewayId;
 import lombok.experimental.UtilityClass;
 import org.compiere.model.X_M_Shipper;
 
 @UtilityClass
 public class DhlConstants
 {
-	public static final String SHIPPER_GATEWAY_ID = X_M_Shipper.SHIPPERGATEWAY_DHL;
+	public static final ShipperGatewayId SHIPPER_GATEWAY_ID = ShipperGatewayId.ofString(X_M_Shipper.SHIPPERGATEWAY_DHL);
 
 	//they don't use X12DE355
 	public static final String KILOGRAM_UOM = "kg";

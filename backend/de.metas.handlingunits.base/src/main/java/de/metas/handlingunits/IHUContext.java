@@ -46,6 +46,8 @@ public interface IHUContext extends IContextAware
 
 	String PROPERTY_AttributeTrxCandidates = "PROPERTY_AttributeTrxCandidates";
 
+	String PROPERTY_IsReceiptReversal = "IsReceiptReversal";
+
 	@Nullable
 	<T> T getProperty(String propertyName);
 
@@ -117,4 +119,6 @@ public interface IHUContext extends IContextAware
 	 * @return {@code true} if the HU shall not be destroyed right now
 	 */
 	boolean isDontDestroyHu(@NonNull HuId ofRepoId);
+
+	boolean isPropertyTrue(@NonNull String propertyName);
 }

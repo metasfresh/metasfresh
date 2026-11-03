@@ -16,53 +16,20 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.process.JavaProcess;
+import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 
-import org.compiere.model.MPaymentTerm;
-import org.compiere.util.AdempiereUserError;
- 
-/**
- *	Validate Payment Term and Schedule	
- *	
- *  @author Jorg Janke
- *  @version $Id: PaymentTermValidate.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
- */
 public class PaymentTermValidate extends JavaProcess
 {
-	/**
-	 *  Prepare - e.g., get Parameters.
-	 */
-	protected void prepare()
-	{
-		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
-		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
-			else
-				log.error("Unknown Parameter: " + name);
-		}
-	}	//	prepare
+	@NonNull final PaymentTermService paymentTermService = SpringContextHolder.instance.getBean(PaymentTermService.class);
 
-	/**
-	 *  Perform process.
-	 *  @return Message
-	 *  @throws Exception if not successful
-	 */
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		log.info("C_PaymentTerm_ID=" + getRecord_ID());
-		MPaymentTerm pt = new MPaymentTerm (getCtx(), getRecord_ID(), get_TrxName());
-		String msg = pt.validate();
-		pt.save();
-		//
-		if ("@OK@".equals(msg))
-			return msg;
-		throw new AdempiereUserError (msg);
-	}	//	doIt
-
-}	//	PaymentTermValidate
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(getRecord_ID());
+		paymentTermService.validateNow(paymentTermId);
+		return MSG_OK;
+	}
+}

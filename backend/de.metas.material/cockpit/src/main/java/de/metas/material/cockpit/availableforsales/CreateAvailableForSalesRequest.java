@@ -28,6 +28,7 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
 import java.math.BigDecimal;
 
@@ -49,4 +50,6 @@ public class CreateAvailableForSalesRequest
 
 	@NonNull
 	OrgId orgId;
+
+	@NonNull WarehouseId warehouseId;
 }

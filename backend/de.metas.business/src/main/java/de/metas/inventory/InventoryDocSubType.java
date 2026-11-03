@@ -7,7 +7,10 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_DocType;
+
+import java.util.Objects;
 
 /*
  * #%L
@@ -19,12 +22,12 @@ import org.compiere.model.X_C_DocType;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,10 +36,10 @@ import org.compiere.model.X_C_DocType;
 
 public enum InventoryDocSubType implements ReferenceListAwareEnum
 {
-	InternalUseInventory(X_C_DocType.DOCSUBTYPE_InternalUseInventory), //
-	AggregatedHUInventory("IAH"), //
-	SingleHUInventory("ISH"), //
-	VirtualInventory(X_C_DocType.DOCSUBTYPE_VirtualInventory), //
+	InternalUseInventory(X_C_DocType.DOCSUBTYPE_InternalUseInventory),
+	AggregatedHUInventory(X_C_DocType.DOCSUBTYPE_AggregatedHUInventory),
+	SingleHUInventory(X_C_DocType.DOCSUBTYPE_SingleHUInventory),
+	VirtualInventory(X_C_DocType.DOCSUBTYPE_VirtualInventory),
 	;
 
 	@Getter
@@ -54,6 +57,16 @@ public enum InventoryDocSubType implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
+	public static InventoryDocSubType of(@NonNull final DocBaseAndSubType docBaseAndSubType)
+	{
+		if (!Objects.equals(docBaseAndSubType.getDocBaseType(), DocBaseType.MaterialPhysicalInventory))
+		{
+			throw new AdempiereException("Invalid inventory document type: " + docBaseAndSubType);
+		}
+
+		return InventoryDocSubType.ofCode(docBaseAndSubType.getDocSubType().getCode());
+	}
+
 	public DocBaseType getDocBaseType()
 	{
 		return DocBaseType.MaterialPhysicalInventory;
@@ -67,5 +80,10 @@ public enum InventoryDocSubType implements ReferenceListAwareEnum
 	public DocBaseAndSubType toDocBaseAndSubType()
 	{
 		return DocBaseAndSubType.of(getDocBaseType(), toDocSubTypeString());
+	}
+
+	public boolean isActualPhysicalInventory()
+	{
+		return SingleHUInventory == this || AggregatedHUInventory == this;
 	}
 }

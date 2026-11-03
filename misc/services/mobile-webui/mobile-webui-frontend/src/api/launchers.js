@@ -11,38 +11,48 @@ import { toQRCodeString } from '../utils/qrCode/hu';
 export const getLaunchers = ({
   applicationId,
   filterByQRCodeString,
-  filterByDocumentNo,
-  facets,
+  filters,
+  facetIds: facetIdsParam,
+  facets: facetsParam,
+  excludeAlreadyStarted,
   countOnly = false,
+  limit,
 }) => {
-  const facetIds = facets ? facets.map((facet) => facet.facetId) : null;
+  let facetIds = null;
+  if (facetIdsParam) {
+    facetIds = facetIdsParam;
+  } else if (facetsParam) {
+    facetIds = facetsParam ? facetsParam.map((facet) => facet.facetId) : null;
+  }
+
   return axios
     .post(`${apiBasePath}/userWorkflows/launchers/query`, {
+      ...filters,
       applicationId,
       filterByQRCode: filterByQRCodeString,
-      filterByDocumentNo,
       facetIds,
+      excludeAlreadyStarted,
       countOnly,
+      limit,
     })
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const countLaunchers = ({ applicationId, filterByQRCodeString, filterByDocumentNo, facetIds }) => {
+export const countLaunchers = ({ applicationId, facetIds, filters }) => {
   return getLaunchers({
     applicationId,
-    filterByQRCodeString,
-    filterByDocumentNo,
     facetIds,
+    filters,
     countOnly: true,
   }).then((response) => response.count);
 };
 
-export const getFacets = ({ applicationId, filterByDocumentNo, activeFacetIds }) => {
+export const getFacets = ({ applicationId, activeFacetIds, filters }) => {
   return axios
     .post(`${apiBasePath}/userWorkflows/facets`, {
       applicationId,
-      filterByDocumentNo,
       activeFacetIds,
+      ...filters,
     })
     .then((response) => unboxAxiosResponse(response))
     .then((response) => response.groups);
@@ -81,7 +91,7 @@ export const useLaunchersWebsocket = ({
   userToken,
   applicationId,
   filterByQRCode,
-  filterByDocumentNo,
+  filters,
   facets,
   onWebsocketMessage,
 }) => {
@@ -90,20 +100,26 @@ export const useLaunchersWebsocket = ({
 
   useEffect(() => {
     let client;
+    // ws.disconnectClient is async, so a frame can still be delivered after this effect's cleanup ran and
+    // the screen unmounted -- in the captured failure the STOMP DISCONNECT was logged BEFORE the deleting
+    // MESSAGE. An unmounted subscription must not write to the store at all.
+    let isSubscriptionActive = true;
     if (enabled) {
       const topic = `/v2/userWorkflows/launchers/?${toQueryString({
         userToken,
         applicationId,
         qrCode: filterByQRCodeString,
-        documentNo: filterByDocumentNo,
+        documentNo: filters?.filterByDocumentNo, // FIXME make it general
+        filterByQtyAvailableAtPickFromLocator: filters?.filterByQtyAvailableAtPickFromLocator,
         facetIds,
       })}`;
 
-      console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCodeString, filterByDocumentNo, facetIds });
+      // console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCodeString, filters, facetIds });
       client = ws.connectAndSubscribe({
         topic,
         debug: !!window?.debug_ws,
         onWebsocketMessage: (message) => {
+          if (!isSubscriptionActive) return;
           const applicationLaunchers = JSON.parse(message.body);
           onWebsocketMessage({ applicationId, applicationLaunchers });
         },
@@ -111,11 +127,12 @@ export const useLaunchersWebsocket = ({
     }
 
     return () => {
+      isSubscriptionActive = false;
       if (client) {
         ws.disconnectClient(client);
         client = null;
-        console.debug('WS disconnected', { applicationId, filterByQRCode, filterByDocumentNo });
+        // console.debug('WS disconnected', { applicationId, filterByQRCode, filters });
       }
     };
-  }, [enabled, userToken, applicationId, filterByQRCodeString, filterByDocumentNo, facetIds]);
+  }, [enabled, userToken, applicationId, filterByQRCodeString, JSON.stringify(filters), facetIds]);
 };

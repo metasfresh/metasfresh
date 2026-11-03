@@ -1,5 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
 Feature: Sales order API
+
+  ## F00100: Sales Order
 
   Background:
     Given infrastructure and metasfresh are running
@@ -61,8 +66,8 @@ Feature: Sales order API
       | Identifier              | InternalName      |
       | dataSource_09182025_010 | test_09182025_010 |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | REST.Context | REST.Context.DocumentNo | AD_InputDataSource_ID   | ExternalId              | C_BPartner_ID | DateOrdered |
-      | so         | true    | orderId      | orderDocumentNo         | dataSource_09182025_010 | externalId_09182025_010 | customer      | 2025-04-01  |
+      | Identifier | IsSOTrx | REST.Context | REST.Context.DocumentNo | AD_InputDataSource_ID   | ExternalId              | C_BPartner_ID | DateOrdered | ExternalSystem.Value |
+      | so         | true    | orderId      | orderDocumentNo         | dataSource_09182025_010 | externalId_09182025_010 | customer      | 2025-04-01  | Shopware6            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so_l1      | so         | product      | 10         |
@@ -76,7 +81,7 @@ Feature: Sales order API
 {
   "orgCode": "001",
   "externalId": "externalId_09182025_010",
-  "dataSource": "int-test_09182025_010"
+  "externalSystemCode": "Shopware6"
 }
 """
     Then the metasfresh REST-API responds with
@@ -94,15 +99,16 @@ Feature: Sales order API
       | Identifier              | InternalName      |
       | dataSource_09182025_020 | test_09182025_020 |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | REST.Context | REST.Context.DocumentNo | AD_InputDataSource_ID   | ExternalId              | C_BPartner_ID | DateOrdered |
-      | so         | true    | orderId      | orderDocumentNo         | dataSource_09182025_020 | externalId_09182025_020 | customer      | 2025-04-01  |
+      | Identifier | IsSOTrx | REST.Context | REST.Context.DocumentNo | AD_InputDataSource_ID   | ExternalId              | C_BPartner_ID | DateOrdered | ExternalSystem.Value |
+      | so         | true    | orderId      | orderDocumentNo         | dataSource_09182025_020 | externalId_09182025_020 | customer      | 2025-04-01  | Shopware6            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so_l1      | so         | product      | 10         |
     And the order identified by so is completed
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss1        | so_l1          | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss1        | so_l1          | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | ss1                              | D            | true                | false       |
@@ -115,7 +121,7 @@ Feature: Sales order API
 {
   "orgCode": "001",
   "externalId": "externalId_09182025_020",
-  "dataSource": "int-test_09182025_020"
+  "externalSystemCode": "Shopware6"
 }
 """
     Then the metasfresh REST-API responds with
@@ -126,7 +132,7 @@ Feature: Sales order API
       "message": "Die Bestellung OrderId(repoId=@orderId@) enthält bereits gelieferte Artikel.",
       "errorCode": "MSG_ERR_ORDER_HAS_DELIVERED_ITEMS",
       "userFriendlyError": true,
-      "stackTrace": "OrderService.reverseOrder:177 <~~~ SalesOrderRestController.revertOrder:231 <~~~ ApiAuditService.processRequestSync:500 <- ApiAuditService.processRequest:245 <- ApiAuditFilter.doFilter:115 <~~~ UserAuthTokenFilter.lambda$doFilter$1:66 <- UserAuthTokenService.lambda$asCallable$0:96 <- UserAuthTokenService.call:117 <- UserAuthTokenService.run:89 <- UserAuthTokenFilter.doFilter:61",
+      "stackTrace": "OrderService.reverseOrder:178 <~~~ SalesOrderRestController.revertOrder:241 <~~~ WebConfig$ApiNoStoreCacheControlFilter.doFilter:80 <~~~ ApiAuditService.processRequestSync:519 <- ApiAuditService.processRequest:249 <- ApiAuditFilter.doFilter:115 <~~~ UserAuthTokenFilter.lambda$doFilter$1:66 <- UserAuthTokenService.lambda$asCallable$0:96 <- UserAuthTokenService.call:117 <- UserAuthTokenService.run:89 <- UserAuthTokenFilter.doFilter:61",
       "parameters": {
         "AD_Language": "<null>",
         "AD_Message": "MSG_ERR_ORDER_HAS_DELIVERED_ITEMS"

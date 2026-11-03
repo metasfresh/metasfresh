@@ -7,6 +7,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
@@ -80,7 +81,7 @@ public class SetPickFromHUWFActivityHandler implements WFActivityHandler, SetSca
 	@Override
 	public WFProcess setScannedBarcode(@NonNull final SetScannedBarcodeRequest request)
 	{
-		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(request.getScannedBarcode());
+		final HUQRCode qrCode = huQRCodesService.getQRCodeByScannedCode(ScannedCode.ofString(request.getScannedBarcode()));
 		final HuId huId = huQRCodesService.getHuIdByQRCode(qrCode);
 		final HUInfo pickFromHU = HUInfo.builder()
 				.id(huId)

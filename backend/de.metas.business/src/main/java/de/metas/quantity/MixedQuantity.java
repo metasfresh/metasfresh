@@ -1,18 +1,24 @@
 package de.metas.quantity;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 public final class MixedQuantity
@@ -31,6 +37,25 @@ public final class MixedQuantity
 		return GuavaCollectors.collectUsingListAccumulator(MixedQuantity::sumOf);
 	}
 
+	public static <T> Collector<T, ?, MixedQuantity> collectAndSum(@NonNull final Function<T, Quantity> qtyExtractor)
+	{
+		final Supplier<Map<UomId, Quantity>> supplier = HashMap::new;
+		final BiConsumer<Map<UomId, Quantity>, T> accumulator = (acc, item) -> {
+			final Quantity qty = qtyExtractor.apply(item);
+			if (qty != null)
+			{
+				acc.compute(qty.getUomId(), (uomId, currentQty) -> currentQty == null ? qty : currentQty.add(qty));
+			}
+		};
+		final BinaryOperator<Map<UomId, Quantity>> combiner = (acc1, acc2) -> {
+			acc2.forEach((uomId, qty) -> acc1.merge(uomId, qty, Quantity::add));
+			return acc1;
+		};
+		final Function<Map<UomId, Quantity>, MixedQuantity> finisher = acc -> acc.isEmpty() ? EMPTY : new MixedQuantity(acc);
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
 	public static MixedQuantity sumOf(@NonNull final Collection<Quantity> collection)
 	{
 		if (collection.isEmpty())
@@ -47,11 +72,18 @@ public final class MixedQuantity
 		return new MixedQuantity(map);
 	}
 
+	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.addValue(map.values())
-				.toString();
+		if (map.isEmpty())
+		{
+			return "0";
+		}
+
+		return map.values()
+				.stream()
+				.map(Quantity::toShortString)
+				.collect(Collectors.joining("+"));
 	}
 
 	public Optional<Quantity> toNoneOrSingleValue()
@@ -68,5 +100,44 @@ public final class MixedQuantity
 		{
 			throw new AdempiereException("Expected none or single value but got many: " + map.values());
 		}
+	}
+
+	/**
+	 * Tolerant variant of {@link #toNoneOrSingleValue()}: returns {@code null} when there is no value
+	 * <b>or</b> when the values span multiple UOMs (instead of throwing). Use where a single-UOM quantity
+	 * is wanted for display but a genuine multi-UOM aggregate must simply resolve to "no single value".
+	 */
+	@Nullable
+	public Quantity toSingleValueOrNull()
+	{
+		return map.size() == 1 ? map.values().iterator().next() : null;
+	}
+
+	public MixedQuantity add(@NonNull final Quantity qtyToAdd)
+	{
+		if (qtyToAdd.isZero())
+		{
+			return this;
+		}
+
+		return new MixedQuantity(
+				CollectionUtils.merge(map, qtyToAdd.getUomId(), qtyToAdd, Quantity::add)
+		);
+	}
+
+	public MixedQuantity subtract(@NonNull final Quantity qtyToAdd)
+	{
+		return add(qtyToAdd.negate());
+	}
+
+	public boolean hasUOM(@NonNull final UomId uomId)
+	{
+		return map.containsKey(uomId);
+	}
+
+	public Quantity getByUOM(@NonNull final UomId uomId)
+	{
+		final Quantity qty = map.get(uomId);
+		return qty != null ? qty : Quantitys.zero(uomId);
 	}
 }

@@ -39,56 +39,31 @@ import javax.annotation.Nullable;
 @Builder
 public class BankAccount
 {
-	@NonNull
-	BankAccountId id;
+	@NonNull BankAccountId id;
+	@NonNull OrgId orgId;
+	@NonNull CurrencyId currencyId;
 
-	@Nullable // C_BP_BankAccount.C_Bank_ID is not mandatory!
-	BankId bankId;
+	@Nullable BankId bankId;
+	@Nullable String accountName;
+	@Nullable String accountNo;
+	@Nullable String routingNo;
+	@Nullable String accountStreet;
+	@Nullable String accountZip;
+	@Nullable String accountCity;
+	@Nullable String accountCountry;
 
-	@Nullable
-	String accountName;
-
-	@Nullable
-	String accountNo;
-
-	@Nullable
-	String esrRenderedAccountNo;
-
-	@Nullable
-	String IBAN;
-
-	@Nullable
-	String QR_IBAN;
-
-	@Nullable
-	String SEPA_CreditorIdentifier;
-
-	@NonNull
-	CurrencyId currencyId;
-
-	@NonNull
-	OrgId orgId;
-
-	@Nullable
-	String routingNo;
-
-	@Nullable
-	String accountStreet;
-
-	@Nullable
-	String accountZip;
-
-	@Nullable
-	String accountCity;
-
-	@Nullable
-	String accountCountry;
+	@Nullable String esrRenderedAccountNo;
+	@Nullable String IBAN;
+	@Nullable String QR_IBAN;
+	@Nullable String SEPA_CreditorIdentifier;
+	boolean isESRAccount;
 
 	public boolean isAccountNoMatching(@NonNull final String accountNo)
 	{
-		final String QR_IBAN = StringUtils.trimBlankToNull(getQR_IBAN());
-		final String IBAN = StringUtils.trimBlankToNull(getIBAN());
-		final String SEPA_CreditorIdentifier = StringUtils.trimBlankToNull(getSEPA_CreditorIdentifier());
+		// the stored values may contain blanks (e.g. "CH76 3570 ..."), the same way the given accountNo is cleaned below
+		final String QR_IBAN = StringUtils.cleanWhitespace(StringUtils.trimBlankToNull(getQR_IBAN()));
+		final String IBAN = StringUtils.cleanWhitespace(StringUtils.trimBlankToNull(getIBAN()));
+		final String SEPA_CreditorIdentifier = StringUtils.cleanWhitespace(StringUtils.trimBlankToNull(getSEPA_CreditorIdentifier()));
 
 		final int indexOfSlash = StringUtils.findIndexOf(accountNo, "/");
 

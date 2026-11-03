@@ -1,17 +1,17 @@
 package de.metas.inventory;
 
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_InventoryLine;
+
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import de.metas.product.ProductId;
-import lombok.NonNull;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_InventoryLine;
-
-import de.metas.util.ISingletonService;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -61,5 +61,11 @@ public interface IInventoryDAO extends ISingletonService
 
 	Optional<Instant> getMinInventoryDate(@NonNull Collection<InventoryId> inventoryIds);
 
+	void save(I_M_Inventory inventory);
+
 	void save(I_M_InventoryLine inventoryLine);
+
+	List<I_M_Inventory> list(@NonNull InventoryQuery query);
+
+	Stream<I_M_Inventory> stream(@NonNull InventoryQuery query);
 }

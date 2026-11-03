@@ -1,21 +1,8 @@
-package de.metas.ordercandidate.api;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.ordercandidate.OrderCandidate_Constants;
-import de.metas.util.Check;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,6 +20,19 @@ import java.util.stream.Collectors;
  * #L%
  */
 
+package de.metas.ordercandidate.api;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.ordercandidate.OrderCandidate_Constants;
+import de.metas.util.Check;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Value
 public class OLCandAggregation
 {
@@ -43,13 +43,13 @@ public class OLCandAggregation
 
 	private static final NopOrderingComparator DO_NOTHING_COMPARATOR = new NopOrderingComparator();
 
-	private final ImmutableList<OLCandAggregationColumn> columns;
-	private final ImmutableList<OLCandAggregationColumn> orderByColumns;
-	private final ImmutableList<OLCandAggregationColumn> splitOrderDiscriminatorColumns;
-	private final ImmutableList<OLCandAggregationColumn> groupByColumns;
+	@NonNull ImmutableList<OLCandAggregationColumn> columns;
+	@NonNull ImmutableList<OLCandAggregationColumn> orderByColumns;
+	@NonNull ImmutableList<OLCandAggregationColumn> splitOrderDiscriminatorColumns;
+	@NonNull ImmutableList<OLCandAggregationColumn> groupByColumns;
 
 	@Getter(lazy = true)
-	private final Comparator<OLCand> orderingComparator = createOrderingComparator();
+	Comparator<OLCand> orderingComparator = createOrderingComparator();
 
 	private OLCandAggregation(final List<OLCandAggregationColumn> columns)
 	{
@@ -77,7 +77,7 @@ public class OLCandAggregation
 				.reduce(DO_NOTHING_COMPARATOR, Comparator::thenComparing);
 	}
 
-	private final Comparator<OLCand> createColumnOrderingComparator(final OLCandAggregationColumn column)
+	private Comparator<OLCand> createColumnOrderingComparator(final OLCandAggregationColumn column)
 	{
 		return new OLCandColumnOrderingComparator(column);
 	}
@@ -128,7 +128,7 @@ public class OLCandAggregation
 		}
 
 		@SuppressWarnings("unchecked")
-		private final Comparable<Object> toComparable(final Object value)
+		private Comparable<Object> toComparable(final Object value)
 		{
 			return (Comparable<Object>)value;
 		}

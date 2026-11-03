@@ -43,8 +43,11 @@ import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailR
 import de.metas.material.dispo.model.I_MD_ATP_Reconciliation_Backup;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import de.metas.material.planning.pporder.PPOrderCandidateRepository;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -79,7 +82,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * needs so the pre-change values stay recoverable after the run's process has ended.
  * <p>
  * Wiring mirrors {@link AtpReconciliationCommandTest} exactly, for the same reason documented there: a real
- * {@link CandidateChangeService}, built from real {@link SupplyCandidateHandler}/{@link DemandCandiateHandler},
+ * {@link CandidateChangeService}, built from real {@link SupplyCandidateHandler}/{@link DemandCandidateHandler},
  * mocking only {@link PostMaterialEventService}.
  */
 public class AtpReconciliationBackupTest
@@ -119,19 +122,22 @@ public class AtpReconciliationBackupTest
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryWriteService);
 
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
-		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
+		final DemandCandidateHandler demandCandiateHandler = new DemandCandidateHandler(
 				candidateRepository,
 				candidateRepositoryWriteService,
 				Mockito.mock(PostMaterialEventService.class),
 				new AvailableToPromiseRepository(),
 				stockCandidateService,
-				supplyCandidateHandler);
+				supplyCandidateHandler,
+				Mockito.mock(MaterialPlanningContextHelper.class),
+				new PPOrderCandidateDemandMatcher(),
+				new PPOrderCandidateRepository());
 
 		candidateChangeService = new CandidateChangeService(ImmutableList.of(supplyCandidateHandler, demandCandiateHandler));
 
 		atpTargetCalculator = AtpTargetCalculator.newInstanceForUnitTesting();
 		atpReconciliationCommand = new AtpReconciliationCommand(
-				atpTargetCalculator, candidateChangeService, candidateRepository, new AtpReconciliationBackupRepositoryImpl());
+				atpTargetCalculator, candidateChangeService, candidateRepository, new DefaultAtpReconciliationBackupRepository());
 	}
 
 	@Test
@@ -201,7 +207,7 @@ public class AtpReconciliationBackupTest
 	 * A STOCK candidate backed up by one reconciliation run can legitimately be backed up again by a LATER
 	 * run whose window still reaches it - {@code MD_ATP_Reconciliation_Backup} has no uniqueness on
 	 * {@code MD_Candidate_ID} (its own migration header: "one row per STOCK candidate a run touched"), so
-	 * that candidate ends up with two rows sharing its id. {@code AtpReconciliationDetailRepo} reuses the
+	 * that candidate ends up with two rows sharing its id. {@code AtpReconciliationDetailRepository} reuses the
 	 * same table for a DIFFERENT purpose - naming the correction candidate's OWN business-case detail - and
 	 * originally looked a candidate up by {@code MD_Candidate_ID} alone, so re-reading a twice-audited STOCK
 	 * candidate hit {@code DBMoreThanOneRecordsFoundException}. This is the normal, expected operational
@@ -280,7 +286,7 @@ public class AtpReconciliationBackupTest
 	/** Really persists the backup (delegating to the real implementation), then throws - see the test above. */
 	private static final class CrashAfterBackupRepository implements AtpReconciliationBackupRepository
 	{
-		private final AtpReconciliationBackupRepository delegate = new AtpReconciliationBackupRepositoryImpl();
+		private final AtpReconciliationBackupRepository delegate = new DefaultAtpReconciliationBackupRepository();
 
 		private boolean backupWasCalled = false;
 		private String capturedRunUuid = null;

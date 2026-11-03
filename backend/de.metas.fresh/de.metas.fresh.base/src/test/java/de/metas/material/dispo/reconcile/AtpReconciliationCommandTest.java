@@ -44,8 +44,11 @@ import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailR
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import de.metas.material.planning.pporder.PPOrderCandidateRepository;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -76,8 +79,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests {@link AtpReconciliationCommand#reconcile}.
  * <p>
  * The wiring below deliberately builds its own {@link CandidateChangeService} (real {@link SupplyCandidateHandler}
- * and {@link DemandCandiateHandler}, mocked only {@link PostMaterialEventService}) instead of resolving it through a
- * {@code newInstanceForUnitTesting()} on {@link AtpReconciliationCommand} itself: {@link DemandCandiateHandler}
+ * and {@link DemandCandidateHandler}, mocked only {@link PostMaterialEventService}) instead of resolving it through a
+ * {@code newInstanceForUnitTesting()} on {@link AtpReconciliationCommand} itself: {@link DemandCandidateHandler}
  * needs a working {@link PostMaterialEventService}, and outside an active transaction
  * {@code ITrxManager#accumulateAndProcessAfterCommit} runs its callback <b>eagerly</b> (see
  * {@code ITrxManager.java:530-538}) - so a real one would attempt a genuine event-bus publish from inside this
@@ -123,13 +126,16 @@ public class AtpReconciliationCommandTest
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryWriteService);
 
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
-		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
+		final DemandCandidateHandler demandCandiateHandler = new DemandCandidateHandler(
 				candidateRepository,
 				candidateRepositoryWriteService,
 				Mockito.mock(PostMaterialEventService.class),
 				new AvailableToPromiseRepository(),
 				stockCandidateService,
-				supplyCandidateHandler);
+				supplyCandidateHandler,
+				Mockito.mock(MaterialPlanningContextHelper.class),
+				new PPOrderCandidateDemandMatcher(),
+				new PPOrderCandidateRepository());
 
 		candidateChangeService = new CandidateChangeService(ImmutableList.of(supplyCandidateHandler, demandCandiateHandler));
 

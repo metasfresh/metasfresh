@@ -1,10 +1,8 @@
-package de.metas.handlingunits.shipmentschedule.api;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +20,11 @@ package de.metas.handlingunits.shipmentschedule.api;
  * #L%
  */
 
+package de.metas.handlingunits.shipmentschedule.api;
+
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IEnqueueResult;
 import de.metas.async.api.IWorkPackageBuilder;
@@ -82,6 +81,7 @@ import java.util.Set;
 
 import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo;
 import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 
 /**
  * Locks all the given shipments schedules into one big lock, then creates and enqueues workpackages, splitting off locks.
@@ -148,7 +148,7 @@ public class ShipmentScheduleEnqueuer
 			}
 		});
 
-		return result.getValue();
+		return result.getValueNotNull();
 	}
 
 	@NonNull
@@ -220,8 +220,9 @@ public class ShipmentScheduleEnqueuer
 							.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 							.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
 							.bindToTrxName(localCtx.getTrxName())
-							.setC_Async_Batch_ID(AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID()));
-
+							.setAsyncBatchId(workPackageParameters.getAsyncBatchId()) // don't rely on the shipment schedule to have an asyncBatchId.
+					;
+					
 					workpackageBuilder
 							.parameters()
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_OnlyLUIds, RepoIdAwares.toCommaSeparatedString(workPackageParameters.getOnlyLUIds()))
@@ -229,7 +230,8 @@ public class ShipmentScheduleEnqueuer
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions, workPackageParameters.isOnTheFlyPickToPackingInstructions())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules, workPackageParameters.isCloseShipmentSchedules())
-							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, DeliveryPlanningId.toRepoId(workPackageParameters.getDeliveryPlanningId()));
 
 					// Create a new locker which will grab the locked shipment candidates from 'mainLock'
 					// and it will move them to a new owner which is created per workpackage
@@ -329,7 +331,7 @@ public class ShipmentScheduleEnqueuer
 				// NOTE: when we will add the scheds to workpackages we will move the ICs to another owner and we will also set AutoCleanup=false
 				.setAutoCleanup(true)
 				.setFailIfAlreadyLocked(true)
-				.retryOnFailure(3)
+				.retryOnFailure(10)
 				.setRecordsByFilter(I_M_ShipmentSchedule.class, queryFilters);
 
 		final Set<PickingJobScheduleId> jobScheduleIds = workPackageParameters.getPickingJobScheduleIds();

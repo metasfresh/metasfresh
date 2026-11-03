@@ -14,6 +14,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
@@ -115,7 +116,7 @@ public class AllocationBLTest
 		final Timestamp firstDate = new Timestamp(1000000);
 
 		final I_C_DocType type = newInstance(I_C_DocType.class);
-		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APInvoice);
+		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
 		InterfaceWrapperHelper.save(type);
 
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
@@ -130,6 +131,7 @@ public class AllocationBLTest
 		invoice.setIsSOTrx(true);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
+		invoice.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		InterfaceWrapperHelper.save(invoice);
 
 		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
@@ -162,6 +164,7 @@ public class AllocationBLTest
 		assertThat(lines.get(0).getAmount()).isEqualByComparingTo("10"); // payAmt of payment1
 
 		assertThat(invoiceDAO.retrieveOpenAmt(invoice))
+				.as("OpenAmt")
 				.isEqualByComparingTo(invoice.getGrandTotal().subtract(payment1.getPayAmt()));
 	}
 
@@ -172,7 +175,7 @@ public class AllocationBLTest
 		final Timestamp firstDate = new Timestamp(1000000);
 
 		final I_C_DocType type = newInstance(I_C_DocType.class);
-		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APInvoice);
+		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
 		InterfaceWrapperHelper.save(type);
 
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
@@ -187,6 +190,7 @@ public class AllocationBLTest
 		invoice.setIsSOTrx(true);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
+		invoice.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		InterfaceWrapperHelper.save(invoice);
 
 		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
@@ -254,7 +258,7 @@ public class AllocationBLTest
 		assertThat(lines.get(2).getC_Payment_ID()).isEqualTo(payment3.getC_Payment_ID());
 		assertThat(lines.get(2).getAmount()).isEqualByComparingTo("50"); // payAmt of payment2
 
-		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).isZero();
+		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).as("OpenAmt").isZero();
 	}
 
 	@Test
@@ -264,7 +268,7 @@ public class AllocationBLTest
 		final Timestamp firstDate = new Timestamp(1000000);
 
 		final I_C_DocType type = newInstance(I_C_DocType.class);
-		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APInvoice);
+		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
 		saveRecord(type);
 
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
@@ -279,6 +283,7 @@ public class AllocationBLTest
 		invoice.setIsSOTrx(true);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
+		invoice.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		InterfaceWrapperHelper.save(invoice);
 
 		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
@@ -346,13 +351,13 @@ public class AllocationBLTest
 		assertThat(lines.get(2).getC_Payment_ID()).isEqualTo(payment3.getC_Payment_ID());
 		assertThat(lines.get(2).getAmount()).isEqualByComparingTo("50"); // partial payAmt of payment2
 
-		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).isZero();
+		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).as("OpenAmt").isZero();
 	}
 
 	@Nested
 	class applyBankAccountInvoiceAutoAllocRules
 	{
-		private I_C_Payment payment(@NonNull BankAccountId bankAccountId)
+		private I_C_Payment payment(@NonNull final BankAccountId bankAccountId)
 		{
 			final I_C_Payment payment = newInstance(I_C_Payment.class);
 			payment.setC_BP_BankAccount_ID(bankAccountId.getRepoId());
@@ -361,8 +366,8 @@ public class AllocationBLTest
 		}
 
 		private void bankAccountAndInvoiceDocTypeId(
-				@NonNull BankAccountId bankAccountId,
-				@NonNull DocTypeId invoiceDocTypeId)
+				@NonNull final BankAccountId bankAccountId,
+				@NonNull final DocTypeId invoiceDocTypeId)
 		{
 			final I_C_BP_BankAccount_InvoiceAutoAllocateRule record = newInstance(I_C_BP_BankAccount_InvoiceAutoAllocateRule.class);
 			record.setC_BP_BankAccount_ID(bankAccountId.getRepoId());

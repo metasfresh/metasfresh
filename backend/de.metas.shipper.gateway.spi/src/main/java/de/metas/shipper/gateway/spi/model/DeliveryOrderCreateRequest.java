@@ -1,7 +1,10 @@
 package de.metas.shipper.gateway.spi.model;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.async.AsyncBatchId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -12,6 +15,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Map;
 import java.util.Set;
 
 /*
@@ -42,22 +46,31 @@ public class DeliveryOrderCreateRequest
 	Set<Integer> packageIds;
 	ShipperTransportationId shipperTransportationId;
 
-	String shipperGatewayId;
+	ShipperGatewayId shipperGatewayId;
 
 	LocalDate pickupDate;
 	LocalTime timeFrom;
 	LocalTime timeTo;
 	AsyncBatchId asyncBatchId;
 
+	/**
+	 * Per-shipment-schedule carrier (product + goods-type + services), resolved from the shipment schedule
+	 * (SCHEDULE-SOURCED) by the caller in {@code de.metas.handlingunits.base}.
+	 * {@code ShipperGatewayFacade.createDeliveryOrderKey} reads the carrier from here; commons must not depend
+	 * on the handlingunits module (dependency cycle). A schedule absent from this map carries no resolved carrier.
+	 */
+	@NonNull ImmutableMap<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId;
+
 	@Builder
 	public DeliveryOrderCreateRequest(
 			@NonNull final LocalDate pickupDate,
 			@NonNull @Singular final Set<Integer> packageIds,
 			final ShipperTransportationId shipperTransportationId,
-			@NonNull final String shipperGatewayId,
- 			@Nullable final LocalTime timeFrom,
+			@NonNull final ShipperGatewayId shipperGatewayId,
+			@Nullable final LocalTime timeFrom,
 			@Nullable final LocalTime timeTo,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final AsyncBatchId asyncBatchId,
+			@Nullable final Map<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId)
 	{
 		this.pickupDate = pickupDate;
 		this.packageIds = Check.assumeNotEmpty(packageIds, "packageIds is not empty");
@@ -66,5 +79,6 @@ public class DeliveryOrderCreateRequest
 		this.timeFrom = CoalesceUtil.coalesceNotNull(timeFrom, LocalTime.MIN);
 		this.timeTo = CoalesceUtil.coalesceNotNull(timeTo, LocalTime.MAX);
 		this.asyncBatchId = asyncBatchId;
+		this.carrierByScheduleId = carrierByScheduleId != null ? ImmutableMap.copyOf(carrierByScheduleId) : ImmutableMap.of();
 	}
 }

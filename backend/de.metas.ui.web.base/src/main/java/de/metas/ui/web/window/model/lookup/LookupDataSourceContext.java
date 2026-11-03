@@ -42,6 +42,9 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Stream;
 
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+import static de.metas.util.StringUtils.trimBlankToNull;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -89,16 +92,16 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	public static final String FILTER_Any = "%";
 	private static final String FILTER_Any_SQL = "'%'";
 
-	public static final CtxName PARAM_AD_Language = CtxNames.parseNotNull(Env.CTXNAME_AD_Language);
-	public static final CtxName PARAM_UserRolePermissionsKey = AccessSqlStringExpression.PARAM_UserRolePermissionsKey;
+	@NonNull public static final CtxName PARAM_AD_Language = CtxNames.parseNotNull(Env.CTXNAME_AD_Language);
+	@NonNull public static final CtxName PARAM_UserRolePermissionsKey = AccessSqlStringExpression.PARAM_UserRolePermissionsKey;
 
-	public static final CtxName PARAM_OrgAccessSql = CtxNames.parse("OrgAccessSql");
-	public static final CtxName PARAM_Filter = CtxNames.parse("Filter");
-	public static final CtxName PARAM_FilterSql = CtxNames.parse("FilterSql");
-	public static final CtxName PARAM_FilterSqlWithoutWildcards = CtxNames.parse("FilterSqlWithoutWildcards");
-	public static final CtxName PARAM_ViewId = CtxNames.parse("ViewId");
-	public static final CtxName PARAM_ViewSize = CtxNames.parse("ViewSize");
-	private static final CtxName PARAM_ContextTableName = CtxNames.parse(IValidationContext.PARAMETER_ContextTableName);
+	@NonNull public static final CtxName PARAM_OrgAccessSql = CtxNames.parse("OrgAccessSql");
+	@NonNull public static final CtxName PARAM_Filter = CtxNames.parse("Filter");
+	@NonNull public static final CtxName PARAM_FilterSql = CtxNames.parse("FilterSql");
+	@NonNull public static final CtxName PARAM_FilterSqlWithoutWildcards = CtxNames.parse("FilterSqlWithoutWildcards");
+	@NonNull public static final CtxName PARAM_ViewId = CtxNames.parse("ViewId");
+	@NonNull public static final CtxName PARAM_ViewSize = CtxNames.parse("ViewSize");
+	@NonNull private static final CtxName PARAM_ContextTableName = CtxNames.parse(IValidationContext.PARAMETER_ContextTableName);
 
 	@Nullable private final String lookupTableName;
 	@NonNull private final ImmutableMap<String, Object> parameterValues;
@@ -448,10 +451,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		private Builder(@Nullable final String lookupTableName)
 		{
 			this.lookupTableName = lookupTableName;
-
-			//
-			// Defaults
-			putShowInactive(false);
 		}
 
 		public LookupDataSourceContext build()
@@ -718,6 +717,14 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			if (variableName.getDefaultValue() != CtxNames.VALUE_NULL)
 			{
 				return variableName.getDefaultValue();
+			}
+
+			if (variableName.getName().equals(SqlForFetchingLookups.SQL_PARAM_ShowInactive.getName()))
+			{
+				return coalesceNotNull(
+						trimBlankToNull(SqlForFetchingLookups.SQL_PARAM_ShowInactive.getDefaultValue()),
+						SqlForFetchingLookups.SQL_PARAM_VALUE_ShowInactive_No
+				);
 			}
 
 			// Value not found

@@ -4,8 +4,8 @@
       "orgCode": "001",
       "externalLineId": "externalLineId",
       "externalHeaderId": "externalHeaderId",
+      "externalSystemCode": "ALBERTA",
       "dataSource": "int-Alberta",
-      "dataDest": null,
       "bpartner": {
         "bpartnerIdentifier": "1",
         "bpartnerLocationIdentifier": "1",

@@ -5,27 +5,38 @@ import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
 import { act } from 'react-dom/test-utils';
 
-import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
+import {
+  ShortcutProvider
+} from '../../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
-import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
+import {
+  initialState as windowHandlerState
+} from '../../../reducers/windowHandler';
 
 import Filters from '../../../components/filters/Filters';
+import { initNumeralLocales } from '../../../utils/locale';
 import filtersFixtures from '../../../../test_setup/fixtures/filters.json';
-import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../../test_setup/fixtures/keymap.json';
-import filterData from '../../../../test_setup/fixtures/filters/filterData.json';
-import filtersActive from '../../../../test_setup/fixtures/filters/filtersActive.json';
-import filtersStoreOne from '../../../../test_setup/fixtures/filters/filtersStoreOne.json';
-import filtersStoreTwo from '../../../../test_setup/fixtures/filters/filtersStoreTwo.json';
-import filtersStoreThree from '../../../../test_setup/fixtures/filters/filtersStoreThree.json';
-import filtersStoreFour from '../../../../test_setup/fixtures/filters/filtersStoreFour.json';
-import filtersStoreFacet from '../../../../test_setup/fixtures/filters/filtersStoreFacet.json';
-import filtersStoreInline from '../../../../test_setup/fixtures/filters/filtersStoreInline.json';
+import filterData
+  from '../../../../test_setup/fixtures/filters/filterData.json';
+import filtersActive
+  from '../../../../test_setup/fixtures/filters/filtersActive.json';
+import filtersStoreOne
+  from '../../../../test_setup/fixtures/filters/filtersStoreOne.json';
+import filtersStoreTwo
+  from '../../../../test_setup/fixtures/filters/filtersStoreTwo.json';
+import filtersStoreThree
+  from '../../../../test_setup/fixtures/filters/filtersStoreThree.json';
+import filtersStoreFour
+  from '../../../../test_setup/fixtures/filters/filtersStoreFour.json';
+import filtersStoreFacet
+  from '../../../../test_setup/fixtures/filters/filtersStoreFacet.json';
+import filtersStoreInline
+  from '../../../../test_setup/fixtures/filters/filtersStoreInline.json';
 
 const mockStore = configureStore([]);
 
 const createStore = function (state = {}) {
-  const res = merge(
+  return merge(
     {
       appHandler: {
         ...appHandlerState,
@@ -35,8 +46,6 @@ const createStore = function (state = {}) {
     },
     state
   );
-
-  return res;
 };
 
 const createInitialProps = function (
@@ -53,6 +62,13 @@ const createInitialProps = function (
 };
 
 describe('Filters tests', () => {
+  afterEach(() => {
+    initNumeralLocales('en', {
+      numberDecimalSeparator: '.',
+      numberGroupingSeparator: ',',
+    });
+  });
+
   it('renders without errors', () => {
     const dummyProps = createInitialProps();
     const initialState = createStore({
@@ -126,7 +142,6 @@ describe('Filters tests', () => {
   });
 
   it('renders active filters caption for inline filters', () => {
-    const updateDocListListener = jest.fn();
     const dummyProps = createInitialProps(undefined);
     const initialState = createStore({
       windowHandler: {
@@ -186,7 +201,7 @@ describe('Filters tests', () => {
     });
     const store = mockStore(initialState);
     const wrapper = mount(
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+      <ShortcutProvider>
         <Provider store={store}>
           <div className="document-lists-wrapper">
             <Filters {...dummyProps} />
@@ -225,7 +240,7 @@ describe('Filters tests', () => {
       });
       const store = mockStore(initialState);
       const wrapper = mount(
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <Provider store={store}>
             <div className="document-lists-wrapper">
               <Filters {...dummyProps} />
@@ -270,7 +285,7 @@ describe('Filters tests', () => {
 
       const store = mockStore(initialState);
       const wrapper = mount(
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <Provider store={store}>
             <div className="document-lists-wrapper">
               <Filters {...dummyProps} />
@@ -334,6 +349,77 @@ describe('Filters tests', () => {
       expect(updateDocListListener).toBeCalledWith(filterResult);
     });
 
+    it('keeps what the user types into a number filter, and sends a decimal comma as a dot-decimal (German session)', () => {
+      initNumeralLocales('de', {
+        numberDecimalSeparator: ',',
+        numberGroupingSeparator: '.',
+      });
+      const updateDocListListener = jest.fn();
+      const dummyProps = createInitialProps(undefined, {
+        filtersActive: filtersFixtures.filtersActive3,
+        updateDocList: updateDocListListener,
+      });
+      const initialState = createStore({
+        windowHandler: { allowShortcut: true, modal: { visible: false } },
+        filters: filtersStoreTwo,
+      });
+
+      const wrapper = mount(
+        <ShortcutProvider>
+          <Provider store={mockStore(initialState)}>
+            <div className="document-lists-wrapper">
+              <Filters {...dummyProps} />
+            </div>
+          </Provider>
+        </ShortcutProvider>
+      );
+      wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
+      const typeQtyFrom = (value) => {
+        act(() => {
+          wrapper
+            .find('.form-field-QtyDelivered input')
+            .first()
+            .simulate('change', { target: { value } });
+        });
+        wrapper.update();
+      };
+      const displayedQtyFrom = () =>
+        wrapper.find('.form-field-QtyDelivered input').first().props().value;
+
+      // partial input stays as typed: a lone minus or a trailing comma must not be rewritten while typing
+      typeQtyFrom('-');
+      expect(displayedQtyFrom()).toEqual('-');
+      typeQtyFrom('3,');
+      expect(displayedQtyFrom()).toEqual('3,');
+      typeQtyFrom('3,5');
+      expect(displayedQtyFrom()).toEqual('3,5');
+
+      // typing the other end keeps this one
+      act(() => {
+        wrapper
+          .find('.form-field-QtyDelivered input')
+          .at(1)
+          .simulate('change', { target: { value: '4,5' } });
+      });
+      wrapper.update();
+      const qtyDeliveredState = wrapper
+        .find('FiltersItem')
+        .state()
+        .filter.parameters.find((p) => p.parameterName === 'QtyDelivered');
+      expect([qtyDeliveredState.value, qtyDeliveredState.valueTo]).toEqual(['3.5', '4.5']);
+      expect(displayedQtyFrom()).toEqual('3,5');
+
+      wrapper
+        .find('.filter-widget .filter-btn-wrapper .applyBtn')
+        .simulate('click');
+
+      const appliedFilters = updateDocListListener.mock.calls[0][0];
+      const qtyDelivered = appliedFilters
+        .flatMap((filter) => filter.parameters)
+        .find((p) => p.parameterName === 'QtyDelivered');
+      expect(qtyDelivered.value).toEqual('3.5');
+    });
+
     it('supports selecting filters without parameters', () => {
       const updateDocListListener = jest.fn();
       const dummyProps = createInitialProps(undefined, {
@@ -350,7 +436,7 @@ describe('Filters tests', () => {
       });
       const store = mockStore(initialState);
       const wrapper = mount(
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <Provider store={store}>
             <div className="document-lists-wrapper">
               <Filters {...dummyProps} />

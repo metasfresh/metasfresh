@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_CallOrder;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Commission;
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_CompensationGroup;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_LicenseFee;
@@ -56,7 +57,8 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	MEDIATED_COMMISSION(TYPE_CONDITIONS_MediatedCommission),
 	MARGIN_COMMISSION(TYPE_CONDITIONS_MarginCommission),
 	LICENSE_FEE(TYPE_CONDITIONS_LicenseFee),
-	CALL_ORDER(TYPE_CONDITIONS_CallOrder)
+	CALL_ORDER(TYPE_CONDITIONS_CallOrder),
+	COMPENSATION_GROUP(TYPE_CONDITIONS_CompensationGroup)
 	;
 
 	@Getter

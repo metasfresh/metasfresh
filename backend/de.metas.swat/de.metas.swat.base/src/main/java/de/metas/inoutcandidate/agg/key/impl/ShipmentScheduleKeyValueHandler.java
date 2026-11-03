@@ -27,6 +27,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
@@ -70,8 +71,11 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 		}
 		values.add(sched.getAD_Org_ID());
 
-		if (sched.getM_Shipper_ID() > 0)
+		if (ShipperId.ofRepoIdOrNull(sched.getM_Shipper_ID()) != null)
 		{
+			// Only the carrier *company* is part of the aggregation key. Carrier product and goods-type
+			// intentionally are NOT — that split is handled at the delivery-order (Carrier_ShipmentOrder)
+			// level, sourced from the picking-job line. Do not add them here (it would re-split M_InOut).
 			values.add(sched.getM_Shipper_ID());
 		}
 
@@ -81,6 +85,11 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 		}
 
 		values.add(sched.getExternalHeaderId());
+		
+		if (sched.getExternalSystem_ID() > 0)
+		{
+			values.add(sched.getExternalSystem_ID());
+		}
 
 		return values;
 	}

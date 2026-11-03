@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.async
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 /**
  *
  */
@@ -40,7 +62,7 @@ public interface IAsyncBatchBL extends ISingletonService
 	 */
 	int increaseEnqueued(final I_C_Queue_WorkPackage workPackage);
 
-	int decreaseEnqueued(I_C_Queue_WorkPackage workPackage);
+	void decreaseEnqueued(I_C_Queue_WorkPackage workPackage);
 
 	/**
 	 * update last processed and count processed
@@ -125,7 +147,14 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	Optional<AsyncBatchType> getAsyncBatchType(@NonNull I_C_Async_Batch asyncBatch);
 
+	/**
+	 * Convenience overload that loads the {@link I_C_Async_Batch} record for the given id out-of-trx.
+	 * Returns empty if no such record exists (i.e. {@code retrieveAsyncBatchRecordOutOfTrx} returned {@code null}),
+	 * so callers never dereference a {@code null} record.
+	 */
+	Optional<AsyncBatchType> getAsyncBatchType(@NonNull AsyncBatchId asyncBatchId);
+
 	AsyncBatchType getAsyncBatchTypeById(@NonNull AsyncBatchTypeId asyncBatchTypeId);
 
-	Duration getTimeUntilProcessedRecheck(I_C_Async_Batch asyncBatch);
+	Duration getTimeUntilProcessedRecheck(@NonNull I_C_Async_Batch asyncBatch);
 }

@@ -26,13 +26,16 @@ package org.adempiere.mm.attributes.countryattribute.impl;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
+import org.springframework.stereotype.Component;
 
+@Component
 public class InvoiceLineCountryModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return org.compiere.model.I_C_InvoiceLine.Table_Name;
 	}

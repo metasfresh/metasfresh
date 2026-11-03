@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -15,6 +16,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Getter;
@@ -48,9 +50,18 @@ import java.util.Optional;
 	@Setter
 	private InputDataSourceId inputDataSourceId;
 
+	@Getter
+	@Setter
+	@Nullable
+	private ExternalSystemId externalSystemId;
+
 	private LocalDate dateInvoiced;
 
 	private LocalDate dateAcct;
+
+	@Getter
+	@Setter
+	private LocalDate overrideDueDate;
 
 	@Getter
 	@Setter
@@ -107,6 +118,19 @@ import java.util.Optional;
 
 	private String incotermLocation;
 
+	@Getter @Setter @Nullable
+	private PromotionCodeId promotionCodeId;
+
+	@Getter @Setter @Nullable
+	private PromotionCodeId promotionCode2Id;
+
+	/**
+	 * Caller's explicit Y/N intent for {@code C_Invoice.IsPartialInvoice}; {@code null} means no
+	 * explicit intent. See {@link IInvoiceHeader#getIsPartialInvoice()}.
+	 */
+	@Nullable
+	private Boolean isPartialInvoice;
+
 	/* package */ InvoiceHeaderImpl()
 	{
 	}
@@ -117,6 +141,7 @@ import java.util.Optional;
 		return "InvoiceHeaderImpl ["
 				+ "docBaseType=" + docBaseType
 				+ ", dateInvoiced=" + dateInvoiced
+				+ ", OverrideDueDate=" + overrideDueDate
 				+ ", AD_Org_ID=" + OrgId.toRepoId(orgId)
 				+ ", M_PriceList_ID=" + M_PriceList_ID
 				+ ", isSOTrx=" + isSOTrx
@@ -260,7 +285,6 @@ import java.util.Optional;
 		this.isSOTrx = isSOTrx;
 	}
 
-
 	@Override
 	public int getM_InOut_ID()
 	{
@@ -285,9 +309,6 @@ import java.util.Optional;
 		return Optional.ofNullable(docTypeInvoicingPoolId);
 	}
 
-
-
-
 	@Override
 	public boolean isTakeDocTypeFromPool()
 	{
@@ -298,7 +319,6 @@ import java.util.Optional;
 	{
 		this.isTakeDocTypeFromPool = isTakeDocTypeFromPool;
 	}
-
 
 	@Override
 	public void setDocTypeInvoicingPoolId(@Nullable final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
@@ -424,8 +444,15 @@ import java.util.Optional;
 	}
 
 	@Override
-	public InputDataSourceId getAD_InputDataSource_ID() {	return inputDataSourceId;}
+	public InputDataSourceId getAD_InputDataSource_ID() {return inputDataSourceId;}
 
-	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId){this.inputDataSourceId = inputDataSourceId;}
+	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId) {this.inputDataSourceId = inputDataSourceId;}
+
+	@Override
+	@Nullable
+	public Boolean getIsPartialInvoice() {return isPartialInvoice;}
+
+	@Override
+	public void setIsPartialInvoice(@Nullable final Boolean isPartialInvoice) {this.isPartialInvoice = isPartialInvoice;}
 
 }

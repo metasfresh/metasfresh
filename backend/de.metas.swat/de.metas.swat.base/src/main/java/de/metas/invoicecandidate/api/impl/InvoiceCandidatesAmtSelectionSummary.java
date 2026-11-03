@@ -51,6 +51,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 	private final BigDecimal huNetAmtNotApproved;
 	private final BigDecimal cuNetAmtNotApproved;
 	private final int countTotalToRecompute;
+	private final BigDecimal netOrderValueNextDay;
 
 	private final ImmutableSet<String> currencySymbols;
 
@@ -70,6 +71,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 		cuNetAmtNotApproved = builder.cuNetAmtNotApproved;
 
 		countTotalToRecompute = builder.countTotalToRecompute;
+		netOrderValueNextDay = builder.netOrderValueNextDay;
 		currencySymbols = builder.currencySymbols.build();
 	}
 
@@ -143,6 +145,16 @@ public class InvoiceCandidatesAmtSelectionSummary
 		return countTotalToRecompute;
 	}
 
+	public BigDecimal getNetOrderValueNextDay()
+	{
+		return netOrderValueNextDay;
+	}
+
+	public ITranslatableString getNetOrderValueNextDayAsTranslatableString()
+	{
+		return toTranslatableString(getNetOrderValueNextDay());
+	}
+
 	public Set<String> getCurrencySymbols()
 	{
 		return currencySymbols;
@@ -184,6 +196,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 		private BigDecimal cuNetAmtNotApproved = BigDecimal.ZERO;
 
 		private int countTotalToRecompute = 0;
+		private BigDecimal netOrderValueNextDay = BigDecimal.ZERO;
 		private final ImmutableSet.Builder<String> currencySymbols = ImmutableSet.builder();
 
 		private Builder()
@@ -244,6 +257,13 @@ public class InvoiceCandidatesAmtSelectionSummary
 			Check.assume(countToRecomputeToAdd > 0, "countToRecomputeToAdd > 0");
 			countTotalToRecompute += countToRecomputeToAdd;
 		}
-
+		public Builder addNetOrderValueNextDay(@Nullable final BigDecimal amtToAdd)
+		{
+			if (amtToAdd != null)
+			{
+				netOrderValueNextDay = netOrderValueNextDay.add(amtToAdd);
+			}
+			return this;
+		}
 	}
 }

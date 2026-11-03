@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00280
 @topic:orderDocOutbound
 Feature: Validate order doc outbound log creation
+## F00280: Doc Outbound
   Especially tracing "C_Doc_Outbound_Log.CurrentEMailAddress"
 
   Background:
@@ -52,7 +55,7 @@ Feature: Validate order doc outbound log creation
     And the order identified by order_1 is completed
 
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference       | processed | docStatus | OPT.EMail          |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference       | processed | DocStatus | OPT.EMail          |
       | order_1               | sale_bpartner            | bpLocation                        | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_1128101 | true      | CO        | location@email.com |
 
     And after not more than 60s validate C_Doc_Outbound_Log:
@@ -82,7 +85,7 @@ Feature: Validate order doc outbound log creation
     And the order identified by order_1 is completed
 
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference       | processed | docStatus | OPT.EMail |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference       | processed | DocStatus | OPT.EMail |
       | order_1               | sale_bpartner            | bpLocation                        | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_2085101 | true      | CO        | null      |
 
     And after not more than 60s validate C_Doc_Outbound_Log:

@@ -2,9 +2,9 @@ package de.metas.shipping.api;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,7 +22,11 @@ package de.metas.shipping.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
+import de.metas.handlingunits.impl.ShipperTransportationQuery;
+import de.metas.inout.InOutId;
+import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -33,12 +37,14 @@ import org.compiere.model.I_M_Package;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 
 public interface IShipperTransportationDAO extends ISingletonService
 {
 
-	I_M_ShipperTransportation getById(ShipperTransportationId shipperItransportationId);
+	@NonNull
+	I_M_ShipperTransportation getById(@NonNull ShipperTransportationId shipperItransportationId);
 
 	List<I_M_ShippingPackage> retrieveShippingPackages(@NonNull ShipperTransportationId shipperTransportation);
 
@@ -57,4 +63,26 @@ public interface IShipperTransportationDAO extends ISingletonService
 
 	@NonNull
 	ShipperTransportationId getOrCreate(@NonNull CreateShipperTransportationRequest request);
+
+	/** Persists changes made to an already-loaded transport-order header record. */
+	void save(@NonNull I_M_ShipperTransportation shipperTransportation);
+
+	ImmutableList<OrderId> retrieveOrderIds(@NonNull ShipperTransportationId shipperTransportationId);
+
+	Collection<I_M_ShipperTransportation> getByQuery(@NonNull ShipperTransportationQuery query);
+
+	boolean anyMatch(@NonNull ShipperTransportationQuery query);
+
+	/**
+	 * @return {@code true} if there is at least one active {@link I_M_ShippingPackage} still linking
+	 * 		given {@code inOutId} to given {@code shipperTransportationId}.
+	 */
+	boolean hasActiveShippingPackage(@NonNull InOutId inOutId, @NonNull ShipperTransportationId shipperTransportationId);
+
+	/**
+	 * Clears the {@code M_ShipperTransportation_ID} of the given shipment, but only if it still points to
+	 * {@code expectedCurrentValue} — i.e. it was not concurrently relinked to (or already cleared from)
+	 * something else in the meantime. No-op otherwise.
+	 */
+	void clearShipperTransportationIdIfMatches(@NonNull InOutId inOutId, @NonNull ShipperTransportationId expectedCurrentValue);
 }

@@ -1,0 +1,820 @@
+package de.metas.manufacturing.job.service.commands.receive;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.i18n.AdMessageKey;
+import de.metas.manufacturing.config.ReceiveUnitType;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
+import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.job.model.ReceivingTarget;
+import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
+import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaverSupportingServices;
+import de.metas.manufacturing.job.service.ManufacturingJobService;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewTUTarget;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.scannable_code.ScannedCode;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
+import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+public class ReceiveGoodsCommand
+{
+	private static final AdMessageKey MSG_ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED");
+	private static final AdMessageKey MSG_MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED");
+	private static final AdMessageKey MSG_NOT_ACTIVE_HU = AdMessageKey.of("de.metas.manufacturing.job.service.commands.NOT_ACTIVE_HU");
+	@VisibleForTesting
+	public static final AdMessageKey MSG_CatchWeightReceiveOneAtATime = AdMessageKey.of("MaterialReceipt_CatchWeightReceiveOneAtATime");
+
+	//
+	// Services
+	@NonNull private final ITrxManager trxManager;
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
+	@NonNull private final IHUStatusBL huStatusBL;
+	@NonNull private final IHUAttributesBL huAttributesBL;
+	@NonNull private final IUOMConversionBL uomConversionBL;
+	@NonNull private final IHUPPOrderBL ppOrderBL;
+	@NonNull private final IPPOrderBOMBL ppOrderBOMBL;
+	@NonNull private final ManufacturingJobService jobService;
+	@NonNull private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
+
+	//
+	// Parameters
+	//@NonNull private final ManufacturingJob jobInitial;
+	@NonNull private final FinishedGoodsReceiveLineId finishedGoodsReceiveLineId;
+	@NonNull private final SelectedReceivingTarget receivingTarget;
+	@NonNull private final BigDecimal qtyToReceiveBD;
+	@NonNull private final ZonedDateTime date;
+	@Nullable private final LocalDate bestBeforeDate;
+	@Nullable private final LocalDate productionDate;
+	@Nullable private final String lotNo;
+	@Nullable private final Quantity catchWeight;
+	/**
+	 * Generic editable-attribute values submitted with the receive event, with Lot/Best-before/Production date
+	 * already REMOVED (in the constructor) - those are producer-managed and routed to the
+	 * {@link IPPOrderReceiptHUProducer} setters via {@link #createHUProducer()} so the auto-lot gate and
+	 * creation-time timing stay untouched. Whatever remains here is applied post-creation onto every produced
+	 * HU's attribute storage, guarded by {@code hasAttribute} (see {@link #setSubmittedAttributesForReceivedHUs()}).
+	 */
+	@NonNull private final Map<AttributeCode, String> attributes;
+	@Nullable private final ScannedCode barcode;
+	/** Unit type for receiving goods (CU or TU). Determines how quantities are interpreted and displayed. */
+	@NonNull private final ReceiveUnitType receiveUnitType;
+	/** Required when {@link #receiveUnitType} is TU. If null in TU mode, falls back to CU qty calculation. */
+	@Nullable private final HUPIItemProductId tuPIItemProductIdForTUMode;
+	/**
+	 * The line's {@link de.metas.manufacturing.config.FinishedGoodsReceiveLineConfig#isReceiveOnePiecePerScan()}:
+	 * mandatory catch-weight scan with the weight captured at receipt.
+	 * Then every receipt is exactly one piece carrying its own scanned weight, lot and best-before date, whatever the receive unit type;
+	 * in TU mode those pieces fill the current TU up to its packing capacity.
+	 * Without the weight at receipt the scan only sets lot and best-before date for a normal receipt of N, so this is false.
+	 */
+	private final boolean receiveOnePiecePerScan;
+
+	//
+	// State
+	@NonNull private final PPOrderId ppOrderId;
+	@Nullable private final PPOrderBOMLineId coProductBOMLineId;
+	@NonNull private ManufacturingJob job;
+	@Nullable private I_PP_Order _ppOrder; // lazy
+	@Nullable private I_PP_Order_BOMLine _coProductLine; // lazy
+	@Nullable private Quantity _qtyToReceive; // lazy
+	@NonNull private final ArrayList<I_M_HU> receivedHUs = new ArrayList<>();
+
+	@Builder
+	private ReceiveGoodsCommand(
+			@NonNull final ITrxManager trxManager,
+			@NonNull final IHandlingUnitsBL handlingUnitsBL,
+			@NonNull final IHUStatusBL huStatusBL,
+			@NonNull final IHUAttributesBL huAttributesBL,
+			@NonNull final IUOMConversionBL uomConversionBL,
+			@NonNull final IHUPPOrderBL ppOrderBL,
+			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
+			@NonNull final ManufacturingJobService jobService,
+			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices,
+			//
+			@NonNull final ManufacturingJob job,
+			@NonNull final FinishedGoodsReceiveLineId finishedGoodsReceiveLineId,
+			@NonNull final SelectedReceivingTarget receivingTarget,
+			@NonNull final BigDecimal qtyToReceiveBD,
+			@NonNull final ZonedDateTime date,
+			@Nullable final LocalDate bestBeforeDate,
+			@Nullable final LocalDate productionDate,
+			@Nullable final String lotNo,
+			@Nullable final Quantity catchWeight,
+			@Nullable final Map<AttributeCode, String> attributes,
+			@Nullable final ScannedCode barcode,
+			@Nullable final ReceiveUnitType receiveUnitType,
+			@Nullable final HUPIItemProductId tuPIItemProductIdForTUMode,
+			final boolean receiveOnePiecePerScan)
+	{
+		this.trxManager = trxManager;
+		this.handlingUnitsBL = handlingUnitsBL;
+		this.huStatusBL = huStatusBL;
+		this.huAttributesBL = huAttributesBL;
+		this.uomConversionBL = uomConversionBL;
+		this.ppOrderBL = ppOrderBL;
+		this.ppOrderBOMBL = ppOrderBOMBL;
+		this.jobService = jobService;
+		this.loadingAndSavingSupportServices = loadingAndSavingSupportServices;
+
+		this.finishedGoodsReceiveLineId = finishedGoodsReceiveLineId;
+		this.receivingTarget = receivingTarget;
+		this.qtyToReceiveBD = qtyToReceiveBD;
+		this.date = date;
+		this.catchWeight = catchWeight;
+
+		// Lot / Best-before / Production date are producer-managed: the mobile frontend submits them through
+		// the generic `attributes` map, but they MUST reach the IPPOrderReceiptHUProducer setters (see
+		// createHUProducer) to keep the auto-lot gate (blank Lot -> sequence fires; typed Lot -> suppressed)
+		// and creation-time timing. So extract them from the map here (a non-blank map value wins over the
+		// deprecated dedicated ReceiveFrom field) and REMOVE them - that removal is the runtime-enforced
+		// exclusion stopping setSubmittedAttributesForReceivedHUs from re-stamping them post-creation, which
+		// would otherwise let the producer see a blank Lot and wrongly consume the sequence.
+		// NOTE: plain mutable HashMap - a submitted-but-empty attribute value is a null map value (see
+		// JsonManufacturingOrderEvent.ReceiveFrom#getAttributesAsMap), and ImmutableMap forbids null values.
+		final Map<AttributeCode, String> submittedAttributes = attributes != null ? new HashMap<>(attributes) : new HashMap<>();
+		final String lotNoFromAttributes = StringUtils.trimBlankToNull(submittedAttributes.remove(AttributeConstants.ATTR_LotNumber));
+		final String bestBeforeDateFromAttributes = StringUtils.trimBlankToNull(submittedAttributes.remove(AttributeConstants.ATTR_BestBeforeDate));
+		final String productionDateFromAttributes = StringUtils.trimBlankToNull(submittedAttributes.remove(AttributeConstants.ProductionDate));
+
+		this.lotNo = lotNoFromAttributes != null ? lotNoFromAttributes : StringUtils.trimBlankToNull(lotNo);
+		this.bestBeforeDate = bestBeforeDateFromAttributes != null ? TimeUtil.asLocalDate(bestBeforeDateFromAttributes) : bestBeforeDate;
+		this.productionDate = productionDateFromAttributes != null ? TimeUtil.asLocalDate(productionDateFromAttributes) : productionDate;
+		this.attributes = submittedAttributes;
+		this.barcode = barcode;
+		this.receiveUnitType = receiveUnitType != null ? receiveUnitType : ReceiveUnitType.CU;
+		this.tuPIItemProductIdForTUMode = tuPIItemProductIdForTUMode;
+		this.receiveOnePiecePerScan = receiveOnePiecePerScan;
+
+		// state
+		this.job = job;
+		this.ppOrderId = job.getPpOrderId();
+		this.coProductBOMLineId = job.getFinishedGoodsReceiveLineById(finishedGoodsReceiveLineId).getCoProductBOMLineId();
+	}
+
+	@NonNull
+	public ManufacturingJob execute()
+	{
+		trxManager.runInThreadInheritedTrx(this::execute0);
+		return job;
+	}
+
+	private void execute0()
+	{
+		job = job.withChangedReceiveLine(finishedGoodsReceiveLineId, this::receiveLine);
+		save();
+
+		autoIssueForWhatWasReceived();
+	}
+
+	@NonNull
+	private FinishedGoodsReceiveLine receiveLine(@NonNull final FinishedGoodsReceiveLine line)
+	{
+		getQtyToReceive(); // validate the qty before any HU is created
+
+		@Nullable final ReceivingTarget receivingTarget;
+		if (this.receivingTarget.getReceiveToNewLU() != null)
+		{
+			receivingTarget = receiveToNewLU(this.receivingTarget.getReceiveToNewLU());
+		}
+		else if (this.receivingTarget.getReceiveToQRCode() != null)
+		{
+			receivingTarget = receiveToQRCode(this.receivingTarget.getReceiveToQRCode());
+		}
+		else if (this.receivingTarget.getReceiveToNewTU() != null)
+		{
+			receivingTarget = receiveToNewTU(this.receivingTarget.getReceiveToNewTU());
+		}
+		else
+		{
+			throw new AdempiereException("Unhandled target: " + this.receivingTarget);
+		}
+
+		saveReceivingTargetForLaterUse(receivingTarget);
+		setCatchWeightForReceivedHUs();
+		setSubmittedAttributesForReceivedHUs();
+
+		return line.withQtyReceived(getTotalQtyReceived())
+				.withReceivingTarget(receivingTarget);
+	}
+
+	@Nullable
+	private ReceivingTarget receiveToQRCode(@NonNull final JsonHUQRCodeTarget qrCodeTarget)
+	{
+		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(qrCodeTarget.getHuQRCode().getCode());
+		final HuId existingHUId = loadingAndSavingSupportServices.getHuIdByQRCodeIfExists(qrCode).orElse(null);
+		if (existingHUId == null)
+		{
+			final HUQRCodePackingInfo packingInfo = qrCode.getPackingInfo();
+			final @NonNull HUQRCodeUnitType huUnitType = packingInfo.getHuUnitType();
+			if (HUQRCodeUnitType.TU.equals(huUnitType))
+			{
+				final HuId tuId = receiveSingleTU(packingInfo.getPackingInstructionsId());
+
+				loadingAndSavingSupportServices.assignQRCodeForReceiptHU(qrCode, tuId);
+
+				if (barcode != null)
+				{
+					return ReceivingTarget.ofExistingTUId(tuId);
+				}
+				else
+				{
+					// NOTE: returning null because this receiving target is not re-usable
+					// i.e. receiving again to this HU is not supported
+					// (backwards compatible)
+					return null;
+				}
+			}
+			else
+			{
+				throw new AdempiereException("HU Unit Type is not supported: " + huUnitType);
+			}
+		}
+		else
+		{
+			final I_M_HU existingHU = handlingUnitsBL.getById(existingHUId);
+			assertActive(existingHU);
+
+			if (handlingUnitsBL.isLoadingUnit(existingHU))
+			{
+				return receiveToExistingLU(existingHU, qrCodeTarget.getTuPIItemProductId());
+			}
+			else if (handlingUnitsBL.isTransportUnit(existingHU))
+			{
+				return receiveToExistingTU(existingHU);
+			}
+			else
+			{
+				throw new AdempiereException(MSG_ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED);
+			}
+		}
+	}
+
+	@Nullable
+	private ReceivingTarget receiveToNewLU(@NonNull final JsonNewLUTarget newLUTarget)
+	{
+		final Quantity qtyToReceive = getQtyToReceive();
+		final List<I_M_HU> lus = createHUProducer().receiveLUs(qtyToReceive, newLUTarget.getTuPIItemProductId(), newLUTarget.getLuPIItemId());
+		collectReceivedHUs(lus);
+		if (lus.size() == 1)
+		{
+			setQRCodeAttribute(lus.get(0));
+		}
+
+		//
+		// Case: we received 1 item, usually that's receiving by scanning a QR code
+		// => keep the same LU
+		if (lus.size() == 1 && qtyToReceive.isOne())
+		{
+			return ReceivingTarget.ofExistingLU(lus.get(0), newLUTarget.getTuPIItemProductId());
+		}
+		//
+		// Else, because we are also respecting the qty TUs per LU, it's better to clean up the target after receiving
+		else
+		{
+			return null;
+		}
+	}
+
+	private ReceivingTarget receiveToExistingLU(
+			@NonNull final I_M_HU existingLU,
+			@Nullable final HUPIItemProductId suggestedTUPIItemProductId)
+	{
+		assertMixingDifferentProductsAllowed(existingLU);
+
+		HUPIItemProductId tuPIItemProductId = suggestedTUPIItemProductId;
+		if (tuPIItemProductId == null)
+		{
+			final ReceivingTarget previousReceivingTarget = getPreviousReceivingTarget();
+			tuPIItemProductId = previousReceivingTarget != null ? previousReceivingTarget.getTuPIItemProductId() : null;
+		}
+		if (tuPIItemProductId == null)
+		{
+			throw new AdempiereException("No CU-TU association defined");
+		}
+
+		if (isFillCurrentTUPieceByPiece())
+		{
+			final I_M_HU currentTU = findCurrentNotFullTU(existingLU, tuPIItemProductId).orElse(null);
+			if (currentTU != null)
+			{
+				HUTransformService.newInstance().cusToExistingTU(ImmutableList.of(retrieveSingleVHU()), currentTU);
+				return ReceivingTarget.ofExistingLU(existingLU, tuPIItemProductId);
+			}
+		}
+
+		final List<I_M_HU> tusOrVhus = receiveTUs(tuPIItemProductId);
+		for (final I_M_HU tu : tusOrVhus)
+		{
+			HUTransformService.newInstance().tuToExistingLU(tu, QtyTU.ONE, existingLU);
+		}
+
+		return ReceivingTarget.ofExistingLU(existingLU, tuPIItemProductId);
+	}
+
+	private ReceivingTarget receiveToExistingTU(@NonNull final I_M_HU existingTU)
+	{
+		assertMixingDifferentProductsAllowed(existingTU);
+
+		if (isFillCurrentTUPieceByPiece())
+		{
+			final HUPIItemProduct tuPIItemProduct = getTUPIItemProduct(existingTU).orElse(null);
+			if (tuPIItemProduct != null && isFull(existingTU, tuPIItemProduct))
+			{
+				// the TU is full per its packing => start a new TU of the same packing; it becomes the current TU
+				final I_M_HU newTU = CollectionUtils.singleElement(receiveTUs(tuPIItemProduct.getId()));
+				return placeNextToFullTU(handlingUnitsBL, newTU, existingTU, tuPIItemProduct.getId());
+			}
+		}
+
+		final I_M_HU vhu = retrieveSingleVHU();
+
+		HUTransformService.newInstance().cusToExistingTU(ImmutableList.of(vhu), existingTU);
+		return ReceivingTarget.ofExistingTU(existingTU);
+	}
+
+	private void assertMixingDifferentProductsAllowed(@NotNull final I_M_HU targetHU)
+	{
+		if (isCoProduct())
+		{
+			final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(targetHU);
+			if (!huStorage.isEmptyOrSingleProductStorageMatching(getProductId()))
+			{
+				throw new AdempiereException(MSG_MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED);
+			}
+		}
+	}
+
+	private void assertActive(@NotNull final I_M_HU targetHU)
+	{
+		if (!huStatusBL.isStatusActive(targetHU))
+		{
+			throw new AdempiereException(MSG_NOT_ACTIVE_HU);
+		}
+	}
+
+	private I_PP_Order getPPOrder()
+	{
+		I_PP_Order ppOrder = this._ppOrder;
+		if (ppOrder == null)
+		{
+			ppOrder = this._ppOrder = ppOrderBL.getById(ppOrderId);
+		}
+		return ppOrder;
+	}
+
+	@Nullable
+	private I_PP_Order_BOMLine getCOProductLine()
+	{
+		if (coProductBOMLineId != null)
+		{
+			I_PP_Order_BOMLine coProductLine = this._coProductLine;
+			if (coProductLine == null)
+			{
+				coProductLine = this._coProductLine = ppOrderBOMBL.getOrderBOMLineById(coProductBOMLineId);
+			}
+			return coProductLine;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	private void clearLoadedData()
+	{
+		this._coProductLine = null;
+		this._ppOrder = null;
+	}
+
+	private IPPOrderReceiptHUProducer createHUProducer()
+	{
+		final IPPOrderReceiptHUProducer huProducer;
+		final LocatorId locatorId;
+
+		final I_PP_Order_BOMLine coProductLine = getCOProductLine();
+		if (coProductLine != null)
+		{
+			locatorId = LocatorId.ofRepoId(coProductLine.getM_Warehouse_ID(), coProductLine.getM_Locator_ID());
+			huProducer = ppOrderBL.receivingByOrCoProduct(PPOrderBOMLineId.ofRepoId(coProductLine.getPP_Order_BOMLine_ID()));
+		}
+		else
+		{
+			final I_PP_Order ppOrder = getPPOrder();
+			locatorId = LocatorId.ofRepoId(ppOrder.getM_Warehouse_ID(), ppOrder.getM_Locator_ID());
+			huProducer = ppOrderBL.receivingMainProduct(ppOrderId);
+		}
+
+		StringUtils.trimBlankToOptional(lotNo).ifPresent(huProducer::lotNumber);
+		Optional.ofNullable(bestBeforeDate).ifPresent(huProducer::bestBeforeDate);
+		huProducer.defaultBestBeforeDateFromProduct(); // the mobile client sends a best-before date only if the operator changed the pre-filled default
+		Optional.ofNullable(productionDate).ifPresent(huProducer::productionDate);
+
+		return huProducer
+				.movementDate(date)
+				.locatorId(locatorId);
+	}
+
+	private Quantity getQtyToReceive()
+	{
+		Quantity qtyToReceive = this._qtyToReceive;
+		if (qtyToReceive == null)
+		{
+			qtyToReceive = this._qtyToReceive = computeQtyToReceive();
+		}
+		return qtyToReceive;
+	}
+
+	private Quantity computeQtyToReceive()
+	{
+		final UomId fallbackUomId;
+		final I_PP_Order_BOMLine coProductLine = getCOProductLine();
+		if (coProductLine != null)
+		{
+			fallbackUomId = UomId.ofRepoId(coProductLine.getC_UOM_ID());
+		}
+		else
+		{
+			final I_PP_Order ppOrder = getPPOrder();
+			fallbackUomId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
+		}
+
+		final HUPIItemProduct tuPIItemProductForTUMode = receiveUnitType.isTU() && tuPIItemProductIdForTUMode != null
+				? loadingAndSavingSupportServices.getTUPIItemProduct(tuPIItemProductIdForTUMode)
+				: null;
+
+		return computeQtyToReceive(qtyToReceiveBD, fallbackUomId, tuPIItemProductForTUMode, receiveOnePiecePerScan);
+	}
+
+	@VisibleForTesting
+	static Quantity computeQtyToReceive(
+			@NonNull final BigDecimal qtyToReceiveBD,
+			@NonNull final UomId fallbackUomId,
+			@Nullable final HUPIItemProduct tuPIItemProductForTUMode,
+			final boolean receiveOnePiecePerScan)
+	{
+		if (receiveOnePiecePerScan)
+		{
+			// One receipt = one piece in every receive mode: the qty counts pieces, it is never converted from TUs,
+			// else the one scanned weight would land on the packing's N pieces.
+			final Quantity qtyPieces = Quantitys.of(qtyToReceiveBD, fallbackUomId);
+			if (!qtyPieces.isOne())
+			{
+				throw new AdempiereException(MSG_CatchWeightReceiveOneAtATime, qtyToReceiveBD)
+						.markAsUserValidationError()
+						.setParameter("qtyToReceive", qtyPieces);
+			}
+			return qtyPieces;
+		}
+
+		if (tuPIItemProductForTUMode == null || tuPIItemProductForTUMode.isInfiniteCapacity())
+		{
+			return Quantitys.of(qtyToReceiveBD, fallbackUomId);
+		}
+		return tuPIItemProductForTUMode.computeQtyCUsOfQtyTUs(QtyTU.ofBigDecimal(qtyToReceiveBD));
+	}
+
+	/**
+	 * TU receive mode with one piece per scan (see {@link #receiveOnePiecePerScan}): each receipt adds one piece to the current TU;
+	 * a full TU (per its packing capacity) is followed by a new one. LU aggregation of those TUs is unchanged.
+	 */
+	private boolean isFillCurrentTUPieceByPiece()
+	{
+		return receiveOnePiecePerScan && receiveUnitType.isTU();
+	}
+
+	/**
+	 * @return the newest TU on the LU, if it has the given packing and is not full yet
+	 */
+	private Optional<I_M_HU> findCurrentNotFullTU(@NonNull final I_M_HU lu, @NonNull final HUPIItemProductId tuPIItemProductId)
+	{
+		return findCurrentNotFullTU(
+				handlingUnitsBL.retrieveIncludedHUs(lu),
+				handlingUnitsBL::isTransportUnit,
+				tu -> getTUPIItemProduct(tu)
+						.filter(tuPIItemProduct -> HUPIItemProductId.equals(tuPIItemProduct.getId(), tuPIItemProductId))
+						.filter(tuPIItemProduct -> !isFull(tu, tuPIItemProduct))
+						.isPresent());
+	}
+
+	@VisibleForTesting
+	static Optional<I_M_HU> findCurrentNotFullTU(
+			@NonNull final List<I_M_HU> husOnLU,
+			@NonNull final Predicate<I_M_HU> isRealTU,
+			@NonNull final Predicate<I_M_HU> isOfPackingAndNotFull)
+	{
+		// Only the newest TU can be the current one: the older ones were filled before it was started.
+		// So only that one is checked (packing and capacity cost DB lookups), not every TU on the LU.
+		return husOnLU.stream()
+				.filter(isRealTU)
+				.max(Comparator.comparing(I_M_HU::getM_HU_ID))
+				.filter(isOfPackingAndNotFull);
+	}
+
+	/**
+	 * The new TU started because the full TU was picked belongs where the full TU is: on its LU, which then is the receiving target.
+	 */
+	@VisibleForTesting
+	static ReceivingTarget placeNextToFullTU(
+			@NonNull final IHandlingUnitsBL handlingUnitsBL,
+			@NonNull final I_M_HU newTU,
+			@NonNull final I_M_HU fullTU,
+			@NonNull final HUPIItemProductId tuPIItemProductId)
+	{
+		final I_M_HU lu = handlingUnitsBL.getLoadingUnitHU(fullTU);
+		if (lu == null)
+		{
+			return ReceivingTarget.ofExistingTU(newTU);
+		}
+
+		HUTransformService.newInstance().tuToExistingLU(newTU, QtyTU.ONE, lu);
+		return ReceivingTarget.ofExistingLU(lu, tuPIItemProductId);
+	}
+
+	private Optional<HUPIItemProduct> getTUPIItemProduct(@NonNull final I_M_HU tu)
+	{
+		return loadingAndSavingSupportServices.getTUPIItemProduct(tu, getProductId(), date);
+	}
+
+	private boolean isFull(@NonNull final I_M_HU tu, @NonNull final HUPIItemProduct tuPIItemProduct)
+	{
+		return isFull(tuPIItemProduct, uom -> {
+			final IHUProductStorage productStorage = handlingUnitsBL.getStorageFactory().getStorage(tu).getProductStorageOrNull(getProductId());
+			return productStorage != null ? productStorage.getQty(uom) : Quantity.zero(uom);
+		});
+	}
+
+	/**
+	 * @param qtyInTU the product qty in the TU, in the given UOM; only asked for if the packing has a finite capacity
+	 */
+	@VisibleForTesting
+	static boolean isFull(@NonNull final HUPIItemProduct tuPIItemProduct, @NonNull final Function<I_C_UOM, Quantity> qtyInTU)
+	{
+		if (tuPIItemProduct.isInfiniteCapacity())
+		{
+			return false;
+		}
+
+		final Quantity capacity = tuPIItemProduct.getQtyCUsPerTU();
+		return qtyInTU.apply(capacity.getUOM()).compareTo(capacity) >= 0;
+	}
+
+	@Nullable
+	private ReceivingTarget getPreviousReceivingTarget()
+	{
+		final I_PP_Order_BOMLine coProductLine = getCOProductLine();
+		return coProductLine != null
+				? ManufacturingJobLoaderAndSaver.extractReceivingTarget(coProductLine)
+				: ManufacturingJobLoaderAndSaver.extractReceivingTarget(getPPOrder());
+	}
+
+	private void saveReceivingTargetForLaterUse(@Nullable final ReceivingTarget receivingTarget)
+	{
+		final I_PP_Order_BOMLine coProductLine = getCOProductLine();
+		if (coProductLine != null)
+		{
+			ManufacturingJobLoaderAndSaver.updateRecordFromReceivingTarget(coProductLine, receivingTarget);
+			ppOrderBOMBL.save(coProductLine);
+		}
+		else
+		{
+			final I_PP_Order ppOrder = getPPOrder();
+			ManufacturingJobLoaderAndSaver.updateRecordFromReceivingTarget(ppOrder, receivingTarget);
+			ppOrderBL.save(ppOrder);
+		}
+	}
+
+	@Nullable
+	private ReceivingTarget receiveToNewTU(@NonNull final JsonNewTUTarget newTUTarget)
+	{
+		final HUPIItemProductId tuPIItemProductId = newTUTarget.getTuPIItemProductId();
+		final List<I_M_HU> hus = receiveTUs(tuPIItemProductId);
+
+		if (barcode != null && hus.size() == 1)
+		{
+			return ReceivingTarget.ofExistingTU(hus.get(0));
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	@NonNull
+	private List<I_M_HU> receiveTUs(@NonNull final HUPIItemProductId tuPIItemProductId)
+	{
+		final List<I_M_HU> hus = createHUProducer().receiveTUs(getQtyToReceive(), tuPIItemProductId);
+		collectReceivedHUs(hus);
+
+		if (hus.size() == 1)
+		{
+			setQRCodeAttribute(hus.get(0));
+		}
+
+		return hus;
+	}
+
+	@NonNull
+	private HuId receiveSingleTU(@NonNull final HuPackingInstructionsId tuPackingInstructionsId)
+	{
+		final I_M_HU tu = createHUProducer().receiveSingleTU(getQtyToReceive(), tuPackingInstructionsId);
+		collectReceivedHU(tu);
+		setQRCodeAttribute(tu);
+
+		return HuId.ofRepoId(tu.getM_HU_ID());
+	}
+
+	@NonNull
+	private I_M_HU retrieveSingleVHU()
+	{
+		final I_M_HU vhu = createHUProducer().receiveVHU(getQtyToReceive());
+		collectReceivedHU(vhu);
+		setQRCodeAttribute(vhu);
+
+		return vhu;
+	}
+
+	private void collectReceivedHU(@NonNull final I_M_HU hu)
+	{
+		this.receivedHUs.add(hu);
+	}
+
+	private void collectReceivedHUs(@NonNull final List<I_M_HU> hus)
+	{
+		this.receivedHUs.addAll(hus);
+	}
+
+	private void setCatchWeightForReceivedHUs()
+	{
+		if (catchWeight == null)
+		{
+			return;
+		}
+
+		if (receivedHUs.isEmpty())
+		{
+			//shouldn't happen
+			throw new AdempiereException("No HUs have been received!");
+		}
+
+		final PackedHUWeightNetUpdater weightUpdater = new PackedHUWeightNetUpdater(uomConversionBL,
+				handlingUnitsBL.createMutableHUContextForProcessing(),
+				getProductId(),
+				catchWeight);
+
+		weightUpdater.updatePackToHUs(receivedHUs);
+	}
+
+	/**
+	 * Applies the submitted generic editable-attribute values (Lot/Best-before/Production date already removed
+	 * from the map in the constructor - those go through {@link #createHUProducer()}'s setters) onto every HU of each produced top-level HU's hierarchy
+	 * (LU -&gt; TU -&gt; CU), via {@link IHUAttributesBL#updateHUAttributeRecursive(HuId, HUAttributeUpdateRequest)}
+	 * - the same recursive-walk API {@code AbstractPPOrderReceiptHUProducer#updateReceivedHUs} uses. This matters
+	 * because on the default receive target (aggregate-to-LU), {@link #receivedHUs} holds only the newly-created
+	 * LU wrapper, which carries no product/attribute storage of its own; the recursive walk reaches down to the
+	 * material-carrying TU/CU where the attribute actually lives. A blank/empty value is skipped (v1 does not set
+	 * anything for an empty entry, and nothing is enforced as mandatory). An attribute not present on a given HU's
+	 * storage (not part of that HU's own {@code M_HU_PI_Version}'s {@code M_HU_PI_Attribute} rows) is silently
+	 * skipped too - {@code updateHUAttributeRecursive} applies the same {@code hasAttribute} guard per HU node.
+	 */
+	private void setSubmittedAttributesForReceivedHUs()
+	{
+		if (attributes.isEmpty())
+		{
+			return;
+		}
+
+		for (final I_M_HU hu : receivedHUs)
+		{
+			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+
+			for (final Map.Entry<AttributeCode, String> attributeToSet : attributes.entrySet())
+			{
+				final String value = StringUtils.trimBlankToNull(attributeToSet.getValue());
+				if (value == null)
+				{
+					continue;
+				}
+
+				huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+						.attributeCode(attributeToSet.getKey())
+						.attributeValue(value)
+						.build());
+			}
+		}
+	}
+
+	@NonNull
+	private ProductId getProductId()
+	{
+		final I_PP_Order_BOMLine coProductLine = getCOProductLine();
+		if (coProductLine != null)
+		{
+			return ProductId.ofRepoId(coProductLine.getM_Product_ID());
+		}
+		else
+		{
+			final I_PP_Order ppOrder = getPPOrder();
+			return ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		}
+	}
+
+	@NonNull
+	private Quantity getTotalQtyReceived()
+	{
+		clearLoadedData();
+		final I_PP_Order_BOMLine ppOrderBomLine = getCOProductLine();
+		if (ppOrderBomLine != null)
+		{
+			return loadingAndSavingSupportServices.getQuantities(ppOrderBomLine).getQtyIssuedOrReceived().negate();
+		}
+
+		return loadingAndSavingSupportServices.getQuantities(getPPOrder()).getQtyReceived();
+	}
+
+	private boolean isCoProduct()
+	{
+		return getCOProductLine() != null;
+	}
+
+	private void setQRCodeAttribute(@NonNull final I_M_HU hu)
+	{
+		if (barcode == null) {return;}
+
+		final IAttributeStorage huAttributes = handlingUnitsBL.getAttributeStorage(hu);
+		if (!huAttributes.hasAttribute(HUAttributeConstants.ATTR_QRCode)) {return;}
+
+		huAttributes.setSaveOnChange(true);
+		huAttributes.setValue(HUAttributeConstants.ATTR_QRCode, barcode.getAsString());
+	}
+
+	private void save()
+	{
+		newSaver().saveActivityStatuses(job);
+	}
+
+	@NonNull
+	private ManufacturingJobLoaderAndSaver newSaver() {return new ManufacturingJobLoaderAndSaver(loadingAndSavingSupportServices);}
+
+	private void autoIssueForWhatWasReceived()
+	{
+		job = jobService.autoIssueWhatWasReceived(job, RawMaterialsIssueStrategy.DEFAULT);
+	}
+
+}

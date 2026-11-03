@@ -30,6 +30,7 @@ import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cost.classification.CostClassificationRepository;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
@@ -50,7 +51,6 @@ import de.metas.invoice.matchinv.listeners.MatchInvListenersRegistry;
 import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.money.MoneyService;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.costs.OrderCostRepository;
 import de.metas.order.costs.OrderCostService;
@@ -193,13 +193,14 @@ public class PostDocumentNow_ManualTest
 		return new AcctDocRequiredServicesFacade(
 				modelCacheInvalidationService,
 				elementValueService,
+				new CostClassificationRepository(),
 				new GLCategoryRepository(),
 				bankAccountService,
 				accountProviderFactory,
 				new InvoiceAcctRepository(),
 				matchInvoiceService,
 				orderCostService,
-				new FAOpenItemsService(Optional.empty()),
+				new FAOpenItemsService(elementValueService, Optional.empty()),
 				costingService,
 				new DimensionService(ImmutableList.of()),
 				new SalesRegionService(new SalesRegionRepository()),
@@ -227,10 +228,7 @@ public class PostDocumentNow_ManualTest
 				.services(acctDocRequiredServicesFacade)
 				.acctSchemas(acctSchemas);
 
-		final OrderGroupRepository orderGroupRepository = new OrderGroupRepository(
-				new GroupCompensationLineCreateRequestFactory(),
-				Optional.empty() // advisors
-		);
+		final OrderGroupRepository orderGroupRepository = OrderGroupRepository.newInstanceForUnitTesting();
 
 		for (final I_C_Invoice documentModel : records)
 		{

@@ -1,5 +1,6 @@
 package de.metas.acct.doc;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.GLCategoryRepository;
@@ -7,6 +8,7 @@ import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderFactory;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.DocumentPostMultiRequest;
 import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.IAccountDAO;
@@ -20,8 +22,8 @@ import de.metas.acct.factacct_userchanges.FactAcctUserChangesService;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.acct.vatcode.IVATCodeDAO;
-import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.acct.vatcode.VATCodeMatchingResponse;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
@@ -32,9 +34,13 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cost.classification.CostClassificationCategoryId;
+import de.metas.cost.classification.CostClassificationId;
+import de.metas.cost.classification.CostClassificationRepository;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailReverseRequest;
+import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
@@ -45,6 +51,7 @@ import de.metas.costing.ICostingService;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
@@ -159,6 +166,7 @@ public class AcctDocRequiredServicesFacade
 	@Getter
 	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final ElementValueService elementValueService;
+	private final CostClassificationRepository costClassificationRepository;
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
@@ -265,6 +273,11 @@ public class AcctDocRequiredServicesFacade
 		return validCombination.getElementValueId();
 	}
 
+	public CostClassificationCategoryId getCostClassificationCategoryId(final CostClassificationId costClassificationId)
+	{
+		return costClassificationRepository.getById(costClassificationId).getCostClassificationCategoryId();
+	}
+
 	public CurrencyPrecision getCurrencyStandardPrecision(@NonNull final CurrencyId currencyId)
 	{
 		return currencyDAO.getStdPrecision(currencyId);
@@ -359,6 +372,13 @@ public class AcctDocRequiredServicesFacade
 	public MoveCostsResult moveCosts(@NonNull final MoveCostsRequest request)
 	{
 		return costingService.moveCosts(request);
+	}
+
+	public ImmutableMap<ProductId, CostAmountDetailed> getCostDetailAmountsToPostByProduct(
+			@NonNull final CostingDocumentRef documentRef,
+			@NonNull final AcctSchema as)
+	{
+		return costingService.getCostDetailAmountsToPostByProduct(documentRef, as);
 	}
 
 	public CostDetailCreateResultsList createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
@@ -461,9 +481,21 @@ public class AcctDocRequiredServicesFacade
 		return warehouseBL.getOrgIdByLocatorRepoId(locatorId);
 	}
 
-	public Optional<VATCode> findVATCode(final VATCodeMatchingRequest request)
+	public Optional<VATCodeMatchingResponse> findVATCode(final VATCodeMatchingRequest request)
 	{
 		return vatCodeDAO.findVATCode(request);
+	}
+
+	public Optional<Boolean> findIsSOTrxByCode(
+			@Nullable final String vatCode,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final TaxId taxId)
+	{
+		if (vatCode == null || vatCode.isEmpty())
+		{
+			return Optional.empty();
+		}
+		return vatCodeDAO.findIsSOTrxByCode(vatCode, acctSchemaId, taxId);
 	}
 
 	public Dimension extractDimensionFromModel(final Object model)
@@ -513,6 +545,7 @@ public class AcctDocRequiredServicesFacade
 		//
 		record.setC_Tax_ID(TaxId.toRepoId(factLine.getTaxId()));
 		record.setVATCode(factLine.getVatCode());
+		record.setVATCodeAmountType(factLine.getVatCodeAmountType() != null ? factLine.getVatCodeAmountType().getCode() : null);
 		//
 		record.setAD_Table_ID(factLine.getDocRecordRef().getAD_Table_ID());
 		record.setRecord_ID(factLine.getDocRecordRef().getRecord_ID());
@@ -566,6 +599,9 @@ public class AcctDocRequiredServicesFacade
 
 		record.setOI_TrxType(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getTrxType().getCode() : null);
 		record.setOpenItemKey(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getKey().getAsString() : null);
+
+		record.setC_CostClassification_ID(CostClassificationId.toRepoId(factLine.getCostClassificationId()));
+		record.setC_CostClassification_Category_ID(CostClassificationCategoryId.toRepoId(factLine.getCostClassificationCategoryId()));
 
 		factAcctDAO.save(record);
 		factLine.setId(FactAcctId.ofRepoId(record.getFact_Acct_ID()));

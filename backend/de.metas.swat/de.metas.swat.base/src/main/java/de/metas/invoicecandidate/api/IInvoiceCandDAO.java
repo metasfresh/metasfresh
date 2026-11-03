@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.invoicecandidate.api;
 
 import com.google.common.collect.ImmutableList;
@@ -40,28 +62,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
@@ -210,11 +210,11 @@ public interface IInvoiceCandDAO extends ISingletonService
 	ImmutableSet<InvoiceCandidateId> retrieveReferencingIds(@NonNull TableRecordReference reference);
 
 	/**
-	 * Delete all invoice candidates (active or not) that reference the given {@code model} via their {@code AD_Table_ID} and {@code Record_ID}.
-	 *
-	 * @return number of deleted invoice candidates.
+	 * @return all invoice candidates (active or not) that reference the given {@code model} via their {@code AD_Table_ID} and {@code Record_ID}.
 	 */
-	int deleteAllReferencingInvoiceCandidates(Object model);
+	List<I_C_Invoice_Candidate> retrieveAllReferencingInclInactive(@NonNull Object model);
+
+	void delete(@NonNull I_C_Invoice_Candidate ic);
 
 	/**
 	 * Updates <code>dateInvoiced</code> of candidates from selection.
@@ -323,6 +323,11 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLineId(OrderLineId orderLineId);
 
+	/**
+	 * @return those of the given order lines that have at least one invoice candidate, including inactive ones
+	 */
+	ImmutableSet<OrderLineId> retrieveOrderLineIdsWithInvoiceCandidates(@NonNull Set<OrderLineId> orderLineIds);
+
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(OrderId orderId);
 
 	/**
@@ -407,6 +412,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(PInstanceId pinstanceId);
 
 	InvoiceableInvoiceCandIdResult getFirstInvoiceableInvoiceCandId(OrderId orderId);
+
+	ImmutableSet<InvoiceCandidateId> getIdsByQuery(@NonNull InvoiceCandidateQuery query);
 
 	@Value
 	class InvoiceableInvoiceCandIdResult

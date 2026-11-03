@@ -22,6 +22,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -536,6 +537,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setDocumentNo("000120686");
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		save(invoice);
 
 		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = newInstance(I_C_ReferenceNo_Doc.class);
@@ -545,7 +547,11 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		save(esrReferenceNumberDocument);
 
+		I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class);
+		allocHdr.setC_Currency_ID(currencyEUR.getRepoId());
+		save(allocHdr);
 		I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class);
+		allocAmt.setC_AllocationHdr_ID(allocHdr.getC_AllocationHdr_ID());
 		allocAmt.setWriteOffAmt(new BigDecimal(10.0));
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
@@ -641,6 +647,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		invoice.setDocumentNo("000120686");
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		save(invoice);
 
 		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class);
@@ -655,7 +662,11 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
 		save(esrReferenceNumberDocument);
 
+		I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class);
+		allocHdr.setC_Currency_ID(currencyEUR.getRepoId());
+		save(allocHdr);
 		I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class);
+		allocAmt.setC_AllocationHdr_ID(allocHdr.getC_AllocationHdr_ID());
 		allocAmt.setWriteOffAmt(new BigDecimal(10.0));
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
