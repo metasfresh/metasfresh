@@ -621,6 +621,59 @@ public class C_Order_StepDef
 		}
 	}
 
+	/**
+	 * Completes a prepay order ({@code C_DocType.DocSubType}='PR'), which then waits for its payment ({@code C_Order.DocStatus}='WP').
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And the order identified by o_1 is completed and waits for payment
+	 * </pre>
+	 */
+	@And("^the order identified by (.*) is completed and waits for payment$")
+	public void order_completed_waiting_for_payment(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		order.setDocAction(IDocument.ACTION_Complete);
+		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_WaitingPayment);
+	}
+
+	/**
+	 * Puts a completed order into {@code C_Order.DocStatus}='WP' directly.
+	 * <p>
+	 * In production this state comes from a payment reservation: completing an order of a payment rule that needs one (e.g. PayPal) runs
+	 * {@code OrderPaymentReservationService.createPaymentReservationIfNeeded}, whose {@code PayPalPaymentProcessor.canReserveMoney} needs a PayPal
+	 * processor that the cucumber stack does not have. The state is the one {@code MOrder.completeIt} produces for it.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And the completed order identified by o_paypal is put into waiting for payment as a payment reservation would
+	 * </pre>
+	 */
+	@And("^the completed order identified by (.*) is put into waiting for payment as a payment reservation would$")
+	public void order_put_into_waiting_for_payment_like_a_payment_reservation(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		assertThat(order.getDocStatus()).as("DocStatus of %s", orderIdentifier).isEqualTo(IDocument.STATUS_Completed);
+		order.setDocStatus(IDocument.STATUS_WaitingPayment);
+		saveRecord(order);
+	}
+
+	/**
+	 * Deactivates the order, as a user does by unticking {@code C_Order.IsActive} in the window.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And the order identified by o_1 is deactivated
+	 * </pre>
+	 */
+	@And("^the order identified by (.*) is deactivated$")
+	public void order_deactivated(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		order.setIsActive(false);
+		saveRecord(order);
+	}
+
 	@And("^the order identified by (.*) cannot be (reactivated|completed|closed|voided|reversed)$")
 	public void order_action_not_possible(@NonNull final String orderIdentifier, @NonNull final String action)
 	{

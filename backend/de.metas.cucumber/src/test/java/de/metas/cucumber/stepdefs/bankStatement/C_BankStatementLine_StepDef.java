@@ -23,14 +23,27 @@
 package de.metas.cucumber.stepdefs.bankStatement;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.service.BankStatementLineCreateRequest;
+import de.metas.banking.service.IBankStatementDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.currency.CurrencyRepository;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Order;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -58,6 +71,8 @@ import static org.assertj.core.api.Assertions.*;
 public class C_BankStatementLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
@@ -66,19 +81,22 @@ public class C_BankStatementLine_StepDef
 	private final C_BPartner_StepDefData partnerTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_Payment_StepDefData paymentTable;
+	private final C_Order_StepDefData orderTable;
 
 	public C_BankStatementLine_StepDef(
 			@NonNull final C_BankStatement_StepDefData bankStatementTable,
 			@NonNull final C_BankStatementLine_StepDefData bankStatementLineTable,
 			@NonNull final C_BPartner_StepDefData partnerTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final C_Payment_StepDefData paymentTable)
+			@NonNull final C_Payment_StepDefData paymentTable,
+			@NonNull final C_Order_StepDefData orderTable)
 	{
 		this.bankStatementTable = bankStatementTable;
 		this.bankStatementLineTable = bankStatementLineTable;
 		this.partnerTable = partnerTable;
 		this.invoiceTable = invoiceTable;
 		this.paymentTable = paymentTable;
+		this.orderTable = orderTable;
 	}
 
 	@And("load C_BankStatementLine")
@@ -94,7 +112,7 @@ public class C_BankStatementLine_StepDef
 	/**
 	 * Validates the bank statement lines. All columns are optional except the identifier; a column that is absent or empty is not checked.
 	 * <p>
-	 * {@code OPT.C_BPartner_ID.Identifier} and {@code OPT.C_Invoice_ID.Identifier} may also be {@code null}, which asserts that the line has no partner / no invoice.
+	 * {@code OPT.C_BPartner_ID.Identifier}, {@code OPT.C_Invoice_ID.Identifier} and {@code OPT.C_Order_ID.Identifier} may also be {@code null}, which asserts that the line has no partner / no invoice.
 	 * <pre>{@code
 	 * And validate C_BankStatementLine
 	 *   | C_BankStatementLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier |
@@ -110,6 +128,73 @@ public class C_BankStatementLine_StepDef
 		{
 			validateBankStatementLine(row);
 		}
+	}
+
+	/**
+	 * Adds a line to a draft bank statement, as a user does in window {@code Bankauszug}, tab {@code Auszugs-Position}.
+	 * The amount is both statement and transaction amount; negative = debit (outgoing).
+	 * The order is the one a user picks in field {@code Auftrag}: a callout fills the partner then, which cucumber does not run, so give {@code C_BPartner_ID} too.
+	 *
+	 * @cucumber.columns
+	 * <b>Identifier</b> — (required) alias<br>
+	 * <b>C_BankStatement_ID</b> — (required, identifier-ref)<br>
+	 * <b>Amount</b> — (required) amount with currency code, e.g. {@code 123.52 EUR}<br>
+	 * <b>C_BPartner_ID</b> — (optional, identifier-ref)<br>
+	 * <b>C_Invoice_ID</b> — (optional, identifier-ref)<br>
+	 * <b>C_Order_ID</b> — (optional, identifier-ref) the picked order<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_BankStatementLine:
+	 *   | Identifier | C_BankStatement_ID | Amount     | C_BPartner_ID | C_Order_ID |
+	 *   | bsl_1      | bs_1               | 123.52 EUR | customer      | order_1    |
+	 * </pre>
+	 */
+	@And("metasfresh contains C_BankStatementLine:")
+	public void create_C_BankStatementLine(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_BankStatement bankStatementRecord = row.getAsIdentifier(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID).lookupNotNullIn(bankStatementTable);
+			final Money amount = row.getAsMoney("Amount", currencyRepository::getCurrencyIdByCurrencyCode);
+
+			final BankStatementLineId lineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()
+					.bankStatementId(BankStatementId.ofRepoId(bankStatementRecord.getC_BankStatement_ID()))
+					.orgId(StepDefConstants.ORG_ID)
+					.bpartnerId(row.getAsOptionalIdentifier(I_C_BankStatementLine.COLUMNNAME_C_BPartner_ID)
+							.map(id -> BPartnerId.ofRepoId(id.lookupNotNullIn(partnerTable).getC_BPartner_ID()))
+							.orElse(null))
+					.invoiceId(row.getAsOptionalIdentifier(I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID)
+							.map(id -> InvoiceId.ofRepoId(id.lookupNotNullIn(invoiceTable).getC_Invoice_ID()))
+							.orElse(null))
+					.statementLineDate(row.getAsOptionalLocalDate(I_C_BankStatementLine.COLUMNNAME_StatementLineDate).orElseGet(() -> TimeUtil.asLocalDate(bankStatementRecord.getStatementDate(), orgDAO.getTimeZone(StepDefConstants.ORG_ID))))
+					.statementAmt(amount)
+					.trxAmt(amount)
+					.updateAmountsFromInvoice(false)
+					.build());
+
+			final I_C_BankStatementLine lineRecord = InterfaceWrapperHelper.load(lineId.getRepoId(), I_C_BankStatementLine.class);
+			row.getAsOptionalIdentifier(I_C_BankStatementLine.COLUMNNAME_C_Order_ID)
+					.ifPresent(id -> lineRecord.setC_Order_ID(id.lookupNotNullIn(orderTable).getC_Order_ID()));
+			InterfaceWrapperHelper.saveRecord(lineRecord);
+
+			row.getAsIdentifier().putOrReplace(bankStatementLineTable, lineRecord);
+		});
+	}
+
+	/**
+	 * Changes the partner of the line, as a clerk does in field {@code C_BankStatementLine.C_BPartner_ID}.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And the C_BPartner_ID of the bank statement line identified by bsl_1 is changed to other_partner
+	 * </pre>
+	 */
+	@And("^the C_BPartner_ID of the bank statement line identified by (.*) is changed to (.*)$")
+	public void change_C_BPartner_ID_of_line(@NonNull final String bankStatementLineIdentifier, @NonNull final String partnerIdentifier)
+	{
+		final I_C_BankStatementLine lineRecord = bankStatementLineTable.get(bankStatementLineIdentifier);
+		InterfaceWrapperHelper.refresh(lineRecord);
+		lineRecord.setC_BPartner_ID(partnerTable.get(partnerIdentifier).getC_BPartner_ID());
+		InterfaceWrapperHelper.saveRecord(lineRecord);
 	}
 
 	/**
@@ -208,6 +293,17 @@ public class C_BankStatementLine_StepDef
 			softly.assertThat(invoiceRecord).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice record %s for identifier=%s ", bslIdentifier, invoiceRecord,invoiceIdentifier).isNotNull();
 
 			softly.assertThat(bankStatementLineRecord.getC_Invoice_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice_ID for identifier=%s", bslIdentifier, invoiceIdentifier).isEqualTo(invoiceRecord.getC_Invoice_ID());
+		}
+
+		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (isExplicitNull(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER))
+		{
+			softly.assertThat(bankStatementLineRecord.getC_Order_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_Order_ID", bslIdentifier).isLessThanOrEqualTo(0);
+		}
+		else if (Check.isNotBlank(orderIdentifier))
+		{
+			final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+			softly.assertThat(bankStatementLineRecord.getC_Order_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_Order_ID for identifier=%s", bslIdentifier, orderIdentifier).isEqualTo(orderRecord.getC_Order_ID());
 		}
 
 		final boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_Processed, false);

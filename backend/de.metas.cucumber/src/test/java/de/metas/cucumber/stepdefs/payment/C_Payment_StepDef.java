@@ -45,6 +45,7 @@ import de.metas.cucumber.stepdefs.bankStatement.C_BankStatement_StepDefData;
 import de.metas.cucumber.stepdefs.charge.C_Charge_StepDefData;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -53,6 +54,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -76,6 +78,7 @@ import org.compiere.acct.PostingStatus;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -125,6 +128,7 @@ public class C_Payment_StepDef
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_DocType_StepDefData docTypeTable;
 	private final C_Charge_StepDefData chargeTable;
+	private final C_Order_StepDefData orderTable;
 
 	/**
 	 * Creates one or more {@link I_C_Payment} records in Draft status.
@@ -145,6 +149,7 @@ public class C_Payment_StepDef
 	 *                                {@code C_Prepayment_Acct} (AR) or {@code V_Prepayment_Acct} (AP).
 	 *                                {@code PayAmt} must equal the proforma's {@code GrandTotal}.<br>
 	 *   <b>C_Invoice_ID</b> — (optional, identifier-ref) pre-linked invoice<br>
+	 *   <b>C_Order_ID</b> — (optional, identifier-ref) the order the payment is entered for, as in window {@code Zahlung} field {@code Auftrag}<br>
 	 * @cucumber.depends {@link de.metas.cucumber.stepdefs.C_BPartner_StepDefData},
 	 *                   {@link de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData},
 	 *                   {@link de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData}
@@ -519,6 +524,32 @@ public class C_Payment_StepDef
 		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsPrepayment)
 				.ifPresent(isPrepayment -> softly.assertThat(payment.isPrepayment()).as("IsPrepayment").isEqualTo(isPrepayment));
 
+		// "null" expects the payment to be linked to no bank statement line
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BankStatementLine_ID)
+				.ifPresent(lineIdentifier -> {
+					if (lineIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(payment.getC_BankStatementLine_ID()).as("C_BankStatementLine_ID should not be set").isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						softly.assertThat(payment.getC_BankStatementLine_ID()).as("C_BankStatementLine_ID").isEqualTo(lineIdentifier.lookupNotNullIn(bankStatementLineTable).getC_BankStatementLine_ID());
+					}
+				});
+
+		// "null" expects the payment to carry no order
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Order_ID)
+				.ifPresent(orderIdentifier -> {
+					if (orderIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(payment.getC_Order_ID()).as("C_Order_ID should not be set").isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						softly.assertThat(payment.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderIdentifier.lookupNotNullIn(orderTable).getC_Order_ID());
+					}
+				});
+
 		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
 				.map(invoiceTable::getId)
 				.ifPresent(expectedProformaInvoiceId -> softly.assertThat(payment.getProforma_Invoice_ID()).as("Proforma_Invoice_ID").isEqualTo(expectedProformaInvoiceId.getRepoId()));
@@ -543,6 +574,26 @@ public class C_Payment_StepDef
 				});
 
 		softly.assertAll();
+	}
+
+	/**
+	 * Asserts the number of active payments that carry the given order ({@code C_Payment.C_Order_ID}), whatever their status.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then exactly 0 payments carry the order identified by order_1
+	 * </pre>
+	 */
+	@And("^exactly (\\d+) payments? carr(?:y|ies) the order identified by (.*)$")
+	public void assertPaymentCountOfOrder(final int expectedCount, @NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		final int actualCount = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.count();
+		assertThat(actualCount).as("number of C_Payment with C_Order_ID of %s", orderIdentifier).isEqualTo(expectedCount);
 	}
 
 	@And("^after not more than (.*)s, C_Payment is found")
@@ -634,6 +685,10 @@ public class C_Payment_StepDef
 				.map(invoiceTable::getId)
 				.orElse(null);
 
+		final OrderId orderId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Order_ID)
+				.map(orderIdentifier -> OrderId.ofRepoId(orderIdentifier.lookupNotNullIn(orderTable).getC_Order_ID()))
+				.orElse(null);
+
 		final I_C_Payment payment = (isReceipt ? paymentBL.newInboundReceiptBuilder() : paymentBL.newOutboundPaymentBuilder())
 				.adOrgId(orgId)
 				.bpartnerId(bpartnerId)
@@ -645,6 +700,7 @@ public class C_Payment_StepDef
 				.dateAcct(dateAcct)
 				.invoiceId(invoiceId)
 				.proformaInvoiceId(proformaInvoiceId)
+				.orderId(orderId)
 				.isAutoAllocateAvailableAmt(false)
 				.createDraft();
 

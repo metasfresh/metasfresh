@@ -25,6 +25,11 @@ package de.metas.cucumber.stepdefs.bankStatement;
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.service.BankStatementCreateRequest;
+import de.metas.banking.service.IBankStatementDAO;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -56,6 +61,7 @@ public class C_BankStatement_StepDef
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 	private final C_BankStatement_StepDefData bankStatementTable;
 	private final C_BP_BankAccount_StepDefData bankAccountTable;
@@ -125,6 +131,57 @@ public class C_BankStatement_StepDef
 		final I_C_BankStatement bankStatementRecord = bankStatementTable.get(bankStatementIdentifier);
 		bankStatementRecord.setDocAction(IDocument.ACTION_Complete);
 		documentBL.processEx(bankStatementRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
+	/**
+	 * Completes the statement and asserts that the completion is refused with the given {@code AD_Message.ErrorCode}
+	 * and that the statement is not completed afterwards.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then the C_BankStatement identified by bs_1 is completed expecting error code PAYMENT_BPARTNERMISMATCH_ORDER
+	 * </pre>
+	 */
+	@And("^the C_BankStatement identified by (.*) is completed expecting error code (.*)$")
+	public void complete_C_BankStatement_expecting_error_code(@NonNull final String bankStatementIdentifier, @NonNull final String errorCode)
+	{
+		final I_C_BankStatement bankStatementRecord = bankStatementTable.get(bankStatementIdentifier);
+		bankStatementRecord.setDocAction(IDocument.ACTION_Complete);
+
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> documentBL.processEx(bankStatementRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
+
+		final I_C_BankStatement reloaded = bankStatementDAO.getById(BankStatementId.ofRepoId(bankStatementRecord.getC_BankStatement_ID()));
+		bankStatementTable.putOrReplace(bankStatementIdentifier, reloaded);
+		assertThat(reloaded.isProcessed()).as("C_BankStatement.Processed of %s after the refused completion", bankStatementIdentifier).isFalse();
+		assertThat(reloaded.getDocStatus()).as("C_BankStatement.DocStatus of %s after the refused completion", bankStatementIdentifier).isNotEqualTo(IDocument.STATUS_Completed);
+	}
+
+	/**
+	 * Creates a draft bank statement of an org bank account, as a user does in window {@code Bankauszug}; its lines are added with {@code metasfresh contains C_BankStatementLine:}.
+	 *
+	 * @cucumber.columns
+	 * <b>Identifier</b> — (required) alias<br>
+	 * <b>C_BP_BankAccount_ID</b> — (required, identifier-ref) org bank account<br>
+	 * <b>StatementDate</b> — (required) e.g. {@code 2026-11-03}<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_BankStatement:
+	 *   | Identifier | C_BP_BankAccount_ID | StatementDate |
+	 *   | bs_1       | org_account         | 2026-11-03    |
+	 * </pre>
+	 */
+	@And("metasfresh contains C_BankStatement:")
+	public void create_C_BankStatement(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final BankStatementId bankStatementId = bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
+					.orgId(StepDefConstants.ORG_ID)
+					.orgBankAccountId(bankAccountTable.getOrgBankAccountId(row.getAsIdentifier(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID)))
+					.statementDate(row.getAsLocalDate(I_C_BankStatement.COLUMNNAME_StatementDate))
+					.name(row.getAsOptionalString(I_C_BankStatement.COLUMNNAME_Name).orElseGet(() -> row.suggestValueAndName().getName()))
+					.build());
+			row.getAsIdentifier().putOrReplace(bankStatementTable, bankStatementDAO.getById(bankStatementId));
+		});
 	}
 
 	private void validateBankStatement(@NonNull final Map<String, String> row)
