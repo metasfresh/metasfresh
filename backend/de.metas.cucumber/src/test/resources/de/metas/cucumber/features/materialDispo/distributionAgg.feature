@@ -75,8 +75,8 @@ Feature: create distribution order based on aggregation sysconfig
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Aggregate by both orderId and orderLineId
-    When set sys config boolean value true for sys config DDOrderAggregation.header.bySalesOrderId
-    And set sys config boolean value true for sys config DDOrderAggregation.line.bySalesOrderLineId
+    When temporarily set sys config boolean value true for sys config 'DDOrderAggregation.header.bySalesOrderId'
+    And temporarily set sys config boolean value true for sys config 'DDOrderAggregation.line.bySalesOrderLineId'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | SO1        | true    | bpartner_1    | 2022-07-20  | 2022-07-17T00:00:00Z | targetWH       |
@@ -128,8 +128,8 @@ Feature: create distribution order based on aggregation sysconfig
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Aggregate by orderId
-    When set sys config boolean value true for sys config DDOrderAggregation.header.bySalesOrderId
-    And set sys config boolean value false for sys config DDOrderAggregation.line.bySalesOrderLineId
+    When temporarily set sys config boolean value true for sys config 'DDOrderAggregation.header.bySalesOrderId'
+    And temporarily set sys config boolean value false for sys config 'DDOrderAggregation.line.bySalesOrderLineId'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | SO1        | true    | bpartner_1    | 2022-07-20  | 2022-07-17T00:00:00Z | targetWH       |
@@ -180,8 +180,8 @@ Feature: create distribution order based on aggregation sysconfig
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Aggregate by orderLineId
-    When set sys config boolean value false for sys config DDOrderAggregation.header.bySalesOrderId
-    And set sys config boolean value true for sys config DDOrderAggregation.line.bySalesOrderLineId
+    When temporarily set sys config boolean value false for sys config 'DDOrderAggregation.header.bySalesOrderId'
+    And temporarily set sys config boolean value true for sys config 'DDOrderAggregation.line.bySalesOrderLineId'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | SO1        | true    | bpartner_1    | 2022-07-20  | 2022-07-17T00:00:00Z | targetWH       |
@@ -231,8 +231,8 @@ Feature: create distribution order based on aggregation sysconfig
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: No aggregation by SalesOrderId or SalesOrderLineId
-    When set sys config boolean value false for sys config DDOrderAggregation.header.bySalesOrderId
-    And set sys config boolean value false for sys config DDOrderAggregation.line.bySalesOrderLineId
+    When temporarily set sys config boolean value false for sys config 'DDOrderAggregation.header.bySalesOrderId'
+    And temporarily set sys config boolean value false for sys config 'DDOrderAggregation.line.bySalesOrderLineId'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | SO1        | true    | bpartner_1    | 2022-07-20  | 2022-07-17T00:00:00Z | targetWH       |
@@ -284,7 +284,7 @@ Feature: create distribution order based on aggregation sysconfig
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Planning-less candidates for different products aggregate into one DD_Order when byProductId is off
-    When set sys config boolean value false for sys config DDOrderAggregation.header.byProductId
+    When temporarily set sys config boolean value false for sys config 'DDOrderAggregation.header.byProductId'
     And metasfresh contains DD_Order_Candidates:
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | M_Shipper_ID | Qty   |
       | cand_p1    | p_1          | sourceWH            | targetWH         | shipper      | 2 PCE |
@@ -307,7 +307,7 @@ Feature: create distribution order based on aggregation sysconfig
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Planning-less candidates for different products split into separate DD_Orders when byProductId is on
-    When set sys config boolean value true for sys config DDOrderAggregation.header.byProductId
+    When temporarily set sys config boolean value true for sys config 'DDOrderAggregation.header.byProductId'
     And metasfresh contains DD_Order_Candidates:
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | M_Shipper_ID | Qty   |
       | cand_p1    | p_1          | sourceWH            | targetWH         | shipper      | 2 PCE |

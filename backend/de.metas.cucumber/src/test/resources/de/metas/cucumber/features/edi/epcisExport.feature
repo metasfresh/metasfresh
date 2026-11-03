@@ -1,5 +1,5 @@
 @from:cucumber
-@ghActions:run_on_executor5
+@ghActions:run_on_executor10
 Feature: EPCIS JSON export via get_epcis_events_json_fn
   The SQL function builds EPCIS event JSON from the HU hierarchy.
   Tests create controlled shipment data and validate function execution and JSON structure.

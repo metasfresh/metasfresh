@@ -25,7 +25,9 @@ package de.metas.handlingunits.inout;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingMaterial;
 import de.metas.handlingunits.HuPackingMaterialId;
@@ -45,6 +47,7 @@ import org.compiere.model.I_M_Product;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface IHUPackingMaterialDAO extends ISingletonService
 {
@@ -54,6 +57,15 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 	 * @param pip may be null in which case an empty list is returned
 	 */
 	List<I_M_HU_PackingMaterial> retrievePackingMaterials(final I_M_HU_PI_Item_Product pip);
+
+	/**
+	 * Batch variant of {@link #retrievePackingMaterials(I_M_HU_PI_Item_Product)} that returns only the packing materials' product IDs:
+	 * for each given packing instruction, the products of the active packing materials of the active packing-material items of its PI version.
+	 * <p>
+	 * Packing materials without a product are skipped; a packing instruction with no such product has no entry.
+	 * The number of queries does not depend on the number of given IDs.
+	 */
+	ImmutableSetMultimap<HUPIItemProductId, ProductId> retrievePackingMaterialProductIdsByPIItemProductIds(@NonNull Set<HUPIItemProductId> pipIds);
 
 	/**
 	 * get packing material for a certain product

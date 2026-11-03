@@ -291,7 +291,7 @@ public class DDOrderService
 
 			final IHUPackingAware packingAware = new DDOrderLineHUPackingAware(ddOrderLine);
 
-			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyEntered.intValue());
+			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyEntered);
 		}
 		else
 		{
