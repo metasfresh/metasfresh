@@ -27,11 +27,11 @@
 -- 2. The field's own name element is rewritten (in place; only this field uses it) to "Auftragsart" / "Order Type".
 -- 3. The field is placed on the tab, after "Zahlungsweise Info" and before "Zahlungsbedingung".
 
--- 1. Validation rule: active sales order types except quotation (ON, OB), cost estimate (CE), frame contract (FA),
---    call-off (CAO, OC) and return (RM)
+-- 1. Validation rule: active sales order types of exactly three sub-types: standard order (SO), prepayment order (PR)
+--    and commission order (OOC); every other sales order sub-type (quotation, cost estimate, frame contract, call-off, return, ...) is not offered
 INSERT INTO AD_Val_Rule (AD_Client_ID, AD_Org_ID, AD_Val_Rule_ID, Code, Created, CreatedBy, Description, EntityType, IsActive, Name, Type, Updated, UpdatedBy)
 VALUES (0, 0, 540810 /*From ID Server*/,
-        'C_DocType.IsActive=''Y'' AND C_DocType.DocBaseType=''SOO'' AND C_DocType.IsSOTrx=''Y'' AND COALESCE(C_DocType.DocSubType,'' '') NOT IN (''RM'',''ON'',''OB'',''CE'',''FA'',''CAO'',''OC'')',
+        'C_DocType.IsActive=''Y'' AND C_DocType.DocBaseType=''SOO'' AND C_DocType.IsSOTrx=''Y'' AND C_DocType.DocSubType IN (''SO'',''PR'',''OOC'')',
         TO_TIMESTAMP('2026-11-02 19:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         'Sales order types a customer can have as its order type', 'D', 'Y', 'C_DocType_SalesOrderType_ForBPartner', 'S',
         TO_TIMESTAMP('2026-11-02 19:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100)
