@@ -33,7 +33,9 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.freighcost.FreightCostRule;
@@ -59,6 +61,7 @@ import de.metas.ordercandidate.api.OLCandsProcessorExecutor;
 import de.metas.ordercandidate.api.source.OLCandProcessingHelper;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
@@ -88,6 +91,7 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.MNote;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
@@ -118,6 +122,7 @@ public class OLCandBL implements IOLCandBL
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
@@ -357,8 +362,38 @@ public class OLCandBL implements IOLCandBL
 		final DocTypeId orderDefaultsDocTypeId = orderDefaults == null ? null
 				: orderDefaults.getDocTypeTargetId();
 
-		return coalesce(orderDocTypeId,
-				orderDefaultsDocTypeId);
+		// the partner is loaded only if the candidate carries no order type of its own
+		return CoalesceUtil.coalesceSuppliers(
+				() -> orderDocTypeId,
+				() -> getBPartnerOrderDocTypeId(orderCandidateRecord),
+				() -> orderDefaultsDocTypeId);
+	}
+
+	/**
+	 * @return the sales order type ({@code C_BPartner.SO_DocTypeTarget_ID}) of the candidate's buyer, if it is usable for the candidate:
+	 * active, a sales order type, and of the candidate's organisation or of organisation {@code *}.
+	 */
+	@Nullable
+	private DocTypeId getBPartnerOrderDocTypeId(@Nullable final I_C_OLCand orderCandidateRecord)
+	{
+		if (orderCandidateRecord == null)
+		{
+			return null;
+		}
+
+		final BPartnerId bpartnerId = effectiveValuesBL.getBPartnerEffectiveId(orderCandidateRecord);
+		final DocTypeId docTypeId = bpartnerId == null ? null : bpartnerBL.getSalesOrderDocTypeId(bpartnerId).orElse(null);
+		if (docTypeId == null)
+		{
+			return null;
+		}
+
+		final I_C_DocType docType = docTypeBL.getById(docTypeId);
+		final OrgId docTypeOrgId = OrgId.ofRepoId(docType.getAD_Org_ID());
+		final boolean isUsable = docType.isActive()
+				&& DocBaseType.ofCode(docType.getDocBaseType()).isSalesOrder()
+				&& (docTypeOrgId.isAny() || docTypeOrgId.equals(OrgId.ofRepoId(orderCandidateRecord.getAD_Org_ID())));
+		return isUsable ? docTypeId : null;
 	}
 
 	@Nullable
