@@ -5,6 +5,8 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
 import de.metas.distribution.mobileui.launchers.DistributionLauncherCaptionProvider;
@@ -52,6 +54,8 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final DistributionNetworkRepository distributionNetworkRepository;
 
 	@NonNull public final DDOrderService ddOrderService;
+	@NonNull public final DDOrderCandidateService ddOrderCandidateService;
+	@NonNull public final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 	@NonNull public final DistributionLauncherCaptionProvider distributionLauncherCaptionProvider;
 	@NonNull public final DistributionJobLoaderSupportingServices distributionJobLoaderSupportingServices;
 

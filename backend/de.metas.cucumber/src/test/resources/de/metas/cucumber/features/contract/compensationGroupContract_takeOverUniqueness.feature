@@ -67,3 +67,29 @@ Feature: Compensation-group contract take-over records: uniqueness per settings
     Then creating C_CompensationGroup_ContractSettings_TakeOver_Product is refused with error code ContractCompGroup_TakeOverProductUnique:
       | C_CompensationGroup_ContractSettings_TakeOver_ID | M_Product_ID            |
       | takeOver2                                        | customerDiscountProduct |
+
+  # ##############################################################################################
+  # A refund condition is listed on at most one take-over record per settings,
+  # so that its refund percentage is never counted twice.
+  # The same refund condition on a second take-over record of the same settings is refused.
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S32357_TS6
+  Scenario: The same refund condition on two take-over records of one settings is refused
+    Given metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
+      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID            |
+      | takeOver1  | settings                                | goodsCategory         | ownDiscountProduct      |
+      | takeOver2  | settings                                | foodCategory          | otherOwnDiscountProduct |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier | Name                                   | Type_Conditions |
+      | rvWare1    | RV Ware 1 % vierteljährlich S32357_TS6 | Refund          |
+    And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_RefundCond:
+      | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
+      | takeOver1                                        | rvWare1                  |
+
+    Then creating C_CompensationGroup_ContractSettings_TakeOver_RefundCond is refused with error code ContractCompGroup_TakeOverRefundCondDup:
+      | C_CompensationGroup_ContractSettings_TakeOver_ID | C_Flatrate_Conditions_ID |
+      | takeOver2                                        | rvWare1                  |

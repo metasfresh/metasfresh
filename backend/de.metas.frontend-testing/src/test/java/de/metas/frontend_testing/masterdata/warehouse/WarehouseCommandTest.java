@@ -22,17 +22,24 @@ package de.metas.frontend_testing.masterdata.warehouse;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.IHUWarehouseDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.I_M_Warehouse_SourceHUConfig;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -112,5 +119,34 @@ public class WarehouseCommandTest
 		assertThat(second.getLocatorCode()).isEqualTo(firstLocatorValue);
 		assertThat(InterfaceWrapperHelper.load(first.getLocatorId(), I_M_Locator.class).getValue()).isEqualTo(firstLocatorValue);
 		assertThat(InterfaceWrapperHelper.load(first.getWarehouseId(), I_M_Warehouse.class).getM_Warehouse_PickingGroup_ID()).isEqualTo(firstPickingGroupId);
+	}
+
+	@Test
+	public void receiveAsSourceHU_withCategories()
+	{
+		final I_M_Product_Category categoryRecord = InterfaceWrapperHelper.newInstance(I_M_Product_Category.class);
+		categoryRecord.setValue("foil");
+		categoryRecord.setName("foil");
+		InterfaceWrapperHelper.saveRecord(categoryRecord);
+		final Identifier categoryIdentifier = Identifier.ofString("foilCategory");
+		context.putIdentifier(categoryIdentifier, ProductCategoryId.ofRepoId(categoryRecord.getM_Product_Category_ID()));
+
+		final JsonWarehouseResponse response = commandBuilder(
+				Identifier.ofString("wh"),
+				JsonWarehouseRequest.builder()
+						.receiveAsSourceHU(true)
+						.sourceHUProductCategories(ImmutableList.of(categoryIdentifier))
+						.build())
+				.build()
+				.execute();
+
+		assertThat(InterfaceWrapperHelper.load(response.getWarehouseId(), I_M_Warehouse.class).isReceiveAsSourceHU()).isTrue();
+		final List<I_M_Warehouse_SourceHUConfig> configs = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Warehouse_SourceHUConfig.class)
+				.addEqualsFilter(I_M_Warehouse_SourceHUConfig.COLUMNNAME_M_Warehouse_ID, response.getWarehouseId())
+				.create()
+				.list();
+		assertThat(configs).hasSize(1);
+		assertThat(configs.get(0).getM_Product_Category_ID()).isEqualTo(categoryRecord.getM_Product_Category_ID());
 	}
 }

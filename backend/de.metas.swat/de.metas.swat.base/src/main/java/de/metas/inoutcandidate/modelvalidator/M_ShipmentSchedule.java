@@ -292,21 +292,13 @@ public class M_ShipmentSchedule
 		if (shipmentSchedule.isClosed())
 		{
 			orderBL.closeLine(orderLine);
+			// if nothing was delivered, IsDeliveryClosed=Y makes the candidates processed - see InvoiceCandBL.updateProcessedFlag
 			invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
-
-			// see OrderLineReceiptScheduleListener.onAfterClose - same reasoning, sales side
-			if (orderLine.getQtyDelivered().signum() == 0)
-			{
-				invoiceCandBL.closeInvoiceCandidatesByOrderLineId(orderLineId);
-			}
 		}
 		else
 		{
 			orderBL.reopenLine(orderLine);
 			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
-
-			// see OrderLineReceiptScheduleListener.onAfterReopen - same reasoning, sales side
-			invoiceCandBL.openInvoiceCandidatesByOrderLineId(orderLineId);
 		}
 	}
 

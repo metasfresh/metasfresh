@@ -75,6 +75,15 @@ public class JsonCreateProductRequest
 	 */
 	@Nullable Boolean isSkipDefaultCosts;
 
+	/**
+	 * {@code M_Cost.CurrentCostPrice} (own cost price, in the product's stock UOM) of the costing-method element
+	 * of each accounting schema. When {@code null} the default costs are left untouched.
+	 */
+	@Nullable BigDecimal currentCostPrice;
+
+	/** {@code M_Product.CoProductCostDistributionPercent}; when {@code null} the column stays unset. */
+	@Nullable BigDecimal coProductCostDistributionPercent;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
 	@Nullable GTIN gtin;
@@ -89,6 +98,9 @@ public class JsonCreateProductRequest
 
 	/** M_Product.GuaranteeDaysMin — minimum guaranteed shelf-life days for this product */
 	@Nullable Integer guaranteeDaysMin;
+
+	/** M_Product.BestBeforeDays — total shelf life in days, used to default the best-before date at receipt */
+	@Nullable Integer bestBeforeDays;
 
 	@Nullable BOM bom;
 
@@ -172,6 +184,23 @@ public class JsonCreateProductRequest
 	public static class BOM
 	{
 		@NonNull List<BOMLine> lines;
+		/** optional lot-number sequence of the BOM (PP_Product_BOM.LotNo_Sequence_ID) */
+		@Nullable LotNoSequence lotNoSequence;
+		boolean serialNoSequence;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class LotNoSequence
+	{
+		@Nullable String prefix;
+		/** the lot number is the receipt date (DateSequenceProvider, date format from sysconfig), followed by the counter if a decimal pattern is set */
+		boolean dateBased;
+		@Nullable String decimalPattern;
+		@Nullable Integer currentNext;
+		/** dateBased only: this sequence's own date format (AD_Sequence.DateFormat), instead of the global one */
+		@Nullable String dateFormat;
 	}
 
 	@Value

@@ -38,8 +38,9 @@ import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.util.Env;
+import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -74,11 +75,36 @@ public class AsyncBatchService
 	{
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
+		computeProgress(asyncBatch, trxName)
+				.ifPresent(request -> {
+					Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatch for: asyncBatchID: " + request.getAsyncBatchId() +
+							" allWPSize: " + request.getNoOfEnqueuedWPs() +
+							" processedWPSize: " + request.getNoOfProcessedWPs() +
+							" erroredWPSize: " + request.getNoOfErrorWPs());
+
+					asyncBatchEventBusService.postRequest(request);
+				});
+	}
+
+	/**
+	 * @return the progress of the given async batch's workpackages as currently committed in the DB, or empty if no workpackage qualifies.
+	 */
+	@NonNull
+	private Optional<AsyncBatchNotifyRequest> retrieveCurrentProgress(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
+
+		return computeProgress(asyncBatch, ITrx.TRXNAME_None);
+	}
+
+	@NonNull
+	private Optional<AsyncBatchNotifyRequest> computeProgress(@NonNull final I_C_Async_Batch asyncBatch, @Nullable final String trxName)
+	{
 		final List<I_C_Queue_WorkPackage> workPackages = getWorkPackagesFromCurrentRun(asyncBatch, trxName);
 
 		if (workPackages.isEmpty())
 		{
-			return;
+			return Optional.empty();
 		}
 
 		final int workPackagesProcessedCount = (int)workPackages.stream()
@@ -89,20 +115,13 @@ public class AsyncBatchService
 				.filter(I_C_Queue_WorkPackage::isError)
 				.count();
 
-		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatch for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
-				" allWPSize: " + workPackages.size() +
-				" processedWPSize: " + workPackagesProcessedCount +
-				" erroredWPSize: " + workPackagesWithErrorCount);
-
-		final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
-				.clientId(Env.getClientId())
-				.asyncBatchId(AsyncBatchId.toRepoId(asyncBatchId))
+		return Optional.of(AsyncBatchNotifyRequest.builder()
+				.clientId(ClientId.ofRepoId(asyncBatch.getAD_Client_ID()))
+				.asyncBatchId(asyncBatch.getC_Async_Batch_ID())
 				.noOfProcessedWPs(workPackagesProcessedCount)
 				.noOfEnqueuedWPs(workPackages.size())
 				.noOfErrorWPs(workPackagesWithErrorCount)
-				.build();
-
-		asyncBatchEventBusService.postRequest(request);
+				.build());
 	}
 
 	/**
@@ -139,7 +158,10 @@ public class AsyncBatchService
 		// remove that other caller's registration and release its lock.
 		// So: observeOn stays outside the try - if it fails, we registered nothing and must remove nothing;
 		// and waitToBeProcessed already removes our registration itself, also when it fails.
-		asyncBatchObserver.observeOn(asyncBatchId);
+		//
+		// dev-note: the observer re-confirms a notified "all processed" with the current count; a foreign workpackage of the same
+		// async batch might have notified it before our own workpackages were committed
+		asyncBatchObserver.observeOn(asyncBatchId, () -> retrieveCurrentProgress(asyncBatchId));
 
 		final T result;
 		boolean registrationRemovedByWait = false;

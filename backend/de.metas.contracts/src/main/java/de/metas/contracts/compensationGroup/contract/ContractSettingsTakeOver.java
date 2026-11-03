@@ -1,6 +1,7 @@
 package de.metas.contracts.compensationGroup.contract;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.ConditionsId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -33,7 +34,8 @@ import lombok.Value;
 /**
  * One take-over record of a contract's compensation-group settings: for products of {@link #productCategoryId},
  * the customer's contract discount lines for {@link #customerDiscountProductIds} are taken over onto the purchase order
- * as a line of {@link #ownLineProductId}.
+ * as a line of {@link #ownLineProductId}; the customer's qualifying refund contracts of {@link #refundConditionsIds} are added to that line,
+ * whose summed percentage is rounded to {@link #percentagePrecision} decimals.
  */
 @Value
 @Builder
@@ -44,4 +46,8 @@ public class ContractSettingsTakeOver
 	/** the discount product of the purchase order's own take-over line */
 	@NonNull ProductId ownLineProductId;
 	@NonNull @Singular ImmutableSet<ProductId> customerDiscountProductIds;
+	/** decimals of the take-over line's summed percentage; defaults to 2, the AD default of the column PercentagePrecision */
+	@Builder.Default int percentagePrecision = 2;
+	/** the refund conditions whose qualifying refund contracts are taken over */
+	@NonNull @Singular ImmutableSet<ConditionsId> refundConditionsIds;
 }
