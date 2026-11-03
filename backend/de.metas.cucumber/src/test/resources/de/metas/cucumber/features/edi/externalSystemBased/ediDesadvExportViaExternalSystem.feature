@@ -2,12 +2,18 @@
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00350_EDI
 @F00350
-@ghActions:run_on_executor3
+@ghActions:run_on_executor10
 Feature: EDI DESADV export via External System
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    # The step "the external system sends an error response" POSTs to api/v2/externalsystem/externalstatus and
+    # expects HTTP 200, i.e. synchronous processing. Self-contained: do not rely on a feature that ran earlier on the
+    # same executor having created such an API_Audit_Config (SeqNo=9 takes precedence over the seeded configs).
+    And the following API_Audit_Config records are created:
+      | Identifier  | SeqNo | OPT.Method | OPT.PathPrefix                       | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | wait4result | 9     | POST       | api/v2/externalsystem/externalstatus | N                     | Y                                | N                 |
     And metasfresh has date and time 2025-05-15T16:30:17+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -65,9 +71,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_1 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_1      | ol_1                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_1      | ol_1                      | N             | 100          |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -133,9 +140,10 @@ Feature: EDI DESADV export via External System
 
     And the order identified by o_2 is completed
 
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_2      | ol_2_1                    | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_2      | ol_2_1                    | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |

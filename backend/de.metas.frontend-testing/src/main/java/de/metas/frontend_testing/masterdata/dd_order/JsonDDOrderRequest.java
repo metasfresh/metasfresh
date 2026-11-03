@@ -39,5 +39,15 @@ public class JsonDDOrderRequest
 		@Nullable Identifier locatorTo;
 		@NonNull Identifier product;
 		@NonNull BigDecimal qtyEntered;
+
+		/**
+		 * Sales-order line this DD_OrderLine is demand for — mirrors {@code JsonPPOrderRequest#salesOrderLine}
+		 * ({@link de.metas.frontend_testing.masterdata.pp_order.PPOrderCommand}): a fixture-only link by
+		 * {@link Identifier}, set directly on {@code DD_OrderLine.C_OrderLineSO_ID}, without simulating the real
+		 * material-disposition candidate pipeline that populates it in production. Lets a test build the exact
+		 * DB shape the sales-order-line demand route reads (e.g.
+		 * {@code DDOrderLineDemandSqlHelper.byCarrierProductIds}).
+		 */
+		@Nullable Identifier salesOrderLine;
 	}
 }

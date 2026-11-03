@@ -7,15 +7,6 @@ import { POSOrderPanel } from "../../utils/screens/pos/POSOrderPanel";
 import { POSCashWithdrawalModal } from "../../utils/screens/pos/POSCashWithdrawalModal";
 import { POSCashJournalModals } from "../../utils/screens/pos/POSCashJournalModals";
 
-let previousSysconfigs = null;
-
-// Restore in an afterEach so it also runs when the test body fails or times out.
-test.afterEach(async () => {
-    if (previousSysconfigs && Object.keys(previousSysconfigs).length > 0) {
-        await Backend.setSysconfigs(previousSysconfigs);
-    }
-});
-
 // de_DE login: rendered amounts use comma decimals (see exactTextMatch in posText.js).
 const createMasterdata = async () => {
     const masterdata = await Backend.createMasterdata({
@@ -33,7 +24,6 @@ const createMasterdata = async () => {
         },
     });
 
-    previousSysconfigs = masterdata.previousSysconfigs;
     return masterdata;
 };
 

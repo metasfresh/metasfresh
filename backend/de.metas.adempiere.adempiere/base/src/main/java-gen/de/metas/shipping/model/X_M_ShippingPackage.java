@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_ShippingPackage, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1336235374L;
+	private static final long serialVersionUID = 44445256L;
 
     /** Standard Constructor */
     public X_M_ShippingPackage (final Properties ctx, final int M_ShippingPackage_ID, @Nullable final String trxName)
@@ -38,8 +38,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	@Override
 	public void setActualDischargeQuantity (final BigDecimal ActualDischargeQuantity)
 	{
-		set_Value (COLUMNNAME_ActualDischargeQuantity, ActualDischargeQuantity);
-	}
+		throw new IllegalArgumentException ("ActualDischargeQuantity is virtual column");	}
 
 	@Override
 	public BigDecimal getActualDischargeQuantity() 
@@ -51,8 +50,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	@Override
 	public void setActualLoadQty (final BigDecimal ActualLoadQty)
 	{
-		set_Value (COLUMNNAME_ActualLoadQty, ActualLoadQty);
-	}
+		throw new IllegalArgumentException ("ActualLoadQty is virtual column");	}
 
 	@Override
 	public BigDecimal getActualLoadQty() 
@@ -349,6 +347,30 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
+	public void setPlannedDischargeQuantity (final @Nullable BigDecimal PlannedDischargeQuantity)
+	{
+		throw new IllegalArgumentException ("PlannedDischargeQuantity is virtual column");	}
+
+	@Override
+	public BigDecimal getPlannedDischargeQuantity() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedDischargeQuantity);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPlannedLoadedQuantity (final @Nullable BigDecimal PlannedLoadedQuantity)
+	{
+		throw new IllegalArgumentException ("PlannedLoadedQuantity is virtual column");	}
+
+	@Override
+	public BigDecimal getPlannedLoadedQuantity() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedLoadedQuantity);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setProcessed (final boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Processed);
@@ -406,5 +428,39 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTU);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setTransportProductNos (final @Nullable java.lang.String TransportProductNos)
+	{
+		throw new IllegalArgumentException ("TransportProductNos is virtual column");	}
+
+	@Override
+	public java.lang.String getTransportProductNos() 
+	{
+		return get_ValueAsString(COLUMNNAME_TransportProductNos);
+	}
+
+	@Override
+	public void setTransportQtys (final @Nullable BigDecimal TransportQtys)
+	{
+		throw new IllegalArgumentException ("TransportQtys is virtual column");	}
+
+	@Override
+	public BigDecimal getTransportQtys() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TransportQtys);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setTransportUOM_ID (final int TransportUOM_ID)
+	{
+		throw new IllegalArgumentException ("TransportUOM_ID is virtual column");	}
+
+	@Override
+	public int getTransportUOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_TransportUOM_ID);
 	}
 }

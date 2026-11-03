@@ -15,6 +15,8 @@ import de.metas.distribution.mobileui.external_services.hu.HUInfo;
 import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
 import de.metas.distribution.mobileui.external_services.product.ProductInfo;
 import de.metas.distribution.mobileui.external_services.sourcedoc.DistributionSourceDocService;
+import de.metas.distribution.mobileui.external_services.sourcedoc.SourceDocPickingNoteLines;
+import de.metas.distribution.mobileui.external_services.sourcedoc.SourceDocPickingNotesLoader;
 import de.metas.distribution.mobileui.external_services.sourcedoc.ManufacturingOrderRef;
 import de.metas.distribution.mobileui.external_services.sourcedoc.PlantInfo;
 import de.metas.distribution.mobileui.external_services.sourcedoc.SalesOrderRef;
@@ -42,6 +44,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +63,7 @@ public class DistributionJobLoaderSupportingServices
 	@NonNull private final DistributionWarehouseService warehouseService;
 	@NonNull private final DistributionHUService huService;
 	@NonNull private final DistributionSourceDocService sourceDocService;
+	@NonNull private final SourceDocPickingNotesLoader sourceDocPickingNotesLoader;
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
@@ -145,6 +149,12 @@ public class DistributionJobLoaderSupportingServices
 	{
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_BOMLine_ID());
 		return orderBOMLineId != null ? sourceDocService.getPickingInstruction(orderBOMLineId) : TranslatableStrings.empty();
+	}
+
+	@NonNull
+	public SourceDocPickingNoteLines getSourceDocPickingNoteLines(@NonNull final Collection<I_DD_Order> ddOrders)
+	{
+		return sourceDocPickingNotesLoader.load(ddOrders);
 	}
 
 	@NonNull

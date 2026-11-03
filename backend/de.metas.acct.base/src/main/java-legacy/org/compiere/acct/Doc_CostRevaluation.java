@@ -32,10 +32,10 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 		this.costRevaluation = CostRevaluationRepository.fromRecord(costRevaluationRecord);
 	}
 
-	/** {@code true} when this is a value-neutral {@code CopyFromCostElement} switch (vs. a {@code Calculated} revaluation). */
-	public boolean isCopyFromCostElementSource()
+	/** {@code true} for a {@code Manual} revaluation (vs. a value-neutral {@code CopyFromCostElement} switch). */
+	public boolean isManualSource()
 	{
-		return costRevaluation.getRevaluationSource().isCopyFromCostElement();
+		return costRevaluation.getRevaluationSource().isManual();
 	}
 
 	@Override
@@ -48,6 +48,12 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 
 	private ImmutableList<DocLine_CostRevaluation> loadDocLines()
 	{
+		// A reversed revaluation has given back its cost changes and a voided one has booked nothing; posting either must not reach the costing engine.
+		if (costRevaluation.getDocStatus().isReversedOrVoided())
+		{
+			return ImmutableList.of();
+		}
+
 		return costRevaluationRepository.streamAllLineRecordsByCostRevaluationId(costRevaluation.getCostRevaluationId())
 				.filter(I_M_CostRevaluationLine::isActive)
 				.sorted(Comparator.comparing(I_M_CostRevaluationLine::getM_CostRevaluationLine_ID))
@@ -76,13 +82,17 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 	private void createFactsForLine(@NonNull final Fact fact, @NonNull final DocLine_CostRevaluation docLine)
 	{
 		final AcctSchema acctSchema = fact.getAcctSchema();
+		// Amount is determined at posting from stock on hand
 		final CostAmount costs = docLine.getCreateCosts(acctSchema);
 
 		//
-		// Revenue
-		// -------------------
-		// Product Asset DR
-		// Revenue               CR
+		// Cost adjustment — booked symmetrically against the neutral cost-adjustment account, never
+		// Revenue/Expense (an inventory write-up to Revenue is impermissible under HGB).
+		// -------------------------------------------------------------------------------------------
+		// Increase (delta >= 0):  Product Asset      DR delta
+		//                         Cost Adjustment        CR delta
+		// Decrease (delta <  0):  Cost Adjustment    DR |delta|
+		//                         Product Asset          CR |delta|
 		if (costs.signum() >= 0)
 		{
 			fact.createLine()
@@ -94,32 +104,26 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 
 			fact.createLine()
 					.setDocLine(docLine)
-					.setAccount(docLine.getAccount(ProductAcctType.P_Revenue_Acct, acctSchema))
+					.setAccount(docLine.getAccount(ProductAcctType.P_CostAdjustment_Acct, acctSchema))
 					.setAmtSource(null, costs)
 					// .locatorId(line.getM_Locator_ID()) // N/A atm
 					.buildAndAdd();
 		}
-		//
-		// Expense
-		// ------------------------------------
-		// Product Asset            CR
-		// Expense          DR
 		else // deltaAmountToBook.signum() < 0
 		{
+			fact.createLine()
+					.setDocLine(docLine)
+					.setAccount(docLine.getAccount(ProductAcctType.P_CostAdjustment_Acct, acctSchema))
+					.setAmtSource(costs.negate(), null)
+					// .locatorId(line.getM_Locator_ID()) // N/A atm
+					.buildAndAdd();
+
 			fact.createLine()
 					.setDocLine(docLine)
 					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, acctSchema))
 					.setAmtSource(null, costs.negate())
 					// .locatorId(line.getM_Locator_ID()) // N/A atm
 					.buildAndAdd();
-
-			fact.createLine()
-					.setDocLine(docLine)
-					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, acctSchema))
-					.setAmtSource(costs.negate(), null)
-					// .locatorId(line.getM_Locator_ID()) // N/A atm
-					.buildAndAdd();
-
 		}
 	}
 }

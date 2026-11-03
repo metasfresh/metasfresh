@@ -41,6 +41,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderQuery;
+import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
@@ -358,6 +359,17 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.idsAsSet(OrderId::ofRepoId);
 	}
 
+	@Override
+	public List<I_C_Order> getByLinkOrderId(@NonNull final OrderId linkOrderId)
+	{
+		return createQueryBuilder()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkOrderId)
+				.orderBy(I_C_Order.COLUMNNAME_C_Order_ID)
+				.create()
+				.list();
+	}
+
 	private IQueryBuilder<I_C_Order> createQueryBuilder()
 	{
 		return Services.get(IQueryBL.class)
@@ -524,6 +536,15 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.addCompareFilter(I_C_OrderLine.COLUMNNAME_QtyDelivered, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	public boolean isCalibrationRuleUsed(@NonNull final CalibrationRuleId calibrationRuleId)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_CompensationGroup_CalibrationRule_ID, calibrationRuleId)
 				.create()
 				.anyMatch();
 	}
