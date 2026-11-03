@@ -625,9 +625,9 @@ jobs:
           mkdir cucumber
           docker pull metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}):/compose.yml" . && docker rm tempcopytainer
-          docker-compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
+          docker compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
           docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
-          docker-compose down
+          docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
       - name: push-database-images
         uses: nick-fields/retry@v3
@@ -665,7 +665,7 @@ jobs:
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
         run: |
-          docker-compose up -d
+          docker compose up -d
       - name: Make the script files executable
         working-directory: docker-builds/health/
         if: success() || failure()
@@ -716,11 +716,11 @@ jobs:
 #        if: success() || failure()
 #        run: |
 #          ./apiHealthChecks.sh
-      - name: create docker-compose summary
+      - name: create docker compose summary
         working-directory: docker-builds/compose/
         if: success() || failure()
         run: |
-          docker-compose ps -a
+          docker compose ps -a
           docker inspect --format "{{json .State.Health }}" compose_db_1 | jq
           docker inspect --format "{{json .State.Health }}" compose_webapi_1 | jq
           docker inspect --format "{{json .State.Health }}" compose_app_1 | jq
@@ -735,7 +735,7 @@ jobs:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
         if: success() || failure()
         run: | 
-          docker-compose down
+          docker compose down
 
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
