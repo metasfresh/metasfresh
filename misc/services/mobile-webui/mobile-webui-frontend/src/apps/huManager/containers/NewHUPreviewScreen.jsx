@@ -6,7 +6,7 @@ import { clearLoadedData } from '../actions';
 import { getNewHUPreviewFromGlobalState } from '../reducers';
 import { huManagerLocation } from '../routes';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import { resolveLocatorQRCode } from '../../../api/warehouse';
+import { toLocatorQRCode } from '../../../api/warehouse';
 import ReadQtyDialog from '../../../components/dialogs/ReadQtyDialog';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import Button from '../../../components/buttons/Button';
@@ -80,7 +80,7 @@ const NewHUPreviewScreen = () => {
   // replaces the location at once; any other code is refused (error toast + error beep, thrown to the scanner) and changes nothing.
   // Nothing is remembered for the next label.
   const onScanned = async ({ scannedBarcode }) => {
-    const locatorQRCode = await resolveLocatorQRCode({ scannedBarcode }).catch((error) => {
+    const locatorQRCode = await toLocatorQRCode({ scannedBarcode }).catch((error) => {
       if (axios.isAxiosError(error)) throw error; // a failed call keeps its own message
       throw trl('huManager.newHU.notALocator');
     });

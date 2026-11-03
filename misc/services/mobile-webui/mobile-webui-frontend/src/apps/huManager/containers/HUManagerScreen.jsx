@@ -45,9 +45,8 @@ const HUManagerScreen = () => {
   const [currentLocatorQRCode, setCurrentLocatorQRCode] = useState();
   const [handlingUnitInfo, setHandlingUnitInfo] = useHandlingUnitInfo();
 
-  // A scanned code that is no HU: when the role may create HUs from a label, show what the label would create (or its
-  // rejection as the one error message); without the action the scanner keeps today's not-found error.
-  const onHUNotFound = async ({ scannedBarcode }) => {
+  // A scanned code that is no HU: show what a label would create, or its rejection as the one error message.
+  const proposeNewHU = async ({ scannedBarcode }) => {
     const proposal = await api.proposeHUFromScannedCode({ scannedCode: scannedBarcode });
     if (proposal.rejection) {
       throw proposal.rejection.message;
@@ -221,7 +220,7 @@ const HUManagerScreen = () => {
     return (
       <HUScanner
         onResolvedBarcode={(handlingUnitInfo) => setHandlingUnitInfo(handlingUnitInfo)}
-        onHUNotFound={actions.includes('createHU') ? onHUNotFound : undefined}
+        onHUNotFound={actions.includes('createHU') ? proposeNewHU : undefined}
       />
     );
   }
