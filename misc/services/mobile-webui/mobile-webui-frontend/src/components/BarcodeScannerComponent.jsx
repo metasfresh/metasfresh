@@ -14,12 +14,17 @@ import BarcodeScannerFooter from './BarcodeScanner/BarcodeScannerFooter';
 
 const TOAST_ID = 'BarcodeScannerComponentError';
 
-// One error toast at a time (a repeated scan error must not stack), but every toast gets its own id: a toast shown right
-// after the previous one was closed must not reuse that id, else it flashes and disappears (the closed toast's removal
-// still hits the same id).
+// Prop `uniqueErrorToastIds`: one error toast at a time (a repeated scan error must not stack), but every toast gets its
+// own id: a toast shown right after the previous one was closed must not reuse that id, else it flashes and disappears
+// (the closed toast's removal still hits the same id). Without the prop: the fixed TOAST_ID.
 let lastErrorToastId = null;
 let errorToastSeq = 0;
-const showErrorToastOnce = (showToast) => {
+const showErrorToast = ({ once, showToast }) => {
+  if (!once) {
+    showToast(TOAST_ID);
+    return;
+  }
+
   if (lastErrorToastId && toast.isActive(lastErrorToastId)) {
     return;
   }
@@ -33,6 +38,7 @@ const BarcodeScannerComponent = ({
   onResolvedResult,
   inputPlaceholderText,
   invisible,
+  uniqueErrorToastIds,
 }) => {
   const { enabledModes, defaultMode, okBeepParams, errorBeepParams, scanDuplicatesIntervalMillis } = useConfigParams({
     invisible,
@@ -90,7 +96,10 @@ const BarcodeScannerComponent = ({
       console.debug('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
-        showErrorToastOnce((toastId) => toastError({ plainMessage: resolvedResult.error, toastId }));
+        showErrorToast({
+          once: uniqueErrorToastIds,
+          showToast: (toastId) => toastError({ plainMessage: resolvedResult.error, toastId }),
+        });
         beep(errorBeepParams);
         scanningStatus.done = false; // not done yet
         onError?.();
@@ -101,7 +110,7 @@ const BarcodeScannerComponent = ({
       }
     } catch (error) {
       beep(errorBeepParams);
-      showErrorToastOnce((toastId) => toastErrorFromObj(error, toastId));
+      showErrorToast({ once: uniqueErrorToastIds, showToast: (toastId) => toastErrorFromObj(error, toastId) });
       onError?.();
     } finally {
       scanningStatus.running = false;
@@ -180,6 +189,8 @@ BarcodeScannerComponent.propTypes = {
   inputPlaceholderText: PropTypes.string,
   onResolvedResult: PropTypes.func.isRequired,
   invisible: PropTypes.bool,
+  /** one error toast at a time, each with its own id; default: the fixed id */
+  uniqueErrorToastIds: PropTypes.bool,
 };
 
 BarcodeScannerComponent.defaultProps = {

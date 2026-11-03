@@ -18,10 +18,10 @@ jest.mock('../utils/audio', () => ({ beep: jest.fn() }));
 jest.mock('../utils/toast', () => ({ toastErrorFromObj: jest.fn() }));
 jest.mock('react-toastify', () => ({ toast: { isActive: jest.fn() } }));
 
-// A scan error toast: one at a time (a repeated error must not stack), but every toast gets its own id.
-// A toast shown right after the previous one was closed must not reuse the previous id, else it flashes
-// and vanishes (HU Manager: the 2nd consecutive rejection was never seen).
-describe('BarcodeScannerComponent — scan error toast ids', () => {
+// Without the prop `uniqueErrorToastIds` the error toast uses the fixed id. With it: one error toast at a time (a repeated
+// error must not stack), but every toast gets its own id — a toast shown right after the previous one was closed must not
+// reuse the previous id, else it flashes and vanishes (the 2nd consecutive error was never seen).
+describe('BarcodeScannerComponent — scan error toast', () => {
   const scan = async (value) => {
     const input = screen.getByTestId('qrCode-input');
     await act(async () => {
@@ -30,20 +30,40 @@ describe('BarcodeScannerComponent — scan error toast ids', () => {
     });
   };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
+  const renderScanner = (extraProps) => {
     const store = createStore(combineReducers({ settings: settingsReducer }));
     render(
       <Provider store={store}>
         <BarcodeScannerComponent
           onResolvedResult={jest.fn()}
           resolveScannedBarcode={jest.fn(() => Promise.reject(new Error('rejected')))}
+          {...extraProps}
         />
       </Provider>
     );
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('gives a new toast its own id once the previous toast was closed', async () => {
+  it('without uniqueErrorToastIds, every error toast uses the fixed id', async () => {
+    renderScanner();
+    toast.isActive.mockReturnValue(false);
+
+    await scan('code-1');
+    await scan('code-2');
+
+    expect(toastErrorFromObj).toHaveBeenCalledTimes(2);
+    expect(toastErrorFromObj.mock.calls.map((call) => call[1])).toEqual([
+      'BarcodeScannerComponentError',
+      'BarcodeScannerComponentError',
+    ]);
+    expect(toast.isActive).not.toHaveBeenCalled();
+  });
+
+  it('opt-in: gives a new toast its own id once the previous toast was closed', async () => {
+    renderScanner({ uniqueErrorToastIds: true });
     toast.isActive.mockReturnValue(false);
 
     await scan('code-1');
@@ -56,7 +76,8 @@ describe('BarcodeScannerComponent — scan error toast ids', () => {
     expect(secondId).not.toEqual(firstId);
   });
 
-  it('shows no second toast while the previous one is still open', async () => {
+  it('opt-in: shows no second toast while the previous one is still open', async () => {
+    renderScanner({ uniqueErrorToastIds: true });
     // a toast of this test is open as soon as the first one was shown (the module keeps the last id across tests)
     toast.isActive.mockImplementation(() => toastErrorFromObj.mock.calls.length > 0);
 

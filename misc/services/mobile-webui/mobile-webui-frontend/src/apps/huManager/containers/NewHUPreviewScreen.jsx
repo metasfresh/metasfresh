@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import * as api from '../api';
-import { handlingUnitLoaded } from '../actions';
+import { clearLoadedData } from '../actions';
 import { getNewHUPreviewFromGlobalState } from '../reducers';
 import { huManagerLocation } from '../routes';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
@@ -17,8 +17,9 @@ import PropTypes from 'prop-types';
 
 /**
  * The "New HU" preview of the HU Manager: shown after a scanned product label found no existing HU.
- * Shows what the label would create; OK creates the HU (one single-HU inventory on the server) and opens the standard
- * HU info screen with the new HU, Cancel creates nothing.
+ * Shows what the label would create; OK creates the HU (one single-HU inventory on the server), shows a success message naming
+ * the HU and the quantity and goes back to the scan screen (the new HU is NOT opened: the user scans the next label, or types the
+ * HU number from the message to open it); Cancel creates nothing.
  */
 const NewHUPreviewScreen = () => {
   const { history } = useScreenDefinition({
@@ -38,7 +39,8 @@ const NewHUPreviewScreen = () => {
   const isCreatingRef = useRef(false); // synchronous guard against a double tap on OK (state updates are async)
 
   useEffect(() => {
-    if (!preview) {
+    // no preview (e.g. a page reload) -> back to the scan screen; not after OK, which leaves the screen itself (history.replace below)
+    if (!preview && !isCreatingRef.current) {
       history.goBack();
     }
   }, [preview]);
@@ -57,14 +59,15 @@ const NewHUPreviewScreen = () => {
     api
       .createHUFromScannedCode({ scannedCode, qty, locatorQRCode: locator.qrCode })
       .then((handlingUnitInfo) => {
-        dispatch(handlingUnitLoaded({ handlingUnitInfo }));
         toastNotification({
           plainMessage: trl('huManager.newHU.created', {
             huValue: handlingUnitInfo.displayName,
             qty: `${qty} ${proposal.uom}`,
           }),
         });
-        history.push(huManagerLocation());
+        // clear the preview: back on the scan screen it cannot be shown again, so a second OK cannot create a second HU
+        history.replace(huManagerLocation());
+        dispatch(clearLoadedData());
       })
       .catch((axiosError) => {
         isCreatingRef.current = false;
