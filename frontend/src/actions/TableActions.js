@@ -185,7 +185,7 @@ export function createTableData(rawData) {
     expandedDepth: rawData.expandedDepth,
     collapsible: rawData.collapsible,
     indentSupported: rawData.supportTree,
-    allowNew: rawData.allowNew ?? true,
+    ...createTableData_NewDocumentPermission(rawData),
   };
 
   // we're removing any keys without a value ta make merging with the existing data
@@ -201,6 +201,30 @@ export function createTableData(rawData) {
     {}
   );
 }
+
+/**
+ * @summary the create permission as the server stated it on this response — `allowNew` plus the
+ * standard actions it transmits as disabled-with-a-reason (`JSONViewResult`, set by
+ * `ViewRestController.setNewDocumentPermission`), so the grid can grey them instead of dropping them.
+ *
+ * A response that carries no `allowNew` transmitted no permission at all — a layout-only seed
+ * (`createGridTable`), or a tab table. Both fields then stay `null`, i.e. *not stated yet*, rather
+ * than fabricating "allowed": an omitted flag must not fail open (AC15). `getMasterViewStandardActions`
+ * is the single place that turns this into an enabled state.
+ *
+ * When the permission *is* stated, both fields are always written, because a later page fetch which
+ * carries no disabled action has to clear a previously stored one.
+ */
+const createTableData_NewDocumentPermission = (rawData) => {
+  if (rawData.allowNew === undefined || rawData.allowNew === null) {
+    return { allowNew: null, disabledStandardActions: null };
+  }
+
+  return {
+    allowNew: rawData.allowNew,
+    disabledStandardActions: rawData.disabledStandardActions ?? [],
+  };
+};
 
 const createTableData_Columns = (rawData) => {
   if (!rawData.elements) return undefined;

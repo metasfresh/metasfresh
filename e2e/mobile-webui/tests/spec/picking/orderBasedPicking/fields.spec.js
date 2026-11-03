@@ -31,6 +31,7 @@ test('Expect PRODUCT_NO displayed on picking line', async ({ page }) => {
                     allowPickingAnyHU: true,
                     pickTo: ['LU_TU', 'TU', 'LU_CU', 'CU'],
                     shipOnCloseLU: false,
+                    anonymousPickHUsOnTheFly: false,
                     readAttributes: [],
                     fields: [
                         { field: 'PRODUCT_NO' },

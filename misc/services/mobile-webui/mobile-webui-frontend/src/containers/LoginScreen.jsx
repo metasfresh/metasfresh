@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import ScreenToaster from '../components/ScreenToaster';
 import LogoHeader from '../components/LogoHeader';
 import { useMobileConfiguration } from '../api/configuration';
 import ButtonWithIndicator from '../components/buttons/ButtonWithIndicator';
@@ -68,7 +67,6 @@ const LoginScreen = () => {
           onSetAuthMethodClicked={handleSetAuthMethod}
         />
       )}
-      <ScreenToaster />
     </div>
   );
 };
@@ -90,26 +88,20 @@ const LoginView = ({
       <LoginMethodPanel authMethod={currentAuthMethod} />
       {availableAuthMethods && availableAuthMethods.length === 2 && (
         <div className="section is-size-5" style={{ paddingTop: 0 }}>
-          <div className="container px-6">
-            <ButtonWithIndicator
-              caption={trl('login.alternativeMethods')}
-              onClick={() =>
-                onSetAuthMethodClicked(availableAuthMethods.find((method) => method !== currentAuthMethod))
-              }
-              additionalCssClass={'alternative-button'}
-            />
-          </div>
+          <ButtonWithIndicator
+            caption={trl('login.alternativeMethods')}
+            onClick={() => onSetAuthMethodClicked(availableAuthMethods.find((method) => method !== currentAuthMethod))}
+            additionalCssClass={'alternative-button'}
+          />
         </div>
       )}
       {availableAuthMethods && availableAuthMethods.length > 2 && (
         <div className="section is-size-5" style={{ paddingTop: 0 }}>
-          <div className="container px-6">
-            <ButtonWithIndicator
-              caption={trl('login.alternativeMethods')}
-              onClick={onAlternativeAuthMethodClicked}
-              additionalCssClass={'alternative-button'}
-            />
-          </div>
+          <ButtonWithIndicator
+            caption={trl('login.alternativeMethods')}
+            onClick={onAlternativeAuthMethodClicked}
+            additionalCssClass={'alternative-button'}
+          />
         </div>
       )}
     </>

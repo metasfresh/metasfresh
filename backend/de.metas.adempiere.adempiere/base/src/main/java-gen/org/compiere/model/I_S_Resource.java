@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for S_Resource
  *  @author metasfresh (generated) 
@@ -73,31 +72,6 @@ public interface I_S_Resource
 	int getAD_User_ID();
 
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
-
-	/**
-	 * Set Workplace.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Workplace_ID (int C_Workplace_ID);
-
-	/**
-	 * Get Workplace.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Workplace_ID();
-
-	@Nullable org.compiere.model.I_C_Workplace getC_Workplace();
-
-	void setC_Workplace(@Nullable org.compiere.model.I_C_Workplace C_Workplace);
-
-	ModelColumn<I_S_Resource, org.compiere.model.I_C_Workplace> COLUMN_C_Workplace_ID = new ModelColumn<>(I_S_Resource.class, "C_Workplace_ID", org.compiere.model.I_C_Workplace.class);
-	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
 
 	/**
 	 * Set Capacity Per Production Cycle.
@@ -185,6 +159,33 @@ public interface I_S_Resource
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Workplace.
+	 * Logical area within a warehouse, to which one or more Workstations can be assigned. An operator logs into exactly one Workplace per shift. The associated warehouse (M_Warehouse_ID) drives the storage location of the work performed there.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Workplace_ID (int C_Workplace_ID);
+
+	/**
+	 * Get Workplace.
+	 * Logical area within a warehouse, to which one or more Workstations can be assigned. An operator logs into exactly one Workplace per shift. The associated warehouse (M_Warehouse_ID) drives the storage location of the work performed there.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Workplace_ID();
+
+	@Nullable org.compiere.model.I_C_Workplace getC_Workplace();
+
+	void setC_Workplace(@Nullable org.compiere.model.I_C_Workplace C_Workplace);
+
+	ModelColumn<I_S_Resource, org.compiere.model.I_C_Workplace> COLUMN_C_Workplace_ID = new ModelColumn<>(I_S_Resource.class, "C_Workplace_ID", org.compiere.model.I_C_Workplace.class);
+	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
 
 	/**
 	 * Set Daily Capacity.
@@ -297,6 +298,7 @@ public interface I_S_Resource
 
 	/**
 	 * Set Manufacturing Resource.
+	 * Marks the resource as relevant for manufacturing. Only S_Resource records flagged accordingly appear in the manufacturing module's selection lists and can be scanned as a Workstation in MobileUI.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -306,6 +308,7 @@ public interface I_S_Resource
 
 	/**
 	 * Get Manufacturing Resource.
+	 * Marks the resource as relevant for manufacturing. Only S_Resource records flagged accordingly appear in the manufacturing module's selection lists and can be scanned as a Workstation in MobileUI.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -317,7 +320,29 @@ public interface I_S_Resource
 	String COLUMNNAME_IsManufacturingResource = "IsManufacturingResource";
 
 	/**
+	 * Set Lot Number Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLotNumberCode (@Nullable java.lang.String LotNumberCode);
+
+	/**
+	 * Get Lot Number Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLotNumberCode();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_LotNumberCode = new ModelColumn<>(I_S_Resource.class, "LotNumberCode", null);
+	String COLUMNNAME_LotNumberCode = "LotNumberCode";
+
+	/**
 	 * Set Manufacturing Resource Type.
+	 * Type of manufacturing resource: Workstation (physical scannable device), Work Center (aggregate within a Plant), Plant (manufacturing site), Production Line, or External System.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -327,6 +352,7 @@ public interface I_S_Resource
 
 	/**
 	 * Get Manufacturing Resource Type.
+	 * Type of manufacturing resource: Workstation (physical scannable device), Work Center (aggregate within a Plant), Plant (manufacturing site), Production Line, or External System.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false

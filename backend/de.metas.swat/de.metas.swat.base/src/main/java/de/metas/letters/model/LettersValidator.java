@@ -184,6 +184,7 @@ public class LettersValidator implements ModelValidator
 			.put(X_C_DocType.DOCBASETYPE_ARReceipt, I_C_Payment.Table_Name)
 			.put(X_C_DocType.DOCBASETYPE_SalesOrder, I_C_Order.Table_Name)
 			.put(X_C_DocType.DOCBASETYPE_ARProFormaInvoice, I_C_Invoice.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_APProFormaInvoice, I_C_Invoice.Table_Name)
 			.put(X_C_DocType.DOCBASETYPE_MaterialDelivery, I_M_InOut.Table_Name)
 			.put(X_C_DocType.DOCBASETYPE_MaterialReceipt, I_M_InOut.Table_Name)
 			.put(X_C_DocType.DOCBASETYPE_MaterialMovement, I_M_Movement.Table_Name)

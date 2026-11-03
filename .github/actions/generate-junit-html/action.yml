@@ -31,9 +31,13 @@ runs:
       uses: ./.github/actions/setup-allure
 
     # Download previous history from last run on same branch
+    # The history only feeds the trend charts. A transport error while fetching it (e.g. "other side closed")
+    # must not fail the job: the report is then generated without trends. Test results are not affected.
     - name: Download previous Allure history
+      id: download-history
       if: inputs.history-artifact-name != ''
-      uses: dawidd6/action-download-artifact@v6
+      continue-on-error: true
+      uses: dawidd6/action-download-artifact@v21
       with:
         name: ${{ inputs.history-artifact-name }}
         path: junit-history-temp
@@ -135,7 +139,7 @@ runs:
         fi
 
     - name: Upload report artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: success() || failure()
       with:
         name: ${{ inputs.artifact-name }}
@@ -143,9 +147,10 @@ runs:
         retention-days: ${{ inputs.retention-days }}
 
     # Upload history for next build (enables trends over time)
+    # Skip after a failed history download: uploading only this run's history (overwrite) would reset the trend chain.
     - name: Upload history for trends
-      if: inputs.history-artifact-name != '' && (success() || failure())
-      uses: actions/upload-artifact@v4
+      if: inputs.history-artifact-name != '' && (success() || failure()) && steps.download-history.outcome != 'failure'
+      uses: actions/upload-artifact@v6
       with:
         name: ${{ inputs.history-artifact-name }}
         path: ${{ inputs.output-dir }}/history

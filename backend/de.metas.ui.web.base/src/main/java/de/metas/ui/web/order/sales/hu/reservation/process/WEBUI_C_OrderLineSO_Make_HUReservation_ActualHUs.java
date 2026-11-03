@@ -48,15 +48,13 @@ import java.util.stream.Collectors;
  * #L%
  */
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public class WEBUI_C_OrderLineSO_Make_HUReservation_ActualHUs
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition
 {
-	@Autowired
-	private HUReservationService huReservationService;
-
-	@Autowired
-	private SalesOrderLineRepository salesOrderLineRepository;
+	@Autowired private HUReservationService huReservationService;
+	@Autowired private SalesOrderLineRepository salesOrderLineRepository;
 
 	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -67,13 +65,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation_ActualHUs
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository)
-				.orElse(null);
-		if (salesOrderLine == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No sales order was set");
-		}
-
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
 		final ProductId productId = salesOrderLine.getProductId();
 		final Quantity reservableQty = retrieveReservableQuantity(productId);
 		if (reservableQty.signum() <= 0)
@@ -119,9 +111,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation_ActualHUs
 	@Override
 	protected String doIt()
 	{
-		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository)
-				.orElseThrow(() -> new AdempiereException("Sales order line not found"));
-
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository);
 		final ImmutableList<HuId> selectedHuIds = streamSelectedHUIds(Select.ALL)
 				.collect(ImmutableList.toImmutableList());
 		if (selectedHuIds.isEmpty())

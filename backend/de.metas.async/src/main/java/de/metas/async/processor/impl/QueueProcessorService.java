@@ -74,6 +74,7 @@ public class QueueProcessorService
 			asyncProcessorPlanner.addQueueProcessor(queueProcessor);
 			asyncProcessorPlanner.start();
 
+			// dev-note: no re-check of the notified progress is needed here: all workpackages were assigned and committed before observing
 			asyncBatchObserver.observeOn(asyncBatchId);
 			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
 		}

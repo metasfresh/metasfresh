@@ -61,6 +61,12 @@ public final class JsonOLCandCreateBulkResponse
 		return new JsonOLCandCreateBulkResponse(null, ImmutableList.of(error));
 	}
 
+	@NonNull
+	public static JsonOLCandCreateBulkResponse errors(@NonNull final List<JsonErrorItem> errors)
+	{
+		return new JsonOLCandCreateBulkResponse(null, errors);
+	}
+
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Getter
 	private final List<JsonOLCand> result;
