@@ -1,9 +1,8 @@
 package de.metas.inoutcandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -31,7 +30,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Inputsource.
+	 * Set Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -40,7 +39,7 @@ public interface I_M_ShipmentSchedule
 	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
-	 * Get Inputsource.
+	 * Get Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -558,7 +557,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_C_BPartner_Override_ID = "C_BPartner_Override_ID";
 
 	/**
-	 * Set C_BPartner_Vendor_ID.
+	 * Set Vendor.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -567,7 +566,7 @@ public interface I_M_ShipmentSchedule
 	void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID);
 
 	/**
-	 * Get C_BPartner_Vendor_ID.
+	 * Get Vendor.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -840,7 +839,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Shipmentdate.
+	 * Set Delivery Date.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -849,7 +848,7 @@ public interface I_M_ShipmentSchedule
 	void setDeliveryDate (@Nullable java.sql.Timestamp DeliveryDate);
 
 	/**
-	 * Get Shipmentdate.
+	 * Get Delivery Date.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1121,6 +1120,33 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
 
 	/**
+	 * Set Color for short-term availability problem.
+	 * Color to use when flagging sale order lines where the current stock minus foreseeable shipments is not sufficient to fulfill the ordered quantity.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInsufficientQtyAvailableForSalesColor_ID (int InsufficientQtyAvailableForSalesColor_ID);
+
+	/**
+	 * Get Color for short-term availability problem.
+	 * Color to use when flagging sale order lines where the current stock minus foreseeable shipments is not sufficient to fulfill the ordered quantity.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getInsufficientQtyAvailableForSalesColor_ID();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_InsufficientQtyAvailableForSalesColor_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "InsufficientQtyAvailableForSalesColor_ID", null);
+	String COLUMNNAME_InsufficientQtyAvailableForSalesColor_ID = "InsufficientQtyAvailableForSalesColor_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -1208,6 +1234,7 @@ public interface I_M_ShipmentSchedule
 
 	/**
 	 * Set Delivery Stop.
+	 * Delivery / order stop
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1217,6 +1244,7 @@ public interface I_M_ShipmentSchedule
 
 	/**
 	 * Get Delivery Stop.
+	 * Delivery / order stop
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1958,6 +1986,33 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
+	 * Set Available at short notice.
+	 * Current stock minus foreseeable shipments in the respective product's stocking UOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQtyAvailableForSales (@Nullable BigDecimal QtyAvailableForSales);
+
+	/**
+	 * Get Available at short notice.
+	 * Current stock minus foreseeable shipments in the respective product's stocking UOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getQtyAvailableForSales();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyAvailableForSales = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyAvailableForSales", null);
+	String COLUMNNAME_QtyAvailableForSales = "QtyAvailableForSales";
+
+	/**
 	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
@@ -2201,6 +2256,27 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyScheduledForPicking = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyScheduledForPicking", null);
 	String COLUMNNAME_QtyScheduledForPicking = "QtyScheduledForPicking";
+
+	/**
+	 * Set Processed Qty Scheduled for Picking.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyScheduledForPickingOfProcessed (@Nullable BigDecimal QtyScheduledForPickingOfProcessed);
+
+	/**
+	 * Get Processed Qty Scheduled for Picking.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyScheduledForPickingOfProcessed();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyScheduledForPickingOfProcessed = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyScheduledForPickingOfProcessed", null);
+	String COLUMNNAME_QtyScheduledForPickingOfProcessed = "QtyScheduledForPickingOfProcessed";
 
 	/**
 	 * Set Quantity to Deliver.

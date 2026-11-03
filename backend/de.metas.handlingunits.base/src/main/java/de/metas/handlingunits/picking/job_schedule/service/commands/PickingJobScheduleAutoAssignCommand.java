@@ -25,13 +25,18 @@ package de.metas.handlingunits.picking.job_schedule.service.commands;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.inout.PriorityRule;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleQuery;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderPickingType;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
@@ -42,9 +47,10 @@ import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.shipping.CarrierProductId;
-import de.metas.util.Check;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_BP_Group;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceRepository;
@@ -53,29 +59,42 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesCommand.SYSCONFIG_CARRIER_PRODUCT_REQUIRED;
 
 public class PickingJobScheduleAutoAssignCommand
 {
+	// Constants
+	private static final int DEFAULT_QUERY_LIMIT = 1000;
+	@NonNull private static final String SYSCONFIG_QUERY_LIMIT = "de.metas.handlingunits.picking.job_schedule.service.commands.PickingJobScheduleAutoAssignCommand.QueryLimit";
+
 	// Services
 	@NonNull private final WorkplaceRepository workplaceRepository;
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
 	@NonNull private final PickingJobShipmentScheduleService pickingJobShipmentScheduleService;
-	@NonNull private final ISysConfigBL sysConfigBL;
 	@NonNull private final PickingJobProductService pickingJobProductService;
+
+	@NonNull private final ISysConfigBL sysConfigBL;
+	@NonNull private final IBPartnerDAO partnerDAO;
+	@NonNull private final IBPGroupDAO bpGroupDAO;
+	@NonNull private final IOrderDAO orderDAO;
 
 	// Params
 	@NonNull private final PickingJobScheduleAutoAssignRequest request;
 
 	// State
-	private List<Workplace> workplaces;
+	private ImmutableList<Workplace> workplaces;
 	private WorkplacesCapacity workplacesCapacity;
 	private ImmutableMap<ProductId, Product> productsById;
 	private ImmutableMap<OrderId, BigDecimal> totalQtyToDeliverByOrderId;
+	// Lazy caches: resolved only when a workplace actually restricts by BP-group / doctype
+	private final Map<BPartnerId, ImmutableSet<BPGroupId>> bpGroupIdsByShipBPartnerId = new HashMap<>();
+	private final Map<OrderId, Optional<DocTypeId>> docTypeIdByOrderId = new HashMap<>();
 
 	@Builder
 	private PickingJobScheduleAutoAssignCommand(
@@ -84,6 +103,9 @@ public class PickingJobScheduleAutoAssignCommand
 			@NonNull final PickingJobShipmentScheduleService pickingJobShipmentScheduleService,
 			@NonNull final ISysConfigBL sysConfigBL,
 			@NonNull final PickingJobProductService pickingJobProductService,
+			@NonNull final IBPartnerDAO partnerDAO,
+			@NonNull final IBPGroupDAO bpGroupDAO,
+			@NonNull final IOrderDAO orderDAO,
 			@NonNull final PickingJobScheduleAutoAssignRequest request)
 	{
 		this.workplaceRepository = workplaceRepository;
@@ -91,6 +113,9 @@ public class PickingJobScheduleAutoAssignCommand
 		this.pickingJobShipmentScheduleService = pickingJobShipmentScheduleService;
 		this.sysConfigBL = sysConfigBL;
 		this.pickingJobProductService = pickingJobProductService;
+		this.partnerDAO = partnerDAO;
+		this.bpGroupDAO = bpGroupDAO;
+		this.orderDAO = orderDAO;
 		this.request = request;
 	}
 
@@ -110,28 +135,34 @@ public class PickingJobScheduleAutoAssignCommand
 				.map(Workplace::getWarehouseId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final boolean isCarrierProductRequired = sysConfigBL.getBooleanValue(SYSCONFIG_CARRIER_PRODUCT_REQUIRED, false);
-		final ImmutableList<ShipmentSchedule> allEligibleShipmentSchedules = pickingJobShipmentScheduleService.getBy(
+		final QueryLimit queryLimit = getQueryLimit();
+		final ImmutableList<ShipmentSchedule> shipmentSchedulesCandidates = pickingJobShipmentScheduleService.getBy(
 						ShipmentScheduleQuery.builder()
 								.warehouseIds(warehouseIds)
 								.preparationDate(request.getPreparationDate())
 								.fromCompleteOrderOrNullOrder(true)
 								.includeWithQtyToDeliverZero(false)
 								.includeProcessed(false)
+								.includeInvalid(false)
+								.isScheduledForPicking(false)
 								.orderByOrderId(true)
-								.build()) //TODO for next iteration: Introduce limit, but without splitting schedules for same order
+								.limit(queryLimit)
+								.build());
+
+		if (shipmentSchedulesCandidates.isEmpty()) {return;}
+
+		// On limit reach exclude the last order to avoid having the order only partially included
+		final OrderId orderIdToExclude = queryLimit.isLimitHitOrExceeded(shipmentSchedulesCandidates) ?
+				shipmentSchedulesCandidates.get(shipmentSchedulesCandidates.size() - 1).getOrderId()
+				: null;
+		final boolean isCarrierProductRequired = isCarrierProductRequired();
+		final ImmutableList<ShipmentSchedule> allEligibleShipmentSchedules = shipmentSchedulesCandidates
 				.stream()
 				.filter(sched -> sched.getCarrierProductId() != null || !isCarrierProductRequired)
+				.filter(shipmentSchedule -> orderIdToExclude == null || !OrderId.equals(shipmentSchedule.getOrderId(), orderIdToExclude))
 				.collect(ImmutableList.toImmutableList());
 
-		if (allEligibleShipmentSchedules.isEmpty())
-		{
-			return;
-		}
-
-		final ImmutableSet<ShipmentScheduleId> allEligibleShipmentScheduleIds = allEligibleShipmentSchedules.stream()
-				.map(ShipmentSchedule::getId)
-				.collect(ImmutableSet.toImmutableSet());
+		if (allEligibleShipmentSchedules.isEmpty()) {return;}
 
 		final ImmutableSet<WorkplaceId> workplaceIds = workplaces.stream()
 				.map(Workplace::getId)
@@ -139,66 +170,22 @@ public class PickingJobScheduleAutoAssignCommand
 
 		final List<PickingJobSchedule> existingPickingJobSchedules = pickingJobScheduleRepository.stream(
 				PickingJobScheduleQuery.builder()
-						.onlyShipmentScheduleIds(allEligibleShipmentScheduleIds)
 						.workplaceIds(workplaceIds)
 						.isProcessed(false)
 						.build()
 		).collect(ImmutableList.toImmutableList());
-
-		// TODO for next iteration, decide how qtyToDeliver changes are handled (This logic can't be used, because if same workplace we update and if different workplace we insert)
-		// final Map<ShipmentScheduleId, BigDecimal> alreadyAssignedQtyByShipmentScheduleId = new HashMap<>();
-		// workplacesCapacity = new WorkplacesCapacity();
-		// existingPickingJobSchedules.forEach(jobSched -> {
-		// 	workplacesCapacity.increase(jobSched.getWorkplaceId());
-		//
-		// 	final ShipmentScheduleId schedId = jobSched.getShipmentScheduleId();
-		// 	final BigDecimal assigned = alreadyAssignedQtyByShipmentScheduleId.getOrDefault(schedId, BigDecimal.ZERO);
-		// 	alreadyAssignedQtyByShipmentScheduleId.put(schedId, assigned.add(jobSched.getQtyToPick().toBigDecimal()));
-		// });
-		//
-		// final ImmutableList<ShipmentSchedule> schedulesWithRemainingQty = allEligibleShipmentSchedules.stream()
-		// 		.filter(sched -> {
-		// 			final BigDecimal qtyToDeliver = sched.getQuantityToDeliver().toBigDecimal();
-		// 			final BigDecimal alreadyAssignedQty = alreadyAssignedQtyByShipmentScheduleId.getOrDefault(sched.getId(), BigDecimal.ZERO);
-		// 			return qtyToDeliver.subtract(alreadyAssignedQty).signum() > 0;
-		// 		})
-		// 		.collect(ImmutableList.toImmutableList());
-		// final ImmutableSet<ProductId> productIds = schedulesWithRemainingQty.stream()
-		// 		.map(ShipmentSchedule::getProductId)
-		// 		.collect(ImmutableSet.toImmutableSet());
-		// productsById = productRepository.getByIdsAsMap(productIds);
-		//
-		// totalQtyToDeliverByOrderId = schedulesWithRemainingQty.stream()
-		// 		.filter(sched -> sched.getOrderId() != null)
-		// 		.collect(ImmutableMap.toImmutableMap(
-		// 				ShipmentSchedule::getOrderId,
-		// 				schedule -> {
-		// 					final BigDecimal qtyToDeliver = schedule.getQuantityToDeliver().toBigDecimal();
-		// 					final BigDecimal alreadyAssignedQty = alreadyAssignedQtyByShipmentScheduleId.getOrDefault(schedule.getId(), BigDecimal.ZERO);
-		// 					return qtyToDeliver.subtract(alreadyAssignedQty);
-		// 				},
-		// 				BigDecimal::add
-		// 		));
-
-		final ImmutableSet<ShipmentScheduleId> alreadyAssignedIds = existingPickingJobSchedules.stream()
-				.map(PickingJobSchedule::getShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final ImmutableList<ShipmentSchedule> allUnscheduledShipmentScheduleIds = allEligibleShipmentSchedules.stream()
-				.filter(sched -> !alreadyAssignedIds.contains(sched.getId()))
-				.collect(ImmutableList.toImmutableList());
 
 		workplacesCapacity = new WorkplacesCapacity();
 		existingPickingJobSchedules.forEach(jobSched ->
 				workplacesCapacity.increase(jobSched.getWorkplaceId())
 		);
 
-		final ImmutableSet<ProductId> productIds = allUnscheduledShipmentScheduleIds.stream()
+		final ImmutableSet<ProductId> productIds = allEligibleShipmentSchedules.stream()
 				.map(ShipmentSchedule::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
 		productsById = pickingJobProductService.getByIdsAsMap(productIds);
 
-		totalQtyToDeliverByOrderId = allUnscheduledShipmentScheduleIds.stream()
+		totalQtyToDeliverByOrderId = allEligibleShipmentSchedules.stream()
 				.filter(sched -> sched.getOrderId() != null)
 				.collect(ImmutableMap.toImmutableMap(
 						ShipmentSchedule::getOrderId,
@@ -206,7 +193,7 @@ public class PickingJobScheduleAutoAssignCommand
 						BigDecimal::add
 				));
 
-		for (final ShipmentSchedule schedule : allUnscheduledShipmentScheduleIds)
+		for (final ShipmentSchedule schedule : allEligibleShipmentSchedules)
 		{
 			final Workplace matchingWorkplace = findMatchingWorkplace(schedule);
 			if (matchingWorkplace == null)
@@ -214,23 +201,30 @@ public class PickingJobScheduleAutoAssignCommand
 				continue;
 			}
 
-			// final BigDecimal qtyToDeliver = schedule.getQuantityToDeliver().toBigDecimal();
-			// final BigDecimal alreadyAssignedQty = alreadyAssignedQtyByShipmentScheduleId.getOrDefault(schedule.getId(), BigDecimal.ZERO);
-			// final BigDecimal remainingQtyToPick = qtyToDeliver.subtract(alreadyAssignedQty);
-
 			CreateOrUpdatePickingJobSchedulesCommand.builder()
 					.pickingJobScheduleRepository(pickingJobScheduleRepository)
 					.pickingJobShipmentScheduleService(pickingJobShipmentScheduleService)
 					.request(CreateOrUpdatePickingJobSchedulesRequest.builder()
 							.workplaceId(matchingWorkplace.getId())
 							.shipmentScheduleAndJobScheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(schedule.getId()))
-							.qtyToPickBD(schedule.getQuantityToDeliver().toBigDecimal()) //.qtyToPickBD(remainingQtyToPick)
+							.qtyToPickBD(schedule.getQuantityToDeliver().toBigDecimal())
 							.build())
 					.build()
 					.execute();
 
 			workplacesCapacity.increase(matchingWorkplace.getId());
 		}
+	}
+
+	@NonNull
+	private QueryLimit getQueryLimit()
+	{
+		return QueryLimit.ofInt(sysConfigBL.getIntValue(SYSCONFIG_QUERY_LIMIT, DEFAULT_QUERY_LIMIT));
+	}
+
+	private boolean isCarrierProductRequired()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_CARRIER_PRODUCT_REQUIRED, false);
 	}
 
 	@Nullable
@@ -270,6 +264,16 @@ public class PickingJobScheduleAutoAssignCommand
 			}
 
 			if (!isPriorityCompatible(workplace, schedule))
+			{
+				continue;
+			}
+
+			if (!isBPartnerGroupCompatible(workplace, schedule))
+			{
+				continue;
+			}
+
+			if (!isDocTypeCompatible(workplace, schedule))
 			{
 				continue;
 			}
@@ -321,7 +325,6 @@ public class PickingJobScheduleAutoAssignCommand
 		}
 
 		final ProductCategoryId productCategoryId = productsById.get(scheduleProductId).getProductCategoryId();
-		Check.assumeNotNull(productCategoryId, "ProductCategoryId of {} is not null", scheduleProductId);
 		return !workplaceCategories.isEmpty() && workplaceCategories.contains(productCategoryId);
 	}
 
@@ -375,6 +378,66 @@ public class PickingJobScheduleAutoAssignCommand
 		}
 
 		return PriorityRule.equals(priorityRule, schedule.getPriorityRule());
+	}
+
+	private boolean isBPartnerGroupCompatible(
+			@NonNull final Workplace workplace,
+			@NonNull final ShipmentSchedule schedule)
+	{
+		final ImmutableSet<BPGroupId> workplaceBPGroups = workplace.getBpartnerGroupIds();
+		if (workplaceBPGroups.isEmpty())
+		{
+			return true;
+		}
+
+		final ImmutableSet<BPGroupId> scheduleBPGroups = bpGroupIdsByShipBPartnerId.computeIfAbsent(
+				schedule.getShipBPartnerId(),
+				this::resolveBPGroupIds);
+
+		return !Collections.disjoint(workplaceBPGroups, scheduleBPGroups);
+	}
+
+	@NonNull
+	private ImmutableSet<BPGroupId> resolveBPGroupIds(@NonNull final BPartnerId bpartnerId)
+	{
+		// The schedule's ship-to partner belongs to its directly-assigned group plus (at most one) parent group.
+		final BPGroupId directGroupId = partnerDAO.getBPGroupIdByBPartnerId(bpartnerId);
+		final I_C_BP_Group group = bpGroupDAO.getById(directGroupId);
+		final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(group.getParent_BP_Group_ID());
+
+		return parentGroupId != null
+				? ImmutableSet.of(directGroupId, parentGroupId)
+				: ImmutableSet.of(directGroupId);
+	}
+
+	private boolean isDocTypeCompatible(
+			@NonNull final Workplace workplace,
+			@NonNull final ShipmentSchedule schedule)
+	{
+		final ImmutableSet<DocTypeId> workplaceDocTypeIds = workplace.getDocTypeIds();
+		if (workplaceDocTypeIds.isEmpty())
+		{
+			return true;
+		}
+
+		final OrderId orderId = schedule.getOrderId();
+		if (orderId == null)
+		{
+			return false;
+		}
+
+		final DocTypeId scheduleDocTypeId = docTypeIdByOrderId
+				.computeIfAbsent(orderId, this::resolveOrderDocTypeId)
+				.orElse(null);
+
+		return scheduleDocTypeId != null && workplaceDocTypeIds.contains(scheduleDocTypeId);
+	}
+
+	@NonNull
+	private Optional<DocTypeId> resolveOrderDocTypeId(@NonNull final OrderId orderId)
+	{
+		// Match the order's own doctype (read from the live C_Order), not the schedule's copied C_DocType_ID.
+		return DocTypeId.optionalOfRepoId(orderDAO.getById(orderId).getC_DocType_ID());
 	}
 
 	private static class WorkplacesCapacity

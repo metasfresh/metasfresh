@@ -49,6 +49,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 {
 	I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId);
 
+	List<I_PP_Order_BOMLine> getOrderBOMLinesByIds(@NonNull Set<PPOrderBOMLineId> orderBOMLineIds);
+
 	List<I_PP_Order_BOMLine> getOrderBOMLines(PPOrderId orderId);
 
 	<T extends I_PP_Order_BOMLine> List<T> getOrderBOMLines(PPOrderId orderId, Class<T> orderBOMLineClass);
@@ -75,9 +77,11 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	I_C_UOM getBOMLineUOM(I_PP_Order_BOMLine bomLine);
 
-	@NonNull UomId getBOMLineUOMId(@NonNull I_PP_Order_BOMLine bomLine);
+	@NonNull
+	UomId getBOMLineUOMId(@NonNull I_PP_Order_BOMLine bomLine);
 
-	@NonNull UomId getBOMLineUOMId(PPOrderBOMLineId orderBOMLineId);
+	@NonNull
+	UomId getBOMLineUOMId(PPOrderBOMLineId orderBOMLineId);
 
 	OrderBOMLineQuantities getQuantities(I_PP_Order_BOMLine orderBOMLine);
 
@@ -115,6 +119,10 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 */
 	Quantity getQtyRequiredToReceive(I_PP_Order_BOMLine orderBOMLine);
 
+	/**
+	 * @return {@code M_Product.CoProductCostDistributionPercent} of the co-product carried by this order BOM line,
+	 * read live from the product; {@link Percent#ZERO} when unset.
+	 */
 	Percent getCoProductCostDistributionPercent(I_PP_Order_BOMLine orderBOMLine);
 
 	void addQty(OrderBOMLineQtyChangeRequest request);
@@ -156,4 +164,15 @@ public interface IPPOrderBOMBL extends ISingletonService
 	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(@NonNull final I_PP_Order ppOrder);
 
 	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(WarehouseId ppOrderWarehouseId);
+
+	/**
+	 * Updates the issuing tolerance specification for a BOM line.
+	 * This method does NOT save the BOM line - caller is responsible for saving.
+	 *
+	 * @param orderBOMLine the BOM line to update
+	 * @param toleranceSpec the tolerance specification to apply, or null to clear tolerance
+	 */
+	void updateIssuingToleranceSpec(
+			@NonNull I_PP_Order_BOMLine orderBOMLine,
+			@javax.annotation.Nullable de.metas.product.IssuingToleranceSpec toleranceSpec);
 }

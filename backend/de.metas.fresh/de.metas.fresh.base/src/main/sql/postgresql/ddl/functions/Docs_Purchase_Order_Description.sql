@@ -37,7 +37,7 @@ SELECT o.description                         AS description,
        o.dateordered                         AS dateordered,
        o.datepromised                        AS datepromised,
        CASE
-           WHEN report.IsHiddenReportElement(o.C_DocType_ID, 'Delivery_To_Address') = 'N' THEN
+           WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Delivery_To_Address') = 'N' THEN
                REPLACE(
                        REPLACE(o.DeliveryToAddress, E'\r\n', ' | '),
                        E'\n', ' | '
@@ -64,7 +64,7 @@ SELECT o.description                         AS description,
        srep.email                            AS sr_email,
        COALESCE(dtt.PrintName, dt.PrintName) AS PrintName,
        CASE
-           WHEN report.IsHiddenReportElement(o.C_DocType_ID, 'Bill_To_Address') = 'N' THEN
+           WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Bill_To_Address') = 'N' THEN
                REPLACE(
                        REPLACE(o.billtoaddress, E'\r\n', ' | '),
                        E'\n', ' | '

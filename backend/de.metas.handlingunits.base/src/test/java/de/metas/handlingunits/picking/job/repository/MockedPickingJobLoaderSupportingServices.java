@@ -11,17 +11,17 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageableList;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageableLocks;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -39,6 +39,13 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 {
 	public static final ZoneId ZONE_ID = ZoneId.of("Europe/London");
 	private final HashMap<HuId, HUQRCode> qrCodes = new HashMap<>();
+	/** Sales-order-line SeqNo (C_OrderLine.Line) per line, keyed as the loader keys it. Absent -> 0, so tests that don't care are unaffected. */
+	private final HashMap<OrderAndLineId, Integer> salesOrderLineSeqNos = new HashMap<>();
+
+	public void setSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId, final int seqNo)
+	{
+		salesOrderLineSeqNos.put(orderAndLineId, seqNo);
+	}
 
 	@Override
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return MobileUIPickingUserProfile.DEFAULT.getDefaultPickingJobOptions();}
@@ -65,6 +72,12 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	public void warmUpBPartnerNamesCache(@NonNull final Set<BPartnerId> bpartnerIds)
 	{
 		// do nothing
+	}
+
+	@Override
+	public void warmUpQRCodesCache(@NonNull final Collection<HuId> huIds)
+	{
+		// do nothing (this mock already serves QR codes from its in-memory map)
 	}
 
 	@Override
@@ -104,15 +117,24 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
-	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
+	public void warmUpSalesOrderLineSeqNosCache(@NonNull final Set<OrderAndLineId> orderAndLineIds)
 	{
-		return 0;
+		// no-op: getSalesOrderLineSeqNo already serves from the in-memory map
 	}
 
 	@Override
-	public ITranslatableString getProductName(@NonNull final ProductId productId)
+	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
 	{
-		return TranslatableStrings.anyLanguage("productName-" + productId.getRepoId());
+		return salesOrderLineSeqNos.getOrDefault(orderAndLineId, 0);
+	}
+
+	@Override
+	public ProductValueAndName getProductValueAndName(@NonNull final ProductId productId)
+	{
+		return ProductValueAndName.of(
+				"productValue-" + productId.getRepoId(),
+				TranslatableStrings.anyLanguage("productName-" + productId.getRepoId())
+		);
 	}
 
 	@Override

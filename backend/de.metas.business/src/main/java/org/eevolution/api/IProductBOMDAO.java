@@ -68,6 +68,10 @@ public interface IProductBOMDAO extends ISingletonService
 
 	Optional<I_PP_Product_BOM> getPreviousVersion(I_PP_Product_BOM bomVersion, DocStatus docStatus);
 
+	/**
+	 * @return {@code true} if the given product is referenced by an active BOM line of ComponentType
+	 * Component ({@code CO}), Variant ({@code VA}) or Packing ({@code PK}); co-products and other types do not count.
+	 */
 	boolean isComponent(ProductId productId);
 
 	Optional<ProductBOMLineId> getBomLineByProductId(@NonNull ProductBOMId productBOMId, @NonNull ProductId productId);

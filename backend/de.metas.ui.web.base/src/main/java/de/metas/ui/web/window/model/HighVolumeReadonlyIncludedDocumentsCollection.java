@@ -183,6 +183,10 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 		return false;
 	}
 
+	// hasNewDocumentsWithChanges() intentionally not overridden: a read-only collection cannot
+	// hold an unsaved NEW document (createNewDocument() always throws), so the interface default
+	// (false) is invariantly correct here.
+
 	@Override
 	public void saveIfHasChanges()
 	{

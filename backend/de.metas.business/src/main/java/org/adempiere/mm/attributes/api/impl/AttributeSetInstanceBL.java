@@ -524,6 +524,12 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
+	public boolean isStorageRelevant(@NonNull final AttributeCode attributeCode)
+	{
+		return attributeDAO.isStorageRelevant(attributeCode);
+	}
+
+	@Override
 	public ImmutableAttributeSet getImmutableAttributeSetById(@NonNull final AttributeSetInstanceId asiId)
 	{
 		if (asiId.isNone())
@@ -563,7 +569,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		}
 		else if (AttributeValueType.NUMBER.equals(valueType))
 		{
-			return record.getValueNumber();
+			return InterfaceWrapperHelper.getValueOrNull(record, I_M_AttributeInstance.COLUMNNAME_ValueNumber);
 		}
 		else if (AttributeValueType.STRING.equals(valueType))
 		{
@@ -606,8 +612,12 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public List<I_M_AttributeInstance> getAttributeInstances(final I_M_AttributeSetInstance attributeSetInstance)
+	public List<I_M_AttributeInstance> getAttributeInstances(@Nullable final I_M_AttributeSetInstance attributeSetInstance)
 	{
+		if (attributeSetInstance == null)
+		{
+			return ImmutableList.of();
+		}
 		//
 		// Ordering by M_AttributeUse.SeqNo
 		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetInstance.getM_AttributeSet_ID());

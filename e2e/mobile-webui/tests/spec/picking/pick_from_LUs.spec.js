@@ -98,7 +98,7 @@ test('Pick less than a LU because ordered qty is less than an LU', async ({ page
         },
         hus: {
             HU1: { huStatus: 'A', storages: { P1: '4 PCE' } },
-            lu1: { huStatus: 'S', storages: { P1: '76 PCE' } },
+            lu1: { huStatus: 'S', storages: { P1: '76 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -115,7 +115,7 @@ test('Pick less than a LU because ordered qty is less than an LU', async ({ page
         },
         hus: {
             HU1: { huStatus: 'A', storages: { P1: '4 PCE' } },
-            lu1: { huStatus: 'E', storages: { P1: '76 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '76 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });

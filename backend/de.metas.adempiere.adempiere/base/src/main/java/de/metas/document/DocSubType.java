@@ -66,8 +66,12 @@ public enum DocSubType implements ReferenceListAwareEnum
 	CreditorPostCharge(X_C_DocType.DOCSUBTYPE_KreditorenNachbelastung),
 	LICENSE_COMMISSION (X_C_DocType.DOCSUBTYPE_LS),
 	PaymentServiceProviderInvoice(X_C_DocType.DOCSUBTYPE_PaymentServiceProviderInvoice),
+	PaymentBonusCreditMemo(X_C_DocType.DOCSUBTYPE_PaymentBonusCreditMemo),
 	CallOrder(X_C_DocType.DOCSUBTYPE_CallOrder),
-	OrderOnCommission(X_C_DocType.DOCSUBTYPE_OrderOnCommission)
+	OrderOnCommission(X_C_DocType.DOCSUBTYPE_OrderOnCommission),
+	DeliveryInstruction(X_C_DocType.DOCSUBTYPE_DeliveryInstruction),
+	InventoryShortageDocument(X_C_DocType.DOCSUBTYPE_InventoryShortageDocument),
+	InventoryOverageDocument(X_C_DocType.DOCSUBTYPE_InventoryOverageDocument)
 	;
 
 	public static final ReferenceId AD_REFERENCE_ID = ReferenceId.ofRepoId(X_C_DocType.DOCSUBTYPE_AD_Reference_ID);
@@ -108,6 +112,7 @@ public enum DocSubType implements ReferenceListAwareEnum
 	public boolean isAnyOrNone() { return isAny() || isNone(); }
 	public boolean IsInterimInvoice() { return DownPayment.equals(this); }
 	public boolean isPrepay() { return PrepayOrder.equals(this); }
+	public boolean isDeliveryInstruction() { return DeliveryInstruction.equals(this); }
 	public boolean isCallOrder() { return CallOrder.equals(this); }
 	public boolean isFrameAgreement() { return FrameAgrement.equals(this); }
 	public boolean isMediated() { return Mediated.equals(this); }

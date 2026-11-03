@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2101981371L;
+	private static final long serialVersionUID = 558044016L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -962,6 +962,17 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setInsufficientQtyAvailableForSalesColor_ID (final int InsufficientQtyAvailableForSalesColor_ID)
+	{
+		throw new IllegalArgumentException ("InsufficientQtyAvailableForSalesColor_ID is virtual column");	}
+
+	@Override
+	public int getInsufficientQtyAvailableForSalesColor_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_InsufficientQtyAvailableForSalesColor_ID);
+	}
+
+	@Override
 	public void setIsBPartnerAddress_Override (final boolean IsBPartnerAddress_Override)
 	{
 		set_Value (COLUMNNAME_IsBPartnerAddress_Override, IsBPartnerAddress_Override);
@@ -1527,6 +1538,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setQtyAvailableForSales (final @Nullable BigDecimal QtyAvailableForSales)
+	{
+		throw new IllegalArgumentException ("QtyAvailableForSales is virtual column");	}
+
+	@Override
+	public BigDecimal getQtyAvailableForSales() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyAvailableForSales);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyDelivered (final @Nullable BigDecimal QtyDelivered)
 	{
 		set_Value (COLUMNNAME_QtyDelivered, QtyDelivered);
@@ -1665,6 +1688,19 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public BigDecimal getQtyScheduledForPicking() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyScheduledForPicking);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyScheduledForPickingOfProcessed (final @Nullable BigDecimal QtyScheduledForPickingOfProcessed)
+	{
+		set_Value (COLUMNNAME_QtyScheduledForPickingOfProcessed, QtyScheduledForPickingOfProcessed);
+	}
+
+	@Override
+	public BigDecimal getQtyScheduledForPickingOfProcessed() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyScheduledForPickingOfProcessed);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

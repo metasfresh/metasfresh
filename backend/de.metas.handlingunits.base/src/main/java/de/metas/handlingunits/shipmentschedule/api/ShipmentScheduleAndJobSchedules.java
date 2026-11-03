@@ -12,6 +12,7 @@ import lombok.Value;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Set;
 
@@ -23,7 +24,7 @@ public class ShipmentScheduleAndJobSchedules
 
 	@NonNull ShipmentScheduleId shipmentScheduleId;
 
-	private ShipmentScheduleAndJobSchedules(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @Nullable Collection<PickingJobSchedule> jobSchedules)
+	private ShipmentScheduleAndJobSchedules(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @Nullable final Collection<PickingJobSchedule> jobSchedules)
 	{
 		this.shipmentSchedule = shipmentSchedule;
 		this.shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
@@ -39,7 +40,7 @@ public class ShipmentScheduleAndJobSchedules
 		}
 	}
 
-	public static ShipmentScheduleAndJobSchedules of(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @Nullable Collection<PickingJobSchedule> jobSchedules)
+	public static ShipmentScheduleAndJobSchedules of(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @Nullable final Collection<PickingJobSchedule> jobSchedules)
 	{
 		return new ShipmentScheduleAndJobSchedules(shipmentSchedule, jobSchedules);
 	}
@@ -68,5 +69,6 @@ public class ShipmentScheduleAndJobSchedules
 
 	public Set<PickingJobScheduleId> getJobScheduleIds() {return jobSchedules.getJobScheduleIds();}
 
+	@Nullable
 	public String getHeaderAggregationKey() {return StringUtils.trimBlankToNull(shipmentSchedule.getHeaderAggregationKey());}
 }

@@ -39,6 +39,12 @@ const WFLauncherButton = ({
 
     wfProcessPromise
       .then((wfProcess) => {
+        // NOTE: the store update and the navigation below are NOT batched on React 17 /
+        // connected-react-router 6.9 / react-redux 7.2, so ApplicationLayout can mount on the job
+        // route one render pass before this dispatched process is observable in the store. The
+        // redirect-home guard in ApplicationLayout tolerates that ordering (it defers goHome one
+        // tick); if this navigation is ever reworked to a root-cause fix (guarantee the store update
+        // is observable before navigating), that guard's deferral can be revisited.
         dispatch(updateWFProcess({ wfProcess, parent: null }));
         history.push(getWFProcessScreenLocation({ applicationId, wfProcessId: wfProcess.id }));
       })

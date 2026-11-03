@@ -232,6 +232,10 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 		return singleDocument.hasChangesRecursivelly();
 	}
 
+	// hasNewDocumentsWithChanges() intentionally not overridden: a single-row-detail tab cannot
+	// hold an unsaved NEW document (createNewDocument() always throws), so the interface default
+	// (false) is invariantly correct here.
+
 	@Override
 	public void saveIfHasChanges()
 	{

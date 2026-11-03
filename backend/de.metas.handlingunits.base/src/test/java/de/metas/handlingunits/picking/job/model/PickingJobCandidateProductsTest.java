@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
@@ -39,7 +40,7 @@ class PickingJobCandidateProductsTest
 		{
 			return PickingJobCandidateProduct.builder()
 					.productId(productId)
-					.productName(TranslatableStrings.anyLanguage("productId=" + productId.getRepoId()))
+					.productValueAndName(ProductValueAndName.of("productValue-" + productId.getRepoId(), TranslatableStrings.anyLanguage("productId=" + productId.getRepoId())))
 					.qtyToDeliver(qty(qtyToDeliver))
 					.qtyAvailableToPick(qty(qtyAvailable))
 					.build();
