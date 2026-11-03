@@ -7,7 +7,9 @@ import { combineReducers, createStore } from 'redux';
 import NewHUPreviewScreen from '../../../apps/huManager/containers/NewHUPreviewScreen';
 import { huManagerReducer } from '../../../apps/huManager/reducers';
 import { putSettingsAction, reducer as settings } from '../../../reducers/settings';
-import { toastErrorFromObj } from '../../../utils/toast';
+import { toastErrorFromObj, toastNotification } from '../../../utils/toast';
+import * as api from '../../../apps/huManager/api';
+import { huManagerLocation } from '../../../apps/huManager/routes';
 import axios from 'axios';
 
 jest.mock('../../../utils/ui_trace', () => ({
@@ -22,8 +24,9 @@ jest.mock('../../../utils/toast', () => ({
   toastErrorFromObj: jest.fn(),
   toastNotification: jest.fn(),
 }));
+const mockHistory = { goBack: jest.fn(), push: jest.fn(), replace: jest.fn() };
 jest.mock('../../../hooks/useScreenDefinition', () => ({
-  useScreenDefinition: () => ({ history: { goBack: jest.fn(), push: jest.fn() } }),
+  useScreenDefinition: () => ({ history: mockHistory }),
 }));
 jest.mock('../../../apps/huManager/api');
 jest.mock('axios');
@@ -127,5 +130,40 @@ describe('NewHUPreviewScreen quantity entry next to a hardware scanner', () => {
     // fireEvent returns false when the keydown was cancelled (preventDefault): the browser would not insert the character
     const qtyField = screen.getByTestId('qty-input'); // the field of the dialog
     expect(fireEvent.keyDown(qtyField, { key: '5' })).toBe(true);
+  });
+});
+
+// AC4: after OK the user is back on the scan screen with a success message — the new HU is NOT loaded into the HU info screen
+// (the user opens it by typing the HU number from the message).
+describe('NewHUPreviewScreen after OK', () => {
+  it('shows the success message, keeps the new HU out of the HU info state and returns to the scan screen', async () => {
+    const proposal = {
+      product: { productId: 1, value: 'P1', name: 'Product 1' },
+      qty: 1,
+      uom: 'PCE',
+      attributes: [],
+      locatorQRCode: LOCATOR_QR,
+      locatorCaption: 'Hauptlager',
+    };
+    const store = createStore(combineReducers({ settings, 'applications/huManager': huManagerReducer }), {
+      'applications/huManager': { newHUPreview: { scannedCode: 'LABEL-1', proposal } },
+    });
+    api.createHUFromScannedCode.mockResolvedValue({ id: '1000001', displayName: '1000001 (CU)' });
+    render(
+      <Provider store={store}>
+        <NewHUPreviewScreen />
+      </Provider>
+    );
+    await act(async () => {});
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('ok-button'));
+    });
+
+    expect(toastNotification).toHaveBeenCalledTimes(1); // the success message (its text is asserted in the E2E: HU number + quantity)
+    expect(store.getState()['applications/huManager'].handlingUnitInfo ?? null).toBeNull(); // not loaded -> the scan screen is shown
+    expect(mockHistory.replace).toHaveBeenCalledWith(huManagerLocation());
+    expect(mockHistory.goBack).not.toHaveBeenCalled();
+    expect(store.getState()['applications/huManager'].newHUPreview).toBeNull(); // not reachable again: a second OK would create a second HU
   });
 });

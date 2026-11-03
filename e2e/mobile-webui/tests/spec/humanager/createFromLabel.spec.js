@@ -5,12 +5,14 @@ import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
+import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { NewHUPreviewScreen } from '../../utils/screens/huManager/NewHUPreviewScreen';
 import { expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../utils/common';
 import { DISPOSAL_REASON_DAMAGED } from '../../utils/screens/huManager/HUDisposalScreen';
 
 // HU Manager: scan a product label that is no existing HU -> "New HU" preview -> OK -> one single-HU
-// inventory creates the HU -> the standard HU info screen with the new HU pre-scanned.
+// inventory creates the HU -> a success message naming the HU and the quantity, back on the scan screen (the new HU is not opened;
+// the user types the HU number from the message to open it).
 //
 // Label format (custom, no product-code part): GTIN 1-14, LOT 15-19, BEST_BEFORE_DATE 20-25 (yyMMdd).
 //   e.g. '02001234567893' + 'L2311' + '271231'
@@ -88,16 +90,31 @@ const clickOKAndGetCreatedHU = async () => {
         NewHUPreviewScreen.clickOK(),
     ]);
     const hu = (await response.json()).result; // JsonGetSingleHUResponse { result: JsonHU }
-    return { huId: hu.id, huQRCode: hu.qrCode?.code };
+    // displayName = M_HU.Value + the packing instruction in brackets (HUDisplayNameBuilder.build()); the toast shows the display name
+    return { huId: hu.id, huQRCode: hu.qrCode?.code, huValue: hu.displayName.split(' ')[0], displayName: hu.displayName };
 };
 
-const expectHUInfoOfNewHU = async ({ locatorCode, qty = '1 PCE' }) => {
+// AC4: after OK the user is back on the scan screen — a success message naming the HU and the quantity, the scan field ready,
+// no HU info screen (the new HU is NOT opened). The message is what tells the user which HU number was created.
+const expectBackOnScanScreenAfterOK = async ({ created, qty = '1 PCE' }) => await test.step('Expect: back on the scan screen after OK, success message, no HU info', async () => {
+    await HUManagerScreen.waitForScreen();
+    await NewHUPreviewScreen.expectNotDisplayed();
+    await expect(page.locator('.Toastify__toast--success').filter({ hasText: `HU ${created.huValue}` }).filter({ hasText: qty }).first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await BarcodeScannerComponent.expectAttached({});
+    await HUManagerScreen.expectValueMissing({ name: 'huinfo-table' });
+    await HUManagerScreen.expectValueMissing({ name: 'qty-value' });
+});
+
+// The real user path to the new HU afterwards: the user has no label for the new CU, so he types the HU number from the message
+// (exactly M_HU.Value, not the display name) in the scanner's manual mode -> the HU info screen of that HU.
+const openCreatedHUByValue = async ({ created, locatorCode, qty = '1 PCE' }) => await test.step('Open the created HU by typing its M_HU.Value', async () => {
+    await BarcodeScannerComponent.type(created.huValue);
     await HUManagerScreen.waitForHUInfoPanel();
     await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: qty });
     await HUManagerScreen.expectValue({ name: 'locator-value', expectedValue: locatorCode });
     // the standard actions of a scanned HU are offered
     await HUManagerScreen.expectButtonVisible({ testId: 'move-button' });
-};
+});
 
 const expectCreateCallCount = (counter, expected) => expect(counter.count).toBe(expected);
 
@@ -117,7 +134,7 @@ const goBackToApplicationsAndLogout = async () => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('custom label (GTIN + lot + best-before) -> preview -> OK -> HU info of the new HU, Move works', async ({ page }) => {
+test('custom label (GTIN + lot + best-before) -> preview -> OK -> success message, back on the scan screen; the HU opened by its number, Move works', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - create HU from a scanned label');
@@ -133,10 +150,10 @@ test('custom label (GTIN + lot + best-before) -> preview -> OK -> HU info of the
     await NewHUPreviewScreen.expectOKEnabled();
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
 
-    const { huId, huQRCode } = await clickOKAndGetCreatedHU();
-    await expectHUInfoOfNewHU({ locatorCode });
-    // success message naming the HU and the quantity
-    await expect(page.locator('.Toastify__toast--success').filter({ hasText: '1 PCE' }).first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    const created = await clickOKAndGetCreatedHU();
+    const { huId, huQRCode } = created;
+    // AC4: success message naming the HU and the quantity, back on the scan screen, the new HU is not opened
+    await expectBackOnScanScreenAfterOK({ created });
 
     await Backend.expect({
         hus: {
@@ -148,7 +165,8 @@ test('custom label (GTIN + lot + best-before) -> preview -> OK -> HU info of the
         }
     });
 
-    // Move works on the new HU
+    // Move works on the new HU (opened by typing the HU number from the message)
+    await openCreatedHUByValue({ created, locatorCode });
     await HUManagerScreen.move({ qrCode: masterdata.warehouses.wh2.locators.wh2_l1.qrCode });
     await HUManagerScreen.waitForScreen();
     await HUManagerScreen.scanHUQRCode({ huQRCode });
@@ -156,7 +174,7 @@ test('custom label (GTIN + lot + best-before) -> preview -> OK -> HU info of the
 });
 
 // noinspection JSUnusedLocalSymbols
-test('reference case with an invented GS1 label -> preview -> OK -> HU info; one completed inventory, one CU as previewed', async ({ page }) => {
+test('reference case with an invented GS1 label -> preview -> OK -> back on the scan screen; one completed inventory, one CU as previewed', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - create HU from a scanned label');
@@ -180,9 +198,11 @@ test('reference case with an invented GS1 label -> preview -> OK -> HU info; one
     // the preview books nothing
     expectCreateCallCount(createCalls, 0);
 
-    // OK -> the new HU is shown (HU info, quantity + location as previewed)
-    const { huId, huQRCode } = await clickOKAndGetCreatedHU();
-    await expectHUInfoOfNewHU({ locatorCode });
+    // OK -> success message + back on the scan screen; the HU opened by its number shows quantity + location as previewed
+    const created = await clickOKAndGetCreatedHU();
+    const { huId, huQRCode } = created;
+    await expectBackOnScanScreenAfterOK({ created });
+    await openCreatedHUByValue({ created, locatorCode }); // quantity + location as previewed
     expectCreateCallCount(createCalls, 1);
 
     // backend: one CU with product, quantity, values and location as previewed; one completed inventory
@@ -214,8 +234,9 @@ test('GS1 label -> preview -> OK -> CU with lot + best-before (= use-by)', async
     await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '1 PCE' });
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
 
-    const { huId } = await clickOKAndGetCreatedHU();
-    await expectHUInfoOfNewHU({ locatorCode });
+    const created = await clickOKAndGetCreatedHU();
+    const { huId } = created;
+    await expectBackOnScanScreenAfterOK({ created });
     await Backend.expect({
         hus: {
             [huId]: {
@@ -349,8 +370,9 @@ test('location scanned on the preview (no button), not remembered; a product lab
     // (c) another location QR code -> shown at once, no button; OK books there
     await NewHUPreviewScreen.scan(wh2_l1.qrCode);
     await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: wh2_l1.code });
-    await clickOKAndGetCreatedHU();
-    await expectHUInfoOfNewHU({ locatorCode: wh2_l1.code });
+    const created = await clickOKAndGetCreatedHU();
+    await expectBackOnScanScreenAfterOK({ created });
+    await openCreatedHUByValue({ created, locatorCode: wh2_l1.code }); // booked where it was scanned
 
     // (d) the next label shows the workplace location again, not the one scanned before
     await HUManagerScreen.clickButton({ testId: 'scan-again-button' });
@@ -376,7 +398,7 @@ test('double tap on OK books one inventory', async ({ page }) => {
     const created = page.waitForResponse((r) => r.url().includes('createFromScannedCode') && r.request().method() === 'POST', { timeout: SLOW_ACTION_TIMEOUT });
     await NewHUPreviewScreen.okButton().dblclick();
     const hu = (await (await created).json()).result; // JsonGetSingleHUResponse { result: JsonHU }
-    await expectHUInfoOfNewHU({ locatorCode });
+    await expectBackOnScanScreenAfterOK({ created: { huValue: hu.displayName.split(' ')[0] } });
 
     expectCreateCallCount(createCalls, 1);
     await Backend.expect({
@@ -430,8 +452,9 @@ test('catch-weight product, label with constant + product code + weight + lot + 
     await NewHUPreviewScreen.expectValue({ name: 'attribute-Lot-Nummer-value', expectedValue: 'L2311' });
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
 
-    const { huId, huQRCode } = await clickOKAndGetCreatedHU();
-    await expectHUInfoOfNewHU({ locatorCode });
+    const created = await clickOKAndGetCreatedHU();
+    const { huId, huQRCode } = created;
+    await expectBackOnScanScreenAfterOK({ created });
     // The weight proof: WeightNet is 12.345 on the HU and the CU (not the nominal 0.1 of the PCE->KGM rate, not 0), and the
     // catch-weight inventory completed. The lot, production date and best-before date arrive through the inventory line's
     // attributes (inventory ASI) and are inherited by the CU when the inventory completes. The weight is set on the CU
@@ -477,21 +500,21 @@ test('GS1 label with weight (310n) — kg product: quantity = weight; piece prod
     await test.step('product stocked in kg: quantity = label weight', async () => {
         await scanLabelAndWaitForPreview({ label: `01${gtinKg}3103012345` });
         await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '12.345 KGM' });
-        const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
-        const { huId } = await clickOKAndGetCreatedHU();
-        await expectHUInfoOfNewHU({ locatorCode, qty: '12.345 KGM' });
+        await NewHUPreviewScreen.expectLocatorProposedAndGet();
+        const created = await clickOKAndGetCreatedHU();
+        const { huId } = created;
+        await expectBackOnScanScreenAfterOK({ created, qty: '12.345 KGM' });
         await Backend.expect({ hus: { [huId]: { huStatus: 'A', storages: { 'P1': '12.345 KGM' } } } });
-        await HUManagerScreen.clickButton({ testId: 'scan-again-button' });
-        await HUManagerScreen.waitForScreen();
     });
 
     await test.step('piece product: quantity 1, weight shown as not used and not stored', async () => {
         await scanLabelAndWaitForPreview({ label: `01${gtinPce}3103012345` });
         await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '1 PCE' });
         await NewHUPreviewScreen.expectValue({ name: 'weight-value', expectedValue: 'The weight on the label is not used for this product' });
-        const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
-        const { huId } = await clickOKAndGetCreatedHU();
-        await expectHUInfoOfNewHU({ locatorCode });
+        await NewHUPreviewScreen.expectLocatorProposedAndGet();
+        const created = await clickOKAndGetCreatedHU();
+        const { huId } = created;
+        await expectBackOnScanScreenAfterOK({ created });
         await Backend.expect({ hus: { [huId]: { huStatus: 'A', storages: { 'P2': '1 PCE' }, attributes: { 'WeightNet': '0.000' } } } }); // the HU carries the default WeightNet 0 (a piece product / this HU profile has the attribute row; not assumed for every product) — NOT the label's 12.345
     });
 });
@@ -562,7 +585,7 @@ test('a label whose constant part does not match is not recognized', async ({ pa
 });
 
 // noinspection JSUnusedLocalSymbols
-test('after OK the HU info screen has no Undo; standard Dispose flags the HU, the HU stays on hand', async ({ page }) => {
+test('the created HU opened by its number has no Undo; standard Dispose flags the HU, the HU stays on hand', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - create HU from a scanned label');
@@ -574,8 +597,11 @@ test('after OK the HU info screen has no Undo; standard Dispose flags the HU, th
 
     await scanLabelAndWaitForPreview({ label: customLabel(gtin) });
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
-    const { huId, huQRCode } = await clickOKAndGetCreatedHU();
-    await expectHUInfoOfNewHU({ locatorCode });
+    const created = await clickOKAndGetCreatedHU();
+    const { huId, huQRCode } = created;
+    await expectBackOnScanScreenAfterOK({ created });
+    // the user has no label for the new CU: he types the HU number from the success message in the scanner's manual mode
+    await openCreatedHUByValue({ created, locatorCode });
     await HUManagerScreen.expectButtonMissing({ testId: 'undo-button' });
 
     await HUManagerScreen.dispose({ reason: DISPOSAL_REASON_DAMAGED });
@@ -607,12 +633,10 @@ test('the same label twice -> two previews alike, two HUs, two completed invento
         if (i === 1) locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
         await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: locatorCode });
         await NewHUPreviewScreen.expectValue({ name: 'attribute-Lot-Nummer-value', expectedValue: 'L2311' });
-        // no note or warning of any kind (the preview is the only thing on screen; no message toast)
-        await expect(page.locator('.Toastify__toast')).toHaveCount(0);
+        // no note or warning of any kind (the success toast of the previous HU is no note)
+        await expect(page.locator('.Toastify__toast:not(.Toastify__toast--success)')).toHaveCount(0);
         created.push(await clickOKAndGetCreatedHU());
-        await expectHUInfoOfNewHU({ locatorCode });
-        await HUManagerScreen.clickButton({ testId: 'scan-again-button' });
-        await HUManagerScreen.waitForScreen();
+        await expectBackOnScanScreenAfterOK({ created: created[i - 1] }); // straight back on the scan screen for the next label
     }
 
     expect(created[0].huId).not.toBe(created[1].huId);
