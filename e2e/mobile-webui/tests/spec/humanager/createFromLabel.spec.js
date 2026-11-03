@@ -38,6 +38,21 @@ const FORMAT_GTIN_LOT_BBD = {
     ],
 };
 
+// Fixed-position format of a bracketed label "(01)<GTIN-14>(11)<yyMMdd production date>(10)<6-character lot>" (38 characters; no best-before date).
+// Only the shape is the shape of a real customer label; the code values of the test are INVENTED.
+const FORMAT_BRACKETED_GTIN_PRODDATE_LOT = {
+    name: 'my bracketed label (HU Manager)',
+    parts: [
+        { startPosition: 1, endPosition: 4, type: 'CONSTANT', constantValue: '(01)' },
+        { startPosition: 5, endPosition: 18, type: 'GTIN' },
+        { startPosition: 19, endPosition: 22, type: 'CONSTANT', constantValue: '(11)' },
+        { startPosition: 23, endPosition: 28, type: 'PRODUCTION_DATE', dateFormat: 'yyMMdd' },
+        { startPosition: 29, endPosition: 32, type: 'CONSTANT', constantValue: '(10)' },
+        { startPosition: 33, endPosition: 38, type: 'LOT' },
+    ],
+};
+const bracketedLabel = (gtin) => `(01)${gtin}(11)270315(10)481732`;
+
 // Constant + Product code + Weight + Lot + Production date + Best-before + Ignore
 //   e.g. 'XQ' + <4-digit product code> + '012345' (12.345 kg) + 'L2311' + '251101' + '271231' + 'zz'
 const FORMAT_PRODUCTCODE_WEIGHT = {
@@ -217,6 +232,51 @@ test('reference case with an invented GS1 label -> preview -> OK -> back on the 
             },
         },
         inventories: { [huQRCode]: { isExists: true, docStatus: 'CO', count: 1 } },
+        products: { 'P1': { huStorageCount: 1, inventoryLineCount: 1 } },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('reference label shape (bracketed, fixed positions) -> preview -> enter quantity -> OK -> lot + production date on the CU, no HU_QRCode value', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - create HU from a scanned label');
+    allure.severity('critical');
+
+    const gtin = uniqueGtin14();
+    const masterdata = await createMasterdata({ gtin, formats: [FORMAT_BRACKETED_GTIN_PRODDATE_LOT] });
+    await openHUManager({ user: masterdata.login.user });
+
+    await scanLabelAndWaitForPreview({ label: bracketedLabel(gtin) });
+    await expect(page.getByTestId('product-value')).toContainText(masterdata.products.P1.productName);
+    await NewHUPreviewScreen.expectValue({ name: 'attribute-Lot-Nummer-value', expectedValue: '481732' });
+    await expect(page.getByTestId('attribute-ProductionDate-value')).toContainText('2027');
+    const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
+
+    // the label carries no quantity: the user enters it
+    await NewHUPreviewScreen.setQty(7);
+    await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '7 PCE' });
+    await NewHUPreviewScreen.expectOKEnabled();
+
+    const created = await clickOKAndGetCreatedHU();
+    const { huId, huQRCode } = created;
+    await expectBackOnScanScreenAfterOK({ created, locatorCode, qty: '7 PCE' });
+
+    // one completed inventory; one CU with the entered quantity, the lot and the production date of the label, on the previewed location;
+    // the label code itself is NOT stored as the HU_QRCode attribute
+    await Backend.expect({
+        hus: {
+            [huId]: {
+                huStatus: 'A',
+                storages: { 'P1': '7 PCE' },
+                cus: [{
+                    qty: '7 PCE',
+                    // null = the attribute carries no value (the attribute row exists on every HU; AC27: the label code is not written to it)
+                    attributes: { 'Lot-Nummer': '481732', 'ProductionDate': '2027-03-15', 'HU_QRCode': null },
+                }],
+            },
+        },
+        inventories: { [huQRCode]: { isExists: true, docStatus: 'CO', count: 1, qtyCount: '7' } },
         products: { 'P1': { huStorageCount: 1, inventoryLineCount: 1 } },
     });
 });
