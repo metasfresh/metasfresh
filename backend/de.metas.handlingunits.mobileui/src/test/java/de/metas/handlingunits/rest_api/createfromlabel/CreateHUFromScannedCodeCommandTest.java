@@ -1,17 +1,11 @@
 package de.metas.handlingunits.rest_api.createfromlabel;
 
-import de.metas.scannable_code.ScannedCode;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.product.IProductBL;
-import de.metas.organization.IOrgDAO;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import de.metas.util.Services;
+import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.handlingunits.CreateHUFromInventoryRequest;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -21,35 +15,44 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.organization.IOrgDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.Services;
 import de.metas.util.time.PatternedDateTimeFormatter;
 import de.metas.workplace.WorkplaceRepository;
 import de.metas.workplace.WorkplaceService;
 import de.metas.workplace.WorkplaceUserAssignRepository;
-import com.google.common.collect.ImmutableList;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +66,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class CreateHUFromScannedCodeCommandTest
 {
-	private static final java.time.ZonedDateTime BOOKING_DATE = java.time.ZonedDateTime.of(2026, 1, 15, 10, 30, 0, 0, java.time.ZoneId.of("Europe/Berlin"));
+	private static final ZonedDateTime BOOKING_DATE = ZonedDateTime.of(2026, 1, 15, 10, 30, 0, 0, ZoneId.of("Europe/Berlin"));
 
 	private static final String SHARED_GTIN = "02001234567817";
 
@@ -149,7 +152,7 @@ class CreateHUFromScannedCodeCommandTest
 				.labelProductResolver(new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)))
 				.clientId(ClientId.METASFRESH)
 				.scannedCode(ScannedCode.ofString("01" + SHARED_GTIN))
-				.qty(java.math.BigDecimal.ONE)
+				.qty(BigDecimal.ONE)
 				.locatorId(locatorQRCode.getLocatorId())
 				.date(BOOKING_DATE)
 				.build()

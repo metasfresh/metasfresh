@@ -22,7 +22,6 @@
 
 package de.metas.handlingunits.mobileui;
 
-import de.metas.common.util.time.SystemTime;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
@@ -31,6 +30,7 @@ import de.metas.common.handlingunits.JsonGRAICodesRequest;
 import de.metas.common.handlingunits.JsonGRAICodesResponse;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.mobileui.config.HUManagerProfile;

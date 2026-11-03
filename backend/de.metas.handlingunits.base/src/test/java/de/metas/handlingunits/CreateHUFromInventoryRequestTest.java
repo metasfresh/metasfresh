@@ -2,10 +2,11 @@ package de.metas.handlingunits;
 
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
-import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,7 @@ class CreateHUFromInventoryRequestTest
 
 	private static CreateHUFromInventoryRequest.CreateHUFromInventoryRequestBuilder requestWithoutDate()
 	{
-		final I_C_UOM uom = org.adempiere.model.InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		final I_C_UOM uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		return CreateHUFromInventoryRequest.builder()
 				.productId(ProductId.ofRepoId(1))
 				.qty(Quantity.of(1, uom))

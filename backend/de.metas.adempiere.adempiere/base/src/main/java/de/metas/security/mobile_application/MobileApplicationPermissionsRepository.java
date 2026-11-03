@@ -121,7 +121,7 @@ public class MobileApplicationPermissionsRepository
 			return;
 		}
 
-		// one query for all the action-access rows of the role, instead of one per action
+		// one query for all the action-access rows of the role
 		final Map<MobileApplicationActionId, I_Mobile_Application_Action_Access> existingByActionId = queryBL
 				.createQueryBuilder(I_Mobile_Application_Action_Access.class)
 				.addEqualsFilter(I_Mobile_Application_Action_Access.COLUMNNAME_AD_Role_ID, request.getRoleId())
@@ -131,7 +131,7 @@ public class MobileApplicationPermissionsRepository
 				.collect(ImmutableMap.toImmutableMap(
 						row -> MobileApplicationActionId.ofRepoId(row.getMobile_Application_Action_ID()),
 						row -> row,
-						// fail-loud on duplicate rows of one role+action with the same exception as the former firstOnly() per action
+						// duplicate rows of one role+action are a data error: fail loud
 						(row1, row2) -> {
 							throw new DBMoreThanOneRecordsFoundException("More than one " + I_Mobile_Application_Action_Access.Table_Name
 									+ " row for " + I_Mobile_Application_Action_Access.COLUMNNAME_AD_Role_ID + "=" + request.getRoleId().getRepoId()
