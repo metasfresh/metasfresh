@@ -2017,7 +2017,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
       | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
       | bsl_22                            | bs_22                         | 10   |
     And the C_BPartner_ID of the bank statement line identified by bsl_22 is changed to bp_OM2
-    And the C_BankStatement identified by bs_22 is completed expecting error code PAYMENT_BPARTNERMISMATCH_ORDER
+    And the C_BankStatement identified by bs_22 is completed expecting error code Payment_BPartnerMismatch_Order
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |
       | o_22       | WP        | 123.52     |
@@ -2645,6 +2645,10 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
     And metasfresh contains C_Payment
       | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_Order_ID |
       | p_31a      | bp_OM         | 100.00 EUR | true      | o_31a      |
+    # a payment that is created with an order takes the order total as its amount; a user can change it afterwards
+    And the draft payment identified by p_31a is saved without UI callouts
+      | PayAmt |
+      | 100.00 |
     And the payment identified by p_31a is completed
     And the C_BankStatement identified by bs_31a is completed expecting error code BANKSTATEMENT_ORDER_ALREADY_PAID
     And exactly 1 payment carries the order identified by o_31a

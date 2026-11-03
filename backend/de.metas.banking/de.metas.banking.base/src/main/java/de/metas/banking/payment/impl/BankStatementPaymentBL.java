@@ -22,6 +22,7 @@
 
 package de.metas.banking.payment.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -41,9 +42,12 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
@@ -56,13 +60,19 @@ import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.X_C_Order;
+import org.compiere.model.X_C_Payment;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -74,10 +84,15 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
+	private static final AdMessageKey MSG_ORDER_AMOUNT_MISMATCH = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_AMOUNT_MISMATCH");
+	private static final AdMessageKey MSG_ORDER_ALREADY_PAID = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_ALREADY_PAID");
+
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IBankStatementBL bankStatementBL;
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final PaymentAllocationService paymentAllocationService;
@@ -142,8 +157,21 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 											   .direction(expectedPaymentDirection)
 											   .bpartnerId(bpartnerId)
 											   .payAmt(expectedPaymentAmount)
+											   .orderId(extractOrderIdToPay(bankStatementLine, trxAmt))
 											   .excludePaymentIds(excludePaymentIds)
 											   .build());
+	}
+
+	/**
+	 * @return the order that the payment of this line has to carry, i.e. the order of an incoming line without invoice;
+	 * null for a debit, 0.00 or invoice line (these never get the order).
+	 */
+	@Nullable
+	private static OrderId extractOrderIdToPay(@NonNull final I_C_BankStatementLine bankStatementLine, @NonNull final Money trxAmt)
+	{
+		return bankStatementLine.getC_Invoice_ID() <= 0 && trxAmt.signum() > 0
+				? OrderId.ofRepoIdOrNull(bankStatementLine.getC_Order_ID())
+				: null;
 	}
 
 	private static Money extractTrxAmt(final I_C_BankStatementLine line)
@@ -181,6 +209,8 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final Money payAmount = trxAmt.negateIf(!inboundPayment);
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(bankStatementLine.getC_Invoice_ID());
+
+		final OrderId orderId = extractOrderIdToPay(bankStatementLine, trxAmt);
 
 		final TenderType tenderType = paymentBL.getTenderType(orgBankAccountId);
 
@@ -223,8 +253,43 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 
 			paymentBuilder.invoiceId(invoiceId);
 		}
+		else if (orderId != null)
+		{
+			// invoice matching comes first; a debit, 0.00 or invoice line never gives its payment the order (see extractOrderIdToPay)
+			assertOrderCanBePaid(orderId, trxAmt);
+			paymentBuilder.orderId(orderId);
+		}
 
 		return paymentBuilder.createDraft(); // note: don't complete the payment now, else onComplete interceptors might link this payment to a different Bank Statement Line.
+	}
+
+	/**
+	 * Full prepayment only: the order must still wait for payment, no payment may carry it yet, and the line amount and currency must equal the order total.
+	 *
+	 * @throws AdempiereException if not, so completing the bank statement fails visibly and the order stays waiting
+	 */
+	private void assertOrderCanBePaid(@NonNull final OrderId orderId, @NonNull final Money trxAmt)
+	{
+		final I_C_Order order = orderDAO.getById(orderId);
+
+		final boolean carriedByAnotherPayment = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Order_ID, orderId)
+				.addNotInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, ImmutableSet.of(X_C_Payment.DOCSTATUS_Voided, X_C_Payment.DOCSTATUS_Reversed))
+				.create()
+				.anyMatch();
+		if (!X_C_Order.DOCSTATUS_WaitingPayment.equals(order.getDocStatus()) || order.getC_Payment_ID() > 0 || carriedByAnotherPayment)
+		{
+			throw new AdempiereException(MSG_ORDER_ALREADY_PAID, order.getDocumentNo());
+		}
+
+		final CurrencyId orderCurrencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());
+		if (order.getGrandTotal().compareTo(trxAmt.toBigDecimal()) != 0 || !CurrencyId.equals(orderCurrencyId, trxAmt.getCurrencyId()))
+		{
+			throw new AdempiereException(MSG_ORDER_AMOUNT_MISMATCH,
+										 order.getDocumentNo(),
+										 order.getGrandTotal().toPlainString() + " " + moneyService.getCurrencyCodeByCurrencyId(orderCurrencyId).toThreeLetterCode());
+		}
 	}
 
 	@Override

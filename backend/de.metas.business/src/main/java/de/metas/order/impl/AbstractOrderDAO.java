@@ -649,12 +649,14 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		// not already carried by another unprocessed bank statement line
 		// (table name based, because the bank statement line model lives in a module this one cannot depend on)
 		final IQueryBuilder<Object> otherUnprocessedBankLines = queryBL.createQueryBuilder(TABLENAME_C_BankStatementLine)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(COLUMNNAME_Processed, false)
 				.addNotEqualsFilter(COLUMNNAME_C_BankStatementLine_ID, query.getCurrentBankStatementLineId());
 		queryBuilder.addNotInSubQueryFilter(I_C_Order.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, otherUnprocessedBankLines.create());
 
 		// not already paid / carried by a payment, unless that payment is voided or reversed
 		final IQuery<I_C_Payment> activePayments = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
 				.addNotNull(I_C_Payment.COLUMNNAME_C_Order_ID)
 				.addNotInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, ImmutableSet.of(X_C_Payment.DOCSTATUS_Voided, X_C_Payment.DOCSTATUS_Reversed))
 				.create();

@@ -227,6 +227,10 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 					.addEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, query.getPayAmt().toBigDecimal())
 					.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Currency_ID, query.getPayAmt().getCurrencyId());
 		}
+		if (query.getOrderId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Order_ID, query.getOrderId());
+		}
 		if (!query.getExcludePaymentIds().isEmpty())
 		{
 			queryBuilder.addNotInArrayFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, query.getExcludePaymentIds());

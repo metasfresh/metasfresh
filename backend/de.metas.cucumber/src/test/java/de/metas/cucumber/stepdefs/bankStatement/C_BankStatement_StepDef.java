@@ -26,7 +26,6 @@ import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
@@ -43,6 +42,7 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.util.TimeUtil;
@@ -50,11 +50,13 @@ import org.compiere.util.TimeUtil;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 public class C_BankStatement_StepDef
 {
@@ -139,7 +141,7 @@ public class C_BankStatement_StepDef
 	 *
 	 * @cucumber.example
 	 * <pre>
-	 * Then the C_BankStatement identified by bs_1 is completed expecting error code PAYMENT_BPARTNERMISMATCH_ORDER
+	 * Then the C_BankStatement identified by bs_1 is completed expecting error code Payment_BPartnerMismatch_Order
 	 * </pre>
 	 */
 	@And("^the C_BankStatement identified by (.*) is completed expecting error code (.*)$")
@@ -148,7 +150,18 @@ public class C_BankStatement_StepDef
 		final I_C_BankStatement bankStatementRecord = bankStatementTable.get(bankStatementIdentifier);
 		bankStatementRecord.setDocAction(IDocument.ACTION_Complete);
 
-		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> documentBL.processEx(bankStatementRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
+		// the completion may wrap the exception of the payment it creates, so the error code is looked up along the cause chain
+		final Throwable thrown = catchThrowable(() -> documentBL.processEx(bankStatementRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
+		assertThat(thrown).as("completion of %s expected to be refused with error code %s", bankStatementIdentifier, errorCode).isNotNull();
+		final List<String> errorCodes = new ArrayList<>();
+		for (Throwable cause = thrown; cause != null; cause = cause.getCause())
+		{
+			if (cause instanceof AdempiereException)
+			{
+				errorCodes.add(((AdempiereException)cause).getErrorCode());
+			}
+		}
+		assertThat(errorCodes).as("error codes along the cause chain of %s", thrown).contains(errorCode);
 
 		final I_C_BankStatement reloaded = bankStatementDAO.getById(BankStatementId.ofRepoId(bankStatementRecord.getC_BankStatement_ID()));
 		bankStatementTable.putOrReplace(bankStatementIdentifier, reloaded);
