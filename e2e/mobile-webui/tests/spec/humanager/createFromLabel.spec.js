@@ -428,7 +428,9 @@ test('location changed with the Change locator button, not remembered; a non-loc
 
     // (e) a product label scanned in the dialog -> refused with an error toast, dialog stays open; Cancel keeps the location
     await NewHUPreviewScreen.openChangeLocatorDialog();
-    await expectErrorToast('a product label is no location', async () => await NewHUPreviewScreen.scanInChangeLocatorDialog(customLabel(gtin)));
+    await expectErrorToast('a product label is no location', async () => await NewHUPreviewScreen.scanInChangeLocatorDialog(customLabel(gtin)), ({ textContent }) => {
+        expect(textContent).toMatch(/Not found/); // the server's answer of the locator lookup, not any other error (e.g. a 500)
+    });
     await NewHUPreviewScreen.cancelChangeLocatorDialog();
     await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: wh1_l1.code });
 
@@ -468,7 +470,6 @@ test('inline quantity on the preview: typed digits stay in the field, emptied fi
         await NewHUPreviewScreen.expectNoScanner();
         await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
         await NewHUPreviewScreen.setQty(7);
-        await page.waitForTimeout(2500); // past the 2 s refocus of a scanner's hidden input (there is none now)
         await NewHUPreviewScreen.expectQty({ qty: '7', uom: 'PCE' });
         await ErrorToast.expectNoErrorToast();
         await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: wh1_l1.code });

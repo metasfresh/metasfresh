@@ -34,7 +34,9 @@ const NewHUPreviewScreen = () => {
 
   // the quantity field is prefilled with the proposed quantity; it forwards its qtyInfo on mount and on every keystroke
   const [qtyInfo, setQtyInfo] = useState(() =>
-    qtyInfos.of({ qty: proposal?.qty ?? 1, qtyStr: `${proposal?.qty ?? 1}` })
+    proposal?.qty != null
+      ? qtyInfos.of({ qty: proposal.qty, qtyStr: `${proposal.qty}` })
+      : qtyInfos.invalidOfNumber(null)
   );
   const [isChangeLocatorDialogOpen, setChangeLocatorDialogOpen] = useState(false);
   const [locator, setLocator] = useState({ qrCode: proposal?.locatorQRCode, caption: proposal?.locatorCaption });
