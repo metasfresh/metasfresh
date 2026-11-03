@@ -46,17 +46,22 @@ const NewHUPreviewScreen = () => {
   const isCreatingRef = useRef(false); // synchronous guard against a double tap on OK (state updates are async)
 
   // a replaced proposal (a new preview in the store while the screen stays mounted) restarts from its quantity and location
+  // (not reachable today: the preview unmounts between scans; kept so the screen never shows a stale quantity or location)
   useEffect(() => {
     setQtyInfo(toQtyInfo(proposal));
     setLocator(toLocator(proposal));
   }, [proposal]);
 
+  // useScreenDefinition returns a new history object on every render: the effect below reads the latest one through a ref,
+  // so that it runs only when the preview changes and not after every render
+  const historyRef = useRef(history);
+  historyRef.current = history;
   useEffect(() => {
     // no preview (e.g. a page reload) -> back to the scan screen; not after OK, which leaves the screen itself (history.replace below)
     if (!preview && !isCreatingRef.current) {
-      history.goBack();
+      historyRef.current.goBack();
     }
-  }, [preview, history]);
+  }, [preview]);
 
   if (!preview) return <></>;
 

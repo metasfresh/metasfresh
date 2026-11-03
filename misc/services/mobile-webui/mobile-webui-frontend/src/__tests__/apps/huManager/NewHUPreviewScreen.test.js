@@ -27,7 +27,7 @@ jest.mock('../../../utils/toast', () => ({
 }));
 const mockHistory = { goBack: jest.fn(), push: jest.fn(), replace: jest.fn() };
 jest.mock('../../../hooks/useScreenDefinition', () => ({
-  useScreenDefinition: () => ({ history: mockHistory }),
+  useScreenDefinition: () => ({ history: { ...mockHistory } }), // a new object on every call, like useMobileNavigation
 }));
 jest.mock('../../../apps/huManager/api');
 jest.mock('axios');
@@ -227,5 +227,25 @@ describe('NewHUPreviewScreen after OK', () => {
     expect(mockHistory.replace).toHaveBeenCalledWith(huManagerLocation());
     expect(mockHistory.goBack).not.toHaveBeenCalled();
     expect(store.getState()['applications/huManager'].newHUPreview).toBeNull(); // not reachable again: a second OK would create a second HU
+  });
+});
+
+// useScreenDefinition hands out a new history object on every render: the "no preview -> go back" effect must still run only
+// when the preview changes, not after every render.
+describe('NewHUPreviewScreen without a preview', () => {
+  it('goes back once, not after every re-render', async () => {
+    mockHistory.goBack.mockClear();
+    const store = createStore(combineReducers({ settings, 'applications/huManager': huManagerReducer }));
+    const ui = (
+      <Provider store={store}>
+        <NewHUPreviewScreen />
+      </Provider>
+    );
+    const { rerender } = render(ui);
+    rerender(ui);
+    rerender(ui);
+    await act(async () => {});
+
+    expect(mockHistory.goBack).toHaveBeenCalledTimes(1);
   });
 });
