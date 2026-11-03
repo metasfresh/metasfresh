@@ -163,6 +163,13 @@ public class PaymentBL implements IPaymentBL
 		return paymentDAO.getOrderIdsCarriedByActivePayments(orderIds);
 	}
 
+	@Override
+	@NonNull
+	public Optional<PaymentId> getActivePaymentIdCarryingOrder(@NonNull final OrderId orderId)
+	{
+		return paymentDAO.getActivePaymentIdCarryingOrder(orderId);
+	}
+
 	private CurrencyId fetchC_Currency_Invoice_ID(final I_C_Payment payment)
 	{
 		final int C_Invoice_ID = payment.getC_Invoice_ID();

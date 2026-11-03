@@ -1,8 +1,9 @@
 -- Two error messages for completing a bank statement whose line carries a prepay sales order (the payment gets the order):
 --   ERR_BANKSTATEMENT_ORDER_AMOUNT_MISMATCH: full prepayment only, the line amount / currency differs from the order total.
 --     {0} = C_Order.DocumentNo, {1} = order total with currency, e.g. 123.52 EUR
---   ERR_BANKSTATEMENT_ORDER_ALREADY_PAID: the order is not waiting for payment any more or is already carried by a payment.
---     {0} = C_Order.DocumentNo (one text for both cases: not waiting any more / carried by a payment)
+--   ERR_BANKSTATEMENT_ORDER_ALREADY_PAID: the order is already carried by a payment (an order that simply does not wait for payment any more
+--     gets ERR_BANKSTATEMENT_ORDER_NOT_WAITING, see 5832930).
+--     {0} = C_Order.DocumentNo, {1} = C_Payment.DocumentNo of the carrying payment
 -- Base text German, en_US override English, de_DE / de_CH marked translated.
 
 -- ERR_BANKSTATEMENT_ORDER_AMOUNT_MISMATCH
@@ -39,7 +40,7 @@ UPDATE AD_Message_Trl SET IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-03
 -- ERR_BANKSTATEMENT_ORDER_ALREADY_PAID
 INSERT INTO AD_Message (AD_Client_ID, AD_Message_ID, AD_Org_ID, Created, CreatedBy, EntityType, IsActive, MsgText, MsgType, Updated, UpdatedBy, Value)
 VALUES (0, 545983 /*From ID Server*/, 0, TO_TIMESTAMP('2026-11-03 17:11:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'Y',
-        'Auftrag {0} wartet nicht mehr auf Zahlung oder wird bereits durch eine Zahlung getragen. Es wird keine weitere Zahlung erstellt. Bitte den Auftrag in der Auszugsposition entfernen.',
+        'Auftrag {0} ist bereits durch die Zahlung {1} bezahlt. Es wird keine weitere Zahlung erstellt. Bitte den Auftrag in der Auszugsposition entfernen.',
         'E', TO_TIMESTAMP('2026-11-03 17:11:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'ERR_BANKSTATEMENT_ORDER_ALREADY_PAID')
 ;
 
@@ -56,7 +57,7 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Message_ID = 545983
 ;
 
 UPDATE AD_Message_Trl
-SET MsgText = 'Order {0} is no longer waiting for payment or is already carried by a payment. No further payment is created. Please clear the order on the bank statement line.',
+SET MsgText = 'Order {0} is already paid by payment {1}. No further payment is created. Please clear the order on the bank statement line.',
     IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-03 17:11:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Language = 'en_US' AND AD_Message_ID = 545983
 ;

@@ -24,6 +24,7 @@
 package de.metas.payment.api.impl;
 
 import de.metas.order.OrderId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
@@ -73,5 +74,23 @@ public class PaymentDAO_getOrderIdsCarriedByActivePayments_Test
 		assertThat(paymentDAO.getOrderIdsCarriedByActivePayments(ImmutableList.of(drafted, completed, voided, reversed, inactive, withoutPayment)))
 				.containsExactlyInAnyOrder(drafted, completed);
 		assertThat(paymentDAO.getOrderIdsCarriedByActivePayments(ImmutableList.of(voided, withoutPayment))).isEmpty();
+	}
+
+	/** The payment to name in a refusal is an active one that is neither voided nor reversed; none if only such payments point to the order. */
+	@Test
+	void getActivePaymentIdCarryingOrder_skipsVoidedReversedAndInactivePayments()
+	{
+		payment(1, X_C_Payment.DOCSTATUS_Voided, true);
+		payment(1, X_C_Payment.DOCSTATUS_Reversed, true);
+		payment(1, X_C_Payment.DOCSTATUS_Completed, false);
+		assertThat(paymentDAO.getActivePaymentIdCarryingOrder(OrderId.ofRepoId(1))).isEmpty();
+
+		final I_C_Payment carrying = newInstance(I_C_Payment.class);
+		carrying.setC_Order_ID(1);
+		carrying.setDocStatus(X_C_Payment.DOCSTATUS_Completed);
+		saveRecord(carrying);
+
+		assertThat(paymentDAO.getActivePaymentIdCarryingOrder(OrderId.ofRepoId(1))).contains(PaymentId.ofRepoId(carrying.getC_Payment_ID()));
+		assertThat(paymentDAO.getActivePaymentIdCarryingOrder(OrderId.ofRepoId(2))).isEmpty();
 	}
 }

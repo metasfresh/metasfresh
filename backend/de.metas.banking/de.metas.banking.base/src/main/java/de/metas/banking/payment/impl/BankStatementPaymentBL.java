@@ -22,7 +22,6 @@
 
 package de.metas.banking.payment.impl;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -85,6 +84,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
 	private static final AdMessageKey MSG_ORDER_AMOUNT_MISMATCH = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_AMOUNT_MISMATCH");
 	private static final AdMessageKey MSG_ORDER_ALREADY_PAID = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_ALREADY_PAID");
+	private static final AdMessageKey MSG_ORDER_NOT_WAITING = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_NOT_WAITING");
 	private static final AdMessageKey MSG_ORDER_NOT_A_PREPAYMENT = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_NOT_A_PREPAYMENT");
 
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
@@ -283,11 +283,18 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			throw new AdempiereException(MSG_ORDER_NOT_A_PREPAYMENT, order.getDocumentNo());
 		}
 
-		if (!DocStatus.ofCode(order.getDocStatus()).isWaitingForPayment()
-				|| order.getC_Payment_ID() > 0
-				|| !paymentBL.getOrderIdsCarriedByActivePayments(ImmutableSet.of(orderId)).isEmpty())
+		// name the payment that carries the order, if there is one: the one the order points to, else an active payment pointing to the order
+		final PaymentId orderPaymentId = PaymentId.ofRepoIdOrNull(order.getC_Payment_ID());
+		final PaymentId carryingPaymentId = orderPaymentId != null
+				? orderPaymentId
+				: paymentBL.getActivePaymentIdCarryingOrder(orderId).orElse(null);
+		if (carryingPaymentId != null)
 		{
-			throw new AdempiereException(MSG_ORDER_ALREADY_PAID, order.getDocumentNo());
+			throw new AdempiereException(MSG_ORDER_ALREADY_PAID, order.getDocumentNo(), paymentBL.getById(carryingPaymentId).getDocumentNo());
+		}
+		if (!DocStatus.ofCode(order.getDocStatus()).isWaitingForPayment())
+		{
+			throw new AdempiereException(MSG_ORDER_NOT_WAITING, order.getDocumentNo());
 		}
 
 		final CurrencyId orderCurrencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());

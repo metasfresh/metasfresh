@@ -30,6 +30,7 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.organization.IOrgDAO;
@@ -45,8 +46,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -67,15 +70,18 @@ public class C_BankStatement_StepDef
 
 	private final C_BankStatement_StepDefData bankStatementTable;
 	private final C_BP_BankAccount_StepDefData bankAccountTable;
+	private final C_Payment_StepDefData paymentTable;
 	private final TestContext restTestContext;
 
 	public C_BankStatement_StepDef(
 			@NonNull final C_BankStatement_StepDefData bankStatementTable,
 			@NonNull final C_BP_BankAccount_StepDefData bankAccountTable,
+			@NonNull final C_Payment_StepDefData paymentTable,
 			@NonNull final TestContext restTestContext)
 	{
 		this.bankStatementTable = bankStatementTable;
 		this.bankAccountTable = bankAccountTable;
+		this.paymentTable = paymentTable;
 		this.restTestContext = restTestContext;
 	}
 
@@ -144,8 +150,35 @@ public class C_BankStatement_StepDef
 	 * Then the C_BankStatement identified by bs_1 is completed expecting error code Payment_BPartnerMismatch_Order
 	 * </pre>
 	 */
-	@And("^the C_BankStatement identified by (.*) is completed expecting error code (.*)$")
+	@And("^the C_BankStatement identified by (.*) is completed expecting error code (\\S+)$")
 	public void complete_C_BankStatement_expecting_error_code(@NonNull final String bankStatementIdentifier, @NonNull final String errorCode)
+	{
+		completeExpectingError(bankStatementIdentifier, errorCode, null);
+	}
+
+	/**
+	 * Like {@link #complete_C_BankStatement_expecting_error_code(String, String)}, and also asserts that the message of the refusal
+	 * names the {@code C_Payment.DocumentNo} of the given payment.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then the C_BankStatement identified by bs_1 is completed expecting error code BANKSTATEMENT_ORDER_ALREADY_PAID naming the payment identified by p_1
+	 * </pre>
+	 * @cucumber.depends {@link C_Payment_StepDefData}
+	 */
+	@And("^the C_BankStatement identified by (.*) is completed expecting error code (\\S+) naming the payment identified by (.*)$")
+	public void complete_C_BankStatement_expecting_error_code_naming_payment(
+			@NonNull final String bankStatementIdentifier,
+			@NonNull final String errorCode,
+			@NonNull final String paymentIdentifier)
+	{
+		completeExpectingError(bankStatementIdentifier, errorCode, paymentTable.get(paymentIdentifier));
+	}
+
+	private void completeExpectingError(
+			@NonNull final String bankStatementIdentifier,
+			@NonNull final String errorCode,
+			@Nullable final I_C_Payment expectedPaymentInMessage)
 	{
 		final I_C_BankStatement bankStatementRecord = bankStatementTable.get(bankStatementIdentifier);
 		bankStatementRecord.setDocAction(IDocument.ACTION_Complete);
@@ -154,14 +187,26 @@ public class C_BankStatement_StepDef
 		final Throwable thrown = catchThrowable(() -> documentBL.processEx(bankStatementRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
 		assertThat(thrown).as("completion of %s expected to be refused with error code %s", bankStatementIdentifier, errorCode).isNotNull();
 		final List<String> errorCodes = new ArrayList<>();
+		String messageWithErrorCode = null;
 		for (Throwable cause = thrown; cause != null; cause = cause.getCause())
 		{
 			if (cause instanceof AdempiereException)
 			{
-				errorCodes.add(((AdempiereException)cause).getErrorCode());
+				final AdempiereException adempiereException = (AdempiereException)cause;
+				errorCodes.add(adempiereException.getErrorCode());
+				if (messageWithErrorCode == null && errorCode.equals(adempiereException.getErrorCode()))
+				{
+					messageWithErrorCode = adempiereException.getMessage();
+				}
 			}
 		}
 		assertThat(errorCodes).as("error codes along the cause chain of %s", thrown).contains(errorCode);
+		if (expectedPaymentInMessage != null)
+		{
+			assertThat(messageWithErrorCode)
+					.as("message of the refusal with error code %s must name C_Payment.DocumentNo", errorCode)
+					.contains(expectedPaymentInMessage.getDocumentNo());
+		}
 
 		final I_C_BankStatement reloaded = bankStatementDAO.getById(BankStatementId.ofRepoId(bankStatementRecord.getC_BankStatement_ID()));
 		bankStatementTable.putOrReplace(bankStatementIdentifier, reloaded);

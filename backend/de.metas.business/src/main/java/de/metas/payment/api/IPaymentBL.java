@@ -63,6 +63,12 @@ public interface IPaymentBL extends ISingletonService
 	@NonNull
 	ImmutableSet<OrderId> getOrderIdsCarriedByActivePayments(@NonNull Collection<OrderId> orderIds);
 
+	/**
+	 * @see IPaymentDAO#getActivePaymentIdCarryingOrder(OrderId)
+	 */
+	@NonNull
+	Optional<PaymentId> getActivePaymentIdCarryingOrder(@NonNull OrderId orderId);
+
 	DefaultPaymentBuilder newInboundReceiptBuilder();
 
 	DefaultPaymentBuilder newOutboundPaymentBuilder();

@@ -2305,6 +2305,33 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   # ################################################################################
 
   @from:cucumber
+  @Id:S32606_OM33d
+  Scenario: Hand-picked prepay order that does not wait for payment any more and that no payment carries: completing the statement fails with the not-waiting message, no payment is created
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
+      | o_33d      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM33D-0033 |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l_o_33d   | o_33d      | p_OM         | 1          |
+    And the order identified by o_33d is completed and waits for payment
+    And the order identified by o_33d is closed
+    And metasfresh contains C_BankStatement:
+      | Identifier | C_BP_BankAccount_ID | StatementDate |
+      | bs_33d    | bpb_OM              | 2026-11-03    |
+    And metasfresh contains C_BankStatementLine:
+      | Identifier | C_BankStatement_ID | Amount     | C_BPartner_ID | C_Order_ID |
+      | bsl_33d   | bs_33d             | 123.52 EUR | bp_OM         | o_33d      |
+    And the C_BankStatement identified by bs_33d is completed expecting error code BANKSTATEMENT_ORDER_NOT_WAITING
+    And exactly 0 payments carry the order identified by o_33d
+    And exactly 0 payments belong to the bank statement line identified by bsl_33d
+
+
+  # ################################################################################
+  # ################################################################################
+  # ################################################################################
+
+  @from:cucumber
   @Id:S32606_OM26
   Scenario: Same order named in two imported files before either is completed: only the first line gets the order
 
@@ -2779,7 +2806,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
       | PayAmt |
       | 100.00 |
     And the payment identified by p_31a is completed
-    And the C_BankStatement identified by bs_31a is completed expecting error code BANKSTATEMENT_ORDER_ALREADY_PAID
+    And the C_BankStatement identified by bs_31a is completed expecting error code BANKSTATEMENT_ORDER_ALREADY_PAID naming the payment identified by p_31a
     And exactly 1 payment carries the order identified by o_31a
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |
@@ -2872,7 +2899,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
     And metasfresh contains C_Payment
       | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_Order_ID |
       | p_31b      | bp_OM         | 100.00 EUR | true      | o_31b      |
-    And the C_BankStatement identified by bs_31b is completed expecting error code BANKSTATEMENT_ORDER_ALREADY_PAID
+    And the C_BankStatement identified by bs_31b is completed expecting error code BANKSTATEMENT_ORDER_ALREADY_PAID naming the payment identified by p_31b
     And exactly 1 payment carries the order identified by o_31b
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |

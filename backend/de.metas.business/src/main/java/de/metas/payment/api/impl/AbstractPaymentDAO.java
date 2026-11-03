@@ -320,14 +320,29 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 			return ImmutableSet.of();
 		}
 
-		return queryBL.createQueryBuilder(I_C_Payment.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_Payment.COLUMNNAME_C_Order_ID, orderIds)
-				.addNotInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, ImmutableSet.of(X_C_Payment.DOCSTATUS_Voided, X_C_Payment.DOCSTATUS_Reversed))
+		return queryActivePaymentsCarryingOrders(orderIds)
 				.create()
 				.listDistinct(I_C_Payment.COLUMNNAME_C_Order_ID, Integer.class)
 				.stream()
 				.map(OrderId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	@NonNull
+	public Optional<PaymentId> getActivePaymentIdCarryingOrder(@NonNull final OrderId orderId)
+	{
+		return queryActivePaymentsCarryingOrders(ImmutableSet.of(orderId))
+				.orderBy(I_C_Payment.COLUMNNAME_C_Payment_ID)
+				.create()
+				.firstIdOnlyOptional(PaymentId::ofRepoIdOrNull);
+	}
+
+	private IQueryBuilder<I_C_Payment> queryActivePaymentsCarryingOrders(@NonNull final Collection<OrderId> orderIds)
+	{
+		return queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Payment.COLUMNNAME_C_Order_ID, orderIds)
+				.addNotInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, ImmutableSet.of(X_C_Payment.DOCSTATUS_Voided, X_C_Payment.DOCSTATUS_Reversed));
 	}
 }
