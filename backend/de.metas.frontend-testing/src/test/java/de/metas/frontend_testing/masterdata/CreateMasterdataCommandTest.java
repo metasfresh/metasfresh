@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCalibrationRuleRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
@@ -451,5 +452,33 @@ public class CreateMasterdataCommandTest
 		assertThat(warehouses.get("EMPTIES").getEmpties()).isNull();
 
 		assertThat(Objects.requireNonNull(request.getPackages()).get("PKG1").getShipper()).isEqualTo(Identifier.ofString("SHIPPER"));
+	}
+
+	@Test
+	public void request_json_withBpGroupsAndCalibrationRules_shouldDeserialize() throws Exception
+	{
+		// given: the JSON shape the Playwright fixtures use
+		final String json = "{"
+				+ "\"bpGroups\": {\"GRP\": {\"name\": \"Wholesale\"}},"
+				+ "\"bpartners\": {\"BP\": {\"bpGroup\": \"GRP\"}},"
+				+ "\"calibrationRules\": {\"R1\": {\"seqNo\": 10, \"bpartner\": \"BP\", \"bpGroup\": \"GRP\", \"product\": \"P1\","
+				+ " \"productCategory\": \"CAT\", \"schema\": \"S1\", \"factor\": 150}}"
+				+ "}";
+
+		// when
+		final JsonCreateMasterdataRequest request = new ObjectMapper().readValue(json, JsonCreateMasterdataRequest.class);
+
+		// then
+		assertThat(Objects.requireNonNull(request.getBpGroups()).get("GRP").getName()).isEqualTo("Wholesale");
+		assertThat(Objects.requireNonNull(request.getBpartners()).get("BP").getBpGroup()).isEqualTo(Identifier.ofString("GRP"));
+
+		final JsonCalibrationRuleRequest rule = Objects.requireNonNull(request.getCalibrationRules()).get("R1");
+		assertThat(rule.getSeqNo()).isEqualTo(10);
+		assertThat(rule.getBpartner()).isEqualTo(Identifier.ofString("BP"));
+		assertThat(rule.getBpGroup()).isEqualTo(Identifier.ofString("GRP"));
+		assertThat(rule.getProduct()).isEqualTo(Identifier.ofString("P1"));
+		assertThat(rule.getProductCategory()).isEqualTo(Identifier.ofString("CAT"));
+		assertThat(rule.getSchema()).isEqualTo(Identifier.ofString("S1"));
+		assertThat(rule.getFactor()).isEqualByComparingTo("150");
 	}
 }

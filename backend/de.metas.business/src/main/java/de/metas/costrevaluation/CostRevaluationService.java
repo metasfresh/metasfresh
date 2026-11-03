@@ -3,48 +3,107 @@ package de.metas.costrevaluation;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
-import de.metas.costing.CostDetailAdjustment;
+import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostsRevaluationRequest;
 import de.metas.costing.CostsRevaluationResult;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.CurrentCostQuery;
+import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICostingService;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.IProductCostingBL;
+import de.metas.costing.methods.CostAmountType;
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.lang.SeqNoProvider;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 public class CostRevaluationService
 {
-	private final CostRevaluationRepository costRevaluationRepository;
-	private final ICurrentCostsRepository currentCostsRepo;
-	private final ICostingService costingService;
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	static final AdMessageKey MSG_LineAlreadyExistsForProduct = AdMessageKey.of("M_CostRevaluation.LineAlreadyExistsForProduct");
+	static final AdMessageKey MSG_NoCurrentCostForProduct = AdMessageKey.of("M_CostRevaluation.NoCurrentCostForProduct");
+	static final AdMessageKey MSG_OrgRequiredForOrgCostingLevel = AdMessageKey.of("M_CostRevaluation.OrgRequiredForOrgCostingLevel");
+	static final AdMessageKey MSG_AmbiguousCurrentCost = AdMessageKey.of("M_CostRevaluation.AmbiguousCurrentCost");
+	static final AdMessageKey MSG_NewCostPriceNegative = AdMessageKey.of("M_CostRevaluation.NewCostPriceNegative");
+	static final AdMessageKey MSG_DocumentNotDraft = AdMessageKey.of("M_CostRevaluation.DocumentNotDraft");
+	static final AdMessageKey MSG_QuickInputOnlyForManualSource = AdMessageKey.of("M_CostRevaluation.QuickInputOnlyForManualSource");
+	static final AdMessageKey MSG_NoSourceCostAsOfEvaluationStartDate = AdMessageKey.of("M_CostRevaluation.NoSourceCostAsOfEvaluationStartDate");
+
+	@NonNull private final CostRevaluationRepository costRevaluationRepository;
+	@NonNull private final ICurrentCostsRepository currentCostsRepo;
+	@NonNull private final ICostingService costingService;
+	@NonNull private final ICostDetailRepository costDetailRepository;
+	@NonNull private final ICostElementRepository costElementRepository;
+	@NonNull private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
 	public CostRevaluationService(
 			@NonNull final CostRevaluationRepository costRevaluationRepository,
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICostingService costingService)
+			@NonNull final ICostingService costingService,
+			@NonNull final ICostDetailRepository costDetailRepository,
+			@NonNull final ICostElementRepository costElementRepository)
 	{
 		this.costRevaluationRepository = costRevaluationRepository;
 		this.currentCostsRepo = currentCostsRepo;
 		this.costingService = costingService;
+		this.costDetailRepository = costDetailRepository;
+		this.costElementRepository = costElementRepository;
+	}
+
+	/**
+	 * The cost element a new {@code Manual} revaluation is preset to: the active material cost element whose costing method is the costing method
+	 * of the given accounting schema, else of the client's primary schema. The {@code M_CostRevaluation.M_CostElement_ID} column default applies the same rule in SQL.
+	 *
+	 * @return empty unless exactly one element matches (the user chooses then).
+	 */
+	public Optional<CostElementId> findPresetCostElement(@NonNull final ClientId clientId, @Nullable final AcctSchemaId acctSchemaId)
+	{
+		final AcctSchemaId acctSchemaIdToUse = acctSchemaId != null ? acctSchemaId : acctSchemaDAO.getPrimaryAcctSchemaId(clientId);
+		if (acctSchemaIdToUse == null)
+		{
+			return Optional.empty();
+		}
+
+		final CostingMethod costingMethod = acctSchemaDAO.getById(acctSchemaIdToUse).getCosting().getCostingMethod();
+		final ImmutableList<CostElementId> costElementIds = costElementRepository.getActiveMaterialCostingElements(clientId)
+				.stream()
+				.filter(costElement -> costElement.isMaterialCostingMethod(costingMethod))
+				.map(CostElement::getId)
+				.collect(ImmutableList.toImmutableList());
+		return costElementIds.size() == 1 ? Optional.of(costElementIds.get(0)) : Optional.empty();
+	}
+
+	@NonNull
+	public CostRevaluation getById(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		return costRevaluationRepository.getById(costRevaluationId);
 	}
 
 	public boolean isDraftedDocument(@NonNull final CostRevaluationId costRevaluationId)
@@ -67,18 +126,18 @@ public class CostRevaluationService
 	{
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
 
-		if (costRevaluation.getRevaluationSource().isCopyFromCostElement())
+		if (costRevaluation.getRevaluationSource().isManual())
 		{
-			createLinesFromCopyFromCostElement(costRevaluationId, costRevaluation);
+			createLinesFromManual(costRevaluationId, costRevaluation);
 		}
 		else
 		{
-			createLinesFromCalculated(costRevaluationId, costRevaluation);
+			createLinesFromCopyFromCostElement(costRevaluationId, costRevaluation);
 		}
 	}
 
-	/** {@code Calculated}: seeds lines from the document's own (target) cost element's current costs. */
-	private void createLinesFromCalculated(
+	/** {@code Manual}: seeds lines from the document's own (target) cost element's current costs. */
+	private void createLinesFromManual(
 			@NonNull final CostRevaluationId costRevaluationId,
 			@NonNull final CostRevaluation costRevaluation)
 	{
@@ -128,7 +187,7 @@ public class CostRevaluationService
 
 	/**
 	 * Restates each given live {@link CurrentCost} as the cost its element carried as of {@code asOfDate}. Only the
-	 * {@code CopyFromCostElement} preview uses this; the {@code Calculated} source keeps revaluating the live cost.
+	 * {@code CopyFromCostElement} preview uses this; the {@code Manual} source keeps revaluating the live cost.
 	 */
 	private ImmutableList<CurrentCost> toCostsAsOf(
 			@NonNull final ImmutableList<CurrentCost> currentCosts,
@@ -145,7 +204,7 @@ public class CostRevaluationService
 
 		// Fails loudly rather than silently falling back to the live cost — the very bug the as-of read exists to fix.
 		final CostDetailPreviousAmounts costAsOf = costingService.getCostAsOf(segmentAndElement, asOfDate)
-				.orElseThrow(() -> new AdempiereException("No current cost found for source cost element " + segmentAndElement));
+				.orElseThrow(() -> new AdempiereException(MSG_NoSourceCostAsOfEvaluationStartDate, productBL.getProductValueAndName(segmentAndElement.getProductId())));
 
 		final CurrentCost restated = currentCost.copy();
 		restated.setFrom(costAsOf);
@@ -170,7 +229,7 @@ public class CostRevaluationService
 
 	private ImmutableSet<ProductId> retrieveStockedProductIdsOrThrow(@NonNull final ClientId clientId)
 	{
-		final ImmutableSet<ProductId> productIds = productDAO.retrieveStockedProductIds(clientId);
+		final ImmutableSet<ProductId> productIds = productBL.retrieveStockedProductIds(clientId);
 		if (productIds.isEmpty())
 		{
 			throw new AdempiereException("No stocked products found");
@@ -203,17 +262,216 @@ public class CostRevaluationService
 		return currentCost.getCostSegment().isMatching(orgId);
 	}
 
+	/**
+	 * Adds one line for {@code productId}, for the cost segment of the product's current cost, with the given {@code newCostPrice}.
+	 * <p>
+	 * A product without a current cost yet gets one at quantity 0; completing its line books no value difference.
+	 * <p>
+	 * Other lines of the revaluation are left untouched.
+	 *
+	 * @throws AdempiereException if {@code newCostPrice} is negative, if the revaluation's source is not {@link RevaluationSource#Manual},
+	 * if the revaluation is not drafted / in progress,
+	 * if an active line already exists for {@code productId} (duplicate guard), if the product still has
+	 * no current cost after seeding (unsupported costing setup), or if it has more than one (ambiguous multi-segment product).
+	 * @return the id of the newly created line.
+	 */
+	@NonNull
+	public CostRevaluationLineId createLineForProduct(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final ProductId productId,
+			@NonNull final BigDecimal newCostPrice)
+	{
+		if (newCostPrice.signum() < 0)
+		{
+			throw new AdempiereException(MSG_NewCostPriceNegative);
+		}
+
+		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
+		if (!costRevaluation.getRevaluationSource().isManual())
+		{
+			// a CopyFromCostElement revaluation copies the source element's cost and would ignore the typed price
+			throw new AdempiereException(MSG_QuickInputOnlyForManualSource);
+		}
+		if (!costRevaluation.getDocStatus().isDraftedOrInProgress())
+		{
+			throw new AdempiereException(MSG_DocumentNotDraft);
+		}
+
+		if (costRevaluationRepository.hasActiveLineForProduct(costRevaluationId, productId))
+		{
+			throw new AdempiereException(MSG_LineAlreadyExistsForProduct, productBL.getProductValueAndName(productId));
+		}
+
+		final OrgId orgId = getOrgIdToMatch(costRevaluation, productId);
+
+		CurrentCost currentCost = resolveCurrentCost(costRevaluation, productId, orgId).orElse(null);
+		if (currentCost == null)
+		{
+			// a stocked product may have no current cost yet (e.g. a migrated product)
+			currentCostsRepo.createDefaultProductCosts(productBL.getById(productId));
+			currentCost = resolveCurrentCost(costRevaluation, productId, orgId)
+					.orElseThrow(() -> new AdempiereException(MSG_NoCurrentCostForProduct, productBL.getProductValueAndName(productId)));
+		}
+
+		final CostAmount newCostAmount = CostAmount.of(newCostPrice, currentCost.getCurrencyId());
+		return costRevaluationRepository.createLineForCurrentCost(costRevaluationId, currentCost, newCostAmount);
+	}
+
+	/**
+	 * The org to match the product's current cost by: the revaluation's org when the product is costed at
+	 * {@link CostingLevel#Organization}, {@code null} (any org) otherwise.
+	 *
+	 * @throws AdempiereException if the product is costed at organization level but the header org is {@link OrgId#ANY}.
+	 */
+	@Nullable
+	private OrgId getOrgIdToMatch(@NonNull final CostRevaluation costRevaluation, @NonNull final ProductId productId)
+	{
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, costRevaluation.getAcctSchemaId());
+		if (!costingLevel.isOrg())
+		{
+			return null;
+		}
+
+		final OrgId orgId = costRevaluation.getOrgId();
+		if (orgId.isAny())
+		{
+			throw new AdempiereException(MSG_OrgRequiredForOrgCostingLevel, productBL.getProductValueAndName(productId));
+		}
+		return orgId;
+	}
+
+	/**
+	 * The product's single current cost for the revaluation's costing context and the given {@code orgId} ({@code null} = any org).
+	 *
+	 * @return the matching {@link CurrentCost}, or {@link Optional#empty()} when the product has none yet.
+	 * @throws AdempiereException if more than one current cost matches (ambiguous multi-segment product).
+	 */
+	private Optional<CurrentCost> resolveCurrentCost(
+			@NonNull final CostRevaluation costRevaluation,
+			@NonNull final ProductId productId,
+			@Nullable final OrgId orgId)
+	{
+		final ImmutableList<CurrentCost> currentCosts = currentCostsRepo.list(
+				CurrentCostQuery.builder()
+						.clientId(costRevaluation.getClientId())
+						.orgId(orgId)
+						.acctSchemaId(costRevaluation.getAcctSchemaId())
+						.costElementId(costRevaluation.getCostElementId())
+						.productId(productId)
+						.build());
+
+		if (currentCosts.size() > 1)
+		{
+			throw new AdempiereException(MSG_AmbiguousCurrentCost, productBL.getProductValueAndName(productId), currentCosts.size());
+		}
+
+		return currentCosts.isEmpty() ? Optional.empty() : Optional.of(currentCosts.get(0));
+	}
+
+	/**
+	 * Writes the values booked at posting onto the line and its before-row: the stock on hand and the cost price the line's revaluation
+	 * {@code M_CostDetail} was booked from (its previous amounts) and its amount. They differ from the values of Complete when stock
+	 * moved between Complete and posting.
+	 *
+	 * Does nothing for a {@code CopyFromCostElement} line: its cost detail is the opening anchor, which books nothing.
+	 *
+	 * @throws AdempiereException if the line has not exactly one main cost detail on its own cost element and accounting schema.
+	 */
+	public void writeBookedValues(@NonNull final CostRevaluationLine line)
+	{
+		if (!costRevaluationRepository.getById(line.getId().getCostRevaluationId()).getRevaluationSource().isManual())
+		{
+			return;
+		}
+
+		writeBookedValues(line.getId(), getRevaluationCostDetail(line));
+	}
+
+	private CostDetail getRevaluationCostDetail(@NonNull final CostRevaluationLine line)
+	{
+		final CostSegmentAndElement costSegmentAndElement = line.getCostSegmentAndElement();
+		final CostingDocumentRef documentRef = CostingDocumentRef.ofCostRevaluationLineId(line.getId());
+		final ImmutableList<CostDetail> costDetails = costDetailRepository.listByDocumentRefAndAcctSchemaId(documentRef, costSegmentAndElement.getAcctSchemaId())
+				.stream()
+				.filter(costDetail -> CostElementId.equals(costDetail.getCostElementId(), costSegmentAndElement.getCostElementId()))
+				.filter(costDetail -> costDetail.getAmtType() == CostAmountType.MAIN)
+				.collect(ImmutableList.toImmutableList());
+		if (costDetails.size() != 1)
+		{
+			throw new AdempiereException("Expected exactly one cost detail for " + documentRef + " but got " + costDetails);
+		}
+		return costDetails.get(0);
+	}
+
+	void writeBookedValues(@NonNull final CostRevaluationLineId lineId, @NonNull final CostDetail costDetail)
+	{
+		final CostDetailPreviousAmounts previousAmounts = costDetail.getPreviousAmounts();
+		if (previousAmounts == null)
+		{
+			throw new AdempiereException("Cost detail of a cost revaluation line shall have previous amounts: " + costDetail);
+		}
+
+		final Quantity qty = previousAmounts.getQty();
+		final CostAmount oldCostPrice = previousAmounts.getCostPrice().getOwnCostPrice();
+		final CostAmount deltaAmount = costDetail.getAmt();
+		final CostAmount oldAmount = oldCostPrice.multiply(qty);
+
+		costRevaluationRepository.saveEvaluated(lineId, qty, oldCostPrice, deltaAmount);
+		costRevaluationRepository.updateBeforeRevaluationDetail(lineId, qty, oldCostPrice, oldAmount, oldAmount.add(deltaAmount), deltaAmount);
+	}
+
+	/**
+	 * @return {@code true} if any line of the revaluation, active or not, has its revaluation {@code M_CostDetail}, i.e. something was booked.
+	 */
+	public boolean hasAnyLineWithCostDetail(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		return costDetailRepository.hasCostDetailsForCostRevaluation(costRevaluationId);
+	}
+
 	public void deleteDetailsByLineId(@NonNull final CostRevaluationLineId lineId)
 	{
 		costRevaluationRepository.deleteDetailsByLineId(lineId);
 	}
 
+	/**
+	 * "Run": evaluates the lines not evaluated yet.
+	 * <p>
+	 * A {@code CopyFromCostElement} revaluation is only previewed by its lines; Run writes nothing for it, and its seed is written at Complete.
+	 */
+	public void runRevaluation(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		if (!costRevaluationRepository.getById(costRevaluationId).getRevaluationSource().isManual())
+		{
+			return;
+		}
+
+		createDetails(costRevaluationId);
+	}
+
+	/**
+	 * Evaluates the lines not evaluated yet.
+	 */
 	public void createDetails(@NonNull final CostRevaluationId costRevaluationId)
 	{
+		createDetails(costRevaluationId, false);
+	}
+
+	/**
+	 * Evaluates all lines again, also those already evaluated, so the value differences reflect the current stock and cost price.
+	 */
+	public void reevaluateAllLines(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		createDetails(costRevaluationId, true);
+	}
+
+	private void createDetails(@NonNull final CostRevaluationId costRevaluationId, final boolean includeEvaluatedLines)
+	{
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
+		// A CopyFromCostElement line is seeded once; it is never evaluated again.
+		final boolean reevaluateEvaluatedLines = includeEvaluatedLines && costRevaluation.getRevaluationSource().isManual();
 		final ImmutableList<CostRevaluationLine> linesToRevaluate = costRevaluationRepository.getLinesByCostRevaluationId(costRevaluationId)
 				.stream()
-				.filter(line -> !line.isRevaluated())
+				.filter(line -> reevaluateEvaluatedLines || !line.isRevaluated())
 				.collect(ImmutableList.toImmutableList());
 		if (linesToRevaluate.isEmpty())
 		{
@@ -232,8 +490,8 @@ public class CostRevaluationService
 		// element/product, not only a prior CopyFromCostElement switch), and that is the safer choice:
 		//  - In scope for this feature is the PRE-activation switch, which only ever writes cost details on the MAI
 		//    (target) element via CopyFromCostElement — so the broad signal and the narrow one coincide here.
-		//  - The only case where they diverge is a POST-activation Calculated-then-switch interleave (an ordinary
-		//    Calculated revaluation runs on the MAI element after the accounting method was activated, then a switch is
+		//  - The only case where they diverge is a POST-activation Manual-then-switch interleave (an ordinary
+		//    Manual revaluation runs on the MAI element after the accounting method was activated, then a switch is
 		//    attempted). That method-activation is a separate, decoupled feature and is OUT OF SCOPE here; in that
 		//    interleave a broad silent skip (leave the existing history untouched) is safer than a narrow re-seed that
 		//    would silently overwrite an in-use cost with a fresh zero-GL opening.
@@ -263,7 +521,7 @@ public class CostRevaluationService
 			@NonNull final CostRevaluation costRevaluation,
 			@NonNull final ImmutableList<CostRevaluationLine> linesToRevaluate)
 	{
-		if (!costRevaluation.getRevaluationSource().isCopyFromCostElement())
+		if (costRevaluation.getRevaluationSource().isManual())
 		{
 			return ImmutableSet.of();
 		}
@@ -286,9 +544,9 @@ public class CostRevaluationService
 	public void reverseDetails(@NonNull final CostRevaluationId costRevaluationId)
 	{
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
-		if (!costRevaluation.getRevaluationSource().isCopyFromCostElement())
+		if (costRevaluation.getRevaluationSource().isManual())
 		{
-			// Reversal for the history-replay (Calculated) source is not implemented yet.
+			// Reversal for the Manual source is not implemented yet.
 			throw new AdempiereException("Reversal is only implemented for the CopyFromCostElement source: " + costRevaluationId);
 		}
 
@@ -303,127 +561,57 @@ public class CostRevaluationService
 
 	private void createDetails(@NonNull final CostRevaluation costRevaluation, @NonNull final CostRevaluationLine line)
 	{
-		if (line.isRevaluated())
+		if (costRevaluation.getRevaluationSource().isManual())
 		{
-			throw new AdempiereException("Line already revaluated: " + line.getId());
-		}
-
-		if (costRevaluation.getRevaluationSource().isCopyFromCostElement())
-		{
-			createDetailsForCopyFromCostElement(costRevaluation, line);
+			createDetailsForManual(line);
 		}
 		else
 		{
-			createDetailsForCalculated(costRevaluation, line);
+			createDetailsForCopyFromCostElement(costRevaluation, line);
 		}
 	}
 
-	/** {@code Calculated}: history-replay revaluation writing the before / adjustment / after cost details. */
-	private void createDetailsForCalculated(@NonNull final CostRevaluation costRevaluation, @NonNull final CostRevaluationLine line)
+	/**
+	 * {@code Manual}: forward-only revaluation, books the on-hand quantity at the new cost price (one before-row).
+	 * The line shows the stock on hand and the current cost price of this evaluation.
+	 */
+	private void createDetailsForManual(@NonNull final CostRevaluationLine line)
 	{
 		final CostSegmentAndElement costSegmentAndElement = line.getCostSegmentAndElement();
 		final CostsRevaluationResult result = costingService.revaluateCosts(CostsRevaluationRequest.builder()
 				.costSegmentAndElement(costSegmentAndElement)
-				.evaluationStartDate(costRevaluation.getEvaluationStartDate())
 				.newCostPrice(line.getNewCostPrice())
 				.build());
 
-		final CostRevaluationLineId lineId = line.getId();
-		final SeqNoProvider seqNo = SeqNoProvider.ofInt(10);
-		CostAmount deltaAmountTotal = CostAmount.zero(line.getNewCostPrice().getCurrencyId());
+		final CostsRevaluationResult.CurrentCostBeforeEvaluation currentCostBeforeEvaluation = result.getCurrentCostBeforeEvaluation();
+		final Quantity qty = currentCostBeforeEvaluation.getQty();
+		final CostAmount costPriceOld = currentCostBeforeEvaluation.getCostPriceOld();
+		final CostAmount costPriceNew = currentCostBeforeEvaluation.getCostPriceNew();
+		final CostAmount costAmountOld = costPriceOld.multiply(qty);
+		final CostAmount costAmountNew = costPriceNew.multiply(qty);
+		final CostAmount deltaAmount = costAmountNew.subtract(costAmountOld);
 
-		//
-		// Current Cost Before Revaluation Adjustment:
-		{
-			final CostsRevaluationResult.CurrentCostBeforeEvaluation currentCostBeforeEvaluation = result.getCurrentCostBeforeEvaluation();
-			final Quantity qty = currentCostBeforeEvaluation.getQty();
-			final CostAmount costPriceOld = currentCostBeforeEvaluation.getCostPriceOld();
-			final CostAmount costPriceNew = currentCostBeforeEvaluation.getCostPriceNew();
-			final CostAmount costAmountOld = costPriceOld.multiply(qty);
-			final CostAmount costAmountNew = costPriceNew.multiply(qty);
-			final CostAmount deltaAmount = costAmountNew.subtract(costAmountOld);
-			deltaAmountTotal = deltaAmountTotal.add(deltaAmount);
+		costRevaluationRepository.createDetail(CostRevaluationDetailCreateRequest.builder()
+				.lineId(line.getId())
+				.seqNo(SeqNo.ofInt(10))
+				.type(CostRevaluationDetailType.CurrentCostBeforeRevaluation)
+				.costSegmentAndElement(costSegmentAndElement)
+				//
+				.qty(qty)
+				.oldCostPrice(costPriceOld)
+				.newCostPrice(costPriceNew)
+				.oldAmount(costAmountOld)
+				.newAmount(costAmountNew)
+				.deltaAmount(deltaAmount)
+				//
+				.build());
 
-			costRevaluationRepository.createDetail(CostRevaluationDetailCreateRequest.builder()
-					.lineId(lineId)
-					.seqNo(seqNo.getAndIncrement())
-					.type(CostRevaluationDetailType.CurrentCostBeforeRevaluation)
-					.costSegmentAndElement(costSegmentAndElement)
-					//
-					.qty(qty)
-					.oldCostPrice(costPriceOld)
-					.newCostPrice(costPriceNew)
-					.oldAmount(costAmountOld)
-					.newAmount(costAmountNew)
-					.deltaAmount(deltaAmount)
-					//
-					.build());
-		}
-
-		//
-		// Cost Detail Adjustments:
-		for (final CostDetailAdjustment costDetailAdjustment : result.getCostDetailAdjustments())
-		{
-			final CostAmount oldCostAmount = costDetailAdjustment.getOldCostAmount();
-			final CostAmount newCostAmount = costDetailAdjustment.getNewCostAmount();
-			final CostAmount deltaAmount = newCostAmount.subtract(oldCostAmount);
-			deltaAmountTotal = deltaAmountTotal.add(deltaAmount);
-
-			costRevaluationRepository.createDetail(CostRevaluationDetailCreateRequest.builder()
-					.lineId(lineId)
-					.seqNo(seqNo.getAndIncrement())
-					.type(CostRevaluationDetailType.CostDetailAdjustment)
-					.costSegmentAndElement(costSegmentAndElement)
-					//
-					.qty(costDetailAdjustment.getQty())
-					.oldCostPrice(costDetailAdjustment.getOldCostPrice())
-					.newCostPrice(costDetailAdjustment.getNewCostPrice())
-					.oldAmount(oldCostAmount)
-					.newAmount(newCostAmount)
-					.deltaAmount(deltaAmount)
-					//
-					.costDetailId(costDetailAdjustment.getCostDetailId())
-					.build());
-		}
-
-		//
-		// Current Cost After Revaluation Adjustment:
-		{
-			final CostsRevaluationResult.CurrentCostAfterEvaluation currentCostAfterEvaluation = result.getCurrentCostAfterEvaluation();
-			final CostAmount oldCostPrice = currentCostAfterEvaluation.getCostPriceComputed();
-			final CostAmount newCostPrice = line.getNewCostPrice();
-
-			if (!oldCostPrice.compareToEquals(newCostPrice))
-			{
-				final Quantity qty = currentCostAfterEvaluation.getQty();
-				final CostAmount oldCostAmount = oldCostPrice.multiply(qty);
-				final CostAmount newCostAmount = newCostPrice.multiply(qty);
-				final CostAmount deltaAmount = newCostAmount.subtract(oldCostAmount);
-				deltaAmountTotal = deltaAmountTotal.add(deltaAmount);
-
-				costRevaluationRepository.createDetail(CostRevaluationDetailCreateRequest.builder()
-						.lineId(lineId)
-						.seqNo(seqNo.getAndIncrement())
-						.type(CostRevaluationDetailType.CurrentCostAfterRevaluation)
-						.costSegmentAndElement(costSegmentAndElement)
-						//
-						.qty(qty)
-						.oldCostPrice(oldCostPrice)
-						.newCostPrice(newCostPrice)
-						.oldAmount(oldCostAmount)
-						.newAmount(newCostAmount)
-						.deltaAmount(deltaAmount)
-						//
-						.build());
-			}
-		}
-
-		costRevaluationRepository.save(line.markingAsEvaluated(deltaAmountTotal));
+		costRevaluationRepository.saveEvaluated(line.getId(), qty, costPriceOld, deltaAmount);
 	}
 
 	/**
 	 * {@code CopyFromCostElement} complete-time path: directly sets the target element's {@code M_Cost} from the source's
-	 * opening amounts and writes one opening-anchor {@code M_CostDetail}, instead of the {@code Calculated} history-replay.
+	 * opening amounts and writes one opening-anchor {@code M_CostDetail}, instead of a history replay.
 	 * <p>
 	 * The opening is the source's cost <b>as of the cut-off</b> ({@code EvaluationStartDate}) — not its live cost at
 	 * complete time. For a back-dated switch those differ: the live {@code M_Cost} row already reflects every movement
@@ -479,7 +667,7 @@ public class CostRevaluationService
 		final CostSegmentAndElement sourceSegmentAndElement = CostSegmentAndElement.of(targetSegment, sourceCostElementId);
 
 		final CostDetailPreviousAmounts sourceCostAsOfCutoff = costingService.getCostAsOf(sourceSegmentAndElement, costRevaluation.getEvaluationStartDate())
-				.orElseThrow(() -> new AdempiereException("No current cost found for source cost element " + sourceSegmentAndElement));
+				.orElseThrow(() -> new AdempiereException(MSG_NoSourceCostAsOfEvaluationStartDate, productBL.getProductValueAndName(sourceSegmentAndElement.getProductId())));
 
 		// Value-neutral seed: snapshot own price + LL + qty together from that SINGLE as-of-the-cut-off read of the
 		// source — never a stale-own/qty + fresh-LL mix. The line's own/qty are only the drafted preview frozen at

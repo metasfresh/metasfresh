@@ -555,7 +555,14 @@ public class CandidateRepositoryRetrieval
 				return null;
 			}
 
-			candidate.validateNonStockCandidate();
+			// A STOCK candidate is not a "non-stock candidate" and is never expected to pass
+			// validateNonStockCandidate() - the constructor itself skips that call for STOCK (see Candidate's
+			// constructor). Calling it here unconditionally misclassified every STOCK row as drifted legacy
+			// data, flooding the log with one false warning per row and silently dropping it from the result.
+			if (candidate.getType() != CandidateType.STOCK)
+			{
+				candidate.validateNonStockCandidate();
+			}
 			return candidate;
 		}
 		catch (final RuntimeException e)

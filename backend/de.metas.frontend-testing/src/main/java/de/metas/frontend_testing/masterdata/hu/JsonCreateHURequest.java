@@ -29,6 +29,15 @@ public class JsonCreateHURequest
 	 */
 	@Nullable BigDecimal qty;
 	@Nullable Identifier packingInstructions;
+	/**
+	 * Partner of the created top-level HU (the LU, or the TU when the packing instructions have no LU). Identifier of a partner created in the same request.
+	 */
+	@Nullable Identifier bpartner;
+	/**
+	 * Partner of the HUs included in the created top-level HU (TUs and their VHUs). Absent means no partner ({@code C_BPartner_ID} NULL).
+	 * Only applied when {@code bpartner} or {@code tuBPartner} is set.
+	 */
+	@Nullable Identifier tuBPartner;
 	@Nullable Boolean generateHUQRCode;
 	@Nullable Boolean generateHUQRCodesForAllTUs;
 	@Nullable Integer splitOutTUsCountAfterQRCodes;

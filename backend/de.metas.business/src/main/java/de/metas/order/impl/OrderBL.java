@@ -191,6 +191,12 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public List<I_C_Order> getByLinkOrderId(@NonNull final OrderId linkOrderId)
+	{
+		return orderDAO.getByLinkOrderId(linkOrderId);
+	}
+
+	@Override
 	public List<I_C_OrderLine> getLinesByOrderIds(@NonNull final Set<OrderId> orderIds)
 	{
 		return orderDAO.retrieveOrderLinesByOrderIds(orderIds);
@@ -1547,6 +1553,14 @@ public class OrderBL implements IOrderBL
 		}
 		else
 		{
+			if (!attributeSetInstanceBL.getImmutableAttributeSetById(asiId).hasAttribute(AttributeConstants.ATTR_Project))
+			{
+				// No ProjectValue instance on this ASI and no project on the line: nothing to clear.
+				// Creating one here would materialize an empty attribute (and clone the ASI)
+				// on every project-less order line.
+				return;
+			}
+
 			final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, null);
 			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
 		}

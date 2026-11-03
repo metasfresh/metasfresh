@@ -64,9 +64,9 @@ public class PPOrderCandidateAdvisedEvent extends AbstractPPOrderCandidateEvent
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrderCandidateAdvisedEvent(
-			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("ppOrderCandidate") @NonNull final PPOrderCandidate ppOrderCandidate,
-			@JsonProperty("supplyRequiredDescriptor") @Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@JsonProperty("eventDescriptor") @Builder.ObtainVia(method = "getEventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("ppOrderCandidate") @Builder.ObtainVia(method = "getPpOrderCandidate") @NonNull final PPOrderCandidate ppOrderCandidate,
+			@JsonProperty("supplyRequiredDescriptor") @Builder.ObtainVia(method = "getSupplyRequiredDescriptor") @Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@JsonProperty("directlyCreatePPOrder") final boolean directlyCreatePPOrder,
 			@JsonProperty("tryUpdateExistingCandidate") final boolean tryUpdateExistingCandidate)
 	{

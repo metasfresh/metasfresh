@@ -27,6 +27,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.GetResponse;
+import com.rabbitmq.client.ShutdownSignalException;
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -230,6 +231,13 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 	 * any message that does not parse as XML is acked-and-skipped (removed) and polling continues, so a
 	 * cross-scenario/cross-feature leftover can neither be returned as the wrong document nor crash the
 	 * poll. See also the Background queue-purge step {@link #edi_export_queue_is_purged(String)}.
+	 * <p>
+	 * Finally, the loop waits for the queue itself, not only for a message: the export queue does not exist
+	 * until the exporter's first publish ({@code RabbitMqExportProcessor} declares exchange, queue and binding
+	 * right before it publishes), so on a fresh broker the poll can run before the queue exists. The broker
+	 * answers such a {@code basicGet} with {@code 404 NOT_FOUND} and closes the channel; we treat that exactly
+	 * like an empty queue ("not published yet"), open a fresh channel and keep polling until the deadline —
+	 * the same queue-absent tolerance the purge step has.
 	 */
 	@NonNull
 	private Document pollDocumentFromQueue(@NonNull final String queueName) throws IOException, TimeoutException, InterruptedException, ParserConfigurationException, SAXException
@@ -238,29 +246,45 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 		try
 		{
 			// createChannel() is inside the outer try so the connection is still closed if it throws.
-			final Channel channel = connection.createChannel();
+			// not final: replaced by a fresh channel when the broker closes it on a "queue not found" (see below)
+			Channel channel = connection.createChannel();
 			try
 			{
 				final long deadlineMillis = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60);
+				boolean queueAbsenceLogged = false;
 
 				while (System.currentTimeMillis() < deadlineMillis)
 				{
 					// autoAck=false: pull exactly one message at a time on the test thread, then ack it
 					// explicitly once we have read its body. No prefetch storm, no consumer-callback thread.
-					final GetResponse getResponse = channel.basicGet(queueName, false);
+					final GetResponse getResponse;
+					try
+					{
+						getResponse = channel.basicGet(queueName, false);
+					}
+					catch (final IOException basicGetFailed)
+					{
+						if (!isQueueNotFound(basicGetFailed))
+						{
+							throw basicGetFailed;
+						}
+						// The queue does not exist yet, i.e. the exporter has not published yet. The broker closed
+						// this channel with the 404, so continue on a fresh one.
+						if (!queueAbsenceLogged)
+						{
+							logger.info("*** Queue: {} does not exist yet -> waiting for the export to declare it", queueName);
+							queueAbsenceLogged = true;
+						}
+						channel = connection.createChannel();
+						sleepBeforeNextPoll();
+						continue;
+					}
+
 					if (getResponse == null)
 					{
 						// Queue currently empty (the export workpackage may not have published yet) -> wait
 						// briefly and retry until the deadline.
-						try
-						{
-							Thread.sleep(250);
-						}
-						catch (final InterruptedException interrupted)
-						{
-							Thread.currentThread().interrupt();
-							throw interrupted;
-						}
+						sleepBeforeNextPoll();
 						continue;
 					}
 
@@ -305,6 +329,35 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 		{
 			connection.close();
 		}
+	}
+
+	private static void sleepBeforeNextPoll() throws InterruptedException
+	{
+		try
+		{
+			Thread.sleep(250);
+		}
+		catch (final InterruptedException interrupted)
+		{
+			Thread.currentThread().interrupt();
+			throw interrupted;
+		}
+	}
+
+	/**
+	 * @return {@code true} if the given {@code basicGet} failure is the broker's {@code 404 NOT_FOUND} channel close
+	 * for a queue that does not exist (yet); any other failure is a real problem and must propagate.
+	 */
+	private static boolean isQueueNotFound(@NonNull final IOException basicGetFailed)
+	{
+		final Throwable cause = basicGetFailed.getCause();
+		if (!(cause instanceof ShutdownSignalException))
+		{
+			return false;
+		}
+		final com.rabbitmq.client.Method reason = ((ShutdownSignalException)cause).getReason();
+		return reason instanceof AMQP.Channel.Close
+				&& ((AMQP.Channel.Close)reason).getReplyCode() == AMQP.NOT_FOUND;
 	}
 
 	@NonNull

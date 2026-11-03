@@ -1,0 +1,61 @@
+.pos-invoice-settlement-modal {
+  .modal-card-body {
+    .caption {
+      font-weight: bold;
+      margin-bottom: 0.5em;
+    }
+
+    .document-no-value {
+      font-weight: bold;
+      font-size: 1.5em;
+      min-height: 1.2em;
+      margin-bottom: 0.5em;
+    }
+
+    .numpad-container {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+      justify-content: right;
+    }
+
+    .invoices-container {
+      display: flex;
+      flex-flow: column nowrap;
+      gap: 0.5em;
+
+      .no-results {
+        font-style: italic;
+      }
+
+      // one row per matching invoice - stacked vertically (never squished onto one line), each field
+      // gets its own full-width row so it has room on a narrow handheld screen
+      .invoice-row {
+        height: auto;
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: flex-start;
+        text-align: left;
+        padding: 0.75em 1em;
+
+        > div {
+          width: 100%;
+        }
+
+        .invoice-row-documentNo {
+          font-weight: bold;
+        }
+
+        .invoice-row-openAmt {
+          font-weight: bold;
+        }
+      }
+    }
+  }
+
+  .pos-invoice-settlement-success {
+    font-size: 1.25em;
+    text-align: center;
+    padding: 1em 0;
+  }
+}
