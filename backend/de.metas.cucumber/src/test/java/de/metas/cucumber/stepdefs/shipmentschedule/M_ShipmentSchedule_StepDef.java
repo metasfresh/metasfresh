@@ -71,6 +71,7 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
@@ -200,6 +201,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
@@ -221,6 +223,11 @@ public class M_ShipmentSchedule_StepDef
 	 * sweep and jam the whole UpdateInvalidShipmentSchedules batch.
 	 */
 	private final List<Integer> seededRecomputeScheduleIds = new ArrayList<>();
+
+	/**
+	 * Schedule copies loaded by {@link #load_copy_for_later_recompute(String)}, by identifier. Step-def instances are per scenario.
+	 */
+	private final Map<String, I_M_ShipmentSchedule> staleShipmentScheduleCopiesByIdentifier = new HashMap<>();
 
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
@@ -1279,6 +1286,83 @@ public class M_ShipmentSchedule_StepDef
 		assertThat(asyncBatchId).as("C_Async_Batch_ID of the pending %s workpackage", processorShortName).isGreaterThan(0);
 
 		set_C_Async_Batch_ID_by_direct_update(shipmentScheduleIdentifier, String.valueOf(asyncBatchId));
+	}
+
+	/**
+	 * Loads a separate, uncached copy of the schedule and keeps it for
+	 * {@link #recompute_earlier_loaded_copy(String)}. Together they stage a schedule recompute that loaded the schedule
+	 * at this point and saves it later, after other transactions changed the schedule in between (a stale recompute).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given a copy of M_ShipmentSchedule shipmentSchedule2 is loaded for a later recompute
+	 * </pre>
+	 */
+	@And("^a copy of M_ShipmentSchedule (.*) is loaded for a later recompute$")
+	public void load_copy_for_later_recompute(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final I_M_ShipmentSchedule copy = loadUncachedCopy(shipmentScheduleIdentifier);
+		staleShipmentScheduleCopiesByIdentifier.put(shipmentScheduleIdentifier, copy);
+	}
+
+	/**
+	 * Runs, on the copy kept by {@link #load_copy_for_later_recompute(String)}, the first part of the schedule recompute
+	 * (as {@code ShipmentScheduleUpdater} does: update from the referenced order line and order, the header aggregation key,
+	 * the picked quantity) and saves the copy.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the earlier loaded copy of M_ShipmentSchedule shipmentSchedule2 is recomputed from its order and saved
+	 * </pre>
+	 */
+	@And("^the earlier loaded copy of M_ShipmentSchedule (.*) is recomputed from its order and saved$")
+	public void recompute_earlier_loaded_copy(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final I_M_ShipmentSchedule copy = staleShipmentScheduleCopiesByIdentifier.remove(shipmentScheduleIdentifier);
+		assertThat(copy).as("copy of M_ShipmentSchedule %s loaded by an earlier step", shipmentScheduleIdentifier).isNotNull();
+
+		recomputeFromOrderAndSave(shipmentScheduleIdentifier, copy);
+	}
+
+	/**
+	 * Like {@link #recompute_earlier_loaded_copy(String)}, but loads the schedule now (a recompute that reads the
+	 * current state).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When M_ShipmentSchedule shipmentSchedule2 is loaded now, recomputed from its order and saved
+	 * </pre>
+	 */
+	@And("^M_ShipmentSchedule (.*) is loaded now, recomputed from its order and saved$")
+	public void recompute_current_state(@NonNull final String shipmentScheduleIdentifier)
+	{
+		recomputeFromOrderAndSave(shipmentScheduleIdentifier, loadUncachedCopy(shipmentScheduleIdentifier));
+	}
+
+	@NonNull
+	private I_M_ShipmentSchedule loadUncachedCopy(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final int shipmentScheduleId = shipmentScheduleTable.get(shipmentScheduleIdentifier).getM_ShipmentSchedule_ID();
+		// a query builds a new model instance from the DB row, so the copy is not shared with any cached instance
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create()
+				.firstOnlyNotNull(I_M_ShipmentSchedule.class);
+	}
+
+	private void recomputeFromOrderAndSave(@NonNull final String shipmentScheduleIdentifier, @NonNull final I_M_ShipmentSchedule schedule)
+	{
+		// the same calls ShipmentScheduleUpdater.updateSchedules makes on a loaded schedule (order line + order, header key, picked quantity);
+		// the picked quantity matters for a stale copy: PO saves only if a column really differs from the loaded value, and then writes every set column
+		shipmentScheduleHandlerBL.updateShipmentScheduleFromReferencedRecord(schedule);
+		shipmentScheduleBL.updateHeaderAggregationKey(schedule);
+		schedule.setQtyPickList(shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(schedule).toBigDecimal());
+		InterfaceWrapperHelper.save(schedule);
+
+		shipmentScheduleTable.putOrReplace(shipmentScheduleIdentifier, InterfaceWrapperHelper.load(schedule.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class));
 	}
 
 	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
