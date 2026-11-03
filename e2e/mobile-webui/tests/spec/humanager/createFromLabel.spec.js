@@ -51,24 +51,12 @@ const FORMAT_PRODUCTCODE_WEIGHT = {
     ],
 };
 
-// The action `createHU` is not part of "allow all actions" (Mobile_Application_Action.IsIncludedInAllowAllActions = N): a role gets it only
-// through an explicit Mobile_Application_Action_Access row. So the login users of these specs get a role that is granted it.
-// includedRoles: [] — with the default WebUI role included, the role would have two login organisations (the user's login then selects
-// organisation "*", which has no default warehouse for the proposed location). `grantCreateHU: false` keeps the plain default login role (no grant).
-const CREATE_HU_GRANTED_ROLE = 'createHUGranted';
-const createHUGrantedRoles = () => ({
-    [CREATE_HU_GRANTED_ROLE]: { includedRoles: [], mobileApplicationAccess: [{ application: 'huManager', allowAllActions: true, grantedActions: ['createHU'] }] },
-});
-
 // products / formats / extra are opt-in: the defaults (one piece product on `gtin`, the GTIN+lot+best-before format) are what the core tests use
-const createMasterdata = async ({ gtin, users, workplaces, products, formats, extra, grantCreateHU = true } = {}) => {
-    const loginUsers = users ?? { user: { language: "en_US" } };
+const createMasterdata = async ({ gtin, users, workplaces, products, formats, extra } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
-            login: grantCreateHU
-                ? Object.fromEntries(Object.entries(loginUsers).map(([name, user]) => [name, { role: CREATE_HU_GRANTED_ROLE, ...user }]))
-                : loginUsers,
+            login: users ?? { user: { language: "en_US" } },
             products: products ?? { "P1": { gtin, uom: 'PCE' } },
             warehouses: {
                 "wh1": { locators: { wh1_l1: {}, wh1_l2: {} } },
@@ -77,7 +65,6 @@ const createMasterdata = async ({ gtin, users, workplaces, products, formats, ex
             ...(workplaces ? { workplaces } : {}),
             customQRCodeFormats: formats ?? [FORMAT_GTIN_LOT_BBD],
             ...(extra ?? {}),
-            ...(grantCreateHU ? { roles: { ...createHUGrantedRoles(), ...(extra?.roles ?? {}) } } : {}),
         }
     });
 };
@@ -737,68 +724,6 @@ test('role without allow-all, only createHU granted -> product label opens the p
         gtin,
         users: { user: { language: 'en_US', role: 'restricted' } },
         extra: { roles: restrictedHUManagerRole(['createHU']) },
-    });
-    const createCalls = countCreateCalls();
-    await openHUManager({ user: masterdata.login.user });
-
-    await scanLabelAndWaitForPreview({ label: customLabel(gtin) });
-    await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '1 PCE' });
-    await NewHUPreviewScreen.clickCancel();
-
-    await HUManagerScreen.waitForScreen();
-    expectCreateCallCount(createCalls, 0);
-    await Backend.expect({ products: { 'P1': { huStorageCount: 0, inventoryLineCount: 0 } } });
-});
-
-// noinspection JSUnusedLocalSymbols
-test('allow-all role WITHOUT a createHU grant (the default login role) -> product label gives today\'s not found, no preview, nothing booked; both endpoints refuse', async ({ page }) => {
-    allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5120');
-    allure.story('HU Manager - create HU from a scanned label');
-    allure.severity('critical');
-
-    const gtin = uniqueGtin14();
-    // default test login role: Mobile_Application_Access.IsAllowAllActions = Y for the HU Manager, no explicit createHU grant
-    const masterdata = await createMasterdata({ gtin, grantCreateHU: false });
-    const calls = countProposeAndCreateCalls();
-    await openHUManager({ user: masterdata.login.user });
-
-    const lookupPromise = page.waitForResponse((r) => r.url().includes('/hu-manager/byQRCode') && r.request().method() === 'POST', { timeout: SLOW_ACTION_TIMEOUT });
-    await expectErrorToast('product label, allow-all role without createHU', async () => {
-        await HUManagerScreen.scanLabel({ label: customLabel(gtin) });
-    }, ({ textContent }) => {
-        expect(textContent).toMatch(/Please try again/);
-        expect(textContent).not.toMatch(/Label not recognized|No product found|does not identify a product|Not a product label/);
-    });
-    expect((await lookupPromise).status()).toBe(404);
-    await NewHUPreviewScreen.expectNotDisplayed();
-    await HUManagerScreen.waitForScreen();
-    expect(calls.count).toBe(0);
-
-    await Backend.expectHUManagerCreateFromLabelRefused({ authToken: masterdata.login.user.token, scannedCode: customLabel(gtin) });
-
-    await Backend.expect({ products: { 'P1': { huStorageCount: 0, inventoryLineCount: 0 } } });
-});
-
-// noinspection JSUnusedLocalSymbols
-test('allow-all role WITH an explicit createHU grant -> product label opens the preview; Cancel books nothing', async ({ page }) => {
-    allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5120');
-    allure.story('HU Manager - create HU from a scanned label');
-    allure.severity('critical');
-
-    const gtin = uniqueGtin14();
-    const masterdata = await createMasterdata({
-        gtin,
-        users: { user: { language: 'en_US', role: 'allowAllGranted' } },
-        extra: {
-            roles: {
-                "allowAllGranted": {
-                    includedRoles: [],
-                    mobileApplicationAccess: [{ application: 'huManager', allowAllActions: true, grantedActions: ['createHU'] }],
-                },
-            },
-        },
     });
     const createCalls = countCreateCalls();
     await openHUManager({ user: masterdata.login.user });

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
-import de.metas.mobile.application.MobileApplicationAction;
 import de.metas.mobile.application.MobileApplicationActionId;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationRepoId;
@@ -33,8 +32,8 @@ class CreateRoleCommandMobileApplicationAccessTest
 	private MasterdataContext context;
 	private MobileApplicationInfoRepository applicationInfoRepository;
 	private MobileApplicationRepoId applicationId;
-	private MobileApplicationAction createHUAction;
-	private MobileApplicationAction disposeAction;
+	private MobileApplicationActionId createHUActionId;
+	private MobileApplicationActionId disposeActionId;
 
 	@BeforeEach
 	void beforeEach()
@@ -49,23 +48,17 @@ class CreateRoleCommandMobileApplicationAccessTest
 		application.setName("HU Manager");
 		InterfaceWrapperHelper.saveRecord(application);
 		applicationId = MobileApplicationRepoId.ofRepoId(application.getMobile_Application_ID());
-		// like the data: createHU is not included in "allow all actions", dispose is
-		createHUAction = createAction(application, "createHU", false);
-		disposeAction = createAction(application, "dispose", true);
+		createHUActionId = createAction(application, "createHU");
+		disposeActionId = createAction(application, "dispose");
 	}
 
-	private static MobileApplicationAction createAction(final I_Mobile_Application application, final String internalName, final boolean includedInAllowAllActions)
+	private static MobileApplicationActionId createAction(final I_Mobile_Application application, final String internalName)
 	{
 		final I_Mobile_Application_Action action = InterfaceWrapperHelper.newInstance(I_Mobile_Application_Action.class);
 		action.setMobile_Application_ID(application.getMobile_Application_ID());
 		action.setInternalName(internalName);
-		action.setIsIncludedInAllowAllActions(includedInAllowAllActions);
 		InterfaceWrapperHelper.saveRecord(action);
-		return MobileApplicationAction.builder()
-				.id(MobileApplicationActionId.ofRepoId(action.getMobile_Application_Action_ID()))
-				.internalName(internalName)
-				.includedInAllowAllActions(includedInAllowAllActions)
-				.build();
+		return MobileApplicationActionId.ofRepoId(action.getMobile_Application_Action_ID());
 	}
 
 	private RoleId createRole(final JsonRoleMobileApplicationAccessRequest access)
@@ -101,8 +94,8 @@ class CreateRoleCommandMobileApplicationAccessTest
 
 		final MobileApplicationPermissions permissions = permissionsOf(roleId);
 		assertThat(permissions.isAllowAccess(applicationId)).isTrue();
-		assertThat(permissions.isAllowAction(applicationId, createHUAction)).isFalse();
-		assertThat(permissions.isAllowAction(applicationId, disposeAction)).isFalse();
+		assertThat(permissions.isAllowAction(applicationId, createHUActionId)).isFalse();
+		assertThat(permissions.isAllowAction(applicationId, disposeActionId)).isFalse();
 	}
 
 	@Test
@@ -113,18 +106,18 @@ class CreateRoleCommandMobileApplicationAccessTest
 
 		final MobileApplicationPermissions permissions = permissionsOf(roleId);
 		assertThat(permissions.isAllowAccess(applicationId)).isTrue();
-		assertThat(permissions.isAllowAction(applicationId, createHUAction)).isTrue();
-		assertThat(permissions.isAllowAction(applicationId, disposeAction)).isFalse();
+		assertThat(permissions.isAllowAction(applicationId, createHUActionId)).isTrue();
+		assertThat(permissions.isAllowAction(applicationId, disposeActionId)).isFalse();
 	}
 
 	@Test
-	void allowAllDefault_actionsIncludedInAllowAll_butNotCreateHU()
+	void allowAllDefault_allActions()
 	{
 		final RoleId roleId = createRole(JsonRoleMobileApplicationAccessRequest.builder().application("huManager").build());
 
 		final MobileApplicationPermissions permissions = permissionsOf(roleId);
-		assertThat(permissions.isAllowAction(applicationId, createHUAction)).isFalse();
-		assertThat(permissions.isAllowAction(applicationId, disposeAction)).isTrue();
+		assertThat(permissions.isAllowAction(applicationId, createHUActionId)).isTrue();
+		assertThat(permissions.isAllowAction(applicationId, disposeActionId)).isTrue();
 	}
 
 	@Test
@@ -148,14 +141,13 @@ class CreateRoleCommandMobileApplicationAccessTest
 	}
 
 	@Test
-	void allowAll_withCreateHUGranted_getsCreateHUAndDispose()
+	void grantedActionsWithAllowAll_failsNamingIt()
 	{
-		final RoleId roleId = createRole(JsonRoleMobileApplicationAccessRequest.builder()
-				.application("huManager").allowAllActions(true).grantedActions(ImmutableList.of("createHU")).build());
-
-		final MobileApplicationPermissions permissions = permissionsOf(roleId);
-		assertThat(permissions.isAllowAction(applicationId, createHUAction)).isTrue();
-		assertThat(permissions.isAllowAction(applicationId, disposeAction)).isTrue();
+		assertThatThrownBy(() -> createRole(JsonRoleMobileApplicationAccessRequest.builder()
+				.application("huManager").allowAllActions(true).grantedActions(ImmutableList.of("createHU")).build()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("grantedActions")
+				.hasMessageContaining("allowAllActions");
 	}
 
 	@Test

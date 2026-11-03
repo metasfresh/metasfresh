@@ -56,11 +56,18 @@ public class MobileApplicationPermissionsRepository
 		final MobileApplicationRepoId mobileApplicationId = MobileApplicationRepoId.ofRepoId(applicationAccess.getMobile_Application_ID());
 
 		final boolean allowAllActions = applicationAccess.isAllowAllActions();
-		// Explicit grants count also for allow-all roles: an action that is not included in "allow all actions" is available only through its grant.
-		final ImmutableSet<MobileApplicationActionId> allowedActionIds = actionAccessByMobileApplicationId.get(mobileApplicationId)
-				.stream()
-				.map(action -> MobileApplicationActionId.ofRepoId(action.getMobile_Application_Action_ID()))
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<MobileApplicationActionId> allowedActionIds;
+		if (allowAllActions)
+		{
+			allowedActionIds = ImmutableSet.of(); // not relevant
+		}
+		else
+		{
+			allowedActionIds = actionAccessByMobileApplicationId.get(mobileApplicationId)
+					.stream()
+					.map(action -> MobileApplicationActionId.ofRepoId(action.getMobile_Application_Action_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+		}
 
 		return MobileApplicationPermission.builder()
 				.mobileApplicationId(mobileApplicationId)

@@ -77,7 +77,6 @@ public interface I_Mobile_Application_Action
 
 	/**
 	 * Set Description.
-	 * Optional short description of the record.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
@@ -87,7 +86,6 @@ public interface I_Mobile_Application_Action
 
 	/**
 	 * Get Description.
-	 * Optional short description of the record.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
@@ -145,31 +143,7 @@ public interface I_Mobile_Application_Action
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set In „Alle Aktionen erlaubt“ enthalten.
-	 * Rollen mit „Alle Aktionen erlaubt“ erhalten diese Aktion. N = nur Rollen mit ausdrücklicher Berechtigung für die Aktion.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsIncludedInAllowAllActions (boolean IsIncludedInAllowAllActions);
-
-	/**
-	 * Get In „Alle Aktionen erlaubt“ enthalten.
-	 * Rollen mit „Alle Aktionen erlaubt“ erhalten diese Aktion. N = nur Rollen mit ausdrücklicher Berechtigung für die Aktion.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isIncludedInAllowAllActions();
-
-	ModelColumn<I_Mobile_Application_Action, Object> COLUMN_IsIncludedInAllowAllActions = new ModelColumn<>(I_Mobile_Application_Action.class, "IsIncludedInAllowAllActions", null);
-	String COLUMNNAME_IsIncludedInAllowAllActions = "IsIncludedInAllowAllActions";
-
-	/**
 	 * Set Mobile Application Action.
-	 * Single action within a mobile application.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -179,7 +153,6 @@ public interface I_Mobile_Application_Action
 
 	/**
 	 * Get Mobile Application Action.
-	 * Single action within a mobile application.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -192,7 +165,6 @@ public interface I_Mobile_Application_Action
 
 	/**
 	 * Set Mobile Application.
-	 * Application of the mobile user interface.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -202,7 +174,6 @@ public interface I_Mobile_Application_Action
 
 	/**
 	 * Get Mobile Application.
-	 * Application of the mobile user interface.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true

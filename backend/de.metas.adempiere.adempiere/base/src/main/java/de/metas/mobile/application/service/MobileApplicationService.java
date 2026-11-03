@@ -2,7 +2,7 @@ package de.metas.mobile.application.service;
 
 import de.metas.logging.LogManager;
 import de.metas.mobile.application.MobileApplication;
-import de.metas.mobile.application.MobileApplicationAction;
+import de.metas.mobile.application.MobileApplicationActionId;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.mobile.application.MobileApplicationRepoId;
@@ -120,13 +120,13 @@ public class MobileApplicationService
 	private boolean hasActionAccess(@NonNull final MobileApplicationId applicationId, @NonNull String actionInternalName, final MobileApplicationPermissions permissions)
 	{
 		final MobileApplicationInfo applicationInfo = applicationInfoRepository.getById(applicationId);
-		final MobileApplicationAction action = applicationInfo.getActionByInternalName(actionInternalName).orElse(null);
-		if (action == null)
+		final MobileApplicationActionId actionId = applicationInfo.getActionIdByInternalName(actionInternalName).orElse(null);
+		if (actionId == null)
 		{
 			return false;
 		}
 
-		return permissions.isAllowAction(applicationInfo.getRepoId(), action);
+		return permissions.isAllowAction(applicationInfo.getRepoId(), actionId);
 	}
 
 }

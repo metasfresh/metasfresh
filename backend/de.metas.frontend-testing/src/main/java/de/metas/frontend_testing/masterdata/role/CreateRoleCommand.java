@@ -179,6 +179,11 @@ public class CreateRoleCommand
 			}
 
 			final List<String> grantedActions = accessRequest.getGrantedActions();
+			if (accessRequest.isAllowAllActions() && grantedActions != null && !grantedActions.isEmpty())
+			{
+				throw new AdempiereException("mobileApplicationAccess: application `" + applicationValue
+						+ "` has grantedActions but allowAllActions is true, which makes them meaningless; set allowAllActions to false");
+			}
 
 			final MobileApplicationInfo application = mobileApplicationInfoRepository.getById(MobileApplicationId.ofString(applicationValue));
 

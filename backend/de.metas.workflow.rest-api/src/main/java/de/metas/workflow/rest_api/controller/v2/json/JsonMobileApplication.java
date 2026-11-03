@@ -47,7 +47,7 @@ public class JsonMobileApplication
 				.caption(appInfo.getCaption().translate(jsonOpts.getAdLanguage()))
 				.actions(appInfo.getActions()
 						.stream()
-						.filter(action -> mobileApplicationPermissions.isAllowAction(appInfo.getRepoId(), action))
+						.filter(action -> mobileApplicationPermissions.isAllowAction(appInfo.getRepoId(), action.getId()))
 						.map(MobileApplicationAction::getInternalName)
 						.collect(ImmutableSet.toImmutableSet()))
 				.maxStartedLaunchers(appInfo.getMaxStartedLaunchers().toIntOrZero())

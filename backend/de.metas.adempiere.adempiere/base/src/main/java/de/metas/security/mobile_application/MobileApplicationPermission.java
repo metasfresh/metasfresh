@@ -2,7 +2,6 @@ package de.metas.security.mobile_application;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import de.metas.mobile.application.MobileApplicationAction;
 import de.metas.mobile.application.MobileApplicationActionId;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.security.permissions.Permission;
@@ -108,11 +107,10 @@ public class MobileApplicationPermission
 		}
 	}
 
-	public boolean isAllowAction(@NonNull final MobileApplicationAction action)
+	public boolean isAllowAction(@NonNull final MobileApplicationActionId actionId)
 	{
 		if (!allowAccess) {return false;}
 
-		return allowedActionIds.contains(action.getId())
-				|| (allowAllActions && action.isIncludedInAllowAllActions());
+		return allowAllActions || allowedActionIds.contains(actionId);
 	}
 }

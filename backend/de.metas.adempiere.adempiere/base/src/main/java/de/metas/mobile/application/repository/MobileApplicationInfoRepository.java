@@ -90,7 +90,6 @@ public class MobileApplicationInfoRepository
 		return MobileApplicationAction.builder()
 				.id(MobileApplicationActionId.ofRepoId(record.getMobile_Application_Action_ID()))
 				.internalName(StringUtils.trimBlankToOptional(record.getInternalName()).orElseThrow(() -> new AdempiereException("No internal name: " + record)))
-				.includedInAllowAllActions(record.isIncludedInAllowAllActions())
 				.build();
 	}
 

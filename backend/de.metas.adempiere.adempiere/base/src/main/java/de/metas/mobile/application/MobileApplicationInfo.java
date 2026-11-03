@@ -77,8 +77,9 @@ public class MobileApplicationInfo
 		this.actionsByInternalName = Maps.uniqueIndex(this.actions, MobileApplicationAction::getInternalName);
 	}
 
-	public Optional<MobileApplicationAction> getActionByInternalName(final @NonNull String actionInternalName)
+	public Optional<MobileApplicationActionId> getActionIdByInternalName(final @NonNull String actionInternalName)
 	{
-		return Optional.ofNullable(actionsByInternalName.get(actionInternalName));
+		final MobileApplicationAction action = actionsByInternalName.get(actionInternalName);
+		return action != null ? Optional.of(action.getId()) : Optional.empty();
 	}
 }

@@ -1,7 +1,6 @@
 package de.metas.security.mobile_application;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.mobile.application.MobileApplicationAction;
 import de.metas.mobile.application.MobileApplicationActionId;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.OrgId;
@@ -57,12 +56,6 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 		otherActionId = MobileApplicationActionId.ofRepoId(otherAction.getMobile_Application_Action_ID());
 	}
 
-	/** every action here is included in "allow all actions", like all existing actions */
-	private static MobileApplicationAction action(final MobileApplicationActionId id)
-	{
-		return MobileApplicationAction.builder().id(id).internalName("action" + id.getRepoId()).includedInAllowAllActions(true).build();
-	}
-
 	private CreateMobileApplicationAccessRequest.CreateMobileApplicationAccessRequestBuilder request()
 	{
 		return CreateMobileApplicationAccessRequest.builder()
@@ -79,7 +72,7 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 	{
 		repository.createMobileApplicationAccess(request().build());
 
-		assertThat(repository.getMobileApplicationPermissions(ROLE_ID).isAllowAction(applicationId, action(actionId))).isTrue();
+		assertThat(repository.getMobileApplicationPermissions(ROLE_ID).isAllowAction(applicationId, actionId)).isTrue();
 	}
 
 	@Test
@@ -89,7 +82,7 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 
 		repository.createMobileApplicationAccess(request().build()); // e.g. the POS grant or the Mobile_Application interceptor
 
-		assertThat(repository.getMobileApplicationPermissions(ROLE_ID).isAllowAction(applicationId, action(actionId))).isFalse();
+		assertThat(repository.getMobileApplicationPermissions(ROLE_ID).isAllowAction(applicationId, actionId)).isFalse();
 	}
 
 	@Test
@@ -102,7 +95,7 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 		assertThat(accessRowCount()).isEqualTo(1);
 		final MobileApplicationPermissions permissions = repository.getMobileApplicationPermissions(ROLE_ID);
 		assertThat(permissions.isAllowAccess(applicationId)).isTrue();
-		assertThat(permissions.isAllowAction(applicationId, action(actionId))).isFalse();
+		assertThat(permissions.isAllowAction(applicationId, actionId)).isFalse();
 	}
 
 	@Test
@@ -114,7 +107,7 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 		repository.createMobileApplicationAccess(request().allowAllActions(false).allowedActionIds(ImmutableSet.of(actionId)).build());
 
 		final MobileApplicationPermissions permissions = repository.getMobileApplicationPermissions(ROLE_ID);
-		assertThat(permissions.isAllowAction(applicationId, action(actionId))).isTrue();
-		assertThat(permissions.isAllowAction(applicationId, action(otherActionId))).isFalse();
+		assertThat(permissions.isAllowAction(applicationId, actionId)).isTrue();
+		assertThat(permissions.isAllowAction(applicationId, otherActionId)).isFalse();
 	}
 }
