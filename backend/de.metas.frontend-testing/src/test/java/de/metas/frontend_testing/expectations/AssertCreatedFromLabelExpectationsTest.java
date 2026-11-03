@@ -69,12 +69,17 @@ class AssertCreatedFromLabelExpectationsTest
 	@Test
 	void products_counts()
 	{
-		assertThatCode(() -> AssertProductExpectationsCommand.assertCounts(0,
-				JsonProductExpectation.builder().huCount(0).build()))
+		assertThatCode(() -> AssertProductExpectationsCommand.assertCounts(0, 0,
+				JsonProductExpectation.builder().huCount(0).inventoryLineCount(0).build()))
 				.doesNotThrowAnyException();
 
-		assertThatThrownBy(() -> AssertProductExpectationsCommand.assertCounts(1,
+		assertThatThrownBy(() -> AssertProductExpectationsCommand.assertCounts(1, 0,
 				JsonProductExpectation.builder().huCount(0).build()))
+				.isInstanceOf(Throwable.class);
+
+		// failure scenario: a refused scan leaves an inventory line behind although no HU exists
+		assertThatThrownBy(() -> AssertProductExpectationsCommand.assertCounts(0, 1,
+				JsonProductExpectation.builder().huCount(0).inventoryLineCount(0).build()))
 				.isInstanceOf(Throwable.class);
 	}
 

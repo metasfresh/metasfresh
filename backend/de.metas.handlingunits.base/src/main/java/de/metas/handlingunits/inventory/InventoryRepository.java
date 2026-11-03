@@ -269,6 +269,16 @@ public final class InventoryRepository
 		return newLoaderAndSaver().getLineRecords(inventoryAndLineIds).values();
 	}
 
+	/** @return the number of active {@code M_InventoryLine}s of the given product, over all inventory documents (draft or completed) */
+	public int countLinesByProductId(@NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_M_InventoryLine.class)
+				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Product_ID, productId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.count();
+	}
+
 	private InventoryAndLineIdSet retrieveAllLineIdsForHU(final @NonNull HuId huId)
 	{
 		final List<I_M_HU> includedHUs = handlingUnitsBL.retrieveIncludedHUs(handlingUnitsBL.getById(huId));
