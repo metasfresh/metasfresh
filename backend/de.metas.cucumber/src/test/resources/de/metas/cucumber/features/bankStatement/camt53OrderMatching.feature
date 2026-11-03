@@ -57,13 +57,38 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   @from:cucumber
   @Id:S32606_OM1
   Scenario: Credit line naming a waiting prepay order: order and partner on the line; completing the statement creates the payment with the order and releases the order
+    # reference-case shape: pure-numeric zero-padded document number, 2 lines of 51.90 EUR net + 19 % VAT on a tax-excluded price list = 123.52 EUR gross
 
+    And metasfresh contains M_Products:
+      | Identifier |
+      | p_OM1a     |
+      | p_OM1b     |
+    And metasfresh contains M_PricingSystems
+      | Identifier | OPT.IsActive |
+      | ps_OM1     | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name              | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_SO_OM1  | ps_OM1                        | DE                        | EUR                 | price_list_SO_OM1 | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name       | ValidFrom  |
+      | plv_SO_OM1 | pl_SO_OM1                 | plv_SO_OM1 | 2026-01-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_OM1a    | plv_SO_OM1                        | p_OM1a                  | 51.90    | PCE               | Normal                        |
+      | pp_OM1b    | plv_SO_OM1                        | p_OM1b                  | 51.90    | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | bp_OM1     | Y              | ps_OM1                        | I               |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | l_OM1      | 0203111110011 | bp_OM1                   | true                | true         |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
-      | o_1        | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM01-0021  |
+      | o_1        | true    | bp_OM1        | 2026-11-03  | SOO         | PR         | 0021       |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | l_o_1      | o_1        | p_OM         | 1          |
+      | l_o_1a     | o_1        | p_OM1a       | 1          |
+      | l_o_1b     | o_1        | p_OM1b       | 1          |
     And the order identified by o_1 is completed and waits for payment
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |
@@ -127,7 +152,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Vorauskasse OM01-0021 Danke</Ustrd>
+							<Ustrd>Vorauskasse 0021 Danke</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -141,14 +166,14 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
       | bsl_1                             | bs_1                          | 10   |
     And validate C_BankStatementLine
       | C_BankStatementLine_ID.Identifier | OPT.TrxAmt | OPT.C_Order_ID.Identifier | OPT.C_BPartner_ID.Identifier |
-      | bsl_1                             | 123.52     | o_1                       | bp_OM                        |
+      | bsl_1                             | 123.52     | o_1                       | bp_OM1                       |
     And the C_BankStatement identified by bs_1 is completed
     And after not more than 60s, C_Payment is found
       | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
       | p_1                     | bs_1                              | bsl_1                                 |
     And validate payments
       | C_Payment_ID.Identifier | PayAmt | IsReceipt | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
-      | p_1                     | 123.52 | true      | bp_OM                    | o_1                   |
+      | p_1                     | 123.52 | true      | bp_OM1                   | o_1                   |
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |
       | o_1        | CO        | 123.52     |
@@ -385,9 +410,16 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
       | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_Order_ID |
       | p_4        | bp_OM         | 123.52 EUR | true      | o_4b       |
     And the payment identified by p_4 is completed
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
+      | o_4c       | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM04-DRA   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l_o_4c     | o_4c       | p_OM         | 1          |
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |
       | o_4b       | CO        | 123.52     |
+      | o_4c       | DR        | 123.52     |
     When bank statement is imported with identifiers bs_4, not matching invoice amounts
     """
 <?xml version="1.0" encoding="utf-8"?>
@@ -447,7 +479,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
 						</RltdPties>
 						<RmtInf>
-							<Ustrd>Zahlung OM04-STD und OM04-PRE</Ustrd>
+							<Ustrd>Zahlung OM04-STD und OM04-PRE und OM04-DRA</Ustrd>
 						</RmtInf>
 					</TxDtls>
 				</NtryDtls>
@@ -462,6 +494,11 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
     And validate C_BankStatementLine
       | C_BankStatementLine_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_BPartner_ID.Identifier |
       | bsl_4                             | null                      | null                         |
+    And the C_BankStatement identified by bs_4 is completed
+    And exactly 0 payments belong to the bank statement line identified by bsl_4
+    And validate payments
+      | C_Payment_ID.Identifier | C_Order_ID.Identifier | C_BankStatementLine_ID.Identifier |
+      | p_4                     | o_4b                  | null                              |
 
 
   # ################################################################################
@@ -2138,6 +2175,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
       | bsl_24     | bs_24              | 100.00 EUR | bp_OM         | o_24       |
     And the C_BankStatement identified by bs_24 is completed expecting error code BANKSTATEMENT_ORDER_AMOUNT_MISMATCH
     And exactly 0 payments carry the order identified by o_24
+    And exactly 0 payments belong to the bank statement line identified by bsl_24
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |
       | o_24       | WP        | 123.52     |
@@ -2166,6 +2204,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
       | bsl_25     | bs_25              | 123.52 CHF | bp_OM         | o_25       |
     And the C_BankStatement identified by bs_25 is completed expecting error code BANKSTATEMENT_ORDER_AMOUNT_MISMATCH
     And exactly 0 payments carry the order identified by o_25
+    And exactly 0 payments belong to the bank statement line identified by bsl_25
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |
       | o_25       | WP        | 123.52     |

@@ -596,6 +596,26 @@ public class C_Payment_StepDef
 		assertThat(actualCount).as("number of C_Payment with C_Order_ID of %s", orderIdentifier).isEqualTo(expectedCount);
 	}
 
+	/**
+	 * Asserts the number of active payments that belong to the given bank statement line ({@code C_Payment.C_BankStatementLine_ID}), whatever their status.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then exactly 0 payments belong to the bank statement line identified by bsl_1
+	 * </pre>
+	 */
+	@And("^exactly (\\d+) payments? belong(?:s)? to the bank statement line identified by (.*)$")
+	public void assertPaymentCountOfBankStatementLine(final int expectedCount, @NonNull final String lineIdentifier)
+	{
+		final I_C_BankStatementLine line = bankStatementLineTable.get(lineIdentifier);
+		final int actualCount = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BankStatementLine_ID, line.getC_BankStatementLine_ID())
+				.create()
+				.count();
+		assertThat(actualCount).as("number of C_Payment with C_BankStatementLine_ID of %s", lineIdentifier).isEqualTo(expectedCount);
+	}
+
 	@And("^after not more than (.*)s, C_Payment is found")
 	public void find_C_Payment(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{

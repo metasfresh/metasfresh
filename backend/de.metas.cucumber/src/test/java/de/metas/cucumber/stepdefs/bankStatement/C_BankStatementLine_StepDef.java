@@ -35,6 +35,7 @@ import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
@@ -112,12 +113,12 @@ public class C_BankStatementLine_StepDef
 	/**
 	 * Validates the bank statement lines. All columns are optional except the identifier; a column that is absent or empty is not checked.
 	 * <p>
-	 * {@code OPT.C_BPartner_ID.Identifier}, {@code OPT.C_Invoice_ID.Identifier} and {@code OPT.C_Order_ID.Identifier} may also be {@code null}, which asserts that the line has no partner / no invoice.
+	 * {@code OPT.C_BPartner_ID.Identifier}, {@code OPT.C_Invoice_ID.Identifier} and {@code OPT.C_Order_ID.Identifier} may also be {@code null}, which asserts that the line has no partner / no invoice / no order.
 	 * <pre>{@code
 	 * And validate C_BankStatementLine
-	 *   | C_BankStatementLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier |
-	 *   | bsl1                              | bp1                          | invoice1                    |
-	 *   | bsl2                              | bp2                          | null                        |
+	 *   | C_BankStatementLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier | OPT.C_Order_ID.Identifier |
+	 *   | bsl1                              | bp1                          | invoice1                    | null                      |
+	 *   | bsl2                              | bp2                          | null                        | order2                    |
 	 * }</pre>
 	 */
 	@And("validate C_BankStatementLine")
@@ -166,15 +167,15 @@ public class C_BankStatementLine_StepDef
 							.map(id -> InvoiceId.ofRepoId(id.lookupNotNullIn(invoiceTable).getC_Invoice_ID()))
 							.orElse(null))
 					.statementLineDate(row.getAsOptionalLocalDate(I_C_BankStatementLine.COLUMNNAME_StatementLineDate).orElseGet(() -> TimeUtil.asLocalDate(bankStatementRecord.getStatementDate(), orgDAO.getTimeZone(StepDefConstants.ORG_ID))))
+					.orderId(row.getAsOptionalIdentifier(I_C_BankStatementLine.COLUMNNAME_C_Order_ID)
+							.map(id -> OrderId.ofRepoId(id.lookupNotNullIn(orderTable).getC_Order_ID()))
+							.orElse(null))
 					.statementAmt(amount)
 					.trxAmt(amount)
 					.updateAmountsFromInvoice(false)
 					.build());
 
 			final I_C_BankStatementLine lineRecord = InterfaceWrapperHelper.load(lineId.getRepoId(), I_C_BankStatementLine.class);
-			row.getAsOptionalIdentifier(I_C_BankStatementLine.COLUMNNAME_C_Order_ID)
-					.ifPresent(id -> lineRecord.setC_Order_ID(id.lookupNotNullIn(orderTable).getC_Order_ID()));
-			InterfaceWrapperHelper.saveRecord(lineRecord);
 
 			row.getAsIdentifier().putOrReplace(bankStatementLineTable, lineRecord);
 		});

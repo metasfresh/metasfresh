@@ -271,7 +271,7 @@ public class C_BankStatementLine_Test
 
 	}
 
-	/** TC-OM8a */
+	/** Selecting an order on a bank statement line sets the line partner to the order's bill partner. */
 	@Nested
 	public class onC_Order_ID_Changed
 	{

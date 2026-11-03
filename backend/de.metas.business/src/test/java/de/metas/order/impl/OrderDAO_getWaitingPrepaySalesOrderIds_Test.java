@@ -89,7 +89,7 @@ public class OrderDAO_getWaitingPrepaySalesOrderIds_Test
 				.amount(new BigDecimal("123.52"));
 	}
 
-	/** TC-OM19 */
+	/** A given partner matches the orders it has as bill partner or ordering partner; without a partner all waiting prepay orders match. */
 	@Test
 	void partnerGiven_matchesBillPartnerOrOrderingPartner_noPartner_matchesAll()
 	{
