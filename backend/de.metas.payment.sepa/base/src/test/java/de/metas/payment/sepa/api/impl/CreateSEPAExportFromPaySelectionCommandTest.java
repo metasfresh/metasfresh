@@ -28,6 +28,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 	private static final int ORG_ID = 1000000;
 
 	private I_C_PaySelection paySelection;
+	private I_C_BP_BankAccount ownBankAccount;
 
 	@BeforeEach
 	void beforeEach()
@@ -49,7 +50,8 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 				.swiftCode("INGBNL2A")
 				.build());
 
-		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
+		ownBankAccount = newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount bankAccount = ownBankAccount;
 		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
 		bankAccount.setC_Currency_ID(PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR).getRepoId());
 		bankAccount.setIBAN("NL31INGB0000000044");
@@ -77,5 +79,31 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		final I_SEPA_Export export = new CreateSEPAExportFromPaySelectionCommand(paySelection, null).run();
 
 		assertThat(export.getSEPA_Protocol()).isEqualTo("pain.001.001.09.ch.03");
+	}
+
+	/**
+	 * SIX SPS 2026 p.47 (CH16): the paying (debtor) account must not be a QR-IBAN, so the header takes the normal IBAN only.
+	 */
+	@Test
+	void ownAccountWithQrIbanOnly_headerNeverTakesQrIban()
+	{
+		ownBankAccount.setIBAN(null);
+		ownBankAccount.setQR_IBAN("CH4431999123000889012");
+		save(ownBankAccount);
+
+		final I_SEPA_Export export = new CreateSEPAExportFromPaySelectionCommand(paySelection, null).run();
+
+		assertThat(export.getIBAN()).isNull();
+	}
+
+	@Test
+	void ownAccountWithIbanAndQrIban_headerTakesNormalIban()
+	{
+		ownBankAccount.setQR_IBAN("CH4431999123000889012");
+		save(ownBankAccount);
+
+		final I_SEPA_Export export = new CreateSEPAExportFromPaySelectionCommand(paySelection, null).run();
+
+		assertThat(export.getIBAN()).isEqualTo("NL31INGB0000000044");
 	}
 }
