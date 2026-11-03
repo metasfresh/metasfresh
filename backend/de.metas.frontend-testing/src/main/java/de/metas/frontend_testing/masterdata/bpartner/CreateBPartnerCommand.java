@@ -271,8 +271,7 @@ public class CreateBPartnerCommand
 		return docTypeBL.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(DocBaseType.SalesOrder)
 				.docSubType(docSubType)
-				.adClientId(MasterdataContext.CLIENT_ID.getRepoId())
-				.adOrgId(OrgId.ANY.getRepoId())
+				.clientAndOrgId(MasterdataContext.CLIENT_ID, OrgId.ANY)
 				.build());
 	}
 

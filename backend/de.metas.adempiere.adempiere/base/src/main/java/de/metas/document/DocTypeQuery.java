@@ -47,11 +47,17 @@ public class DocTypeQuery
 	@Default
 	DocSubType docSubType = DOCSUBTYPE_Any;
 
+	/**
+	 * @deprecated use {@link DocTypeQueryBuilder#clientAndOrgId(ClientAndOrgId)}
+	 */
 	@NonNull
 	Integer adClientId;
 
 	/**
 	 * Even if specified, the system will still try to fallback to {@code AD_Org_ID=0} if there is no doctype with a matching org-id.
+	 */
+	/**
+	 * @deprecated use {@link DocTypeQueryBuilder#clientAndOrgId(ClientAndOrgId)}
 	 */
 	@Default
 	int adOrgId = Env.CTXVALUE_AD_Org_ID_System;
