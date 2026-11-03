@@ -271,7 +271,7 @@ public class C_BankStatementLine_Test
 
 	}
 
-	/** Selecting an order on a bank statement line sets the line partner to the order's bill partner. */
+	/** Selecting an order on a bank statement line without invoice sets the line partner to the order's bill partner; an invoice on the line wins. */
 	@Nested
 	public class onC_Order_ID_Changed
 	{
@@ -308,6 +308,19 @@ public class C_BankStatementLine_Test
 			callout.onC_Order_ID_Changed(bsl);
 
 			assertThat(bsl.getC_BPartner_ID()).isEqualTo(BILL_PARTNER_ID);
+		}
+
+		@Test
+		public void lineWithInvoice_keepsItsPartner()
+		{
+			final I_C_BankStatementLine bsl = bankStatementLine().build();
+			bsl.setC_Invoice_ID(3);
+			bsl.setC_BPartner_ID(ORDERING_PARTNER_ID);
+			bsl.setC_Order_ID(createOrder().getC_Order_ID());
+
+			callout.onC_Order_ID_Changed(bsl);
+
+			assertThat(bsl.getC_BPartner_ID()).isEqualTo(ORDERING_PARTNER_ID);
 		}
 	}
 }

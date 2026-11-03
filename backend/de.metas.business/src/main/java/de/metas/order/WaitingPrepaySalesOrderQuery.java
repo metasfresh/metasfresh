@@ -23,8 +23,8 @@
 package de.metas.order;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.banking.BankStatementLineId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -40,6 +40,9 @@ import java.math.BigDecimal;
 @Builder
 public class WaitingPrepaySalesOrderQuery
 {
+	/** {@code C_Order.C_DocType_ID} has to be one of these, i.e. the prepay document types; the caller determines them. */
+	@NonNull ImmutableSet<DocTypeId> docTypeIds;
+
 	/** Candidate {@code C_Order.DocumentNo} values, e.g. the words of a bank line's text. */
 	@NonNull ImmutableSet<String> documentNos;
 
@@ -51,7 +54,4 @@ public class WaitingPrepaySalesOrderQuery
 
 	/** Has to equal {@code C_Order.GrandTotal} */
 	@NonNull BigDecimal amount;
-
-	/** Orders carried by this bank statement line are not excluded by the "already on an unprocessed bank statement line" rule. */
-	@Nullable BankStatementLineId currentBankStatementLineId;
 }

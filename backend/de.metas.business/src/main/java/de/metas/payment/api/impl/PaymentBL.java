@@ -156,6 +156,13 @@ public class PaymentBL implements IPaymentBL
 		return paymentDAO.retrievePaymentIds(query);
 	}
 
+	@Override
+	@NonNull
+	public ImmutableSet<OrderId> getOrderIdsCarriedByActivePayments(@NonNull final Collection<OrderId> orderIds)
+	{
+		return paymentDAO.getOrderIdsCarriedByActivePayments(orderIds);
+	}
+
 	private CurrencyId fetchC_Currency_Invoice_ID(final I_C_Payment payment)
 	{
 		final int C_Invoice_ID = payment.getC_Invoice_ID();

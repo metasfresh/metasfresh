@@ -188,10 +188,8 @@ public interface IOrderDAO extends ISingletonService
 	boolean isCalibrationRuleUsed(@NonNull CalibrationRuleId calibrationRuleId);
 
 	/**
-	 * @return the ids of the active, sales, {@code DocStatus='WP'} orders of a prepay document type ({@code C_DocType.DocSubType='PR'})
-	 * that match the given query and are not yet carried by another unprocessed {@code C_BankStatementLine.C_Order_ID}
-	 * or by a {@code C_Payment.C_Order_ID} whose {@code DocStatus} is neither 'VO' nor 'RE'.
-	 * All filters (incl. the amount) are applied in the query; no organization filter.
+	 * @return the ids of the active, sales, {@code DocStatus='WP'} orders that match the given query (document types, document numbers, currency, amount, optional partner).
+	 * Only the criteria of the order itself are applied; whether another bank statement line or payment already carries an order is for the caller to decide. No organization filter.
 	 */
 	List<OrderId> getWaitingPrepaySalesOrderIds(@NonNull WaitingPrepaySalesOrderQuery query);
 

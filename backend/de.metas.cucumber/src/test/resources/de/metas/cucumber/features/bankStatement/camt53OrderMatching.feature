@@ -2215,6 +2215,96 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
   # ################################################################################
 
   @from:cucumber
+  @Id:S32606_OM33a
+  Scenario: Hand-picked payment-reservation order (standard order waiting for payment): completing the statement fails, the order stays waiting
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo | OPT.PaymentRule |
+      | o_33a      | true    | bp_OM         | 2026-11-03  | SOO         | SO         | OM33A-0033 | L               |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l_o_33a   | o_33a      | p_OM         | 1          |
+    And the order identified by o_33a is completed
+    And the completed order identified by o_33a is put into waiting for payment as a payment reservation would
+    And metasfresh contains C_BankStatement:
+      | Identifier | C_BP_BankAccount_ID | StatementDate |
+      | bs_33a    | bpb_OM              | 2026-11-03    |
+    And metasfresh contains C_BankStatementLine:
+      | Identifier | C_BankStatement_ID | Amount     | C_BPartner_ID | C_Order_ID |
+      | bsl_33a   | bs_33a             | 123.52 EUR | bp_OM         | o_33a      |
+    And the C_BankStatement identified by bs_33a is completed expecting error code BANKSTATEMENT_ORDER_NOT_A_PREPAYMENT
+    And exactly 0 payments carry the order identified by o_33a
+    And exactly 0 payments belong to the bank statement line identified by bsl_33a
+    And validate the created orders
+      | Identifier | DocStatus | GrandTotal |
+      | o_33a     | WP        | 123.52     |
+
+
+  # ################################################################################
+  # ################################################################################
+  # ################################################################################
+
+  @from:cucumber
+  @Id:S32606_OM33b
+  Scenario: Hand-picked inactive prepay order: completing the statement fails, the order stays waiting
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
+      | o_33b      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM33B-0033 |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l_o_33b   | o_33b      | p_OM         | 1          |
+    And the order identified by o_33b is completed and waits for payment
+    And the order identified by o_33b is deactivated
+    And metasfresh contains C_BankStatement:
+      | Identifier | C_BP_BankAccount_ID | StatementDate |
+      | bs_33b    | bpb_OM              | 2026-11-03    |
+    And metasfresh contains C_BankStatementLine:
+      | Identifier | C_BankStatement_ID | Amount     | C_BPartner_ID | C_Order_ID |
+      | bsl_33b   | bs_33b             | 123.52 EUR | bp_OM         | o_33b      |
+    And the C_BankStatement identified by bs_33b is completed expecting error code BANKSTATEMENT_ORDER_NOT_A_PREPAYMENT
+    And exactly 0 payments carry the order identified by o_33b
+    And exactly 0 payments belong to the bank statement line identified by bsl_33b
+    And validate the created orders
+      | Identifier | DocStatus | GrandTotal |
+      | o_33b     | WP        | 123.52     |
+
+
+  # ################################################################################
+  # ################################################################################
+  # ################################################################################
+
+  @from:cucumber
+  @Id:S32606_OM33c
+  Scenario: Hand-picked prepay order that is flagged as no sales order: completing the statement fails, the order stays waiting
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
+      | o_33c      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | OM33C-0033 |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l_o_33c   | o_33c      | p_OM         | 1          |
+    And the order identified by o_33c is completed and waits for payment
+    And the order identified by o_33c is flagged as no sales order
+    And metasfresh contains C_BankStatement:
+      | Identifier | C_BP_BankAccount_ID | StatementDate |
+      | bs_33c    | bpb_OM              | 2026-11-03    |
+    And metasfresh contains C_BankStatementLine:
+      | Identifier | C_BankStatement_ID | Amount     | C_BPartner_ID | C_Order_ID |
+      | bsl_33c   | bs_33c             | 123.52 EUR | bp_OM         | o_33c      |
+    And the C_BankStatement identified by bs_33c is completed expecting error code BANKSTATEMENT_ORDER_NOT_A_PREPAYMENT
+    And exactly 0 payments carry the order identified by o_33c
+    And exactly 0 payments belong to the bank statement line identified by bsl_33c
+    And validate the created orders
+      | Identifier | DocStatus | GrandTotal |
+      | o_33c     | WP        | 123.52     |
+
+
+  # ################################################################################
+  # ################################################################################
+  # ################################################################################
+
+  @from:cucumber
   @Id:S32606_OM26
   Scenario: Same order named in two imported files before either is completed: only the first line gets the order
 

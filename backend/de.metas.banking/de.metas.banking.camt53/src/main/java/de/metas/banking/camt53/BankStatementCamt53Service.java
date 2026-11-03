@@ -48,6 +48,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocSubType;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
@@ -68,6 +70,7 @@ import de.metas.order.OrderId;
 import de.metas.order.WaitingPrepaySalesOrderQuery;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -126,7 +129,9 @@ public class BankStatementCamt53Service
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 	private final BankAccountService bankAccountService;
 	private final CurrencyRepository currencyRepository;
@@ -383,13 +388,14 @@ public class BankStatementCamt53Service
 			bankStatementLineCreateRequestBuilder.importedBillPartnerName(entryWrapper.getCdtrNames());
 		}
 
-		final Optional<I_C_Invoice> referencedInvoice = getReferencedInvoiceRecord(importBankStatementLineRequest, statementLineDate);
-		referencedInvoice.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
-				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-				.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
-
-		// order matching is only the fallback of the invoice matching
-		if (!referencedInvoice.isPresent() && stmtAmount.signum() > 0)
+		final I_C_Invoice referencedInvoice = getReferencedInvoiceRecord(importBankStatementLineRequest, statementLineDate).orElse(null);
+		if (referencedInvoice != null)
+		{
+			bankStatementLineCreateRequestBuilder
+					.invoiceId(InvoiceId.ofRepoId(referencedInvoice.getC_Invoice_ID()))
+					.bpartnerId(BPartnerId.ofRepoId(referencedInvoice.getC_BPartner_ID()));
+		}
+		else if (stmtAmount.signum() > 0) // order matching is only the fallback of the invoice matching
 		{
 			getReferencedPrepayOrder(entryWrapper, stmtAmount)
 					.ifPresent(order -> bankStatementLineCreateRequestBuilder
@@ -570,11 +576,22 @@ public class BankStatementCamt53Service
 			return Optional.empty();
 		}
 
-		final List<OrderId> orderIds = orderDAO.getWaitingPrepaySalesOrderIds(WaitingPrepaySalesOrderQuery.builder()
+		final List<OrderId> candidateOrderIds = orderDAO.getWaitingPrepaySalesOrderIds(WaitingPrepaySalesOrderQuery.builder()
+				.docTypeIds(docTypeDAO.getDocTypeIdsByDocSubType(DocSubType.PrepayOrder))
 				.documentNos(documentNos)
 				.currencyId(stmtAmount.getCurrencyId())
 				.amount(stmtAmount.toBigDecimal())
 				.build());
+
+		// an order that another unprocessed bank statement line or an active payment already carries is not up for matching;
+		// only what is left counts, so that exactly one remaining order is unambiguous
+		final ImmutableSet<OrderId> carriedOrderIds = ImmutableSet.<OrderId>builder()
+				.addAll(bankStatementDAO.getOrderIdsOnUnprocessedLines(candidateOrderIds))
+				.addAll(paymentBL.getOrderIdsCarriedByActivePayments(candidateOrderIds))
+				.build();
+		final List<OrderId> orderIds = candidateOrderIds.stream()
+				.filter(orderId -> !carriedOrderIds.contains(orderId))
+				.collect(ImmutableList.toImmutableList());
 		if (orderIds.size() > 1)
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog(

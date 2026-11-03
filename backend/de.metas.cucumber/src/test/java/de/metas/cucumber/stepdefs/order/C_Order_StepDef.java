@@ -109,6 +109,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -119,6 +120,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.util.DB;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
@@ -672,6 +674,22 @@ public class C_Order_StepDef
 		final I_C_Order order = orderTable.get(orderIdentifier);
 		order.setIsActive(false);
 		saveRecord(order);
+	}
+
+	/**
+	 * Clears {@code C_Order.IsSOTrx} of the order, as legacy or imported data can have it.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And the order identified by o_1 is flagged as no sales order
+	 * </pre>
+	 */
+	@And("^the order identified by (.*) is flagged as no sales order$")
+	public void order_flagged_as_no_sales_order(@NonNull final String orderIdentifier)
+	{
+		// plain SQL: saving a changed IsSOTrx would run the purchase price list lookup of the order interceptors
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		DB.executeUpdateAndThrowExceptionOnFail("UPDATE C_Order SET IsSOTrx='N' WHERE C_Order_ID=?", new Object[] { order.getC_Order_ID() }, ITrx.TRXNAME_None);
 	}
 
 	@And("^the order identified by (.*) cannot be (reactivated|completed|closed|voided|reversed)$")

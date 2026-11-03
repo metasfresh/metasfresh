@@ -76,7 +76,7 @@ public class BankStatementBL implements IBankStatementBL
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);

@@ -397,4 +397,24 @@ public class BankStatementDAO implements IBankStatementDAO
 				.create()
 				.maxInt(I_C_BankStatementLine.COLUMNNAME_Line);
 	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<OrderId> getOrderIdsOnUnprocessedLines(@NonNull final Collection<OrderId> orderIds)
+	{
+		if (orderIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_BankStatementLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_Processed, false)
+				.addInArrayFilter(I_C_BankStatementLine.COLUMNNAME_C_Order_ID, orderIds)
+				.create()
+				.listDistinct(I_C_BankStatementLine.COLUMNNAME_C_Order_ID, Integer.class)
+				.stream()
+				.map(OrderId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

@@ -100,7 +100,7 @@ public class C_BankStatementLine
 	public void onC_Order_ID_Changed(@NonNull final I_C_BankStatementLine bsl)
 	{
 		final OrderId orderId = OrderId.ofRepoIdOrNull(bsl.getC_Order_ID());
-		if (orderId == null)
+		if (orderId == null || bsl.getC_Invoice_ID() > 0) // an invoice on the line wins: its partner stays, the order is ignored at completion
 		{
 			return;
 		}

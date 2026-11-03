@@ -145,6 +145,16 @@ public class DocTypeDAO implements IDocTypeDAO
 		return docTypeIdsByInvoicingPoolId.getOrLoad(docTypeInvoicingPoolId, this::retrieveDocTypeIdsByInvoicingPoolId);
 	}
 
+	@Override
+	@NonNull
+	public ImmutableSet<DocTypeId> getDocTypeIdsByDocSubType(@NonNull final DocSubType docSubType)
+	{
+		return queryBL.createQueryBuilder(I_C_DocType.class)
+				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType.getCode())
+				.create()
+				.idsAsSet(DocTypeId::ofRepoId);
+	}
+
 	private Optional<DocTypeId> retrieveDocTypeIdByQuery(@NonNull final DocTypeQuery query)
 	{
 		return Optional.ofNullable(

@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -43,6 +44,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
@@ -125,4 +127,10 @@ public interface IPaymentDAO extends ISingletonService
 
 	@NonNull
 	Optional<PaymentId> findCompletedOrClosedPaymentIdByProformaInvoiceId(@NonNull InvoiceId proformaInvoiceId);
+
+	/**
+	 * @return those of the given orders that are carried by an active {@code C_Payment} ({@code C_Payment.C_Order_ID}) whose {@code DocStatus} is neither 'VO' nor 'RE'
+	 */
+	@NonNull
+	ImmutableSet<OrderId> getOrderIdsCarriedByActivePayments(@NonNull Collection<OrderId> orderIds);
 }

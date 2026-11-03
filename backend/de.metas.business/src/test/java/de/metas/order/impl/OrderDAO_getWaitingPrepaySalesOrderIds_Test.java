@@ -24,6 +24,7 @@ package de.metas.order.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -84,6 +85,7 @@ public class OrderDAO_getWaitingPrepaySalesOrderIds_Test
 	private WaitingPrepaySalesOrderQuery.WaitingPrepaySalesOrderQueryBuilder query()
 	{
 		return WaitingPrepaySalesOrderQuery.builder()
+				.docTypeIds(ImmutableSet.of(DocTypeId.ofRepoId(prepayDocType.getC_DocType_ID())))
 				.documentNos(ImmutableSet.of("0021"))
 				.currencyId(EUR)
 				.amount(new BigDecimal("123.52"));
