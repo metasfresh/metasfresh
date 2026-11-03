@@ -47,7 +47,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class CreateHUFromScannedCodeCommandTest
 {
-	private static final String SHARED_GTIN = "04251674473003";
+	private static final String SHARED_GTIN = "02001234567817";
 
 	private RecordingHUQtyService huQtyService;
 	private HUQRCodesService huQRCodesService;
@@ -231,7 +231,7 @@ class CreateHUFromScannedCodeCommandTest
 		product2.setGTIN("02001234567893");
 		product2.setC_UOM_ID(otherUomSameCode.getC_UOM_ID());
 		InterfaceWrapperHelper.saveRecord(product2);
-		product1.setGTIN("04251674410299");
+		product1.setGTIN("02001234567909");
 		InterfaceWrapperHelper.saveRecord(product1);
 
 		create(readRequest("{\"scannedCode\":\"0102001234567893\",\"qty\":\"2\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\"}"));

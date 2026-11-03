@@ -170,14 +170,14 @@ class ProductBLTest
 		{
 			final I_M_Product a = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 			a.setValue("S1");
-			a.setGTIN("04251674473003");
+			a.setGTIN("02001234567893");
 			InterfaceWrapperHelper.saveRecord(a);
 			final I_M_Product b = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 			b.setValue("S2");
-			b.setGTIN("04251674473003");
+			b.setGTIN("02001234567893");
 			InterfaceWrapperHelper.saveRecord(b);
 
-			assertThat(productBL.getProductIdsByLabelGTIN(GTIN.ofString("04251674473003"), null, ClientId.METASFRESH))
+			assertThat(productBL.getProductIdsByLabelGTIN(GTIN.ofString("02001234567893"), null, ClientId.METASFRESH))
 					.containsExactly(ProductId.ofRepoId(a.getM_Product_ID()), ProductId.ofRepoId(b.getM_Product_ID()));
 		}
 	}

@@ -213,7 +213,7 @@ public class ProductDAOTest
 		void labelGtin_14digit_exactMatch()
 		{
 			final I_M_Product p = productWithGtin("L1", "02001234567893");
-			productWithGtin("L2", "04251674473003");
+			productWithGtin("L2", "02001234567909");
 
 			assertThat(productDAO.getProductIdsByLabelGTIN(GTIN.ofString("02001234567893"), ClientId.METASFRESH))
 					.containsExactly(ProductId.ofRepoId(p.getM_Product_ID()));
@@ -222,10 +222,10 @@ public class ProductDAOTest
 		@Test
 		void labelGtin_twoArticles_bothReturnedOrderedById()
 		{
-			final I_M_Product lowerId = productWithGtin("L3", "04251674473003");
-			final I_M_Product higherId = productWithGtin("L4", "04251674473003");
+			final I_M_Product lowerId = productWithGtin("L3", "02001234567893");
+			final I_M_Product higherId = productWithGtin("L4", "02001234567893");
 
-			final ImmutableList<ProductId> result = productDAO.getProductIdsByLabelGTIN(GTIN.ofString("04251674473003"), ClientId.METASFRESH);
+			final ImmutableList<ProductId> result = productDAO.getProductIdsByLabelGTIN(GTIN.ofString("02001234567893"), ClientId.METASFRESH);
 
 			assertThat(result).containsExactly(ProductId.ofRepoId(lowerId.getM_Product_ID()), ProductId.ofRepoId(higherId.getM_Product_ID()));
 			assertThat(lowerId.getM_Product_ID()).isLessThan(higherId.getM_Product_ID());
@@ -238,9 +238,9 @@ public class ProductDAOTest
 			assertThat(productDAO.getProductIdByGTINStrictly(GTIN.ofString("02001234567893"), ClientId.METASFRESH))
 					.contains(ProductId.ofRepoId(unique.getM_Product_ID()));
 
-			productWithGtin("L6", "04251674473003");
-			productWithGtin("L7", "04251674473003");
-			assertThatThrownBy(() -> productDAO.getProductIdByGTINStrictly(GTIN.ofString("04251674473003"), ClientId.METASFRESH))
+			productWithGtin("L6", "02001234567909");
+			productWithGtin("L7", "02001234567909");
+			assertThatThrownBy(() -> productDAO.getProductIdByGTINStrictly(GTIN.ofString("02001234567909"), ClientId.METASFRESH))
 					.isInstanceOf(DBException.class);
 		}
 	}
