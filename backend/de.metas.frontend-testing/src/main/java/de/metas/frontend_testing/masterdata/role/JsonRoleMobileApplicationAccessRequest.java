@@ -28,7 +28,9 @@ public class JsonRoleMobileApplicationAccessRequest
 
 	/**
 	 * {@code Mobile_Application_Action.InternalName}s granted through {@code Mobile_Application_Action_Access}
-	 * (relevant only when {@link #allowAllActions} is {@code false}), e.g. {@code createHU}
+	 * e.g. {@code createHU}. Also meaningful together with {@link #allowAllActions}: an action with
+	 * {@code Mobile_Application_Action.IsIncludedInAllowAllActions} = 'N' (like {@code createHU}) is available to an
+	 * allow-all role only through such a grant
 	 */
 	@Nullable List<String> grantedActions;
 }

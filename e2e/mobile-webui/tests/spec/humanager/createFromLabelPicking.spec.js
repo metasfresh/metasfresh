@@ -35,7 +35,10 @@ const createMasterdata = async ({ gtin, externalBarcode } = {}) => await Backend
     language: "en_US",
     request: {
         // the workplace is the HU Manager's source for the location proposed to the created CU: the default location of warehouse `wh`
-        login: { user: { language: "en_US", workplace: "workplace1" } },
+        // createHU is not part of "allow all actions": the login role is granted it explicitly (includedRoles: [] keeps the login organisation
+        // the main one; with the default WebUI role included, the login would select organisation "*", which has no default warehouse)
+        login: { user: { language: "en_US", workplace: "workplace1", role: "createHUGranted" } },
+        roles: { "createHUGranted": { includedRoles: [], mobileApplicationAccess: [{ application: 'huManager', allowAllActions: true, grantedActions: ['createHU'] }] } },
         workplaces: { "workplace1": { warehouse: "wh" } },
         mobileConfig: {
             picking: {

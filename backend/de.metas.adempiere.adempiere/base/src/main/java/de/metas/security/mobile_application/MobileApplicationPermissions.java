@@ -4,7 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.mobile.application.MobileApplicationActionId;
+import de.metas.mobile.application.MobileApplicationAction;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.security.permissions.PermissionsBuilder;
 import de.metas.util.GuavaCollectors;
@@ -112,9 +112,9 @@ public class MobileApplicationPermissions
 		return permission != null && permission.isAllowAccess();
 	}
 
-	public boolean isAllowAction(@NonNull final MobileApplicationRepoId mobileApplicationId, @NonNull final MobileApplicationActionId actionId)
+	public boolean isAllowAction(@NonNull final MobileApplicationRepoId mobileApplicationId, @NonNull final MobileApplicationAction action)
 	{
 		final MobileApplicationPermission permission = byMobileApplicationId.get(mobileApplicationId);
-		return permission != null && permission.isAllowAction(actionId);
+		return permission != null && permission.isAllowAction(action);
 	}
 }

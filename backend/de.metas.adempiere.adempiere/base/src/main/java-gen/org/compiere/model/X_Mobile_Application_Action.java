@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_Mobile_Application_Action extends org.compiere.model.PO implements I_Mobile_Application_Action, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1658859922L;
+	private static final long serialVersionUID = -1120722382L;
 
     /** Standard Constructor */
     public X_Mobile_Application_Action (final Properties ctx, final int Mobile_Application_Action_ID, @Nullable final String trxName)
@@ -56,6 +56,18 @@ public class X_Mobile_Application_Action extends org.compiere.model.PO implement
 	public java.lang.String getInternalName() 
 	{
 		return get_ValueAsString(COLUMNNAME_InternalName);
+	}
+
+	@Override
+	public void setIsIncludedInAllowAllActions (final boolean IsIncludedInAllowAllActions)
+	{
+		set_Value (COLUMNNAME_IsIncludedInAllowAllActions, IsIncludedInAllowAllActions);
+	}
+
+	@Override
+	public boolean isIncludedInAllowAllActions() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsIncludedInAllowAllActions);
 	}
 
 	@Override

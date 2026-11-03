@@ -51,12 +51,24 @@ const FORMAT_PRODUCTCODE_WEIGHT = {
     ],
 };
 
+// The action `createHU` is not part of "allow all actions" (Mobile_Application_Action.IsIncludedInAllowAllActions = N): a role gets it only
+// through an explicit Mobile_Application_Action_Access row. So the login users of these specs get a role that is granted it.
+// includedRoles: [] — with the default WebUI role included, the role would have two login organisations (the user's login then selects
+// organisation "*", which has no default warehouse for the proposed location). `grantCreateHU: false` keeps the plain default login role (no grant).
+const CREATE_HU_GRANTED_ROLE = 'createHUGranted';
+const createHUGrantedRoles = () => ({
+    [CREATE_HU_GRANTED_ROLE]: { includedRoles: [], mobileApplicationAccess: [{ application: 'huManager', allowAllActions: true, grantedActions: ['createHU'] }] },
+});
+
 // products / formats / extra are opt-in: the defaults (one piece product on `gtin`, the GTIN+lot+best-before format) are what the core tests use
-const createMasterdata = async ({ gtin, users, workplaces, products, formats, extra } = {}) => {
+const createMasterdata = async ({ gtin, users, workplaces, products, formats, extra, grantCreateHU = true } = {}) => {
+    const loginUsers = users ?? { user: { language: "en_US" } };
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
-            login: users ?? { user: { language: "en_US" } },
+            login: grantCreateHU
+                ? Object.fromEntries(Object.entries(loginUsers).map(([name, user]) => [name, { role: CREATE_HU_GRANTED_ROLE, ...user }]))
+                : loginUsers,
             products: products ?? { "P1": { gtin, uom: 'PCE' } },
             warehouses: {
                 "wh1": { locators: { wh1_l1: {}, wh1_l2: {} } },
@@ -65,6 +77,7 @@ const createMasterdata = async ({ gtin, users, workplaces, products, formats, ex
             ...(workplaces ? { workplaces } : {}),
             customQRCodeFormats: formats ?? [FORMAT_GTIN_LOT_BBD],
             ...(extra ?? {}),
+            ...(grantCreateHU ? { roles: { ...createHUGrantedRoles(), ...(extra?.roles ?? {}) } } : {}),
         }
     });
 };
@@ -746,7 +759,7 @@ test('allow-all role WITHOUT a createHU grant (the default login role) -> produc
 
     const gtin = uniqueGtin14();
     // default test login role: Mobile_Application_Access.IsAllowAllActions = Y for the HU Manager, no explicit createHU grant
-    const masterdata = await createMasterdata({ gtin });
+    const masterdata = await createMasterdata({ gtin, grantCreateHU: false });
     const calls = countProposeAndCreateCalls();
     await openHUManager({ user: masterdata.login.user });
 
