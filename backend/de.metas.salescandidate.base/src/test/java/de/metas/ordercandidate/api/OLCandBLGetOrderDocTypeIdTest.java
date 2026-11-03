@@ -56,7 +56,7 @@ class OLCandBLGetOrderDocTypeIdTest
 	{
 		final DocTypeId ownDocTypeId = createSalesOrderDocType();
 		final BPartnerId partnerId = createPartnerId();
-		when(bpartnerBL.getSalesOrderDocTypeId(partnerId)).thenReturn(Optional.of(createSalesOrderDocType())); // so that an eager partner load fails the verify below, not with an NPE
+		when(bpartnerBL.getSalesOrderDocTypeId(partnerId)).thenReturn(Optional.of(createSalesOrderDocType())); // a partner type exists, so only the candidate's own type can explain the result
 		final I_C_OLCand olCand = createOLCand(ownDocTypeId, partnerId);
 
 		final DocTypeId result = olCandBL.getOrderDocTypeId(null, olCand);

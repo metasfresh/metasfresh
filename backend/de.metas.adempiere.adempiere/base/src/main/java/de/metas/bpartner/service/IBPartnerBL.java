@@ -24,10 +24,10 @@ package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocTypeId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;

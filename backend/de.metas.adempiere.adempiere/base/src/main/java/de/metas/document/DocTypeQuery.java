@@ -47,17 +47,11 @@ public class DocTypeQuery
 	@Default
 	DocSubType docSubType = DOCSUBTYPE_Any;
 
-	/**
-	 * @deprecated use {@link DocTypeQueryBuilder#clientAndOrgId(ClientAndOrgId)}
-	 */
 	@NonNull
 	Integer adClientId;
 
 	/**
 	 * Even if specified, the system will still try to fallback to {@code AD_Org_ID=0} if there is no doctype with a matching org-id.
-	 */
-	/**
-	 * @deprecated use {@link DocTypeQueryBuilder#clientAndOrgId(ClientAndOrgId)}
 	 */
 	@Default
 	int adOrgId = Env.CTXVALUE_AD_Org_ID_System;
@@ -102,6 +96,27 @@ public class DocTypeQuery
 			return docSubType(DOCSUBTYPE_NONE);
 		}
 
+		/**
+		 * @deprecated use {@link #clientAndOrgId(ClientAndOrgId)}
+		 */
+		@Deprecated
+		public DocTypeQueryBuilder adClientId(@NonNull final Integer adClientId)
+		{
+			this.adClientId = adClientId;
+			return this;
+		}
+
+		/**
+		 * @deprecated use {@link #clientAndOrgId(ClientAndOrgId)}
+		 */
+		@Deprecated
+		public DocTypeQueryBuilder adOrgId(final int adOrgId)
+		{
+			this.adOrgId$value = adOrgId;
+			this.adOrgId$set = true;
+			return this;
+		}
+
 		public DocTypeQueryBuilder clientAndOrgId(@NonNull final ClientAndOrgId clientAndOrgId)
 		{
 			return clientAndOrgId(clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
@@ -109,8 +124,9 @@ public class DocTypeQuery
 
 		public DocTypeQueryBuilder clientAndOrgId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 		{
-			adClientId(clientId.getRepoId());
-			adOrgId(orgId.getRepoId());
+			this.adClientId = clientId.getRepoId();
+			this.adOrgId$value = orgId.getRepoId();
+			this.adOrgId$set = true;
 			return this;
 		}
 	}
