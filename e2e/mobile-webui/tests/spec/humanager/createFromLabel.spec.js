@@ -97,7 +97,7 @@ const clickOKAndGetCreatedHU = async () => {
 // AC4: after OK the user is back on the scan screen — a success message naming the HU and the quantity, the scan field ready,
 // no HU info screen (the new HU is NOT opened). The message is what tells the user which HU number was created.
 const expectBackOnScanScreenAfterOK = async ({ created, qty = '1 PCE', locatorCode }) => await test.step('Expect: back on the scan screen after OK, success message, no HU info', async () => {
-    // the HU is booked on the proposed location (the create response's JsonHU.locatorValue; was asserted on the HU info screen before AC4)
+    // the HU is booked on the proposed location (the create response's JsonHU.locatorValue)
     if (locatorCode !== undefined) expect(created.locatorValue).toBe(locatorCode);
     await HUManagerScreen.waitForScreen();
     await NewHUPreviewScreen.expectNotDisplayed();
