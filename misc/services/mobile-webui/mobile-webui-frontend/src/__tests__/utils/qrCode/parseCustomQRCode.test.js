@@ -103,10 +103,10 @@ describe('parseLocalDate', () => {
 describe('parseCustomQRCode', () => {
   test('GTIN part sets ATTR_GTIN', () => {
     const result = parseCustomQRCode({
-      string: '04251674410206',
+      string: '02001234567893',
       format: { name: 'Test', parts: [{ type: 'GTIN', startPosition: 1, endPosition: 14 }] },
     });
     expect(result.error).toBeUndefined();
-    expect(result[ATTR_GTIN]).toBe('04251674410206');
+    expect(result[ATTR_GTIN]).toBe('02001234567893');
   });
 });

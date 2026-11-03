@@ -13,7 +13,7 @@ import { DISPOSAL_REASON_DAMAGED } from '../../utils/screens/huManager/HUDisposa
 // inventory creates the HU -> the standard HU info screen with the new HU pre-scanned.
 //
 // Label format (custom, no product-code part): GTIN 1-14, LOT 15-19, BEST_BEFORE_DATE 20-25 (yyMMdd).
-//   e.g. '04251674410206' + 'L2311' + '271231'
+//   e.g. '02001234567893' + 'L2311' + '271231'
 // The product's stored GTIN is the 14-digit form (the customer-data shape: leading 0 + 13-digit EAN).
 
 // Unique per run (the label lookup must find exactly one product; the DB keeps products of earlier runs).

@@ -109,8 +109,8 @@ class ScannableCodeFormatTest
 					))
 					.build();
 
-			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("04251674410206")).orElseThrow();
-			assertThat(parsed.getGtin()).isEqualTo("04251674410206");
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("02001234567893")).orElseThrow();
+			assertThat(parsed.getGtin()).isEqualTo("02001234567893");
 		}
 
 		@Test
@@ -127,8 +127,8 @@ class ScannableCodeFormatTest
 					))
 					.build();
 
-			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("04251674410206L2311271231")).orElseThrow();
-			assertThat(parsed.getGtin()).isEqualTo("04251674410206");
+			final ParsedScannedCode parsed = format.parse(ScannedCode.ofString("02001234567893L2311271231")).orElseThrow();
+			assertThat(parsed.getGtin()).isEqualTo("02001234567893");
 			assertThat(parsed.getLotNo()).isEqualTo("L2311");
 			assertThat(parsed.getBestBeforeDate()).isEqualTo("2027-12-31");
 		}
@@ -145,7 +145,7 @@ class ScannableCodeFormatTest
 					))
 					.build();
 
-			assertThatThrownBy(() -> format.parse(ScannedCode.ofString("X04251674410206")).orElseThrow())
+			assertThatThrownBy(() -> format.parse(ScannedCode.ofString("X02001234567893")).orElseThrow())
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageStartingWith("Invalid constant marker, expected `A` but was `X`");
 		}

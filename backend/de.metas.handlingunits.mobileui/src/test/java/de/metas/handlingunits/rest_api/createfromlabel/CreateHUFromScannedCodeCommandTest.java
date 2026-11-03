@@ -136,7 +136,7 @@ class CreateHUFromScannedCodeCommandTest
 	void clientValuesOnlyForQtyLocator() throws IOException
 	{
 		// only product1 keeps the GTIN, so the re-parse yields exactly one product
-		product2.setGTIN("04251674410206");
+		product2.setGTIN("02001234567893");
 		InterfaceWrapperHelper.saveRecord(product2);
 
 		final JsonCreateHUFromScannedCodeRequest request = readRequest("{\"scannedCode\":\"01" + SHARED_GTIN + "\",\"qty\":\"3\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\",\"productId\":" + product2.getM_Product_ID() + "}");
@@ -228,13 +228,13 @@ class CreateHUFromScannedCodeCommandTest
 		otherUomSameCode.setName("Each (second)");
 		InterfaceWrapperHelper.saveRecord(otherUomSameCode);
 
-		product2.setGTIN("04251674410206");
+		product2.setGTIN("02001234567893");
 		product2.setC_UOM_ID(otherUomSameCode.getC_UOM_ID());
 		InterfaceWrapperHelper.saveRecord(product2);
 		product1.setGTIN("04251674410299");
 		InterfaceWrapperHelper.saveRecord(product1);
 
-		create(readRequest("{\"scannedCode\":\"0104251674410206\",\"qty\":\"2\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\"}"));
+		create(readRequest("{\"scannedCode\":\"0102001234567893\",\"qty\":\"2\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\"}"));
 
 		assertThat(huQtyService.requests.get(0).getQty().getUomId()).isEqualTo(UomId.ofRepoId(otherUomSameCode.getC_UOM_ID()));
 	}

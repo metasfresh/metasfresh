@@ -227,7 +227,7 @@ test('Pick using custom QR code', async ({ page }) => {
 // find the product by it.
 //
 // Label layout: GTIN 1-14, LOT 15-19, BEST_BEFORE_DATE 20-25 (yyMMdd), WEIGHT_KG 26-31.
-//   e.g. '04251674410206' + 'L2311' + '271231' + '099999'  (weight 99.999 kg, same weight shape as the product-code format above)
+//   e.g. '02001234567893' + 'L2311' + '271231' + '099999'  (weight 99.999 kg, same weight shape as the product-code format above)
 //
 
 // Unique per run (the strict GTIN lookup must find exactly one product; the DB keeps products of earlier runs).

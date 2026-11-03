@@ -212,10 +212,10 @@ public class ProductDAOTest
 		@Test
 		void labelGtin_14digit_exactMatch()
 		{
-			final I_M_Product p = productWithGtin("L1", "04251674410206");
+			final I_M_Product p = productWithGtin("L1", "02001234567893");
 			productWithGtin("L2", "04251674473003");
 
-			assertThat(productDAO.getProductIdsByLabelGTIN(GTIN.ofString("04251674410206"), ClientId.METASFRESH))
+			assertThat(productDAO.getProductIdsByLabelGTIN(GTIN.ofString("02001234567893"), ClientId.METASFRESH))
 					.containsExactly(ProductId.ofRepoId(p.getM_Product_ID()));
 		}
 
@@ -234,8 +234,8 @@ public class ProductDAOTest
 		@Test
 		void strictLookup_unchangedForSharedAndUniqueGtin()
 		{
-			final I_M_Product unique = productWithGtin("L5", "04251674410206");
-			assertThat(productDAO.getProductIdByGTINStrictly(GTIN.ofString("04251674410206"), ClientId.METASFRESH))
+			final I_M_Product unique = productWithGtin("L5", "02001234567893");
+			assertThat(productDAO.getProductIdByGTINStrictly(GTIN.ofString("02001234567893"), ClientId.METASFRESH))
 					.contains(ProductId.ofRepoId(unique.getM_Product_ID()));
 
 			productWithGtin("L6", "04251674473003");
