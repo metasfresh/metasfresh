@@ -15,6 +15,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -132,8 +133,13 @@ class CreateHUFromScannedCodeCommandTest
 	/** goes through the real service, so the request-to-command mapping of production code is what the tests exercise */
 	private HuId create(final JsonCreateHUFromScannedCodeRequest request)
 	{
+		return create(request, "en_US");
+	}
+
+	private HuId create(final JsonCreateHUFromScannedCodeRequest request, final String adLanguage)
+	{
 		final CreateHUFromLabelService service = new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)), new LabelTargetLocatorResolver(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class)));
-		return service.create(request, ClientId.METASFRESH, BOOKING_DATE).getHuId();
+		return service.create(request, ClientId.METASFRESH, adLanguage, BOOKING_DATE).getHuId();
 	}
 
 	/** The command takes every service and the label resolver as builder parameters (it builds and looks up nothing itself). */
@@ -151,6 +157,7 @@ class CreateHUFromScannedCodeCommandTest
 				.huQtyService(huQtyService)
 				.labelProductResolver(new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)))
 				.clientId(ClientId.METASFRESH)
+				.adLanguage("en_US")
 				.scannedCode(ScannedCode.ofString("01" + SHARED_GTIN))
 				.qty(BigDecimal.ONE)
 				.locatorId(locatorQRCode.getLocatorId())
@@ -298,6 +305,51 @@ class CreateHUFromScannedCodeCommandTest
 		assertThatThrownBy(() -> create(requestOf("ZZLOT001271231251101")))
 				.isInstanceOf(LabelRejectionException.class)
 				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE);
+		assertThat(huQtyService.requests).isEmpty();
+	}
+
+	/**
+	 * Failure scenario: the origin marker stored on the inventory document (M_Inventory.Description, visible in the desktop) was a
+	 * hard-coded English literal: it must be the AD_Message in the language of the user who creates the HU.
+	 */
+	@Test
+	void inventoryDescription_isTheTranslatedMessageInTheUsersLanguage() throws IOException
+	{
+		product2.setGTIN("02001234567893");
+		InterfaceWrapperHelper.saveRecord(product2);
+
+		create(readRequest("{\"scannedCode\":\"01" + SHARED_GTIN + "\",\"qty\":\"1\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\"}"), "de_DE");
+
+		assertThat(huQtyService.requests).hasSize(1);
+		assertThat(huQtyService.requests.get(0).getDescription())
+				.isEqualTo(TranslatableStrings.adMessage(CreateFromLabelMessages.INVENTORY_DESCRIPTION).translate("de_DE"))
+				.isNotEqualTo("HU Manager: created from scanned label"); // the former hard-coded literal
+	}
+
+	/** Server-side guard the UI cannot produce (OK is disabled at 0): its text is an AD_Message too, not a hard-coded literal. */
+	@Test
+	void quantityNotPositive_refusedWithTheMessage() throws IOException
+	{
+		product2.setGTIN("02001234567893");
+		InterfaceWrapperHelper.saveRecord(product2);
+
+		assertThatThrownBy(() -> create(readRequest("{\"scannedCode\":\"01" + SHARED_GTIN + "\",\"qty\":\"0\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\"}")))
+				.hasMessageContaining(CreateFromLabelMessages.QTY_MUST_BE_POSITIVE.toAD_Message());
+		assertThat(huQtyService.requests).isEmpty();
+	}
+
+	/** A user can scan a location that was deactivated meanwhile: the refusal text is an AD_Message, not a hard-coded literal. */
+	@Test
+	void inactiveLocator_refusedWithTheMessage() throws IOException
+	{
+		product2.setGTIN("02001234567893");
+		InterfaceWrapperHelper.saveRecord(product2);
+		final I_M_Locator locator = Services.get(IWarehouseDAO.class).getLocatorById(locatorQRCode.getLocatorId());
+		locator.setIsActive(false);
+		InterfaceWrapperHelper.saveRecord(locator);
+
+		assertThatThrownBy(() -> create(readRequest("{\"scannedCode\":\"01" + SHARED_GTIN + "\",\"qty\":\"1\",\"locatorQRCode\":\"" + locatorQRCode.toGlobalQRCodeJsonString().replace("\"", "\\\"") + "\"}")))
+				.hasMessageContaining(CreateFromLabelMessages.NOT_AN_ACTIVE_LOCATOR.toAD_Message());
 		assertThat(huQtyService.requests).isEmpty();
 	}
 

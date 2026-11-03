@@ -585,6 +585,7 @@ test('catch-weight product, label with constant + product code + weight + lot + 
         inventories: {
             [huQRCode]: {
                 docStatus: 'CO',
+                // the AD_Message `...createFromLabel.InventoryDescription` in the E2E user's language (en_US, see createMasterdata)
                 description: 'HU Manager: created from scanned label',
                 count: 1,
                 qtyCount: '1',

@@ -52,7 +52,7 @@ public class CreateHUFromLabelService
 
 	/** @return the new HU, with its HU QR code created (so the standard actions, Move etc., work on it) */
 	@NonNull
-	public CreatedHU create(@NonNull final JsonCreateHUFromScannedCodeRequest request, @NonNull final ClientId clientId, @NonNull final ZonedDateTime date)
+	public CreatedHU create(@NonNull final JsonCreateHUFromScannedCodeRequest request, @NonNull final ClientId clientId, @NonNull final String adLanguage, @NonNull final ZonedDateTime date)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> {
 			final HuId huId = CreateHUFromScannedCodeCommand.builder()
@@ -63,6 +63,7 @@ public class CreateHUFromLabelService
 					.huQtyService(huQtyService)
 					.labelProductResolver(labelProductResolver)
 					.clientId(clientId)
+					.adLanguage(adLanguage)
 					.scannedCode(request.getScannedCode())
 					.qty(request.getQty())
 					.locatorId(LocatorQRCode.ofScannedCode(request.getLocatorQRCode()).getLocatorId())
