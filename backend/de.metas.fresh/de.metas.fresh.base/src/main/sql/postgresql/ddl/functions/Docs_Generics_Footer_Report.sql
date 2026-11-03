@@ -1,14 +1,18 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(numeric, character(1))
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(numeric,
+                                                                                       character(1),
+                                                                                       IN p_ad_language character varying)
 ;
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id             numeric,
-                                                                               p_isFactoringPartner character(1) DEFAULT 'N')
+                                                                               p_isFactoringPartner character(1) DEFAULT 'N',
+                                                                               IN p_ad_language     character varying DEFAULT 'de_DE')
     RETURNS TABLE
             (
                 org_name              character varying,
                 org_address1          character varying,
                 org_postal            character varying,
                 org_city              character varying,
+                org_country           character varying,
                 org_bank_acct         character varying,
                 org_bank_name         character varying,
                 org_bank_blz          character varying,
@@ -29,10 +33,11 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p
     LANGUAGE sql
 AS
 $$
-SELECT COALESCE(org_bp.name, '')               AS org_name,
-       COALESCE(loc.address1, '')              AS org_address1,
-       COALESCE(loc.postal, '')                AS org_postal,
-       COALESCE(loc.city, '')                  AS org_city,
+SELECT COALESCE(org_bp.name, '')                    AS org_name,
+       COALESCE(loc.address1, '')                   AS org_address1,
+       COALESCE(loc.postal, '')                     AS org_postal,
+       COALESCE(loc.city, '')                       AS org_city,
+       COALESCE(country_trl.name, country.name, '') AS org_country,
        COALESCE(
                CASE
                    WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
@@ -40,7 +45,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
                        ELSE org_ba.org_bank_acct
                END,
                ''
-       )                                       AS org_bank_acct,
+       )                                            AS org_bank_acct,
        COALESCE(
                CASE
                    WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
@@ -48,7 +53,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
                        ELSE org_ba.org_bank_name
                END,
                ''
-       )                                       AS org_bank_name,
+       )                                            AS org_bank_name,
        COALESCE(
                CASE
                    WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
@@ -56,7 +61,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
                        ELSE org_ba.org_bank_blz
                END,
                ''
-       )                                       AS org_bank_blz,
+       )                                            AS org_bank_blz,
        COALESCE(
                CASE
                    WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
@@ -64,7 +69,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
                        ELSE org_ba.org_bank_iban
                END,
                ''
-       )                                       AS org_bank_iban,
+       )                                            AS org_bank_iban,
        COALESCE(
                CASE
                    WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
@@ -72,7 +77,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
                        ELSE org_ba.org_bank_swift
                END,
                ''
-       )                                       AS org_bank_swift,
+       )                                            AS org_bank_swift,
        COALESCE(
                CASE
                    WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
@@ -80,29 +85,31 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
                        ELSE cur.iso_code
                END,
                ''
-       )                                       AS org_bank_currency,
+       )                                            AS org_bank_currency,
        TRIM(
                CASE WHEN org_bp.name IS NULL THEN '' ELSE org_bp.name || ', ' END ||
                CASE WHEN loc.address1 IS NULL THEN '' ELSE loc.address1 || ', ' END ||
                CASE WHEN loc.postal IS NULL THEN '' ELSE loc.postal || ', ' END ||
                CASE WHEN loc.city IS NULL THEN '' ELSE loc.city || ', ' END
-       )                                       AS org_addressline,
-       org_bp.description                      AS orgpartnerdescription,
-       usr.firstname || ' ' || usr.lastname    AS manager,
-       org_bp.vataxid                          AS vataxid,
-       COALESCE(usr.phone, org_bpl.phone, '-') AS phone,
-       usr.phone2                              AS phone2,
-       COALESCE(usr.fax, org_bpl.fax, '-')     AS fax,
-       COALESCE(usr.email, '-')                AS email,
+       )                                            AS org_addressline,
+       org_bp.description                           AS orgpartnerdescription,
+       usr.firstname || ' ' || usr.lastname         AS manager,
+       org_bp.vataxid                               AS vataxid,
+       COALESCE(usr.phone, org_bpl.phone, '-')      AS phone,
+       usr.phone2                                   AS phone2,
+       COALESCE(usr.fax, org_bpl.fax, '-')          AS fax,
+       COALESCE(usr.email, '-')                     AS email,
        org_bp.url
 
 FROM ad_org org
          INNER JOIN c_bpartner org_bp ON org.ad_org_id = org_bp.ad_orgbp_id
+         LEFT OUTER JOIN ad_orginfo org_info ON org.ad_org_id = org_info.ad_org_id
          INNER JOIN c_bpartner_location org_bpl ON org_bp.c_bpartner_id = org_bpl.c_bpartner_id
          INNER JOIN ad_user usr ON org_bp.c_bpartner_id = usr.c_bpartner_id AND usr.isdefaultcontact = 'Y'
-         INNER JOIN report.Fresh_Org_BankAccount(org.AD_Org_ID) org_ba ON TRUE
+         INNER JOIN LATERAL report.Fresh_Org_BankAccount(org.AD_Org_ID) org_ba ON TRUE
          LEFT OUTER JOIN c_location loc ON org_bpl.c_location_id = loc.c_location_id
          LEFT OUTER JOIN c_country country ON loc.c_country_id = country.c_country_id
+         LEFT OUTER JOIN c_country_trl country_trl ON country_trl.c_country_id = country.c_country_id AND country_trl.ad_language = p_ad_language
          LEFT OUTER JOIN c_bp_bankaccount bpb ON org_bp.c_bpartner_id = bpb.c_bpartner_id
          LEFT OUTER JOIN c_bank bank ON bpb.c_bank_id = bank.c_bank_id
          LEFT OUTER JOIN C_Currency cur ON bpb.C_Currency_ID = cur.C_Currency_ID
@@ -113,7 +120,19 @@ FROM ad_org org
          LEFT OUTER JOIN C_Currency curf ON bpbf.C_Currency_ID = curf.C_Currency_ID
 
 WHERE org.ad_org_id = p_org_id
-ORDER BY bpb.isDefault DESC
+-- Prefer the location explicitly configured in AD_OrgInfo (OrgBP_Location_ID) when it is set
+-- and belongs to the org BPartner; otherwise fall back to the default bill-to / ship-to address.
+-- Kept as an ordering preference (not a restricting join) so a missing/foreign AD_OrgInfo
+-- location never leaves the footer empty.
+ORDER BY CASE
+             WHEN org_info.orgbp_location_id IS NOT NULL
+                 AND org_bpl.c_bpartner_location_id = org_info.orgbp_location_id
+                 THEN 0
+                 ELSE 1
+         END,
+         org_bpl.isbilltodefault DESC,
+         org_bpl.isshiptodefault DESC,
+         bpb.isDefault DESC
 LIMIT 1
 $$
 ;

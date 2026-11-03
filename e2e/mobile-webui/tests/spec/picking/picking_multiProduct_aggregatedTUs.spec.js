@@ -121,7 +121,7 @@ test('Aggregated TUs - 4 products into 1 LU', async ({ page }) => {
                 [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '170 PCE' } },
                 [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '160 PCE' } },
                 [masterdata.handlingUnits.HU4.qrCode]: { huStatus: 'A', storages: { P4: '190 PCE' } },
-                lu1: { huStatus: 'S', storages: { P1: '20 PCE', P2: '30 PCE', P3: '40 PCE', P4: '10 PCE' } },
+                lu1: { huStatus: 'S', storages: { P1: '20 PCE', P2: '30 PCE', P3: '40 PCE', P4: '10 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
     });
@@ -153,7 +153,7 @@ test('Aggregated TUs - 4 products into 1 LU', async ({ page }) => {
                 [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '170 PCE' } },
                 [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '160 PCE' } },
                 [masterdata.handlingUnits.HU4.qrCode]: { huStatus: 'A', storages: { P4: '190 PCE' } },
-                lu1: { huStatus: 'E', storages: { P1: '20 PCE', P2: '30 PCE', P3: '40 PCE', P4: '10 PCE' } },
+                lu1: { huStatus: 'E', storages: { P1: '20 PCE', P2: '30 PCE', P3: '40 PCE', P4: '10 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
     });
@@ -266,7 +266,7 @@ test('Standalone TUs - same product picked in separate scans', async ({ page }) 
             hus: {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '180 PCE' } },
                 [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '170 PCE' } },
-                lu1: { huStatus: 'S', storages: { P1: '20 PCE', P2: '30 PCE' } },
+                lu1: { huStatus: 'S', storages: { P1: '20 PCE', P2: '30 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
     });
@@ -293,7 +293,7 @@ test('Standalone TUs - same product picked in separate scans', async ({ page }) 
             hus: {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '180 PCE' } },
                 [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '170 PCE' } },
-                lu1: { huStatus: 'E', storages: { P1: '20 PCE', P2: '30 PCE' } },
+                lu1: { huStatus: 'E', storages: { P1: '20 PCE', P2: '30 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
     });

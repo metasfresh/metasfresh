@@ -104,7 +104,11 @@ class FiltersNotIncluded extends PureComponent {
 
           if (filter.inlineRenderMode === 'button') {
             return (
-              <div className="filter-wrapper filter-inline" key={index}>
+              <div
+                className="filter-wrapper filter-inline"
+                key={index}
+                data-testid={`filter-wrapper-${filter.filterId}`}
+              >
                 {dateStepper && (
                   <FiltersDateStepper
                     active={this.findActiveFilter(filter.filterId)}
@@ -120,6 +124,7 @@ class FiltersNotIncluded extends PureComponent {
                     ['btn-active']: isActive && !allChildFiltersCleared,
                     ['btn-distance']: !dateStepper,
                   })}
+                  data-testid={`filter-button-${filter.filterId}`}
                   tabIndex={modalVisible ? -1 : 0}
                 >
                   <i className="meta-icon-preview" />

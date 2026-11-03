@@ -102,7 +102,7 @@ public class ShipmentScheduleHandlerTest
 				.thenReturn(list);
 
 		// invoke the method under test
-		final Optional<AttributeConfig> matchingAttributeConfig = shipmentScheduleHandler.findMatchingAttributeConfig(10, attribute);
+		final Optional<AttributeConfig> matchingAttributeConfig = shipmentScheduleHandler.findMatchingAttributeConfig(10, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 
 		assertThat(matchingAttributeConfig).isPresent();
 		assertThat(matchingAttributeConfig.get()).isSameAs(attributeConfigConfig);

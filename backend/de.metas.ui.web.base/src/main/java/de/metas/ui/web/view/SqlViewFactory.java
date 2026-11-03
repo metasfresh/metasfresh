@@ -23,6 +23,8 @@
 package de.metas.ui.web.view;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.i18n.AdMessageKey;
@@ -41,6 +43,8 @@ import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewBindingCustomizer;
+import de.metas.ui.web.view.descriptor.SqlViewBindingCustomizerMap;
 import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
 import de.metas.ui.web.view.descriptor.SqlViewCustomizerMap;
 import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
@@ -84,18 +88,28 @@ public class SqlViewFactory implements IViewFactory
 	private final CompositeDefaultViewProfileIdProvider defaultProfileIdProvider;
 	private final ViewHeaderPropertiesProviderMap headerPropertiesProvider;
 
+	/** Per-window overrides for the row-data repository; empty for every standard window. */
+	private final ImmutableMap<WindowId, ViewDataRepositoryFactory> viewDataRepositoryFactoriesByWindowId;
+
 	public SqlViewFactory(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final WebuiDocumentReferencesService webuiDocumentReferencesService,
 			@NonNull final List<SqlViewCustomizer> viewCustomizersList,
+			@NonNull final List<SqlViewBindingCustomizer> viewBindingCustomizersList,
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
 			@NonNull final Optional<List<ViewHeaderPropertiesProvider>> headerPropertiesProvider,
 			@NonNull final Optional<List<SqlDocumentFilterConverter>> filterConverters,
 			@NonNull final SqlDocumentFilterConverterDecoratorsProvider filterConverterDecoratorsProvider,
 			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors,
-			@NonNull final GeoLocationDocumentService geoLocationDocumentService)
+			@NonNull final GeoLocationDocumentService geoLocationDocumentService,
+			@NonNull final Optional<List<ViewDataRepositoryFactory>> viewDataRepositoryFactories)
 	{
 		this.webuiDocumentReferencesService = webuiDocumentReferencesService;
+
+		this.viewDataRepositoryFactoriesByWindowId = Maps.uniqueIndex(
+				viewDataRepositoryFactories.orElseGet(ImmutableList::of),
+				ViewDataRepositoryFactory::getWindowId);
+		logger.info("View data repository factories: {}", this.viewDataRepositoryFactoriesByWindowId);
 
 		final SqlViewCustomizerMap viewCustomizers = SqlViewCustomizerMap.ofCollection(viewCustomizersList);
 		logger.info("View customizers: {}", viewCustomizers);
@@ -103,9 +117,13 @@ public class SqlViewFactory implements IViewFactory
 		this.defaultProfileIdProvider = makeDefaultProfileIdProvider(defaultViewProfileIdProviders, viewCustomizers);
 		logger.info("Default ProfileId providers: {}", this.defaultProfileIdProvider);
 
+		final SqlViewBindingCustomizerMap viewBindingCustomizers = SqlViewBindingCustomizerMap.ofCollection(viewBindingCustomizersList);
+		logger.info("View binding customizers: {}", viewBindingCustomizers);
+
 		final SqlViewBindingFactory viewBindingsFactory = SqlViewBindingFactory.builder()
 				.documentDescriptorFactory(documentDescriptorFactory)
 				.viewCustomizers(viewCustomizers)
+				.viewBindingCustomizers(viewBindingCustomizers)
 				.filterConverters(filterConverters.orElseGet(ImmutableList::of))
 				.filterConverterDecoratorsProvider(filterConverterDecoratorsProvider)
 				.viewInvalidationAdvisors(viewInvalidationAdvisors)
@@ -159,7 +177,7 @@ public class SqlViewFactory implements IViewFactory
 		final JSONViewDataType viewType = request.getViewType();
 		final ViewProfileId profileId = !ViewProfileId.isNull(request.getProfileId()) ? request.getProfileId() : defaultProfileIdProvider.getDefaultProfileIdByWindowId(windowId);
 		final SqlViewBinding sqlViewBinding = viewLayouts.getViewBinding(windowId, viewType.getRequiredFieldCharacteristic(), profileId);
-		final SqlViewDataRepository viewDataRepository = new SqlViewDataRepository(sqlViewBinding);
+		final SqlViewDataRepository viewDataRepository = createViewDataRepository(windowId, sqlViewBinding);
 
 		final DefaultView.Builder viewBuilder = DefaultView.builder(viewDataRepository)
 				.setViewId(request.getViewId())
@@ -177,7 +195,8 @@ public class SqlViewFactory implements IViewFactory
 						request.getDocumentReferenceId()))
 				.applySecurityRestrictions(request.isApplySecurityRestrictions())
 				.viewInvalidationAdvisor(sqlViewBinding.getViewInvalidationAdvisor())
-				.refreshViewOnChangeEvents(sqlViewBinding.isRefreshViewOnChangeEvents());
+				.refreshViewOnChangeEvents(sqlViewBinding.isRefreshViewOnChangeEvents())
+				.setParameters(request.getParameters());
 
 		final DocumentFilterList filters = request.getFiltersUnwrapped(viewDataRepository.getViewFilterDescriptors());
 		viewBuilder.setFilters(filters);
@@ -195,6 +214,21 @@ public class SqlViewFactory implements IViewFactory
 		}
 
 		return viewBuilder.build();
+	}
+
+	/**
+	 * Instantiate the row-data repository. Delegates to a {@link ViewDataRepositoryFactory} registered
+	 * for the window if present; otherwise the standard {@link SqlViewDataRepository}. Behavior is unchanged for
+	 * every window without a registered factory.
+	 */
+	private SqlViewDataRepository createViewDataRepository(
+			@NonNull final WindowId windowId,
+			@NonNull final SqlViewBinding sqlViewBinding)
+	{
+		final ViewDataRepositoryFactory customFactory = viewDataRepositoryFactoriesByWindowId.get(windowId);
+		return customFactory != null
+				? customFactory.createViewDataRepository(sqlViewBinding)
+				: new SqlViewDataRepository(sqlViewBinding);
 	}
 
 	@Nullable

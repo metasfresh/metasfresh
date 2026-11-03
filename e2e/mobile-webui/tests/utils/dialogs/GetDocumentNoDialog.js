@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { page } from "../common";
+import { page, SLOW_ACTION_TIMEOUT } from "../common";
 
 const NAME = 'GetDocumentNoDialog';
 /** @returns {import('@playwright/test').Locator} */
@@ -7,7 +7,7 @@ const containerElement = () => page.locator('.get-documentNo-dialog');
 
 export const GetDocumentNoDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     typeDocumentNo: async (documentNo) => await test.step(`${NAME} - Type Document No ${documentNo}`, async () => {

@@ -54,7 +54,9 @@ public final class AttributesKey implements Comparable<AttributesKey>
 {
 	// first, declare the "static" constants that might be used within the "factory-method" constants
 
-	/** The delimiter should not contain any character that has a "regexp" meaning and would interfere with {@link String#replaceAll(String, String)}. */
+	/**
+	 * The delimiter should not contain any character that has a "regexp" meaning and would interfere with {@link String#replaceAll(String, String)}.
+	 */
 	@VisibleForTesting
 	public static final String ATTRIBUTES_KEY_DELIMITER = "§&§";
 	private static final Joiner ATTRIBUTEVALUEIDS_JOINER = Joiner.on(ATTRIBUTES_KEY_DELIMITER).skipNulls();
@@ -63,7 +65,9 @@ public final class AttributesKey implements Comparable<AttributesKey>
 	public static final AttributesKey ALL = AttributesKey.ofAttributeValueIds(-1000);
 	public static final AdMessageKey MSG_ATTRIBUTES_KEY_ALL = AdMessageKey.of("de.metas.material.dispo.<ALL_ATTRIBUTES_KEYS>");
 
-	/** This key's meaning depends on the other keys it comes with. */
+	/**
+	 * This key's meaning depends on the other keys it comes with.
+	 */
 	public static final AttributesKey OTHER = AttributesKey.ofAttributeValueIds(-1001);
 	public static final AdMessageKey MSG_ATTRIBUTES_KEY_OTHER = AdMessageKey.of("de.metas.material.dispo.<OTHER_ATTRIBUTES_KEYS>");
 
@@ -177,6 +181,16 @@ public final class AttributesKey implements Comparable<AttributesKey>
 	public String getAsString()
 	{
 		return attributesKeyString;
+	}
+
+	@Nullable
+	public static String toStringOrNull(@Nullable final AttributesKey key)
+	{
+		if (key == null || key.isNone())
+		{
+			return null;
+		}
+		return key.getAsString();
 	}
 
 	public boolean isNone()

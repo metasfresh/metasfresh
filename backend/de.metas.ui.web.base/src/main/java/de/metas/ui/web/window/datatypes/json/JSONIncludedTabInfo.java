@@ -16,6 +16,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -72,6 +74,14 @@ public final class JSONIncludedTabInfo
 	@JsonProperty("allowCreateNewReason")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private String allowCreateNewReason;
+	/**
+	 * Set only where {@link #allowCreateNewReason} holds text meant for the user: it is then the stable
+	 * AD_Message key behind that text, which automated tests assert on instead of the rendered wording.
+	 * Absent for the refusals which transmit a technical name.
+	 */
+	@JsonProperty("allowCreateNewReasonKey")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private String allowCreateNewReasonKey;
 
 	@JsonProperty("allowDelete")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -95,6 +105,7 @@ public final class JSONIncludedTabInfo
 		staleRowIds = new HashSet<>(from.staleRowIds);
 		allowCreateNew = from.allowCreateNew;
 		allowCreateNewReason = from.allowCreateNewReason;
+		allowCreateNewReasonKey = from.allowCreateNewReasonKey;
 		allowDelete = from.allowDelete;
 		allowDeleteReason = from.allowDeleteReason;
 	}
@@ -111,8 +122,14 @@ public final class JSONIncludedTabInfo
 
 	public void setAllowCreateNew(final boolean allowCreateNew, final String reason)
 	{
+		setAllowCreateNew(allowCreateNew, reason, null);
+	}
+
+	public void setAllowCreateNew(final boolean allowCreateNew, final String reason, @Nullable final String reasonKey)
+	{
 		this.allowCreateNew = allowCreateNew;
 		allowCreateNewReason = reason;
+		allowCreateNewReasonKey = reasonKey;
 	}
 
 	public void setAllowDelete(final boolean allowDelete, final String reason)
@@ -156,6 +173,7 @@ public final class JSONIncludedTabInfo
 		{
 			allowCreateNew = from.allowCreateNew;
 			allowCreateNewReason = from.allowCreateNewReason;
+			allowCreateNewReasonKey = from.allowCreateNewReasonKey;
 		}
 
 		if (from.allowDelete != null)
