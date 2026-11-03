@@ -12,8 +12,8 @@ import javax.annotation.Nullable;
 @Jacksonized
 public class JsonProductExpectation
 {
-	/** exact number of HU storage records ({@code M_HU_Storage}) of the product */
-	@Nullable Integer huStorageCount;
+	/** exact number of active HUs ({@code M_HU}) holding the product, i.e. having an active {@code M_HU_Storage} of it */
+	@Nullable Integer huCount;
 	/** exact number of {@code M_InventoryLine} of the product */
 	@Nullable Integer inventoryLineCount;
 }

@@ -70,11 +70,11 @@ class AssertCreatedFromLabelExpectationsTest
 	void products_counts()
 	{
 		assertThatCode(() -> AssertProductExpectationsCommand.assertCounts(0, 0,
-				JsonProductExpectation.builder().huStorageCount(0).inventoryLineCount(0).build()))
+				JsonProductExpectation.builder().huCount(0).inventoryLineCount(0).build()))
 				.doesNotThrowAnyException();
 
 		assertThatThrownBy(() -> AssertProductExpectationsCommand.assertCounts(1, 0,
-				JsonProductExpectation.builder().huStorageCount(0).build()))
+				JsonProductExpectation.builder().huCount(0).build()))
 				.isInstanceOf(Throwable.class);
 		assertThatThrownBy(() -> AssertProductExpectationsCommand.assertCounts(0, 1,
 				JsonProductExpectation.builder().inventoryLineCount(0).build()))

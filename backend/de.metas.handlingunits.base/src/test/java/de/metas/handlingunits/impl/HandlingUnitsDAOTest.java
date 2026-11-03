@@ -5,9 +5,11 @@ import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.jupiter.api.Assertions;
@@ -79,4 +81,47 @@ public class HandlingUnitsDAOTest extends AbstractHUTest
 				, "Invalid result for BPartner=" + bpartner3);
 	}
 
+	@Test
+	public void countActiveHUsByProductId_countsEachActiveHUHoldingTheProductOnce()
+	{
+		final ProductId productId = ProductId.ofRepoId(1001);
+		final ProductId otherProductId = ProductId.ofRepoId(1002);
+
+		final I_M_HU huWithProduct = createHU(true);
+		createStorage(huWithProduct, productId, true);
+
+		final I_M_HU huWithProductAndOtherProduct = createHU(true);
+		createStorage(huWithProductAndOtherProduct, productId, true);
+		createStorage(huWithProductAndOtherProduct, otherProductId, true);
+
+		final I_M_HU huWithOtherProductOnly = createHU(true);
+		createStorage(huWithOtherProductOnly, otherProductId, true);
+
+		final I_M_HU inactiveHU = createHU(false);
+		createStorage(inactiveHU, productId, true);
+
+		final I_M_HU huWithInactiveStorage = createHU(true);
+		createStorage(huWithInactiveStorage, productId, false);
+
+		Assertions.assertEquals(2, dao.countActiveHUsByProductId(productId));
+		Assertions.assertEquals(2, dao.countActiveHUsByProductId(otherProductId));
+		Assertions.assertEquals(0, dao.countActiveHUsByProductId(ProductId.ofRepoId(1003)));
+	}
+
+	private I_M_HU createHU(final boolean active)
+	{
+		final I_M_HU hu = InterfaceWrapperHelper.newInstance(I_M_HU.class, helper.contextProvider);
+		hu.setIsActive(active);
+		InterfaceWrapperHelper.save(hu);
+		return hu;
+	}
+
+	private void createStorage(final I_M_HU hu, final ProductId productId, final boolean active)
+	{
+		final I_M_HU_Storage storage = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class, helper.contextProvider);
+		storage.setM_HU_ID(hu.getM_HU_ID());
+		storage.setM_Product_ID(productId.getRepoId());
+		storage.setIsActive(active);
+		InterfaceWrapperHelper.save(storage);
+	}
 }

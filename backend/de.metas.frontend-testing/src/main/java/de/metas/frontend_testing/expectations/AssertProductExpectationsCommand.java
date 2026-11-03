@@ -36,16 +36,16 @@ class AssertProductExpectationsCommand
 			final ProductId productId = context.getId(Identifier.ofString(productMatcherStr), ProductId.class);
 			softlyPutContext("productId", context.describeId(productId));
 
-			assertCounts(services.countHUStoragesByProductId(productId), services.countInventoryLinesByProductId(productId), expectation);
+			assertCounts(services.countActiveHUsByProductId(productId), services.countInventoryLinesByProductId(productId), expectation);
 		});
 	}
 
 	@VisibleForTesting
-	static void assertCounts(final int huStorageCount, final int inventoryLineCount, @NonNull final JsonProductExpectation expectation)
+	static void assertCounts(final int huCount, final int inventoryLineCount, @NonNull final JsonProductExpectation expectation)
 	{
-		if (expectation.getHuStorageCount() != null)
+		if (expectation.getHuCount() != null)
 		{
-			assertThat(huStorageCount).as("Number of HU storage records of the product").isEqualTo(expectation.getHuStorageCount());
+			assertThat(huCount).as("Number of HUs holding the product").isEqualTo(expectation.getHuCount());
 		}
 		if (expectation.getInventoryLineCount() != null)
 		{

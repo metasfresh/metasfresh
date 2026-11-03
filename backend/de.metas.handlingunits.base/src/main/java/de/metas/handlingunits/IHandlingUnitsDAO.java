@@ -38,6 +38,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -322,6 +323,11 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU> retrieveVirtualHUs(I_M_HU_Item itemMaterial);
 
 	IHUQueryBuilder createHUQueryBuilder();
+
+	/**
+	 * @return the number of distinct active HUs that have an active {@code M_HU_Storage} of the given product (whatever its qty).
+	 */
+	int countActiveHUsByProductId(@NonNull ProductId productId);
 
 	List<I_M_HU_Item> retrieveAllItemsNoCache(Collection<HuId> huIds);
 

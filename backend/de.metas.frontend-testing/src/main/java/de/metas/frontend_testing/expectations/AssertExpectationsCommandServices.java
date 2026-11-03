@@ -4,13 +4,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_Inventory_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -102,6 +102,7 @@ import java.util.stream.Collectors;
 public class AssertExpectationsCommandServices
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -307,13 +308,9 @@ public class AssertExpectationsCommandServices
 		return inventoryCandidateService.getInventoryCandidatesByHUId(huId);
 	}
 
-	public int countHUStoragesByProductId(@NonNull final ProductId productId)
+	public int countActiveHUsByProductId(@NonNull final ProductId productId)
 	{
-		return queryBL.createQueryBuilder(I_M_HU_Storage.class)
-				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, productId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.count();
+		return handlingUnitsDAO.countActiveHUsByProductId(productId);
 	}
 
 	public int countInventoryLinesByProductId(@NonNull final ProductId productId)
