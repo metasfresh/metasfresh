@@ -8,7 +8,8 @@ import de.metas.security.RoleId;
 import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.QueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -19,9 +20,13 @@ import org.compiere.model.I_Mobile_Application_Action_Access;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * {@code createMobileApplicationAccess} is an upsert: a role usually already has an allow-all access row to every
@@ -32,7 +37,8 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 {
 	private static final RoleId ROLE_ID = RoleId.ofRepoId(1000046);
 
-	private final MobileApplicationPermissionsRepository repository = new MobileApplicationPermissionsRepository();
+	private MobileApplicationPermissionsRepository repository;
+	private ActionAccessQueryCountingQueryBL queryBL;
 	private MobileApplicationRepoId applicationId;
 	private MobileApplicationActionId actionId;
 	private MobileApplicationActionId otherActionId;
@@ -41,6 +47,12 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		// the repository gets its IQueryBL when constructed, so register the counting replacement first
+		queryBL = new ActionAccessQueryCountingQueryBL();
+		Services.registerService(IQueryBL.class, queryBL);
+		repository = new MobileApplicationPermissionsRepository();
+
 		final I_Mobile_Application application = InterfaceWrapperHelper.newInstance(I_Mobile_Application.class);
 		application.setValue("huManager");
 		application.setName("HU Manager");
@@ -116,26 +128,35 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 	}
 
 	@Test
-	void manyAllowedActions_someAlreadyHaveARow_oneRowPerAction_existingReactivated_oneSelectForTheActionRows()
+	void manyAllowedActions_someAlreadyHaveARow_oneRowPerAction_existingReactivated_oneQueryForTheActionRows()
 	{
 		final MobileApplicationActionId thirdActionId = createAction("third");
 		final MobileApplicationActionId fourthActionId = createAction("fourth");
 		createActionAccess(actionId, false); // inactive, has to be reactivated
 		createActionAccess(otherActionId, true);
 
-		final POJOLookupMap db = POJOLookupMap.get();
-		final String actionAccessTable = I_Mobile_Application_Action_Access.Table_Name;
-		final int selectsBefore = db.getSelectCount(actionAccessTable);
+		final int queriesBefore = queryBL.actionAccessQueryCount.get();
 
 		repository.createMobileApplicationAccess(request().allowAllActions(false)
 				.allowedActionIds(ImmutableSet.of(actionId, otherActionId, thirdActionId, fourthActionId)).build());
 
-		assertThat(db.getSelectCount(actionAccessTable) - selectsBefore).as("selects on " + actionAccessTable).isEqualTo(1);
+		assertThat(queryBL.actionAccessQueryCount.get() - queriesBefore).as("queries on " + I_Mobile_Application_Action_Access.Table_Name).isEqualTo(1);
 		final List<I_Mobile_Application_Action_Access> rows = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Mobile_Application_Action_Access.class).create().list();
 		assertThat(rows).hasSize(4).allMatch(I_Mobile_Application_Action_Access::isActive);
 		assertThat(rows).extracting(I_Mobile_Application_Action_Access::getMobile_Application_Action_ID)
 				.containsExactlyInAnyOrder(actionId.getRepoId(), otherActionId.getRepoId(), thirdActionId.getRepoId(), fourthActionId.getRepoId());
+	}
+
+	@Test
+	void duplicateRowsOfOneRoleAndAction_failLoud()
+	{
+		createActionAccess(actionId, true);
+		createActionAccess(actionId, true);
+
+		assertThatThrownBy(() -> repository.createMobileApplicationAccess(request().allowAllActions(false)
+				.allowedActionIds(ImmutableSet.of(actionId)).build()))
+				.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	private MobileApplicationActionId createAction(final String internalName)
@@ -155,5 +176,21 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 		row.setMobile_Application_Action_ID(id.getRepoId());
 		row.setIsActive(active);
 		InterfaceWrapperHelper.saveRecord(row);
+	}
+
+	/** Counts the {@link I_Mobile_Application_Action_Access} query builders it creates. */
+	private static class ActionAccessQueryCountingQueryBL extends QueryBL
+	{
+		final AtomicInteger actionAccessQueryCount = new AtomicInteger();
+
+		@Override
+		public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass, final Properties ctx, @Nullable final String trxName)
+		{
+			if (I_Mobile_Application_Action_Access.class.equals(modelClass))
+			{
+				actionAccessQueryCount.incrementAndGet();
+			}
+			return super.createQueryBuilder(modelClass, ctx, trxName);
+		}
 	}
 }

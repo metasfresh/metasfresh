@@ -129,8 +129,7 @@ public class MobileApplicationPermissionsRepository
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						row -> MobileApplicationActionId.ofRepoId(row.getMobile_Application_Action_ID()),
-						row -> row,
-						(first, second) -> first));
+						row -> row)); // fail-loud on duplicate rows of one role+action, as the former firstOnly() per action did
 
 		for (final MobileApplicationActionId actionId : actionIds)
 		{
