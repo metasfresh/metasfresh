@@ -231,7 +231,7 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_ErrorDirectory = "ErrorDirectory";
 
 	/**
-	 * Set External System Outbound Endpoint.
+	 * Set External System Endpoint.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -240,7 +240,7 @@ public interface I_ExternalSystem_Endpoint
 	void setExternalSystem_Endpoint_ID (int ExternalSystem_Endpoint_ID);
 
 	/**
-	 * Get External System Outbound Endpoint.
+	 * Get External System Endpoint.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -250,6 +250,29 @@ public interface I_ExternalSystem_Endpoint
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_ExternalSystem_Endpoint_ID = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "ExternalSystem_Endpoint_ID", null);
 	String COLUMNNAME_ExternalSystem_Endpoint_ID = "ExternalSystem_Endpoint_ID";
+
+	/**
+	 * Set Frequency.
+	 * Frequency of events
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFrequency (int Frequency);
+
+	/**
+	 * Get Frequency.
+	 * Frequency of events
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFrequency();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_Frequency = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "Frequency", null);
+	String COLUMNNAME_Frequency = "Frequency";
 
 	/**
 	 * Set HTTP Endpoint.
@@ -273,6 +296,43 @@ public interface I_ExternalSystem_Endpoint
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_HttpEndPoint = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "HttpEndPoint", null);
 	String COLUMNNAME_HttpEndPoint = "HttpEndPoint";
+
+	/**
+	 * Set Import Filename Pattern.
+	 * Changes the resulting name of an imported file — for the attachment on the record and for the copy in the directory for processed or failed files. Placeholders: 
+{
+filename}
+ (filename without extension), 
+{
+timestamp}
+ (yyyyMMdd_HHmmss);
+ the source file's extension is appended automatically. Empty: name remains unchanged.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setImportFileNamePattern (@Nullable java.lang.String ImportFileNamePattern);
+
+	/**
+	 * Get Import Filename Pattern.
+	 * Changes the resulting name of an imported file — for the attachment on the record and for the copy in the directory for processed or failed files. Placeholders: 
+{
+filename}
+ (filename without extension), 
+{
+timestamp}
+ (yyyyMMdd_HHmmss);
+ the source file's extension is appended automatically. Empty: name remains unchanged.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getImportFileNamePattern();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_ImportFileNamePattern = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "ImportFileNamePattern", null);
+	String COLUMNNAME_ImportFileNamePattern = "ImportFileNamePattern";
 
 	/**
 	 * Set Active.
@@ -342,6 +402,29 @@ public interface I_ExternalSystem_Endpoint
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_IsFileUpload = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "IsFileUpload", null);
 	String COLUMNNAME_IsFileUpload = "IsFileUpload";
+
+	/**
+	 * Set Local Root Location.
+	 * Local machine root location
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLocalRootLocation (@Nullable java.lang.String LocalRootLocation);
+
+	/**
+	 * Get Local Root Location.
+	 * Local machine root location
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLocalRootLocation();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_LocalRootLocation = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "LocalRootLocation", null);
+	String COLUMNNAME_LocalRootLocation = "LocalRootLocation";
 
 	/**
 	 * Set Login User Name.

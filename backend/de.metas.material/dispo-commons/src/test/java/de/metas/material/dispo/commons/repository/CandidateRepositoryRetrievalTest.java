@@ -158,6 +158,40 @@ public class CandidateRepositoryRetrievalTest
 				.containsExactly(CandidateId.ofRepoId(validCandidate.getMD_Candidate_ID()));
 	}
 
+	/**
+	 * A {@code STOCK} candidate is not "drifted legacy data" - it is the most common candidate type (every
+	 * demand/supply candidate has one). The {@link Candidate} constructor already knows to skip
+	 * {@link Candidate#validateNonStockCandidate()} for it ({@code type != CandidateType.STOCK}), and the
+	 * tolerant path's explicit call must mirror that, or every {@code STOCK} row is misclassified as failing
+	 * validation, logged as drifted, and silently dropped from the result.
+	 */
+	@Test
+	public void retrieveOrderedByDateAndSeqNoTolerant_keepsStockCandidate()
+	{
+		final int productId = 5000;
+		final int warehouseId = 6000;
+
+		final I_MD_Candidate stockCandidate = newInstance(I_MD_Candidate.class);
+		stockCandidate.setDateProjected(SystemTime.asTimestamp());
+		stockCandidate.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK);
+		stockCandidate.setM_Product_ID(productId);
+		stockCandidate.setM_Warehouse_ID(warehouseId);
+		save(stockCandidate);
+
+		final CandidatesQuery query = CandidatesQuery.builder()
+				.materialDescriptorQuery(MaterialDescriptorQuery.builder()
+						.productId(productId)
+						.warehouseId(WarehouseId.ofRepoId(warehouseId))
+						.customer(BPartnerClassifier.any())
+						.build())
+				.build();
+
+		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNoTolerant(query);
+
+		assertThat(result).extracting(Candidate::getId)
+				.containsExactly(CandidateId.ofRepoId(stockCandidate.getMD_Candidate_ID()));
+	}
+
 	private I_MD_Candidate createCandidateRecord(@NonNull final Timestamp dateProjected)
 	{
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);

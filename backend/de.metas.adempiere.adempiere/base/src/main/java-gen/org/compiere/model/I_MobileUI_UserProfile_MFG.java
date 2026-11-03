@@ -236,6 +236,29 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
 
 	/**
+	 * Set Finished goods: require catch-weight scan.
+	 * Receiving a catch-weight finished good at production receipt requires a scan.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsFinishedGoodsCatchWeightScanRequired (@Nullable java.lang.String IsFinishedGoodsCatchWeightScanRequired);
+
+	/**
+	 * Get Finished goods: require catch-weight scan.
+	 * Receiving a catch-weight finished good at production receipt requires a scan.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsFinishedGoodsCatchWeightScanRequired();
+
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsFinishedGoodsCatchWeightScanRequired = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsFinishedGoodsCatchWeightScanRequired", null);
+	String COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired = "IsFinishedGoodsCatchWeightScanRequired";
+
+	/**
 	 * Set Workstation Scan Required.
 	 * User must scan a workstation QR code before starting manufacturing work. Only orders for the assigned workstation are displayed.
 	 *

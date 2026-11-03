@@ -221,4 +221,23 @@ describe('EditableAttributesSection', () => {
 
     expect(screen.getByTestId('attr-LotNumber-field')).toHaveValue('LOT-0001');
   });
+
+  it('starts with the given initial values and emits them only together with an edit', () => {
+    const onFieldChange = jest.fn();
+    render(
+      <EditableAttributesSection
+        attributes={ATTRIBUTES}
+        initialValuesByCode={{ LotNumber: '26-0042', NetWeight: '' }}
+        onFieldChange={onFieldChange}
+      />
+    );
+
+    expect(screen.getByTestId('attr-LotNumber-field')).toHaveValue('26-0042');
+    expect(screen.getByTestId('attr-NetWeight-field')).toHaveValue(null);
+    expect(onFieldChange).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByTestId('attr-SizeCM-field'), { target: { value: 'S' } });
+
+    expect(onFieldChange).toHaveBeenLastCalledWith({ LotNumber: '26-0042', SizeCM: 'S' });
+  });
 });

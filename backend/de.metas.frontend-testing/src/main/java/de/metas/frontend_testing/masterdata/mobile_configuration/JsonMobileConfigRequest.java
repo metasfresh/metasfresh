@@ -46,6 +46,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean allowCompletingPartialPickingJob;
 		@Nullable Boolean shipOnCloseLU;
+		@Nullable Boolean catchWeightTUPickingEnabled;
 
 		@Nullable Set<PickToStructure> pickTo;
 		@Nullable Set<PickAttribute> readAttributes;
@@ -151,5 +152,6 @@ public class JsonMobileConfigRequest
 		// Client-level (MobileUI_MFG_Config), not per-user: see MobileConfigManufacturingCommand.
 		@Nullable Boolean isAllowEmptyingHUs;
 		@Nullable Boolean isConfirmEmptyingHU;
+		@Nullable Boolean isFinishedGoodsCatchWeightScanRequired;
 	}
 }

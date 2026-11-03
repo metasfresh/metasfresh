@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
@@ -507,6 +508,47 @@ test('Undo discards unsaved changes and reloads from backend', async ({ page }) 
     await GRAIScreen.tapUndoButton();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 2 });
     await GRAIScreen.expectSendButtonDisabled();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('A GRAI scanned while Send is still in flight is kept and can be sent', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI Send');
+    allure.severity('critical');
+
+    await createMasterdataAndScanLU({ page });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100000000001' });
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100000000002' });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 2 });
+
+    // The user taps Send and, without waiting for the answer, scans the next GRAI
+    const sendResponse = await GRAIScreen.holdNextSendResponse();
+    await GRAIScreen.tapSendButtonWithoutWaiting();
+    await test.step('Send request carries the 2 GRAIs on screen at tap time', async () => {
+        expect(await sendResponse.sentGraiCodes).toEqual([graiChipText(1), graiChipText(2)]);
+    });
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100000000003' });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+
+    // The answer arrives: the 3rd GRAI is still there and still unsaved
+    sendResponse.release();
+    await GRAIScreen.waitForSendResponseHandled();
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: [graiChipText(1), graiChipText(2), graiChipText(3)] });
+    await GRAIScreen.expectSendButtonEnabled();
+    await GRAIScreen.expectUndoButtonEnabled();
+
+    // A second Send saves all 3
+    await GRAIScreen.tapSendButton();
+    await GRAIScreen.expectSendButtonDisabled();
+
+    // Verify backend persistence: reload from backend, all 3 GRAIs survived the round-trip
+    await GRAIScreen.reloadFromBackend();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: [graiChipText(1), graiChipText(2), graiChipText(3)] });
 });
 
 // noinspection JSUnusedLocalSymbols

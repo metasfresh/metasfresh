@@ -698,9 +698,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 			// Fire the side effects that ReceiptScheduleBL.reopen()'s onAfterReopen listener would have done.
 			// orderBL.reopenLine(orderLine) was already called above.
-			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
-			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
-			invoiceCandBL.openInvoiceCandidatesByOrderLineId(orderLineId);
+			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 		}
 	}
 
@@ -726,10 +724,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			InterfaceWrapperHelper.refresh(orderLine);
 			orderBL.reopenLine(orderLine);
 
-			// Undo the close's Processed_Override=Y too, or the reactivated order's candidates can never be invoiced.
-			// openDeliveryInvoiceCandidatesByOrderLineId is deliberately NOT called: IsDeliveryClosed is display-only
-			// and self-heals on the next complete - see reopenReceiptSchedulesForOrder.
-			invoiceCandBL.openInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+			// Undo the close's IsDeliveryClosed=Y on the candidates too: with nothing received, it would make them processed
+			// (see InvoiceCandBL.updateProcessedFlag), but the reactivated order's candidates must stay invoiceable.
+			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 		}
 	}
 

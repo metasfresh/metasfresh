@@ -54,6 +54,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -68,6 +69,7 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.PInstanceId;
+import de.metas.project.ProjectId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -99,7 +101,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -134,6 +135,7 @@ import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsUpdateLocati
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsCompleteInvoices;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsDeliveryDateAsInvoiceDate;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsPartialInvoice;
+import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_OnlyApprovedForInvoicing;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_OverrideDueDate;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
@@ -144,6 +146,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Effective_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Discount_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule;
@@ -365,6 +368,31 @@ public class C_Invoice_Candidate_StepDef
 				});
 	}
 
+	/**
+	 * Asserts that NO {@code C_Invoice_Candidate} at all carries the given {@code ExternalHeaderId} — the
+	 * counterpart of {@code after not more than (.*)s, locate C_Invoice_Candidates by externalHeaderId}.
+	 * Used to prove that a rejected REST call left nothing behind; inactive records count as "left behind"
+	 * too, so no active-records filter is applied.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then there is no C_Invoice_Candidate with ExternalHeaderId TC12_Header
+	 * </pre>
+	 */
+	@And("^there is no C_Invoice_Candidate with ExternalHeaderId (.*)$")
+	public void validate_no_C_Invoice_Candidate_for_externalHeaderId(@NonNull final String externalHeaderId)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_ExternalHeaderId, externalHeaderId)
+				.create()
+				.list(I_C_Invoice_Candidate.class);
+
+		assertThat(invoiceCandidates)
+				.as("C_Invoice_Candidate records with ExternalHeaderId=" + externalHeaderId)
+				.isEmpty();
+	}
+
 	@And("^there is no C_Invoice_Candidate for C_Order (.*)$")
 	public void validate_no_C_Invoice_Candidate_created(@NonNull final String orderIdentifier)
 	{
@@ -378,6 +406,23 @@ public class C_Invoice_Candidate_StepDef
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(order);
 		Assertions.assertThat(invoiceCandidates).isEmpty();
+	}
+
+	/**
+	 * Deletes an open invoice candidate, like a user does it in the invoice candidates window.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the invoice candidate identified by salesIC is deleted
+	 * </pre>
+	 */
+	@And("^the invoice candidate identified by (.*) is deleted$")
+	public void invoice_candidate_is_deleted(@NonNull final String identifier)
+	{
+		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(identifier);
+		assertThat(invoiceCandidate.isProcessed()).as("only an open invoice candidate can be deleted").isFalse();
+		InterfaceWrapperHelper.delete(invoiceCandidate);
 	}
 
 	@And("recompute invoice candidates if required")
@@ -571,11 +616,17 @@ public class C_Invoice_Candidate_StepDef
 	 *   <li>{@code QtyEntered} (optional)</li>
 	 *   <li>{@code QtyInvoiced} (optional)</li>
 	 *   <li>{@code NetAmtToInvoice} (optional)</li>
+	 *   <li>{@code NetAmtInvoiced} (optional) — compared by value, ignoring the scale</li>
+	 *   <li>{@code IsError} (optional)</li>
 	 *   <li>{@code C_Order_ID} (optional)</li>
 	 *   <li>{@code C_OrderLine_ID} (optional)</li>
 	 *   <li>{@code PaymentRule} (optional)</li>
 	 *   <li>{@code M_Product_ID} (optional)</li>
 	 *   <li>{@code Processed} (optional)</li>
+	 *   <li>{@code C_Tax_ID} (optional, identifier-ref) — expected tax as derived by the pricing engine</li>
+	 *   <li>{@code C_Tax_Override_ID} (optional, identifier-ref, null-allowed) — expected tax override;
+	 *       pass {@code null} to assert that no override is set</li>
+	 *   <li>{@code C_Tax_Effective_ID} (optional, identifier-ref)</li>
 	 *   <li>{@code IsWithoutCharge} (optional)</li>
 	 *   <li>{@code Reason} (optional)</li>
 	 *   <li>{@code IsAutoInvoice} (optional) — expected auto-invoice flag</li>
@@ -583,6 +634,9 @@ public class C_Invoice_Candidate_StepDef
 	 *   <li>{@code InvoiceRule_Override} (optional, null-allowed) — expected invoice-rule override; pass {@code null} to assert that no override is set</li>
 	 *   <li>{@code IsFreightCost} (optional) — expected freight-cost flag, derived from the product's ProductType</li>
 	 *   <li>{@code DeliveryDate} (optional) — expected delivery date</li>
+	 *   <li>{@code C_Project_ID} (optional, identifier-ref, null-allowed) — expected project;
+	 *       pass {@code null} to assert that no project is set</li>
+	 *   <li>{@code PriceEntered_Override} (optional) — expected override price</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -662,6 +716,12 @@ public class C_Invoice_Candidate_StepDef
 						row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice)
 								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getNetAmtToInvoice()).isEqualTo(expected));
 
+						row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getNetAmtInvoiced()).as(I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced).isEqualByComparingTo(expected));
+
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsError)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isError()).as(I_C_Invoice_Candidate.COLUMNNAME_IsError).isEqualTo(expected));
+
 						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
 								.map(orderTable::getId)
 								.ifPresent(orderId -> softly.assertThat(finalInvoiceCandidate.getC_Order_ID()).isEqualTo(orderId.getRepoId()));
@@ -694,18 +754,49 @@ public class C_Invoice_Candidate_StepDef
 						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_Processed)
 								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isProcessed()).isEqualTo(expected));
 
+						row.getAsOptionalBoolean(COLUMNNAME_ApprovalForInvoicing)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isApprovalForInvoicing())
+										.as("ApprovalForInvoicing")
+										.isEqualTo(expected));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_Processed_Override)
+								// pass the `null` placeholder to assert that NO override is set
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getProcessed_Override())
+										.as("Processed_Override")
+										.isEqualTo(DataTableUtil.nullToken2Null(expected)));
+
 						row.getAsOptionalIdentifier(COLUMNNAME_C_Tax_Effective_ID)
 								.map(taxTable::getId)
 								.ifPresent(taxEffectiveId -> softly.assertThat(finalInvoiceCandidate.getC_Tax_Effective_ID()).isEqualTo(taxEffectiveId.getRepoId()));
+
+						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID)
+								.map(taxTable::getId)
+								.ifPresent(taxId -> softly.assertThat(finalInvoiceCandidate.getC_Tax_ID()).as("C_Tax_ID").isEqualTo(taxId.getRepoId()));
+
+						// pass the `null` placeholder to assert that NO override is set
+						row.getAsOptionalIdentifier(COLUMNNAME_C_Tax_Override_ID)
+								.ifPresent(taxOverrideIdentifier -> {
+									if (taxOverrideIdentifier.isNotNullPlaceholder())
+									{
+										softly.assertThat(finalInvoiceCandidate.getC_Tax_Override_ID())
+												.as("C_Tax_Override_ID")
+												.isEqualTo(taxTable.getId(taxOverrideIdentifier).getRepoId());
+									}
+									else
+									{
+										softly.assertThat(finalInvoiceCandidate.getC_Tax_Override_ID())
+												.as("C_Tax_Override_ID")
+												.isZero();
+									}
+								});
 
 						row.getAsOptionalBoolean(COLUMNNAME_IsToClear)
 								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isToClear()).isEqualTo(expected));
 
 						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_Project_ID)
-								.ifPresent(projectIdentifier -> {
-									final I_C_Project project = projectTable.get(projectIdentifier);
-									softly.assertThat(finalInvoiceCandidate.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
-								});
+								.ifPresent(projectIdentifier -> softly.assertThat(ProjectId.ofRepoIdOrNull(finalInvoiceCandidate.getC_Project_ID()))
+										.as("C_Project_ID")
+										.isEqualTo(projectIdentifier.lookupIdIn(projectTable)));
 
 						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsWithoutCharge)
 								.ifPresent(isWithoutCharge -> softly.assertThat(finalInvoiceCandidate.isWithoutCharge()).as("IsWithoutCharge").isEqualTo(isWithoutCharge));
@@ -746,6 +837,9 @@ public class C_Invoice_Candidate_StepDef
 
 						row.getAsOptionalLocalDate(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
 								.ifPresent(deliveryDate -> softly.assertThat(TimeUtil.asLocalDate(finalInvoiceCandidate.getDeliveryDate())).as("DeliveryDate").isEqualTo(deliveryDate));
+
+						row.getAsOptionalBigDecimal(COLUMNNAME_PriceEntered_Override)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getPriceEntered_Override()).as("PriceEntered_Override").isEqualByComparingTo(expected));
 
 						softly.assertAll();
 					}
@@ -896,6 +990,28 @@ public class C_Invoice_Candidate_StepDef
 		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 	}
 
+	/**
+	 * Like {@link #generateInvoices(ImmutableSet)}, but the invoices are dated {@code dateInvoiced}, as when the user sets the invoice date on invoicing.
+	 * The invoices are created asynchronously; the caller waits for them.
+	 */
+	public void generateInvoices(final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds, @NonNull final LocalDate dateInvoiced)
+	{
+		Check.assumeNotEmpty(invoiceCandidateIds, "invoiceCandidateIds is not empty");
+
+		waitUntilValid(invoiceCandidateIds, 120);
+
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(false);
+		invoicingParams.setDateInvoiced(dateInvoiced);
+
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, Trx.TRXNAME_None);
+		invoiceCandBL.enqueueForInvoicing()
+				.setContext(Env.getCtx())
+				.setFailIfNothingEnqueued(true)
+				.setInvoicingParams(invoicingParams)
+				.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+	}
+
 	@And("invoice candidates are not billable")
 	public void check_not_billable(@NonNull final DataTable dataTable)
 	{
@@ -942,6 +1058,39 @@ public class C_Invoice_Candidate_StepDef
 		{
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadInvoiceCandidatesByExternalHeaderId(tableRow));
 		}
+	}
+
+	/**
+	 * Marks the given invoice candidates as "to recompute" and waits until the async updater has recomputed them.
+	 *
+	 * <p>This is the regular recompute path, e.g. what happens after a shipment or an order line change. Use it when a
+	 * scenario needs a recompute and no business step triggers one, e.g. for an already invoiced candidate.</p>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code C_Invoice_Candidate_ID} — required, identifier of the invoice candidate</li>
+	 *   </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, C_Invoice_Candidates are invalidated and recomputed:
+	 *   | C_Invoice_Candidate_ID |
+	 *   | ic_1                   |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, C_Invoice_Candidates are invalidated and recomputed:$")
+	public void invalidate_and_recompute(final int timeoutSec, @NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Invoice_Candidate invoiceCandidate = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
+			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+
+			final int noOfInvalidatedCandidates = invoiceCandDAO.invalidateCand(invoiceCandidate);
+			assertThat(noOfInvalidatedCandidates).as("invalidated candidates for %s", invoiceCandidateId).isEqualTo(1);
+
+			waitUntilValid(invoiceCandidateId, timeoutSec);
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+		});
 	}
 
 	@And("^after not more than (.*)s, C_Invoice_Candidates are not marked as 'to recompute'$")
@@ -1025,6 +1174,12 @@ public class C_Invoice_Candidate_StepDef
 	 * <ul>
 	 *   <li>{@code OPT.M_Product_ID.Identifier} – when present, filters ICs by this product; required when
 	 *       the return generates multiple ICs (e.g. packing-material lines alongside the product line)</li>
+	 *   <li>{@code OPT.M_InOutLine_ID} – when present, narrows the lookup to the ICs of this specific
+	 *       return line (registered via {@code OPT.M_InOutLine_ID} on the "validate the created
+	 *       material receipt lines" step); required (instead of {@code OPT.M_Product_ID.Identifier}) when the
+	 *       return has several lines of the SAME product (e.g. two different batches returned in one visit) —
+	 *       {@code QtyDelivered}/{@code QtyOrdered} cannot disambiguate them because they are only populated by
+	 *       the candidate's own async recompute, not at creation time</li>
 	 * </ul>
 	 *
 	 * @return {@code true} if exactly one matching IC was found and stored; {@code false} if none found yet
@@ -1033,28 +1188,130 @@ public class C_Invoice_Candidate_StepDef
 	{
 		final int returnInOutId = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(shipmentTable).getM_InOut_ID();
 
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, returnInOutId);
+		// narrows to exactly this return line's own ICs when given (reliable even before the async qty recompute
+		// lands); otherwise falls back to a M_InOut(+product)-scoped query
+		final List<I_C_Invoice_Candidate> matchingCandidates = row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID)
+				.map(inoutLineTable::get)
+				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
+				.orElseGet(() -> {
+					final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+							.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, returnInOutId);
 
-		// Optional product filter — required when the return generates multiple ICs (packing-material lines alongside the product IC)
-		row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
-				.map(productIdentifier -> productIdentifier.lookupNotNullIn(productTable))
-				.ifPresent(product -> queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID()));
+					// Optional product filter — required when the return generates multiple ICs (packing-material lines alongside the product IC)
+					row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
+							.map(productIdentifier -> productIdentifier.lookupNotNullIn(productTable))
+							.ifPresent(product -> queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID()));
 
-		// firstOnlyOptional throws when >1 IC matches: pass OPT.M_Product_ID.Identifier to narrow the lookup
-		// whenever the return generates several ICs (e.g. HU packing-material lines alongside the product line).
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBuilder
-				.create()
-				.firstOnlyOptional(I_C_Invoice_Candidate.class);
+					return queryBuilder.create().list();
+				});
 
-		if (!invoiceCandidate.isPresent())
+		// pass OPT.M_InOutLine_ID / OPT.M_Product_ID.Identifier to narrow the lookup whenever the
+		// return generates several ICs (e.g. HU packing-material lines alongside the product line)
+		assertThat(matchingCandidates).as("invoice candidates for row %s", row).hasSizeLessThanOrEqualTo(1);
+
+		if (matchingCandidates.isEmpty())
 		{
 			return false;
 		}
 
-		invoiceCandTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID), invoiceCandidate.get());
+		invoiceCandTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID), matchingCandidates.get(0));
 
 		return true;
+	}
+
+	/**
+	 * Closes the one invoice candidate by hand, like the user's "close" action does for it (the WebUI process calls the plural {@code closeInvoiceCandidates}).
+	 */
+	@And("^the C_Invoice_Candidate identified by (.*) is closed by hand$")
+	public void closeInvoiceCandidateByHand(@NonNull final String invoiceCandIdentifier)
+	{
+		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+		InterfaceWrapperHelper.refresh(invoiceCandidate);
+		invoiceCandBL.closeInvoiceCandidate(invoiceCandidate);
+	}
+
+	/**
+	 * Writes the given columns of invoice candidates with plain SQL: no model interceptor, no invalidation, no recompute.
+	 * For a stored state the application does not write on its own, such as an {@code Updated} timestamp in the past.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_Candidate_ID.Identifier</b> — (required) the candidate<br>
+	 *   <b>OPT.Updated</b> — (optional) instant, e.g. {@code 2026-01-01T00:00:00Z}<br>
+	 *   <b>OPT.C_Tax_Override_ID</b> — (optional) the tax override's numeric ID, e.g. {@code 100} (Tax_Not_Found)<br>
+	 *   <b>OPT.Processed</b> — (optional) boolean, written to both {@code Processed} and {@code Processed_Calc}, e.g. to restore the state of a candidate stored before a rule existed<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_Invoice_Candidate by plain SQL, without interceptors or recompute:
+	 *   | C_Invoice_Candidate_ID.Identifier | OPT.Updated          |
+	 *   | ic1                               | 2026-01-01T00:00:00Z |
+	 * </pre>
+	 */
+	@And("update C_Invoice_Candidate by plain SQL, without interceptors or recompute:")
+	public void update_C_Invoice_Candidate_by_plain_SQL(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.forEach(row -> {
+					final I_C_Invoice_Candidate invoiceCandidate = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
+					final int invoiceCandidateId = invoiceCandidate.getC_Invoice_Candidate_ID();
+
+					row.getAsOptionalInstantTimestamp(I_C_Invoice_Candidate.COLUMNNAME_Updated)
+							.ifPresent(updated -> DB.executeUpdateAndThrowExceptionOnFail(
+									"UPDATE C_Invoice_Candidate SET Updated = ? WHERE C_Invoice_Candidate_ID = ?",
+									new Object[] { updated, invoiceCandidateId },
+									ITrx.TRXNAME_None));
+
+					row.getAsOptionalInt(I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID)
+							.ifPresent(taxId -> DB.executeUpdateAndThrowExceptionOnFail(
+									"UPDATE C_Invoice_Candidate SET C_Tax_Override_ID = ? WHERE C_Invoice_Candidate_ID = ?",
+									new Object[] { taxId, invoiceCandidateId },
+									ITrx.TRXNAME_None));
+
+					row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_Processed)
+							.ifPresent(processed -> DB.executeUpdateAndThrowExceptionOnFail(
+									"UPDATE C_Invoice_Candidate SET Processed = ?, Processed_Calc = ? WHERE C_Invoice_Candidate_ID = ?",
+									new Object[] { processed ? "Y" : "N", processed ? "Y" : "N", invoiceCandidateId },
+									ITrx.TRXNAME_None));
+
+					InterfaceWrapperHelper.refresh(invoiceCandidate);
+				});
+	}
+
+	/**
+	 * Asserts the stored state of invoice candidates as it is right now, i.e. without waiting for a pending recompute
+	 * (unlike {@code validate C_Invoice_Candidate:}, which waits for it and so cannot see a state that the recompute corrects).
+	 * Use it together with {@code new "UpdateInvalidInvoiceCandidatesWorkpackageProcessor" workpackages are held}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_Candidate_ID.Identifier</b> — (required) the candidate<br>
+	 *   <b>OPT.Processed</b> — (optional) boolean<br>
+	 *   <b>OPT.ApprovalForInvoicing</b> — (optional) boolean<br>
+	 *   <b>OPT.IsToRecompute</b> — (optional) boolean: whether the candidate is queued for recompute ({@code C_Invoice_Candidate_Recompute}) right now<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And validate C_Invoice_Candidate as stored right now, without waiting for its recompute:
+	 *   | C_Invoice_Candidate_ID.Identifier | OPT.Processed | OPT.ApprovalForInvoicing |
+	 *   | ic1                               | false         | true                     |
+	 * </pre>
+	 */
+	@And("validate C_Invoice_Candidate as stored right now, without waiting for its recompute:")
+	public void validate_C_Invoice_Candidate_as_stored_now(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.forEach(row -> {
+					final I_C_Invoice_Candidate invoiceCandidateRecord = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
+					InterfaceWrapperHelper.refresh(invoiceCandidateRecord);
+
+					final SoftAssertions softly = new SoftAssertions();
+					row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_Processed)
+							.ifPresent(expected -> softly.assertThat(invoiceCandidateRecord.isProcessed()).as("Processed").isEqualTo(expected));
+					row.getAsOptionalBoolean(COLUMNNAME_ApprovalForInvoicing)
+							.ifPresent(expected -> softly.assertThat(invoiceCandidateRecord.isApprovalForInvoicing()).as("ApprovalForInvoicing").isEqualTo(expected));
+					row.getAsOptionalBoolean("IsToRecompute")
+							.ifPresent(expected -> softly.assertThat(invoiceCandDAO.isToRecompute(invoiceCandidateRecord)).as("IsToRecompute").isEqualTo(expected));
+					softly.assertAll();
+				});
 	}
 
 	@And("update invoice candidates")
@@ -1303,6 +1560,7 @@ public class C_Invoice_Candidate_StepDef
 		firstRow.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
 		firstRow.getAsOptionalLocalDate(PARA_OverrideDueDate).ifPresent(invoicingParams::setOverrideDueDate);
 		firstRow.getAsOptionalBoolean(PARA_IsPartialInvoice).ifPresent(invoicingParams::setIsPartialInvoice);
+		firstRow.getAsOptionalBoolean(PARA_OnlyApprovedForInvoicing).ifPresent(invoicingParams::setOnlyApprovedForInvoicing);
 
 		final boolean completeInvoices = firstRow.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
 		invoicingParams.setCompleteInvoices(completeInvoices);
@@ -1314,11 +1572,12 @@ public class C_Invoice_Candidate_StepDef
 		}
 
 		// Create selection with all invoice candidate IDs
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(
-				invoiceCandidateIds.stream()
-						.map(InvoiceCandidateId::getRepoId)
-						.collect(ImmutableList.toImmutableList()),
-				Trx.TRXNAME_None);
+		// like the WebUI process, only select the approved candidates when OnlyApprovedForInvoicing is set
+		final ImmutableList<Integer> selectedIds = invoiceCandidates.stream()
+				.filter(ic -> !isExcludedByApprovalFilter(ic, invoicingParams))
+				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.collect(ImmutableList.toImmutableList());
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(selectedIds, Trx.TRXNAME_None);
 
 		try
 		{
@@ -1361,6 +1620,21 @@ public class C_Invoice_Candidate_StepDef
 		assertThat(invoiceCandidateInOutLine).isNull();
 	}
 
+	/**
+	 * Mirrors the WebUI invoicing process, which only selects approved candidates when {@code OnlyApprovedForInvoicing} is set:
+	 * {@code prepareAndEnqueueSelection} flags the whole selection as approved before the enqueuer's own approval check runs,
+	 * so that check alone would never exclude anything.
+	 */
+	private static boolean isExcludedByApprovalFilter(@NonNull final I_C_Invoice_Candidate invoiceCandidate, @NonNull final IInvoicingParams invoicingParams)
+	{
+		if (!invoicingParams.isOnlyApprovedForInvoicing())
+		{
+			return false;
+		}
+		InterfaceWrapperHelper.refresh(invoiceCandidate);
+		return !invoiceCandidate.isApprovalForInvoicing();
+	}
+
 	public void updateInvoiceCandidate(@NonNull final DataTableRow row)
 	{
 		final I_C_Invoice_Candidate invoiceCandidateRecord = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
@@ -1379,6 +1653,9 @@ public class C_Invoice_Candidate_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_InvoiceRule_Override)
 				.ifPresent(invoiceCandidateRecord::setInvoiceRule_Override);
+
+		row.getAsOptionalBoolean(COLUMNNAME_ApprovalForInvoicing)
+				.ifPresent(invoiceCandidateRecord::setApprovalForInvoicing);
 
 		row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID)
 				.map(taxTable::getId)

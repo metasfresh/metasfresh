@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0360_Transport_Extralogistik
 @allure.label.feature:F29050_Delivery_Planning
-@ghActions:run_on_executor5
+@ghActions:run_on_executor10
 Feature: Delivery planning quantities
 
   Splitting a delivery planning divides its planned figures across the resulting plannings; each

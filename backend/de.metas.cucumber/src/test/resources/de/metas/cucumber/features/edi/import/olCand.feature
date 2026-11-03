@@ -561,3 +561,582 @@ Feature: import order candidate to metasfresh
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
       | olCand_ver             | huItemProduct_ver_new                  | product                 | 30         | PORef_ver       |
+
+
+  # ####################################################################################################
+  # ####################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S_LenientGln_TC1
+  Scenario: lenient GLN lookup — non-matching Lookup_Label resolves by GLN (AC1)
+  _Given one C_BPartner with a main location GLN and a Lookup_Label
+  _When importing OLCand via EDIImportXML whose C_BPartner selector has the same GLN but a Lookup_Label that is not in the masterdata
+  _Then C_OLCand is created and resolved to the seeded C_BPartner and its location
+
+    Given metasfresh contains C_BPartners:
+      | Identifier          | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label    |
+      | bpartner_lenient    | LenientBPartner    | N            | Y              | ps_1                          | label_in_masterdata |
+      | orgBPartner_lenient | LenientOrgBPartner | N            | Y              | ps_1                          | label_org           |
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
+      | bpartner_lenient         | product                 | 4000003000003 | false               |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name              | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
+      | huItemProduct_lenient              | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_Lenient x 10 PCE | PCE                   | bpartner_lenient             |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLocation_lenient     | 4000001000005 | bpartner_lenient         | false        |
+      | bpLocation_org_lenient | 4000002000004 | orgBPartner_lenient      | false        |
+
+    When send message to RabbitMQ queue defined by:impProcessor
+  """
+<?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
+      <AD_DataDestination_ID>
+        <InternalName>DEST.de.metas.ordercandidate</InternalName>
+      </AD_DataDestination_ID>
+      <AD_Org_ID>
+      <GLN>4000002000004</GLN>
+      </AD_Org_ID>
+      <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
+      <C_BPartner_ID>
+        <GLN>4000001000005</GLN>
+        <Lookup_Label>label_not_in_the_masterdata</Lookup_Label>
+      </C_BPartner_ID>
+      <C_BPartner_Location_ID>
+        <C_BPartner_ID>
+          <GLN>4000001000005</GLN>
+          <Lookup_Label>label_not_in_the_masterdata</Lookup_Label>
+        </C_BPartner_ID>
+        <GLN>4000001000005</GLN>
+      </C_BPartner_Location_ID>
+      <C_Currency_ID>
+        <ISO_Code>EUR</ISO_Code>
+      </C_Currency_ID>
+      <C_UOM_ID>
+        <X12DE355>KGM</X12DE355>
+      </C_UOM_ID>
+      <DateCandidate>2022-10-17+03:00</DateCandidate>
+      <DeliveryRule>F</DeliveryRule>
+      <DeliveryViaRule>S</DeliveryViaRule>
+      <IsManualPrice>Y</IsManualPrice>
+      <M_Product_ID>
+        <UPC>4000003000003</UPC>
+        <GLN>4000001000005</GLN>
+      </M_Product_ID>
+      <M_HU_PI_Item_Product_ID>
+        <UPC>4000003000003</UPC>
+        <GLN>4000001000005</GLN>
+      </M_HU_PI_Item_Product_ID>
+      <PriceEntered>5</PriceEntered>
+      <QtyEntered>10</QtyEntered>
+      <POReference>PORef_lenient</POReference>
+      <DatePromised>2022-11-20T23:59:59+03:00</DatePromised>
+    </EDI_Imp_C_OLCand>
+"""
+
+    Then after not more than 120s, C_OLCand is found
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.POReference | OPT.IMP_Processor_ID.Identifier |
+      | olCand_lenient         | Shopware6            | product      | bpartner_lenient             | 10         | PORef_lenient   | impProcessor                    |
+
+    And validate C_OLCand:
+      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
+      | olCand_lenient         | bpartner_lenient         | bpLocation_lenient                | product                 | 10         | PORef_lenient   |
+
+
+  # ####################################################################################################
+  # ####################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S_LenientGln_TC2
+  Scenario: lenient GLN lookup — matching Lookup_Label still selects the partner by label
+  _Given two C_BPartners that share a main location GLN and differ in Lookup_Label
+  _When importing OLCand via EDIImportXML whose C_BPartner selector carries the Lookup_Label of the second one
+  _Then C_OLCand is created and resolved to the partner owning that label
+
+    Given metasfresh contains C_BPartners:
+      | Identifier           | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label |
+      | bpartner_other_match | BpartnerOther_match | N            | Y              | ps_1                          | label_other      |
+      | bpartner_match       | Bpartner_match      | N            | Y              | ps_1                          | label_match      |
+      | orgBPartner_match    | OrgBPartner_match   | N            | Y              | ps_1                          | label_org_match  |
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
+      | bpartner_match           | product                 | 4000013000002 | false               |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name            | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
+      | huItemProduct_match                | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_match x 10 PCE | PCE                   | bpartner_match               |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLocation_other_match | 4000011000004 | bpartner_other_match     | false        |
+      | bpLocation_match       | 4000011000004 | bpartner_match           | false        |
+      | bpLocation_org_match   | 4000012000003 | orgBPartner_match        | false        |
+
+    When send message to RabbitMQ queue defined by:impProcessor
+  """
+<?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
+      <AD_DataDestination_ID>
+        <InternalName>DEST.de.metas.ordercandidate</InternalName>
+      </AD_DataDestination_ID>
+      <AD_Org_ID>
+      <GLN>4000012000003</GLN>
+      </AD_Org_ID>
+      <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
+      <C_BPartner_ID>
+        <GLN>4000011000004</GLN>
+        <Lookup_Label>label_match</Lookup_Label>
+      </C_BPartner_ID>
+      <C_BPartner_Location_ID>
+        <C_BPartner_ID>
+          <GLN>4000011000004</GLN>
+          <Lookup_Label>label_match</Lookup_Label>
+        </C_BPartner_ID>
+        <GLN>4000011000004</GLN>
+      </C_BPartner_Location_ID>
+      <C_Currency_ID>
+        <ISO_Code>EUR</ISO_Code>
+      </C_Currency_ID>
+      <C_UOM_ID>
+        <X12DE355>KGM</X12DE355>
+      </C_UOM_ID>
+      <DateCandidate>2022-10-17+03:00</DateCandidate>
+      <DeliveryRule>F</DeliveryRule>
+      <DeliveryViaRule>S</DeliveryViaRule>
+      <IsManualPrice>Y</IsManualPrice>
+      <M_Product_ID>
+        <UPC>4000013000002</UPC>
+        <GLN>4000011000004</GLN>
+      </M_Product_ID>
+      <M_HU_PI_Item_Product_ID>
+        <UPC>4000013000002</UPC>
+        <GLN>4000011000004</GLN>
+      </M_HU_PI_Item_Product_ID>
+      <PriceEntered>5</PriceEntered>
+      <QtyEntered>10</QtyEntered>
+      <POReference>PORef_match</POReference>
+      <DatePromised>2022-11-20T23:59:59+03:00</DatePromised>
+    </EDI_Imp_C_OLCand>
+"""
+
+    Then after not more than 120s, C_OLCand is found
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.POReference | OPT.IMP_Processor_ID.Identifier |
+      | olCand_match           | Shopware6            | product      | bpartner_match               | 10         | PORef_match     | impProcessor                    |
+
+    And validate C_OLCand:
+      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
+      | olCand_match           | bpartner_match           | bpLocation_match                  | product                 | 10         | PORef_match     |
+
+
+  # ####################################################################################################
+  # ####################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S_LenientGln_TC3
+  Scenario: lenient GLN lookup — absent Lookup_Label resolves by GLN
+  _Given one C_BPartner with a main location GLN and a Lookup_Label
+  _When importing OLCand via EDIImportXML whose C_BPartner selector has the GLN and no Lookup_Label
+  _Then C_OLCand is created and resolved to the seeded C_BPartner and its location
+
+    Given metasfresh contains C_BPartners:
+      | Identifier          | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label    |
+      | bpartner_nolabel    | Bpartner_nolabel    | N            | Y              | ps_1                          | label_in_masterdata |
+      | orgBPartner_nolabel | OrgBPartner_nolabel | N            | Y              | ps_1                          | label_org_nolabel   |
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
+      | bpartner_nolabel         | product                 | 4000023000001 | false               |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name              | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
+      | huItemProduct_nolabel              | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_nolabel x 10 PCE | PCE                   | bpartner_nolabel             |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLocation_nolabel     | 4000021000003 | bpartner_nolabel         | false        |
+      | bpLocation_org_nolabel | 4000022000002 | orgBPartner_nolabel      | false        |
+
+    When send message to RabbitMQ queue defined by:impProcessor
+  """
+<?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
+      <AD_DataDestination_ID>
+        <InternalName>DEST.de.metas.ordercandidate</InternalName>
+      </AD_DataDestination_ID>
+      <AD_Org_ID>
+      <GLN>4000022000002</GLN>
+      </AD_Org_ID>
+      <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
+      <C_BPartner_ID>
+        <GLN>4000021000003</GLN>
+      </C_BPartner_ID>
+      <C_BPartner_Location_ID>
+        <C_BPartner_ID>
+          <GLN>4000021000003</GLN>
+        </C_BPartner_ID>
+        <GLN>4000021000003</GLN>
+      </C_BPartner_Location_ID>
+      <C_Currency_ID>
+        <ISO_Code>EUR</ISO_Code>
+      </C_Currency_ID>
+      <C_UOM_ID>
+        <X12DE355>KGM</X12DE355>
+      </C_UOM_ID>
+      <DateCandidate>2022-10-17+03:00</DateCandidate>
+      <DeliveryRule>F</DeliveryRule>
+      <DeliveryViaRule>S</DeliveryViaRule>
+      <IsManualPrice>Y</IsManualPrice>
+      <M_Product_ID>
+        <UPC>4000023000001</UPC>
+        <GLN>4000021000003</GLN>
+      </M_Product_ID>
+      <M_HU_PI_Item_Product_ID>
+        <UPC>4000023000001</UPC>
+        <GLN>4000021000003</GLN>
+      </M_HU_PI_Item_Product_ID>
+      <PriceEntered>5</PriceEntered>
+      <QtyEntered>10</QtyEntered>
+      <POReference>PORef_nolabel</POReference>
+      <DatePromised>2022-11-20T23:59:59+03:00</DatePromised>
+    </EDI_Imp_C_OLCand>
+"""
+
+    Then after not more than 120s, C_OLCand is found
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.POReference | OPT.IMP_Processor_ID.Identifier |
+      | olCand_nolabel         | Shopware6            | product      | bpartner_nolabel             | 10         | PORef_nolabel   | impProcessor                    |
+
+    And validate C_OLCand:
+      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
+      | olCand_nolabel         | bpartner_nolabel         | bpLocation_nolabel                | product                 | 10         | PORef_nolabel   |
+
+
+  # ####################################################################################################
+  # ####################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S_LenientGln_TC4
+  Scenario: lenient GLN lookup — import stays strict when the Lookup_Label format line is not lenient
+  _Given one C_BPartner with a main location GLN and a Lookup_Label, and the Lookup_Label format line set to IsImportLenient=N
+  _When importing OLCand via EDIImportXML whose C_BPartner selector has the same GLN but a Lookup_Label that is not in the masterdata
+  _Then the import fails because the C_BPartner cannot be resolved from the format
+
+    Given metasfresh contains C_BPartners:
+      | Identifier         | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label    |
+      | bpartner_optout    | Bpartner_optout    | N            | Y              | ps_1                          | label_in_masterdata |
+      | orgBPartner_optout | OrgBPartner_optout | N            | Y              | ps_1                          | label_org_optout    |
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
+      | bpartner_optout          | product                 | 4000033000000 | false               |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name             | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
+      | huItemProduct_optout               | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_optout x 10 PCE | PCE                   | bpartner_optout              |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier            | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLocation_optout     | 4000031000002 | bpartner_optout          | false        |
+      | bpLocation_org_optout | 4000032000001 | orgBPartner_optout       | false        |
+    And the following EXP_FormatLines are set:
+      | EXP_Format.Value                | Value        | IsImportLenient |
+      | EDI_C_BPartner_Lookup_BPL_GLN_v | Lookup_Label | N               |
+
+    When send message to RabbitMQ queue defined by:impProcessor
+  """
+<?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
+      <AD_DataDestination_ID>
+        <InternalName>DEST.de.metas.ordercandidate</InternalName>
+      </AD_DataDestination_ID>
+      <AD_Org_ID>
+      <GLN>4000032000001</GLN>
+      </AD_Org_ID>
+      <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
+      <C_BPartner_ID>
+        <GLN>4000031000002</GLN>
+        <Lookup_Label>label_not_in_the_masterdata</Lookup_Label>
+      </C_BPartner_ID>
+      <C_BPartner_Location_ID>
+        <C_BPartner_ID>
+          <GLN>4000031000002</GLN>
+          <Lookup_Label>label_not_in_the_masterdata</Lookup_Label>
+        </C_BPartner_ID>
+        <GLN>4000031000002</GLN>
+      </C_BPartner_Location_ID>
+      <C_Currency_ID>
+        <ISO_Code>EUR</ISO_Code>
+      </C_Currency_ID>
+      <C_UOM_ID>
+        <X12DE355>KGM</X12DE355>
+      </C_UOM_ID>
+      <DateCandidate>2022-10-17+03:00</DateCandidate>
+      <DeliveryRule>F</DeliveryRule>
+      <DeliveryViaRule>S</DeliveryViaRule>
+      <IsManualPrice>Y</IsManualPrice>
+      <M_Product_ID>
+        <UPC>4000033000000</UPC>
+        <GLN>4000031000002</GLN>
+      </M_Product_ID>
+      <M_HU_PI_Item_Product_ID>
+        <UPC>4000033000000</UPC>
+        <GLN>4000031000002</GLN>
+      </M_HU_PI_Item_Product_ID>
+      <PriceEntered>5</PriceEntered>
+      <QtyEntered>10</QtyEntered>
+      <POReference>PORef_optout</POReference>
+      <DatePromised>2022-11-20T23:59:59+03:00</DatePromised>
+    </EDI_Imp_C_OLCand>
+"""
+
+    Then after not more than 60s, the import of import processor impProcessor failed with:
+      | Text                                               | AD_Message                 |
+      | 4000031000002                                      |                            |
+      | Lookup_Label ILIKE '%label_not_in_the_masterdata%' |                            |
+      |                                                    | EXPObjectFormatNotResolved |
+
+
+  # ####################################################################################################
+  # ####################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S_LenientGln_TC5
+  Scenario: lenient GLN lookup — shared GLN without a replication-lookup default fails with the ambiguity message
+  _Given two C_BPartners that share a main location GLN, neither flagged as replication-lookup default
+  _When importing OLCand via EDIImportXML whose C_BPartner selector has that GLN but a Lookup_Label that is not in the masterdata
+  _Then the import fails and the error names the ambiguity (GLN, Lookup_Label, no default)
+
+    Given metasfresh contains C_BPartners:
+      | Identifier            | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label    | OPT.IsReplicationLookupDefault |
+      | bpartner_a_nodefault  | BpartnerA_nodefault   | N            | Y              | ps_1                          | label_a             | N                              |
+      | bpartner_b_nodefault  | BpartnerB_nodefault   | N            | Y              | ps_1                          | label_b             | N                              |
+      | orgBPartner_nodefault | OrgBPartner_nodefault | N            | Y              | ps_1                          | label_org_nodefault | N                              |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier               | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLocation_a_nodefault   | 4000041000001 | bpartner_a_nodefault     | false        |
+      | bpLocation_b_nodefault   | 4000041000001 | bpartner_b_nodefault     | false        |
+      | bpLocation_org_nodefault | 4000042000000 | orgBPartner_nodefault    | false        |
+
+    When send message to RabbitMQ queue defined by:impProcessor
+  """
+<?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
+      <AD_DataDestination_ID>
+        <InternalName>DEST.de.metas.ordercandidate</InternalName>
+      </AD_DataDestination_ID>
+      <AD_Org_ID>
+      <GLN>4000042000000</GLN>
+      </AD_Org_ID>
+      <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
+      <C_BPartner_ID>
+        <GLN>4000041000001</GLN>
+        <Lookup_Label>label_not_in_the_masterdata</Lookup_Label>
+      </C_BPartner_ID>
+      <C_BPartner_Location_ID>
+        <C_BPartner_ID>
+          <GLN>4000041000001</GLN>
+          <Lookup_Label>label_not_in_the_masterdata</Lookup_Label>
+        </C_BPartner_ID>
+        <GLN>4000041000001</GLN>
+      </C_BPartner_Location_ID>
+      <C_Currency_ID>
+        <ISO_Code>EUR</ISO_Code>
+      </C_Currency_ID>
+      <C_UOM_ID>
+        <X12DE355>KGM</X12DE355>
+      </C_UOM_ID>
+      <DateCandidate>2022-10-17+03:00</DateCandidate>
+      <DeliveryRule>F</DeliveryRule>
+      <DeliveryViaRule>S</DeliveryViaRule>
+      <IsManualPrice>Y</IsManualPrice>
+      <M_Product_ID>
+        <UPC>4000043000009</UPC>
+        <GLN>4000041000001</GLN>
+      </M_Product_ID>
+      <M_HU_PI_Item_Product_ID>
+        <UPC>4000043000009</UPC>
+        <GLN>4000041000001</GLN>
+      </M_HU_PI_Item_Product_ID>
+      <PriceEntered>5</PriceEntered>
+      <QtyEntered>10</QtyEntered>
+      <POReference>PORef_nodefault</POReference>
+      <DatePromised>2022-11-20T23:59:59+03:00</DatePromised>
+    </EDI_Imp_C_OLCand>
+"""
+
+    Then after not more than 60s, the import of import processor impProcessor failed with:
+      | Text                        | AD_Message                            |
+      | 4000041000001               |                                       |
+      | label_not_in_the_masterdata |                                       |
+      |                             | EDI_BPartnerLookup_AmbiguousNoDefault |
+
+
+  # ####################################################################################################
+  # ####################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S_LenientGln_TC6
+  Scenario: lenient GLN lookup — shared GLN with one replication-lookup default resolves to the default
+  _Given two C_BPartners that share a main location GLN, the second flagged as replication-lookup default
+  _When importing OLCand via EDIImportXML whose C_BPartner selector has that GLN but a Lookup_Label that is not in the masterdata
+  _Then C_OLCand is created and resolved to the flagged partner and its location
+
+    Given metasfresh contains C_BPartners:
+      | Identifier          | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label  | OPT.IsReplicationLookupDefault |
+      | bpartner_a_default  | BpartnerA_default   | N            | Y              | ps_1                          | label_a           | N                              |
+      | bpartner_b_default  | BpartnerB_default   | N            | Y              | ps_1                          | label_b           | Y                              |
+      | orgBPartner_default | OrgBPartner_default | N            | Y              | ps_1                          | label_org_default | N                              |
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
+      | bpartner_b_default       | product                 | 4000053000008 | false               |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name                | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
+      | huItemProduct_b_default            | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_B_default x 10 PCE | PCE                   | bpartner_b_default           |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLocation_a_default   | 4000051000000 | bpartner_a_default       | false        |
+      | bpLocation_b_default   | 4000051000000 | bpartner_b_default       | false        |
+      | bpLocation_org_default | 4000052000009 | orgBPartner_default      | false        |
+
+    When send message to RabbitMQ queue defined by:impProcessor
+  """
+<?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
+      <AD_DataDestination_ID>
+        <InternalName>DEST.de.metas.ordercandidate</InternalName>
+      </AD_DataDestination_ID>
+      <AD_Org_ID>
+      <GLN>4000052000009</GLN>
+      </AD_Org_ID>
+      <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
+      <C_BPartner_ID>
+        <GLN>4000051000000</GLN>
+        <Lookup_Label>label_not_in_the_masterdata</Lookup_Label>
+      </C_BPartner_ID>
+      <C_BPartner_Location_ID>
+        <C_BPartner_ID>
+          <GLN>4000051000000</GLN>
+          <Lookup_Label>label_not_in_the_masterdata</Lookup_Label>
+        </C_BPartner_ID>
+        <GLN>4000051000000</GLN>
+      </C_BPartner_Location_ID>
+      <C_Currency_ID>
+        <ISO_Code>EUR</ISO_Code>
+      </C_Currency_ID>
+      <C_UOM_ID>
+        <X12DE355>KGM</X12DE355>
+      </C_UOM_ID>
+      <DateCandidate>2022-10-17+03:00</DateCandidate>
+      <DeliveryRule>F</DeliveryRule>
+      <DeliveryViaRule>S</DeliveryViaRule>
+      <IsManualPrice>Y</IsManualPrice>
+      <M_Product_ID>
+        <UPC>4000053000008</UPC>
+        <GLN>4000051000000</GLN>
+      </M_Product_ID>
+      <M_HU_PI_Item_Product_ID>
+        <UPC>4000053000008</UPC>
+        <GLN>4000051000000</GLN>
+      </M_HU_PI_Item_Product_ID>
+      <PriceEntered>5</PriceEntered>
+      <QtyEntered>10</QtyEntered>
+      <POReference>PORef_default</POReference>
+      <DatePromised>2022-11-20T23:59:59+03:00</DatePromised>
+    </EDI_Imp_C_OLCand>
+"""
+
+    Then after not more than 120s, C_OLCand is found
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.POReference | OPT.IMP_Processor_ID.Identifier |
+      | olCand_default         | Shopware6            | product      | bpartner_b_default           | 10         | PORef_default   | impProcessor                    |
+
+    And validate C_OLCand:
+      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
+      | olCand_default         | bpartner_b_default       | bpLocation_b_default              | product                 | 10         | PORef_default   |
+
+
+  # ####################################################################################################
+  # ####################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S_LenientGln_TC7
+  Scenario: lenient GLN lookup — a location GLN entered with a trailing space is stored trimmed and is matched (AC7)
+  _Given one C_BPartner whose main location GLN was entered with a trailing space (the GLN is trimmed on save)
+  _When importing OLCand via EDIImportXML whose C_BPartner selector has the same GLN (without the space) but a Lookup_Label that is not in the masterdata
+  _Then C_OLCand is created and resolved to the seeded C_BPartner and its location
+
+    Given metasfresh contains C_BPartners:
+      | Identifier        | Name             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.Lookup_Label    |
+      | bpartner_trail    | TrailBPartner    | N            | Y              | ps_1                          | label_in_masterdata |
+      | orgBPartner_trail | TrailOrgBPartner | N            | Y              | ps_1                          | label_org           |
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
+      | bpartner_trail           | product                 | 4000073000005 | false               |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name            | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
+      | huItemProduct_trail                | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_Trail x 10 PCE | PCE                   | bpartner_trail               |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier           | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLocation_trail     | 4000071000007 | bpartner_trail           | false        |
+      | bpLocation_org_trail | 4000072000006 | orgBPartner_trail        | false        |
+    And the GLN of C_BPartner_Location "bpLocation_trail" is entered with a trailing space
+
+    When send message to RabbitMQ queue defined by:impProcessor
+  """
+<?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
+      <AD_DataDestination_ID>
+        <InternalName>DEST.de.metas.ordercandidate</InternalName>
+      </AD_DataDestination_ID>
+      <AD_Org_ID>
+      <GLN>4000072000006</GLN>
+      </AD_Org_ID>
+      <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
+      <C_BPartner_ID>
+        <GLN>4000071000007</GLN>
+        <Lookup_Label>label_not_in_the_masterdata</Lookup_Label>
+      </C_BPartner_ID>
+      <C_BPartner_Location_ID>
+        <C_BPartner_ID>
+          <GLN>4000071000007</GLN>
+          <Lookup_Label>label_not_in_the_masterdata</Lookup_Label>
+        </C_BPartner_ID>
+        <GLN>4000071000007</GLN>
+      </C_BPartner_Location_ID>
+      <C_Currency_ID>
+        <ISO_Code>EUR</ISO_Code>
+      </C_Currency_ID>
+      <C_UOM_ID>
+        <X12DE355>KGM</X12DE355>
+      </C_UOM_ID>
+      <DateCandidate>2022-10-17+03:00</DateCandidate>
+      <DeliveryRule>F</DeliveryRule>
+      <DeliveryViaRule>S</DeliveryViaRule>
+      <IsManualPrice>Y</IsManualPrice>
+      <M_Product_ID>
+        <UPC>4000073000005</UPC>
+        <GLN>4000071000007</GLN>
+      </M_Product_ID>
+      <M_HU_PI_Item_Product_ID>
+        <UPC>4000073000005</UPC>
+        <GLN>4000071000007</GLN>
+      </M_HU_PI_Item_Product_ID>
+      <PriceEntered>5</PriceEntered>
+      <QtyEntered>10</QtyEntered>
+      <POReference>PORef_trail</POReference>
+      <DatePromised>2022-11-20T23:59:59+03:00</DatePromised>
+    </EDI_Imp_C_OLCand>
+"""
+
+    Then after not more than 120s, C_OLCand is found
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.POReference | OPT.IMP_Processor_ID.Identifier |
+      | olCand_trail           | Shopware6            | product      | bpartner_trail               | 10         | PORef_trail     | impProcessor                    |
+
+    And validate C_OLCand:
+      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
+      | olCand_trail           | bpartner_trail           | bpLocation_trail                  | product                 | 10         | PORef_trail     |
