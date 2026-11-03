@@ -42,12 +42,13 @@ export const GRAIScreen = {
         await BarcodeScannerComponent.waitForInputFieldToGetEmpty();
     }),
 
-    // Scans the GRAIs one after the other as separate scans (each one ends with Enter), as fast as an
+    // Scans the GRAIs one after the other as separate scans (each one explicitly ended with Enter: the scanner's type() sends
+    // no terminator by default, without it back-to-back codes would merge into one read), as fast as an
     // operator can trigger them: no waiting in between for the previous scan to be consumed.
     scanGraiBarcodesBackToBack: async ({ barcodeStrings }) => await test.step(`${NAME} - Scan ${barcodeStrings.length} GRAI barcodes back to back`, async () => {
         await GRAIScreen.expectVisible();
         for (const barcodeString of barcodeStrings) {
-            await BarcodeScannerComponent.type(barcodeString);
+            await BarcodeScannerComponent.type({ scannedCode: barcodeString, terminator: 'Enter' });
         }
     }),
 
