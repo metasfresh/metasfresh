@@ -7,7 +7,6 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
-import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 
@@ -51,10 +50,9 @@ public class DocTypeQuery
 	Integer adClientId;
 
 	/**
-	 * Even if specified, the system will still try to fallback to {@code AD_Org_ID=0} if there is no doctype with a matching org-id.
+	 * Even if specified, the system will still try to fallback to {@code AD_Org_ID=0} if there is no doctype with a matching org-id. Defaults to {@code 0} (system org) if not set.
 	 */
-	@Default
-	int adOrgId = Env.CTXVALUE_AD_Org_ID_System;
+	int adOrgId;
 
 	@Nullable
 	Boolean isSOTrx;
@@ -112,8 +110,7 @@ public class DocTypeQuery
 		@Deprecated
 		public DocTypeQueryBuilder adOrgId(final int adOrgId)
 		{
-			this.adOrgId$value = adOrgId;
-			this.adOrgId$set = true;
+			this.adOrgId = adOrgId;
 			return this;
 		}
 
@@ -125,8 +122,7 @@ public class DocTypeQuery
 		public DocTypeQueryBuilder clientAndOrgId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 		{
 			this.adClientId = clientId.getRepoId();
-			this.adOrgId$value = orgId.getRepoId();
-			this.adOrgId$set = true;
+			this.adOrgId = orgId.getRepoId();
 			return this;
 		}
 	}
