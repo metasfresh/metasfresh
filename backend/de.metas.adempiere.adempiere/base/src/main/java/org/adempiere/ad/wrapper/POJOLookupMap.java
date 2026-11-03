@@ -85,7 +85,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngine
 {
@@ -543,9 +545,19 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return getRecords(tableName, clazz, filter, orderByComparator, trxName);
 	}
 
+	/** Test-only: how many selects ({@link #getRecords(String, Class, IQueryFilter, Comparator, String)}) ran per table, so a test can assert "one query, not N". */
+	private final Map<String, AtomicInteger> selectCountByTableName = new ConcurrentHashMap<>();
+
+	public int getSelectCount(@NonNull final String tableName)
+	{
+		final AtomicInteger counter = selectCountByTableName.get(tableName);
+		return counter != null ? counter.get() : 0;
+	}
+
 	public <T> List<T> getRecords(final String tableName, final Class<T> clazz, final IQueryFilter<T> filter, final Comparator<T> orderByComparator, final String trxName)
 	{
 		assertSameTableName(tableName, clazz);
+		selectCountByTableName.computeIfAbsent(tableName, k -> new AtomicInteger()).incrementAndGet();
 
 		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName);
 		if (recordsMap == null || recordsMap.isEmpty())

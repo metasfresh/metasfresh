@@ -8,14 +8,18 @@ import de.metas.security.RoleId;
 import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_Mobile_Application;
 import org.compiere.model.I_Mobile_Application_Access;
 import org.compiere.model.I_Mobile_Application_Action;
+import org.compiere.model.I_Mobile_Application_Action_Access;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -109,5 +113,47 @@ class MobileApplicationPermissionsRepositoryCreateAccessTest
 		final MobileApplicationPermissions permissions = repository.getMobileApplicationPermissions(ROLE_ID);
 		assertThat(permissions.isAllowAction(applicationId, actionId)).isTrue();
 		assertThat(permissions.isAllowAction(applicationId, otherActionId)).isFalse();
+	}
+
+	@Test
+	void manyAllowedActions_someAlreadyHaveARow_oneRowPerAction_existingReactivated_oneSelectForTheActionRows()
+	{
+		final MobileApplicationActionId thirdActionId = createAction("third");
+		final MobileApplicationActionId fourthActionId = createAction("fourth");
+		createActionAccess(actionId, false); // inactive, has to be reactivated
+		createActionAccess(otherActionId, true);
+
+		final POJOLookupMap db = POJOLookupMap.get();
+		final String actionAccessTable = I_Mobile_Application_Action_Access.Table_Name;
+		final int selectsBefore = db.getSelectCount(actionAccessTable);
+
+		repository.createMobileApplicationAccess(request().allowAllActions(false)
+				.allowedActionIds(ImmutableSet.of(actionId, otherActionId, thirdActionId, fourthActionId)).build());
+
+		assertThat(db.getSelectCount(actionAccessTable) - selectsBefore).as("selects on " + actionAccessTable).isEqualTo(1);
+		final List<I_Mobile_Application_Action_Access> rows = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_Mobile_Application_Action_Access.class).create().list();
+		assertThat(rows).hasSize(4).allMatch(I_Mobile_Application_Action_Access::isActive);
+		assertThat(rows).extracting(I_Mobile_Application_Action_Access::getMobile_Application_Action_ID)
+				.containsExactlyInAnyOrder(actionId.getRepoId(), otherActionId.getRepoId(), thirdActionId.getRepoId(), fourthActionId.getRepoId());
+	}
+
+	private MobileApplicationActionId createAction(final String internalName)
+	{
+		final I_Mobile_Application_Action action = InterfaceWrapperHelper.newInstance(I_Mobile_Application_Action.class);
+		action.setMobile_Application_ID(applicationId.getRepoId());
+		action.setInternalName(internalName);
+		InterfaceWrapperHelper.saveRecord(action);
+		return MobileApplicationActionId.ofRepoId(action.getMobile_Application_Action_ID());
+	}
+
+	private void createActionAccess(final MobileApplicationActionId id, final boolean active)
+	{
+		final I_Mobile_Application_Action_Access row = InterfaceWrapperHelper.newInstance(I_Mobile_Application_Action_Access.class);
+		row.setAD_Role_ID(ROLE_ID.getRepoId());
+		row.setMobile_Application_ID(applicationId.getRepoId());
+		row.setMobile_Application_Action_ID(id.getRepoId());
+		row.setIsActive(active);
+		InterfaceWrapperHelper.saveRecord(row);
 	}
 }
