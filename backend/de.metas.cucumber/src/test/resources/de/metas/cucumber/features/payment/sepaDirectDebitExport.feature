@@ -1094,13 +1094,14 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
   # Creditor address: the creditor is the org BP; its address comes from the org BP's default bill-to location (GLN 4000000000129),
   # never from the debtor bank account's holder data (A_Name, A_City). There is one creditor per file, so the scenario exports three times
-  # and re-points that location before each export:
-  #   1. a location with a city                                     -> Cdtr.PstlAdr with street, post code, town and country of the org BP
-  #   2. a location without a city                                  -> no Cdtr.PstlAdr at all
-  #   3. a city of only disallowed characters (empty after conversion) -> no Cdtr.PstlAdr, the export still succeeds
+  # and re-points that location before each export; in this order each export expects a different Cdtr than the one before,
+  # so a re-point that did not take effect fails the export after it:
+  #   1. a city of only disallowed characters (empty after conversion) -> no Cdtr.PstlAdr, the export still succeeds
+  #   2. a location with a city (the Background's)                     -> Cdtr.PstlAdr with street, post code, town and country of the org BP
+  #   3. a location without a city                                     -> no Cdtr.PstlAdr at all
   @from:cucumber
   @Id:S32708_TC14
-  Scenario: creditor address from the org BP location, three exports: with a city (Cdtr.PstlAdr with town and country, not the debtor account holder's city), without a city (no Cdtr.PstlAdr), city of only disallowed characters (no Cdtr.PstlAdr, the export still succeeds)
+  Scenario: creditor address from the org BP location, three exports: city of only disallowed characters (no Cdtr.PstlAdr, the export still succeeds), with a city (Cdtr.PstlAdr with town and country, not the debtor account holder's city), without a city (no Cdtr.PstlAdr)
     Given metasfresh contains C_BPartners:
       | Identifier     | Name                    | Value           | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | withCityDebtor | Debtor CreditorWithCity | withcity_@Date@ | Y          | pricingSystem                 | D               |
@@ -1159,7 +1160,109 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       | C_Invoice_ID | OpenAmt | PayAmt | C_BP_BankAccount_ID |
       | euroCityInv  | 300.00  | 300.00 | euroCityAcct        |
 
-    # 1. the Background's location, with a city
+    # 1. a city of only disallowed characters
+    Given metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal | OPT.City |
+      | euroCityLoc              | DE          | Musterstrasse 3 | 53111      | €€       |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier  | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
+      | creditorBPL | 4000000000129 | creditorBP               | euroCityLoc                  | Y            | Y                   |
+    When the SEPA export process is run for pay selection "euroCityPaySelection"
+    Then the SEPA export result is a single XML file
+    And the SEPA direct debit file for scheme B2B is:
+      """
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <Document xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pain.008.001.08 pain.008.001.08.xsd" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.08" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <CstmrDrctDbtInitn>
+              <GrpHdr>
+                  <MsgId>${ignore}</MsgId>
+                  <CreDtTm>2026-10-28T10:00:00.000+01:00</CreDtTm>
+                  <NbOfTxs>1</NbOfTxs>
+                  <CtrlSum>300.00</CtrlSum>
+                  <InitgPty>
+                      <Nm>SEPA Test Creditor GmbH</Nm>
+                  </InitgPty>
+              </GrpHdr>
+              <PmtInf>
+                  <PmtInfId>${ignore}</PmtInfId>
+                  <PmtMtd>DD</PmtMtd>
+                  <NbOfTxs>1</NbOfTxs>
+                  <CtrlSum>300.00</CtrlSum>
+                  <PmtTpInf>
+                      <SvcLvl>
+                          <Cd>SEPA</Cd>
+                      </SvcLvl>
+                      <LclInstrm>
+                          <Cd>B2B</Cd>
+                      </LclInstrm>
+                      <SeqTp>RCUR</SeqTp>
+                  </PmtTpInf>
+                  <ReqdColltnDt>2026-11-02</ReqdColltnDt>
+                  <Cdtr>
+                      <Nm>SEPA Test Creditor GmbH</Nm>
+                      <!-- no PstlAdr: the city is empty after the conversion -->
+                  </Cdtr>
+                  <CdtrAcct>
+                      <Id>
+                          <IBAN>DE91100000000123456789</IBAN>
+                      </Id>
+                  </CdtrAcct>
+                  <CdtrAgt>
+                      <FinInstnId>
+                          <BICFI>TESTDEC0XXX</BICFI>
+                      </FinInstnId>
+                  </CdtrAgt>
+                  <ChrgBr>SLEV</ChrgBr>
+                  <CdtrSchmeId>
+                      <Id>
+                          <PrvtId>
+                              <Othr>
+                                  <Id>DE98ZZZ09999999999</Id>
+                                  <SchmeNm>
+                                      <Prtry>SEPA</Prtry>
+                                  </SchmeNm>
+                              </Othr>
+                          </PrvtId>
+                      </Id>
+                  </CdtrSchmeId>
+                  <DrctDbtTxInf>
+                      <PmtId>
+                          <EndToEndId>${ignore}</EndToEndId>
+                      </PmtId>
+                      <InstdAmt Ccy="EUR">300.00</InstdAmt>
+                      <DrctDbtTx>
+                          <MndtRltdInf>
+                              <MndtId>MREF-EUROCITY-001</MndtId>
+                              <DtOfSgntr>2013-09-23</DtOfSgntr>
+                              <AmdmntInd>false</AmdmntInd>
+                          </MndtRltdInf>
+                      </DrctDbtTx>
+                      <DbtrAgt>
+                          <FinInstnId>
+                              <BICFI>TESTDEB2XXX</BICFI>
+                          </FinInstnId>
+                      </DbtrAgt>
+                      <Dbtr>
+                          <Nm>Debtor CreditorEuroCity</Nm>
+                      </Dbtr>
+                      <DbtrAcct>
+                          <Id>
+                              <IBAN>DE78200000001000000007</IBAN>
+                          </Id>
+                      </DbtrAcct>
+                      <RmtInf>
+                          <Ustrd>Invoice EuroCity</Ustrd>
+                      </RmtInf>
+                  </DrctDbtTxInf>
+              </PmtInf>
+          </CstmrDrctDbtInitn>
+      </Document>
+      """
+
+    # 2. back to the Background's location, with a city
+    Given metasfresh contains C_BPartner_Locations:
+      | Identifier  | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
+      | creditorBPL | 4000000000129 | creditorBP               | creditorLoc                  | Y            | Y                   |
     When the SEPA export process is run for pay selection "withCityPaySelection"
     Then the SEPA export result is a single XML file
     And the SEPA direct debit file for scheme B2B is:
@@ -1258,7 +1361,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
       </Document>
       """
 
-    # 2. a location without a city
+    # 3. a location without a city
     Given metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal |
       | noCityLoc                | DE          | Musterstrasse 2 | 53111      |
@@ -1350,105 +1453,6 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
                       </DbtrAcct>
                       <RmtInf>
                           <Ustrd>Invoice NoCity</Ustrd>
-                      </RmtInf>
-                  </DrctDbtTxInf>
-              </PmtInf>
-          </CstmrDrctDbtInitn>
-      </Document>
-      """
-
-    # 3. a city of only disallowed characters
-    Given metasfresh contains C_Location:
-      | C_Location_ID.Identifier | CountryCode | OPT.Address1    | OPT.Postal | OPT.City |
-      | euroCityLoc              | DE          | Musterstrasse 3 | 53111      | €€       |
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier  | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsBillTo | OPT.IsBillToDefault |
-      | creditorBPL | 4000000000129 | creditorBP               | euroCityLoc                  | Y            | Y                   |
-    When the SEPA export process is run for pay selection "euroCityPaySelection"
-    Then the SEPA export result is a single XML file
-    And the SEPA direct debit file for scheme B2B is:
-      """
-      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-      <Document xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pain.008.001.08 pain.008.001.08.xsd" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.08" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-          <CstmrDrctDbtInitn>
-              <GrpHdr>
-                  <MsgId>${ignore}</MsgId>
-                  <CreDtTm>2026-10-28T10:00:00.000+01:00</CreDtTm>
-                  <NbOfTxs>1</NbOfTxs>
-                  <CtrlSum>300.00</CtrlSum>
-                  <InitgPty>
-                      <Nm>SEPA Test Creditor GmbH</Nm>
-                  </InitgPty>
-              </GrpHdr>
-              <PmtInf>
-                  <PmtInfId>${ignore}</PmtInfId>
-                  <PmtMtd>DD</PmtMtd>
-                  <NbOfTxs>1</NbOfTxs>
-                  <CtrlSum>300.00</CtrlSum>
-                  <PmtTpInf>
-                      <SvcLvl>
-                          <Cd>SEPA</Cd>
-                      </SvcLvl>
-                      <LclInstrm>
-                          <Cd>B2B</Cd>
-                      </LclInstrm>
-                      <SeqTp>RCUR</SeqTp>
-                  </PmtTpInf>
-                  <ReqdColltnDt>2026-11-02</ReqdColltnDt>
-                  <Cdtr>
-                      <Nm>SEPA Test Creditor GmbH</Nm>
-                      <!-- no PstlAdr: the city is empty after the conversion -->
-                  </Cdtr>
-                  <CdtrAcct>
-                      <Id>
-                          <IBAN>DE91100000000123456789</IBAN>
-                      </Id>
-                  </CdtrAcct>
-                  <CdtrAgt>
-                      <FinInstnId>
-                          <BICFI>TESTDEC0XXX</BICFI>
-                      </FinInstnId>
-                  </CdtrAgt>
-                  <ChrgBr>SLEV</ChrgBr>
-                  <CdtrSchmeId>
-                      <Id>
-                          <PrvtId>
-                              <Othr>
-                                  <Id>DE98ZZZ09999999999</Id>
-                                  <SchmeNm>
-                                      <Prtry>SEPA</Prtry>
-                                  </SchmeNm>
-                              </Othr>
-                          </PrvtId>
-                      </Id>
-                  </CdtrSchmeId>
-                  <DrctDbtTxInf>
-                      <PmtId>
-                          <EndToEndId>${ignore}</EndToEndId>
-                      </PmtId>
-                      <InstdAmt Ccy="EUR">300.00</InstdAmt>
-                      <DrctDbtTx>
-                          <MndtRltdInf>
-                              <MndtId>MREF-EUROCITY-001</MndtId>
-                              <DtOfSgntr>2013-09-23</DtOfSgntr>
-                              <AmdmntInd>false</AmdmntInd>
-                          </MndtRltdInf>
-                      </DrctDbtTx>
-                      <DbtrAgt>
-                          <FinInstnId>
-                              <BICFI>TESTDEB2XXX</BICFI>
-                          </FinInstnId>
-                      </DbtrAgt>
-                      <Dbtr>
-                          <Nm>Debtor CreditorEuroCity</Nm>
-                      </Dbtr>
-                      <DbtrAcct>
-                          <Id>
-                              <IBAN>DE78200000001000000007</IBAN>
-                          </Id>
-                      </DbtrAcct>
-                      <RmtInf>
-                          <Ustrd>Invoice EuroCity</Ustrd>
                       </RmtInf>
                   </DrctDbtTxInf>
               </PmtInf>
