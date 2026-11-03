@@ -73,12 +73,14 @@ public abstract class StepDefData<T>
 
 	/**
 	 * Loads the record referenced by the given {@code recordRef} as this stepdef's model class and {@link #put(StepDefDataIdentifier, Object)}s it.
+	 *
+	 * @throws AdempiereException if this stepdef is not about a model interface (e.g. it holds POJOs), because such records cannot be loaded from a {@link TableRecordReference}
 	 */
 	public void putRecord(@NonNull final StepDefDataIdentifier identifier, @NonNull final TableRecordReference recordRef)
 	{
-		if (clazz == null)
+		if (getTableName() == null)
 		{
-			throw new AdempiereException("Cannot put " + recordRef + " as `" + identifier + "` because " + this + " has no model class");
+			throw new AdempiereException("Cannot put " + recordRef + " as `" + identifier + "` because " + this + " holds POJOs, not model interface records");
 		}
 		put(identifier, recordRef.getModel(clazz));
 	}

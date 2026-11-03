@@ -117,7 +117,11 @@ public class IdentifiersResolver
 				.collect(ImmutableList.toImmutableList());
 		if (matches.isEmpty())
 		{
-			throw new AdempiereException("No StepDefData registered for table " + tableName);
+			final ImmutableList<StepDefData<?>> pojoStepDefDatas = getStepDefDatas().stream()
+					.filter(stepDefData -> stepDefData.getTableName() == null)
+					.collect(ImmutableList.toImmutableList());
+			throw new AdempiereException("No StepDefData with a model interface registered for table " + tableName
+					+ "; StepDefData that hold POJOs cannot be looked up by table name: " + pojoStepDefDatas);
 		}
 		else if (matches.size() > 1)
 		{
@@ -207,19 +211,15 @@ public class IdentifiersResolver
 				.map(id -> TableRecordReference.of(I_SAP_GLJournal.Table_Name, id))
 				.ifPresent(result::add);
 
-		// master data is looked up only if no document matched, so that an identifier that names a document resolves as before
-		if (result.isEmpty())
-		{
-			bpartnerTable.getIdOptional(identifier)
-					.map(id -> TableRecordReference.of(I_C_BPartner.Table_Name, id))
-					.ifPresent(result::add);
-			bankAccountTable.getIdOptional(identifier)
-					.map(id -> TableRecordReference.of(I_C_BP_BankAccount.Table_Name, id.getRepoId()))
-					.ifPresent(result::add);
-			mandateTable.getOptional(identifier)
-					.map(TableRecordReference::of)
-					.ifPresent(result::add);
-		}
+		bpartnerTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_C_BPartner.Table_Name, id))
+				.ifPresent(result::add);
+		bankAccountTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_C_BP_BankAccount.Table_Name, id))
+				.ifPresent(result::add);
+		mandateTable.getOptional(identifier)
+				.map(TableRecordReference::of)
+				.ifPresent(result::add);
 
 		if (result.isEmpty())
 		{
