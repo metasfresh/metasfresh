@@ -445,3 +445,67 @@ test('14-digit stored GTIN (leading 0 + 13-digit EAN) of the expected product �
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '99.999 kg' });
     await Backend.expect({ hus: { [huQRCode]: { huStatus: 'S', storages: { 'BOM': '1 PCE' } } } });
 });
+
+// noinspection JSUnusedLocalSymbols
+test('custom GTIN part of no product → product not matching', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Pick using custom QR code with a GTIN part');
+    allure.severity('critical');
+
+    // a label of an article that does not exist in the system yet: no M_Product carries this GTIN
+    const unknownGtin = uniqueGtin14('7');
+    await createGtinMasterdata({ expectedGtin: uniqueGtin14('8'), otherGtin: uniqueGtin14('9') });
+    await LoginScreen.login(masterdata.login.user);
+
+    const label = gtinLabel(unknownGtin);
+    await receiveHUWithLabel({ label });
+
+    await startPickingJobAtScanScreen();
+    await expectErrorToast('Scan label with the GTIN of no product', async () => {
+        await PickLineScanScreen.typeQRCode(label);
+    }, ({ textContent }) => {
+        // the same answer as for the GTIN of another product, never the lookup exception
+        expect(textContent).toContain('PICKING_QR_PRODUCT_NOT_MATCHING');
+        expect(textContent).not.toContain('GTIN');
+    });
+    await PickLineScanScreen.waitForScreen();
+
+    // nothing picked
+    await PickLineScanScreen.goBack();
+    await PickingJobLineScreen.goBack();
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '0 kg' });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('partial unpick with a GTIN of no product → falls through, no exception', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Pick using custom QR code with a GTIN part');
+    allure.severity('critical');
+
+    const expectedGtin = uniqueGtin14('8');
+    const unknownGtin = uniqueGtin14('7');
+    await createGtinMasterdata({ expectedGtin, otherGtin: uniqueGtin14('9') });
+    await LoginScreen.login(masterdata.login.user);
+
+    const label = gtinLabel(expectedGtin);
+    await receiveHUWithLabel({ label });
+
+    await startPickingJobAtScanScreen();
+    await PickLineScanScreen.pickHU({ qrCode: label });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '99.999 kg' });
+
+    // the operator scans a label of no known article to say which article to unpick: the job's generic rejection, not the GTIN lookup exception
+    await PickingJobScreen.clickUnpickItem();
+    await expectErrorToast('Scan label with the GTIN of no product to unpick', async () => {
+        await PickingJobScreen.scanProductCodeToUnpick({ scannedCode: gtinLabel(unknownGtin) });
+    }, ({ textContent }) => {
+        // falls through to the generic "no product of this job matches" rejection (shown as the app's generic error text); the GTIN lookup's own '@NotFound@ Product: GTIN' text must not appear
+        expect(textContent).not.toContain('Not found');
+        expect(textContent).not.toContain('GTIN');
+    });
+    await PickingJobScreen.expectOnProductScanStage();
+});

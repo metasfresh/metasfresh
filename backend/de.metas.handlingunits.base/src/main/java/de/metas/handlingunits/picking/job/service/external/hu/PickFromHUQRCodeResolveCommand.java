@@ -222,7 +222,8 @@ class PickFromHUQRCodeResolveCommand
 		final GTIN qrCodeGTIN = customQRCode.getGTIN().orElse(null);
 		if (qrCodeGTIN != null)
 		{
-			final ProductId gtinProductId = productService.getProductIdByGTINStrictlyNotNull(qrCodeGTIN, ClientId.METASFRESH);
+			// a GTIN of no article is a label of another product, not an error
+			final ProductId gtinProductId = productService.getProductIdByGTINStrictly(qrCodeGTIN, ClientId.METASFRESH).orElse(null);
 			if (!ProductId.equals(expectedProductId, gtinProductId))
 			{
 				return BooleanWithReason.falseBecause(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, productService.getProductNameTrl(expectedProductId));
