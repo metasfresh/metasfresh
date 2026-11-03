@@ -155,12 +155,13 @@ class CreateHUFromScannedCodeCommandTest
 		product2.setGTIN("02001234567893");
 		InterfaceWrapperHelper.saveRecord(product2);
 
-		final HuId huId = CreateHUFromScannedCodeCommand.builder()
+		final CreatedHU created = CreateHUFromScannedCodeCommand.builder()
 				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
 				.warehouseDAO(Services.get(IWarehouseDAO.class))
 				.attributeDAO(Services.get(IAttributeDAO.class))
 				.huQtyService(huQtyService)
+				.huQRCodesService(huQRCodesService)
 				.labelProductResolver(new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)))
 				.clientId(ClientId.METASFRESH)
 				.adLanguage("en_US")
@@ -171,7 +172,8 @@ class CreateHUFromScannedCodeCommandTest
 				.build()
 				.execute();
 
-		assertThat(huId).isNotNull();
+		assertThat(created.getHuId()).isNotNull();
+		assertThat(created.getQrCode()).isEqualTo(huQRCodesService.getQRCodeByHuId(created.getHuId()));
 		assertThat(huQtyService.requests.get(0).getProductId()).isEqualTo(ProductId.ofRepoId(product1.getM_Product_ID()));
 	}
 

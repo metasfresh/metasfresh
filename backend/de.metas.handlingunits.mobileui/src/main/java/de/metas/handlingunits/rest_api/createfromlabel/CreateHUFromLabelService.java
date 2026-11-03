@@ -1,16 +1,13 @@
 package de.metas.handlingunits.rest_api.createfromlabel;
 
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.product.IProductBL;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ClientId;
@@ -50,17 +47,18 @@ public class CreateHUFromLabelService
 				.labelTargetLocatorResolver(labelTargetLocatorResolver);
 	}
 
-	/** @return the new HU, with its HU QR code created (so the standard actions, Move etc., work on it) */
+	/** @return the new HU with its HU QR code (created if missing, so the standard actions, Move etc., work on it) */
 	@NonNull
 	public CreatedHU create(@NonNull final JsonCreateHUFromScannedCodeRequest request, @NonNull final ClientId clientId, @NonNull final String adLanguage, @NonNull final ZonedDateTime date)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> {
-			final HuId huId = CreateHUFromScannedCodeCommand.builder()
+			return CreateHUFromScannedCodeCommand.builder()
 					.handlingUnitsBL(handlingUnitsBL)
 					.uomConversionBL(uomConversionBL)
 					.warehouseDAO(warehouseDAO)
 					.attributeDAO(attributeDAO)
 					.huQtyService(huQtyService)
+					.huQRCodesService(huQRCodesService)
 					.labelProductResolver(labelProductResolver)
 					.clientId(clientId)
 					.adLanguage(adLanguage)
@@ -70,15 +68,6 @@ public class CreateHUFromLabelService
 					.date(date)
 					.build()
 					.execute();
-			final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(huId); // creates the QR code if missing, like the HU lookup by value does
-			return new CreatedHU(huId, qrCode);
 		});
-	}
-
-	@Value
-	public static class CreatedHU
-	{
-		@NonNull HuId huId;
-		@NonNull HUQRCode qrCode;
 	}
 }

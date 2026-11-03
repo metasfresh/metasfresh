@@ -49,6 +49,7 @@ import de.metas.handlingunits.rest_api.JsonMoveHURequest;
 import de.metas.handlingunits.rest_api.JsonPrintHULabelRequest;
 import de.metas.handlingunits.rest_api.JsonPrintHULabelResponse;
 import de.metas.handlingunits.rest_api.createfromlabel.CreateHUFromLabelService;
+import de.metas.handlingunits.rest_api.createfromlabel.CreatedHU;
 import de.metas.handlingunits.rest_api.createfromlabel.JsonCreateHUFromScannedCodeRequest;
 import de.metas.handlingunits.rest_api.createfromlabel.JsonHUProposal;
 import de.metas.handlingunits.rest_api.createfromlabel.JsonProposeHUFromScannedCodeRequest;
@@ -205,7 +206,7 @@ public class HUManagerRestController
 	{
 		assertActionAccess(HUManagerAction.CreateHU);
 
-		final CreateHUFromLabelService.CreatedHU createdHU = createHUFromLabelService.create(request, Env.getClientId(), Env.getADLanguageOrBaseLanguage(), SystemTime.asZonedDateTime());
+		final CreatedHU createdHU = createHUFromLabelService.create(request, Env.getClientId(), Env.getADLanguageOrBaseLanguage(), SystemTime.asZonedDateTime());
 
 		return handlingUnitsService.getByIdSupplier(
 				() -> GetByIdRequest.builder()
