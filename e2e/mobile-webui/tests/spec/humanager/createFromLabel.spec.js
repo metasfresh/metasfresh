@@ -736,3 +736,65 @@ test('role without allow-all, only createHU granted -> product label opens the p
     expectCreateCallCount(createCalls, 0);
     await Backend.expect({ products: { 'P1': { huStorageCount: 0, inventoryLineCount: 0 } } });
 });
+
+// noinspection JSUnusedLocalSymbols
+test('allow-all role WITHOUT a createHU grant (the default login role) -> product label gives today\'s not found, no preview, nothing booked; both endpoints refuse', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - create HU from a scanned label');
+    allure.severity('critical');
+
+    const gtin = uniqueGtin14();
+    // default test login role: Mobile_Application_Access.IsAllowAllActions = Y for the HU Manager, no explicit createHU grant
+    const masterdata = await createMasterdata({ gtin });
+    const calls = countProposeAndCreateCalls();
+    await openHUManager({ user: masterdata.login.user });
+
+    const lookupPromise = page.waitForResponse((r) => r.url().includes('/hu-manager/byQRCode') && r.request().method() === 'POST', { timeout: SLOW_ACTION_TIMEOUT });
+    await expectErrorToast('product label, allow-all role without createHU', async () => {
+        await HUManagerScreen.scanLabel({ label: customLabel(gtin) });
+    }, ({ textContent }) => {
+        expect(textContent).toMatch(/Please try again/);
+        expect(textContent).not.toMatch(/Label not recognized|No product found|does not identify a product|Not a product label/);
+    });
+    expect((await lookupPromise).status()).toBe(404);
+    await NewHUPreviewScreen.expectNotDisplayed();
+    await HUManagerScreen.waitForScreen();
+    expect(calls.count).toBe(0);
+
+    await Backend.expectHUManagerCreateFromLabelRefused({ authToken: masterdata.login.user.token, scannedCode: customLabel(gtin) });
+
+    await Backend.expect({ products: { 'P1': { huStorageCount: 0, inventoryLineCount: 0 } } });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('allow-all role WITH an explicit createHU grant -> product label opens the preview; Cancel books nothing', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - create HU from a scanned label');
+    allure.severity('critical');
+
+    const gtin = uniqueGtin14();
+    const masterdata = await createMasterdata({
+        gtin,
+        users: { user: { language: 'en_US', role: 'allowAllGranted' } },
+        extra: {
+            roles: {
+                "allowAllGranted": {
+                    includedRoles: [],
+                    mobileApplicationAccess: [{ application: 'huManager', allowAllActions: true, grantedActions: ['createHU'] }],
+                },
+            },
+        },
+    });
+    const createCalls = countCreateCalls();
+    await openHUManager({ user: masterdata.login.user });
+
+    await scanLabelAndWaitForPreview({ label: customLabel(gtin) });
+    await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '1 PCE' });
+    await NewHUPreviewScreen.clickCancel();
+
+    await HUManagerScreen.waitForScreen();
+    expectCreateCallCount(createCalls, 0);
+    await Backend.expect({ products: { 'P1': { huStorageCount: 0, inventoryLineCount: 0 } } });
+});
