@@ -8,7 +8,7 @@ Feature: A schedule recompute does not split one picking job's shipment by clear
 ## One order, one picking job, three lines. Completing the job assigns one new async batch to all three schedules
 ## (ShipmentService.groupSchedulesByAsyncBatch) and enqueues ONE shipment workpackage. The batch is part of the
 ## shipment header key, so a schedule recompute that writes the order's empty batch over one schedule before the
-## workpackage reads it splits the run into two shipments (TC10). Each scenario expects one shipment.
+## workpackage reads it splits the run into two shipments. Each scenario expects one shipment.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -113,7 +113,7 @@ Feature: A schedule recompute does not split one picking job's shipment by clear
     And set picking target as new LU identified by LU
 
 
-  # Stale timing (the reference case A407129): a recompute loaded the schedule BEFORE the run assigned the batch (here:
+  # Stale timing (the shape of the observed production case): a recompute loaded the schedule BEFORE the run assigned the batch (here:
   # before the pick it recomputes) and saves it AFTER. The pick makes the save a real change, so PO writes every column
   # the recompute set, including the order's empty batch over the batch committed in between, without a change-log row.
   @from:cucumber
