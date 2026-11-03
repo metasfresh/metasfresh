@@ -448,7 +448,7 @@ test('location changed with the Change locator button, not remembered; a non-loc
     await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: wh1_l1.code });
 });
 
-test('inline quantity on the preview: typed digits stay in the field, emptied field disables OK, quantity + Change locator -> HU on the scanned location with the typed quantity', async () => {
+test('inline quantity on the preview: typed digits stay in the field, emptied field disables OK, quantity + Change locator -> HU on the scanned location with the typed quantity', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - create HU from a scanned label');
