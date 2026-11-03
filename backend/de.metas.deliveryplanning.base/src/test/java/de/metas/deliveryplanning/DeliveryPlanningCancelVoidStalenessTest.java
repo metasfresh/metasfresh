@@ -31,6 +31,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.event.IEventBusFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.notification.INotificationBL;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -74,6 +75,9 @@ class DeliveryPlanningCancelVoidStalenessTest
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 	private DeliveryPlanningService deliveryPlanningService;
 	private I_C_UOM uom;
 
@@ -90,16 +94,23 @@ class DeliveryPlanningCancelVoidStalenessTest
 		Services.registerService(IBPartnerStatisticsUpdater.class, Mockito.mock(IBPartnerStatisticsUpdater.class));
 
 		deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		final DeliveryPlanningAllocService deliveryPlanningAllocService = new DeliveryPlanningAllocService(
+				deliveryPlanningAllocRepository, deliveryPlanningRepository, deliveryInstructionRepository);
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 		deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
 				deliveryPlanningRepository,
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
+				deliveryPlanningAllocRepository,
+				deliveryInstructionService,
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());
 
 		// the REAL interceptor, so the instruction's AFTER_VOID unlink cascade genuinely runs on void
-		POJOLookupMap.get().addModelValidator(new M_ShipperTransportation(deliveryPlanningService, Mockito.mock(IEventBusFactory.class)));
+		POJOLookupMap.get().addModelValidator(new M_ShipperTransportation(deliveryPlanningService, deliveryPlanningAllocService, Mockito.mock(IEventBusFactory.class)));
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);

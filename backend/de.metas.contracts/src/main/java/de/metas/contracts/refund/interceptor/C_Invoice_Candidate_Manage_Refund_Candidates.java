@@ -3,6 +3,7 @@ package de.metas.contracts.refund.interceptor;
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import java.sql.Timestamp;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
@@ -61,7 +62,8 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 
 	private AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository;
 
-	private C_Invoice_Candidate_Manage_Refund_Candidates(
+	@VisibleForTesting
+	C_Invoice_Candidate_Manage_Refund_Candidates(
 			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository,
 			@NonNull final AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository,
 			@NonNull final RefundInvoiceCandidateService refundInvoiceCandidateService,
@@ -79,7 +81,10 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 					I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice,
 					I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice,
-					I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced })
+					I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced,
+					// a discount line of a contract-created compensation group is no refund base; regrouping changes that
+					I_C_Invoice_Candidate.COLUMNNAME_C_Order_CompensationGroup_ID,
+					I_C_Invoice_Candidate.COLUMNNAME_IsGroupCompensationLine })
 	public void associateWithRefundCandidate(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		if (!Services.get(IInvoiceCandBL.class).isUpdateProcessInProgress())

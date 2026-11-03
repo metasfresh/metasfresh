@@ -45,4 +45,10 @@ public class PlainADPInstanceDAO extends ADPInstanceDAO
 	{
 		return ImmutableSet.of();
 	}
+
+	@Override
+	public void saveSelectedIncludedRecords(final PInstanceId pinstanceId, final Set<TableRecordReference> recordRefs)
+	{
+		// POJO mode: no AD_PInstance_SelectedIncludedRecords table; consistent with retrieveSelectedIncludedRecords() returning empty
+	}
 }

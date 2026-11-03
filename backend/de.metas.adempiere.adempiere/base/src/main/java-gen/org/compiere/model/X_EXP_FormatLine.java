@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for EXP_FormatLine
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_FormatLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 303743353L;
+	private static final long serialVersionUID = -764943961L;
 
     /** Standard Constructor */
     public X_EXP_FormatLine (final Properties ctx, final int EXP_FormatLine_ID, @Nullable final String trxName)
@@ -264,6 +264,18 @@ public class X_EXP_FormatLine extends org.compiere.model.PO implements I_EXP_For
 	public java.lang.String getHelp() 
 	{
 		return get_ValueAsString(COLUMNNAME_Help);
+	}
+
+	@Override
+	public void setIsImportLenient (final boolean IsImportLenient)
+	{
+		set_Value (COLUMNNAME_IsImportLenient, IsImportLenient);
+	}
+
+	@Override
+	public boolean isImportLenient() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsImportLenient);
 	}
 
 	@Override

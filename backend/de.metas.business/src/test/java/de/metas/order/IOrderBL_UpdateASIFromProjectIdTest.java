@@ -25,6 +25,8 @@ package de.metas.order;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.project.service.ProjectRepository;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -45,6 +47,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.compiere.model.X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -57,6 +60,8 @@ class IOrderBL_UpdateASIFromProjectIdTest
 {
 	private static final String PROJECT_VALUE = "PROJECT-001";
 	private static final String PROJECT_VALUE_2 = "PROJECT-002";
+	private static final AttributeCode OTHER_ATTR_CODE = AttributeCode.ofString("TestSize");
+	private static final String OTHER_ATTR_VALUE = "SIZE-21";
 
 	final private IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
@@ -75,6 +80,16 @@ class IOrderBL_UpdateASIFromProjectIdTest
 		attribute.setAttributeValueType(ATTRIBUTEVALUETYPE_StringMax40);
 		attribute.setIsStorageRelevant(true);
 		saveRecord(attribute);
+	}
+
+	private I_M_Attribute createOtherAttr()
+	{
+		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
+		attribute.setValue(OTHER_ATTR_CODE.getCode());
+		attribute.setAttributeValueType(ATTRIBUTEVALUETYPE_StringMax40);
+		attribute.setIsStorageRelevant(true);
+		saveRecord(attribute);
+		return attribute;
 	}
 
 	private I_M_Product createProduct(final String productValue)
@@ -170,29 +185,32 @@ class IOrderBL_UpdateASIFromProjectIdTest
 	@Test
 	void updateASIFromProjectId_WhenASIExists_AndProjectIsNull_ShouldClearProjectAttribute()
 	{
-		// Given
+		// Given: an order line whose ASI carries ProjectValue with a real value, set via C_Project_ID
 		final I_M_Product product = createProduct("Product-3");
+		final I_C_Project project = createProject(PROJECT_VALUE);
 		final I_M_AttributeSetInstance asi = createASI(product);
-
-		// First set a project value
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
-		attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, PROJECT_VALUE);
-
 		final I_C_OrderLine orderLine = createOrderLine(product);
 		orderLine.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
+		orderLine.setC_Project_ID(project.getC_Project_ID());
 		saveRecord(orderLine);
 
-		// Now clear the project
-		orderLine.setC_Project_ID(-1);
-
-		// When
 		final IOrderBL toBeTested = Services.get(IOrderBL.class);
 		toBeTested.updateASIFromProjectId(orderLine);
 
-		// Then
+		// sanity: the project value did land on the line's (cloned) ASI before we clear it
+		final AttributeSetInstanceId asiIdWithProject = AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID());
+		assertEquals(PROJECT_VALUE, getProjectValueFromASI(asiIdWithProject));
+
+		// When: the project is cleared and the update runs again
+		orderLine.setC_Project_ID(-1);
+		toBeTested.updateASIFromProjectId(orderLine);
+
+		// Then: the M_AttributeInstance row is still present on the (again cloned) ASI, with a null value
 		final AttributeSetInstanceId updatedAsiId = AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID());
-		final String actualProjectValue = getProjectValueFromASI(updatedAsiId);
-		assertNull(actualProjectValue, "Project attribute should be cleared");
+		final boolean hasProjectValueInstance = attributeSetInstanceBL.getImmutableAttributeSetById(updatedAsiId)
+				.hasAttribute(AttributeConstants.ATTR_Project);
+		assertTrue(hasProjectValueInstance, "ProjectValue instance row should still exist after clearing");
+		assertNull(getProjectValueFromASI(updatedAsiId), "Project attribute value should be cleared");
 	}
 
 	@Test
@@ -259,5 +277,45 @@ class IOrderBL_UpdateASIFromProjectIdTest
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID());
 		final String actualProjectValue = getProjectValueFromASI(asiId);
 		assertEquals(PROJECT_VALUE, actualProjectValue);
+	}
+
+	@Test
+	void updateASIFromProjectId_WhenASIHasOtherAttributeAndNoProjectValue_AndProjectWasNeverSet_ShouldNotCloneOrInjectProjectAttribute()
+	{
+		// Given: an ASI carrying a real, non-Project attribute value, but no ProjectValue instance,
+		// and a line with no project at all
+		final I_M_Product product = createProduct("Product-7");
+		final I_M_Attribute otherAttr = createOtherAttr();
+		final I_M_AttributeSetInstance asi = createASI(product);
+		final AttributeSetInstanceId seededAsiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		attributeSetInstanceBL.setAttributeInstanceValue(
+				seededAsiId,
+				AttributeId.ofRepoId(otherAttr.getM_Attribute_ID()),
+				OTHER_ATTR_VALUE);
+		final I_C_OrderLine orderLine = createOrderLine(product);
+		orderLine.setM_AttributeSetInstance_ID(seededAsiId.getRepoId());
+		// No C_Project_ID is set - the line never had a project
+		saveRecord(orderLine);
+
+		// sanity: the seeded ASI does not yet carry a ProjectValue instance
+		assertFalse(
+				attributeSetInstanceBL.getImmutableAttributeSetById(seededAsiId).hasAttribute(AttributeConstants.ATTR_Project),
+				"Sanity: seeded ASI must not already carry a ProjectValue instance");
+
+		// When
+		final IOrderBL toBeTested = Services.get(IOrderBL.class);
+		toBeTested.updateASIFromProjectId(orderLine);
+
+		// Then: no clone happened - the guard's early return was taken
+		assertEquals(
+				seededAsiId.getRepoId(),
+				orderLine.getM_AttributeSetInstance_ID(),
+				"ASI must not be cloned when there is no project and no existing ProjectValue instance");
+
+		// And: still no ProjectValue instance was materialized on the ASI
+		final AttributeSetInstanceId finalAsiId = AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID());
+		assertFalse(
+				attributeSetInstanceBL.getImmutableAttributeSetById(finalAsiId).hasAttribute(AttributeConstants.ATTR_Project),
+				"No ProjectValue instance should be materialized when the line has no project");
 	}
 }

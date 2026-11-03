@@ -68,7 +68,7 @@ class StockDataUpdateRequestHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
-		handler = new StockDataUpdateRequestHandler(postMaterialEventService);
+		handler = new StockDataUpdateRequestHandler(postMaterialEventService, new StockRepository());
 	}
 
 	private static StockDataRecordIdentifier identifier()

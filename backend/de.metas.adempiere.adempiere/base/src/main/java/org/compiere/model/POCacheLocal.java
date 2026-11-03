@@ -24,19 +24,19 @@ package org.compiere.model;
 
 import de.metas.util.Check;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.Properties;
 
 /**
  * Extends {@link AbstractPOCacheLocal} by also holding a reference to the cached PO's "parent" (e.g. a C_BPartner's C_Order).
  * Allows to set e.g. a new C_BPartner_ID to that order.
+ * <p>
+ * The parent is referenced strongly on purpose: an instance is reachable only from its parent's {@code PO.m_poCacheLocals} (or from a running call on it),
+ * so parent and cache-local form a closed cycle which the GC collects together. A weak reference could be cleared while a method of this class is running.
  */
 public final class POCacheLocal extends AbstractPOCacheLocal
 {
-	private final Reference<PO> parentPORef;
+	private final PO parentPO;
 
 	public static POCacheLocal newInstance(@NonNull final PO parent, @NonNull final String parentColumnName, @NonNull final String tableName)
 	{
@@ -53,21 +53,11 @@ public final class POCacheLocal extends AbstractPOCacheLocal
 		Check.assumeNotEmpty(parentColumnName, "parentColumnName is null");
 		Check.assumeNotEmpty(tableName, "tableName");
 
-		this.parentPORef = new WeakReference<>(parent);
+		this.parentPO = parent;
 	}
 
 	private PO getParentPO()
 	{
-		final PO parentPO = parentPORef.get();
-		if (parentPO == null)
-		{
-			// cleanup
-			this.poRef = null;
-
-			// throw exception
-			throw new AdempiereException("Parent PO reference expired");
-		}
-
 		return parentPO;
 	}
 

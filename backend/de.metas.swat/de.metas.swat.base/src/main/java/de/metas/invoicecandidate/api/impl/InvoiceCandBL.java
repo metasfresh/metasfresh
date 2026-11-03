@@ -73,6 +73,7 @@ import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.IsPartialInvoice;
@@ -96,6 +97,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
+import de.metas.invoicecandidate.compensationGroup.PercentCompensationLineInvoicing;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -197,6 +199,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -228,6 +231,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 {
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsToClear");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsInDispute");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_SIMULATION = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Simulation");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_DateToInvoice");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_MANUAL_RULE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_ManualRule");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Error");
@@ -293,6 +297,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -596,6 +602,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		Money netAmtInvoiced = Money.zero(icCurrencyId);
 
+		// the percent discount candidate of a compensation group is repriced after each partial invoice,
+		// so its own current price does not tell what its earlier invoice lines were invoiced at
+		final boolean useInvoiceLinePrice = !ilas.isEmpty() && PercentCompensationLineInvoicing.isPercentCompensationLine(ic);
+
 		for (final I_C_Invoice_Line_Alloc ila : ilas)
 		{
 			// we don't need to check the invoice's DocStatus. If the ila is there, we count it.
@@ -623,7 +633,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final boolean isIlaInvoiceAnAdjInvoice = Services.get(IInvoiceBL.class)
 					.isAdjustmentCharge(ila.getC_InvoiceLine().getC_Invoice());
 
-			final BigDecimal usedPriceActual = isIlaInvoiceAnAdjInvoice ?
+			final BigDecimal usedPriceActual = isIlaInvoiceAnAdjInvoice || useInvoiceLinePrice ?
 					ila.getC_InvoiceLine().getPriceActual() :
 					ic.getPriceActual();
 
@@ -1010,6 +1020,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final boolean ignoreInvoiceSchedule,
 			final boolean isInvoiceManualRule)
 	{
+		return getInvoicingSkipReasonOrNull(ic, ignoreInvoiceSchedule, isInvoiceManualRule) != null;
+	}
+
+	@Override
+	@Nullable
+	public String getInvoicingSkipReasonOrNull(
+			final I_C_Invoice_Candidate ic,
+			final boolean ignoreInvoiceSchedule,
+			final boolean isInvoiceManualRule)
+	{
 		// 04533: ignore already processed candidates
 		// task 08343: if the ic is processed (after the recent update), then skip it (this logic was in the where clause in C_Invoice_Candidate_EnqueueSelection)
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -1018,7 +1038,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED, new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.INFO).addLog(msg);
-			return true;
+			return msg;
 		}
 
 		// ignore "error" candidates
@@ -1028,7 +1048,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					+ ": "
 					+ ic.getErrorMsg();
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-			return true;
+			return msg;
 		}
 
 		if (ic.isToClear())
@@ -1037,7 +1057,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR,
 					new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-			return true;
+			return msg;
 		}
 
 		if (ic.isInDispute())
@@ -1046,14 +1066,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE,
 					new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-			return true;
+			return msg;
 		}
 
 		if (ic.isSimulation())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
-					+ " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
-			return true;
+			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_SIMULATION,
+					new Object[] { ic.getC_Invoice_Candidate_ID() });
+			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
+			return msg;
 		}
 
 		// Manual rule is on its own axis — controlled by a dedicated flag, decoupled from IgnoreInvoiceSchedule.
@@ -1065,10 +1086,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_MANUAL_RULE,
 						new Object[] { ic.getC_Invoice_Candidate_ID() });
 				Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-				return true;
+				return msg;
 			}
 			// Manual is explicitly requested → don't apply the date gate (Manual has no schedule by design).
-			return false;
+			return null;
 		}
 
 		// flagged via field color
@@ -1080,10 +1101,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
 					new Object[] { ic.getC_Invoice_Candidate_ID(), TimeUtil.asTimestamp(dateToInvoice), TimeUtil.asTimestamp(getToday()) });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-			return true;
+			return msg;
 		}
 
-		return false; // Don't skip!
+		return null; // Don't skip!
 	}
 
 	@Override
@@ -1244,6 +1265,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		splitCand.setM_PricingSystem_ID(ic.getM_PricingSystem_ID());
 		splitCand.setM_Product_ID(ic.getM_Product_ID());
+		splitCand.setC_UOM_ID(ic.getC_UOM_ID()); // mandatory for the price-actual checks of a new candidate
+		splitCand.setC_PaymentTerm_ID(ic.getC_PaymentTerm_ID()); // mandatory column
 		splitCand.setIsPackagingMaterial(ic.isPackagingMaterial());
 		splitCand.setC_Charge_ID(ic.getC_Charge_ID());
 
@@ -1625,10 +1648,19 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					// task 08927: it could be that il's original qtyInvoiced was already subtracted (maybe partially)
 					// we only want to subtract the qty that was not yet subtracted
-					final Optional<IPair<StockQtyAndUOMQty, Money>> qtyInvoicedAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(invoiceCandidate);
-					assume(qtyInvoicedAndNetAmtInvoiced.isPresent(), "Since the il of this ic is reversed, the ic is supposed to to have an invoiced quantity (even if zero); il={}; ic={}", il, invoiceCandidate);
-
-					final StockQtyAndUOMQty qtyInvoicedForIc = qtyInvoicedAndNetAmtInvoiced.get().getLeft();
+					final StockQtyAndUOMQty qtyInvoicedForIc;
+					if (PercentCompensationLineInvoicing.isPercentCompensationLine(invoiceCandidate))
+					{
+						// The percent discount candidate of a compensation group carries one unit per partial invoice.
+						// Only what this invoice line still counts on the candidate may be taken back, not the units of the candidate's other invoices
+						qtyInvoicedForIc = sumupQtyStillInvoicedByInvoiceLineGroup(invoiceCandidate, il, reversalLine, productId);
+					}
+					else
+					{
+						final Optional<IPair<StockQtyAndUOMQty, Money>> qtyInvoicedAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(invoiceCandidate);
+						assume(qtyInvoicedAndNetAmtInvoiced.isPresent(), "Since the il of this ic is reversed, the ic is supposed to to have an invoiced quantity (even if zero); il={}; ic={}", il, invoiceCandidate);
+						qtyInvoicedForIc = qtyInvoicedAndNetAmtInvoiced.get().getLeft();
+					}
 
 					// examples:
 					// reversalQtyInvoiced = -5, qtyInvoicedForIc = 3 (because of partial reinvoicable credit memo with qty 2) => overlap=-2 => create Ila with qty -5-(-2)=-3
@@ -1640,6 +1672,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					//
 					// Task 12884 (Reversing an adjustment invoice): Set reversalQtyInvoiced in ila  to have  correct  quantities( ila adj  +  reversal Ila adj = 0)
+					//
 					if (isAdjustmentChargeInvoice)
 					{
 						qtyInvoicedForIla = reversalQtyInvoiced;
@@ -1677,6 +1710,64 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 				createUpdateIla(request);
 			}
+		}
+	}
+
+	/**
+	 * @return what the given invoice line's allocation group still counts on the given invoice candidate, before {@code reversalLine} is allocated.
+	 * <p>
+	 * The group is the credited invoice line (for a credit memo line: the line it credits), that line's reversal,
+	 * and the credit memo lines that credit it together with their reversals. Summing over the whole group makes the order of
+	 * reversals irrelevant: whether the credited invoice or its credit memo is reversed first, the reversal takes back only
+	 * what the group still counts, so each invoice's discount unit is counted once.
+	 */
+	private StockQtyAndUOMQty sumupQtyStillInvoicedByInvoiceLineGroup(
+			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
+			@NonNull final I_C_InvoiceLine il,
+			@NonNull final I_C_InvoiceLine reversalLine,
+			@NonNull final ProductId productId)
+	{
+		final I_C_InvoiceLine creditedLine = invoiceBL.isCreditMemo(il.getC_Invoice()) && il.getRef_InvoiceLine_ID() > 0
+				? InterfaceWrapperHelper.create(il.getRef_InvoiceLine(), I_C_InvoiceLine.class)
+				: il;
+
+		final Set<Integer> groupLineIds = new HashSet<>();
+		addLineAndItsReversal(groupLineIds, creditedLine, invoiceDAO);
+		for (final I_C_InvoiceLine referringLine : invoiceDAO.retrieveReferringLines(InvoiceAndLineId.ofRepoId(creditedLine.getC_Invoice_ID(), creditedLine.getC_InvoiceLine_ID())))
+		{
+			if (invoiceBL.isCreditMemo(referringLine.getC_Invoice()))
+			{
+				addLineAndItsReversal(groupLineIds, referringLine, invoiceDAO);
+			}
+		}
+		groupLineIds.remove(reversalLine.getC_InvoiceLine_ID());
+
+		StockQtyAndUOMQty qtyStillInvoiced = StockQtyAndUOMQtys.createZero(productId, UomId.ofRepoId(invoiceCandidate.getC_UOM_ID()));
+		for (final I_C_Invoice_Line_Alloc ila : invoiceCandDAO.retrieveIlaForIc(InvoiceCandidateIds.ofRecord(invoiceCandidate)))
+		{
+			if (groupLineIds.contains(ila.getC_InvoiceLine_ID()))
+			{
+				qtyStillInvoiced = StockQtyAndUOMQtys.add(
+						qtyStillInvoiced,
+						StockQtyAndUOMQtys.create(ila.getQtyInvoiced(), productId, ila.getQtyInvoicedInUOM(), UomId.ofRepoIdOrNull(ila.getC_UOM_ID())));
+			}
+		}
+		return qtyStillInvoiced;
+	}
+
+	private static void addLineAndItsReversal(
+			@NonNull final Set<Integer> lineIds,
+			@NonNull final I_C_InvoiceLine line,
+			@NonNull final IInvoiceDAO invoiceDAO)
+	{
+		lineIds.add(line.getC_InvoiceLine_ID());
+
+		final int reversalInvoiceId = line.getC_Invoice().getReversal_ID();
+		if (reversalInvoiceId > 0)
+		{
+			final I_C_InvoiceLine lineReversal = invoiceDAO.retrieveReversalLine(line, reversalInvoiceId);
+			Check.assumeNotNull(lineReversal, "C_InvoiceLine {} is expected to have a reversal line in C_Invoice_ID={}", line, reversalInvoiceId);
+			lineIds.add(lineReversal.getC_InvoiceLine_ID());
 		}
 	}
 
@@ -1890,6 +1981,89 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public int deleteAllReferencingInvoiceCandidates(@NonNull final Object model)
+	{
+		final List<I_C_Invoice_Candidate> icRecordsToDelete = invoiceCandDAO.retrieveAllReferencingInclInactive(model);
+		for (final I_C_Invoice_Candidate icRecordToDelete : icRecordsToDelete)
+		{
+			setProcessedToFalseIfIcNotNeeded(icRecordToDelete);
+			invoiceCandDAO.delete(icRecordToDelete);
+		}
+		return icRecordsToDelete.size();
+	}
+
+	/**
+	 * Note: no need to save the record; just unset its processed flag to allow deletion if that makes sense.
+	 */
+	private void setProcessedToFalseIfIcNotNeeded(@NonNull final I_C_Invoice_Candidate icToDelete)
+	{
+		final boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
+		final boolean processedByDeliveryClosedRule = icToDelete.isProcessed() && isProcessedByDeliveryClosedRule(icToDelete);
+		if (!manuallyFlaggedAsProcessed && !processedByDeliveryClosedRule)
+		{
+			return; // nothing to do
+		}
+
+		final boolean hasInvoiceLines = !invoiceCandDAO.retrieveIlForIc(icToDelete).isEmpty();
+		if (hasInvoiceLines)
+		{
+			return; // nothing to do
+		}
+
+		// icToDelete was set to "processed" to be out of the way (manually, or because its delivery was closed with nothing delivered); in this case, we can unprocess and delete it.
+		icToDelete.setProcessed(false);
+	}
+
+	@Override
+	public boolean isProcessedByDeliveryClosedRule(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		// cheap conditions first; the order line is loaded only if they all hold
+		return ic.isDeliveryClosed()
+				&& isQtyToInvoiceBasedOnDeliveredQty(ic)
+				&& ic.getQtyDelivered().signum() == 0
+				&& ic.getQtyInvoiced().signum() == 0
+				&& retrieveOrderLineQtyDelivered(ic).signum() == 0;
+	}
+
+	/**
+	 * @return {@code true} if the candidate's quantity to invoice can only come from a delivery (see {@code InvoiceCandidate.computeToInvoiceExclOverride}),
+	 * so with its delivery closed and nothing delivered, it can never be invoiced.
+	 */
+	private boolean isQtyToInvoiceBasedOnDeliveredQty(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final InvoiceRule invoiceRule = getInvoiceRule(ic); // the effective rule; never the virtual column InvoiceRule_Effective
+		switch (invoiceRule)
+		{
+			case AfterOrderDelivered:
+				return true; // the ordered qty, but only once the whole order is delivered
+			case AfterDelivery:
+			case OrderCompletelyDelivered:
+			case CustomerScheduleAfterDelivery:
+			case Manual:
+				return productBL.isItemType(ProductId.ofRepoId(ic.getM_Product_ID())); // non-items: delivered or ordered qty
+			default:
+				return false; // Immediate (delivered or ordered qty), AfterPick (picked qty)
+		}
+	}
+
+	/**
+	 * Reads the order line in the candidate's transaction, where a shipment's/receipt's completion already raised its {@code QtyDelivered} before the candidate's own {@code QtyDelivered} follows.
+	 * Not via {@code IOrderDAO#getOrderLineById}: that loads in the thread-inherited transaction, while the recompute can pass the candidate an explicit one.
+	 *
+	 * @return the order line's {@code QtyDelivered}, or zero if the candidate has no order line
+	 */
+	private BigDecimal retrieveOrderLineQtyDelivered(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(ic.getC_OrderLine_ID());
+		if (orderLineId == null)
+		{
+			return ZERO;
+		}
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(getCtx(ic), orderLineId.getRepoId(), I_C_OrderLine.class, getTrxName(ic));
+		return orderLine.getQtyDelivered();
+	}
+
+	@Override
 	public void updateProcessedFlag(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		Boolean processed = null;
@@ -1900,6 +2074,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		final boolean processedCalc;
+		boolean processedByInvoicing = false;
 		Integer nonReversedIlas = null;
 
 		// If invoice candidate has errors, don't update the Processed_Calc value until the error is solved.
@@ -1931,9 +2106,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 
 			// task 08567: add a way to override "processed" by the user
-			processedCalc = noOpenQty && nonReversedIlas > 0;
+			processedByInvoicing = noOpenQty && nonReversedIlas > 0;
+			processedCalc = processedByInvoicing || isProcessedByDeliveryClosedRule(ic);
 		}
 
+		final boolean processedByOverride = processed != null;
 		if (processed == null)
 		{
 			processed = processedCalc; // processed wasn't set via Processed_Override
@@ -1951,7 +2128,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			ic.setQtyToInvoiceInUOM(ZERO);
 			ic.setQtyToInvoiceBeforeDiscount(ZERO);
 
-			ic.setApprovalForInvoicing(false);
+			// Processed only by the delivery-closed rule: keep an approval that was set before shipping,
+			// so that the candidate is still included in an "only approved" invoicing run once something is delivered.
+			if (processedByOverride || processedByInvoicing)
+			{
+				ic.setApprovalForInvoicing(false);
+			}
 		}
 		else if (nonReversedIlas != null && nonReversedIlas == 0)
 		{
@@ -2271,27 +2453,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void openInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
-	{
-		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
-		invoiceCandidates.forEach(this::openInvoiceCandidate);
-	}
-
-	/** Counterpart of {@link #closeInvoiceCandidate(I_C_Invoice_Candidate)}; QtyToInvoice is not restored, the invalidation recomputes it. */
-	private void openInvoiceCandidate(@NonNull final I_C_Invoice_Candidate candidate)
-	{
-		candidate.setProcessed_Override(null);
-
-		if (!InterfaceWrapperHelper.hasChanges(candidate))
-		{
-			return;
-		}
-
-		invoiceCandDAO.invalidateCand(candidate);
-		invoiceCandDAO.save(candidate);
-	}
-
-	@Override
 	public void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
@@ -2421,6 +2582,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 								logger.debug("Has aggregation attribute: InvoicePerShipment ; => not closing invoice candidate with id={}", candidate.getC_Invoice_Candidate_ID());
 								continue;
 							}
+						}
+
+						if (PercentCompensationLineInvoicing.isPercentCompensationLine(candidate))
+						{
+							// one discount unit per partial invoice: its invoice line always carries a full unit, so it is never "partially invoiced";
+							// it stays open while its group's goods do (see PercentCompensationLineInvoicing)
+							logger.debug("percent compensation line; => not closing invoice candidate with id={}", candidate.getC_Invoice_Candidate_ID());
+							continue;
 						}
 
 						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
@@ -2565,6 +2734,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			icRecord.setQtyDelivered(ZERO);
 			icRecord.setQtyToInvoiceInUOM(ZERO);
 		}
+	}
+
+	@Override
+	public BigDecimal computeNetAmtInvoiced(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return sumupQtyInvoicedAndNetAmtInvoiced(ic)
+				.map(IPair::getRight)
+				.map(Money::toBigDecimal)
+				.orElse(ZERO);
 	}
 
 	@Override
@@ -2901,5 +3079,29 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.collect(Collectors.toList());
 		invoiceCandDAO.saveAll(updatedInvoiceCandidates);
 		logger.debug("Updated C_Project_ID={} on {} C_Invoice_Candidates for C_OrderLine_ID={}", projectId, updatedInvoiceCandidates.size(), orderLineId);
+	}
+
+	@Override
+	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLine(final org.compiere.model.I_M_InOutLine inOutLine)
+	{
+		return invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(inOutLine);
+	}
+
+	@Override
+	public void save(final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		invoiceCandDAO.save(invoiceCandidate);
+	}
+
+	@Override
+	public void invalidateCand(final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		invoiceCandDAO.invalidateCand(invoiceCandidate);
+	}
+
+	@Override
+	public List<org.compiere.model.I_C_InvoiceLine> retrieveIlForIc(final InvoiceCandidateId invoiceCandidateId)
+	{
+		return invoiceCandDAO.retrieveIlForIc(invoiceCandidateId);
 	}
 }

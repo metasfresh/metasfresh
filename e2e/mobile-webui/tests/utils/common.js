@@ -58,6 +58,27 @@ export const setCurrentPage = (currentPage) => {
     consoleRecorder = startConsoleRecorder(currentPage);
 }
 
+// Sysconfig rows the current test overwrote, each with its value from BEFORE the test's first overwrite of that row
+// (first previous value per name+clientId+orgId wins). Filled by Backend's sysconfig-writing calls; the page fixture
+// restores them after every test, also a failed one, so no spec needs its own afterEach.
+let sysconfigsToRestore = [];
+
+const isSameRow = (a, b) => a.name === b.name && a.clientId === b.clientId && a.orgId === b.orgId;
+
+/** @param {{previousSysconfigs?: Array<{name: string, value: ?string, clientId: number, orgId: number}>}} response as returned by the backend */
+export const rememberSysconfigsToRestore = ({ previousSysconfigs }) => {
+    (previousSysconfigs ?? [])
+        .filter((previous) => !sysconfigsToRestore.some((remembered) => isSameRow(remembered, previous)))
+        .forEach((previous) => sysconfigsToRestore.push(previous));
+};
+
+/** Returns the remembered values and forgets them, so a failing restore cannot leak into the next test. */
+export const takeSysconfigsToRestore = () => {
+    const result = sysconfigsToRestore;
+    sysconfigsToRestore = [];
+    return result;
+};
+
 /**
  * Assert the app did NOT log a console message matching `pattern` so far in this test.
  * Not a polling assertion: use it only for a message the app would have logged *before* a state you
@@ -83,15 +104,36 @@ export const expectNoConsoleMessageMatching = ({ pattern, because }) => {
 // See skill playwright-video-delivery § "Test speed vs. recording speed".
 export const UAT_CAPTURE = !!process.env.UAT_CAPTURE;
 
-// Hold the currently-painted screen on the video recorder long enough for the freshly-entered
-// values to be captured as a clear, deliberate freeze (the recorder samples ~25 fps and Playwright
-// otherwise fills + confirms within a single frame, so the values are never recorded). NO-OP unless
+// Hold the currently-painted screen long enough for the video recorder to capture it — e.g. freshly
+// entered values, which Playwright otherwise fills + confirms before the recorder receives a frame
+// showing them (it receives frames only when the page repaints; see below). NO-OP unless
 // UAT_CAPTURE is set — so this can only ever slow a deliberate capture run, never a normal/CI run;
 // the value is therefore generous for legibility, not a marginal minimum.
 const CAPTURE_HOLD_MS = 500;
 export const holdForCaptureIfEnabled = async () => {
     if (!UAT_CAPTURE || page == null) return;
-    await page.waitForTimeout(CAPTURE_HOLD_MS);
+    // NOT a plain waitForTimeout(): the recorder only receives a frame when the page repaints, and a screen
+    // that has just turned static can reach it only with the next repaint — after the hold. Measured on the
+    // LU target list: no frame arrived during the whole 500 ms hold, so the list was in no recorded frame.
+    // Repaint an invisible pixel on every animation frame while holding, so the held screen is recorded.
+    await page.evaluate((holdMs) => new Promise((resolve) => {
+        const marker = document.createElement('div');
+        marker.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0.01;pointer-events:none';
+        document.body.appendChild(marker);
+        const end = performance.now() + holdMs;
+        let toggle = false;
+        const repaint = () => {
+            toggle = !toggle;
+            marker.style.backgroundColor = toggle ? '#000' : '#fff';
+            if (performance.now() < end) {
+                requestAnimationFrame(repaint);
+            } else {
+                marker.remove();
+                resolve();
+            }
+        };
+        requestAnimationFrame(repaint);
+    }), CAPTURE_HOLD_MS);
 };
 
 // Bring an element the test is asserting on into the recorded viewport, then hold it there. Playwright's
@@ -133,6 +175,56 @@ export const mashDeviceBack = async (times = 12) => await step(`Mash device/brow
     }, times);
     await page.waitForTimeout(FAST_ACTION_TIMEOUT);
 });
+
+// How long an already-painted result screen is held so the video recorder samples it. Playwright's
+// screencast samples at ~40ms, so 500ms yields a dozen-odd frames — about 2s at the 0.25x playback
+// speed someone uses when checking what a test actually did.
+const RESULT_HOLD_MS = 500;
+
+// How long to let a refetch finish before freezing. Deliberately NOT FAST_ACTION_TIMEOUT: this waits
+// out a brief post-assertion flicker (the observed refetches settle in ~110-170ms), not a general
+// action, and it multiplies into the suite's worst case — so it is sized for the flicker.
+const RESULT_SETTLE_TIMEOUT_MS = 1500;
+
+/**
+ * Hold the painted screen so the recording shows the result the screen exists to display.
+ *
+ * This runs on EVERY run, CI included, and that is the point. A result list is asserted and left
+ * behind within ~110-170ms (measured off a CI trace), which at the screencast's ~40ms sampling is
+ * two or three frames out of the ~400 in a 16s recording — present in principle, unfindable in
+ * practice. It used to be opt-in behind UAT_CAPTURE, which meant exactly the runs nobody watches
+ * live — CI — were the ones whose recording showed nothing.
+ *
+ * Cost: one hold per assertion of a settled result list, across 38 call sites in the distribution
+ * specs. Typical is the 500ms hold itself, ~19s over a full run — the suite measured 2.1m before and
+ * 2.3m after, granularity too coarse to pin the delta more exactly. The WORST case is larger and
+ * worth stating: each call can also spend up to RESULT_SETTLE_TIMEOUT_MS twice before giving up, so
+ * ~4s per call and ~2.5min over 38 of them if nothing ever settles. Nothing upstream rules that out:
+ * the launcher renders its buttons from the last loaded list and paints the spinner ALONGSIDE them
+ * (WFLaunchersScreen.jsx), so the caller's assertions pass on the stale-but-correct list while a
+ * refetch is still in flight — a refetch that then hangs is invisible to them. The warn below is the
+ * safety net for that, not the assertions above.
+ *
+ * Why no assertion can substitute, and why this may only be called from a screen object and never
+ * from a spec: e2e/mobile-webui/CLAUDE.md § "Test scenarios read like a real-life workflow".
+ */
+export const holdForVideo = async () => {
+    // Freezing blindly is not enough: the launcher list can go back into a spinner right after the
+    // assertions pass (a refetch lands), and then the held frames record a loading indicator instead
+    // of the result. Settle first, and re-settle if a refetch starts during the freeze, so the frames
+    // the recorder takes are of the painted result. Bounded to two attempts -- this only shapes the
+    // recording and must never turn into an open-ended wait.
+    for (let attempt = 0; attempt < 2; attempt++) {
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: RESULT_SETTLE_TIMEOUT_MS }).catch(() => {});
+        await page.waitForTimeout(RESULT_HOLD_MS);
+        if ((await page.locator('.loading').count()) === 0) {
+            return;
+        }
+    }
+    // Never fail a test that has already passed for a recording concern — but do say so, otherwise a
+    // creeping refetch latency shows up only as recordings that quietly stop being usable.
+    console.warn('[holdForVideo] screen still loading after both settle attempts — this frame will show a spinner');
+};
 
 let nextErrorWatcherId = 101;
 let currentErrorWatcherId = 0;
