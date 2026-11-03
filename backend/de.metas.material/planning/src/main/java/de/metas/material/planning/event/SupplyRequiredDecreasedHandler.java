@@ -31,6 +31,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.pporder.PPOrderRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -52,6 +53,7 @@ public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<Supp
 	private static final Logger log = LogManager.getLogger(SupplyRequiredDecreasedHandler.class);
 	@NonNull private final List<SupplyRequiredAdvisor> supplyRequiredAdvisors;
 	@NonNull private final MaterialPlanningContextHelper helper;
+	@NonNull private final PPOrderRepository ppOrderRepository;
 
 	@Override
 	public Collection<Class<? extends SupplyRequiredDecreasedEvent>> getHandledEventType()
@@ -81,7 +83,7 @@ public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<Supp
 		if (remainingQtyToHandle.signum() > 0)
 		{
 			Loggables.withLogger(log, Level.WARN).addLog("Could not decrease the qty for event {}. Qty left: {}", event, remainingQtyToHandle);
-			SupplyRequiredDecreasedNotificationProducer.newInstance().sendNotification(context, descriptor, remainingQtyToHandle);
+			SupplyRequiredDecreasedNotificationProducer.newInstance(ppOrderRepository).sendNotification(context, descriptor, remainingQtyToHandle);
 		}
 	}
 

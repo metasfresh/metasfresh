@@ -92,7 +92,7 @@ public abstract class ExportBPartnerToExternalSystem extends ExportToExternalSys
 	 */
 	public void enqueueBPartnerSync(@NonNull final BPartnerId bPartnerId)
 	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("BPartnerId: {} enqueued to be synced.", bPartnerId);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("ExportBPartnerToExternalSystem - C_BPartner_ID: {} enqueued to be synced.", bPartnerId.getRepoId());
 
 		syncBPartnerDebouncer.add(bPartnerId);
 	}

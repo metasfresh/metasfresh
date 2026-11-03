@@ -81,4 +81,16 @@ public class PickHUCommand_LifeCycleStatus_Test
 
 		assertThatThrownBy(() -> pick(productId)).isInstanceOf(AdempiereException.class);
 	}
+
+	@Test
+	public void doNotDeliverStatus_pickThrows()
+	{
+		// "N" (Lieferstopp / DO_NOT_DELIVER) blocks SHIP and PICK: the sale stays legitimate, but the goods
+		// must not leave the warehouse. Pinned on THIS entry point too — the desktop pick-HU path and the
+		// mobile picking job each call assertAllowed themselves, so a shared-matrix test alone would not
+		// catch one of them being decoupled from IProductBL later.
+		final ProductId productId = createProduct(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop);
+
+		assertThatThrownBy(() -> pick(productId)).isInstanceOf(AdempiereException.class);
+	}
 }

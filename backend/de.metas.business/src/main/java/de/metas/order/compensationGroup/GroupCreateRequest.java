@@ -1,5 +1,6 @@
 package de.metas.order.compensationGroup;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.order.OrderId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.acct.api.ActivityId;
@@ -51,4 +52,8 @@ public class GroupCreateRequest
 
 	@Nullable
 	GroupTemplateId groupTemplateId;
+
+	/** The contract term that creates the group; set on the header before any order line joins the group. */
+	@Nullable
+	FlatrateTermId flatrateTermId;
 }

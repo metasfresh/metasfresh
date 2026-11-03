@@ -45,8 +45,8 @@ import lombok.RequiredArgsConstructor;
  * |-------------|:--:|:---------:|:-------:|:--------------:|
  * | PURCHASE    | Y  |    N      |    N    |       Y         |
  * | SELL        | Y  |    Y      |    N    |       Y         |
- * | PICK        | Y  |    Y      |    N    |       Y         |
- * | MANUFACTURE | Y  |    Y      |    N    |       Y         |
+ * | PICK        | Y  |    Y      |    N    |       N         |
+ * | MANUFACTURE | Y  |    N      |    N    |       Y         |
  * | SHIP        | Y  |    Y      |    N    |       N         |
  * </pre>
  * {@code OK} (and a {@code null} status, via {@link #ofNullableCode(String)}) is fully permissive by design
@@ -58,14 +58,16 @@ public enum BBSStatus implements ReferenceListAwareEnum
 	/** Fully allowed. */
 	OK(X_M_Product.PRODUCTLIFECYCLESTATUS_OK, ImmutableSet.of()),
 
-	/** Blocks new purchasing only. */
-	PHASE_OUT(X_M_Product.PRODUCTLIFECYCLESTATUS_PhaseOut, ImmutableSet.of(ProductLifeCycleAction.PURCHASE)),
+	/** Blocks new purchasing and manufacturing; the remaining stock may still be sold, picked and shipped. */
+	PHASE_OUT(X_M_Product.PRODUCTLIFECYCLESTATUS_PhaseOut,
+			ImmutableSet.of(ProductLifeCycleAction.PURCHASE, ProductLifeCycleAction.MANUFACTURE)),
 
 	/** Blocks everything. */
 	BLOCKED(X_M_Product.PRODUCTLIFECYCLESTATUS_Blocked, ImmutableSet.copyOf(ProductLifeCycleAction.values())),
 
-	/** Blocks shipping only. */
-	DO_NOT_DELIVER(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop, ImmutableSet.of(ProductLifeCycleAction.SHIP)),
+	/** Blocks leaving the warehouse — shipping and picking; selling and purchasing stay allowed. */
+	DO_NOT_DELIVER(X_M_Product.PRODUCTLIFECYCLESTATUS_DeliveryStop,
+			ImmutableSet.of(ProductLifeCycleAction.SHIP, ProductLifeCycleAction.PICK)),
 	;
 
 	private static final ValuesIndex<BBSStatus> typesByCode = ReferenceListAwareEnums.index(values());

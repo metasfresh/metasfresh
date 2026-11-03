@@ -15,6 +15,7 @@ import tablesHandler, {
 import {
   deleteQuickActions,
   fetchQuickActions,
+  fetchTopActions,
   requestQuickActions,
 } from '../../actions/Actions';
 import { createTableData } from '../../actions/TableActions';
@@ -381,6 +382,36 @@ describe('QuickActions', () => {
           ])
         );
 
+      });
+  });
+});
+
+describe('TopActions', () => {
+  beforeEach(() => {
+    nock.cleanAll();
+  });
+
+  it(`does not request top actions without a document`, () => {
+    const store = mockStore(createState());
+
+    // No nock interceptor is registered on purpose: if the guard were missing, the request would be
+    // attempted and this test would fail rather than silently pass.
+    return store
+      .dispatch(fetchTopActions({ windowId: '143', tabId: 'tab1', docId: undefined }))
+      .then(() => {
+        expect(store.getActions()).toEqual([]);
+      });
+  });
+
+  it(`does not request top actions for the 'notfound' sentinel`, () => {
+    const store = mockStore(createState());
+
+    return store
+      .dispatch(
+        fetchTopActions({ windowId: '143', tabId: 'tab1', docId: 'notfound' })
+      )
+      .then(() => {
+        expect(store.getActions()).toEqual([]);
       });
   });
 });

@@ -24,6 +24,7 @@ package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.gs1.GS1ProductCodesCollection;
 import de.metas.gs1.GTIN;
@@ -65,6 +66,9 @@ public interface IProductBL extends ISingletonService
 	boolean isPurchaseSalesEnforcementEnabled(@NonNull ClientId clientId, @NonNull OrgId orgId);
 
 	I_M_Product getById(ProductId productId);
+
+	/** @return the IDs of the client's stocked products */
+	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull ClientId clientId);
 
 	I_M_Product getByIdInTrx(ProductId productId);
 
@@ -119,6 +123,18 @@ public interface IProductBL extends ISingletonService
 	 * current {@link de.metas.product.BBSStatus}.
 	 */
 	void assertAllowed(@NonNull ProductId productId, @NonNull ProductLifeCycleAction action);
+
+	/**
+	 * Batch variant of {@link #assertAllowed(ProductId, ProductLifeCycleAction)} for callers that check a whole
+	 * document's lines: loads the products in one go instead of one {@code getById} per line.
+	 *
+	 * The products are checked in ascending {@code M_Product_ID} order, so a document carrying several blocked
+	 * products always reports the same one.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException (user validation error) on the lowest-id product whose
+	 * current {@link de.metas.product.BBSStatus} blocks the action.
+	 */
+	void assertAllowed(@NonNull Set<ProductId> productIds, @NonNull ProductLifeCycleAction action);
 
 	boolean isItemType(@Nullable ProductId productId);
 

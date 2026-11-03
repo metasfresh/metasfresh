@@ -38,9 +38,10 @@ import java.util.List;
 
 /**
  * Re-triggers the scripted-export-conversion for a selection of C_Invoice records.
- * When {@code IsOnlyNotSentSuccessfully=Y} only configs in error/invalid state are re-sent.
- * When {@code IsOnlyNotSentSuccessfully=N} configs in any terminal state (including already-Sent)
- * are re-triggered; in-flight and DontSend configs are always skipped.
+ * When {@code IsOnlyNotSentSuccessfully=Y} only not-yet-successfully-sent configs are re-sent
+ * (error/invalid, the suppressed DontSend, and an operator-parked Pending).
+ * When {@code IsOnlyNotSentSuccessfully=N} configs in any state are re-triggered, including
+ * already-Sent; DontSend and actively-in-flight configs are always skipped.
  */
 public class C_Invoice_ReSend_ScriptedExportConversion extends JavaProcess implements IProcessPrecondition
 {

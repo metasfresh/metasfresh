@@ -15,8 +15,10 @@ import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Candidate;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -86,4 +88,19 @@ public interface IHUPPOrderBL extends ISingletonService
 	void issueAndReceiveMaturingHUs(@NonNull I_PP_Order ppOrder);
 
 	boolean isAtLeastOneCandidateMaturing(@NonNull List<I_PP_Order_Candidate> candidates);
+
+	/**
+	 * Generates the next lot number from the lot-number sequence of the given order's BOM (<code>PP_Order_BOM.LotNo_Sequence_ID</code>), evaluated for the given receipt date.
+	 *
+	 * @return the generated lot number, or empty if the order's BOM has no lot-number sequence
+	 */
+	Optional<String> getAndIncrementLotNumberFromSequence(@NonNull PPOrderId ppOrderId, @NonNull LocalDate receiptDate);
+
+	/**
+	 * Previews, without consuming the sequence, the lot number that {@link #getAndIncrementLotNumberFromSequence(PPOrderId, LocalDate)} would generate for the given receipt date.
+	 *
+	 * @return the lot number, or empty if the order's BOM has no lot-number sequence, or if that sequence's value depends on its incremental number,
+	 * which a preview cannot reserve (a concurrent receipt could take it)
+	 */
+	Optional<String> previewLotNumberFromSequence(@NonNull PPOrderId ppOrderId, @NonNull LocalDate receiptDate);
 }

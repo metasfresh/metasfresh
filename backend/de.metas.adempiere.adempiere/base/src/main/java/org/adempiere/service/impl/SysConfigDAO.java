@@ -67,13 +67,7 @@ public class SysConfigDAO implements ISysConfigDAO
 			@Nullable final String value,
 			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		I_AD_SysConfig sysConfig = queryBL
-				.createQueryBuilder(I_AD_SysConfig.class)
-				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, name)
-				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, clientAndOrgId.getClientId())
-				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, clientAndOrgId.getOrgId())
-				.create()
-				.firstOnly(I_AD_SysConfig.class);
+		I_AD_SysConfig sysConfig = retrieveExactRow(name, clientAndOrgId);
 
 		final String oldValue;
 		if (sysConfig == null)
@@ -93,6 +87,39 @@ public class SysConfigDAO implements ISysConfigDAO
 		sysConfig.setValue(valuePO);
 		InterfaceWrapperHelper.save(sysConfig);
 		logger.info("Set SysConfig `{}` to `{}` (Old value: `{}`, Client/Org: {})", name, valuePO, oldValue, clientAndOrgId);
+	}
+
+	@Nullable
+	private I_AD_SysConfig retrieveExactRow(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return queryBL
+				.createQueryBuilder(I_AD_SysConfig.class)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, name)
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, clientAndOrgId.getClientId())
+				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, clientAndOrgId.getOrgId())
+				.create()
+				.firstOnly(I_AD_SysConfig.class);
+	}
+
+	@Override
+	public Optional<String> getValueOfExactRow(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		final I_AD_SysConfig sysConfig = retrieveExactRow(name, clientAndOrgId);
+		return sysConfig != null ? Optional.ofNullable(sysConfig.getValue()) : Optional.empty();
+	}
+
+	@Override
+	public void deleteExactRow(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		final I_AD_SysConfig sysConfig = retrieveExactRow(name, clientAndOrgId);
+		if (sysConfig == null)
+		{
+			return;
+		}
+
+		final String oldValue = sysConfig.getValue();
+		InterfaceWrapperHelper.delete(sysConfig);
+		logger.info("Deleted SysConfig `{}` (Old value: `{}`, Client/Org: {})", name, oldValue, clientAndOrgId);
 	}
 
 	@Override

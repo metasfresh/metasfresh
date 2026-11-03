@@ -36,6 +36,8 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.LocationId;
 import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -46,6 +48,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -115,6 +118,13 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 			return sched.getQtyToDeliver_Override();
 		}
 		return sched.getQtyToDeliver();
+	}
+
+	@Override
+	public Quantity getQtyOnHand(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(sched.getM_Product_ID());
+		return Quantity.of(sched.getQtyOnHand(), uom);
 	}
 
 	@Override

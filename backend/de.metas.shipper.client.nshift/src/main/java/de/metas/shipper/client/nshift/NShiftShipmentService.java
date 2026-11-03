@@ -28,7 +28,6 @@ import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
-import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
@@ -187,12 +186,14 @@ public class NShiftShipmentService
 
 		final NShiftMappingConfigs mappingConfigs = NShiftMappingConfigs.ofJson(deliveryRequest.getMappingConfigs());
 
-		// Add Addresses
-		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
-				deliveryRequest.getPickupAddress(), deliveryRequest.getPickupContact(), JsonAddressKind.SENDER, mappingConfigs, deliveryRequest::getValue));
+		// Add Addresses. While test mode is on, the configured text IS the Attention for both roles.
+		final String testModeAttention = NShiftUtil.resolveTestModeAttention(config);
 
 		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
-				deliveryRequest.getDeliveryAddress(), deliveryRequest.getDeliveryContact(), JsonAddressKind.RECEIVER, mappingConfigs, deliveryRequest::getValue));
+				deliveryRequest.getPickupAddress(), deliveryRequest.getPickupContact(), JsonAddressKind.SENDER, mappingConfigs, deliveryRequest::getValue, testModeAttention));
+
+		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
+				deliveryRequest.getDeliveryAddress(), deliveryRequest.getDeliveryContact(), JsonAddressKind.RECEIVER, mappingConfigs, deliveryRequest::getValue, testModeAttention));
 
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, deliveryRequest::getValue));
 
@@ -333,7 +334,7 @@ public class NShiftShipmentService
 				.shipperProduct(extractResolvedShipperProduct(response));
 
 		extractResolvedGoodsTypes(responseLines).forEach(responseBuilder::resolvedGoodsType);
-		extractResolvedServices(response).forEach(responseBuilder::resolvedService);
+		NShiftUtil.extractResolvedServices(response).forEach(responseBuilder::resolvedService);
 
 		return responseBuilder.build();
 	}
@@ -384,21 +385,6 @@ public class NShiftShipmentService
 							.id(id)
 							.name(line.getGoodsTypeName() != null ? line.getGoodsTypeName() : id)
 							.build();
-				})
-				.collect(Collectors.toCollection(LinkedHashSet::new));
-	}
-
-	private static Set<JsonCarrierService> extractResolvedServices(@NonNull final JsonShipmentResponse response)
-	{
-		if (response.getServices() == null)
-		{
-			return Collections.emptySet();
-		}
-		// services come back as bare ids; use the id as the name as well
-		return response.getServices().stream()
-				.map(svcId -> {
-					final String id = String.valueOf(svcId);
-					return JsonCarrierService.builder().id(id).name(id).build();
 				})
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}

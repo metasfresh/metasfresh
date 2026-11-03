@@ -1,6 +1,7 @@
 package org.eevolution.api;
 
 import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import lombok.NonNull;
@@ -67,6 +68,13 @@ public interface IPPCostCollectorBL extends ISingletonService
 	 * @return processed cost collector
 	 */
 	I_PP_Cost_Collector createReceipt(ReceiptCostCollectorCandidate candidate);
+
+	/**
+	 * Creates and processes the {@code CostDifferenceDistribution} collector of the given order's main product.
+	 * The collector carries neither a quantity nor an amount: everything posted is recomputed from the order's
+	 * {@code PP_Order_Cost} rows at posting time.
+	 */
+	I_PP_Cost_Collector createCostDifferenceDistribution(@NonNull I_PP_Order order, @NonNull ZonedDateTime movementDate);
 
 	void createActivityControl(ActivityControlCreateRequest request);
 

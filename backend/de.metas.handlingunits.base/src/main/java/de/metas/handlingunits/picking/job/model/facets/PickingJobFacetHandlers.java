@@ -8,6 +8,7 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.facets.customer.CustomerFacetHandler;
 import de.metas.handlingunits.picking.job.model.facets.delivery_day.DeliveryDayFacetHandler;
+import de.metas.handlingunits.picking.job.model.facets.preparation_day.PreparationDayFacetHandler;
 import de.metas.handlingunits.picking.job.model.facets.handover_location.HandoverLocationFacetHandler;
 import de.metas.picking.api.Packageable;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroup;
@@ -30,6 +31,7 @@ public class PickingJobFacetHandlers
 			ImmutableList.of(
 					new CustomerFacetHandler(),
 					new DeliveryDayFacetHandler(),
+					new PreparationDayFacetHandler(),
 					new HandoverLocationFacetHandler()),
 			PickingJobFacetHandler::getHandledGroup
 	);

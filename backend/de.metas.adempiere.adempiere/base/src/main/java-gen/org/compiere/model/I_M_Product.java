@@ -121,6 +121,29 @@ public interface I_M_Product
 	String COLUMNNAME_avv_no = "avv_no";
 
 	/**
+	 * Set Total shelf life.
+	 * Total shelf life of the product in days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBestBeforeDays (int BestBeforeDays);
+
+	/**
+	 * Get Total shelf life.
+	 * Total shelf life of the product in days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBestBeforeDays();
+
+	ModelColumn<I_M_Product, Object> COLUMN_BestBeforeDays = new ModelColumn<>(I_M_Product.class, "BestBeforeDays", null);
+	String COLUMNNAME_BestBeforeDays = "BestBeforeDays";
+
+	/**
 	 * Set BioControlNumber.
 	 *
 	 * <br>Type: List
@@ -276,6 +299,31 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_Content = new ModelColumn<>(I_M_Product.class, "Content", null);
 	String COLUMNNAME_Content = "Content";
+
+	/**
+	 * Set Co-Product Cost Distribution Percent.
+	 * Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = the co-product receives zero cost;
+ the main product absorbs the total inbound costs.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCoProductCostDistributionPercent (@Nullable BigDecimal CoProductCostDistributionPercent);
+
+	/**
+	 * Get Co-Product Cost Distribution Percent.
+	 * Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = the co-product receives zero cost;
+ the main product absorbs the total inbound costs.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCoProductCostDistributionPercent();
+
+	ModelColumn<I_M_Product, Object> COLUMN_CoProductCostDistributionPercent = new ModelColumn<>(I_M_Product.class, "CoProductCostDistributionPercent", null);
+	String COLUMNNAME_CoProductCostDistributionPercent = "CoProductCostDistributionPercent";
 
 	/**
 	 * Get Created.
@@ -1810,6 +1858,29 @@ public interface I_M_Product
 	String COLUMNNAME_M_CustomsTariff_ID = "M_CustomsTariff_ID";
 
 	/**
+	 * Set Medical device type.
+	 * Medical device type
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMedicalDeviceType (@Nullable java.lang.String MedicalDeviceType);
+
+	/**
+	 * Get Medical device type.
+	 * Medical device type
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMedicalDeviceType();
+
+	ModelColumn<I_M_Product, Object> COLUMN_MedicalDeviceType = new ModelColumn<>(I_M_Product.class, "MedicalDeviceType", null);
+	String COLUMNNAME_MedicalDeviceType = "MedicalDeviceType";
+
+	/**
 	 * Set Freight Category.
 	 * Category of the Freight
 	 *
@@ -2125,6 +2196,29 @@ public interface I_M_Product
 	String COLUMNNAME_PostControl = "PostControl";
 
 	/**
+	 * Set Preferential origin.
+	 * Preferential origin
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPreferentialOrigin (@Nullable java.lang.String PreferentialOrigin);
+
+	/**
+	 * Get Preferential origin.
+	 * Preferential origin
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPreferentialOrigin();
+
+	ModelColumn<I_M_Product, Object> COLUMN_PreferentialOrigin = new ModelColumn<>(I_M_Product.class, "PreferentialOrigin", null);
+	String COLUMNNAME_PreferentialOrigin = "PreferentialOrigin";
+
+	/**
 	 * Set Preparation.
 	 *
 	 * <br>Type: TextLong
@@ -2191,19 +2285,19 @@ public interface I_M_Product
 	 * Set Product Life Cycle Status.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setProductLifeCycleStatus (@Nullable java.lang.String ProductLifeCycleStatus);
+	void setProductLifeCycleStatus (java.lang.String ProductLifeCycleStatus);
 
 	/**
 	 * Get Product Life Cycle Status.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getProductLifeCycleStatus();
+	java.lang.String getProductLifeCycleStatus();
 
 	ModelColumn<I_M_Product, Object> COLUMN_ProductLifeCycleStatus = new ModelColumn<>(I_M_Product.class, "ProductLifeCycleStatus", null);
 	String COLUMNNAME_ProductLifeCycleStatus = "ProductLifeCycleStatus";

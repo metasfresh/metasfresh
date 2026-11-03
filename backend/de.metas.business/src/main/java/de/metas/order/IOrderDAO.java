@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -147,6 +148,16 @@ public interface IOrderDAO extends ISingletonService
 
 	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
 
+	/**
+	 * @return the ids of every order of {@code bpartnerId} that is not yet processed — the orders whose {@code C_OrderLine.C_Tax_ID} may still legitimately be recomputed.
+	 */
+	Set<OrderId> retrieveNotProcessedOrderIds(BPartnerId bpartnerId);
+
+	/**
+	 * @return the active orders whose {@code Link_Order_ID} is the given order (e.g. the purchase orders created from a sales order), ordered by id
+	 */
+	List<I_C_Order> getByLinkOrderId(@NonNull OrderId linkOrderId);
+
 	void delete(org.compiere.model.I_C_OrderLine orderLine);
 
 	void deleteByLineId(OrderAndLineId orderAndLineId);
@@ -173,6 +184,8 @@ public interface IOrderDAO extends ISingletonService
 	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
 	
 	boolean hasDeliveredItems(@NonNull OrderId orderId);
+
+	boolean isCalibrationRuleUsed(@NonNull CalibrationRuleId calibrationRuleId);
 
 	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
 	List<I_C_Order> getByLineQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter);

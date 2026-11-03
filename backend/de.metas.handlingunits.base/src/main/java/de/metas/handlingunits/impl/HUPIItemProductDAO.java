@@ -45,6 +45,7 @@ import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -511,18 +512,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final ZonedDateTime date)
 	{
-		// Barcode-lookup policy: the query dimensions that are relevant when resolving a PIIP by GTIN.
-		// Anything not set here (huUnitType, price-list version, packaging product, …) is deliberately
-		// NOT a criterion for a barcode lookup. The query itself is built by the canonical path, so this
-		// lookup cannot drift from it.
-		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
-		queryVO.setGtin(gtin);                          // match GTIN / TU-EAN / UPC
-		queryVO.setDate(date);                          // valid on this date (null = no date filter)
-		queryVO.setBPartnerId(bpartnerId);              // scope to this partner (and its generic rows)...
-		queryVO.setAllowAnyPartner(bpartnerId == null); // ...unless none is given (e.g. the REST product lookup)
-		queryVO.setAllowAnyProduct(false);              // the GTIN drives the product; not the allow-any-product templates
-		queryVO.setOnlyActiveProduct(true);             // exclude consolidation-stale rows (inactive product)
-		queryVO.setAllowInfiniteCapacity(true);         // capacity is not a criterion for a barcode lookup
+		final IHUPIItemProductQuery queryVO = createGtinLookupQuery(gtin, bpartnerId, date);
 
 		// Ordering is intentionally NOT the canonical "default-first" one: a barcode lookup resolves the
 		// packing valid on the date, so among the rows valid on the date the one with the LATEST ValidFrom
@@ -548,6 +538,46 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		return Optional.of(ProductAndHUPIItemProductId.of(
 				ProductId.ofRepoId(record.getM_Product_ID()),
 				HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())));
+	}
+
+	/**
+	 * Single definition of the barcode-lookup policy, shared by {@link #findFirstByGtin(GTIN, BPartnerId, ZonedDateTime)}
+	 * and {@link #retrieveByGtinIgnoringDate(GTIN, BPartnerId)} so the two cannot drift apart.
+	 */
+	@NonNull
+	private IHUPIItemProductQuery createGtinLookupQuery(
+			@NonNull final GTIN gtin,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ZonedDateTime date)
+	{
+		// Barcode-lookup policy: the query dimensions that are relevant when resolving a PIIP by GTIN.
+		// Anything not set here (huUnitType, price-list version, packaging product, …) is deliberately
+		// NOT a criterion for a barcode lookup. The query itself is built by the canonical path, so this
+		// lookup cannot drift from it.
+		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
+		queryVO.setGtin(gtin);                          // match GTIN / TU-EAN / UPC
+		queryVO.setDate(date);                          // valid on this date (null = no date filter)
+		queryVO.setBPartnerId(bpartnerId);              // scope to this partner (and its generic rows)...
+		queryVO.setAllowAnyPartner(bpartnerId == null); // ...unless none is given (e.g. the REST product lookup)
+		queryVO.setAllowAnyProduct(false);              // the GTIN drives the product; not the allow-any-product templates
+		queryVO.setOnlyActiveProduct(true);             // exclude consolidation-stale rows (inactive product)
+		queryVO.setAllowInfiniteCapacity(true);         // capacity is not a criterion for a barcode lookup
+		return queryVO;
+	}
+
+	@Override
+	@NonNull
+	public List<I_M_HU_PI_Item_Product> retrieveByGtinIgnoringDate(@NonNull final GTIN gtin, @Nullable final BPartnerId bpartnerId)
+	{
+		final IHUPIItemProductQuery queryVO = createGtinLookupQuery(gtin, bpartnerId, null);
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.filter(createQueryFilter(queryVO))
+				.orderBy()
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Direction.Ascending, Nulls.First)
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, Direction.Ascending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.list(I_M_HU_PI_Item_Product.class);
 	}
 
 	/**
@@ -860,11 +890,23 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final ZonedDateTime date)
 	{
+		return retrieveDefaultForProduct(productId, bpartnerId, date, null);
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item_Product> retrieveDefaultForProduct(
+			@NonNull final ProductId productId,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ZonedDateTime date,
+			@Nullable final PriceListVersionId priceListVersionId)
+	{
 		final IHUPIItemProductQuery query = createHUPIItemProductQuery();
 		query.setBPartnerId(bpartnerId);
 		query.setProductId(productId);
 		query.setDate(date);
 		query.setDefaultForProduct(true);
+		// null means "don't restrict"; the filter in buildQueryFilters is guarded by a null check
+		query.setPriceListVersionId(priceListVersionId);
 
 		final I_M_HU_PI_Item_Product huPIItemProduct = retrieveFirst(Env.getCtx(), query, ITrx.TRXNAME_None);
 		return Optional.ofNullable(huPIItemProduct);
@@ -876,7 +918,17 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final ZonedDateTime date)
 	{
-		return retrieveDefaultForProduct(productId, bpartnerId, date)
+		return retrieveDefaultIdForProduct(productId, bpartnerId, date, null);
+	}
+
+	@Override
+	public Optional<HUPIItemProductId> retrieveDefaultIdForProduct(
+			@NonNull final ProductId productId,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final ZonedDateTime date,
+			@Nullable final PriceListVersionId priceListVersionId)
+	{
+		return retrieveDefaultForProduct(productId, bpartnerId, date, priceListVersionId)
 				.map(huPiItemProduct -> HUPIItemProductId.ofRepoIdOrNull(huPiItemProduct.getM_HU_PI_Item_Product_ID()));
 	}
 

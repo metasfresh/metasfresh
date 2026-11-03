@@ -115,10 +115,11 @@ final class GLNLoadingCache
 	{
 		final ImmutableSet<OrgId> onlyOrgIds = glnsQuery.getOnlyOrgIds();
 		final String glnLookupLabel = glnsQuery.getGlnLookupLabel();
+		final boolean onlyActive = glnsQuery.isOnlyActive();
 
 		return getGLNLocations(glnsQuery)
 				.stream()
-				.flatMap(glnLocation -> glnLocation.streamBPartnerLocationIds(onlyOrgIds, glnLookupLabel))
+				.flatMap(glnLocation -> glnLocation.streamBPartnerLocationIds(onlyOrgIds, glnLookupLabel, onlyActive))
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -172,7 +173,7 @@ final class GLNLoadingCache
 			final I_C_BPartner bPartner = bpartnerId2BPartner.get(BPartnerId.ofRepoId(bPartnerLocation.getC_BPartner_ID()));
 			final GLNLocation glnLocation = toGLNLocation(
 					bPartnerLocation,
-					bPartner.getLookup_Label());
+					bPartner);
 			locationsByGLN.put(glnLocation.getGlnWithLabel().getGln(), glnLocation);
 		}
 
@@ -188,14 +189,16 @@ final class GLNLoadingCache
 
 	private static GLNLocation toGLNLocation(
 			@NonNull final I_C_BPartner_Location record,
-			@Nullable final String glnLookupLabel)
+			@NonNull final I_C_BPartner bPartner)
 	{
+		final String glnLookupLabel = bPartner.getLookup_Label();
 		final String gln = Check.assumeNotNull(record.getGLN(), "we can be sure that this point that the GLN is not null");
 
 		return GLNLocation.builder()
 				.orgId(OrgId.ofRepoIdOrAny(record.getAD_Org_ID()))
 				.glnWithLabel(GlnWithLabel.ofGLN(GLN.ofString(gln), glnLookupLabel))
 				.bpLocationId(BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
+				.active(record.isActive() && bPartner.isActive())
 				.build();
 	}
 
@@ -216,9 +219,11 @@ final class GLNLoadingCache
 		@NonNull
 		Stream<BPartnerLocationId> streamBPartnerLocationIds(
 				@Nullable final Set<OrgId> onlyOrgIds,
-				@Nullable final String glnLookupLabel)
+				@Nullable final String glnLookupLabel,
+				final boolean onlyActive)
 		{
 			return locations.stream()
+					.filter(location -> !onlyActive || location.isActive())
 					.filter(location -> location.isMatching(onlyOrgIds, glnLookupLabel))
 					.map(GLNLocation::getBpLocationId);
 		}
@@ -236,6 +241,9 @@ final class GLNLoadingCache
 
 		@NonNull
 		BPartnerLocationId bpLocationId;
+
+		/** {@code true} if both the location and its bpartner are active. */
+		boolean active;
 
 		boolean isMatching(@Nullable final Set<OrgId> onlyOrgIds,
 						   @Nullable final String glnLookupLabel)

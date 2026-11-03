@@ -101,19 +101,24 @@ public class NShiftOrderAdvisorService
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
 				.orderNo(deliveryAdvisorRequest.getId().replace("-", "")); //  Order Number is limited to 35 characters. fld_RefOrderNumber
 
+		// While test mode is on, the configured text IS the Attention for both roles.
+		final String testModeAttention = NShiftUtil.resolveTestModeAttention(deliveryAdvisorRequest.getShipperConfig());
+
 		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
 				deliveryAdvisorRequest.getPickupAddress(),
 				deliveryAdvisorRequest.getPickupContact(),
 				JsonAddressKind.SENDER,
 				mappingConfigs,
-				valueProvider));
+				valueProvider,
+				testModeAttention));
 
 		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
 				deliveryAdvisorRequest.getDeliveryAddress(),
 				deliveryAdvisorRequest.getDeliveryContact(),
 				JsonAddressKind.RECEIVER,
 				mappingConfigs,
-				valueProvider));
+				valueProvider,
+				testModeAttention));
 
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, valueProvider));
 
@@ -127,7 +132,8 @@ public class NShiftOrderAdvisorService
 				.build();
 	}
 
-	private static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonOrderAdviceResponse response, @NonNull final String requestId)
+	@VisibleForTesting
+	static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonOrderAdviceResponse response, @NonNull final String requestId)
 	{
 		// OrderAdvice wraps the advised shipment under "Shipment". The carrier PRODUCT IDENTITY is the product
 		// CONCEPT: ProdConceptID (e.g. 9303) — NOT ProdCSID (the carrier-service instance / integration). Reading the
@@ -145,8 +151,7 @@ public class NShiftOrderAdvisorService
 						.name(NShiftUtil.buildCarrierProductName(shipment.getCarrierFullName(), shipment.getProdName(), String.valueOf(prodConceptID)))
 						.build());
 
-		// GoodsType is reported per line (no shipment-level GoodsType / Services in the OrderAdvice response);
-		// the advise carries a single line, so take the GoodsType from the first.
+		// GoodsType is reported per line; the advise carries a single line, so take the GoodsType from the first.
 		final List<JsonLine> lines = shipment.getLines();
 		if (lines != null && !lines.isEmpty() && lines.get(0).getGoodsTypeID() != null)
 		{
@@ -156,6 +161,10 @@ public class NShiftOrderAdvisorService
 					.name(line.getGoodsTypeName())
 					.build());
 		}
+
+		// Services come back at shipment level as bare ids (Shipment.Services), same as the ship response — expose
+		// them as shipperProductServices so the resolved services are persisted onto the shipment schedule.
+		responseBuilder.shipperProductServices(NShiftUtil.extractResolvedServices(shipment));
 
 		return responseBuilder.build();
 	}

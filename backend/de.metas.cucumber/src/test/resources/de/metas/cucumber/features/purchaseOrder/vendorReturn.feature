@@ -2,7 +2,7 @@
 @allure.label.epic:E0140_Purchasing
 @allure.label.feature:F00600_Purchase_Order
 @F00600
-@ghActions:run_on_executor7
+@ghActions:run_on_executor10
 Feature: Vendor Return from Material Receipt
 ## Tests that creating a vendor return via M_InOut_GenerateVendorReturn reassigns M_HUs
 ## from the original material receipt to the vendor return document upon completion.
