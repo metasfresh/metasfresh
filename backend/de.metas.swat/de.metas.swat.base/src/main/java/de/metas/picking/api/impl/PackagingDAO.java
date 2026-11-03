@@ -90,9 +90,9 @@ public class PackagingDAO implements IPackagingDAO
 
 		//
 		// Filter: Product
-		if (query.getProductId() != null)
+		if (!query.getProductIds().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, query.getProductId());
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, query.getProductIds());
 		}
 
 		//
@@ -135,10 +135,12 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter: PreparationDate
-		if (query.getPreparationDate() != null)
+		// Filter: PreparationDays
+		// Strict, unlike DeliveryDays above: an unset PreparationDate does not pass. See PackageableQuery.
+		if (!query.getPreparationDays().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
+			final ICompositeQueryFilter<I_M_Packageable_V> preparationDaysFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+			query.getPreparationDays().forEach(preparationDay -> preparationDaysFilter.addEqualsFilter(I_M_Packageable_V.COLUMN_PreparationDate, preparationDay, DateTruncQueryFilterModifier.DAY));
 		}
 
 		//
@@ -154,7 +156,8 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter: IsFixedDatePromised
+		// Filter: IsFixedDatePromised (header flag, applies to ALL lines) — compares the per-line DatePromised
+		// (override-inclusive; see M_Packageable_V). Keep in sync with de.metas.handlingunits...ShipmentService.
 		final ZonedDateTime maximumFixedPromisedDate = query.getMaximumFixedPromisedDate();
 		if (maximumFixedPromisedDate != null)
 		{
@@ -230,14 +233,10 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Exclude schedules fully covered by a draft shipment (QtyToDeliver<=0 AND IsPickQtyOnDraftShipment='Y').
-		if (query.isExcludeFullyOnDraftShipment())
+		// Nothing left to pick: keep only QtyToDeliver > 0 (it is already net of picked/shipped/on-draft qty).
+		if (query.isExcludeNothingToPick())
 		{
-			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
-					.setJoinOr()
-					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_QtyToDeliver, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
-					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsPickQtyOnDraftShipment, false)
-			);
+			queryBuilder.addCompareFilter(I_M_Packageable_V.COLUMNNAME_QtyToDeliver, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
 		}
 
 		// Filter: Handover Location

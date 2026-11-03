@@ -25,11 +25,10 @@ export const DistributionJobScreen = {
         await DistributionUtils.expectJobId({ distributionJobId });
     }),
 
-    expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
-        const row = await page.locator(
-            `tr:has(th:has-text("${caption}")):has(td:has-text("${value}"))`
-        );
-        await expect(row).toHaveCount(1)
+    // `exact` defaults to false (substring value match) to preserve the long-standing behaviour of
+    // this method's existing callers. The shared helper additionally requires the row to be visible.
+    expectHeaderProperty: async ({ caption, value, exact = false }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'${exact ? '' : ' (substring)'}`, async () => {
+        await DistributionUtils.expectHeaderProperty({ caption, value, exact });
     }),
 
     scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove, expectNextScreen }) => await test.step(`${NAME} - Scan HU to move`, async () => {

@@ -159,9 +159,14 @@ test('Scan the pick from HU by ExternalBarcode', async ({ page }) => {
             // },
             hus: {
                 [masterdata.handlingUnits.P1_HU.qrCode]: { huStatus: 'A', storages: { P1: '8  PCE' } },
-                tu11: { huStatus: 'S', storages: { P1: '20 PCE' } },
-                tu12: { huStatus: 'S', storages: { P1: '24 PCE' } },
-                tu13: { huStatus: 'E', storages: { P1: '28 PCE' } },
+                // Product-based job: each picked LU/TU carries the consignee of the sales order it was
+                // picked for — line1 20 PCE => SO1/customer1, line2 24 PCE => SO2/customer2,
+                // line3 28 PCE => SO3/customer3 (see salesOrders SO1/SO2/SO3 above). Each customer is
+                // declared without an explicit location, so bpartnerLocation resolves via the single
+                // default ship-to (the _singleBPLocationI fallback) — same identifier as the bpartner.
+                tu11: { huStatus: 'S', storages: { P1: '20 PCE' }, bpartner: 'customer1', bpartnerLocation: 'customer1' },
+                tu12: { huStatus: 'S', storages: { P1: '24 PCE' }, bpartner: 'customer2', bpartnerLocation: 'customer2' },
+                tu13: { huStatus: 'E', storages: { P1: '28 PCE' }, bpartner: 'customer3', bpartnerLocation: 'customer3' },
             }
             // hus: {
             //     [masterdata.handlingUnits.P1_HU.qrCode]: { huStatus: 'A', storages: { P1: '8  PCE' } },

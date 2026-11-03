@@ -3,7 +3,7 @@ DROP VIEW IF EXISTS rv_sales_invoice_report
 
 CREATE VIEW rv_sales_invoice_report
             (DocTypeName, ProductValue, ProductName, Postal, ProductCategory, BPValue, BPName, BPGroupName, SalesRep_Name, DateInvoiced, DeliveryDate,
-             InvoiceDocumentNo, InvoicedQty, LineNetAmt, LineGrossAmt)
+             InvoiceDocumentNo, InvoicedQty, LineNetAmt, LineGrossAmt, CreditMemoReason)
 AS
 SELECT DISTINCT dt.name                                                                                                    AS DocTypeName,
                 mp.value                                                                                                   AS ProductValue,
@@ -19,7 +19,8 @@ SELECT DISTINCT dt.name                                                         
                 i.documentno                                                                                               AS InvoiceDocumentNo,
                 il.qtyentered * (CASE WHEN dt.docbasetype IN ('APC', 'ARC') THEN -1 ELSE 1 END)::NUMERIC                   AS InvoicedQty,
                 il.linenetamt * (CASE WHEN dt.docbasetype IN ('APC', 'ARC') THEN -1 ELSE 1 END)::NUMERIC                   AS LineNetAmt,
-                (il.taxamtinfo + il.linenetamt) * (CASE WHEN dt.docbasetype IN ('APC', 'ARC') THEN -1 ELSE 1 END)::NUMERIC AS LineGrossAmt
+                (il.taxamtinfo + il.linenetamt) * (CASE WHEN dt.docbasetype IN ('APC', 'ARC') THEN -1 ELSE 1 END)::NUMERIC AS LineGrossAmt,
+                COALESCE(cmr_trl.name, cmr.name)                                                                           AS CreditMemoReason
 
 
 FROM c_invoice i
@@ -35,6 +36,8 @@ FROM c_invoice i
          LEFT JOIN c_bp_group bpg ON billbp.c_bp_group_id = bpg.c_bp_group_id
          LEFT JOIN m_product mp ON il.m_product_id = mp.m_product_id
          LEFT JOIN m_product_category mpc ON mp.m_product_category_id = mpc.m_product_category_id
+         LEFT JOIN AD_Ref_List cmr ON cmr.AD_Reference_ID = 540014 AND cmr.value = il.Line_CreditMemoReason
+         LEFT JOIN AD_Ref_List_Trl cmr_trl ON cmr.ad_ref_list_id = cmr_trl.ad_ref_list_id AND cmr_trl.ad_language = 'de_DE'
 
 
 WHERE i.docstatus = 'CO'::bpchar

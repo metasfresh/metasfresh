@@ -16,6 +16,8 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
@@ -28,6 +30,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -42,6 +45,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 
 @ExtendWith(SnapshotExtension.class)
@@ -64,7 +68,7 @@ class PickingJobRepositoryTest
 		AdempiereTestHelper.get().init();
 		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
-		pickingJobRepository = new PickingJobRepository();
+		pickingJobRepository = PickingJobRepository.newInstanceForUnitTesting();
 		loadingSupportServices = new MockedPickingJobLoaderSupportingServices();
 
 		uomEach = BusinessTestHelper.createUomEach();
@@ -94,8 +98,7 @@ class PickingJobRepositoryTest
 				.build();
 	}
 
-	@Test
-	void createNewAndGet_then_getById()
+	private PickingJob createSampleJob()
 	{
 		loadingSupportServices.mockQRCode(HuId.ofRepoId(11), dummyQRCode("7a71c408-e7fb-4b5d-a0b8-814896b31659"));
 		loadingSupportServices.mockQRCode(HuId.ofRepoId(1001), dummyQRCode("f18c53be-1341-4203-b0f4-fb25fb33a5fa"));
@@ -103,7 +106,7 @@ class PickingJobRepositoryTest
 		final OrderAndLineId salesOrderLineId = OrderAndLineId.ofRepoIds(salesOrderId, 8);
 		final ShipmentScheduleAndJobScheduleId scheduleId = ShipmentScheduleAndJobScheduleId.ofRepoIds(7, -1);
 		final BPartnerLocationId deliveryBPLocationId = BPartnerLocationId.ofRepoId(3, 4);
-		final PickingJob jobCreated = pickingJobRepository.createNewAndGet(
+		return pickingJobRepository.createNewAndGet(
 				PickingJobCreateRepoRequest.builder()
 						.aggregationType(PickingJobAggregationType.SALES_ORDER)
 						.orgId(orgId)
@@ -147,12 +150,53 @@ class PickingJobRepositoryTest
 								.build())
 						.build(),
 				loadingSupportServices);
+	}
+
+	@Test
+	void createNewAndGet_then_getById()
+	{
+		final PickingJob jobCreated = createSampleJob();
 		expect.toMatchSnapshot(jobCreated);
 
 		final PickingJob jobLoaded = pickingJobRepository.getById(jobCreated.getId(), loadingSupportServices);
 		Assertions.assertThat(jobLoaded)
 				.usingRecursiveComparison()
 				.isEqualTo(jobCreated);
+	}
+
+	@Test
+	void carrierProductAndAdviseReadOnly_roundTrip_onHeaderAndLine()
+	{
+		final CarrierProductId carrierProductId = CarrierProductId.ofRepoId(4711);
+		final CarrierGoodsTypeId carrierGoodsTypeId = CarrierGoodsTypeId.ofRepoId(8150);
+		final ImmutableSet<CarrierServiceId> carrierServices = ImmutableSet.of(
+				CarrierServiceId.ofRepoId(8151),
+				CarrierServiceId.ofRepoId(8152));
+
+		final PickingJob jobToSave = createSampleJob()
+				.withCarrierProductId(carrierProductId)
+				.withCarrierAdviseReadOnly(true)
+				.withChangedLines(line -> line.toBuilder()
+						.carrierProductId(carrierProductId)
+						.carrierAdviseReadOnly(true)
+						.isManual(true)
+						.carrierGoodsTypeId(carrierGoodsTypeId)
+						.carrierServices(carrierServices)
+						.build());
+		pickingJobRepository.save(jobToSave);
+
+		final PickingJob jobLoaded = pickingJobRepository.getById(jobToSave.getId(), loadingSupportServices);
+
+		Assertions.assertThat(jobLoaded.getCarrierProductId()).isEqualTo(carrierProductId);
+		Assertions.assertThat(jobLoaded.isCarrierAdviseReadOnly()).isTrue();
+
+		Assertions.assertThat(jobLoaded.getLines()).allSatisfy(line -> {
+			Assertions.assertThat(line.getCarrierProductId()).isEqualTo(carrierProductId);
+			Assertions.assertThat(line.isCarrierAdviseReadOnly()).isTrue();
+			Assertions.assertThat(line.isManual()).as("isManual").isTrue();
+			Assertions.assertThat(line.getCarrierGoodsTypeId()).as("carrierGoodsTypeId").isEqualTo(carrierGoodsTypeId);
+			Assertions.assertThat(line.getCarrierServices()).as("carrierServices").isEqualTo(carrierServices);
+		});
 	}
 
 	private int createPickingJobWithLine(
@@ -176,45 +220,67 @@ class PickingJobRepositoryTest
 	}
 
 	@Test
-	void existsActivePickingJobLineForSchedule_voidedJob_isNotBusy()
+	void retrieveScheduleIdsWithActivePickingJobLine_voidedJob_isNotBusy()
 	{
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(101);
 		createPickingJobWithLine(PickingJobDocStatus.Voided, scheduleId);
 
-		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+		Assertions.assertThat(pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(ImmutableSet.of(scheduleId)))
 				.as("a voided picking job must NOT count as busy")
-				.isFalse();
+				.isEmpty();
 	}
 
 	@Test
-	void existsActivePickingJobLineForSchedule_completedJob_isNotBusy()
+	void retrieveScheduleIdsWithActivePickingJobLine_completedJob_isNotBusy()
 	{
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(102);
 		createPickingJobWithLine(PickingJobDocStatus.Completed, scheduleId);
 
-		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+		Assertions.assertThat(pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(ImmutableSet.of(scheduleId)))
 				.as("a completed picking job must NOT count as busy")
-				.isFalse();
+				.isEmpty();
 	}
 
 	@Test
-	void existsActivePickingJobLineForSchedule_draftedJob_isBusy()
+	void retrieveScheduleIdsWithActivePickingJobLine_draftedJob_isBusy()
 	{
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(103);
 		createPickingJobWithLine(PickingJobDocStatus.Drafted, scheduleId);
 
-		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+		Assertions.assertThat(pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(ImmutableSet.of(scheduleId)))
 				.as("a drafted (in-progress) picking job must count as busy")
-				.isTrue();
+				.containsExactly(scheduleId);
 	}
 
 	@Test
-	void existsActivePickingJobLineForSchedule_noLine_isNotBusy()
+	void retrieveScheduleIdsWithActivePickingJobLine_noLine_isNotBusy()
 	{
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(104);
 
-		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+		Assertions.assertThat(pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(ImmutableSet.of(scheduleId)))
 				.as("no picking job line for the schedule must NOT count as busy")
-				.isFalse();
+				.isEmpty();
+	}
+
+	@Test
+	void retrieveScheduleIdsWithActivePickingJobLine_manySchedules_returnsOnlyTheBusyOnes()
+	{
+		final ShipmentScheduleId voided = ShipmentScheduleId.ofRepoId(201);
+		final ShipmentScheduleId drafted1 = ShipmentScheduleId.ofRepoId(202);
+		final ShipmentScheduleId completed = ShipmentScheduleId.ofRepoId(203);
+		final ShipmentScheduleId drafted2 = ShipmentScheduleId.ofRepoId(204);
+		final ShipmentScheduleId noLine = ShipmentScheduleId.ofRepoId(205);
+		createPickingJobWithLine(PickingJobDocStatus.Voided, voided);
+		createPickingJobWithLine(PickingJobDocStatus.Drafted, drafted1);
+		createPickingJobWithLine(PickingJobDocStatus.Completed, completed);
+		createPickingJobWithLine(PickingJobDocStatus.Drafted, drafted2);
+
+		// the non-busy ones are asked FIRST, so an implementation that only honours the first id cannot pass
+		final Set<ShipmentScheduleId> actual = pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(
+				ImmutableSet.of(voided, noLine, completed, drafted1, drafted2));
+
+		Assertions.assertThat(actual)
+				.as("every drafted schedule of the batch must come back, and only those")
+				.containsExactlyInAnyOrder(drafted1, drafted2);
 	}
 }

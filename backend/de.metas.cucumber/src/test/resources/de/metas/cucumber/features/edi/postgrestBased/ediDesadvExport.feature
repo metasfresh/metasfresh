@@ -92,9 +92,10 @@ Feature: EDI DESADV export via postgREST
       | o_1        | DocumentNo | o_1_DocumentNo |
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 180s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_1      | ol_1                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_1      | ol_1                      | N             | 100          |
        
     # This controls the SSCC18 value such that our LU and desc-pack get SSCC18-value 012345670010000005
     And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
@@ -268,7 +269,7 @@ Feature: EDI DESADV export via postgREST
     "DateOrdered": "2025-04-17T00:00:00",
     "POReference": "testReference",
     "DatePromised": "2025-04-18T00:00:00+00:00",
-    "MovementDate": "2025-05-15T00:00:00",
+    "MovementDate": "2025-04-18T00:00:00",
     "EDI_Desadv_ID": @d_1@,
     "DeliveryViaRule": "P",
     "ShipmentDocumentNo": "@shipment_S0468_010_DocumentNo@",
@@ -930,7 +931,7 @@ Feature: EDI DESADV export via postgREST
     "DateOrdered": "2025-04-17T00:00:00",
     "POReference": "ean13FallbackRef",
     "DatePromised": "2025-04-18T00:00:00+00:00",
-    "MovementDate": "2025-05-15T00:00:00",
+    "MovementDate": "2025-04-18T00:00:00",
     "EDI_Desadv_ID": @d_050@,
     "DeliveryViaRule": "P",
     "ShipmentDocumentNo": "@shipment_S0468_050_DocumentNo@",

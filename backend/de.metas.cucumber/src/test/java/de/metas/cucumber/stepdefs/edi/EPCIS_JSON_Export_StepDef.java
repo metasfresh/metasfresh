@@ -39,7 +39,9 @@ import org.compiere.util.DB;
 import org.compiere.util.Trx;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -200,6 +202,8 @@ public class EPCIS_JSON_Export_StepDef
 	 *   <b>lotNumber</b> — (optional) expected lot number<br>
 	 *   <b>bestBeforeDate</b> — (optional) expected best-before date<br>
 	 *   <b>itemCount</b> — (optional) expected number of items in this crate<br>
+	 *   <b>poReference</b> — (optional) expected per-crate source-order POReference (order-pure crate, me03 #30279)<br>
+	 *   <b>shipmentDocumentNo</b> — (optional) expected per-crate delivery note = crate-shipment M_InOut.DocumentNo<br>
 	 * @cucumber.example
 	 * <pre>
 	 * Then the EPCIS JSON crate has:
@@ -234,7 +238,62 @@ public class EPCIS_JSON_Export_StepDef
 			row.getAsOptionalInt("itemCount")
 					.ifPresent(expected -> assertThat(crate.path("items").size())
 							.as("crate itemCount").isEqualTo(expected));
+
+			row.getAsOptionalString("poReference")
+					.ifPresent(expected -> assertThat(crate.path("poReference").asText())
+							.as("crate poReference").isEqualTo(expected));
+
+			row.getAsOptionalString("shipmentDocumentNo")
+					.ifPresent(expected -> assertThat(crate.path("shipmentDocumentNo").asText())
+							.as("crate shipmentDocumentNo").isEqualTo(expected));
 		});
+	}
+
+	/**
+	 * Asserts that every crate of a pallet is order-pure: it carries a non-null per-crate
+	 * {@code poReference} and {@code shipmentDocumentNo}, and the DISTINCT set of {@code poReference}
+	 * values across all crates equals exactly the expected set. This is the EPCIS PACKING order-purity
+	 * contract (me03 #30279): a crate belongs to one order, so each crate's packing event references
+	 * only that order — even when several orders share one physical pallet/SSCC.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>poReference</b> — (required) one row per DISTINCT source-order POReference expected across the pallet's crates<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then the EPCIS JSON pallet 0 crates are order-pure with POReferences:
+	 *   | poReference |
+	 *   | 1170000001  |
+	 *   | 1170000002  |
+	 * </pre>
+	 */
+	@Then("the EPCIS JSON pallet {int} crates are order-pure with POReferences:")
+	public void validateCratesOrderPure(final int palletIndex, @NonNull final DataTable dataTable)
+	{
+		assertThat(lastEpcisResult).as("EPCIS JSON result must exist (call the export function first)").isNotNull();
+
+		final JsonNode crates = lastEpcisResult.path("pallets").get(palletIndex).path("crates");
+		assertThat(crates.isArray()).as("pallet[%d].crates must be a JSON array", palletIndex).isTrue();
+		assertThat(crates.size()).as("pallet[%d] must have crates", palletIndex).isGreaterThan(0);
+
+		final Set<String> distinctPoRefs = new HashSet<>();
+		crates.forEach(crate -> {
+			// order-pure: every crate must be tagged with exactly one (non-null) order + its delivery note
+			assertThat(crate.path("poReference").isTextual())
+					.as("every crate must carry a non-null poReference, got: %s", crate)
+					.isTrue();
+			assertThat(crate.path("shipmentDocumentNo").isTextual())
+					.as("every crate must carry a non-null shipmentDocumentNo, got: %s", crate)
+					.isTrue();
+			distinctPoRefs.add(crate.path("poReference").asText());
+		});
+
+		final Set<String> expectedPoRefs = new HashSet<>();
+		DataTableRows.of(dataTable).forEach(row -> expectedPoRefs.add(row.getAsString("poReference")));
+
+		assertThat(distinctPoRefs)
+				.as("distinct per-crate poReferences on pallet[%d]", palletIndex)
+				.isEqualTo(expectedPoRefs);
 	}
 
 	/**

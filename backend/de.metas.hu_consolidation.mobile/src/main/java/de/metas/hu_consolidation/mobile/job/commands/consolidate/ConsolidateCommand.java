@@ -1,11 +1,13 @@
 package de.metas.hu_consolidation.mobile.job.commands.consolidate;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.slot.PickingSlotQueue;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
@@ -40,6 +42,7 @@ public class ConsolidateCommand
 	@NonNull private final HUConsolidationJobId jobId;
 	@NonNull private final PickingSlotId fromPickingSlotId;
 	@Nullable private final HuId huId;
+	@Nullable private final GRAI grai;
 
 	// State
 	private HUTransformService huTransformService; // lazy
@@ -62,6 +65,7 @@ public class ConsolidateCommand
 		this.jobId = request.getJobId();
 		this.fromPickingSlotId = request.getFromPickingSlotId();
 		this.huId = request.getHuId();
+		this.grai = request.getGrai();
 	}
 
 	public HUConsolidationJob execute()
@@ -104,16 +108,40 @@ public class ConsolidateCommand
 		return job;
 	}
 
-	private Set<HuId> getHuIdsToConsolidate()
+	@VisibleForTesting
+	Set<HuId> getHuIdsToConsolidate()
 	{
 		final PickingSlotQueue fromPickingSlotQueue = getFromPickingSlotQueue();
+
+		final HuId effectiveHuId;
 		if (huId != null)
 		{
-			if (!fromPickingSlotQueue.containsHuId(huId))
+			effectiveHuId = huId;
+		}
+		else if (grai != null)
+		{
+			effectiveHuId = handlingUnitsBL.getTopLevelHuIdByGrai(grai)
+					.orElseThrow(() -> new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND)
+							.setParameter("grai", grai.toCanonicalString()));
+		}
+		else
+		{
+			effectiveHuId = null;
+		}
+
+		if (effectiveHuId != null)
+		{
+			if (!fromPickingSlotQueue.containsHuId(effectiveHuId))
 			{
-				throw new AdempiereException(MobileQRCodeMessages.LU_NOT_AT_SLOT);
+				final AdempiereException ex = new AdempiereException(MobileQRCodeMessages.LU_NOT_AT_SLOT)
+						.setParameter("effectiveHuId", effectiveHuId);
+				if (grai != null)
+				{
+					ex.setParameter("grai", grai.toCanonicalString());
+				}
+				throw ex;
 			}
-			return ImmutableSet.of(huId);
+			return ImmutableSet.of(effectiveHuId);
 		}
 		else
 		{

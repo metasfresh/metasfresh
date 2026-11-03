@@ -917,6 +917,27 @@ public interface I_DD_Order
 	String COLUMNNAME_IsInTransit = "IsInTransit";
 
 	/**
+	 * Set Is Picking Disconnected.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickingDisconnected (boolean IsPickingDisconnected);
+
+	/**
+	 * Get Is Picking Disconnected.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickingDisconnected();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_IsPickingDisconnected = new ModelColumn<>(I_DD_Order.class, "IsPickingDisconnected", null);
+	String COLUMNNAME_IsPickingDisconnected = "IsPickingDisconnected";
+
+	/**
 	 * Set Printed.
 	 * Indicates if this document / line is printed
 	 *
@@ -1005,6 +1026,31 @@ public interface I_DD_Order
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
+	 * Set Locator Priority.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setLocatorPriorityNo (int LocatorPriorityNo);
+
+	/**
+	 * Get Locator Priority.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getLocatorPriorityNo();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_LocatorPriorityNo = new ModelColumn<>(I_DD_Order.class, "LocatorPriorityNo", null);
+	String COLUMNNAME_LocatorPriorityNo = "LocatorPriorityNo";
+
+	/**
 	 * Set MRP Allow Cleanup.
 	 * MRP is allowed to remove this document
 	 *
@@ -1072,27 +1118,6 @@ public interface I_DD_Order
 
 	ModelColumn<I_DD_Order, Object> COLUMN_MRP_ToDelete = new ModelColumn<>(I_DD_Order.class, "MRP_ToDelete", null);
 	String COLUMNNAME_MRP_ToDelete = "MRP_ToDelete";
-
-	/**
-	 * Set Shipment Candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
-
-	/**
-	 * Get Shipment Candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_ShipmentSchedule_ID();
-
-	ModelColumn<I_DD_Order, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_DD_Order.class, "M_ShipmentSchedule_ID", null);
-	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
 	 * Set Shipper.

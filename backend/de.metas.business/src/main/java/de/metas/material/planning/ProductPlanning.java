@@ -83,6 +83,7 @@ public class ProductPlanning
 	boolean isMatured;
 	@Nullable ProductBOMVersionsId bomVersionsId;
 	@Nullable PPRoutingId workflowId;
+	@Nullable ResourceId workstationId;
 	@Nullable Quantity maxManufacturedQtyPerOrderDispo;
 	@Nullable MaturingConfigId maturingConfigId;
 	@Nullable MaturingConfigLineId maturingConfigLineId;
@@ -90,6 +91,10 @@ public class ProductPlanning
 	// Picking
 	boolean isPickingOrder;
 	boolean isPickDirectlyIfFeasible;
+
+	//
+	// Trading
+	boolean isTraded;
 
 	//
 	// Purchasing
@@ -129,12 +134,14 @@ public class ProductPlanning
 						   final boolean isMatured,
 						   @Nullable final ProductBOMVersionsId bomVersionsId,
 						   @Nullable final PPRoutingId workflowId,
+						   @Nullable final ResourceId workstationId,
 						   @Nullable final Quantity maxManufacturedQtyPerOrderDispo,
 						   @Nullable final MaturingConfigId maturingConfigId,
 						   @Nullable final MaturingConfigLineId maturingConfigLineId,
 						   final int manufacturingAggregationId,
 						   final boolean isPickingOrder,
 						   final boolean isPickDirectlyIfFeasible,
+						   final boolean isTraded,
 						   final boolean isPurchased,
 						   @Nullable final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse,
 						   @Nullable final DistributionNetworkId distributionNetworkId,
@@ -172,11 +179,13 @@ public class ProductPlanning
 		this.isMatured = isMatured;
 		this.bomVersionsId = bomVersionsId;
 		this.workflowId = workflowId;
+		this.workstationId = workstationId;
 		this.maxManufacturedQtyPerOrderDispo = maxManufacturedQtyPerOrderDispo;
 		this.maturingConfigId = maturingConfigId;
 		this.maturingConfigLineId = maturingConfigLineId;
 		this.isPickingOrder = isPickingOrder;
 		this.isPickDirectlyIfFeasible = isPickDirectlyIfFeasible;
+		this.isTraded = isTraded;
 		this.isPurchased = isPurchased;
 		this.onMaterialReceiptWithDestWarehouse = onMaterialReceiptWithDestWarehouse;
 		this.distributionNetworkId = distributionNetworkId;

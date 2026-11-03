@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
 public class PickingJobStepPickedToHU
 {
@@ -21,4 +21,6 @@ public class PickingJobStepPickedToHU
 	@Nullable Quantity catchWeight;
 	@NonNull Instant createdAt;
 	// @NonNull PickingCandidateId pickingCandidateId;
+
+	public HuId getActualPickedHUId() {return actualPickedHU.getId();}
 }

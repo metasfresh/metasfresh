@@ -48,6 +48,7 @@ import org.compiere.model.I_M_MatchPO;
 import org.compiere.util.Env;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -152,6 +153,23 @@ public class CostingDocuments_StepDef
 		return hus.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(ImmutableSet.toImmutableSet());
 	}
 
+	/**
+	 * Invoices the order line's invoice candidate and loads the resulting completed invoice and its material invoice match.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_OrderLine_ID</b> — (required, identifier-ref) the order line whose invoice candidate is invoiced<br>
+	 *   <b>PriceEntered_Override</b> — (optional) invoice price override<br>
+	 *   <b>DateInvoiced</b> — (optional) the invoice date; without it the invoice is dated today<br>
+	 *   <b>C_Invoice_ID</b> — (optional) identifier for the created invoice<br>
+	 *   <b>M_MatchInv_ID</b> — (optional) identifier for the created invoice match<br>
+	 * @cucumber.example
+	 * <pre>
+	 * When for costing, create completed invoice with one line
+	 *   | C_OrderLine_ID | PriceEntered_Override | DateInvoiced | M_MatchInv_ID |
+	 *   | po_l1          | 12                    | 2021-04-15   | matchInv      |
+	 * </pre>
+	 */
 	@Given("for costing, create completed invoice with one line")
 	public void createInvoices(@NonNull final DataTable dataTable)
 	{
@@ -171,7 +189,15 @@ public class CostingDocuments_StepDef
 		invoiceCandDAO.save(invoiceCandidate);
 		invoiceCandidateStepDef.waitUntilValid(invoiceCandidateId, 120);
 
-		invoiceCandidateStepDef.generateInvoices(ImmutableSet.of(invoiceCandidateId));
+		final LocalDate dateInvoiced = row.getAsOptionalLocalDate(I_C_Invoice.COLUMNNAME_DateInvoiced).orElse(null);
+		if (dateInvoiced != null)
+		{
+			invoiceCandidateStepDef.generateInvoices(ImmutableSet.of(invoiceCandidateId), dateInvoiced);
+		}
+		else
+		{
+			invoiceCandidateStepDef.generateInvoices(ImmutableSet.of(invoiceCandidateId));
+		}
 		final I_C_Invoice invoice = invoiceStepDef.waitAndLoadSingleInvoice(invoiceCandidateId);
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 		row.getAsOptionalIdentifier("C_Invoice_ID").ifPresent(invoiceIdentifier -> invoiceTable.putOrReplace(invoiceIdentifier, invoice));

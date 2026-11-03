@@ -61,6 +61,15 @@ public class JsonShipmentOptions
 	@JsonProperty("ServiceLevel")
 	String serviceLevel;
 
+	/** Order-advise only: {@code false} (serialized as {@code 0}) = advise without booking the shipment. */
+	@JsonProperty("Submit")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean submit;
+
+	/** Order-advise only: {@code "extended"} to get the full advised result. */
+	@JsonProperty("Visibility")
+	String visibility;
+
 	@JsonProperty("RerunCSROnError")
 	@JsonSerialize(converter = BooleanToIntConverter.class)
 	Boolean rerunCSROnError;

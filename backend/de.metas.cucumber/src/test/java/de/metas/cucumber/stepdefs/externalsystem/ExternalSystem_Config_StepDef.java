@@ -31,18 +31,14 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.endpoint.EndpointAuthType;
-import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionRepository;
+import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -51,6 +47,10 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
+import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionRepository;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
@@ -59,6 +59,7 @@ import de.metas.process.ProcessInfoLog;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -73,9 +74,11 @@ import org.compiere.model.I_AD_UserGroup;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -94,7 +97,7 @@ public class ExternalSystem_Config_StepDef
 	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final ExternalSystemConfigRepository externalSystemConfigRepository = SpringContextHolder.instance.getBean(ExternalSystemConfigRepository.class);
 	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 	private final ExternalSystemScriptedExportConversionRepository scriptedExportConversionRepository = SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionRepository.class);
 
@@ -104,6 +107,18 @@ public class ExternalSystem_Config_StepDef
 	private final ExternalSystem_Config_ScriptedExportConversion_StepDefData scriptedExportConversionConfigTable;
 
 	private final TestContext testContext;
+
+	/**
+	 * {@code IsTriggerOnComplete} scripted-export configs created by this scenario; deactivated by {@link #restoreTriggerOnCompleteConfigsAfterScenario()},
+	 * because an active one fires an export on every later completion of a document of its table, also in the scenarios that run after this one on the executor.
+	 */
+	private final Set<Integer> createdTriggerOnCompleteConfigIds = new LinkedHashSet<>();
+
+	/**
+	 * Previously active {@code IsTriggerOnComplete} scripted-export configs this scenario deactivated (table-scoped takeover); re-activated by
+	 * {@link #restoreTriggerOnCompleteConfigsAfterScenario()}, unless this scenario created them itself.
+	 */
+	private final Set<Integer> takenOverTriggerOnCompleteConfigIds = new LinkedHashSet<>();
 
 	public ExternalSystem_Config_StepDef(
 			@NonNull final ExternalSystem_Config_StepDefData configTable,
@@ -228,7 +243,7 @@ public class ExternalSystem_Config_StepDef
 
 		final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCodeOrNull(typeCode);
 
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(externalSystemType, externalSystemChildValue);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepository.getByTypeAndValue(externalSystemType, externalSystemChildValue);
 
 		if (externalSystemParentConfig.isPresent())
 		{
@@ -353,10 +368,42 @@ public class ExternalSystem_Config_StepDef
 	@And("metasfresh contains ExternalSystem_Config with ScriptedExportConversion")
 	public void add_externalSystemConfigWithScriptedExportConversion(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::saveExternalSystemConfigWithScriptedExportConversion);
+		DataTableRows.of(dataTable).forEach(row -> saveExternalSystemConfigWithScriptedExportConversion(row));
+	}
+
+	/**
+	 * Variant of {@code metasfresh contains ExternalSystem_Config with ScriptedExportConversion} that also
+	 * enables {@code IsTriggerOnComplete} on the scripted-export config, so completing a document of the
+	 * configured table records an {@code ExternalSystem_ScriptedExportConversion_Status} row. Use this when
+	 * the scenario verifies the status-table lifecycle (Pending/DontSend/Sent/Error/Invalid).
+	 *
+	 * <p>Accepts the same columns as the base step:
+	 * <b>ExternalSystem_Config_ID</b> (identifier), <b>ExternalSystem_Config_ScriptedExportConversion_ID</b> (identifier),
+	 * <b>AD_Process_OutboundData_ID.Value</b> (the outbound data process producing the export payload),
+	 * <b>TableName</b> (the document table the config triggers on),
+	 * <b>WhereClause</b> (optional — the config's match clause; defaults to {@code IsActive='Y'}. Override with a
+	 * clause that only matches once the document is committed-complete, e.g. {@code docstatus IN ('CO','CL')},
+	 * to mirror the production EPCIS clause {@code "de.metas.edi".epcis_has_events(m_inout_id)}).
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * And metasfresh contains ExternalSystem_Config with ScriptedExportConversion and StatusColumn:
+	 *   | ExternalSystem_Config_ID | ExternalSystem_Config_ScriptedExportConversion_ID | AD_Process_OutboundData_ID.Value | TableName |
+	 *   | esConfig_es              | scriptedCfg_es                                    | M_InOut_EDI_Export_JSON          | M_InOut   |
+	 * </pre>
+	 */
+	@And("metasfresh contains ExternalSystem_Config with ScriptedExportConversion and StatusColumn:")
+	public void add_externalSystemConfigWithScriptedExportConversionAndStatusColumn(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> saveExternalSystemConfigWithScriptedExportConversion(row, true));
 	}
 
 	private void saveExternalSystemConfigWithScriptedExportConversion(@NonNull final DataTableRow row)
+	{
+		saveExternalSystemConfigWithScriptedExportConversion(row, false);
+	}
+
+	private void saveExternalSystemConfigWithScriptedExportConversion(@NonNull final DataTableRow row, final boolean readStatusColumn)
 	{
 		final StepDefDataIdentifier parentConfigIdentifier = row.getAsIdentifier(COLUMNNAME_ExternalSystem_Config_ID);
 		final StepDefDataIdentifier scriptedConfigIdentifier = row.getAsIdentifier(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID);
@@ -365,7 +412,7 @@ public class ExternalSystem_Config_StepDef
 
 		// Create an outbound endpoint with defaults
 		final I_ExternalSystem_Endpoint outboundEndpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
-		outboundEndpoint.setOutboundHttpEP("http://localhost:9999");
+		outboundEndpoint.setHttpEndPoint("http://localhost:9999");
 		outboundEndpoint.setOutboundHttpMethod(HttpMethod.POST.getCode());
 		outboundEndpoint.setType(X_ExternalSystem_Endpoint.TYPE_HTTP);
 		outboundEndpoint.setAuthType(EndpointAuthType.Token.getCode());
@@ -397,13 +444,83 @@ public class ExternalSystem_Config_StepDef
 
 		scriptedExportConversionConfig.setExternalSystemValue(valueAndName.getValue());
 
+		if (readStatusColumn)
+		{
+			// Status_AD_Column_ID was removed from the model when the per-record status design was
+			// consolidated into ExternalSystem_ScriptedExportConversion_Status (one row per export
+			// attempt, carrying the export lifecycle).  IsTriggerOnComplete is still required to tell the
+			// complete-interceptor to start the export.
+			scriptedExportConversionConfig.setIsTriggerOnComplete(true);
+
+			// Deactivate any pre-existing IsTriggerOnComplete configs for the same AD_Table_ID
+			// to avoid roll-up interference between test runs.
+			queryBL
+					.createQueryBuilder(I_ExternalSystem_Config_ScriptedExportConversion.class)
+					.addEqualsFilter(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_AD_Table_ID, tableId.getRepoId())
+					.addEqualsFilter(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_IsTriggerOnComplete, true)
+					.addEqualsFilter(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_IsActive, true)
+					.create()
+					.list()
+					.forEach(existing -> {
+						existing.setIsActive(false);
+						InterfaceWrapperHelper.save(existing);
+						takenOverTriggerOnCompleteConfigIds.add(existing.getExternalSystem_Config_ScriptedExportConversion_ID());
+					});
+		}
+
+		// The DDL default "IsActive=Y" is not valid PostgreSQL SQL (Y is treated as a column name by
+		// the JDBC driver). Default to the syntactically correct always-true form so that
+		// ExternalSystemScriptedExportConversionService.isConfigMatchingRecord() can run the WHERE
+		// clause successfully. A scenario may override it via the optional WhereClause column — e.g.
+		// a clause that only matches once the document is committed-complete (docstatus IN ('CO','CL')),
+		// mirroring the production EPCIS clause "de.metas.edi".epcis_has_events(m_inout_id).
+		final String whereClause = row.getAsOptionalString("WhereClause").orElse("IsActive='Y'");
+		scriptedExportConversionConfig.setWhereClause(whereClause);
 
 		InterfaceWrapperHelper.save(scriptedExportConversionConfig);
+		if (readStatusColumn)
+		{
+			createdTriggerOnCompleteConfigIds.add(scriptedExportConversionConfig.getExternalSystem_Config_ScriptedExportConversion_ID());
+		}
 
 		final ExternalSystemScriptedExportConversionConfig config = scriptedExportConversionRepository.getById(
 				ExternalSystemScriptedExportConversionConfigId.ofRepoId(scriptedExportConversionConfig.getExternalSystem_Config_ScriptedExportConversion_ID())
 		);
 
 		scriptedExportConversionConfigTable.put(scriptedConfigIdentifier, config);
+	}
+
+	/**
+	 * Guaranteed-execution cleanup for {@link #add_externalSystemConfigWithScriptedExportConversionAndStatusColumn}: an {@code @After} hook, so it also runs when a step failed.
+	 * Deactivates the {@code IsTriggerOnComplete} configs this scenario created and re-activates the ones it took over,
+	 * so a later scenario on the same executor does not export (and, for EPCIS, get its reverse/reactivate blocked by an in-flight export) because of this one.
+	 * A no-op for every scenario that never called that step.
+	 */
+	@After
+	public void restoreTriggerOnCompleteConfigsAfterScenario()
+	{
+		try
+		{
+			createdTriggerOnCompleteConfigIds.forEach(id -> setScriptedExportConversionConfigActive(id, false));
+			takenOverTriggerOnCompleteConfigIds.stream()
+					.filter(id -> !createdTriggerOnCompleteConfigIds.contains(id))
+					.forEach(id -> setScriptedExportConversionConfigActive(id, true));
+		}
+		finally
+		{
+			createdTriggerOnCompleteConfigIds.clear();
+			takenOverTriggerOnCompleteConfigIds.clear();
+		}
+	}
+
+	private static void setScriptedExportConversionConfigActive(final int configId, final boolean active)
+	{
+		final I_ExternalSystem_Config_ScriptedExportConversion config = InterfaceWrapperHelper.load(configId, I_ExternalSystem_Config_ScriptedExportConversion.class);
+		if (config == null || config.isActive() == active)
+		{
+			return; // deleted during the scenario, or nothing to change
+		}
+		config.setIsActive(active);
+		InterfaceWrapperHelper.save(config);
 	}
 }

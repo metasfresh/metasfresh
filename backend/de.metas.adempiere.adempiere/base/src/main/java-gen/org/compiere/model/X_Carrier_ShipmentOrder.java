@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_Carrier_ShipmentOrder, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1388190658L;
+	private static final long serialVersionUID = -207033780L;
 
     /** Standard Constructor */
     public X_Carrier_ShipmentOrder (final Properties ctx, final int Carrier_ShipmentOrder_ID, @Nullable final String trxName)
@@ -107,6 +107,30 @@ public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setExternalSystem (final @Nullable java.lang.String ExternalSystem)
+	{
+		set_Value (COLUMNNAME_ExternalSystem, ExternalSystem);
+	}
+
+	@Override
+	public java.lang.String getExternalSystem() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalSystem);
+	}
+
+	@Override
+	public void setIncotermsValue (final @Nullable java.lang.String IncotermsValue)
+	{
+		set_Value (COLUMNNAME_IncotermsValue, IncotermsValue);
+	}
+
+	@Override
+	public java.lang.String getIncotermsValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_IncotermsValue);
+	}
+
+	@Override
 	public void setInternationalDelivery (final boolean InternationalDelivery)
 	{
 		set_Value (COLUMNNAME_InternationalDelivery, InternationalDelivery);
@@ -116,6 +140,18 @@ public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_
 	public boolean isInternationalDelivery() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_InternationalDelivery);
+	}
+
+	@Override
+	public void setIsPreAdviceRequired (final boolean IsPreAdviceRequired)
+	{
+		set_Value (COLUMNNAME_IsPreAdviceRequired, IsPreAdviceRequired);
+	}
+
+	@Override
+	public boolean isPreAdviceRequired() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPreAdviceRequired);
 	}
 
 	@Override

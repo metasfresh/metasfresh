@@ -806,27 +806,6 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Shipment Candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
-
-	/**
-	 * Get Shipment Candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_ShipmentSchedule_ID();
-
-	ModelColumn<I_DD_OrderLine, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_DD_OrderLine.class, "M_ShipmentSchedule_ID", null);
-	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
-
-	/**
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *

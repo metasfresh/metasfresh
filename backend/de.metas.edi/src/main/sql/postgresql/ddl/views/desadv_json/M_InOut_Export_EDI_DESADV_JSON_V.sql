@@ -8,10 +8,10 @@ SELECT io.m_inout_id,
        d.edi_desadv_id AS edi_desadv_id,
        JSON_BUILD_OBJECT('metasfresh_DESADV', JSONB_BUILD_OBJECT(
                'Version', '0.2',
-               -- EdiDesadvRecipientGLN moved to C_BPartner_EDI_Setting; resolve via coalesce:
-               -- 1) exact location row (C_BPartner_ID + C_BPartner_Location_ID)
-               -- 2) partner-default row (C_BPartner_ID, no location)
-               'TechnicalRecipientGLN', COALESCE(edi_setting_loc.edidesadvrecipientgln, edi_setting_def.edidesadvrecipientgln),
+               -- EdiDesadvRecipientGLN resolved from C_BPartner_EDI_Setting via LATERAL:
+               -- lowest SeqNo (then lowest ID) among active rows matching the doc's partner+location
+               -- (exact-location OR partner-default), mirroring Java EDIBPartnerConfigMap.resolve.
+               'TechnicalRecipientGLN', edi_setting.edidesadvrecipientgln,
                'TechnicalSenderGLN', (SELECT REGEXP_REPLACE(sl.gln::text, '\s+$'::text, ''::text)
                                       FROM c_bpartner_location sl
                                       WHERE sl.c_bpartner_id = org.org_bpartner_id
@@ -36,7 +36,12 @@ SELECT io.m_inout_id,
                'DateOrdered', d.dateordered,
                'ShipmentDocumentNo', io.documentno,
                'EDI_Desadv_ID', d.edi_desadv_id,
-               'MovementDate', io.movementdate,
+                -- copied from 5805740_sys_me03_30189_DESADV_JSON_MovementDate_from_EDI_Desadv.sql
+               -- MovementDate carries the promised delivery date: EDI_Desadv.MovementDate is set from
+               -- C_Order.DatePromised at DESADV creation (DesadvBL.retrieveOrCreateDesadv). This matches the
+               -- legacy CCTOP XML export (M_InOut_Desadv_V) and is per-DESADV (correct for consolidated
+               -- shipments), unlike io.movementdate which is the single shipment-wide goods-movement date.
+               'MovementDate', d.movementdate,
                'POReference', COALESCE(d.poreference, io.poreference),
                'Packings', "de.metas.edi".get_desadv_packs_json_fn(d.edi_desadv_id, io.m_inout_id),
                'Currency', COALESCE(curr.currency_json, '{}'::jsonb),
@@ -59,15 +64,17 @@ SELECT io.m_inout_id,
                               ON link.m_inout_id = io.m_inout_id AND link.isactive = 'Y'
                          JOIN edi_desadv d
                               ON d.edi_desadv_id = link.edi_desadv_id
-                         -- EDI setting: coalesce exact-location row → partner-default row for GLN resolution
-                         LEFT JOIN c_bpartner_edi_setting edi_setting_loc
-                              ON edi_setting_loc.c_bpartner_id = d.c_bpartner_id
-                             AND edi_setting_loc.c_bpartner_location_id = d.c_bpartner_location_id
-                             AND edi_setting_loc.isactive = 'Y'
-                         LEFT JOIN c_bpartner_edi_setting edi_setting_def
-                              ON edi_setting_def.c_bpartner_id = d.c_bpartner_id
-                             AND edi_setting_def.c_bpartner_location_id IS NULL
-                             AND edi_setting_def.isactive = 'Y'
+                         -- EDI setting: LATERAL picks the single active row with lowest SeqNo (then lowest ID)
+                         -- among rows matching partner+location exactly OR partner-default (location IS NULL).
+                         LEFT JOIN LATERAL (
+                             SELECT s.*
+                             FROM c_bpartner_edi_setting s
+                             WHERE s.c_bpartner_id = d.c_bpartner_id
+                               AND (s.c_bpartner_location_id = d.c_bpartner_location_id OR s.c_bpartner_location_id IS NULL)
+                               AND s.isactive = 'Y'
+                             ORDER BY s.seqno, s.c_bpartner_edi_setting_id
+                             LIMIT 1
+                         ) edi_setting ON TRUE
     -- Joins for other lookup objects
                          LEFT JOIN "de.metas.edi".edi_currency_object_v curr ON curr.c_currency_id = d.c_currency_id
                          LEFT JOIN "de.metas.edi".edi_bpartner_object_v bp_buyer ON bp_buyer.c_bpartner_id = d.c_bpartner_id

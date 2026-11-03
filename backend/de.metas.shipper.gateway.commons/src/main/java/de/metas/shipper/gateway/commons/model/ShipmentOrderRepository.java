@@ -51,6 +51,7 @@ import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -69,6 +70,10 @@ import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveAll;
 
+/**
+ * Repository Tables: Carrier_ShipmentOrder, Carrier_ShipmentOrder_Parcel, Carrier_ShipmentOrder_Item
+ * Repository Cluster: ShipmentOrderRepository
+ */
 @Repository
 @RequiredArgsConstructor
 public class ShipmentOrderRepository
@@ -79,9 +84,10 @@ public class ShipmentOrderRepository
 	@NonNull private final CarrierGoodsTypeRepository goodsTypeRepository;
 	@NonNull private final CarrierShipmentOrderServiceRepository carrierServiceRepository;
 
+	@NonNull
 	public DeliveryOrder getById(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
-		final I_Carrier_ShipmentOrder shipmentOrder = InterfaceWrapperHelper.load(deliveryOrderId, I_Carrier_ShipmentOrder.class);
+		final I_Carrier_ShipmentOrder shipmentOrder = InterfaceWrapperHelper.loadNotNull(deliveryOrderId, I_Carrier_ShipmentOrder.class);
 
 		final ImmutableListMultimap<DeliveryOrderParcelId, DeliveryOrderItem> parcelIdToItems = queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
 				.addEqualsFilter(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_ID, deliveryOrderId)
@@ -125,6 +131,7 @@ public class ShipmentOrderRepository
 				.productName(item.getProductName())
 				.productValue(item.getArticleValue())
 				.customsTariff(item.getCustomsTariffNumber())
+				.countryOfOrigin(item.getCountryOfOrigin())
 				.totalWeightInKg(item.getTotalWeightInKg())
 				.unitPrice(Money.of(item.getPrice(), currencyId))
 				.totalValue(Money.of(item.getTotalPrice(), currencyId))
@@ -139,6 +146,9 @@ public class ShipmentOrderRepository
 		final DeliveryOrder.DeliveryOrderBuilder builder = DeliveryOrder.builder()
 				.id(id)
 				.customerReference(po.getCustomerReference())
+				.incotermsValue(po.getIncotermsValue())
+				.externalSystemValue(po.getExternalSystem())
+				.preAdviceRequired(StringUtils.ofBoolean(po.isPreAdviceRequired()))
 				.shipperId(shipperId)
 				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(po.getM_ShipperTransportation_ID()))
 				.pickupDate(PickupDate.builder()
@@ -276,7 +286,10 @@ public class ShipmentOrderRepository
 		final I_Carrier_ShipmentOrder po = InterfaceWrapperHelper.newInstance(I_Carrier_ShipmentOrder.class);
 		po.setC_BPartner_ID(request.getDeliveryAddress().getBpartnerId());
 		po.setCustomerReference(request.getCustomerReference());
+		po.setIncotermsValue(request.getIncotermsValue());
+		po.setExternalSystem(request.getExternalSystemValue());
 		po.setInternationalDelivery(!Objects.equals(request.getDeliveryAddress().getCountry(), request.getPickupAddress().getCountry()));
+		po.setIsPreAdviceRequired(StringUtils.toBoolean(request.getPreAdviceRequired()));
 		final ShipperId shipperId = request.getShipperId();
 		po.setM_Shipper_ID(ShipperId.toRepoId(shipperId));
 		po.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(request.getShipperTransportationId()));
@@ -390,6 +403,7 @@ public class ShipmentOrderRepository
 		po.setProductName(item.getProductName());
 		po.setArticleValue(item.getProductValue());
 		po.setCustomsTariffNumber(item.getCustomsTariff());
+		po.setCountryOfOrigin(item.getCountryOfOrigin());
 		Check.assumeEquals(item.getTotalValue().getCurrencyId(), item.getUnitPrice().getCurrencyId());
 		po.setPrice(item.getUnitPrice().toBigDecimal());
 		po.setC_Currency_ID(item.getUnitPrice().getCurrencyId().getRepoId());

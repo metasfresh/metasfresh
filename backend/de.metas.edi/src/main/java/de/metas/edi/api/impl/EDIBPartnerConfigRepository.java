@@ -24,7 +24,7 @@ package de.metas.edi.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CCache;
@@ -32,17 +32,16 @@ import de.metas.edi.api.EDIBPartnerConfig;
 import de.metas.edi.api.EDISendingMode;
 import de.metas.esb.edi.model.I_C_BPartner_EDI_Setting;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,8 +52,6 @@ import java.util.Optional;
 @Repository
 public class EDIBPartnerConfigRepository
 {
-	private static final Logger logger = LogManager.getLogger(EDIBPartnerConfigRepository.class);
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@VisibleForTesting
@@ -102,27 +99,13 @@ public class EDIBPartnerConfigRepository
 				.map(EDIBPartnerConfigRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableMap<BPartnerLocationId, EDIBPartnerConfig> byLocation = configs.stream()
-				.filter(config -> config.getBpartnerLocationId() != null)
-				.collect(ImmutableMap.toImmutableMap(
-						EDIBPartnerConfig::getBpartnerLocationId,
-						config -> config,
-						(first, ignored) -> {
-							logger.warn("Ignoring duplicate active C_BPartner_EDI_Setting for location={}; keeping the first", first.getBpartnerLocationId());
-							return first;
-						}));
-
-		final ImmutableMap<BPartnerId, EDIBPartnerConfig> defaultByPartner = configs.stream()
-				.filter(config -> config.getBpartnerLocationId() == null)
-				.collect(ImmutableMap.toImmutableMap(
+		// Group all configs by partner; resolution is done at query time using SeqNo + ID ordering.
+		final ImmutableListMultimap<BPartnerId, EDIBPartnerConfig> byPartner = configs.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						EDIBPartnerConfig::getBPartnerId,
-						config -> config,
-						(first, ignored) -> {
-							logger.warn("Ignoring duplicate active default C_BPartner_EDI_Setting for bPartnerId={}; keeping the first", first.getBPartnerId().getRepoId());
-							return first;
-						}));
+						config -> config));
 
-		return new EDIBPartnerConfigMap(byLocation, defaultByPartner);
+		return new EDIBPartnerConfigMap(byPartner);
 	}
 
 	private static EDIBPartnerConfig fromRecord(@NonNull final I_C_BPartner_EDI_Setting record)
@@ -135,6 +118,8 @@ public class EDIBPartnerConfigRepository
 		return EDIBPartnerConfig.builder()
 				.bPartnerId(bPartnerId)
 				.bpartnerLocationId(bpartnerLocationId)
+				.repoId(record.getC_BPartner_EDI_Setting_ID())
+				.seqNo(record.getSeqNo())
 				.isEdiDesadvRecipient(record.isEdiDesadvRecipient())
 				.ediDesadvRecipientGLN(record.getEdiDesadvRecipientGLN())
 				.ediDesadvSendingMode(EDISendingMode.ofCode(record.getEdiDESADVSendingMode()))
@@ -148,22 +133,28 @@ public class EDIBPartnerConfigRepository
 
 	private static final class EDIBPartnerConfigMap
 	{
-		private final ImmutableMap<BPartnerLocationId, EDIBPartnerConfig> byLocation;
-		private final ImmutableMap<BPartnerId, EDIBPartnerConfig> defaultByPartner;
+		private static final Comparator<EDIBPartnerConfig> BY_SEQ_NO_THEN_ID =
+				Comparator.comparingInt(EDIBPartnerConfig::getSeqNo)
+						.thenComparingInt(EDIBPartnerConfig::getRepoId);
 
-		EDIBPartnerConfigMap(
-				@NonNull final ImmutableMap<BPartnerLocationId, EDIBPartnerConfig> byLocation,
-				@NonNull final ImmutableMap<BPartnerId, EDIBPartnerConfig> defaultByPartner)
+		private final ImmutableListMultimap<BPartnerId, EDIBPartnerConfig> byPartner;
+
+		EDIBPartnerConfigMap(@NonNull final ImmutableListMultimap<BPartnerId, EDIBPartnerConfig> byPartner)
 		{
-			this.byLocation = byLocation;
-			this.defaultByPartner = defaultByPartner;
+			this.byPartner = byPartner;
 		}
 
 		@Nullable
 		EDIBPartnerConfig resolve(@NonNull final BPartnerLocationId bpl)
 		{
-			final EDIBPartnerConfig exact = byLocation.get(bpl);
-			return exact != null ? exact : defaultByPartner.get(bpl.getBpartnerId());
+			final BPartnerId bPartnerId = bpl.getBpartnerId();
+			return byPartner.get(bPartnerId).stream()
+					.filter(config -> {
+						final BPartnerLocationId configLocation = config.getBpartnerLocationId();
+						return configLocation == null || configLocation.equals(bpl);
+					})
+					.min(BY_SEQ_NO_THEN_ID)
+					.orElse(null);
 		}
 	}
 }

@@ -55,6 +55,7 @@ import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_EdiINVO
 import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_EdiInvoicRecipientGLN;
 import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_IsEdiDesadvRecipient;
 import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_IsEdiInvoicRecipient;
+import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_SeqNo;
 
 /**
  * Step definitions for creating and managing {@link I_C_BPartner_EDI_Setting} records.
@@ -85,6 +86,7 @@ public class C_BPartner_EDI_Setting_StepDef
 	 *   <b>EdiInvoicRecipientGLN</b> — (optional) GLN for INVOIC recipient<br>
 	 *   <b>EdiINVOICSendingMode</b> — (optional) sending mode code, default R (ReplicationInterface)<br>
 	 *   <b>EdiINVOIC_ExternalSystem_Config_ID</b> — (optional, identifier-ref) external system config for INVOIC<br>
+	 *   <b>SeqNo</b> — (optional) sequence number used for tie-breaking; lowest SeqNo wins when multiple rows match; defaults to 10<br>
 	 *   <b>Identifier</b> — (optional) alias for cross-step reference<br>
 	 * @cucumber.depends StepDefData: C_BPartner_StepDefData, C_BPartner_Location_StepDefData, ExternalSystem_Config_StepDefData
 	 * @cucumber.example
@@ -102,7 +104,8 @@ public class C_BPartner_EDI_Setting_StepDef
 
 	private void createEdiSetting(@NonNull final DataTableRow row)
 	{
-		// Fix B: accept raw repo-IDs as well as registered step-def identifiers
+		// Resolve by step-def identifier first, falling back to a raw repo-ID so partners that
+		// were never registered in the step-def table (e.g. pre-existing seed partners) still work.
 		final I_C_BPartner bPartner = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID)
 				.lookupOrLoadById(bPartnerTable, id -> InterfaceWrapperHelper.loadOutOfTrx(id, I_C_BPartner.class));
 		final int bPartnerId = bPartner.getC_BPartner_ID();
@@ -121,8 +124,8 @@ public class C_BPartner_EDI_Setting_StepDef
 			locationId = null;
 		}
 
-		// Fix A: upsert — find existing row for (C_BPartner_ID, C_BPartner_Location_ID) to stay idempotent
-		// across Background re-runs and pre-existing partner rows.
+		// Upsert: reuse an existing row for (C_BPartner_ID, C_BPartner_Location_ID) so the step stays
+		// idempotent across Background re-runs and pre-existing partner rows.
 		final I_C_BPartner_EDI_Setting record = CoalesceUtil.coalesceSuppliers(
 				() -> {
 					final IQueryBuilder<I_C_BPartner_EDI_Setting> qb = queryBL
@@ -164,6 +167,8 @@ public class C_BPartner_EDI_Setting_StepDef
 				.getCode());
 		row.getAsOptionalIdentifier(COLUMNNAME_EdiINVOIC_ExternalSystem_Config_ID)
 				.ifPresent(id -> record.setEdiINVOIC_ExternalSystem_Config_ID(id.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
+
+		record.setSeqNo(row.getAsOptionalInt(COLUMNNAME_SeqNo).orElse(10));
 
 		InterfaceWrapperHelper.saveRecord(record);
 

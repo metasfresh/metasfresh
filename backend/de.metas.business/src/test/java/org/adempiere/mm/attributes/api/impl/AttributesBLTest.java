@@ -23,6 +23,7 @@ package org.adempiere.mm.attributes.api.impl;
  */
 
 import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.AttributesTestHelper;
@@ -33,15 +34,19 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AttributesBLTest
 {
@@ -132,5 +137,41 @@ public class AttributesBLTest
 		final String attributeValueTypeActual = generator.getAttributeValueType();
 
 		Assertions.assertEquals(attributeValueTypeExpected, attributeValueTypeActual);
+	}
+
+	private ProductId createProductWithBestBeforeDays(final int bestBeforeDays)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_Product.class);
+		product.setValue("product");
+		product.setName("product");
+		product.setBestBeforeDays(bestBeforeDays);
+		save(product);
+		return ProductId.ofRepoId(product.getM_Product_ID());
+	}
+
+	@Test
+	public void computeBestBeforeDefault_bestBeforeDaysSet_receiptDayIsDayZero()
+	{
+		final ProductId productId = createProductWithBestBeforeDays(10);
+
+		final Optional<LocalDate> result = attributesBL.computeBestBeforeDefault(productId, LocalDate.of(2026, 10, 19));
+
+		assertThat(result).contains(LocalDate.of(2026, 10, 29));
+	}
+
+	@Test
+	public void computeBestBeforeDefault_bestBeforeDaysUnset_empty()
+	{
+		final ProductId productId = createProductWithBestBeforeDays(0);
+
+		assertThat(attributesBL.computeBestBeforeDefault(productId, LocalDate.of(2026, 10, 19))).isEmpty();
+	}
+
+	@Test
+	public void computeBestBeforeDefault_bestBeforeDaysNegative_empty()
+	{
+		final ProductId productId = createProductWithBestBeforeDays(-5);
+
+		assertThat(attributesBL.computeBestBeforeDefault(productId, LocalDate.of(2026, 10, 19))).isEmpty();
 	}
 }

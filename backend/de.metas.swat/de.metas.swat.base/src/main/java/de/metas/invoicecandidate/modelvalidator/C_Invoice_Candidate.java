@@ -16,6 +16,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupCompensationChangesHandler;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.compensationGroup.PercentCompensationLineInvoicing;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.location.InvoiceCandidateLocationsUpdater;
@@ -25,7 +26,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.InvoiceRule;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -88,7 +88,7 @@ public class C_Invoice_Candidate
 	{
 		return new C_Invoice_Candidate(
 				new InvoiceCandidateRecordService(),
-				new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory()),
+				InvoiceCandidateGroupRepository.newInstanceForUnitTesting(),
 				AttachmentEntryService.createInstanceForUnitTesting(),
 				DocumentLocationBL.newInstanceForUnitTesting());
 	}
@@ -270,6 +270,8 @@ public class C_Invoice_Candidate
 			I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced,
 			I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered,
 			I_C_Invoice_Candidate.COLUMNNAME_Processed_Override, // task 08567
+			I_C_Invoice_Candidate.COLUMNNAME_IsDeliveryClosed, // delivery-closed rule, see IInvoiceCandBL#isProcessedByDeliveryClosedRule
+			I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override, // same rule; a changed override would otherwise only be re-evaluated on the next recompute
 	})
 	public void updateProcessedFlag(final I_C_Invoice_Candidate ic)
 	{
@@ -282,17 +284,32 @@ public class C_Invoice_Candidate
 		if (ic.getC_OrderLine_ID() > 0)
 		{
 			final org.compiere.model.I_C_OrderLine ol = ic.getC_OrderLine();
-			if (ol.getQtyInvoiced().compareTo(ic.getQtyInvoiced()) != 0)
+			final BigDecimal qtyInvoiced = computeOrderLineQtyInvoiced(ic, ol);
+			if (ol.getQtyInvoiced().compareTo(qtyInvoiced) != 0)
 			{
 				// Required to ommit
 				// "MOrderLine.set_Value: Column not updateable - QtyInvoiced - NewValue=5.00 - OldValue=0 [62]"
 				Check.errorUnless(ol instanceof X_C_OrderLine || Adempiere.isUnitTestMode(), "We need to set QtyInvoiced via the model class, not directly on the PO (class={}).", ol.getClass());
-				ol.setQtyInvoiced(ic.getQtyInvoiced());
+				ol.setQtyInvoiced(qtyInvoiced);
 			}
 			InterfaceWrapperHelper.save(ol);
 
-			Check.assume(ol.getQtyInvoiced().compareTo(ic.getQtyInvoiced()) == 0, ic + " should have updated its ol's QtyInVoiced");
+			Check.assume(ol.getQtyInvoiced().compareTo(qtyInvoiced) == 0, ic + " should have updated its ol's QtyInVoiced");
 		}
+	}
+
+	/**
+	 * The percent discount candidate of a compensation group is invoiced one unit per partial invoice (see {@link PercentCompensationLineInvoicing}),
+	 * but its order line ordered only one unit: the order line never counts more than it ordered, so that the order's invoice status
+	 * reads "completely invoiced" only when its goods are.
+	 */
+	private BigDecimal computeOrderLineQtyInvoiced(@NonNull final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine ol)
+	{
+		if (PercentCompensationLineInvoicing.isPercentCompensationLine(ic))
+		{
+			return ic.getQtyInvoiced().min(ol.getQtyOrdered());
+		}
+		return ic.getQtyInvoiced();
 	}
 
 	/**

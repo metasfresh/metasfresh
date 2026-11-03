@@ -44,7 +44,7 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
 
   return (
     <div className="mt-5">
-      <BarcodeScannerComponent isShowInputText={false} isShowVideo={false} onResolvedResult={onScannedCode} />
+      <BarcodeScannerComponent invisible onResolvedResult={onScannedCode} />
       {lines.map((line, lineIdx) => {
         const lineId = line.lineId;
         return (
