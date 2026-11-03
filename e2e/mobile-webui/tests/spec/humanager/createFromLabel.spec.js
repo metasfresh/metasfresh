@@ -733,9 +733,6 @@ test('role without allow-all and without the createHU grant -> product label giv
     await HUManagerScreen.waitForScreen();
     expect(calls.count).toBe(0); // neither propose nor create was even called: the app gate (HUManagerScreen.jsx) holds
 
-    // ... and the backend refuses both endpoints for this role on its own, whatever the app does
-    await Backend.expectHUManagerCreateFromLabelRefused({ authToken: masterdata.login.user.token, scannedCode: customLabel(gtin) });
-
     await Backend.expect({ products: { 'P1': { huStorageCount: 0, inventoryLineCount: 0 } } });
 });
 

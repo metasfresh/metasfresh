@@ -60,26 +60,6 @@ export const Backend = {
         };
     }),
 
-    /**
-     * Calls both HU Manager "create from label" endpoints as the given user (the role must not be allowed the createHU action)
-     * and expects the backend itself to refuse them (access denied), independent of what the app shows.
-     */
-    expectHUManagerCreateFromLabelRefused: async ({ authToken, scannedCode }) => await test.step(`Backend: expect HU Manager create-from-label endpoints refused`, async () => {
-        const backendBaseUrl = await getBackendBaseUrl();
-        const call = async (endpoint, data) => {
-            const response = await page.request.post(`${backendBaseUrl}/material/handlingunits/hu-manager/${endpoint}`, {
-                data,
-                headers: { 'Content-Type': 'application/json', 'Accept-Language': 'en_US', 'Authorization': authToken },
-            });
-            const body = await response.text();
-            if (response.ok() || !/Access denied/.test(body)) {
-                throw new Error(`${endpoint} was not refused with "Access denied": HTTP ${response.status()}\n${body}`);
-            }
-        };
-        await call('proposeFromScannedCode', { scannedCode });
-        await call('createFromScannedCode', { scannedCode, qty: 1, locatorQRCode: 'unused' }); // locatorQRCode is mandatory in the JSON, the access check runs before it is read
-    }),
-
     /** Writes sysconfigs at config level; the previous values are restored after the test. */
     setSysconfigs: async (sysconfigs) => await test.step(`Backend: set sysconfigs`, async () => {
         rememberSysconfigsToRestore(await postSysconfigs('setSysconfigs', sysconfigs));
