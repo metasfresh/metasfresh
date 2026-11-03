@@ -27,6 +27,7 @@ import de.metas.security.permissions.WindowMaxQueryRecordsConstraint;
 import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -330,6 +331,32 @@ public class RoleDAO implements IRoleDAO
 		InterfaceWrapperHelper.save(userRole);
 
 		Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
+	}
+
+	@Override
+	public RoleId createRole(final String name)
+	{
+		final I_AD_Role record = InterfaceWrapperHelper.newInstance(I_AD_Role.class);
+		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setName(name);
+		record.setUserLevel(TableAccessLevel.ClientPlusOrganization.getUserLevelString());
+		// One org only: the login offers one entry per (role, tenant, org), and it auto-completes only for a
+		// single entry. IsAccessAllOrgs=Y would make that depend on how many orgs the stack happens to have.
+		record.setIsAccessAllOrgs(false);
+		InterfaceWrapperHelper.save(record);
+
+		return RoleId.ofRepoId(record.getAD_Role_ID());
+	}
+
+	@Override
+	public void createRoleInclusion(final RoleId roleId, final RoleId includedRoleId, final SeqNo seqNo)
+	{
+		final I_AD_Role_Included record = InterfaceWrapperHelper.newInstance(I_AD_Role_Included.class);
+		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setAD_Role_ID(roleId.getRepoId());
+		record.setIncluded_Role_ID(includedRoleId.getRepoId());
+		record.setSeqNo(seqNo.toInt());
+		InterfaceWrapperHelper.save(record);
 	}
 
 	private boolean hasUserRoleAssignment(final UserId adUserId, final RoleId adRoleId)

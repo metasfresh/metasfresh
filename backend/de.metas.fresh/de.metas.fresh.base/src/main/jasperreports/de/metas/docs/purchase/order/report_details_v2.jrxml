@@ -214,7 +214,9 @@
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="500" y="7" width="45" height="12" forecolor="#000000" uuid="d29e9aa9-ffdb-497d-a63d-9bd74e4ac560"/>
+				<reportElement key="textField-20" x="500" y="7" width="45" height="12" forecolor="#000000" uuid="d29e9aa9-ffdb-497d-a63d-9bd74e4ac560">
+					<printWhenExpression><![CDATA[$F{linenetamt}!=null]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
@@ -239,7 +241,7 @@
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="545" y="7" width="34" height="12" forecolor="#000000" uuid="625a8742-ced7-4849-98ff-c3d9cd6ae817">
-					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" )&& $F{rate}!=null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -525,7 +527,7 @@
 		</band>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean($F{attributes} != null) 
+			<printWhenExpression><![CDATA[new Boolean($F{attributes} != null)
   ||  ( new Boolean($P{displayhu}.equals( "Y" ) && $F{lu_name} != null && !$F{lu_name}.isEmpty() ) )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-13" mode="Transparent" x="97" y="0" width="142" height="12" forecolor="#000000" uuid="78d9f5a7-25c1-4106-ace7-c1af5c85fb3b">

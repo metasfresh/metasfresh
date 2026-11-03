@@ -92,6 +92,19 @@ public class DD_OrderLine_StepDef
 	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 
+	/**
+	 * @cucumber.stepdef Creates DD_OrderLine records for a previously created DD_Order.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code Identifier} — step-internal identifier for cross-step reference</li>
+	 *   <li>{@code DD_Order_ID} — identifier of the parent DD_Order</li>
+	 *   <li>{@code M_Product_ID} — identifier of the product</li>
+	 *   <li>{@code QtyEntered} — quantity to move</li>
+	 *   <li>{@code M_Locator_ID} — identifier of the source locator (must belong to DD_Order's from-warehouse)</li>
+	 *   <li>{@code M_LocatorTo_ID} — identifier of the target locator (must belong to DD_Order's to-warehouse)</li>
+	 * </ul>
+	 */
 	@Given("metasfresh contains DD_OrderLines:")
 	public void metasfresh_contains_dd_order_lines(@NonNull final DataTable dataTable)
 	{
@@ -136,6 +149,16 @@ public class DD_OrderLine_StepDef
 				});
 	}
 
+	/**
+	 * @cucumber.stepdef Validates DD_Order_MoveSchedule records linked to DD_OrderLines.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code DD_OrderLine_ID.Identifier} — identifier of the DD_OrderLine</li>
+	 *   <li>{@code QtyPicked} — expected quantity (note: feature file column is {@code QtyPicked}
+	 *       but the assertion compares against {@code QtyToPick} — this is a pre-existing mismatch)</li>
+	 * </ul>
+	 */
 	@And("validate DD_Order_MoveSchedule")
 	public void validate_move_schedule(@NonNull final DataTable dataTable)
 	{
@@ -159,6 +182,9 @@ public class DD_OrderLine_StepDef
 		}
 	}
 
+	/**
+	 * @cucumber.stepdef Asserts that no DD_OrderLine exists for the given sales order line identifier.
+	 */
 	@And("^no DD_OrderLine found for orderLine (.*)$")
 	public void validate_no_DD_OrderLine_found(@NonNull final String orderLineIdentifier)
 	{
@@ -174,6 +200,19 @@ public class DD_OrderLine_StepDef
 		}
 	}
 
+	/**
+	 * @cucumber.stepdef Polls for DD_OrderLines linked to a sales order line until they match or timeout.
+	 * <p>
+	 * Optional validation columns:
+	 * <ul>
+	 *   <li>{@code Identifier} — stores the found DD_OrderLine for later reference</li>
+	 *   <li>{@code QtyEntered} — expected entered quantity</li>
+	 *   <li>{@code M_Product_ID} — expected product identifier</li>
+	 *   <li>{@code M_Warehouse_From_ID} — expected source warehouse identifier</li>
+	 *   <li>{@code M_Warehouse_To_ID} — expected target warehouse identifier</li>
+	 *   <li>{@code DD_Order_ID} — expected DD_Order identifier (registers new identifier if not yet known)</li>
+	 * </ul>
+	 */
 	@And("^after not more than (.*)s, DD_OrderLine found for orderLine (.*)$")
 	public void validate_DD_OrderLines_found_for_OrderLine(
 			final int timeoutSec,

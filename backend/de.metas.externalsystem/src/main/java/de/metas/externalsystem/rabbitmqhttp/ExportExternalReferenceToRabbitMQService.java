@@ -44,10 +44,10 @@ import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
 import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
@@ -81,14 +81,14 @@ public class ExportExternalReferenceToRabbitMQService extends ExportExternalRefe
 	protected ExportExternalReferenceToRabbitMQService(
 			final @NonNull DataExportAuditRepository dataExportAuditRepository,
 			final @NonNull DataExportAuditLogRepository dataExportAuditLogRepository,
-			final @NonNull ExternalSystemConfigRepo externalSystemConfigRepo,
+			final @NonNull ExternalSystemConfigRepository externalSystemConfigRepository,
 			final @NonNull ExternalSystemMessageSender externalSystemMessageSender,
 			final @NonNull ExternalReferenceRepository externalReferenceRepository,
 			final @NonNull UserGroupRepository userGroupRepository,
 			final @NonNull BPartnerCompositeRepository bpartnerCompositeRepository,
 			final @NonNull ExternalSystemConfigService externalSystemConfigService)
 	{
-		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepo, externalSystemMessageSender, externalReferenceRepository, externalSystemConfigService);
+		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepository, externalSystemMessageSender, externalReferenceRepository, externalSystemConfigService);
 
 		this.userGroupRepository = userGroupRepository;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
@@ -106,7 +106,7 @@ public class ExportExternalReferenceToRabbitMQService extends ExportExternalRefe
 			return Optional.empty();
 		}
 
-		final ImmutableList<ExternalSystemParentConfig> rabbitMQParentConfigs = externalSystemConfigRepo.getActiveByType(ExternalSystemType.RabbitMQ);
+		final ImmutableList<ExternalSystemParentConfig> rabbitMQParentConfigs = externalSystemConfigRepository.getActiveByType(ExternalSystemType.RabbitMQ);
 
 		return Optional.of(rabbitMQParentConfigs.stream()
 								   .filter(ExternalSystemParentConfig::isActive)

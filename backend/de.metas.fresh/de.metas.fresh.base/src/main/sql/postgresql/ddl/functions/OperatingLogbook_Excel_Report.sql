@@ -43,7 +43,7 @@ CREATE OR REPLACE FUNCTION report.OperatingLogbook_Excel_Report(IN p_MovementDat
                 ServicePerformed        varchar,
                 InvoiceDocumentNo       varchar,
                 PurchaseOrderDocumentNo varchar,
-                TakeoverDate            date,
+                TakeoverDate            text,
                 QuantityInTons          numeric,
                 WasteCodeNumber         varchar,
                 WasteProducerName       varchar,
@@ -58,12 +58,12 @@ CREATE OR REPLACE FUNCTION report.OperatingLogbook_Excel_Report(IN p_MovementDat
     LANGUAGE sql
 AS
 $$
-SELECT 'B + T Eingang'                                                                       AS ServicePerformed,
-       inv.DocumentNo                                                                        AS InvoiceDocumentNo,
-       ord.DocumentNo                                                                        AS PurchaseOrderDocumentNo,
-       io.MovementDate                                                                       AS TakeoverDate,
-       iol.MovementQty                                                                       AS QuantityInTons,
-       COALESCE(prod.AVV_No, prod.value)                                                     AS WasteCodeNumber,
+SELECT 'B + T Eingang'                                          AS ServicePerformed,
+       inv.DocumentNo                                           AS InvoiceDocumentNo,
+       ord.DocumentNo                                           AS PurchaseOrderDocumentNo,
+       TO_CHAR(io.MovementDate, 'DD.MM.YYYY')                    AS TakeoverDate,
+       iol.MovementQty                                          AS QuantityInTons,
+       COALESCE(prod.AVV_No, prod.value)                        AS WasteCodeNumber,
 
        bp_supplier.Name                                         AS WasteProducerName,
        COALESCE(bp_supplier.WasteProducerNo, bp_supplier.Value) AS WasteProducerNo,
@@ -75,10 +75,10 @@ SELECT 'B + T Eingang'                                                          
        )                                                        AS WasteDisposalNo,
 
 
-       prod.AVV_No                                                                           AS WasteCodeNumber2,
-       iol.MovementQty                                                                       AS QuantityInTons2,
-       io.MovementDate                                                                       AS SubmissionDate,
-       NULL                                                                                  AS Comments -- empty for now
+       prod.AVV_No                                              AS WasteCodeNumber2,
+       iol.MovementQty                                          AS QuantityInTons2,
+       io.MovementDate                                          AS SubmissionDate,
+       NULL                                                     AS Comments -- empty for now
 
 FROM M_InOut io
          INNER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID
@@ -86,8 +86,13 @@ FROM M_InOut io
          INNER JOIN C_BPartner bp_supplier ON io.C_BPartner_ID = bp_supplier.C_BPartner_ID
          LEFT JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
          LEFT JOIN C_Order ord ON ol.C_Order_ID = ord.C_Order_ID
-         LEFT JOIN C_InvoiceLine invl ON iol.M_InOutLine_ID = invl.M_InOutLine_ID
-         LEFT JOIN C_Invoice inv ON invl.C_Invoice_ID = inv.C_Invoice_ID
+         LEFT JOIN LATERAL (
+    SELECT STRING_AGG(DISTINCT inv_inner.DocumentNo, ', ' ORDER BY inv_inner.DocumentNo) AS DocumentNo
+    FROM C_InvoiceLine invl_inner
+             INNER JOIN C_Invoice inv_inner ON invl_inner.C_Invoice_ID = inv_inner.C_Invoice_ID
+    WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
+    GROUP BY iol.M_InOutLine_ID
+    ) inv ON TRUE
          LEFT JOIN M_ReceiptSchedule_Alloc rsa ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
          LEFT JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
          LEFT JOIN M_Warehouse wh_dest ON wh_dest.M_Warehouse_ID = COALESCE(
@@ -109,18 +114,19 @@ WHERE io.IsSOTrx = 'N'
   AND io.IsActive = 'Y'
   AND iol.IsActive = 'Y'
   AND wh.Value != 'DropshipWarehouse'
+  AND prod.AVV_No IS NOT NULL
 
 UNION ALL
 
 -- ========================================
 -- PART 2: Material Receipts (B + T) - Dropship Warehouses
 -- ========================================
-SELECT 'B + T'                                                                               AS ServicePerformed,
-       inv.DocumentNo                                                                        AS InvoiceDocumentNo,
-       ord.DocumentNo                                                                        AS PurchaseOrderDocumentNo,
-       io.MovementDate                                                                       AS TakeoverDate,
-       iol.MovementQty                                                                       AS QuantityInTons,
-       COALESCE(prod.AVV_No, prod.value)                                                     AS WasteCodeNumber,
+SELECT 'B + T'                                                  AS ServicePerformed,
+       inv.DocumentNo                                           AS InvoiceDocumentNo,
+       ord.DocumentNo                                           AS PurchaseOrderDocumentNo,
+       TO_CHAR(io.MovementDate, 'DD.MM.YYYY')                    AS TakeoverDate,
+       iol.MovementQty                                          AS QuantityInTons,
+       COALESCE(prod.AVV_No, prod.value)                        AS WasteCodeNumber,
 
        bp_supplier.Name                                         AS WasteProducerName,
        COALESCE(bp_supplier.WasteProducerNo, bp_supplier.Value) AS WasteProducerNo,
@@ -131,10 +137,10 @@ SELECT 'B + T'                                                                  
                COALESCE(bp_dest_org.WasteDisposerNo, bp_dest_org.Value)
        )                                                        AS WasteDisposalNo,
 
-       prod.AVV_No                                                                           AS WasteCodeNumber2,
-       iol.MovementQty                                                                       AS QuantityInTons2,
-       io.MovementDate                                                                       AS SubmissionDate,
-       NULL                                                                                  AS Comments
+       prod.AVV_No                                              AS WasteCodeNumber2,
+       iol.MovementQty                                          AS QuantityInTons2,
+       io.MovementDate                                          AS SubmissionDate,
+       NULL                                                     AS Comments
 
 FROM M_InOut io
          INNER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID
@@ -142,8 +148,13 @@ FROM M_InOut io
          INNER JOIN C_BPartner bp_supplier ON io.C_BPartner_ID = bp_supplier.C_BPartner_ID
          LEFT JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
          LEFT JOIN C_Order ord ON ol.C_Order_ID = ord.C_Order_ID
-         LEFT JOIN C_InvoiceLine invl ON iol.M_InOutLine_ID = invl.M_InOutLine_ID
-         LEFT JOIN C_Invoice inv ON invl.C_Invoice_ID = inv.C_Invoice_ID
+         LEFT JOIN LATERAL (
+    SELECT STRING_AGG(DISTINCT inv_inner.DocumentNo, ', ' ORDER BY inv_inner.DocumentNo) AS DocumentNo
+    FROM C_InvoiceLine invl_inner
+             INNER JOIN C_Invoice inv_inner ON invl_inner.C_Invoice_ID = inv_inner.C_Invoice_ID
+    WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
+    GROUP BY iol.M_InOutLine_ID
+    ) inv ON TRUE
          LEFT JOIN M_ReceiptSchedule_Alloc rsa ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
          LEFT JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
          LEFT JOIN M_Warehouse wh_dest ON wh_dest.M_Warehouse_ID = COALESCE(
@@ -164,18 +175,19 @@ WHERE io.IsSOTrx = 'N'
   AND io.IsActive = 'Y'
   AND iol.IsActive = 'Y'
   AND wh.Value = 'DropshipWarehouse'
+  AND prod.AVV_No IS NOT NULL
 
 UNION ALL
 
 -- ========================================
 -- PART 3: Customer Shipments (H + M)
 -- ========================================
-SELECT 'H + M'                                                                               AS ServicePerformed,
-       inv_sales.DocumentNo                                                                  AS InvoiceDocumentNo,
-       ord_sales.DocumentNo                                                                  AS PurchaseOrderDocumentNo,
-       io.MovementDate                                                                       AS TakeoverDate,
-       iol.MovementQty                                                                       AS QuantityInTons,
-       COALESCE(prod.AVV_No, prod.value)                                                     AS WasteCodeNumber,
+SELECT 'H + M'                                                  AS ServicePerformed,
+       inv_sales.DocumentNo                                     AS InvoiceDocumentNo,
+       ord_sales.DocumentNo                                     AS PurchaseOrderDocumentNo,
+       TO_CHAR(io.MovementDate, 'DD.MM.YYYY')                    AS TakeoverDate,
+       iol.MovementQty                                          AS QuantityInTons,
+       COALESCE(prod.AVV_No, prod.value)                        AS WasteCodeNumber,
 
        COALESCE(bp_wh_source.Name, bp_org_source.Name)          AS WasteProducerName,
        COALESCE(
@@ -186,10 +198,10 @@ SELECT 'H + M'                                                                  
        bp_customer.Name                                         AS WasteDisposalName,
        COALESCE(bp_customer.WasteDisposerNo, bp_customer.Value) AS WasteDisposalNo,
 
-       prod.AVV_No                                                                           AS WasteCodeNumber2,
-       iol.MovementQty                                                                       AS QuantityInTons2,
-       io.MovementDate                                                                       AS SubmissionDate,
-       NULL                                                                                  AS Comments
+       prod.AVV_No                                              AS WasteCodeNumber2,
+       iol.MovementQty                                          AS QuantityInTons2,
+       io.MovementDate                                          AS SubmissionDate,
+       NULL                                                     AS Comments
 
 FROM M_InOut io
          INNER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID
@@ -197,8 +209,14 @@ FROM M_InOut io
          INNER JOIN C_BPartner bp_customer ON io.C_BPartner_ID = bp_customer.C_BPartner_ID
          LEFT JOIN C_OrderLine ol_sales ON iol.C_OrderLine_ID = ol_sales.C_OrderLine_ID
          LEFT JOIN C_Order ord_sales ON ol_sales.C_Order_ID = ord_sales.C_Order_ID AND ord_sales.IsSOTrx = 'Y'
-         LEFT JOIN C_InvoiceLine invl_sales ON iol.M_InOutLine_ID = invl_sales.M_InOutLine_ID
-         LEFT JOIN C_Invoice inv_sales ON invl_sales.C_Invoice_ID = inv_sales.C_Invoice_ID AND inv_sales.IsSOTrx = 'Y'
+         LEFT JOIN LATERAL (
+    SELECT STRING_AGG(DISTINCT inv_inner.DocumentNo, ', ' ORDER BY inv_inner.DocumentNo) AS DocumentNo
+    FROM C_InvoiceLine invl_inner
+             INNER JOIN C_Invoice inv_inner ON invl_inner.C_Invoice_ID = inv_inner.C_Invoice_ID
+        AND inv_inner.IsSOTrx = 'Y'
+    WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
+    GROUP BY iol.M_InOutLine_ID
+    ) inv_sales ON TRUE
          LEFT JOIN M_Warehouse wh_source ON io.M_Warehouse_ID = wh_source.M_Warehouse_ID
          LEFT JOIN C_BPartner bp_wh_source ON wh_source.C_BPartner_ID = bp_wh_source.C_BPartner_ID
          LEFT JOIN AD_Org org_source ON wh_source.AD_Org_ID = org_source.AD_Org_ID
@@ -211,9 +229,10 @@ WHERE io.IsSOTrx = 'Y'
   AND io.DocStatus IN ('CO', 'CL')
   AND io.IsActive = 'Y'
   AND iol.IsActive = 'Y'
+  AND prod.AVV_No IS NOT NULL
 
 ORDER BY ServicePerformed,
-         TakeoverDate,
+         SubmissionDate,
          InvoiceDocumentNo;
 $$
 ;

@@ -29,6 +29,22 @@ import { ReceiptCandidatesPage } from '../utils/pages/ReceiptCandidatesPage';
  * - Parameter dialog input for quantity
  * - Multiple receipts from single PO line
  * - PDF validation for each partial receipt
+ *
+ * ## Video Recording Behavior
+ *
+ * NOTE: This test opens new browser tabs for Material Receipt navigation
+ * (via "Zoom Into" context menu). Playwright records each tab separately,
+ * which may result in multiple video files in the test results:
+ * - Main video: Shows the primary workflow on the main page
+ * - Additional videos (video-1.webm, etc.): Show Material Receipt tab content
+ *
+ * This is expected behavior due to Playwright's per-page video recording.
+ * All videos together document the complete workflow.
+ *
+ * ## PDF Attachments
+ *
+ * Downloaded PDFs are automatically attached to the Allure report after validation.
+ * This allows verification of PDF content without accessing the CI artifacts directly.
  */
 
 // Test cases for multi-language validation

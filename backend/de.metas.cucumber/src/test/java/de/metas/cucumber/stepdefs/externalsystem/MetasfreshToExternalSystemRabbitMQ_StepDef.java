@@ -29,8 +29,7 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.GetResponse;
 import de.metas.CommandLineParser;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
@@ -67,9 +66,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
@@ -85,6 +84,9 @@ import static org.assertj.core.api.Assertions.*;
 public class MetasfreshToExternalSystemRabbitMQ_StepDef
 {
 	private final static Logger logger = LogManager.getLogger(MetasfreshToExternalSystemRabbitMQ_StepDef.class);
+
+	/** How long the synchronous {@code basicGet} poll sleeps between empty pulls. */
+	private static final long POLL_INTERVAL_MILLIS = 250L;
 
 	private final ConnectionFactory metasfreshToRabbitMQFactory;
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -123,9 +125,54 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	public void rabbitMQs_MF_TO_ExternalSystem_queue_is_empty() throws IOException, TimeoutException
 	{
 		final Connection connection = metasfreshToRabbitMQFactory.newConnection();
-		final Channel channel = connection.createChannel();
-		final AMQP.Queue.PurgeOk purgeOk = channel.queuePurge(QUEUE_NAME_MF_TO_ES);
-		logger.info("Purged {} messages from queue {}", purgeOk.getMessageCount(), QUEUE_NAME_MF_TO_ES);
+		try
+		{
+			// createChannel() is inside the outer try so the connection is still closed if it throws.
+			final Channel channel = connection.createChannel();
+			try
+			{
+				final AMQP.Queue.PurgeOk purgeOk = channel.queuePurge(QUEUE_NAME_MF_TO_ES);
+				logger.info("Purged {} messages from queue {}", purgeOk.getMessageCount(), QUEUE_NAME_MF_TO_ES);
+			}
+			finally
+			{
+				// guard with isOpen(): if the broker already force-closed the channel, an unconditional
+				// close() would throw AlreadyClosedException in finally and suppress the real failure.
+				if (channel.isOpen())
+				{
+					channel.close();
+				}
+			}
+		}
+		finally
+		{
+			connection.close();
+		}
+	}
+
+	/**
+	 * Asserts that no message arrives on {@link ExternalSystemConstants#QUEUE_NAME_MF_TO_ES} within the
+	 * given timeout — the negative counterpart of {@code RabbitMQ receives a JsonExternalSystemRequest …}.
+	 * <p>
+	 * Polls synchronously with {@code basicGet} for the whole timeout window, so a message arriving late in
+	 * the window is still seen and still fails the assertion. A message that does not parse as a
+	 * {@link JsonExternalSystemRequest} is acked and skipped rather than failing the step — a leftover or
+	 * another scenario's message must not be reported as the condition under test.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then RabbitMQ MF_TO_ExternalSystem receives no message within 5s
+	 * </pre>
+	 */
+	@Then("^RabbitMQ MF_TO_ExternalSystem receives no message within (.*)s$")
+	public void rabbitMQ_receives_no_message(final int timeoutSeconds) throws IOException, TimeoutException
+	{
+		final JsonExternalSystemRequest request = receiveOneRequestOrNull(timeoutSeconds);
+
+		assertThat(request)
+				.as("Expected no JsonExternalSystemRequest on queue=%s within %ss, but received: %s", QUEUE_NAME_MF_TO_ES, timeoutSeconds, request)
+				.isNull();
 	}
 
 	@Then("RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:")
@@ -206,54 +253,208 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		}
 	}
 
+	/**
+	 * Polls {@code numberOfMessages} qualifying {@link JsonExternalSystemRequest}s off the
+	 * {@code MF_TO_ExternalSystem} queue.
+	 * <p>
+	 * Implemented with a <b>synchronous {@code basicGet} pull-loop</b> rather than an asynchronous push
+	 * consumer ({@code basicConsume} + a {@code DefaultConsumer.handleDelivery} callback). The
+	 * push-consumer approach is racy here: with no prefetch limit the broker dispatches <i>every</i>
+	 * queued message at once to the consumer; after the poll method's {@code finally} closes the channel,
+	 * still-pending deliveries re-enter the callback and act on the now-closed channel — which throws
+	 * inside the callback and makes the RabbitMQ client tear the channel down with
+	 * {@code ShutdownSignalException: ... Closed due to exception from Consumer ... handleDelivery}.
+	 * A pull-loop fetches exactly one message per {@code basicGet}, on the test thread, so there is no
+	 * consumer callback to throw and no extra-delivery/close race.
+	 * <p>
+	 * The loop is also tolerant of a foreign or unparseable message left on the (shared, durable) queue:
+	 * any message that does not parse as a {@link JsonExternalSystemRequest} is acked-and-skipped (removed)
+	 * and polling continues, so a cross-scenario/cross-feature leftover can neither be collected nor crash
+	 * the poll. Messages that parse but do not satisfy {@code messageQualifier} are likewise acked-and-skipped.
+	 * Closes both channel (guarded by {@code isOpen()}) and connection in {@code finally}.
+	 */
 	@NonNull
 	private List<JsonExternalSystemRequest> pollRequestFromQueue(
 			final int numberOfMessages,
 			final Function<JsonExternalSystemRequest, Boolean> messageQualifier) throws IOException, TimeoutException, InterruptedException
 	{
-		Channel channel = null;
-
+		final Connection connection = metasfreshToRabbitMQFactory.newConnection();
 		try
 		{
-			final ImmutableList.Builder<JsonExternalSystemRequest> collector = ImmutableList.builder();
-
-			final Connection connection = metasfreshToRabbitMQFactory.newConnection();
-			channel = connection.createChannel();
-
-			final CountDownLatch countDownLatch = new CountDownLatch(numberOfMessages);
-
-			final DefaultConsumer consumer = new DefaultConsumer(channel)
+			// createChannel() is inside the outer try so the connection is still closed if it throws.
+			final Channel channel = connection.createChannel();
+			try
 			{
-				@Override
-				public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body) throws JsonProcessingException
+				final ImmutableList.Builder<JsonExternalSystemRequest> collector = ImmutableList.builder();
+				int collected = 0;
+
+				final long deadlineMillis = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60);
+
+				while (collected < numberOfMessages && System.currentTimeMillis() < deadlineMillis)
 				{
-					final String externalSystemRequest = new String(body, StandardCharsets.UTF_8);
+					// autoAck=false: pull exactly one message at a time on the test thread, then ack it
+					// explicitly once we have read its body. No prefetch storm, no consumer-callback thread.
+					final GetResponse getResponse = channel.basicGet(QUEUE_NAME_MF_TO_ES, false);
+					if (getResponse == null)
+					{
+						// Queue currently empty (the export workpackage may not have published yet) -> wait
+						// briefly and retry until the deadline.
+						try
+						{
+							Thread.sleep(250);
+						}
+						catch (final InterruptedException interrupted)
+						{
+							Thread.currentThread().interrupt();
+							throw interrupted;
+						}
+						continue;
+					}
+
+					final String externalSystemRequest = new String(getResponse.getBody(), StandardCharsets.UTF_8);
+					channel.basicAck(getResponse.getEnvelope().getDeliveryTag(), false);
+
+					final JsonExternalSystemRequest jsonExternalSystemRequest;
+					try
+					{
+						jsonExternalSystemRequest = objectMapper.readValue(externalSystemRequest, JsonExternalSystemRequest.class);
+					}
+					catch (final JsonProcessingException foreignMessage)
+					{
+						// A leftover / foreign message that is not a JsonExternalSystemRequest: it is already acked
+						// (removed) above, so just skip it and keep polling for the messages we expect.
+						// The full body is logged on purpose: after the queue-empty isolation step, a non-parseable
+						// message most likely means the system under test published a malformed request, and the only
+						// other symptom is the generic 60s-timeout assertion below — the body is what makes that root
+						// cause diagnosable from the CI log.
+						logger.warn("*** {}: skipping non-JsonExternalSystemRequest/foreign message (body={}): {}", QUEUE_NAME_MF_TO_ES, externalSystemRequest, foreignMessage.getMessage());
+						continue;
+					}
 
 					logger.info("*** {}: received message: {}", QUEUE_NAME_MF_TO_ES, externalSystemRequest);
-
-					final JsonExternalSystemRequest jsonExternalSystemRequest = objectMapper.readValue(externalSystemRequest, JsonExternalSystemRequest.class);
 
 					if (messageQualifier.apply(jsonExternalSystemRequest))
 					{
 						collector.add(jsonExternalSystemRequest);
-						countDownLatch.countDown();
+						collected++;
 					}
 				}
-			};
 
-			channel.basicConsume(QUEUE_NAME_MF_TO_ES, true, consumer);
+				// the while-loop exits at collected == numberOfMessages (success) or on the deadline
+				// (collected < numberOfMessages); collected can never exceed numberOfMessages, so assert
+				// exact equality rather than >= which would disguise the loop's invariant.
+				assertThat(collected)
+						.as("Expected %s qualifying message(s) on queue '%s' within 60s, but got %s", numberOfMessages, QUEUE_NAME_MF_TO_ES, collected)
+						.isEqualTo(numberOfMessages);
 
-			final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS);
-
-			assertThat(messageReceivedWithinTimeout).isTrue();
-
-			return collector.build();
+				return collector.build();
+			}
+			finally
+			{
+				// guard with isOpen(): if the broker already force-closed the channel, an unconditional
+				// close() would throw AlreadyClosedException in finally and suppress the real failure.
+				if (channel.isOpen())
+				{
+					channel.close();
+				}
+			}
 		}
 		finally
 		{
-			if (channel != null)
+			connection.close();
+		}
+	}
+
+	/**
+	 * Blocks for up to {@code timeoutSeconds} for a single message on {@link ExternalSystemConstants#QUEUE_NAME_MF_TO_ES},
+	 * returning {@code null} if none arrived in time. Unlike {@link #pollRequestFromQueue(int, Function)} this
+	 * does not fail when nothing is received — the caller ({@code rabbitMQ_receives_no_message}) asserts on that.
+	 */
+	@Nullable
+	private JsonExternalSystemRequest receiveOneRequestOrNull(final int timeoutSeconds) throws IOException, TimeoutException
+	{
+		Connection connection = null;
+		Channel channel = null;
+
+		try
+		{
+			connection = metasfreshToRabbitMQFactory.newConnection();
+			channel = connection.createChannel();
+
+			final long deadline = System.currentTimeMillis() + (timeoutSeconds * 1000L);
+
+			while (System.currentTimeMillis() < deadline)
+			{
+				final GetResponse response = channel.basicGet(QUEUE_NAME_MF_TO_ES, false);
+				if (response == null)
+				{
+					try
+					{
+						Thread.sleep(POLL_INTERVAL_MILLIS);
+					}
+					catch (final InterruptedException e)
+					{
+						Thread.currentThread().interrupt();
+						break;
+					}
+					continue;
+				}
+
+				final long deliveryTag = response.getEnvelope().getDeliveryTag();
+				final String payload = new String(response.getBody(), StandardCharsets.UTF_8);
+
+				logger.info("*** {}: received message: {}", QUEUE_NAME_MF_TO_ES, payload);
+
+				try
+				{
+					final JsonExternalSystemRequest request = objectMapper.readValue(payload, JsonExternalSystemRequest.class);
+					channel.basicAck(deliveryTag, false);
+					return request;
+				}
+				catch (final JsonProcessingException e)
+				{
+					// Foreign message (a leftover, or another scenario's): ack it so it neither blocks this poll
+					// nor reappears, and keep polling. Throwing here would fail the scenario for someone else's
+					// message rather than for the condition under test.
+					channel.basicAck(deliveryTag, false);
+					logger.info("*** {}: skipping unparseable message: {}", QUEUE_NAME_MF_TO_ES, payload, e);
+				}
+			}
+
+			return null;
+		}
+		finally
+		{
+			closeQuietly(channel, connection);
+		}
+	}
+
+	/**
+	 * Closes channel and connection, swallowing close failures — a broker-side close error must not mask
+	 * the assertion result of the step that is closing.
+	 */
+	private void closeQuietly(@Nullable final Channel channel, @Nullable final Connection connection)
+	{
+		if (channel != null)
+		{
+			try
 			{
 				channel.close();
+			}
+			catch (final Exception e)
+			{
+				logger.debug("Ignoring failure while closing the channel", e);
+			}
+		}
+		if (connection != null)
+		{
+			try
+			{
+				connection.close();
+			}
+			catch (final Exception e)
+			{
+				logger.debug("Ignoring failure while closing the connection", e);
 			}
 		}
 	}
@@ -291,6 +492,10 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		if (!isMatchingESRequestBasedOnESConfig(externalSystemConfigIdentifier, externalSystemRequest))
 		{
 			return false;
+		}
+		if (DataTableUtil.extractBooleanForColumnNameOr(row, "ConfigIDOnly", false))
+		{
+			return true;
 		}
 
 		final String huIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
