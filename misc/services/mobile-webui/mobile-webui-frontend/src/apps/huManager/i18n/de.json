@@ -73,12 +73,11 @@
     "title": "Neue HU",
     "product": "Produkt",
     "qty": "Menge",
-    "changeQty": "Menge ändern",
     "locator": "Lagerplatz",
-    "noLocator": "Kein Lagerplatz - bitte scannen",
+    "noLocator": "Kein Lagerplatz - bitte \"Lagerplatz ändern\" tippen",
+    "changeLocator": "Lagerplatz ändern",
     "weight": "Gewicht",
     "ok": "OK",
-    "notALocator": "Lagerplatz scannen oder OK drücken",
     "created": "HU %(huValue)s erstellt: %(qty)s"
   }
 }

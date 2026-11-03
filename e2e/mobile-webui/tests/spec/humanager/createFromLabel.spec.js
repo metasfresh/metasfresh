@@ -162,7 +162,7 @@ test('custom label (GTIN + lot + best-before) -> preview -> OK -> success messag
     await openHUManager({ user: masterdata.login.user });
 
     await scanLabelAndWaitForPreview({ label: customLabel(gtin) });
-    await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '1 PCE' });
+    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
     await NewHUPreviewScreen.expectValue({ name: 'attribute-Lot-Nummer-value', expectedValue: 'L2311' });
     await NewHUPreviewScreen.expectOKEnabled();
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
@@ -206,7 +206,7 @@ test('reference case with an invented GS1 label -> preview -> OK -> back on the 
     // scan -> preview, everything asserted on screen
     await scanLabelAndWaitForPreview({ label: gs1Label(gtin) });
     await NewHUPreviewScreen.expectProductContains(masterdata.products.P1.productName);
-    await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '1 PCE' });
+    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
     await NewHUPreviewScreen.expectValue({ name: 'attribute-Lot-Nummer-value', expectedValue: 'L2311' });
     // the best-before date of the label (use-by 31.12.2027) is shown on the preview, exactly (en_US display MM/DD/YYYY)
     await NewHUPreviewScreen.expectAttributeValue({ code: 'HU_BestBeforeDate', expectedValue: '12/31/2027' });
@@ -255,7 +255,7 @@ test('reference label shape (bracketed, fixed positions) -> preview -> enter qua
 
     // the label carries no quantity: the user enters it
     await NewHUPreviewScreen.setQty(7);
-    await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '7 PCE' });
+    await NewHUPreviewScreen.expectQty({ qty: '7', uom: 'PCE' });
     await NewHUPreviewScreen.expectOKEnabled();
 
     const created = await clickOKAndGetCreatedHU();
@@ -293,7 +293,7 @@ test('GS1 label -> preview -> OK -> CU with lot + best-before (= use-by)', async
     await openHUManager({ user: masterdata.login.user });
 
     await scanLabelAndWaitForPreview({ label: gs1Label(gtin) });
-    await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '1 PCE' });
+    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
 
     const created = await clickOKAndGetCreatedHU();
@@ -404,7 +404,7 @@ test('location from the user workplace — pick-from location, else the default 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('location scanned on the preview (no button), not remembered; a product label on the preview is refused', async ({ page }) => {
+test('location changed with the Change locator button, not remembered; a non-location code in the dialog is refused, Cancel keeps the location', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - create HU from a scanned label');
@@ -423,14 +423,17 @@ test('location scanned on the preview (no button), not remembered; a product lab
     await scanLabelAndWaitForPreview({ label: customLabel(gtin) });
     await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: wh1_l1.code });
 
-    // (e) a product label scanned on the preview -> refused with an error toast, preview unchanged
-    await NewHUPreviewScreen.scan(customLabel(gtin));
-    await expect(page.locator('.Toastify__toast--error').filter({ hasText: 'Scan a locator or press OK' }).first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-    await NewHUPreviewScreen.waitForScreen();
+    await NewHUPreviewScreen.expectNoScanner();
+
+    // (e) a product label scanned in the dialog -> refused with an error toast, dialog stays open; Cancel keeps the location
+    await NewHUPreviewScreen.openChangeLocatorDialog();
+    await NewHUPreviewScreen.scanInChangeLocatorDialog(customLabel(gtin));
+    await expect(page.locator('.Toastify__toast--error').first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await NewHUPreviewScreen.cancelChangeLocatorDialog();
     await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: wh1_l1.code });
 
-    // (c) another location QR code -> shown at once, no button; OK books there
-    await NewHUPreviewScreen.scan(wh2_l1.qrCode);
+    // (c) Change locator + another location QR code -> shown at once; OK books there
+    await NewHUPreviewScreen.changeLocator(wh2_l1.qrCode);
     await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: wh2_l1.code });
     const created = await clickOKAndGetCreatedHU();
     await expectBackOnScanScreenAfterOK({ created });
@@ -441,6 +444,55 @@ test('location scanned on the preview (no button), not remembered; a product lab
     await HUManagerScreen.waitForScreen();
     await scanLabelAndWaitForPreview({ label: customLabel(gtin) });
     await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: wh1_l1.code });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('inline quantity on the preview: typed digits stay in the field, emptied field disables OK, quantity + Change locator -> HU on the scanned location with the typed quantity', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - create HU from a scanned label');
+    allure.severity('critical');
+
+    const gtin = uniqueGtin14();
+    const masterdata = await createMasterdata({
+        gtin,
+        users: { user: { language: "en_US", workplace: "workplace1" } },
+        workplaces: { workplace1: { warehouse: 'wh1', pickFromLocator: 'wh1_l1' } },
+    });
+    const wh1_l1 = masterdata.warehouses.wh1.locators.wh1_l1;
+    const wh2_l1 = masterdata.warehouses.wh2.locators.wh2_l1;
+    await openHUManager({ user: masterdata.login.user });
+    await scanLabelAndWaitForPreview({ label: customLabel(gtin) });
+
+    await test.step('(i) typed digits stay in the quantity field (the preview has no scanner)', async () => {
+        await NewHUPreviewScreen.expectNoScanner();
+        await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
+        await NewHUPreviewScreen.setQty(7);
+        await page.waitForTimeout(2500); // past the 2 s refocus of a scanner's hidden input (there is none now)
+        await NewHUPreviewScreen.expectQty({ qty: '7', uom: 'PCE' });
+        await expect(page.locator('.Toastify__toast--error')).toHaveCount(0);
+        await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: wh1_l1.code });
+        await NewHUPreviewScreen.expectOKEnabled();
+    });
+
+    await test.step('(ii) quantity field emptied -> OK disabled; typed again -> enabled', async () => {
+        await NewHUPreviewScreen.clearQty();
+        await NewHUPreviewScreen.expectOKDisabled();
+        await NewHUPreviewScreen.setQty(5);
+        await NewHUPreviewScreen.expectOKEnabled();
+    });
+
+    await test.step('(iii) quantity typed, Change locator, location scanned -> the location changes, the quantity stays', async () => {
+        await NewHUPreviewScreen.setQty(3);
+        await NewHUPreviewScreen.changeLocator(wh2_l1.qrCode);
+        await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: wh2_l1.code });
+        await NewHUPreviewScreen.expectQty({ qty: '3', uom: 'PCE' });
+    });
+
+    const created = await clickOKAndGetCreatedHU();
+    await expectBackOnScanScreenAfterOK({ created, qty: '3 PCE' });
+    await Backend.expect({ hus: { [created.huId]: { huStatus: 'A', storages: { 'P1': '3 PCE' } } } });
+    await openCreatedHUByValue({ created, locatorCode: wh2_l1.code, qty: '3 PCE' }); // booked on the scanned location, typed quantity
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -509,7 +561,7 @@ test('catch-weight product, label with constant + product code + weight + lot + 
 
     const label = `XQ${masterdata.products.P1.productCode}012345L2311251101271231zz`;
     await scanLabelAndWaitForPreview({ label });
-    await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '1 PCE' });
+    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
     await NewHUPreviewScreen.expectValue({ name: 'weight-value', expectedValue: '12.345 KGM' });
     await NewHUPreviewScreen.expectValue({ name: 'attribute-Lot-Nummer-value', expectedValue: 'L2311' });
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
@@ -561,7 +613,7 @@ test('GS1 label with weight (310n) — kg product: quantity = weight; piece prod
 
     await test.step('product stocked in kg: quantity = label weight', async () => {
         await scanLabelAndWaitForPreview({ label: `01${gtinKg}3103012345` });
-        await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '12.345 KGM' });
+        await NewHUPreviewScreen.expectQty({ qty: '12.345', uom: 'KGM' });
         const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
         const created = await clickOKAndGetCreatedHU();
         const { huId } = created;
@@ -571,7 +623,7 @@ test('GS1 label with weight (310n) — kg product: quantity = weight; piece prod
 
     await test.step('piece product: quantity 1, weight shown as not used and not stored', async () => {
         await scanLabelAndWaitForPreview({ label: `01${gtinPce}3103012345` });
-        await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '1 PCE' });
+        await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
         await NewHUPreviewScreen.expectValue({ name: 'weight-value', expectedValue: 'The weight on the label is not used for this product' });
         const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
         const created = await clickOKAndGetCreatedHU();
@@ -690,7 +742,7 @@ test('the same label twice -> two previews alike, two HUs, two completed invento
     const created = [];
     for (let i = 1; i <= 2; i++) {
         await scanLabelAndWaitForPreview({ label: customLabel(gtin) });
-        await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '1 PCE' });
+        await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
         // the user has no workplace -> the organisation's default location; the second preview must look like the first
         if (i === 1) locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
         await NewHUPreviewScreen.expectValue({ name: 'locator-value', expectedValue: locatorCode });
@@ -813,7 +865,7 @@ test('role without allow-all, only createHU granted -> product label opens the p
     await openHUManager({ user: masterdata.login.user });
 
     await scanLabelAndWaitForPreview({ label: customLabel(gtin) });
-    await NewHUPreviewScreen.expectValue({ name: 'qty-value', expectedValue: '1 PCE' });
+    await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
     await NewHUPreviewScreen.clickCancel();
 
     await HUManagerScreen.waitForScreen();

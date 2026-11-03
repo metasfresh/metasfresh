@@ -6,12 +6,14 @@ import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponen
 const NAME = 'NewHUPreviewScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#NewHUPreviewScreen');
+const changeLocatorDialog = () => page.getByTestId('ChangeCurrentLocatorDialog');
 
 /**
  * The "New HU" preview of the HU Manager: shown after a scanned product label found no existing HU.
  * Rows use the same `<name>-value` test ids as the HU info table: product-value, qty-value, locator-value,
  * attribute-<code>-value (e.g. attribute-Lot-Nummer-value), weight-value (the label weight, or the "not used for this product" text).
- * Quantity: button qty-edit-button opens the dialog NewHUQtyDialog (qty-input, ok-button, cancel-button). Buttons: ok-button, cancel-button.
+ * Location: button change-locator-button opens the dialog ChangeCurrentLocatorDialog (scan a location; the preview has no scanner of its own).
+ * Quantity: an inline field (qty-input) in the quantity row; the unit is shown in the field. Buttons: ok-button, cancel-button.
  */
 export const NewHUPreviewScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -55,21 +57,33 @@ export const NewHUPreviewScreen = {
         await expect(containerElement().getByTestId('ok-button')).toBeDisabled();
     }),
 
+    /** the inline quantity field of the quantity row */
+    qtyInput: () => containerElement().getByTestId('qty-input'),
+
     /**
-     * The quantity is changed in a dialog (the scanner is unmounted while it is open; next to a live hardware scanner typed digits
-     * would be swallowed). It is typed with real key events (pressSequentially): fill() sends no keydown and would not see that.
-     * The read-only row `qty-value` shows the effective quantity + UOM.
+     * The quantity is typed into the inline field with real key events (pressSequentially): fill() sends no keydown and would not see
+     * a hardware scanner's window-level key reader swallowing the digits. The proposed quantity is pre-selected on focus: typing replaces it.
      */
-    setQty: async (qty) => await test.step(`${NAME} - Set quantity "${qty}"`, async () => {
-        await containerElement().getByTestId('qty-edit-button').tap();
-        const dialog = page.getByTestId('NewHUQtyDialog');
-        await dialog.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
-        const qtyInput = dialog.getByTestId('qty-input');
+    setQty: async (qty) => await test.step(`${NAME} - Type quantity "${qty}"`, async () => {
+        const qtyInput = NewHUPreviewScreen.qtyInput();
         await qtyInput.click();
-        await qtyInput.pressSequentially(`${qty}`); // the field is pre-selected on focus: typing replaces the proposed quantity
+        await qtyInput.pressSequentially(`${qty}`);
         await expect(qtyInput).toHaveValue(`${qty}`);
-        await dialog.getByTestId('ok-button').tap();
-        await dialog.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** the field is emptied with real key events (select all + Backspace) */
+    clearQty: async () => await test.step(`${NAME} - Empty the quantity field`, async () => {
+        const qtyInput = NewHUPreviewScreen.qtyInput();
+        await qtyInput.click();
+        await qtyInput.press('Control+A');
+        await qtyInput.press('Backspace');
+        await expect(qtyInput).toHaveValue('');
+    }),
+
+    /** the quantity shown in the field and its unit, e.g. ('12.345', 'KGM') */
+    expectQty: async ({ qty, uom }) => await test.step(`${NAME} - Expect quantity "${qty} ${uom}"`, async () => {
+        await expect(NewHUPreviewScreen.qtyInput()).toHaveValue(qty);
+        await expect(containerElement().getByTestId('qty-value')).toContainText(uom);
     }),
 
     /** Phone ergonomics: every value cell ends inside the viewport (a long value wraps; nothing is clipped on the right). */
@@ -101,10 +115,36 @@ export const NewHUPreviewScreen = {
     /** the OK button of the preview (scoped: the clearance dialog in the HU Manager uses the same test ids) */
     okButton: () => containerElement().getByTestId('ok-button'),
 
-    /** a scan on the preview (no button): a location QR code replaces the location, any other code is refused with an error toast */
-    scan: async (code) => await test.step(`${NAME} - Scan on the preview`, async () => {
-        await NewHUPreviewScreen.waitForScreen();
+    /** the preview itself has no scanner: a location is scanned in the dialog of the Change locator button */
+    expectNoScanner: async () => await test.step(`${NAME} - Expect no scanner on the preview`, async () => {
+        await BarcodeScannerComponent.expectNotAttached({});
+    }),
+
+    /** the "Change locator" button -> the dialog of the HU Manager (the only scanner on screen) */
+    openChangeLocatorDialog: async () => await test.step(`${NAME} - Tap Change locator`, async () => {
+        await containerElement().getByTestId('change-locator-button').tap();
+        await changeLocatorDialog().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** scan in the open dialog: a location is applied and the dialog closes; any other code is refused with an error toast (dialog stays) */
+    scanInChangeLocatorDialog: async (code) => await test.step(`${NAME} - Scan "${code}" in the Change locator dialog`, async () => {
         await BarcodeScannerComponent.type(code);
+    }),
+
+    expectChangeLocatorDialogClosed: async () => await test.step(`${NAME} - Expect the Change locator dialog closed`, async () => {
+        await changeLocatorDialog().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    cancelChangeLocatorDialog: async () => await test.step(`${NAME} - Cancel the Change locator dialog`, async () => {
+        await changeLocatorDialog().getByTestId('cancelText-button').tap();
+        await NewHUPreviewScreen.expectChangeLocatorDialogClosed();
+    }),
+
+    /** tap Change locator, scan the location code, the dialog closes with the location applied */
+    changeLocator: async (code) => await test.step(`${NAME} - Change locator to "${code}"`, async () => {
+        await NewHUPreviewScreen.openChangeLocatorDialog();
+        await NewHUPreviewScreen.scanInChangeLocatorDialog(code);
+        await NewHUPreviewScreen.expectChangeLocatorDialogClosed();
     }),
 
     clickOK: async () => await test.step(`${NAME} - Click OK`, async () => {
