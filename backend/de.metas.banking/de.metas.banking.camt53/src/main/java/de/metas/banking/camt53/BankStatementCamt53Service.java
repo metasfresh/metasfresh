@@ -63,6 +63,9 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.order.WaitingPrepaySalesOrderQuery;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.esr.ESRConstants;
@@ -80,6 +83,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -122,6 +126,7 @@ public class BankStatementCamt53Service
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final BankAccountService bankAccountService;
 	private final CurrencyRepository currencyRepository;
@@ -378,10 +383,19 @@ public class BankStatementCamt53Service
 			bankStatementLineCreateRequestBuilder.importedBillPartnerName(entryWrapper.getCdtrNames());
 		}
 
-		getReferencedInvoiceRecord(importBankStatementLineRequest, statementLineDate)
-				.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
-						.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-						.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
+		final Optional<I_C_Invoice> referencedInvoice = getReferencedInvoiceRecord(importBankStatementLineRequest, statementLineDate);
+		referencedInvoice.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
+				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
+
+		// order matching is only the fallback of the invoice matching
+		if (!referencedInvoice.isPresent() && stmtAmount.signum() > 0)
+		{
+			getReferencedPrepayOrder(entryWrapper, stmtAmount)
+					.ifPresent(order -> bankStatementLineCreateRequestBuilder
+							.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
+							.bpartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID())));
+		}
 
 		return Optional.of(bankStatementLineCreateRequestBuilder.build());
 	}
@@ -539,6 +553,36 @@ public class BankStatementCamt53Service
 		}
 
 		return lineRequests;
+	}
+
+	/**
+	 * @return the one waiting prepay sales order that is named in the entry's text and totals exactly the entry amount (full prepayment only);
+	 * empty if there is none or more than one.
+	 */
+	@NonNull
+	private Optional<I_C_Order> getReferencedPrepayOrder(
+			@NonNull final IStatementLineWrapper entryWrapper,
+			@NonNull final Money stmtAmount)
+	{
+		final ImmutableSet<String> documentNos = entryWrapper.getDocumentReferenceCandidates();
+		if (documentNos.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final List<OrderId> orderIds = orderDAO.getWaitingPrepaySalesOrderIds(WaitingPrepaySalesOrderQuery.builder()
+				.documentNos(documentNos)
+				.currencyId(stmtAmount.getCurrencyId())
+				.amount(stmtAmount.toBigDecimal())
+				.build());
+		if (orderIds.size() > 1)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog(
+					"Multiple waiting prepay orders found for ReportEntry2={}! MatchedOrderIds={}", entryWrapper.getLineReference(), orderIds);
+			return Optional.empty();
+		}
+
+		return orderIds.isEmpty() ? Optional.empty() : Optional.of(orderDAO.getById(orderIds.get(0)));
 	}
 
 	@NonNull
