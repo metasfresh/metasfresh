@@ -108,8 +108,8 @@ it('fills the scanned quantity, weight, Lot-Nr and MHD into the fields without r
   expect(onClick).not.toHaveBeenCalled();
   expect(screen.getByTestId('lotNo')).toHaveValue('500');
   expect(screen.getByTestId('bestBeforeDate')).toHaveValue('2025-11-08');
-  expect(document.getElementById('qty-input')).toHaveValue(1);
-  expect(document.getElementById('catch-weight')).toHaveValue(0.101);
+  expect(document.getElementById('qty-input')).toHaveValue('1');
+  expect(document.getElementById('catch-weight')).toHaveValue('0.101');
   expect(screen.getByText(CONFIRM_CAPTION)).toBeEnabled();
 });
 
@@ -149,7 +149,7 @@ it('receives one unit with the weight the operator entered after the scan, with 
   const { onClick } = renderCatchWeightButton();
   await openDialog();
   await scan(LMQ_CODE);
-  expect(document.getElementById('qty-input')).toHaveValue(1);
+  expect(document.getElementById('qty-input')).toHaveValue('1');
   expect(document.getElementById('qty-input')).toBeDisabled();
   expect(document.getElementById('catch-weight')).toBeEnabled();
   await act(async () => {

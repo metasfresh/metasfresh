@@ -42,6 +42,8 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSOrder;
@@ -78,6 +80,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
@@ -109,6 +112,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -195,6 +199,17 @@ public class AssertExpectationsCommandServices
 	public List<I_PP_Order_Qty> getPPOrderQtyForFinishedGoodsReceive(@NonNull final PPOrderId ppOrderId)
 	{
 		return huPPOrderQtyDAO.retrieveOrderQtyForFinishedGoodsReceive(ppOrderId);
+	}
+
+	public List<I_PP_Order_Qty> getPPOrderQtyForCoProductReceive(@NonNull final PPOrderId ppOrderId)
+	{
+		return huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
+				.stream()
+				.filter(candidate -> {
+					final PPOrderBOMLineId bomLineId = PPOrderBOMLineId.ofRepoIdOrNull(candidate.getPP_Order_BOMLine_ID());
+					return bomLineId != null && PPOrderUtil.isReceipt(ppOrderBOMDAO.getOrderBOMLineById(bomLineId));
+				})
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public List<I_PP_Order_Qty> getPPOrderQtyForComponentIssue(@NonNull final PPOrderId ppOrderId)

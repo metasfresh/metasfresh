@@ -11,6 +11,7 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2026-07-01T09:00:00+02:00[Europe/Berlin]
+    And temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO"
     And documents are accounted immediately
 
     # unique per run (auto-generated Value/Name, never a fixed literal): a category row must never be

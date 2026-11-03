@@ -9,6 +9,7 @@ Feature: Order to delivery instructions
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2023-02-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically
+    And temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO"
 
 
     Given metasfresh contains M_PricingSystems
