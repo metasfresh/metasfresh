@@ -8,7 +8,7 @@ Feature: A schedule recompute does not split one picking job's shipment by clear
 ## One order, one picking job, three lines. Completing the job assigns one new async batch to all three schedules
 ## (ShipmentService.groupSchedulesByAsyncBatch) and enqueues ONE shipment workpackage. The batch is part of the
 ## shipment header key, so a schedule recompute that writes the order's empty batch over one schedule before the
-## workpackage reads it splits the run into two shipments. Each scenario expects one shipment.
+## workpackage reads it splits the run into two shipments. Each scenario expects one shipment per run.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -113,6 +113,9 @@ Feature: A schedule recompute does not split one picking job's shipment by clear
     And set picking target as new LU identified by LU
 
 
+  # ###################################################################################################################
+  # ###################################################################################################################
+
   # Stale timing (the shape of the observed production case): a recompute loaded the schedule BEFORE the run assigned the batch (here:
   # before the pick it recomputes) and saves it AFTER. The pick makes the save a real change, so PO writes every column
   # the recompute set, including the order's empty batch over the batch committed in between, without a change-log row.
@@ -139,6 +142,9 @@ Feature: A schedule recompute does not split one picking job's shipment by clear
       | shipmentSchedule2                | shipment1             | CO            |
       | shipmentSchedule3                | shipment1             | CO            |
 
+
+  # ###################################################################################################################
+  # ###################################################################################################################
 
   # Fresh timing: a recompute loads the schedule AFTER the run assigned the batch, so the loaded value IS the batch,
   # and copies the order's empty batch over it. The run's own batch assignment flags the order's schedules for exactly
@@ -167,3 +173,47 @@ Feature: A schedule recompute does not split one picking job's shipment by clear
       | shipmentSchedule2                | shipment1             | CO            |
       | shipmentSchedule3                | shipment1             | CO            |
 
+
+
+  # ###################################################################################################################
+  # ###################################################################################################################
+
+  # Batch cleanup after a partial run: run 1 ships part of line 1 and gives schedule 1 the run's batch.
+  # The next schedule recompute copies the order's empty batch onto the schedule again.
+  # Without that cleanup, run 2 groups schedule 1 (old batch) apart from schedules 2 and 3 (no batch): two shipments.
+  @from:cucumber
+  @Id:S33362_230
+  Scenario: a later run of a partly shipped order is not split by the earlier run's batch
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_AND_COMPLETE  | Y                                  |
+    And temporarily set sys config boolean value false for sys config 'M_ShipmentSchedule_Close_PartiallyShipped'
+    And pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product1              | pickFromAggregatedLU1 | 3         | 0           |                       | 2027-03-01     | 1111  |
+    And complete picking job
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment1             | CO            |
+    And the shipment-schedule recompute work queue drains to zero pending workpackages
+    And after not more than 60s, M_ShipmentSchedule shipmentSchedule1 carries no C_Async_Batch_ID
+    And after not more than 60s, M_ShipmentSchedule shipmentSchedule2 carries no C_Async_Batch_ID
+    And after not more than 60s, M_ShipmentSchedule shipmentSchedule3 carries no C_Async_Batch_ID
+
+    When start picking job for sales order identified by SO
+    And scan picking slot identified by 210.0
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU            | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | product1              | pickFromAggregatedLU1 | 3         | 0           |                       | 2027-03-01     | 1111  |
+      | product2              | pickFromAggregatedLU2 | 5         | 0           |                       | 2027-03-01     | 2222  |
+      | product3              | pickFromAggregatedLU3 | 6         | 0           |                       | 2027-03-01     | 3333  |
+    And complete picking job
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule2                | shipment2             | CO            |
+      | shipmentSchedule3                | shipment2             | CO            |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus | OPT.IgnoreCreated.M_InOut_ID.Identifier |
+      | shipmentSchedule1                | shipment2             | CO            | shipment1                               |

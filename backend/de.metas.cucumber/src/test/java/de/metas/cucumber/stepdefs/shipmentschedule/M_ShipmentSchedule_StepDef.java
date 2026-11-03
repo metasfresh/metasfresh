@@ -1342,6 +1342,23 @@ public class M_ShipmentSchedule_StepDef
 		recomputeFromOrderAndSave(shipmentScheduleIdentifier, loadUncachedCopy(shipmentScheduleIdentifier));
 	}
 
+	/**
+	 * Waits until the schedule, read from the DB, carries no {@code C_Async_Batch_ID}; fails on timeout.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, M_ShipmentSchedule shipmentSchedule1 carries no C_Async_Batch_ID
+	 * </pre>
+	 */
+	@And("^after not more than (\\d+)s, M_ShipmentSchedule (.*) carries no C_Async_Batch_ID$")
+	public void waitUntilNoAsyncBatch(final int timeoutSec, @NonNull final String shipmentScheduleIdentifier) throws InterruptedException
+	{
+		StepDefUtil.tryAndWait(timeoutSec, 500,
+				() -> loadUncachedCopy(shipmentScheduleIdentifier).getC_Async_Batch_ID() <= 0,
+				() -> logger.info("C_Async_Batch_ID of M_ShipmentSchedule {}: {}", shipmentScheduleIdentifier, loadUncachedCopy(shipmentScheduleIdentifier).getC_Async_Batch_ID()));
+	}
+
 	@NonNull
 	private I_M_ShipmentSchedule loadUncachedCopy(@NonNull final String shipmentScheduleIdentifier)
 	{
