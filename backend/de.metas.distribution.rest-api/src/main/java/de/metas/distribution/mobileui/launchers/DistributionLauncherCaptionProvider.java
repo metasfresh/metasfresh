@@ -42,6 +42,8 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -66,11 +68,21 @@ public class DistributionLauncherCaptionProvider
 		@NonNull final ArrayList<String> fieldsInOrder = new ArrayList<>();
 		@NonNull final HashMap<String, ITranslatableString> fieldValues = new HashMap<>();
 		@NonNull final HashMap<String, Comparable<?>> comparingKeys = new HashMap<>();
+		@NonNull final HashSet<String> blockLayoutFields = new HashSet<>();
 
 		for (final DistributionJobCaptionFormatItem formatItem : format.getItems())
 		{
 			final DistributionJobCaptionField field = formatItem.getField();
-			final ITranslatableString captionItem = computeItem(context, field);
+			final ITranslatableString captionItem;
+			if (field == DistributionJobCaptionField.SourceDocsWithPickingNote)
+			{
+				captionItem = TranslatableStrings.joinList("\n", context.getSourceDocPickingNoteLines());
+				blockLayoutFields.add(field.getCode());
+			}
+			else
+			{
+				captionItem = computeItem(context, field);
+			}
 			fieldsInOrder.add(field.getCode());
 			fieldValues.put(field.getCode(), captionItem);
 		}
@@ -98,6 +110,7 @@ public class DistributionLauncherCaptionProvider
 				.fieldsInOrder(fieldsInOrder)
 				.fieldValues(fieldValues)
 				.comparingKeys(comparingKeys)
+				.blockLayoutFields(blockLayoutFields)
 				.build();
 	}
 
@@ -135,6 +148,8 @@ public class DistributionLauncherCaptionProvider
 				return extractPriority(context);
 			case PickingInstruction:
 				return extractPickingInstruction(context);
+			case SourceDocsWithPickingNote:
+				return TranslatableStrings.joinList(", ", context.getSourceDocPickingNoteLines());
 			default:
 				return TranslatableStrings.empty();
 		}
@@ -289,11 +304,7 @@ public class DistributionLauncherCaptionProvider
 			return TranslatableStrings.empty();
 		}
 
-		return TranslatableStrings.builder()
-				.append(documentTypeAndNo.getLeft())
-				.append(" ")
-				.append(documentTypeAndNo.getRight())
-				.build();
+		return DistributionSourceDocService.toDocTypeAndNoCaption(documentTypeAndNo.getLeft(), documentTypeAndNo.getRight());
 	}
 
 	@NonNull
@@ -314,6 +325,7 @@ public class DistributionLauncherCaptionProvider
 				.seqNo(ddOrderReference.getSeqNo())
 				.displayDate(ddOrderReference.getDisplayDate())
 				.pickingInstruction(ddOrderReference.getPickingInstruction())
+				.sourceDocPickingNoteLines(ddOrderReference.getSourceDocPickingNoteLines())
 				.pickFromWarehouseId(ddOrderReference.getFromWarehouseId())
 				.fromLocator(fromLocator)
 				.dropToWarehouseId(ddOrderReference.getToWarehouseId())
@@ -338,6 +350,7 @@ public class DistributionLauncherCaptionProvider
 				.seqNo(job.getSeqNo())
 				.displayDate(job.getPickDate())
 				.pickingInstruction(job.getPickingInstruction())
+				.sourceDocPickingNoteLines(job.getSourceDocPickingNoteLines())
 				.pickFromWarehouse(job.getPickFromWarehouse())
 				.fromLocator(fromLocator)
 				.dropToWarehouse(job.getDropToWarehouse())
@@ -368,6 +381,7 @@ public class DistributionLauncherCaptionProvider
 		// @Nullable ZonedDateTime pickDate;
 		@NonNull ZonedDateTime displayDate;
 		@Nullable ITranslatableString pickingInstruction;
+		@NonNull List<ITranslatableString> sourceDocPickingNoteLines;
 		@Nullable WarehouseInfo pickFromWarehouse;
 		@Nullable WarehouseId pickFromWarehouseId;
 		@Nullable LocatorInfo fromLocator;

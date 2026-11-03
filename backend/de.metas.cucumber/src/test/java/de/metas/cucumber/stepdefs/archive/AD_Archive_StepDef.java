@@ -22,7 +22,18 @@
 
 package de.metas.cucumber.stepdefs.archive;
 
+import com.google.common.collect.ImmutableList;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.DecodeHintType;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.multi.GenericMultipleBarcodeReader;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.util.Services;
 import io.cucumber.java.en.Then;
@@ -34,15 +45,26 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.pdfbox.cos.COSBase;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.TextPosition;
 import org.compiere.model.I_AD_Archive;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,16 +100,53 @@ public class AD_Archive_StepDef
 	{
 		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
 
-		final int count = queryBL.createQueryBuilder(I_AD_Archive.class)
+		assertThat(countArchives(recordRef))
+				.as("AD_Archive count for record %s", recordRef)
+				.isGreaterThanOrEqualTo(1);
+	}
+
+	/**
+	 * Waits for the asynchronous archiving of the document PDF, which starts when the document is completed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 60s, an AD_Archive exists for the record identified by "salesInvoice1"
+	 * </pre>
+	 */
+	@Then("after not more than {int}s, an AD_Archive exists for the record identified by {string}")
+	public void assert_archive_exists_eventually(final int timeoutSec, @NonNull final String recordIdentifier) throws InterruptedException
+	{
+		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> countArchives(recordRef) >= 1);
+	}
+
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then no AD_Archive exists for the record identified by "salesInvoice2"
+	 * </pre>
+	 */
+	@Then("no AD_Archive exists for the record identified by {string}")
+	public void assert_archive_does_not_exist(@NonNull final String recordIdentifier)
+	{
+		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
+
+		assertThat(countArchives(recordRef))
+				.as("AD_Archive count for record %s", recordRef)
+				.isZero();
+	}
+
+	private int countArchives(@NonNull final TableRecordReference recordRef)
+	{
+		return queryBL.createQueryBuilder(I_AD_Archive.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Archive.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
 				.create()
 				.count();
-
-		assertThat(count)
-				.as("AD_Archive count for record %s", recordRef)
-				.isGreaterThanOrEqualTo(1);
 	}
 
 	/**
@@ -240,6 +299,182 @@ public class AD_Archive_StepDef
 	}
 
 	/**
+	 * Verifies that a vertical distance equals a literal number of points -- the assertion for "this span is
+	 * exactly one band's own declared height", used when no OTHER pair of anchors in the same document is
+	 * available to compare against (the paired form above needs a second span that is independently known to
+	 * be exactly the same height; a band whose own height has no same-height sibling anywhere else in the
+	 * print has none). The expected value is the band's own {@code height} attribute from the JRXML -- a
+	 * source-code fact, not a guess -- so a band that silently gained or lost height (e.g. an unguarded
+	 * sibling band rendering blank-but-present alongside it) changes this measured span and fails here.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order_checkup", the vertical distance from text "AlphaItem" to text "BetaItem" is 47.0 points
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, the vertical distance from text {string} to text {string} is {double} points")
+	public void assert_archived_pdf_vertical_distance_is(
+			@NonNull final String recordIdentifier,
+			@NonNull final String fromText,
+			@NonNull final String toText,
+			final double expectedPoints)
+	{
+		final List<PdfLine> lines = extractPdfVisualLines(recordIdentifier);
+
+		final float actualDistance = verticalDistance(lines, fromText, toText);
+
+		// same rationale as the paired form: the smallest difference worth catching is one whole
+		// (possibly blank-but-present) band's height, so a fraction of a point of float noise is not a difference.
+		assertThat(actualDistance)
+				.as("Vertical distance '%s'->'%s' in extracted PDF text %s", fromText, toText, textsOf(lines))
+				.isCloseTo((float)expectedPoints, within(0.5f));
+	}
+
+	/**
+	 * Verifies that one vertical distance is a whole multiple of another -- the assertion for "this span covers
+	 * exactly N line-heights", used to prove a multi-line value's embedded blank line(s) occupy real space
+	 * rather than being collapsed. {@code multiplier} lines of a stretched multi-line text field are not
+	 * necessarily the same height as {@code multiplier} lines spanning a DIFFERENT band boundary (a band-to-band
+	 * transition and a line-to-line transition inside one stretched field are computed differently), so pick
+	 * both distances from lines of the SAME stretched value whenever possible -- see
+	 * {@link #assert_archived_pdf_vertical_distances_equal} for the sibling equals-form and its own reference-pick
+	 * guidance.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order", the vertical distance from text "line2" to text "line4" is 2 times the distance from text "line1" to text "line2"
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, the vertical distance from text {string} to text {string} is {int} times the distance from text {string} to text {string}")
+	public void assert_archived_pdf_vertical_distance_is_multiple_of(
+			@NonNull final String recordIdentifier,
+			@NonNull final String actualFromText,
+			@NonNull final String actualToText,
+			final int multiplier,
+			@NonNull final String unitFromText,
+			@NonNull final String unitToText)
+	{
+		final List<PdfLine> lines = extractPdfVisualLines(recordIdentifier);
+
+		final float actualDistance = verticalDistance(lines, actualFromText, actualToText);
+		final float unitDistance = verticalDistance(lines, unitFromText, unitToText);
+
+		// same rationale as the equals-form: the smallest difference worth catching is one whole line-height,
+		// so a fraction of a point of float noise in the glyph coordinates is not a difference.
+		assertThat(actualDistance)
+				.as("Vertical distance '%s'->'%s' vs %s times '%s'->'%s' in extracted PDF text %s",
+						actualFromText, actualToText, multiplier, unitFromText, unitToText, textsOf(lines))
+				.isCloseTo(unitDistance * multiplier, within(0.5f));
+	}
+
+	/**
+	 * Verifies that one vertical distance is strictly greater than another -- the assertion for "this span
+	 * consumed MORE than an ordinary single line's worth of space", used when the two legs are shaped so
+	 * differently (a band-to-band transition vs. a line-to-line transition inside a stretched field) that
+	 * neither the equals-form nor the multiple-of-form can be pinned to a single expected value without being
+	 * one-off wrong on font-metric grounds. Weaker than either of those two, but exact and font-metric-proof:
+	 * proves the larger span consumed genuine extra height, whatever the precise figure is.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order", the vertical distance from text "BETA-NR" to text "Sortimentsware" is greater than the distance from text "ALPHA-NR" to text "BetaItem"
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, the vertical distance from text {string} to text {string} is greater than the distance from text {string} to text {string}")
+	public void assert_archived_pdf_vertical_distance_is_greater_than(
+			@NonNull final String recordIdentifier,
+			@NonNull final String largerFromText,
+			@NonNull final String largerToText,
+			@NonNull final String smallerFromText,
+			@NonNull final String smallerToText)
+	{
+		final List<PdfLine> lines = extractPdfVisualLines(recordIdentifier);
+
+		final float largerDistance = verticalDistance(lines, largerFromText, largerToText);
+		final float smallerDistance = verticalDistance(lines, smallerFromText, smallerToText);
+
+		assertThat(largerDistance)
+				.as("Vertical distance '%s'->'%s' vs '%s'->'%s' in extracted PDF text %s",
+						largerFromText, largerToText, smallerFromText, smallerToText, textsOf(lines))
+				.isGreaterThan(smallerDistance);
+	}
+
+	/**
+	 * Verifies that one vertical distance equals the SUM of two others -- a tighter sibling of
+	 * {@link #assert_archived_pdf_vertical_distance_is_greater_than} for the case where the expected total is
+	 * known to be an ADDITION of two differently-shaped legs (e.g. an ordinary band-to-band article pitch plus
+	 * one stretched-field line height) rather than a clean multiple of either alone, so
+	 * {@link #assert_archived_pdf_vertical_distance_is_multiple_of} cannot express it. Unlike the greater-than
+	 * form, this also catches an OVERSHOOT -- extra height silently added by a band that renders blank (no
+	 * glyphs, so no line-count or content assertion sees it) instead of being suppressed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order", the vertical distance from text "BETA-NR" to text "Sortimentsware" equals the distance from text "ALPHA-NR" to text "BetaItem" plus the distance from text "Für die Truhe:" to text "Bitte saubere Schalen"
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, the vertical distance from text {string} to text {string} equals the distance from text {string} to text {string} plus the distance from text {string} to text {string}")
+	public void assert_archived_pdf_vertical_distance_equals_sum_of(
+			@NonNull final String recordIdentifier,
+			@NonNull final String actualFromText,
+			@NonNull final String actualToText,
+			@NonNull final String firstAddendFromText,
+			@NonNull final String firstAddendToText,
+			@NonNull final String secondAddendFromText,
+			@NonNull final String secondAddendToText)
+	{
+		final List<PdfLine> lines = extractPdfVisualLines(recordIdentifier);
+
+		final float actualDistance = verticalDistance(lines, actualFromText, actualToText);
+		final float firstAddend = verticalDistance(lines, firstAddendFromText, firstAddendToText);
+		final float secondAddend = verticalDistance(lines, secondAddendFromText, secondAddendToText);
+
+		// same rationale as the sibling forms: the smallest difference worth catching is one whole
+		// (possibly blank-but-present) band's height, so a fraction of a point of float noise is not a difference.
+		assertThat(actualDistance)
+				.as("Vertical distance '%s'->'%s' vs ('%s'->'%s' + '%s'->'%s') in extracted PDF text %s",
+						actualFromText, actualToText, firstAddendFromText, firstAddendToText,
+						secondAddendFromText, secondAddendToText, textsOf(lines))
+				.isCloseTo(firstAddend + secondAddend, within(0.5f));
+	}
+
+	/**
+	 * Verifies that a whole visual line's text equals {@code expectedText} EXACTLY -- not merely contains it.
+	 * This is the assertion for "this row carries its own text and nothing else": a value glued onto the same
+	 * row (sharing its Y-coordinate with something else, so PDFBox's position-sorted extraction concatenates
+	 * them onto one visual line) fails here even though {@link #assert_archived_pdf_contains_text} would still
+	 * pass, since that step only checks the needle is present somewhere in the whole document.
+	 * <p>
+	 * {@code needleText} only locates the line (the first line, top-to-bottom, containing it); the equality
+	 * check then applies to that line's WHOLE text, needle and all.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the visual line containing text "Sortimentsware" in the PDF archived for the record identified by "order" is exactly "Sortimentsware"
+	 * </pre>
+	 */
+	@Then("the visual line containing text {string} in the PDF archived for the record identified by {string} is exactly {string}")
+	public void assert_archived_pdf_visual_line_is_exactly(
+			@NonNull final String needleText,
+			@NonNull final String recordIdentifier,
+			@NonNull final String expectedText)
+	{
+		final List<PdfLine> lines = extractPdfVisualLines(recordIdentifier);
+
+		final int idx = indexOfLineContaining(lines, needleText, 0);
+		assertThat(idx).as("Line containing '%s' in extracted PDF text %s", needleText, textsOf(lines)).isGreaterThanOrEqualTo(0);
+
+		assertThat(lines.get(idx).getText())
+				.as("Full text of the visual line containing '%s' in extracted PDF text %s", needleText, textsOf(lines))
+				.isEqualTo(expectedText);
+	}
+
+	/**
 	 * Asserts that no two words in the archived PDF are printed on top of each other.
 	 * <p>
 	 * A generic layout net: it needs no knowledge of the document, so it can be added to any scenario that
@@ -288,6 +523,177 @@ public class AD_Archive_StepDef
 				.as("Overlapping text in the PDF archived for record %s (tolerance %s points, %s words examined)",
 						recordIdentifier, tolerancePoints, words.size())
 				.isEmpty();
+	}
+
+	/**
+	 * Counts the image XObjects (e.g. a barcode drawn by an {@code <image>} element) referenced across all
+	 * pages of the archived PDF.
+	 * <p>
+	 * NOT usable for a {@code jr:Code39} / Barcode4J <b>component</b>: JasperReports renders those as SVG by
+	 * default ({@code net.sf.jasperreports.components.barcode4j.image.producer=svg}, default.jasperreports
+	 * .properties), so they reach the PDF as vector drawing operations and contribute ZERO image XObjects.
+	 * Assert those with {@link #assert_archived_pdf_barcode_encodes_record_reference} instead.
+	 * <p>
+	 * Counts DISTINCT image XObjects per page (one entry per page's XObject resource dictionary), not
+	 * {@code Do} draw operations: an image object drawn more than once on the same page from the same
+	 * resource entry is counted once, not once per draw. In this report every article row's barcode is its
+	 * own distinct object (confirmed even for two rows with an identical, NULL-derived barcode content), so
+	 * the count matches "one per article row" here -- but a report that drew one shared image object
+	 * repeatedly on a page would undercount against that reading.
+	 * <p>
+	 * This is the assertion for "no image renders here", which no text-extraction step above can make: an
+	 * {@code <image>} report element renders as ink with no glyphs, so a barcode requested for a NULL
+	 * content value (Java string concatenation turns that into the literal "null", and JasperReports
+	 * renders it successfully -- it does not throw) leaves no trace in any extracted text stream.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the PDF archived for the record identified by "order_checkup" contains exactly 2 images
+	 * </pre>
+	 */
+	@Then("the PDF archived for the record identified by {string} contains exactly {int} images")
+	public void assert_archived_pdf_contains_exactly_images(
+			@NonNull final String recordIdentifier,
+			final int expectedImageCount)
+	{
+		final int actualImageCount = countPdfImages(recordIdentifier);
+
+		assertThat(actualImageCount)
+				.as("Image XObjects rendered in the PDF archived for record %s", recordIdentifier)
+				.isEqualTo(expectedImageCount);
+	}
+
+	private int countPdfImages(@NonNull final String recordIdentifier)
+	{
+		final byte[] pdfBytes = getLatestArchivedPdfBytes(recordIdentifier);
+
+		try (final PDDocument document = PDDocument.load(pdfBytes))
+		{
+			int count = 0;
+			for (final PDPage page : document.getPages())
+			{
+				count += countImageXObjects(page.getResources(), new HashSet<>());
+			}
+			return count;
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException("Failed to count images in the PDF archived for record " + recordIdentifier, e);
+		}
+	}
+
+	/**
+	 * Asserts the archived PDF prints a Code39 barcode reading {@code <AD_Table_ID>-<Record_ID>} of the
+	 * referenced record -- the form the scanner writes into the scan file name, which the import resolves from.
+	 * <p>
+	 * The image and text steps above cannot see a Barcode4J barcode: JasperReports renders it as SVG, so it
+	 * reaches the PDF as vector operations (no image XObject) and its caption as glyph outlines (no text).
+	 * Hence rasterise and decode; 300 DPI reads ~20 characters, 200 is too coarse.
+	 * <p>
+	 * Presence, not exclusivity: the scanner reads a defined region, so another barcode is harmless.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the PDF archived for the record identified by "order_checkup_WH" prints a barcode encoding the reference of the record identified by "order"
+	 * </pre>
+	 */
+	@Then("the PDF archived for the record identified by {string} prints a barcode encoding the reference of the record identified by {string}")
+	public void assert_archived_pdf_barcode_encodes_record_reference(
+			@NonNull final String archivedRecordIdentifier,
+			@NonNull final String referencedRecordIdentifier)
+	{
+		final TableRecordReference referencedRecord = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(referencedRecordIdentifier));
+		final String expectedCode = referencedRecord.getAD_Table_ID() + "-" + referencedRecord.getRecord_ID();
+
+		final List<String> decodedCodes = decodeCode39Barcodes(archivedRecordIdentifier);
+
+		assertThat(decodedCodes)
+				.as("Code39 barcodes scanned out of the PDF archived for record %s (expecting the reference of %s)",
+						archivedRecordIdentifier, referencedRecordIdentifier)
+				.contains(expectedCode);
+	}
+
+	private static final int BARCODE_SCAN_DPI = 300;
+
+	@NonNull
+	private List<String> decodeCode39Barcodes(@NonNull final String recordIdentifier)
+	{
+		final byte[] pdfBytes = getLatestArchivedPdfBytes(recordIdentifier);
+
+		try (final PDDocument document = PDDocument.load(pdfBytes))
+		{
+			final PDFRenderer renderer = new PDFRenderer(document);
+			final List<String> codes = new ArrayList<>();
+			for (int pageIndex = 0; pageIndex < document.getNumberOfPages(); pageIndex++)
+			{
+				// GRAY: zxing reads only luminance, so RGB would build ~26 MB/page of channels it discards.
+				final BufferedImage pageImage = renderer.renderImageWithDPI(pageIndex, BARCODE_SCAN_DPI, ImageType.GRAY);
+				codes.addAll(decodeCode39Barcodes(pageImage));
+			}
+			return codes;
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException("Failed to scan barcodes in the PDF archived for record " + recordIdentifier, e);
+		}
+	}
+
+	@NonNull
+	private static List<String> decodeCode39Barcodes(@NonNull final BufferedImage pageImage)
+	{
+		final BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(pageImage)));
+
+		final EnumMap<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
+		// CODE_39 only, for speed (an unrestricted read tries every 1D symbology). Trade: if the report
+		// switches symbology this reports "but was []" rather than naming the code it found.
+		hints.put(DecodeHintType.POSSIBLE_FORMATS, Arrays.asList(BarcodeFormat.CODE_39));
+		hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+
+		try
+		{
+			final Result[] results = new GenericMultipleBarcodeReader(new MultiFormatReader()).decodeMultiple(bitmap, hints);
+			return Arrays.stream(results).map(Result::getText).collect(Collectors.toList());
+		}
+		catch (final NotFoundException e)
+		{
+			// A page without a barcode is normal in a multi-page document; empty lets the assertion report
+			// the real diff rather than a zxing exception.
+			return ImmutableList.of();
+		}
+	}
+
+	/**
+	 * Recurses into form XObjects (a group of drawing instructions that can itself embed images), so an
+	 * image nested inside one is still counted. {@code visited} guards against a form XObject that
+	 * (legally, if unusually) references itself, which would otherwise recurse forever.
+	 */
+	private static int countImageXObjects(@NonNull final PDResources resources, @NonNull final Set<COSBase> visited)
+	{
+		int count = 0;
+		for (final COSName xObjectName : resources.getXObjectNames())
+		{
+			final PDXObject xObject;
+			try
+			{
+				xObject = resources.getXObject(xObjectName);
+			}
+			catch (final IOException e)
+			{
+				throw new AdempiereException("Failed to read XObject " + xObjectName.getName() + " from the archived PDF", e);
+			}
+
+			if (xObject instanceof PDImageXObject)
+			{
+				count++;
+			}
+			else if (xObject instanceof PDFormXObject && visited.add(xObject.getCOSObject()))
+			{
+				count += countImageXObjects(((PDFormXObject)xObject).getResources(), visited);
+			}
+		}
+		return count;
 	}
 
 

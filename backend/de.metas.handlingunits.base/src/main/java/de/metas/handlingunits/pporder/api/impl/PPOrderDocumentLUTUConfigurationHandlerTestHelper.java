@@ -25,11 +25,18 @@ package de.metas.handlingunits.pporder.api.impl;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 public class PPOrderDocumentLUTUConfigurationHandlerTestHelper
 {
 	public static I_M_HU_LUTU_Configuration createNewLUTUConfiguration(@NonNull final I_PP_Order ppOrder)
 	{
 		return PPOrderDocumentLUTUConfigurationHandler.instance.createNewLUTUConfiguration(ppOrder);
+	}
+
+	public static I_M_HU_LUTU_Configuration createNewLUTUConfiguration(@NonNull final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine)
+	{
+		final de.metas.handlingunits.model.I_PP_Order_BOMLine huPPOrderBOMLine = InterfaceWrapperHelper.create(ppOrderBOMLine, de.metas.handlingunits.model.I_PP_Order_BOMLine.class);
+		return PPOrderBOMLineDocumentLUTUConfigurationHandler.instance.createNewLUTUConfiguration(huPPOrderBOMLine);
 	}
 }

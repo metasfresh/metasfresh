@@ -41,6 +41,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.compensationGroup.PercentCompensationLineInvoicing;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -79,6 +80,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -117,6 +119,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	private final SpringContextHolder.Lazy<PercentCompensationLineInvoicing> percentCompensationLineInvoicing = SpringContextHolder.lazyBean(PercentCompensationLineInvoicing.class);
 
 	private static final AdMessageKey MSG_ERROR_INVOICE_CANDIDATE_IS_PROCESSED = AdMessageKey.of("C_OrderLine.onProductChanged.Msg_Error_Invoice_Candidate_Is_Processed");
 
@@ -239,7 +242,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asiId);
 
-		invoiceCandBL.setQualityDiscountPercent_Override(icRecord, attributes);
+		if (icRecord.isGroupCompensationLine())
+		{
+			// a group-compensation line is priced with PriceEntered == PriceActual (see #calculatePriceAndTax), which is only
+			// correct if it carries no quality-discount override; never look one up from the partner's pricing conditions
+			icRecord.setQualityDiscountPercent_Override(null);
+		}
+		else
+		{
+			invoiceCandBL.setQualityDiscountPercent_Override(icRecord, attributes);
+		}
 
 		if (orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
 		{
@@ -301,6 +313,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * <li>DateOrdered := C_OrderLine.DateOrdered
 	 * <li>C_Order_ID: C_OrderLine.C_Order_ID
 	 * <li>C_PaymentTerm_ID: C_OrderLine.C_PaymentTerm_ID/C_Order.C_PaymentTerm_ID
+	 * <li>C_Project_ID: C_OrderLine.C_Project_ID, only if the candidate is not processed
 	 * </ul>
 	 *
 	 * @see IInvoiceCandidateHandler#setOrderedData(I_C_Invoice_Candidate)
@@ -358,10 +371,17 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		setPaymentRule(ic, orderLine);
 
+		setProjectIfNotProcessed(ic, orderLine);
+
 		// F00127.1 — propagate free-of-charge flag. Lives in setOrderedData so amendments
 		// to the order line after IC creation also flow through.
 		ic.setIsWithoutCharge(orderLine.isWithoutCharge());
 		ic.setReason(orderLine.isWithoutCharge() ? orderLine.getReason() : null);
+
+		if (PercentCompensationLineInvoicing.isPercentCompensationLine(ic))
+		{
+			percentCompensationLineInvoicing.get().updateQtyOrdered(ic);
+		}
 	}
 
 	public static void assertOrderLineProductNotChangedIfInvoiceCandidateIsProcessed(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)
@@ -398,6 +418,23 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			ic.setPaymentRule(Services.get(IInvoiceBL.class).getDefaultPaymentRule().getCode());
 		}
+	}
+
+	/**
+	 * The order line owns the project: copy it on every update, also when it is empty.
+	 * This covers candidates that missed the push from {@link IInvoiceCandBL#updateProjectId(OrderLineId, de.metas.project.ProjectId)},
+	 * e.g. because they were created at the same time as the order line got its project.
+	 * Same rule as that push: a processed candidate keeps its project, so that it matches its invoice lines.
+	 */
+	private static void setProjectIfNotProcessed(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		if (ic.isProcessed())
+		{
+			return;
+		}
+		ic.setC_Project_ID(orderLine.getC_Project_ID());
 	}
 
 	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
@@ -534,10 +571,13 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			group.updateAllCompensationLines();
 
 			final GroupCompensationLine compensationLine = group.getCompensationLineById(groupsRepo.extractLineId(icRecord));
-			priceAndTax.priceEntered(compensationLine.getPrice());
-			priceAndTax.priceActual(compensationLine.getPrice());
+			// the group computes the discount on the goods invoiced so far and to invoice now; what is open is that minus the discount invoiced so far
+			final BigDecimal price = compensationLine.getPrice().subtract(invoiceCandBL.computeNetAmtInvoiced(icRecord));
+			priceAndTax.priceEntered(price);
+			priceAndTax.priceActual(price);
+			priceAndTax.discount(Percent.ZERO);
 			priceAndTax.compensationGroupBaseAmt(compensationLine.getBaseAmt());
-			// NOTE: we assume AmtType does not change so nor the Qty (which in this case shall be ONE)
+			// NOTE: we assume AmtType does not change so nor the Qty (which in this case shall be ONE per invoice; see PercentCompensationLineInvoicing)
 		}
 
 		return priceAndTax.build();
