@@ -1,7 +1,9 @@
 package de.metas.distribution.ddorder.lowlevel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
@@ -29,6 +31,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -401,6 +404,24 @@ public class DDOrderLowLevelDAO
 		return sqlQuery.iterateAndStream();
 	}
 
+	/**
+	 * The flavour of {@link #streamDDOrders(DDOrderQuery)} that also restricts on the order's lines via opaque,
+	 * caller-built queries. Each entry in {@code lineIdRestrictions} MUST be a query over {@link I_DD_OrderLine};
+	 * entries are AND-ed (a facet OR-ing several routes internally builds its own single entry with a composite
+	 * {@code setJoinOr()} filter — see {@code DDOrderLineDemandSqlHelper}). The list is generic on purpose: it is
+	 * not specific to any one demand-side attribute (carrier, sales order, ...), so later facets reuse it.
+	 */
+	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query, @NonNull final ImmutableList<IQuery<?>> lineIdRestrictions)
+	{
+		final IQueryBuilder<I_DD_Order> sqlQuery = toSqlQuery(query, lineIdRestrictions);
+		if (sqlQuery == null)
+		{
+			return Stream.empty();
+		}
+
+		return sqlQuery.iterateAndStream();
+	}
+
 	public void deleteOrders(@NonNull final DeleteOrdersQuery deleteOrdersQuery)
 	{
 		final IQueryBuilder<I_DD_Order> deleteOrdersQueryBuilder = queryBL.createQueryBuilder(I_DD_Order.class);
@@ -439,6 +460,22 @@ public class DDOrderLowLevelDAO
 	}
 
 	private IQueryBuilder<I_DD_Order> toSqlQuery(final DDOrderQuery query)
+	{
+		return toSqlQuery(query, ImmutableList.of());
+	}
+
+	/**
+	 * Package-private (not {@code private}) so {@code DDOrderLowLevelDAOTest} can inspect the emitted SQL of the
+	 * applied {@code lineIdRestrictions} directly, without going through {@link #streamDDOrders(DDOrderQuery, ImmutableList)}'s
+	 * execution.
+	 *
+	 * @param lineIdRestrictions each entry MUST be a query over {@link I_DD_OrderLine}; entries are AND-ed. Applied
+	 *                           on the order-to-line join ({@code I_DD_Order.DD_Order_ID -> I_DD_OrderLine.DD_Order_ID}),
+	 *                           never line-id to line-id, so parent and sub table differ and {@link org.adempiere.ad.dao.impl.InSubQueryFilter}
+	 *                           renders a correlated {@code EXISTS} rather than an {@code IN}.
+	 */
+	@VisibleForTesting
+	IQueryBuilder<I_DD_Order> toSqlQuery(final DDOrderQuery query, @NonNull final ImmutableList<IQuery<?>> lineIdRestrictions)
 	{
 		final IQueryBuilder<I_DD_Order> queryBuilder = queryBL.createQueryBuilder(I_DD_Order.class);
 		setOrderBys(queryBuilder, query.getOrderBys());
@@ -509,13 +546,6 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
-		// Sales Order
-		if (query.getSalesOrderIds() != null && !query.getSalesOrderIds().isEmpty())
-		{
-			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_C_Order_ID, query.getSalesOrderIds());
-		}
-
-		//
 		// Manufacturing Order
 		if (query.getManufacturingOrderIds() != null && !query.getManufacturingOrderIds().isEmpty())
 		{
@@ -578,6 +608,18 @@ public class DDOrderLowLevelDAO
 			{
 				queryBuilder.addInSubQueryFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, I_DD_OrderLine.COLUMNNAME_DD_Order_ID, lineQueryBuilder.create());
 			}
+		}
+
+		//
+		// Demand-side line restrictions (e.g. carrier, sales order): applied on the order-to-line join so that
+		// parent (DD_Order) and sub (DD_OrderLine) table differ, making InSubQueryFilter render a correlated
+		// EXISTS instead of falling back to IN (which it would emit for a same-table sub-query).
+		for (final IQuery<?> lineIdRestriction : lineIdRestrictions)
+		{
+			queryBuilder.addInSubQueryFilter(
+					I_DD_Order.COLUMNNAME_DD_Order_ID,
+					I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+					lineIdRestriction);
 		}
 
 		//
@@ -658,6 +700,43 @@ public class DDOrderLowLevelDAO
 				.create()
 				.update(ddOrder -> {
 					ddOrder.setForward_PP_Order_ID(PPOrderId.toRepoId(newPPOrderId));
+					return IQueryUpdater.MODEL_UPDATED;
+				});
+	}
+
+	public ImmutableSetMultimap<PPOrderBOMLineId, DDOrderId> getIdsByForwardPPOrderBOMLineIds(@NonNull final Collection<PPOrderBOMLineId> ppOrderBOMLineIds)
+	{
+		if (ppOrderBOMLineIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_DD_Order.class)
+				.addInArrayFilter(I_DD_Order.COLUMNNAME_Forward_PP_Order_BOMLine_ID, ppOrderBOMLineIds)
+				.create()
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						ddOrder -> PPOrderBOMLineId.ofRepoId(ddOrder.getForward_PP_Order_BOMLine_ID()),
+						ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID())));
+	}
+
+	/**
+	 * Re-points the given DD_Orders to a (re-created) PP_Order_BOMLine.
+	 *
+	 * @return number of updated DD_Orders
+	 */
+	public int updateForwardPPOrderBOMLineByIds(@NonNull final Set<DDOrderId> ddOrderIds, @NonNull final PPOrderBOMLineId newPPOrderBOMLineId)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return 0;
+		}
+
+		return queryBL.createQueryBuilder(I_DD_Order.class)
+				.addInArrayFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.create()
+				.update(ddOrder -> {
+					ddOrder.setForward_PP_Order_BOMLine_ID(newPPOrderBOMLineId.getRepoId());
 					return IQueryUpdater.MODEL_UPDATED;
 				});
 	}

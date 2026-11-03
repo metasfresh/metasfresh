@@ -1,4 +1,6 @@
 @from:cucumber
+@allure.label.epic:E0360_Transport_Extralogistik
+@allure.label.feature:F29050_Delivery_Planning
 @ghActions:run_on_executor5
 Feature: Delivery planning automatically generated when M_ShipmentSchedule is created
 
@@ -55,11 +57,11 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
       | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule | orderLine_SO              | N             |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanning_SO                | orderLine_SO              |
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanning_SO    | orderLine_SO   |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.M_Warehouse_ID.Identifier |
-      | deliveryPlanning_SO               | 10         | 10           | Outgoing                 | order_SO                  | orderLine_SO                  | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              | warehouse                     |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | M_Product_ID | C_BPartner_Location_ID | M_Shipper_ID | ETA        | M_Warehouse_ID |
+      | deliveryPlanning_SO    | 10         | 10           | Outgoing           | order_SO   | orderLine_SO   | customer      | product      | customerLocation       | shipper_DHL  | 2023-02-25 | warehouse      |
 
 
   Scenario: Incoming delivery planning is automatically created after ReceiptSchedule is created; PO is delivered to warehouse
@@ -81,9 +83,14 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
       | Identifier        | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | vendorLocation    | 1234564396446 | vendor                   | true                | true                |
       | warehouseLocation | 1203522892346 | warehouseBP              | true                | true                |
+    # No Name: DataTableRow#suggestValueAndName then derives a per-run-unique Value, and M_Product_StepDef
+    # upserts by that Value - so this scenario gets a FRESH product every run. With the literal, every run
+    # reused one product and the C_BPartner_Products row below hit UniqueCurrentVendor
+    # (iscurrentvendor, usedforvendor, m_product_id) against the row an earlier run had left behind, so the
+    # scenario could only pass on a freshly reset database.
     And metasfresh contains M_Products:
-      | Identifier | Name                         |
-      | product    | ProductNameIncoming_02022023 |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
       | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | productPrice_PO_2 | priceListVersion_PO_2             | product                 | 5.0      | PCE               | Normal                        |
@@ -112,11 +119,11 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule                 | order_PO              | orderLine_PO              | vendor                   | vendorLocation                    | product                 | 5          | warehouse                 |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanning_PO                | orderLine_PO              |
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanning_PO    | orderLine_PO   |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.M_Warehouse_ID.Identifier |
-      | deliveryPlanning_PO               | 5          | 5            | Incoming                 | order_PO                  | orderLine_PO                  | vendor                       | product                     | warehouseLocation                     | shipper_DPD                 | 2023-02-20              | warehouse                     |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | M_Product_ID | C_BPartner_Location_ID | M_Shipper_ID | ETA        | M_Warehouse_ID |
+      | deliveryPlanning_PO    | 5          | 5            | Incoming           | order_PO   | orderLine_PO   | vendor        | product      | warehouseLocation      | shipper_DPD  | 2023-02-20 | warehouse      |
 
 
   @from:cucumber
@@ -157,11 +164,11 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule_3 | orderLine_SO_3            | N             |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanning_SO_3              | orderLine_SO_3            |
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanning_SO_3  | orderLine_SO_3 |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | deliveryPlanning_SO_3             | 10         | 10           | Outgoing                 | order_SO_3                | orderLine_SO_3                | customer_3                   | product_3                   | customerLocation_3                    |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | M_Product_ID | C_BPartner_Location_ID |
+      | deliveryPlanning_SO_3  | 10         | 10           | Outgoing           | order_SO_3 | orderLine_SO_3 | customer_3    | product_3    | customerLocation_3     |
 
     When the order identified by order_SO_3 is reactivated
 
@@ -175,5 +182,5 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule_3 | orderLine_SO_3            | N             |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | deliveryPlanning_SO_3             | 20         | 20           | Outgoing                 | order_SO_3                | orderLine_SO_3                | customer_3                   | product_3                   | customerLocation_3                    |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | M_Product_ID | C_BPartner_Location_ID |
+      | deliveryPlanning_SO_3  | 20         | 20           | Outgoing           | order_SO_3 | orderLine_SO_3 | customer_3    | product_3    | customerLocation_3     |

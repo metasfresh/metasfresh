@@ -74,6 +74,8 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 	private static final String JSON_HU_CLEAR_REQUEST = "20_JsonHUClear.json";
 	private static final String JSON_CLEARANCE_STATUS_REQUEST = "30_ClearanceStatusRequest.json";
 
+	private static final String EXPLICIT_AUTH_TOKEN = "explicit-per-exchange-token";
+
 	private MetasfreshAuthProvider metasfreshAuthProvider;
 	private CustomRouteController customRouteController;
 
@@ -293,6 +295,89 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 		assertThat(mockCustomMessageToMFProcessor.called).isEqualTo(1);
 		assertThat(mockClearHUProcessor.called).isEqualTo(1);
 		validateRoutesAreStopped();
+	}
+
+	@Test
+	public void givenAnExchangeWithExplicitAuthToken_whenCallingMFAPI_thenTheExplicitTokenIsSent() throws Exception
+	{
+		//given
+		AdviceWith.adviceWith(context,
+				CUSTOM_FROM_MF_ROUTE_ID,
+				a -> a.replaceFromWith("direct:test-RabbitMQ_custom_from_MF_Route_ID"));
+
+		final MockCustomMessageToMFProcessor mockCustomMessageToMFProcessor = new MockCustomMessageToMFProcessor();
+		final MockClearHUProcessor mockClearHUProcessor = new MockClearHUProcessor();
+		prepareClearHURouteForTesting(mockCustomMessageToMFProcessor, mockClearHUProcessor);
+
+		final MetasfreshAuthorizationTokenNotifier metasfreshAuthorizationTokenNotifier = new MetasfreshAuthorizationTokenNotifier(metasfreshAuthProvider,
+																																   "mock://clearHURoute",
+																																   customRouteController,
+																																   context.createProducerTemplate());
+		context.getManagementStrategy().addEventNotifier(metasfreshAuthorizationTokenNotifier);
+
+		context.start();
+		customRouteController.startAlwaysRunningRoutes();
+
+		validateRoutesWhenNoAuthPresent();
+		validateMFResponseWithAuthToken();
+		assertThat(metasfreshAuthProvider.getAuthToken()).isNotEqualTo(EXPLICIT_AUTH_TOKEN);
+
+		final MockEndpoint clearHUMockEP = getMockEndpoint(MOCK_CLEAR_HU);
+		clearHUMockEP.expectedHeaderReceived(CoreConstants.AUTHORIZATION, EXPLICIT_AUTH_TOKEN);
+
+		//when
+		sendJsonHUClearWithExplicitAuthToken();
+
+		//then
+		MockEndpoint.assertIsSatisfied(context);
+		assertThat(mockClearHUProcessor.called).isEqualTo(1);
+	}
+
+	@Test
+	public void givenAnExchangeWithExplicitAuthToken_whenMFAPIRespondsWith401_thenRoutesKeepRunningAndNoReAuthIsRequested() throws Exception
+	{
+		//given
+		AdviceWith.adviceWith(context,
+				CUSTOM_FROM_MF_ROUTE_ID,
+				a -> a.replaceFromWith("direct:test-RabbitMQ_custom_from_MF_Route_ID"));
+
+		final MockCustomMessageToMFProcessor mockCustomMessageToMFProcessor = new MockCustomMessageToMFProcessor();
+		final MockClearHUProcessor mockClearHUProcessor = new MockClearHUProcessor(true);
+		prepareClearHURouteForTesting(mockCustomMessageToMFProcessor, mockClearHUProcessor);
+
+		final MetasfreshAuthorizationTokenNotifier metasfreshAuthorizationTokenNotifier = new MetasfreshAuthorizationTokenNotifier(metasfreshAuthProvider,
+																																   "mock://clearHURoute",
+																																   customRouteController,
+																																   context.createProducerTemplate());
+		context.getManagementStrategy().addEventNotifier(metasfreshAuthorizationTokenNotifier);
+
+		context.start();
+		customRouteController.startAlwaysRunningRoutes();
+
+		validateRoutesWhenNoAuthPresent();
+		validateMFResponseWithAuthToken();
+		final String serviceToken = metasfreshAuthProvider.getAuthToken();
+
+		//when
+		sendJsonHUClearWithExplicitAuthToken();
+
+		//then
+		assertThat(mockClearHUProcessor.called).isEqualTo(1);
+		assertThat(mockCustomMessageToMFProcessor.called).isEqualTo(0);
+		assertThat(metasfreshAuthProvider.getAuthToken()).isEqualTo(serviceToken);
+		validateRoutesAreStarted();
+	}
+
+	private void sendJsonHUClearWithExplicitAuthToken() throws IOException
+	{
+		final InputStream requestBodyAsStringIS = this.getClass().getResourceAsStream(JSON_HU_CLEAR_REQUEST);
+		final JsonHUClear requestBodyAsJsonHUClear = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(requestBodyAsStringIS, JsonHUClear.class);
+		final String requestBodyAsString = JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(requestBodyAsJsonHUClear);
+
+		template.send("direct:" + CLEAR_HU_ROUTE_ID, exchange -> {
+			exchange.getIn().setBody(requestBodyAsString);
+			exchange.setProperty(ExternalSystemCamelConstants.PROPERTY_MF_AUTH_TOKEN, EXPLICIT_AUTH_TOKEN);
+		});
 	}
 
 	private void validateRoutesWhenNoAuthPresent()

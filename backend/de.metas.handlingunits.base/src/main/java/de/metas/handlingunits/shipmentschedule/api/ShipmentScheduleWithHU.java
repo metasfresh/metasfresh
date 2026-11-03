@@ -206,7 +206,12 @@ public class ShipmentScheduleWithHU
 		this.shipmentScheduleQtyPicked = allocRecord;
 		this.shipmentSchedule = create(allocRecord.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 		this.pickedQty = overrideQty;
-		this.catchQty = Optional.empty();
+
+		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+		this.catchQty = StockQtyAndUOMQtys.create(
+						allocRecord.getQtyPicked(), productId,
+						allocRecord.getQtyDeliveredCatch(), UomId.ofRepoIdOrNull(allocRecord.getCatch_UOM_ID()))
+				.getUOMQtyOpt();
 		this.vhu = overrideVHU;
 		this.tuHU = allocRecord.getM_TU_HU_ID() > 0 ? allocRecord.getM_TU_HU() : null;
 		this.luHU = allocRecord.getM_LU_HU_ID() > 0 ? allocRecord.getM_LU_HU() : null;
@@ -229,7 +234,13 @@ public class ShipmentScheduleWithHU
 		return ImmutableList.of(new ShipmentScheduleWithHU(huContext, qtyPicked, qtyTypeToUse));
 	}
 
-	/** Creates a single candidate with an explicit VHU and qty override. Used by the expansion logic in {@link IHUShipmentScheduleBL}. */
+	/**
+	 * Creates a single candidate with an explicit VHU and qty override. Used by the expansion logic in {@link IHUShipmentScheduleBL}.
+	 * <p>
+	 * Caller contract: {@code qtyPicked.getQtyPicked()} equals {@code qty}, so the record's catch weight
+	 * ({@code QtyDeliveredCatch}/{@code Catch_UOM_ID}) belongs to this candidate and is carried over as-is.
+	 * Both callers in {@code createCandidatesForQtyPicked} meet this.
+	 */
 	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedForVHU(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
 			@NonNull final IHUContext huContext,

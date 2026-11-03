@@ -42,18 +42,21 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanning.ProductPlanningBuilder;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Maturing_Configuration;
 import org.compiere.model.I_M_Maturing_Configuration_Line;
@@ -61,7 +64,9 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.WORKFLOW_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -72,6 +77,12 @@ public class PP_Product_Planning_StepDef
 {
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+
+	/**
+	 * Every {@code PP_Product_Planning} this step-def touched (created OR updated) this scenario, so
+	 * {@link #deactivateTouchedProductPlannings()} can deactivate all of them afterwards.
+	 */
+	private final Set<ProductPlanningId> touchedPlanningIds = new HashSet<>();
 
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
@@ -155,6 +166,8 @@ public class PP_Product_Planning_StepDef
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsDocComplete).ifPresent(builder::isDocComplete);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).ifPresent(builder::isAttributeDependant);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsManufacturedLot4Lot).ifPresent(builder::isManufacturedLot4Lot);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsManufactured).ifPresent(builder::isManufactured);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsTraded).ifPresent(builder::isTraded);
 
 		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.map(productBomVersionsTable::getId)
@@ -218,6 +231,7 @@ public class PP_Product_Planning_StepDef
 				.ifPresent(aggregationId -> builder.manufacturingAggregationId(aggregationId.getRepoId()));
 
 		final ProductPlanning productPlanning = productPlanningDAO.save(builder.build());
+		touchedPlanningIds.add(productPlanning.getIdNotNull());
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> productPlanningTable.putOrReplace(identifier, productPlanning));
 	}
@@ -237,7 +251,14 @@ public class PP_Product_Planning_StepDef
 			return Optional.of(productPlanning);
 		}
 
-		final StepDefDataIdentifier identifier = row.getAsIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Product_ID);
+		// No M_Product column → a generic planning that applies to all products; there is nothing to look up an existing one by.
+		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Product_ID)
+				.filter(id -> !id.isNullPlaceholder())
+				.orElse(null);
+		if (identifier == null)
+		{
+			return Optional.empty();
+		}
 		final I_M_Product productRecord = identifier.lookupIn(productTable);
 		assertThat(productRecord).as("Missing M_Product for identifier=%s", identifier.getAsString()).isNotNull();
 
@@ -269,5 +290,24 @@ public class PP_Product_Planning_StepDef
 						&& WarehouseId.equals(productPlanning.getWarehouseId(), warehouseId)
 						&& ResourceId.equals(productPlanning.getPlantId(), plantId)
 						&& ProductId.equals(productPlanning.getProductId(), productId));
+	}
+
+	/**
+	 * Deactivates every planning this scenario touched (tracked in {@link #touchedPlanningIds}) — see that
+	 * field's own Javadoc for why both the generic (no-{@code M_Product}) and the product-specific case need
+	 * it. Runs on scenario pass AND failure.
+	 */
+	@After
+	public void deactivateTouchedProductPlannings()
+	{
+		for (final ProductPlanningId planningId : touchedPlanningIds)
+		{
+			final I_PP_Product_Planning record = InterfaceWrapperHelper.load(planningId, I_PP_Product_Planning.class);
+			if (record.isActive())
+			{
+				record.setIsActive(false);
+				InterfaceWrapperHelper.saveRecord(record);
+			}
+		}
 	}
 }

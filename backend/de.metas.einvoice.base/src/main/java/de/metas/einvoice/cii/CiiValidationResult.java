@@ -46,6 +46,45 @@ public class CiiValidationResult
 	}
 
 	/**
+	 * Returns a newline-separated, human-readable detail of all FATAL/ERROR-level failed assertions,
+	 * each rendered as {@code ruleId — message (location)}. A null ruleId, message or location is omitted.
+	 */
+	@NonNull
+	public String getFatalAndErrorDetails()
+	{
+		return failedAssertions.stream()
+				.filter(FailedAssertion::isFatalOrError)
+				.map(CiiValidationResult::formatDetail)
+				.collect(Collectors.joining("\n"));
+	}
+
+	private static String formatDetail(@NonNull final FailedAssertion assertion)
+	{
+		final StringBuilder sb = new StringBuilder();
+		if (assertion.getRuleId() != null)
+		{
+			sb.append(assertion.getRuleId());
+		}
+		if (assertion.getMessage() != null)
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(" — ");
+			}
+			sb.append(assertion.getMessage());
+		}
+		if (assertion.getLocation() != null)
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(" ");
+			}
+			sb.append("(").append(assertion.getLocation()).append(")");
+		}
+		return sb.toString();
+	}
+
+	/**
 	 * A single failed Schematron assertion from the SVRL output.
 	 */
 	@Value

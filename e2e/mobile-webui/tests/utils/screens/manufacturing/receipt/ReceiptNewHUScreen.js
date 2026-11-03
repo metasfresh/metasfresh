@@ -6,6 +6,9 @@ import { ReceiptReceiveTargetScreen } from './ReceiptReceiveTargetScreen';
 
 const NAME = 'ReceiptNewHUScreen';
 const NO_GEBINDE_GUIDANCE_TESTID = 'receive-no-gebinde-guidance';
+// The "No Packing Item" target: testIds derive from M_HU_PI_Item_Product_ID, and the virtual packing
+// instruction is the fixed core record 101 (HUPIItemProductId.VIRTUAL_HU), so it has no masterdata testId.
+export const VIRTUAL_TU_TARGET_TESTID = 'tuPIItemProduct-101';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#ReceiptNewHUScreen');
 
