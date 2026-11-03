@@ -4,8 +4,15 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.handlingunits.CreateHUFromInventoryRequest;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.impl.HUQtyService;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
@@ -13,6 +20,9 @@ import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import de.metas.util.time.PatternedDateTimeFormatter;
 import com.google.common.collect.ImmutableList;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -108,17 +118,11 @@ class CreateHUFromScannedCodeCommandTest
 		return JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(json, JsonCreateHUFromScannedCodeRequest.class);
 	}
 
+	/** goes through the real service, so the request-to-command mapping of production code is what the tests exercise */
 	private HuId create(final JsonCreateHUFromScannedCodeRequest request)
 	{
-		return CreateHUFromScannedCodeCommand.builder()
-				.huQRCodesService(huQRCodesService)
-				.huQtyService(huQtyService)
-				.clientId(ClientId.METASFRESH)
-				.scannedCode(request.getScannedCode())
-				.qty(request.getQty())
-				.locatorId(LocatorQRCode.ofGlobalQRCodeJsonString(request.getLocatorQRCode()).getLocatorId())
-				.build()
-				.execute();
+		final CreateHUFromLabelService service = new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelTargetLocatorResolver(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository())));
+		return service.create(request, ClientId.METASFRESH).getHuId();
 	}
 
 	/**
@@ -268,11 +272,26 @@ class CreateHUFromScannedCodeCommandTest
 			super(InventoryService.newInstanceForUnitTesting());
 		}
 
+		/** the service reads the new HU's QR code afterwards; attach one so it does not need a full HU (packing instructions) to generate it */
+		private static void attachQRCode(final HuId huId)
+		{
+			final HUQRCode qrCode = HUQRCode.builder()
+					.id(HUQRCodeUniqueId.random())
+					.packingInfo(HUQRCodePackingInfo.builder().huUnitType(HUQRCodeUnitType.VHU).packingInstructionsId(HuPackingInstructionsId.VIRTUAL).caption("CU").build())
+					.attributes(ImmutableList.of())
+					.build();
+			new HUQRCodesRepository().createNew(qrCode, huId);
+		}
+
 		@Override
 		public HuId createHUFromInventory(final CreateHUFromInventoryRequest request)
 		{
 			requests.add(request);
-			return HuId.ofRepoId(1000);
+			final I_M_HU hu = InterfaceWrapperHelper.newInstance(I_M_HU.class); // the service reads its QR code afterwards
+			InterfaceWrapperHelper.saveRecord(hu);
+			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+			attachQRCode(huId);
+			return huId;
 		}
 	}
 }
