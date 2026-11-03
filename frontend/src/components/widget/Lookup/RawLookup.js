@@ -152,12 +152,21 @@ export class RawLookup extends Component {
 
     this.handleValueChanged();
 
-    const { defaultValue, initialFocus } = this.props;
+    const { autoFocus, defaultValue, initialFocus } = this.props;
     if (defaultValue) {
       this.inputSearch.value = computeInputTextFromSelectedItem(defaultValue);
     }
     if (initialFocus && !this.inputSearch.value) {
       this.focus({ shouldYieldToFocusedField: this.isDocumentHeaderLookup() });
+    } else if (
+      autoFocus &&
+      this.state.shouldBeFocused &&
+      !this.inputSearch.value
+    ) {
+      // The document data may already be there when this widget mounts, so no update has to follow: take the
+      // one-shot focus now instead of waiting for componentDidUpdate.
+      this.focus({ shouldYieldToFocusedField: this.isDocumentHeaderLookup() });
+      this.setState({ shouldBeFocused: false });
     }
   }
 

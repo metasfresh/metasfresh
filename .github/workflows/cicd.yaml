@@ -1766,6 +1766,7 @@ jobs:
           fi
       - name: Check if 'metasfreshArchives' directory exists
         id: check_metasfreshArchives_dir
+        if: always()
         run: |
           if [ -d "cucumber/metasfreshArchives/" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
@@ -1773,7 +1774,7 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
       - uses: actions/upload-artifact@v6
-        if: steps.check_metasfreshArchives_dir.outputs.exists == 'true'
+        if: always() && steps.check_metasfreshArchives_dir.outputs.exists == 'true'
         with:
           name: metasfreshArchives-${{ matrix.profile }}
           path: cucumber/metasfreshArchives/

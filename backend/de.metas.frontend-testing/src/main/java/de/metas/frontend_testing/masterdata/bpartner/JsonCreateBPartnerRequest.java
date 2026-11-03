@@ -99,6 +99,15 @@ public class JsonCreateBPartnerRequest
 	@Builder.Default boolean isSoPriceList = true;
 
 	/**
+	 * ISO currency code (e.g. {@code "CHF"}) of the price list created for this business partner.
+	 * Only used when this request creates the pricing system (the first business partner of a masterdata request).
+	 * Costs of purchased goods are valued from the purchase price, converted to the accounting currency: a price list in
+	 * another currency than the accounting schema's one makes the costed price differ from the entered price.
+	 * Default: EUR
+	 */
+	@Nullable String priceListCurrencyCode;
+
+	/**
 	 * Bank accounts to create for this business partner.
 	 * Used for EN16931 / ZUGFeRD CII CreditorFinancialAccount (seller IBAN).
 	 */

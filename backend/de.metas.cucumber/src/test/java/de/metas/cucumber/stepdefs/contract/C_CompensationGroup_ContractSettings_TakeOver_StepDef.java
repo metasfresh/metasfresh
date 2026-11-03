@@ -74,6 +74,7 @@ public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 	 *     <li>{@code C_CompensationGroup_ContractSettings_ID} (required, identifier-ref) — the settings record</li>
 	 *     <li>{@code M_Product_Category_ID} (required, identifier-ref) — the product category the take-over applies to</li>
 	 *     <li>{@code M_Product_ID} (required, identifier-ref) — the contract's own discount product</li>
+	 *     <li>{@code OPT.PercentagePrecision} (optional) — decimals to which the take-over line's summed percentage is rounded; absent → the DB default 2</li>
 	 * </ul>
 	 * <pre>
 	 * And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
@@ -173,6 +174,8 @@ public class C_CompensationGroup_ContractSettings_TakeOver_StepDef
 		record.setC_CompensationGroup_ContractSettings_ID(settings.getC_CompensationGroup_ContractSettings_ID());
 		record.setM_Product_Category_ID(category.getM_Product_Category_ID());
 		record.setM_Product_ID(product.getM_Product_ID());
+		row.getAsOptionalInt(I_C_CompensationGroup_ContractSettings_TakeOver.COLUMNNAME_PercentagePrecision)
+				.ifPresent(record::setPercentagePrecision);
 		return record;
 	}
 }

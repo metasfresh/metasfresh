@@ -72,6 +72,10 @@ class MobileConfigManufacturingCommand
 		{
 			newConfigBuilder.isConfirmEmptyingHU(OptionalBoolean.ofBoolean(request.getIsConfirmEmptyingHU()));
 		}
+		if (request.getIsFinishedGoodsCatchWeightScanRequired() != null)
+		{
+			newConfigBuilder.isFinishedGoodsCatchWeightScanRequired(OptionalBoolean.ofBoolean(request.getIsFinishedGoodsCatchWeightScanRequired()));
+		}
 
 		final MobileUIManufacturingConfig newConfig = newConfigBuilder.build();
 		mobileManufacturingConfigRepository.saveUserConfig(newConfig, loginUserId);
@@ -104,6 +108,7 @@ class MobileConfigManufacturingCommand
 				.editableAttributes(getGlobalEditableAttributes())
 				.isAllowEmptyingHUs(newConfig.getIsAllowEmptyingHUs().toBooleanOrNull())
 				.isConfirmEmptyingHU(newConfig.getIsConfirmEmptyingHU().toBooleanOrNull())
+				.isFinishedGoodsCatchWeightScanRequired(newConfig.getIsFinishedGoodsCatchWeightScanRequired().toBooleanOrNull())
 				.build();
 	}
 

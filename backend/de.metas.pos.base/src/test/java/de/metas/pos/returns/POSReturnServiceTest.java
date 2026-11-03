@@ -21,6 +21,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceService;
+import de.metas.invoicecandidate.api.CreateInvoiceForModelService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -120,9 +121,10 @@ class POSReturnServiceTest
 	 */
 	private static InvoiceService newInvoiceService()
 	{
-		return new InvoiceService(new AsyncBatchService(
+		final AsyncBatchService asyncBatchService = new AsyncBatchService(
 				new AsyncBatchObserver(),
-				new AsyncBatchEventBusService(PlainEventBusFactory.newInstance(), new EventLogUserService())));
+				new AsyncBatchEventBusService(PlainEventBusFactory.newInstance(), new EventLogUserService()));
+		return new InvoiceService(asyncBatchService, new CreateInvoiceForModelService(asyncBatchService));
 	}
 
 	@Test

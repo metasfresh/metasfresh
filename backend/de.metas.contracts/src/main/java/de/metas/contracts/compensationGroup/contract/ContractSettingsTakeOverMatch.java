@@ -8,6 +8,8 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.math.RoundingMode;
+
 /*
  * #%L
  * de.metas.contracts
@@ -32,28 +34,41 @@ import lombok.Value;
 
 /**
  * A take-over record together with the nominal percentages it takes over from the linked sales order, one per
- * contract discount line (never empty).
+ * contract discount line, and the qualifying refund contracts of its listed refund conditions (not both empty).
  */
 @Value
 public class ContractSettingsTakeOverMatch
 {
 	@NonNull ContractSettingsTakeOver takeOver;
 	@NonNull ImmutableList<TakenOverPercentage> takenOverPercentages;
+	@NonNull ImmutableList<TakenOverRefund> takenOverRefunds;
 
 	public ContractSettingsTakeOverMatch(
 			@NonNull final ContractSettingsTakeOver takeOver,
-			@NonNull final ImmutableList<TakenOverPercentage> takenOverPercentages)
+			@NonNull final ImmutableList<TakenOverPercentage> takenOverPercentages,
+			@NonNull final ImmutableList<TakenOverRefund> takenOverRefunds)
 	{
-		Check.assumeNotEmpty(takenOverPercentages, "takenOverPercentages is not empty");
+		Check.assume(!takenOverPercentages.isEmpty() || !takenOverRefunds.isEmpty(), "takenOverPercentages or takenOverRefunds is not empty");
 		this.takeOver = takeOver;
 		this.takenOverPercentages = takenOverPercentages;
+		this.takenOverRefunds = takenOverRefunds;
 	}
 
+	/** The nominal sum of the taken-over contract discount percentages and refund percentages, unrounded. */
 	public Percent getSummedPercent()
 	{
-		return takenOverPercentages.stream()
+		final Percent contractDiscounts = takenOverPercentages.stream()
 				.map(TakenOverPercentage::getPercent)
 				.reduce(Percent.ZERO, Percent::add);
+		return takenOverRefunds.stream()
+				.map(TakenOverRefund::getPercent)
+				.reduce(contractDiscounts, Percent::add);
+	}
+
+	/** The summed percentage, rounded half up to the take-over record's decimals (only the take-over line is rounded). */
+	public Percent getRoundedSummedPercent()
+	{
+		return Percent.of(getSummedPercent().toBigDecimal().setScale(takeOver.getPercentagePrecision(), RoundingMode.HALF_UP));
 	}
 
 	public ImmutableSet<ProductId> getTakenOverProductIds()

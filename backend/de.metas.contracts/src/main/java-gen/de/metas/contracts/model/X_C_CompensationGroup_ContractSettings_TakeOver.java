@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_CompensationGroup_ContractSettings_TakeOver extends org.compiere.model.PO implements I_C_CompensationGroup_ContractSettings_TakeOver, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 910034252L;
+	private static final long serialVersionUID = 1726562439L;
 
     /** Standard Constructor */
     public X_C_CompensationGroup_ContractSettings_TakeOver (final Properties ctx, final int C_CompensationGroup_ContractSettings_TakeOver_ID, @Nullable final String trxName)
@@ -92,5 +92,17 @@ public class X_C_CompensationGroup_ContractSettings_TakeOver extends org.compier
 	public int getM_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+	}
+
+	@Override
+	public void setPercentagePrecision (final int PercentagePrecision)
+	{
+		set_Value (COLUMNNAME_PercentagePrecision, PercentagePrecision);
+	}
+
+	@Override
+	public int getPercentagePrecision() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PercentagePrecision);
 	}
 }

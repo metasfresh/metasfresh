@@ -409,7 +409,9 @@ public class CreateBPartnerCommand
 		}
 
 		final Identifier pricingSystemIdentifier = Identifier.unique("PS");
-		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.EUR);
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(request.getPriceListCurrencyCode() != null
+				? CurrencyCode.ofThreeLetterCode(request.getPriceListCurrencyCode())
+				: CurrencyCode.EUR);
 
 		final PricingSetupHelper.PricingSetupResult setup = PricingSetupHelper.createPricingSystemAndPriceList(
 				priceListVersionRepository,
