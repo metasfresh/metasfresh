@@ -41,6 +41,7 @@ public class DeliveryOrderItem
 	@NonNull String productName;
 	@NonNull String productValue;
 	@Nullable String customsTariff;
+	@Nullable String countryOfOrigin;
 	@NonNull BigDecimal totalWeightInKg;
 	@NonNull Quantity shippedQuantity;
 }

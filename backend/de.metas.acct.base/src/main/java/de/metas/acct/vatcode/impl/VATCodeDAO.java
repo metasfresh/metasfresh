@@ -1,13 +1,16 @@
 package de.metas.acct.vatcode.impl;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.model.X_C_VAT_Code;
 import de.metas.acct.vatcode.CreateVATCodeRequest;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.acct.vatcode.VATCodeMatchingResponse;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -27,9 +30,12 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -60,7 +66,7 @@ public class VATCodeDAO implements IVATCodeDAO
 
 	@Override
 	@NonNull
-	public Optional<VATCode> findVATCode(@NonNull final VATCodeMatchingRequest request)
+	public Optional<VATCodeMatchingResponse> findVATCode(@NonNull final VATCodeMatchingRequest request)
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -76,7 +82,10 @@ public class VATCodeDAO implements IVATCodeDAO
 		{
 			if (isMatching(matching, request))
 			{
-				return Optional.of(VATCode.of(matching.getVATCode(), matching.getC_VAT_Code_ID()));
+				return Optional.of(VATCodeMatchingResponse.builder()
+						.vatCode(VATCode.of(matching.getVATCode(), matching.getC_VAT_Code_ID()))
+						.vatCodeAmountType(VATCodeAmountType.ofNullableCode(matching.getAmountType()))
+						.build());
 			}
 		}
 
@@ -141,8 +150,36 @@ public class VATCodeDAO implements IVATCodeDAO
 		{
 			record.setDescription(request.getDescription());
 		}
+		if (request.getAmountType() != null)
+		{
+			record.setAmountType(request.getAmountType().getCode());
+		}
 		InterfaceWrapperHelper.saveRecord(record);
 		return VATCode.of(record.getVATCode(), record.getC_VAT_Code_ID());
+	}
+
+	@Override
+	public Optional<Boolean> findIsSOTrxByCode(@NonNull final String vatCode, @NonNull final AcctSchemaId acctSchemaId, @NonNull final TaxId taxId)
+	{
+		// a code usually has a Net and a Tax row for the same tax, which agree on IsSOTrx;
+		// a code set up for both the sales and the purchase side does not agree, then the caller decides
+		final Set<String> isSOTrxValues = queryBL.createQueryBuilder(I_C_VAT_Code.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, vatCode)
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_Tax_ID, taxId)
+				.create()
+				.list(I_C_VAT_Code.class)
+				.stream()
+				.map(r -> Strings.nullToEmpty(r.getIsSOTrx()))
+				.collect(Collectors.toSet());
+
+		// no row, a blank IsSOTrx or rows that disagree => unknown
+		if (isSOTrxValues.size() != 1 || isSOTrxValues.contains(""))
+		{
+			return Optional.empty();
+		}
+		return Optional.of(isSOTrxValues.contains(X_C_VAT_Code.ISSOTRX_Yes));
 	}
 
 	/**
@@ -182,6 +219,19 @@ public class VATCodeDAO implements IVATCodeDAO
 			return false;
 		}
 
+		// Match AmountType (when specified in request)
+		if (request.getAmountType() != null)
+		{
+			final String matchingAmountType = matching.getAmountType();
+			// null matchingAmountType: record has no AmountType set (only in legacy/test data;
+			// production column is NOT NULL DEFAULT 'T'). A null record cannot satisfy a typed request.
+			if (!request.getAmountType().getCode().equals(matchingAmountType))
+			{
+				logger.debug("=> not matching (AmountType)");
+				return false;
+			}
+		}
+
 		logger.debug("=> matching");
 		return true;
 	}
@@ -204,7 +254,7 @@ public class VATCodeDAO implements IVATCodeDAO
 				.addColumn(I_C_VAT_Code.COLUMN_ValidFrom, Direction.Descending, Nulls.Last)
 				.addColumn(I_C_VAT_Code.COLUMN_ValidTo, Direction.Descending, Nulls.Last)
 				.addColumn(I_C_VAT_Code.COLUMN_IsSOTrx, Direction.Ascending, Nulls.Last)
-				.addColumn(I_C_VAT_Code.COLUMN_C_VAT_Code_ID)
+				.addColumn(I_C_VAT_Code.COLUMN_C_VAT_Code_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				//
 				.create()

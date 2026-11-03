@@ -41,7 +41,8 @@ public enum EndpointAuthType implements ReferenceListAwareEnum
 	Token(X_ExternalSystem_Endpoint.AUTHTYPE_Token),
 	OAuth(X_ExternalSystem_Endpoint.AUTHTYPE_OAuth),
 	SAS(X_ExternalSystem_Endpoint.AUTHTYPE_SAS),
-	Basic(X_ExternalSystem_Endpoint.AUTHTYPE_Basic)
+	Basic(X_ExternalSystem_Endpoint.AUTHTYPE_Basic),
+	OAuth2(X_ExternalSystem_Endpoint.AUTHTYPE_OAuth2)
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<EndpointAuthType> index = ReferenceListAwareEnums.index(values());

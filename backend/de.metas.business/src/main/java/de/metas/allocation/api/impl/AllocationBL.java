@@ -177,8 +177,8 @@ public class AllocationBL implements IAllocationBL
 	}
 
 	public void autoAllocateSpecificPayment(@NonNull final org.compiere.model.I_C_Invoice invoice,
-											@NonNull final I_C_Payment payment,
-											final boolean ignoreIsAutoAllocateAvailableAmt)
+	                                        @NonNull final I_C_Payment payment,
+	                                        final boolean ignoreIsAutoAllocateAvailableAmt)
 	{
 		if (!invoice.isFinancial())
 		{
@@ -338,4 +338,11 @@ public class AllocationBL implements IAllocationBL
 		final I_C_AllocationLine line = allocationDAO.getLineById(lineId);
 		return PaymentId.optionalOfRepoId(line.getC_Payment_ID());
 	}
+
+	@Override
+	public boolean hasActiveAllocationBetween(@NonNull final InvoiceId invoiceId, @NonNull final PaymentId paymentId)
+	{
+		return allocationDAO.hasActiveAllocationBetween(invoiceId, paymentId);
+	}
+
 }

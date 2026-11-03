@@ -51,7 +51,7 @@ class SalesOrderDummyGRAIProviders
 		final String poReference = StringUtils.trimBlankToNull(salesOrder.getPOReference());
 		if (poReference == null)
 		{
-			throw new AdempiereException("Cannot generate dummy GRAIs: POReference not found for " + salesOrderId);
+			throw new AdempiereException(DummyGRAITemplate.MSG_DUMMY_GRAI_POREFERENCE_MISSING, salesOrderId);
 		}
 		return poReference;
 	}

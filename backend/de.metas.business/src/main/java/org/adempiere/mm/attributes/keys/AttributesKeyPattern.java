@@ -22,21 +22,23 @@
 
 package org.adempiere.mm.attributes.keys;
 
-import java.util.Collection;
-
-import org.adempiere.mm.attributes.AttributeId;
-
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeId;
 
+import java.util.Collection;
+
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @EqualsAndHashCode(doNotUseGetters = true)
 public final class AttributesKeyPattern
 {
@@ -81,7 +83,8 @@ public final class AttributesKeyPattern
 
 	private String _sqlLikeString; // lazy
 
-	private AttributesKeyPattern(@NonNull final Collection<AttributesKeyPartPattern> partPatterns)
+	@JsonCreator
+	private AttributesKeyPattern(@NonNull @JsonProperty("partPatterns") final Collection<AttributesKeyPartPattern> partPatterns)
 	{
 		Check.assumeNotEmpty(partPatterns, "partPatterns is not empty");
 
@@ -101,16 +104,16 @@ public final class AttributesKeyPattern
 	{
 		final ToStringHelper builder = MoreObjects.toStringHelper(this)
 				.omitNullValues();
-		
-		if(isAll())
+
+		if (isAll())
 		{
 			builder.addValue("ALL");
 		}
-		else if(isOther())
+		else if (isOther())
 		{
 			builder.addValue("OTHERS");
 		}
-		else if(isNone())
+		else if (isNone())
 		{
 			builder.addValue("NONE");
 		}
@@ -118,7 +121,7 @@ public final class AttributesKeyPattern
 		{
 			builder.addValue(partPatterns);
 		}
-		
+
 		return builder.toString();
 	}
 

@@ -114,9 +114,7 @@ public class OLCandProcessingHelper
 				|| !Objects.equals(previousCandidate.getBPartnerInfo(), candidate.getBPartnerInfo())
 				|| !Objects.equals(previousCandidate.getBillBPartnerInfo(), candidate.getBillBPartnerInfo())
 				//
-				// task 06269: note that for now we set DatePromised only in the header, so different DatePromised values result in different orders, and all ols have the same DatePromised
 				|| !Objects.equals(previousCandidate.getDateOrdered(), candidate.getDateOrdered())
-				|| !Objects.equals(previousCandidate.getDatePromised(), candidate.getDatePromised())
 				|| !Objects.equals(previousCandidate.getHandOverBPartnerInfo(), candidate.getHandOverBPartnerInfo())
 				|| !Objects.equals(previousCandidate.getDropShipBPartnerInfo(), candidate.getDropShipBPartnerInfo())
 				//

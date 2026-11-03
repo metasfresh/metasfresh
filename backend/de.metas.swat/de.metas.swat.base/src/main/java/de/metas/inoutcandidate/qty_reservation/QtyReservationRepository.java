@@ -15,7 +15,11 @@ import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -24,6 +28,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Repository for loading {@link QtyReservation} domain objects from the {@code M_QtyReservation} table.
+ * <p>
+ * Repository Tables: M_QtyReservation
+ * Repository Cluster: QtyReservationRepository (sole owner)
  */
 @Repository
 public class QtyReservationRepository
@@ -110,6 +117,51 @@ public class QtyReservationRepository
 	}
 
 	/**
+	 * Physically deletes the given reservation rows by ID (same delete mechanism as
+	 * {@link #deleteReservation(DeleteQtyReservationRequest)}, but targeted at specific rows
+	 * to avoid removing sibling reservations sharing the same supply-type bucket).
+	 */
+	public void deleteByIds(@NonNull final Set<QtyReservationId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return;
+		}
+
+		// IDs come from getActiveByOrderLineId (IsActive=Y, Processed=false), so no further filter is needed here.
+		queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addInArrayFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID,
+						ids.stream().map(QtyReservationId::getRepoId).collect(ImmutableList.toImmutableList()))
+				.create()
+				.delete();
+	}
+
+	/**
+	 * For the given reservation IDs, returns whether each is a PLANNED_SUPPLY reservation (vs ON_HAND).
+	 * Used to order reservations PS-before-OH when trimming, since {@link QtyReservation} does not expose SupplyType.
+	 */
+	@NonNull
+	public Map<QtyReservationId, Boolean> getIsPlannedSupplyByIds(@NonNull final Set<QtyReservationId> ids)
+	{
+		final Map<QtyReservationId, Boolean> result = new HashMap<>();
+		if (ids.isEmpty())
+		{
+			return result;
+		}
+
+		queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID,
+						ids.stream().map(QtyReservationId::getRepoId).collect(ImmutableList.toImmutableList()))
+				.create()
+				.stream()
+				.forEach(record -> result.put(
+						QtyReservationId.ofRepoId(record.getM_QtyReservation_ID()),
+						SupplyType.ofCode(record.getSupplyType()).isPlannedSupply()));
+		return result;
+	}
+
+	/**
 	 * Returns all active, unprocessed reservations for the given order line.
 	 * Used by the HU picker to honor each reservation's attributes when picking on-the-fly.
 	 */
@@ -127,22 +179,42 @@ public class QtyReservationRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public QtyTU getReservedQtyTU(final @NotNull DeleteQtyReservationRequest request)
-	{
-		return getReservedQtyTU(toSqlQuery(request));
-	}
-
 	private IQueryBuilder<I_M_QtyReservation> toSqlQuery(@NonNull final DeleteQtyReservationRequest request)
 	{
-		final IQueryBuilder<I_M_QtyReservation> sqlQueryBuilder = queryNotProcessedByOrderLine(request.getOrderAndLineId())
-				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_SupplyType, request.getSupplyType().getCode());
+		return toSqlQuery(request.getOrderAndLineId(), request.getSupplyType(), request.getDatePromised());
+	}
 
-		if (request.getDatePromised() != null)
+	private IQueryBuilder<I_M_QtyReservation> toSqlQuery(
+			@NonNull final OrderAndLineId orderAndLineId,
+			@NonNull final SupplyType supplyType,
+			@Nullable final Instant datePromised)
+	{
+		final IQueryBuilder<I_M_QtyReservation> sqlQueryBuilder = queryNotProcessedByOrderLine(orderAndLineId)
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_SupplyType, supplyType.getCode());
+
+		if (datePromised != null)
 		{
-			sqlQueryBuilder.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_DatePromised, TimeUtil.asTimestamp(request.getDatePromised()));
+			sqlQueryBuilder.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_DatePromised, TimeUtil.asTimestamp(datePromised));
 		}
 
 		return sqlQueryBuilder;
+	}
+
+	/**
+	 * Active, unprocessed reservations of one bucket (order line + supply type + optional date promised), by reservation id.
+	 */
+	@NonNull
+	public ImmutableList<QtyReservation> getActiveByBucket(
+			@NonNull final OrderAndLineId orderAndLineId,
+			@NonNull final SupplyType supplyType,
+			@Nullable final Instant datePromised)
+	{
+		return toSqlQuery(orderAndLineId, supplyType, datePromised)
+				.orderBy(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID)
+				.create()
+				.stream()
+				.map(QtyReservationLoaderAndSaver::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public QtyTU getReservedQtyTU(@NonNull final OrderAndLineId orderLineId)

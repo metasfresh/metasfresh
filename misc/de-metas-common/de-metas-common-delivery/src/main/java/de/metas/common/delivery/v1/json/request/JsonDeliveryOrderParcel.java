@@ -54,12 +54,17 @@ public class JsonDeliveryOrderParcel
 	@Nullable String trackingUrl;
 	@Nullable byte[] labelPdfBase64;
 	@NonNull List<JsonDeliveryOrderLineContents> contents;
+	/** Wire-string for the top-level HU type: "LU", "TU", or "CU". Keep wire format in sync with
+	 * PackedHUCarrierAdviseService.toTopLevelTypeWireString (advise path). */
+	@Nullable String topLevelType;
 
 	@JsonIgnore
 	public Optional<String> getValue(@NonNull final String attributeValue)
 	{
 		switch (attributeValue)
 		{
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOP_LEVEL_TYPE:
+				return Optional.ofNullable(topLevelType);
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PARCEL_ID:
 				return Optional.of(getId());
 			//aggregated JsonDeliveryOrderLineContents
@@ -70,6 +75,12 @@ public class JsonDeliveryOrderParcel
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMS_TARIFF:
 				//Empty Strings should be filtered out by gateway implementation
 				return Optional.of(contents.stream().map(JsonDeliveryOrderLineContents::getCustomsTariff).filter(Objects::nonNull).collect(Collectors.joining(",")));
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_COUNTRY_OF_ORIGIN:
+				final ImmutableSet<String> countriesOfOrigin = contents.stream()
+						.map(JsonDeliveryOrderLineContents::getCountryOfOrigin)
+						.filter(Objects::nonNull)
+						.collect(ImmutableSet.toImmutableSet());
+				return countriesOfOrigin.size() == 1 ? Optional.of(countriesOfOrigin.iterator().next()) : Optional.empty();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE:
 				return Optional.of(contents.stream()
 						.map(JsonDeliveryOrderLineContents::getTotalValue)

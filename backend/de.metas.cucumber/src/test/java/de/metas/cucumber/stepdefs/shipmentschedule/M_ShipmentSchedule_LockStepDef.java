@@ -24,35 +24,88 @@ package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockRequest;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockType;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLocksMap;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class M_ShipmentSchedule_LockStepDef
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final ShipmentScheduleLockRepository lockRepository = SpringContextHolder.instance.getBean(ShipmentScheduleLockRepository.class);
 
-	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 
-	public M_ShipmentSchedule_LockStepDef(final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
+	/**
+	 * Creates a PICKING lock on the given shipment schedule(s) on behalf of the specified user.
+	 * Used to simulate a concurrent picker already holding the lock, e.g. to verify that
+	 * mass printing skips schedules locked by another user.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_ShipmentSchedule_ID} — identifier of the shipment schedule to lock</li>
+	 *   <li>{@code Login} — login of the user who should own the lock</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Given M_ShipmentSchedule_Lock exists for:
+	 *   | M_ShipmentSchedule_ID | Login   |
+	 *   | sched1                | picker2 |
+	 * </pre>
+	 */
+	@Given("M_ShipmentSchedule_Lock exists for:")
+	public void createLockForShipmentScheduleAndUser(@NonNull final DataTable dataTable)
 	{
-		this.shipmentScheduleTable = shipmentScheduleTable;
+		DataTableRows.of(dataTable).forEach((tableRow) -> {
+			final ShipmentScheduleId shipmentScheduleId = tableRow.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+					.lookupIdIn(shipmentScheduleTable);
+
+			final String login = tableRow.getAsString(I_AD_User.COLUMNNAME_Login);
+			final UserId userId = userDAO.retrieveUserIdByLogin(login);
+			assertThat(userId).as("User exists for login=" + login).isNotNull();
+
+			lockRepository.lock(ShipmentScheduleLockRequest.builder()
+					.shipmentScheduleId(shipmentScheduleId)
+					.lockedBy(userId)
+					.lockType(ShipmentScheduleLockType.PICKING)
+					.build());
+		});
 	}
 
-	@Then("validate M_ShipmentSchedule_Lock record for")
+	/**
+	 * Asserts whether a PICKING lock exists (or does not exist) for the given shipment schedule and user.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_ShipmentSchedule_ID} — identifier of the shipment schedule</li>
+	 *   <li>{@code Login} — login of the user expected to hold (or not hold) the lock</li>
+	 *   <li>{@code Exists} — {@code true} if the lock is expected to exist; {@code false} if it should be absent</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then validate M_ShipmentSchedule_Lock record for:
+	 *   | M_ShipmentSchedule_ID | Login   | Exists |
+	 *   | sched1                | picker2 | true   |
+	 * </pre>
+	 */
+	@Then("validate M_ShipmentSchedule_Lock record for:")
 	public void validateLockForShipmentScheduleAndUser(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((tableRow) -> {
@@ -60,14 +113,10 @@ public class M_ShipmentSchedule_LockStepDef
 					.lookupIdIn(shipmentScheduleTable);
 
 			final String username = tableRow.getAsString(I_AD_User.COLUMNNAME_Login);
-			SharedTestContext.put("username", username);
-
 			final UserId userId = userDAO.retrieveUserIdByLogin(username);
 			assertThat(userId).as("User exists for login=" + username).isNotNull();
-			SharedTestContext.put("userId", userId);
 
 			final ShipmentScheduleLocksMap locks = lockRepository.getByShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId));
-			SharedTestContext.put("locks", locks);
 
 			final boolean lockExists = locks.isLockedBy(userId);
 			final boolean expecting_lockExists = tableRow.getAsBoolean("Exists");
