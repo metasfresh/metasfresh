@@ -65,7 +65,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.movement.MoveHURequestItem;
-import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
@@ -632,9 +631,7 @@ public class HandlingUnitsService
 	{
 		final ScannedCode scannedCode = request.getQrCode();
 		final GlobalQRCode globalQRCode = GlobalQRCode.parse(scannedCode.getAsString()).orNullIfError();
-		// a Leich+Mehl label is a global QR code but never an HU QR code: it identifies no HU, so it is "not found" (the HU Manager then reads it as a label).
-		// Other non-HU global codes (e.g. a locator/shelf label) keep the invalid-QR-code answer from resolveHuId on purpose.
-		if (globalQRCode != null && !LMQRCode.isHandled(globalQRCode))
+		if (globalQRCode != null)
 		{
 			final HuId huId = resolveHuId(globalQRCode);
 			if (huId != null)

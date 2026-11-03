@@ -55,22 +55,26 @@ class HandlingUnitsServiceGetByQRCodeTest
 	}
 
 	/**
-	 * A Leich+Mehl label is a global QR code (LMQ#...) but no HU QR code: the HU lookup must report "no HU" (404), so the HU Manager
-	 * goes on to read it as a label and answers "Not a product label" - never the raw HU-QR-code conversion error (400).
+	 * A Leich+Mehl label is a global QR code (LMQ#...) but no HU QR code: the shared HU lookup keeps the answer it had before the
+	 * HU Manager "create from label" feature - "invalid QR code" (400), the same as for any other non-HU global code.
 	 */
 	@Test
-	void leichUndMehlCode_isNoHU_notABadRequest()
+	void leichUndMehlCode_staysInvalidQRCode_badRequest()
 	{
 		final ResponseEntity<JsonGetSingleHUResponse> response = service.getByQRCode(GetByQRCodeRequest.builder()
 				.qrCode(ScannedCode.ofString("LMQ#1#25.5#31.12.2025#L2311"))
 				.build());
 
-		assertThat(response.getStatusCode()).as(String.valueOf(response.getBody())).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(response.getStatusCode()).as(String.valueOf(response.getBody())).isEqualTo(HttpStatus.BAD_REQUEST);
+		// the body is the invalid-QR-code error (not another failure that happens to be a 400)
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().getError()).isNotNull();
+		assertThat(response.getBody().getError().getMessage()).contains("INVALID_QR_CODE_ERROR_MSG");
 	}
 
 	/**
-	 * Another metasfresh QR code that is no HU code (a shelf label) keeps today's "invalid QR code" answer (400) - only a
-	 * Leich+Mehl code is "no HU". Pins the deliberate distinction so a general "non-HU global code is 404" cleanup cannot flip it silently.
+	 * Another metasfresh QR code that is no HU code (a shelf label) gets the same "invalid QR code" answer (400) as a Leich+Mehl code:
+	 * the lookup names no code type.
 	 */
 	@Test
 	void locatorCode_staysInvalidQRCode_badRequest()

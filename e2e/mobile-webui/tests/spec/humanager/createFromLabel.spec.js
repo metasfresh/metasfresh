@@ -520,7 +520,7 @@ test('rejections show one message each, book nothing; quantity 0 disables OK', a
     await expectRejection({ title: 'mistyped HU number reads as GS1 lot', label: `10${Date.now()}`, expectedText: /does not identify a product/ });
     await expectRejection({ title: 'unassigned HU QR code', label: masterdata.generatedHUQRCodes.g1.qrCode, expectedText: /Not a product label/ });
     await expectRejection({ title: 'locator (shelf) QR code', label: masterdata.warehouses.wh1.locators.wh1_l1.qrCode, expectedText: /invalid/i });
-    await expectRejection({ title: 'LM code', label: 'LMQ#1#25.5#31.12.2025#L2311', expectedText: /Not a product label/ });
+    await expectRejection({ title: 'LM code', label: 'LMQ#1#25.5#31.12.2025#L2311', expectedText: /invalid/i });
     await expectRejection({ title: 'pick-on-the-fly code', label: 'PICK_ON_THE_FLY', expectedText: /Not a product label/ });
 
     await test.step('quantity 0 -> OK disabled', async () => {
