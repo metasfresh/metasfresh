@@ -5,9 +5,9 @@ import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -106,6 +106,26 @@ public class HandlingUnitsDAOTest extends AbstractHUTest
 		Assertions.assertEquals(2, dao.countActiveHUsByProductId(productId));
 		Assertions.assertEquals(2, dao.countActiveHUsByProductId(otherProductId));
 		Assertions.assertEquals(0, dao.countActiveHUsByProductId(ProductId.ofRepoId(1003)));
+	}
+
+	@Test
+	public void countActiveHUsByProductId_countsIncludedHUsToo()
+	{
+		final ProductId productId = ProductId.ofRepoId(1001);
+
+		final I_M_HU lu = createHU(true);
+		createStorage(lu, productId, true);
+
+		final I_M_HU_Item luItem = InterfaceWrapperHelper.newInstance(I_M_HU_Item.class, helper.contextProvider);
+		luItem.setM_HU_ID(lu.getM_HU_ID());
+		InterfaceWrapperHelper.save(luItem);
+
+		final I_M_HU includedTU = createHU(true);
+		includedTU.setM_HU_Item_Parent_ID(luItem.getM_HU_Item_ID());
+		InterfaceWrapperHelper.save(includedTU);
+		createStorage(includedTU, productId, true);
+
+		Assertions.assertEquals(2, dao.countActiveHUsByProductId(productId), "the LU and its included TU both hold the product");
 	}
 
 	private I_M_HU createHU(final boolean active)

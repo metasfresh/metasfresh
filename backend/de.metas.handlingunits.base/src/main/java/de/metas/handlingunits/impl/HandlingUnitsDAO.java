@@ -1144,6 +1144,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		return createHUQueryBuilder()
 				.addOnlyWithProductId(productId)
+				.setOnlyTopLevelHUs(false) // LUs and their included TUs/VHUs all count
 				.setAllowEmptyStorage()
 				.createQuery()
 				.count();

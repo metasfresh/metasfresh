@@ -1,8 +1,5 @@
 package de.metas.inventory;
 
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.ad_reference.AdRefListRepositoryMocked;
-import de.metas.ad_reference.AdRefTableRepositoryMocked;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_Inventory_Candidate;
 import org.adempiere.test.AdempiereTestHelper;
@@ -15,15 +12,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InventoryCandidateServiceTest
+public class InventoryCandidateRepositoryTest
 {
-	private InventoryCandidateService service;
+	private InventoryCandidateRepository repository;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		service = new InventoryCandidateService(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
+		repository = new InventoryCandidateRepository();
 	}
 
 	@Test
@@ -36,7 +33,7 @@ public class InventoryCandidateServiceTest
 		createCandidate(huId, false);
 		createCandidate(otherHuId, true);
 
-		final List<I_M_Inventory_Candidate> result = service.getInventoryCandidatesByHUId(huId);
+		final List<I_M_Inventory_Candidate> result = repository.getByHuId(huId);
 
 		assertThat(result)
 				.extracting(I_M_Inventory_Candidate::getM_Inventory_Candidate_ID)

@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.inout.IHUInOutDAO;
@@ -36,7 +35,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inventory.InventoryCandidateService;
+import de.metas.inventory.InventoryCandidateRepository;
 import de.metas.inventory.InventoryId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -100,7 +99,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AssertExpectationsCommandServices
 {
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -119,7 +117,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final InventoryService inventoryService;
-	@NonNull private final InventoryCandidateService inventoryCandidateService;
+	@NonNull private final InventoryCandidateRepository inventoryCandidateRepository;
 	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
@@ -303,12 +301,12 @@ public class AssertExpectationsCommandServices
 
 	public List<I_M_Inventory_Candidate> getInventoryCandidatesByHUId(@NonNull final HuId huId)
 	{
-		return inventoryCandidateService.getInventoryCandidatesByHUId(huId);
+		return inventoryCandidateRepository.getByHuId(huId);
 	}
 
 	public int countActiveHUsByProductId(@NonNull final ProductId productId)
 	{
-		return handlingUnitsDAO.countActiveHUsByProductId(productId);
+		return handlingUnitsBL.countActiveHUsByProductId(productId);
 	}
 
 	public Inventory getInventoryById(@NonNull final InventoryId inventoryId)

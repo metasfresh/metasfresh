@@ -325,7 +325,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	IHUQueryBuilder createHUQueryBuilder();
 
 	/**
-	 * @return the number of distinct active HUs that have an active {@code M_HU_Storage} of the given product (whatever its qty).
+	 * @return the number of distinct active HUs, on every level (LUs and their included TUs/VHUs), that have an active {@code M_HU_Storage}
+	 * of the given product (whatever its qty). Only HUs of the context client are counted (the {@link #createHUQueryBuilder()} default).
 	 */
 	int countActiveHUsByProductId(@NonNull ProductId productId);
 

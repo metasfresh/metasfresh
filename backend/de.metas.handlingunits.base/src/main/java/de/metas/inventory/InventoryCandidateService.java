@@ -24,7 +24,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 @Service
 public class InventoryCandidateService
@@ -118,14 +117,5 @@ public class InventoryCandidateService
 				.addNotNull(I_M_Inventory_Candidate.COLUMNNAME_DisposeReason)
 				.create()
 				.anyMatch();
-	}
-
-	public List<I_M_Inventory_Candidate> getInventoryCandidatesByHUId(@NonNull final HuId huId)
-	{
-		return queryBL.createQueryBuilder(I_M_Inventory_Candidate.class)
-				.addEqualsFilter(I_M_Inventory_Candidate.COLUMNNAME_M_HU_ID, huId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
 	}
 }
