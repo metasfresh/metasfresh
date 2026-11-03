@@ -5,7 +5,7 @@
 # Build context requires:
 #   - git.properties file (created from init job outputs)
 
-FROM maven:3.8.8-eclipse-temurin-8
+FROM maven:3.9.16-eclipse-temurin-25
 
 WORKDIR /workspace
 
