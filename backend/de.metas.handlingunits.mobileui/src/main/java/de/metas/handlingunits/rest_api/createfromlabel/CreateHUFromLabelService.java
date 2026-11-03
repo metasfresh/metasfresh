@@ -26,12 +26,12 @@ import java.time.ZonedDateTime;
 public class CreateHUFromLabelService
 {
 	// services of the commands (resolved once here and handed to each command)
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final HUQtyService huQtyService;
