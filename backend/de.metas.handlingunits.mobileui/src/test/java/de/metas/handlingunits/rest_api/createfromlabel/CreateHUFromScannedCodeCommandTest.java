@@ -15,7 +15,9 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.impl.PlainMsgBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -31,6 +33,7 @@ import de.metas.util.time.PatternedDateTimeFormatter;
 import de.metas.workplace.WorkplaceRepository;
 import de.metas.workplace.WorkplaceService;
 import de.metas.workplace.WorkplaceUserAssignRepository;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -315,6 +318,15 @@ class CreateHUFromScannedCodeCommandTest
 	@Test
 	void inventoryDescription_isTheTranslatedMessageInTheUsersLanguage() throws IOException
 	{
+		// language made observable: the message text carries the language it was asked for
+		Services.registerService(IMsgBL.class, new PlainMsgBL()
+		{
+			@Override
+			public String getMsg(final String adLanguage, @NonNull final AdMessageKey message)
+			{
+				return adLanguage + ":" + message.toAD_Message();
+			}
+		});
 		product2.setGTIN("02001234567893");
 		InterfaceWrapperHelper.saveRecord(product2);
 
@@ -322,7 +334,8 @@ class CreateHUFromScannedCodeCommandTest
 
 		assertThat(huQtyService.requests).hasSize(1);
 		assertThat(huQtyService.requests.get(0).getDescription())
-				.isEqualTo(TranslatableStrings.adMessage(CreateFromLabelMessages.INVENTORY_DESCRIPTION).translate("de_DE"))
+				.isEqualTo("de_DE:" + CreateFromLabelMessages.INVENTORY_DESCRIPTION.toAD_Message())
+				.isNotEqualTo("en_US:" + CreateFromLabelMessages.INVENTORY_DESCRIPTION.toAD_Message())
 				.isNotEqualTo("HU Manager: created from scanned label"); // the former hard-coded literal
 	}
 

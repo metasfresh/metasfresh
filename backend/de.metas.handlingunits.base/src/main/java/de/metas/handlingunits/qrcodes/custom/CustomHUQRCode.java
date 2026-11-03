@@ -66,7 +66,7 @@ public class CustomHUQRCode implements IHUQRCode
 	{
 		return Optional.of(ProductLabelCodes.builder()
 				.productNo(parsedScannedCode.getProductNo())
-				.GTIN(parsedScannedCode.getGtin())
+				.gtin(parsedScannedCode.getGtin())
 				.build());
 	}
 }

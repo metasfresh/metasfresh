@@ -74,6 +74,6 @@ public class GS1HUQRCode implements IHUQRCode
 	@Override
 	public Optional<ProductLabelCodes> getProductLabelCodes()
 	{
-		return Optional.of(ProductLabelCodes.builder().GTIN(elements.getGTIN().orElse(null)).build());
+		return Optional.of(ProductLabelCodes.builder().gtin(elements.getGTIN().orElse(null)).build());
 	}
 }

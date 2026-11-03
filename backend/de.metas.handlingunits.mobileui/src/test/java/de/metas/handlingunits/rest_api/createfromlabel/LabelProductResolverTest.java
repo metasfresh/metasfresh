@@ -1,8 +1,8 @@
 package de.metas.handlingunits.rest_api.createfromlabel;
 
-import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
+import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.model.ProductLabelCodes;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -11,16 +11,18 @@ import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
-import org.adempiere.model.InterfaceWrapperHelper;
+import javax.annotation.Nullable;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +34,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /** The resolver is stateless: its services come through the constructor, the client through {@code resolve(...)}. */
 class LabelProductResolverTest
@@ -72,6 +75,17 @@ class LabelProductResolverTest
 		resolver = new LabelProductResolver(HUQRCodesService.newInstanceForUnitTesting(), Services.get(IProductBL.class));
 	}
 
+	private I_M_Product createEAN13Product()
+	{
+		final I_M_Product ean13Product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		ean13Product.setIsActive(true);
+		ean13Product.setValue("59414");
+		ean13Product.setName("P2");
+		ean13Product.setC_UOM_ID(product.getC_UOM_ID());
+		InterfaceWrapperHelper.saveRecord(ean13Product);
+		return ean13Product;
+	}
+
 	@Test
 	void pickOnTheFlyCode_isNotAProductLabel()
 	{
@@ -91,12 +105,7 @@ class LabelProductResolverTest
 	@Test
 	void ean13Code_resolvesTheProductWithThatEAN13()
 	{
-		final I_M_Product ean13Product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
-		ean13Product.setIsActive(true);
-		ean13Product.setValue("59414");
-		ean13Product.setName("P2");
-		ean13Product.setC_UOM_ID(product.getC_UOM_ID());
-		InterfaceWrapperHelper.saveRecord(ean13Product);
+		final I_M_Product ean13Product = createEAN13Product();
 
 		assertThat(HUQRCodesService.newInstanceForUnitTesting().parse(ScannedCode.ofString(EAN13_VALUE))).isInstanceOf(EAN13HUQRCode.class);
 
@@ -129,8 +138,13 @@ class LabelProductResolverTest
 		InterfaceWrapperHelper.saveRecord(locator);
 		final ScannedCode locatorCode = ScannedCode.ofString(LocatorQRCode.ofLocator(locator).toGlobalQRCodeJsonString());
 
+		final Throwable parserException = catchThrowable(() -> HUQRCodesService.newInstanceForUnitTesting().parse(locatorCode));
+		assertThat(parserException).isNotNull();
+
 		assertThatThrownBy(() -> resolver.resolve(locatorCode, ClientId.METASFRESH))
-				.isNotInstanceOf(LabelRejectionException.class);
+				.isNotInstanceOf(LabelRejectionException.class)
+				.isExactlyInstanceOf(parserException.getClass())
+				.hasMessage(parserException.getMessage());
 	}
 
 	@Test
@@ -142,16 +156,11 @@ class LabelProductResolverTest
 	}
 
 	/** none of the real scanned-code classes: proves the resolver reads the code only through {@link IHUQRCode} */
+	@RequiredArgsConstructor
 	private static class TestCode implements IHUQRCode
 	{
-		private final ProductLabelCodes productLabelCodes;
-		private final LocalDate expirationDate;
-
-		private TestCode(final ProductLabelCodes productLabelCodes, final LocalDate expirationDate)
-		{
-			this.productLabelCodes = productLabelCodes;
-			this.expirationDate = expirationDate;
-		}
+		@Nullable private final ProductLabelCodes productLabelCodes;
+		@Nullable private final LocalDate expirationDate;
 
 		@Override
 		public String getAsString() {return "TEST";}
@@ -180,7 +189,7 @@ class LabelProductResolverTest
 	@Test
 	void anyCodeCarryingTheGTINOfAProduct_resolvesThatProduct()
 	{
-		final ProductLabelCodes codes = ProductLabelCodes.builder().GTIN(GTIN.ofString(GTIN_VALUE)).build();
+		final ProductLabelCodes codes = ProductLabelCodes.builder().gtin(GTIN.ofString(GTIN_VALUE)).build();
 
 		assertThat(resolve(new TestCode(codes, null)).getProductId()).isEqualTo(ProductId.ofRepoId(product.getM_Product_ID()));
 	}
@@ -212,7 +221,7 @@ class LabelProductResolverTest
 	@Test
 	void unknownProductNumber_isNotRetriedWithTheGTIN()
 	{
-		final ProductLabelCodes codes = ProductLabelCodes.builder().productNo("NO-SUCH-PRODUCT").GTIN(GTIN.ofString(GTIN_VALUE)).build();
+		final ProductLabelCodes codes = ProductLabelCodes.builder().productNo("NO-SUCH-PRODUCT").gtin(GTIN.ofString(GTIN_VALUE)).build();
 
 		assertThatThrownBy(() -> resolve(new TestCode(codes, null)))
 				.isInstanceOf(LabelRejectionException.class)
@@ -222,13 +231,8 @@ class LabelProductResolverTest
 	@Test
 	void ean13Only_isResolvedThroughTheEAN13Lookup()
 	{
-		final I_M_Product ean13Product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
-		ean13Product.setIsActive(true);
-		ean13Product.setValue("59414");
-		ean13Product.setName("P2");
-		ean13Product.setC_UOM_ID(product.getC_UOM_ID());
-		InterfaceWrapperHelper.saveRecord(ean13Product);
-		final ProductLabelCodes codes = ProductLabelCodes.builder().EAN13(EAN13.ofString(EAN13_VALUE).orElseThrow()).build();
+		final I_M_Product ean13Product = createEAN13Product();
+		final ProductLabelCodes codes = ProductLabelCodes.builder().ean13(EAN13.ofString(EAN13_VALUE).orElseThrow()).build();
 
 		assertThat(resolve(new TestCode(codes, null)).getProductId()).isEqualTo(ProductId.ofRepoId(ean13Product.getM_Product_ID()));
 	}

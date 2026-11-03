@@ -66,6 +66,6 @@ public class EAN13HUQRCode implements IHUQRCode
 	@Override
 	public Optional<ProductLabelCodes> getProductLabelCodes()
 	{
-		return Optional.of(ProductLabelCodes.builder().EAN13(ean13).build());
+		return Optional.of(ProductLabelCodes.builder().ean13(ean13).build());
 	}
 }

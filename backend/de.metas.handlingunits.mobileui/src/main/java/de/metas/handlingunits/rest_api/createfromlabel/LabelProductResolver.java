@@ -73,13 +73,13 @@ public class LabelProductResolver
 				throw new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_PRODUCT_CODE, labelCodes.getProductNo());
 			}
 		}
-		else if (labelCodes.getGTIN() != null)
+		else if (labelCodes.getGtin() != null)
 		{
-			productId = resolveByGTIN(labelCodes.getGTIN(), clientId);
+			productId = resolveByGTIN(labelCodes.getGtin(), clientId);
 		}
 		else
 		{
-			final EAN13 ean13 = Objects.requireNonNull(labelCodes.getEAN13());
+			final EAN13 ean13 = Objects.requireNonNull(labelCodes.getEan13());
 			productId = productBL.getProductIdByEAN13(ean13, null, clientId)
 					.orElseThrow(() -> new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_GTIN, ean13.getAsString()));
 		}

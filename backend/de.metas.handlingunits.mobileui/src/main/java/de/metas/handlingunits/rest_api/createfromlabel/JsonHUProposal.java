@@ -69,7 +69,7 @@ public class JsonHUProposal
 	@Jacksonized
 	public static class JsonRejection
 	{
-		/** {@code AD_Message.ErrorCode} of the message */
+		/** {@code AD_Message.ErrorCode}, or the message key if the message has none */
 		@NonNull String errorCode;
 		/** translated, one plain-language message for the user */
 		@NonNull String message;

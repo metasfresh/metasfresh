@@ -6,13 +6,14 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.IMsgBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.X12DE355;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -103,7 +104,7 @@ public class CreateHUFromScannedCodeCommand
 				.locatorId(locatorId)
 				.attributes(toInventoryAttributes(labelValues))
 				// origin marker on the inventory document, in the language of the creating user; "Change Qty" books the same inventory sub-type
-				.description(TranslatableStrings.adMessage(CreateFromLabelMessages.INVENTORY_DESCRIPTION).translate(adLanguage))
+				.description(Services.get(IMsgBL.class).getMsg(adLanguage, CreateFromLabelMessages.INVENTORY_DESCRIPTION))
 				.build());
 
 		// the weight cannot go through the inventory (its attribute key drops weight attributes): set it on the completed CU

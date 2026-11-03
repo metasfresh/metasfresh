@@ -16,8 +16,8 @@ import javax.annotation.Nullable;
 public class ProductLabelCodes
 {
 	@Nullable String productNo;
-	@Nullable GTIN GTIN;
-	@Nullable EAN13 EAN13;
+	@Nullable GTIN gtin;
+	@Nullable EAN13 ean13;
 
-	public boolean isEmpty() {return productNo == null && GTIN == null && EAN13 == null;}
+	public boolean isEmpty() {return productNo == null && gtin == null && ean13 == null;}
 }
