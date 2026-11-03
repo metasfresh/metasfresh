@@ -24,24 +24,29 @@ package de.metas.inoutcandidate.shippertransportation;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
+import de.metas.handlingunits.shipmentschedule.api.DeliveryOrderCarrierResolver;
 import de.metas.handlingunits.shipping.InOutToTransportationOrderService;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
-import de.metas.lang.SOTrx;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
+import de.metas.shipper.gateway.spi.model.ResolvedCarrier;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -53,6 +58,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -79,22 +85,26 @@ public class ShipperDeliveryService
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull private final InOutToTransportationOrderService inOutToTransportationOrderService;
 	@NonNull private final ShipperGatewayFacade shipperGatewayFacade;
-
-	public void addToDailyTransportationOrder(@NonNull final InOutId inOutId)
-	{
-		createTransportationAndPackagesForShipment(inOutId, true);
-	}
+	@NonNull private final DeliveryOrderCarrierResolver deliveryOrderCarrierResolver;
 
 	public void createTransportationAndPackagesForShipment(@NonNull final InOutId inOutId)
 	{
 		createTransportationAndPackagesForShipment(inOutId, false);
 	}
 
-	private void createTransportationAndPackagesForShipment(
+	public void createTransportationAndPackagesForShipment(
 			@NonNull final InOutId inOutId,
 			final boolean createOneTransportationOrderPerDay)
 	{
 		final I_M_InOut shipment = inOutDAO.getById(inOutId);
+
+		final boolean isOutboundSalesShipment = shipment.isSOTrx() && !inOutBL.isReturnMovementType(shipment.getMovementType());
+		if (!isOutboundSalesShipment)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog(
+					"Returning! Not an outbound sales shipment (purchase receipt or return), no shipper-transportation record is created for it! m_inout_id: ", inOutId);
+			return;
+		}
 
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(shipment.getM_Shipper_ID());
 
@@ -104,16 +114,29 @@ public class ShipperDeliveryService
 			return;
 		}
 
+		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
+
+		if (createOneTransportationOrderPerDay && shipper.isCreateDeliveryPlanning())
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog(
+					"Skipping daily transport order for shipper with IsCreateDeliveryPlanning=Y, m_inout_id: {}", inOutId);
+			return;
+		}
+
 		final BPartnerLocationAndCaptureId shipFromBPWarehouseLocation = warehouseDAO.getWarehouseLocationById(WarehouseId.ofRepoId(shipment.getM_Warehouse_ID()));
 
 		final CreateShipperTransportationRequest createShipperTransportationRequest = CreateShipperTransportationRequest
 				.builder()
 				.shipperId(shipperId)
+				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()))
+				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()))
 				.shipperBPartnerAndLocationId(shipFromBPWarehouseLocation.getBpartnerLocationId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(inOutBL.retrieveMovementDate(shipment))
 				.assignAnonymouslyPickedHUs(true)
-				.isSOTrx(SOTrx.SALES)
+				// Outgoing, stated rather than derived: the guard at the top of this method has already
+				// returned for anything that is not an outbound sales shipment.
+				.transportDirection(TransportDirection.Outgoing)
 				.build();
 
 		final ShipperTransportationId shipperTransportationId;
@@ -170,6 +193,11 @@ public class ShipperDeliveryService
 
 		final I_M_ShipperTransportation shipperTransportation = load(shipperTransportationId, I_M_ShipperTransportation.class);
 
+		// Resolve the carrier from the shipment schedule (SCHEDULE-SOURCED); pass it to commons as data
+		// (commons must not depend on the handlingunits module — see DeliveryOrderCarrierResolver).
+		final ImmutableMap<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId = deliveryOrderCarrierResolver.resolveByPackageIds(
+				mPackageIds.stream().map(PackageId::ofRepoId).collect(ImmutableSet.toImmutableSet()));
+
 		final DeliveryOrderCreateRequest request = DeliveryOrderCreateRequest.builder()
 				.pickupDate(getPickupDate(shipperTransportation))
 				.timeFrom(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeFrom()))
@@ -178,6 +206,7 @@ public class ShipperDeliveryService
 				.shipperTransportationId(shipperTransportationId)
 				.shipperGatewayId(shipperGatewayId)
 				.asyncBatchId(asyncBatchId)
+				.carrierByScheduleId(carrierByScheduleId)
 				.build();
 		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
 	}

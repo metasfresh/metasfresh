@@ -44,6 +44,7 @@ import {
   AcctSimulationViewHeader,
   AcctSimulationViewHeader_WINDOW_ID,
 } from '../acctSimulation/AcctSimulationViewHeader';
+import { isMasterView } from '../../reducers/viewHandler';
 
 /**
  * @file Class based component.
@@ -114,6 +115,7 @@ class DocumentList extends Component {
       // TODO: Check if we need two separate flags
       isModal,
       inModal,
+      isMasterView,
       processStatus,
       readonly,
       includedView,
@@ -258,16 +260,19 @@ class DocumentList extends Component {
             )}
           >
             <div className={cx('header-element', { disabled: hasIncluded })}>
-              {layout.supportNewRecord && !isModal && (
-                <button
-                  className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
-                  onClick={onRedirectToNewDocument}
-                  title={layout.newRecordCaption}
-                >
-                  <i className="meta-icon-add" />
-                  {layout.newRecordCaption}
-                </button>
-              )}
+              {layout.supportNewRecord &&
+                layout.newRecordCaption &&
+                !isMasterView &&
+                !isModal && (
+                  <button
+                    className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
+                    onClick={onRedirectToNewDocument}
+                    title={layout.newRecordCaption}
+                  >
+                    <i className="meta-icon-add" />
+                    {layout.newRecordCaption}
+                  </button>
+                )}
 
               {windowId === INVOICE_TO_ALLOCATE_WINDOW_ID && (
                 <InvoiceToAllocateViewHeader
@@ -453,8 +458,9 @@ DocumentList.propTypes = {
   setQuickActionsComponentRef: PropTypes.func,
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, { windowId, viewId }) => {
   return {
+    isMasterView: isMasterView({ state, windowId, viewId }),
     isPPOrderCandidateViewHeaderEnabled: getSettingFromStateAsBoolean(
       state,
       'PPOrderCandidateViewHeader.enabled',

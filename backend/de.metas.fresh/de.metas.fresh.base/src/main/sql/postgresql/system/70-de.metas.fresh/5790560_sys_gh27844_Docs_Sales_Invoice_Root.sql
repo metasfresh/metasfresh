@@ -6,13 +6,14 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                                                                                       IN p_Language  Character Varying(6))
     RETURNS TABLE
             (
-                AD_Org_ID        numeric,
-                DocStatus        character(2),
-                PrintName        character varying(60),
-                countrycode      character(2),
-                C_Currency_ID    numeric,
-                displayhu        text,
-                isCreditMemo     character(1),
+                AD_Org_ID              numeric,
+                DocStatus              character(2),
+                PrintName              character varying(60),
+                countrycode            character(2),
+                C_Currency_ID          numeric,
+                displayhu              text,
+                isCreditMemo           character(1),
+                isFactoringPartner character(1),
                 isHeaderQRHidden CHARACTER(1)
             )
 AS
@@ -33,20 +34,23 @@ SELECT i.AD_Org_ID,
                         AND il.isActive = 'Y')
                THEN 'Y'
                ELSE 'N'
-       END                                                                     AS displayhu,
+       END                                                                                                                                            AS displayhu,
        CASE
            WHEN dt.docbasetype = 'ARC'
                THEN 'Y'
                ELSE 'N'
-       END                                                                     AS isCreditMemo,
+       END                                                                                                                                            AS isCreditMemo,
+       IsFactoring,
        report.IsHiddenReportElement(i.C_DocTypeTarget_ID, 'Invoice_Header_QR') AS isHeaderQRHidden
 FROM C_Invoice i
-         INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID
-         LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_Language
+         INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+         LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_Language AND dtt.isActive = 'Y'
+         LEFT OUTER JOIN C_BPartner bp ON bp.C_BPartner_ID = i.C_BPartner_ID
          LEFT OUTER JOIN C_BPartner_Location bpl ON bpl.C_BPartner_Location_id = i.C_BPartner_Location_ID
          LEFT OUTER JOIN C_Location l ON l.C_Location_ID = bpl.C_Location_ID
          LEFT OUTER JOIN C_Country c ON c.C_Country_ID = l.C_Country_ID
 WHERE i.C_Invoice_ID = p_Record_ID
+  AND i.isActive = 'Y'
 $$
     LANGUAGE sql STABLE
 ;

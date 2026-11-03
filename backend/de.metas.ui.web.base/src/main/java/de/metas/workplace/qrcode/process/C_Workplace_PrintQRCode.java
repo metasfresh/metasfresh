@@ -22,11 +22,11 @@
 
 package de.metas.workplace.qrcode.process;
 
-import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
-import de.metas.util.Check;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
@@ -34,27 +34,44 @@ import de.metas.workplace.qrcode.WorkplaceQRCode;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Workplace;
 
-public class C_Workplace_PrintQRCode extends JavaProcess
+public class C_Workplace_PrintQRCode extends JavaProcess implements IProcessDefaultParametersProvider
 {
 	private final WorkplaceService workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
 	private final GlobalQRCodeService globalQRCodeService = SpringContextHolder.instance.getBean(GlobalQRCodeService.class);
 
+	private static final String PARAM_RenderedQRCode = "RenderedQRCode";
+
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if (parameter.getColumnName().equals(PARAM_RenderedQRCode))
+		{
+			return getQRCode().toGlobalQRCodeJsonString();
+		}
+
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+	}
+
 	@Override
 	protected String doIt()
 	{
-		final WorkplaceId workplaceId = getWorkplaceId();
-		final Workplace workplace = workplaceService.getById(workplaceId);
-		final PrintableQRCode qrCode = WorkplaceQRCode.ofWorkplace(workplace).toPrintableQRCode();
+		final WorkplaceQRCode qrCode = getQRCode();
 
-		final QRCodePDFResource pdf = globalQRCodeService.createPDF(qrCode);
+		final QRCodePDFResource pdf = globalQRCodeService.createPDF(qrCode.toPrintableQRCode());
 		getResult().setReportData(pdf, pdf.getFilename(), pdf.getContentType());
 
 		return MSG_OK;
 	}
 
+	private WorkplaceQRCode getQRCode()
+	{
+		final WorkplaceId workplaceId = getWorkplaceId();
+		final Workplace workplace = workplaceService.getById(workplaceId);
+		return WorkplaceQRCode.ofWorkplace(workplace);
+	}
+
 	private WorkplaceId getWorkplaceId()
 	{
-		Check.assumeEquals(getTableName(), I_C_Workplace.Table_Name, "table");
-		return WorkplaceId.ofRepoId(getRecord_ID());
+		return getRecordIdAssumingTableName(I_C_Workplace.Table_Name, WorkplaceId::ofRepoId);
 	}
 }

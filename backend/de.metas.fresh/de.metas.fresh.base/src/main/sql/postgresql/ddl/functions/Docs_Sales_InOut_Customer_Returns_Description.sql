@@ -1,4 +1,4 @@
-﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN p_record_id   numeric,
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN p_record_id   numeric,
                                                                                                          IN p_AD_Language Character Varying(6))
 ;
 

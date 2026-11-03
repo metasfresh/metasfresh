@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
 @ghActions:run_on_executor6
 Feature: Moving Average Invoice - receive and ship
+## F1500: Costing
 
   Background:
     Given infrastructure and metasfresh are running
@@ -10,8 +14,8 @@ Feature: Moving Average Invoice - receive and ship
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2021-04-14T13:30:13+01:00[Europe/Berlin]
     And load and update C_AcctSchema:
-      | C_AcctSchema_ID | Name                  |
-      | acctSchema      | metas fresh UN/34 CHF |
+      | C_AcctSchema_ID | Name                  | CostingMethod |
+      | acctSchema      | metas fresh UN/34 CHF | M             |
     And cost elements for material costing methods MovingAverageInvoice are active
     And load M_Warehouse:
       | M_Warehouse_ID | Value        |
@@ -90,6 +94,9 @@ Feature: Moving Average Invoice - receive and ship
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: No initial stock, no invoice price variance
     When for costing, create completed invoice with one line
       | C_OrderLine_ID | M_MatchInv_ID |
@@ -120,6 +127,9 @@ Feature: Moving Average Invoice - receive and ship
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: No initial stock, invoice price variance
     When for costing, create completed invoice with one line
       | C_OrderLine_ID | PriceEntered_Override | M_MatchInv_ID |
@@ -148,6 +158,9 @@ Feature: Moving Average Invoice - receive and ship
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: No initial stock, receive, ship, get vendor invoice with price variance, ship again
     #
     # Ship 7 items

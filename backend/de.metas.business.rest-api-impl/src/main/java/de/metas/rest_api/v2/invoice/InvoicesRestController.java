@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -41,6 +41,7 @@ import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesR
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
@@ -50,6 +51,7 @@ import de.metas.rest_api.v2.invoicecandidates.request.JsonCreateInvoiceCandidate
 import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.security.permissions2.PermissionServiceFactory;
+import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -57,6 +59,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -90,6 +94,9 @@ public class InvoicesRestController
 	private final @NonNull ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final @NonNull JsonServiceFactory jsonServiceFactory;
 	private final @NonNull ExternalSystemRepository externalSystemRepository;
+	private final @NonNull BPartnerMasterdataProvider bPartnerMasterdataProvider;
+
+	private final @NonNull ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@ApiOperation("Create new invoice candidates")
 	@ApiResponses(value = {
@@ -102,16 +109,24 @@ public class InvoicesRestController
 	public ResponseEntity<JsonCreateInvoiceCandidatesResponse> createInvoiceCandidates(
 			@RequestBody @NonNull final JsonCreateInvoiceCandidatesRequest request)
 	{
+		final JsonCreateInvoiceCandidatesResponse response =
+				trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> createInvoiceCandidates0(request));
+		return ResponseEntity.ok(response);
+	}
+
+	private JsonCreateInvoiceCandidatesResponse createInvoiceCandidates0(
+			@NonNull final JsonCreateInvoiceCandidatesRequest request)
+	{
 		final MasterdataProvider masterdataProvider = MasterdataProvider.builder()
 				.permissionService(permissionServiceFactory.createPermissionService())
 				.bpartnerRestController(bpartnerRestController)
 				.externalReferenceRestControllerService(externalReferenceRestControllerService)
 				.jsonRetrieverService(jsonServiceFactory.createRetriever())
 				.externalSystemRepository(externalSystemRepository)
+				.bPartnerMasterdataProvider(bPartnerMasterdataProvider)
 				.build();
 		// TODO make individual IC accessible via URL, then return "created" instead
-		final JsonCreateInvoiceCandidatesResponse response = createInvoiceCandidatesService.createInvoiceCandidates(request, masterdataProvider);
-		return ResponseEntity.ok(response);
+		return createInvoiceCandidatesService.createInvoiceCandidates(request, masterdataProvider);
 	}
 
 	@PostMapping(path = "/status", consumes = "application/json", produces = "application/json")

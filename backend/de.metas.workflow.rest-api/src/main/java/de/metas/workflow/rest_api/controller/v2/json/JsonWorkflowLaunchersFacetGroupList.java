@@ -23,7 +23,7 @@
 package de.metas.workflow.rest_api.controller.v2.json;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

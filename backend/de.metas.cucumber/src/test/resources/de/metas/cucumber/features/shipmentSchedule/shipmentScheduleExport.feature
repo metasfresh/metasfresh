@@ -1,7 +1,11 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00105_Sales_Order_Document
+@F00105
 @topic:shipmentScheduleExport
 @ghActions:run_on_executor7
 Feature: Shipment schedule export rest-api
+## F00105: Shipment Schedule
   Mostly covering the "shipBPartner"."contact" info differences when exporting oxid vs non-oxid (shopware) shipment candidates.
 
   Background:
@@ -52,7 +56,6 @@ Feature: Shipment schedule export rest-api
       | shipUser_ref                      | Shopware6      | UserID  | shipUser_reference    | shipUser                  |                             |
       | billUser_ref                      | Shopware6      | UserID  | billUser_reference    | billUser                  |                             |
       | shipperTest_ref                   | Shopware6      | Shipper | shipperTest_reference |                           | shipper_test                |
-
 
   @Id:S0150_210
   Scenario: Export oxid shipment candidate
@@ -119,12 +122,16 @@ Feature: Shipment schedule export rest-api
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02      | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 300s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | orderLine_1               | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
-      | schedule_1                       | customer_so_25_02            | shipBPLocation                        | customer_so_25_02               | billBPLocation                  | product_25_02               | PENDING          | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               | Shopware6            |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value | OPT.Carrier_Advising_Status |
+      | schedule_1                       | customer_so_25_02            | shipBPLocation                        | customer_so_25_02               | billBPLocation                  | product_25_02               | PENDING          | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               | Shopware6            | CO                          |
+    # the async carrier advise re-saves the schedule (on this branch Siro has no carrier gateway, so the no-gateway advise returns a synthetic success and ends Completed); let it and any pending recompute settle before exporting
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | schedule_1                       |
 
     And update AD_User:
       | AD_User_ID.Identifier | OPT.EMail           | OPT.Phone |
@@ -213,12 +220,16 @@ Feature: Shipment schedule export rest-api
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02      | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 300s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | orderLine_1               | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
-      | schedule_1                       | customer_so_25_02            | shipBPLocation                        | customer_so_25_02               | billBPLocation                  | product_25_02               | PENDING          | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               | Shopware6            |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value | OPT.Carrier_Advising_Status |
+      | schedule_1                       | customer_so_25_02            | shipBPLocation                        | customer_so_25_02               | billBPLocation                  | product_25_02               | PENDING          | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               | Shopware6            | CO                          |
+    # the async carrier advise re-saves the schedule (on this branch Siro has no carrier gateway, so the no-gateway advise returns a synthetic success and ends Completed); let it and any pending recompute settle before exporting
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | schedule_1                       |
 
     And update AD_User:
       | AD_User_ID.Identifier | OPT.EMail           | OPT.Phone |

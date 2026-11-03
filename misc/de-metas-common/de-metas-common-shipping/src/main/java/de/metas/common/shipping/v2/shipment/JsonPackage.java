@@ -31,6 +31,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
@@ -45,6 +46,10 @@ public class JsonPackage
 
 	@JsonProperty("weight")
 	BigDecimal weight;
+
+	@JsonProperty("dimensions")
+	@Nullable
+	JsonDimensions dimensions;
 
 	@JsonPOJOBuilder(withPrefix = "")
 	@JsonIgnoreProperties(ignoreUnknown = true)

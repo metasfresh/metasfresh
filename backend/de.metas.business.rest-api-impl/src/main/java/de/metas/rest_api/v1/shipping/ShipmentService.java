@@ -63,6 +63,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
+import de.metas.product.PackageDimensions;
 import de.metas.product.ProductId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -350,7 +351,7 @@ public class ShipmentService
 						.quantityTypeToUse(request.getQuantityTypeToUse())
 						.onTheFlyPickToPackingInstructions(false) // backwards compatibility: on-the-fly-pick to (anonymous) CUs
 						.qtyToDeliverOverrides(QtyToDeliverMap.EMPTY)
-						.isFailIfNoPickedHUs(true) // backwards compatibility: true - fail if no picked HUs found
+						.failOnSingleScheduleWithNoPickedHUs(true) // backwards compatibility: true - fail if no picked HUs found (REST API typically processes single schedules)
 						.build()
 		);
 
@@ -373,6 +374,7 @@ public class ShipmentService
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
 					.bpartnerValue(bPartnerValue)
+					.isCustomerFilter(true)
 					.build());
 		}
 	}
@@ -418,6 +420,7 @@ public class ShipmentService
 								.trackingNumber(jsonPackage.getTrackingCode())
 								.weight(jsonPackage.getWeight())
 								.trackingUrl(trackingURL)
+								.packageDimensions(PackageDimensions.UNSPECIFIED)//not supported in this version
 								.build()
 				)
 				.collect(ImmutableList.toImmutableList());

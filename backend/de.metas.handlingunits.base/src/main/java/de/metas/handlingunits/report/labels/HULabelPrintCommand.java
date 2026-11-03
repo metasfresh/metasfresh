@@ -51,8 +51,9 @@ class HULabelPrintCommand
 			return;
 		}
 
-		trxManager.runAfterCommit(() ->
+		trxManager.runAfterClose((trx) ->
 		{
+			if (trx != null && !trx.isCommittedOK()) {return;}
 			//M_HU_Storage persistence may be delayed by de.metas.handlingunits.storage.impl.SaveOnCommitHUStorageDAO
 			huQRCodesService.generateForExistingHUs(batchToPrintCollector.getHuIds());
 			batchToPrintCollector.forEach(this::printBatchNow);

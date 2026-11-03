@@ -11,13 +11,13 @@ import de.metas.cucumber.stepdefs.api.APIResponse;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.distributionorder.DD_Order_StepDefData;
 import de.metas.distribution.ddorder.DDOrderId;
-import de.metas.distribution.rest_api.JsonDistributionEvent;
-import de.metas.distribution.workflows_api.DistributionJobLineId;
-import de.metas.distribution.workflows_api.DistributionJobStepId;
-import de.metas.distribution.workflows_api.DistributionMobileApplication;
-import de.metas.distribution.workflows_api.activity_handlers.MoveWFActivityHandler;
-import de.metas.distribution.workflows_api.json.JsonDistributionJobLine;
-import de.metas.distribution.workflows_api.json.JsonDistributionJobStep;
+import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
+import de.metas.distribution.mobileui.job.model.DistributionJobLineId;
+import de.metas.distribution.mobileui.job.model.DistributionJobStepId;
+import de.metas.distribution.mobileui.DistributionMobileApplication;
+import de.metas.distribution.mobileui.workflows_api.activity_handlers.MoveWFActivityHandler;
+import de.metas.distribution.mobileui.rest_api.json.JsonDistributionJobLine;
+import de.metas.distribution.mobileui.rest_api.json.JsonDistributionJobStep;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
@@ -125,8 +125,9 @@ public class DistributionWorkflow_RestController_StepDef
 					final WFActivityId wfActivityId = WFActivityId.ofString(activityNode.at("/activityId").asText());
 					result.wfActivityId(wfActivityId);
 
-					final JsonNode linesArrayNode = activityNode.at("/componentProps/lines");
-					assertThat(linesArrayNode.size()).isOne();
+					// The lines live under /componentProps/job/lines, not directly under componentProps — a wrong path silently yields an empty node instead of erroring.
+					final JsonNode linesArrayNode = activityNode.at("/componentProps/job/lines");
+					assertThat(linesArrayNode.size()).as("lines of the distribution move activity").isOne();
 					final JsonNode lineNode = linesArrayNode.get(0);
 
 					final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();

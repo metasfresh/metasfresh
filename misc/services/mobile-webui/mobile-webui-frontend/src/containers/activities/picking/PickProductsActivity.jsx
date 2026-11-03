@@ -1,9 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import UnpickPanel from './unpick/UnpickPanel';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
 import {
+  pickingJobsListLocation,
   pickingLineScanScreenLocation,
   pickingLineScreenLocation,
   pickingScanScreenLocation,
@@ -25,20 +27,40 @@ import {
 import { isCurrentTargetEligibleForActivityAndLine } from '../../../reducers/wfProcesses/picking/isCurrentTargetEligibleForLine';
 import { BarcodeScannerButton } from '../../../components/BarcodeScannerButton';
 import { usePickProductsScan } from './PickProductsScanScreen';
+import { useDispatch } from 'react-redux';
+import { postPickAll } from '../../../api/picking';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { toastErrorFromObj } from '../../../utils/toast';
+import { trl } from '../../../utils/translations';
+import { useApplicationInfoParameters } from '../../../reducers/applications';
+import { usePickingJobQtyAvailable } from './usePickingJobQtyAvailable';
+import { QtyAvailableStatus } from '../../../constants/QtyAvailableStatus';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
 const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity }) => {
   const history = useMobileNavigation();
+  const dispatch = useDispatch();
+
+  const { allowQuickPackAll, isShowQtyAvailableForLines } = useApplicationInfoParameters({ applicationId });
+  const qtyAvailable = usePickingJobQtyAvailable({
+    wfProcessId,
+    enabled: isShowQtyAvailableForLines || allowQuickPackAll,
+  });
+  const isShowQuickPackAllButton = allowQuickPackAll && qtyAvailable?.status === QtyAvailableStatus.FULLY_AVAILABLE;
+
   const { onBarcodeScanned } = usePickProductsScan({ applicationId, wfProcessId, activityId });
+
+  const [isUnpicking, setUnpicking] = useState(false);
 
   const isUserEditable = isUserEditableFunc({ activity });
   const isAllowPickingAnyHU = isAllowPickingAnyHUOnHeaderLevel({ activity });
 
-  const groupedLines = useMemo(() => {
-    const lines = getLinesArrayFromActivity(activity);
-    return groupLinesByDisplayKey(lines);
-  }, [activity]);
+  const lines = useMemo(() => getLinesArrayFromActivity(activity), [activity]);
+  const groupedLines = useMemo(() => groupLinesByDisplayKey([...lines]), [lines]);
+
+  const isAnyLinePicked = lines.some((line) => line.qtyPicked > 0);
+  const firstLineId = lines[0]?.pickingLineId;
 
   const onScanButtonClick = () => {
     history.push(pickingScanScreenLocation({ applicationId, wfProcessId, activityId }));
@@ -50,6 +72,17 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
     return groupedLines.some((lines) => lines.some((line) => isLineReadOnly({ activity, line })));
   };
 
+  if (isUnpicking) {
+    return (
+      <UnpickPanel
+        wfProcessId={wfProcessId}
+        activityId={activityId}
+        lineId={firstLineId}
+        onClose={() => setUnpicking(false)}
+      />
+    );
+  }
+
   return (
     <div className="mt-5">
       <SelectCurrentLUTUButtons
@@ -59,6 +92,15 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
         isUserEditable={isUserEditable}
       />
       <br />
+
+      {isUserEditable && (
+        <ButtonWithIndicator
+          testId="unpick-item-button"
+          captionKey="activities.picking.unpick.unpickItemBtn"
+          disabled={!isAnyLinePicked}
+          onClick={() => setUnpicking(true)}
+        />
+      )}
 
       {isAllowPickingAnyHU && (
         <BarcodeScannerButton
@@ -77,6 +119,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
               const { uom, qtyToPick, qtyPicked } = line;
               const qtyPickedCatchWeight = computeCatchWeightsArrayForLine({ line });
               const qtyPickedCatchWeightStr = formatCatchWeightToHumanReadableStr(qtyPickedCatchWeight);
+              const lineQtyAvailable = isShowQtyAvailableForLines ? qtyAvailable?.lines?.[lineId] : null;
 
               return (
                 <ButtonWithIndicator
@@ -94,6 +137,8 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
                     qtyCurrent={qtyPicked}
                     qtyCurrentCatchWeight={qtyPickedCatchWeightStr}
                     applicationId={applicationId}
+                    qtyAvailable={lineQtyAvailable?.qtyAvailableToPick}
+                    qtyAvailableUom={lineQtyAvailable?.uom}
                   />
                 </ButtonWithIndicator>
               );
@@ -107,6 +152,19 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
             </React.Fragment>
           );
         })}
+
+      {isShowQuickPackAllButton && (
+        <ButtonWithIndicator
+          testId={'pickAll-button'}
+          caption={trl('activities.picking.pickAll')}
+          onClick={() => {
+            return postPickAll({ wfProcessId })
+              .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+              .then(() => history.push(pickingJobsListLocation({ applicationId })))
+              .catch(toastErrorFromObj);
+          }}
+        />
+      )}
     </div>
   );
 };

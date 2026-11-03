@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.payment_allocation;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.ui.web.payment_allocation.InvoiceRow.InvoiceRowBuilder;
@@ -60,6 +61,15 @@ public class InvoiceRowReducers
 				final Amount serviceFeeAmt = Amount.of(serviceFeeAmtBD, currencyCode);
 				rowBuilder.serviceFeeAmt(serviceFeeAmt);
 			}
+			else if (InvoiceRow.FIELD_PaymentBonusAmt.contentEquals(fieldName))
+			{
+				final BigDecimal paymentBonusAmtBD = fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO);
+
+				final CurrencyCode currencyCode = row.getCurrencyCode();
+				final Amount paymentBonusAmt = Amount.of(paymentBonusAmtBD, currencyCode);
+				rowBuilder.paymentBonusAmt(paymentBonusAmt);
+				rowBuilder.paymentBonusEnteredAmt(paymentBonusAmt);
+			}
 			else if (InvoiceRow.FIELD_BankFeeAmt.contentEquals(fieldName))
 			{
 				final BigDecimal bankFeeAmtBD = fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO);
@@ -74,6 +84,26 @@ public class InvoiceRowReducers
 			}
 		}
 
-		return rowBuilder.build();
+		return updatePaymentBonus(rowBuilder.build());
+	}
+
+	/**
+	 * The payment bonus is checked against what the customer pays, which depends on the discount and the fees too; so it is checked after any change of the row.
+	 * Shows the amount that will be booked, if the entered one cannot be because of the rounding of the VAT, and the note why the bonus is not the computed one.
+	 */
+	private static InvoiceRow updatePaymentBonus(@NonNull final InvoiceRow row)
+	{
+		// the amount as the user entered it, so that e.g. the note about the VAT rounding stays when another amount changes
+		final Amount paymentBonusAmt = CoalesceUtil.coalesce(row.getPaymentBonusEnteredAmt(), row.getPaymentBonusAmt());
+		if (paymentBonusAmt == null)
+		{
+			return row;
+		}
+
+		final PaymentBonusRowValues paymentBonusRowValues = PaymentBonusRowValues.entered(row.getPaymentBonusDeduction(), paymentBonusAmt, row.getMaxPaymentBonusAmt(), row.getPaymentBonusNote());
+		return row.toBuilder()
+				.paymentBonusAmt(paymentBonusRowValues.getPaymentBonusAmt())
+				.paymentBonusNote(paymentBonusRowValues.getPaymentBonusNote())
+				.build();
 	}
 }

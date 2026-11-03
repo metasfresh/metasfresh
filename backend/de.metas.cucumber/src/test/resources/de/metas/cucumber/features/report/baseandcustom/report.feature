@@ -1,6 +1,10 @@
 @report
 @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
 Feature: Jasper Report Tests
+## F00400: Report
 
   Background:
     Given infrastructure and metasfresh are running
@@ -36,21 +40,28 @@ Feature: Jasper Report Tests
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | pp_1       | plv_purchase           | product      | 8.0      | PCE      |
       | pp_2       | plv_sales              | product      | 10.0     | PCE      |
+        # dev-note: make sure that the correct payment term is used, regardless of the branch
+    And metasfresh contains C_PaymentTerm
+      | Identifier          |
+      | customerPaymentTerm |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | vendor     | Y        | N          | ps_1               |
-      | customer   | N        | Y          | ps_1               |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | C_PaymentTerm_ID    |
+      | vendor     | Y        | N          | ps_1               |                     |
+      | customer   | N        | Y          | ps_1               | customerPaymentTerm |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
       | vendorLocation   | vendor        | CH           | Y               | Y               |
       | customerLocation | customer      | CH           | Y               | Y               |
     And metasfresh contains C_Tax
-      | Identifier        | C_TaxCategory_ID.InternalName | Name      | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | de_ch_tax         | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
-      | ch_ch_tax         | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
+      | Identifier | C_TaxCategory_ID.InternalName | Name      | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | de_ch_tax  | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
+      | ch_ch_tax  | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
 
   @S0471_100
   @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
   Scenario: Purchase Report Test
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | M_Warehouse_ID |
@@ -63,8 +74,8 @@ Feature: Jasper Report Tests
       | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
       | rs1                  | po1        | po1_l1         | vendor        | vendorLocation         | product      | 10         | wh             |
     And The jasper process is run
-      | Value               | Record_ID  |
-      | Bestellung (Jasper) | po1        |
+      | Value               | Record_ID |
+      | Bestellung (Jasper) | po1       |
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID |
       | LU         |
@@ -84,7 +95,7 @@ Feature: Jasper Report Tests
       | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID |
       | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | product_TU_10CU         | LU            |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And create material receipt
       | M_HU_ID | M_ReceiptSchedule_ID | M_InOut_ID |
       | hu1     | rs1                  | receipt1   |
@@ -92,8 +103,8 @@ Feature: Jasper Report Tests
       | M_InOutLine_ID | M_InOut_ID | M_Product_ID | C_OrderLine_ID |
       | receipt1_l1    | receipt1   | product      | po1_l1         |
     And The jasper process is run
-      | Value                 | Record_ID  |
-      | Wareneingang (Jasper) | receipt1   |
+      | Value                 | Record_ID |
+      | Wareneingang (Jasper) | receipt1  |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID | C_OrderLine_ID |
       | po_ic_1                | po1_l1         |
@@ -111,10 +122,21 @@ Feature: Jasper Report Tests
       | Eingangsrechnung (Jasper) | purchaseInvoice_1 |
 
 
-
   @S0471_200
   @from:cucumber
-  Scenario: Sales Report Test
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
+  Scenario: Sales Report and Dunning Report Test
+    And metasfresh contains C_Dunning:
+      | Identifier        |
+      | dunning_S0471_200 |
+    And metasfresh contains C_DunningLevel:
+      | Identifier             | C_Dunning_ID      | DaysAfterDue |
+      | dunningLevel_S0471_200 | dunning_S0471_200 | 0            |
+    And update C_BPartner:
+      | Identifier | C_Dunning_ID      |
+      | customer   | dunning_S0471_200 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
       | so1        | true    | customer      | 2025-04-01  | wh             |
@@ -126,8 +148,8 @@ Feature: Jasper Report Tests
       | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID |
       | ss1        | so1_l1         | N             | wh             |
     And The jasper process is run
-      | Value            | Record_ID  |
-      | Auftrag (Jasper) | so1        |
+      | Value            | Record_ID |
+      | Auftrag (Jasper) | so1       |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | ss1                   | D            | true                | false       |
@@ -135,8 +157,8 @@ Feature: Jasper Report Tests
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | ss1                   | shipment1  |
     And The jasper process is run
-      | Value                 | Record_ID  |
-      | Lieferschein (Jasper) | shipment1  |
+      | Value                 | Record_ID |
+      | Lieferschein (Jasper) | shipment1 |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | so_ic1                            | so1_l1                    | 10           |
@@ -146,17 +168,133 @@ Feature: Jasper Report Tests
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID | C_Invoice_ID  |
       | so_ic1                 | salesInvoice1 |
-    And validate created invoices
-      | C_Invoice_ID  | C_BPartner_ID | C_BPartner_Location_ID | processed | DocStatus |
-      | salesInvoice1 | customer      | customerLocation       | true      | CO        |
     And The jasper process is run
       | Value             | Record_ID     |
       | Rechnung (Jasper) | salesInvoice1 |
+    # dev-note: update dateInvoiced to be set in the past in order to generate dunning
+    And update C_Invoice:
+      | Identifier    | OPT.DateInvoiced |
+      | salesInvoice1 | 2021-04-08       |
 
+    And invoke "C_Dunning_Candidate_Create" process:
+      | C_DunningLevel_ID      | DunningDate |
+      | dunningLevel_S0471_200 | 2022-09-29  |
+    And after not more than 60s, locate C_Dunning_Candidate:
+      | Identifier           | TableName | Record_ID     |
+      | dunningCandInvoice_1 | C_Invoice | salesInvoice1 |
+    And invoke "C_Dunning_Candidate_Process" process:
+      | Identifier   | C_Dunning_Candidate_ID | AutoProcess |
+      | dunningDoc_1 | dunningCandInvoice_1   | false       |
+    And The jasper process is run
+      | Value        | Record_ID    |
+      | C_DunningDoc | dunningDoc_1 |
 
+  @S0471_300
+  @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
+  Scenario: Delivery Instruction Report Test
+    And set sys config boolean value true for sys config de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseStd              | StdWarehouse | warehouseStdLocation                  |
+    And contains M_Shippers
+      | Identifier  | OPT.IsCreateDeliveryPlanning |
+      | shipper_DHL | true                         |
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.DatePromised     | M_Warehouse_ID | M_PricingSystem_ID |
+      | so_di      | true    | customer      | 2025-04-01  | 2025-04-10T00:00:00Z | warehouseStd   | ps_1               |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | so_di_l1   | so_di      | product      | 10         | shipper_DHL                 |
+    And the order identified by so_di is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier          | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID |
+      | shipmentSchedule_di | so_di_l1       | N             | warehouseStd   |
+    And after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanning_di    | so_di_l1       |
+    And generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
+      | deliveryInstruction_di     | deliveryPlanning_di    | true       |
+    And validate M_ShipperTransportation:
+      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
+      | deliveryInstruction_di                | shipper_DHL             | customer                       | customerLocation               | CO            |
+    And The jasper process is run
+      | Value                         | Record_ID              |
+      | Delivery instructions(Jasper) | deliveryInstruction_di |
 
+  @S0471_400
+  @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
+  # Guards the 'WH' (Warehouse) order-checkup document: OrderCheckupBL#createReportBuilders builds it per
+  # order line only when the product resolves a manufacturing/trading PP_Product_Planning that carries a
+  # workflow/routing (getMfgProductPlanning -> retrieveManufacturingOrTradingPlanning). The order's own
+  # warehouse also carries a PP_Plant_ID here -- needed only because "the order-checkup reports are
+  # generated" always requires the 'PL' (Plant) document to build too; the 'WH' one is what this scenario
+  # asserts and removing the PP_Product_Plannings row below is what must make it fail. Scenario-scoped
+  # fixtures only, so the shared Background 'wh'/'product' -- which carry neither prerequisite -- stay
+  # untouched for the sibling scenarios above.
+  Scenario: Order Checkup Warehouse Report Test
+    Given create S_Resource:
+      | Identifier   | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
+      | checkupPlant | 1000000           | Y                       | PT                        | 999             |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID   | PP_Plant_ID  |
+      | checkupWarehouse | checkupPlant |
+    And metasfresh contains PP_Product_Plannings
+      | M_Product_ID | S_Resource_ID | IsManufactured | IsTraded |
+      | product      | checkupPlant  | true           | false    |
+    And metasfresh contains C_Orders:
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID   |
+      | checkupOrderWh | true    | customer      | 2025-04-01  | checkupWarehouse |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID     | M_Product_ID | QtyEntered |
+      | checkupOrderWhL1 | checkupOrderWh | product      | 10         |
+    And the order identified by checkupOrderWh is completed
+    And the order-checkup reports are generated for the order identified by "checkupOrderWh"
+    And The jasper process is run
+      | Value                       | Record_ID                 |
+      | C_Order_MFGWarehouse_Report | checkupOrderWh_checkup_WH |
+    Then an AD_Archive exists for the record identified by "checkupOrderWh_checkup_WH"
+
+  @S0471_500
+  @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
+  # Guards the 'PL' (Plant) order-checkup document: OrderCheckupBL#createReportBuilders builds it whenever
+  # the order's OWN M_Warehouse resolves a PP_Plant_ID -- independent of any PP_Product_Planning (no
+  # manufacturing/trading planning is set up for 'product' here on purpose, to prove that). Scenario-scoped
+  # warehouse+plant, so the shared Background 'wh' (no PP_Plant_ID) stays untouched for the sibling
+  # scenarios above.
+  Scenario: Order Checkup Plant Report Test
+    Given create S_Resource:
+      | Identifier   | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
+      | checkupPlant | 1000000           | Y                       | PT                        | 999             |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID   | PP_Plant_ID  |
+      | checkupWarehouse | checkupPlant |
+    And metasfresh contains C_Orders:
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID   |
+      | checkupOrderPl | true    | customer      | 2025-04-01  | checkupWarehouse |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID     | M_Product_ID | QtyEntered |
+      | checkupOrderPlL1 | checkupOrderPl | product      | 10         |
+    And the order identified by checkupOrderPl is completed
+    And the order-checkup reports are generated for the order identified by "checkupOrderPl"
+    And The jasper process is run
+      | Value                       | Record_ID              |
+      | C_Order_MFGWarehouse_Report | checkupOrderPl_checkup |
+    Then an AD_Archive exists for the record identified by "checkupOrderPl_checkup"
 
   @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
   Scenario: Deactivate StoreArchiveOnFileSystem
     And update AD_Client
       | Identifier | StoreArchiveOnFileSystem |

@@ -3,9 +3,9 @@ package de.metas.bpartner.service;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_Group;
 
 import javax.annotation.Nullable;
@@ -47,7 +47,9 @@ public interface IBPGroupDAO extends ISingletonService
 	BPGroupId getBPGroupByBPartnerId(BPartnerId bpartnerId);
 
 	@Nullable
-	I_C_BP_Group getDefaultByClientId(ClientId clientId);
+	I_C_BP_Group getDefaultByClientOrgId(ClientAndOrgId clientAndOrgId);
 
 	BPartnerNameAndGreetingStrategyId getBPartnerNameAndGreetingStrategyId(@NonNull BPGroupId bpGroupId);
+
+	void save(@NonNull I_C_BP_Group bpGroup);
 }

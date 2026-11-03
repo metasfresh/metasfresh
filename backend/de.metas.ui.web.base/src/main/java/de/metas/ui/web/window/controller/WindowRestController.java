@@ -22,21 +22,18 @@
 
 package de.metas.ui.web.window.controller;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefTable;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
-import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
-import de.metas.logging.LogManager;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
-import de.metas.rest_api.utils.v2.JsonErrors;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.debug.DebugRestController;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.ProcessRestController;
@@ -66,19 +63,21 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONOptions.JSONOptionsBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONProcessNewRecordRequest;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
-import de.metas.ui.web.window.datatypes.json.JsonWindowsHealthResponse;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.ui.web.window.descriptor.NewRecordDescriptor;
 import de.metas.ui.web.window.descriptor.NewRecordDescriptor.ProcessNewRecordDocumentRequest;
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
-import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
-import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
+import de.metas.ui.web.window.health.WindowHealthCheckCommand;
+import de.metas.ui.web.window.health.json.JsonWindowHealthCheckRequest;
+import de.metas.ui.web.window.health.json.JsonWindowsHealthCheckResponse;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChangeLogService;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -99,12 +98,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -118,7 +115,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -137,9 +133,8 @@ public class WindowRestController
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
-	@NonNull private static final Logger logger = LogManager.getLogger(DebugRestController.class);
 	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-	@NonNull private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final UserSession userSession;
 	@NonNull private final DocumentCollection documentCollection;
 	@NonNull private final DocumentZoomIntoService documentZoomIntoService;
@@ -161,13 +156,28 @@ public class WindowRestController
 	{
 		return JSONDocumentLayoutOptions.prepareFrom(userSession)
 				.newRecordDescriptorsProvider(newRecordDescriptorsProvider)
-				.advancedSearchDescriptorsProvider(advancedSearchDescriptorsProvider);
+				.advancedSearchDescriptorsProvider(advancedSearchDescriptorsProvider)
+				.roleETagFingerprint(layoutRoleETagFingerprint());
 	}
 
 	private JSONDocumentOptionsBuilder newJSONDocumentOptions()
 	{
 		return JSONDocumentOptions.builder()
 				.userSession(userSession);
+	}
+
+	/**
+	 * ETag fingerprint for the role-dependent parts of a window layout (the lookup "new record" option is
+	 * gated per role in {@link de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField}). The
+	 * base layout ETag is role-independent, so it is folded in here: the role id makes it distinct per role
+	 * (no cross-role 304 reuse), and the permissions cache version - bumped whenever a role-dependent table
+	 * such as {@code AD_Table_Access} changes - makes a permission change take effect without an app restart.
+	 */
+	private String layoutRoleETagFingerprint()
+	{
+		final RoleId roleId = userSession.getUserRolePermissions().getRoleId();
+		final long permissionsVersion = userRolePermissionsDAO.getCacheVersion();
+		return roleId.getRepoId() + "-" + permissionsVersion;
 	}
 
 	@GetMapping("/{windowId}/layout")
@@ -184,6 +194,7 @@ public class WindowRestController
 
 		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
 				.includeLanguageInETag()
+				.includeRoleInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(DocumentDescriptor::getLayout)
 				//
@@ -208,6 +219,7 @@ public class WindowRestController
 
 		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
 				.includeLanguageInETag()
+				.includeRoleInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(desc -> desc.getLayout().getDetail(detailId))
 				//
@@ -425,7 +437,7 @@ public class WindowRestController
 
 		final DocumentPath fromDocumentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
 
-		final Document documentCopy = documentCollection.duplicateDocument(fromDocumentPath);
+		final Document documentCopy = documentCollection.duplicateDocument(fromDocumentPath, userSession.getUserRolePermissions());
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions().showAdvancedFields(advanced).build();
 		return JSONDocument.ofDocument(documentCopy, jsonOpts);
 	}
@@ -927,13 +939,29 @@ public class WindowRestController
 
 		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
+			final NewRecordDescriptor newRecordDescriptor = newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor());
+
+			// Gate the role's per-table CREATE permission on the TARGET table (e.g. C_BPartner), not the
+			// quick-input template's own table (C_BPartner_QuickInput). The standard "New" path and the WebUI
+			// both enforce this, but this endpoint did not, so a replayed/direct POST created the record
+			// fail-open for a role with WRITE but IsCanCreateNewRecords='N'. checkCanCreateNewRecord (WRITE-only)
+			// stays untouched because it is shared with the REST path (PermissionService.assertCanCreateOrUpdate).
+			final AdTableId targetTableId = AdTableId.ofRepoIdOrNull(adTableDAO.retrieveTableId(newRecordDescriptor.getTableName()));
+			final BooleanWithReason roleCanCreateNewRecord = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(
+					targetTableId,
+					userSession.getUserRolePermissions());
+			if (roleCanCreateNewRecord.isFalse())
+			{
+				throw new AdempiereException(roleCanCreateNewRecord.getReason());
+			}
+
 			document.saveIfValidAndHasChanges();
 			if (document.hasChangesRecursivelly())
 			{
 				throw new AdempiereException("Not saved");
 			}
 
-			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
+			return newRecordDescriptor
 					.getProcessor()
 					.processNewRecordDocument(ProcessNewRecordDocumentRequest.builder()
 							.document(document)
@@ -1034,72 +1062,24 @@ public class WindowRestController
 	}
 
 	@GetMapping("/health")
-	public JsonWindowsHealthResponse healthCheck(
+	public JsonWindowsHealthCheckResponse healthCheck(
 			@RequestParam(name = "windowIds", required = false) final String windowIdsCommaSeparated
 	)
 	{
-		final DocumentDescriptorFactory documentDescriptorFactory = documentCollection.getDocumentDescriptorFactory();
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-
-		final ImmutableSet<AdWindowId> skipAdWindowIds = ImmutableSet.of(
-				AdWindowId.ofRepoId(540371), // Picking Tray Clearing - placeholder window
-				AdWindowId.ofRepoId(540674), // Shipment Schedule Editor - placeholder window
-				AdWindowId.ofRepoId(540759), // Payment Allocation - placeholder window
-				AdWindowId.ofRepoId(540485) // Picking Terminal (v2) - placeholder window
-		);
-
-		final ImmutableSet<AdWindowId> onlyAdWindowIds = RepoIdAwares.ofCommaSeparatedSet(windowIdsCommaSeparated, AdWindowId.class);
-		final ImmutableSet<AdWindowId> allAdWidowIds = adWindowDAO.retrieveAllActiveAdWindowIds();
-		final ImmutableSet<AdWindowId> adWindowIds = !onlyAdWindowIds.isEmpty() ? onlyAdWindowIds : allAdWidowIds;
-
-		final ArrayList<JsonWindowsHealthResponse.Entry> errors = new ArrayList<>();
-		final int countTotal = adWindowIds.size();
-		int countCurrent = 0;
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		for (final AdWindowId adWindowId : adWindowIds)
-		{
-			countCurrent++;
-
-			if (skipAdWindowIds.contains(adWindowId))
-			{
-				continue;
-			}
-
-			final WindowId windowId = WindowId.of(adWindowId);
-			try
-			{
-				if (!allAdWidowIds.contains(adWindowId))
-				{
-					throw new AdempiereException("Not an existing/active window");
-				}
-
-				documentDescriptorFactory.invalidateForWindow(windowId);
-				final DocumentDescriptor documentDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId);
-				documentDescriptorFactory.invalidateForWindow(windowId);
-
-				final String windowName = documentDescriptor.getEntityDescriptor().getCaption().translate(adLanguage);
-				logger.info("testWindows [{}/{}] Window `{}` ({}) is OK", countCurrent, countTotal, windowName, windowId);
-			}
-			catch (final Exception ex)
-			{
-				final String windowName = adWindowDAO.retrieveWindowName(adWindowId).translate(adLanguage);
-				logger.info("testWindows [{}/{}] Window `{}` ({}) is NOK: {}", countCurrent, countTotal, windowName, windowId, ex.getLocalizedMessage());
-
-				final Throwable cause = DocumentLayoutBuildException.extractCause(ex);
-				errors.add(JsonWindowsHealthResponse.Entry.builder()
-						.windowId(windowId)
-						.windowName(windowName)
-						.error(JsonErrors.ofThrowable(cause, adLanguage))
-						.build());
-			}
-		}
-
-		stopwatch.stop();
-
-		return JsonWindowsHealthResponse.builder()
-				.took(stopwatch.toString())
-				.countTotal(countTotal)
-				.errors(errors)
-				.build();
+		return healthCheck(JsonWindowHealthCheckRequest.builder()
+				.onlyAdWindowIds(RepoIdAwares.ofCommaSeparatedSet(windowIdsCommaSeparated, AdWindowId.class))
+				.checkContextVariables(false)
+				.build());
 	}
+
+	@PostMapping("/health")
+	public JsonWindowsHealthCheckResponse healthCheck(@RequestBody JsonWindowHealthCheckRequest request)
+	{
+		return WindowHealthCheckCommand.builder()
+				.documentDescriptorFactory(documentCollection.getDocumentDescriptorFactory())
+				.request(request)
+				.build()
+				.execute();
+	}
+
 }

@@ -30,7 +30,7 @@ public interface I_C_Order
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Inputsource.
+	 * Set Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -39,7 +39,7 @@ public interface I_C_Order
 	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
-	 * Get Inputsource.
+	 * Get Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -291,9 +291,7 @@ public interface I_C_Order
 
 	/**
 	 * Set B/L Date.
-	 * Date when the Bill of Lading was issued by the carrier.
-	 * The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed.
-	 * Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
+	 * Date when the Bill of Lading was issued by the carrier. The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed. Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -303,9 +301,7 @@ public interface I_C_Order
 
 	/**
 	 * Get B/L Date.
-	 * Date when the Bill of Lading was issued by the carrier.
-	 * The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed.
-	 * Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
+	 * Date when the Bill of Lading was issued by the carrier. The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed. Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -379,6 +375,60 @@ public interface I_C_Order
 	int getC_Activity_ID();
 
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Carrier Material Assignment.
+	 * The goods type assigned to the carrier product for shipment handling.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Goods_Type_ID (int Carrier_Goods_Type_ID);
+
+	/**
+	 * Get Carrier Material Assignment.
+	 * The goods type assigned to the carrier product for shipment handling.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Goods_Type_ID();
+
+	@Nullable org.compiere.model.I_Carrier_Goods_Type getCarrier_Goods_Type();
+
+	void setCarrier_Goods_Type(@Nullable org.compiere.model.I_Carrier_Goods_Type Carrier_Goods_Type);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_Carrier_Goods_Type> COLUMN_Carrier_Goods_Type_ID = new ModelColumn<>(I_C_Order.class, "Carrier_Goods_Type_ID", org.compiere.model.I_Carrier_Goods_Type.class);
+	String COLUMNNAME_Carrier_Goods_Type_ID = "Carrier_Goods_Type_ID";
+
+	/**
+	 * Set Carrier Product.
+	 * The carrier product for shipment handling.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Product_ID (int Carrier_Product_ID);
+
+	/**
+	 * Get Carrier Product.
+	 * The carrier product for shipment handling.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Product_ID();
+
+	@Nullable org.compiere.model.I_Carrier_Product getCarrier_Product();
+
+	void setCarrier_Product(@Nullable org.compiere.model.I_Carrier_Product Carrier_Product);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_Carrier_Product> COLUMN_Carrier_Product_ID = new ModelColumn<>(I_C_Order.class, "Carrier_Product_ID", org.compiere.model.I_Carrier_Product.class);
+	String COLUMNNAME_Carrier_Product_ID = "Carrier_Product_ID";
 
 	/**
 	 * Set Async Batch.
@@ -904,7 +954,7 @@ public interface I_C_Order
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -914,7 +964,7 @@ public interface I_C_Order
 	 * Get Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -970,6 +1020,56 @@ public interface I_C_Order
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
+
+	/**
+	 * Get Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode2_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
+
+	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
+
+	/**
+	 * Set Promotion Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode_ID (int C_PromotionCode_ID);
+
+	/**
+	 * Get Promotion Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
+
+	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
 
 	/**
 	 * Set Copy/Create.
@@ -1491,9 +1591,7 @@ public interface I_C_Order
 
 	/**
 	 * Set ETA.
-	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations.
-	 * The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated.
-	 * Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations. The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated. Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1503,9 +1601,7 @@ public interface I_C_Order
 
 	/**
 	 * Get ETA.
-	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations.
-	 * The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated.
-	 * Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations. The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated. Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1559,6 +1655,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_ExternalPurchaseOrderURL = new ModelColumn<>(I_C_Order.class, "ExternalPurchaseOrderURL", null);
 	String COLUMNNAME_ExternalPurchaseOrderURL = "ExternalPurchaseOrderURL";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Order.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set Freight Amount.
@@ -1785,9 +1902,6 @@ public interface I_C_Order
 
 	/**
 	 * Set Invoice date.
-	 * Date when the supplier’s invoice was issued.
-	 * The Invoice Date is automatically synchronized from the Supplier Invoice to the Purchase Order when the invoice is received or posted in the system.
-	 * Manual changes of the Invoice Date in the Purchase Order are not allowed — it is always derived from the corresponding Supplier Invoice.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1797,9 +1911,6 @@ public interface I_C_Order
 
 	/**
 	 * Get Invoice date.
-	 * Date when the supplier’s invoice was issued.
-	 * The Invoice Date is automatically synchronized from the Supplier Invoice to the Purchase Order when the invoice is received or posted in the system.
-	 * Manual changes of the Invoice Date in the Purchase Order are not allowed — it is always derived from the corresponding Supplier Invoice.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1903,6 +2014,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IsApproved = new ModelColumn<>(I_C_Order.class, "IsApproved", null);
 	String COLUMNNAME_IsApproved = "IsApproved";
+
+	/**
+	 * Set Auto Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoInvoice (boolean IsAutoInvoice);
+
+	/**
+	 * Get Auto Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoInvoice();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsAutoInvoice = new ModelColumn<>(I_C_Order.class, "IsAutoInvoice", null);
+	String COLUMNNAME_IsAutoInvoice = "IsAutoInvoice";
 
 	/**
 	 * Set Credit Approved.
@@ -2064,6 +2196,27 @@ public interface I_C_Order
 	String COLUMNNAME_IsInvoiced = "IsInvoiced";
 
 	/**
+	 * Set Pre-Advice Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setIsPreAdviceRequired (boolean IsPreAdviceRequired);
+
+	/**
+	 * Get Pre-Advice Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	boolean isPreAdviceRequired();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsPreAdviceRequired = new ModelColumn<>(I_C_Order.class, "IsPreAdviceRequired", null);
+	String COLUMNNAME_IsPreAdviceRequired = "IsPreAdviceRequired";
+
+	/**
 	 * Set Printed.
 	 * Indicates if this document / line is printed
 	 *
@@ -2085,6 +2238,29 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IsPrinted = new ModelColumn<>(I_C_Order.class, "IsPrinted", null);
 	String COLUMNNAME_IsPrinted = "IsPrinted";
+
+	/**
+	 * Set Reprint Order Checkup.
+	 * Controls whether the order checkup is reprinted when this order is reactivated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReprintOrderCheckup (boolean IsReprintOrderCheckup);
+
+	/**
+	 * Get Reprint Order Checkup.
+	 * Controls whether the order checkup is reprinted when this order is reactivated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReprintOrderCheckup();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsReprintOrderCheckup = new ModelColumn<>(I_C_Order.class, "IsReprintOrderCheckup", null);
+	String COLUMNNAME_IsReprintOrderCheckup = "IsReprintOrderCheckup";
 
 	/**
 	 * Set Sales partner required.
@@ -2740,6 +2916,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Print Totals.
+	 * Whether the totals section is included in the generated document.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -2749,6 +2926,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Print Totals.
+	 * Whether the totals section is included in the generated document.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -2825,53 +3003,73 @@ public interface I_C_Order
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Promotion Code.
-	 * User entered promotion code at sales time
+	 * Set Process Status.
+	 * Process State of the Order: Green: "Completed", Yellow: "In Progress", Red: "Not Started"
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPromotionCode (@Nullable java.lang.String PromotionCode);
-
-	/**
-	 * Get Promotion Code.
-	 * User entered promotion code at sales time
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getPromotionCode();
-
-	ModelColumn<I_C_Order, Object> COLUMN_PromotionCode = new ModelColumn<>(I_C_Order.class, "PromotionCode", null);
-	String COLUMNNAME_PromotionCode = "PromotionCode";
-
-	/**
-	 * Set Purchaser.
-	 * Purchasing Responsible
-	 *
-	 * <br>Type: Search
+	 * <br>Type: Color
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	void setPurchaser_User_ID (int Purchaser_User_ID);
+	void setProcessStatusColor_ID (int ProcessStatusColor_ID);
 
 	/**
-	 * Get Purchaser.
-	 * Purchasing Responsible
+	 * Get Process Status.
+	 * Process State of the Order: Green: "Completed", Yellow: "In Progress", Red: "Not Started"
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Color
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	int getPurchaser_User_ID();
+	int getProcessStatusColor_ID();
 
-	String COLUMNNAME_Purchaser_User_ID = "Purchaser_User_ID";
+	ModelColumn<I_C_Order, Object> COLUMN_ProcessStatusColor_ID = new ModelColumn<>(I_C_Order.class, "ProcessStatusColor_ID", null);
+	String COLUMNNAME_ProcessStatusColor_ID = "ProcessStatusColor_ID";
+
+	/**
+	 * Set Public Procurement Commitment No..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPublicProcurementCommitmentNo (@Nullable java.lang.String PublicProcurementCommitmentNo);
+
+	/**
+	 * Get Public Procurement Commitment No..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPublicProcurementCommitmentNo();
+
+	ModelColumn<I_C_Order, Object> COLUMN_PublicProcurementCommitmentNo = new ModelColumn<>(I_C_Order.class, "PublicProcurementCommitmentNo", null);
+	String COLUMNNAME_PublicProcurementCommitmentNo = "PublicProcurementCommitmentNo";
+
+	/**
+	 * Set Public Procurement Market No..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPublicProcurementMarketNo (@Nullable java.lang.String PublicProcurementMarketNo);
+
+	/**
+	 * Get Public Procurement Market No..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPublicProcurementMarketNo();
+
+	ModelColumn<I_C_Order, Object> COLUMN_PublicProcurementMarketNo = new ModelColumn<>(I_C_Order.class, "PublicProcurementMarketNo", null);
+	String COLUMNNAME_PublicProcurementMarketNo = "PublicProcurementMarketNo";
 
 	/**
 	 * Set Qty without Trading Unit.
@@ -3085,6 +3283,27 @@ public interface I_C_Order
 	String COLUMNNAME_SendEMail = "SendEMail";
 
 	/**
+	 * Set Gross Weight Sum (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTotalGrossWeightKg (BigDecimal TotalGrossWeightKg);
+
+	/**
+	 * Get Gross Weight Sum (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTotalGrossWeightKg();
+
+	ModelColumn<I_C_Order, Object> COLUMN_TotalGrossWeightKg = new ModelColumn<>(I_C_Order.class, "TotalGrossWeightKg", null);
+	String COLUMNNAME_TotalGrossWeightKg = "TotalGrossWeightKg";
+
+	/**
 	 * Set Total Lines.
 	 * Total of all document lines
 	 *
@@ -3273,25 +3492,4 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_Weight = new ModelColumn<>(I_C_Order.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
-
-	/**
-	 * Set External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExternalSystem_ID (int ExternalSystem_ID);
-
-	/**
-	 * Get External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getExternalSystem_ID();
-
-	ModelColumn<I_C_Order, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Order.class, "ExternalSystem_ID", null);
-	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 }

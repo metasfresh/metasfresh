@@ -3,7 +3,6 @@ package de.metas.handlingunits.shipmentschedule.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.util.GuavaCollectors;
@@ -72,12 +71,7 @@ public class ShipmentScheduleAndJobSchedulesCollection implements Iterable<Shipm
 		return getShipmentScheduleIds(schedule -> !schedule.hasJobSchedules());
 	}
 
-	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIdsWithJobSchedules()
-	{
-		return getShipmentScheduleIds(ShipmentScheduleAndJobSchedules::hasJobSchedules);
-	}
-
-	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds(@NonNull Predicate<ShipmentScheduleAndJobSchedules> filter)
+	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds(@NonNull final Predicate<ShipmentScheduleAndJobSchedules> filter)
 	{
 		return list.stream()
 				.filter(filter)

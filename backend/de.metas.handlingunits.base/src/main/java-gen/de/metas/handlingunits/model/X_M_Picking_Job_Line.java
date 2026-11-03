@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_Picking_Job_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1300941424L;
+	private static final long serialVersionUID = -152289796L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Line (final Properties ctx, final int M_Picking_Job_Line_ID, @Nullable final String trxName)
@@ -33,6 +33,36 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setCarrier_Goods_Type_ID (final int Carrier_Goods_Type_ID)
+	{
+		if (Carrier_Goods_Type_ID < 1) 
+			set_Value (COLUMNNAME_Carrier_Goods_Type_ID, null);
+		else 
+			set_Value (COLUMNNAME_Carrier_Goods_Type_ID, Carrier_Goods_Type_ID);
+	}
+
+	@Override
+	public int getCarrier_Goods_Type_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Goods_Type_ID);
+	}
+
+	@Override
+	public void setCarrier_Product_ID (final int Carrier_Product_ID)
+	{
+		if (Carrier_Product_ID < 1) 
+			set_Value (COLUMNNAME_Carrier_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Carrier_Product_ID, Carrier_Product_ID);
+	}
+
+	@Override
+	public int getCarrier_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Product_ID);
 	}
 
 	@Override
@@ -168,6 +198,18 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
+	public void setCurrent_PickTo_TU_GRAI (final @Nullable java.lang.String Current_PickTo_TU_GRAI)
+	{
+		set_Value (COLUMNNAME_Current_PickTo_TU_GRAI, Current_PickTo_TU_GRAI);
+	}
+
+	@Override
+	public java.lang.String getCurrent_PickTo_TU_GRAI() 
+	{
+		return get_ValueAsString(COLUMNNAME_Current_PickTo_TU_GRAI);
+	}
+
+	@Override
 	public void setCurrent_PickTo_TU_ID (final int Current_PickTo_TU_ID)
 	{
 		if (Current_PickTo_TU_ID < 1) 
@@ -207,6 +249,30 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public java.lang.String getCurrent_PickTo_TU_QRCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_Current_PickTo_TU_QRCode);
+	}
+
+	@Override
+	public void setIsCarrierAdviseManual (final boolean IsCarrierAdviseManual)
+	{
+		set_Value (COLUMNNAME_IsCarrierAdviseManual, IsCarrierAdviseManual);
+	}
+
+	@Override
+	public boolean isCarrierAdviseManual() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCarrierAdviseManual);
+	}
+
+	@Override
+	public void setIsCarrierAdviseReadOnly (final boolean IsCarrierAdviseReadOnly)
+	{
+		set_Value (COLUMNNAME_IsCarrierAdviseReadOnly, IsCarrierAdviseReadOnly);
+	}
+
+	@Override
+	public boolean isCarrierAdviseReadOnly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCarrierAdviseReadOnly);
 	}
 
 	@Override

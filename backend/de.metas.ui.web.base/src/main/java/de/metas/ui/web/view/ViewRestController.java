@@ -26,6 +26,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.logging.LogManager;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
@@ -50,17 +53,22 @@ import de.metas.ui.web.view.json.JSONViewOrderBy;
 import de.metas.ui.web.view.json.JSONViewProfilesList;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
+import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDisabledStandardAction;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+import de.metas.ui.web.window.model.DocumentStandardAction;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoService;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -70,6 +78,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
+import org.slf4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -118,9 +127,11 @@ public class ViewRestController
 	//
 	private static final String PARAM_FilterId = "filterId";
 
+	@NonNull private static final Logger logger = LogManager.getLogger(ViewRestController.class);
 	@NonNull private final UserSession userSession;
 	@NonNull private final IViewsRepository viewsRepo;
 	@NonNull private final ProcessRestController processRestController;
+	@NonNull private final DocumentDescriptorFactory documentDescriptorFactory;
 	@NonNull private final WindowRestController windowRestController;
 	@NonNull private final CommentsService commentsService;
 	@NonNull private final DocumentZoomIntoService documentZoomIntoService;
@@ -272,7 +283,51 @@ public class ViewRestController
 		final List<IViewRow> rows = result.isPageLoaded() ? result.getPage() : Collections.emptyList();
 		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(rows);
 
-		return JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
+		final JSONViewResult json = JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
+		setNewDocumentPermission(json, viewId.getWindowId(), jsonOpts.getAdLanguage());
+		return json;
+	}
+
+	/**
+	 * Transmits whether a new record may be created from this view, and — where the role's per-table
+	 * permission is what forbids it — why, so the grid can grey the action instead of just hiding its cause.
+	 */
+	private void setNewDocumentPermission(
+			@NonNull final JSONViewResult json,
+			@NonNull final WindowId windowId,
+			@NonNull final String adLanguage)
+	{
+		if (windowId.toAdWindowIdOrNull() == null)
+		{
+			json.setAllowNew(false);
+			return;
+		}
+
+		try
+		{
+			final DocumentEntityDescriptor documentEntityDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId).getEntityDescriptor();
+
+			final BooleanWithReason allowNew = DocumentPermissionsHelper.checkNewDocumentAllowed(documentEntityDescriptor, userSession);
+			json.setAllowNew(allowNew.isTrue());
+
+			// checkNewDocumentAllowed short-circuits to a reasonless FALSE for the window-level refusals (write-access,
+			// allowCreateNewLogic) and only reaches the role check -- which alone carries a reason -- once those pass.
+			// JSONDisabledStandardAction.refusedByRole only returns null for a TRUE input, not for a reasonless FALSE,
+			// so gate on the reason here to let the window-level refusal win with no role message.
+			if (!TranslatableStrings.isBlank(allowNew.getReason()))
+			{
+				final JSONDisabledStandardAction newRefused = JSONDisabledStandardAction.refusedByRole(DocumentStandardAction.New, allowNew, adLanguage);
+				if (newRefused != null)
+				{
+					json.setDisabledStandardActions(ImmutableList.of(newRefused));
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed checking if new document is allowed for windowId={}. Not allowing it.", windowId, ex);
+			json.setAllowNew(false);
+		}
 	}
 
 	@GetMapping("/layout")

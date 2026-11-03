@@ -1,6 +1,6 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 
 import '../assets/css/styles.scss';
@@ -10,27 +10,24 @@ import {
 } from '../utils/locale';
 import {
   addNotification,
-  setProcessSaved,
-  initHotkeys,
-  initKeymap,
+  connectionError,
   setLanguages,
+  setProcessSaved,
+  showAcknowledgeDialog,
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api/login';
-import { connectionError } from '../actions/AppActions';
 // import PluginsRegistry from '../services/PluginsRegistry';
 import { useAuth } from '../hooks/useAuth';
 import useConstructor from '../hooks/useConstructor';
 import history from '../services/History';
 import Routes from '../routes';
 import { NO_CONNECTION_ERROR } from '../constants/Constants';
-import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
+import { ShortcutProvider } from '../components/keyshortcuts/ShortcutProvider';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
-import blacklist from '../shortcuts/blacklist';
-import keymap from '../shortcuts/keymap';
 import { getDocSummaryDataFromState } from '../reducers/windowHandlerUtils';
-
-const hotkeys = generateHotkeys({ keymap, blacklist });
+import { useNotificationsWebsocket } from '../hooks/useNotificationsWebsocket';
+import { useSessionWebsocket } from '../hooks/useSessionWebsocket';
 
 // const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
@@ -65,9 +62,16 @@ const computeTitleFromState = (state) => {
 const App = () => {
   // const [pluginsLoading, setPluginsLoading] = useState(!!APP_PLUGINS.length);
   const auth = useAuth();
+  // the axios interceptor below is registered once, so it must read the
+  // current auth object (and its login state) through a ref
+  const authRef = useRef(auth);
+  // assigned during render on purpose: an effect would lag one commit behind the login state
+  authRef.current = auth;
   const dispatch = useDispatch();
   const store = useStore();
   const language = useSelector((state) => state.appHandler.me.language);
+  useNotificationsWebsocket();
+  useSessionWebsocket();
 
   useConstructor(() => {
     // this.pluginsRegistry = new PluginsRegistry(this);
@@ -106,16 +110,19 @@ const App = () => {
         if (error.response.status == 401) {
           if (
             !location.pathname.includes('login') &&
-            !auth.authRequestPending()
+            !authRef.current.authRequestPending()
           ) {
             dispatch(setProcessSaved());
 
-            auth.setRedirectRoute(location.pathname);
+            authRef.current.setRedirectRoute(location.pathname);
 
             // we got not authenticated error, but locally still have the authenticated flag truthy
             // (ie user logged out in another window, or session timed out)
-            if (auth.isLoggedIn || store.getState().appHandler.isLogged) {
-              auth.logout().finally(() => {
+            if (
+              authRef.current.isLoggedIn ||
+              store.getState().appHandler.isLogged
+            ) {
+              authRef.current.logout().finally(() => {
                 history.push('/login');
               });
             } else {
@@ -134,7 +141,7 @@ const App = () => {
           // if user types in incorrect token, there's no way for us to tell if he's
           // already authenticated or not. So it's safest to reset the login process
           if (error.response.data.message.includes('Invalid token')) {
-            return auth
+            return authRef.current
               .logout()
               .then(() => {
                 history.push('/login');
@@ -145,29 +152,25 @@ const App = () => {
           }
 
           //if not logged in
-          if (!auth.isLoggedIn && !store.getState().appHandler.isLogged) {
-            return auth.checkAuthentication().then((authenticated) => {
-              if (authenticated) {
-                history.push(location.pathname);
-              }
-            });
+          if (
+            !authRef.current.isLoggedIn &&
+            !store.getState().appHandler.isLogged
+          ) {
+            return authRef.current
+              .checkAuthentication()
+              .then((authenticated) => {
+                if (authenticated) {
+                  history.push(location.pathname);
+                }
+              });
           }
         } else if (error.response.status == 502) {
           return; // silent error for 502 bad gateway (otherwise we will get a bunch of notif from the retries)
         } else if (error.response.status == 503) {
           dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
         } else if (error.response.status != 404) {
-          if (auth.isLoggedIn) {
-            const errorMessenger = (code) => {
-              switch (code) {
-                case 500:
-                  return 'Server error';
-                case 400:
-                  return 'Client error';
-              }
-            };
-            const { data, status } = error.response;
-            const errorTitle = errorMessenger(status);
+          if (authRef.current.isLoggedIn) {
+            const { data } = error.response;
             const message = data.message ? data.message : '';
 
             // eslint-disable-next-line no-console
@@ -181,15 +184,26 @@ const App = () => {
             }
 
             if (data.userFriendlyError) {
-              dispatch(
-                addNotification(
-                  'Error: ' + message.split(' ', 4).join(' ') + '...',
-                  data.message,
-                  5000,
-                  'error',
-                  errorTitle
-                )
-              );
+              if (data.userMessagePresentation === 'ACKNOWLEDGE_DIALOG') {
+                // The server sends a translated userMessageTitle (a shared "Information" caption for this
+                // presentation mode) alongside the message; the '' fallback keeps an older backend (no title) rendering.
+                dispatch(
+                  showAcknowledgeDialog(
+                    data.userMessageTitle || '',
+                    data.message
+                  )
+                );
+              } else {
+                // A user-friendly error is shown as-is, never prefixed with the HTTP status (e.g. "Server error" for a 500)
+                dispatch(
+                  addNotification(
+                    'Error: ' + message.split(' ', 4).join(' ') + '...',
+                    data.message,
+                    5000,
+                    'error'
+                  )
+                );
+              }
             }
           }
         }
@@ -233,9 +247,6 @@ const App = () => {
     });
 
     counterpart.setMissingEntryGenerator(() => '');
-
-    dispatch(initKeymap(keymap));
-    dispatch(initHotkeys(hotkeys));
 
     /**
      * this is the part of the application that activates the plugins from the plugins array found in - plugins.js

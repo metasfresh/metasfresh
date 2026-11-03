@@ -15,7 +15,6 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<migration-sql-basedir/>
 		<metasfresh.version>10.0.0</metasfresh.version>
 		<metasfresh-common.version>10.0.0</metasfresh-common.version>
 	</properties>
@@ -77,6 +76,13 @@
 			<groupId>de.metas.common.product</groupId>
 			<artifactId>de-metas-common-product</artifactId>
 			<version>${metasfresh-common.version}</version>
+		</dependency>
+
+		<!-- TaxDAO reads VATaxIDStatus.hasTaxCertificate() to decide whether a partner still holds a tax certificate -->
+		<dependency>
+			<groupId>de.metas.vatid</groupId>
+			<artifactId>metasfresh-vatid-base</artifactId>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>

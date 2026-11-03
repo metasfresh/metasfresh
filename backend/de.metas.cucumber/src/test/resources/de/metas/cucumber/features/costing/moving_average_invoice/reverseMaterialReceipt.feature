@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
 @ghActions:run_on_executor6
 Feature: Moving Average Invoice - Check costing when reversing a material receipt
+## F1500: Costing
 
   Background:
     Given infrastructure and metasfresh are running
@@ -10,8 +14,8 @@ Feature: Moving Average Invoice - Check costing when reversing a material receip
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2021-04-14T13:30:13+01:00[Europe/Berlin]
     And load and update C_AcctSchema:
-      | C_AcctSchema_ID | Name                  |
-      | acctSchema      | metas fresh UN/34 CHF |
+      | C_AcctSchema_ID | Name                  | CostingMethod |
+      | acctSchema      | metas fresh UN/34 CHF | M             |
     And cost elements for material costing methods MovingAverageInvoice are active
     And load M_Warehouse:
       | M_Warehouse_ID | Value        |
@@ -69,6 +73,9 @@ Feature: Moving Average Invoice - Check costing when reversing a material receip
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: No initial stock
     #
     # Create material receipt 
@@ -136,6 +143,9 @@ Feature: Moving Average Invoice - Check costing when reversing a material receip
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: With initial stock
     #
     # Create the initial inventory 

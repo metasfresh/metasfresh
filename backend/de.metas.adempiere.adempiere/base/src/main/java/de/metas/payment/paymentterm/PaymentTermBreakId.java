@@ -39,9 +39,7 @@ import java.util.Optional;
 public class PaymentTermBreakId implements RepoIdAware
 {
 	int repoId;
-
-	@NonNull
-	PaymentTermId paymentTermId;
+	@NonNull PaymentTermId paymentTermId;
 
 	public static PaymentTermBreakId ofRepoId(@NonNull final PaymentTermId paymentTermId, final int paymentTermBreakId)
 	{
@@ -82,8 +80,8 @@ public class PaymentTermBreakId implements RepoIdAware
 	@Builder
 	private PaymentTermBreakId(@NonNull final PaymentTermId paymentTermId, final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "paymentTermBreakId");
 		this.paymentTermId = paymentTermId;
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_PaymentTerm_Break_ID");
 	}
 
 	public static int toRepoId(@Nullable final PaymentTermBreakId paymentTermBreakId)
@@ -91,13 +89,7 @@ public class PaymentTermBreakId implements RepoIdAware
 		return paymentTermBreakId != null ? paymentTermBreakId.getRepoId() : -1;
 	}
 
-	@Nullable
-	public static Integer toRepoIdOrNull(@Nullable final PaymentTermBreakId paymentTermBreakId)
-	{
-		return paymentTermBreakId != null ? paymentTermBreakId.getRepoId() : null;
-	}
-
-	public static boolean equals(final  @Nullable PaymentTermBreakId id1, final @Nullable PaymentTermBreakId id2)
+	public static boolean equals(final @Nullable PaymentTermBreakId id1, final @Nullable PaymentTermBreakId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

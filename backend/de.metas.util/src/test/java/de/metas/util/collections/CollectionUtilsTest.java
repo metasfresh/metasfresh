@@ -202,7 +202,55 @@ class CollectionUtilsTest
 							ImmutableMapEntry::getKey)
 			).isSameAs(map);
 		}
+	}
 
+	@Nested
+	class merge_map
+	{
+		@Test
+		void addNewElementToEmptyMap()
+		{
+			assertThat(CollectionUtils.merge(
+					ImmutableMap.of(),
+					"K1",
+					"V1",
+					String::concat
+			)).isEqualTo(ImmutableMap.of("K1", "V1"));
+		}
+
+		@Test
+		void addNewElement()
+		{
+			assertThat(CollectionUtils.merge(
+					ImmutableMap.of("K1", "V1", "K2", "V2"),
+					"K3",
+					"V3",
+					String::concat
+			)).isEqualTo(ImmutableMap.of("K1", "V1", "K2", "V2", "K3", "V3"));
+		}
+
+		@Test
+		void mergeExistingElement()
+		{
+			assertThat(CollectionUtils.merge(
+					ImmutableMap.of("K1", "V11", "K2", "V2"),
+					"K1",
+					"V12",
+					String::concat
+			)).isEqualTo(ImmutableMap.of("K1", "V11V12", "K2", "V2"));
+		}
+
+		@Test
+		void mergeExistingElementProducingNoChange()
+		{
+			final ImmutableMap<String, String> map = ImmutableMap.of("K1", "V1", "K2", "V2");
+			assertThat(CollectionUtils.merge(
+					map,
+					"K1",
+					"",
+					String::concat
+			)).isSameAs(map);
+		}
 	}
 
 	@Nested
@@ -330,5 +378,109 @@ class CollectionUtilsTest
 			assertThat(CollectionUtils.fillMissingKeys(map, ImmutableSet.of(1, 2), "new"))
 					.isSameAs(map);
 		}
+	}
+
+	@Nested
+	class mapValue
+	{
+		@Test
+		void changeExistingValue()
+		{
+			final ImmutableMap<String, String> map = ImmutableMap.of("k1", "v1", "k2", "v2");
+			assertThat(CollectionUtils.mapValue(map, "k2", v -> v + "_changed"))
+					.isEqualTo(ImmutableMap.of("k1", "v1", "k2", "v2_changed"));
+		}
+
+		@Test
+		void changeExistingValueToSameValue()
+		{
+			final ImmutableMap<String, String> map = ImmutableMap.of("k1", "v1", "k2", "v2");
+			assertThat(CollectionUtils.mapValue(map, "k2", v -> v))
+					.isSameAs(map);
+		}
+
+		@Test
+		void changeMissingKey()
+		{
+			final ImmutableMap<String, String> map = ImmutableMap.of("k1", "v1", "k2", "v2");
+			assertThatThrownBy(() -> CollectionUtils.mapValue(map, "k3", v -> v))
+					.hasMessageStartingWith("key 'k3' does not exist");
+		}
+	}
+
+	@Nested
+	class getNextRoundRobin
+	{
+		@Test
+		void wrapAround_toFirst()
+		{
+			// Last element is current → next is first (wrap-around)
+			final ImmutableList<String> list = ImmutableList.of("A", "B", "C");
+			assertThat(CollectionUtils.getNextRoundRobin(list, "C", null)).isEqualTo("A");
+		}
+
+		@Test
+		void skipIneligible_returnsNextEligible()
+		{
+			// B is ineligible → skips B, returns C
+			final ImmutableList<String> list = ImmutableList.of("A", "B", "C");
+			assertThat(CollectionUtils.getNextRoundRobin(list, "A", e -> !e.equals("B"))).isEqualTo("C");
+		}
+
+		@Test
+		void noEligible_returnsNull()
+		{
+			// All candidates after A are ineligible
+			final ImmutableList<String> list = ImmutableList.of("A", "B", "C");
+			assertThat(CollectionUtils.getNextRoundRobin(list, "A", e -> false)).isNull();
+		}
+
+		@Test
+		void elementNotInList_returnsNull()
+		{
+			final ImmutableList<String> list = ImmutableList.of("A", "B", "C");
+			assertThat(CollectionUtils.getNextRoundRobin(list, "Z", null)).isNull();
+		}
+
+		@Test
+		void singleElement_returnsNull()
+		{
+			// Only one element — the loop runs zero iterations (step < size=1 never holds)
+			final ImmutableList<String> list = ImmutableList.of("A");
+			assertThat(CollectionUtils.getNextRoundRobin(list, "A", null)).isNull();
+		}
+
+		@Test
+		void nullIsEligible_treatedAsAlwaysEligible()
+		{
+			// null isEligible → no filtering → plain next element
+			final ImmutableList<String> list = ImmutableList.of("A", "B", "C");
+			assertThat(CollectionUtils.getNextRoundRobin(list, "A", null)).isEqualTo("B");
+		}
+	}
+
+	@Nested
+	public class removeIf
+	{
+		@Test
+		void empty()
+		{
+			final ImmutableList<Integer> list = ImmutableList.of();
+			assertThat(CollectionUtils.removeIf(list, item -> true)).isSameAs(list);
+		}
+
+		@Test
+		void nothingRemoved()
+		{
+			final ImmutableList<Integer> list = ImmutableList.of(1, 2, 3, 4);
+			assertThat(CollectionUtils.removeIf(list, item -> false)).isSameAs(list);
+		}
+
+		@Test
+		void removeSome()
+		{
+			assertThat(CollectionUtils.removeIf(ImmutableList.of(1, 2, 3, 4), item -> item % 2 == 0)).isEqualTo(ImmutableList.of(1, 3));
+		}
+
 	}
 }

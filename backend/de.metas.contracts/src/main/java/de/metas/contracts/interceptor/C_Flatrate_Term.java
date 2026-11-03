@@ -50,7 +50,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.IMsgBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -110,7 +110,7 @@ public class C_Flatrate_Term
 
 	private final ContractOrderService contractOrderService;
 	private final IOLCandDAO candDAO = Services.get(IOLCandDAO.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final GLCategoryRepository glCategoryRepository;
 
@@ -142,7 +142,7 @@ public class C_Flatrate_Term
 		final List<I_AD_Org> orgs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Org.class)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
+				.addEqualsFilter(I_AD_Org.COLUMNNAME_AD_Client_ID, clientId)
 				.addNotEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, OrgId.ANY)
 				.orderBy(I_AD_Org.COLUMNNAME_AD_Org_ID)
 				.create()
@@ -256,10 +256,11 @@ public class C_Flatrate_Term
 			}
 			else
 			{
-				if (periodsOfTerm.get(0).getStartDate().after(term.getStartDate()))
+				final I_C_Period firstPeriodOfTerm = periodsOfTerm.get(0);
+				if (firstPeriodOfTerm.getStartDate().after(term.getStartDate()))
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
-											new Object[] { term.getStartDate(), invoicingCal.getName() }));
+											new Object[] { firstPeriodOfTerm.getStartDate(), invoicingCal.getName() }));
 				}
 				final I_C_Period lastPeriodOfTerm = periodsOfTerm.get(periodsOfTerm.size() - 1);
 				if (lastPeriodOfTerm.getEndDate().before(term.getEndDate()))
@@ -348,7 +349,7 @@ public class C_Flatrate_Term
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteC_Invoice_Candidates(final I_C_Flatrate_Term term)
 	{
-		invoiceCandDAO.deleteAllReferencingInvoiceCandidates(term);
+		invoiceCandBL.deleteAllReferencingInvoiceCandidates(term);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
@@ -686,6 +687,11 @@ public class C_Flatrate_Term
 	public void ensureOneContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
 	{
 		ensureOneContractOfGivenType(term);
+
+		if (TypeConditions.ofCode(term.getType_Conditions()) == TypeConditions.COMPENSATION_GROUP)
+		{
+			flatrateBL.assertNoOverlappingCompensationGroupTerm(term);
+		}
 	}
 
 	private void ensureOneContractOfGivenType(@NonNull final I_C_Flatrate_Term term)

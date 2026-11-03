@@ -45,7 +45,8 @@ SELECT doc.line_id                                                AS C_Order_M_I
        p.c_uom_id,
        doc.qty,
        doc.linenetamt,
-       COALESCE(stock.qtyonhand, 0)                               AS current_qty_sum,
+       doc.linenetamt + COALESCE(doc.taxamtinfo, 0) AS grossamount,
+       COALESCE(stock.qtyonhand, 0)                 AS current_qty_sum,
        doc.priceactual,
        doc.c_orderline_id,
        doc.ad_client_id,
@@ -53,7 +54,8 @@ SELECT doc.line_id                                                AS C_Order_M_I
        doc.created,
        doc.createdby,
        doc.isactive,
-       doc.posted
+       doc.posted,
+       doc.m_warehouse_id
 FROM (SELECT get_table_id('C_Order')                                   AS ad_Table_id,
              o.c_order_id                                              AS Record_ID,
              o.c_order_id                                              AS head_id,
@@ -83,25 +85,26 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
              ol.m_hu_pi_item_product_id,
              ol.priceactual,
              ol.linenetamt,
+             ol.taxamtinfo,
              ol.c_orderline_id
       FROM c_order o
                JOIN c_orderline ol ON ol.c_order_id = o.c_order_id
 
       UNION ALL
 
-      SELECT get_table_id('M_InOut')                             AS ad_Table_id,
-             io.m_inout_id                                       AS Record_ID,
-             io.m_inout_id                                       AS head_id,
-             1000000000 + iol.m_inoutline_id                     AS line_id,
+      SELECT get_table_id('M_InOut')           AS ad_Table_id,
+             io.m_inout_id                     AS Record_ID,
+             io.m_inout_id                     AS head_id,
+             1000000000 + iol.m_inoutline_id   AS line_id,
              iol.ad_client_id,
              iol.ad_org_id,
              iol.created,
              iol.createdby,
-             GREATEST(iol.updated, io.updated)                   AS updated,
+             GREATEST(iol.updated, io.updated) AS updated,
              CASE
                  WHEN iol.updated > io.updated THEN iol.updatedby
                                                ELSE io.updatedby
-             END                                                 AS updatedby,
+             END                               AS updatedby,
              iol.isactive,
              io.issotrx,
              io.c_doctype_id,
@@ -118,28 +121,29 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
              iol.m_hu_pi_item_product_id,
              NULL,
              NULL,
+             NULL,
              iol.c_orderline_id
       FROM m_inout io
                JOIN m_inoutline iol ON iol.m_inout_id = io.m_inout_id
 
       UNION ALL
 
-      SELECT get_table_id('C_Invoice')                                   AS ad_Table_id,
-             i.c_invoice_id                                              AS Record_ID,
-             i.c_invoice_id                                              AS head_id,
-             2000000000 + il.c_invoiceline_id                            AS line_id,
+      SELECT get_table_id('C_Invoice')                                 AS ad_Table_id,
+             i.c_invoice_id                                            AS Record_ID,
+             i.c_invoice_id                                            AS head_id,
+             2000000000 + il.c_invoiceline_id                          AS line_id,
              il.ad_client_id,
              il.ad_org_id,
              il.created,
              il.createdby,
-             GREATEST(il.updated, i.updated)                             AS updated,
+             GREATEST(il.updated, i.updated)                           AS updated,
              CASE
                  WHEN il.updated > i.updated THEN il.updatedby
                                              ELSE i.updatedby
-             END                                                         AS updatedby,
+             END                                                       AS updatedby,
              il.isactive,
              i.issotrx,
-             COALESCE(NULLIF(i.c_doctype_id, 0), i.c_doctypetarget_id)  AS c_doctype_id,
+             COALESCE(NULLIF(i.c_doctype_id, 0), i.c_doctypetarget_id) AS c_doctype_id,
              i.documentno,
              i.processed,
              i.docstatus,
@@ -153,6 +157,7 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
              il.m_hu_pi_item_product_id,
              il.priceactual,
              il.linenetamt,
+             il.taxamt,
              il.c_orderline_id
       FROM c_invoice i
                JOIN c_invoiceline il ON il.c_invoice_id = i.c_invoice_id) doc
@@ -161,5 +166,7 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
          LEFT JOIN (SELECT s.m_product_id, s.m_warehouse_id, SUM(s.qtyonhand) AS qtyonhand
                     FROM md_stock s
                     WHERE s.isactive = 'Y'
-                    GROUP BY s.m_product_id, s.m_warehouse_id) stock ON doc.m_product_id = stock.m_product_id AND doc.m_warehouse_id = stock.m_warehouse_id
+                    GROUP BY s.m_product_id, s.m_warehouse_id) stock
+                   ON doc.m_product_id = stock.m_product_id
+                       AND doc.m_warehouse_id = stock.m_warehouse_id
 ;

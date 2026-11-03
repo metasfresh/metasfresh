@@ -130,7 +130,9 @@ public class ADProcessPostProcessService
 
 		//
 		// Refresh all
-		boolean viewInvalidateAllCalled = false;
+		boolean viewFullyInvalidated = false;
+
+		final boolean recreateViewSelection = processExecutionResult.isRecreateViewSelectionAfterExecution();
 
 		if (processExecutionResult.isRefreshAllAfterExecution())
 		{
@@ -138,10 +140,20 @@ public class ADProcessPostProcessService
 
 			if (view != null)
 			{ // multiple rows selected
-				view.invalidateAll();
-				ViewChangesCollector.getCurrentOrAutoflush()
-						.collectFullyChanged(view);
-				viewInvalidateAllCalled = true;
+				if (recreateViewSelection)
+				{
+					// Rebuilds the selection so records the process moved out of scope actually leave it.
+					// Resets the row cache and collects the change event itself, so the else-branch must
+					// not also run.
+					view.invalidateSelection();
+				}
+				else
+				{
+					view.invalidateAll();
+					ViewChangesCollector.getCurrentOrAutoflush()
+							.collectFullyChanged(view);
+				}
+				viewFullyInvalidated = true;
 
 				documentsCollection.invalidateDocumentsByWindowId(view.getViewId().getWindowId());
 			}
@@ -161,7 +173,7 @@ public class ADProcessPostProcessService
 			documentsCollection.invalidateDocumentByRecordId(recordToRefresh.getTableName(), recordToRefresh.getRecord_ID());
 
 			final IView view = viewSupplier.get();
-			if (!viewInvalidateAllCalled && view != null)
+			if (!viewFullyInvalidated && view != null)
 			{
 				final boolean watchedByFrontend = viewsRepo.isWatchedByFrontend(view.getViewId());
 				view.notifyRecordsChanged(TableRecordReferenceSet.of(recordToRefresh), watchedByFrontend);

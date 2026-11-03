@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
 @ghActions:run_on_executor7
 Feature: Order price based on date
+## F32000: Pricing
 
   Background:
     Given infrastructure and metasfresh are running
@@ -60,6 +64,9 @@ Feature: Order price based on date
       | buyerLocation    | buyer         | Y               | Y               |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   Scenario: When creating a purchase order, the DateOrdered is used to identify the correct price of the product, not the DatePromised.
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | DocBaseType |
@@ -75,6 +82,9 @@ Feature: Order price based on date
       | orderLine_PO | order_PO   | product      | 10         | 0            | 0           | 10    | 0        | EUR          | true      | 10          |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   Scenario: When creating a sales order, the DatePromised is used to identify the correct price of the product, not the DateOrdered.
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised |

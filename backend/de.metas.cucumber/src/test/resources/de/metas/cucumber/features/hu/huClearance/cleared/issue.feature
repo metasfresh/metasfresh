@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0370_Intralogistic_HUs
+@allure.label.feature:F5000_Handling_Unit
+@F5000
 @ghActions:run_on_executor5
 Feature: Cleared HU can be issued to production order
+## F5000: Handling Unit
 
   Scenario: Cleared HUs can be issued to a production order
     Given infrastructure and metasfresh are running

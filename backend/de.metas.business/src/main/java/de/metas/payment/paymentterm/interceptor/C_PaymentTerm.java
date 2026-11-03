@@ -22,10 +22,9 @@
 
 package de.metas.payment.paymentterm.interceptor;
 
-import de.metas.payment.paymentterm.PaymentTermConstants;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.PaymentTermService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,20 +34,24 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_PaymentTerm.class)
 @Component
+@RequiredArgsConstructor
 public class C_PaymentTerm
 {
-	private final PaymentTermService paymentTermService;
-
-	public C_PaymentTerm(final PaymentTermService paymentTermService) {this.paymentTermService = paymentTermService;}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_C_PaymentTerm.COLUMNNAME_IsComplex)
-	public void assertValidComplexPaymentTerm(@NonNull final I_C_PaymentTerm record)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave(@NonNull final I_C_PaymentTerm record, @NonNull final ModelChangeType type)
 	{
-		if (record.isComplex() && paymentTermService.hasPaySchedule(PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID())))
+		if (record.isDueFixed())
 		{
-			throw new AdempiereException(PaymentTermConstants.MSG_ComplexTermConflict)
-					.appendParametersToMessage()
-					.setParameter("PaymentTerm", record.getName());
+			int dd = record.getFixMonthDay();
+			if (dd < 1 || dd > 31)
+			{
+				throw new AdempiereException("@Invalid@ @FixMonthDay@");
+			}
+			dd = record.getFixMonthCutoff();
+			if (dd < 1 || dd > 31)
+			{
+				throw new AdempiereException("@Invalid@ @FixMonthCutoff@");
+			}
 		}
 	}
 }

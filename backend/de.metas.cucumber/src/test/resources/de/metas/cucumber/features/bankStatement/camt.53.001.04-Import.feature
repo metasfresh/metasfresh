@@ -1,5 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
 Feature: import bank statement in camt.53.001.04 import format
+## F01100: Bank Statement
 
   Background:
     Given infrastructure and metasfresh are running
@@ -36,6 +40,9 @@ Feature: import bank statement in camt.53.001.04 import format
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_100
   Scenario: Import bank statement, identify org-account by IBAN and link one statement-line to a payment for a sales invoice that is matched via documentNo
 
@@ -52,8 +59,8 @@ Feature: import bank statement in camt.53.001.04 import format
       | bpb_1_S0337                    | 2000257                 |
 
     And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
-      | bpb_1_S0337                    | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
+      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              | OPT.C_Bank_ID.Identifier |
+      | bpb_1_S0337                    | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | b_1_S0337_100            |
 
     And metasfresh contains C_Invoice:
       | Identifier      | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.DocumentNo   |
@@ -220,6 +227,9 @@ Feature: import bank statement in camt.53.001.04 import format
       | inv_1_S0337_100         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_200
   Scenario: Import one statement, identify org-account by IBAN and link two invoices one of which is matched via ESR-Reference
 
@@ -236,8 +246,8 @@ Feature: import bank statement in camt.53.001.04 import format
       | bp_bank_account_metasfresh_S0337_200 | 2000257                 |
 
     And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
-      | bp_bank_account_metasfresh_S0337_200 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
+      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              | OPT.C_Bank_ID.Identifier |
+      | bp_bank_account_metasfresh_S0337_200 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | b_1_S0337_200            |
 
 	  # create 2 invoices; we expect the sales invoice to end up with the ESR-reference 123456700102156434010001795
     Given metasfresh contains C_Invoice:
@@ -457,6 +467,9 @@ Feature: import bank statement in camt.53.001.04 import format
       | inv_2_S0337_200         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_300
   Scenario: Import one statement, identify org-account by IBAN and link two invoices, but in 2 different bank statements; so the expectation is to have created 2 bank statements
 
@@ -473,8 +486,8 @@ Feature: import bank statement in camt.53.001.04 import format
       | bp_bank_account_metasfresh_S0337_300 | 2000257                 |
 
     And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
-      | bp_bank_account_metasfresh_S0337_300 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
+      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              | OPT.C_Bank_ID.Identifier |
+      | bp_bank_account_metasfresh_S0337_300 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | b_1_S0337_300            |
 
 	  # create 2 invoices; we expect the sales invoice to end up with the ESR-reference ReferenceNo_metasfresh_S0337_300_2
     Given metasfresh contains C_Invoice:
@@ -777,8 +790,8 @@ Feature: import bank statement in camt.53.001.04 import format
       | bp_bank_account_metasfresh_S0337_400 | 2000257                 |
 
     And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              |
-      | bp_bank_account_metasfresh_S0337_400 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 |
+      | C_BP_BankAccount_ID.Identifier       | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount | OPT.AccountNo | OPT.ESR_RenderedAccountNo | OPT.IBAN              | OPT.C_Bank_ID.Identifier |
+      | bp_bank_account_metasfresh_S0337_400 | CHF                     | Y                | 1234567890    | 123456789                 | CH3908704016075473007 | b_1_S0337_400            |
 
 	  # create 1 invoice; we expect the sales invoice to end up with the Document no 511004_S0337_400
     Given metasfresh contains C_Invoice:
@@ -1108,6 +1121,9 @@ Feature: import bank statement in camt.53.001.04 import format
       | bsl_1_S0337_400_5                 | 2023-10-25     | 2023-10-25   | CHF                        | -1953.15   |                              |                             |
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_500
   Scenario: Import one statement, identify org-account by IBAN and import as one summary line
 
@@ -1337,6 +1353,9 @@ Feature: import bank statement in camt.53.001.04 import format
 
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_600
   Scenario: Import one statement, identify org-account by IBAN, split QRR transactions from regular transactions and import as only QRR transacations as one summary line
 

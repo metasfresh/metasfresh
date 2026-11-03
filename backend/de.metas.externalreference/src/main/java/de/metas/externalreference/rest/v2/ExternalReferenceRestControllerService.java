@@ -2,7 +2,7 @@
  * #%L
  * de.metas.externalreference
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -52,6 +52,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -65,6 +66,7 @@ import java.util.Optional;
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
 @Component
+@RequiredArgsConstructor
 public class ExternalReferenceRestControllerService
 {
 	private static final Logger logger = LogManager.getLogger(ExternalReferenceRestControllerService.class);
@@ -73,14 +75,11 @@ public class ExternalReferenceRestControllerService
 	private final ExternalSystemRepository externalSystemRepository;
 	private final ExternalReferenceTypes externalReferenceTypes;
 
-	public ExternalReferenceRestControllerService(
-			@NonNull final ExternalReferenceRepository externalReferenceRepository,
-			@NonNull final ExternalSystemRepository externalSystemRepository,
-			@NonNull final ExternalReferenceTypes externalReferenceTypes)
+	public static ExternalReferenceRestControllerService newInstanceForUnitTesting()
 	{
-		this.externalReferenceRepository = externalReferenceRepository;
-		this.externalSystemRepository = externalSystemRepository;
-		this.externalReferenceTypes = externalReferenceTypes;
+		return new ExternalReferenceRestControllerService(ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes()),
+				new ExternalSystemRepository(),
+				new ExternalReferenceTypes());
 	}
 
 	@NonNull
@@ -126,7 +125,7 @@ public class ExternalReferenceRestControllerService
 			@NonNull final ExternalIdentifier externalIdentifier,
 			@NonNull final IExternalReferenceType externalReferenceType)
 	{
-		final OrgId orgIdToUse = CoalesceUtil.coalesceSuppliers(() -> orgId, () -> Env.getOrgId());
+		final OrgId orgIdToUse = CoalesceUtil.coalesceSuppliers(() -> orgId, Env::getOrgId);
 
 		final JsonExternalSystemName externalSystemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
 

@@ -29,6 +29,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product_Category;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
@@ -106,11 +107,33 @@ public class PP_Order extends CalloutEngine
 			return;
 		}
 
+		//
+		// Plant (Produktionsstätte) and WorkStation (Arbeitsstation) follow the product's category (gh31188)
+		final I_M_Product_Category productCategory = productBL.getProductCategoryByProductId(productId);
+		if (productCategory != null)
+		{
+			ppOrder.setS_Resource_ID(productCategory.getS_Resource_ID());
+			ppOrder.setWorkStation_ID(productCategory.getWorkStation_ID());
+		}
+
 		final UomId uomId = productBL.getStockUOMId(productId);
 		ppOrder.setC_UOM_ID(uomId.getRepoId());
 
 		final ProductPlanning pp = findPP_Product_Planning(ppOrder);
 		ppOrder.setAD_Workflow_ID(PPRoutingId.toRepoId(pp.getWorkflowId()));
+
+		//
+		// Plant (Produktionsstätte) + WorkStation (Arbeitsstation): Product Planning takes precedence over the product-category fallback set above
+		final ResourceId planningPlantId = pp.getPlantId();
+		if (planningPlantId != null)
+		{
+			ppOrder.setS_Resource_ID(planningPlantId.getRepoId());
+		}
+		final ResourceId planningWorkStationId = pp.getWorkstationId();
+		if (planningWorkStationId != null)
+		{
+			ppOrder.setWorkStation_ID(planningWorkStationId.getRepoId());
+		}
 
 		final ProductBOMVersionsId productBOMVersionsId = Optional.ofNullable(pp.getBomVersionsId())
 				.orElseThrow(() -> new MrpException("@FillMandatory@ @PP_Product_BOMVersions_ID@ ( @M_Product_ID@=" + productId.getRepoId() + ")"));
@@ -195,8 +218,8 @@ public class PP_Order extends CalloutEngine
 		{
 			builder = ProductPlanning.builder()
 					.orgId(OrgId.ofRepoId(ppOrderWithProductId.getAD_Org_ID()))
-					.warehouseId(WarehouseId.ofRepoId(ppOrderWithProductId.getM_Warehouse_ID()))
-					.plantId(ResourceId.ofRepoId(ppOrderWithProductId.getS_Resource_ID()))
+					.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrderWithProductId.getM_Warehouse_ID()))
+					.plantId(ResourceId.ofRepoIdOrNull(ppOrderWithProductId.getS_Resource_ID()))
 					.productId(ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()));
 		}
 		else

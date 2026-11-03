@@ -1,5 +1,6 @@
 package de.metas.manufacturing.job.model;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
@@ -30,6 +31,7 @@ public class FinishedGoodsReceiveLine
 
 	@Nullable ReceivingTarget receivingTarget;
 	@Nullable UomId catchWeightUOMId;
+	@Nullable HUPIItemProductId tuPIItemProductId;
 
 	@NonNull WFActivityStatus status;
 
@@ -43,7 +45,8 @@ public class FinishedGoodsReceiveLine
 			@NonNull final Quantity qtyReceived,
 			@Nullable final PPOrderBOMLineId coProductBOMLineId,
 			@Nullable final ReceivingTarget receivingTarget,
-			@Nullable final UomId catchWeightUOMId)
+			@Nullable final UomId catchWeightUOMId,
+			@Nullable final HUPIItemProductId tuPIItemProductId)
 	{
 		this.productId = productId;
 		this.productName = productName;
@@ -54,6 +57,7 @@ public class FinishedGoodsReceiveLine
 		this.coProductBOMLineId = coProductBOMLineId;
 
 		this.receivingTarget = receivingTarget;
+		this.tuPIItemProductId = tuPIItemProductId;
 
 		this.id = coProductBOMLineId == null
 				? FinishedGoodsReceiveLineId.FINISHED_GOODS
@@ -62,6 +66,11 @@ public class FinishedGoodsReceiveLine
 
 		this.status = computeStatus(qtyToReceive, qtyReceived);
 	}
+
+	/**
+	 * @return {@code true} for the main finished good, {@code false} for a co- or by-product line
+	 */
+	public boolean isMainFinishedGood() {return coProductBOMLineId == null;}
 
 	private static WFActivityStatus computeStatus(
 			@NonNull final Quantity qtyToReceive,

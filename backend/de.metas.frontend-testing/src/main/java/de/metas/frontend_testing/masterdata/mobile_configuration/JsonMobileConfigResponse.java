@@ -1,15 +1,19 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.mobile.MobileAuthMethod;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.mm.attributes.AttributeCode;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 
 @Value
@@ -35,15 +39,21 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean allowPickingAnyCustomer;
 		@Nullable Boolean allowPickingAnyHU;
 		@Nullable CreateShipmentPolicy createShipmentPolicy;
+		@Nullable Boolean completeJobAutomatically;
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean shipOnCloseLU;
 		@Nullable Set<PickToStructure> pickTo;
+		@Nullable Set<PickAttribute> readAttributes;
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean allowCompletingPartialPickingJob;
 		@Nullable Boolean isAnonymousPickHUsOnTheFly;
+		@Nullable Boolean pickingSlotRequired;
 		@Nullable Boolean displayPickingSlotSuggestions;
 		@Nullable Boolean activeWorkplaceRequired;
 		@Nullable Boolean considerOnlyJobScheduledToWorkplace;
+		@Nullable Boolean massPrinting;
+
+		@Nullable List<PickingJobFacetGroup> filters;
 	}
 
 	//
@@ -56,6 +66,10 @@ public class JsonMobileConfigResponse
 	public static class Distribution
 	{
 		@Nullable Boolean allowPickingAnyHU;
+		@Nullable Boolean requireTrolley;
+		@Nullable Boolean requireScanningProductCode;
+		@Nullable Boolean navigateToJobsListAfterPickFromComplete;
+		@Nullable Boolean completeJobAutomatically;
 	}
 
 	//
@@ -69,5 +83,17 @@ public class JsonMobileConfigResponse
 	{
 		@Nullable Boolean isScanResourceRequired;
 		@Nullable Boolean isAllowIssuingAnyHU;
+		@Nullable String receiveUnitType;
+		@Nullable Boolean isAllowFinishedGoodsReceiveToLU;
+		@Nullable Boolean isAllowFinishedGoodsReceiveToTU;
+		@Nullable Boolean isSkipFinishedGoodsReceiveTargetStep;
+		@Nullable Boolean isCaptureCatchWeightAtReceipt;
+		@Nullable Boolean isAllowReceiveWithoutPackingItem;
+
+		/** Ordered {@code M_Attribute.Value} codes - the CURRENT global editable-attribute list after this call. */
+		@Nullable List<AttributeCode> editableAttributes;
+		@Nullable Boolean isAllowEmptyingHUs;
+		@Nullable Boolean isConfirmEmptyingHU;
+		@Nullable Boolean isFinishedGoodsCatchWeightScanRequired;
 	}
 }

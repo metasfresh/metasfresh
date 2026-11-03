@@ -14,14 +14,16 @@
 
 	<description>SEPA Payments - Core</description>
 
-	<properties>
-		<migration-sql-basedir/>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>de.metas.payment.sepa</groupId>
 			<artifactId>de.metas.payment.sepa.schema.pain_001_01_03_ch_02</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.payment.sepa</groupId>
+			<artifactId>de.metas.payment.sepa.schema.pain_001_001_09_ch_03</artifactId>
 			<version>10.0.0</version>
 		</dependency>
 

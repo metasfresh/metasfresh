@@ -29,9 +29,11 @@ import com.google.common.collect.Maps;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.IPair;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUContextHolder;
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -40,6 +42,8 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.HuPackingMaterialId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -61,6 +65,7 @@ import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.generichumodel.HUType;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.CopyHUsCommand.CopyHUsCommandBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -81,6 +86,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
@@ -131,6 +137,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
@@ -150,7 +157,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
 
@@ -215,9 +221,19 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public Set<ProductId> getStoredProducts(final Collection<HuId> huIds)
+	{
+		final List<I_M_HU> hus = getByIds(huIds);
+		return getStorageFactory().streamHUProductStorages(hus)
+				.map(IHUProductStorage::getProductId)
+				.collect(Collectors.toSet());
+	}
+
+	@Override
 	public IHUProductStorage getSingleHUProductStorage(final HuId huId) {return getSingleHUProductStorage(getById(huId));}
 
 	@Override
+	@NonNull
 	public IHUProductStorage getSingleHUProductStorage(final I_M_HU hu) {return getStorageFactory().getSingleHUProductStorage(hu);}
 
 	@Override
@@ -357,6 +373,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final boolean isReceiptReversal = huContext.isPropertyTrue(IHUContext.PROPERTY_IsReceiptReversal);
 		if(!isReceiptReversal)
 		{
+			//Loaded here to prevent recursion
+			final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 			final List<PackageId> packageIds = huPackageBL.retrievePackageIds(huId);
 			if(!packageIds.isEmpty())
 			{
@@ -1018,6 +1036,34 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPI(piVersion);
 	}
 
+	@Override
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsRepo.retrievePICurrentVersionId(piId);
+	}
+
+	@Override
+	@NonNull
+	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsRepo.retrievePICurrentVersion(piId);
+	}
+
+	@Override
+	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version)
+	{
+		return handlingUnitsRepo.retrievePIItemMaterial(version);
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull final HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId includedPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveFirstPIItem(piId, includedPIId, bpartnerId);
+	}
+
 	@NonNull
 	@Override
 	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_Item huItem)
@@ -1332,7 +1378,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
-			@Nullable final String huUnitType,
+			@Nullable final HuUnitType huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(packingInstructionsId, huUnitType, bpartnerId);
@@ -1367,6 +1413,58 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		handlingUnitsRepo.retrieveIncludedHUs(hu)
 				.forEach(includedHU -> setClearanceStatusRecursively(HuId.ofRepoId(includedHU.getM_HU_ID()), clearanceStatusInfo));
 	}
+
+	@Override
+	public boolean setReservedRecursively(@NonNull final I_M_HU hu, final boolean reserved)
+	{
+		// Validate first: check if all HUs in the hierarchy can be reserved/unreserved
+		if (reserved)
+		{
+			if (!canReserveRecursively(hu))
+			{
+				return false;
+			}
+		}
+
+		// If validation passes (or unreserving), proceed with reservation
+		setReservedRecursivelyWithoutValidation(hu, reserved);
+		return true;
+	}
+
+	private boolean canReserveRecursively(@NonNull final I_M_HU hu)
+	{
+		if (hu.isReserved())
+		{
+			return false;
+		}
+
+		// Recursively validate all children
+		return handlingUnitsRepo.retrieveIncludedHUs(hu)
+				.stream()
+				.allMatch(this::canReserveRecursively);
+	}
+
+	private void setReservedRecursivelyWithoutValidation(@NonNull final I_M_HU hu, final boolean reserved)
+	{
+		hu.setIsReserved(reserved);
+		handlingUnitsRepo.saveHU(hu);
+		handlingUnitsRepo.retrieveIncludedHUs(hu)
+				.forEach(includedHU -> setReservedRecursivelyWithoutValidation(includedHU, reserved));
+	}
+
+	@Override
+	public void setReservedByHUIds(@NonNull final Set<HuId> huIds, final boolean reserved)
+	{
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+		for (final I_M_HU hu : getByIds(huIds))
+		{
+			setReservedRecursively(hu, reserved);
+		}
+	}
+
 
 	@Override
 	public boolean isHUHierarchyCleared(@NonNull final HuId huId)
@@ -1431,7 +1529,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull final I_M_HU_PI huPI,
-			@Nullable final String huUnitType,
+			@Nullable final HuUnitType huUnitType,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
@@ -1473,7 +1571,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Override
 	@NonNull
-	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds)
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
 	{
 		return handlingUnitsRepo.retrievePIInfo(piItemIds);
 	}
@@ -1496,6 +1594,35 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public List<I_M_HU> retrieveIncludedHUs(final I_M_HU huId)
 	{
 		return handlingUnitsRepo.retrieveIncludedHUs(huId);
+	}
+
+	@Override
+	public List<I_M_HU_Item> retrieveItems(final I_M_HU hu, final HUItemType type)
+	{
+		return handlingUnitsRepo.retrieveItems(hu, type);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version piVersion, @Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrievePIItems(piVersion, bpartnerId);
+	}
+
+	@Override
+	public List<I_M_HU> retrieveIncludedHUs(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.retrieveIncludedHUs(huId);
+	}
+
+	@Override
+	public Optional<ProductId> getFirstPackingMaterialProductId(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.retrievePackingMaterialAndQtys(getById(huId))
+				.stream()
+				.findFirst()
+				.map(IPair::getLeft)
+				.map(IHUPackingMaterialDAO::extractProductOrNull)
+				.map(product -> ProductId.ofRepoId(product.getM_Product_ID()));
 	}
 
 	@Override
@@ -1535,5 +1662,25 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.setOnlyTopLevelHUs()
 				.addOnlyWithAttribute(AttributeConstants.ATTR_ExternalBarcode, scannedCode.getAsString())
 				.firstIdOnly();
+	}
+
+	@Override
+	public Optional<HuId> getTopLevelHuIdByGrai(@NonNull final GRAI grai)
+	{
+		return handlingUnitsRepo.createHUQueryBuilder()
+				.setOnlyActiveHUs(true)
+				.setOnlyTopLevelHUs()
+				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString())
+				.firstIdOnly();
+	}
+
+	@Override
+	public Set<HuPackingMaterialId> getHUPackingMaterialIds(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.retrieveAllItemsNoCache(Collections.singleton(huId))
+				.stream()
+				.map(item -> HuPackingMaterialId.ofRepoIdOrNull(item.getM_HU_PackingMaterial_ID()))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
 	}
 }

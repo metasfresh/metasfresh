@@ -1,9 +1,14 @@
 @from:cucumber
-@ghActions:run_on_executor7
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
+@ghActions:run_on_executor8
 Feature: Empties receives
+## F17050: Shipment
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-08-10T13:30:13+01:00[Europe/Berlin]
 
@@ -60,6 +65,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_100
   Scenario: Create and complete empties receive InOut: TU
   _Given TU packing material
@@ -97,6 +105,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_110
   Scenario: Create and complete empties receive InOut: LU
   _Given LU packing material
@@ -134,6 +145,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_120
   Scenario: Create and complete empties receive InOut: TU - then reactivate it
   _Given TU packing material
@@ -185,6 +199,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_130
   Scenario: Create and complete empties receive InOut: LU - then reactivate it
   _Given LU packing material
@@ -236,6 +253,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_140
   Scenario: Create and complete empties receive InOut: TU - reactivate and complete it again
   _Given TU packing material
@@ -301,6 +321,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_141
   Scenario: Create and complete empties receive InOut: TU - reactivate, increase qty and complete it again
   _Given TU packing material
@@ -370,6 +393,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_142
   Scenario: Create and complete empties receive InOut: TU - reactivate, decrease qty and complete it again
   _Given TU packing material
@@ -438,6 +464,9 @@ Feature: Empties receives
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 5                |
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_150
   Scenario: Create and complete empties receive InOut: LU - reactivate and complete it again
   _Given LU packing material
@@ -503,6 +532,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_151
   Scenario: Create and complete empties receive InOut: LU - reactivate, = qty and complete it again
   _Given LU packing material
@@ -572,6 +604,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_152
   Scenario: Create and complete empties receive InOut: LU - reactivate, decrease qty and complete it again
   _Given LU packing material
@@ -641,6 +676,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_160
   Scenario: Create and complete empties receive InOut: TU - then close it
   _Given TU packing material
@@ -692,6 +730,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_170
   Scenario: Create and complete empties receive InOut: LU - then close it
   _Given LU packing material
@@ -743,6 +784,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_180
   Scenario: Create and complete empties receive InOut: TU - then revert it
   _Given TU packing material;
@@ -764,6 +808,7 @@ Feature: Empties receives
       | orderLine  | order                 | purchaseProduct         | 10         |
 
     And the order identified by order is completed
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
@@ -808,6 +853,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_190
   Scenario: Create and complete empties receive InOut: LU - then revert it
   _Given LU packing material
@@ -829,6 +877,7 @@ Feature: Empties receives
       | orderLine  | order                 | purchaseProduct         | 10         |
 
     And the order identified by order is completed
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
@@ -873,6 +922,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_200
   Scenario: Create and complete empties receive InOut: TU - then reactivate and void it
   _Given TU packing material
@@ -938,6 +990,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_210
   Scenario: Create and complete empties receive InOut: LU - then reactivate and void it
   _Given LU packing material

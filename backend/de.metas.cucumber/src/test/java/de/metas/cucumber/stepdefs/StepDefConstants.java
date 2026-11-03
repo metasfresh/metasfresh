@@ -36,6 +36,8 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
+import java.time.LocalDate;
+
 public class StepDefConstants
 {
 	public static final String TABLECOLUMN_IDENTIFIER = StepDefDataIdentifier.SUFFIX;
@@ -49,6 +51,8 @@ public class StepDefConstants
 	public static final DocTypeId DOC_TYPE_ID_MMI = DocTypeId.ofRepoId(1000023);
 	public static final ClientId CLIENT_ID = ClientId.METASFRESH;
 	public static final OrgId ORG_ID = OrgId.MAIN;
+	/** {@code AD_Org.Value} of the standard main org ({@link #ORG_ID} = {@link OrgId#MAIN}) in the seed DB. */
+	public static final String ORG_VALUE = "001";
 	public static final OrgId ORG_ID_SYSTEM = OrgId.ANY;
 	public static final CountryId COUNTRY_ID = CountryId.GERMANY;
 	public static final FlatrateTransitionId FLATRATE_TRANSITION_ID = FlatrateTransitionId.ofRepoId(1000003);
@@ -59,4 +63,10 @@ public class StepDefConstants
 
 	public static final BPartnerId METASFRESH_AG_BPARTNER_ID = BPartnerId.ofRepoId(2155894);
 	public static final BPartnerLocationId METASFRESH_AG_BPARTNER_LOCATION_ID = BPartnerLocationId.ofRepoId(METASFRESH_AG_BPARTNER_ID, 2202690);
+
+	public static final LocalDate DEFAULT_ValidFrom = LocalDate.parse("2000-01-01");
+	public static final String DEFAULT_TaxCategory_InternalName = "Normal";
+
+	public static int DEFAULT_timeOutSec = 30;
+
 }

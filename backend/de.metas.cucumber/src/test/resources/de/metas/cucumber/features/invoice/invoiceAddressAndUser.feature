@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
 @ghActions:run_on_executor5
 Feature: Validate default address and contact is considered on invoice based on invoicing params
+## F00700: Invoice
 
   Background:
     Given infrastructure and metasfresh are running

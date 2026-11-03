@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefData;
 import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistribution_StepDefData;
@@ -77,8 +78,11 @@ public class PP_Product_Planning_StepDef
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
-	/** Plannings created/updated with no M_Product — they match ALL products, so they must be deactivated after the scenario to avoid leaking into the next one (see {@link #deactivateGenericProductPlannings()}). */
-	private final Set<ProductPlanningId> genericPlanningIds = new HashSet<>();
+	/**
+	 * Every {@code PP_Product_Planning} this step-def touched (created OR updated) this scenario, so
+	 * {@link #deactivateTouchedProductPlannings()} can deactivate all of them afterwards.
+	 */
+	private final Set<ProductPlanningId> touchedPlanningIds = new HashSet<>();
 
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
@@ -91,6 +95,7 @@ public class PP_Product_Planning_StepDef
 	@NonNull private final M_Maturing_Configuration_StepDefData maturingConfigurationTable;
 	@NonNull private final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable;
 	@NonNull private final S_Resource_StepDefData resourceTable;
+	@NonNull private final C_Aggregation_StepDefData aggregationTable;
 
 	private static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006);
 
@@ -100,7 +105,10 @@ public class PP_Product_Planning_StepDef
 	 * Key columns: {@code M_Product_ID}, {@code IsCreatePlan} (controls auto-enqueue of C_Order generation),
 	 * {@code IsDocComplete} (controls whether the auto-generated C_Order is completed), {@code IsPurchased},
 	 * {@code IsManufactured}, {@code IsAttributeDependant}, {@code PP_Product_BOMVersions_ID},
-	 * {@code DD_NetworkDistribution_ID}, {@code M_Warehouse_ID}, {@code S_Resource_ID}.
+	 * {@code DD_NetworkDistribution_ID}, {@code M_Warehouse_ID}, {@code S_Resource_ID},
+	 * {@code OPT.C_Manufacturing_Aggregation_ID.Identifier} (a {@code C_Aggregation} for table
+	 * {@code PP_Order_Candidate}; when set, {@code PPOrderCandidateAggregationFactory} uses it instead of the
+	 * default header aggregation key when grouping candidates into a {@code PP_Order}).
 	 */
 	@Given("metasfresh contains PP_Product_Plannings")
 	public void createOrUpdate(@NonNull final DataTable dataTable)
@@ -154,8 +162,12 @@ public class PP_Product_Planning_StepDef
 		getResourceId(row).ifPresent(builder::plantId);
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_Workflow_ID).map(workflowTable::getId).ifPresent(builder::workflowId);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan).ifPresent(builder::isCreatePlan);
+		row.getAsOptionalInt(I_PP_Product_Planning.COLUMNNAME_DeliveryTime_Promised).ifPresent(builder::leadTimeDays);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsDocComplete).ifPresent(builder::isDocComplete);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).ifPresent(builder::isAttributeDependant);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsManufacturedLot4Lot).ifPresent(builder::isManufacturedLot4Lot);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsManufactured).ifPresent(builder::isManufactured);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsTraded).ifPresent(builder::isTraded);
 
 		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.map(productBomVersionsTable::getId)
@@ -213,14 +225,13 @@ public class PP_Product_Planning_StepDef
 				.map(MaturingConfigLineId::ofRepoId)
 				.ifPresent(builder::maturingConfigLineId);
 
-		final ProductPlanning productPlanning = productPlanningDAO.save(builder.build());
+		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_C_Manufacturing_Aggregation_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(aggregationTable::getId)
+				.ifPresent(aggregationId -> builder.manufacturingAggregationId(aggregationId.getRepoId()));
 
-		// A no-product planning matches ALL products; remember it so @After can deactivate it and it can't
-		// leak into the next scenario of the same shared-DB profile run.
-		if (productPlanning.getProductId() == null)
-		{
-			genericPlanningIds.add(productPlanning.getIdNotNull());
-		}
+		final ProductPlanning productPlanning = productPlanningDAO.save(builder.build());
+		touchedPlanningIds.add(productPlanning.getIdNotNull());
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> productPlanningTable.putOrReplace(identifier, productPlanning));
 	}
@@ -282,15 +293,14 @@ public class PP_Product_Planning_StepDef
 	}
 
 	/**
-	 * Deactivates the no-product plannings this scenario created (tracked in {@link #genericPlanningIds}).
-	 * A generic (no-{@code M_Product}) planning applies to ALL products, so one left active leaks into the next
-	 * scenario of the same shared-DB profile run — its products become "purchased" and spawn spurious
-	 * SUPPLY/PURCHASE MD_Candidates. Runs on scenario pass AND failure.
+	 * Deactivates every planning this scenario touched (tracked in {@link #touchedPlanningIds}) — see that
+	 * field's own Javadoc for why both the generic (no-{@code M_Product}) and the product-specific case need
+	 * it. Runs on scenario pass AND failure.
 	 */
 	@After
-	public void deactivateGenericProductPlannings()
+	public void deactivateTouchedProductPlannings()
 	{
-		for (final ProductPlanningId planningId : genericPlanningIds)
+		for (final ProductPlanningId planningId : touchedPlanningIds)
 		{
 			final I_PP_Product_Planning record = InterfaceWrapperHelper.load(planningId, I_PP_Product_Planning.class);
 			if (record.isActive())

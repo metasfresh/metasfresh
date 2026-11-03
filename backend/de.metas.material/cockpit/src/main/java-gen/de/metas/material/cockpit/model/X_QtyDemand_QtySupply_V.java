@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_QtyDemand_QtySupply_V extends org.compiere.model.PO implements I_QtyDemand_QtySupply_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -108491773L;
+	private static final long serialVersionUID = 1428033587L;
 
     /** Standard Constructor */
     public X_QtyDemand_QtySupply_V (final Properties ctx, final int QtyDemand_QtySupply_V_ID, @Nullable final String trxName)
@@ -132,6 +132,19 @@ public class X_QtyDemand_QtySupply_V extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setQtyConfirmedBySupplier (final @Nullable BigDecimal QtyConfirmedBySupplier)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyConfirmedBySupplier, QtyConfirmedBySupplier);
+	}
+
+	@Override
+	public BigDecimal getQtyConfirmedBySupplier() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyConfirmedBySupplier);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyDemand_QtySupply_V_ID (final int QtyDemand_QtySupply_V_ID)
 	{
 		if (QtyDemand_QtySupply_V_ID < 1) 
@@ -208,6 +221,19 @@ public class X_QtyDemand_QtySupply_V extends org.compiere.model.PO implements I_
 	public BigDecimal getQtyToProduce() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToProduce);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyUnconfirmedBySupplier (final @Nullable BigDecimal QtyUnconfirmedBySupplier)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyUnconfirmedBySupplier, QtyUnconfirmedBySupplier);
+	}
+
+	@Override
+	public BigDecimal getQtyUnconfirmedBySupplier() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyUnconfirmedBySupplier);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

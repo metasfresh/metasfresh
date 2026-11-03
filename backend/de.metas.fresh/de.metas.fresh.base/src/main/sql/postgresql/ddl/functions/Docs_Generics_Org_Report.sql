@@ -62,7 +62,10 @@ SELECT
             COALESCE(cou_trl.name, cou.name)
     END                                    AS country,
 	org_bpl.gln,
-	COALESCE(p_Email, us.email) as email,
+    CASE
+        WHEN report.IsOrgHiddenReportElement(ad_org.ad_org_id, 'Org_Email') = 'N' THEN
+            COALESCE(p_Email, us.email)
+    END                                    AS email,
 	org_bp.URL
 FROM
 	ad_org ad_org

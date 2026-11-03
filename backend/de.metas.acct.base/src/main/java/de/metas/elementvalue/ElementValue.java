@@ -25,6 +25,7 @@ package de.metas.elementvalue;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.cost.classification.CostClassificationId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -54,6 +55,7 @@ public class ElementValue
 	int seqNo;
 	@Nullable String defaultAccountName;
 	@Nullable AccountConceptualName accountConceptualName;
+	@Nullable CostClassificationId costClassificationId;
 	boolean isOpenItem;
 
 	public String toShortString() {return value + "_" + name;}

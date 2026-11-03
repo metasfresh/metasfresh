@@ -1,17 +1,13 @@
-import React, { useState, useContext, createContext } from 'react';
+import React, { createContext, useContext, useRef, useState } from 'react';
 import { useDispatch, useStore } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { loginWithToken, checkLoginRequest, logoutRequest } from '../api/login';
+import { checkLoginRequest, loginWithToken, logoutRequest } from '../api/login';
 
 import history from '../services/History';
-import Auth from '../services/Auth';
-import {
-  loginSuccess as loginAction,
-  getNotifications,
-  getNotificationsEndpoint,
-} from '../actions/AppActions';
+import { loginSuccess as loginSuccessAction } from '../actions/AppActions';
 import useSynchronousState from './useSynchronousState';
+import * as types from '../constants/ActionTypes';
 
 const authContext = createContext();
 
@@ -38,12 +34,18 @@ export const useAuth = () => {
 
 // Provider hook that creates auth object and handles state
 function useProvideAuth() {
-  const auth = new Auth();
   const dispatch = useDispatch();
   const store = useStore();
 
   // controls if user is authenticated and stores in the local storage as well as local value
-  const [isLoggedIn, setLoggedIn] = useState(localStorage.isLogged);
+  const [isLoggedIn, setLoggedInState] = useState(localStorage.isLogged);
+  // mirrors `isLoggedIn` so callbacks captured by long-lived closures (ie. the
+  // axios interceptor) read the current value instead of a stale render's one
+  const isLoggedInRef = useRef(isLoggedIn);
+  const setLoggedIn = (value) => {
+    isLoggedInRef.current = value;
+    setLoggedInState(value);
+  };
 
   // flag indicating if there's an ongoing authentication request
   const [authRequestPending, setAuthRequestPending] =
@@ -132,15 +134,6 @@ function useProvideAuth() {
   const _loginSuccess = () => {
     localStorage.setItem('isLogged', true);
     setLoggedIn(true);
-
-    return Promise.resolve();
-  };
-
-  const fetchNotifications = () => {
-    dispatch(getNotificationsEndpoint(auth));
-    dispatch(getNotifications());
-
-    return Promise.resolve();
   };
 
   /**
@@ -150,12 +143,9 @@ function useProvideAuth() {
    */
   const login = () => {
     if (!store.getState().appHandler.isLogged) {
-      return dispatch(loginAction(auth)).then(() => {
+      return dispatch(loginSuccessAction()).then(() => {
         _loginSuccess();
       });
-      // user is already authenticated but we need to refresh notifications
-    } else {
-      return fetchNotifications();
     }
   };
 
@@ -164,10 +154,10 @@ function useProvideAuth() {
    * @summary reset the authentication flags
    */
   const _logoutSuccess = () => {
-    auth.close();
     setLoggedIn(false);
     localStorage.removeItem('isLogged');
     setAuthRequestPending(false);
+    dispatch({ type: types.LOGOUT_SUCCESS });
   };
 
   /**
@@ -175,19 +165,20 @@ function useProvideAuth() {
    * @summary run the logout request on the backend
    */
   const logout = () => {
-    if (isLoggedIn) {
+    if (isLoggedInRef.current) {
       setAuthRequestPending(true);
 
       return logoutRequest().finally(() => _logoutSuccess());
     }
 
-    return Promise.resolve(() => _logoutSuccess());
+    _logoutSuccess();
+
+    return Promise.resolve();
   };
 
   return {
     isLoggedIn,
     redirectRoute,
-    auth,
     login,
     logout,
     tokenLogin,

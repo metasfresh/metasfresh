@@ -1,76 +1,8 @@
-package de.metas.rest_api.v2.ordercandidates.impl;
-
-import de.metas.RestUtils;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.bpartner.service.BPartnerQuery;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.impl.GLNQuery;
-import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
-import de.metas.common.bpartner.v2.response.JsonResponseContact;
-import de.metas.common.bpartner.v2.response.JsonResponseLocation;
-import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
-import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
-import de.metas.common.ordercandidates.v2.request.JsonSalesPartner;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.JSONPaymentRule;
-import de.metas.externalreference.ExternalBusinessKey;
-import de.metas.externalreference.ExternalIdentifier;
-import de.metas.externalreference.ExternalUserReferenceType;
-import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
-import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
-import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
-import de.metas.externalreference.shipper.ShipperExternalReferenceType;
-import de.metas.externalsystem.ExternalSystemId;
-import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.externalsystem.ExternalSystemType;
-import de.metas.impex.api.IInputDataSourceDAO;
-import de.metas.impex.api.impl.InputDataSourceQuery;
-import de.metas.impex.api.impl.InputDataSourceQuery.InputDataSourceQueryBuilder;
-import de.metas.impexp.InputDataSourceId;
-import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery.PaymentTermQueryBuilder;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.v2.bpartner.BpartnerRestController;
-import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
-import de.metas.rest_api.v2.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
-import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
-import de.metas.security.permissions2.PermissionService;
-import de.metas.shipping.IShipperDAO;
-import de.metas.shipping.ShipperId;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.web.exception.InvalidIdentifierException;
-import de.metas.util.web.exception.MissingResourceException;
-import lombok.Builder;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner;
-
-import javax.annotation.Nullable;
-import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
 /*
  * #%L
- * de.metas.ordercandidate.rest-api-impl
+ * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -88,21 +20,95 @@ import java.util.Optional;
  * #L%
  */
 
+package de.metas.rest_api.v2.ordercandidates.impl;
+
+import de.metas.RestUtils;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GLN;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
+import de.metas.common.bpartner.v2.response.JsonResponseContact;
+import de.metas.common.bpartner.v2.response.JsonResponseLocation;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
+import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.common.ordercandidates.v2.request.JsonSalesPartner;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JSONPaymentRule;
+import de.metas.externalreference.ExternalBusinessKey;
+import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalreference.shipper.ShipperExternalReferenceType;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.impex.api.impl.InputDataSourceQuery;
+import de.metas.impex.api.impl.InputDataSourceQuery.InputDataSourceQueryBuilder;
+import de.metas.impexp.InputDataSourceId;
+import de.metas.incoterms.Incoterms;
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery.PaymentTermQueryBuilder;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
+import de.metas.rest_api.v2.bpartner.BpartnerRestController;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
+import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
+import de.metas.security.permissions2.PermissionService;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.web.exception.InvalidIdentifierException;
+import de.metas.util.web.exception.MissingResourceException;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 public final class MasterdataProvider
 {
-	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	@NonNull private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
-	private final PermissionService permissionService;
-	private final BPartnerEndpointAdapter bpartnerEndpointAdapter;
-	private final ProductMasterDataProvider productMasterDataProvider;
-	private final JsonRetrieverService jsonRetrieverService;
-	private final ExternalReferenceRestControllerService externalReferenceService;
-	private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final PermissionService permissionService;
+	@NonNull private final BPartnerEndpointAdapter bpartnerEndpointAdapter;
+	@NonNull private final ProductMasterDataProvider productMasterDataProvider;
+	@NonNull private final BPartnerMasterdataProvider bPartnerMasterdataProvider;
+
+	@NonNull private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceService;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
 
 	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
 
@@ -110,12 +116,14 @@ public final class MasterdataProvider
 	private MasterdataProvider(
 			@NonNull final PermissionService permissionService,
 			@NonNull final BpartnerRestController bpartnerRestController,
+			@NonNull final BPartnerMasterdataProvider bPartnerMasterdataProvider,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final JsonRetrieverService jsonRetrieverService,
 			@NonNull final ExternalSystemRepository externalSystemRepository)
 	{
 		this.permissionService = permissionService;
 		this.bpartnerEndpointAdapter = new BPartnerEndpointAdapter(bpartnerRestController);
+		this.bPartnerMasterdataProvider = bPartnerMasterdataProvider;
 		this.jsonRetrieverService = jsonRetrieverService;
 		this.externalReferenceService = externalReferenceRestControllerService;
 		this.externalSystemRepository = externalSystemRepository;
@@ -129,6 +137,7 @@ public final class MasterdataProvider
 		permissionService.assertCanCreateOrUpdateRecord(orgId, I_C_OLCand.class);
 	}
 
+	@Nullable
 	public PricingSystemId getPricingSystemIdByValue(@Nullable final String pricingSystemCode)
 	{
 		if (Check.isEmpty(pricingSystemCode, true))
@@ -171,12 +180,103 @@ public final class MasterdataProvider
 						.setParameter("JsonBPartnerLocationContact", jsonBPartnerInfo));
 	}
 
+	/**
+	 * A {@code gln-} partner or location identifier is resolved among active partners and active locations only;
+	 * it is then passed on as metasfresh-id. Other identifiers are passed on unchanged.
+	 */
 	public Optional<BPartnerInfo> getBPartnerInfo(
 			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			@Nullable final OrgId orgId)
 	{
+		if (jsonBPartnerInfo == null)
+		{
+			return Optional.empty();
+		}
+
 		final String orgCode = orgId != null ? orgDAO.retrieveOrgValue(orgId) : null;
-		return bpartnerEndpointAdapter.getBPartnerInfo(jsonBPartnerInfo, orgCode);
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = resolveGLNIdentifiersAmongActiveRecords(jsonBPartnerInfo, orgId, orgCode);
+		return bpartnerEndpointAdapter.getBPartnerInfo(jsonBPartnerInfoToUse, orgCode);
+	}
+
+	@NonNull
+	private JsonRequestBPartnerLocationAndContact resolveGLNIdentifiersAmongActiveRecords(
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
+			@Nullable final OrgId orgId,
+			@Nullable final String orgCode)
+	{
+		// Lombok's @NonNull on the DTO getters does not apply to requests deserialized from JSON (a missing property arrives as null), so check explicitly.
+		if (jsonBPartnerInfo.getBPartnerIdentifier() == null)
+		{
+			throw new AdempiereException("bpartnerIdentifier is missing from the bpartner block!")
+					.appendParametersToMessage()
+					.setParameter("JsonBPartnerLocationContact", jsonBPartnerInfo);
+		}
+		if (jsonBPartnerInfo.getBPartnerLocationIdentifier() == null)
+		{
+			throw new AdempiereException("bpartnerLocationIdentifier is missing from the bpartner block!")
+					.appendParametersToMessage()
+					.setParameter("JsonBPartnerLocationContact", jsonBPartnerInfo);
+		}
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(jsonBPartnerInfo.getBPartnerIdentifier());
+		final ExternalIdentifier locationIdentifier = ExternalIdentifier.of(jsonBPartnerInfo.getBPartnerLocationIdentifier());
+		final boolean bpartnerIsGLN = ExternalIdentifier.Type.GLN.equals(bpartnerIdentifier.getType());
+		final boolean locationIsGLN = ExternalIdentifier.Type.GLN.equals(locationIdentifier.getType());
+		if (!bpartnerIsGLN && !locationIsGLN)
+		{
+			return jsonBPartnerInfo;
+		}
+
+		final BPartnerId bpartnerId = bpartnerIsGLN
+				? getActiveBPartnerIdByGLN(bpartnerIdentifier.asGLN(), orgId, jsonBPartnerInfo)
+				: BPartnerId.ofRepoId(bpartnerEndpointAdapter.getBPartnerMetasfreshId(orgCode, jsonBPartnerInfo.getBPartnerIdentifier()).getValue());
+
+		final String locationIdentifierToUse = locationIsGLN
+				? String.valueOf(getActiveBPartnerLocationIdByGLN(bpartnerId, locationIdentifier.asGLN(), jsonBPartnerInfo).getRepoId())
+				: jsonBPartnerInfo.getBPartnerLocationIdentifier();
+
+		return JsonRequestBPartnerLocationAndContact.builder()
+				.bPartnerIdentifier(String.valueOf(bpartnerId.getRepoId()))
+				.bPartnerLocationIdentifier(locationIdentifierToUse)
+				.contactIdentifier(jsonBPartnerInfo.getContactIdentifier())
+				.build();
+	}
+
+	@NonNull
+	private BPartnerId getActiveBPartnerIdByGLN(
+			@NonNull final GLN gln,
+			@Nullable final OrgId orgId,
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo)
+	{
+		final OrgId orgIdToUse = orgId != null ? orgId : Env.getOrgId(); // same fallback as the bpartner REST endpoint for a missing orgCode
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.onlyOrgId(orgIdToUse)
+				.onlyOrgId(OrgId.ANY)
+				.gln(gln)
+				.glnLookupOnlyActive(true)
+				.failIfNotExists(false)
+				.build();
+
+		return bPartnerDAO.retrieveBPartnerIdBy(query)
+				.orElseThrow(() -> new AdempiereException("No BPartner found for the given identifier!")
+						.appendParametersToMessage()
+						.setParameter("BPartnerIdentifier", jsonBPartnerInfo.getBPartnerIdentifier()));
+	}
+
+	@NonNull
+	private BPartnerLocationId getActiveBPartnerLocationIdByGLN(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final GLN gln,
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo)
+	{
+		return bPartnerDAO.retrieveBPartnerLocations(bpartnerId) // active locations only
+				.stream()
+				.filter(location -> GLN.equals(GLN.ofNullableString(location.getGLN()), gln))
+				.map(location -> BPartnerLocationId.ofRepoId(bpartnerId, location.getC_BPartner_Location_ID()))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No BPartnerLocation found for the given identifier!")
+						.appendParametersToMessage()
+						.setParameter("BPartnerIdentifier", jsonBPartnerInfo.getBPartnerIdentifier())
+						.setParameter("BPartnerLocationIdentifier", jsonBPartnerInfo.getBPartnerLocationIdentifier()));
 	}
 
 	@NonNull
@@ -212,6 +312,15 @@ public final class MasterdataProvider
 			@NonNull final OrgId orgId)
 	{
 		return productMasterDataProvider.getProductInfo(productIdentifier, orgId);
+	}
+
+	public ProductInfo getProductInfoForOrderCandidate(
+			@NonNull final ExternalIdentifier productIdentifier,
+			@NonNull final OrgId orgId,
+			@Nullable final ZonedDateTime date,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return productMasterDataProvider.getProductInfoForOrderCandidate(productIdentifier, orgId, date, bpartnerId);
 	}
 
 	@Nullable
@@ -342,109 +451,33 @@ public final class MasterdataProvider
 	@NonNull
 	private Optional<BPartnerId> resolveBPartnerExternalBusinessKey(@NonNull final OrgId orgId, @NonNull final ExternalBusinessKey externalBusinessKey)
 	{
-		if (ExternalBusinessKey.Type.VALUE.equals(externalBusinessKey.getType()))
-		{
-			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
-					.bpartnerValue(externalBusinessKey.asValue())
-					.onlyOrgId(orgId)
-					.build());
-		}
-		else if (ExternalBusinessKey.Type.EXTERNAL_REFERENCE.equals(externalBusinessKey.getType()))
-		{
-			return externalReferenceService
-					.getJsonMetasfreshIdFromExternalBusinessKey(orgId, externalBusinessKey, BPartnerExternalReferenceType.BPARTNER_VALUE)
-					.map(jsonMetasfreshId -> BPartnerId.ofRepoId(jsonMetasfreshId.getValue()));
-		}
-		else
-		{
-			throw new InvalidIdentifierException("Given ExternalBusinessKeyType is not supported!")
-					.appendParametersToMessage()
-					.setParameter("ExternalBusinessKeyType", externalBusinessKey.getType())
-					.setParameter("RawValue", externalBusinessKey.getRawValue());
-		}
+		return bPartnerMasterdataProvider.resolveBPartnerExternalBusinessKey(orgId, externalBusinessKey);
 	}
 
 	@NonNull
 	public Optional<BPartnerId> resolveBPartnerExternalIdentifier(@NonNull final OrgId orgId, @NonNull final ExternalIdentifier externalIdentifier)
 	{
-		if (ExternalIdentifier.Type.METASFRESH_ID.equals(externalIdentifier.getType()))
-		{
-			return Optional.of(BPartnerId.ofRepoId(externalIdentifier.asMetasfreshId().getValue()));
-		}
-		else if (ExternalIdentifier.Type.GLN.equals(externalIdentifier.getType()))
-		{
-			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
-					.gln(externalIdentifier.asGLN())
-					.onlyOrgId(orgId)
-					.build());
-		}
-		else if (ExternalIdentifier.Type.EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
-		{
-			return externalReferenceService
-					.resolveExternalReference(orgId, externalIdentifier, BPartnerExternalReferenceType.BPARTNER)
-					.map(jsonMetasfreshId -> BPartnerId.ofRepoId(jsonMetasfreshId.getValue()));
-		}
-		else
-		{
-			throw new InvalidIdentifierException("Given ExternalIdentifier is not supported!")
-					.appendParametersToMessage()
-					.setParameter("ExternalIdentifier", externalIdentifier.getType())
-					.setParameter("RawValue", externalIdentifier.getRawValue());
-		}
+		return bPartnerMasterdataProvider.resolveBPartnerExternalIdentifier(orgId, externalIdentifier);
 	}
 
 	@NonNull
 	public Optional<BPartnerLocationId> resolveBPartnerLocationExternalIdentifier(@NonNull final BPartnerId bPartnerId, @NonNull final OrgId orgId, @NonNull final ExternalIdentifier externalIdentifier)
 	{
-		if (ExternalIdentifier.Type.METASFRESH_ID.equals(externalIdentifier.getType()))
-		{
-			return Optional.of(BPartnerLocationId.ofRepoId(bPartnerId, externalIdentifier.asMetasfreshId().getValue()));
-		}
-		else if (ExternalIdentifier.Type.GLN.equals(externalIdentifier.getType()))
-		{
-			final GLNQuery glnQuery = GLNQuery.builder()
-					.onlyOrgId(orgId)
-					.gln(externalIdentifier.asGLN())
-					.build();
-			return bPartnerDAO.retrieveSingleBPartnerLocationIdBy(glnQuery);
-		}
-		else if (ExternalIdentifier.Type.EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
-		{
-			return externalReferenceService
-					.resolveExternalReference(orgId, externalIdentifier, BPLocationExternalReferenceType.BPARTNER_LOCATION)
-					.map(jsonMetasfreshId -> BPartnerLocationId.ofRepoId(bPartnerId, jsonMetasfreshId.getValue()));
-		}
-		else
-		{
-			throw new InvalidIdentifierException("Given ExternalIdentifier is not supported!")
-					.appendParametersToMessage()
-					.setParameter("ExternalIdentifier", externalIdentifier.getType())
-					.setParameter("RawValue", externalIdentifier.getRawValue());
-		}
+		return bPartnerMasterdataProvider.resolveBPartnerLocationExternalIdentifier(bPartnerId, orgId, externalIdentifier);
 	}
 
 	@NonNull
 	public Optional<UserId> resolveUserExternalIdentifier(@NonNull final OrgId orgId, @NonNull final ExternalIdentifier externalIdentifier)
 	{
-		if (ExternalIdentifier.Type.METASFRESH_ID.equals(externalIdentifier.getType()))
-		{
-			return Optional.of(UserId.ofRepoId(externalIdentifier.asMetasfreshId().getValue()));
-		}
-		else if (ExternalIdentifier.Type.EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
-		{
-			return externalReferenceService
-					.resolveExternalReference(orgId, externalIdentifier, ExternalUserReferenceType.USER_ID)
-					.map(jsonMetasfreshId -> UserId.ofRepoId(jsonMetasfreshId.getValue()));
-		}
-		else
-		{
-			throw new InvalidIdentifierException("Given ExternalIdentifier is not supported!")
-					.appendParametersToMessage()
-					.setParameter("ExternalIdentifier", externalIdentifier.getType())
-					.setParameter("RawValue", externalIdentifier.getRawValue());
-		}
+		return bPartnerMasterdataProvider.resolveUserExternalIdentifier(orgId, externalIdentifier);
 	}
 
+	public boolean isAutoInvoice(@NonNull final JsonOLCandCreateRequest request, @NonNull final BPartnerId bpartnerId)
+	{
+		return bPartnerMasterdataProvider.isAutoInvoice(request, bpartnerId);
+	}
+
+	@Nullable
 	public PaymentRule getPaymentRule(final JsonOLCandCreateRequest request)
 	{
 		final JSONPaymentRule jsonPaymentRule = request.getPaymentRule();
@@ -496,7 +529,7 @@ public final class MasterdataProvider
 				throw new InvalidIdentifierException(paymentTerm);
 		}
 
-		final Optional<PaymentTermId> paymentTermId = paymentTermRepo.retrievePaymentTermId(queryBuilder.build());
+		final Optional<PaymentTermId> paymentTermId = paymentTermRepo.firstIdOnly(queryBuilder.build());
 
 		return paymentTermId.orElseThrow(() -> MissingResourceException.builder()
 				.resourceName("PaymentTerm")
@@ -511,10 +544,51 @@ public final class MasterdataProvider
 		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
 		return BPartnerId.ofRepoIdOrNull(bPartner.getC_BPartner_SalesRep_ID());
 	}
-	
+
 	@NonNull
 	public ExternalSystemId getExternalSystemId(@NonNull final ExternalSystemType type)
 	{
 		return externalSystemRepository.getIdByType(type);
+	}
+
+	@Nullable
+	public Incoterms getIncoterms(@NonNull final JsonOLCandCreateRequest request,
+									@NonNull final OrgId orgId,
+									@NonNull final BPartnerId bPartnerId)
+	{
+		return bPartnerMasterdataProvider.getIncoterms(request, orgId, bPartnerId);
+	}
+
+	@NonNull
+	public TaxCategoryId getTaxCategoryId(
+			@NonNull final IdentifierString taxCategoryIdentifier,
+			@NonNull final Object parent)
+	{
+		final Optional<TaxCategoryId> taxCategoryId;
+		switch (taxCategoryIdentifier.getType())
+		{
+			case INTERNALNAME:
+				taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryIdentifier.asInternalName());
+				break;
+			case METASFRESH_ID:
+				taxCategoryId = taxBL.getActiveTaxCategoryIdById(taxCategoryIdentifier.asMetasfreshId(TaxCategoryId::ofRepoId));
+				break;
+			default:
+				throw new InvalidIdentifierException(taxCategoryIdentifier);
+		}
+
+		return taxCategoryId
+				// TaxCategoryId.NOT_FOUND is backed by a real, active, system-seeded C_TaxCategory row
+				// ('Tax_Not_Found_Category', AD_Client_ID=0) that exists on every instance, so both lookups above resolve
+				// it like any other category - by its id, and (since this branch makes InternalName writable) by its
+				// internal name too. It must not be resolvable through the API: the sentinel would travel into the tax
+				// query and only surface there as an ordinary "no tax matched", instead of telling the caller that the
+				// identifier they sent names no tax category.
+				.filter(id -> !TaxCategoryId.NOT_FOUND.equals(id))
+				.orElseThrow(() -> MissingResourceException.builder()
+						.resourceName("TaxCategory")
+						.resourceIdentifier(taxCategoryIdentifier.toJson())
+						.parentResource(parent)
+						.build());
 	}
 }

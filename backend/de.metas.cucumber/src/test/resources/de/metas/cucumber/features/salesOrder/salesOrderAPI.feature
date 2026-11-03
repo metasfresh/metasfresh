@@ -1,5 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
 Feature: Sales order API
+
+  ## F00100: Sales Order
 
   Background:
     Given infrastructure and metasfresh are running
@@ -100,9 +105,10 @@ Feature: Sales order API
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so_l1      | so         | product      | 10         |
     And the order identified by so is completed
+    # QtyToDeliver is the settle signal: the recompute clears IsToRecompute before its transaction commits QtyToDeliver.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss1        | so_l1          | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss1        | so_l1          | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | ss1                              | D            | true                | false       |
@@ -126,7 +132,7 @@ Feature: Sales order API
       "message": "Die Bestellung OrderId(repoId=@orderId@) enthält bereits gelieferte Artikel.",
       "errorCode": "MSG_ERR_ORDER_HAS_DELIVERED_ITEMS",
       "userFriendlyError": true,
-      "stackTrace": "OrderService.reverseOrder:178 <~~~ SalesOrderRestController.revertOrder:236 <~~~ ApiAuditService.processRequestSync:500 <- ApiAuditService.processRequest:245 <- ApiAuditFilter.doFilter:115 <~~~ UserAuthTokenFilter.lambda$doFilter$1:66 <- UserAuthTokenService.lambda$asCallable$0:96 <- UserAuthTokenService.call:117 <- UserAuthTokenService.run:89 <- UserAuthTokenFilter.doFilter:61",
+      "stackTrace": "OrderService.reverseOrder:178 <~~~ SalesOrderRestController.revertOrder:241 <~~~ WebConfig$ApiNoStoreCacheControlFilter.doFilter:80 <~~~ ApiAuditService.processRequestSync:519 <- ApiAuditService.processRequest:249 <- ApiAuditFilter.doFilter:115 <~~~ UserAuthTokenFilter.lambda$doFilter$1:66 <- UserAuthTokenService.lambda$asCallable$0:96 <- UserAuthTokenService.call:117 <- UserAuthTokenService.run:89 <- UserAuthTokenFilter.doFilter:61",
       "parameters": {
         "AD_Language": "<null>",
         "AD_Message": "MSG_ERR_ORDER_HAS_DELIVERED_ITEMS"
