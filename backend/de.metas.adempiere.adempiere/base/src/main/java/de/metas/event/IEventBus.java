@@ -3,6 +3,7 @@ package de.metas.event;
 import lombok.NonNull;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 
 /*
@@ -75,6 +76,17 @@ public interface IEventBus
 	 * Enqueue given event in RabbitMQ.
 	 */
 	void enqueueEvent(Event event);
+
+	/**
+	 * Enqueue the given events in RabbitMQ, in the given order, as one batch (see {@link EventEnqueuer#enqueueEventsInOneBatch(Runnable)}).
+	 * With RabbitMQ they go out on one channel, so the broker keeps their order.
+	 * An event that cannot be enqueued is logged and skipped.
+	 * Note: with {@code de.metas.event.MonitorIncomingEvents}, the per-event span covers only adding the event to the batch, not the actual send.
+	 */
+	default void enqueueEvents(@NonNull final List<Event> events)
+	{
+		events.forEach(this::enqueueEvent);
+	}
 
 	/**
 	 * Create an event and serialize the given {@code obj} to be the event's body (payload).

@@ -23,6 +23,7 @@
 package de.metas.product.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
@@ -82,6 +83,7 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -485,6 +487,42 @@ public class ProductDAO implements IProductDAO
 	public String getProductCategoryNameById(@NonNull final ProductCategoryId id)
 	{
 		return getProductCategoryById(id).getName();
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<ProductCategoryId> getProductCategoryIdAndAncestors(@NonNull final ProductCategoryId productCategoryId)
+	{
+		final ImmutableSet.Builder<ProductCategoryId> result = ImmutableSet.builder();
+
+		final Set<ProductCategoryId> seenIds = new HashSet<>();
+		ProductCategoryId currentId = productCategoryId;
+		while (currentId != null && seenIds.add(currentId))
+		{
+			result.add(currentId);
+
+			final I_M_Product_Category productCategory = getProductCategoryById(currentId);
+			currentId = ProductCategoryId.ofRepoIdOrNull(productCategory.getM_Product_Category_Parent_ID());
+		}
+
+		return result.build();
+	}
+
+	@Override
+	@NonNull
+	public ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> getProductCategoryIdAndAncestorsByProductIds(@NonNull final Set<ProductId> productIds)
+	{
+		if (productIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<ProductId, ImmutableSet<ProductCategoryId>> result = ImmutableMap.builder();
+		for (final ProductAndCategoryId productAndCategoryId : retrieveProductAndCategoryIdsByProductIds(productIds))
+		{
+			result.put(productAndCategoryId.getProductId(), getProductCategoryIdAndAncestors(productAndCategoryId.getProductCategoryId()));
+		}
+		return result.build();
 	}
 
 	@Override

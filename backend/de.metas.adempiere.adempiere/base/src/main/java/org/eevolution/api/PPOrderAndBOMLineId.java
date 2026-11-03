@@ -8,6 +8,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 @Builder
@@ -38,6 +39,8 @@ public class PPOrderAndBOMLineId
 	{
 		return ofRepoIds(ppOrderId.getRepoId(), lineId);
 	}
+
+	public static boolean equals(@Nullable final PPOrderAndBOMLineId id1, @Nullable final PPOrderAndBOMLineId id2) {return Objects.equals(id1, id2);}
 
 	public boolean isSameOrderAs(@Nullable final PPOrderAndBOMLineId other) {return other != null && PPOrderId.equals(this.ppOrderId, other.ppOrderId);}
 

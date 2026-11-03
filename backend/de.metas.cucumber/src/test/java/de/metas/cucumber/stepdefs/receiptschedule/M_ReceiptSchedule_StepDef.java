@@ -39,6 +39,7 @@ import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
@@ -51,6 +52,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
@@ -95,6 +97,8 @@ public class M_ReceiptSchedule_StepDef
 	private final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	@NonNull private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
 	@NonNull private final C_Order_StepDefData orderTable;
@@ -112,6 +116,47 @@ public class M_ReceiptSchedule_StepDef
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_ReceiptSchedule_ID)
 				.forEach(row -> loadAndValidate(row, timeoutSec));
+	}
+
+	/**
+	 * Waits until the receipt schedule of the given order line exists and registers it under the given identifier.
+	 * No quantity or other validation is applied.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code C_OrderLine_ID} — required, references a previously registered purchase order line</li>
+	 *     <li>{@code M_ReceiptSchedule_ID} — required, identifier under which the receipt schedule is registered</li>
+	 *   </ul>
+	 * @cucumber.depends StepDefData: C_OrderLine_StepDefData, M_ReceiptSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 30s, load M_ReceiptSchedule for C_OrderLine:
+	 *   | C_OrderLine_ID | M_ReceiptSchedule_ID |
+	 *   | pol_1          | rs_1                 |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, load M_ReceiptSchedule for C_OrderLine:$")
+	public void loadReceiptScheduleForOrderLine(final int timeoutSec, @NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_ReceiptSchedule_ID)
+				.forEach(row -> waitAndLoadReceiptScheduleForOrderLine(row, timeoutSec));
+	}
+
+	private void waitAndLoadReceiptScheduleForOrderLine(@NonNull final DataTableRow row, final int timeoutSec) throws InterruptedException
+	{
+		final I_C_OrderLine orderLine = row.getAsIdentifier(COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
+		final StepDefDataIdentifier receiptScheduleIdentifier = row.getAsIdentifier(COLUMNNAME_M_ReceiptSchedule_ID);
+
+		final Mutable<I_M_ReceiptSchedule> receiptScheduleHolder = new Mutable<>();
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> {
+			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
+			receiptScheduleHolder.setValue(receiptSchedule);
+			return receiptSchedule != null;
+		});
+
+		receiptScheduleTable.putOrReplace(receiptScheduleIdentifier, receiptScheduleHolder.getValueNotNull());
 	}
 
 	private void loadAndValidate(final DataTableRow row, final int timeoutSec) throws InterruptedException
@@ -275,6 +320,15 @@ public class M_ReceiptSchedule_StepDef
 		}
 	}
 
+	/**
+	 * Closes or reopens the receipt schedule in one transaction, like the {@code M_ReceiptSchedule_Close} and
+	 * {@code M_ReceiptSchedule_ReOpen} processes do.
+	 * <p>
+	 * Without the transaction, every save commits on its own. Closing an invoice candidate first commits its
+	 * recompute record and only then its {@code Processed_Override}, so the async invoice candidate worker can
+	 * recompute the candidate in between, from the old {@code Processed_Override}. It then removes the recompute
+	 * record, so nothing recomputes the candidate again and {@code Processed} stays wrong.
+	 */
 	@And("^the M_ReceiptSchedule identified by (.*) is (closed|reactivated)$")
 	public void M_ReceiptSchedule_action(@NonNull final String receiptScheduleIdentifier, @NonNull final String action)
 	{
@@ -283,10 +337,16 @@ public class M_ReceiptSchedule_StepDef
 		switch (StepDefDocAction.valueOf(action))
 		{
 			case closed:
-				receiptScheduleBL.close(receiptSchedule);
+				trxManager.runInNewTrx(() -> {
+					InterfaceWrapperHelper.setThreadInheritedTrxName(receiptSchedule);
+					receiptScheduleBL.close(receiptSchedule);
+				});
 				break;
 			case reactivated:
-				receiptScheduleBL.reopen(receiptSchedule);
+				trxManager.runInNewTrx(() -> {
+					InterfaceWrapperHelper.setThreadInheritedTrxName(receiptSchedule);
+					receiptScheduleBL.reopen(receiptSchedule);
+				});
 				break;
 			default:
 				throw new AdempiereException("Unhandled M_ReceiptSchedule action")

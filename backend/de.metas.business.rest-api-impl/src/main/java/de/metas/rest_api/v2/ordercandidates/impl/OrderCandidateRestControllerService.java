@@ -94,12 +94,16 @@ public class OrderCandidateRestControllerService
 	{
 		final HashMap<OLCandQuery, List<OLCand>> query2OLCandList = new HashMap<>();
 
-		final List<OLCand> olCandidates = olCandValidatorService.validateOLCands(bulkRequest
+		final List<JsonOLCandCreateRequest> requestsToCreate = bulkRequest
 				.getRequests()
 				.stream()
 				.filter(request -> !wasOLCandAlreadyCreated(request, query2OLCandList))
-				.map(request -> createOrderLineCandidate(request, masterdataProvider))
-				.collect(ImmutableList.toImmutableList()));
+				.collect(ImmutableList.toImmutableList());
+
+		final List<OLCand> olCandidates = olCandValidatorService.validateOLCands(OLCandBulkLineErrorCollector.mapAll(
+				requestsToCreate,
+				request -> createOrderLineCandidate(request, masterdataProvider),
+				request -> OLCandLineRef.of(request.getLine(), request.getExternalLineId(), request.getExternalHeaderId())));
 
 		return jsonConverters.toJson(olCandidates, masterdataProvider);
 	}

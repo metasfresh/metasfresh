@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.allocation;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
@@ -37,23 +38,39 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuild
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.refund.paymentdeduction.PaymentBonusDeductionService;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingContext;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeComputeRequest;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentId;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -77,25 +94,43 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 
+/**
+ * Step definitions for allocating payments to invoices.
+ * <p>
+ * The step {@code allocate payments to invoices} derives the invoice-processing service fee automatically for every sales invoice
+ * that has a service-company config; no fee column is needed in the data table.
+ * The optional column {@code InvoiceProcessing.C_BPartner_ID} only asserts the expected service company.
+ */
 @RequiredArgsConstructor
 public class AllocatePayments_StepDef
 {
 	private static final String WRITE_OFF_PROCESS = "WRITEOFF";
 	private static final String DISCOUNT_PROCESS = "DISCOUNT";
+	private static final DocBaseAndSubType PAYMENT_BONUS_CREDIT_MEMO = DocBaseAndSubType.of(DocBaseType.SalesCreditMemo, DocSubType.PaymentBonusCreditMemo);
+	/**
+	 * Same message as the WebUI payment allocation ({@code PaymentsViewAllocateCommand}), which is not on this module's classpath.
+	 */
+	private static final AdMessageKey MSG_NO_CONFIG_FOR_PAYMENT_PARTNER = AdMessageKey.of("InvoiceProcessingServiceCompany_NoConfigForPaymentPartner");
 
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = SpringContextHolder.instance.getBean(InvoiceProcessingServiceCompanyService.class);
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+	private final PaymentBonusDeductionService paymentBonusDeductionService = SpringContextHolder.instance.getBean(PaymentBonusDeductionService.class);
+	private final PaymentBonusCreditMemoService paymentBonusCreditMemoService = SpringContextHolder.instance.getBean(PaymentBonusCreditMemoService.class);
 
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@NonNull private final C_Payment_StepDefData paymentTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
@@ -126,24 +161,62 @@ public class AllocatePayments_StepDef
 		});
 	}
 
+	/**
+	 * Allocates the payments to the invoices of the data table in one {@link PaymentAllocationBuilder} run.
+	 * <p>
+	 * Required columns: {@code C_Payment_ID} (payment identifier), {@code C_Invoice_ID} (invoice identifier).
+	 * Optional: {@code InvoiceProcessing.C_Invoice_ID} registers the generated service invoice under that identifier;
+	 * {@code InvoiceProcessing.C_BPartner_ID} asserts the expected service company;
+	 * {@code PaymentBonusAmt} is the bonus that the customer actually deducted, instead of the computed one;
+	 * {@code PaymentBonus.C_Invoice_ID} registers the invoice's payment bonus credit memo under that identifier ({@code null} expects none).
+	 * <p>
+	 * Payments are read first, because the service company and the fee date are derived from them, like in the WebUI payment allocation.
+	 * For every sales invoice with a service-company config the service fee is computed automatically,
+	 * and so is the bonus that the customer deducts at payment.
+	 * <pre>
+	 * And allocate payments to invoices
+	 *   | C_Payment_ID | C_Invoice_ID | InvoiceProcessing.C_Invoice_ID | PaymentBonus.C_Invoice_ID |
+	 *   | pay1         | inv1         | svcInv1                        | bonusCreditMemo1          |
+	 * </pre>
+	 * @see PaymentAllocationBuilder
+	 */
 	@And("allocate payments to invoices")
 	public void allocate_payment_to_invoice(@NonNull final DataTable table)
+	{
+		allocatePaymentsToInvoices(table);
+	}
+
+	/**
+	 * Same as {@code allocate payments to invoices}, but asserts that the allocation is refused with the given {@code AD_Message.ErrorCode}
+	 * e.g. when the payment's partner is not configured as invoice-processing service company.
+	 * <pre>
+	 * When allocate payments to invoices expecting error code SERVICE_FEE_PAYMENT_PARTNER_NO_CONFIG:
+	 *   | C_Invoice_ID | C_Payment_ID |
+	 *   | inv1         | pay1         |
+	 * </pre>
+	 */
+	@And("^allocate payments to invoices expecting error code (.*):$")
+	public void allocate_payment_to_invoice_expecting_error_code(@NonNull final String errorCode, @NonNull final DataTable table)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> allocatePaymentsToInvoices(table));
+	}
+
+	private void allocatePaymentsToInvoices(@NonNull final DataTable table)
 	{
 		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
 		final ArrayList<PaymentDocument> paymentDocuments = new ArrayList<>();
 
-		DataTableRows.of(table).forEach(row -> {
-			row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
-					.ifPresent(payableDocuments::add);
+		DataTableRows.of(table).forEach(row -> row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
+				.map(this::buildPaymentDocument)
+				.ifPresent(paymentDocuments::add));
 
-			row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
-					.map(this::buildPaymentDocument)
-					.ifPresent(paymentDocuments::add);
-		});
+		DataTableRows.of(table).forEach(row -> row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
+				.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row, paymentDocuments))
+				.ifPresent(payableDocuments::add));
 
 		final PaymentAllocationBuilder paymentAllocationBuilder = PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				.paymentBonusCreditMemoService(paymentBonusCreditMemoService)
 				.defaultDateTrx(LocalDate.now())
 				.paymentDocuments(paymentDocuments)
 				.payableDocuments(payableDocuments)
@@ -161,6 +234,95 @@ public class AllocatePayments_StepDef
 		final PaymentAllocationResult result = paymentAllocationBuilder.build();
 
 		DataTableRows.of(table).forEach(row -> updateServiceInvoiceIdentifier(row, result));
+		DataTableRows.of(table).forEach(this::updatePaymentBonusCreditMemoIdentifier);
+	}
+
+	/**
+	 * Asserts that no service fee invoice (i.e. no purchase invoice referencing the sales invoice, in any document status) was created for the row's invoice.
+	 * <pre>
+	 * And there is no service fee invoice for invoice
+	 *   | C_Invoice_ID |
+	 *   | inv1         |
+	 * </pre>
+	 */
+	@And("there is no service fee invoice for invoice")
+	public void noServiceFeeInvoice(@NonNull final DataTable table)
+	{
+		DataTableRows.of(table).forEach(row -> {
+			final InvoiceId invoiceId = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIdIn(invoiceTable);
+			final List<I_C_Invoice> serviceFeeInvoices = queryBL.createQueryBuilder(I_C_Invoice.class)
+					.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoiceId)
+					.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsSOTrx, false)
+					.create()
+					.list();
+			assertThat(serviceFeeInvoices).as("service fee invoices of C_Invoice_ID=%s", invoiceId.getRepoId()).isEmpty();
+		});
+	}
+
+	/**
+	 * Asserts that no completed or closed payment bonus credit memo („Zahlungsbonus-Gutschrift“) references the given sales invoice.
+	 * <pre>
+	 * And there is no payment bonus credit memo for invoice invoice
+	 * </pre>
+	 */
+	@And("^there is no payment bonus credit memo for invoice (.*)$")
+	public void noPaymentBonusCreditMemo(@NonNull final String invoiceIdentifier)
+	{
+		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		assertThat(retrievePaymentBonusCreditMemos(invoiceId))
+				.as("payment bonus credit memos of C_Invoice_ID=%s", invoiceId.getRepoId())
+				.isEmpty();
+	}
+
+	/**
+	 * Asserts that exactly one completed or closed payment bonus credit memo („Zahlungsbonus-Gutschrift“) references the given sales invoice, and that it is the one registered under {@code creditMemoIdentifier}:
+	 * the payment bonus of an invoice is booked once.
+	 * <pre>
+	 * And the only payment bonus credit memo for invoice invoice is bonusCreditMemo
+	 * </pre>
+	 */
+	@And("^the only payment bonus credit memo for invoice (.*) is (.*)$")
+	public void onlyPaymentBonusCreditMemo(@NonNull final String invoiceIdentifier, @NonNull final String creditMemoIdentifier)
+	{
+		final InvoiceId invoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		final InvoiceId expectedCreditMemoId = invoiceTable.getId(StepDefDataIdentifier.ofString(creditMemoIdentifier));
+		assertThat(retrievePaymentBonusCreditMemos(invoiceId))
+				.as("payment bonus credit memos of C_Invoice_ID=%s", invoiceId.getRepoId())
+				.extracting(I_C_Invoice::getC_Invoice_ID)
+				.containsExactly(expectedCreditMemoId.getRepoId());
+	}
+
+	/**
+	 * Registers the payment bonus credit memo of the row's invoice under the identifier of the column {@code PaymentBonus.C_Invoice_ID}.
+	 * There has to be exactly one completed or closed payment bonus credit memo that references the invoice; the placeholder {@code null} expects none.
+	 */
+	private void updatePaymentBonusCreditMemoIdentifier(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier creditMemoIdentifier = row.getAsOptionalIdentifier("PaymentBonus.C_Invoice_ID").orElse(null);
+		if (creditMemoIdentifier == null)
+		{
+			return;
+		}
+
+		final InvoiceId invoiceId = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIdIn(invoiceTable);
+		final List<? extends I_C_Invoice> creditMemos = retrievePaymentBonusCreditMemos(invoiceId);
+
+		if (creditMemoIdentifier.isNullPlaceholder())
+		{
+			assertThat(creditMemos).as("payment bonus credit memos of C_Invoice_ID=%s", invoiceId.getRepoId()).isEmpty();
+			return;
+		}
+
+		assertThat(creditMemos).as("payment bonus credit memos of C_Invoice_ID=%s", invoiceId.getRepoId()).hasSize(1);
+		invoiceTable.putOrReplace(creditMemoIdentifier, creditMemos.get(0));
+	}
+
+	/**
+	 * @return the completed or closed payment bonus credit memos („Zahlungsbonus-Gutschrift“) that reference the given sales invoice
+	 */
+	private List<? extends I_C_Invoice> retrievePaymentBonusCreditMemos(@NonNull final InvoiceId salesInvoiceId)
+	{
+		return invoiceDAO.retrieveReferencingCompletedInvoices(salesInvoiceId, PAYMENT_BONUS_CREDIT_MEMO);
 	}
 
 	/**
@@ -265,10 +427,23 @@ public class AllocatePayments_StepDef
 	}
 
 
+	/**
+	 * The service company is the business partner of the payment (it pays on behalf of its customers).
+	 * The optional column {@code InvoiceProcessing.C_BPartner_ID} only asserts that expectation.
+	 */
 	@NonNull
 	private BPartnerId getServiceCompanyBPartnerId(final @NonNull DataTableRow row)
 	{
-		return row.getAsIdentifier("InvoiceProcessing.C_BPartner_ID").lookupNotNullIdIn(bpartnerTable);
+		final I_C_Payment payment = paymentTable.get(row.getAsIdentifier(COLUMNNAME_C_Payment_ID));
+		final BPartnerId serviceCompanyBPartnerId = BPartnerId.ofRepoId(payment.getC_BPartner_ID());
+
+		row.getAsOptionalIdentifier("InvoiceProcessing.C_BPartner_ID")
+				.map(identifier -> identifier.lookupNotNullIdIn(bpartnerTable))
+				.ifPresent(expected -> assertThat(serviceCompanyBPartnerId)
+						.as("service company derived from the payment")
+						.isEqualTo(expected));
+
+		return serviceCompanyBPartnerId;
 	}
 
 	@And("^allocate invoices \\(credit memo/purchase\\) to invoices$")
@@ -278,13 +453,13 @@ public class AllocatePayments_StepDef
 
 		DataTableRows.of(table).forEach(row -> {
 			row.getAsOptionalIdentifier("C_Invoice_ID")
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
+					.map(invoiceIdentifier -> buildPayableDocumentWithoutDeductions(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("CreditMemo.C_Invoice_ID")
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
+					.map(invoiceIdentifier -> buildPayableDocumentWithoutDeductions(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("Purchase.C_Invoice_ID")
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
+					.map(invoiceIdentifier -> buildPayableDocumentWithoutDeductions(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 		});
 
@@ -298,16 +473,39 @@ public class AllocatePayments_StepDef
 				.build();
 	}
 
+	/**
+	 * Builds the payable without any invoice-processing service fee and without a payment bonus deduction.
+	 */
 	@NonNull
-	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
-												 @NonNull final DataTableRow row)
+	private PayableDocument buildPayableDocumentWithoutDeductions(@NonNull final StepDefDataIdentifier invoiceIdentifier,
+																  @NonNull final DataTableRow row)
 	{
-		return preparePayableDocument(invoiceIdentifier, row).build();
+		return preparePayableDocument(invoiceIdentifier, row, invoiceToAllocate -> Optional.empty(), invoiceToAllocate -> Optional.empty()).build();
 	}
 
+	/**
+	 * Builds the payable and, for a sales invoice with a service-company config, deducts the service fee
+	 * whose service company and date are derived from the given payments; it also deducts the bonus that the customer deducts at payment.
+	 */
+	@NonNull
+	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
+												 @NonNull final DataTableRow row,
+												 @NonNull final List<PaymentDocument> paymentDocuments)
+	{
+		return preparePayableDocument(invoiceIdentifier, row,
+				invoiceToAllocate -> computeInvoiceProcessingFee(invoiceToAllocate, paymentDocuments),
+				invoiceToAllocate -> computePaymentBonusDeduction(invoiceToAllocate, row))
+				.build();
+	}
+
+	/**
+	 * @param serviceFeeCalculator returns the service fee to deduct from the invoice, or empty for none
+	 */
 	@NonNull
 	private PayableDocumentBuilder preparePayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
-														  @NonNull final DataTableRow row)
+														  @NonNull final DataTableRow row,
+														  @NonNull final Function<InvoiceToAllocate, Optional<InvoiceProcessingFeeCalculation>> serviceFeeCalculator,
+														  @NonNull final Function<InvoiceToAllocate, Optional<PaymentBonusDeduction>> paymentBonusCalculator)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
@@ -327,12 +525,36 @@ public class AllocatePayments_StepDef
 		}
 
 
+		//
+		// Service company fee
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = serviceFeeCalculator.apply(invoiceToAllocate).orElse(null);
+		Money invoiceProcessingFee = null;
+		if (invoiceProcessingFeeCalculation != null)
+		{
+			invoiceProcessingFee = moneyService.toMoney(invoiceProcessingFeeCalculation.getFeeAmountIncludingTax());
+			payAmt = payAmt.subtract(invoiceProcessingFee);
+		}
+
+		//
+		// Bonus that the customer deducts when paying (same flow as the WebUI payment allocation); the optional column PaymentBonusAmt is the amount that the customer actually deducted
+		final PaymentBonusDeduction paymentBonusDeduction = paymentBonusCalculator.apply(invoiceToAllocate).orElse(null);
+		Money paymentBonus = null;
+		if (paymentBonusDeduction != null)
+		{
+			paymentBonus = paymentBonusDeduction.getGrossAmount();
+			payAmt = payAmt.subtract(paymentBonus);
+		}
+
 		final AllocationAmounts amounts = AllocationAmounts.builder()
 				.payAmt(payAmt)
 				.discountAmt(discountAmt)
+				.invoiceProcessingFee(invoiceProcessingFee)
+				.paymentBonus(paymentBonus)
 				.build();
 
 		return PayableDocument.builder()
+				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
+				.paymentBonusDeduction(paymentBonusDeduction)
 				.invoiceId(invoiceToAllocate.getInvoiceId())
 				.bpartnerId(invoiceToAllocate.getBpartnerId())
 				.documentNo(invoiceToAllocate.getDocumentNo())
@@ -344,6 +566,72 @@ public class AllocatePayments_StepDef
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(amounts.convertToRealAmounts(invoiceToAllocate.getMultiplier()));
+	}
+
+	private Optional<PaymentBonusDeduction> computePaymentBonusDeduction(@NonNull final InvoiceToAllocate invoiceToAllocate, @NonNull final DataTableRow row)
+	{
+		final Optional<PaymentBonusDeduction> computedDeduction = paymentBonusDeductionService.computeForInvoice(invoiceToAllocate.getInvoiceId());
+		final Optional<Money> deductedAmt = row.getAsOptionalMoney("PaymentBonusAmt", moneyService::getCurrencyIdByCurrencyCode);
+		if (!deductedAmt.isPresent())
+		{
+			return computedDeduction;
+		}
+
+		final PaymentBonusDeduction deduction = computedDeduction
+				.orElseThrow(() -> new AdempiereException("No payment bonus to deduct for invoice " + invoiceToAllocate.getDocumentNo()));
+		return Optional.of(deduction.withGrossAmount(deductedAmt.get()));
+	}
+
+	private Optional<InvoiceProcessingFeeCalculation> computeInvoiceProcessingFee(
+			@NonNull final InvoiceToAllocate invoiceToAllocate,
+			@NonNull final List<PaymentDocument> paymentDocuments)
+	{
+		if (!invoiceToAllocate.getDocBaseType().isSales())
+		{
+			return Optional.empty();
+		}
+
+		final ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
+		final Optional<InvoiceProcessingFeeCalculation> computedFee = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
+				.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
+				.evaluationDate(evaluationDate)
+				.customerId(invoiceToAllocate.getBpartnerId())
+				.docTypeId(invoiceToAllocate.getDocTypeId())
+				.invoiceId(invoiceToAllocate.getInvoiceId())
+				.invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
+				.serviceInvoiceWasAlreadyGenerated(OptionalBoolean.UNKNOWN) // like production: let computeFee check for an existing service invoice
+				.build());
+		if (!computedFee.isPresent() || computedFee.get().getFeeAmountIncludingTax().isZero())
+		{
+			return Optional.empty();
+		}
+
+		final BPartnerId customerId = invoiceToAllocate.getBpartnerId();
+		final InvoiceProcessingContext context = invoiceProcessingServiceCompanyService.extractInvoiceProcessingContext(
+				customerId,
+				paymentDocuments.stream()
+						.map(PaymentDocument::toInvoiceProcessingContext)
+						.collect(ImmutableList.toImmutableList()),
+				() -> new AdempiereException("No service company config found for customer " + customerId));
+		final BPartnerId serviceCompanyBPartnerId = context.getServiceCompanyId();
+
+		return Optional.of(invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
+						.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
+						.paymentDate(context.getPaymentDate())
+						.customerId(invoiceToAllocate.getBpartnerId())
+						.invoiceId(invoiceToAllocate.getInvoiceId())
+						.feeAmountIncludingTax(computedFee.get().getFeeAmountIncludingTax())
+						.serviceCompanyBPartnerId(serviceCompanyBPartnerId)
+						.build())
+				// mirrors PaymentsViewAllocateCommand.java:193-199 (pinned by PaymentsViewAllocateCommandTest:685-705)
+				.orElseThrow(() -> new AdempiereException(
+						MSG_NO_CONFIG_FOR_PAYMENT_PARTNER,
+						invoiceToAllocate.getDocumentNo(),
+						paymentDocuments.stream().map(PaymentDocument::getDocumentNo).collect(Collectors.joining(", ")),
+						bpartnerBL.getBPartnerName(serviceCompanyBPartnerId))
+						.markAsUserValidationError()
+						.setParameter("C_Invoice_ID", invoiceToAllocate.getInvoiceId().getRepoId())
+						.setParameter("C_BPartner_ID", serviceCompanyBPartnerId.getRepoId())));
 	}
 
 	@NonNull

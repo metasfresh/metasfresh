@@ -644,7 +644,7 @@ export function fetchHeaderProperties({ windowId, viewId, isModal = false }) {
 
 export function patchViewAction({ windowId, viewId, rowId, fieldName, value }) {
   return (dispatch) => {
-    patchModalView({ windowId, viewId, rowId, fieldName, value }).then(
+    return patchModalView({ windowId, viewId, rowId, fieldName, value }).then(
       (row) => {
         dispatch(
           partialUpdateGridTableRows({
@@ -653,12 +653,16 @@ export function patchViewAction({ windowId, viewId, rowId, fieldName, value }) {
           })
         );
 
+        // A rejected row edit comes back as HTTP 200 with the unchanged row and the error (see ViewRowEditRestController),
+        // so it is shown here - whether or not the error is flagged as user friendly - instead of silently keeping the old value
         const error = row.error;
-        if (error?.userFriendlyError) {
+        if (error) {
           const message = error.message ?? '';
           dispatch(
             addNotification(
-              'Error: ' + message.split(' ', 4).join(' ') + '...',
+              message
+                ? 'Error: ' + message.split(' ', 4).join(' ') + '...'
+                : 'Error',
               message,
               5000,
               'error'
