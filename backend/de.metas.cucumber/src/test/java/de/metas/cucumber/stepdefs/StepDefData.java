@@ -225,6 +225,26 @@ public abstract class StepDefData<T>
 		return records.get(identifier);
 	}
 
+	/**
+	 * @return the given identifier's record id, read directly from what is already known — the id its
+	 * {@link TableRecordReference} was created with — without loading or refreshing the record. Unlike
+	 * {@link #get(StepDefDataIdentifier)}, this never fails on a since-deleted underlying row, because it never
+	 * reads that row at all. Empty when the identifier is unknown, or its item was stored as a plain (non-model)
+	 * record — that shape has no id to peek at without invoking {@code extractIdFromRecord}, but it also isn't
+	 * lazily loaded, so callers can fall back to the normal, safe {@code get}-based id lookup for it.
+	 */
+	@NonNull
+	public Optional<Integer> peekRecordRepoId(@NonNull final StepDefDataIdentifier identifier)
+	{
+		final RecordDataItem<T> item = getRecordDataItemOrNull(identifier);
+		if (item == null || item.getTableRecordReference() == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(item.getTableRecordReference().getRecord_ID());
+	}
+
 	@NonNull
 	public Optional<T> getOptional(@NonNull final String identifier)
 	{
@@ -312,15 +332,28 @@ public abstract class StepDefData<T>
 
 			if (tableRecordReference != null)
 			{
+				final T model;
 				try
 				{
-					return tableRecordReference.getModel(tableRecordReferenceClazz);
+					model = tableRecordReference.getModel(tableRecordReferenceClazz);
 				}
 				catch (final RuntimeException e)
 				{
 					throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
 							.setParameter("recordDataItem", this);
 				}
+
+				if (model == null)
+				{
+					// the row this item's identifier once pointed to no longer exists in the DB (e.g. deleted by
+					// application logic after being identified) -- fail clearly instead of handing back a null
+					// that surfaces as an unrelated NPE at some later, unrelated call site.
+					throw new AdempiereException("Record no longer exists in the DB for " + this)
+							.appendParametersToMessage()
+							.setParameter("recordDataItem", this);
+				}
+
+				return model;
 			}
 
 			throw new AdempiereException("Cannot get the record of " + this);

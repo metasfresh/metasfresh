@@ -37,7 +37,8 @@ import java.util.Arrays;
 public enum Camt53Version
 {
 	V02("camt.053.001.02"),
-	V04("camt.053.001.04");
+	V04("camt.053.001.04"),
+	V08("camt.053.001.08");
 
 	@Getter
 	private final String code;

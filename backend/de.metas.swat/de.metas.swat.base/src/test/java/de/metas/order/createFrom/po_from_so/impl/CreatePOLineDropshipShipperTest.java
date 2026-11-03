@@ -230,7 +230,7 @@ class CreatePOLineDropshipShipperTest
 				purchaseOrder,
 				I_C_OrderLine.COLUMNNAME_QtyOrdered,
 				purchaseType);
-		agg.setItemAggregationKeyBuilder(CreatePOLineFromSOLinesAggregationKeyBuilder.INSTANCE);
+		agg.setItemAggregationKeyBuilder(CreatePOLineFromSOLinesAggregationKeyBuilder.forPurchaseType(purchaseType));
 		agg.setGroupsBufferSize(100);
 		return agg;
 	}

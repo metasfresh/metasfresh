@@ -14,6 +14,7 @@ import {
 } from '../../../reducers/windowHandler';
 
 import Filters from '../../../components/filters/Filters';
+import { initNumeralLocales } from '../../../utils/locale';
 import filtersFixtures from '../../../../test_setup/fixtures/filters.json';
 import filterData
   from '../../../../test_setup/fixtures/filters/filterData.json';
@@ -61,6 +62,13 @@ const createInitialProps = function (
 };
 
 describe('Filters tests', () => {
+  afterEach(() => {
+    initNumeralLocales('en', {
+      numberDecimalSeparator: '.',
+      numberGroupingSeparator: ',',
+    });
+  });
+
   it('renders without errors', () => {
     const dummyProps = createInitialProps();
     const initialState = createStore({
@@ -339,6 +347,77 @@ describe('Filters tests', () => {
         },
       ];
       expect(updateDocListListener).toBeCalledWith(filterResult);
+    });
+
+    it('keeps what the user types into a number filter, and sends a decimal comma as a dot-decimal (German session)', () => {
+      initNumeralLocales('de', {
+        numberDecimalSeparator: ',',
+        numberGroupingSeparator: '.',
+      });
+      const updateDocListListener = jest.fn();
+      const dummyProps = createInitialProps(undefined, {
+        filtersActive: filtersFixtures.filtersActive3,
+        updateDocList: updateDocListListener,
+      });
+      const initialState = createStore({
+        windowHandler: { allowShortcut: true, modal: { visible: false } },
+        filters: filtersStoreTwo,
+      });
+
+      const wrapper = mount(
+        <ShortcutProvider>
+          <Provider store={mockStore(initialState)}>
+            <div className="document-lists-wrapper">
+              <Filters {...dummyProps} />
+            </div>
+          </Provider>
+        </ShortcutProvider>
+      );
+      wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
+      const typeQtyFrom = (value) => {
+        act(() => {
+          wrapper
+            .find('.form-field-QtyDelivered input')
+            .first()
+            .simulate('change', { target: { value } });
+        });
+        wrapper.update();
+      };
+      const displayedQtyFrom = () =>
+        wrapper.find('.form-field-QtyDelivered input').first().props().value;
+
+      // partial input stays as typed: a lone minus or a trailing comma must not be rewritten while typing
+      typeQtyFrom('-');
+      expect(displayedQtyFrom()).toEqual('-');
+      typeQtyFrom('3,');
+      expect(displayedQtyFrom()).toEqual('3,');
+      typeQtyFrom('3,5');
+      expect(displayedQtyFrom()).toEqual('3,5');
+
+      // typing the other end keeps this one
+      act(() => {
+        wrapper
+          .find('.form-field-QtyDelivered input')
+          .at(1)
+          .simulate('change', { target: { value: '4,5' } });
+      });
+      wrapper.update();
+      const qtyDeliveredState = wrapper
+        .find('FiltersItem')
+        .state()
+        .filter.parameters.find((p) => p.parameterName === 'QtyDelivered');
+      expect([qtyDeliveredState.value, qtyDeliveredState.valueTo]).toEqual(['3.5', '4.5']);
+      expect(displayedQtyFrom()).toEqual('3,5');
+
+      wrapper
+        .find('.filter-widget .filter-btn-wrapper .applyBtn')
+        .simulate('click');
+
+      const appliedFilters = updateDocListListener.mock.calls[0][0];
+      const qtyDelivered = appliedFilters
+        .flatMap((filter) => filter.parameters)
+        .find((p) => p.parameterName === 'QtyDelivered');
+      expect(qtyDelivered.value).toEqual('3.5');
     });
 
     it('supports selecting filters without parameters', () => {

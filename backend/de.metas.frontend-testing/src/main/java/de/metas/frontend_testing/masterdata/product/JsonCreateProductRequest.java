@@ -69,6 +69,21 @@ public class JsonCreateProductRequest
 	 */
 	@Nullable Boolean isSerialNoPicked;
 
+	/**
+	 * When {@code true}, the product is created without any {@code M_Cost} row, like a migrated product.
+	 * Defaults to {@code false}.
+	 */
+	@Nullable Boolean isSkipDefaultCosts;
+
+	/**
+	 * {@code M_Cost.CurrentCostPrice} (own cost price, in the product's stock UOM) of the costing-method element
+	 * of each accounting schema. When {@code null} the default costs are left untouched.
+	 */
+	@Nullable BigDecimal currentCostPrice;
+
+	/** {@code M_Product.CoProductCostDistributionPercent}; when {@code null} the column stays unset. */
+	@Nullable BigDecimal coProductCostDistributionPercent;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
 	@Nullable GTIN gtin;
@@ -84,6 +99,9 @@ public class JsonCreateProductRequest
 	/** M_Product.GuaranteeDaysMin — minimum guaranteed shelf-life days for this product */
 	@Nullable Integer guaranteeDaysMin;
 
+	/** M_Product.BestBeforeDays — total shelf life in days, used to default the best-before date at receipt */
+	@Nullable Integer bestBeforeDays;
+
 	@Nullable BOM bom;
 
 	/**
@@ -93,6 +111,18 @@ public class JsonCreateProductRequest
 	 * Example values: "Lot", "Serial", "LotSerial"
 	 */
 	@Nullable String attributeSetName;
+
+	/**
+	 * Identifier of a {@link JsonProductCategoryRequest} created in the same request (the {@code productCategories}
+	 * map key). When set, the product is placed in that per-run category
+	 * ({@code M_Product.M_Product_Category_ID}); when omitted, it defaults to
+	 * {@link de.metas.frontend_testing.masterdata.MasterdataContext#PRODUCT_CATEGORY_STANDARD_ID}.
+	 * <p>
+	 * This is the field that makes the mobile mfg editable-attributes feature testable: that feature resolves a
+	 * product's attribute set from its CATEGORY, so a product must sit in a category whose set carries the
+	 * configured attributes - not merely have {@link #attributeSetName} set (a different consumer).
+	 */
+	@Nullable Identifier productCategory;
 
 	/**
 	 * Identifier of a {@link de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest}
@@ -154,6 +184,23 @@ public class JsonCreateProductRequest
 	public static class BOM
 	{
 		@NonNull List<BOMLine> lines;
+		/** optional lot-number sequence of the BOM (PP_Product_BOM.LotNo_Sequence_ID) */
+		@Nullable LotNoSequence lotNoSequence;
+		boolean serialNoSequence;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class LotNoSequence
+	{
+		@Nullable String prefix;
+		/** the lot number is the receipt date (DateSequenceProvider, date format from sysconfig), followed by the counter if a decimal pattern is set */
+		boolean dateBased;
+		@Nullable String decimalPattern;
+		@Nullable Integer currentNext;
+		/** dateBased only: this sequence's own date format (AD_Sequence.DateFormat), instead of the global one */
+		@Nullable String dateFormat;
 	}
 
 	@Value

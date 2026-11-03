@@ -25,8 +25,19 @@ package de.metas.deliveryplanning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.inout.InOutId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
+import de.metas.location.CountryId;
+import org.adempiere.warehouse.WarehouseId;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.order.OrderLineId;
+import de.metas.order.OrderId;
+import de.metas.uom.UomId;
+import de.metas.product.ProductId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -45,7 +56,7 @@ import java.time.Instant;
  * is allocated to. Not a full mirror of {@code M_Delivery_Planning}.
  */
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class DeliveryPlanning
 {
 	@NonNull DeliveryPlanningId id;
@@ -78,6 +89,122 @@ public class DeliveryPlanning
 	boolean closed;
 
 	/**
+	 * Read straight off the stored column - never re-derived here; task Q10 maintains the invariant
+	 * {@code Processed == (IsClosed || IsDelivered)} at every write point.
+	 * <p>
+	 * UNLIKE the {@code @Nullable} fields below, this is a primitive whose unset value ({@code false}) is the
+	 * PERMISSIVE answer for a guard, so EVERY mapper building a {@link DeliveryPlanning} from a record must set
+	 * it - leaving it out silently waves a processed planning through.
+	 */
+	boolean processed;
+
+	/**
+	 * Read straight off the stored column, which the {@code M_Delivery_Planning_Alloc} interceptor keeps in
+	 * step: it is true exactly while the planning has an ACTIVE allocation to a delivery instruction in
+	 * {@code DocStatus = Completed}. Receiving before that is what it guards.
+	 * <p>
+	 * NOTE the polarity is the OPPOSITE of {@link #processed} above: there the unset value {@code false} is
+	 * the permissive answer, so a mapper that forgets it waves a processed planning through. Here {@code false}
+	 * is the RESTRICTIVE answer - a mapper that forgets it blocks a receivable planning instead of allowing an
+	 * unreceivable one. That fails safe, but it is why a test building a receivable planning has to say so.
+	 */
+	boolean readyForReceipt;
+
+	/**
+	 * The five quantities are {@code @NonNull} because their columns all carry {@code AD_IsMandatory='Y'} - a
+	 * planning always has them. They were {@code @Nullable} only because three partial record mappers used to
+	 * omit them for callers that "never ask"; with one mapper setting every record-derived field, that reason
+	 * is gone and the model can state what the dictionary already guarantees.
+	 */
+	@NonNull Quantity qtyOrdered;
+
+	/** This planning's own planned LOAD figure - the load half of {@link DeliveryPlanningList#openPlanQty}'s pool. */
+	@NonNull Quantity plannedLoadedQty;
+
+	@NonNull Quantity actualLoadedQty;
+
+	@NonNull Quantity plannedDischargeQty;
+
+	@NonNull Quantity actualDischargeQty;
+
+	/**
+	 * Genuinely optional, unlike the quantities above: {@code M_InOut_ID} carries {@code AD_IsMandatory='N'} and
+	 * is null on the majority of rows - a planning has no shipment/receipt until one is generated.
+	 */
+	@Nullable InOutId inOutId;
+
+	/**
+	 * The delivery instruction this planning currently sits on, and the release number stamped from it. Both
+	 * null while it is on none - which is the state {@code clearInstructionReference} puts it back into.
+	 */
+	@Nullable ShipperTransportationId shipperTransportationId;
+
+	@Nullable String releaseNo;
+
+	/**
+	 * The order-line TOTALS, redundantly stored on every planning of the line: how much of the line is still
+	 * open, and how much of that is already planned. Written together by
+	 * {@code recomputeOpenQuantitiesForOrderLine}, which is why they are on the model at all.
+	 * <p>
+	 * {@code QtyTotalOpen} is {@code AD_IsMandatory='Y'} and physically NOT NULL; {@code QtyTotalOpenPlanned}
+	 * is neither, so the two are typed differently on purpose rather than uniformly.
+	 */
+	@NonNull Quantity qtyTotalOpen;
+
+	@Nullable Quantity qtyTotalOpenPlanned;
+
+	// ------------------------------------------------------------------------------------------------
+	// The rest of the row. Deliberately absent: AD_Client_ID / AD_Org_ID beyond orgId, the audit columns
+	// (Created/CreatedBy/Updated/UpdatedBy), the 13 ColumnSQL-computed columns (BPartnerName, IsDelivered,
+	// ProductName, ShipTo_Location_ID, DeliveryStatus_Color_ID, ...) which have no physical column to write
+	// back to, and IsAllocated - that one is stored AND already derived here from {@link #allocations}, and
+	// two sources of truth for one question is worse than none.
+	// ------------------------------------------------------------------------------------------------
+
+	/** {@code AD_IsMandatory='Y'} and physically NOT NULL, like the quantities. */
+	@NonNull BPartnerId bpartnerId;
+
+	@NonNull UomId uomId;
+
+	@Nullable BPartnerLocationId bpartnerLocationId;
+
+	@Nullable ProductId productId;
+
+	@Nullable WarehouseId warehouseId;
+
+	@Nullable OrderId orderId;
+
+	@Nullable OrderLineId orderLineId;
+
+	@Nullable ReceiptScheduleId receiptScheduleId;
+
+	@Nullable ShipmentScheduleId shipmentScheduleId;
+
+	@Nullable CountryId originCountryId;
+
+	@Nullable CountryId destinationCountryId;
+
+	/** The actual departure/arrival, against {@link #etd} and {@link #eta} as planned. */
+	@Nullable Instant ata;
+
+	@Nullable Instant atd;
+
+	@Nullable Instant eta;
+
+	/** Free text, not a timestamp: both columns are String in the dictionary despite their names. */
+	@Nullable String loadingTime;
+
+	@Nullable String deliveryTime;
+
+	@Nullable String orderStatus;
+
+	@Nullable String batch;
+
+	@Nullable String wayBillNo;
+
+	@Nullable String transportDetails;
+
+	/**
 	 * This planning's ACTIVE allocations, one per delivery instruction it sits on. A list rather than a single id
 	 * because multi-leg transport puts one planning on several instructions; no consumer may assume at most one.
 	 */
@@ -101,4 +228,10 @@ public class DeliveryPlanning
 	}
 
 	public boolean isWithoutShipper() {return shipperId == null;}
+
+	/**
+	 * The same definition {@code M_Delivery_Planning.IsDelivered}'s {@code ColumnSQL} evaluates in SQL, so the two
+	 * layers cannot diverge. On an incoming planning "delivered" means received.
+	 */
+	public boolean isDelivered() {return inOutId != null;}
 }

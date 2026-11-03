@@ -32,6 +32,8 @@ import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
@@ -99,7 +101,6 @@ public class DocumentCollection
 	private static final Logger logger = LogManager.getLogger(DocumentCollection.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	public static final AdMessageKey MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW = AdMessageKey.of("de.metas.ui.web.window.model.DocumentCollection.CloningNotAllowedForCurrentWindow");
-	public static final AdMessageKey MSG_CREATE_NOT_ALLOWED = AdMessageKey.of(("de.metas.ui.web.window.model.DocumentCollection.CreateNotAllowed"));
 
 	private final DocumentDescriptorFactory documentDescriptorFactory;
 	private final UserSession userSession;
@@ -357,9 +358,13 @@ public class DocumentCollection
 
 	private void assertNewDocumentAllowed(final DocumentEntityDescriptor entityDescriptor)
 	{
-		if(!DocumentPermissionsHelper.isNewDocumentAllowed(entityDescriptor, userSession))
+		final BooleanWithReason newDocumentAllowed = DocumentPermissionsHelper.checkNewDocumentAllowed(entityDescriptor, userSession);
+		if (newDocumentAllowed.isFalse())
 		{
-			throw new AdempiereException(MSG_CREATE_NOT_ALLOWED);
+			final ITranslatableString reason = newDocumentAllowed.getReason();
+			throw new AdempiereException(TranslatableStrings.isBlank(reason)
+					? TranslatableStrings.adMessage(DocumentPermissionsHelper.MSG_CREATE_NOT_ALLOWED)
+					: reason);
 		}
 	}
 
@@ -858,6 +863,13 @@ public class DocumentCollection
 		if (!DocumentPermissionsHelper.canEdit(fromDocument, permissions))
 		{
 			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
+		}
+
+		// Cloning brings a new record into existence, so the role's create permission applies here too.
+		final BooleanWithReason roleCanCreateNewRecords = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(fromDocument.getEntityDescriptor(), permissions);
+		if (roleCanCreateNewRecords.isFalse())
+		{
+			throw new AdempiereException(roleCanCreateNewRecords.getReason());
 		}
 
 		final TableRecordReference fromRecordRef = fromDocument.getTableRecordReference()
