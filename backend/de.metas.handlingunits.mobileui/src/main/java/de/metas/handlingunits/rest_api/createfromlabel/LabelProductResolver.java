@@ -20,7 +20,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -129,19 +128,19 @@ class LabelProductResolver
 	@NonNull
 	private ProductId resolveByGTIN(@NonNull final GTIN gtin)
 	{
-		final List<ProductId> productIds = productBL.getProductIdsByLabelGTIN(gtin, null, clientId);
+		final ImmutableSet<ProductId> productIds = productBL.getProductIdsByGTIN(gtin, clientId);
 		if (productIds.isEmpty())
 		{
 			throw new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_GTIN, gtin.getAsString());
 		}
 		else if (productIds.size() > 1)
 		{
-			final String productValues = productBL.getProductValues(ImmutableSet.copyOf(productIds)).values().stream()
+			final String productValues = productBL.getProductValues(productIds).values().stream()
 					.sorted()
 					.collect(Collectors.joining(", "));
 			throw new LabelRejectionException(BARCODE_FITS_SEVERAL_PRODUCTS, gtin.getAsString(), productValues);
 		}
-		return productIds.get(0);
+		return productIds.iterator().next();
 	}
 
 	private static String trunc(@NonNull final ScannedCode scannedCode)

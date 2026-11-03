@@ -898,15 +898,15 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public ImmutableList<ProductId> getProductIdsByLabelGTIN(@NonNull final GTIN gtin, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)
+	public ImmutableSet<ProductId> getProductIdsByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
 	{
-		final ImmutableList<ProductId> exactMatches = productsRepo.getProductIdsByLabelGTIN(gtin, clientId);
+		final ImmutableSet<ProductId> exactMatches = productsRepo.getProductIdsByGTIN(gtin, clientId);
 		if (!exactMatches.isEmpty())
 		{
 			return exactMatches;
 		}
 
-		return getProductIdByGTIN(gtin, bpartnerId, clientId).map(ImmutableList::of).orElseGet(ImmutableList::of);
+		return getProductIdByGTIN(gtin, null, clientId).map(ImmutableSet::of).orElseGet(ImmutableSet::of);
 	}
 
 	private Optional<ProductId> getProductIdByGTINStrictly(@NonNull final GTIN gtin, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)

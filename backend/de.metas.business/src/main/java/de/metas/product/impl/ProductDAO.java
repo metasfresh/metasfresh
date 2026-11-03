@@ -717,7 +717,7 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public ImmutableList<ProductId> getProductIdsByLabelGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	public ImmutableSet<ProductId> getProductIdsByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
 	{
 		return queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
@@ -725,9 +725,7 @@ public class ProductDAO implements IProductDAO
 				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtin.getAsString())
 				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
 				.create()
-				.listIds(ProductId::ofRepoId)
-				.stream()
-				.collect(ImmutableList.toImmutableList());
+				.idsAsSet(ProductId::ofRepoId);
 	}
 
 	@Override

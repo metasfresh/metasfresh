@@ -1,5 +1,6 @@
 package de.metas.product.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.gs1.GTIN;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -150,7 +151,7 @@ class ProductBLTest
 	}
 
 	@Nested
-	class getProductIdsByLabelGTIN
+	class getProductIdsByGTIN
 	{
 		@Test
 		void labelGtin_noExactMatch_fallsBackToClientAwareLookup()
@@ -161,7 +162,7 @@ class ProductBLTest
 			p.setEAN13_ProductCode("702766721");
 			InterfaceWrapperHelper.saveRecord(p);
 
-			assertThat(productBL.getProductIdsByLabelGTIN(GTIN.ofString("7617027667210"), null, ClientId.METASFRESH))
+			assertThat(productBL.getProductIdsByGTIN(GTIN.ofString("7617027667210"), ClientId.METASFRESH))
 					.containsExactly(ProductId.ofRepoId(p.getM_Product_ID()));
 		}
 
@@ -177,7 +178,8 @@ class ProductBLTest
 			b.setGTIN("02001234567893");
 			InterfaceWrapperHelper.saveRecord(b);
 
-			assertThat(productBL.getProductIdsByLabelGTIN(GTIN.ofString("02001234567893"), null, ClientId.METASFRESH))
+			assertThat(productBL.getProductIdsByGTIN(GTIN.ofString("02001234567893"), ClientId.METASFRESH))
+					.isInstanceOf(ImmutableSet.class)
 					.containsExactly(ProductId.ofRepoId(a.getM_Product_ID()), ProductId.ofRepoId(b.getM_Product_ID()));
 		}
 	}

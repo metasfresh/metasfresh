@@ -22,7 +22,7 @@
 
 package de.metas.product.impl;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.product.IProductDAO;
@@ -215,7 +215,8 @@ public class ProductDAOTest
 			final I_M_Product p = productWithGtin("L1", "02001234567893");
 			productWithGtin("L2", "02001234567909");
 
-			assertThat(productDAO.getProductIdsByLabelGTIN(GTIN.ofString("02001234567893"), ClientId.METASFRESH))
+			assertThat(productDAO.getProductIdsByGTIN(GTIN.ofString("02001234567893"), ClientId.METASFRESH))
+					.isInstanceOf(ImmutableSet.class)
 					.containsExactly(ProductId.ofRepoId(p.getM_Product_ID()));
 		}
 
@@ -225,7 +226,7 @@ public class ProductDAOTest
 			final I_M_Product lowerId = productWithGtin("L3", "02001234567893");
 			final I_M_Product higherId = productWithGtin("L4", "02001234567893");
 
-			final ImmutableList<ProductId> result = productDAO.getProductIdsByLabelGTIN(GTIN.ofString("02001234567893"), ClientId.METASFRESH);
+			final ImmutableSet<ProductId> result = productDAO.getProductIdsByGTIN(GTIN.ofString("02001234567893"), ClientId.METASFRESH);
 
 			assertThat(result).containsExactly(ProductId.ofRepoId(lowerId.getM_Product_ID()), ProductId.ofRepoId(higherId.getM_Product_ID()));
 			assertThat(lowerId.getM_Product_ID()).isLessThan(higherId.getM_Product_ID());

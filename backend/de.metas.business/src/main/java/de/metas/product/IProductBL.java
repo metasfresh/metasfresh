@@ -309,12 +309,15 @@ public interface IProductBL extends ISingletonService
 	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
 
 	/**
-	 * Product lookup for a scanned label: all products whose GTIN equals the scanned GTIN exactly (ordered by M_Product_ID);
-	 * when none does, the single product found by {@link #getProductIdByGTIN(GTIN, BPartnerId, ClientId)}, if any.
-	 * Note: unlike {@link #getProductIdByGTIN(GTIN, BPartnerId, ClientId)}, the {@code M_Product.GTIN} match comes first;
-	 * a partner-specific GTIN mapping ({@code C_BPartner_Product.GTIN}) is consulted only when no {@code M_Product.GTIN} matches.
+	 * Plural counterpart of {@link #getProductIdByGTIN(GTIN, BPartnerId, ClientId)} (no partner): it exposes ambiguity,
+	 * so a caller can reject a GTIN that fits several products instead of getting one of them picked.
+	 * <ol>
+	 * <li>All active products of the client whose {@code M_Product.GTIN} equals the given GTIN exactly (ordered by {@code M_Product_ID}).</li>
+	 * <li>Only if step 1 finds none: the single product found by {@link #getProductIdByGTIN(GTIN, BPartnerId, ClientId)}, if any.</li>
+	 * </ol>
+	 * Unlike the single-result methods (which return one product by contract), this one may return several.
 	 */
-	ImmutableList<ProductId> getProductIdsByLabelGTIN(@NonNull GTIN gtin, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
+	ImmutableSet<ProductId> getProductIdsByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
 	Optional<ProductId> getProductIdByGTINStrictly(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
