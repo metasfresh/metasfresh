@@ -18,8 +18,6 @@ import Spinner from './Spinner';
 import { doFinally } from '../utils';
 import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickConfig';
 import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
-import Spinner from './Spinner';
-import { doFinally } from '../utils';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_HU_BARCODE = 'READ_HU_BARCODE';
@@ -77,6 +75,9 @@ const ScanHUAndGetQtyComponent = ({
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState(undefined);
   const [isProcessing, setProcessing] = useState(false);
+  // synchronous twin of isProcessing: state is only visible after the next render, so two taps handled
+  // before that render would both pass a state-only check
+  const isResultInFlightRef = useRef(false);
   // GRAI Flow-Through: when graiScanEnabled, the confirmed qty result is stashed here and the GRAI
   // capture is shown inline (non-skippable) before the pick is reported, so qty + GRAIs go out in one
   // atomic onResult call.
@@ -227,13 +228,23 @@ const ScanHUAndGetQtyComponent = ({
 
   // Mirrors GetQuantityDialog.fireOnQtyChange: isProcessing is what suppresses the scan target while
   // the pick's POST is in flight, and it has to be cleared on the error branch too.
+  // The ref makes a second call before the next render a no-op (a state-only check would let both through).
   const fireOnResult = (onResultPayload) => {
+    if (isResultInFlightRef.current) {
+      return undefined;
+    }
+    const clearInFlight = () => {
+      isResultInFlightRef.current = false;
+      setProcessing(false);
+    };
+
+    isResultInFlightRef.current = true;
     setProcessing(true);
     try {
       const promise = onResult(onResultPayload)?.catch?.((error) => toastErrorFromObj(error));
-      return doFinally(promise, () => setProcessing(false));
+      return doFinally(promise, clearInFlight);
     } catch (error) {
-      setProcessing(false);
+      clearInFlight();
       throw error;
     }
   };

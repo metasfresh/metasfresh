@@ -416,6 +416,8 @@ public class PickingJobPickCommand
 
 		productService.assertPickAllowed(getProductId());
 
+		assertNotAboveOrderedQtyWhenOverPickBlocked();
+
 		checkOrAllocatePickingSlot();
 
 		validatePickFromHU();
