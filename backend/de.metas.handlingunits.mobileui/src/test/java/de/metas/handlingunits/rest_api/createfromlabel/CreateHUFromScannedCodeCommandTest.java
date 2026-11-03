@@ -1,6 +1,7 @@
 package de.metas.handlingunits.rest_api.createfromlabel;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.handlingunits.CreateHUFromInventoryRequest;
 import de.metas.handlingunits.HuId;
@@ -17,6 +18,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.i18n.impl.PlainMsgBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
@@ -322,9 +325,10 @@ class CreateHUFromScannedCodeCommandTest
 		Services.registerService(IMsgBL.class, new PlainMsgBL()
 		{
 			@Override
-			public String getMsg(final String adLanguage, @NonNull final AdMessageKey message)
+			public ITranslatableString getTranslatableMsgText(@NonNull final AdMessageKey adMessage, final Object... msgParameters)
 			{
-				return adLanguage + ":" + message.toAD_Message();
+				final String key = adMessage.toAD_Message();
+				return TranslatableStrings.ofMap(ImmutableMap.of("de_DE", "de_DE:" + key, "en_US", "en_US:" + key), key);
 			}
 		});
 		product2.setGTIN("02001234567893");
