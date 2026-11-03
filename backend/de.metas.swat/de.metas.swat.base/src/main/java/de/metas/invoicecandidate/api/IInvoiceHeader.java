@@ -113,4 +113,17 @@ public interface IInvoiceHeader
 
 	@Nullable
 	LocalDate getOverrideDueDate();
+
+	/**
+	 * Caller's explicit Y/N intent for {@code C_Invoice.IsPartialInvoice}; {@code null} means no
+	 * explicit intent (NA — let the C_Invoice interceptor default from doctype).
+	 *
+	 * <p>Propagated directly from {@code PlainInvoicingParams.partialInvoice} through
+	 * {@code AggregationEngine} to the invoice creation in {@code InvoiceCandBLCreateInvoices},
+	 * bypassing the doctype-swap path. See me03 #29369 (iter-3 split-payment).
+	 */
+	@Nullable
+	Boolean getIsPartialInvoice();
+
+	void setIsPartialInvoice(@Nullable Boolean isPartialInvoice);
 }

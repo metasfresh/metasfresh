@@ -146,4 +146,8 @@ public interface IHUInOutBL extends ISingletonService
 
 	@NonNull
 	Map<InOutLineId, List<I_M_HU>> retrieveShippedHUsByShipmentLineId(Set<InOutLineId> shipmentLineIds);
+
+	void save(@NonNull I_M_InOutLine inOutLineRecord);
+
+	void save(@NonNull I_M_InOut inOutRecord);
 }

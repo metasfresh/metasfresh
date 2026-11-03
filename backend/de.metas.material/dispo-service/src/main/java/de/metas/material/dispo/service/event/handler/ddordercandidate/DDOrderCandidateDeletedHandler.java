@@ -2,6 +2,7 @@ package de.metas.material.dispo.service.event.handler.ddordercandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
@@ -31,6 +32,7 @@ public class DDOrderCandidateDeletedHandler implements MaterialEventHandler<DDOr
 		return ImmutableList.of(DDOrderCandidateDeletedEvent.class);
 	}
 
+	// no MRP_Exclude guard: handler only operates on already-existing candidates loaded by ID; if creation was skipped due to MRP_Exclude, the load returns nothing and this is a no-op.
 	@Override
 	public void handleEvent(@NonNull final DDOrderCandidateDeletedEvent event)
 	{
@@ -54,7 +56,14 @@ public class DDOrderCandidateDeletedHandler implements MaterialEventHandler<DDOr
 												  .build())
 				.build();
 
-		candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query)
-				.forEach(candidateChangeHandler::onCandidateDelete);
+		for (final Candidate candidate : candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query))
+		{
+			// deleting a candidate also deletes its linked supply or demand candidate (both directions); the list is ordered by date and seqNo, so either side may already be gone
+			if (candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(candidate.getId())) == null)
+			{
+				continue;
+			}
+			candidateChangeHandler.onCandidateDelete(candidate);
+		}
 	}
 }

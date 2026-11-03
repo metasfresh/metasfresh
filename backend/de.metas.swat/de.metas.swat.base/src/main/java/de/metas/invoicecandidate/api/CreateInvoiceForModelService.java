@@ -84,7 +84,17 @@ public class CreateInvoiceForModelService
 				.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
 	}
 
-	private void generateMissingInvoiceCandidatesForModel(@NonNull final List<TableRecordReference> modelReferences)
+	/**
+	 * Uses the Async-framework to create the missing invoice candidates for the given models and waits until that is done.
+	 * <p>
+	 * The candidates are created by workpackages within an async batch that this method waits for.
+	 * That way, the caller does not depend on a possibly still pending (and possibly overtaken) workpackage that was scheduled earlier.
+	 * Creating candidates for a model that already has them does nothing.
+	 * A model without an async batch gets a new one; a model that has one is processed within it.
+	 *
+	 * @param modelReferences e.g. {@code C_Order} records
+	 */
+	public void generateMissingInvoiceCandidatesForModel(@NonNull final List<TableRecordReference> modelReferences)
 	{
 		final List<Object> models = TableRecordReference.getModels(modelReferences, Object.class);
 

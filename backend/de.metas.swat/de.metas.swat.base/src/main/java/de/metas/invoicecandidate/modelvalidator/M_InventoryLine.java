@@ -5,7 +5,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.util.Services;
 
 /*
@@ -39,6 +39,6 @@ public class M_InventoryLine
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteC_Invoice_Candidates(final I_M_InventoryLine inventoryLine)
 	{
-		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(inventoryLine);
+		Services.get(IInvoiceCandBL.class).deleteAllReferencingInvoiceCandidates(inventoryLine);
 	}
 }

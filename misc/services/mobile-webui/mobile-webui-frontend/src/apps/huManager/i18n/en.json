@@ -62,7 +62,7 @@
         "confirmQuestion": "Remove all %(count)s GRAIs?"
       },
       "send": {
-        "buttonCaption": "Send"
+        "buttonCaption": "Save"
       },
       "undo": {
         "buttonCaption": "Undo"

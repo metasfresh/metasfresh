@@ -28,6 +28,8 @@ import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Proforma_Order_Alloc;
 import org.springframework.stereotype.Repository;
 
@@ -41,6 +43,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ProformaOrderAllocRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public static ProformaOrderAllocRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return SpringContextHolder.getBeanOrSupply(ProformaOrderAllocRepository.class, ProformaOrderAllocRepository::new);
+	}
 
 	@NonNull
 	public ProformaOrderAlloc getById(@NonNull final ProformaOrderAllocId proformaOrderAllocId)
@@ -69,6 +77,7 @@ public class ProformaOrderAllocRepository
 				.anyMatch();
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean existsByOrder(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_C_Proforma_Order_Alloc.class)
@@ -102,10 +111,6 @@ public class ProformaOrderAllocRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 * Returns the {@link OrderId} of the active proforma-order allocation for the given proforma invoice, or empty if none.
-	 * This is a narrower projection than {@link #findByProformaInvoiceId} — prefer it when only the order ID is needed.
-	 */
 	@NonNull
 	public Optional<OrderId> findOrderIdByProformaInvoiceId(@NonNull final InvoiceId proformaInvoiceId)
 	{
@@ -126,21 +131,6 @@ public class ProformaOrderAllocRepository
 				.create()
 				.firstOnlyOptional(I_C_Proforma_Order_Alloc.class)
 				.map(r -> InvoiceId.ofRepoId(r.getC_Invoice_ID()));
-	}
-
-	/**
-	 * Returns the single active proforma-order allocation for the given proforma invoice, or empty if none exists.
-	 * Used by the C_Payment interceptor to look up the order after a payment status change.
-	 */
-	@NonNull
-	public Optional<ProformaOrderAlloc> findByProformaInvoiceId(@NonNull final InvoiceId proformaInvoiceId)
-	{
-		return queryBL.createQueryBuilder(I_C_Proforma_Order_Alloc.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Proforma_Order_Alloc.COLUMNNAME_C_Invoice_ID, proformaInvoiceId)
-				.create()
-				.firstOnlyOptional(I_C_Proforma_Order_Alloc.class)
-				.map(ProformaOrderAllocRepository::fromRecord);
 	}
 
 	/**

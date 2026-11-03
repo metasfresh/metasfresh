@@ -322,4 +322,37 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		final IInvoiceHeader invoice = invoices.get(0);
 		assertThat(invoice.getOverrideDueDate()).isNull();
 	}
+
+	/**
+	 * Verifies that the "param" DueDateOverride is NOT applied when the IC has no payment term set
+	 * (neither C_PaymentTerm_Override_ID nor C_PaymentTerm_ID).
+	 * An override may only be applied when a payment term explicitly allows it; without a payment term
+	 * there is nothing to check, so the guard must fail-closed.
+	 */
+	@Test
+	public void test_using_dateDateDueOverrideParam_noPaymentTerm()
+	{
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate().build();
+
+		// Clear both payment term fields: the IC builder sets a default payment term,
+		// so we clear it explicitly to reach the no-payment-term code path.
+		ic1.setC_PaymentTerm_ID(-1);
+		ic1.setC_PaymentTerm_Override_ID(-1);
+		InterfaceWrapperHelper.save(ic1);
+
+		updateInvalidCandidates();
+		InterfaceWrapperHelper.refresh(ic1);
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.overrideDueDateParam(LocalDate.parse("2023-02-01"))
+				.build();
+
+		engine.addInvoiceCandidate(ic1);
+
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+		assertThat(invoices).hasSize(1);
+
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getOverrideDueDate()).isNull();
+	}
 }

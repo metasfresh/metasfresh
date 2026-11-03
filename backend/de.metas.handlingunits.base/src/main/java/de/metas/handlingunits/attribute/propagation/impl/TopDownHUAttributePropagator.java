@@ -75,10 +75,6 @@ public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 
 	/**
 	 * First sets the value, then propagates it, using the {@link IAttributeSplitterStrategy} assigned to the given <code>addtributeSet</code> and attribute.
-	 *
-	 * @param propagationContext
-	 * @param attributeSet
-	 * @param value
 	 */
 	private void setValue(final IHUAttributePropagationContext propagationContext, final IAttributeStorage attributeSet, final Object value)
 	{
@@ -98,11 +94,7 @@ public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 	}
 
 	/**
-	 * Also see the javadoc at {@link #propagateValue(IHUAttributePropagationContext, IAttributeStorage, Object)}.
-	 *
-	 * @param attributeSet
-	 * @param attribute
-	 * @param value
+	 * Also see the Javadoc at {@link #propagateValue(IHUAttributePropagationContext, IAttributeStorage, Object)}.
 	 */
 	private void propagateToChildren(final IHUAttributePropagationContext propagationContext, final IAttributeStorage attributeSet, final Object value)
 	{
@@ -117,8 +109,8 @@ public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 
 		//
 		// Check which of our child attributes are aware of propagation and build a list with them
-		final List<IAttributeStorage> childrenAttributeSets = new ArrayList<IAttributeStorage>(childrenAttributeSetsAll.size());
-		final List<IHUAttributePropagator> childrenAttributeSetPropagators = new ArrayList<IHUAttributePropagator>(childrenAttributeSetsAll.size());
+		final List<IAttributeStorage> childrenAttributeSets = new ArrayList<>(childrenAttributeSetsAll.size());
+		final List<IHUAttributePropagator> childrenAttributeSetPropagators = new ArrayList<>(childrenAttributeSetsAll.size());
 		
 		for (final IAttributeStorage childAttributeSet : childrenAttributeSetsAll)
 		{
@@ -140,7 +132,7 @@ public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 
 			//
 			// We don't have a splitter strategy and we're in a reverse propagation
-			if (NullSplitterStrategy.instance.equals(splitterStrategy)
+			if (splitterStrategy instanceof NullSplitterStrategy
 					&& childAttributeSet.getPropagationType(attribute).equals(childPropagator.getReversalPropagationType()))
 			{
 				//

@@ -49,7 +49,9 @@ SELECT c_trl.ad_language
      , COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)                                                                                               AS ad_val_rule_id
      , c.ad_process_id
      , c.isalwaysupdateable
-     , c.readonlylogic
+     -- mf15#4157: honour AD_Field-level ReadOnlyLogic override; fall back to AD_Column when the field has no override.
+     -- NULLIF treats empty-string as "not overridden" (legacy AD_Field rows often carry ''-default instead of NULL).
+     , COALESCE(NULLIF(f.readonlylogic, ''), c.readonlylogic)                                                                                    AS readonlylogic
      , c.mandatorylogic
      , c.isupdateable
      , c.isencrypted                                                                                                                              AS isencryptedcolumn

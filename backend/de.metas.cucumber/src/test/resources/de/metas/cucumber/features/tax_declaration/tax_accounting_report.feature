@@ -68,9 +68,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | sales19    | tax19    | Y       |
-      | purchase19 | tax19    | N       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19    | tax19    | Y       | T          |
+      | purchase19 | tax19    | N       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -131,9 +131,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | sales19    | tax19    | Y       |
-      | purchase19 | tax19    | N       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19    | tax19    | Y       | T          |
+      | purchase19 | tax19    | N       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -185,9 +185,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | purchase19 | tax19    | N       |
-      | sales19    | tax19    | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | purchase19 | tax19    | N       | T          |
+      | sales19    | tax19    | Y       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -239,9 +239,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | purchase19 | tax19    | N       |
-      | sales19    | tax19    | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | purchase19 | tax19    | N       | T          |
+      | sales19    | tax19    | Y       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -293,9 +293,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsTaxExempt |
       | tax0       | taxCategory      | 0    | DE                       | DE                        | Y           |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | sales0     | tax0     | Y       |
-      | purchase0  | tax0     | N       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales0     | tax0     | Y       | T          |
+      | purchase0  | tax0     | N       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -347,9 +347,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsTaxExempt |
       | tax0       | taxCategory      | 0    | DE                       | DE                        | Y           |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | purchase0  | tax0     | N       |
-      | sales0     | tax0     | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | purchase0  | tax0     | N       | T          |
+      | sales0     | tax0     | Y       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -420,9 +420,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | sales19    | tax19    | Y       |
-      | purchase19 | tax19    | N       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19    | tax19    | Y       | T          |
+      | purchase19 | tax19    | N       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -492,11 +492,11 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | tax19      | taxCategory19    | 19   | DE                       | DE                        |
       | tax7       | taxCategory7     | 7    | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | sales19    | tax19    | Y       |
-      | purchase19 | tax19    | N       |
-      | sales7     | tax7     | Y       |
-      | purchase7  | tax7     | N       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19    | tax19    | Y       | T          |
+      | purchase19 | tax19    | N       | T          |
+      | sales7     | tax7     | Y       | T          |
+      | purchase7  | tax7     | N       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product19  |
@@ -572,9 +572,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | sales19    | tax19    | Y       |
-      | purchase19 | tax19    | N       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19    | tax19    | Y       | T          |
+      | purchase19 | tax19    | N       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -647,9 +647,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | purchase19 | tax19    | N       |
-      | sales19    | tax19    | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | purchase19 | tax19    | N       | T          |
+      | sales19    | tax19    | Y       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -724,9 +724,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | purchase19 | tax19    | N       |
-      | sales19    | tax19    | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | purchase19 | tax19    | N       | T          |
+      | sales19    | tax19    | Y       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -813,9 +813,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | purchase19 | tax19    | N       |
-      | sales19    | tax19    | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | purchase19 | tax19    | N       | T          |
+      | sales19    | tax19    | Y       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -890,9 +890,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
       | tax19      | taxCategory      | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | purchase19 | tax19    | N       |
-      | sales19    | tax19    | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | purchase19 | tax19    | N       | T          |
+      | sales19    | tax19    | Y       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -969,9 +969,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
       | tax19      | taxCategory      | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | purchase19 | tax19    | N       |
-      | sales19    | tax19    | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | purchase19 | tax19    | N       | T          |
+      | sales19    | tax19    | Y       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -1042,9 +1042,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
       | tax19      | taxCategory      | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | purchase19 | tax19    | N       |
-      | sales19    | tax19    | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | purchase19 | tax19    | N       | T          |
+      | sales19    | tax19    | Y       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -1132,9 +1132,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
       | tax19      | taxCategory      | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | purchase19 | tax19    | N       |
-      | sales19    | tax19    | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | purchase19 | tax19    | N       | T          |
+      | sales19    | tax19    | Y       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -1211,9 +1211,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
       | tax19      | taxCategory      | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | purchase19 | tax19    | N       |
-      | sales19    | tax19    | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | purchase19 | tax19    | N       | T          |
+      | sales19    | tax19    | Y       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |

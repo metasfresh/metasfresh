@@ -62,12 +62,18 @@ public abstract class CacheRestControllerTemplate
 			Services.get(IUserRolePermissionsDAO.class).resetLocalCache();
 			response.addLog("user/role permissions: cache invalidated");
 		}
+		if (request.getValueAsBoolean("gc"))
 		{
-			System.gc();
+			invokeGc();
 			response.addLog("system: garbage collected");
 		}
 
 		return response;
+	}
+
+	protected void invokeGc()
+	{
+		System.gc();
 	}
 
 	protected void resetAdditional(@NonNull final JsonCacheResetResponse response, @NonNull final JsonCacheResetRequest request) {}

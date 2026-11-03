@@ -122,4 +122,7 @@ public interface IPaymentDAO extends ISingletonService
 	 */
 	@NonNull
 	Optional<I_C_Payment> findCompletedOrClosedByProformaInvoiceId(@NonNull InvoiceId proformaInvoiceId);
+
+	@NonNull
+	Optional<PaymentId> findCompletedOrClosedPaymentIdByProformaInvoiceId(@NonNull InvoiceId proformaInvoiceId);
 }

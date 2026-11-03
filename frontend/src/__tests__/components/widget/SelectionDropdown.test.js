@@ -129,6 +129,58 @@ describe('SelectionDropdown component', () => {
     expect(onCancelSpy).toHaveBeenCalled();
   });
 
+  // The ref Map is keyed by option object identity and is cleared whenever `listHash`
+  // changes, while `handleKeyDown` stays registered on `window`. An arrow key handled
+  // while the Map holds no entry for the newly-selected option therefore reached
+  // `scrollIntoView(undefined)`, which dereferenced it and threw an uncaught
+  // "Cannot read properties of undefined (reading 'getBoundingClientRect')".
+  // Navigation itself must still happen — the guard skips scrolling, not selecting.
+  describe('arrow navigation when the option ref is missing', () => {
+    const arm = () => {
+      const map = {};
+      window.addEventListener = jest.fn((event, cb) => {
+        map[event] = cb;
+      });
+      return map;
+    };
+    const eventProps = () => ({
+      preventDefault: jest.fn(),
+      stopPropagation: jest.fn(),
+    });
+
+    it('does not throw and still selects when the ref map was cleared', () => {
+      const onChangeSpy = jest.fn();
+      const props = createDummyProps(
+        {
+          ...fixtures.widgetData1,
+          selected: fixtures.data1.options[0],
+          onChange: onChangeSpy,
+        },
+        fixtures.data1.options
+      );
+      const map = arm();
+      const wrapper = mount(<SelectionDropdown {...props} />);
+
+      // the state the listHash change leaves behind
+      wrapper.instance().optionToRef.clear();
+
+      expect(() => map.keydown({ ...eventProps(), key: 'ArrowDown' })).not.toThrow();
+      expect(onChangeSpy).toHaveBeenCalledWith(fixtures.data1.options[1]);
+    });
+
+    it('scrollIntoView tolerates a missing element', () => {
+      const props = createDummyProps(
+        { ...fixtures.widgetData1, selected: fixtures.data1.options[0] },
+        fixtures.data1.options
+      );
+      arm();
+      const instance = mount(<SelectionDropdown {...props} />).instance();
+
+      expect(() => instance.scrollIntoView(undefined, false)).not.toThrow();
+      expect(() => instance.scrollIntoView(null, false)).not.toThrow();
+    });
+  });
+
   it('properly handles keyboard events and selects options', () => {
     const onSelectSpy = jest.fn();
     const onChangeSpy = jest.fn();

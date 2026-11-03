@@ -39,11 +39,12 @@ import java.util.Optional;
 public interface IVATCodeDAO extends ISingletonService
 {
 	/**
-	 * Find matching {@link VATCode} for given context, .
+	 * Find matching VAT code for the given context.
 	 *
-	 * @return vat code or {@link Optional#empty()}; never returns null
+	 * @return matching response (carries the resolved {@link VATCode} + its
+	 * {@link VATCodeAmountType}) or {@link Optional#empty()}; never returns null
 	 */
-	Optional<VATCode> findVATCode(VATCodeMatchingRequest request);
+	Optional<VATCodeMatchingResponse> findVATCode(VATCodeMatchingRequest request);
 
 	@NonNull
 	VatCodeId getIdByCodeAndOrgId(@NonNull String code, @NonNull OrgId orgId);
@@ -58,4 +59,13 @@ public interface IVATCodeDAO extends ISingletonService
 	 */
 	@NonNull
 	VATCode createVATCode(@NonNull CreateVATCodeRequest request);
+
+	/**
+	 * Returns the IsSOTrx flag of the C_VAT_Code records (usually a Net and a Tax row) that have the given VATCode string and tax.
+	 * Used to derive the correct IsSOTrx for Net VAT code lookup when the tax leg's IsSOTrx
+	 * differs from the document's (e.g. reverse-charge T_Due_Acct within a purchase allocation).
+	 *
+	 * @return Optional.empty() if no record is found, if an IsSOTrx is blank or if the records disagree
+	 */
+	Optional<Boolean> findIsSOTrxByCode(@NonNull String vatCode, @NonNull AcctSchemaId acctSchemaId, @NonNull TaxId taxId);
 }
