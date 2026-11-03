@@ -115,6 +115,7 @@ class AccountImportTestHelper
 	{
 		final I_C_Currency currencyRecord = InterfaceWrapperHelper.newInstance(I_C_Currency.class);
 		currencyRecord.setISO_Code("EUR");
+		currencyRecord.setDescription("EUR");
 		InterfaceWrapperHelper.save(currencyRecord);
 
 		final I_M_CostType costTypeRecord = InterfaceWrapperHelper.newInstance(I_M_CostType.class);

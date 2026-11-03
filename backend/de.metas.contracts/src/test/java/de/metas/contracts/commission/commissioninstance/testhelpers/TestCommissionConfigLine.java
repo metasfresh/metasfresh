@@ -1,6 +1,7 @@
 package de.metas.contracts.commission.commissioninstance.testhelpers;
 
 import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.pair.IPair;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;
@@ -52,6 +53,9 @@ public class TestCommissionConfigLine
 	@Nullable
 	ProductCategoryId salesProductCategoryId;
 
+	@Nullable
+	BPartnerId customerId;
+
 	@NonNull
 	String percentOfBasePoints;
 
@@ -70,6 +74,7 @@ public class TestCommissionConfigLine
 		settingsLineRecord.setPercentOfBasePoints(new java.math.BigDecimal(percentOfBasePoints));
 		settingsLineRecord.setCustomer_Group_ID(BPGroupId.toRepoId(customerBGroupId));
 		settingsLineRecord.setM_Product_Category_ID(ProductCategoryId.toRepoId(salesProductCategoryId));
+		settingsLineRecord.setC_BPartner_Customer_ID(BPartnerId.toRepoId(customerId));
 
 		saveRecord(settingsLineRecord);
 

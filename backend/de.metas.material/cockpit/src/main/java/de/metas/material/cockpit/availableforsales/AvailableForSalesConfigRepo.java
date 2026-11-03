@@ -2,6 +2,7 @@ package de.metas.material.cockpit.availableforsales;
 
 import de.metas.cache.CCache;
 import de.metas.material.cockpit.model.I_MD_AvailableForSales_Config;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.ColorId;
 import de.metas.util.Services;
@@ -40,9 +41,19 @@ import javax.annotation.Nullable;
 public class AvailableForSalesConfigRepo
 {
 	private final CCache<ConfigQuery, AvailableForSalesConfig> cache = CCache
-			.<ConfigQuery, AvailableForSalesConfig> builder()
+			.<ConfigQuery, AvailableForSalesConfig>builder()
 			.tableName(I_MD_AvailableForSales_Config.Table_Name)
 			.build();
+
+	@NonNull
+	public AvailableForSalesConfig getConfig(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return getConfig(
+				ConfigQuery.builder()
+						.clientId(clientAndOrgId.getClientId())
+						.orgId(clientAndOrgId.getOrgId())
+						.build());
+	}
 
 	@NonNull
 	public AvailableForSalesConfig getConfig(@NonNull final ConfigQuery query)

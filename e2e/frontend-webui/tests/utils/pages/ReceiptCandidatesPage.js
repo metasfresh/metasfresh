@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { PdfDownloader } from '../PdfDownloader';
+import { serverErrorMessage } from '../RestResponse';
 
 /**
  * Page object for Material Receipt Candidates window (ID: 540196).
@@ -36,6 +37,56 @@ import { PdfDownloader } from '../PdfDownloader';
  * 9. Click "Done" to close modal
  */
 export class ReceiptCandidatesPage {
+
+  /**
+   * Ensure no modal overlays are blocking the page.
+   *
+   * This method waits for any modal overlays (screen-freeze, raw-modal) to be
+   * removed from the DOM before proceeding. This prevents "element intercepts
+   * pointer events" errors when trying to click elements on the main page.
+   *
+   * @param {number} [timeout=SLOW_ACTION_TIMEOUT] - Maximum time to wait
+   */
+  static async ensureNoModalBlocking(timeout = SLOW_ACTION_TIMEOUT) {
+    return await test.step('ReceiptCandidatesPage - Ensure no modal blocking', async () => {
+      const page = getPage();
+
+      // Wait for screen-freeze overlay to be removed
+      await page.locator('.screen-freeze').waitFor({
+        state: 'detached',
+        timeout: timeout,
+      }).catch(() => {
+        // No overlay present, which is fine
+      });
+
+      // Wait for raw-modal to be removed
+      await page.locator('.raw-modal').waitFor({
+        state: 'detached',
+        timeout: timeout,
+      }).catch(() => {
+        // No modal present, which is fine
+      });
+
+      // Wait for modal-done button to be removed (confirms modal is fully closed)
+      await page.getByTestId('modal-done').waitFor({
+        state: 'detached',
+        timeout: timeout,
+      }).catch(() => {
+        // No done button present, which is fine
+      });
+
+      // Wait for any spinners/loaders to complete
+      await page.locator('.rotating, .indicator-pending, .loader, .spinner').waitFor({
+        state: 'detached',
+        timeout: timeout,
+      }).catch(() => {
+        // No spinners present, which is fine
+      });
+
+      // Final stabilization wait
+      await page.waitForTimeout(300);
+    });
+  }
 
   /**
    * Execute the default Quick Action (simple approach).
@@ -73,10 +124,16 @@ export class ReceiptCandidatesPage {
    * Open the Quick Actions dropdown.
    *
    * Clicks the dropdown toggle button (down arrow) to show all available actions.
+   *
+   * IMPORTANT: This method first ensures no modal overlays are blocking the page.
+   * This prevents "element intercepts pointer events" errors after modal operations.
    */
   static async openQuickActionsDropdown() {
     return await test.step('ReceiptCandidatesPage - Open Quick Actions dropdown', async () => {
       const page = getPage();
+
+      // CRITICAL: Ensure no modal is blocking before trying to click
+      await this.ensureNoModalBlocking();
 
       // Language-independent: Use data-testid added in Phase 2
       const dropdownToggle = page.getByTestId('quick-action-dropdown-toggle');
@@ -385,6 +442,10 @@ export class ReceiptCandidatesPage {
 
   /**
    * Close the HU Editor modal by clicking "Done".
+   *
+   * IMPORTANT: This method uses a robust wait pattern to ensure the modal
+   * is fully closed before returning. This prevents "intercepts pointer events"
+   * errors on subsequent actions.
    */
   static async closeHUEditorModal() {
     return await test.step('ReceiptCandidatesPage - Close HU Editor modal', async () => {
@@ -402,9 +463,29 @@ export class ReceiptCandidatesPage {
 
       // CRITICAL: Wait for the modal overlay (screen-freeze) to be removed
       // This prevents "intercepts pointer events" errors on subsequent actions
-      await page.locator('.screen-freeze, .raw-modal').waitFor({
+
+      // Wait for compound class selector (element with both classes)
+      await page.locator('.screen-freeze.raw-modal').waitFor({
         state: 'detached',
         timeout: VERY_SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Try individual selectors
+      });
+
+      // Wait for screen-freeze alone
+      await page.locator('.screen-freeze').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Might already be gone
+      });
+
+      // Wait for raw-modal alone
+      await page.locator('.raw-modal').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Might already be gone
       });
 
       // Also wait for modal content to be removed
@@ -414,6 +495,25 @@ export class ReceiptCandidatesPage {
       }).catch(() => {
         // Modal content might already be gone
       });
+
+      // Ensure the Done button is gone (confirms modal closed)
+      await page.getByTestId('modal-done').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Button might already be gone
+      });
+
+      // Wait for any spinners/loaders
+      await page.locator('.rotating, .indicator-pending, .loader, .spinner').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // No spinners present
+      });
+
+      // Wait for network to settle
+      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
       // Additional stabilization wait to ensure no lingering modal effects
       await page.waitForTimeout(500);
@@ -491,49 +591,18 @@ export class ReceiptCandidatesPage {
       await actionItem.click();
 
       // Step 3: Wait for parameter dialog to appear
-      // The dialog contains a form field for QtyCUsPerTU
+      // The dialog contains the form field QtyCUsReceived ("Menge CU"), which holds the quantity to receive
       await page.locator('.panel-modal, .modal-content').waitFor({
         state: 'visible',
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
-      // Step 4: Find and fill the quantity field
-      // Language-independent: Use field name selector (QtyCUsPerTU)
-      // Try multiple selector patterns for the quantity input
-      const quantityInput = page.locator(
-        '.form-field-QtyCUsPerTU input, ' +
-        'input[name="QtyCUsPerTU"], ' +
-        '.panel-modal .input-number input, ' +
-        '.modal-content .input-number input'
-      ).first();
+      // Step 4: Enter the quantity into QtyCUsReceived (language-independent: by ColumnName);
+      // waits for the server to acknowledge the parameter change and checks the field's value
+      await this.setProcessNumberField('QtyCUsReceived', quantity);
 
-      await quantityInput.waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      // Clear existing value and enter new quantity
-      await quantityInput.clear();
-      await quantityInput.fill(String(quantity));
-
-      // Wait for input to have the expected value (React state update)
-      await expect(quantityInput).toHaveValue(String(quantity), { timeout: 5000 });
-
-      // Step 5: Submit the parameter dialog by clicking the Start button
-      // Language-independent: Use data-testid for modal buttons
-      // Note: Process modals use "process-modal-start-button" (see Modal.js)
-      const submitButton = page.getByTestId('process-modal-start-button').or(
-        page.getByTestId('modal-start')
-      ).or(
-        page.getByTestId('modal-done')
-      );
-
-      await submitButton.waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await submitButton.click();
+      // Step 5: Submit the parameter dialog by clicking the Start button (process-modal-start-button, see Modal.js)
+      await this.startProcess();
 
       // Step 6: Wait for HU Editor to appear
       // The process opens an HU Editor modal where we need to create the receipt
@@ -543,32 +612,60 @@ export class ReceiptCandidatesPage {
         timeout: VERY_SLOW_ACTION_TIMEOUT,
       });
 
-      // Step 7: Click "Create material receipt" button in the HU Editor
-      // This button is the first quick action in the HU Editor Actions area
-      // Using data-testid for language-independent selection
-      // Note: There are two quick-action-button elements on screen (HU Editor and main view)
-      // We target the first one which is inside the HU Editor modal
-      const createReceiptButton = page.getByTestId('quick-action-button').first();
-      await createReceiptButton.waitFor({
+      // Step 7: Click "Create material receipt" action in the HU Editor
+      // IMPORTANT: Scope to the modal to avoid interacting with elements from the main view behind the modal
+      // The modal has class "screen-freeze raw-modal" and contains the HU Editor
+      const modal = page.locator('.screen-freeze.raw-modal, .panel-modal').first();
+
+      // Open the quick actions dropdown to access the specific action
+      const dropdownToggle = modal.getByTestId('quick-action-dropdown-toggle');
+      await dropdownToggle.waitFor({
         state: 'visible',
         timeout: SLOW_ACTION_TIMEOUT,
       });
-      await createReceiptButton.click();
+      await dropdownToggle.click();
 
-      // Step 8: Wait for receipt creation to complete
-      // First wait for any spinners to disappear
-      await page
-        .locator('.rotating, .indicator-pending, .loader, .spinner')
-        .waitFor({
-          state: 'detached',
-          timeout: VERY_SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Continue if no spinner visible
-        });
+      // Click the specific "Create material receipt" action by its AD_Process.Value
+      // Using data-testid ensures we get the correct action regardless of display order
+      const createReceiptAction = modal.getByTestId('quick-action-WEBUI_M_HU_CreateReceipt_NoParams');
+      await createReceiptAction.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
-      // Then wait for network to settle (receipt creation involves backend processing)
-      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      // Step 8: Wait until the backend has run "Create material receipt".
+      // The quick action creates a process instance (POST /process/{processId}) and, because the
+      // process has no parameters, starts it right away (GET /process/{processId}/{pinstanceId}/start).
+      // Both requests look up the HU Editor view by its id, and "Done" (Step 9) closes that view on the
+      // server (DELETE /documentView/husToReceive/{viewId}). If "Done" is clicked before the start request
+      // was answered, the process fails with "View not found", no receipt is created, and the later
+      // navigation to the Material Receipt finds no allocation row.
+      const processCreated = page.waitForResponse(isProcessCreate, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      processCreated.catch(() => {}); // keeps processCreated from rejecting unhandled if the click throws; awaited below
+      const processStarted = page.waitForResponse(isProcessStart, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+      processStarted.catch(() => {}); // keeps processStarted from rejecting unhandled if it is never awaited (create failed)
+      await createReceiptAction.click();
+
+      const createResponse = await processCreated;
+      const createError = createResponse.ok() ? '' : await serverErrorMessage(createResponse);
+      expect(
+        createResponse.ok(),
+        `Create material receipt: creating the process instance returned ${createResponse.status()}: ${createError}`
+      ).toBe(true);
+      const { pinstanceId } = await createResponse.json();
+
+      const startResponse = await processStarted;
+      expect(
+        new URL(startResponse.url()).pathname,
+        'Create material receipt: the start request does not belong to the created process instance'
+      ).toContain(`/${pinstanceId}/start`);
+      const startError = startResponse.ok() ? '' : await serverErrorMessage(startResponse);
+      expect(
+        startResponse.ok(),
+        `Create material receipt: starting the process returned ${startResponse.status()}: ${startError}`
+      ).toBe(true);
+      const startResult = await startResponse.json();
+      expect(startResult.error, `Create material receipt failed: ${startResult.summary}`).toBeFalsy();
 
       // Step 9: Click "Done" to close the HU Editor
       // Using data-testid for language-independent selection
@@ -582,12 +679,33 @@ export class ReceiptCandidatesPage {
       // Step 10: Wait for HU Editor modal to fully close
       // CRITICAL: Wait for the modal overlay (screen-freeze) to be removed
       // This prevents "intercepts pointer events" errors on subsequent actions
-      await page.locator('.screen-freeze, .raw-modal').waitFor({
+
+      // Wait for screen-freeze overlay to be removed (compound selector for element with both classes)
+      await page.locator('.screen-freeze.raw-modal').waitFor({
         state: 'detached',
-        timeout: VERY_SLOW_ACTION_TIMEOUT,
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Try again with individual selectors
+        console.log('Compound selector detach failed, trying individual selectors');
       });
 
-      // Also ensure the Done button is gone (confirms modal closed)
+      // Also wait for screen-freeze alone (in case classes aren't combined)
+      await page.locator('.screen-freeze').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Might already be gone
+      });
+
+      // Also wait for raw-modal alone
+      await page.locator('.raw-modal').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Might already be gone
+      });
+
+      // Ensure the Done button is gone (confirms modal closed)
       await page.getByTestId('modal-done').waitFor({
         state: 'detached',
         timeout: SLOW_ACTION_TIMEOUT,
@@ -595,11 +713,21 @@ export class ReceiptCandidatesPage {
         // Button might already be gone
       });
 
+      // Wait for any remaining spinners/loaders
+      await page.locator('.rotating, .indicator-pending, .loader, .spinner').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // No spinners present
+      });
+
       // Wait for page to stabilize after modal close
       await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
       // Additional stabilization wait to ensure no lingering modal effects
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(1000);
+
+      console.log(`Receipt created successfully for quantity ${quantity}`);
     });
   }
 
@@ -732,28 +860,51 @@ export class ReceiptCandidatesPage {
           const rowCount = await allTabRows.count();
           console.log(`Found ${rowCount} allocation row(s) in tab, selecting ${rowDescription}`);
 
-          // Step 3: First left-click to select the row, then right-click for context menu
-          await tabTableRow.click();
-          await tabTableRow.click({ button: 'right' });
+          // Step 3: Select the row, then right-click a zoom-capable cell. The context menu offers
+          // "Zoom Into" only for a right-clicked cell whose field supports zoom-into
+          // (TableContextMenu.js); M_InOut_ID references the receipt, so its cell does.
+          await tabTableRow.scrollIntoViewIfNeeded().catch(() => {});
+          await tabTableRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-          // Wait for context menu to appear
+          // Grid cells expose data-cy="cell-<ColumnName>". The M_InOut_ID column is part of the
+          // Allocated tab's grid layout, so a missing cell is a real failure, not a reason to fall
+          // back to the row: a row right-click lands on whatever column is at the row centre.
+          const zoomCell = tabTableRow.locator('[data-cy="cell-M_InOut_ID"]').first();
+          try {
+            await zoomCell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+          } catch (cellError) {
+            throw new Error(
+              `Allocation row has no visible M_InOut_ID cell to right-click for Zoom Into: ${cellError.message}`
+            );
+          }
+
           const contextMenu = page.locator('.context-menu');
-          await contextMenu.waitFor({ state: 'visible', timeout: 5000 });
 
-          console.log('Context menu opened');
-
-          // Step 4: Click "Zoom Into" option
-          // LANGUAGE-INDEPENDENT: Use icon class 'meta-icon-share' instead of text
-          // The menu item has icon="meta-icon-share" which is stable across languages
-          // IMPORTANT: Zoom Into opens in a NEW TAB (window.open with _blank)
+          // Step 4 target: the "Zoom Into" menu item.
+          // LANGUAGE-INDEPENDENT: filter by icon class 'meta-icon-share' (stable across
+          // languages). IMPORTANT: Zoom Into opens the Material Receipt in a NEW TAB
+          // (window.open with _blank).
           const zoomIntoItem = contextMenu.locator('.context-menu-item').filter({
             has: page.locator('.meta-icon-share'),
           }).first();
+
+          // Select the row first and require the selection to register (row gains
+          // 'row-selected'): the Zoom Into action works on the selected row.
+          await tabTableRow.click();
+          await expect(tabTableRow).toHaveClass(/row-selected/, { timeout: SLOW_ACTION_TIMEOUT });
+
+          await zoomCell.scrollIntoViewIfNeeded().catch(() => {});
+          await zoomCell.click({ button: 'right' });
+
+          await contextMenu.waitFor({ state: 'visible', timeout: 5000 });
+          console.log('Context menu opened');
 
           await zoomIntoItem.waitFor({ state: 'visible', timeout: 5000 });
 
           // Set up listener for the popup BEFORE clicking
           const popupPromise = page.context().waitForEvent('page', { timeout: SLOW_ACTION_TIMEOUT });
+          // A failing click below must not leave this promise rejected and unhandled.
+          popupPromise.catch(() => {});
 
           await zoomIntoItem.click();
           console.log('Clicked Zoom Into');
@@ -761,6 +912,10 @@ export class ReceiptCandidatesPage {
           // Step 5: Wait for new tab to open
           const newPage = await popupPromise;
           console.log('New tab opened:', newPage.url());
+
+          // The popup may open blank and navigate to the target window a moment later;
+          // wait for the Material Receipt URL (best-effort) before verifying it.
+          await newPage.waitForURL(/\/window\/184\//, { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
           // Wait for the new page to load
           await newPage.waitForLoadState('networkidle', {
@@ -787,9 +942,12 @@ export class ReceiptCandidatesPage {
           lastError = error;
           console.log(`Attempt ${attempt}/${maxRetries} failed: ${error.message}`);
 
-          // Press Escape to close any open menus before retrying
-          await page.keyboard.press('Escape');
-          await page.waitForTimeout(200);
+          // Reliably dismiss any stale/half-open context menu before retrying,
+          // waiting until it is actually gone rather than a fixed short pause.
+          await page.keyboard.press('Escape').catch(() => {});
+          await page.locator('.context-menu')
+            .waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT })
+            .catch(() => {});
 
           if (attempt < maxRetries) {
             await page.waitForTimeout(2000 * attempt);
@@ -929,4 +1087,74 @@ export class ReceiptCandidatesPage {
       await this.downloadAndValidatePdf(expectedData);
     });
   }
+
+  /** @param {string} columnName - language-independent ColumnName of the process parameter (e.g. "QtyCUsPerTU") */
+  static async getProcessFieldLabel(columnName) {
+    return await test.step(`ReceiptCandidatesPage - Read label of process field ${columnName}`, async () => {
+      const label = getPage().locator(`.panel-modal-content .form-field-${columnName} label`).first();
+      await label.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      return (await label.textContent()).trim();
+    });
+  }
+
+  static async cancelProcessDialog() {
+    return await test.step('ReceiptCandidatesPage - Cancel process dialog', async () => {
+      const page = getPage();
+      await page.getByTestId('process-modal-cancel-button').click();
+      await page.getByTestId('process-modal-start-button').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    });
+  }
+
+  static async setProcessNumberField(columnName, value) {
+    return await test.step(`ReceiptCandidatesPage - Set process field ${columnName} = ${value}`, async () => {
+      const input = getPage().locator(`.panel-modal-content .form-field-${columnName} input.input-field`);
+      await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      // wait for the server to acknowledge the change (PATCH of the process parameters); no PATCH is sent when the
+      // value did not change, hence the swallowed timeout - the receipt's quantity is asserted by the caller
+      const acknowledged = getPage().waitForResponse(
+        (response) => response.request().method() === 'PATCH' && response.url().includes('/process/'),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      ).catch(() => {});
+      await input.click();
+      // the widget registers the focus one tick after the DOM focus; a blur before that is ignored and sends no PATCH
+      await getPage().locator(`.panel-modal-content .form-field-${columnName} .input-body-container.focused`).waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+      await input.press('Control+a');
+      await input.pressSequentially(String(value));
+      await input.blur();
+      await acknowledged;
+      await getPage().waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      await expect(input).toHaveValue(new RegExp(`^${value}([.,]0+)?$`));
+    });
+  }
+
+  static async startProcess() {
+    return await test.step('ReceiptCandidatesPage - Start process', async () => {
+      const startButton = getPage().getByTestId('process-modal-start-button');
+      await expect(startButton).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+      await startButton.click();
+    });
+  }
+
+  /** One array of trimmed cell texts per row of the HU editor view that opens after a receipt. */
+  static async readHUEditorRows() {
+    return await test.step('ReceiptCandidatesPage - Read HU editor rows', async () => {
+      const rows = getPage().locator('.panel-modal .table tbody tr');
+      await rows.first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+      return await rows.evaluateAll((trs) =>
+        trs.map((tr) => Array.from(tr.querySelectorAll('td')).map((td) => td.textContent.trim()))
+      );
+    });
+  }
 }
+
+/** True for `POST /process/{processId}`, which creates a process instance. */
+const isProcessCreate = (response) => {
+  const request = response.request();
+  return request.method() === 'POST' && /\/process\/[^/]+$/.test(new URL(request.url()).pathname);
+};
+
+/** True for `GET /process/{processId}/{pinstanceId}/start`, which runs a process instance. */
+const isProcessStart = (response) => {
+  const request = response.request();
+  return request.method() === 'GET' && /\/process\/[^/]+\/[^/]+\/start$/.test(new URL(request.url()).pathname);
+};

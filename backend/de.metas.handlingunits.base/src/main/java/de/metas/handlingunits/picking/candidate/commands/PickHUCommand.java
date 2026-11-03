@@ -26,7 +26,9 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -66,6 +68,7 @@ public class PickHUCommand
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
@@ -111,6 +114,7 @@ public class PickHUCommand
 	private PickHUResult performInTrx()
 	{
 		final ProductId productId = getProductId();
+		productBL.assertAllowed(productId, ProductLifeCycleAction.PICK);
 		huAttributesBL.validateMandatoryPickingAttributes(pickFrom.getHuId(), productId);
 
 		final Quantity qtyToPick = getQtyToPick();

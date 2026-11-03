@@ -77,9 +77,21 @@ public class X_MobileUI_UserProfile_DD extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public boolean isNavigateToJobsListAfterPickFromComplete() 
+	public boolean isNavigateToJobsListAfterPickFromComplete()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsNavigateToJobsListAfterPickFromComplete);
+	}
+
+	@Override
+	public void setIsPrintDDOrderOnComplete (final boolean IsPrintDDOrderOnComplete)
+	{
+		set_Value (COLUMNNAME_IsPrintDDOrderOnComplete, IsPrintDDOrderOnComplete);
+	}
+
+	@Override
+	public boolean isPrintDDOrderOnComplete()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPrintDDOrderOnComplete);
 	}
 
 	@Override
