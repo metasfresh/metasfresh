@@ -65,7 +65,7 @@ const NewHUPreviewScreen = () => {
             qty: `${qty} ${proposal.uom}`,
           }),
         });
-        // replace (not push): the preview must not be reachable again with the back button (a second OK would create a second HU)
+        // clear the preview: back on the scan screen it cannot be shown again, so a second OK cannot create a second HU
         history.replace(huManagerLocation());
         dispatch(clearLoadedData());
       })
