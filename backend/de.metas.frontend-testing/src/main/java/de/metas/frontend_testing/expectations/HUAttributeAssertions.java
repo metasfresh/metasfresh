@@ -54,11 +54,6 @@ final class HUAttributeAssertions
 			@NonNull final Map<String, String> expectations,
 			@NonNull final I_M_HU hu)
 	{
-		if (expectations.isEmpty())
-		{
-			return;
-		}
-
 		assertAttributes(expectations, services.getAttributes(hu));
 	}
 
