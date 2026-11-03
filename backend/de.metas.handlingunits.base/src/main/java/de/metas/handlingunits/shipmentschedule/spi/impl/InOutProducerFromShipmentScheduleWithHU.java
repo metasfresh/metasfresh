@@ -427,6 +427,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			}
 		}
 
+		// Taken from the shipment's first schedule; with setIgnoreScheduleAsyncBatch, that schedule may have lost the batch its siblings still carry.
 		if (shipmentSchedule.getC_Async_Batch_ID() > 0)
 		{
 			shipment.setC_Async_Batch_ID(shipmentSchedule.getC_Async_Batch_ID());

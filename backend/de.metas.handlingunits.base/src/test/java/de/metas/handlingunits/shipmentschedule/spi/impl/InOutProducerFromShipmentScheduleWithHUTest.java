@@ -583,7 +583,6 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			assertThat(result.getInOuts()).hasSize(1);
 		}
 
-
 		@Nested
 		public class schedulesWithDifferentAsyncBatches
 		{
