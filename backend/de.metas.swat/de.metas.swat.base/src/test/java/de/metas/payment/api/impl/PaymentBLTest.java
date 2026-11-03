@@ -8,7 +8,9 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
@@ -16,11 +18,22 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
+import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
+import de.metas.product.ProductId;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -29,12 +42,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Payment;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -44,7 +59,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -114,6 +131,8 @@ public class PaymentBLTest
 		@BeforeEach
 		public void beforeEach()
 		{
+			PaymentBonusOnPaymentService.newInstanceForUnitTesting(); // no payment bonus deduction for these payments
+
 			order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(1);
 			order.setC_Currency_ID(currencyEUR.getRepoId());
@@ -317,6 +336,160 @@ public class PaymentBLTest
 
 			assertThatThrownBy(() -> paymentBL.updateAmounts(payment, null, false))
 					.isInstanceOf(NoCurrencyRateFoundException.class);
+		}
+	}
+
+	/**
+	 * The payment bonus that the customer deducts („Abzug bei Zahlung“) is dropped when the payment can no longer deduct it.
+	 */
+	@Nested
+	public class paymentBonus
+	{
+		private I_C_Invoice invoice;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			final I_C_DocType docType = newInstance(I_C_DocType.class);
+			docType.setDocBaseType(InvoiceDocBaseType.CustomerInvoice.getCode());
+			docType.setIsSOTrx(true);
+			saveRecord(docType);
+
+			invoice = newInstance(I_C_Invoice.class);
+			invoice.setAD_Org_ID(1);
+			invoice.setC_BPartner_ID(20);
+			invoice.setC_Currency_ID(currencyEUR.getRepoId());
+			invoice.setGrandTotal(new BigDecimal("166.50"));
+			invoice.setC_DocType_ID(docType.getC_DocType_ID());
+			invoice.setIsSOTrx(true);
+			invoice.setProcessed(true);
+			invoice.setIsFinancial(InvoiceDocBaseType.CustomerInvoice.isFinancial());
+			saveRecord(invoice);
+
+			// the customer may deduct 2.60 net + 7 % VAT = 2.78, in the invoice's currency
+			final Tax tax7 = Tax.builder()
+					.taxId(TaxId.ofRepoId(1))
+					.name("7 %")
+					.orgId(OrgId.ANY)
+					.validFrom(TimeUtil.asTimestamp(LocalDate.parse("2020-01-01")))
+					.taxCategoryId(TaxCategoryId.ofRepoId(1))
+					.rate(new BigDecimal("7"))
+					.isTaxExempt(false)
+					.requiresTaxCertificate(false)
+					.seqNo(10)
+					.build();
+			final PaymentBonusDeduction deduction = PaymentBonusDeduction.builder()
+					.orgId(OrgId.ofRepoId(1))
+					.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+					.customerId(BPartnerId.ofRepoId(20))
+					.currencyId(currencyEUR)
+					.precision(CurrencyPrecision.TWO)
+					.line(PaymentBonusDeductionLine.builder()
+							.bonusProductId(ProductId.ofRepoId(1))
+							.tax(tax7)
+							.netAmt(Money.of(new BigDecimal("2.60"), currencyEUR))
+							.build())
+					.build();
+			assertThat(deduction.getGrossAmount().toBigDecimal()).isEqualByComparingTo("2.78");
+
+			SpringContextHolder.registerJUnitBean(new PaymentBonusOnPaymentService(Optional.of(invoiceId -> Optional.of(deduction)), new PaymentBonusCreditMemoService()));
+		}
+
+		/**
+		 * A payment in another currency than the invoice cannot deduct the bonus (the credit memo is in the invoice's currency): the bonus is set to 0.
+		 * PayAmt stays what the customer paid (converted), so the shortfall becomes a write-off.
+		 */
+		@Test
+		public void onCurrencyChange_otherCurrency_resetsPaymentBonus()
+		{
+			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal("2.0"));
+
+			// pre-filled in EUR: 166.50 - 2.78 = 163.72
+			final I_C_Payment payment = newInstance(I_C_Payment.class);
+			payment.setAD_Org_ID(1);
+			payment.setDateTrx(SystemTime.asDayTimestamp());
+			payment.setIsReceipt(true);
+			payment.setDocStatus(DocStatus.Drafted.getCode());
+			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
+			payment.setPayAmt(new BigDecimal("163.72"));
+			payment.setPaymentBonusAmt(new BigDecimal("2.78"));
+			saveRecord(payment);
+
+			payment.setC_Currency_ID(currencyCHF.getRepoId());
+			paymentBL.onCurrencyChange(payment);
+
+			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+			assertThat(payment.getPayAmt()).as("PayAmt = 2 x 163.72").isEqualByComparingTo("327.44");
+			assertThat(payment.getWriteOffAmt()).as("WriteOffAmt = 2 x 166.50 open - 327.44").isEqualByComparingTo("5.56");
+		}
+
+		/** Like Skonto, a change of the conversion type in the same currency keeps the amounts the user entered: a full payment stays without bonus. */
+		@Test
+		public void onCurrencyChange_sameCurrency_keepsTypedAmounts()
+		{
+			final I_C_Payment payment = newInstance(I_C_Payment.class);
+			payment.setAD_Org_ID(1);
+			payment.setDateTrx(SystemTime.asDayTimestamp());
+			payment.setIsReceipt(true);
+			payment.setDocStatus(DocStatus.Drafted.getCode());
+			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
+			payment.setPayAmt(new BigDecimal("166.50"));
+			payment.setPaymentBonusAmt(BigDecimal.ZERO);
+			saveRecord(payment);
+
+			// e.g. the user changed C_ConversionType_ID
+			paymentBL.onCurrencyChange(payment);
+
+			assertThat(payment.getPayAmt()).as("PayAmt").isEqualByComparingTo("166.50");
+			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+			assertThat(payment.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo("0");
+		}
+
+		/**
+		 * The pre-fill on a payment whose bonus is no longer deductible (e.g. the contract ended) drops the bonus left over from before.
+		 * The amounts were just set from the invoice (PayAmt = open - Skonto, see {@code PaymentDAO.updateDiscountAndPayment}), so PayAmt stays open - Skonto.
+		 */
+		@Test
+		public void updatePaymentBonusFromInvoice_noDeduction_dropsLeftoverBonus()
+		{
+			final I_C_Payment payment = newInstance(I_C_Payment.class);
+			payment.setAD_Org_ID(1);
+			payment.setDateTrx(SystemTime.asDayTimestamp());
+			payment.setIsReceipt(true);
+			payment.setDocStatus(DocStatus.Drafted.getCode());
+			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
+			payment.setPayAmt(new BigDecimal("166.50"));
+			payment.setPaymentBonusAmt(new BigDecimal("2.78"));
+			saveRecord(payment);
+
+			new PaymentBonusOnPaymentService(Optional.empty(), new PaymentBonusCreditMemoService()).updatePaymentBonusFromInvoice(payment);
+
+			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
+			assertThat(payment.getPayAmt()).as("PayAmt").isEqualByComparingTo("166.50");
+		}
+
+		/** A payment whose invoice is removed has no bonus to deduct. */
+		@Test
+		public void updateAmounts_noInvoice_zeroesPaymentBonus()
+		{
+			final I_C_Payment payment = newInstance(I_C_Payment.class);
+			payment.setAD_Org_ID(1);
+			payment.setC_BPartner_ID(20);
+			payment.setDateTrx(SystemTime.asDayTimestamp());
+			payment.setIsReceipt(true);
+			payment.setDocStatus(DocStatus.Drafted.getCode());
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
+			payment.setPayAmt(new BigDecimal("163.72"));
+			payment.setPaymentBonusAmt(new BigDecimal("2.78"));
+			saveRecord(payment);
+
+			// the user cleared the invoice
+			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Invoice_ID, /* creditMemoAdjusted */true);
+
+			assertThat(payment.getPaymentBonusAmt()).as("PaymentBonusAmt").isEqualByComparingTo("0");
 		}
 	}
 

@@ -27,7 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * {@code de.metas.pricing.productprice.ProductPriceRepository}: this one is scoped to the HU column only.
  * <p>
  * Repository Tables: M_ProductPrice
- * Repository Cluster: ProductPricePackingInstructionRepository
+ * Repository Cluster: ProductPricePackingInstructionRepository, ProductPriceRepository, PriceListDAO
  */
 public class ProductPricePackingInstructionRepository
 {

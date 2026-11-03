@@ -52,6 +52,21 @@ public interface IArchiveBL extends ISingletonService
 	 */
 	ModelDynAttributeAccessor<I_AD_Archive, PrintCopies> COPIES_PER_ARCHIVE = new ModelDynAttributeAccessor<>(PrintCopies.class);
 
+	/**
+	 * Stamp the transient suppress-auto-print flag on the given archive. When {@code true}, the printing module skips
+	 * printing-queue-item creation for this archive, even if it would otherwise qualify (e.g. direct-enqueue /
+	 * direct-process-queue-item config). The flag is transient (non-persisted): storing it inside the AD_Archive record
+	 * (i.e. DB) makes no sense for the same reason as {@link #COPIES_PER_ARCHIVE}: one AD_Archive can be printed multiple
+	 * times, and this decision is specific to the printing-queue-item created right after this archive.
+	 */
+	void setSuppressAutoPrint(I_AD_Archive archive, boolean suppressAutoPrint);
+
+	/**
+	 * @return the transient suppress-auto-print flag stamped on the given archive via
+	 * {@link #setSuppressAutoPrint(I_AD_Archive, boolean)}, or {@code false} when it was never set.
+	 */
+	boolean isSuppressAutoPrint(I_AD_Archive archive);
+
 	@NonNull
 	ArchiveResult archive(@NonNull ArchiveRequest request);
 

@@ -21,6 +21,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -51,20 +52,17 @@ public class GenerateOutgoingDeliveryPlanningCommand
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
 	@NonNull private final I_M_ShipmentSchedule shipmentSchedule;
-	@NonNull private final DeliveryStatusColorPalette colorPalette;
 	@NonNull private final DimensionService dimensionService;
 
 	@Builder
 	private GenerateOutgoingDeliveryPlanningCommand(
 			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final DeliveryStatusColorPalette colorPalette,
 			@NonNull final DimensionService dimensionService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 
 		this.shipmentSchedule = shipmentSchedule;
-		this.colorPalette = colorPalette;
 		this.dimensionService = dimensionService;
 	}
 
@@ -98,8 +96,7 @@ public class GenerateOutgoingDeliveryPlanningCommand
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(shipmentSchedule.getAD_Client_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
-				.deliveryStatusColorId(colorPalette.getNotDeliveredColorId())
-				.deliveryPlanningType(DeliveryPlanningType.Outgoing)
+				.transportDirection(TransportDirection.Outgoing)
 				.orderId(orderId)
 				.orderLineId(orderLineId)
 				.warehouseId(WarehouseId.ofRepoId(shipmentSchedule.getM_Warehouse_ID()))
@@ -111,7 +108,10 @@ public class GenerateOutgoingDeliveryPlanningCommand
 				.qtyTotalOpen(qtyOrdered.subtract(shipmentScheduleBL.getQtyDelivered(shipmentSchedule)))
 				.actualLoadedQty(Quantity.zero(uomOfProduct))
 				.plannedLoadedQty(qtyOrdered)
-				.plannedDischargeQty(Quantity.zero(uomOfProduct))
+				.plannedDischargeQty(qtyOrdered)
+				// ZERO, like every other actual on a brand-new planning. Nothing has been loaded, so nothing can
+				// have been discharged - and an ACTUAL is only ever derived from another ACTUAL. This column moves
+				// when ActualLoadQty moves (M_Delivery_Planning#settleEnds), never from the order or the plan.
 				.actualDischargeQty(Quantity.zero(uomOfProduct))
 				.uom(uomOfProduct)
 				.plannedDeliveryDate(TimeUtil.asInstant(deliveryDate_effective))
@@ -122,8 +122,7 @@ public class GenerateOutgoingDeliveryPlanningCommand
 		{
 			final I_C_Order order = orderDAO.getById(orderId);
 
-			requestBuilder.isB2B(order.isDropShip())
-					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()))
+			requestBuilder.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()))
 					.incotermLocation(order.getIncotermLocation())
 					// gh30630: default the estimated departure/loading date (ETD) from the order's
 					// PreparationDate, mirroring the shape of

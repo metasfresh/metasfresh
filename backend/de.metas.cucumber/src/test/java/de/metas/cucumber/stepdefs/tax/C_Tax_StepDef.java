@@ -90,6 +90,12 @@ public class C_Tax_StepDef
 	 *     <li>{@code SeqNo} — integer; auto-assigned if missing</li>
 	 *     <li>{@code EN16931VATCategory} — EN16931 VAT category code (e.g. {@code S}), required for e-invoice mapping</li>
 	 *     <li>{@code TypeOfDestCountry}, {@code ValidFrom} — as documented in {@link I_C_Tax}</li>
+	 *     <li>{@code ValidTo} — date; the tax stops matching after it. Omitted leaves the DB default
+	 *         ({@code 9999-12-31}), i.e. the tax never expires. Set it to make a tax invisible to tax
+	 *         determination at the document's date, which is filtered by {@code ValidFrom <= date <= ValidTo}</li>
+	 *     <li>{@code IsActive} — {@code Y}/{@code N}/{@code true}/{@code false}; defaults to {@code Y}.
+	 *         Set it to {@code N} to make a tax invisible to tax determination, which only ever
+	 *         considers active records</li>
 	 *     <li>{@code RequiresTaxCertificate} — {@code Y}/{@code N}/{@code true}/{@code false}; tri-state column
 	 *         (blank/omitted leaves it unset, i.e. matches regardless) — this tax only applies to a BPartner
 	 *         that holds (or lacks) a tax certificate, as resolved during tax determination in
@@ -137,6 +143,10 @@ public class C_Tax_StepDef
 
 		tableRow.getAsOptionalLocalDateTimestamp(I_C_Tax.COLUMNNAME_ValidFrom)
 				.ifPresent(taxRecord::setValidFrom);
+		tableRow.getAsOptionalLocalDateTimestamp(I_C_Tax.COLUMNNAME_ValidTo)
+				.ifPresent(taxRecord::setValidTo);
+		tableRow.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_IsActive)
+				.ifPresent(taxRecord::setIsActive);
 		tableRow.getAsOptionalBigDecimal(I_C_Tax.COLUMNNAME_Rate)
 				.ifPresent(taxRecord::setRate);
 		tableRow.getAsOptionalCountryCode(I_C_Tax.COLUMNNAME_C_Country_ID)

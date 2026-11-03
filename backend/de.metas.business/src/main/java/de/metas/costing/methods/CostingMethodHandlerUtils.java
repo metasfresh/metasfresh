@@ -13,6 +13,8 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostPriceUOMConverter;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
@@ -89,6 +91,41 @@ public class CostingMethodHandlerUtils
 	public QuantityUOMConverter getQuantityUOMConverter()
 	{
 		return uomConversionBL;
+	}
+
+	public CostPriceUOMConverter getCostPriceUOMConverter()
+	{
+		return this::convertCostPriceToUom;
+	}
+
+	/**
+	 * Converts a {@link CostPrice} to {@code targetUomId} using the product's UOM conversion, mirroring
+	 * {@code OrderBOMCostCalculatorRepository.convertCostPrice}: a price scales inversely to quantity, so each
+	 * cost amount is round-tripped through a {@link ProductPrice} and {@link IUOMConversionBL#convertProductPriceToUom}.
+	 */
+	@NonNull
+	public CostPrice convertCostPriceToUom(
+			@NonNull final CostPrice costPrice,
+			@NonNull final ProductId productId,
+			@NonNull final UomId targetUomId)
+	{
+		if (UomId.equals(costPrice.getUomId(), targetUomId))
+		{
+			return costPrice;
+		}
+
+		final UomId fromUomId = costPrice.getUomId();
+		final CurrencyPrecision costingPrecision = currenciesRepo.getCostingPrecision(costPrice.getCurrencyId());
+
+		return costPrice.convertAmounts(targetUomId, costAmount -> {
+			final ProductPrice productPrice = ProductPrice.builder()
+					.productId(productId)
+					.uomId(fromUomId)
+					.money(costAmount.toMoney())
+					.build();
+			final ProductPrice productPriceConv = uomConversionBL.convertProductPriceToUom(productPrice, targetUomId, costingPrecision);
+			return CostAmount.ofProductPrice(productPriceConv);
+		});
 	}
 
 	@NonNull

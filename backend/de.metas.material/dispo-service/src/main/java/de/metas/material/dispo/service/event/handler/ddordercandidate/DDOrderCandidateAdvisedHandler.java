@@ -38,6 +38,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -178,7 +179,38 @@ public class DDOrderCandidateAdvisedHandler
 	private DDOrderCandidateAdvisedEvent updateEvent(@NonNull final DDOrderCandidateAdvisedEvent event)
 	{
 		final PPOrderId ppOrderId = findPPOrderId(event).orElse(null);
-		return event.withPPOrderId(ppOrderId);
+		return updateBOMLineFromDemandCandidate(event.withPPOrderId(ppOrderId));
+	}
+
+	/**
+	 * The event's BOM line can be outdated: changing e.g. the qty of a PP_Order re-creates its BOM lines, possibly after this event was posted.
+	 * The production demand candidate this event was posted for is moved to the new BOM line, so we take the BOM line from there.
+	 * Otherwise, the DD_Order_Candidate would reference a deleted PP_Order_BOMLine.
+	 */
+	private DDOrderCandidateAdvisedEvent updateBOMLineFromDemandCandidate(@NonNull final DDOrderCandidateAdvisedEvent event)
+	{
+		final PPOrderRef ppOrderRef = event.getForwardPPOrderRef();
+		if (ppOrderRef == null || !ppOrderRef.isBOMLine())
+		{
+			return event;
+		}
+
+		final CandidateId demandCandidateId = CandidateId.ofRepoIdOrNull(event.getSupplyRequiredDescriptorNotNull().getDemandCandidateId());
+		if (demandCandidateId == null)
+		{
+			return event;
+		}
+
+		final PPOrderAndBOMLineId currentPPOrderAndBOMLineId = candidateRepositoryRetrieval.retrieveLatestMatch(CandidatesQuery.fromId(demandCandidateId))
+				.flatMap(demandCandidate -> demandCandidate.getBusinessCaseDetail(ProductionDetail.class))
+				.map(ProductionDetail::getPpOrderAndBOMLineId)
+				.orElse(null);
+		if (currentPPOrderAndBOMLineId == null)
+		{
+			return event;
+		}
+
+		return event.withPPOrderAndBOMLineId(currentPPOrderAndBOMLineId);
 	}
 
 	private Optional<PPOrderId> findPPOrderId(@NonNull final DDOrderCandidateAdvisedEvent event)

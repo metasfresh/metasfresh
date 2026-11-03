@@ -5,7 +5,6 @@ import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
-import de.metas.util.ColorId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -20,10 +19,9 @@ public class DeliveryPlanningReceiptInfo
 	@Nullable private final OrderAndLineId purchaseOrderAndLineId;
 	@NonNull private final ReceiptScheduleId receiptScheduleId;
 	@NonNull private final OrgId orgId;
-	boolean isB2B;
+	boolean dropship;
 
 	@Nullable private InOutId receiptId;
-	@Nullable private ColorId receivedStatusColorId;
 
 	@Nullable
 	public OrderId getPurchaseOrderId() {return purchaseOrderAndLineId != null ? purchaseOrderAndLineId.getOrderId() : null;}
@@ -31,10 +29,5 @@ public class DeliveryPlanningReceiptInfo
 	public boolean isReceived()
 	{
 		return getReceiptId() != null;
-	}
-
-	public void updateReceivedStatusColor(@NonNull final DeliveryStatusColorPalette colorPalette)
-	{
-		setReceivedStatusColorId(isReceived() ? colorPalette.getDeliveredColorId() : colorPalette.getNotDeliveredColorId());
 	}
 }

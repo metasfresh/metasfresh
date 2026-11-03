@@ -44,6 +44,14 @@
 		<property name="com.jaspersoft.studio.field.name" value="uom"/>
 		<property name="com.jaspersoft.studio.field.label" value="uom"/>
 	</field>
+	<field name="orderno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="orderno"/>
+		<property name="com.jaspersoft.studio.field.label" value="orderno"/>
+	</field>
+	<field name="referenceno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="referenceno"/>
+		<property name="com.jaspersoft.studio.field.label" value="referenceno"/>
+	</field>
 	<pageHeader>
 		<band height="19" splitType="Stretch">
 			<textField>
@@ -91,7 +99,9 @@
 					<paragraph spacingBefore="1"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productname}
-+"\n"+$F{productvalue}]]></textFieldExpression>
++"\n"+$F{productvalue}
++($F{orderno}!=null ? "\n"+$R{order}+" "+$F{orderno} : "")
++($F{referenceno}!=null ? "\n"+$R{reference}+" "+$F{referenceno} : "")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="ContainerHeight" x="320" y="3" width="90" height="22" uuid="e3899b6c-e602-446d-8e22-cb10d128274c">
