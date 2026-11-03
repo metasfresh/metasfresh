@@ -40,7 +40,7 @@ UPDATE AD_Message_Trl SET IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-03
 -- ERR_BANKSTATEMENT_ORDER_ALREADY_PAID
 INSERT INTO AD_Message (AD_Client_ID, AD_Message_ID, AD_Org_ID, Created, CreatedBy, EntityType, IsActive, MsgText, MsgType, Updated, UpdatedBy, Value)
 VALUES (0, 545983 /*From ID Server*/, 0, TO_TIMESTAMP('2026-11-03 17:11:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'Y',
-        'Auftrag {0} ist bereits durch die Zahlung {1} bezahlt. Es wird keine weitere Zahlung erstellt. Bitte den Auftrag in der Auszugsposition entfernen.',
+        'Auftrag {0} ist bereits der Zahlung {1} zugeordnet. Es wird keine weitere Zahlung erstellt. Bitte den Auftrag in der Auszugsposition entfernen.',
         'E', TO_TIMESTAMP('2026-11-03 17:11:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'ERR_BANKSTATEMENT_ORDER_ALREADY_PAID')
 ;
 
@@ -57,7 +57,7 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Message_ID = 545983
 ;
 
 UPDATE AD_Message_Trl
-SET MsgText = 'Order {0} is already paid by payment {1}. No further payment is created. Please clear the order on the bank statement line.',
+SET MsgText = 'Order {0} is already assigned to payment {1}. No further payment is created. Please clear the order on the bank statement line.',
     IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-11-03 17:11:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Language = 'en_US' AND AD_Message_ID = 545983
 ;
