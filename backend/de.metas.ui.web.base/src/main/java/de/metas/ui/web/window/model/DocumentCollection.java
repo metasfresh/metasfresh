@@ -32,6 +32,8 @@ import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
@@ -49,6 +51,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
@@ -98,7 +101,6 @@ public class DocumentCollection
 	private static final Logger logger = LogManager.getLogger(DocumentCollection.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	public static final AdMessageKey MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW = AdMessageKey.of("de.metas.ui.web.window.model.DocumentCollection.CloningNotAllowedForCurrentWindow");
-	public static final AdMessageKey MSG_CREATE_NOT_ALLOWED = AdMessageKey.of(("de.metas.ui.web.window.model.DocumentCollection.CreateNotAllowed"));
 
 	private final DocumentDescriptorFactory documentDescriptorFactory;
 	private final UserSession userSession;
@@ -356,9 +358,13 @@ public class DocumentCollection
 
 	private void assertNewDocumentAllowed(final DocumentEntityDescriptor entityDescriptor)
 	{
-		if(!DocumentPermissionsHelper.isNewDocumentAllowed(entityDescriptor, userSession))
+		final BooleanWithReason newDocumentAllowed = DocumentPermissionsHelper.checkNewDocumentAllowed(entityDescriptor, userSession);
+		if (newDocumentAllowed.isFalse())
 		{
-			throw new AdempiereException(MSG_CREATE_NOT_ALLOWED);
+			final ITranslatableString reason = newDocumentAllowed.getReason();
+			throw new AdempiereException(TranslatableStrings.isBlank(reason)
+					? TranslatableStrings.adMessage(DocumentPermissionsHelper.MSG_CREATE_NOT_ALLOWED)
+					: reason);
 		}
 	}
 
@@ -375,6 +381,15 @@ public class DocumentCollection
 			throw new InvalidDocumentPathException("documentId cannot be NEW");
 		}
 
+		final DocumentFieldDescriptor singleIdField = entityDescriptor.getSingleIdFieldOrNull();
+		if (!documentIdCanMatchKey(
+				singleIdField != null,
+				singleIdField != null && String.class.equals(singleIdField.getValueClass()),
+				documentKey.getDocumentId().isInt()))
+		{
+			throw new DocumentNotFoundException(documentKey.getDocumentPath());
+		}
+
 		final Document document = DocumentQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId())
 				.setChangesCollector(NullDocumentChangesCollector.instance)
 				.retriveDocumentOrNull();
@@ -384,6 +399,32 @@ public class DocumentCollection
 		}
 
 		return document;
+	}
+
+	/**
+	 * Tells whether a document id can address a record of the entity at all.
+	 * <p>
+	 * A non-numeric id cannot match a single-column integer key, so the record does not exist. Answering that here
+	 * keeps a stale or malformed id — the frontend emits both a {@code notfound} sentinel and, when a route parameter
+	 * is unset, the literal {@code undefined} — from reaching the SQL layer, where it surfaces as a server error
+	 * instead of a 404.
+	 *
+	 * @param hasSingleIdField           the entity is keyed by exactly one column; a composed key is left alone
+	 * @param singleIdFieldIsStringTyped that single key column is string-typed, so a non-numeric id is legitimate
+	 * @param documentIdIsInt            the incoming id is numeric
+	 */
+	static boolean documentIdCanMatchKey(
+			final boolean hasSingleIdField,
+			final boolean singleIdFieldIsStringTyped,
+			final boolean documentIdIsInt)
+	{
+		if (documentIdIsInt)
+		{
+			return true;
+		}
+
+		// Only the single-key path converts the id to an int, so a composed key is unaffected.
+		return !hasSingleIdField || singleIdFieldIsStringTyped;
 	}
 
 	public String cacheReset(final boolean forgetNotSavedDocuments)
@@ -822,6 +863,13 @@ public class DocumentCollection
 		if (!DocumentPermissionsHelper.canEdit(fromDocument, permissions))
 		{
 			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
+		}
+
+		// Cloning brings a new record into existence, so the role's create permission applies here too.
+		final BooleanWithReason roleCanCreateNewRecords = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(fromDocument.getEntityDescriptor(), permissions);
+		if (roleCanCreateNewRecords.isFalse())
+		{
+			throw new AdempiereException(roleCanCreateNewRecords.getReason());
 		}
 
 		final TableRecordReference fromRecordRef = fromDocument.getTableRecordReference()

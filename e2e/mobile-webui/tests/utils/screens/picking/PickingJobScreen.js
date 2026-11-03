@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, revealForCaptureIfEnabled, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
 import { PickingJobScanHUScreen } from "./PickingJobScanHUScreen";
 import { PickingSlotScanScreen } from "./PickingSlotScanScreen";
@@ -8,6 +8,7 @@ import { PickingJobsListScreen } from "./PickingJobsListScreen";
 import { SelectPickTargetTUScreen } from './SelectPickTargetTUScreen';
 import { PickFromHUScanScreen } from './PickFromHUScanScreen';
 import { expect } from '@playwright/test';
+import { waitForNoInFlightXhr } from '../../inFlightXhr';
 import { PickLineScanScreen } from './PickLineScanScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
 import { PickGraiScreen } from './PickGraiScreen';
@@ -30,6 +31,13 @@ export const PickingJobScreen = {
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // The job header and the line header are rendered by the same page-global markup, so this
+    // delegates rather than duplicating the locator — mirroring how DistributionJobScreen defers
+    // to DistributionUtils. Gives job-header assertions a call site on the screen they belong to.
+    expectHeaderProperty: async ({ caption, value }) => await step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
+        await PickingJobLineScreen.expectHeaderProperty({ caption, value });
     }),
 
     expectVisible: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await step(`${NAME} - Expect to be displayed`, async () => {
@@ -120,7 +128,11 @@ export const PickingJobScreen = {
     }),
 
     clickLUTargetButton: async () => await step(`${NAME} - Click LU target button`, async () => {
-        await page.getByTestId('targetLU-button').tap();
+        const luTargetButton = page.getByTestId('targetLU-button');
+        // Capture mode only (UAT_CAPTURE): the button renders below the fold, so the tap would appear in no
+        // recorded frame; scroll it into view and hold it there before tapping it.
+        await revealForCaptureIfEnabled(luTargetButton);
+        await luTargetButton.tap();
     }),
     setTargetLU: async ({ lu }) => await step(`${NAME} - Set target LU to ${lu}`, async () => {
         if (!lu) throw new Error("No LU specified.");
@@ -190,7 +202,8 @@ export const PickingJobScreen = {
                        terminator, // optional: end-of-scan key ('Enter'/'Tab') appended after the code (device suffix); only used when isScanDirectly
                        expectedPickDirectly,
                        expectNextScreen,
-                       switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason
+                       switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason,
+                       expectedError
                    }) => await step(`${NAME} - Scan HU and Pick`, async () => {
         if (isScanDirectly) {
             await BarcodeScannerComponent.type({ scannedCode: qrCode, gapAtIndex, gapMs, terminator });
@@ -201,7 +214,18 @@ export const PickingJobScreen = {
         }
 
         if (!expectedPickDirectly) {
-            await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason });
+            // expectedError: the qty-dialog Done press fires the picking/event POST which the backend
+            // rejects (e.g. a life-cycle-blocked product) — asserted as an error toast.
+            await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError });
+        }
+
+        if (expectedError) {
+            // A REJECTED pick leaves the operator exactly where they were — the qty dialog stays open so
+            // the quantity can be corrected or the pick cancelled. Verified from the trace: after the 422
+            // on POST /picking/event the app renders the toast and issues no further request, and
+            // #WFProcessScreen is not in the DOM. So there is no next screen to wait for here; waiting
+            // for one would time out.
+            return;
         }
 
         if (!expectNextScreen || expectNextScreen === 'PickingJobScreen') {
@@ -256,6 +280,10 @@ export const PickingJobScreen = {
                 await expect(classes).toContain(expectedClassName);
             });
         }
+
+        // Capture mode only (UAT_CAPTURE): a line button may render below the fold, so its picked quantity
+        // can appear in no recorded frame; scroll it into view and hold it there.
+        await revealForCaptureIfEnabled(lineButton);
     }),
 
     // per-line available-qty display, gated by the picking profile's IsShowQtyAvailableForLines flag.
@@ -293,6 +321,7 @@ export const PickingJobScreen = {
     }),
 
     complete: async () => await step(`${NAME} - Complete`, async () => {
+        await waitForJobScreenToSettle();
         await page.locator('#last-confirm-button').tap();
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
@@ -448,6 +477,19 @@ const UNPICK_SUBMIT_ROUTE = '**/picking/event';
 //
 //
 //
+
+// The job screen (and its line view) asks `has-closed-lu` every time it mounts; once an LU was closed
+// (and reopening is allowed) the answer adds "Reopen LU" ABOVE "Complete". Matches with or without the
+// `lineId` query string.
+const HAS_CLOSED_LU_QUERY = /\/picking\/job\/[^/]+\/has-closed-lu(\?|$)/;
+
+// Tapping "Complete" while that answer is still on its way loses the tap: the answer pushes the button
+// down between the tap's point and the click that follows the touch, so the click hits whatever moved
+// under the old point and the confirmation dialog never opens (flaky cases 58 / 95 / 103 / 175). An
+// operator sees the screen settle before reaching for the button; wait for the same.
+const waitForJobScreenToSettle = async () => await step(`${NAME} - Wait for the job screen to settle`, async () => {
+    await waitForNoInFlightXhr(page, { urlPattern: HAS_CLOSED_LU_QUERY, timeout: SLOW_ACTION_TIMEOUT });
+});
 
 const pickingSlotButton = () => {
     return page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickingSlot}-button`);

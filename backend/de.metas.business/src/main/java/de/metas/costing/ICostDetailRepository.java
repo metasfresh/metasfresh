@@ -3,6 +3,7 @@ package de.metas.costing;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costrevaluation.CostRevaluationId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -72,6 +73,19 @@ public interface ICostDetailRepository
 	boolean hasCostDetailsByProductId(ProductId productId);
 
 	/**
+	 * @return the earliest changing-costs {@code M_CostDetail} of the given segment+element dated strictly AFTER
+	 * {@code asOfDate}, ordered by {@code DateAcct, M_CostDetail_ID}. Its {@code Prev_*} columns hold the state the cost
+	 * element was in immediately before that movement — i.e. the state as of {@code asOfDate}.
+	 * <p>
+	 * Deliberately the same algorithm as the SQL function {@code getCurrentCostInfo}
+	 * ({@code de.metas.acct.base/.../ddl/functions/getCurrentCost.sql}), so a point-in-time valuation read done in SQL and
+	 * one done here agree by construction.
+	 */
+	Optional<CostDetail> getFirstChangingCostsDetailAfter(
+			@NonNull CostSegmentAndElement costSegmentAndElement,
+			@NonNull Instant asOfDate);
+
+	/**
 	 * @return the subset of {@code productIds} for which a completed {@code M_CostRevaluation} line has already written a
 	 * cost detail on this {@code (acctSchemaId, costElementId)} — i.e. carries an {@code M_CostDetail} with
 	 * {@code M_CostRevaluationLine_ID} set. This is a broad, source-agnostic signal: it fires for ANY completed
@@ -82,4 +96,9 @@ public interface ICostDetailRepository
 			@NonNull AcctSchemaId acctSchemaId,
 			@NonNull CostElementId costElementId,
 			@NonNull Set<ProductId> productIds);
+
+	/**
+	 * @return {@code true} if any line of the given {@code M_CostRevaluation}, active or not, has written a cost detail.
+	 */
+	boolean hasCostDetailsForCostRevaluation(@NonNull CostRevaluationId costRevaluationId);
 }

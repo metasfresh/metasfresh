@@ -12,14 +12,13 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
-import de.metas.handlingunits.picking.job.service.PickingJobGraiTargetService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -33,16 +32,17 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
+import de.metas.handlingunits.picking.job.carrieradvise.CarrierAdviseConsistencyService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.MockedPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.PickingJobGraiTargetService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.PickingJobUnpickProductResolver;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
-import de.metas.handlingunits.picking.job.carrieradvise.CarrierAdviseConsistencyService;
 import de.metas.handlingunits.picking.job.service.external.carrieradvise.PickingJobCarrierAdviseConsistencyService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
@@ -106,6 +106,7 @@ import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -118,7 +119,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Workplace;
 import org.compiere.model.I_Carrier_Service;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
 import org.compiere.util.Env;
@@ -414,6 +414,7 @@ public class PickingJobTestHelper
 			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
 			@Nullable final Set<CarrierServiceId> carrierServices,
 			@Nullable final String carrierAdvisingStatus,
+			@Nullable final UomId catchWeightUomId,
 			final boolean assignToWorkplace)
 	{
 		final BPartnerLocationId shipToBPLocationIdEffective = shipToBPLocationId != null ? shipToBPLocationId : this.shipToBPLocationId;
@@ -472,12 +473,13 @@ public class PickingJobTestHelper
 					.build());
 		}
 
-		return createPackageableFromShipmentSchedule(shipmentSchedule, lockedBy);
+		return createPackageableFromShipmentSchedule(shipmentSchedule, lockedBy, catchWeightUomId);
 	}
 
 	private Packageable createPackageableFromShipmentSchedule(
 			@NonNull final I_M_ShipmentSchedule sched,
-			@Nullable final UserId lockedBy)
+			@Nullable final UserId lockedBy,
+			@Nullable final UomId catchWeightUomId)
 	{
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(sched.getC_Order_ID()));
 
@@ -517,6 +519,11 @@ public class PickingJobTestHelper
 		if (lockedBy != null)
 		{
 			item.setLockedBy_User_ID(lockedBy.getRepoId());
+		}
+		if (catchWeightUomId != null)
+		{
+			item.setIsCatchWeight(true);
+			item.setCatch_UOM_ID(catchWeightUomId.getRepoId());
 		}
 
 		save(item);

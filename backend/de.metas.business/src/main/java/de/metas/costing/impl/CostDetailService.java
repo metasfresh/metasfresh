@@ -134,12 +134,35 @@ public class CostDetailService implements ICostDetailService
 	@Override
 	public final List<CostDetail> getExistingCostDetails(@NonNull final CostDetailCreateRequest request)
 	{
+		// NOTE: intentionally NOT filtering by request.getAmtType() (which defaults to MAIN).
+		// This method feeds the repost-recovery path (CostingMethodHandlerTemplate.createOrUpdateCost in
+		// de.metas.business plus all four manufacturing handlers), which must reconstruct the FULL posting:
+		// on a repost we recover ALL persisted legs of the document (MAIN + ADJUSTMENT + ALREADY_SHIPPED) so
+		// the aggregated CostAmountDetailed is leg-complete instead of degenerating to the MAIN leg.
+		// Multi-leg producers this corrects: the MovingAverageInvoice MatchInv (keeps the invoice-vs-PO price
+		// variance on its proper account -- for the on-hand case, on-hand inventory revaluation (P_Asset) via
+		// the ADJUSTMENT leg, with InvoicePriceVariance only as an FX/residual line -- so GR/IR
+		// (NotInvoicedReceipts) still carries only the PO-price receipt amount and nets to zero, instead of
+		// degenerating to the full invoiced amount), and the manufacturing
+		// CostDifferenceDistribution under AveragePO / LastPOPrice / MovingAverageInvoice
+		// (PPOrderCostDifferenceDistributor persists MAIN + ADJUSTMENT + ALREADY_SHIPPED for all three).
+		// A document/method that only ever persists a single MAIN leg is unaffected: recovering all legs is
+		// identical to recovering MAIN.
+		//
+		// DO filter by request.getProductId(): a CostDifferenceDistribution collector persists rows for the MAIN
+		// product AND each co-product under ONE documentRef (all sharing the material cost element), so a
+		// product-blind recovery lets a co-product's already-persisted leg short-circuit (via containsAmtType) the
+		// creation of the SAME-amtType leg for the main product on a reversal/repost -- the main product's legs are
+		// then never created and its residual is never reversed. Each handler call carries the product it is posting,
+		// and only that product's legs must be recovered. For a single-product document the request's product is the
+		// document's only product, so this filter is a no-op (recovering all legs of that product == recovering all
+		// legs of the document).
 		return costDetailsRepo.list(CostDetailQuery.builder()
 				.acctSchemaId(request.getAcctSchemaId())
 				.costElementId(request.getCostElementId()) // assume request's costing element is set
 				.documentRef(request.getDocumentRef())
-				.amtType(request.getAmtType())
-				// .productId(request.getProductId())
+				.productId(request.getProductId()) // scope to THIS product's legs; see note above
+				// .amtType(...) omitted on purpose: recover every leg, see note above
 				// .attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.build());
 	}
@@ -289,6 +312,14 @@ public class CostDetailService implements ICostDetailService
 	public Optional<CostDetail> firstOnly(@NonNull final CostDetailQuery query)
 	{
 		return costDetailsRepo.firstOnly(query);
+	}
+
+	@Override
+	public Optional<CostDetail> getFirstChangingCostsDetailAfter(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final Instant asOfDate)
+	{
+		return costDetailsRepo.getFirstChangingCostsDetailAfter(costSegmentAndElement, asOfDate);
 	}
 
 }

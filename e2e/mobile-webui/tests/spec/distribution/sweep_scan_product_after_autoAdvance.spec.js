@@ -7,7 +7,7 @@ import { DistributionJobsListScreen } from "../../utils/screens/distribution/Dis
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { DistributionLinePickFromScreen } from '../../utils/screens/distribution/DistributionLinePickFromScreen';
 import { DistributionUtils } from '../../utils/screens/distribution/DistributionUtils';
-import { generateEAN13 } from '../../utils/ean13';
+import { createSweepMasterdata } from '../../utils/sweepDistributionMasterdata';
 
 //
 // The "sweep" distribution flow: an operator scans ONE staging LU (a large HU sitting at a ground
@@ -17,84 +17,20 @@ import { generateEAN13 } from '../../utils/ean13';
 // single staging LU/product shared by all orders (instead of one dedicated HU per order), because
 // that is what exercises the auto-advance carrying the scanned HU forward to the next order.
 //
-// Mobile distribution profile (same as the mirror spec):
-//   navigateToJobsListAfterPickFromComplete: true — auto-advance to the next order after pick-from
-//   requireScanningProductCode: true              — operator must scan the product GTIN
-//   completeJobAutomatically: true                — auto-complete a job once fully moved
-//   allowStartNextJobOnly: true                   — start jobs strictly in offered order
-//   orderBys: 'Priority, LocatorPriority'         — offer orders sorted by priority, then source-locator priority
+// The fixture is built by the factory shared with sweep_scan_HU_after_autoAdvance_anyHU.spec.js, so
+// the two scenarios hold the whole distribution profile and layout constant — see
+// sweepDistributionMasterdata.js for that profile, and for why this scenario stands ONE handling unit
+// at the source locator while the pick-any-HU one stands several.
 //
 
-const ORDER_COUNT = 3;
-
-// Plenty of qty on the staging LU so every DD order below is a small, partial pick off it.
-const LU_QTY = 1000;
-
-const createMasterdata = async () => {
-    const luExternalBarcode = `EXT-SWEEP-${Date.now()}`;
-
-    const distributionOrders = {};
-    for (let i = 1; i <= ORDER_COUNT; i++) {
-        distributionOrders[`DD${i}`] = {
-            seqNo: i * 10,
-            warehouseFrom: "wh",
-            warehouseTo: "wh",
-            warehouseInTransit: "whInTransit",
-            plant: "plantId",
-            lines: [{ product: "P", qtyEntered: i * 10, locatorFrom: "LZ", locatorTo: "packingTable" }],
-        };
-    }
-
-    const masterdata = await Backend.createMasterdata({
-        language: "en_US",
-        request: {
-            login: { user: { language: "en_US", workplace: "sweepWorkplace" } },
-            mobileConfig: {
-                distribution: {
-                    navigateToJobsListAfterPickFromComplete: true,
-                    completeJobAutomatically: true,
-                    requireScanningProductCode: true,
-                    allowStartNextJobOnly: true,
-                    // Explicit (not the request-level default): this scenario's whole premise is a
-                    // pre-allocated move plan carrying a FIXED source HU per step (see
-                    // DistributionJobCreateCommand), which the backend only builds when this is
-                    // false. Unlike the other flags above, allowPickingAnyHU is NOT reset to a
-                    // request-level default when omitted (MobileConfigDistributionCommand keeps the
-                    // previous value) — a global, unscoped config row — so this must be set here to
-                    // keep the scenario deterministic regardless of what an earlier test left behind.
-                    allowPickingAnyHU: false,
-                    orderBys: 'Priority, LocatorPriority',
-                    // Job-level caption (asserted nowhere here, but kept consistent with the mirror
-                    // spec's convention so the launcher/job header renders a meaningful caption).
-                    captionFormat: 'LocatorFrom,LocatorTo,ProductValueAndName,Qty',
-                },
-            },
-            // The workplace is the packing table: a single warehouse, pick-from = packingTable.
-            workplaces: { sweepWorkplace: { warehouse: 'wh', pickFromLocator: 'packingTable' } },
-            resources: { "plantId": { type: "PT" } },
-            products: { "P": { gtin: generateEAN13().ean13 } },
-            warehouses: {
-                "wh": {
-                    locators: {
-                        // The ground locator where the ONE staging LU sits.
-                        LZ: { isGroundLocator: true, priorityNo: 10 },
-                        // The non-ground target every DD order drops to.
-                        packingTable: { isGroundLocator: false, priorityNo: 999 },
-                    },
-                },
-                "whInTransit": { inTransit: true },
-            },
-            handlingUnits: {
-                // The single staging LU, scannable via its external barcode, holding plenty of P.
-                LU: { product: "P", warehouse: "wh", locator: "LZ", qty: LU_QTY, externalBarcode: luExternalBarcode },
-            },
-            distributionOrders,
-        },
+const createMasterdata = async () =>
+    await createSweepMasterdata({
+        // This scenario's whole premise is a pre-allocated move plan carrying a FIXED source HU per
+        // step (see DistributionJobCreateCommand), which the backend only builds when this is false.
+        allowPickingAnyHU: false,
+        barcodePrefix: 'EXT-SWEEP',
+        workplaceKey: 'sweepWorkplace',
     });
-
-    masterdata.luExternalBarcode = luExternalBarcode;
-    return masterdata;
-};
 
 // noinspection JSUnusedLocalSymbols
 test('Sweep: after auto-advance, the operator scans only the product code (the staging LU carries forward)', async ({ page }) => {
@@ -118,7 +54,7 @@ test('Sweep: after auto-advance, the operator scans only the product code (the s
 
     await test.step('Pick DD1 off the staging LU (scan the LU + product P, confirm qty 10) → auto-advance to DD2 pick-from', async () => {
         await DistributionJobScreen.scanHUToMove({
-            huQRCode: masterdata.luExternalBarcode,
+            huQRCode: masterdata.huExternalBarcodes.HU1,
             productScannedCode: masterdata.products.P.gtin,
             expectedQtyToMove: 10,
             expectNextScreen: 'DistributionLinePickFromScreen',
@@ -126,7 +62,7 @@ test('Sweep: after auto-advance, the operator scans only the product code (the s
         await DistributionLinePickFromScreen.expectJobId({ distributionJobId: masterdata.distributionOrders.DD2.jobId });
     });
 
-    // *** REGRESSION GUARD (was THE RED ASSERTION) ***
+    // *** REGRESSION GUARD ***
     // The staging LU was already scanned for DD1 and holds plenty of stock for DD2 too, so the
     // operator does not need to re-scan it — the auto-advanced screen goes straight to the
     // product-code scan. The thunk carries the just-picked HU's QR code forward only when the next

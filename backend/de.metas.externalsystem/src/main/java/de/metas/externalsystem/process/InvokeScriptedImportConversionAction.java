@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -40,26 +41,30 @@ import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedIm
 import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionConfigId;
 import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionService;
 import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionService.ResolvedChildCommand;
+import de.metas.externalsystem.scriptedimportconversion.ScriptedImportConversionCommand;
 import de.metas.externalsystem.scriptedimportconversion.ScriptedImportConversionIntent;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessPreconditionsResolution;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * "Call" process for scripted-import conversion ({@code AD_Process 585512}, attached at the parent
  * {@code ExternalSystem_Config} and the child {@code ExternalSystem_Config_ScriptedImportConversion}).
  * <p>
  * The {@code External_Request} parameter is a Start/Stop <i>intent</i>; the concrete camel command
- * (REST vs SFTP) is derived per child from that child's endpoint transport, because a parent may
- * have several import children with different transports. Run on the parent it iterates all active
- * children; run on a child (or via {@code childConfigId}) it targets that single child.
+ * is derived per child from that child's endpoint transport, because a parent may have several
+ * import children with different transports. Run on the parent it iterates all active children; run
+ * on a child (or via {@code childConfigId}) it targets that single child.
  */
 public class InvokeScriptedImportConversionAction extends AlterExternalSystemServiceStatusAction
 {
@@ -74,7 +79,7 @@ public class InvokeScriptedImportConversionAction extends AlterExternalSystemSer
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ScriptedImportConversionIntent intent = ScriptedImportConversionIntent.ofCode(externalRequest);
+		final ScriptedImportConversionIntent intent = resolveIntent(externalRequest);
 
 		final ImmutableList<ResolvedChildCommand> resolvedCommands = resolveChildCommands(intent);
 		if (resolvedCommands.isEmpty())
@@ -95,7 +100,7 @@ public class InvokeScriptedImportConversionAction extends AlterExternalSystemSer
 			try
 			{
 				// Record the expected status (Active/Inactive) FIRST -- it is the source of truth the startup
-				// reconciler acts on -- then trigger the concrete route (enable/disable REST or SFTP polling).
+				// reconciler acts on -- then trigger the concrete route for this child's transport.
 				externalServices.handleStatusUpdateIfRequired(parentId, command);
 				externalSystemMessageSender.send(buildRequest(parentConfig, child, command));
 
@@ -114,6 +119,38 @@ public class InvokeScriptedImportConversionAction extends AlterExternalSystemSer
 		}
 
 		return MSG_OK + " (" + succeeded + "/" + resolvedCommands.size() + ")";
+	}
+
+	/**
+	 * The manual process passes a Start/Stop intent, but the generic infra + {@code ExternalSystem_Service}
+	 * enable/disable commands pass the CONCRETE transport command here — so accept both.
+	 */
+	@VisibleForTesting
+	static ScriptedImportConversionIntent resolveIntent(@NonNull final String externalRequest)
+	{
+		final ScriptedImportConversionIntent intent = ScriptedImportConversionIntent.ofCodeOrNull(externalRequest);
+		if (intent != null)
+		{
+			return intent;
+		}
+
+		final ScriptedImportConversionCommand command = ScriptedImportConversionCommand.ofCodeOrNull(externalRequest);
+		if (command != null)
+		{
+			return command.getIntent();
+		}
+
+		// Both accepted-value lists are derived from their enums rather than spelled out: a transport
+		// added later brings its two commands along with it instead of leaving a stale literal here.
+		throw new AdempiereException("No ScriptedImportConversion intent or command for External_Request")
+				.appendParametersToMessage()
+				.setParameter("External_Request", externalRequest)
+				.setParameter("acceptedIntents", Arrays.stream(ScriptedImportConversionIntent.values())
+						.map(ScriptedImportConversionIntent::getCode)
+						.collect(Collectors.joining(", ")))
+				.setParameter("acceptedCommands", Arrays.stream(ScriptedImportConversionCommand.values())
+						.map(ScriptedImportConversionCommand::getValue)
+						.collect(Collectors.joining(", ")));
 	}
 
 	private ImmutableList<ResolvedChildCommand> resolveChildCommands(final ScriptedImportConversionIntent intent)

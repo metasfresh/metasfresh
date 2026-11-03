@@ -24,7 +24,6 @@ package de.metas.distribution.ddorder.replenishment.interceptor;
 
 import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
-import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -35,21 +34,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Drives the DD_Order picking-replenishment flow off the workstation assignment
- * ({@link I_M_Picking_Job_Schedule}) — the assignment of a shipment-schedule line to a picking workplace
- * is what now creates / updates / voids the replenishment DD_Order (it replaced the former
- * {@code M_ShipmentSchedule}-driven trigger).
- *
- * <ul>
- *   <li>{@code beforeChange}: sync picker-busy guard — refuse changing an assignment whose DD_Order has an
- *       active picking job.</li>
- *   <li>{@code afterNew} / {@code afterChange}: schedule an after-commit reconcile for the assignment
- *       (create or recreate the DD_Order).</li>
- *   <li>{@code afterDelete}: void + unlink the existing DD_Order SYNCHRONOUSLY in the current (delete)
- *       transaction — there is nothing left to pick at that workstation. This must NOT be deferred to
- *       after-commit: the deferrable FK {@code mpickingjobschedule_ddorder} (DD_Order/DD_OrderLine →
- *       M_Picking_Job_Schedule) is checked at the delete-trx commit, so the linked DD_Order has to be
- *       voided and unlinked before the assignment row is flushed.</li>
- * </ul>
+ * ({@link I_M_Picking_Job_Schedule}).
  */
 @Interceptor(I_M_Picking_Job_Schedule.class)
 @Component
@@ -64,16 +49,26 @@ public class M_Picking_Job_Schedule_DDOrderPickingInterceptor
 		replenishmentService.assertCanChange(jobSchedule);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void scheduleReconcileAfterCommit(@NonNull final I_M_Picking_Job_Schedule record)
 	{
 		replenishmentService.scheduleReconcileAfterCommit(PickingJobScheduleRepository.fromRecord(record));
 	}
 
+	/** Separate from the afterNew timing: a brand-new assignment has no old values, so asking for the group it left would read a group key of zeroes. */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE })
+	public void scheduleReconcileOfAffectedGroupsAfterCommit(@NonNull final I_M_Picking_Job_Schedule record)
+	{
+		replenishmentService.scheduleReconcileOfAffectedGroupsAfterCommit(record);
+	}
+
+	/**
+	 * Passed as a domain object, not an id: AFTER_DELETE means the row is already gone, so this record is the last place its delivery can be read from.
+	 */
+	// Must stay synchronous: the deferrable FK ddorderline_pjs_pickingjobsched is checked at this transaction's commit.
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void voidDDOrderOnDelete(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{
-		replenishmentService.voidDDOrdersForDeletedAssignment(
-				PickingJobScheduleId.ofRepoId(jobSchedule.getM_Picking_Job_Schedule_ID()));
+		replenishmentService.voidDDOrdersForDeletedAssignment(PickingJobScheduleRepository.fromRecord(jobSchedule));
 	}
 }

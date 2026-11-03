@@ -93,6 +93,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -132,7 +133,6 @@ public class JsonConverters
 
 		final String jsonProductIdentifier = request.getProductIdentifier();
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(jsonProductIdentifier);
-		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(productIdentifier, orgId);
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
@@ -157,6 +157,13 @@ public class JsonConverters
 					"dateRequired may not be null, unless dataDestInternalName={}; this={}",
 					"DEST.de.metas.invoicecandidate", this);
 		}
+
+		// it is the M_HU_PI_Item_Product ValidFrom reference date.
+		final ZonedDateTime datePromised = request.getDateRequired() != null
+				? request.getDateRequired().atStartOfDay(masterdataProvider.getOrgTimeZone(orgId))
+				: null;
+		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
+		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfoForOrderCandidate(productIdentifier, orgId, datePromised, bPartnerInfo.getBpartnerId());
 
 		final ShipperId shipperId = masterdataProvider.getShipperId(request);
 
@@ -211,7 +218,6 @@ public class JsonConverters
 				.map(DocSubType::ofNullableCode)
 				.orElse(DocSubType.ANY);
 
-		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
 		final BPartnerInfo billBPartnerInfo = masterdataProvider.getBPartnerInfo(request.getBillBPartner(), orgId).orElse(null);
 
 		final AssignSalesRepRule assignSalesRepRule = getAssignSalesRepRule(request.getApplySalesRepFrom());

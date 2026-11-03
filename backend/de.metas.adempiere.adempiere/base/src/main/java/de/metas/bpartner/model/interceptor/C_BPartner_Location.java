@@ -22,12 +22,10 @@
 
 package de.metas.bpartner.model.interceptor;
 
-import de.metas.bpartner.vatid.VATaxIDValidationUtil;
-import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -36,15 +34,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_BPartner_Location
 {
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_C_BPartner_Location.COLUMNNAME_VATaxID)
-	public void validateVATaxID(@NonNull final I_C_BPartner_Location bpLocation)
+	/**
+	 * Strips leading/trailing whitespace from the GLN; a blank GLN is stored as <code>null</code>
+	 * (same normalization as {@link de.metas.bpartner.GLN#ofNullableString(String)}),
+	 * so that GLN lookups by exact match are not defeated by stray whitespace.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BPartner_Location.COLUMNNAME_GLN)
+	public void trimGLN(@NonNull final I_C_BPartner_Location bpLocation)
 	{
-		if (sysConfigBL.getBooleanValue(VATaxIDValidationUtil.SYSCONFIG_validateVATaxID, true))
-		{
-			VATaxIDValidationUtil.validate(bpLocation.getVATaxID());
-		}
+		bpLocation.setGLN(StringUtils.trimBlankToNull(bpLocation.getGLN()));
 	}
 }

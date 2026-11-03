@@ -30,6 +30,7 @@ import org.adempiere.service.ClientId;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 @Value
 @Builder
@@ -44,5 +45,11 @@ public class LotNoContext
 	/** The PP_Order this lot number is generated for; exposed to a {@link de.metas.document.sequenceno.CustomSequenceNoProvider} via the eval-context {@code Record_ID}. */
 	@Nullable
 	PPOrderId ppOrderId;
+
+	/**
+	 * Exposed to the sequence's evaluation context under the sequence's <code>AD_Sequence.DateColumn</code>; ignored if that column is not set.
+	 */
+	@Nullable
+	LocalDate date;
 
 }

@@ -2,7 +2,7 @@
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00700_Invoicing
 @F00700
-@ghActions:run_on_executor5
+@ghActions:run_on_executor7
 Feature: Reverse Charge tax — accounting posting for purchase and sales documents
 ## me03#28726: Support Reverse Charge with explicit Fact_Acct
 ## me03#29361: zero C_InvoiceTax.ReverseChargeTaxAmt on sales invoices

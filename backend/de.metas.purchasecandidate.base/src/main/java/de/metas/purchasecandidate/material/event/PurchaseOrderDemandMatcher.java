@@ -4,6 +4,7 @@ import de.metas.material.planning.IMaterialDemandMatcher;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -40,6 +41,12 @@ public class PurchaseOrderDemandMatcher implements IMaterialDemandMatcher
 	public boolean matches(@NonNull final MaterialPlanningContext context)
 	{
 		final ProductPlanning productPlanning = context.getProductPlanning();
+
+		if (!productBL.isAllowed(context.getProductId(), ProductLifeCycleAction.PURCHASE))
+		{
+			Loggables.addLog("Product {} is blocked for PURCHASE by its product life-cycle status; PurchaseOrderDemandMatcher returns false", context.getProductId());
+			return false;
+		}
 
 		if (productPlanning.isPurchased())
 		{

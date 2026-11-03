@@ -72,6 +72,8 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.user.UserId;
@@ -119,6 +121,7 @@ public class PickingJobPickCommand
 	//
 	// Services
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final PickingJobProductService productService;
 	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
@@ -201,6 +204,7 @@ public class PickingJobPickCommand
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
+		this.productService = productService;
 		this.bpartnerService = bpartnerService;
 		this.warehouseService = warehouseService;
 		this.shipmentScheduleService = shipmentScheduleService;
@@ -359,6 +363,8 @@ public class PickingJobPickCommand
 	private PickingJob executeInTrx()
 	{
 		_pickingJob.assertNotProcessed();
+
+		productService.assertPickAllowed(getProductId());
 
 		checkOrAllocatePickingSlot();
 
@@ -909,13 +915,17 @@ public class PickingJobPickCommand
 					final ImmutableList<TUPart> cus = tu.getCUsNotEmpty();
 					final List<Quantity> catchWeights = getCatchWeight() != null ? getCatchWeight().spreadEqually(cus.size()) : null;
 
-					Quantity qtyPickedThisTU = null;
+					StockQtyAndUOMQty qtysPickedThisTU = null;
 					for (int i = 0; i < cus.size(); i++)
 					{
 						final TUPart cu = cus.get(i);
 						final Quantity catchWeightPerCU = catchWeights != null ? catchWeights.get(i) : null;
 						final Quantity qtyPicked = huStorageFactory.getStorage(cu.toHU()).getQuantity(productId, uom);
-						qtyPickedThisTU = qtyPickedThisTU == null ? qtyPicked : qtyPickedThisTU.add(qtyPicked);
+						if (recordTUOnShipmentSchedule)
+						{
+							final StockQtyAndUOMQty qtysPickedThisCU = CatchWeightHelper.extractQtys(HUContextHolder.getCurrent(), productId, qtyPicked, cu.toHU());
+							qtysPickedThisTU = qtysPickedThisTU == null ? qtysPickedThisCU : StockQtyAndUOMQtys.add(qtysPickedThisTU, qtysPickedThisCU);
+						}
 						if (!recordTUOnShipmentSchedule)
 						{
 							addShipmentScheduleQtyPicked(cu, qtyPicked);
@@ -924,13 +934,14 @@ public class PickingJobPickCommand
 						result.addAll(toPickingJobStepPickedToHU(cu, qtyPicked, catchWeightPerCU, pickFrom));
 					}
 
-					if (recordTUOnShipmentSchedule && qtyPickedThisTU != null)
+					if (recordTUOnShipmentSchedule && qtysPickedThisTU != null)
 					{
 						// Record THIS pick's qty (sum of its CU parts), NOT the container TU's cumulative
 						// product storage: picking the same product more than once into one bare TU would
 						// otherwise record the running total, which the shipment-schedule expansion over-counts
 						// into a spurious extra per-COO line (nShiftShipment COO "mixed TUs" scenarios).
-						addShipmentScheduleQtyPicked(tu, qtyPickedThisTU);
+						// Likewise the catch weight is this pick's CU parts' WeightNet, not the TU's running total.
+						addShipmentScheduleQtyPicked(tu.toHU(), qtysPickedThisTU);
 					}
 				}
 			}
@@ -952,13 +963,18 @@ public class PickingJobPickCommand
 
 	private void addShipmentScheduleQtyPicked(@NonNull final I_M_HU hu, @NonNull final Quantity qtyPicked)
 	{
+		addShipmentScheduleQtyPicked(hu, CatchWeightHelper.extractQtys(HUContextHolder.getCurrent(), getProductId(), qtyPicked, hu));
+	}
+
+	private void addShipmentScheduleQtyPicked(@NonNull final I_M_HU hu, @NonNull final StockQtyAndUOMQty qtyPicked)
+	{
 		final IMutableHUContext huContext = HUContextHolder.getCurrent();
 		final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
 
 		shipmentScheduleService.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
 				.scheduleId(getScheduleId())
 				.cachedShipmentSchedule(shipmentScheduleInfo.getRecord())
-				.qtyPicked(CatchWeightHelper.extractQtys(huContext, getProductId(), qtyPicked, hu))
+				.qtyPicked(qtyPicked)
 				.hu(hu)
 				.huContext(huContext)
 				.anonymousHuPickedOnTheFly(false)
@@ -1035,8 +1051,9 @@ public class PickingJobPickCommand
 		// TU's QR left the CU un-QR'd → the unpick's extract asserted the wrong HU and the CU was stranded
 		// Picked inside the TU.
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cu.getId());
-		// Consumes only the first code (get(0) below); assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
-		assertEnoughQRCodes(huQRCodes, 1);
+		// Same surplus tolerance as the aggregate-TU path: this path uses only the first code (get(0) below),
+		// tolerates a surplus (rationale in its Javadoc).
+			assertEnoughQRCodes(huQRCodes, 1);
 		final HUQRCode huQRCode = huQRCodes.get(0);
 
 		return ImmutableList.of(

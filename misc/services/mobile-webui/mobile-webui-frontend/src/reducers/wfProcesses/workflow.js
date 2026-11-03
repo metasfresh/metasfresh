@@ -45,6 +45,9 @@ export const workflowReducer = ({ draftState, action }) => {
       return draftState;
     }
 
+    // Only a REQUESTED snapshot may prune: it is stamped when the request was issued, so it cannot claim
+    // knowledge of a job started later. A pushed snapshot carries no such bound, so it has its own action
+    // type that no case here handles -- attaching the prune to the type keeps it unreachable by accident.
     case launcherTypes.POPULATE_LAUNCHERS_COMPLETE: {
       const { applicationLaunchers, requestTimestamp } = action.payload;
 

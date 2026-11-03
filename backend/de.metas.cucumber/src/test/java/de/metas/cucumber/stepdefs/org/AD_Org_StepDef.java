@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.org;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.organization.IOrgDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -60,8 +61,12 @@ public class AD_Org_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
+			final String orgIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final String name = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_Name);
-			final String value = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_Value);
+			// Value is optional: without it a unique one is generated, so each run gets a new organisation instead of the one of a previous run
+			final String value = CoalesceUtil.coalesceSuppliersNotNull(
+					() -> DataTableUtil.extractStringOrNullForColumnName(tableRow, I_AD_Org.COLUMNNAME_Value),
+					() -> ValueAndName.unique(orgIdentifier).getValue());
 
 			final I_AD_Org orgRecord = CoalesceUtil.coalesce(queryBL.createQueryBuilder(I_AD_Org.class)
 																	 .addEqualsFilter(I_AD_Org.COLUMNNAME_Value, value)
@@ -76,7 +81,6 @@ public class AD_Org_StepDef
 
 			orgDAO.save(orgRecord);
 
-			final String orgIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			orgTable.putOrReplace(orgIdentifier, orgRecord);
 		}
 	}

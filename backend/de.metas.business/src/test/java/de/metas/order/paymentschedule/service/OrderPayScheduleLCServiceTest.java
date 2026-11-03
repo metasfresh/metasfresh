@@ -400,6 +400,59 @@ class OrderPayScheduleLCServiceTest
 				.isNotEqualTo(X_C_OrderPaySchedule.STATUS_Paid);
 	}
 
+	/**
+	 * Order completion on a no-LC payment term whose first break is an {@code OD} advance, with NO
+	 * proforma allocation at all: {@code recomputeLCStepAfterOrderCompleted} must leave the schedule
+	 * that {@code OrderPayScheduleService.createOrderPaySchedules} just built completely alone.
+	 * <p>
+	 * Guards the regression where the unconditional {@code recomputeLCStep} took its
+	 * {@code proforma == null} branch on every ordinary completion and reset the advance line to
+	 * {@code Pending} / {@code 9999-12-01} with a null {@code ReferenceDate}.
+	 */
+	@Test
+	void afterOrderCompleted_noProformaAllocation_leavesAdvanceLineUntouched()
+	{
+		final OrderId orderId = createOrder();
+		createAdvancePayScheduleLine(orderId, X_C_OrderPaySchedule.STATUS_Awaiting_Pay);
+		createMaterialReceiptPayScheduleLine(orderId, X_C_OrderPaySchedule.STATUS_Pending_Ref);
+
+		service.recomputeLCStepAfterOrderCompleted(orderId);
+
+		final I_C_OrderPaySchedule odLine = findLineByReferenceDateType(orderId, ReferenceDateType.OrderDate);
+		assertThat(odLine.getStatus())
+				.as("no proforma allocation — the freshly built advance (OD) line must keep its status")
+				.isEqualTo(X_C_OrderPaySchedule.STATUS_Awaiting_Pay);
+		assertThat(TimeUtil.asLocalDate(odLine.getDueDate()))
+				.as("no proforma allocation — the advance line's DueDate must not be reset")
+				.isEqualTo(LocalDate.of(2026, 6, 1));
+
+		final I_C_OrderPaySchedule blLine = findLineByReferenceDateType(orderId, ReferenceDateType.BillOfLadingDate);
+		assertThat(blLine.getStatus()).isEqualTo(X_C_OrderPaySchedule.STATUS_Pending_Ref);
+	}
+
+	/**
+	 * The same order completion, but WITH an allocated (unpaid) proforma: then there IS something to
+	 * re-derive, so the advance line must pick the proforma up and reach {@code Awaiting_Pay} with
+	 * {@code DueAmt_Actual == proforma GrandTotal}. Proves the guard above narrows the call to the
+	 * no-proforma case only, rather than disabling the re-derivation altogether.
+	 */
+	@Test
+	void afterOrderCompleted_proformaAllocated_rederivesAdvanceLine()
+	{
+		final OrderId orderId = createOrder();
+		createAdvancePayScheduleLine(orderId, X_C_OrderPaySchedule.STATUS_Awaiting_Pay);
+
+		final int proformaInvoiceId = createProformaInvoice(TimeUtil.asTimestamp(LocalDate.of(2026, 7, 3)));
+		createAlloc(orderId, proformaInvoiceId);
+
+		service.recomputeLCStepAfterOrderCompleted(orderId);
+
+		final I_C_OrderPaySchedule odLine = findLineByReferenceDateType(orderId, ReferenceDateType.OrderDate);
+		assertThat(odLine.getStatus()).isEqualTo(X_C_OrderPaySchedule.STATUS_Awaiting_Pay);
+		assertThat(odLine.getDueAmt_Actual()).isEqualByComparingTo(PROFORMA_GRAND_TOTAL);
+		assertThat(TimeUtil.asLocalDate(odLine.getDueDate())).isEqualTo(LocalDate.of(2026, 7, 3));
+	}
+
 	// -----------------------------------------------------------------------
 	// Fixture helpers
 	// -----------------------------------------------------------------------

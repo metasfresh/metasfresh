@@ -48,6 +48,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
@@ -65,8 +67,12 @@ import java.util.Properties;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IPA_SSCC18;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_BestBeforeDate;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_DesadvLine_ID;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOutLine_ID;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyItemCapacity;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -683,6 +689,97 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 				.extracting(I_EDI_Desadv_M_InOut::getM_InOut_ID)
 				.as("All junction rows must point to the same shipment")
 				.containsOnly(inOutRecord.getM_InOut_ID());
+	}
+
+	/**
+	 * The order was completed while POReference was still empty, so no EDI_Desadv and no
+	 * C_OrderLine.EDI_DesadvLine_ID existed. When the shipment completes, the DESADV is created
+	 * from the order as a fallback — and used to end up with QtyDelivered* = 0 because the
+	 * M_InOutLine walk had already finished before those lines existed.
+	 */
+	@Test
+	void addToDesadvCreateForInOutIfNotExist_orderWithoutDesadvLines_getsDeliveredQtys()
+	{
+		final I_C_UOM stockUOM = InterfaceWrapperHelper.load(stockUomId, I_C_UOM.class);
+
+		// a real bpartner + location is needed because the fallback creates a brand-new EDI_Desadv
+		// header, and that requires resolving a bill-to location (OrderBL.getBillToLocationId)
+		final I_C_BPartner recipientBPartner = BusinessTestHelper.createBPartner("recipient-30013");
+		final I_C_BPartner_Location recipientLocation = BusinessTestHelper.createBPartnerLocation(recipientBPartner);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(recipientBPartner.getC_BPartner_ID());
+		order.setC_BPartner_Location_ID(recipientLocation.getC_BPartner_Location_ID());
+		order.setPOReference("PO-30013-LATE");   // set only after the order was completed
+		saveRecord(order);
+
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setC_Order_ID(order.getC_Order_ID());
+		orderLine.setC_BPartner_ID(recipientBPartner.getC_BPartner_ID());
+		orderLine.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
+		orderLine.setC_UOM_ID(stockUOM.getC_UOM_ID());
+		orderLine.setQtyEntered(new BigDecimal("3"));
+		orderLine.setQtyOrdered(new BigDecimal("3"));
+		orderLine.setLine(10);
+		saveRecord(orderLine);
+		assertThat(orderLine.getEDI_DesadvLine_ID())
+				.as("precondition: the order line is not wired to any DESADV line")
+				.isZero();
+
+		final I_M_InOut shipment = newInstance(I_M_InOut.class);
+		shipment.setC_Order_ID(order.getC_Order_ID());
+		shipment.setC_BPartner_ID(recipientBPartner.getC_BPartner_ID());
+		saveRecord(shipment);
+
+		final I_M_InOutLine shipmentLine = newInstance(I_M_InOutLine.class);
+		shipmentLine.setM_InOut_ID(shipment.getM_InOut_ID());
+		shipmentLine.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+		shipmentLine.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
+		shipmentLine.setC_UOM_ID(stockUOM.getC_UOM_ID());
+		shipmentLine.setMovementQty(new BigDecimal("3"));
+		shipmentLine.setQtyEntered(new BigDecimal("3"));
+		saveRecord(shipmentLine);
+
+		// ── invoke ──
+		final I_EDI_Desadv result = desadvBL.addToDesadvCreateForInOutIfNotExist(shipment);
+
+		// ── assert ──
+		assertThat(result).as("a DESADV must have been created from the order").isNotNull();
+
+		InterfaceWrapperHelper.refresh(orderLine);
+		assertThat(orderLine.getEDI_DesadvLine_ID())
+				.as("the fallback must have wired the order line to a DESADV line")
+				.isPositive();
+
+		final I_EDI_DesadvLine createdLine = InterfaceWrapperHelper.load(
+				orderLine.getEDI_DesadvLine_ID(), I_EDI_DesadvLine.class);
+		assertThat(createdLine.getQtyEntered()).isEqualByComparingTo("3");
+		assertThat(createdLine.getQtyDeliveredInUOM())
+				.as("the shipped quantity must reach the freshly created DESADV line")
+				.isEqualByComparingTo("3");
+		assertThat(createdLine.getQtyDeliveredInStockingUOM()).isEqualByComparingTo("3");
+
+		InterfaceWrapperHelper.refresh(result);
+		assertThat(result.getSumDeliveredInStockingUOM()).isEqualByComparingTo("3");
+		assertThat(result.getFulfillmentPercent()).isEqualByComparingTo("100");
+
+		// the EDI export is rejected by the clearing centre when a DESADV carries delivered qtys
+		// but no packs -- so the fallback-created DESADV must also get its EDI_Desadv_Pack(_Item) rows.
+		final List<I_EDI_Desadv_Pack> packRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack.class);
+		assertThat(packRecords)
+				.as("exactly one pack must have been created for the DESADV that was built at shipment completion (one TU, one pack)")
+				.hasSize(1);
+		assertThat(packRecords)
+				.as("every pack found must belong to the DESADV created for this shipment")
+				.allMatch(pack -> pack.getEDI_Desadv_ID() == result.getEDI_Desadv_ID());
+
+		final List<I_EDI_Desadv_Pack_Item> packItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
+		assertThat(packItemRecords)
+				.as("a pack item must reference both the created DESADV line and the shipment line, with its shipped qty, TU count and TU capacity")
+				.extracting(COLUMNNAME_EDI_DesadvLine_ID, COLUMNNAME_M_InOutLine_ID, COLUMNNAME_MovementQty, COLUMNNAME_QtyTU, COLUMNNAME_QtyItemCapacity)
+				.containsOnly(
+						tuple(createdLine.getEDI_DesadvLine_ID(), shipmentLine.getM_InOutLine_ID(), new BigDecimal("3"), 1, new BigDecimal("5"))
+				);
 	}
 
 	private void changeDesadvLineToCOLIasUOM()

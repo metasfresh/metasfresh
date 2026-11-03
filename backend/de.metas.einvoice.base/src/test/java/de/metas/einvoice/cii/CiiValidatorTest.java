@@ -116,6 +116,7 @@ public class CiiValidatorTest
 		// === Currency ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 
 		// === Seller bank account (IBAN for BR-61) ===
@@ -281,6 +282,7 @@ public class CiiValidatorTest
 		// === Currency ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		currency.setStdPrecision(2);
 		saveRecord(currency);
 
@@ -611,6 +613,14 @@ public class CiiValidatorTest
 		assertThat(xrRuleIds)
 				.as("Missing Leitweg-ID must trigger BR-DE-15 when validated as XRechnung. Actual rule ids: %s", xrRuleIds)
 				.contains("BR-DE-15");
+
+		// The BR-DE-15 failed assertion must carry a message and a location (surfaced to the user)
+		final CiiValidationResult.FailedAssertion brDe15 = xrResult.getFailedAssertions().stream()
+				.filter(fa -> "BR-DE-15".equals(fa.getRuleId()))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("BR-DE-15 failed assertion not found"));
+		assertThat(brDe15.getMessage()).isNotBlank();
+		assertThat(brDe15.getLocation()).isNotBlank();
 
 		// EN16931-only call must NOT flag any BR-DE-* rule (it does not run the KoSIT schematron)
 		final CiiValidationResult en16931Result = validator.validate(xmlWithoutLeitweg, null);
