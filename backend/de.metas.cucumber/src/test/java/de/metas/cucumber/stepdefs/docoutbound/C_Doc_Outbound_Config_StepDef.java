@@ -36,6 +36,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -198,6 +199,57 @@ public class C_Doc_Outbound_Config_StepDef
 
 			config.setAD_PrintFormat_ID(printFormatId.getRepoId());
 			InterfaceWrapperHelper.save(config);
+		});
+	}
+
+	/**
+	 * Asserts the stored state of one {@code C_Doc_Outbound_Config} per row, found by its table and document base
+	 * type -- active or not, so a retired configuration can be asserted too. A blank {@code DocBaseType} means the
+	 * generic configuration of that table, i.e. the one without a document base type. The flag columns are
+	 * optional; only the ones given are asserted.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>TableName</b> — (required) {@code AD_Table.TableName} of the configuration<br>
+	 *   <b>DocBaseType</b> — (required column; blank = the generic configuration without a document base type)<br>
+	 *   <b>IsActive</b> — (required) expected {@code IsActive}<br>
+	 *   <b>IsDirectEnqueue</b> — (optional) expected flag<br>
+	 *   <b>IsDirectProcessQueueItem</b> — (optional) expected flag<br>
+	 *   <b>IsAutoSendDocument</b> — (optional) expected flag<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate C_Doc_Outbound_Config:
+	 *   | TableName                   | DocBaseType | IsActive | IsDirectEnqueue |
+	 *   | C_Order_MFGWarehouse_Report | BKP         | true     | true            |
+	 *   | C_Order_MFGWarehouse_Report |             | false    |                 |
+	 * </pre>
+	 */
+	@Then("validate C_Doc_Outbound_Config:")
+	public void validate_doc_outbound_config(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String tableName = row.getAsString(I_AD_Table.COLUMNNAME_TableName);
+			final AdTableId tableId = AdTableId.ofRepoIdOrNull(tableDAO.retrieveTableId(tableName));
+			assertThat(tableId).as("AD_Table not found: %s", tableName).isNotNull();
+
+			final DocBaseType docBaseType = row.getAsOptionalEnum(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType, DocBaseType.class).orElse(null);
+
+			// no active-records filter: a retired (inactive) configuration must be assertable as well
+			final I_C_Doc_Outbound_Config config = queryBL.createQueryBuilder(I_C_Doc_Outbound_Config.class)
+					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_AD_Table_ID, tableId)
+					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType, docBaseType)
+					.create()
+					.firstOnly(I_C_Doc_Outbound_Config.class);
+			assertThat(config).as("C_Doc_Outbound_Config for TableName=%s, DocBaseType=%s", tableName, docBaseType).isNotNull();
+
+			final String description = "C_Doc_Outbound_Config_ID=" + config.getC_Doc_Outbound_Config_ID() + " (TableName=" + tableName + ", DocBaseType=" + docBaseType + ")";
+			assertThat(config.isActive()).as("IsActive of %s", description).isEqualTo(row.getAsBoolean(I_C_Doc_Outbound_Config.COLUMNNAME_IsActive));
+			row.getAsOptionalBoolean(I_C_Doc_Outbound_Config.COLUMNNAME_IsDirectEnqueue)
+					.ifPresent(expected -> assertThat(config.isDirectEnqueue()).as("IsDirectEnqueue of %s", description).isEqualTo(expected));
+			row.getAsOptionalBoolean(I_C_Doc_Outbound_Config.COLUMNNAME_IsDirectProcessQueueItem)
+					.ifPresent(expected -> assertThat(config.isDirectProcessQueueItem()).as("IsDirectProcessQueueItem of %s", description).isEqualTo(expected));
+			row.getAsOptionalBoolean(I_C_Doc_Outbound_Config.COLUMNNAME_IsAutoSendDocument)
+					.ifPresent(expected -> assertThat(config.isAutoSendDocument()).as("IsAutoSendDocument of %s", description).isEqualTo(expected));
 		});
 	}
 

@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.product.ProductType;
 import de.metas.uom.UomId;
@@ -203,6 +204,248 @@ class InvoiceCandBLSimpleTest
 		assertThat(new InvoiceCandBL().computeDateToInvoice(overDelivered)).as("overDelivered").isEqualTo(deliveryDate);
 	}
 	
+	// ---- computed "delivery closed" rule of updateProcessedFlag -------------------------------------------------------------------
+	// Fixture unless the name says otherwise: invoice rule D (After delivery), stock product, order line with QtyDelivered=0, IsDeliveryClosed=Y.
+
+	@Test
+	void updateProcessedFlag_deliveryClosed_nothingDeliveredOrInvoiced_processed()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder());
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed_Calc()).as("Processed_Calc").isTrue();
+		assertThat(ic.isProcessed()).as("Processed").isTrue();
+		assertThat(ic.getProcessed_Override()).as("Processed_Override").isNull();
+		assertThat(ic.getQtyToInvoice()).as("QtyToInvoice").isZero();
+	}
+
+	/** An error candidate keeps {@code Processed_Calc = N} until the error is solved (gh #428), even if the delivery-closed rule would hold. */
+	@Test
+	void updateProcessedFlag_deliveryClosed_nothingDeliveredOrInvoiced_error_notProcessed()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().error(true));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed_Calc()).as("Processed_Calc").isFalse();
+		assertThat(ic.isProcessed()).as("Processed").isFalse();
+	}
+
+	/** Invoice rule O applies to any product, service products included. */
+	@Test
+	void updateProcessedFlag_invoiceRuleAfterOrderDelivered_serviceProduct_processed()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder()
+				.invoiceRule(InvoiceRule.AfterOrderDelivered.getCode())
+				.productType(ProductType.Service));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed_Calc()).as("Processed_Calc").isTrue();
+		assertThat(ic.isProcessed()).as("Processed").isTrue();
+	}
+
+	/** The rule's processed state zeroes the quantities to invoice, but it must not reset an approval for invoicing that was set before shipping. */
+	@Test
+	void updateProcessedFlag_processedByRuleOnly_keepsApprovalForInvoicing()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().approvalForInvoicing(true));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed()).as("Processed").isTrue();
+		assertThat(ic.getQtyToInvoice()).as("QtyToInvoice").isZero();
+		assertThat(ic.isApprovalForInvoicing()).as("ApprovalForInvoicing").isTrue();
+	}
+
+	/** A candidate without an order line (e.g. a manual one) is judged by its own quantities only. */
+	@Test
+	void updateProcessedFlag_noOrderLine_ruleUsesCandidateOnly()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().withOrderLine(false));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.getC_OrderLine_ID()).as("C_OrderLine_ID").isLessThanOrEqualTo(0);
+		assertThat(ic.isProcessed_Calc()).as("Processed_Calc").isTrue();
+		assertThat(ic.isProcessed()).as("Processed").isTrue();
+	}
+
+	@Test
+	void updateProcessedFlag_deliveryClosed_delivered_notProcessed()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().icQtyDelivered(ONE));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed_Calc()).as("Processed_Calc").isFalse();
+		assertThat(ic.isProcessed()).as("Processed").isFalse();
+	}
+
+	/** E.g. a shipment was invoiced and then reversed: the invoiced qty must stay open so that the credit memo is proposed. */
+	@Test
+	void updateProcessedFlag_deliveryClosed_invoicedButNothingDelivered_notProcessed()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().qtyInvoiced(ONE));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed_Calc()).as("Processed_Calc").isFalse();
+		assertThat(ic.isProcessed()).as("Processed").isFalse();
+	}
+
+	@Test
+	void updateProcessedFlag_deliveryNotClosed_nothingDeliveredOrInvoiced_notProcessed()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().deliveryClosed(false));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed_Calc()).as("Processed_Calc").isFalse();
+		assertThat(ic.isProcessed()).as("Processed").isFalse();
+	}
+
+	/** Processed_Override wins over the computed flag. (Processed_Calc is not asserted, so this guard also holds while the rule is not implemented.) */
+	@Test
+	void updateProcessedFlag_deliveryClosed_nothingDeliveredOrInvoiced_processedOverrideNWins()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().processedOverride("N"));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed()).as("Processed").isFalse();
+		assertThat(ic.getProcessed_Override()).as("Processed_Override").isEqualTo("N");
+	}
+
+	/** An explicit close (Processed_Override=Y) keeps resetting the approval for invoicing, also when the rule would apply (delivery closed, nothing delivered). */
+	@Test
+	void updateProcessedFlag_processedOverrideY_resetsApprovalForInvoicing()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().approvalForInvoicing(true).processedOverride("Y"));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed()).as("Processed").isTrue();
+		assertThat(ic.isApprovalForInvoicing()).as("ApprovalForInvoicing").isFalse();
+	}
+
+	/** The completion raises the order line's QtyDelivered before the candidate's own QtyDelivered follows. */
+	@Test
+	void updateProcessedFlag_orderLineDelivered_icQtyDeliveredStillZero_notProcessed()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().olQtyDelivered(ONE));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed_Calc()).as("Processed_Calc").isFalse();
+		assertThat(ic.isProcessed()).as("Processed").isFalse();
+	}
+
+	@Test
+	void updateProcessedFlag_invoiceRuleImmediate_notProcessed()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().invoiceRule(InvoiceRule.Immediate.getCode()));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed()).as("Processed").isFalse();
+	}
+
+	@Test
+	void updateProcessedFlag_invoiceRuleAfterPick_notProcessed()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().invoiceRule(InvoiceRule.AfterPick.getCode()));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed()).as("Processed").isFalse();
+	}
+
+	/** Invoice rule D, but a service product: its quantity to invoice is delivered-or-ordered, so it is invoiceable without delivery. */
+	@Test
+	void updateProcessedFlag_serviceProductAfterDelivery_notProcessed()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().productType(ProductType.Service));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed()).as("Processed").isFalse();
+	}
+
+	/** The effective rule is the override (Immediate) although the candidate's own rule is D. */
+	@Test
+	void updateProcessedFlag_invoiceRuleOverrideImmediate_notProcessed()
+	{
+		final I_C_Invoice_Candidate ic = createICForRuleTest(builder().invoiceRule(InvoiceRule.AfterDelivery.getCode()).invoiceRuleOverride(InvoiceRule.Immediate.getCode()));
+
+		invoiceCandBL.updateProcessedFlag(ic);
+
+		assertThat(ic.isProcessed()).as("Processed").isFalse();
+	}
+
+	private static RuleFixture builder()
+	{
+		return new RuleFixture();
+	}
+
+	/** Parameters of {@link #createICForRuleTest(RuleFixture)}; the defaults are the fixture of the "delivery closed" rule tests. */
+	private static final class RuleFixture
+	{
+		private boolean deliveryClosed = true;
+		private String invoiceRule = InvoiceRule.AfterDelivery.getCode();
+		private String invoiceRuleOverride = null;
+		private ProductType productType = ProductType.Item;
+		private boolean withOrderLine = true;
+		private BigDecimal icQtyDelivered = ZERO;
+		private BigDecimal olQtyDelivered = ZERO;
+		private BigDecimal qtyInvoiced = ZERO;
+		private boolean approvalForInvoicing = false;
+		private String processedOverride = null;
+		private boolean error = false;
+
+		RuleFixture deliveryClosed(final boolean v) { deliveryClosed = v; return this; }
+		RuleFixture invoiceRule(final String v) { invoiceRule = v; return this; }
+		RuleFixture invoiceRuleOverride(final String v) { invoiceRuleOverride = v; return this; }
+		RuleFixture productType(final ProductType v) { productType = v; return this; }
+		RuleFixture withOrderLine(final boolean v) { withOrderLine = v; return this; }
+		RuleFixture icQtyDelivered(final BigDecimal v) { icQtyDelivered = v; return this; }
+		RuleFixture olQtyDelivered(final BigDecimal v) { olQtyDelivered = v; return this; }
+		RuleFixture qtyInvoiced(final BigDecimal v) { qtyInvoiced = v; return this; }
+		RuleFixture approvalForInvoicing(final boolean v) { approvalForInvoicing = v; return this; }
+		RuleFixture processedOverride(final String v) { processedOverride = v; return this; }
+		RuleFixture error(final boolean v) { error = v; return this; }
+	}
+
+	private I_C_Invoice_Candidate createICForRuleTest(@NonNull final RuleFixture f)
+	{
+		final I_M_Product product = BusinessTestHelper.createProduct("ruleproduct", uomId);
+		product.setProductType(f.productType.getCode());
+		InterfaceWrapperHelper.saveRecord(product);
+
+		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
+		ic.setM_Product_ID(product.getM_Product_ID());
+		ic.setInvoiceRule(f.invoiceRule);
+		ic.setInvoiceRule_Override(f.invoiceRuleOverride);
+		ic.setQtyOrdered(TEN);
+		ic.setQtyDelivered(f.icQtyDelivered);
+		ic.setQtyInvoiced(f.qtyInvoiced);
+		ic.setQtyToInvoice(f.icQtyDelivered);
+		ic.setIsDeliveryClosed(f.deliveryClosed);
+		ic.setApprovalForInvoicing(f.approvalForInvoicing);
+		ic.setProcessed_Override(f.processedOverride);
+		ic.setIsError(f.error);
+		if (f.withOrderLine)
+		{
+			final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+			orderLine.setQtyDelivered(f.olQtyDelivered);
+			InterfaceWrapperHelper.saveRecord(orderLine);
+			ic.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+		}
+		InterfaceWrapperHelper.saveRecord(ic);
+		return ic;
+	}
+
 	private I_C_Invoice_Candidate createSchedForOrderCompletelyDeliveredTest(
 			@NonNull final String qtyDelivered,
 			@NonNull final ProductType productType,

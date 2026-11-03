@@ -30,7 +30,7 @@ import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.util.Check;
+import de.metas.cucumber.stepdefs.role.AD_Role_StepDefData;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
@@ -39,9 +39,8 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
-import org.compiere.util.Evaluatees;
+import lombok.RequiredArgsConstructor;
+import org.compiere.model.I_AD_Role;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -52,21 +51,39 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class REST_API_StepDef
 {
 	private String userAuthToken;
 
-	private final TestContext testContext;
-
-	public REST_API_StepDef(final TestContext testContext)
-	{
-		this.testContext = testContext;
-	}
+	@NonNull private final TestContext testContext;
+	@NonNull private final AD_Role_StepDefData roleTable;
 
 	@Given("the existing user with login {string} receives a random a API token for the existing role with name {string}")
 	public void the_existing_user_has_the_authtoken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
 		userAuthToken = RESTUtil.getAuthToken(userLogin, roleName);
+	}
+
+	/**
+	 * Identifier-based counterpart of the name-based token step above: resolves a role registered earlier
+	 * (e.g. by {@code metasfresh contains AD_Roles including the WebUI role:}) via the {@code AD_Role_StepDefData}
+	 * table and mints the auth token from its actual name. This lets a scenario create a role with an
+	 * auto-generated (replay-safe) name and still obtain a token for it, since the generated name is never
+	 * known to the feature text.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: AD_Role_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the existing user with login 'metasfresh' receives a random a API token for the existing role with identifier 'restrictedRole'
+	 * </pre>
+	 */
+	@Given("the existing user with login {string} receives a random a API token for the existing role with identifier {string}")
+	public void the_existing_user_has_the_authtoken_by_role_identifier(@NonNull final String userLogin, @NonNull final String roleIdentifier)
+	{
+		final I_AD_Role role = roleTable.get(roleIdentifier);
+		userAuthToken = RESTUtil.getAuthToken(userLogin, role.getName());
 	}
 
 	@When("a {string} request with the below payload is sent to the metasfresh REST-API {string} and fulfills with {string} status code")
@@ -97,18 +114,7 @@ public class REST_API_StepDef
 
 	private String resolveContextVariables(final String string)
 	{
-		if (Check.isBlank(string))
-		{
-			return string;
-		}
-
-		final HashMap<String, String> variables = testContext.getVariables();
-		if (variables == null || variables.isEmpty())
-		{
-			return string;
-		}
-
-		return StringExpressionCompiler.instance.compile(string).evaluate(Evaluatees.ofMap(variables), OnVariableNotFound.Preserve);
+		return testContext.resolveVariables(string);
 	}
 
 	public void performHTTPRequest(final APIRequest request) throws IOException

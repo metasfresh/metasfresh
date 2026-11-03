@@ -93,6 +93,15 @@ Feature: Bestellkontrolle document type
       | warehouseRpt                   | BKP         |
       | plantRpt                       | BKB         |
 
+    # The generic configuration (no document base type) is retired: the two specific ones carry its
+    # IsDirectEnqueue / IsDirectProcessQueueItem / IsAutoSendDocument flags and stay active, the generic one
+    # is inactive -- so nothing can silently fall back to it any more.
+    And validate C_Doc_Outbound_Config:
+      | TableName                   | DocBaseType | IsActive | IsDirectEnqueue | IsDirectProcessQueueItem | IsAutoSendDocument |
+      | C_Order_MFGWarehouse_Report | BKP         | true     | true            | false                    | false              |
+      | C_Order_MFGWarehouse_Report | BKB         | true     | true            | false                    | false              |
+      | C_Order_MFGWarehouse_Report |             | false    | true            | false                    | false              |
+
     # Both configurations ship pointing at the same print format by design. Repointing just one of them proves
     # the customer's pending decision (splitting the two reports) is a single field edit, nothing more.
     When update C_Doc_Outbound_Config print format:
@@ -306,6 +315,30 @@ Feature: Bestellkontrolle document type
     # The sys config is restored to its prior value by an @After hook (AD_SysConfig_StepDef), not a trailing
     # step here -- Cucumber skips remaining steps once one fails, i.e. on exactly the runs that need the
     # restore.
+
+
+  @Id:S32265_TC7
+  Scenario: Each kind's Bestellkontrolle doc-outbound log carries DocStatus CO
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | order7     | true    | bpartner      | 2026-01-12  | warehouse      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine7 | order7     | product      | 5          |
+
+    When the order identified by order7 is completed
+
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier    | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID |
+      | warehouseRpt7 | order7     | WH           | warehouse      | plant       |
+      | plantRpt7     | order7     | PL           |                | plant       |
+
+    # Each Bestellkontrolle is created already completed (DocStatus 'CO'); the document handler makes the
+    # record wrap-able, so the document engine copies that status onto its doc-outbound log.
+    Then after not more than 60s validate C_Doc_Outbound_Log:
+      | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name               | OPT.DocStatus |
+      | warehouseOutboundLog             | warehouseRpt7        | C_Order_MFGWarehouse_Report | CO            |
+      | plantOutboundLog                 | plantRpt7            | C_Order_MFGWarehouse_Report | CO            |
 
 
 # ####################################################################################################################

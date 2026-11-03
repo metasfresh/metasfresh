@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.refund.AssignableInvoiceCandidate.SplitResult;
+import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -57,6 +58,7 @@ public class AssignableInvoiceCandidateTest
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
 
 		final AssignableInvoiceCandidate candidate = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				//.bpartnerId(BPartnerId.ofRepoId(20))
 				.bpartnerLocationId(billBPartnerAndLocationId)
 				.invoiceableFrom(LocalDate.now())

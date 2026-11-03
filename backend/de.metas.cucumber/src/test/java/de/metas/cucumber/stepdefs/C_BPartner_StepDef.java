@@ -260,6 +260,7 @@ public class C_BPartner_StepDef
 	 *                   <b>C_Dunning_ID</b> — (optional) step-def identifier of the dunning schema<br>
 	 *                   <b>VATaxID</b> — (optional) new VAT-ID value; use {@code null} token to clear<br>
 	 *                   <b>Name</b> — (optional) new partner name<br>
+	 *                   <b>IsActive</b> — (optional) {@code Y}/{@code N}; activates or deactivates the partner<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_BPartner:
@@ -341,6 +342,12 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setValue(valueAndName.getValue());
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name2).ifPresent(bPartnerRecord::setName2);
 		row.getAsOptionalString(COLUMNNAME_Lookup_Label).ifPresent(bPartnerRecord::setLookup_Label);
+		// no generated accessor for this column
+		final Boolean isReplicationLookupDefault = row.getAsOptionalBoolean("IsReplicationLookupDefault").toBooleanOrNull();
+		if (isReplicationLookupDefault != null)
+		{
+			InterfaceWrapperHelper.setValue(bPartnerRecord, "IsReplicationLookupDefault", isReplicationLookupDefault);
+		}
 
 		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
 		bPartnerRecord.setIsVendor(row.getAsOptionalBoolean(COLUMNNAME_IsVendor).orElseFalse());
@@ -361,6 +368,8 @@ public class C_BPartner_StepDef
 			final I_M_DiscountSchema discountSchemaRecord = discountSchemaTable.get(discountSchemaIdentifier);
 			bPartnerRecord.setPO_DiscountSchema_ID(discountSchemaRecord.getM_DiscountSchema_ID());
 		}
+
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation).ifPresent(bPartnerRecord::setIsAllowPriceMutation);
 
 		final StepDefDataIdentifier soDiscountSchemaIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_DiscountSchema_ID).orElse(null);
 		if (soDiscountSchemaIdentifier != null)
@@ -641,6 +650,9 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name)
 				.filter(EmptyUtil::isNotBlank)
 				.ifPresent(bPartner::setName);
+
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsActive)
+				.ifPresent(bPartner::setIsActive);
 
 		InterfaceWrapperHelper.save(bPartner);
 

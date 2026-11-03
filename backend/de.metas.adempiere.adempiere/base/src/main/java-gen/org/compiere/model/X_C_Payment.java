@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -850812701L;
+	private static final long serialVersionUID = 1681424160L;
 
     /** Standard Constructor */
     public X_C_Payment (final Properties ctx, final int C_Payment_ID, @Nullable final String trxName)
@@ -970,6 +970,46 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PayAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPaymentBonusAmt (final BigDecimal PaymentBonusAmt)
+	{
+		set_Value (COLUMNNAME_PaymentBonusAmt, PaymentBonusAmt);
+	}
+
+	@Override
+	public BigDecimal getPaymentBonusAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PaymentBonusAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public org.compiere.model.I_C_Invoice getPaymentBonus_CreditMemo()
+	{
+		return get_ValueAsPO(COLUMNNAME_PaymentBonus_CreditMemo_ID, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public void setPaymentBonus_CreditMemo(final org.compiere.model.I_C_Invoice PaymentBonus_CreditMemo)
+	{
+		set_ValueFromPO(COLUMNNAME_PaymentBonus_CreditMemo_ID, org.compiere.model.I_C_Invoice.class, PaymentBonus_CreditMemo);
+	}
+
+	@Override
+	public void setPaymentBonus_CreditMemo_ID (final int PaymentBonus_CreditMemo_ID)
+	{
+		if (PaymentBonus_CreditMemo_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PaymentBonus_CreditMemo_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PaymentBonus_CreditMemo_ID, PaymentBonus_CreditMemo_ID);
+	}
+
+	@Override
+	public int getPaymentBonus_CreditMemo_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PaymentBonus_CreditMemo_ID);
 	}
 
 	@Override

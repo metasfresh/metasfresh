@@ -333,6 +333,136 @@
     top: 3px;
     left: 0;
   }
+
+  /*
+   * Grid-cell editing: opening or leaving a cell's editor changes neither the row height nor any
+   * column width. `.table-cell` is set only on a grid `<td>`, so single-row forms are not affected.
+   */
+
+  /* The cell's editor (RawWidget sets `form-group-table` on a grid cell's editor). */
+  .form-group-table {
+    /* no Bootstrap `.row` gutter: a grid cell has no label column to align with */
+    margin-left: 0;
+    margin-right: 0;
+    box-sizing: border-box;
+
+    /*
+     * The row's content height (42px row - .5rem top/bottom padding). An extended (multi-line)
+     * row passes its taller height via `--cell-content-height` (TableCell.js).
+     */
+    height: var(--cell-content-height, 26px);
+
+    /*
+     * Fill the column without widening it: `width: 0` drops the editor's intrinsic width from the
+     * column sizing, `min-width: 100%` stretches it to the cell.
+     */
+    width: 0;
+    min-width: 100%;
+
+    /* the widget's single Bootstrap column (`.col-sm-12`, or `.col-sm-9` for a Switch) */
+    > [class*='col-'] {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    &.widgetType-LongText textarea {
+      height: 100%;
+      min-height: 0;
+    }
+
+    /*
+     * The rules below size the cell's own widget. `:not(.attributes-dropdown *)` keeps them off the
+     * widgets of the attribute popup, which is rendered inside the cell.
+     */
+    .input-primary:not(.attributes-dropdown *),
+    .input-secondary:not(.attributes-dropdown *),
+    .input-dropdown-container:not(.attributes-dropdown *) {
+      height: 26px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+
+      /* border-box: the editor's 26px height includes its padding and border */
+      box-sizing: border-box;
+
+      /* the mandatory border (2px top + bottom) takes the place of the vertical padding */
+      &.input-mandatory {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+    }
+
+    /*
+     * The Lookup's input row: its `.3rem` vertical padding (inputs.scss `.lookup-widget-wrapper >
+     * .input-dropdown`) makes it taller than the 26px editor, so it would stick out of the
+     * editor's border and, once painted (the error background of a cleared mandatory Lookup),
+     * cover that border.
+     */
+    .lookup-widget-wrapper > .input-dropdown:not(.attributes-dropdown *) {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    /* overrides `input { min-width: 50px }` (inputs.scss), which would widen a narrow column */
+    input:not(.attributes-dropdown *) {
+      min-width: 0;
+    }
+
+    /* overrides the combobox's `min-width: 200px` (inputs.scss), which would widen a narrow column */
+    .input-dropdown-container:not(.attributes-dropdown *) {
+      min-width: 0;
+    }
+
+    /*
+     * A borderless editor gets the static value's full content width, so a value that fits when
+     * shown also fits when edited. A bordered editor (`.input-primary`, e.g. LongText) keeps its
+     * padding, and a mandatory editor's red border keeps a 2px gap.
+     */
+    .input-secondary:not(.attributes-dropdown *) {
+      padding-left: 0;
+      padding-right: 0;
+
+      &.input-mandatory {
+        padding-left: 2px;
+        padding-right: 2px;
+      }
+
+      input {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  }
+
+  /* The static value. */
+
+  /*
+   * An invisible copy of the static value, rendered next to the editor (TableCell.js): it keeps the
+   * column as wide as the value made it, and takes no height.
+   */
+  .cell-width-keeper {
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+  }
+
+  /* the same box as the editor, also when empty; an extended (multi-line) cell keeps its height */
+  > div > .cell-text-wrapper:not(.extended) {
+    height: 26px;
+    line-height: 26px;
+  }
+
+  /* a label chip keeps its own size, vertically centred in that box */
+  .table-cell-label-container {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    line-height: normal;
+
+    /* the chip's bottom margin (labels.scss) only spaces wrapped chips in the Labels editor */
+    .labels-label {
+      margin-bottom: 0;
+    }
+  }
 }
 
 .table-hide-property {
