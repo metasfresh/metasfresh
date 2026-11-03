@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, revealForCaptureIfEnabled, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
 import { PickingJobScanHUScreen } from "./PickingJobScanHUScreen";
 import { PickingSlotScanScreen } from "./PickingSlotScanScreen";
@@ -8,6 +8,7 @@ import { PickingJobsListScreen } from "./PickingJobsListScreen";
 import { SelectPickTargetTUScreen } from './SelectPickTargetTUScreen';
 import { PickFromHUScanScreen } from './PickFromHUScanScreen';
 import { expect } from '@playwright/test';
+import { waitForNoInFlightXhr } from '../../inFlightXhr';
 import { PickLineScanScreen } from './PickLineScanScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
 import { PickGraiScreen } from './PickGraiScreen';
@@ -127,7 +128,11 @@ export const PickingJobScreen = {
     }),
 
     clickLUTargetButton: async () => await step(`${NAME} - Click LU target button`, async () => {
-        await page.getByTestId('targetLU-button').tap();
+        const luTargetButton = page.getByTestId('targetLU-button');
+        // Capture mode only (UAT_CAPTURE): the button renders below the fold, so the tap would appear in no
+        // recorded frame; scroll it into view and hold it there before tapping it.
+        await revealForCaptureIfEnabled(luTargetButton);
+        await luTargetButton.tap();
     }),
     setTargetLU: async ({ lu }) => await step(`${NAME} - Set target LU to ${lu}`, async () => {
         if (!lu) throw new Error("No LU specified.");
@@ -275,6 +280,10 @@ export const PickingJobScreen = {
                 await expect(classes).toContain(expectedClassName);
             });
         }
+
+        // Capture mode only (UAT_CAPTURE): a line button may render below the fold, so its picked quantity
+        // can appear in no recorded frame; scroll it into view and hold it there.
+        await revealForCaptureIfEnabled(lineButton);
     }),
 
     // per-line available-qty display, gated by the picking profile's IsShowQtyAvailableForLines flag.
@@ -312,6 +321,7 @@ export const PickingJobScreen = {
     }),
 
     complete: async () => await step(`${NAME} - Complete`, async () => {
+        await waitForJobScreenToSettle();
         await page.locator('#last-confirm-button').tap();
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
@@ -467,6 +477,19 @@ const UNPICK_SUBMIT_ROUTE = '**/picking/event';
 //
 //
 //
+
+// The job screen (and its line view) asks `has-closed-lu` every time it mounts; once an LU was closed
+// (and reopening is allowed) the answer adds "Reopen LU" ABOVE "Complete". Matches with or without the
+// `lineId` query string.
+const HAS_CLOSED_LU_QUERY = /\/picking\/job\/[^/]+\/has-closed-lu(\?|$)/;
+
+// Tapping "Complete" while that answer is still on its way loses the tap: the answer pushes the button
+// down between the tap's point and the click that follows the touch, so the click hits whatever moved
+// under the old point and the confirmation dialog never opens (flaky cases 58 / 95 / 103 / 175). An
+// operator sees the screen settle before reaching for the button; wait for the same.
+const waitForJobScreenToSettle = async () => await step(`${NAME} - Wait for the job screen to settle`, async () => {
+    await waitForNoInFlightXhr(page, { urlPattern: HAS_CLOSED_LU_QUERY, timeout: SLOW_ACTION_TIMEOUT });
+});
 
 const pickingSlotButton = () => {
     return page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickingSlot}-button`);

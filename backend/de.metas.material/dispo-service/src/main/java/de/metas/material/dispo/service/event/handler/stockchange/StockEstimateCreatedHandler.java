@@ -36,11 +36,13 @@ import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import de.metas.util.Services;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -49,21 +51,14 @@ import java.util.Collection;
 
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
+@RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class StockEstimateCreatedHandler implements MaterialEventHandler<AbstractStockEstimateEvent>
 {
 	private static final Logger logger = LogManager.getLogger(StockEstimateCreatedHandler.class);
 
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final CandidateChangeService candidateChangeHandler;
-	private final StockEstimateEventService stockEstimateEventService;
-
-	public StockEstimateCreatedHandler(
-			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final StockEstimateEventService stockEstimateEventService)
-	{
-		this.candidateChangeHandler = candidateChangeHandler;
-		this.stockEstimateEventService = stockEstimateEventService;
-	}
+	@NonNull private final CandidateChangeService candidateChangeHandler;
+	@NonNull private final StockEstimateEventService stockEstimateEventService;
 
 	@Override
 	public Collection<Class<? extends AbstractStockEstimateEvent>> getHandledEventType()
@@ -91,6 +86,14 @@ public class StockEstimateCreatedHandler implements MaterialEventHandler<Abstrac
 			throw new AdempiereException("No candidate should exist for event, but an actual candidate was returned")
 					.appendParametersToMessage()
 					.setParameter("StockEstimateCreatedEvent", event);
+		}
+
+		if (stockEstimateEventService.hasUnfulfilledPlannedPositions(event))
+		{
+			// re-baselining onto the bare counted qty would silently absorb it - unlike StockChangedEventHandler,
+			// this event carries no old/new pair to fall back to a physical-movement delta, so the safe choice is
+			// to write nothing and leave the correction to the ATP reconciliation process.
+			return;
 		}
 
 		final Candidate previousStockOrNull = stockEstimateEventService.retrievePreviousStockCandidateOrNull(event);

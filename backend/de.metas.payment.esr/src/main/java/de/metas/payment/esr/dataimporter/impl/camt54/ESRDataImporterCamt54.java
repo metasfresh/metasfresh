@@ -131,6 +131,11 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", namespaceURI);
 	}
 
+	private static boolean isVersion6Schema(@NonNull final String namespaceURI)
+	{
+		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.06", namespaceURI);
+	}
+
 	private static boolean isVersion8Schema(@NonNull final String namespaceURI)
 	{
 		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.08", namespaceURI);
@@ -175,14 +180,18 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			{
 				return importCamt54v02(mxsr);
 			}
+			else if (isVersion6Schema(namespaceURI))
+			{
+				return importCamt54v06(mxsr);
+			}
 			else if (isVersion8Schema(namespaceURI))
 			{
 				return importCamt54v08(mxsr);
 			}
 			else
 			{
-				// deliberately a catch-all rather than a .06 check: .04 and .05 arrive here too, rewritten by the delegate above
-				return importCamt54v06(mxsr);
+				throw new AdempiereException("Unsupported camt.54 version: " )
+						.setParameter("namespaceURI", namespaceURI);
 			}
 
 		}

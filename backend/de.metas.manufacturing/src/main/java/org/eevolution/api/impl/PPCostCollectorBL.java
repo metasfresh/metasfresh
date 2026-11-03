@@ -22,6 +22,7 @@ package org.eevolution.api.impl;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -165,19 +166,27 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	 *
 	 * @return Component Issue, Mix Variance or Method Change Variance
 	 */
-	private static CostCollectorType extractCostCollectorTypeToUseForComponentIssue(
+	@VisibleForTesting
+	static CostCollectorType extractCostCollectorTypeToUseForComponentIssue(
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
 			@NonNull final ProductId productId)
 	{
 		final ProductId bomLineProductId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
 
-		if (!ProductId.equals(productId, bomLineProductId) || PPOrderUtil.isMethodChangeVariance(orderBOMLine))
+		if (!ProductId.equals(productId, bomLineProductId))
 		{
 			return CostCollectorType.MethodChangeVariance;
 		}
+		// A co/by-product receipt shall ALWAYS be a MixVariance so it enters the co-product
+		// capitalization path -- even for a zero-planned line (QtyBatch==0 && QtyBOM==0), where
+		// isMethodChangeVariance would otherwise win. Check co/by-product BEFORE method-change variance.
 		else if (PPOrderUtil.isCoOrByProduct(orderBOMLine))
 		{
 			return CostCollectorType.MixVariance;
+		}
+		else if (PPOrderUtil.isMethodChangeVariance(orderBOMLine))
+		{
+			return CostCollectorType.MethodChangeVariance;
 		}
 		else
 		{

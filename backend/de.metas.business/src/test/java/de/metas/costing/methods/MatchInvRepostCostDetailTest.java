@@ -300,6 +300,42 @@ public class MatchInvRepostCostDetailTest
 		assertThat(costs.getAmountBeforeAdjustment().toBigDecimal()).isEqualByComparingTo(INVOICED_AMT);
 	}
 
+	/**
+	 * REGRESSION: {@code getExistingCostDetails} filters by the request's product. When one document persists
+	 * rows for MORE than one product (a manufacturing CostDifferenceDistribution collector persists a leg for the
+	 * main product AND each co-product under ONE documentRef), recovery for product A must return only A's legs —
+	 * never a sibling product's leg. Removing the {@code .productId(...)} filter would let B's leg be recovered
+	 * here, so this pins the widening. For a single-product document (every non-manufacturing method) the request's
+	 * product is the document's only product, so the filter is a logical no-op — pinned by
+	 * {@link #repost_singleMainLeg_recoversExactlyMain_amountUnchanged()}.
+	 */
+	@Test
+	public void repost_multiProductDocument_recoversOnlyRequestedProductsLegs()
+	{
+		// product A: its own three legs (as a MatchInv posts)
+		seedThreeLegsAsFreshPosting();
+
+		// a SECOND product's MAIN leg under the SAME documentRef
+		final ProductId otherProductId = createProduct("otherProduct");
+		final CostDetailCreateRequest otherRequest = matchInvRequest().toBuilder()
+				.productId(otherProductId)
+				.build();
+		final CurrentCost otherCurrentCost = handlerUtils.getCurrentCostForUpdate(otherRequest);
+		costDetailService.createCostDetailRecordNoCostsChanged(
+				otherRequest.withAmountAndType(eur("77"), CostAmountType.MAIN),
+				CostDetailPreviousAmounts.of(otherCurrentCost));
+
+		// recovery for product A must return only A's legs, never the other product's leg under the same documentRef
+		final List<CostDetail> recovered = handlerUtils.getExistingCostDetails(matchInvRequest());
+
+		assertThat(recovered)
+				.as("getExistingCostDetails must scope to the request's product; a foreign product's leg under the "
+						+ "same documentRef must NOT be recovered")
+				.extracting(CostDetail::getProductId)
+				.containsOnly(productId);
+		assertThat(recovered).hasSize(3);
+	}
+
 	// ---------------------------------------------------------------------------------------------
 	// setup helpers (mirrors MovingAverageInvoiceCostingMethodHandlerTest)
 	// ---------------------------------------------------------------------------------------------
@@ -353,6 +389,11 @@ public class MatchInvRepostCostDetailTest
 
 	private ProductId createProduct()
 	{
+		return createProduct("product");
+	}
+
+	private ProductId createProduct(final String value)
+	{
 		final I_M_Product_Category productCategory = newInstanceOutOfTrx(I_M_Product_Category.class);
 		saveRecord(productCategory);
 
@@ -362,8 +403,8 @@ public class MatchInvRepostCostDetailTest
 		saveRecord(productCategoryAcct);
 
 		final I_M_Product product = newInstanceOutOfTrx(I_M_Product.class);
-		product.setValue("product");
-		product.setName("product");
+		product.setValue(value);
+		product.setName(value);
 		product.setC_UOM_ID(eachUOM.getC_UOM_ID());
 		product.setProductType(ProductType.Item.getCode());
 		product.setIsStocked(true);

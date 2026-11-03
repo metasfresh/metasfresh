@@ -213,29 +213,6 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsAllowReceiveWithoutPackingItem = "IsAllowReceiveWithoutPackingItem";
 
 	/**
-	 * Set Best Before Date editable.
-	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsBestBeforeDateEditable (@Nullable java.lang.String IsBestBeforeDateEditable);
-
-	/**
-	 * Get Best Before Date editable.
-	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIsBestBeforeDateEditable();
-
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsBestBeforeDateEditable = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsBestBeforeDateEditable", null);
-	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
-
-	/**
 	 * Set Capture catch weight.
 	 * Capture the catch weight of a catch-weight product at production receipt.
 	 *
@@ -259,27 +236,27 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
 
 	/**
-	 * Set Lot Number editable.
-	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
+	 * Set Finished goods: require catch-weight scan.
+	 * Receiving a catch-weight finished good at production receipt requires a scan.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsLotNumberEditable (@Nullable java.lang.String IsLotNumberEditable);
+	void setIsFinishedGoodsCatchWeightScanRequired (@Nullable java.lang.String IsFinishedGoodsCatchWeightScanRequired);
 
 	/**
-	 * Get Lot Number editable.
-	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
+	 * Get Finished goods: require catch-weight scan.
+	 * Receiving a catch-weight finished good at production receipt requires a scan.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getIsLotNumberEditable();
+	@Nullable java.lang.String getIsFinishedGoodsCatchWeightScanRequired();
 
-	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsLotNumberEditable = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsLotNumberEditable", null);
-	String COLUMNNAME_IsLotNumberEditable = "IsLotNumberEditable";
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsFinishedGoodsCatchWeightScanRequired = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsFinishedGoodsCatchWeightScanRequired", null);
+	String COLUMNNAME_IsFinishedGoodsCatchWeightScanRequired = "IsFinishedGoodsCatchWeightScanRequired";
 
 	/**
 	 * Set Workstation Scan Required.

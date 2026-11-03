@@ -614,6 +614,14 @@ public class CiiValidatorTest
 				.as("Missing Leitweg-ID must trigger BR-DE-15 when validated as XRechnung. Actual rule ids: %s", xrRuleIds)
 				.contains("BR-DE-15");
 
+		// The BR-DE-15 failed assertion must carry a message and a location (surfaced to the user)
+		final CiiValidationResult.FailedAssertion brDe15 = xrResult.getFailedAssertions().stream()
+				.filter(fa -> "BR-DE-15".equals(fa.getRuleId()))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("BR-DE-15 failed assertion not found"));
+		assertThat(brDe15.getMessage()).isNotBlank();
+		assertThat(brDe15.getLocation()).isNotBlank();
+
 		// EN16931-only call must NOT flag any BR-DE-* rule (it does not run the KoSIT schematron)
 		final CiiValidationResult en16931Result = validator.validate(xmlWithoutLeitweg, null);
 		final List<String> en16931RuleIds = en16931Result.getFatalAndErrorRuleIds();
