@@ -30,6 +30,7 @@ import de.metas.common.handlingunits.JsonGRAICodesRequest;
 import de.metas.common.handlingunits.JsonGRAICodesResponse;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.mobileui.config.HUManagerProfile;
@@ -204,7 +205,7 @@ public class HUManagerRestController
 	{
 		assertActionAccess(HUManagerAction.CreateHU);
 
-		final CreateHUFromLabelService.CreatedHU createdHU = createHUFromLabelService.create(request, Env.getClientId());
+		final CreateHUFromLabelService.CreatedHU createdHU = createHUFromLabelService.create(request, Env.getClientId(), SystemTime.asZonedDateTime());
 
 		return handlingUnitsService.getByIdSupplier(
 				() -> GetByIdRequest.builder()

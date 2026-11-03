@@ -4,6 +4,8 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.AdRefListRepositoryMocked;
 import de.metas.ad_reference.AdRefTableRepositoryMocked;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileRepository;
@@ -14,13 +16,14 @@ import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.createfromlabel.CreateHUFromLabelService;
 import de.metas.handlingunits.rest_api.createfromlabel.JsonCreateHUFromScannedCodeRequest;
 import de.metas.handlingunits.rest_api.createfromlabel.JsonProposeHUFromScannedCodeRequest;
+import de.metas.handlingunits.rest_api.createfromlabel.LabelProductResolver;
 import de.metas.handlingunits.rest_api.createfromlabel.LabelTargetLocatorResolver;
-import de.metas.handlingunits.grai.HUGraiService;
-import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.organization.IOrgDAO;
+import de.metas.product.IProductBL;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -28,9 +31,12 @@ import de.metas.workplace.WorkplaceRepository;
 import de.metas.workplace.WorkplaceService;
 import de.metas.workplace.WorkplaceUserAssignRepository;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Role;
@@ -44,8 +50,6 @@ import org.compiere.model.I_Mobile_Application_Action_Access;
 import org.compiere.model.X_AD_Role;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -116,7 +120,7 @@ class HUManagerRestControllerCreateHUAccessTest
 						inventoryCandidateService,
 						new HUGraiService(new HUPIGraiRepository())),
 				inventoryCandidateService,
-				new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelTargetLocatorResolver(new WorkplaceService(WorkplaceRepository.newInstanceForUnitTesting(), new WorkplaceUserAssignRepository()))));
+				new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)), new LabelTargetLocatorResolver(new WorkplaceService(WorkplaceRepository.newInstanceForUnitTesting(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class))));
 	}
 
 	private I_Mobile_Application_Action newAction(final String internalName)

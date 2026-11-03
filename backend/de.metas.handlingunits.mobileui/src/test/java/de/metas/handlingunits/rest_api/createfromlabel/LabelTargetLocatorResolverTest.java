@@ -1,7 +1,9 @@
 package de.metas.handlingunits.rest_api.createfromlabel;
 
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceRepository;
 import de.metas.workplace.WorkplaceService;
@@ -12,7 +14,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
-import de.metas.util.Services;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_Workplace;
 import org.compiere.model.I_M_Locator;
@@ -42,7 +44,7 @@ class LabelTargetLocatorResolverTest
 	{
 		AdempiereTestHelper.get().init();
 		workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
-		resolver = new LabelTargetLocatorResolver(workplaceService);
+		resolver = new LabelTargetLocatorResolver(workplaceService, Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class));
 	}
 
 	private static WarehouseId newWarehouseId(final int repoId) {return WarehouseId.ofRepoId(repoId);}

@@ -1,7 +1,6 @@
 package de.metas.handlingunits.rest_api.createfromlabel;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.JsonHUAttributeConverters;
 import de.metas.handlingunits.rest_api.createfromlabel.JsonHUProposal.JsonAttribute;
 import de.metas.handlingunits.rest_api.createfromlabel.JsonHUProposal.JsonProduct;
@@ -13,7 +12,6 @@ import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,12 +33,15 @@ import static de.metas.handlingunits.rest_api.createfromlabel.CreateFromLabelMes
  */
 public class ProposeHUFromScannedCodeCommand
 {
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
+	// services
+	@NonNull private final IProductBL productBL;
+	@NonNull private final IAttributeDAO attributeDAO;
+	@NonNull private final IWarehouseDAO warehouseDAO;
 	@NonNull private final LabelProductResolver labelProductResolver;
 	@NonNull private final LabelTargetLocatorResolver labelTargetLocatorResolver;
+
+	// params
+	@NonNull private final ClientId clientId;
 	@NonNull private final UserId userId;
 	@NonNull private final OrgId orgId;
 	@NonNull private final ScannedCode scannedCode;
@@ -48,7 +49,10 @@ public class ProposeHUFromScannedCodeCommand
 
 	@Builder
 	private ProposeHUFromScannedCodeCommand(
-			@NonNull final HUQRCodesService huQRCodesService,
+			@NonNull final IProductBL productBL,
+			@NonNull final IAttributeDAO attributeDAO,
+			@NonNull final IWarehouseDAO warehouseDAO,
+			@NonNull final LabelProductResolver labelProductResolver,
 			@NonNull final LabelTargetLocatorResolver labelTargetLocatorResolver,
 			@NonNull final ClientId clientId,
 			@NonNull final UserId userId,
@@ -56,8 +60,12 @@ public class ProposeHUFromScannedCodeCommand
 			@NonNull final ScannedCode scannedCode,
 			@NonNull final String adLanguage)
 	{
-		this.labelProductResolver = LabelProductResolver.builder().huQRCodesService(huQRCodesService).clientId(clientId).build();
+		this.productBL = productBL;
+		this.attributeDAO = attributeDAO;
+		this.warehouseDAO = warehouseDAO;
+		this.labelProductResolver = labelProductResolver;
 		this.labelTargetLocatorResolver = labelTargetLocatorResolver;
+		this.clientId = clientId;
 		this.userId = userId;
 		this.orgId = orgId;
 		this.scannedCode = scannedCode;
@@ -78,7 +86,7 @@ public class ProposeHUFromScannedCodeCommand
 
 	private JsonHUProposal propose()
 	{
-		final LabelProduct labelProduct = labelProductResolver.resolve(scannedCode);
+		final LabelProduct labelProduct = labelProductResolver.resolve(scannedCode, clientId);
 		final ProductId productId = labelProduct.getProductId();
 		final LabelValues labelValues = LabelValues.of(labelProduct.getCode());
 
@@ -109,7 +117,7 @@ public class ProposeHUFromScannedCodeCommand
 	{
 		final ImmutableList.Builder<JsonAttribute> result = ImmutableList.builder();
 		// only attributes this installation defines: the same ones the booking stores
-		labelValues.getAttributeValuesDefinedHere().forEach((attributeCode, value) -> {
+		labelValues.getAttributeValuesDefinedHere(attributeDAO).forEach((attributeCode, value) -> {
 			final ITranslatableString caption = attributeDAO.getAttributeDisplayNameByValue(attributeCode)
 					.orElseThrow(() -> new AdempiereException("Attribute not found: " + attributeCode));
 

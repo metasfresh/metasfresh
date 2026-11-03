@@ -12,6 +12,7 @@ import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Mobile_Application_Access;
 import org.compiere.model.I_Mobile_Application_Action_Access;
@@ -120,7 +121,7 @@ public class MobileApplicationPermissionsRepository
 			return;
 		}
 
-		// one query for all the action-access rows of the role, instead of one per action
+		// one query for all the action-access rows of the role
 		final Map<MobileApplicationActionId, I_Mobile_Application_Action_Access> existingByActionId = queryBL
 				.createQueryBuilder(I_Mobile_Application_Action_Access.class)
 				.addEqualsFilter(I_Mobile_Application_Action_Access.COLUMNNAME_AD_Role_ID, request.getRoleId())
@@ -129,7 +130,13 @@ public class MobileApplicationPermissionsRepository
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						row -> MobileApplicationActionId.ofRepoId(row.getMobile_Application_Action_ID()),
-						row -> row)); // fail-loud on duplicate rows of one role+action, as the former firstOnly() per action did
+						row -> row,
+						// duplicate rows of one role+action are a data error: fail loud
+						(row1, row2) -> {
+							throw new DBMoreThanOneRecordsFoundException("More than one " + I_Mobile_Application_Action_Access.Table_Name
+									+ " row for " + I_Mobile_Application_Action_Access.COLUMNNAME_AD_Role_ID + "=" + request.getRoleId().getRepoId()
+									+ ", " + I_Mobile_Application_Action_Access.COLUMNNAME_Mobile_Application_Action_ID + "=" + row1.getMobile_Application_Action_ID());
+						}));
 
 		for (final MobileApplicationActionId actionId : actionIds)
 		{
