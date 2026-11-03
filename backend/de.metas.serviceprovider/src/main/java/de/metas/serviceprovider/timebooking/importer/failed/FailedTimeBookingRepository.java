@@ -22,29 +22,37 @@
 
 package de.metas.serviceprovider.timebooking.importer.failed;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.externalreference.IExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.organization.OrgId;
-import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.model.I_S_FailedTimeBooking;
+import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
 @Repository
+@RequiredArgsConstructor
 public class FailedTimeBookingRepository
 {
-	private final IQueryBL queryBL;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ExternalSystemRepository externalSystemRepository;
 
-	public FailedTimeBookingRepository(final IQueryBL queryBL)
+	@VisibleForTesting
+	public static FailedTimeBookingRepository newInstanceForUnitTesting()
 	{
-		this.queryBL = queryBL;
+		Adempiere.assertUnitTestMode();
+		return new FailedTimeBookingRepository(new ExternalSystemRepository());
 	}
 
 	public FailedTimeBookingId save(@NonNull final FailedTimeBooking failedTimeBooking)
@@ -61,7 +69,7 @@ public class FailedTimeBookingRepository
 		final I_S_FailedTimeBooking record = InterfaceWrapperHelper.loadOrNew(failedTimeBookingId, I_S_FailedTimeBooking.class);
 
 		record.setExternalId(failedTimeBooking.getExternalId());
-		record.setExternalSystem(failedTimeBooking.getExternalSystem().getCode());
+		record.setExternalSystem_ID(failedTimeBooking.getExternalSystem().getId().getRepoId());
 
 		record.setJSONValue(failedTimeBooking.getJsonValue());
 		record.setImportErrorMsg(failedTimeBooking.getErrorMsg());
@@ -78,11 +86,11 @@ public class FailedTimeBookingRepository
 		InterfaceWrapperHelper.delete(record);
 	}
 
-	public Optional<FailedTimeBooking> getOptionalByExternalIdAndSystem(@NonNull final IExternalSystem externalSystem,
+	public Optional<FailedTimeBooking> getOptionalByExternalIdAndSystem(@NonNull final ExternalSystem externalSystem,
 																	    @NonNull final String externalId)
 	{
 		return queryBL.createQueryBuilder(I_S_FailedTimeBooking.class)
-				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem, externalSystem.getCode() )
+				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem_ID, externalSystem.getId() )
 				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalId, externalId)
 				.create()
 				.firstOnlyOptional(I_S_FailedTimeBooking.class)
@@ -93,7 +101,7 @@ public class FailedTimeBookingRepository
 	{
 		return queryBL.createQueryBuilder(I_S_FailedTimeBooking.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem,externalSystem.getCode() )
+				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem_ID, externalSystem.getId() )
 				.create()
 				.list()
 				.stream()
@@ -103,8 +111,7 @@ public class FailedTimeBookingRepository
 
 	private FailedTimeBooking buildFailedTimeBooking(@NonNull final I_S_FailedTimeBooking record)
 	{
-		final ExternalSystem externalSystem = ExternalSystem.of(record.getExternalSystem())
-				.orElseThrow(() -> new AdempiereException("Unknown externalSystem: " + record.getExternalSystem()));
+		final ExternalSystem externalSystem = externalSystemRepository.getById(ExternalSystemId.ofRepoId(record.getExternalSystem_ID()));
 
 		return FailedTimeBooking.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))

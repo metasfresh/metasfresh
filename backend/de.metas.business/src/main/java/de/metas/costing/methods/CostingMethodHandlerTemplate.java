@@ -8,9 +8,12 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.AdMessageKey;
 import de.metas.quantity.Quantity;
@@ -212,14 +215,21 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			throw new AdempiereException("Cost revaluation requests shall have explicit cost price set");
 		}
 
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
+		// The amount is determined now, from the stock on hand and the cost price read under the lock which also saves the new price,
+		// so a movement posted between Complete and posting is not booked at the old price a second time.
+		// Same formula as the revaluation's Complete (no extra rounding), so both agree when nothing moved in between.
+		final Quantity qty = currentCosts.getCurrentQty();
+		final CostAmount oldCostPrice = currentCosts.getCostPrice().getOwnCostPrice();
+		final CostAmount bookedAmt = explicitCostPrice.multiply(qty).subtract(oldCostPrice.multiply(qty));
+
 		currentCosts.setOwnCostPrice(explicitCostPrice);
-		currentCosts.addCumulatedAmt(request.getAmt());
+		currentCosts.addCumulatedAmt(bookedAmt);
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
-				request,
+				request.withAmount(bookedAmt),
 				previousCosts);
 
 		utils.saveCurrentCost(currentCosts);
@@ -235,6 +245,40 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);
+
+	public final MoveCostsResult createMovementCosts(@NonNull MoveCostsRequest request)
+	{
+		final List<CostDetail> outboundCostDetails = utils.getExistingCostDetails(CostDetailQuery.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.costElementId(request.getCostElementId()) // assume request's costing element is set
+				.documentRef(request.getOutboundDocumentRef())
+				.amtType(CostAmountType.MAIN)
+				.build());
+		final List<CostDetail> inboundCostDetails = utils.getExistingCostDetails(CostDetailQuery.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.costElementId(request.getCostElementId()) // assume request's costing element is set
+				.documentRef(request.getInboundDocumentRef())
+				.amtType(CostAmountType.MAIN)
+				.build());
+
+		if (!outboundCostDetails.isEmpty() || !inboundCostDetails.isEmpty())
+		{
+			// make sure DateAcct is up-to-date
+			final List<CostDetail> outboundCostDetailsUpdated = utils.updateDateAcct(outboundCostDetails, request.getDate());
+			final List<CostDetail> inboundCostDetailsUpdated = utils.updateDateAcct(inboundCostDetails, request.getDate());
+
+			return MoveCostsResult.builder()
+					.outboundCosts(utils.toAggregatedCostAmount(outboundCostDetailsUpdated))
+					.inboundCosts(utils.toAggregatedCostAmount(inboundCostDetailsUpdated))
+					.build();
+		}
+		else
+		{
+			return createMovementCostsImpl(request);
+		}
+	}
+
+	protected abstract MoveCostsResult createMovementCostsImpl(@NonNull MoveCostsRequest request);
 
 	@Override
 	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(

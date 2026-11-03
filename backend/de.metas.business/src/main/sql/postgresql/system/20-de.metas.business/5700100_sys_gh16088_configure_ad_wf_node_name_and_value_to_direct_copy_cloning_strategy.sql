@@ -1,0 +1,10 @@
+-- Column: AD_WF_Node.Name
+-- 2023-08-24T17:39:15.007991300Z
+UPDATE AD_Column SET CloningStrategy='DC',Updated=TO_TIMESTAMP('2023-08-24 20:39:15.007','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=294
+;
+
+-- Column: AD_WF_Node.Value
+-- 2023-08-24T17:39:26.838628Z
+UPDATE AD_Column SET CloningStrategy='DC',Updated=TO_TIMESTAMP('2023-08-24 20:39:26.838','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=11739
+;
+

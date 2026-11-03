@@ -9,7 +9,10 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.effective.BPartnerEffective;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -21,9 +24,11 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -35,7 +40,6 @@ import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapte
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
@@ -43,7 +47,6 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.InvoiceRule;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
@@ -69,13 +72,12 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -127,9 +129,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	// Services
 	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
-	private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final BPartnerEffectiveBL bPartnerEffectiveBL = SpringContextHolder.instance.getBean(BPartnerEffectiveBL.class);
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
@@ -296,8 +299,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final BigDecimal forcedQtyToAllocate)
 	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
 		final I_M_InOut inOut = create(inOutLineRecord.getM_InOut(), I_M_InOut.class);
 		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class, inOutLineRecord);
 
@@ -353,8 +354,17 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Pricing Informations
-		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0 ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
-		calculatePriceAndTaxAndUpdate(icRecord, inOutLineRecordToUse);
+		final InOutLineId returnOriginLineId = InOutLineId.ofRepoIdOrNull(inOutLineRecord.getReturn_Origin_InOutLine_ID());
+		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = returnOriginLineId != null
+				? inOutBL.getLineByIdInTrx(returnOriginLineId)
+				: inOutLineRecord;
+		// A vendor return is invoiced via this inout IC (it has no PO IC) and re-priced from the bare origin
+		// receipt line, whose Packvorschrift lives on the linked purchase-order line. Resolve+inject it explicitly
+		// so the PI-keyed price is found; scoped to vendor returns so shipment / customer-return pricing is untouched.
+		final HUPIItemProductId explicitPackingInstruction = inOutBL.isVendorReturn(inOut)
+				? inOutBL.resolvePIForVendorReturnPricingCtx(inOutLineRecordToUse)
+				: null;
+		calculatePriceAndTaxAndUpdate(icRecord, inOutLineRecordToUse, explicitPackingInstruction);
 
 		//
 		// Description
@@ -367,23 +377,25 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_C_Order order = inOut.getC_Order();
 			icRecord.setInvoiceRule(order.getInvoiceRule()); // the rule set in order
 		}
-		// Set Invoice Rule from BPartner
+		// Set Invoice Rule and Payment Rule from the bill-partner (order-less delivery)
 		else
 		{
-			final I_C_BPartner billBPartner = bpartnerDAO.getById(icRecord.getBill_BPartner_ID());
+			final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getById(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()));
+			final SOTrx soTrx = SOTrx.ofBoolean(inOut.isSOTrx());
 
-			final InvoiceRule invoiceRule = inOut.isSOTrx() ?
-					InvoiceRule.ofNullableCode(billBPartner.getInvoiceRule()):
-					InvoiceRule.ofNullableCode(billBPartner.getPO_InvoiceRule());
-
-			if (invoiceRule!= null)
-			{
-				icRecord.setInvoiceRule(invoiceRule.getCode());
-			}
-			else
-			{
-				icRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
-			}
+			// Inherit InvoiceRule and PaymentRule from the bill-partner's *effective* configuration
+			// (partner -> BP group -> parent group -> default), the same chain an order resolves them with
+			// (CalloutOrder / BPartnerOrderParamsRepository). For order-less deliveries (e.g. consolidated
+			// "Leergut"/returnable deliveries that bundle several orders) this keeps the candidate aligned
+			// with the order-based goods candidates. Both InvoiceRule and PaymentRule are part of the invoice
+			// header aggregation key, so a mismatch would split the returnables onto a separate invoice.
+			// Reading the raw bill-partner columns missed values inherited from the BP group.
+			// Note: BPartnerOrderParamsRepository additionally normalizes a sales Cash/Check rule to
+			// OnCredit; that edge case is not replicated here (Leergut partners use OnCredit/DirectDeposit/
+			// DirectDebit), so the effective value is used as-is.
+			icRecord.setInvoiceRule(billBPartnerEffective.getInvoiceRule(soTrx).getCode());
+			icRecord.setPaymentRule(billBPartnerEffective.getPaymentRule(soTrx).getCode());
+			icRecord.setIsAutoInvoice(billBPartnerEffective.isAutoInvoice(soTrx));
 		}
 
 		Dimension inOutLineDimension = dimensionService.getFromRecord(inOutLineRecord);
@@ -423,7 +435,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		// set Quality Issue Percentage Override
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
-		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet attributes = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asiId);
 
 		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(icRecord, attributes);
 
@@ -919,16 +931,31 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final I_M_InOutLine inoutLine = getM_InOutLine(icRecord);
-		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inoutLine.getReturn_Origin_InOutLine_ID() > 0 ? inoutLine.getReturn_Origin_InOutLine() : inoutLine;
+		final org.compiere.model.I_M_InOut inOut = inOutBL.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
+		final InOutLineId returnOriginLineId = InOutLineId.ofRepoIdOrNull(inoutLine.getReturn_Origin_InOutLine_ID());
+		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = returnOriginLineId != null
+				? inOutBL.getLineByIdInTrx(returnOriginLineId)
+				: inoutLine;
+		final HUPIItemProductId explicitPackingInstruction = inOutBL.isVendorReturn(inOut)
+				? inOutBL.resolvePIForVendorReturnPricingCtx(inOutLineRecordToUse)
+				: null;
 
-		return calculatePriceAndTax(icRecord, inOutLineRecordToUse);
+		return calculatePriceAndTax(icRecord, inOutLineRecordToUse, explicitPackingInstruction);
 	}
 
 	public static PriceAndTax calculatePriceAndTax(
 			final I_C_Invoice_Candidate icRecord,
 			final org.compiere.model.I_M_InOutLine inoutLineRecord)
 	{
-		final IPricingResult pricingResult = calculatePricingResult(inoutLineRecord);
+		return calculatePriceAndTax(icRecord, inoutLineRecord, null);
+	}
+
+	private static PriceAndTax calculatePriceAndTax(
+			final I_C_Invoice_Candidate icRecord,
+			final org.compiere.model.I_M_InOutLine inoutLineRecord,
+			@Nullable final HUPIItemProductId explicitPackingInstruction)
+	{
+		final IPricingResult pricingResult = calculatePricingResult(inoutLineRecord, explicitPackingInstruction);
 
 		final boolean taxIncluded;
 		if (icRecord.getC_Order_ID() > 0)
@@ -986,8 +1013,15 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 	private static IPricingResult calculatePricingResult(@NonNull final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{
+		return calculatePricingResult(fromInOutLine, null);
+	}
+
+	private static IPricingResult calculatePricingResult(
+			@NonNull final org.compiere.model.I_M_InOutLine fromInOutLine,
+			@Nullable final HUPIItemProductId explicitPackingInstruction)
+	{
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-		return inOutBL.getProductPrice(fromInOutLine);
+		return inOutBL.getProductPrice(fromInOutLine, explicitPackingInstruction);
 	}
 
 	@Nullable
@@ -995,9 +1029,18 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{
+		return calculatePriceAndTaxAndUpdate(icRecord, fromInOutLine, null);
+	}
+
+	@Nullable
+	private static PriceAndTax calculatePriceAndTaxAndUpdate(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			final org.compiere.model.I_M_InOutLine fromInOutLine,
+			@Nullable final HUPIItemProductId explicitPackingInstruction)
+	{
 		try
 		{
-			final PriceAndTax priceAndTax = calculatePriceAndTax(icRecord, fromInOutLine);
+			final PriceAndTax priceAndTax = calculatePriceAndTax(icRecord, fromInOutLine, explicitPackingInstruction);
 			IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
 			return priceAndTax;
 		}

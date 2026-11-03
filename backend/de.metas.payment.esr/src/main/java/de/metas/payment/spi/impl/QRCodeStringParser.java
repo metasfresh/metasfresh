@@ -22,22 +22,24 @@
 
 package de.metas.payment.spi.impl;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.common.base.Splitter;
-
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.PaymentString;
 import de.metas.payment.api.impl.QRPaymentStringDataProvider;
 import de.metas.util.Check;
 import lombok.NonNull;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
 public final class QRCodeStringParser extends AbstractESRPaymentStringParser
 {
-	private static final Splitter SPLITTER = Splitter.on("\n");
+	/**
+	 * Splits on any newline, i,e. {@code \r}, {@code \r\n} as well as {@code \n}.
+	 */
+	private static final Splitter SPLITTER = Splitter.onPattern("\\r?\\n|\\r");
 
 	@Override
 	public PaymentString parse(@NonNull final String qrCode)

@@ -22,53 +22,24 @@
 
 package org.adempiere.archive.api;
 
-import de.metas.email.EMailSentStatus;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-public class ArchiveEmailSentStatus
+@RequiredArgsConstructor
+public enum ArchiveEmailSentStatus implements ReferenceListAwareEnum
 {
-	public static final ArchiveEmailSentStatus MESSAGE_SENT = new ArchiveEmailSentStatus(AdMessageKey.of("MessageSent"));
-	public static final ArchiveEmailSentStatus MESSAGE_NOT_SENT = new ArchiveEmailSentStatus(AdMessageKey.of("MessageNotSent"));
+	Success("Email_Success"), // X_C_Doc_Outbound_Log_Line.STATUS_Email_Success
+	Failure("Email_Failure");// X_C_Doc_Outbound_Log_Line.STATUS_Email_Failure
 
-	private final AdMessageKey adMessage;
-	private final String plainMessage;
+	@Getter
+	private final String code;
 
-	ArchiveEmailSentStatus(
-			@NonNull final AdMessageKey adMessage)
-	{
-		this.adMessage = adMessage;
-		this.plainMessage = null;
-	}
+	public boolean isSuccess() {return Success.equals(this);}
 
-	ArchiveEmailSentStatus(@NonNull final String plainMessage)
-	{
-		this.adMessage = null;
-		this.plainMessage = plainMessage;
-	}
+	private static final ReferenceListAwareEnums.ValuesIndex<ArchiveEmailSentStatus> index = ReferenceListAwareEnums.index(values());
 
-	public static ArchiveEmailSentStatus ofEMailSentStatus(final EMailSentStatus emailSentStatus)
-	{
-		if (emailSentStatus.isSentOK())
-		{
-			return MESSAGE_SENT;
-		}
-		else
-		{
-			return new ArchiveEmailSentStatus(emailSentStatus.getSentMsg());
-		}
-	}
-
-	public String toDisplayText(@NonNull final IMsgBL msgBL, @NonNull final String adLanguage)
-	{
-		if (adMessage != null)
-		{
-			return msgBL.getTranslatableMsgText(adMessage).translate(adLanguage);
-		}
-		else
-		{
-			return plainMessage;
-		}
-	}
+	public static ArchiveEmailSentStatus ofCode(@NonNull final String code) {return index.ofCode(code);}
 }

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api;
 
 import com.google.common.base.MoreObjects;
@@ -6,8 +28,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.error.AdIssueId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.incoterms.IncotermsId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
@@ -15,6 +39,7 @@ import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
@@ -37,28 +62,6 @@ import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class OLCand implements IProductPriceAware
 {
@@ -69,100 +72,43 @@ public final class OLCand implements IProductPriceAware
 	/**
 	 * This value - if not null - ends up as {@code C_Order.DateOrdered}. If null, the current date will be used.
 	 */
-	@Getter
-	@Setter
-	private LocalDate dateOrdered;
-
-	@Getter
-	private final LocalDate presetDateShipped;
-
-	@Getter
-	private final LocalDate presetDateInvoiced;
-	
+	@Getter @Setter private LocalDate dateOrdered;
+	@Getter private final LocalDate presetDateShipped;
+	@Getter private final LocalDate presetDateInvoiced;
 	private final BPartnerInfo bpartnerInfo;
-
-	@Getter
-	private final BPartnerInfo billBPartnerInfo;
-
-	@Getter
-	private final Optional<BPartnerInfo> dropShipBPartnerInfo;
-
-	@Getter
-	private final Optional<BPartnerInfo> handOverBPartnerInfo;
-
-	@Getter
-	private final PricingSystemId pricingSystemId;
-
-	@Getter
-	private final DeliveryRule deliveryRule;
-
-	@Getter
-	private final DeliveryViaRule deliveryViaRule;
-
-	@Getter
-	private final ShipperId shipperId;
-
-	@Getter
-	private final String externalLineId;
-
-	@Getter
-	private final String externalHeaderId;
-
-	@Getter
-	private final FreightCostRule freightCostRule;
-
-	@Getter
-	private final PaymentRule paymentRule;
-
-	@Getter
-	private final PaymentTermId paymentTermId;
-
-	@Getter
-	private final InvoiceRule invoiceRule;
-
-	@Getter
-	private final BPartnerId salesRepId;
-
-	@Getter
-	private final Quantity qty;
+	@Getter private final BPartnerInfo billBPartnerInfo;
+	@Getter private final Optional<BPartnerInfo> dropShipBPartnerInfo;
+	@Getter private final Optional<BPartnerInfo> handOverBPartnerInfo;
+	@Getter private final PricingSystemId pricingSystemId;
+	@Getter private final DeliveryRule deliveryRule;
+	@Getter private final DeliveryViaRule deliveryViaRule;
+	@Getter private final ShipperId shipperId;
+	@Nullable @Getter private final WarehouseId warehouseId;
+	@Getter private final String externalLineId;
+	@Getter private final String externalHeaderId;
+	@Getter private final FreightCostRule freightCostRule;
+	@Getter private final PaymentRule paymentRule;
+	@Getter private final PaymentTermId paymentTermId;
+	@Getter private final InvoiceRule invoiceRule;
+	@Getter private final BPartnerId salesRepId;
+	@Getter private final Quantity qty;
 	@Nullable @Getter private final BigDecimal manualQtyInPriceUOM;
-
-	@Getter
-	@Nullable
-	private final Quantity qtyItemCapacityEff;
-
-	@Getter
-	private final DocTypeId orderDocTypeId;
-
-	@Getter
-	private final OrderLineGroup orderLineGroup;
-
-	@Getter
-	private final AsyncBatchId asyncBatchId;
-
-	@Getter
-	private final BigDecimal qtyShipped;
-
-	@Getter
-	private final AssignSalesRepRule assignSalesRepRule;
-
-	@Getter
-	private final BPartnerId salesRepInternalId;
-
-	@Getter
-	private final String bpartnerName;
-
-	@Getter
-	private final String phone;
-
-	@Getter
-	private final String email;
-
-	@Getter
-	private final AdIssueId adIssueId;
-
-	@Getter
-	private final String headerAggregationKey;
+	@Nullable @Getter private final Quantity qtyItemCapacityEff;
+	@Getter private final DocTypeId orderDocTypeId;
+	@Getter private final OrderLineGroup orderLineGroup;
+	@Getter private final AsyncBatchId asyncBatchId;
+	@Getter private final BigDecimal qtyShipped;
+	@Getter private final AssignSalesRepRule assignSalesRepRule;
+	@Getter private final BPartnerId salesRepInternalId;
+	@Getter private final String bpartnerName;
+	@Getter private final String phone;
+	@Getter private final String email;
+	@Getter private final AdIssueId adIssueId;
+	@Getter private final String headerAggregationKey;
+	@Nullable @Getter private final PromotionCodeId promotionCodeId;
+	@Nullable @Getter private final PromotionCodeId promotionCode2Id;
+	@Getter private final boolean isWithoutCharge;
+	@Nullable @Getter private final String reason;
 
 	@Builder
 	private OLCand(
@@ -180,6 +126,7 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final PricingSystemId pricingSystemId,
 			@Nullable final ShipperId shipperId,
+			@Nullable final WarehouseId warehouseId,
 			@Nullable final DocTypeId orderDocTypeId,
 			@Nullable final BPartnerId salesRepId,
 			@Nullable final OrderLineGroup orderLineGroup,
@@ -192,7 +139,11 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final String phone,
 			@Nullable final String email,
 			@Nullable final AdIssueId adIssueId,
-			@Nullable final String headerAggregationKey)
+			@Nullable final String headerAggregationKey,
+			@Nullable final PromotionCodeId promotionCodeId,
+			@Nullable final PromotionCodeId promotionCode2Id,
+			final boolean isWithoutCharge,
+			@Nullable final String reason)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -227,6 +178,7 @@ public final class OLCand implements IProductPriceAware
 		this.qtyItemCapacityEff = qtyItemCapacityEff;
 
 		this.shipperId = shipperId;
+		this.warehouseId = warehouseId;
 
 		this.salesRepId = salesRepId;
 
@@ -246,6 +198,11 @@ public final class OLCand implements IProductPriceAware
 		this.adIssueId = adIssueId;
 
 		this.headerAggregationKey = headerAggregationKey;
+
+		this.promotionCodeId = promotionCodeId;
+		this.promotionCode2Id = promotionCode2Id;
+		this.isWithoutCharge = isWithoutCharge;
+		this.reason = reason;
 	}
 
 	@Override
@@ -297,12 +254,6 @@ public final class OLCand implements IProductPriceAware
 	public int getM_AttributeSetInstance_ID()
 	{
 		return olCandRecord.getM_AttributeSetInstance_ID();
-	}
-
-	@Nullable
-	public WarehouseId getWarehouseId()
-	{
-		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_ID());
 	}
 
 	@Nullable
@@ -362,6 +313,12 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.isError();
 	}
 
+	@Nullable
+	public String getErrorMsgJSON()
+	{
+		return olCandRecord.getErrorMsgJSON();
+	}
+
 	public void setGroupingError(final String errorMsg)
 	{
 		olCandRecord.setProcessed(false);
@@ -398,67 +355,62 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.getAD_DataDestination_ID();
 	}
 
+	@NonNull
+	public ExternalSystemId getExternalSystemId()
+	{
+		return ExternalSystemId.ofRepoId(olCandRecord.getExternalSystem_ID());
+	}
+
+	public boolean isAutoInvoice() { return olCandRecord.isAutoInvoice(); }
+
+	@Nullable
+	public IncotermsId getIncotermsId() {return IncotermsId.ofRepoIdOrNull(olCandRecord.getC_Incoterms_ID());}
+
+	@Nullable
+	public String getIncotermLocation() {return olCandRecord.getIncotermLocation();}
+
 	// FIXME hardcoded (08691)
 	@Nullable
 	public Object getValueByColumn(@NonNull final OLCandAggregationColumn column)
 	{
 		final String olCandColumnName = column.getColumnName();
 
-		if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Bill_BPartner_ID))
+		switch (olCandColumnName)
 		{
-			return getBillBPartnerInfo().getBpartnerId();
-		}
-		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Bill_Location_ID))
-		{
-			return getBillBPartnerInfo().getBpartnerLocationId();
-		}
-		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Bill_Location_Value_ID))
-		{
-			return getBillBPartnerInfo().getLocationId();
-		}
-		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Bill_User_ID))
-		{
-			return getBillBPartnerInfo().getContactId();
-		}
-		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID))
-		{
-			return dropShipBPartnerInfo.orElse(bpartnerInfo).getBpartnerId();
-		}
-		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DropShip_Location_ID))
-		{
-			return dropShipBPartnerInfo.orElse(bpartnerInfo).getBpartnerLocationId();
-		}
-		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DropShip_Location_Value_ID))
-		{
-			return dropShipBPartnerInfo.orElse(bpartnerInfo).getLocationId();
-		}
-		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_M_PricingSystem_ID))
-		{
-			return getPricingSystemId();
-		}
-		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DateOrdered))
-		{
-			return getDateOrdered();
-		}
-		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DatePromised_Effective))
-		{
-			return getDatePromised();
-		}
-		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_BPartnerName))
-		{
-			return getBpartnerName();
-		}
-		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_EMail))
-		{
-			return getEmail();
-		}
-		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Phone))
-		{
-			return getPhone();
-		}
-		else
-		{
-			return InterfaceWrapperHelper.getValueByColumnId(olCandRecord, column.getAdColumnId());
+			case I_C_OLCand.COLUMNNAME_Bill_BPartner_ID:
+				return getBillBPartnerInfo().getBpartnerId();
+			case I_C_OLCand.COLUMNNAME_Bill_Location_ID:
+				return getBillBPartnerInfo().getBpartnerLocationId();
+			case I_C_OLCand.COLUMNNAME_Bill_Location_Value_ID:
+				return getBillBPartnerInfo().getLocationId();
+			case I_C_OLCand.COLUMNNAME_Bill_User_ID:
+				return getBillBPartnerInfo().getContactId();
+			case I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID:
+				return dropShipBPartnerInfo.orElse(bpartnerInfo).getBpartnerId();
+			case I_C_OLCand.COLUMNNAME_DropShip_Location_ID:
+				return dropShipBPartnerInfo.orElse(bpartnerInfo).getBpartnerLocationId();
+			case I_C_OLCand.COLUMNNAME_DropShip_Location_Value_ID:
+				return dropShipBPartnerInfo.orElse(bpartnerInfo).getLocationId();
+			case I_C_OLCand.COLUMNNAME_M_PricingSystem_ID:
+				return getPricingSystemId();
+			case I_C_OLCand.COLUMNNAME_DateOrdered:
+				return getDateOrdered();
+			case I_C_OLCand.COLUMNNAME_DatePromised_Effective:
+				return getDatePromised();
+			case I_C_OLCand.COLUMNNAME_BPartnerName:
+				return getBpartnerName();
+			case I_C_OLCand.COLUMNNAME_EMail:
+				return getEmail();
+			case I_C_OLCand.COLUMNNAME_Phone:
+				return getPhone();
+			case I_C_OLCand.COLUMNNAME_IsAutoInvoice:
+				return isAutoInvoice();
+			case I_C_OLCand.COLUMNNAME_C_Incoterms_ID:
+				return getIncotermsId();
+			case I_C_OLCand.COLUMNNAME_IncotermLocation:
+				return getIncotermLocation();
+			default:
+				return InterfaceWrapperHelper.getValueByColumnId(olCandRecord, column.getAdColumnId());
 		}
 	}
 

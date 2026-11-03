@@ -36,6 +36,7 @@ import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.product.IProductDAO;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.IssuingToleranceValueType;
 import de.metas.product.ProductId;
@@ -51,7 +52,7 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -88,11 +89,17 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	private final IProductBOMBL bomBL = Services.get(IProductBOMBL.class);
 	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
-	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
+	public static PPOrderBOMBL newInstanceForUnitTesting()
+	{
+		return new PPOrderBOMBL();
+	}
 
 	@Override
 	public I_PP_Order_BOMLine getOrderBOMLineById(@NonNull final PPOrderBOMLineId orderBOMLineId)
@@ -101,7 +108,19 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
-	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(final PPOrderId orderId, final Class<T> orderBOMLineClass)
+	public List<I_PP_Order_BOMLine> getOrderBOMLinesByIds(@NonNull final Set<PPOrderBOMLineId> orderBOMLineIds)
+	{
+		return orderBOMsRepo.getOrderBOMLinesByIds(orderBOMLineIds);
+	}
+
+	@Override
+	public List<I_PP_Order_BOMLine> getOrderBOMLines(final PPOrderId orderId)
+	{
+		return getOrderBOMLines(orderId, I_PP_Order_BOMLine.class);
+	}
+
+	@Override
+	public <T extends I_PP_Order_BOMLine> List<T> getOrderBOMLines(final PPOrderId orderId, final Class<T> orderBOMLineClass)
 	{
 		return orderBOMsRepo.retrieveOrderBOMLines(orderId, orderBOMLineClass);
 	}
@@ -164,6 +183,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		orderBOMLine.setM_ChangeNotice_ID(bomLine.getM_ChangeNotice_ID());
 		orderBOMLine.setDescription(bomLine.getDescription());
 		orderBOMLine.setHelp(bomLine.getHelp());
+		orderBOMLine.setPickingInstruction(bomLine.getPickingInstruction());
 		orderBOMLine.setAssay(bomLine.getAssay());
 		orderBOMLine.setQtyBatch(bomLine.getQtyBatch());
 		orderBOMLine.setQtyBOM(bomLine.getQtyBOM());
@@ -190,7 +210,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		if (orderBOMLine.getM_AttributeSetInstance_ID() <= 0 && bomLine.getM_AttributeSetInstance_ID() > 0)
 		{
 			final I_M_AttributeSetInstance asi = bomLine.getM_AttributeSetInstance();
-			final I_M_AttributeSetInstance asiCopy = attributesRepo.copy(asi);
+			final I_M_AttributeSetInstance asiCopy = asiBL.copy(asi);
 			orderBOMLine.setM_AttributeSetInstance_ID(asiCopy.getM_AttributeSetInstance_ID());
 		}
 
@@ -577,8 +597,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
 		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, orderBOMLine);
 
-		final Quantity qtyRequiredPositive = getQuantities(orderBOMLine).getQtyRequired_NegateBecauseIsCOProduct();
-		return Percent.of(BigDecimal.ONE, qtyRequiredPositive.toBigDecimal(), 4);
+		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
+		return Percent.of(productDAO.getById(productId).getCoProductCostDistributionPercent());
 	}
 
 	@Override
@@ -717,7 +737,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public Set<ProductId> getProductIdsToIssue(final PPOrderId ppOrderId)
 	{
-		return retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
+		return getOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
 				.stream()
 				.filter(bomLine -> BOMComponentType.ofNullableCodeOrComponent(bomLine.getComponentType()).isIssue())
 				.map(bomLine -> ProductId.ofRepoId(bomLine.getM_Product_ID()))
@@ -728,6 +748,21 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public ImmutableSet<WarehouseId> getIssueFromWarehouseIds(@NonNull final I_PP_Order ppOrder)
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
-		return warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
+		return getIssueFromWarehouseIds(warehouseId);
+	}
+
+	@Override
+	public ImmutableSet<WarehouseId> getIssueFromWarehouseIds(final WarehouseId ppOrderWarehouseId)
+	{
+		return warehouseDAO.getWarehouseIdsOfSameGroup(ppOrderWarehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
+	}
+
+	@Override
+	public void updateIssuingToleranceSpec(
+			@NonNull final I_PP_Order_BOMLine orderBOMLine,
+			@Nullable final IssuingToleranceSpec toleranceSpec)
+	{
+		updateOrderBOMLine_from_IssuingToleranceSpec(orderBOMLine, toleranceSpec);
+		// NOTE: Does NOT save - caller is responsible for saving
 	}
 }

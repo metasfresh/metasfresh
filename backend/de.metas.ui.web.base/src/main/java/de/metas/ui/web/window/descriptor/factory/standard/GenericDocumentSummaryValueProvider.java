@@ -75,7 +75,39 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 			return new GenericDocumentSummaryValueProvider(fieldValuesExtractors);
 		}
 
+		fieldValuesExtractors = extractFieldNamesFromCompositeLookup(entityDescriptor);
+		if (fieldValuesExtractors != null && !fieldValuesExtractors.isEmpty())
+		{
+			return new GenericDocumentSummaryValueProvider(fieldValuesExtractors);
+		}
 		return EMPTY;
+	}
+
+	/**
+	 * Similar to {@link #extractFieldNamesFromLookup(DocumentEntityDescriptor.Builder)}, but handles only composite key lookups.
+	 */
+	private static List<FieldValueExtractor> extractFieldNamesFromCompositeLookup(final DocumentEntityDescriptor.Builder entityDescriptor)
+	{
+		try
+		{
+			final List<DocumentFieldDescriptor.Builder> idFields = entityDescriptor.getIdFieldBuilders();
+			if (idFields.isEmpty() || idFields.size() == 1)
+			{
+				//only handle composite key lookups. The more common surrogate PK is handled in #extractFieldNamesFromLookup()
+				return ImmutableList.of();
+			}
+
+			return idFields.stream()
+					.filter(field -> !field.isVirtualField())
+					.map(DocumentFieldDescriptor.Builder::getFieldName)
+					.map(GenericFieldValueExtractor::new)
+					.collect(ImmutableList.toImmutableList());
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed extracting composite field names for record's lookup for {}. Ignored.", entityDescriptor, ex);
+			return ImmutableList.of();
+		}
 	}
 
 	private static List<FieldValueExtractor> extractFieldNamesFromLookup(final DocumentEntityDescriptor.Builder entityDescriptor)

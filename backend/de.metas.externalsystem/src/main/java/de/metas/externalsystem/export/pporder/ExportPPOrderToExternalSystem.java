@@ -28,7 +28,7 @@ import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.IExternalSystemChildConfig;
@@ -62,11 +62,11 @@ public abstract class ExportPPOrderToExternalSystem extends ExportToExternalSyst
 	protected ExportPPOrderToExternalSystem(
 			final @NonNull DataExportAuditRepository dataExportAuditRepository,
 			final @NonNull DataExportAuditLogRepository dataExportAuditLogRepository,
-			final @NonNull ExternalSystemConfigRepo externalSystemConfigRepo,
+			final @NonNull ExternalSystemConfigRepository externalSystemConfigRepository,
 			final @NonNull ExternalSystemMessageSender externalSystemMessageSender,
 			final @NonNull ExternalSystemConfigService externalSystemConfigService)
 	{
-		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepo, externalSystemMessageSender);
+		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepository, externalSystemMessageSender);
 
 		this.externalSystemConfigService = externalSystemConfigService;
 	}
@@ -79,7 +79,7 @@ public abstract class ExportPPOrderToExternalSystem extends ExportToExternalSyst
 	{
 		final PPOrderId ppOrderId = ppOrderRecordReference.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId);
 
-		final ExternalSystemParentConfig config = externalSystemConfigRepo.getById(externalSystemChildConfigId);
+		final ExternalSystemParentConfig config = externalSystemConfigRepository.getById(externalSystemChildConfigId);
 
 		if (!config.isActive())
 		{
@@ -99,7 +99,7 @@ public abstract class ExportPPOrderToExternalSystem extends ExportToExternalSyst
 		final String orgCode = orgDAO.getById(ppOrder.getAD_Org_ID()).getValue();
 
 		return Optional.of(JsonExternalSystemRequest.builder()
-								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
+								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getValue()))
 								   .externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 								   .orgCode(orgCode)
 								   .adPInstanceId(JsonMetasfreshId.of(pInstanceId.getRepoId()))

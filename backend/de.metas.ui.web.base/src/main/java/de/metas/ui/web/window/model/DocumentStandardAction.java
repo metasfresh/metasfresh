@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /*
  * #%L
@@ -31,31 +32,53 @@ import lombok.NonNull;
  * Document's standard action (e.g. new, delete, print etc).
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task https://github.com/metasfresh/metasfresh-webui-api/issues/583
+ * @task <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/583">issue</a>
+ * @implSpec keep in sync with webui's DocumentAction.js
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@RequiredArgsConstructor
 public enum DocumentStandardAction
 {
-	New("new"), //
-	AdvancedEdit("advancedEdit"), //
-	Clone("clone"), //
-	Email("email"), //
-	Letter("letter"), //
-	Print("print"), //
-	Delete("delete"), //
-	Comments("comments")//
+	New("new"),
+	AdvancedEdit("advancedEdit"),
+	Clone("clone"),
+	Email("email"),
+	Letter("letter"),
+	Print("print"),
+	Delete("delete"),
+	Comments("comments"),
 	;
 
-	private final String json;
-
-	DocumentStandardAction(@NonNull final String json)
-	{
-		this.json = json;
-	}
+	@NonNull private final String json;
 
 	@JsonValue
 	public String toJson()
 	{
 		return json;
+	}
+
+	public boolean isWindowWriteAccessRequired()
+	{
+		return New.equals(this);
+	}
+
+	public boolean isDocumentWriteAccessRequired()
+	{
+		return isWindowWriteAccessRequired()
+				|| Clone.equals(this)
+				|| Delete.equals(this);
+	}
+
+	/**
+	 * Whether this action produces a NEW record and so is gated by the role's per-table create permission.
+	 * <p>
+	 * Both {@link #New} and {@link #Clone} produce a new record; when the role may not create, both are shown
+	 * <b>disabled-with-a-reason</b> (not removed) so the user sees WHY the action is unavailable. This is the
+	 * single signal {@link de.metas.ui.web.window.datatypes.json.JSONDocumentPermissions} uses to decide which
+	 * standard actions get that treatment.
+	 */
+	public boolean isCreateNewRecordAction()
+	{
+		return New.equals(this) || Clone.equals(this);
 	}
 }

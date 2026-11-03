@@ -125,7 +125,8 @@ class HttpCallSchedulerTest
 				.isInstanceOf(ExecutionException.class)
 				.hasCauseInstanceOf(RuntimeException.class);
 
-		// Wait a bit for scheduler to settle
+		// Wait a bit for scheduler to settle (let the pool thread finish run() and
+		// complete executorFuture, so the next schedule() re-submits run() for the queue)
 		Thread.sleep(500);
 
 		// Second request should still succeed

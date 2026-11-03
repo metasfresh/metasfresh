@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.order.impl;
 
 import de.metas.bpartner.BPartnerContactId;
@@ -51,9 +73,12 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TaxQuery;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
@@ -61,13 +86,18 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Location;
@@ -84,6 +114,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -101,50 +132,33 @@ import static org.adempiere.model.InterfaceWrapperHelper.translate;
 import static org.compiere.util.TimeUtil.asZonedDateTime;
 import static org.compiere.util.TimeUtil.asZonedDateTimeNonNull;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public class OrderLineBL implements IOrderLineBL
 {
-	private static final AdMessageKey MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = AdMessageKey.of("de.metas.order.CounterDocMissingMappedProduct");
-	private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
+	@NonNull private static final AdMessageKey MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = AdMessageKey.of("de.metas.order.CounterDocMissingMappedProduct");
+	@NonNull private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
+	@VisibleForTesting
+	@NonNull static final String SYSCONFIG_PO_PRICE_DATE_USE_DATE_PROMISED = "de.metas.order.PurchaseOrder.UseDatePromisedForPricing";
 
-	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
+	@NonNull private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
-	private final ITaxBL taxBL = Services.get(ITaxBL.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
-	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	@NonNull private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	@NonNull private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private IOrderBL orderBL()
 	{
@@ -158,7 +172,20 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
+	@NonNull
+	public List<I_C_OrderLine> getByIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		return orderDAO.retrieveOrderLinesByIds(orderLineIds);
+	}
+
+	@Override
 	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
+	{
+		return orderDAO.getOrderLineById(orderLineId);
+	}
+
+	@Override
+	public I_C_OrderLine getOrderLineById(@NonNull final OrderAndLineId orderLineId)
 	{
 		return orderDAO.getOrderLineById(orderLineId);
 	}
@@ -208,6 +235,16 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
 		return getQtyToDeliver(orderLine);
+	}
+
+	@Override
+	public Quantity getQtyDelivered(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
+		final BigDecimal qtyDelivered = orderLine.getQtyDelivered();
+		final I_C_UOM uom = getStockingUOM(orderLine);
+
+		return Quantity.of(qtyDelivered, uom);
 	}
 
 	private Quantity getQtyToDeliver(@NonNull final I_C_OrderLine orderLine)
@@ -539,12 +576,23 @@ public class OrderLineBL implements IOrderLineBL
 			final org.compiere.model.I_C_OrderLine orderLine,
 			final I_C_Order order)
 	{
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class); // as long as this is a static method, we can't use the orgDAO field. 
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class); // static method — cannot use instance fields; use Services.get() directly
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
-		return order.isSOTrx()
+		if (order.isSOTrx())
+		{
+			return getPriceDateFromDatePromised(orderLine, order, timeZone);
+		}
+
+		return isUseDatePromised(order)
 				? getPriceDateFromDatePromised(orderLine, order, timeZone)
 				: asZonedDateTimeNonNull(orderLine.getDateOrdered(), timeZone);
+	}
+
+	private static boolean isUseDatePromised(final I_C_Order order)
+	{
+		return Services.get(ISysConfigBL.class)
+				.getBooleanValue(SYSCONFIG_PO_PRICE_DATE_USE_DATE_PROMISED, false, order.getAD_Client_ID(), order.getAD_Org_ID());
 	}
 
 	@NonNull
@@ -799,7 +847,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final MTax tax = MTax.get(Env.getCtx(), taxId);
-		if (tax.isZeroTax())
+		if (tax.isZeroTax() || tax.isReverseCharge())
 		{
 			return ProductPrice.builder()
 					.productId(productId)
@@ -1033,4 +1081,94 @@ public class OrderLineBL implements IOrderLineBL
 		return BPartnerId.optionalOfRepoId(orderLine.getC_BPartner_ID());
 	}
 
+	@Override
+	public void setTax(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final I_C_Order orderRecord = orderBL().getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		final TaxCategoryId taxCategoryId = getTaxCategoryId(orderLine);
+
+		final WarehouseId warehouseId = warehouseAdvisor.evaluateWarehouse(orderLine);
+		final CountryId countryFromId = warehouseBL.getCountryId(warehouseId);
+
+		final BPartnerLocationAndCaptureId bpLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).getBPartnerLocationAndCaptureId();
+
+		final boolean isSOTrx = orderRecord.isSOTrx();
+		final Timestamp taxDate = orderLine.getDatePromised();
+
+		final BPartnerId effectiveBillPartnerId = orderBL().getEffectiveBillPartnerId(orderRecord);
+
+		// if we set the tax for a sales order, consider whether the customer is exempt from taxes
+		final Boolean isTaxExempt;
+		if (isSOTrx && effectiveBillPartnerId != null)
+		{
+			final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
+			// Only set if TRUE - otherwise leave null (don't filter)
+			isTaxExempt = billBPartnerRecord.isTaxExempt() ? Boolean.TRUE : null;
+		}
+		else
+		{
+			isTaxExempt = null;
+		}
+
+		final Tax tax = taxDAO.getBy(TaxQuery.builder()
+				.fromCountryId(countryFromId)
+				.orgId(OrgId.ofRepoId(orderLine.getAD_Org_ID()))
+				.bPartnerLocationId(bpLocationId)
+				.warehouseId(warehouseId)
+				.dateOfInterest(taxDate)
+				.taxCategoryId(taxCategoryId)
+				.soTrx(SOTrx.ofBoolean(isSOTrx))
+				.isTaxExempt(isTaxExempt)
+				.build());
+
+		if (tax == null)
+		{
+			TaxNotFoundException.builder()
+					.taxCategoryId(taxCategoryId)
+					.isSOTrx(isSOTrx)
+					.isTaxExempt(isTaxExempt)
+					.billDate(taxDate)
+					.billFromCountryId(countryFromId)
+					.billToC_Location_ID(bpLocationId.getLocationCaptureId())
+					.build()
+					.throwOrLogWarning(true, logger);
+		}
+
+		orderLine.setC_Tax_ID(tax.getTaxId().getRepoId());
+		orderLine.setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
+	}
+
+	@Override
+	public void setGrossWeightInKg(@NonNull final I_C_OrderLine orderLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final UomId stockUomId = productBL.getStockUOMId(productId);
+		final Quantity qtyOrdered = Quantitys.of(orderLine.getQtyOrdered(), stockUomId);
+
+		final Quantity grossWeight = productBL.computeGrossWeight(productId, qtyOrdered).orElse(null);
+
+		if (grossWeight == null)
+		{
+			orderLine.setGrossWeightKg(BigDecimal.ZERO);
+		}
+		else
+		{
+			final Quantity grossWeightInKg = uomConversionBL.convertToKilogram(grossWeight, productId);
+			orderLine.setGrossWeightKg(grossWeightInKg.toBigDecimal());
+		}
+	}
+
+	@Override
+	public Money getLineGrossAmt(@NonNull final I_C_OrderLine orderLine)
+	{
+		// LineNetAmt is the gross-inclusive total when the owning price list has IsTaxIncluded=Y;
+		// adding TaxAmtInfo would double-count. When IsTaxIncluded=N, LineNetAmt is the net (excl-tax)
+		// and TaxAmtInfo adds the tax to reach gross.
+		final BigDecimal lineGrossAmt = isTaxIncluded(orderLine)
+				? orderLine.getLineNetAmt()
+				: orderLine.getLineNetAmt().add(orderLine.getTaxAmtInfo());
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+		return Money.of(lineGrossAmt, currencyId);
+	}
 }

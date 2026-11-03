@@ -7,11 +7,13 @@ import de.metas.acct.AccountConceptualName;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.acct.open_items.handlers.Generic_OIHandler;
+import de.metas.elementvalue.ElementValueService;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
 import org.compiere.acct.FactLine;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -35,12 +37,22 @@ public class FAOpenItemsService
 	private final Generic_OIHandler genericOIHandler;
 
 	public FAOpenItemsService(
+			@NonNull final ElementValueService elementValueService,
 			@NonNull Optional<List<FAOpenItemsHandler>> handlers)
 	{
 		this.handlersByKey = indexByKey(handlers);
-		this.genericOIHandler = new Generic_OIHandler();
+		this.genericOIHandler = new Generic_OIHandler(elementValueService);
 
 		logger.info("Handlers: {}, {}", this.handlersByKey, genericOIHandler);
+	}
+
+	public static FAOpenItemsService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new FAOpenItemsService(
+				ElementValueService.newInstanceForUnitTesting(),
+				Optional.empty()
+		);
 	}
 
 	private static ImmutableMap<FAOpenItemsHandlerMatchingKey, FAOpenItemsHandler> indexByKey(Optional<List<FAOpenItemsHandler>> optionalHandlers)

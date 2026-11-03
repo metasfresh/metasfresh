@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_Mobile_Application_Trl extends org.compiere.model.PO implements I_Mobile_Application_Trl, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1615893719L;
+	private static final long serialVersionUID = 1942149417L;
 
     /** Standard Constructor */
     public X_Mobile_Application_Trl (final Properties ctx, final int Mobile_Application_Trl_ID, @Nullable final String trxName)
@@ -97,18 +97,6 @@ public class X_Mobile_Application_Trl extends org.compiere.model.PO implements I
 	public boolean isUseCustomization() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsUseCustomization);
-	}
-
-	@Override
-	public org.compiere.model.I_Mobile_Application getMobile_Application()
-	{
-		return get_ValueAsPO(COLUMNNAME_Mobile_Application_ID, org.compiere.model.I_Mobile_Application.class);
-	}
-
-	@Override
-	public void setMobile_Application(final org.compiere.model.I_Mobile_Application Mobile_Application)
-	{
-		set_ValueFromPO(COLUMNNAME_Mobile_Application_ID, org.compiere.model.I_Mobile_Application.class, Mobile_Application);
 	}
 
 	@Override

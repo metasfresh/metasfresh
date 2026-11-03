@@ -1,29 +1,8 @@
-package de.metas.product.impexp;
-
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.logging.LogManager;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_I_Product;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import java.util.Properties;
-
-import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
-import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
-import static org.compiere.model.I_M_Product.COLUMNNAME_C_UOM_ID;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -41,6 +20,28 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_C_UOM_ID;
  * #L%
  */
 
+package de.metas.product.impexp;
+
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductType;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_I_Product;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.Properties;
+
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
+import static org.compiere.model.I_M_Product.COLUMNNAME_C_UOM_ID;
+
 /**
  * A helper class for {@link ProductImportProcess} that performs the "dirty" but efficient SQL updates on the {@link I_I_Product} table.
  * Those updates complements the data from existing metasfresh records and flag those import records that can't yet be imported.
@@ -50,6 +51,8 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_C_UOM_ID;
 public class MProductImportTableSqlUpdater
 {
 	private static final Logger logger = LogManager.getLogger(MProductImportTableSqlUpdater.class);
+
+	private static final String VALID_PRODUCT_TYPE_CODES_SQL = ProductType.getCodesAsSqlList();
 
 	private final ImportRecordsSelection selection;
 	private final Properties ctx;
@@ -90,6 +93,8 @@ public class MProductImportTableSqlUpdater
 
 		dbUpdateIProductFromProduct(selection);
 
+		dbUpdateIsStockedDefault(selection);
+
 		dbUpdateUOM(selection);
 
 		dbUpdateQtyCUUOM(selection);
@@ -121,8 +126,8 @@ public class MProductImportTableSqlUpdater
 
 	public void updateIPharmaProduct()
 	{
-		dbUpdateProductsByValue(selection);
 		dbUpdateProductsByExternalId(selection);
+		dbUpdateProductsByValue(selection);
 		dbUpdateProductCategoryForIFAProduct(selection);
 
 		dbUpdatePackageUOM(selection);
@@ -141,25 +146,39 @@ public class MProductImportTableSqlUpdater
 
 	private void dbUpdateBPartners(@NonNull final ImportRecordsSelection selection)
 	{
+		// Use CASE WHEN to detect ambiguity: if more than one BPartner matches, set NULL (will be caught by error check)
 		StringBuilder sql;
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
-				.append(" SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p")
-				.append(" WHERE i.BPartner_Value=p.Value AND i.AD_Client_ID=p.AD_Client_ID) ")
+				.append(" SET C_BPartner_ID=CASE WHEN (SELECT count(*) FROM C_BPartner p")
+				.append(" WHERE i.BPartner_Value=p.Value AND i.AD_Client_ID=p.AD_Client_ID AND p.IsActive='Y') > 1 THEN NULL")
+				.append(" ELSE (SELECT MAX(C_BPartner_ID) FROM C_BPartner p")
+				.append(" WHERE i.BPartner_Value=p.Value AND i.AD_Client_ID=p.AD_Client_ID AND p.IsActive='Y') END ")
 				.append("WHERE C_BPartner_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		// Mark rows where multiple BPartners matched as errors
+		final StringBuilder sqlError = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='E', I_ErrorMsg=COALESCE(I_ErrorMsg,'')")
+				.append("||'ERR: Multiple BPartners found for BPartner_Value=\"'||i.BPartner_Value||'\"' ")
+				.append("WHERE C_BPartner_ID IS NULL AND i.BPartner_Value IS NOT NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(" AND (SELECT count(*) FROM C_BPartner p WHERE i.BPartner_Value=p.Value AND i.AD_Client_ID=p.AD_Client_ID AND p.IsActive='Y') > 1")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateAndThrowExceptionOnFail(sqlError.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateManufacturers(@NonNull final ImportRecordsSelection selection)
 	{
-		StringBuilder sql;
-		sql = new StringBuilder("UPDATE ")
-				.append(targetTableName + " i ")
+		final StringBuilder sql = new StringBuilder("UPDATE ")
+				.append(targetTableName).append(" i ")
 				.append(" SET Manufacturer_ID=(SELECT C_BPartner_ID FROM C_BPartner p")
-				.append(" WHERE i.ProductManufacturer ilike '%'||p.companyname||'%' AND i.AD_Client_ID=p.AD_Client_ID LIMIT 1) ")
-				.append("WHERE Manufacturer_ID IS NULL")
+				// we can't allow any prefix, because that doesn't perform with larger numbers of bpartners.  
+				.append(" WHERE i.ProductManufacturer ilike p.companyname||'%' AND i.AD_Client_ID=p.AD_Client_ID ORDER BY LENGTH(companyname) LIMIT 1) ")
+				.append("WHERE Manufacturer_ID IS NULL AND i.ProductManufacturer IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -179,14 +198,14 @@ public class MProductImportTableSqlUpdater
 
 	private void dbUpdateProducts(@NonNull final ImportRecordsSelection selection)
 	{
-		final StringBuilder sql = new StringBuilder("UPDATE ")
-				.append(targetTableName + " i ")
-				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
-				.append(" WHERE i.UPC=p.UPC AND i.AD_Client_ID=p.AD_Client_ID AND i.UPC IS NOT NULL) ")
-				.append("WHERE M_Product_ID IS NULL")
-				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
-				.append(selection.toSqlWhereClause("i"));
-		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final String sql = "UPDATE "
+				+ targetTableName + " i "
+				+ " SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p"
+				+ " WHERE i.UPC=p.UPC AND i.AD_Client_ID=p.AD_Client_ID AND i.UPC IS NOT NULL) "
+				+ "WHERE M_Product_ID IS NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ selection.toSqlWhereClause("i");
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		logger.info("Product Existing UPC={}", no);
 
 		dbUpdateProductsByValue(selection);
@@ -199,7 +218,8 @@ public class MProductImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
-				.append(" WHERE i.").append(valueColumnName).append("=p.Value AND i.AD_Client_ID=p.AD_Client_ID) ")
+				.append(" WHERE i.").append(valueColumnName).append("=p.Value AND i.AD_Client_ID=p.AD_Client_ID AND p.AD_Org_ID IN (0, i.AD_Org_ID) ")
+				.append(" ORDER BY p.AD_Org_ID DESC LIMIT 1) ")
 				.append("WHERE M_Product_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
@@ -212,8 +232,9 @@ public class MProductImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
-				.append(" WHERE i." + I_I_Product.COLUMNNAME_ExternalId + "=p.ExternalId AND i.AD_Client_ID=p.AD_Client_ID) ")
-				.append("WHERE M_Product_ID IS NULL")
+				.append(" WHERE i." + I_I_Product.COLUMNNAME_ExternalId + "=p.ExternalId AND i.AD_Client_ID=p.AD_Client_ID AND p.AD_Org_ID IN (0, i.AD_Org_ID) ")
+				.append(" ORDER BY p.AD_Org_ID DESC LIMIT 1) ")
+				.append("WHERE M_Product_ID IS NULL AND " + I_I_Product.COLUMNNAME_ExternalId + " IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -293,6 +314,26 @@ public class MProductImportTableSqlUpdater
 				logger.debug("{} default from existing Product={}", numField, no);
 			}
 		}
+	}
+
+	/**
+	 * gh#27540: Default IsStocked based on ProductType where not explicitly provided.
+	 * Only Item (I) is considered stocked; all other types (S, E, R, F, N, O) are not.
+	 * <p>
+	 * This is kept in sync with {@link de.metas.product.impl.ProductBL#isStocked(org.compiere.model.I_M_Product)}
+	 * which returns {@code product.isStocked() && productType.isItem()}.
+	 *
+	 * @see de.metas.product.ProductType#isItem()
+	 */
+	private void dbUpdateIsStockedDefault(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sql = "UPDATE " + targetTableName + " i"
+				+ " SET IsStocked = CASE WHEN ProductType = 'I' THEN 'Y' ELSE 'N' END"
+				+ " WHERE IsStocked IS NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'"
+				+ selection.toSqlWhereClause("i");
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+		logger.info("Set IsStocked default based on ProductType={}", no);
 	}
 
 	private void dbUpdateUOM(@NonNull final ImportRecordsSelection selection)
@@ -579,7 +620,7 @@ public class MProductImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ProductType,' ")
-				.append("WHERE ProductType NOT IN ('E','I','R','S')")
+				.append("WHERE ProductType NOT IN (" + VALID_PRODUCT_TYPE_CODES_SQL + ")")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);

@@ -1,12 +1,16 @@
 package de.metas.frontend_testing.masterdata.product;
 
 import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.uom.X12DE355;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 
 import javax.annotation.Nullable;
@@ -18,10 +22,72 @@ import java.util.List;
 @Jacksonized
 public class JsonCreateProductRequest
 {
+	// Allow exact value/name (if both null, use valuePrefix or timestamp)
+	@Nullable String value;
+	@Nullable String name;
+
+	/**
+	 * Product type — either the enum name ({@code "Item"}, {@code "Service"}, …) or the
+	 * AD ref-list code ({@code "I"}, {@code "S"}, …). Defaults to {@code Item} when omitted.
+	 * Non-item types (Service, Resource, ExpenseType, …) are NOT stocked by default — useful
+	 * for "bracket" / "header" products that carry a price but are not physically shipped.
+	 */
+	@Nullable String type;
+
+	/**
+	 * Explicit {@code M_Product.IsStocked} override. When {@code null} the value is derived
+	 * from {@link #type} ({@code Item} → stocked, anything else → not stocked).
+	 * Set to {@code false} on an {@code Item} product when you want a "bracket" / bundle
+	 * line that participates in the order flow but should not be tracked as stock.
+	 */
+	@Nullable Boolean isStocked;
+
+	/**
+	 * Explicit {@code M_Product.IsSold} override. When {@code null} the column defaults to
+	 * {@code true}. Set to {@code false} to create a product that is not offered for sale.
+	 */
+	@Nullable Boolean isSold;
+
+	/**
+	 * Explicit {@code M_Product.IsPurchased} override. When {@code null} the column defaults to
+	 * {@code true}. Set to {@code false} to create a product that is not procured via purchase.
+	 */
+	@Nullable Boolean isPurchased;
+
+	/**
+	 * Explicit {@code M_Product.IsSelfPacked} override. When {@code null} the column keeps its
+	 * default ({@code false}). Set to {@code true} to mark the product as self-packed — required by
+	 * the mobileUI mass-printing flow, which only packs self-packed products and skips the rest.
+	 */
+	@Nullable Boolean isSelfPacked;
+
+	/**
+	 * Explicit {@code M_Product.IsSerialNoPicked} override. When {@code true}, the mobile picking flow
+	 * prompts the operator to scan a serial number for this product and writes it to the picked HU's
+	 * {@code SerialNo} attribute. Requires the product's attribute set to support the {@code SerialNo}
+	 * attribute — set {@link #attributeSetName} to a set that includes it (e.g. {@code "Serial"} / {@code "LotSerial"}).
+	 */
+	@Nullable Boolean isSerialNoPicked;
+
+	/**
+	 * When {@code true}, the product is created without any {@code M_Cost} row, like a migrated product.
+	 * Defaults to {@code false}.
+	 */
+	@Nullable Boolean isSkipDefaultCosts;
+
+	/**
+	 * {@code M_Cost.CurrentCostPrice} (own cost price, in the product's stock UOM) of the costing-method element
+	 * of each accounting schema. When {@code null} the default costs are left untouched.
+	 */
+	@Nullable BigDecimal currentCostPrice;
+
+	/** {@code M_Product.CoProductCostDistributionPercent}; when {@code null} the column stays unset. */
+	@Nullable BigDecimal coProductCostDistributionPercent;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
-	@Nullable String gtin;
-	@Nullable String ean13ProductCode;
+	@Nullable GTIN gtin;
+	@Nullable EAN13ProductCode ean13ProductCode;
 	@Nullable X12DE355 uom;
 	@Nullable List<UOMConversion> uomConversions;
 
@@ -30,7 +96,41 @@ public class JsonCreateProductRequest
 
 	@Nullable List<BPartner> bpartners;
 
+	/** M_Product.GuaranteeDaysMin — minimum guaranteed shelf-life days for this product */
+	@Nullable Integer guaranteeDaysMin;
+
+	/** M_Product.BestBeforeDays — total shelf life in days, used to default the best-before date at receipt */
+	@Nullable Integer bestBeforeDays;
+
 	@Nullable BOM bom;
+
+	/**
+	 * Attribute Set name to associate with the product.
+	 * If set, the product will have this M_AttributeSet_ID assigned,
+	 * enabling the Attributes button in the Test Window.
+	 * Example values: "Lot", "Serial", "LotSerial"
+	 */
+	@Nullable String attributeSetName;
+
+	/**
+	 * Identifier of a {@link JsonProductCategoryRequest} created in the same request (the {@code productCategories}
+	 * map key). When set, the product is placed in that per-run category
+	 * ({@code M_Product.M_Product_Category_ID}); when omitted, it defaults to
+	 * {@link de.metas.frontend_testing.masterdata.MasterdataContext#PRODUCT_CATEGORY_STANDARD_ID}.
+	 * <p>
+	 * This is the field that makes the mobile mfg editable-attributes feature testable: that feature resolves a
+	 * product's attribute set from its CATEGORY, so a product must sit in a category whose set carries the
+	 * configured attributes - not merely have {@link #attributeSetName} set (a different consumer).
+	 */
+	@Nullable Identifier productCategory;
+
+	/**
+	 * Identifier of a {@link de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest}
+	 * created in the same request. When set, the product is linked via
+	 * {@code M_Product.C_CompensationGroup_Schema_ID} after the schema is created — this turns the
+	 * product into a "trigger product" that materialises the schema's template lines on an order.
+	 */
+	@Nullable Identifier compensationGroupSchema;
 
 	//
 	//
@@ -73,7 +173,9 @@ public class JsonCreateProductRequest
 	public static class BPartner
 	{
 		@NonNull Identifier bpartner;
-		@Nullable String cu_ean;
+		@Nullable EAN13 ean13;
+		/** C_BPartner_Product.ShelfLifeMinDays — guaranteed shelf-life days required by this customer for this product */
+		@Nullable Integer shelfLifeMinDays;
 	}
 
 	@Value
@@ -82,6 +184,23 @@ public class JsonCreateProductRequest
 	public static class BOM
 	{
 		@NonNull List<BOMLine> lines;
+		/** optional lot-number sequence of the BOM (PP_Product_BOM.LotNo_Sequence_ID) */
+		@Nullable LotNoSequence lotNoSequence;
+		boolean serialNoSequence;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class LotNoSequence
+	{
+		@Nullable String prefix;
+		/** the lot number is the receipt date (DateSequenceProvider, date format from sysconfig), followed by the counter if a decimal pattern is set */
+		boolean dateBased;
+		@Nullable String decimalPattern;
+		@Nullable Integer currentNext;
+		/** dateBased only: this sequence's own date format (AD_Sequence.DateFormat), instead of the global one */
+		@Nullable String dateFormat;
 	}
 
 	@Value
@@ -94,5 +213,8 @@ public class JsonCreateProductRequest
 		boolean percentage;
 		@Nullable X12DE355 uom;
 		@Nullable BOMComponentType componentType;
+		@Nullable BOMComponentIssueMethod issueMethod;
+		@Nullable String pickingInstruction;
+		@Nullable BigDecimal issuingTolerancePerc;
 	}
 }

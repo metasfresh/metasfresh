@@ -23,6 +23,8 @@
 package de.metas.bpartner_product;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -34,54 +36,22 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class BPartnerProduct
 {
-	@NonNull
-	ProductId productId;
-
-	@NonNull
-	BPartnerId bPartnerId;
-
-	@Nullable
-	Boolean active;
-
-	@Nullable
-	Integer seqNo;
-
-	@Nullable
-	String productNo;
-
-	@Nullable
-	String description;
-
-	@Nullable
-	String cuEAN;
-
-	@Nullable
-	String gtin;
-
-	@Nullable
-	String customerLabelName;
-
-	@Nullable
-	String ingredients;
-
-	@Nullable
-	Boolean currentVendor;
-
-	@Nullable
-	Boolean isExcludedFromSales;
-
-	@Nullable
-	String exclusionFromSalesReason;
-
-	@Nullable
-	Boolean dropShip;
-
+	@NonNull ProductId productId;
+	@NonNull BPartnerId bPartnerId;
+	@Nullable Boolean active;
+	@Nullable Integer seqNo;
+	@Nullable String productNo;
+	@Nullable String description;
+	@Nullable GTIN gtin;
+	@Nullable EAN13 cuEAN;
+	@Nullable String customerLabelName;
+	@Nullable String ingredients;
+	@Nullable Boolean currentVendor;
+	@Nullable Boolean isExcludedFromSales;
+	@Nullable String exclusionFromSalesReason;
+	@Nullable Boolean dropShip;
 	@Nullable Boolean usedForVendor;
 	@Nullable Boolean usedForCustomer;
-
-	@Nullable
-	Boolean isExcludedFromPurchase;
-
-	@Nullable
-	String exclusionFromPurchaseReason;
+	@Nullable Boolean isExcludedFromPurchase;
+	@Nullable String exclusionFromPurchaseReason;
 }

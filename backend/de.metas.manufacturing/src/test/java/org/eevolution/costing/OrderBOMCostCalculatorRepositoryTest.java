@@ -111,6 +111,9 @@ class OrderBOMCostCalculatorRepositoryTest
 						.productId(finishedGoodsProductId)
 						.asiId(AttributeSetInstanceId.NONE)
 						.qty(Quantity.of("100", helper.uomEach))
+						// OrderBOMCostCalculatorRepository builds the per-order rollup BOM: the Σp guard is deferred
+						// to the PP_Order post-calculation guard, so the built BOM carries perOrderRollup=true.
+						.perOrderRollup(true)
 						.costPrice(BOMCostPrice.builder()
 								.productId(finishedGoodsProductId)
 								.uomId(helper.uomEachId)

@@ -1,65 +1,8 @@
-package de.metas.order.impl;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.async.AsyncBatchId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocSubType;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
-import de.metas.order.OrderQuery;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import de.metas.util.lang.ExternalId;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_PO_OrderLine_Alloc;
-import org.compiere.model.I_M_InOut;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.eevolution.api.PPCostCollectorId;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static de.metas.util.Check.assumeNotNull;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -76,6 +19,68 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.order.impl;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.async.AsyncBatchId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocSubType;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.impexp.InputDataSourceId;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.order.OrderQuery;
+import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.eevolution.api.PPCostCollectorId;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static de.metas.util.Check.assumeNotNull;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 public abstract class AbstractOrderDAO implements IOrderDAO
 {
@@ -157,19 +162,22 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(final Collection<OrderAndLineId> orderAndLineIds)
+	public ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(final Set<OrderLineId> orderLineIds)
 	{
-		if (orderAndLineIds.isEmpty())
+		if (orderLineIds.isEmpty())
 		{
 			return ImmutableListMultimap.of();
 		}
-		final ImmutableMap<OrderId, I_C_Order> orderIdToOrderMap = getByIds(orderAndLineIds.stream().map(OrderAndLineId::getOrderId).collect(Collectors.toSet()), I_C_Order.class)
+		final List<I_C_OrderLine> orderLines = loadByRepoIdAwares(orderLineIds, I_C_OrderLine.class);
+		final Set<OrderId> orderIds = orderLines.stream()
+				.map(orderLine -> OrderId.ofRepoId(orderLine.getC_Order_ID())).collect(Collectors.toSet());
+		final ImmutableMap<OrderId, I_C_Order> orderIdToOrderMap = getByIds(orderIds)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(o -> OrderId.ofRepoId(o.getC_Order_ID()), Function.identity()));
 
-		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), I_C_OrderLine.class)
+		return orderLines
 				.stream()
-				.collect(ImmutableListMultimap.toImmutableListMultimap(orderLineRecord -> orderIdToOrderMap.get(OrderId.ofRepoId(orderLineRecord.getC_Order_ID())), Function.identity()));
+				.collect(ImmutableListMultimap.toImmutableListMultimap(ol -> orderIdToOrderMap.get(OrderId.ofRepoId(ol.getC_Order_ID())), Function.identity()));
 	}
 
 	@Override
@@ -340,6 +348,28 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.stream();
 	}
 
+	@Override
+	public Set<OrderId> retrieveNotProcessedOrderIds(@NonNull final BPartnerId bpartnerId)
+	{
+		return createQueryBuilder()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_Processed, false)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.idsAsSet(OrderId::ofRepoId);
+	}
+
+	@Override
+	public List<I_C_Order> getByLinkOrderId(@NonNull final OrderId linkOrderId)
+	{
+		return createQueryBuilder()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkOrderId)
+				.orderBy(I_C_Order.COLUMNNAME_C_Order_ID)
+				.create()
+				.list();
+	}
+
 	private IQueryBuilder<I_C_Order> createQueryBuilder()
 	{
 		return Services.get(IQueryBL.class)
@@ -384,6 +414,10 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		if (Check.isNotBlank(query.getDocumentNo()))
 		{
 			return Optional.ofNullable(getOrderByDocumentNumberAndDocType(query));
+		}
+		if (query.getExternalId() != null)
+		{
+			return getOrderByExternalId(query);
 		}
 		return Optional.empty();
 	}
@@ -496,11 +530,80 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return Optional.ofNullable(PPCostCollectorId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, orderLineId)));
 	}
 
+	public boolean hasDeliveredItems(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.addCompareFilter(I_C_OrderLine.COLUMNNAME_QtyDelivered, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	public boolean isCalibrationRuleUsed(@NonNull final CalibrationRuleId calibrationRuleId)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_CompensationGroup_CalibrationRule_ID, calibrationRuleId)
+				.create()
+				.anyMatch();
+	}
+
+	@NonNull
+	private Optional<I_C_Order> getOrderByExternalId(@NonNull final OrderQuery orderQuery)
+	{
+		final OrgId orgId = assumeNotNull(orderQuery.getOrgId(), "Param query needs to have a non-null orgId; query={}", orderQuery);
+		final ExternalId externalId = assumeNotNull(orderQuery.getExternalId(), "Param query needs to have a non-null externalId; query={}", orderQuery);
+
+		final IQueryBuilder<I_C_Order> queryBuilder = createQueryBuilder()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue());
+
+		final InputDataSourceId dataSourceId = orderQuery.getInputDataSourceId();
+		if (dataSourceId != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_AD_InputDataSource_ID, dataSourceId);
+		}
+
+		final ExternalSystemId externalSystemId = orderQuery.getExternalSystemId();
+		if (externalSystemId != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalSystem_ID, externalSystemId);
+		}
+
+		return queryBuilder
+				.create()
+				.firstOnlyOptional();
+	}
+
 	public List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter)
 	{
 		return queryBL.createQueryBuilder(I_C_Order.class)
 				.filter(queryFilter)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
+	}
+
+	@Override
+	public List<I_C_Order> getByLineQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter)
+	{
+		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
+				.filter(queryFilter)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(org.compiere.model.I_C_OrderLine.COLUMN_C_Order_ID)
+				.create()
+				.list();
+	}
+
+	@Override
+	public Set<OrderLineId> getLineIdsByQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter)
+	{
+		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
+				.filter(queryFilter)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.iterateAndStreamIds(OrderLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

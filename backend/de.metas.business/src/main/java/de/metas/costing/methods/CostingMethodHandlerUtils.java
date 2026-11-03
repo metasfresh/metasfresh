@@ -1,9 +1,11 @@
 package de.metas.costing.methods;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
@@ -11,6 +13,8 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostPriceUOMConverter;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
@@ -87,6 +91,41 @@ public class CostingMethodHandlerUtils
 	public QuantityUOMConverter getQuantityUOMConverter()
 	{
 		return uomConversionBL;
+	}
+
+	public CostPriceUOMConverter getCostPriceUOMConverter()
+	{
+		return this::convertCostPriceToUom;
+	}
+
+	/**
+	 * Converts a {@link CostPrice} to {@code targetUomId} using the product's UOM conversion, mirroring
+	 * {@code OrderBOMCostCalculatorRepository.convertCostPrice}: a price scales inversely to quantity, so each
+	 * cost amount is round-tripped through a {@link ProductPrice} and {@link IUOMConversionBL#convertProductPriceToUom}.
+	 */
+	@NonNull
+	public CostPrice convertCostPriceToUom(
+			@NonNull final CostPrice costPrice,
+			@NonNull final ProductId productId,
+			@NonNull final UomId targetUomId)
+	{
+		if (UomId.equals(costPrice.getUomId(), targetUomId))
+		{
+			return costPrice;
+		}
+
+		final UomId fromUomId = costPrice.getUomId();
+		final CurrencyPrecision costingPrecision = currenciesRepo.getCostingPrecision(costPrice.getCurrencyId());
+
+		return costPrice.convertAmounts(targetUomId, costAmount -> {
+			final ProductPrice productPrice = ProductPrice.builder()
+					.productId(productId)
+					.uomId(fromUomId)
+					.money(costAmount.toMoney())
+					.build();
+			final ProductPrice productPriceConv = uomConversionBL.convertProductPriceToUom(productPrice, targetUomId, costingPrecision);
+			return CostAmount.ofProductPrice(productPriceConv);
+		});
 	}
 
 	@NonNull
@@ -166,6 +205,17 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.getExistingCostDetails(request);
 	}
 
+	/** Narrower than an emptiness check: a distribution reversal persists its 3 legs via separate same-document calls, so a sibling leg's row must not be mistaken for this one's. */
+	public boolean containsAmtType(@NonNull final List<CostDetail> costDetails, @NonNull final CostAmountType amtType)
+	{
+		return costDetails.stream().anyMatch(costDetail -> costDetail.getAmtType() == amtType);
+	}
+
+	public List<CostDetail> getExistingCostDetails(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsService.stream(query).collect(ImmutableList.toImmutableList());
+	}
+
 	public CostDetail getSingleCostDetail(@NonNull final CostDetailQuery query)
 	{
 		return costDetailsService.firstOnly(query)
@@ -179,21 +229,22 @@ public class CostingMethodHandlerUtils
 				.collect(Collectors.toList());
 	}
 
-	public final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
+	public final CurrentCost getCurrentCostForUpdate(final CostDetailCreateRequest request)
 	{
 		final CostSegmentAndElement costSegmentAndElement = extractCostSegmentAndElement(request);
-		return getCurrentCost(costSegmentAndElement);
+		return getCurrentCostForUpdate(costSegmentAndElement);
 	}
 
-	public final CurrentCost getCurrentCost(final CostDetail costDetail)
+	public final CurrentCost getCurrentCostForUpdate(final CostDetail costDetail)
 	{
 		final CostSegmentAndElement costSegmentAndElement = costDetailsService.extractCostSegmentAndElement(costDetail);
-		return getCurrentCost(costSegmentAndElement);
+		return getCurrentCostForUpdate(costSegmentAndElement);
 	}
 
-	public final CurrentCost getCurrentCost(final CostSegmentAndElement costSegmentAndElement)
+	/** Returns the {@link CurrentCost} row for the given segment, acquiring a {@code SELECT ... FOR NO KEY UPDATE} row lock held until transaction end. */
+	public final CurrentCost getCurrentCostForUpdate(final CostSegmentAndElement costSegmentAndElement)
 	{
-		return currentCostsRepo.getOrCreate(costSegmentAndElement);
+		return currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
 	}
 
 	public final void saveCurrentCost(final CurrentCost currentCost)
@@ -256,4 +307,10 @@ public class CostingMethodHandlerUtils
 						request.getClientId(),
 						request.getOrgId()));
 	}
+
+	public AggregatedCostAmount toAggregatedCostAmount(final List<CostDetail> costDetails)
+	{
+		return costDetailsService.toAggregatedCostAmount(costDetails);
+	}
+
 }

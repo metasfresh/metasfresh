@@ -32,6 +32,7 @@ import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.strategy.FirstContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.name.strategy.MembershipContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
@@ -88,7 +89,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 				new BPartnerQuickInputRelatedRecordsRepository(),
 				new BPartnerContactQuickInputAttributesRepository(),
 				new BPartnerNameAndGreetingStrategies(Optional.of(strategies)),
-				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository()),
+				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository()),
 				new BPartnerAttributesRepository(),
 				new BpartnerRelatedRecordsRepository(),
 				new BPartnerContactAttributesRepository(),
@@ -222,6 +223,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("Group");
+		group.setName("GroupValue");
 		group.setBPNameAndGreetingStrategy(strategyId != null ? strategyId.getAsString() : null);
 
 		save(group);

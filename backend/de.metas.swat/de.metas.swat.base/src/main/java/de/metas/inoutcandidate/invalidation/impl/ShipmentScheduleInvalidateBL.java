@@ -22,6 +22,7 @@ package de.metas.inoutcandidate.invalidation.impl;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inout.IInOutDAO;
@@ -41,10 +42,13 @@ import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.inoutcandidate.picking_bom.PickingBOMsReversedIndex;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.ITaskExecutorService;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -60,18 +64,34 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
+	/**
+	 * Int sysconfig bounding the invalidation-segment accumulator during a long-running batch: when the accumulator
+	 * ({@link ShipmentScheduleSegmentChangedProcessor}) reaches this size it flushes mid-batch (not only at
+	 * AFTER_COMMIT). A value {@code <= 0} disables the mid-batch flush. Default {@value #DEFAULT_SegmentFlushThreshold}.
+	 */
+	static final String SYSCONFIG_SegmentFlushThreshold = "de.metas.inoutcandidate.ShipmentScheduleSegmentFlushThreshold";
+	private static final int DEFAULT_SegmentFlushThreshold = 1000;
+
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	protected final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	protected final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final PickingBOMService pickingBOMService;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final PickingBOMService pickingBOMService;
 
-	public ShipmentScheduleInvalidateBL(final PickingBOMService pickingBOMService)
+	/**
+	 * The mid-batch flush threshold for the invalidation-segment accumulator. Owned here (this BL owns the
+	 * invalidation concern and its collaborators); {@link ShipmentScheduleSegmentChangedProcessor} obtains it from
+	 * its owning BL rather than reaching into the {@link ISysConfigBL} registry itself.
+	 */
+	int getSegmentFlushThreshold()
 	{
-		this.pickingBOMService = pickingBOMService;
+		return sysConfigBL.getIntValue(SYSCONFIG_SegmentFlushThreshold, DEFAULT_SegmentFlushThreshold);
 	}
 
 	private boolean isShipmentScheduleUpdaterRunning()
@@ -80,6 +100,27 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 
 		return shipmentScheduleUpdater.isRunning();
+	}
+
+	/**
+	 * A non-stocked product (not Item+IsStocked) never competes for on-hand stock, so a change narrows to its own
+	 * schedule. A null product (product-less charge/freight line) narrows the same way, since {@link IProductBL#isStocked}
+	 * is null-safe and returns {@code false} for it.
+	 */
+	private boolean shouldNarrowToSelf(@Nullable final ProductId productId)
+	{
+		return !productBL.isStocked(productId);
+	}
+
+	/**
+	 * Narrow-decision from a raw {@code M_Product_ID} that may be 0: a charge/freight line has no product
+	 * ({@code M_Product_ID=0}; see {@code MOrderLine}/{@code MInOutLine} zeroing it when {@code C_Charge_ID} is set).
+	 * One raw-id entry point keeps every product-bearing line type (inout line, order line, …) on the same
+	 * {@link #shouldNarrowToSelf(ProductId)} decision.
+	 */
+	private boolean shouldNarrowToSelfByProductRepoId(final int productRepoId)
+	{
+		return shouldNarrowToSelf(ProductId.ofRepoIdOrNull(productRepoId));
 	}
 
 	@Override
@@ -158,8 +199,14 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final int bpartnerId = shipment.getC_BPartner_ID();
 		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveLines(shipment))
 		{
-			final IShipmentScheduleSegment segment = createSegmentForInOutLine(bpartnerId, inoutLine);
-			segments.add(segment);
+			if (shouldNarrowToSelfByProductRepoId(inoutLine.getM_Product_ID()))
+			{
+				flagForRecompute(inoutLine);
+			}
+			else
+			{
+				segments.add(createSegmentForInOutLine(bpartnerId, inoutLine));
+			}
 		}
 
 		notifySegmentsChanged(segments);
@@ -168,8 +215,14 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForShipmentLine(final I_M_InOutLine shipmentLine)
 	{
-		final IShipmentScheduleSegment segment = createSegmentForInOutLine(shipmentLine.getM_InOut().getC_BPartner_ID(), shipmentLine);
-		notifySegmentChanged(segment);
+		if (shouldNarrowToSelfByProductRepoId(shipmentLine.getM_Product_ID()))
+		{
+			flagForRecompute(shipmentLine);
+		}
+		else
+		{
+			notifySegmentChanged(createSegmentForInOutLine(shipmentLine.getM_InOut().getC_BPartner_ID(), shipmentLine));
+		}
 	}
 
 	/**
@@ -198,8 +251,17 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 			return;
 		}
 
-		final IShipmentScheduleSegment segment = createSegmentForShipmentSchedule(schedule);
-		notifySegmentChanged(segment);
+		// M_ShipmentSchedule.M_Product_ID is Mandatory and never 0 (schedules are only created for real products),
+		// so — unlike the InOutLine/OrderLine siblings, which can be product-less charge lines — no charge-line guard is needed here.
+		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
+		if (shouldNarrowToSelf(productId))
+		{
+			flagForRecompute(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
+		}
+		else
+		{
+			notifySegmentChanged(createSegmentForShipmentSchedule(schedule));
+		}
 	}
 
 	@Override
@@ -232,16 +294,21 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
-		// we can't restrict the segment to the sched's bpartner, because we don't know if the qty could in theory be reallocated to a *different* partner.
-		// So we have to notify *all* partners' segments.
-		final int bpartnerId = 0;
-		final IShipmentScheduleSegment segment = ShipmentScheduleSegments.builder()
-				.bpartnerId(bpartnerId)
-				.productId(orderLine.getM_Product_ID())
-				.warehouseIdIfNotNull(WarehouseId.ofRepoIdOrNull(orderLine.getM_Warehouse_ID()))
-				.attributeSetInstanceId(orderLine.getM_AttributeSetInstance_ID())
-				.build();
-		notifySegmentChanged(segment);
+		if (shouldNarrowToSelfByProductRepoId(orderLine.getM_Product_ID()))
+		{
+			invalidateJustForOrderLine(orderLine);
+		}
+		else
+		{
+			// we can't restrict the segment to the order line's bpartner, because the qty could in theory be
+			// reallocated to a *different* partner, so we notify *all* partners' segments (bpartnerId 0).
+			notifySegmentChanged(ShipmentScheduleSegments.builder()
+					.bpartnerId(0)
+					.productId(orderLine.getM_Product_ID())
+					.warehouseIdIfNotNull(WarehouseId.ofRepoIdOrNull(orderLine.getM_Warehouse_ID()))
+					.attributeSetInstanceId(orderLine.getM_AttributeSetInstance_ID())
+					.build());
+		}
 	}
 
 	@Override
@@ -306,7 +373,14 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		}
 	}
 
-	private Stream<IShipmentScheduleSegment> explodeByPickingBOMs(final IShipmentScheduleSegment segment)
+	@Override
+	public void deleteRecomputeMarkers(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		invalidSchedulesRepo.deleteRecomputeMarkers(shipmentScheduleId);
+	}
+
+	@VisibleForTesting
+	Stream<IShipmentScheduleSegment> explodeByPickingBOMs(final IShipmentScheduleSegment segment)
 	{
 		if (segment.isAnyProduct())
 		{
@@ -325,6 +399,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 				.productIds(ProductId.toRepoIds(pickingBOMProductIds))
 				.anyBPartner()
 				.locatorIds(segment.getLocatorIds())
+				.warehouseIds(segment.getWarehouseIds())
 				.build();
 
 		return Stream.of(segment, pickingBOMsSegment);

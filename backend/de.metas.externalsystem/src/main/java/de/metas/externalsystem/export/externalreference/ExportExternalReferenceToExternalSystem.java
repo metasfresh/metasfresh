@@ -33,7 +33,7 @@ import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.model.I_S_ExternalReference;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.IExternalSystemChildConfig;
@@ -67,13 +67,13 @@ public abstract class ExportExternalReferenceToExternalSystem extends ExportToEx
 	protected ExportExternalReferenceToExternalSystem(
 			final @NonNull DataExportAuditRepository dataExportAuditRepository,
 			final @NonNull DataExportAuditLogRepository dataExportAuditLogRepository,
-			final @NonNull ExternalSystemConfigRepo externalSystemConfigRepo,
+			final @NonNull ExternalSystemConfigRepository externalSystemConfigRepository,
 			final @NonNull ExternalSystemMessageSender externalSystemMessageSender,
 			final @NonNull ExternalReferenceRepository externalReferenceRepository,
 			final @NonNull ExternalSystemConfigService externalSystemConfigService)
 
 	{
-		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepo, externalSystemMessageSender);
+		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepository, externalSystemMessageSender);
 
 		this.externalReferenceRepository = externalReferenceRepository;
 		this.externalSystemConfigService = externalSystemConfigService;
@@ -93,7 +93,7 @@ public abstract class ExportExternalReferenceToExternalSystem extends ExportToEx
 	 */
 	public void enqueueExternalReferenceSync(@NonNull final ExternalReferenceId externalReferenceId)
 	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("ExternalReferenceId: {} enqueued to be synced.", externalReferenceId);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("ExportExternalReferenceToExternalSystem - ExternalReferenceId: {} enqueued to be synced.", externalReferenceId);
 
 		syncExternalReferenceDebouncer.add(externalReferenceId);
 	}
@@ -106,7 +106,7 @@ public abstract class ExportExternalReferenceToExternalSystem extends ExportToEx
 			@Nullable final PInstanceId pInstanceId)
 	{
 
-		final ExternalSystemParentConfig config = externalSystemConfigRepo.getById(externalSystemChildConfigId);
+		final ExternalSystemParentConfig config = externalSystemConfigRepository.getById(externalSystemChildConfigId);
 
 		if (!config.isActive())
 		{
@@ -127,7 +127,7 @@ public abstract class ExportExternalReferenceToExternalSystem extends ExportToEx
 		final String orgCode = orgDAO.getById(externalReference.getOrgId()).getValue();
 
 		return Optional.of(JsonExternalSystemRequest.builder()
-								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
+								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getValue()))
 								   .externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 								   .orgCode(orgCode)
 								   .adPInstanceId(JsonMetasfreshId.ofOrNull(PInstanceId.toRepoId(pInstanceId)))
@@ -147,7 +147,7 @@ public abstract class ExportExternalReferenceToExternalSystem extends ExportToEx
 			return;
 		}
 
-		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
+		if (!externalSystemConfigRepository.isAnyConfigActive(getExternalSystemType()))
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No active config found for external system type: {}! No action is performed!", getExternalSystemType());
 			return; // nothing to do

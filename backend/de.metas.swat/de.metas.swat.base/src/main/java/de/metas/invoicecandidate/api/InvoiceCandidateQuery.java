@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.invoicecandidate.api;
 
 import com.google.common.collect.ImmutableSet;
@@ -47,6 +69,7 @@ public class InvoiceCandidateQuery
 	@Nullable InvoiceCandidateId maxManualC_Invoice_Candidate_ID;
 	@Nullable Boolean processed;
 	@Nullable Boolean error;
+	@Nullable Boolean autoInvoice;
 
 	@Builder
 	private InvoiceCandidateQuery(
@@ -65,7 +88,8 @@ public class InvoiceCandidateQuery
 			@Nullable final InvoiceCandidateId maxManualC_Invoice_Candidate_ID,
 			@Nullable final SOTrx soTrx,
 			@Nullable final Boolean processed,
-			@Nullable final Boolean error)
+			@Nullable final Boolean error,
+			@Nullable final Boolean autoInvoice)
 	{
 		this.orgId = orgId;
 		this.invoiceCandidateId = invoiceCandidateId;
@@ -83,6 +107,7 @@ public class InvoiceCandidateQuery
 		this.soTrx = soTrx;
 		this.processed = processed;
 		this.error = error;
+		this.autoInvoice = autoInvoice;
 
 		if (dateToInvoice != null && orgId == null)
 		{

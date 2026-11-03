@@ -1,5 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
 Feature: Sales order
+## F00100: Sales Order
 
   Background:
     Given infrastructure and metasfresh are running
@@ -32,6 +36,9 @@ Feature: Sales order
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   @Id:S0156_600
   Scenario: Create a new sales order, make a partial shipment and close the shipment schedule. Validate that `QtyOrdered` from order is not overridden and there is no qty allocated for the order in question
     Given metasfresh contains C_Orders:
@@ -88,6 +95,9 @@ Feature: Sales order
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   @Id:S0156_700
   Scenario: Create a new sales order, make a partial shipment, close the shipment schedule and the reactivate it. Validate that `QtyOrdered` from order is not overridden and the unshipped qty is allocated for the order in question
     Given metasfresh contains C_Orders:
@@ -178,6 +188,9 @@ Feature: Sales order
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   @Id:S0156_800
   Scenario: Create a new sales order and ship all the ordered quantity. Validate that `QtyOrdered` is propagated accordingly
     Given metasfresh contains C_Orders:
@@ -229,6 +242,9 @@ Feature: Sales order
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   @Id:S0156_900
   Scenario: Create a new sales order and ship the ordered quantity is two shipments. Validate that `QtyOrdered` is propagated accordingly and there is no qty allocated for the order in question
     Given metasfresh contains C_Orders:
@@ -311,6 +327,9 @@ Feature: Sales order
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   @Id:S0156_1000
   Scenario: Create a new sales order and ship more than the ordered quantity. Validate that `QtyOrdered` is propagated accordingly
     Given metasfresh contains C_Orders:
@@ -362,3 +381,38 @@ Feature: Sales order
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO_S0156_1000         | order_SO_S0156_1000       | orderLine_SO_S0156_1000       | 28           | 26             | 28               | false                |
+
+
+  @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
+  @Id:S0156_1100
+  Scenario: Create a new sales order (DeliveryRule=Force) and set QtyToDeliver_Override to 0. Validate that QtyToDeliver is 0 (explicit zero override forces zero delivery) and no shipment is generated
+    Given metasfresh contains C_Orders:
+      | Identifier          | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule |
+      | order_SO_S0156_1100 | true    | customer_SO              | 2022-06-17  | po_ref_S0156_1100 | ps_SO                             | customerLocation_SO                   | F                | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier              | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_SO_S0156_1100 | order_SO_S0156_1100   | product_SO_20062022     | 72         |
+
+    When the order identified by order_SO_S0156_1100 is completed
+
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier             | C_OrderLine_ID.Identifier | IsToRecompute |
+      | schedule_SO_S0156_1100 | orderLine_SO_S0156_1100   | N             |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToDeliver |
+      | schedule_SO_S0156_1100           | order_SO_S0156_1100       | orderLine_SO_S0156_1100       | 72             | 0                | 72               |
+
+    When update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | schedule_SO_S0156_1100           | 0                         |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | schedule_SO_S0156_1100           |
+
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered |
+      | schedule_SO_S0156_1100           | 0                         | 0                | 0                | 72             |
+    And validate no M_InOut found for C_Order identified by order_SO_S0156_1100

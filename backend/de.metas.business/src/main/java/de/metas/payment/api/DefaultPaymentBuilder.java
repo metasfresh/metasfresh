@@ -24,6 +24,8 @@ package de.metas.payment.api;
 
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.ChargeId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -32,6 +34,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.proforma.ProformaOrderAllocRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
@@ -46,13 +49,14 @@ import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -74,10 +78,21 @@ public class DefaultPaymentBuilder
 	public static DefaultPaymentBuilder newBuilderOfInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		return new DefaultPaymentBuilder()
-				.invoice(invoice);
+				.fromInvoice(invoice);
+	}
+
+	public static DefaultPaymentBuilder newBuilderOfOrder(@NonNull final I_C_Order order)
+	{
+		return new DefaultPaymentBuilder()
+				.fromOrder(order);
 	}
 
 	private final transient IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+
+	// Lazily resolved — unit tests that don't have a Spring context never hit the proforma branch
+	// in fromInvoice (a non-proforma invoice short-circuits before this lookup runs).
+	private final SpringContextHolder.Lazy<ProformaOrderAllocRepository> proformaAllocRepo
+			= SpringContextHolder.lazyBean(ProformaOrderAllocRepository.class);
 
 	private boolean _built = false;
 	private final I_C_Payment payment;
@@ -225,7 +240,7 @@ public class DefaultPaymentBuilder
 	public final DefaultPaymentBuilder dateTrx(@Nullable final Instant dateTrx)
 	{
 		assertNotBuilt();
-		payment.setDateTrx(dateTrx != null ? Timestamp.from(dateTrx) : null);
+		payment.setDateTrx(TimeUtil.asTimestamp(dateTrx));
 		return this;
 	}
 
@@ -236,10 +251,21 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
+	/**
+	 * A payment with a charge is posted against the charge's account instead of the partner's receivable/payable
+	 * (e.g. an outbound payment with a charge posts DR the charge's expense account / CR the bank in-transit account).
+	 */
+	public final DefaultPaymentBuilder chargeId(@Nullable final ChargeId chargeId)
+	{
+		assertNotBuilt();
+		payment.setC_Charge_ID(ChargeId.toRepoId(chargeId));
+		return this;
+	}
+
 	public final DefaultPaymentBuilder payAmt(@Nullable final BigDecimal payAmt)
 	{
 		assertNotBuilt();
-		payment.setPayAmt(payAmt);
+		payment.setPayAmt(CoalesceUtil.coalesceNotNull(payAmt, BigDecimal.ZERO));
 		return this;
 	}
 
@@ -247,6 +273,13 @@ public class DefaultPaymentBuilder
 	{
 		assertNotBuilt();
 		payment.setDiscountAmt(discountAmt);
+		return this;
+	}
+
+	public final DefaultPaymentBuilder paymentBonusAmt(@Nullable final BigDecimal paymentBonusAmt)
+	{
+		assertNotBuilt();
+		payment.setPaymentBonusAmt(CoalesceUtil.coalesceNotNull(paymentBonusAmt, BigDecimal.ZERO));
 		return this;
 	}
 
@@ -270,9 +303,9 @@ public class DefaultPaymentBuilder
 		payment.setC_ConversionType_ID(CurrencyConversionTypeId.toRepoId(paymentCurrencyContext.getCurrencyConversionTypeId()));
 		if (paymentCurrencyContext.isFixedConversionRate())
 		{
-			Check.assumeEquals(payment.getC_Currency_ID(), paymentCurrencyContext.getPaymentCurrencyId().getRepoId(), "{} shall match payment currency", paymentCurrencyContext);
+			Check.assumeEquals(payment.getC_Currency_ID(), CurrencyId.toRepoId(paymentCurrencyContext.getPaymentCurrencyId()), "{} shall match payment currency", paymentCurrencyContext);
 			payment.setCurrencyRate(paymentCurrencyContext.getCurrencyRate());
-			payment.setSource_Currency_ID(paymentCurrencyContext.getSourceCurrencyId().getRepoId());
+			payment.setSource_Currency_ID(CurrencyId.toRepoId(paymentCurrencyContext.getSourceCurrencyId()));
 		}
 		return this;
 	}
@@ -287,21 +320,41 @@ public class DefaultPaymentBuilder
 	/**
 	 * Sets the following fields using the given <code>invoice</code>:
 	 * <ul>
-	 * <li>C_Invoice_ID
+	 * <li>For non-proforma invoices: <code>C_Invoice_ID</code>
+	 * <li>For proforma invoices (APF / ARF): <code>Proforma_Invoice_ID</code> and
+	 *     <code>C_Order_ID</code> (resolved from the proforma↔order allocation). <code>C_Invoice_ID</code>
+	 *     stays null so {@link org.compiere.model.MPayment#completeIt()} does not create a
+	 *     <code>C_AllocationLine</code> — proforma payments have no accounting allocations
+	 *     (see {@link de.metas.payment.C_Payment#assertProformaPaymentIsFull(org.compiere.model.I_C_Payment)}).
 	 * <li>C_BPartner_ID
 	 * <li>C_Currency_ID
 	 * <li>IsReceipt: set from the invoice's <code>SOTrx</code> (negated if the invoice is a credit memo)
 	 * </ul>
 	 */
-	private DefaultPaymentBuilder invoice(@NonNull final I_C_Invoice invoice)
+	private DefaultPaymentBuilder fromInvoice(@NonNull final I_C_Invoice invoice)
 	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
 		adOrgId(OrgId.ofRepoId(invoice.getAD_Org_ID()));
-		invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		if (invoiceBL.getInvoiceDocBaseType(invoice).isProforma())
+		{
+			proformaInvoiceId(invoiceId);
+			proformaAllocRepo.get()
+					.findOrderIdByProformaInvoiceId(invoiceId)
+					.ifPresent(this::orderId);
+		}
+		else
+		{
+			invoiceId(invoiceId);
+		}
+
 		bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
 		currencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
 
 		final SOTrx soTrx = SOTrx.ofBoolean(invoice.isSOTrx());
-		final boolean creditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
+		final boolean creditMemo = invoiceBL.isCreditMemo(invoice);
 		direction(PaymentDirection.ofSOTrxAndCreditMemo(soTrx, creditMemo));
 
 		return this;
@@ -311,6 +364,20 @@ public class DefaultPaymentBuilder
 	{
 		assertNotBuilt();
 		payment.setC_Invoice_ID(InvoiceId.toRepoId(invoiceId));
+		return this;
+	}
+
+	public final DefaultPaymentBuilder proformaInvoiceId(@Nullable final InvoiceId proformaInvoiceId)
+	{
+		assertNotBuilt();
+		payment.setProforma_Invoice_ID(InvoiceId.toRepoId(proformaInvoiceId));
+		return this;
+	}
+
+	public final DefaultPaymentBuilder prepayment(final boolean isPrepayment)
+	{
+		assertNotBuilt();
+		payment.setIsPrepayment(isPrepayment);
 		return this;
 	}
 
@@ -355,6 +422,19 @@ public class DefaultPaymentBuilder
 	{
 		assertNotBuilt();
 		payment.setIsAutoAllocateAvailableAmt(isAutoAllocateAvailableAmt);
+		return this;
+	}
+
+	private DefaultPaymentBuilder fromOrder(@NonNull final I_C_Order order)
+	{
+		adOrgId(OrgId.ofRepoId(order.getAD_Org_ID()));
+		orderId(OrderId.ofRepoId(order.getC_Order_ID()));
+		bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
+		currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()));
+
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		direction(PaymentDirection.ofSOTrxAndCreditMemo(soTrx, false));
+
 		return this;
 	}
 }

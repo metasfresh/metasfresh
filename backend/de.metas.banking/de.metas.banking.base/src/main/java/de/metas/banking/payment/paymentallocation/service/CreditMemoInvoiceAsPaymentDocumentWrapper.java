@@ -111,6 +111,12 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 		creditMemoPayableDoc.addAllocatedAmounts(AllocationAmounts.ofPayAmt(allocatedPayAmtToAdd.negate()));
 	}
 
+	@Override
+	public void addAllocatedAmt(final AllocationAmounts amount)
+	{
+		creditMemoPayableDoc.addAllocatedAmounts(amount);
+	}
+
 	/**
 	 * Check only the payAmt as that's the only value we are allocating. see {@link  CreditMemoInvoiceAsPaymentDocumentWrapper#addAllocatedAmt(Money)}
 	 */
@@ -154,12 +160,7 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 		}
 
 		// A credit memo cannot pay another credit memo
-		if (payable.isCreditMemo())
-		{
-			return false;
-		}
-
-		return true;
+		return !payable.isCreditMemo();
 	}
 
 	@Override
@@ -178,6 +179,12 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 	public LocalDate getDate()
 	{
 		return creditMemoPayableDoc.getDate();
+	}
+
+	@Override
+	public LocalDate getDateAcct()
+	{
+		return creditMemoPayableDoc.getDateAcct();
 	}
 
 	@Override

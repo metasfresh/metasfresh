@@ -13,7 +13,6 @@
  * For the text or an alternative of this public license, you may reach us    *
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
- *
  * Copyright (C) 2005 Robert KLEIN. robeklein@gmail.com * 
  * Contributor(s): ______________________________________.
  *****************************************************************************/
@@ -22,6 +21,7 @@ package org.compiere.process;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import org.compiere.model.I_Mobile_Application_Access;
+import org.compiere.model.I_Mobile_Application_Action_Access;
 import org.compiere.model.X_AD_Role_Included;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -53,6 +53,7 @@ public class CopyRole extends JavaProcess
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
+			//noinspection StatementWithEmptyBody
 			if (para[i].getParameter() == null)
 				;
 			else if (name.equals("AD_Role_ID") && i == 0)
@@ -66,22 +67,18 @@ public class CopyRole extends JavaProcess
 		}
 	}    //	prepare
 
-	/**
-	 * Copy the role access records
-	 *
-	 * @return info
-	 * @throws Exception
-	 */
 	protected String doIt() throws Exception
 	{
 		String[] tables = new String[] { "AD_Window_Access", "AD_Process_Access", "AD_Form_Access",
 				"AD_Workflow_Access", "AD_Task_Access", "AD_Document_Action_Access",
 				I_Mobile_Application_Access.Table_Name,
+				I_Mobile_Application_Action_Access.Table_Name,
 				X_AD_Role_Included.Table_Name,
 		};
 		String[] keycolumns = new String[] { "AD_Window_ID", "AD_Process_ID", "AD_Form_ID",
 				"AD_Workflow_ID", "AD_Task_ID", "C_DocType_ID, AD_Ref_List_ID",
 				I_Mobile_Application_Access.COLUMNNAME_Mobile_Application_ID,
+				I_Mobile_Application_Action_Access.COLUMNNAME_Mobile_Application_Action_ID,
 				X_AD_Role_Included.COLUMNNAME_Included_Role_ID,
 		};
 

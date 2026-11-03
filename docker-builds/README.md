@@ -4,7 +4,7 @@
 ### CICD (github actions)
 pipeline is located under *.github\workflows\cicd.yaml* and gets executed on push<br>
 executions can be followed under: https://github.com/metasfresh/metasfresh/actions<br>
-junit and cucumber test results will be accumulated under: https://metasfresh.testspace.com/<br>
+junit and cucumber test results are published as Allure reports on https://test-reports.metasfresh.com/ ; the report link for each build is in the summary of its cicd run<br>
 images will get pushed to our docker hub registries with `<mf-version>-<branch-name>.<build-number>` tags<br>
 
 #### Further reading about github related topics
@@ -87,7 +87,7 @@ an overview of existing tags can be found here: https://hub.docker.com/repositor
 ## Tests
 
 ### CICD (github actions)
-junit and cucumber test results will be accumulated under: https://metasfresh.testspace.com/<br>
+junit and cucumber test results are published as Allure reports on https://test-reports.metasfresh.com/ ; the report link for each build is in the summary of its cicd run<br>
 in addition to that, a database image with the post cucumber run state is available for every cucumber run as:<br>
 `metasfresh/metas-db:<tag>-postcucumber`<br>
 <br>
@@ -125,3 +125,5 @@ this can be adjusted by modifying the *cucumber.command* section in _docker-buil
 to run cypress tests, go to *\docker-builds\e2e* and execute ```run.cmd```<br>
 should take about 120 minutes localy<br>
 cypress tests are currently not run on github actions<br>
+
+<!-- TEST: Private version chain validation - safe to remove after testing -->

@@ -37,7 +37,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
@@ -51,18 +50,15 @@ public class C_Payment
 {
 	private final IBankStatementBL bankStatementBL;
 	private final IPaymentBL paymentBL;
-	private final ISysConfigBL sysConfigBL;
 	private final ICashStatementBL cashStatementBL;
 
 	public C_Payment(
 			@NonNull final IBankStatementBL bankStatementBL,
 			@NonNull final IPaymentBL paymentBL,
-			@NonNull final ISysConfigBL sysConfigBL,
 			@NonNull final ICashStatementBL cashStatementBL)
 	{
 		this.bankStatementBL = bankStatementBL;
 		this.paymentBL = paymentBL;
-		this.sysConfigBL = sysConfigBL;
 		this.cashStatementBL = cashStatementBL;
 	}
 
@@ -89,6 +85,12 @@ public class C_Payment
 	public void onPayAmtChange(final I_C_Payment payment)
 	{
 		paymentBL.onPayAmtChange(payment, true);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_PaymentBonusAmt)
+	public void onPaymentBonusAmtChange(final I_C_Payment payment)
+	{
+		paymentBL.onPaymentBonusAmtChange(payment);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID })
@@ -128,11 +130,6 @@ public class C_Payment
 	public void createCashStatementLineIfNeeded(final I_C_Payment payment)
 	{
 		if (!paymentBL.isCashTrx(payment))
-		{
-			return;
-		}
-
-		if (!sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", true, payment.getAD_Client_ID()))
 		{
 			return;
 		}

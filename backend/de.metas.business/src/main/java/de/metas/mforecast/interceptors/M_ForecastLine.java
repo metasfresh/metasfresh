@@ -62,7 +62,12 @@ public class M_ForecastLine
 		if (forecast != null)
 		{
 			forecastLine.setC_BPartner_ID(forecast.getC_BPartner_ID());
-			forecastLine.setM_Warehouse_ID(forecast.getM_Warehouse_ID());
+			// Only overwrite warehouse from header if the header has one set;
+			// the forecast line generator sets warehouse from PP_Product_Planning and we must not stomp on it
+			if (forecast.getM_Warehouse_ID() > 0)
+			{
+				forecastLine.setM_Warehouse_ID(forecast.getM_Warehouse_ID());
+			}
 			forecastLine.setC_Period(forecast.getC_Period());
 			forecastLine.setDatePromised(forecast.getDatePromised());
 		}

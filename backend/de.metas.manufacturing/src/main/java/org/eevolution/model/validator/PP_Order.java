@@ -1,5 +1,6 @@
 package org.eevolution.model.validator;
 
+import de.metas.distribution.ddordercandidate.material_dispo.PPOrderBOMLineDistributionSupplyMover;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -14,25 +15,31 @@ import de.metas.order.IOrderBL;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.project.ProjectId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
@@ -46,41 +53,33 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Interceptor(I_PP_Order.class)
+@RequiredArgsConstructor
 public class PP_Order
 {
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
-	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
-	private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private static final String DYNATTR_Voiding = PP_Order.class.getName() + "#voiding";
 
-	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
-	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
-	private final PPOrderPojoConverter ppOrderConverter;
-	private final PostMaterialEventService materialEventService;
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
-	private final IPPOrderBOMBL ppOrderBOMBL;
-	private final ProductBOMVersionsDAO bomVersionsDAO;
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	@NonNull private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
+	@NonNull private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	@NonNull private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	public PP_Order(
-			@NonNull final PPOrderPojoConverter ppOrderConverter,
-			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
-			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
-			@NonNull final ProductBOMVersionsDAO bomVersionsDAO)
-	{
-		this.ppOrderConverter = ppOrderConverter;
-		this.materialEventService = materialEventService;
-		this.documentNoBuilderFactory = documentNoBuilderFactory;
-		this.ppOrderBOMBL = ppOrderBOMBL;
-		this.bomVersionsDAO = bomVersionsDAO;
-	}
+	@NonNull private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+	@NonNull private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
+	@NonNull private final PPOrderPojoConverter ppOrderConverter;
+	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final IDocumentNoBuilderFactory documentNoBuilderFactory;
+	@NonNull private final IPPOrderBOMBL ppOrderBOMBL;
+	@NonNull private final ProductBOMVersionsDAO bomVersionsDAO;
+	@NonNull private final PPOrderBOMLineDistributionSupplyMover distributionSupplyMover;
 
 	@Init
 	public void registerCallouts()
@@ -148,9 +147,9 @@ public class PP_Order
 				&& ppOrder.getC_OrderLine_ID() > 0
 				&& ppOrder.getC_OrderLine().getM_AttributeSetInstance_ID() > 0)
 		{
-			final I_M_AttributeSetInstance asi = ppOrder.getC_OrderLine().getM_AttributeSetInstance();
-			final I_M_AttributeSetInstance asiCopy = attributeDAO.copy(asi);
-			ppOrder.setM_AttributeSetInstance(asiCopy);
+			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getC_OrderLine().getM_AttributeSetInstance_ID());
+			final AttributeSetInstanceId asiIdCopy = asiBL.copy(asiId);
+			ppOrder.setM_AttributeSetInstance_ID(asiIdCopy.getRepoId());
 		}
 
 		//
@@ -218,7 +217,8 @@ public class PP_Order
 			ifColumnsChanged = {
 					I_PP_Order.COLUMNNAME_QtyEntered,
 					I_PP_Order.COLUMNNAME_DateStartSchedule,
-					I_PP_Order.COLUMNNAME_AD_Workflow_ID })
+					I_PP_Order.COLUMNNAME_AD_Workflow_ID,
+					I_PP_Order.COLUMNNAME_PP_Product_BOM_ID })
 	public void updateAndPostEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
 		if (ppOrderBL.isSomethingProcessed(ppOrderRecord))
@@ -229,12 +229,54 @@ public class PP_Order
 		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord);
 
 		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID());
-		deleteWorkflowAndBOM(orderId);
-		createWorkflowAndBOM(ppOrderRecord);
+
+		// When voiding, QtyEntered is set to 0; the distribution supply is not moved then, but handled as before (deleted, or rejected if already processed).
+		final boolean isVoiding = isVoiding(ppOrderRecord);
+		InterfaceWrapperHelper.setDynAttribute(ppOrderRecord, DYNATTR_Voiding, null);
+
+		// the move needs a trx: the records are re-pointed after the old BOM lines were deleted, which is FK-safe only because the FKs are deferred
+		final ITrx trx = trxManager.get(InterfaceWrapperHelper.getTrxName(ppOrderRecord), OnTrxMissingPolicy.ReturnTrxNone);
+		final boolean shouldMoveDistributionSupply = !isVoiding
+				&& InterfaceWrapperHelper.isValueChanged(ppOrderRecord, I_PP_Order.COLUMNNAME_QtyEntered)
+				&& !trxManager.isNull(trx);
+		if (shouldMoveDistributionSupply)
+		{
+			final PPOrderBOMLineDistributionSupplyMover.Snapshot distributionSupplySnapshot = distributionSupplyMover.collect(orderId);
+
+			distributionSupplyMover.runWhileMovingDistributionSupply(orderId, trx, () -> deleteWorkflowAndBOM(orderId));
+			createWorkflowAndBOM(ppOrderRecord);
+
+			distributionSupplyMover.moveToRecreatedBOMLines(distributionSupplySnapshot);
+		}
+		else
+		{
+			deleteWorkflowAndBOM(orderId);
+			createWorkflowAndBOM(ppOrderRecord);
+		}
 
 		final PPOrderChangedEvent event = eventFactory.inspectPPOrderAfterChange();
 
 		materialEventService.enqueueEventAfterNextCommit(event);
+	}
+
+	/**
+	 * Marks the PP_Order as being voided: voiding sets QtyEntered=0, which must not move the distribution supply to the re-created BOM lines.
+	 */
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
+	public void markVoiding(@NonNull final I_PP_Order ppOrderRecord)
+	{
+		InterfaceWrapperHelper.setDynAttribute(ppOrderRecord, DYNATTR_Voiding, Boolean.TRUE);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
+	public void unmarkVoiding(@NonNull final I_PP_Order ppOrderRecord)
+	{
+		InterfaceWrapperHelper.setDynAttribute(ppOrderRecord, DYNATTR_Voiding, null);
+	}
+
+	private static boolean isVoiding(@NonNull final I_PP_Order ppOrderRecord)
+	{
+		return Boolean.TRUE.equals(InterfaceWrapperHelper.getDynAttribute(ppOrderRecord, DYNATTR_Voiding));
 	}
 
 	private void deleteWorkflowAndBOM(final PPOrderId orderId)
@@ -269,6 +311,8 @@ public class PP_Order
 			ifColumnsChanged = { I_PP_Order.COLUMNNAME_M_Product_ID, I_PP_Order.COLUMNNAME_PP_Product_BOM_ID })
 	public void validateBOMAndProduct(@NonNull final I_PP_Order ppOrder)
 	{
+		assertProductAllowedForManufacturing(ppOrder);
+
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(ppOrder.getPP_Product_BOM_ID());
 
 		final ProductId productIdOfBOM = productBOMDAO.getBOMProductId(bomId);
@@ -280,6 +324,33 @@ public class PP_Order
 					.appendParametersToMessage()
 					.setParameter("PP_Order.M_Product_ID", ppOrder.getM_Product_ID())
 					.setParameter("PP_Order.PP_Product_BOM_ID.M_Product_ID", productIdOfBOM.getRepoId());
+		}
+	}
+
+	/**
+	 * Blocks completing a manufacturing order whose product's life-cycle status forbids {@code MANUFACTURE}.
+	 * <p>
+	 * This is a <b>re-check</b>: {@link #validateBOMAndProduct(I_PP_Order)} already enforces the same rule when
+	 * the order is created or its product changed, but it cannot see a status flipped to a blocking value
+	 * <i>afterwards</i>. Completion is the moment the goods are actually produced, so it is where the current
+	 * status has to hold again.
+	 * <p>
+	 * Only the header (manufactured) product is checked; BOM-line components are deliberately out of scope.
+	 * Self-gating: products with status {@code O}/null are a no-op.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void assertProductAllowedOnComplete(@NonNull final I_PP_Order ppOrder)
+	{
+		assertProductAllowedForManufacturing(ppOrder);
+	}
+
+	/** Shared by the create/change guard and the completion re-check: both ask the same question. */
+	private void assertProductAllowedForManufacturing(@NonNull final I_PP_Order ppOrder)
+	{
+		final ProductId productId = ProductId.ofRepoIdOrNull(ppOrder.getM_Product_ID());
+		if (productId != null)
+		{
+			productBL.assertAllowed(productId, ProductLifeCycleAction.MANUFACTURE);
 		}
 	}
 

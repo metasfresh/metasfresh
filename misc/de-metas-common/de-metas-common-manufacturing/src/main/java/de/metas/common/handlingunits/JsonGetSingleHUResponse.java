@@ -37,12 +37,8 @@ import lombok.Value;
 @JsonDeserialize(builder = JsonGetSingleHUResponse.JsonGetSingleHUResponseBuilder.class)
 public class JsonGetSingleHUResponse
 {
-	@JsonInclude(JsonInclude.Include.NON_ABSENT)
-	JsonHU result;
-
-	@JsonInclude(JsonInclude.Include.NON_ABSENT)
-	JsonErrorItem error;
-
+	@JsonInclude(JsonInclude.Include.NON_ABSENT) JsonHU result;
+	@JsonInclude(JsonInclude.Include.NON_ABSENT) JsonErrorItem error;
 	boolean multipleHUsFound;
 
 	@JsonPOJOBuilder(withPrefix = "")

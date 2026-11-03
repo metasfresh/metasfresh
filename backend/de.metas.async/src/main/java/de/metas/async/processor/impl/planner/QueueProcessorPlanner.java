@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,10 +30,13 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.processor.impl.AbstractQueueProcessor;
+import de.metas.common.util.time.SystemTime;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
@@ -43,6 +46,7 @@ import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -112,7 +116,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 				if (isStopOnFailedRun())
 				{
 					logger.error("*** QueueProcessorPlanner.run() caught an unexpected error!"
-										 + " Planner = " + this.getClass().getName() + " has stopOnFailedRun policy; Shutting down...", throwable);
+							+ " Planner = " + this.getClass().getName() + " has stopOnFailedRun policy; Shutting down...", throwable);
 					shutdown();
 
 					throw AdempiereException.wrapIfNeeded(throwable);
@@ -236,7 +240,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 			if (queueProcessor == null)
 			{
 				logger.warn("*** processWorkPackages: No available QueueProcessor found for workPackageId: {}, c_queue_workpackage.c_queue_packageprocessor_id: {}",
-							workPackage.getC_Queue_WorkPackage_ID(), workPackage.getC_Queue_PackageProcessor_ID());
+						workPackage.getC_Queue_WorkPackage_ID(), workPackage.getC_Queue_PackageProcessor_ID());
 
 				WorkPackageLockHelper.unlockNoFail(workPackage);
 				handledAllWorkPackages = false;
@@ -256,30 +260,55 @@ public abstract class QueueProcessorPlanner implements Runnable
 	@NonNull
 	private List<I_C_Queue_WorkPackage> pollAndLockWorkPackages(@NonNull final Properties ctx, @NonNull final List<IQueueProcessor> queueProcessors)
 	{
-		final IQuery<I_C_Queue_WorkPackage> queueProcessorWPQueriesAggregator = queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
-				//dev-note: workaround to be able to union multiple queries without applying 'limit' and 'order by' to the end result
-				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, -1)
-				.create();
-
 		final QueryLimit numberOfWorkPackagesPerProcessor = QueryLimit.ONE;
 
-		final List<IQuery<I_C_Queue_WorkPackage>> queueProcessorSpecificQueries = queueProcessors
-				.stream()
-				.map(IQueueProcessor::getQueue)
-				.map(queue -> queue.createQuery(ctx, numberOfWorkPackagesPerProcessor))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.map(lockManager::addNotLockedClause)
-				.collect(ImmutableList.toImmutableList());
+		// Execute queries sequentially (not UNION) because PostgreSQL doesn't support FOR UPDATE with UNION
+		// Each query has FOR UPDATE SKIP LOCKED for concurrent locking
+		// Note: LockedAt IS NULL filter is already added by QueueDAO.createQuery()
+		final ImmutableList.Builder<I_C_Queue_WorkPackage> workPackagesCollector = ImmutableList.builder();
+		final Timestamp now = SystemTime.asTimestamp();
 
-		if (queueProcessorSpecificQueries.isEmpty())
+		// Poll each processor's queue separately
+		for (final IQueueProcessor queueProcessor : queueProcessors)
 		{
-			return ImmutableList.of();
+			final Optional<IQuery<I_C_Queue_WorkPackage>> queryOptional = queueProcessor.getQueue()
+					.createQuery(ctx, numberOfWorkPackagesPerProcessor);
+
+			if (!queryOptional.isPresent())
+			{
+				continue;
+			}
+
+			final IQuery<I_C_Queue_WorkPackage> query = queryOptional.get();
+
+			query.setForUpdate(ForUpdate.FOR_UPDATE_SKIP_LOCKED);
+
+			// Set LockedAt timestamp immediately (rows are still locked via FOR UPDATE SKIP LOCKED)
+			final ICompositeQueryUpdater<I_C_Queue_WorkPackage> workPackageUpdater = queryBL.createCompositeQueryUpdater(I_C_Queue_WorkPackage.class)
+					.addSetColumnValue(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, now);
+			final int lockedCount = query.updateDirectly(workPackageUpdater);
+			logger.debug("Locked {} workpackages for queueProcessor {} with queueProcessorId={}", lockedCount, queueProcessor.getName(), queueProcessor.getQueueProcessorId());
+
+			if (lockedCount == 0)
+			{
+				// nothing claimed => nothing this processor could re-fetch; skip the (otherwise wasted) re-fetch query
+				continue;
+			}
+
+			// Execute query - returns successfully locked rows only
+			final List<I_C_Queue_WorkPackage> workPackages = queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
+					.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, now)
+					.addInArrayFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID, queueProcessor.getAssignedPackageProcessorIds())
+					.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, false)
+					.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_IsError, false)
+					.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_IsReadyForProcessing, true)
+					.orderBy(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
+					.list();
+
+			workPackagesCollector.addAll(workPackages);
 		}
 
-		queueProcessorWPQueriesAggregator.addUnions(queueProcessorSpecificQueries, true);
-
-		return lockManager.retrieveAndLockMultipleRecords(queueProcessorWPQueriesAggregator, I_C_Queue_WorkPackage.class);
+		return workPackagesCollector.build();
 	}
 
 	@NonNull

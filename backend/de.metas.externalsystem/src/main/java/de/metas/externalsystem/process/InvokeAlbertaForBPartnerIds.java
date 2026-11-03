@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
@@ -57,7 +57,7 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final InvokeAlbertaService invokeAlbertaService = SpringContextHolder.instance.getBean(InvokeAlbertaService.class);
-	private final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final ExternalSystemConfigRepository externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepository.class);
 
 	public static final AdMessageKey MSG_ERR_PROCESS_NOT_AVAILABLE = AdMessageKey.of("ALBERTA_NO_CONFIG_AVAILABLE");
 
@@ -97,7 +97,7 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 		{
 			return ProcessPreconditionsResolution.accept();
 		}
-		return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_PROCESS_NOT_AVAILABLE, ExternalSystemType.Alberta.getName()));
+		return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_PROCESS_NOT_AVAILABLE, ExternalSystemType.Alberta.getValue()));
 	}
 
 	@Override

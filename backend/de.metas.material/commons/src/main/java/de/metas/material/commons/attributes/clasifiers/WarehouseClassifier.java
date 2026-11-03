@@ -49,7 +49,7 @@ public final class WarehouseClassifier
 
 	private static final WarehouseClassifier ANY = new WarehouseClassifier(null);
 
-	private WarehouseId warehouseId;
+	private final WarehouseId warehouseId;
 
 	private WarehouseClassifier(@Nullable final WarehouseId warehouseId)
 	{
@@ -68,5 +68,11 @@ public final class WarehouseClassifier
 	{
 		return this.warehouseId == null
 				|| WarehouseId.equals(this.warehouseId, warehouseId);
+	}
+
+	@Nullable
+	public WarehouseId getWarehouseId()
+	{
+		return warehouseId;
 	}
 }

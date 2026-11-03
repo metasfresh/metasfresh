@@ -57,6 +57,11 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 	private Supplier<JSONDocumentOptions> _jsonDocumentOptionsSupplier;
 	private int cacheMaxAgeSec = 10;
 	private boolean includeLanguageInETag = false;
+	// Fold a role fingerprint into the ETag (read from the layout options, like the language). Needed whenever
+	// the produced JSON is role-dependent (e.g. a layout whose lookup "new record" option is gated by the
+	// role's create permission): the base ETag is role-independent, so without this a cached response leaks
+	// across roles and only clears on restart. The fingerprint also changes when the role's permissions change.
+	private boolean includeRoleInETag = false;
 
 	private ETagResponseEntityBuilder(@NonNull final WebRequest request, @NonNull final T etagAware, @NonNull final Supplier<R> result)
 	{
@@ -83,12 +88,30 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 		return this;
 	}
 
+	/**
+	 * Fold a role fingerprint (from the layout options) into the ETag so a role-dependent response is not
+	 * cached across roles, and is refreshed when the role's permissions change. Mirrors {@link #includeLanguageInETag()}.
+	 * Requires layout options ({@link #jsonLayoutOptions(Supplier)}).
+	 */
+	public ETagResponseEntityBuilder<T, R> includeRoleInETag()
+	{
+		includeRoleInETag(true);
+		return this;
+	}
+
+	private ETagResponseEntityBuilder<T, R> includeRoleInETag(final boolean includeRoleInETag)
+	{
+		this.includeRoleInETag = includeRoleInETag;
+		return this;
+	}
+
 	public <R2> ETagResponseEntityBuilder<T, R2> map(@NonNull final Function<R, R2> resultMapper)
 	{
 		final Supplier<R> result = this.result;
 		final Supplier<R2> newResult = () -> resultMapper.apply(result.get());
 		return new ETagResponseEntityBuilder<>(request, etagAware, newResult)
 				.includeLanguageInETag(includeLanguageInETag)
+				.includeRoleInETag(includeRoleInETag)
 				.cacheMaxAge(this.cacheMaxAgeSec);
 	}
 
@@ -135,6 +158,15 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 			throw new IllegalStateException("no json options configured");
 		}
 		// TODO
+	}
+
+	private String getRoleETagFingerprint()
+	{
+		if (_jsonLayoutOptionsSupplier == null)
+		{
+			throw new IllegalStateException("includeRoleInETag requires layout options to be configured");
+		}
+		return getJSONLayoutOptions().getRoleETagFingerprint();
 	}
 
 	private JSONOptions getJSONOptions()
@@ -188,14 +220,21 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 
 	private ETag getETag()
 	{
-		ETag etag = etagAware.getETag();
+		final ImmutableMap.Builder<String, String> extraAttributes = ImmutableMap.builder();
 		if (includeLanguageInETag)
 		{
-			final String adLanguage = getAdLanguage();
-			etag = etag.overridingAttributes(ImmutableMap.of("lang", adLanguage));
+			extraAttributes.put("lang", getAdLanguage());
+		}
+		if (includeRoleInETag)
+		{
+			extraAttributes.put("role", getRoleETagFingerprint());
 		}
 
-		return etag;
+		final ImmutableMap<String, String> extraAttributesMap = extraAttributes.build();
+		final ETag etag = etagAware.getETag();
+		return extraAttributesMap.isEmpty()
+				? etag
+				: etag.overridingAttributes(extraAttributesMap);
 	}
 
 	public <JSONType> ResponseEntity<JSONType> toJson(final BiFunction<R, JSONOptions, JSONType> toJsonMapper)

@@ -44,7 +44,7 @@ public class HUMovementBLTest
 
 		//
 		// Service under test
-		huMovementBL = (HUMovementBL)Services.get(IHUMovementBL.class);
+		huMovementBL = HUMovementBL.newInstanceForUnitTesting();
 	}
 
 	/**

@@ -27,8 +27,10 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Sequence;
 
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -49,7 +51,7 @@ public interface ISequenceDAO extends ISingletonService
 	void renameTableSequence(Properties ctx, String tableNameOld, String tableNameNew);
 
 	@NonNull
-	I_AD_Sequence retrieveSequenceByName(@NonNull String sequenceName);
+	Optional<I_AD_Sequence> retrieveSequenceByName(@NonNull final String sequenceName, @NonNull final ClientId clientId);
 
 	DocSequenceId cloneToOrg(@NonNull DocSequenceId fromDocSequenceId, @NonNull OrgId toOrgId);
 }

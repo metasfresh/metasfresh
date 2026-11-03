@@ -1,13 +1,13 @@
 package de.metas.material.cockpit.availableforsales;
 
 import de.metas.material.cockpit.model.I_MD_Available_For_Sales_QueryResult;
-import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import org.compiere.Adempiere;
 import org.compiere.db.Database;
 import org.compiere.model.IQuery;
@@ -70,6 +70,11 @@ public class AvailableForSalesSqlHelper
 
 		if (Adempiere.isUnitTestMode())
 		{
+			if (availableForSalesQuery.getWarehouseId() != null)
+			{
+				queryBuilder.addEqualsFilter(I_MD_Available_For_Sales_QueryResult.COLUMNNAME_M_Warehouse_ID, availableForSalesQuery.getWarehouseId());
+			}
+
 			return queryBuilder
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_MD_Available_For_Sales_QueryResult.COLUMNNAME_M_Product_ID, availableForSalesQuery.getProductId())
@@ -86,16 +91,30 @@ public class AvailableForSalesSqlHelper
 
 		final AttributesKeyPattern storageAttributesKey = availableForSalesQuery.getStorageAttributesKeyPattern();
 
-		final String sqlFrom = "de_metas_material.retrieve_available_for_sales("
-				+ "p_QueryNo => " + queryNo
-				+ ", p_M_Product_ID => " + availableForSalesQuery.getProductId().getRepoId()
-				+ ", p_StorageAttributesKey => '" + storageAttributesKey.getSqlLikeString() + "'"
-				+ ", p_PreparationDate => " + dateString
-				+ ", p_shipmentDateLookAheadHours => " + availableForSalesQuery.getShipmentDateLookAheadHours()
-				+ ", p_salesOrderLookBehindHours => " + availableForSalesQuery.getSalesOrderLookBehindHours()
-				+ ")";
+		final StringBuilder sqlFrom = new StringBuilder(
+				"de_metas_material.retrieve_available_for_sales("
+						+ "p_QueryNo => " + queryNo
+						+ ", p_M_Product_ID => " + availableForSalesQuery.getProductId().getRepoId()
+						+ ", p_StorageAttributesKey => '" + storageAttributesKey.getSqlLikeString() + "'"
+						+ ", p_PreparationDate => " + dateString
+						+ ", p_shipmentDateLookAheadHours => " + availableForSalesQuery.getShipmentDateLookAheadHours()
+						+ ", p_salesOrderLookBehindHours => " + availableForSalesQuery.getSalesOrderLookBehindHours()
+						+ ", p_AD_ORG_ID => " + availableForSalesQuery.getOrgId().getRepoId()
+		);
 
-		sqlDbQuery.setSqlFrom(sqlFrom);
+		if (availableForSalesQuery.getWarehouseId() != null)
+		{
+			sqlFrom.append(", p_M_Warehouse_ID => ")
+					.append(availableForSalesQuery.getWarehouseId().getRepoId());
+		}
+		else
+		{
+			sqlFrom.append(", p_M_Warehouse_ID => NULL");
+		}
+
+		sqlFrom.append(")");
+
+		sqlDbQuery.setSqlFrom(sqlFrom.toString());
 		return dbQuery;
 	}
 }

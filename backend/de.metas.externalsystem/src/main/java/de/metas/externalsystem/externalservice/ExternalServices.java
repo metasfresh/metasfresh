@@ -22,12 +22,13 @@
 
 package de.metas.externalsystem.externalservice;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.externalsystem.status.JsonExternalStatus;
 import de.metas.common.externalsystem.status.JsonExternalStatusResponseItem;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -43,6 +44,8 @@ import de.metas.externalsystem.externalservice.status.ExternalSystemStatusReposi
 import de.metas.externalsystem.externalservice.status.StoreExternalSystemStatusRequest;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -55,17 +58,29 @@ public class ExternalServices
 	private final ExternalSystemServiceRepository serviceRepo;
 	private final ExternalSystemServiceInstanceRepository serviceInstanceRepo;
 	private final ExternalSystemStatusRepository statusRepo;
-	private final ExternalSystemConfigRepo externalSystemConfigRepo;
+	private final ExternalSystemConfigRepository externalSystemConfigRepository;
 
 	public ExternalServices(@NonNull final ExternalSystemServiceRepository serviceRepo,
 			@NonNull final ExternalSystemServiceInstanceRepository serviceInstanceRepo,
 			@NonNull final ExternalSystemStatusRepository statusRepo,
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo)
+			@NonNull final ExternalSystemConfigRepository externalSystemConfigRepository)
 	{
 		this.serviceRepo = serviceRepo;
 		this.serviceInstanceRepo = serviceInstanceRepo;
 		this.statusRepo = statusRepo;
-		this.externalSystemConfigRepo = externalSystemConfigRepo;
+		this.externalSystemConfigRepository = externalSystemConfigRepository;
+	}
+
+	@VisibleForTesting
+	public static ExternalServices newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ExternalServices.class, () -> new ExternalServices(
+				ExternalSystemServiceRepository.newInstanceForUnitTesting(),
+				ExternalSystemServiceInstanceRepository.newInstanceForUnitTesting(),
+				new ExternalSystemStatusRepository(),
+				ExternalSystemConfigRepository.newInstanceForUnitTesting()));
 	}
 
 	public void handleStatusUpdateIfRequired(@NonNull final ExternalSystemParentConfigId configId, @NonNull final String command)
@@ -101,7 +116,7 @@ public class ExternalServices
 	@NonNull
 	public List<JsonExternalStatusResponseItem> getStatusInfo(@NonNull final ExternalSystemType externalSystemType)
 	{
-		final List<ExternalSystemParentConfig> externalSystemConfigs = externalSystemConfigRepo.getActiveByType(externalSystemType);
+		final List<ExternalSystemParentConfig> externalSystemConfigs = externalSystemConfigRepository.getActiveByType(externalSystemType);
 
 		final Map<ExternalSystemParentConfigId, String> configId2ChildValue = externalSystemConfigs.stream()
 				.collect(ImmutableMap.toImmutableMap(ExternalSystemParentConfig::getId,
@@ -112,7 +127,7 @@ public class ExternalServices
 					final ExternalSystemServiceModel service = serviceInstance.getService();
 
 					return JsonExternalStatusResponseItem.builder()
-							.externalSystemConfigType(service.getExternalSystemType().getCode())
+							.externalSystemConfigType(service.getExternalSystemType().getValue())
 							.serviceValue(service.getServiceValue())
 							.externalSystemChildValue(configId2ChildValue.get(serviceInstance.getConfigId()))
 							.expectedStatus(JsonExternalStatus.valueOf(serviceInstance.getExpectedStatus().getCode()))
@@ -135,7 +150,7 @@ public class ExternalServices
 
 	public void initializeServiceInstancesIfRequired(@NonNull final ExternalSystemParentConfigId configId)
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemConfigRepo.getParentTypeById(configId));
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(externalSystemConfigRepository.getParentTypeById(configId));
 
 		serviceRepo.getAllByType(externalSystemType)
 				.stream()
@@ -173,9 +188,9 @@ public class ExternalServices
 
 	private void createInstanceIfRequired(@NonNull final ExternalSystemParentConfigId configId, @NonNull final String command)
 	{
-		final String parentConfigType = externalSystemConfigRepo.getParentTypeById(configId);
+		final String parentConfigType = externalSystemConfigRepository.getParentTypeById(configId);
 
-		getServiceByTypeAndCommand(ExternalSystemType.ofCode(parentConfigType), command)
+		getServiceByTypeAndCommand(ExternalSystemType.ofValue(parentConfigType), command)
 				.map(service -> CreateServiceInstanceRequest.builder()
 						.configId(configId)
 						.serviceId(service.getId())

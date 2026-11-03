@@ -80,7 +80,7 @@ public class OrderCandidatesRestController_misc_Test
 
 		final JsonAttachment jsonAttachment = OrderCandidatesRestController.toJsonAttachment(
 				"externalReference",
-				"dataSourceName",
+				"externalSystemCode",
 				attachmentEntry);
 
 		assertThat(jsonAttachment.getType().name()).isEqualTo(AttachmentEntryType.URL.name());

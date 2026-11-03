@@ -14,7 +14,6 @@
 	<properties>
 		<!-- note that the scripts are not part of the rollout-package.
 		     they are just present when a developer runs mg migrate from their local dev-station -->
-		<migration-sql-basedir>99-de.metas.printing.esb.client</migration-sql-basedir>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 

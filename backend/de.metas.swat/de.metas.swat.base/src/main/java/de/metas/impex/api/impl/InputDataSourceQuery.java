@@ -1,13 +1,13 @@
 package de.metas.impex.api.impl;
 
-import javax.annotation.Nullable;
-
-import de.metas.impex.InputDataSourceId;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.organization.OrgId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L

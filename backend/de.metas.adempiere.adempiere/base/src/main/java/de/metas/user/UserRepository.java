@@ -5,6 +5,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -72,13 +73,16 @@ public class UserRepository
 				.name(userRecord.getName())
 				.firstName(userRecord.getFirstname())
 				.lastName(userRecord.getLastname())
+				.department(userRecord.getDepartment())
 				.birthday(TimeUtil.asLocalDate(userRecord.getBirthday()))
+				.phone(userRecord.getPhone())
 				.emailAddress(userRecord.getEMail())
 
 				.userLanguage(userLanguage)
 				.bPartnerLanguage(bpartnerLanguage)
 				.language(language)
 
+				.isInvoiceEmailEnabled(OptionalBoolean.ofNullableString(userRecord.getIsInvoiceEmailEnabled()))
 				.build();
 	}
 

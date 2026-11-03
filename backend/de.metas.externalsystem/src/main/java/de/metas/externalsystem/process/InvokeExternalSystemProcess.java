@@ -26,7 +26,7 @@ import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
@@ -63,7 +63,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	public final static AdMessageKey MSG_ERR_NO_EXTERNAL_SELECTION = AdMessageKey.of("NoExternalSelection");
 	public final static AdMessageKey MSG_ERR_MULTIPLE_EXTERNAL_SELECTION = AdMessageKey.of("MultipleExternalSelection");
 
-	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	public final ExternalSystemConfigRepository externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepository.class);
 	public final RuntimeParametersRepository runtimeParametersRepository = SpringContextHolder.instance.getBean(RuntimeParametersRepository.class);
 	private final ExternalSystemConfigService externalSystemConfigService = SpringContextHolder.instance.getBean(ExternalSystemConfigService.class);
 
@@ -104,7 +104,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 
 		return JsonExternalSystemRequest.builder()
 				.externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
-				.externalSystemName(JsonExternalSystemName.of(config.getType().getName()))
+				.externalSystemName(JsonExternalSystemName.of(config.getType().getValue()))
 				.parameters(extractParameters(config))
 				.orgCode(getOrgCode(config))
 				.command(externalRequest)

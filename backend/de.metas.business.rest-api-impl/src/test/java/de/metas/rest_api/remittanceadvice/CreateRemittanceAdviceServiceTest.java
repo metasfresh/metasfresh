@@ -130,6 +130,7 @@ class CreateRemittanceAdviceServiceTest
 
 		groupRecord = newInstance(I_C_BP_Group.class);
 		groupRecord.setName(ORG_VALUE + "-name");
+		groupRecord.setValue(ORG_VALUE + "-value");
 		saveRecord(groupRecord);
 
 		senderBPRecord = newInstance(I_C_BPartner.class);

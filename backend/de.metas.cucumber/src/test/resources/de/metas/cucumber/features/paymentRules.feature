@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
 @ghActions:run_on_executor6
 Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
+## F00982: Payment
 
   Background:
     Given infrastructure and metasfresh are running
@@ -29,6 +33,9 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | productPrices_PO | priceListVersion_PO               | product_1               | 10.0     | PCE               | Normal                        |
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: C_BPartner.PaymentRule = 'DirectDebit' correctly propagates to C_Invoice, when created from C_Order; IsSOTrx = 'Y'
     Given metasfresh contains C_BPartners:
       | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule | OPT.InvoiceRule |
@@ -38,8 +45,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | location_1 | 0123411217731 | bpartner_1               | Y                   | Y                   |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | order_1    | true    | bpartner_1               | 2022-03-20  | 1000012              | SO_DirectDebit  |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | order_1    | true    | bpartner_1               | 2022-03-20  | SO_DirectDebit  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | product_1               | 10         |
@@ -48,7 +55,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
     # C_BPartner.PaymentRule => C_Order.PaymentRule (due to org/compiere/model/MOrder.java:951 -> org.compiere.model.MOrder.setBPartner)
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | OPT.POReference | processed | DocStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | F            | P               | SO_DirectDebit  | true      | CO        | D               |
 
     And after not more than 60s locate up2date invoice candidates by order line:
@@ -64,11 +71,14 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
     # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.PaymentRule |
-      | invoice_1               | bpartner_1               | location_1                        | SO_DirectDebit  | 1000002     | true      | CO        | D               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus | OPT.PaymentRule |
+      | invoice_1               | bpartner_1               | location_1                        | SO_DirectDebit  | true      | CO        | D               |
 
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: C_BPartner.PaymentRule = 'OnCredit' correctly propagates to C_Invoice, when created from C_Order; IsSOTrx = 'Y'
     Given metasfresh contains C_BPartners:
       | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule | OPT.InvoiceRule |
@@ -78,8 +88,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | location_1 | 0123456795211 | bpartner_1               | Y                   | Y                   |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | order_1    | true    | bpartner_1               | 2022-03-20  | 1000012              | SO_OnCredit     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | order_1    | true    | bpartner_1               | 2022-03-20  | SO_OnCredit     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | product_1               | 10         |
@@ -88,7 +98,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_BPartner.PaymentRule => C_Order.PaymentRule (due to org/compiere/model/MOrder.java:951 -> org.compiere.model.MOrder.setBPartner)
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | OPT.POReference | processed | DocStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | F            | P               | SO_OnCredit     | true      | CO        | P               |
 
     And after not more than 60s locate up2date invoice candidates by order line:
@@ -106,11 +116,14 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.PaymentRule |
-      | invoice_1               | bpartner_1               | location_1                        | SO_OnCredit     | 1000002     | true      | CO        | P               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus | OPT.PaymentRule |
+      | invoice_1               | bpartner_1               | location_1                        | SO_OnCredit     | true      | CO        | P               |
 
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: C_BPartner.PaymentRule = 'Cash' correctly propagates to C_Invoice, when created from C_Order; IsSOTrx = 'Y'
     Given metasfresh contains C_BPartners:
       | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule | OPT.InvoiceRule |
@@ -120,8 +133,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | location_1 | 0123189751011 | bpartner_1               | Y                   | Y                   |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | order_1    | true    | bpartner_1               | 2022-03-20  | 1000012              | SO_Cash         |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | order_1    | true    | bpartner_1               | 2022-03-20  | SO_Cash         |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | product_1               | 10         |
@@ -130,7 +143,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_BPartner.PaymentRule => C_Order.PaymentRule (due to org/compiere/model/MOrder.java:951 -> org.compiere.model.MOrder.setBPartner)
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | OPT.POReference | processed | DocStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | F            | P               | SO_Cash         | true      | CO        | B               |
 
     And after not more than 60s locate up2date invoice candidates by order line:
@@ -146,11 +159,14 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.PaymentRule |
-      | invoice_1               | bpartner_1               | location_1                        | SO_Cash         | 1000002     | true      | CO        | B               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus | OPT.PaymentRule |
+      | invoice_1               | bpartner_1               | location_1                        | SO_Cash         | true      | CO        | B               |
 
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: C_BPartner.PaymentRule = 'DirectDebit' correctly propagates to C_Invoice, when created from C_Order; IsSOTrx = 'N'
     Given metasfresh contains C_BPartners:
       | Identifier | Name                        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRulePO | OPT.PO_InvoiceRule |
@@ -170,7 +186,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_BPartner.PaymentRule => C_Order.PaymentRule (due to org/compiere/model/MOrder.java:951 -> org.compiere.model.MOrder.setBPartner)
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | OPT.POReference | processed | DocStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | POO         | EUR          | F            | P               | PO_Direct_Debit | true      | CO        | D               |
 
     And after not more than 60s locate up2date invoice candidates by order line:
@@ -186,11 +202,14 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.PaymentRule |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | DocStatus | OPT.PaymentRule |
       | invoice_1               | bpartner_1               | location_1                        | PO_Direct_Debit | 30 Tage netto | true      | CO        | D               |
 
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: C_BPartner.PaymentRule = 'OnCredit' correctly propagates to C_Invoice, when created from C_Order; IsSOTrx = 'N'
     Given metasfresh contains C_BPartners:
       | Identifier | Name                        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRulePO | OPT.PO_InvoiceRule |
@@ -210,7 +229,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_BPartner.PaymentRule => C_Order.PaymentRule (due to org/compiere/model/MOrder.java:951 -> org.compiere.model.MOrder.setBPartner)
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | OPT.POReference | processed | DocStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | POO         | EUR          | F            | P               | PO_On_Credit    | true      | CO        | P               |
 
     And after not more than 60s locate up2date invoice candidates by order line:
@@ -226,11 +245,14 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.PaymentRule |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | DocStatus | OPT.PaymentRule |
       | invoice_1               | bpartner_1               | location_1                        | PO_On_Credit    | 30 Tage netto | true      | CO        | P               |
 
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: Payment rule 'DirectDebit' correctly propagates when SO is cloned
     Given metasfresh contains C_BPartners:
       | Identifier | Name                               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
@@ -248,7 +270,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
     When the order identified by order_so is completed
 
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | processed | docStatus | OPT.PaymentRule |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | processed | DocStatus | OPT.PaymentRule |
       | order_so              | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | A            | P               | true      | CO        | D               |
 
     When C_Order is cloned
@@ -257,11 +279,14 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
     # C_Order.PaymentRule => C_Order.PaymentRule
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | processed | docStatus | OPT.PaymentRule |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | processed | DocStatus | OPT.PaymentRule |
       | clonedOrder_so        | bpartner_1               | location_1                        | 2022-03-22  | SOO         | EUR          | A            | P               | false     | DR        | D               |
 
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: Payment rule 'DirectDebit' correctly propagates when PO is cloned
     Given metasfresh contains C_BPartners:
       | Identifier | Name                               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRulePO |
@@ -279,7 +304,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
     When the order identified by order_po is completed
 
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | processed | docStatus | OPT.PaymentRule |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | processed | DocStatus | OPT.PaymentRule |
       | order_po              | bpartner_1               | location_1                        | 2022-03-20  | POO         | EUR          | A            | P               | true      | CO        | D               |
 
     When C_Order is cloned
@@ -288,11 +313,14 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_Order.PaymentRule => C_Order.PaymentRule
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | processed | docStatus | OPT.PaymentRule |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | processed | DocStatus | OPT.PaymentRule |
       | clonedOrder_po        | bpartner_1               | location_1                        | 2022-03-22  | POO         | EUR          | A            | P               | false     | DR        | D               |
 
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   @Id:S0150_230
   Scenario: PaymentRule = `DirectDebit` from order disposition is correctly propagated to C_Order
     Given metasfresh contains C_BPartners:
@@ -308,6 +336,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
     "orgCode": "001",
     "externalLineId": "555555",
     "externalHeaderId": "1188",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "gln-0199722596654",
@@ -333,7 +362,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 """
 {
     "externalHeaderId": "1188",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
     "closeOrder": false
@@ -345,10 +374,13 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | order_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule | OPT.AD_InputDataSource_ID.InternalName |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | OPT.POReference | processed | DocStatus | OPT.PaymentRule | OPT.AD_InputDataSource_ID.InternalName |
       | order_1               | 1188           | bpartner_1               | location_1                        | 2022-03-22  | SOO         | EUR          | F            | S               | po_ref_mock     | true      | CO        | D               | Shopware                               |
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   @Id:S0150_240
   Scenario: PaymentRule = `OnCredit` from order disposition is correctly propagated to C_Order
     Given metasfresh contains C_BPartners:
@@ -364,6 +396,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
     "orgCode": "001",
     "externalLineId": "222",
     "externalHeaderId": "9208",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "gln-0893711184488",
@@ -389,7 +422,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 """
 {
     "externalHeaderId": "9208",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
     "closeOrder": false
@@ -401,5 +434,5 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | order_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule | OPT.AD_InputDataSource_ID.InternalName |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | OPT.POReference | processed | DocStatus | OPT.PaymentRule | OPT.AD_InputDataSource_ID.InternalName |
       | order_1               | 9208           | bpartner_1               | location_1                        | 2022-03-22  | SOO         | EUR          | F            | S               | po_ref_mock     | true      | CO        | P               | Shopware                               |

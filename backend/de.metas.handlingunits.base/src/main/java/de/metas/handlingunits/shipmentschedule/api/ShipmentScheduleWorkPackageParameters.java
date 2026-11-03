@@ -1,0 +1,147 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.handlingunits.shipmentschedule.api;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.process.PInstanceId;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.CompositeQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Set;
+import de.metas.deliveryplanning.DeliveryPlanningId;
+
+@Value
+@Builder
+public class ShipmentScheduleWorkPackageParameters
+{
+	public static final String PARAM_OnlyLUIds = "OnlyLUIds";
+	public static final String PARAM_QuantityType = "QuantityType";
+	public static final String PARAM_IsOnTheFlyPickToPackingInstructions = "IsOnTheFlyPickToPackingInstructions";
+	public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
+	public static final String PARAM_IsCloseShipmentSchedules = "IsCloseShipmentSchedules";
+	public static final String PARAM_IsShipmentDateToday = "IsShipToday";
+	public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
+	public static final String PARAM_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID";
+	public static final String PARAM_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
+	/**
+	 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
+	 */
+	@NonNull PInstanceId adPInstanceId;
+
+	@Nullable AsyncBatchId asyncBatchId;
+	
+	@Nullable @Getter(AccessLevel.NONE) ShipmentScheduleAndJobScheduleIdSet scheduleIds;
+	@Nullable @Getter(AccessLevel.NONE) IQueryFilter<I_M_ShipmentSchedule> queryFilters;
+	@Nullable ImmutableSet<HuId> onlyLUIds;
+
+	@NonNull M_ShipmentSchedule_QuantityTypeToUse quantityType;
+
+	/**
+	 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
+	 * If {@code true}, then the on-the-fly picked HUs are created as TUs, using the respective shipment schedules' packing instructions.
+	 */
+	@Builder.Default boolean onTheFlyPickToPackingInstructions = false;
+
+	boolean completeShipments;
+	boolean isCloseShipmentSchedules;
+	boolean isShipmentDateToday;
+
+	/**
+	 * Can be used if the caller thinks that the shipping in which the respective shipment-schedules end up shall have the given documentNos.
+	 * ShipmentScheduleIds that are not matched are ignored.
+	 */
+	@Nullable ImmutableMap<ShipmentScheduleId, String> advisedShipmentDocumentNos;
+
+	@Nullable QtyToDeliverMap qtysToDeliverOverride;
+
+	/**
+	 * The planning to stamp onto every shipment LINE this workpackage creates, or {@code null} for none.
+	 *
+	 * @see GenerateShipmentsRequest#getDeliveryPlanningId()
+	 */
+	@Nullable DeliveryPlanningId deliveryPlanningId;
+
+	public IQueryFilter<I_M_ShipmentSchedule> getShipmentSchedulesQueryFiltersEffective()
+	{
+		final CompositeQueryFilter<I_M_ShipmentSchedule> result = CompositeQueryFilter.newInstance(I_M_ShipmentSchedule.class);
+
+		if (this.scheduleIds != null && !this.scheduleIds.isEmpty())
+		{
+			result.addOnlyActiveRecordsFilter();
+			result.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, this.scheduleIds.getShipmentScheduleIds());
+		}
+		if (this.queryFilters != null)
+		{
+			result.addFilter(this.queryFilters);
+		}
+
+		if (result.isEmpty())
+		{
+			throw new AdempiereException("At least scheduleIds or queryFilters shall be set: " + this);
+		}
+
+		// A closed schedule must not go into a new run that ships the entered quantity (quantity type D / PD). Without this, a run enqueued
+		// after an earlier shipment closed the schedule (and before the recompute marks it processed) would ship its still-set QtyToDeliver_Override again.
+		// A picked-quantity run (P) keeps closed schedules: an earlier shipment (e.g. of another LU of the same picking job) may have closed a schedule
+		// that still has picks, and those picks must still be shipped. They cannot ship twice, because a shipped pick has a shipment line
+		// and is no longer among the not-shipped picks the P path ships from.
+		// A PD run also leaves out a closed schedule's picks; they stay unshipped for a later P run.
+		// This filter is used for both locking and selecting the records of every shipment run (ShipmentScheduleEnqueuer).
+		// A schedule closed after its run was enqueued is not affected; see ShipmentScheduleWithHUService.isToBeShipped.
+		if (!quantityType.isOnlyUsePicked())
+		{
+			result.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsClosed, false);
+		}
+
+		return result;
+	}
+
+	public Set<PickingJobScheduleId> getPickingJobScheduleIds()
+	{
+		if (scheduleIds == null || scheduleIds.isEmpty()) {return ImmutableSet.of();}
+		
+		return scheduleIds.getJobScheduleIds();
+	}
+
+	public Set<PickingJobScheduleId> getPickingJobScheduleIds(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		if (scheduleIds == null || scheduleIds.isEmpty()) {return ImmutableSet.of();}
+
+		return scheduleIds.getJobScheduleIds(shipmentScheduleId);
+	}
+
+}

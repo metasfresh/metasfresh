@@ -78,6 +78,7 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 				.esrRenderedAccountNo(record.getESR_RenderedAccountNo())
 				.IBAN(StringUtils.trimBlankToNull(record.getIBAN()))
 				.QR_IBAN(StringUtils.trimBlankToNull(record.getQR_IBAN()))
+				.isESRAccount(record.isEsrAccount())
 				.SEPA_CreditorIdentifier(StringUtils.trimBlankToNull(record.getSEPA_CreditorIdentifier()))
 				.accountNo(record.getAccountNo())
 				.currencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))

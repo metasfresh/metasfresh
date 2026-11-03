@@ -1,21 +1,31 @@
 package de.metas.ui.web.pickingJobSchedule.process;
 
-import de.metas.handlingunits.model.I_M_Picking_Job_Schedule;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleIdSet;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
+import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
+import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.quantity.Quantity;
 import de.metas.workplace.WorkplaceId;
 import org.adempiere.exceptions.AdempiereException;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 
-public class PickingJobScheduleView_Schedule extends PickingJobScheduleViewBasedProcess
+public class PickingJobScheduleView_Schedule extends PickingJobScheduleViewBasedProcess implements IProcessDefaultParametersProvider
 {
+	private static final String PARAM_IsSingleRowSelected = "IsSingleRowSelected";
+	
 	@Param(parameterName = I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID, mandatory = true)
 	private WorkplaceId workplaceId;
 
-	@Param(parameterName = I_M_Picking_Job_Schedule.COLUMNNAME_QtyToPick, mandatory = true)
+	public static final String PARAM_QtyToPick = I_M_Picking_Job_Schedule.COLUMNNAME_QtyToPick;
+	@Param(parameterName = PARAM_QtyToPick)
 	private BigDecimal qtyToPickBD;
 
 	@Override
@@ -27,6 +37,46 @@ public class PickingJobScheduleView_Schedule extends PickingJobScheduleViewBased
 		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Override
+	public @Nullable Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if (parameter.getColumnName().equals(PARAM_QtyToPick))
+		{
+			final ShipmentScheduleAndJobScheduleId shipmentScheduleAndJobScheduleId = getShipmentScheduleAndJobScheduleIds().singleOrNull();
+			if (shipmentScheduleAndJobScheduleId != null)
+			{
+				final PickingJobScheduleId pickingJobScheduleId = shipmentScheduleAndJobScheduleId.getJobScheduleId();
+				if(pickingJobScheduleId == null)
+				{
+					final Quantity qtyRemainingToScheduleForPicking = pickingJobScheduleService.getQtyRemainingToScheduleForPicking(shipmentScheduleAndJobScheduleId.getShipmentScheduleId());
+					return qtyRemainingToScheduleForPicking.toBigDecimal();
+				}
+				else
+				{
+					return pickingJobScheduleService.getById(pickingJobScheduleId).getQtyToPick().toBigDecimal();
+				}
+			}
+		}
+		else if (parameter.getColumnName().equals(PARAM_IsSingleRowSelected))
+		{
+			return getSelectedRowIds().isSingleDocumentId();
+		}
+		else if (parameter.getColumnName().equals(I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID))
+		{
+			final ShipmentScheduleAndJobScheduleId shipmentScheduleAndJobScheduleId = getShipmentScheduleAndJobScheduleIds().singleOrNull();
+			if (shipmentScheduleAndJobScheduleId != null)
+			{
+				final PickingJobScheduleId pickingJobScheduleId = shipmentScheduleAndJobScheduleId.getJobScheduleId();
+				if (pickingJobScheduleId != null)
+				{
+					return pickingJobScheduleService.getById(pickingJobScheduleId).getWorkplaceId();
+				}
+			}
+		}
+
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
 	@Override

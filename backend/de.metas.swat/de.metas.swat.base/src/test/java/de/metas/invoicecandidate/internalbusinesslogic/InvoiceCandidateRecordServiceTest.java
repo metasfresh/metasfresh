@@ -235,6 +235,7 @@ class InvoiceCandidateRecordServiceTest
 
 		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
 		currencyRecord.setC_Currency_ID(CURRENCY_ID.getRepoId());
+		currencyRecord.setDescription("EUR");
 		saveRecord(currencyRecord);
 
 		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class);
@@ -440,6 +441,7 @@ class InvoiceCandidateRecordServiceTest
 	{
 		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
 		currencyRecord.setC_Currency_ID(CURRENCY_ID.getRepoId());
+		currencyRecord.setDescription("EUR");
 		saveRecord(currencyRecord);
 
 		return currencyRecord;

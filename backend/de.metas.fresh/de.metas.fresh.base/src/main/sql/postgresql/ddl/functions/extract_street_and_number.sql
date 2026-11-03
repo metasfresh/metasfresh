@@ -20,30 +20,31 @@
  * #L%
  */
 
+DROP FUNCTION IF EXISTS extract_street_and_number (p_full_address TEXT)
+;
+
 CREATE OR REPLACE FUNCTION extract_street_and_number(p_full_address TEXT)
-    RETURNS TABLE
-            (
-                street TEXT,
-                number TEXT
-            )
-AS
-$$
+    RETURNS TABLE (street TEXT, number TEXT)
+    LANGUAGE plpgsql
+AS $$
 DECLARE
     v_extracted_number TEXT;
     v_extracted_street TEXT;
 BEGIN
-    SELECT REGEXP_SUBSTR(p_full_address, '[a-zA-Z0-9]+$') INTO v_extracted_number;
+    -- Take the trailing street-number token from the END of the string.
+    -- Supports: 12, 12A, 12/2, 12-B, 12-3, etc.
+    v_extracted_number := substring(p_full_address FROM '(\d+[A-Za-z]?(?:[/-]\w+)*)\s*$');
 
     IF v_extracted_number IS NOT NULL THEN
-        SELECT TRIM(SUBSTRING(p_full_address FROM 1 FOR LENGTH(p_full_address) - LENGTH(v_extracted_number) - 1)) INTO v_extracted_street;
+        -- Remove that trailing token from the address to get the street
+        v_extracted_street := btrim(
+                regexp_replace(p_full_address, '\s*\d+[A-Za-z]?(?:[/-]\w+)*\s*$', '')
+                              );
     ELSE
-        v_extracted_street := p_full_address;
-        v_extracted_number := NULL;
+        v_extracted_street := btrim(p_full_address);
+        v_extracted_number := '';  -- return empty string (not NULL)
     END IF;
 
     RETURN QUERY SELECT v_extracted_street, v_extracted_number;
-
 END;
-$$
-    LANGUAGE plpgsql
-;
+$$;

@@ -41,4 +41,18 @@ public interface IDocumentSequenceDAO extends ISingletonService
 
 	String retrieveDocumentNoSys(int AD_Sequence_ID);
 
+	/**
+	 * Atomically ensures the sequence's {@code CurrentNext} is at least {@code value + 1}; never decreases it.
+	 * <p>
+	 * Executes a single {@code UPDATE AD_Sequence SET CurrentNext = GREATEST(CurrentNext, ?) WHERE AD_Sequence_ID = ?}.
+	 * Because it is one statement, PostgreSQL's row-level write lock serializes it against concurrent draws/advances of
+	 * the same sequence — the same atomic-statement guarantee {@link de.metas.document.sequence.impl.DocumentNoBuilder}
+	 * relies on to draw numbers race-free. Call it after assigning an explicit number to a record so that a later
+	 * draw ({@code IDocumentNoBuilder}) cannot re-issue that same number.
+	 *
+	 * @param sequenceId the sequence to advance
+	 * @param value      advance {@code CurrentNext} to at least {@code value + 1}
+	 */
+	void advanceCurrentNextPast(@NonNull DocSequenceId sequenceId, int value);
+
 }

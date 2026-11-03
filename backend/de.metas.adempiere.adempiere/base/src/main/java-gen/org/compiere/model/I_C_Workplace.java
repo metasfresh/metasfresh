@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Workplace
  *  @author metasfresh (generated) 
@@ -52,27 +51,6 @@ public interface I_C_Workplace
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Workplace.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_Workplace_ID (int C_Workplace_ID);
-
-	/**
-	 * Get Workplace.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_Workplace_ID();
-
-	ModelColumn<I_C_Workplace, Object> COLUMN_C_Workplace_ID = new ModelColumn<>(I_C_Workplace.class, "C_Workplace_ID", null);
-	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -96,6 +74,29 @@ public interface I_C_Workplace
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Workplace.
+	 * Logical area within a warehouse, to which one or more Workstations can be assigned. An operator logs into exactly one Workplace per shift. The associated warehouse (M_Warehouse_ID) drives the storage location of the work performed there.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Workplace_ID (int C_Workplace_ID);
+
+	/**
+	 * Get Workplace.
+	 * Logical area within a warehouse, to which one or more Workstations can be assigned. An operator logs into exactly one Workplace per shift. The associated warehouse (M_Warehouse_ID) drives the storage location of the work performed there.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Workplace_ID();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_C_Workplace_ID = new ModelColumn<>(I_C_Workplace.class, "C_Workplace_ID", null);
+	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
 
 	/**
 	 * Set Description.
@@ -140,6 +141,71 @@ public interface I_C_Workplace
 
 	ModelColumn<I_C_Workplace, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Workplace.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Is Packing Place.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPackingPlace (boolean IsPackingPlace);
+
+	/**
+	 * Get Is Packing Place.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPackingPlace();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_IsPackingPlace = new ModelColumn<>(I_C_Workplace.class, "IsPackingPlace", null);
+	String COLUMNNAME_IsPackingPlace = "IsPackingPlace";
+
+	/**
+	 * Set Warn when guaranteed remaining shelf life is undercut.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWarnShelfLifeUndercut (boolean IsWarnShelfLifeUndercut);
+
+	/**
+	 * Get Warn when guaranteed remaining shelf life is undercut.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWarnShelfLifeUndercut();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_IsWarnShelfLifeUndercut = new ModelColumn<>(I_C_Workplace.class, "IsWarnShelfLifeUndercut", null);
+	String COLUMNNAME_IsWarnShelfLifeUndercut = "IsWarnShelfLifeUndercut";
+
+	/**
+	 * Set Max. Picking Jobs.
+	 * Specifies the maximum number of picking jobs allowed for this workplace.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMaxPickingJobs (int MaxPickingJobs);
+
+	/**
+	 * Get Max. Picking Jobs.
+	 * Specifies the maximum number of picking jobs allowed for this workplace.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMaxPickingJobs();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_MaxPickingJobs = new ModelColumn<>(I_C_Workplace.class, "MaxPickingJobs", null);
+	String COLUMNNAME_MaxPickingJobs = "MaxPickingJobs";
 
 	/**
 	 * Set Picking Slot.
@@ -204,6 +270,97 @@ public interface I_C_Workplace
 
 	ModelColumn<I_C_Workplace, Object> COLUMN_Name = new ModelColumn<>(I_C_Workplace.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Order Picking Type.
+	 * Defines the method used to pick items for an order.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrderPickingType (@Nullable java.lang.String OrderPickingType);
+
+	/**
+	 * Get Order Picking Type.
+	 * Defines the method used to pick items for an order.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOrderPickingType();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_OrderPickingType = new ModelColumn<>(I_C_Workplace.class, "OrderPickingType", null);
+	String COLUMNNAME_OrderPickingType = "OrderPickingType";
+
+	/**
+	 * Set Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Locator_ID (int PickFrom_Locator_ID);
+
+	/**
+	 * Get Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Locator_ID();
+
+	String COLUMNNAME_PickFrom_Locator_ID = "PickFrom_Locator_ID";
+
+	/**
+	 * Set Priority.
+	 * Priority of a document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriorityRule (@Nullable java.lang.String PriorityRule);
+
+	/**
+	 * Get Priority.
+	 * Priority of a document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPriorityRule();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_PriorityRule = new ModelColumn<>(I_C_Workplace.class, "PriorityRule", null);
+	String COLUMNNAME_PriorityRule = "PriorityRule";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_Workplace.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Updated.

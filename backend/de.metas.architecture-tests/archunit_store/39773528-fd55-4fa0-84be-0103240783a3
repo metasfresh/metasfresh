@@ -1,0 +1,5 @@
+Method <de.metas.handlingunits.inventory.InventoryService.getDocTypeIdByAggregationType(de.metas.inventory.HUAggregationType, de.metas.organization.OrgId)> calls method <org.compiere.util.Env.getAD_Client_ID()> in (InventoryService.java:164)
+Method <de.metas.handlingunits.movement.api.impl.HUMovementBL.getDirectMoveLocatorId()> calls method <org.compiere.util.Env.getAD_Client_ID(java.util.Properties)> in (HUMovementBL.java:139)
+Method <de.metas.handlingunits.movement.api.impl.HUMovementBL.getDirectMoveLocatorId()> calls method <org.compiere.util.Env.getAD_Org_ID(java.util.Properties)> in (HUMovementBL.java:140)
+Method <de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.retrievePickAvailableHUsOntheFly(de.metas.handlingunits.IHUContext)> calls method <org.compiere.util.Env.getAD_Client_ID(java.util.Properties)> in (ShipmentScheduleWithHUService.java:432)
+Method <de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.retrievePickAvailableHUsOntheFly(de.metas.handlingunits.IHUContext)> calls method <org.compiere.util.Env.getAD_Org_ID(java.util.Properties)> in (ShipmentScheduleWithHUService.java:433)

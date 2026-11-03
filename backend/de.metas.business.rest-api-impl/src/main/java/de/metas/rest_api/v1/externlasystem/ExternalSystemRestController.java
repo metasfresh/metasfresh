@@ -26,6 +26,7 @@ import de.metas.Profiles;
 import de.metas.common.rest_api.v1.CreatePInstanceLogRequest;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
@@ -80,7 +81,7 @@ public class ExternalSystemRestController
 			@PathVariable final String externalSystemChildConfigValue,
 			@PathVariable final String request)
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
+		final ExternalSystemType externalSystemType = externalSystemService.getExternalSystemTypeByCodeOrNameOrNull(externalSystemConfigType);
 		if (externalSystemType == null)
 		{
 			throw new AdempiereException("Unsupported externalSystemConfigType=" + externalSystemConfigType);

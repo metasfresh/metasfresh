@@ -2,7 +2,7 @@
  * #%L
  * de.metas.printing.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,7 @@
 
 package de.metas.printing.async.spi.impl;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -48,7 +49,7 @@ public class InvoiceEnqueueingWorkpackageProcessor extends WorkpackageProcessorA
 				.setContext(InterfaceWrapperHelper.getCtx(workpackage))
 				.setInvoicingParams(getInvoicingParams(parameters))
 				.setFailIfNothingEnqueued(true)
-				.setC_Async_Batch(asyncBatch)
+				.setAsyncBatchId(AsyncBatchId.ofRepoIdOrNull(workpackage.getC_Async_Batch_ID()))
 				.prepareAndEnqueueSelection(PInstanceId.ofRepoIdOrNull(asyncBatch.getAD_PInstance_ID()));
 
 		return Result.SUCCESS;

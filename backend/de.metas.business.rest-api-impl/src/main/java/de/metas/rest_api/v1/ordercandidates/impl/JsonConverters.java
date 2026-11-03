@@ -12,9 +12,11 @@ import de.metas.common.ordercandidates.v1.response.JsonResponseBPartnerLocationA
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.document.DocBaseAndSubType;
-import de.metas.impex.InputDataSourceId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -74,16 +76,19 @@ public class JsonConverters
 {
 	private final CurrencyService currencyService;
 	private final DocTypeService docTypeService;
+	private final ExternalSystemRepository externalSystemRepository;
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public JsonConverters(
 			@NonNull final CurrencyService currencyService,
-			@NonNull final DocTypeService docTypeService)
+			@NonNull final DocTypeService docTypeService,
+			@NonNull final ExternalSystemRepository externalSystemRepository)
 	{
 		this.currencyService = currencyService;
 		this.docTypeService = docTypeService;
+		this.externalSystemRepository = externalSystemRepository;
 
 	}
 
@@ -162,6 +167,7 @@ public class JsonConverters
 				.dataDestId(dataDestId)
 				.externalLineId(request.getExternalLineId())
 				.externalHeaderId(request.getExternalHeaderId())
+				.externalSystemId(externalSystemRepository.getIdByType(ExternalSystemType.ofValue(request.getExternalSystemCode())))
 				//
 				.bpartner(masterdataProvider.getCreateBPartnerInfoInTrx(request.getBpartner(), true/* billTo */, orgId))
 				.billBPartner(masterdataProvider.getCreateBPartnerInfoInTrx(request.getBillBPartner(), true/* billTo */, orgId))

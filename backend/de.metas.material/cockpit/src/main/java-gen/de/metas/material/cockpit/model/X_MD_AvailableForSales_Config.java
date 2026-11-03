@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_MD_AvailableForSales_Config extends org.compiere.model.PO implements I_MD_AvailableForSales_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1746797042L;
+	private static final long serialVersionUID = -1251278770L;
 
     /** Standard Constructor */
     public X_MD_AvailableForSales_Config (final Properties ctx, final int MD_AvailableForSales_Config_ID, @Nullable final String trxName)
@@ -47,13 +47,13 @@ public class X_MD_AvailableForSales_Config extends org.compiere.model.PO impleme
 	}
 
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (final @Nullable String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public java.lang.String getDescription() 
+	public String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -107,6 +107,18 @@ public class X_MD_AvailableForSales_Config extends org.compiere.model.PO impleme
 	public boolean isFeatureActivated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFeatureActivated);
+	}
+
+	@Override
+	public void setIsQtyPerWarehouse (final boolean IsQtyPerWarehouse)
+	{
+		set_Value (COLUMNNAME_IsQtyPerWarehouse, IsQtyPerWarehouse);
+	}
+
+	@Override
+	public boolean isQtyPerWarehouse() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsQtyPerWarehouse);
 	}
 
 	@Override

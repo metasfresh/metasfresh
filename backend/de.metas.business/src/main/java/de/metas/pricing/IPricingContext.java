@@ -23,6 +23,7 @@ package de.metas.pricing;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -32,10 +33,11 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.OptionalBoolean;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_PriceList_Version;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -127,4 +129,14 @@ public interface IPricingContext extends IContextAware
 	Quantity getQuantity();
 
 	BigDecimal getManualPrice();
+
+	/**
+	 * Returns the explicit packing instruction (Packvorschrift) to use during pricing,
+	 * instead of deriving it from the referenced object. Used when the origin line's
+	 * {@code M_HU_PI_Item_Product_ID} column is null (e.g. return lines).
+	 *
+	 * @return the explicit HU packing instruction ID, or {@code null} if not set
+	 */
+	@Nullable
+	HUPIItemProductId getExplicitM_HU_PI_Item_Product_ID();
 }

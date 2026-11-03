@@ -404,4 +404,10 @@ public class HUTrxBL implements IHUTrxBL
 				.addAll(transactionsAggregateMap.values())
 				.build();
 	}
+
+	@Override
+	public I_M_HU_Trx_Line retrieveCounterpartTrxLine(final I_M_HU_Trx_Line trxLine)
+	{
+		return huTrxDAO.retrieveCounterpartTrxLine(trxLine);
+	}
 }

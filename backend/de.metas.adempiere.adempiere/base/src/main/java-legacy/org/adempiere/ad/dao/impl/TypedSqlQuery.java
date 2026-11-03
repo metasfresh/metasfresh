@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,6 +40,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -51,9 +52,11 @@ import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
+import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.IQuery;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -74,6 +77,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -1247,6 +1251,31 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 		}
 
+		// Append the row-locking clause (FOR UPDATE / FOR UPDATE SKIP LOCKED) after ORDER BY.
+		// Fail fast: locking clauses are only valid for SELECT statements, and PostgreSQL
+		// forbids them with UNION or GROUP BY.
+		final ForUpdate forUpdate = getForUpdate();
+		if (forUpdate != ForUpdate.NONE)
+		{
+			final String sel = selectClause != null ? selectClause.toString().replaceAll("^\\s+", "") : "";
+			if (!sel.isEmpty() && !sel.regionMatches(true, 0, "SELECT", 0, 6))
+			{
+				throw new AdempiereException("Locking clause (FOR UPDATE/...) is only valid for SELECT statements")
+						.appendParametersToMessage();
+			}
+			if (unions != null && !unions.isEmpty())
+			{
+				throw new AdempiereException("FOR UPDATE cannot be combined with UNION queries")
+						.appendParametersToMessage();
+			}
+			if (groupByClause != null && groupByClause.length() > 0)
+			{
+				throw new AdempiereException("FOR UPDATE cannot be combined with GROUP BY")
+						.appendParametersToMessage();
+			}
+			sqlBuffer.append("\n ").append(forUpdate.getSqlClause());
+		}
+
 		String sql = sqlBuffer.toString();
 		if (requiredAccess != null)
 		{
@@ -1426,7 +1455,29 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			return null;
 		}
-		return queryOrderBy.getSql();
+
+		// In a no-DB context (e.g. SQL-building unit tests) POInfo cannot be loaded (DBNoConnectionException).
+		// POInfo is only used to expand virtual-column (ColumnSQL) ORDER BY entries — a DB-only feature —
+		// so without a DB there is nothing to expand: fall back to the plain (non-expanded) ORDER BY.
+		final POInfo poInfo;
+		try
+		{
+			poInfo = getPOInfo();
+		}
+		catch (final DBNoConnectionException ignored)
+		{
+			return queryOrderBy.getSql(columnName -> columnName);
+		}
+
+		final String tableNamePrefix = poInfo.getTableName() + ".";
+		return queryOrderBy.getSql(columnName -> {
+			final String columnSql = poInfo.getColumnSqlOrNull(columnName);
+			if (columnSql == null)
+			{
+				return columnName;
+			}
+			return columnSql.replace("@JoinTableNameOrAliasIncludingDot@", tableNamePrefix);
+		});
 	}
 
 	@Override
@@ -1597,9 +1648,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
 	}
 
-	@Nullable
 	@Override
-	public PInstanceId createSelection()
+	public Optional<CreateSelectionResponse> createSelection()
 	{
 		// Create new AD_PInstance_ID for our selection
 		final PInstanceId newSelectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
@@ -1608,16 +1658,16 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final int count = createSelection(newSelectionId);
 		if (count <= 0)
 		{
-			return null;
+			return Optional.empty();
 		}
 
-		return newSelectionId;
+		return Optional.of(CreateSelectionResponse.of(newSelectionId, count));
 	}
 
 	@Override
 	public int deleteDirectly()
 	{
-		if(limit.isNoLimit())
+		if (limit.isNoLimit())
 		{
 			return deleteDirectlyFrom();
 		}
@@ -1639,7 +1689,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
 	}
-
 
 	private int deleteDirectlyInSelect()
 	{
@@ -1876,7 +1925,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 					//
 					+ "\n INSERT INTO T_Selection (AD_PInstance_ID, T_Selection_ID)"
 					+ "\n SELECT " + insertSelectionId.getRepoId() + ", " + toKeyColumnName + " FROM insert_code"
-					//
+			//
 			;
 		}
 		else

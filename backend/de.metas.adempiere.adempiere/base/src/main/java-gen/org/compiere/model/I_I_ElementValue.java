@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for I_ElementValue
  *  @author metasfresh (generated) 
@@ -18,7 +17,7 @@ public interface I_I_ElementValue
 
 
 	/**
-	 * Set Kontovorzeichen.
+	 * Set Account Sign.
 	 * Indicates the Natural Sign of the Account as a Debit or Credit
 	 *
 	 * <br>Type: List
@@ -28,7 +27,7 @@ public interface I_I_ElementValue
 	void setAccountSign (@Nullable java.lang.String AccountSign);
 
 	/**
-	 * Get Kontovorzeichen.
+	 * Get Account Sign.
 	 * Indicates the Natural Sign of the Account as a Debit or Credit
 	 *
 	 * <br>Type: List
@@ -41,7 +40,7 @@ public interface I_I_ElementValue
 	String COLUMNNAME_AccountSign = "AccountSign";
 
 	/**
-	 * Set Kontenart.
+	 * Set Account Type.
 	 * Indicates the type of account
 	 *
 	 * <br>Type: List
@@ -51,7 +50,7 @@ public interface I_I_ElementValue
 	void setAccountType (@Nullable java.lang.String AccountType);
 
 	/**
-	 * Get Kontenart.
+	 * Get Account Type.
 	 * Indicates the type of account
 	 *
 	 * <br>Type: List
@@ -217,7 +216,7 @@ public interface I_I_ElementValue
 	String COLUMNNAME_C_Element_ID = "C_Element_ID";
 
 	/**
-	 * Set Kontenart.
+	 * Set Account Element.
 	 * Account Element
 	 *
 	 * <br>Type: TableDir
@@ -227,7 +226,7 @@ public interface I_I_ElementValue
 	void setC_ElementValue_ID (int C_ElementValue_ID);
 
 	/**
-	 * Get Kontenart.
+	 * Get Account Element.
 	 * Account Element
 	 *
 	 * <br>Type: TableDir
@@ -336,7 +335,7 @@ public interface I_I_ElementValue
 	String COLUMNNAME_ElementName = "ElementName";
 
 	/**
-	 * Set Import - Kontendefinition.
+	 * Set Import Account.
 	 * Import Account Value
 	 *
 	 * <br>Type: ID
@@ -346,7 +345,7 @@ public interface I_I_ElementValue
 	void setI_ElementValue_ID (int I_ElementValue_ID);
 
 	/**
-	 * Get Import - Kontendefinition.
+	 * Get Import Account.
 	 * Import Account Value
 	 *
 	 * <br>Type: ID
@@ -470,7 +469,7 @@ public interface I_I_ElementValue
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Belegartgesteuert.
+	 * Set Document Controlled.
 	 * Control account - If an account is controlled by a document, you cannot post manually to it
 	 *
 	 * <br>Type: YesNo
@@ -480,7 +479,7 @@ public interface I_I_ElementValue
 	void setIsDocControlled (boolean IsDocControlled);
 
 	/**
-	 * Get Belegartgesteuert.
+	 * Get Document Controlled.
 	 * Control account - If an account is controlled by a document, you cannot post manually to it
 	 *
 	 * <br>Type: YesNo
@@ -537,7 +536,28 @@ public interface I_I_ElementValue
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Übergeordnetes Konto.
+	 * Set Organisation Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrgValue (@Nullable java.lang.String OrgValue);
+
+	/**
+	 * Get Organisation Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOrgValue();
+
+	ModelColumn<I_I_ElementValue, Object> COLUMN_OrgValue = new ModelColumn<>(I_I_ElementValue.class, "OrgValue", null);
+	String COLUMNNAME_OrgValue = "OrgValue";
+
+	/**
+	 * Set Parent Account.
 	 * The parent (summary) account
 	 *
 	 * <br>Type: Table
@@ -547,7 +567,7 @@ public interface I_I_ElementValue
 	void setParentElementValue_ID (int ParentElementValue_ID);
 
 	/**
-	 * Get Übergeordnetes Konto.
+	 * Get Parent Account.
 	 * The parent (summary) account
 	 *
 	 * <br>Type: Table
@@ -564,7 +584,7 @@ public interface I_I_ElementValue
 	String COLUMNNAME_ParentElementValue_ID = "ParentElementValue_ID";
 
 	/**
-	 * Set Schlüssel Übergeordnetes Konto .
+	 * Set Parent Key.
 	 * Key if the Parent
 	 *
 	 * <br>Type: String
@@ -574,7 +594,7 @@ public interface I_I_ElementValue
 	void setParentValue (@Nullable java.lang.String ParentValue);
 
 	/**
-	 * Get Schlüssel Übergeordnetes Konto .
+	 * Get Parent Key.
 	 * Key if the Parent
 	 *
 	 * <br>Type: String
@@ -587,7 +607,7 @@ public interface I_I_ElementValue
 	String COLUMNNAME_ParentValue = "ParentValue";
 
 	/**
-	 * Set Buchen "Ist".
+	 * Set Post Actual.
 	 * Actual Values can be posted
 	 *
 	 * <br>Type: YesNo
@@ -597,7 +617,7 @@ public interface I_I_ElementValue
 	void setPostActual (boolean PostActual);
 
 	/**
-	 * Get Buchen "Ist".
+	 * Get Post Actual.
 	 * Actual Values can be posted
 	 *
 	 * <br>Type: YesNo
@@ -610,7 +630,7 @@ public interface I_I_ElementValue
 	String COLUMNNAME_PostActual = "PostActual";
 
 	/**
-	 * Set Buchen "Budget".
+	 * Set Post Budget.
 	 * Budget values can be posted
 	 *
 	 * <br>Type: YesNo
@@ -620,7 +640,7 @@ public interface I_I_ElementValue
 	void setPostBudget (boolean PostBudget);
 
 	/**
-	 * Get Buchen "Budget".
+	 * Get Post Budget.
 	 * Budget values can be posted
 	 *
 	 * <br>Type: YesNo
@@ -633,7 +653,7 @@ public interface I_I_ElementValue
 	String COLUMNNAME_PostBudget = "PostBudget";
 
 	/**
-	 * Set Buchen "Reservierung".
+	 * Set Post Encumbrance.
 	 * Post commitments to this account
 	 *
 	 * <br>Type: YesNo
@@ -643,7 +663,7 @@ public interface I_I_ElementValue
 	void setPostEncumbrance (boolean PostEncumbrance);
 
 	/**
-	 * Get Buchen "Reservierung".
+	 * Get Post Encumbrance.
 	 * Post commitments to this account
 	 *
 	 * <br>Type: YesNo
@@ -656,7 +676,7 @@ public interface I_I_ElementValue
 	String COLUMNNAME_PostEncumbrance = "PostEncumbrance";
 
 	/**
-	 * Set Buchen "statistisch".
+	 * Set Post Statistical.
 	 * Post statistical quantities to this account?
 	 *
 	 * <br>Type: YesNo
@@ -666,7 +686,7 @@ public interface I_I_ElementValue
 	void setPostStatistical (boolean PostStatistical);
 
 	/**
-	 * Get Buchen "statistisch".
+	 * Get Post Statistical.
 	 * Post statistical quantities to this account?
 	 *
 	 * <br>Type: YesNo

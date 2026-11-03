@@ -22,7 +22,9 @@
 
 package de.metas.handlingunits.shipping;
 
+import de.metas.product.PackageDimensions;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -35,4 +37,5 @@ public class PackageInfo
 	@Nullable String trackingNumber;
 	@Nullable String trackingUrl;
 	@Nullable BigDecimal weight;
+	@NonNull @Builder.Default PackageDimensions packageDimensions = PackageDimensions.UNSPECIFIED;
 }

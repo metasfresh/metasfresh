@@ -93,7 +93,7 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 	@NonNull
 	protected String getTabName()
 	{
-		return ExternalSystemType.Alberta.getName();
+		return ExternalSystemType.Alberta.getValue();
 	}
 
 	@NonNull

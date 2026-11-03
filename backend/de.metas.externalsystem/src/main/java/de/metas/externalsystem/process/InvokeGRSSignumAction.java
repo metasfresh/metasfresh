@@ -24,7 +24,7 @@ package de.metas.externalsystem.process;
 
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.util.EmptyUtil;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -44,7 +44,7 @@ import java.util.Map;
 
 public class InvokeGRSSignumAction extends AlterExternalSystemServiceStatusAction
 {
-	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	public final ExternalSystemConfigRepository externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepository.class);
 
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
@@ -90,7 +90,7 @@ public class InvokeGRSSignumAction extends AlterExternalSystemServiceStatusActio
 	@Override
 	protected String getTabName()
 	{
-		return ExternalSystemType.GRSSignum.getName();
+		return ExternalSystemType.GRSSignum.getValue();
 	}
 
 	@Override

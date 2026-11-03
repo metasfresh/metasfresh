@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.leichmehl.interceptor;
 
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.externalservice.ExternalServices;
@@ -38,14 +38,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExternalSystem_Config_LeichMehl
 {
-	public final ExternalSystemConfigRepo externalSystemConfigRepo;
+	public final ExternalSystemConfigRepository externalSystemConfigRepository;
 	public final ExternalServices externalServices;
 
 	public ExternalSystem_Config_LeichMehl(
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
+			@NonNull final ExternalSystemConfigRepository externalSystemConfigRepository,
 			@NonNull final ExternalServices externalServices)
 	{
-		this.externalSystemConfigRepo = externalSystemConfigRepo;
+		this.externalSystemConfigRepository = externalSystemConfigRepository;
 		this.externalServices = externalServices;
 	}
 
@@ -54,11 +54,11 @@ public class ExternalSystem_Config_LeichMehl
 	public void checkType(final I_ExternalSystem_Config_LeichMehl leichMehlConfig)
 	{
 		final String parentType =
-				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_ID()));
+				externalSystemConfigRepository.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.LeichUndMehl.getCode().equals(parentType))
+		if (!ExternalSystemType.LeichUndMehl.getValue().equals(parentType))
 		{
-			throw new AdempiereException("Invalid external system type!");
+			throw new AdempiereException("Invalid external system type: " + parentType);
 		}
 	}
 }

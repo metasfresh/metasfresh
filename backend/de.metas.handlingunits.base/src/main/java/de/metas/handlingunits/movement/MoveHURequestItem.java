@@ -22,8 +22,12 @@
 
 package de.metas.handlingunits.movement;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -33,7 +37,7 @@ import javax.annotation.Nullable;
 @Builder
 public class MoveHURequestItem
 {
-	@NonNull HUIdAndQRCode huIdAndQRCode;
+	@NonNull @Getter(AccessLevel.NONE) HUIdAndQRCode huIdAndQRCode;
 	@Nullable QtyTU numberOfTUs;
 
 	@NonNull
@@ -43,4 +47,10 @@ public class MoveHURequestItem
 				.huIdAndQRCode(huIdAndQRCode)
 				.build();
 	}
+
+	@NonNull
+	public HuId getHuId() {return huIdAndQRCode.getHuId();}
+
+	@Nullable
+	public HUQRCode getHuQRCode() {return huIdAndQRCode.getHuQRCode();}
 }
