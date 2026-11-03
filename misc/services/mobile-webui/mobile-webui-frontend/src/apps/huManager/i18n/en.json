@@ -73,12 +73,11 @@
     "title": "New HU",
     "product": "Product",
     "qty": "Quantity",
-    "changeQty": "Change quantity",
     "locator": "Locator",
-    "noLocator": "No locator - scan one",
+    "noLocator": "No locator - tap Change locator",
+    "changeLocator": "Change locator",
     "weight": "Weight",
     "ok": "OK",
-    "notALocator": "Scan a locator or press OK",
     "created": "HU %(huValue)s created: %(qty)s"
   }
 }

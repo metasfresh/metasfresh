@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { page, SLOW_ACTION_TIMEOUT } from '../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { HUMoveScreen } from './HUMoveScreen';
 import { ChangeHUQtyDialog } from './ChangeHUQtyDialog';
@@ -20,6 +20,12 @@ export const HUManagerScreen = {
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
         await expect(containerElement()).toBeVisible();
+    }),
+
+    /** the back button of the bottom bar (to the applications list, from the scan screen or the HU info panel) */
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await HUManagerScreen.expectVisible();
+        await page.locator(ID_BACK_BUTTON).tap();
     }),
 
     waitForHUInfoPanel: async () => await test.step(`${NAME} - Wait for HU Info Panel`, async () => {

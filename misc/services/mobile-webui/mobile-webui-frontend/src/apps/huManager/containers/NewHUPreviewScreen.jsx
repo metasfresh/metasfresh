@@ -5,19 +5,25 @@ import * as api from '../api';
 import { clearLoadedData } from '../actions';
 import { getNewHUPreviewFromGlobalState } from '../reducers';
 import { huManagerLocation } from '../routes';
-import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import { toLocatorQRCode } from '../../../api/warehouse';
-import ReadQtyDialog from '../../../components/dialogs/ReadQtyDialog';
+import QtyInputField from '../../../components/QtyInputField';
+import { qtyInfos } from '../../../utils/qtyInfos';
+import ChangeCurrentLocatorDialog from '../components/ChangeCurrentLocatorDialog';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import Button from '../../../components/buttons/Button';
 import { trl } from '../../../utils/translations';
-import axios from 'axios';
 import { toastError, toastNotification } from '../../../utils/toast';
 import PropTypes from 'prop-types';
 
+const toQtyInfo = (proposal) =>
+  proposal?.qty != null
+    ? qtyInfos.of({ qty: proposal.qty, qtyStr: `${proposal.qty}` })
+    : qtyInfos.invalidOfNumber(null);
+const toLocator = (proposal) => ({ qrCode: proposal?.locatorQRCode, caption: proposal?.locatorCaption });
+
 /**
  * The "New HU" preview of the HU Manager: shown after a scanned product label found no existing HU.
- * Shows what the label would create; OK creates the HU (one single-HU inventory on the server), shows a success message naming
+ * Shows what the label would create (quantity editable inline, location changed with the "Change locator" button, which opens the scan
+ * dialog of the HU Manager); OK creates the HU (one single-HU inventory on the server), shows a success message naming
  * the HU and the quantity and goes back to the scan screen (the new HU is NOT opened: the user scans the next label, or types the
  * HU number from the message to open it); Cancel creates nothing.
  */
@@ -32,16 +38,28 @@ const NewHUPreviewScreen = () => {
   const preview = useSelector((state) => getNewHUPreviewFromGlobalState(state));
   const { scannedCode, proposal } = preview ?? {};
 
-  const [qty, setQty] = useState(proposal?.qty ?? 0);
-  const [isQtyDialogOpen, setQtyDialogOpen] = useState(false);
-  const [locator, setLocator] = useState({ qrCode: proposal?.locatorQRCode, caption: proposal?.locatorCaption });
+  // the quantity field is prefilled with the proposed quantity; it forwards its qtyInfo on mount and on every keystroke
+  const [qtyInfo, setQtyInfo] = useState(() => toQtyInfo(proposal));
+  const [isChangeLocatorDialogOpen, setChangeLocatorDialogOpen] = useState(false);
+  const [locator, setLocator] = useState(() => toLocator(proposal));
   const [isCreating, setCreating] = useState(false);
   const isCreatingRef = useRef(false); // synchronous guard against a double tap on OK (state updates are async)
 
+  // a replaced proposal (a new preview in the store while the screen stays mounted) restarts from its quantity and location
+  // (not reachable today: the preview unmounts between scans; kept so the screen never shows a stale quantity or location)
+  useEffect(() => {
+    setQtyInfo(toQtyInfo(proposal));
+    setLocator(toLocator(proposal));
+  }, [proposal]);
+
+  // useScreenDefinition returns a new history object on every render: the effect below reads the latest one through a ref,
+  // so that it runs only when the preview changes and not after every render
+  const historyRef = useRef(history);
+  historyRef.current = history;
   useEffect(() => {
     // no preview (e.g. a page reload) -> back to the scan screen; not after OK, which leaves the screen itself (history.replace below)
     if (!preview && !isCreatingRef.current) {
-      history.goBack();
+      historyRef.current.goBack();
     }
   }, [preview]);
 
@@ -49,7 +67,8 @@ const NewHUPreviewScreen = () => {
 
   // the label's weight (X12DE355 code like the qty row): shown when it becomes the CU's net weight, else the server's note that it is not used for this product
   const weightText = proposal.weightKg != null ? `${proposal.weightKg} KGM` : proposal.weightNote;
-  const isOKEnabled = !isCreating && qty > 0 && !!locator.qrCode;
+  const qty = qtyInfo.qty;
+  const isOKEnabled = !isCreating && qtyInfo.isQtyValid && qty > 0 && !!locator.qrCode; // an emptied or 0 quantity disables OK
 
   const onOK = () => {
     if (!isOKEnabled || isCreatingRef.current) return;
@@ -76,36 +95,12 @@ const NewHUPreviewScreen = () => {
       });
   };
 
-  // A scan on the preview (no button): a locator (QR code or plain locator barcode, resolved like in the change-locator dialog)
-  // replaces the location at once; any other code is refused (error toast + error beep, thrown to the scanner) and changes nothing.
-  // Nothing is remembered for the next label.
-  const onScanned = async ({ scannedBarcode }) => {
-    const locatorQRCode = await toLocatorQRCode({ scannedBarcode }).catch((error) => {
-      if (axios.isAxiosError(error)) throw error; // a failed call keeps its own message
-      throw trl('huManager.newHU.notALocator');
-    });
-    setLocator({ qrCode: locatorQRCode.code, caption: locatorQRCode.displayable });
-  };
-
   const onCancel = () => {
     history.goBack();
   };
 
   return (
     <div className="pt-3 section">
-      {isQtyDialogOpen && (
-        <ReadQtyDialog
-          testId="NewHUQtyDialog"
-          qtyLabelTrlKey="huManager.newHU.qty"
-          initialQty={qty}
-          uom={proposal.uom}
-          onCloseDialog={() => setQtyDialogOpen(false)}
-          onSubmit={({ qty: qtyEntered }) => {
-            setQty(Number(qtyEntered));
-            setQtyDialogOpen(false);
-          }}
-        />
-      )}
       <table className="table view-header wrap-values is-size-6">
         <tbody>
           <Row
@@ -113,7 +108,18 @@ const NewHUPreviewScreen = () => {
             testId="product-value"
             value={`${proposal.product.name} (${proposal.product.value})`}
           />
-          <Row captionKey="huManager.newHU.qty" testId="qty-value" value={`${qty} ${proposal.uom}`} />
+          <tr>
+            <th>{trl('huManager.newHU.qty')}</th>
+            <td data-testid="qty-value">
+              <QtyInputField
+                testId="qty-input"
+                qty={qtyInfos.toNumberOrString(qtyInfo)}
+                uom={proposal.uom}
+                onQtyChange={setQtyInfo}
+                readonly={isCreating}
+              />
+            </td>
+          </tr>
           {proposal.attributes.map((attribute) => (
             <tr key={attribute.code}>
               <th>{attribute.caption}</th>
@@ -128,18 +134,23 @@ const NewHUPreviewScreen = () => {
           />
         </tbody>
       </table>
-      <Button
-        testId="qty-edit-button"
-        caption={trl('huManager.newHU.changeQty')}
-        disabled={isCreating}
-        onClick={() => setQtyDialogOpen(true)}
-      />
-      {/* the confirm buttons come before the scanner block so they stay reachable without scrolling on a handheld screen */}
+      {/* the buttons: OK / Cancel / Change locator; no scanner on this screen (a locator is scanned in the dialog) */}
       <Button testId="ok-button" caption={trl('huManager.newHU.ok')} disabled={!isOKEnabled} onClick={onOK} />
+      <Button
+        testId="change-locator-button"
+        caption={trl('huManager.newHU.changeLocator')}
+        disabled={isCreating}
+        onClick={() => setChangeLocatorDialogOpen(true)}
+      />
       <Button testId="cancel-button" caption={trl('general.cancelText')} isDanger onClick={onCancel} />
-      {/* no scanner while the quantity dialog is open: its window-level key reader would swallow the typed digits */}
-      {!isCreating && !isQtyDialogOpen && (
-        <BarcodeScannerComponent inputPlaceholderText={trl('huManager.newHU.locator')} onResolvedResult={onScanned} />
+      {isChangeLocatorDialogOpen && (
+        <ChangeCurrentLocatorDialog
+          onOK={(locatorQRCode) => {
+            setLocator({ qrCode: locatorQRCode.code, caption: locatorQRCode.displayable });
+            setChangeLocatorDialogOpen(false);
+          }}
+          onClose={() => setChangeLocatorDialogOpen(false)}
+        />
       )}
     </div>
   );

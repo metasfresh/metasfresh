@@ -10,7 +10,7 @@ import { toastError } from '../../../utils/toast';
 const ChangeCurrentLocatorDialog = ({ onOK, onClose }) => {
   return (
     <div>
-      <Dialog className="screen">
+      <Dialog className="screen" testId="ChangeCurrentLocatorDialog">
         <BarcodeScannerComponent
           inputPlaceholderText={trl('huManager.locator')}
           onResolvedResult={({ scannedBarcode }) => {
