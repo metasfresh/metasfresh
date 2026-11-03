@@ -1,3 +1,5 @@
+import { getColumnMinWidthPx } from './tableHelpers';
+
 const STORAGE_KEY_PREFIX = 'columnWidths_';
 
 /**
@@ -49,4 +51,37 @@ export function saveColumnWidths(windowId, viewProfileId, widths) {
   } catch (e) {
     // localStorage might be full or unavailable
   }
+}
+
+/**
+ * @method clampStoredColumnWidths
+ * @param {object} columnWidths - Map of fieldName -> stored width in pixels
+ * @param {Array} columns - column definitions (`fields[0].field` + `widgetType`), as rendered
+ * @summary Load-time widget-specific floor: a persisted width can be below a column's
+ * widget-specific minimum (combobox 90px, price/amount 68px — `getColumnMinWidthPx`), so such a
+ * stored width is raised to that minimum here, on the read path.
+ * Stored widths of columns without a widget-specific minimum are returned unchanged.
+ */
+export function clampStoredColumnWidths(columnWidths, columns) {
+  if (!columnWidths || Object.keys(columnWidths).length === 0) {
+    return columnWidths;
+  }
+
+  const widgetTypeByField = {};
+  (columns || []).forEach((col) => {
+    const fieldName = col.fields && col.fields[0] ? col.fields[0].field : null;
+    if (fieldName) {
+      widgetTypeByField[fieldName] = col.widgetType;
+    }
+  });
+
+  const clamped = {};
+  Object.keys(columnWidths).forEach((fieldName) => {
+    const width = columnWidths[fieldName];
+    const minWidthPx = getColumnMinWidthPx(widgetTypeByField[fieldName]);
+
+    clamped[fieldName] = minWidthPx ? Math.max(minWidthPx, width) : width;
+  });
+
+  return clamped;
 }

@@ -35,8 +35,8 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.ColorId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -69,9 +69,7 @@ public class DeliveryPlanningCreateRequest
 
 	@NonNull BPartnerLocationId bPartnerLocationId;
 
-	boolean isB2B;
-
-	@NonNull DeliveryPlanningType deliveryPlanningType;
+	@NonNull TransportDirection transportDirection;
 
 	@Nullable
 	OrderStatus orderStatus;
@@ -95,8 +93,6 @@ public class DeliveryPlanningCreateRequest
 
 	@Nullable
 	ReceiptScheduleId receiptScheduleId;
-
-	@Nullable ColorId deliveryStatusColorId;
 
 	@Nullable
 	Instant plannedLoadingDate;

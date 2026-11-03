@@ -1,4 +1,6 @@
 @from:cucumber
+@allure.label.epic:E0360_Transport_Extralogistik
+@allure.label.feature:F29050_Delivery_Planning
 @ghActions:run_on_executor5
 Feature: Delete delivery planning
 
@@ -11,23 +13,23 @@ Feature: Delete delivery planning
   Scenario: Delete delivery planning
 
     Given metasfresh contains M_PricingSystems
-      | Identifier    | Name              | Value                             | OPT.IsActive |
-      | pricingSystem | PricingSystemName | PricingSystemValueDelete_03022023 | true         |
+      | Identifier    |
+      | pricingSystem |
     And metasfresh contains M_PriceLists
-      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                         | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | priceList_SO | pricingSystem                 | DE                        | EUR                 | PriceListNameDelete_03022023 | true  | false         | 2              | true         |
+      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision |
+      | priceList_SO | pricingSystem                 | DE                        | EUR                 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier          | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | priceListVersion_SO | priceList_SO              | SalesOrder-PLV | 2023-02-01 |
+      | Identifier          | M_PriceList_ID.Identifier | ValidFrom  |
+      | priceListVersion_SO | priceList_SO              | 2023-02-01 |
     And metasfresh contains M_Products:
-      | Identifier | Name                       |
-      | product    | ProductNameDelete_03022023 |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
       | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | productPrice_SO_4 | priceListVersion_SO               | product                 | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | customer   | CustomerDelete_03022023 | N            | Y              | pricingSystem                 |
+      | Identifier | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer   | N            | Y              | pricingSystem                 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | customerLocation | 1230367890599 | customer                 | true                | true                |
@@ -47,29 +49,29 @@ Feature: Delete delivery planning
       | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule | orderLineDelete           | N             |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanningDelete_1           | orderLineDelete           |
+      | M_Delivery_Planning_ID   | C_OrderLine_ID  |
+      | deliveryPlanningDelete_1 | orderLineDelete |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.PlannedLoadedQuantity |
-      | deliveryPlanningDelete_1          | 5          | 5            | Outgoing                 | orderDelete               | orderLineDelete               | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              | 5                         |
+      | M_Delivery_Planning_ID   | QtyOrdered | QtyTotalOpen | TransportDirection | C_Order_ID  | C_OrderLine_ID  | C_BPartner_ID | M_Product_ID | C_BPartner_Location_ID | M_Shipper_ID | ETA        | PlannedLoadedQuantity |
+      | deliveryPlanningDelete_1 | 5          | 5            | Outgoing           | orderDelete | orderLineDelete | customer      | product      | customerLocation       | shipper_DHL  | 2023-02-25 | 5                     |
 
     And delete M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | OPT.ErrorCode                                                        |
-      | deliveryPlanningDelete_1          | de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine |
+      | M_Delivery_Planning_ID   | ErrorCode                                                            |
+      | deliveryPlanningDelete_1 | de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine |
 
     When generate 1 additional M_Delivery_Planning records for: deliveryPlanningDelete_1
 
     Then after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers                | C_OrderLine_ID.Identifier |
-      | deliveryPlanningDelete_1,deliveryPlanningDelete_2 | orderLineDelete           |
+      | M_Delivery_Planning_ID                            | C_OrderLine_ID  |
+      | deliveryPlanningDelete_1,deliveryPlanningDelete_2 | orderLineDelete |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.PlannedLoadedQuantity | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA |
-      | deliveryPlanningDelete_1          | 5          | 5            | Outgoing                 | 3                         | orderDelete               | orderLineDelete               | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              |
-      | deliveryPlanningDelete_2          | 5          | 5            | Outgoing                 | 2                         | orderDelete               | orderLineDelete               | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-25              |
+      | M_Delivery_Planning_ID   | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | C_Order_ID  | C_OrderLine_ID  | C_BPartner_ID | M_Product_ID | C_BPartner_Location_ID | M_Shipper_ID | ETA        |
+      | deliveryPlanningDelete_1 | 5          | 5            | Outgoing           | 3                     | orderDelete | orderLineDelete | customer      | product      | customerLocation       | shipper_DHL  | 2023-02-25 |
+      | deliveryPlanningDelete_2 | 5          | 5            | Outgoing           | 2                     | orderDelete | orderLineDelete | customer      | product      | customerLocation       | shipper_DHL  | 2023-02-25 |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
-      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
-      | deliveryInstructionDelete             | deliveryPlanningDelete_1          |
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID   | IsComplete |
+      | deliveryInstructionDelete  | deliveryPlanningDelete_1 | true       |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.ETA |
@@ -85,8 +87,8 @@ Feature: Delete delivery planning
       | shippingPackageDelete           | packageDelete           | deliveryInstructionDelete             |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | shippingPackageDelete           | packageDelete           | deliveryInstructionDelete             | customerLocation                  | 3             | customer                     | product                     | orderLineDelete               |
+      | shippingPackageDelete           | packageDelete           | deliveryInstructionDelete             | customerLocation                  | 0             | customer                     | product                     | orderLineDelete               |
     And delete M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | OPT.ErrorCode                                                   |
-      | deliveryPlanningDelete_1          | de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced |
-      | deliveryPlanningDelete_2          |                                                                 |
+      | M_Delivery_Planning_ID   | ErrorCode                                                       |
+      | deliveryPlanningDelete_1 | de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced |
+      | deliveryPlanningDelete_2 |                                                                 |

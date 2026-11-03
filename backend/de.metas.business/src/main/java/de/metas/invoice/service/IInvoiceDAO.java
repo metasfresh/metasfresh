@@ -107,6 +107,11 @@ public interface IInvoiceDAO extends ISingletonService
 
 	ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(Collection<InvoiceId> invoiceIds, DocBaseAndSubType targetDocType);
 
+	/**
+	 * @return the completed or closed invoices of the given document type that reference ({@code Ref_Invoice_ID}) the given invoice, e.g. its payment bonus credit memos
+	 */
+	ImmutableList<I_C_Invoice> retrieveReferencingCompletedInvoices(@NonNull InvoiceId invoiceId, @NonNull DocBaseAndSubType targetDocType);
+
 	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceAndLineId invoiceAndLineId);
 
 	/**
@@ -200,6 +205,17 @@ public interface IInvoiceDAO extends ISingletonService
 	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
+
+	/**
+	 * Like {@link #getByDocumentNo(String, OrgId, Class)} but matches invoices whose {@code DocumentNo}
+	 * <b>ends with</b> {@code documentNoSuffix} (SQL {@code DocumentNo LIKE '%'||?}), scoped to {@code orgId}
+	 * (e.g. {@code 170245} matches {@code AR-170245}). Used by the POS invoice-settlement suffix search.
+	 * <p>
+	 * Returns only still-open ({@code IsPaid='N'}), completed/closed ({@code DocStatus IN ('CO','CL')}),
+	 * SALES ({@code IsSOTrx='Y'}) invoices, newest first ({@code ORDER BY DateInvoiced DESC}), capped at 50 rows.
+	 * The credit-memo exclusion stays caller-side (it needs the doc-base-type).
+	 */
+	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNoEndingWith(String documentNoSuffix, OrgId orgId, Class<T> modelClass);
 
 	ImmutableList<I_C_Invoice> retrieveUnpaid(UnpaidInvoiceQuery query);
 

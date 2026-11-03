@@ -106,6 +106,46 @@ class SftpDeliveryProcessorTest
 	}
 
 	@Test
+	void fanOutIndex_isAvailableAsIndexPlaceholderInFilename() throws Exception
+	{
+		try (final EmbeddedSftpServer sftpServer = new EmbeddedSftpServer(sftpRootDir, SFTP_USER, SFTP_PASS);
+			 final CamelContext camelContext = new DefaultCamelContext())
+		{
+			camelContext.start();
+
+			final JsonExternalSystemEndpoint endpoint = JsonExternalSystemEndpoint.builder()
+					.value("test-endpoint")
+					.transportType("SFTP")
+					.sftpHost("localhost")
+					.sftpPort(sftpServer.getPort())
+					.sftpUsername(SFTP_USER)
+					.sftpAuthType("PASSWORD")
+					.password(SFTP_PASS)
+					.sftpRemotePath("")
+					.sftpFilenamePattern("DESADV_{recordid}_{index}.edi")
+					.build();
+
+			final MsgFromMfContext context = MsgFromMfContext.builder()
+					.orgCode("testOrg")
+					.scriptingRequestBody("{}")
+					.scriptIdentifier("testScript")
+					.endpointParameters(endpoint)
+					.outboundRecordTableName("M_InOut")
+					.outboundRecordId("123")
+					.build();
+			context.setScriptReturnValue("payload");
+
+			final Exchange exchange = new DefaultExchange(camelContext);
+			exchange.setProperty(ROUTE_MSG_FROM_MF_CONTEXT, context);
+			exchange.setProperty(ScriptedAdapterConvertMsgFromMFRouteBuilder.EXCHANGE_PROPERTY_FAN_OUT_INDEX, 2);
+
+			new SftpDeliveryProcessor().process(exchange);
+
+			assertThat(sftpRootDir.resolve("DESADV_123_2.edi")).exists();
+		}
+	}
+
+	@Test
 	void passwordAuth_deliversFileToSubdirectory() throws Exception
 	{
 		// Create a subdirectory in the SFTP root

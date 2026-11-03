@@ -92,5 +92,8 @@ public class JsonMobileConfigResponse
 
 		/** Ordered {@code M_Attribute.Value} codes - the CURRENT global editable-attribute list after this call. */
 		@Nullable List<AttributeCode> editableAttributes;
+		@Nullable Boolean isAllowEmptyingHUs;
+		@Nullable Boolean isConfirmEmptyingHU;
+		@Nullable Boolean isFinishedGoodsCatchWeightScanRequired;
 	}
 }
