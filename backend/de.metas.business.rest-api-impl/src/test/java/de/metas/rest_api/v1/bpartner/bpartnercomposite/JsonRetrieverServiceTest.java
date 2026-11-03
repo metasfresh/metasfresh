@@ -29,6 +29,7 @@ import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.rest_api.common.JsonExternalId;
@@ -43,6 +44,7 @@ import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.rest_api.v1.bpartner.JsonRequestConsolidateService;
 import de.metas.user.UserRepository;
 import org.adempiere.ad.table.MockLogEntriesRepository;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.util.Env;
@@ -74,11 +76,12 @@ class JsonRetrieverServiceTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier_PerTableSequence();
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
-		
+
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
@@ -94,6 +97,7 @@ class JsonRetrieverServiceTest
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		bpGroupRecord.setName(BP_GROUP_RECORD_NAME);
+		bpGroupRecord.setValue(BP_GROUP_RECORD_NAME);
 		saveRecord(bpGroupRecord);
 
 		createBPartnerData(0);

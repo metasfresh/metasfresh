@@ -15,7 +15,7 @@ export const ViewHeader = () => {
             {entryItems.map((entry, i) => (
               <tr key={i}>
                 <th>{entry.caption}</th>
-                <td>{entry.value}</td>
+                <td data-testid={entry.valueTestId}>{entry.value}</td>
               </tr>
             ))}
           </tbody>

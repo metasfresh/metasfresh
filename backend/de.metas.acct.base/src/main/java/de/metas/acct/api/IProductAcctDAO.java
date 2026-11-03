@@ -10,6 +10,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -23,7 +24,8 @@ public interface IProductAcctDAO extends IProductActivityProvider, ISingletonSer
 	 * @return activity or null
 	 */
 	@Override
-	ActivityId retrieveActivityForAcct(ClientId clientId, OrgId orgId, ProductId productId);
+	@Nullable
+	ActivityId retrieveActivityForAcct(@NonNull ClientId clientId, @NonNull OrgId orgId, @NonNull ProductId productId);
 
 	Optional<AccountId> getProductAccount(AcctSchemaId acctSchemaId, ProductId productId, ProductAcctType acctType);
 

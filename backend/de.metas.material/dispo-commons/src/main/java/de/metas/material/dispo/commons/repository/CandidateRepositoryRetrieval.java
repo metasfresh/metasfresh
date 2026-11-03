@@ -26,7 +26,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
-import de.metas.material.dispo.commons.repository.repohelpers.AtpReconciliationDetailRepo;
+import de.metas.material.dispo.commons.repository.repohelpers.AtpReconciliationDetailRepository;
 import de.metas.material.dispo.commons.repository.repohelpers.DemandDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
@@ -111,7 +111,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
  * <p>
  * {@code MD_Candidate_Purchase_Detail}, {@code MD_Candidate_StockChange_Detail} and {@code MD_ATP_Reconciliation_Backup}
  * (the correction candidate's own row only) are read here too, but only by delegating to their own repo helpers
- * ({@link PurchaseDetailRepoHelper}, {@link StockChangeDetailRepo}, {@link AtpReconciliationDetailRepo}) - this
+ * ({@link PurchaseDetailRepoHelper}, {@link StockChangeDetailRepo}, {@link AtpReconciliationDetailRepository}) - this
  * class claims no ownership of those tables.
  */
 @Service
@@ -123,18 +123,18 @@ public class CandidateRepositoryRetrieval
 	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final DimensionService dimensionService;
 	@NonNull private final StockChangeDetailRepo stockChangeDetailRepo;
-	@NonNull private final AtpReconciliationDetailRepo atpReconciliationDetailRepo;
+	@NonNull private final AtpReconciliationDetailRepository atpReconciliationDetailRepo;
 
 	/**
 	 * Legacy 2-arg shape, kept so the many existing test call sites that construct this class directly don't all
 	 * need touching for one new business-case detail repo - delegates with a bare {@code new}, harmless since
-	 * {@link AtpReconciliationDetailRepo} carries no state of its own (same as {@link StockChangeDetailRepo}).
+	 * {@link AtpReconciliationDetailRepository} carries no state of its own (same as {@link StockChangeDetailRepo}).
 	 */
 	public CandidateRepositoryRetrieval(
 			@NonNull final DimensionService dimensionService,
 			@NonNull final StockChangeDetailRepo stockChangeDetailRepo)
 	{
-		this(dimensionService, stockChangeDetailRepo, new AtpReconciliationDetailRepo());
+		this(dimensionService, stockChangeDetailRepo, new AtpReconciliationDetailRepository());
 	}
 
 	public Candidate retrieveById(@NonNull final CandidateId candidateId)

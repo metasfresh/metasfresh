@@ -5,7 +5,6 @@ import SelectHUIntermediateList from '../../apps/huManager/containers/SelectHUIn
 import React, { useState } from 'react';
 import { extractErrorResponseFromAxiosError, toastError } from '../../utils/toast';
 import * as api from '../../apps/huManager/api';
-import { isKnownQRCodeFormat } from '../../utils/qrCode/hu';
 
 const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode }) => {
   const [huListByDisplayableQrCode, setHuListByDisplayableQrCode] = useState([]);
@@ -16,27 +15,24 @@ const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode }) => {
       throw trl('activities.picking.notEligibleHUBarcode');
     }
 
-    if (isKnownQRCodeFormat(scannedBarcode)) {
-      if (locatorQrCode) {
-        return getListByLocatingAndHuQR({
-          qrCode: scannedBarcode,
-          upperLevelLocatingQrCode: locatorQrCode,
-        });
-      }
+    if (locatorQrCode) {
+      return getListByLocatingAndHuQR({
+        qrCode: scannedBarcode,
+        upperLevelLocatingQrCode: locatorQrCode,
+      });
+    }
 
-      try {
-        const handlingUnitInfo = await api.getHUByQRCode(scannedBarcode);
-        return { handlingUnitInfo };
-      } catch (axiosError) {
-        const errorResponse = extractErrorResponseFromAxiosError(axiosError);
-        if (errorResponse && errorResponse.multipleHUsFound) {
-          return { targetQrCode: scannedBarcode };
-        } else {
-          throw axiosError;
-        }
+    try {
+      const handlingUnitInfo = await api.getHUByQRCode(scannedBarcode);
+      return { handlingUnitInfo };
+    } catch (axiosError) {
+      const errorResponse = extractErrorResponseFromAxiosError(axiosError);
+      if (errorResponse && errorResponse.multipleHUsFound) {
+        return { targetQrCode: scannedBarcode };
+      } else {
+        throw axiosError;
       }
     }
-    return api.getHUsByDisplayableQRCode(scannedBarcode).then((huList) => ({ huListByQRCode: huList }));
   };
 
   const resolveLocatingScannedBarcode = async ({ scannedBarcode }) => {

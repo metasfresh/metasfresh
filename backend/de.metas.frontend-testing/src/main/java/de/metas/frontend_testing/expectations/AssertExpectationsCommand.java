@@ -10,6 +10,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HuId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
 import org.springframework.http.ResponseEntity;
 
 public class AssertExpectationsCommand
@@ -39,6 +40,7 @@ public class AssertExpectationsCommand
 			masterdata.getBpartners().forEach((identifierStr, bpartner) -> context.putIdentifier(Identifier.ofString(identifierStr), bpartner.getId()));
 			masterdata.getProducts().forEach((identifierStr, product) -> context.putIdentifier(Identifier.ofString(identifierStr), product.getId()));
 			masterdata.getHandlingUnits().forEach((identifierStr, handlingUnit) -> context.putIdentifier(Identifier.ofString(identifierStr), HuId.ofObject(handlingUnit.getHuId())));
+			masterdata.getWarehouses().forEach((identifierStr, warehouse) -> context.putIdentifier(Identifier.ofString(identifierStr), WarehouseId.ofRepoId(warehouse.getWarehouseId())));
 		}
 
 		context.putFromJson(expectations.getContext());
@@ -50,6 +52,15 @@ public class AssertExpectationsCommand
 	{
 		try
 		{
+			if (expectations.getSalesOrders() != null)
+			{
+				AssertSalesOrderExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getSalesOrders())
+						.build()
+						.execute();
+			}
 			if (expectations.getPickings() != null)
 			{
 				AssertPickingExpectationsCommand.builder()
@@ -83,6 +94,42 @@ public class AssertExpectationsCommand
 						.services(services)
 						.context(context)
 						.expectations(expectations.getHus())
+						.build()
+						.execute();
+			}
+			if (expectations.getInventories() != null)
+			{
+				AssertInventoryExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getInventories())
+						.build()
+						.execute();
+			}
+			if (expectations.getMovements() != null)
+			{
+				AssertMovementExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getMovements())
+						.build()
+						.execute();
+			}
+			if (expectations.getPosOrders() != null)
+			{
+				AssertPOSOrderExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getPosOrders())
+						.build()
+						.execute();
+			}
+			if (expectations.getPos() != null)
+			{
+				AssertPOSExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectation(expectations.getPos())
 						.build()
 						.execute();
 			}

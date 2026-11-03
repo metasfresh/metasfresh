@@ -135,6 +135,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_AllowPickToStructure_TU = "AllowPickToStructure_TU";
 
 	/**
+	 * Set Best before date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setBestBeforeDate (boolean BestBeforeDate);
+
+	/**
+	 * Get Best before date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isBestBeforeDate();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_BestBeforeDate = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "BestBeforeDate", null);
+	String COLUMNNAME_BestBeforeDate = "BestBeforeDate";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -292,8 +313,29 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
-	 * Set Allow picking with no rejected qty reason.
-	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
+	 * Set Allow Quick Pack All.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowQuickPackAll (boolean IsAllowQuickPackAll);
+
+	/**
+	 * Get Allow Quick Pack All.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowQuickPackAll();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowQuickPackAll = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowQuickPackAll", null);
+	String COLUMNNAME_IsAllowQuickPackAll = "IsAllowQuickPackAll";
+
+	/**
+	 * Set Allow under-pick w/o reason.
+	 * When enabled, the picker can record a lower quantity without specifying a reason (the dropdown gets an additional «Without reason» option).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -302,8 +344,8 @@ public interface I_MobileUI_UserProfile_Picking
 	void setIsAllowSkippingRejectedReason (boolean IsAllowSkippingRejectedReason);
 
 	/**
-	 * Get Allow picking with no rejected qty reason.
-	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
+	 * Get Allow under-pick w/o reason.
+	 * When enabled, the picker can record a lower quantity without specifying a reason (the dropdown gets an additional «Without reason» option).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -382,6 +424,29 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsCatchWeightTUPickingEnabled = "IsCatchWeightTUPickingEnabled";
 
 	/**
+	 * Set Complete job automatically.
+	 * Automatically completes the job when all lines are fulfilled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCompleteJobAutomatically (boolean IsCompleteJobAutomatically);
+
+	/**
+	 * Get Complete job automatically.
+	 * Automatically completes the job when all lines are fulfilled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCompleteJobAutomatically();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsCompleteJobAutomatically = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsCompleteJobAutomatically", null);
+	String COLUMNNAME_IsCompleteJobAutomatically = "IsCompleteJobAutomatically";
+
+	/**
 	 * Set Consider only scheduled jobs.
 	 *
 	 * <br>Type: YesNo
@@ -403,8 +468,8 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsConsideredOnlyScheduledJobs = "IsConsideredOnlyScheduledJobs";
 
 	/**
-	 * Set Consider sales order capacity.
-	 * If not activated, the quantity allocation for TU Catch Weight is taken from the master data of the product
+	 * Set Cap TU content to remaining qty.
+	 * When enabled, the CU quantity taken from a scanned TU is capped to the remaining order qty (a TU may be picked partially). When disabled, the full TU capacity is always picked, even if that exceeds the order qty.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -413,8 +478,8 @@ public interface I_MobileUI_UserProfile_Picking
 	void setIsConsiderSalesOrderCapacity (boolean IsConsiderSalesOrderCapacity);
 
 	/**
-	 * Get Consider sales order capacity.
-	 * If not activated, the quantity allocation for TU Catch Weight is taken from the master data of the product
+	 * Get Cap TU content to remaining qty.
+	 * When enabled, the CU quantity taken from a scanned TU is capped to the remaining order qty (a TU may be picked partially). When disabled, the full TU capacity is always picked, even if that exceeds the order qty.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -468,6 +533,50 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsFilterByBarcode = "IsFilterByBarcode";
 
 	/**
+	 * Set Mass Printing.
+	 * When enabled, the user can perform mass-printing of shipping labels for self-packed products by scanning one LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsMassPrinting (boolean IsMassPrinting);
+
+	/**
+	 * Get Mass Printing.
+	 * When enabled, the user can perform mass-printing of shipping labels for self-packed products by scanning one LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMassPrinting();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsMassPrinting = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsMassPrinting", null);
+	String COLUMNNAME_IsMassPrinting = "IsMassPrinting";
+
+	/**
+	 * Set Kommissionierfach erforderlich.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickingSlotRequired (boolean IsPickingSlotRequired);
+
+	/**
+	 * Get Kommissionierfach erforderlich.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickingSlotRequired();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsPickingSlotRequired = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsPickingSlotRequired", null);
+	String COLUMNNAME_IsPickingSlotRequired = "IsPickingSlotRequired";
+
+	/**
 	 * Set Ship after closing LU.
 	 *
 	 * <br>Type: YesNo
@@ -489,7 +598,9 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsShipOnCloseLU = "IsShipOnCloseLU";
 
 	/**
-	 * Set Ask User when Over Picking.
+	 * Set Allow over-pick with prompt.
+	 * When enabled, the picker can record more than the ordered qty;
+ the over-delivery must be confirmed via a prompt. When disabled, over-picking is hard-blocked in the frontend ("N above max").
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -498,7 +609,9 @@ public interface I_MobileUI_UserProfile_Picking
 	void setIsShowConfirmationPromptWhenOverPick (boolean IsShowConfirmationPromptWhenOverPick);
 
 	/**
-	 * Get Ask User when Over Picking.
+	 * Get Allow over-pick with prompt.
+	 * When enabled, the picker can record more than the ordered qty;
+ the over-delivery must be confirmed via a prompt. When disabled, over-picking is hard-blocked in the frontend ("N above max").
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -531,6 +644,69 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowLastPickedBestBeforeDateForLines = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowLastPickedBestBeforeDateForLines", null);
 	String COLUMNNAME_IsShowLastPickedBestBeforeDateForLines = "IsShowLastPickedBestBeforeDateForLines";
+
+	/**
+	 * Set Warn when guaranteed remaining shelf life is undercut.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWarnShelfLifeUndercut (boolean IsWarnShelfLifeUndercut);
+
+	/**
+	 * Get Warn when guaranteed remaining shelf life is undercut.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWarnShelfLifeUndercut();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsWarnShelfLifeUndercut = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsWarnShelfLifeUndercut", null);
+	String COLUMNNAME_IsWarnShelfLifeUndercut = "IsWarnShelfLifeUndercut";
+
+	/**
+	 * Set Show available qty per line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowQtyAvailableForLines (boolean IsShowQtyAvailableForLines);
+
+	/**
+	 * Get Show available qty per line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowQtyAvailableForLines();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowQtyAvailableForLines = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowQtyAvailableForLines", null);
+	String COLUMNNAME_IsShowQtyAvailableForLines = "IsShowQtyAvailableForLines";
+
+	/**
+	 * Set Lot number.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setLotNumber (boolean LotNumber);
+
+	/**
+	 * Get Lot number.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isLotNumber();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_LotNumber = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "LotNumber", null);
+	String COLUMNNAME_LotNumber = "LotNumber";
 
 	/**
 	 * Set Mobile UI Picking Profile.

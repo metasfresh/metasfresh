@@ -73,6 +73,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
@@ -83,6 +84,7 @@ import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -114,6 +116,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -166,6 +169,16 @@ public class HUTransformService
 
 	@NonNull private final IHUContext huContext;
 	private final ImmutableList<TableRecordReference> referencedObjects;
+	/**
+	 * VHU IDs that are exempt from the reservation guard.
+	 * The caller sets this when it <em>owns</em> the reservation and is explicitly allowed to
+	 * transform those HUs (e.g. shipment picking for the sales order that reserved them).
+	 * Obtain the IDs via {@link de.metas.handlingunits.reservation.HUReservationService#getVHUIdsByDocumentRef}.
+	 */
+	@NonNull private final ImmutableSet<HuId> allowedReservedVhuIds;
+
+	private static final AdMessageKey MSG_HU_PACK_INSTR_MATERIAL_LINE_NOT_FOUND = AdMessageKey.of("HU_PACK_INSTR_MATERIAL_LINE_NOT_FOUND");
+	private static final AdMessageKey MSG_CANNOT_TRANSFORM_RESERVED_HU = AdMessageKey.of("de.metas.handlingunits.CannotTransformReservedHU");
 
 	/**
 	 * Uses {@link IHUContextFactory#createMutableHUContext(Properties, String)} with the given {@code ctx} and {@code trxName} and returns a new {@link HUTransformService} instance with that huContext.
@@ -182,12 +195,14 @@ public class HUTransformService
 			@Nullable final Properties ctx,
 			@Nullable final String trxName,
 			@Nullable final EmptyHUListener emptyHUListener,
-			@Nullable final List<TableRecordReference> referencedObjects)
+			@Nullable final List<TableRecordReference> referencedObjects,
+			@Nullable final Collection<HuId> allowedReservedVhuIds)
 	{
 		this.huQRCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class, huQRCodesService);
 		this.qrCodeConfigurationService = SpringContextHolder.lazyBean(QRCodeConfigurationService.class, null);
 
 		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
+		this.allowedReservedVhuIds = allowedReservedVhuIds != null ? ImmutableSet.copyOf(allowedReservedVhuIds) : ImmutableSet.of();
 
 		final IMutableHUContext mutableHUContext = createHUContext(ctx, trxName);
 		if (emptyHUListener != null)
@@ -221,12 +236,14 @@ public class HUTransformService
 	 */
 	@Builder(builderClassName = "BuilderForHUcontext", builderMethodName = "builderForHUcontext")
 	private HUTransformService(@NonNull final IHUContext huContext,
-							   @Nullable final List<TableRecordReference> referencedObjects)
+							   @Nullable final List<TableRecordReference> referencedObjects,
+							   @Nullable final Collection<HuId> allowedReservedVhuIds)
 	{
 		this.huQRCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class);
 		this.qrCodeConfigurationService = SpringContextHolder.lazyBean(QRCodeConfigurationService.class, null);
 
 		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
+		this.allowedReservedVhuIds = allowedReservedVhuIds != null ? ImmutableSet.copyOf(allowedReservedVhuIds) : ImmutableSet.of();
 		this.huContext = huContext;
 	}
 
@@ -235,6 +252,62 @@ public class HUTransformService
 		// TODO: in case there were no referenced objects, i think we shall search & retrieve all the referenced documents/lines
 		return referencedObjects;
 	}
+
+	//
+	// =========================================================
+	// Reservation guards
+	// =========================================================
+
+	/**
+	 * Throws {@link AdempiereException} if the given HU itself has {@code IsReserved=Y},
+	 * unless its {@link HuId} is in {@link #allowedReservedVhuIds} (i.e. the caller owns the reservation).
+	 * <p>
+	 * Used for <b>source</b> HUs (CU-level operations where the source is the exact VHU being transformed,
+	 * and TU/LU-level operations that merely re-parent an HU without touching its content)
+	 * as well as <b>target</b> HUs (e.g. existing TU/LU/CU that content is being moved into).
+	 * <p>
+	 * Checking only the HU's own flag is intentional: a TU whose VHU children are reserved
+	 * can still be moved as a container, and content can still be added to a TU/LU whose
+	 * children happen to be reserved — only the target container itself must not be reserved.
+	 */
+	private void assertNotReserved(@NonNull final I_M_HU hu)
+	{
+		if (!hu.isReserved())
+		{
+			return;
+		}
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		if (allowedReservedVhuIds.contains(huId))
+		{
+			return;
+		}
+		throw new AdempiereException(MSG_CANNOT_TRANSFORM_RESERVED_HU)
+				.appendParametersToMessage()
+				.setParameter("M_HU_ID", hu.getM_HU_ID());
+	}
+
+	/** Convenience overload for a collection of HUs. */
+	private void assertNoneReserved(@NonNull final Collection<I_M_HU> hus)
+	{
+		hus.forEach(this::assertNotReserved);
+	}
+
+	/**
+	 * Throws if the given HU <em>or any of its descendants</em> has {@code IsReserved=Y}.
+	 * <p>
+	 * Used by {@link #husToNewCUs} when the active {@link ReservedHUsPolicy} would include
+	 * reserved VHUs in the extraction (i.e. the policy does not already filter them out).
+	 */
+	private void assertNotReservedRecursively(@NonNull final I_M_HU hu)
+	{
+		assertNotReserved(hu);
+		for (final I_M_HU child : handlingUnitsDAO.retrieveIncludedHUs(hu))
+		{
+			assertNotReservedRecursively(child);
+		}
+	}
+
+	// =========================================================
 
 	private IAllocationRequest createCUAllocationRequest(
 			@NonNull final IHUContext huContext,
@@ -284,6 +357,7 @@ public class HUTransformService
 			@NonNull final I_M_HU cuHU,
 			@NonNull final Quantity qtyCU)
 	{
+		assertNotReserved(cuHU);
 		Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; (source-)cuHU={}", qtyCU, cuHU);
 		return cuToNewCU0(cuHU, qtyCU, false);
 	}
@@ -396,6 +470,8 @@ public class HUTransformService
 			@NonNull final Quantity qtyCU,
 			@NonNull final I_M_HU targetTuHU)
 	{
+		assertNotReserved(sourceCuHU);
+		assertNotReserved(targetTuHU);
 		// NOTE: because this method does several non-atomic operations it is important to glue them together in a transaction
 		return trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> cuToExistingTU_InTrx(sourceCuHU, qtyCU, targetTuHU));
 	}
@@ -560,8 +636,13 @@ public class HUTransformService
 			@NonNull final QtyTU qtyTU,
 			@NonNull final I_M_HU luHU)
 	{
+		assertNotReserved(sourceTuHU);
+		assertNotReserved(luHU);
 		LUTUResult result = LUTUResult.EMPTY;
 		final List<I_M_HU> tuHUsToAttachToLU;
+
+		// resolve before any de-aggregation/split, which would detach the TU from the pallet it is taken from
+		final BPartnerId luItemBPartnerId = resolveBPartnerForLUItem(luHU, sourceTuHU);
 
 		final boolean qtyTuExceedsSourceTuHU = qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0;
 		if (qtyTuExceedsSourceTuHU)
@@ -595,6 +676,12 @@ public class HUTransformService
 				lutuProducer.setMaxLUs(0);
 				lutuProducer.setMaxTUsPerLUInfinite();
 				lutuProducer.setTUPI(handlingUnitsBL.getEffectivePI(sourceTuHU));
+				// the partner is only used to find the right (possibly partner-bound) LU->TU item; it is NOT stamped onto the created TUs
+				if (luItemBPartnerId != null)
+				{
+					retrieveLUItemForTU(luHU, handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU), luItemBPartnerId)
+							.ifPresent(lutuProducer::setLUItemPI);
+				}
 				lutuProducer.addCUPerTU(tuCapacity);
 
 				HULoader.builder()
@@ -621,7 +708,11 @@ public class HUTransformService
 		tuHUsToAttachToLU.forEach(tuToAttach -> {
 			final I_M_HU_PI tuPI = handlingUnitsBL.getPI(tuToAttach);
 
-			final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
+			I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
+			if (luPIItem == null && luItemBPartnerId != null)
+			{
+				luPIItem = retrieveLUItemForTU(luHU, HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()), luItemBPartnerId).orElse(null);
+			}
 			if (luPIItem == null)
 			{
 				throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(luHU) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(tuToAttach) + "` because there is no link between them.")
@@ -667,6 +758,7 @@ public class HUTransformService
 			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final boolean isOwnPackingMaterials)
 	{
+		assertNotReserved(cuHU);
 		final LUTUProducerDestination destination = new LUTUProducerDestination();
 		destination.setTUPI(tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI());
 		destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
@@ -711,6 +803,7 @@ public class HUTransformService
 			@NonNull final I_M_HU sourceTuHU,
 			@NonNull final QtyTU qtyTU)
 	{
+		assertNotReserved(sourceTuHU);
 		final QtyTU availableTUs = getMaximumQtyTU(sourceTuHU);
 		if (qtyTU.compareTo(availableTUs) >= 0) // the caller wants to process the entire sourceTuHU
 		{
@@ -791,6 +884,7 @@ public class HUTransformService
 	 */
 	public TUsList husToNewTUs(@NonNull final HUsToNewTUsRequest newTUsRequest)
 	{
+		assertNoneReserved(newTUsRequest.getSourceHUs());
 		QtyTU qtyTuLeft = newTUsRequest.getQtyTU();
 
 		final ArrayList<TU> result = new ArrayList<>();
@@ -886,6 +980,7 @@ public class HUTransformService
 	 */
 	public LUTUResult luExtractTUs(@NonNull final LUExtractTUsRequest request)
 	{
+		assertNotReserved(request.getSourceLU());
 		@NonNull final LU sourceLU = retrieveLUWithTUs(request.getSourceLU());
 		@NonNull final QtyTU qtyTU = request.getQtyTU();
 		@NonNull final HashSet<HuId> alreadyExtractedTUIds = request.getAlreadyExtractedTUIds() != null
@@ -1107,12 +1202,74 @@ public class HUTransformService
 			@NonNull final QtyTU qtyTU,
 			@NonNull final HuPackingInstructionsId luPIId)
 	{
+		assertNotReserved(sourceTuHU);
 		final HuPackingInstructionsId tuPIId = handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU);
-		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(sourceTuHU);
+		final BPartnerId bpartnerId = resolveBPartnerForLUItem(null, sourceTuHU);
 
 		final I_M_HU_PI_Item luPIItem = getLuPIItem(luPIId, tuPIId, bpartnerId);
 
 		return tuToNewLUs(sourceTuHU, qtyTU, luPIItem, true);
+	}
+
+	/**
+	 * Resolves the partner used to look up a partner-bound LU to TU packing instructions item.
+	 * Precedence: the target LU's partner, then the source TU's own partner, then the partner of the pallet the source TU sits on.
+	 * The last one is needed because the partner of a partner-bound item is often only set on the pallet, not on the TUs taken off it.
+	 */
+	@Nullable
+	private BPartnerId resolveBPartnerForLUItem(@Nullable final I_M_HU targetLU, @NonNull final I_M_HU sourceTuHU)
+	{
+		if (targetLU != null)
+		{
+			final BPartnerId targetLUBPartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(targetLU);
+			if (targetLUBPartnerId != null)
+			{
+				return targetLUBPartnerId;
+			}
+		}
+
+		final BPartnerId tuBPartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(sourceTuHU);
+		if (tuBPartnerId != null)
+		{
+			return tuBPartnerId;
+		}
+
+		final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(sourceTuHU);
+		if (topLevelParent == null || HuId.equals(HuId.ofRepoId(topLevelParent.getM_HU_ID()), HuId.ofRepoId(sourceTuHU.getM_HU_ID())))
+		{
+			return null;
+		}
+		return IHandlingUnitsBL.extractBPartnerIdOrNull(topLevelParent);
+	}
+
+	/**
+	 * Finds the LU to TU item of the LU's own packing instructions version for the given partner (which may be the partner of the pallet the TU was taken from, not the LU's own).
+	 */
+	private Optional<I_M_HU_PI_Item> retrieveLUItemForTU(
+			@NonNull final I_M_HU luHU,
+			@NonNull final HuPackingInstructionsId tuPIId,
+			@NonNull final BPartnerId bpartnerId)
+	{
+		return retrieveFirstLUItem(luHU.getM_HU_PI_Version(), tuPIId, bpartnerId);
+	}
+
+	/**
+	 * Picks the LU to TU item (item type HU) of the given LU version that fits the partner.
+	 * If both a generic item and one bound to the partner exist, the partner-bound one wins; remaining ties are broken by lowest M_HU_PI_Item_ID, so that the outcome is deterministic.
+	 *
+	 * @param tuPIId if {@code null}, the included packing instructions are not constrained
+	 */
+	private Optional<I_M_HU_PI_Item> retrieveFirstLUItem(
+			@NonNull final I_M_HU_PI_Version luPIVersion,
+			@Nullable final HuPackingInstructionsId tuPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsDAO.retrievePIItems(luPIVersion, bpartnerId)
+				.stream()
+				.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(piItem.getItemType()))
+				.filter(piItem -> tuPIId == null || HuPackingInstructionsId.equals(HuPackingInstructionsId.ofRepoIdOrNull(piItem.getIncluded_HU_PI_ID()), tuPIId))
+				.min(Comparator.comparing((I_M_HU_PI_Item piItem) -> piItem.getC_BPartner_ID() > 0 ? 0 : 1) // partner-bound before generic
+						.thenComparingInt(I_M_HU_PI_Item::getM_HU_PI_Item_ID));
 	}
 
 	private I_M_HU_PI_Item getLuPIItem(
@@ -1120,9 +1277,10 @@ public class HUTransformService
 			@NonNull final HuPackingInstructionsId tuPIId,
 			@Nullable final BPartnerId bpartnerId)
 	{
+		final I_M_HU_PI_Version luPIVersion = handlingUnitsDAO.retrievePICurrentVersion(luPIId);
 		if (tuPIId.isRealPackingInstructions())
 		{
-			return handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId)
+			return retrieveFirstLUItem(luPIVersion, tuPIId, bpartnerId)
 					.orElseThrow(() -> {
 						final String luPIName = handlingUnitsBL.getPIName(luPIId);
 						final String tuPIName = handlingUnitsBL.getPIName(tuPIId);
@@ -1132,7 +1290,7 @@ public class HUTransformService
 		}
 		else
 		{
-			return handlingUnitsDAO.retrieveFirstPIItem(luPIId, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId)
+			return retrieveFirstLUItem(luPIVersion, null, bpartnerId)
 					.orElseThrow(() -> {
 						final String luPIName = handlingUnitsBL.getPIName(luPIId);
 						final String bpartnerName = bpartnerId != null ? bpartnerDAO.getBPartnerNameById(bpartnerId) : "*";
@@ -1155,6 +1313,7 @@ public class HUTransformService
 			@NonNull final I_M_HU_PI_Item luPIItem,
 			final boolean isOwnPackingMaterials)
 	{
+		assertNotReserved(sourceTuHU);
 		final QtyTU qtyTU_of_sourceTuHU = getMaximumQtyTU(sourceTuHU);
 		if (qtyTU.compareTo(qtyTU_of_sourceTuHU) >= 0 // the complete sourceTuHU shall be processed
 				&& qtyTU_of_sourceTuHU.compareTo(luPIItem.getQty()) <= 0 // the complete sourceTuHU fits onto one pallet
@@ -1186,7 +1345,12 @@ public class HUTransformService
 				{
 					// create the new parent-item that will link sourceTuHU with lu
 					final I_M_HU_PI tuPI = handlingUnitsBL.getPI(sourceTuHU);
-					final I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, tuPI, huContext);
+					I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, tuPI, huContext);
+					if (parentPIItem == null && luPIItem.getIncluded_HU_PI_ID() == tuPI.getM_HU_PI_ID())
+					{
+						// the new LU carries the TU's partner (maybe none); luPIItem is the item the LU was created from and links it to this TU's PI, even if partner-bound
+						parentPIItem = luPIItem;
+					}
 					if (parentPIItem == null)
 					{
 						throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(lu) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(sourceTuHU) + "` because there is no link between them.")
@@ -1308,8 +1472,8 @@ public class HUTransformService
 					.findFirst().orElse(null);
 			if (materialItem == null)
 			{
-				throw new HUException("@NotFound@ @M_HU_PI_Item_ID@")
-						.setParameter("tuPI", tuPI);
+				throw new HUException(MSG_HU_PACK_INSTR_MATERIAL_LINE_NOT_FOUND, tuPI.getName(), tuPI.getM_HU_PI_ID(), sourceTuHU.getM_HU_ID())
+						.markAsUserValidationError();
 			}
 			destination.setTUPI(tuPI);
 			destination.addCUPerTU(cuProductId, sourceQtyCUperTU, cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
@@ -1414,19 +1578,36 @@ public class HUTransformService
 		}
 	}
 
+	@Value
+	@Builder
+	public static class HUsToNewCUsResponse
+	{
+		@NonNull ImmutableList<I_M_HU> newCUs;
+		@NonNull Quantity qtyCUsLeft;
+
+		public I_M_HU singleCU() {return CollectionUtils.singleElement(newCUs);}
+	}
+
 	public I_M_HU huToNewSingleCU(@NonNull final HUsToNewCUsRequest newCURequest)
 	{
 		Check.assume(newCURequest.getSourceHUs().size() == 1, "Only one source HU expected: {}", newCURequest);
-		final List<I_M_HU> splitCUs = husToNewCUs(newCURequest);
-		return CollectionUtils.singleElement(splitCUs);
+		return husToNewCUs(newCURequest).singleCU();
 	}
 
 	/**
 	 * Creates new CUs (vhus) according to the given request
 	 */
-	public List<I_M_HU> husToNewCUs(@NonNull final HUsToNewCUsRequest newCUsRequest)
+	public HUsToNewCUsResponse husToNewCUs(@NonNull final HUsToNewCUsRequest newCUsRequest)
 	{
-		Quantity qtyCuLeft = newCUsRequest.getQtyCU();
+		// If the policy would process reserved VHUs (e.g. CONSIDER_ALL), do a full recursive check
+		// so we fail fast before touching any reserved CU.
+		// If the policy already excludes reserved VHUs (e.g. CONSIDER_ONLY_NOT_RESERVED, as used by
+		// HUReservationService), we skip this check — the policy itself acts as the guard.
+		if (newCUsRequest.getReservedVHUsPolicy().requiresRecursiveReservationGuard())
+		{
+			newCUsRequest.getSourceHUs().forEach(this::assertNotReservedRecursively);
+		}
+		@NonNull Quantity qtyCuLeft = newCUsRequest.getQtyCU();
 
 		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
 		for (final I_M_HU sourceHU : newCUsRequest.getSourceHUs())
@@ -1447,7 +1628,11 @@ public class HUTransformService
 				break;
 			}
 		}
-		return result.build();
+
+		return HUsToNewCUsResponse.builder()
+				.newCUs(result.build())
+				.qtyCUsLeft(qtyCuLeft)
+				.build();
 	}
 
 	/**
@@ -1459,6 +1644,7 @@ public class HUTransformService
 		huQRCodesService.get().assertQRCodeAssignedToHU(huQRCode, huId);
 
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		assertNotReserved(hu);
 
 		if (handlingUnitsBL.isAggregateHU(hu))
 		{
@@ -1493,6 +1679,12 @@ public class HUTransformService
 		}
 		else
 		{
+			// sourceHU is a VHU — check the policy before attempting the transform,
+			// so that CONSIDER_ONLY_NOT_RESERVED returns empty instead of throwing.
+			if (!singleSourceHuRequest.getReservedVHUsPolicy().isConsiderVHU(sourceHU))
+			{
+				return ImmutableList.of();
+			}
 			return cuToNewCU(sourceHU, singleSourceHuRequest.getQtyCU());
 		}
 	}
@@ -1657,6 +1849,8 @@ public class HUTransformService
 			@NonNull final List<I_M_HU> childCUs,
 			@NonNull final I_M_HU targetTU)
 	{
+		assertNoneReserved(childCUs);
+		assertNotReserved(targetTU);
 		final I_M_HU_Item tuMaterialItem = handlingUnitsDAO.retrieveItems(targetTU)
 				.stream()
 				.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(piItem.getItemType()))
@@ -1710,6 +1904,7 @@ public class HUTransformService
 		}
 
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		assertNotReserved(hu);
 		if (handlingUnitsBL.isTopLevel(hu))
 		{
 			return huId;
@@ -1740,6 +1935,7 @@ public class HUTransformService
 			@Nullable final HuPackingInstructionsItemId newLUPackingItem)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(aggregatedHuId);
+		assertNotReserved(hu);
 
 		if (!handlingUnitsBL.isAggregateHU(hu))
 		{
@@ -1815,7 +2011,11 @@ public class HUTransformService
 					.setParameter("availableQtyTU", availableNrOfTUs.toInt());
 		}
 
-		final List<I_M_HU> extractedTUs = HUTransformService.newInstance().tuToNewTUs(hu, qtyTU).getAllTURecords();
+		final List<I_M_HU> extractedTUs = HUTransformService.builderForHUcontext()
+				.huContext(huContext)
+				.allowedReservedVhuIds(allowedReservedVhuIds)
+				.build()
+				.tuToNewTUs(hu, qtyTU).getAllTURecords();
 		return extractedTUs.stream()
 				.map(I_M_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)
@@ -1833,6 +2033,11 @@ public class HUTransformService
 			@NonNull final List<I_M_HU> tusOrVhus,
 			@Nullable final I_M_HU existingLU)
 	{
+		assertNoneReserved(tusOrVhus);
+		if (existingLU != null)
+		{
+			assertNotReserved(existingLU);
+		}
 		return trxManager.callInThreadInheritedTrx(() -> tusToLU(tusOrVhus, existingLU, null));
 	}
 
@@ -1840,7 +2045,9 @@ public class HUTransformService
 			@NonNull final List<I_M_HU> tusOrVhus,
 			@NonNull final HuId existingLUId)
 	{
+		assertNoneReserved(tusOrVhus);
 		final I_M_HU existingLU = handlingUnitsBL.getById(existingLUId);
+		assertNotReserved(existingLU);
 		return trxManager.callInThreadInheritedTrx(() -> tusToLU(tusOrVhus, existingLU, null));
 	}
 
@@ -1849,7 +2056,9 @@ public class HUTransformService
 			@NonNull final HuId existingLUId)
 	{
 		final List<I_M_HU> tusOrVhus = handlingUnitsBL.getByIds(tusOrVhuIds);
+		assertNoneReserved(tusOrVhus);
 		final I_M_HU existingLU = handlingUnitsBL.getById(existingLUId);
+		assertNotReserved(existingLU);
 		return trxManager.callInThreadInheritedTrx(() -> tusToLU(tusOrVhus, existingLU, null));
 	}
 
@@ -1894,6 +2103,8 @@ public class HUTransformService
 			@NonNull final List<I_M_HU> sourceCuHUs,
 			@NonNull final I_M_HU targetTuHU)
 	{
+		assertNoneReserved(sourceCuHUs);
+		assertNotReserved(targetTuHU);
 		final ImmutableList.Builder<I_M_HU> resultCollector = ImmutableList.builder();
 		sourceCuHUs.forEach(sourceCU -> {
 			final Quantity quantity = getSingleProductStorage(sourceCU).getQtyInStockingUOM();
@@ -1905,6 +2116,8 @@ public class HUTransformService
 
 	public void cusToExistingCU(@NonNull final List<I_M_HU> sourceCuHUs, @NonNull final I_M_HU targetCU)
 	{
+		assertNoneReserved(sourceCuHUs);
+		assertNotReserved(targetCU);
 		sourceCuHUs.forEach(sourceCU -> cuToExistingCU(sourceCU, targetCU));
 	}
 

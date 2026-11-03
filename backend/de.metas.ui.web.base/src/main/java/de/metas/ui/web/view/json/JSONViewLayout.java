@@ -16,6 +16,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Value;
 
 import java.util.List;
@@ -44,105 +45,75 @@ import java.util.Set;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JSONViewLayout
+@Value
+public class JSONViewLayout
 {
 	public static JSONViewLayout of(final ViewLayout gridLayout, final JSONDocumentLayoutOptions options)
 	{
 		return new JSONViewLayout(gridLayout, options);
 	}
 
-	@JsonProperty("viewId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private String viewId;
-	//
-	/** i.e. AD_Window_ID */
+	/**
+	 * i.e. AD_Window_ID
+	 */
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	@Deprecated
-	private final WindowId type;
+	@Deprecated WindowId type;
 	@JsonProperty("windowId")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final WindowId windowId;
+	@JsonInclude(JsonInclude.Include.NON_NULL) WindowId windowId;
 
 	@JsonProperty("profileId")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final ViewProfileId profileId;
+	@JsonInclude(JsonInclude.Include.NON_NULL) ViewProfileId profileId;
 
-	@JsonProperty("caption")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String caption;
+	@Getter @JsonProperty("caption")
+	@JsonInclude(JsonInclude.Include.NON_NULL) String caption;
 
-	@JsonProperty("description")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String description;
+	@Getter @JsonProperty("description")
+	@JsonInclude(JsonInclude.Include.NON_NULL) String description;
 
 	@JsonProperty("emptyResultText")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String emptyResultText;
+	@JsonInclude(JsonInclude.Include.NON_NULL) String emptyResultText;
 
 	@JsonProperty("emptyResultHint")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String emptyResultHint;
+	@JsonInclude(JsonInclude.Include.NON_NULL) String emptyResultHint;
 
-	@JsonProperty("pageLength")
-	private final int pageLength;
+	@JsonProperty("pageLength") int pageLength;
 
-	@JsonProperty("elements")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final List<JSONDocumentLayoutElement> elements;
+	@Getter @JsonProperty("elements")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) List<JSONDocumentLayoutElement> elements;
 
-	@JsonProperty("filters")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final List<JSONDocumentFilterDescriptor> filters;
+	@Getter @JsonProperty("filters")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) List<JSONDocumentFilterDescriptor> filters;
 
 	public static final String PROPERTY_supportAttributes = "supportAttributes";
-	@JsonProperty(value = PROPERTY_supportAttributes)
-	private boolean supportAttributes;
+	@JsonProperty(value = PROPERTY_supportAttributes) boolean supportAttributes;
 	//
-	@JsonProperty("supportTree")
-	private final boolean supportTree;
+	@JsonProperty("supportTree") boolean supportTree;
 	@JsonProperty("collapsible")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Boolean collapsible;
+	@JsonInclude(JsonInclude.Include.NON_NULL) Boolean collapsible;
 	@JsonProperty("expandedDepth")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Integer expandedDepth;
+	@JsonInclude(JsonInclude.Include.NON_NULL) Integer expandedDepth;
 
-	@JsonProperty("allowedCloseActions")
-	private final Set<ViewCloseAction> allowedCloseActions;
+	@JsonProperty("allowedCloseActions") Set<ViewCloseAction> allowedCloseActions;
 
 	//
-	@JsonProperty("includedView")
-	private final JSONIncludedViewSupport includedView;
+	@JsonProperty("includedView") JSONIncludedViewSupport includedView;
 	//
 	@Deprecated
-	@JsonProperty("supportIncludedView")
-	private final boolean supportIncludedView;
+	@JsonProperty("supportIncludedView") boolean supportIncludedView;
 	@Deprecated
-	@JsonProperty("supportIncludedViewOnSelect")
-	private final Boolean supportIncludedViewOnSelect;
+	@JsonProperty("supportIncludedViewOnSelect") Boolean supportIncludedViewOnSelect;
 
-	//
-	// New record support
-	@JsonProperty("supportNewRecord")
-	private boolean supportNewRecord = false;
-	@JsonProperty("newRecordCaption")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String newRecordCaption = null;
+	@JsonProperty("supportNewRecord") boolean supportNewRecord;
 
-	//
-	//
 	@JsonProperty("supportOpenRecord")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Boolean supportOpenRecord;
+	@JsonInclude(JsonInclude.Include.NON_NULL) Boolean supportOpenRecord;
 
 	@JsonProperty("supportGeoLocations")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Boolean supportGeoLocations;
+	@JsonInclude(JsonInclude.Include.NON_NULL) Boolean supportGeoLocations;
 
 	@JsonProperty("focusOnFieldName")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String focusOnFieldName;
+	@JsonInclude(JsonInclude.Include.NON_NULL) String focusOnFieldName;
 
 	private JSONViewLayout(final ViewLayout layout, final JSONDocumentLayoutOptions options)
 	{
@@ -166,7 +137,7 @@ public final class JSONViewLayout
 				&& idFieldName != null
 				&& !JSONDocumentLayoutElement.hasField(elements, idFieldName))
 		{
-			elements = ImmutableList.<JSONDocumentLayoutElement> builder()
+			elements = ImmutableList.<JSONDocumentLayoutElement>builder()
 					.add(JSONDocumentLayoutElement.debuggingField(idFieldName, DocumentFieldWidgetType.Text))
 					.addAll(elements)
 					.build();
@@ -214,6 +185,7 @@ public final class JSONViewLayout
 			expandedDepth = null;
 		}
 
+		supportNewRecord = layout.isAllowNew();
 		supportOpenRecord = layout.isAllowOpeningRowDetails();
 
 		supportGeoLocations = layout.isGeoLocationSupport();
@@ -231,31 +203,6 @@ public final class JSONViewLayout
 				.add("elements", elements.isEmpty() ? null : elements)
 				.add("filters", filters.isEmpty() ? null : filters)
 				.toString();
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public String getDescription()
-	{
-		return description;
-	}
-
-	public List<JSONDocumentLayoutElement> getElements()
-	{
-		return elements;
-	}
-
-	public List<JSONDocumentFilterDescriptor> getFilters()
-	{
-		return filters;
-	}
-
-	public void setViewId(final String viewId)
-	{
-		this.viewId = viewId;
 	}
 
 	@Value

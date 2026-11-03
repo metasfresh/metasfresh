@@ -29,6 +29,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Transpo
             (
                 name                text,
                 address             text,
+                istobefetched       char(1),
                 DeliveryDateTimeMax Timestamp WITH TIME ZONE,
                 isPallet            char(1),
                 QtyTU               numeric,
@@ -39,13 +40,15 @@ AS
 $$
 SELECT name,
        address,
+       istobefetched,
        DeliveryDateTimeMax,
        isPallet,
-       QtyTU,
-       QtyLU,
+       SUM(QtyTU)              AS QtyTU,
+       SUM(QtyLU)              AS QtyLU,
        STRING_AGG(note, E'\n') AS notes
 FROM (SELECT name,
              address,
+             istobefetched,
              DeliveryDateTimeMax,
              isPallet,
              QtyTU,
@@ -53,11 +56,12 @@ FROM (SELECT name,
              note
       FROM (SELECT bp.name,
                    bpl.address,
+                   sp.istobefetched,
                    CASE WHEN hupm.name ILIKE '%pal%' THEN 'Y' ELSE 'N' END     AS isPallet,
                    hu.M_HU_ID,
                    dd.DeliveryDateTimeMax,
-                   (CASE WHEN TU IS NULL AND TU > 0 THEN TU ELSE sp.QtyTU END) AS QtyTU,
-                   (CASE WHEN LU IS NULL AND LU > 0 THEN LU ELSE sp.QtyLU END) AS QtyLU,
+                   (CASE WHEN TU IS NOT NULL AND TU > 0 THEN TU ELSE sp.QtyTU END) AS QtyTU,
+                   (CASE WHEN LU IS NOT NULL AND LU > 0 THEN LU ELSE sp.QtyLU END) AS QtyLU,
                    note
             FROM M_ShippingPackage sp
                      INNER JOIN C_BPartner bp ON sp.C_BPartner_ID = bp.C_BPartner_ID
@@ -91,7 +95,7 @@ FROM (SELECT name,
                                       GROUP BY m_hu_ID) AS hu_qty
                                      ON hu.m_hu_id = hu_qty.m_hu_id
             WHERE sp.M_ShipperTransportation_ID = p_M_ShipperTransportation_ID) foo) bar
-GROUP BY name, address, DeliveryDateTimeMax, isPallet, QtyTU, QtyLU
+GROUP BY name, address, istobefetched, DeliveryDateTimeMax, isPallet, QtyTU, QtyLU
 
 $$
     LANGUAGE sql

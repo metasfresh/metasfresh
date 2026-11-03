@@ -1,5 +1,15 @@
-import { parseQRCodeString, toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../../utils/qrCode/hu';
+import {
+  checkPartialHUScannedCode,
+  parseQRCodeString,
+  toQRCodeDisplayable,
+  toQRCodeObject,
+  toQRCodeString,
+} from '../../../utils/qrCode/hu';
+import { ScanCompleteness } from '../../../utils/qrCode/common';
 import { setupCounterpart } from '../../../utils/translations';
+
+const COMPLETE_HU_QR =
+  'HU#1#{"id":"0de63cbd34708add7a9afbb423d0-05650","packingInfo":{"huUnitType":"LU","packingInstructionsId":1000006,"caption":"Euro Palette"},"product":{"id":1000001,"code":"2680","name":"Sternflow 11 Raps"},"attributes":[]}';
 
 describe('huQRCodes tests', () => {
   describe('toQRCodeDisplayable', () => {
@@ -88,6 +98,7 @@ describe('huQRCodes tests', () => {
       expect(parseQRCodeString(code)).toEqual({
         code,
         barcodeType: 'HU',
+        huUnitType: 'LU',
         displayable: '05650',
         productId: '1000001',
         isUnique: true,
@@ -99,6 +110,7 @@ describe('huQRCodes tests', () => {
       expect(parseQRCodeString(code)).toEqual({
         code,
         barcodeType: 'HU',
+        huUnitType: 'V',
         displayable: '28193',
         productId: '2005577',
         weightNet: 2427.425,
@@ -272,6 +284,42 @@ describe('huQRCodes tests', () => {
           isTUToBePickedAsWhole: true,
         });
       });
+    });
+  });
+
+  describe('checkPartialHUScannedCode', () => {
+    it('NOT_APPLICABLE for non-HU / empty / non-string inputs', () => {
+      expect(checkPartialHUScannedCode('')).toBe(ScanCompleteness.NOT_APPLICABLE);
+      expect(checkPartialHUScannedCode(null)).toBe(ScanCompleteness.NOT_APPLICABLE);
+      expect(checkPartialHUScannedCode(undefined)).toBe(ScanCompleteness.NOT_APPLICABLE);
+      expect(checkPartialHUScannedCode(12345)).toBe(ScanCompleteness.NOT_APPLICABLE);
+      expect(checkPartialHUScannedCode('2100001234567')).toBe(ScanCompleteness.NOT_APPLICABLE); // EAN-like
+      expect(checkPartialHUScannedCode('LMQ#1#12.5')).toBe(ScanCompleteness.NOT_APPLICABLE); // other QR type
+      expect(checkPartialHUScannedCode('HUGE123')).toBe(ScanCompleteness.NOT_APPLICABLE); // starts with HU but no separator
+    });
+
+    it('PARTIAL_SCAN while the HU prefix / JSON payload is still arriving', () => {
+      expect(checkPartialHUScannedCode('H')).toBe(ScanCompleteness.PARTIAL_SCAN);
+      expect(checkPartialHUScannedCode('HU')).toBe(ScanCompleteness.PARTIAL_SCAN);
+      expect(checkPartialHUScannedCode('HU#')).toBe(ScanCompleteness.PARTIAL_SCAN);
+      expect(checkPartialHUScannedCode('HU#1')).toBe(ScanCompleteness.PARTIAL_SCAN);
+      expect(checkPartialHUScannedCode('HU#1#')).toBe(ScanCompleteness.PARTIAL_SCAN);
+      expect(checkPartialHUScannedCode('HU#1#{')).toBe(ScanCompleteness.PARTIAL_SCAN);
+      expect(checkPartialHUScannedCode('HU#1#{"id":"0de63cbd')).toBe(ScanCompleteness.PARTIAL_SCAN);
+      // truncated at half of a real code (nested object still open)
+      expect(checkPartialHUScannedCode(COMPLETE_HU_QR.substring(0, Math.floor(COMPLETE_HU_QR.length / 2)))).toBe(
+        ScanCompleteness.PARTIAL_SCAN
+      );
+      // recognised HU but non-JSON payload → never completes on its own (bounded by abandon timer)
+      expect(checkPartialHUScannedCode('HU#1#not-json')).toBe(ScanCompleteness.PARTIAL_SCAN);
+    });
+
+    it('COMPLETE_SCAN once the JSON payload is closed (nesting / string-internal braces handled by JSON.parse)', () => {
+      expect(checkPartialHUScannedCode('HU#1#{}')).toBe(ScanCompleteness.COMPLETE_SCAN);
+      expect(checkPartialHUScannedCode('HU#1#{"id":"x"}')).toBe(ScanCompleteness.COMPLETE_SCAN);
+      expect(checkPartialHUScannedCode(COMPLETE_HU_QR)).toBe(ScanCompleteness.COMPLETE_SCAN);
+      // a literal brace inside a JSON string value must NOT confuse completeness
+      expect(checkPartialHUScannedCode('HU#1#{"name":"Box {A}","attributes":[]}')).toBe(ScanCompleteness.COMPLETE_SCAN);
     });
   });
 });

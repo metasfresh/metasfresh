@@ -1,55 +1,7 @@
 package de.metas.inoutcandidate.spi;
 
-import java.util.Comparator;
-import java.util.Iterator;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -62,15 +14,40 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import de.metas.organization.OrgId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 /**
  * This abstract class declares the pluggable main component to create and handle {@link I_M_ShipmentSchedule} records for
  * other records from a specific source table (e.g. order lines or subscription lines).
- *
+ * <p>
  * Implementors are also related to {@link I_M_IolCandHandler} records.
- *
+ * <p>
  * Implementors can be registered by calling {@link IShipmentScheduleHandlerBL#registerHandler(ShipmentScheduleHandler)} .
- *
+ * <p>
  * Interface methods should only be called by the {@link IShipmentScheduleHandlerBL} implementation.
  *
  * @author metas-dev <dev@metasfresh.com>
@@ -83,13 +60,23 @@ public abstract class ShipmentScheduleHandler
 	{
 		int orgId;
 
-		/** mostly to help with debugging */
+		/**
+		 * mostly to help with debugging
+		 */
 		int attributeConfigId;
 
 		@Nullable
 		AttributeId attributeId;
 
 		boolean onlyIfInReferencedRecordAsi;
+
+		/**
+		 * If {@code true} (default), the HU attribute value overwrites the schedule ASI value
+		 * on the shipment line during HU attribute transfer.
+		 * If {@code false}, the schedule ASI value (from the order line) takes precedence.
+		 */
+		@Builder.Default
+		boolean huAttributeOverridesASI = true;
 	}
 
 	private final static CCache<Integer, ImmutableList<AttributeConfig>> cache = CCache.newCache(
@@ -109,7 +96,9 @@ public abstract class ShipmentScheduleHandler
 						.attributeConfigId(attributeConfigRecord.getM_ShipmentSchedule_AttributeConfig_ID())
 						.orgId(attributeConfigRecord.getAD_Org_ID())
 						.attributeId(AttributeId.ofRepoIdOrNull(attributeConfigRecord.getM_Attribute_ID()))
-						.onlyIfInReferencedRecordAsi(attributeConfigRecord.isOnlyIfInReferencedASI()).build())
+						.onlyIfInReferencedRecordAsi(attributeConfigRecord.isOnlyIfInReferencedASI())
+						.huAttributeOverridesASI(attributeConfigRecord.isHUAttributeOverridesASI())
+						.build())
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -123,12 +112,16 @@ public abstract class ShipmentScheduleHandler
 	 * <li>The framework will create a {@link I_M_IolCandHandler_Log} record for every object returned by this method.</li>
 	 * <li>Implementors should check for <code>I_M_IolCandHandler_Log</code> to make sure that they don't repeatedly return records are then vetoed by some {@link ModelWithoutShipmentScheduleVetoer}</li>
 	 * </ul>
+	 *
+	 * @param limit budget of models still allowed to be processed in the current run; implementors MUST apply this as
+	 * a query limit so that they don't materialize the whole (potentially huge) backlog. Use {@link org.adempiere.ad.dao.QueryLimit#NO_LIMIT}
+	 * to retrieve everything in one go.
 	 */
-	public abstract Iterator<?> retrieveModelsWithMissingCandidates(Properties ctx, String trxName);
+	public abstract Iterator<?> retrieveModelsWithMissingCandidates(Properties ctx, String trxName, QueryLimit limit);
 
 	/**
 	 * Creates missing candidates for the given model.
-	 *
+	 * <p>
 	 * SPI-implementors can assume that this method is only called with objects that
 	 * <ul>
 	 * <li>can be handled by {@link InterfaceWrapperHelper} and</li>
@@ -147,7 +140,7 @@ public abstract class ShipmentScheduleHandler
 
 	/**
 	 * Invalidates invoice candidates for the given model.
-	 *
+	 * <p>
 	 * SPI-implementors can assume that this method is only called with objects that
 	 * <ul>
 	 * <li>can be handled by {@link InterfaceWrapperHelper} and</li>
@@ -192,7 +185,7 @@ public abstract class ShipmentScheduleHandler
 	{
 		final Optional<AttributeConfig> attributeConfigIfPresent = findMatchingAttributeConfig(
 				shipmentSchedule.getAD_Org_ID(),
-				attribute);
+				AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 		if (!attributeConfigIfPresent.isPresent())
 		{
 			return false;
@@ -216,8 +209,8 @@ public abstract class ShipmentScheduleHandler
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
 
-		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class)
-				.retrieveAttributeInstance(
+		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeSetInstanceBL.class)
+				.getAttributeInstance(
 						asiId,
 						attributeConfigToUse.getAttributeId());
 
@@ -228,6 +221,20 @@ public abstract class ShipmentScheduleHandler
 		}
 
 		return hasNonNullAttributeListValue(attributeInstance);
+	}
+
+	/**
+	 * Returns {@code true} if the HU attribute value should overwrite the schedule ASI value
+	 * for the given attribute on the shipment line. Defaults to {@code true} (backward compatible)
+	 * if no config record is found.
+	 */
+	public final boolean isHUAttributeOverridesASI(
+			@NonNull final OrgId orgId,
+			@NonNull final AttributeId attributeId)
+	{
+		return findMatchingAttributeConfig(orgId.getRepoId(), attributeId)
+				.map(AttributeConfig::isHuAttributeOverridesASI)
+				.orElse(true); // default: HU wins (backward compatible)
 	}
 
 	private boolean hasNonNullAttributeListValue(final I_M_AttributeInstance attributeInstance)
@@ -246,7 +253,7 @@ public abstract class ShipmentScheduleHandler
 	@VisibleForTesting
 	Optional<AttributeConfig> findMatchingAttributeConfig(
 			final int orgId,
-			final I_M_Attribute m_Attribute)
+			@NonNull final AttributeId attributeId)
 	{
 		final ImmutableList<AttributeConfig> attributeConfigs = getAttributeConfigs();
 
@@ -256,7 +263,7 @@ public abstract class ShipmentScheduleHandler
 
 		final Optional<AttributeConfig> matchingConfigIfPresent = attributeConfigs
 				.stream()
-				.filter(c -> AttributeId.toRepoId(c.getAttributeId()) == m_Attribute.getM_Attribute_ID())
+				.filter(c -> AttributeId.equals(c.getAttributeId(), attributeId))
 				.sorted(orgComparator)
 				.findFirst();
 

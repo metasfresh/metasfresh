@@ -222,6 +222,7 @@ class Actions extends Component {
           'subheader-item-disabled': item.disabled,
         })}
         onClick={handleClick}
+        data-testid={`action-${item.internalName || 'unknown'}`}
       >
         {item.caption}
         {item.disabled && item.disabledReason && (

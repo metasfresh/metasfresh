@@ -2,7 +2,6 @@ package de.metas.payment.paymentterm.interceptor;
 
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
@@ -83,8 +82,8 @@ public class C_OrderLine
 			return;
 		}
 
-		final PaymentTerm paymentTermRecord = Services.get(IPaymentTermRepository.class).getById(paymentTermId);
-		final Percent paymentDiscount = paymentTermRecord.getDiscount();
+		final PaymentTerm paymentTerm = paymentTermService.getById(paymentTermId);
+		final Percent paymentDiscount = paymentTerm.getDiscount();
 		orderLineRecord.setPaymentDiscount(paymentDiscount.toBigDecimal());
 	}
 

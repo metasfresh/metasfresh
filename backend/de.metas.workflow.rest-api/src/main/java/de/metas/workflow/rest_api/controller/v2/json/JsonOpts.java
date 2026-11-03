@@ -35,6 +35,11 @@ public class JsonOpts
 {
 	@NonNull String adLanguage;
 
+	public static JsonOpts ofAdLanguage(@NonNull final String adLanguage)
+	{
+		return builder().adLanguage(adLanguage).build();
+	}
+
 	@Nullable
 	public Object convertValueToJson(@Nullable final Object value)
 	{

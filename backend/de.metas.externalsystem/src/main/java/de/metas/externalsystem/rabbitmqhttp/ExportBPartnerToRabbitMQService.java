@@ -28,7 +28,7 @@ import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.util.Check;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
@@ -59,14 +59,14 @@ public class ExportBPartnerToRabbitMQService extends ExportBPartnerToExternalSys
 	private final UserGroupRepository userGroupRepository;
 
 	public ExportBPartnerToRabbitMQService(
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
+			@NonNull final ExternalSystemConfigRepository externalSystemConfigRepository,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
 			@NonNull final ExternalSystemConfigService externalSystemConfigService,
 			@NonNull final UserGroupRepository userGroupRepository)
 	{
-		super(externalSystemConfigRepo,
+		super(externalSystemConfigRepository,
 			  externalSystemMessageSender,
 			  dataExportAuditLogRepository,
 			  dataExportAuditRepository,
@@ -87,7 +87,7 @@ public class ExportBPartnerToRabbitMQService extends ExportBPartnerToExternalSys
 			return Optional.empty();
 		}
 
-		return Optional.of(externalSystemConfigRepo.getActiveByType(getExternalSystemType())
+		return Optional.of(externalSystemConfigRepository.getActiveByType(getExternalSystemType())
 								   .stream()
 								   .filter(ExternalSystemParentConfig::isActive)
 								   .map(ExternalSystemParentConfig::getChildConfig)

@@ -41,4 +41,10 @@ public enum HuUnitType implements ReferenceListAwareEnum
 
 	@JsonValue
 	public String toJson() {return getCode();}
+
+	public boolean isLU() {return LU.equals(this);}
+
+	public boolean isTU() {return TU.equals(this);}
+
+	public boolean isVHU() {return VHU.equals(this);}
 }

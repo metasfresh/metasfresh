@@ -28,7 +28,7 @@ import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemConfigTestUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
@@ -54,7 +54,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_
 import static de.metas.externalsystem.ExternalSystemType.GRSSignum;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExportBPartnerToGRSServiceTest
 {
@@ -74,7 +74,7 @@ public class ExportBPartnerToGRSServiceTest
 
 		AdempiereTestHelper.get().init();
 
-		exportBPartnerToGRSService = new ExportBPartnerToGRSService(ExternalSystemConfigRepo.newInstanceForUnitTesting(),
+		exportBPartnerToGRSService = new ExportBPartnerToGRSService(ExternalSystemConfigRepository.newInstanceForUnitTesting(),
 																	new DataExportAuditRepository(),
 																	new DataExportAuditLogRepository(),
 																	new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),

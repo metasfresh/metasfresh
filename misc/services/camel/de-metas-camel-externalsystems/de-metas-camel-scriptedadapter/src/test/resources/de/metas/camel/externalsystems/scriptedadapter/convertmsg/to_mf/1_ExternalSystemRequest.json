@@ -1,0 +1,14 @@
+{
+  "orgCode": "orgCode",
+  "externalSystemName": "ScriptedImportConversion",
+  "externalSystemChildConfigValue": "childValue",
+  "command": "ScriptedImportConversion-enableRestAPI",
+  "adPInstanceId": 123,
+  "externalSystemConfigId": 100,
+  "traceId": "123",
+  "parameters": {
+    "endpointName": "endpointName",
+    "scriptIdentifier": "scriptIdentifier",
+    "token": "token"
+  }
+}

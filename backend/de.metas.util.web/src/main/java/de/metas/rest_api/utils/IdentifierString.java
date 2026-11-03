@@ -25,6 +25,7 @@ package de.metas.rest_api.utils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GlnWithLabel;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.util.Check;
@@ -66,6 +67,8 @@ public class IdentifierString
 
 		GLN,
 
+		GLN_WITH_LABEL,
+
 		INTERNALNAME,
 
 		/**
@@ -85,9 +88,15 @@ public class IdentifierString
 	public static final String PREFIX_VALUE = "val-";
 	public static final String PREFIX_INTERNALNAME = "int-";
 	public static final String PREFIX_GLN = "gln-";
+
+	/**
+	 * @see GlnWithLabel
+	 */
+	public static final String PREFIX_GLN_WITH_LABEL = "glnl-";
 	public static final String PREFIX_DOC = "doc-";
 
-	public static final IdentifierString ofOrNull(@Nullable final String rawIdentifierString)
+	@Nullable
+	public static IdentifierString ofOrNull(@Nullable final String rawIdentifierString)
 	{
 		if (isEmpty(rawIdentifierString, true))
 		{
@@ -136,6 +145,15 @@ public class IdentifierString
 			}
 			return new IdentifierString(Type.GLN, glnString, rawIdentifierString);
 		}
+		else if (rawIdentifierString.toLowerCase().startsWith(PREFIX_GLN_WITH_LABEL))
+		{
+			final String glnWithLabelString = rawIdentifierString.substring(5).trim();
+			if (glnWithLabelString.isEmpty())
+			{
+				throw new AdempiereException("Invalid GLN: `" + rawIdentifierString + "`");
+			}
+			return new IdentifierString(Type.GLN_WITH_LABEL, glnWithLabelString, rawIdentifierString);
+		}
 		else if (rawIdentifierString.toLowerCase().startsWith(PREFIX_DOC))
 		{
 			final String docString = rawIdentifierString.substring(4).trim();
@@ -170,22 +188,22 @@ public class IdentifierString
 		return new IdentifierString(Type.METASFRESH_ID, String.valueOf(repoId), String.valueOf(repoId));
 	}
 
-	public static final IdentifierString ofJsonExternalId(@Nullable final JsonExternalId jsonExternalId)
+	public static IdentifierString ofJsonExternalId(@Nullable final JsonExternalId jsonExternalId)
 	{
 		return of(PREFIX_EXTERNAL_ID + JsonExternalId.toValue(jsonExternalId));
 	}
 
-	public static final IdentifierString ofValue(@NonNull final String code)
+	public static IdentifierString ofValue(@NonNull final String code)
 	{
 		return of(PREFIX_VALUE + code);
 	}
 
-	public static IdentifierString ofGLN(String gln)
+	public static IdentifierString ofGLN(@NonNull final String gln)
 	{
 		return of(PREFIX_GLN + gln);
 	}
 
-	public static IdentifierString ofDoc(String doc)
+	public static IdentifierString ofDoc(@NonNull final String doc)
 	{
 		return of(PREFIX_DOC + doc);
 	}
@@ -230,6 +248,10 @@ public class IdentifierString
 		else if (Type.GLN.equals(type))
 		{
 			prefix = PREFIX_GLN;
+		}
+		else if (Type.GLN_WITH_LABEL.equals(type))
+		{
+			prefix = PREFIX_GLN_WITH_LABEL;
 		}
 		else if (Type.DOC.equals(type))
 		{
@@ -288,28 +310,30 @@ public class IdentifierString
 	public GLN asGLN()
 	{
 		Check.assume(Type.GLN.equals(type), "The type of this instance needs to be {}; this={}", Type.GLN, this);
-
 		return GLN.ofString(value);
+	}
+
+	public GlnWithLabel asGlnWithLabel()
+	{
+		Check.assume(Type.GLN_WITH_LABEL.equals(type), "The type of this instance needs to be {}; this={}", Type.GLN_WITH_LABEL, this);
+		return GlnWithLabel.ofString(value);
 	}
 
 	public String asDoc()
 	{
 		Check.assume(Type.DOC.equals(type), "The type of this instance needs to be {}; this={}", Type.DOC, this);
-
 		return value;
 	}
 
 	public String asValue()
 	{
 		Check.assume(Type.VALUE.equals(type), "The type of this instance needs to be {}; this={}", Type.VALUE, this);
-
 		return value;
 	}
 
 	public String asInternalName()
 	{
 		Check.assume(Type.INTERNALNAME.equals(type), "The type of this instance needs to be {}; this={}", Type.INTERNALNAME, this);
-
 		return value;
 	}
 

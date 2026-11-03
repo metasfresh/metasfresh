@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GlnWithLabel;
+import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
@@ -105,16 +107,27 @@ final class BPartnerCompositeCacheIndex
 	@Override
 	public Collection<OrgAndBPartnerCompositeLookupKey> extractCacheKeys(@NonNull final BPartnerComposite dataItem)
 	{
-		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, dataItem.getBpartner() == null ? null : dataItem.getBpartner().getId()))
+		final BPartner bpartner = dataItem.getBpartner();
+		
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner == null ? null : bpartner.getId()))
 		{
-			final OrgId orgId = dataItem.getOrgId();
+			final OrgId orgId = Check.assumeNotNull(dataItem.getOrgId(), "dataItem.getOrgId() is not null for dataItem={}", dataItem);
+			
 			final ImmutableList.Builder<OrgAndBPartnerCompositeLookupKey> cacheKeys = ImmutableList.builder();
 
-			final String value = dataItem.getBpartner().getValue();
+			final String value = bpartner.getValue();
 			if (!isEmpty(value, true))
 			{
 				cacheKeys.add(OrgAndBPartnerCompositeLookupKey.of(
 						BPartnerCompositeLookupKey.ofCode(value),
+						orgId));
+			}
+
+			final ImmutableSet<GlnWithLabel> locationGlnsWithLabel = dataItem.extractLocationGlnsWithLabel();
+			for (final GlnWithLabel locationGln : locationGlnsWithLabel)
+			{
+				cacheKeys.add(OrgAndBPartnerCompositeLookupKey.of(
+						BPartnerCompositeLookupKey.ofGlnWithLabel(locationGln),
 						orgId));
 			}
 
@@ -125,8 +138,8 @@ final class BPartnerCompositeCacheIndex
 						BPartnerCompositeLookupKey.ofGln(locationGln),
 						orgId));
 			}
-
-			final ExternalId externalId = dataItem.getBpartner().getExternalId();
+			
+			final ExternalId externalId = bpartner.getExternalId();
 			if (externalId != null)
 			{
 				cacheKeys.add(OrgAndBPartnerCompositeLookupKey.of(
@@ -134,7 +147,7 @@ final class BPartnerCompositeCacheIndex
 						orgId));
 			}
 
-			final MetasfreshId metasfreshId = MetasfreshId.ofOrNull(dataItem.getBpartner().getId());
+			final MetasfreshId metasfreshId = MetasfreshId.ofOrNull(bpartner.getId());
 			if (metasfreshId != null)
 			{
 				cacheKeys.add(

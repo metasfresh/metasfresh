@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_PP_Cost_BOMLine extends org.compiere.model.PO implements I_RV_PP_Cost_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1995649221L;
+	private static final long serialVersionUID = -353490917L;
 
     /** Standard Constructor */
     public X_RV_PP_Cost_BOMLine (final Properties ctx, final int RV_PP_Cost_BOMLine_ID, @Nullable final String trxName)
@@ -87,21 +87,6 @@ public class X_RV_PP_Cost_BOMLine extends org.compiere.model.PO implements I_RV_
 	public int getC_AcctSchema_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_AcctSchema_ID);
-	}
-
-	@Override
-	public void setC_UOM_ID (final int C_UOM_ID)
-	{
-		if (C_UOM_ID < 1) 
-			set_Value (COLUMNNAME_C_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
-	}
-
-	@Override
-	public int getC_UOM_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	/** 
@@ -179,6 +164,8 @@ public class X_RV_PP_Cost_BOMLine extends org.compiere.model.PO implements I_RV_
 	public static final String COSTINGMETHOD_UserDefined = "U";
 	/** _ = x */
 	public static final String COSTINGMETHOD__ = "x";
+	/** MovingAverageInvoice = M */
+	public static final String COSTINGMETHOD_MovingAverageInvoice = "M";
 	@Override
 	public void setCostingMethod (final @Nullable java.lang.String CostingMethod)
 	{
@@ -202,6 +189,21 @@ public class X_RV_PP_Cost_BOMLine extends org.compiere.model.PO implements I_RV_
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostStandard);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	@Override

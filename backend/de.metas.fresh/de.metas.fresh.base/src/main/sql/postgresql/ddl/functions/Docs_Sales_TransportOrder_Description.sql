@@ -32,7 +32,10 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Des
                 PickupLocation  varchar(360),
                 name            varchar(60),
                 datetobefetched timestamp with time zone,
-                UserName        varchar(60)
+                UserName        varchar(60),
+                UserLastName    varchar(60),
+                UserMail        varchar(60),
+                UserPhone       varchar(60)
             )
 AS
 $$
@@ -45,7 +48,10 @@ SELECT st.description AS description,
        )              AS PickupLocation,
        t.name,
        st.DateToBeFetched,
-       us.name        AS UserName
+       us.name        AS UserName,
+       us.lastname    AS UserLastName,
+       us.email       AS UserMail,
+       us.phone       AS UserPhone
 FROM M_ShipperTransportation st
          INNER JOIN C_BPartner_Location bpl ON st.Shipper_Location_ID = bpl.C_BPartner_Location_ID
          INNER JOIN C_BPartner bp ON bpl.C_BPartner_ID = bp.C_BPartner_ID

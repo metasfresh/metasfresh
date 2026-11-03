@@ -31,11 +31,7 @@ export const ScanHUConsolidationTargetScreen = () => {
 
   return (
     <div className="section pt-2">
-      <BarcodeScannerComponent
-        continuousRunning={true}
-        resolveScannedBarcode={resolveScannedBarcode}
-        onResolvedResult={onBarcodeScanned}
-      />
+      <BarcodeScannerComponent resolveScannedBarcode={resolveScannedBarcode} onResolvedResult={onBarcodeScanned} />
     </div>
   );
 };

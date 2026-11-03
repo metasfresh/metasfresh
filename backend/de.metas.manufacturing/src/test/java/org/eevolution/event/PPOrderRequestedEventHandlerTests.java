@@ -3,6 +3,7 @@ package org.eevolution.event;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.common.util.time.SystemTime;
+import de.metas.distribution.ddordercandidate.material_dispo.PPOrderBOMLineDistributionSupplyMover;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.event.impl.PlainEventBusFactory;
@@ -30,7 +31,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
+import org.adempiere.mm.attributes.asi_aware.product.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -63,6 +64,7 @@ import org.eevolution.model.validator.PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -370,7 +372,8 @@ public class PPOrderRequestedEventHandlerTests
 				postMaterialEventService,
 				new DocumentNoBuilderFactory(Optional.empty()),
 				new PPOrderBOMBL(),
-				new ProductBOMVersionsDAO()));
+				new ProductBOMVersionsDAO(),
+				Mockito.mock(PPOrderBOMLineDistributionSupplyMover.class)));
 	}
 
 	private List<I_PP_Order_BOMLine> filter(final I_PP_Order ppOrder, final BOMComponentType componentType)

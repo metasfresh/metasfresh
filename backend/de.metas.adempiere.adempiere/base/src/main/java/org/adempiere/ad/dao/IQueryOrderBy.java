@@ -22,20 +22,38 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.function.UnaryOperator;
 
 public interface IQueryOrderBy
 {
 	enum Direction
-	{Ascending, Descending}
+	{
+		Ascending,
+		Descending,
+		;
+
+		public static Direction ofIsAscendingFlag(final boolean isAscending) {return isAscending ? Ascending : Descending;}
+
+		public boolean isAscending() {return this.equals(Ascending);}
+	}
 
 	enum Nulls
 	{First, Last}
 
+	@Nullable
 	String getSql();
 
+	@Nullable
+	String getSql(@NonNull UnaryOperator<String> columnNameMapper);
+
+	@NonNull
 	Comparator<Object> getComparator();
 
+	@NonNull
 	default <T> Comparator<T> getComparator(@SuppressWarnings("unused") Class<T> modelClass)
 	{
 		//noinspection unchecked

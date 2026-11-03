@@ -7,6 +7,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.dimension.DimensionService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
@@ -20,6 +21,7 @@ import de.metas.purchasecandidate.BPPurchaseScheduleRepository;
 import de.metas.purchasecandidate.BPPurchaseScheduleService;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemand;
@@ -154,7 +156,8 @@ public class PurchaseRowsLoaderTest
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
 				new ReferenceGenerator(),
-				dimensionService);
+				dimensionService,
+				new ExternalSystemRepository());
 
 		final DoNothingPurchaseProfitInfoServiceImpl purchaseProfitInfoService = new DoNothingPurchaseProfitInfoServiceImpl();
 
@@ -292,6 +295,7 @@ public class PurchaseRowsLoaderTest
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
 				.vendorId(vendorProductInfo.getVendorId())
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
+				.source(PurchaseCandidateSource.SalesOrder)
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.warehouseId(WarehouseId.ofRepoId(30))
 				.profitInfoOrNull(profitInfo)

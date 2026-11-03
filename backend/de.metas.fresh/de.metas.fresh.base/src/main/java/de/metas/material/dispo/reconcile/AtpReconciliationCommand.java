@@ -87,7 +87,7 @@ public class AtpReconciliationCommand
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final CandidateRepositoryRetrieval candidateRepository)
 	{
-		this(atpTargetCalculator, candidateChangeHandler, candidateRepository, new AtpReconciliationBackupRepositoryImpl());
+		this(atpTargetCalculator, candidateChangeHandler, candidateRepository, new DefaultAtpReconciliationBackupRepository());
 	}
 
 	/**
@@ -276,7 +276,7 @@ public class AtpReconciliationCommand
 				.build();
 
 		// null qtyBefore: this candidate did not exist before the run, matching the same convention
-		// AtpReconciliationBackupRepositoryImpl.newRecordFor uses for the STOCK candidates a run creates.
+		// DefaultAtpReconciliationBackupRepository.newRecordFor uses for the STOCK candidates a run creates.
 		final AtpReconciliationDetail businessCaseDetail = AtpReconciliationDetail.builder()
 				.reconciliationRunUUID(runUuid)
 				.qtyBefore(null)

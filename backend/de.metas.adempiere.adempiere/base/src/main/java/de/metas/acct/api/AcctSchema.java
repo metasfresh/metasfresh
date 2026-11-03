@@ -108,6 +108,11 @@ public class AcctSchema
 		return !isAllowPostingForOrg(orgId);
 	}
 
+	public boolean isElementEnabled(@NonNull final AcctSchemaElementType elementType)
+	{
+		return getSchemaElements().isElementEnabled(elementType);
+	}
+
 	public AcctSchemaElement getSchemaElementByType(@NonNull final AcctSchemaElementType elementType)
 	{
 		return getSchemaElements().getByElementType(elementType);

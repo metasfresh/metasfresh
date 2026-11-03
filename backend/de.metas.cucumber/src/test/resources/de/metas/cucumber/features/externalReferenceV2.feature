@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00801
 @ghActions:run_on_executor5
 Feature: external references for metasfresh resources (V2)
+## F00801: External Reference
   As a REST-API invoker
   I want want to query and update the external references for metasfresh resources like BPartners
   So that the resources 3rd party systems can be connected with metasfresh data
@@ -10,6 +13,8 @@ Feature: external references for metasfresh resources (V2)
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00801
   Scenario: external resource is not referenced to a metasfresh resource
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/001' receives a 'PUT' request with the payload
   """

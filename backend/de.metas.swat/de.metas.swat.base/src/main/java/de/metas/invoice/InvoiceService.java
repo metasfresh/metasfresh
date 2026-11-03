@@ -2,7 +2,7 @@
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,12 +25,13 @@ package de.metas.invoice;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IEnqueueResult;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.CreateInvoiceForModelService;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
@@ -38,10 +39,14 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
@@ -50,9 +55,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 import static org.compiere.util.Env.getCtx;
 
 @Service
@@ -63,36 +70,79 @@ public class InvoiceService
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final AsyncBatchService asyncBatchService;
+	private final CreateInvoiceForModelService createInvoiceForModelService;
 
-	public InvoiceService(@NonNull final AsyncBatchService asyncBatchService)
+	public InvoiceService(
+			@NonNull final AsyncBatchService asyncBatchService,
+			@NonNull final CreateInvoiceForModelService createInvoiceForModelService)
 	{
 		this.asyncBatchService = asyncBatchService;
+		this.createInvoiceForModelService = createInvoiceForModelService;
 	}
 
 	@NonNull
-	public Set<InvoiceId> generateInvoicesFromShipmentLines(@NonNull final List<I_M_InOutLine> shipmentLines, @NonNull final AsyncBatchId asyncBatchId)
+	public Set<InvoiceId> generateInvoicesFromShipmentLines(@NonNull final List<I_M_InOutLine> shipmentLines)
 	{
 		if (shipmentLines.isEmpty())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("generateInvoicesFromShipmentLines - Given shipmentLines list is empty; -> nothing to do");
 			return ImmutableSet.of();
 		}
-		
+
+		generateMissingInvoiceCandidatesForOrders(shipmentLines);
+
 		final Set<InvoiceCandidateId> invoiceCandidateIds = retrieveInvoiceCandsByInOutLines(shipmentLines)
 				.stream()
 				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
+		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 	}
 
-	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds,
-			@NonNull final AsyncBatchId asyncBatchId)
+	/**
+	 * The invoice candidates of the shipped order lines are created asynchronously, by a workpackage that is scheduled when the order is completed.
+	 * That workpackage might still be pending, e.g. because workpackages with a higher priority overtook it.
+	 * Therefore, if a shipped order line has no invoice candidate yet, we create its order's missing candidates within an async batch that we wait for.
+	 */
+	private void generateMissingInvoiceCandidatesForOrders(@NonNull final List<I_M_InOutLine> shipmentLines)
 	{
-		processInvoiceCandidates(ImmutableSet.copyOf(invoiceCandidateIds), asyncBatchId);
+		final ImmutableSet<OrderLineId> orderLineIdsWithoutICs = retrieveOrderLineIdsWithoutInvoiceCandidates(shipmentLines);
+		if (orderLineIdsWithoutICs.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableList<TableRecordReference> orderRefs = orderDAO.retrieveIdsByOrderLineIds(orderLineIdsWithoutICs)
+				.stream()
+				.map(orderId -> TableRecordReference.of(I_C_Order.Table_Name, orderId))
+				.collect(ImmutableList.toImmutableList());
+
+		createInvoiceForModelService.generateMissingInvoiceCandidatesForModel(orderRefs);
+	}
+
+	@NonNull
+	private ImmutableSet<OrderLineId> retrieveOrderLineIdsWithoutInvoiceCandidates(@NonNull final List<I_M_InOutLine> shipmentLines)
+	{
+		final ImmutableSet<OrderLineId> orderLineIds = shipmentLines.stream()
+				.map(shipmentLine -> OrderLineId.ofRepoIdOrNull(shipmentLine.getC_OrderLine_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableSet<OrderLineId> orderLineIdsWithICs = invoiceCandDAO.retrieveOrderLineIdsWithInvoiceCandidates(orderLineIds);
+		return Sets.difference(orderLineIds, orderLineIdsWithICs).immutableCopy();
+	}
+
+	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	{
+		processInvoiceCandidates(ImmutableSet.copyOf(invoiceCandidateIds));
 
 		return invoiceCandidateIds.stream()
 				.map(invoiceCandDAO::retrieveIlForIc)
@@ -102,9 +152,9 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds, @NonNull final AsyncBatchId asyncBatchId)
+	private void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
-			generateInvoicesForAsyncBatch(invoiceCandidateIds, asyncBatchId);
+		generateInvoicesForAsyncBatch(invoiceCandidateIds);
 	}
 
 	@NonNull
@@ -116,15 +166,15 @@ public class InvoiceService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private void generateInvoicesForAsyncBatch(@NonNull final Set<InvoiceCandidateId> invoiceCandIds, @NonNull final AsyncBatchId asyncBatchId)
+	private void generateInvoicesForAsyncBatch(@NonNull final Set<InvoiceCandidateId> invoiceCandIds)
 	{
-		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
+		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
 
 		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, Trx.TRXNAME_None);
 
 		final IInvoiceCandidateEnqueuer enqueuer = invoiceCandBL.enqueueForInvoicing()
 				.setContext(getCtx())
-				.setC_Async_Batch(asyncBatch)
+				.setAsyncBatchId(asyncBatchId)
 				.setInvoicingParams(createDefaultIInvoicingParams())
 				.setFailIfNothingEnqueued(true);
 
@@ -132,7 +182,7 @@ public class InvoiceService
 		enqueuer.prepareSelection(invoiceCandidatesSelectionId);
 
 		final Supplier<IEnqueueResult> enqueueInvoiceCandidates = () -> enqueuer
-					.enqueueSelection(invoiceCandidatesSelectionId);
+				.enqueueSelection(invoiceCandidatesSelectionId);
 
 		asyncBatchService.executeBatch(enqueueInvoiceCandidates, asyncBatchId);
 	}
@@ -142,7 +192,6 @@ public class InvoiceService
 	{
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
 		invoicingParams.setDateInvoiced(LocalDate.now());
 
 		return invoicingParams;

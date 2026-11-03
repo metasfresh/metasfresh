@@ -11,6 +11,8 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.impl.AttributeDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Evaluatee;
@@ -58,13 +60,15 @@ public class MaterialTrackingAttributeValuesProviderTest
 
 		final I_M_Attribute attributeRecord = newInstance(I_M_Attribute.class);
 		attributeRecord.setValue(I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID);
+		attributeRecord.setName(I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID);
+		attributeRecord.setAttributeValueType(AttributeValueType.LIST.getCode());
 		saveRecord(attributeRecord);
 
 		materialTrackingAttributeValuesProvider = MaterialTrackingAttributeValuesProvider.builder()
 				.materialTrackingDAO(Services.get(IMaterialTrackingDAO.class))
 				.huAttributesBL(Services.get(IHUAttributesBL.class))
 				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
-				.attribute(attributeRecord)
+				.attribute(AttributeDAO.fromRecord(attributeRecord))
 				.build();
 	}
 
@@ -120,7 +124,6 @@ public class MaterialTrackingAttributeValuesProviderTest
 		assertThat(namePair1.getID()).isEqualTo(asValueNameKey(materialTrackingId1));
 		assertThat(namePair1.getName()).isEqualTo(createLot(productId1, bpartnerId1));
 	}
-
 
 	@Test
 	public void getAvailableValue()

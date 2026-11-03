@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.inoutcandidate.api.impl;
 
 import de.metas.bpartner.BPartnerContactId;
@@ -7,11 +29,15 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.DocumentLocation;
+import de.metas.inout.PriorityRule;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.LocationId;
 import de.metas.order.DeliveryRule;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -22,6 +48,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -40,13 +67,14 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		if (sched.getC_BPartner_Override_ID() <= 0)
+		final BPartnerId bpartnerOverrideId = BPartnerId.ofRepoIdOrNull(sched.getC_BPartner_Override_ID());
+		if (bpartnerOverrideId != null)
 		{
-			return BPartnerId.ofRepoId(sched.getC_BPartner_ID());
+			return bpartnerOverrideId;
 		}
 		else
 		{
-			return BPartnerId.ofRepoId(sched.getC_BPartner_Override_ID());
+			return BPartnerId.ofRepoId(sched.getC_BPartner_ID());
 		}
 	}
 
@@ -90,6 +118,13 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 			return sched.getQtyToDeliver_Override();
 		}
 		return sched.getQtyToDeliver();
+	}
+
+	@Override
+	public Quantity getQtyOnHand(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(sched.getM_Product_ID());
+		return Quantity.of(sched.getQtyOnHand(), uom);
 	}
 
 	@Override
@@ -190,13 +225,15 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 		return shipmentSchedule.getQtyOrdered_Calculated();
 	}
 
+	@Nullable
 	@Override
-	public ZonedDateTime getDeliveryDate(final I_M_ShipmentSchedule sched)
+	public ZonedDateTime getDeliveryDate(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		return TimeUtil.asZonedDateTime(
 				CoalesceUtil.coalesceSuppliers(
 						sched::getDeliveryDate_Override,
-						sched::getDeliveryDate));
+						sched::getDeliveryDate),
+				OrgId.ofRepoId(sched.getAD_Org_ID()));
 	}
 
 	@Override
@@ -222,5 +259,14 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 		}
 
 		return SystemTime.asZonedDateTime();
+	}
+
+	@Override
+	public PriorityRule getPriorityRule(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		return CoalesceUtil.coalesceNotNull(
+				PriorityRule.ofNullableCode(sched.getPriorityRule_Override()),
+				PriorityRule.ofNullableCode(sched.getPriorityRule()),
+				PriorityRule.Medium);
 	}
 }

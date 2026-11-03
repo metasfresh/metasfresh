@@ -4,7 +4,7 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Or
 ;
 
 CREATE
-    OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Order_Description(IN record_id        NUMERIC,
+    OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Order_Description(IN p_record_id      NUMERIC,
                                                                                                 IN p_m_attribute_id NUMERIC,
                                                                                                 IN p_ad_language    CHARACTER VARYING(6))
 
@@ -48,7 +48,7 @@ FROM PP_Order pp
          LEFT JOIN C_DocType dt ON pp.C_DocTypeTarget_ID = dt.C_DocType_ID
          LEFT JOIN C_DocType_Trl dtt
                    ON pp.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_ad_language
-WHERE pp.PP_Order_ID = record_id
+WHERE pp.PP_Order_ID = p_record_id
 $$
     LANGUAGE SQL
     STABLE

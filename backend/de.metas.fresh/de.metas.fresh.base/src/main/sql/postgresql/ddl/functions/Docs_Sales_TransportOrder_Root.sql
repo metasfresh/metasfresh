@@ -46,9 +46,9 @@ SELECT st.AD_Org_ID,
         LIMIT 1) AS C_BPartner_Location_ID
 FROM M_ShipperTransportation st
          INNER JOIN M_Shipper s ON st.M_Shipper_ID = s.M_Shipper_ID
-         INNER JOIN C_BPartner bp ON s.C_BPartner_ID = bp.C_BPartner_ID
          INNER JOIN C_DocType dt ON st.C_DocType_ID = dt.C_DocType_ID
          LEFT OUTER JOIN C_DocType_Trl dtt ON st.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_Language
+         LEFT OUTER JOIN C_BPartner bp ON s.C_BPartner_ID = bp.C_BPartner_ID
 WHERE st.M_ShipperTransportation_ID = p_ShipperTransportation_ID
     ;
 $$

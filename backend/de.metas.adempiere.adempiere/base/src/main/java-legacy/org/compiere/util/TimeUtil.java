@@ -1715,12 +1715,14 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null -> !null")
 	public static LocalTime asLocalTime(@Nullable final Object obj)
 	{
 		return asLocalTime(obj, null);
 	}
 
 	@Nullable
+	@Contract("!null, _ -> !null")
 	public static LocalTime asLocalTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
@@ -1753,6 +1755,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null, _ -> !null")
 	public static LocalDateTime asLocalDateTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
@@ -1884,6 +1887,13 @@ public class TimeUtil
 		{
 			return asInstant(obj, zoneId).atZone(zoneId);
 		}
+	}
+
+	@Nullable
+	public static Date asStartOfDay(@Nullable final Object obj)
+	{
+		final Date date = asDate(obj);
+		return date == null ? null : trunc(date, TRUNC_DAY);
 	}
 
 	@Nullable
@@ -2424,4 +2434,10 @@ public class TimeUtil
 	{
 		return getDaysBetween360(asZonedDateTime(from), asZonedDateTime(to));
 	}
+
+	public static Instant addDays(@NonNull final Instant baseInstant, final long daysToAdd)
+	{
+		return baseInstant.plus(daysToAdd, ChronoUnit.DAYS);
+	}
+
 }    // TimeUtil

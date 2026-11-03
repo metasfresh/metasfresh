@@ -56,7 +56,6 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.location.CountryId;
-import de.metas.location.ICountryCodeFactory;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
@@ -64,6 +63,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
+import de.metas.product.PackageDimensions;
 import de.metas.product.ProductId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -102,7 +102,6 @@ public class ShipmentService
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -274,7 +273,7 @@ public class ShipmentService
 	{
 		final LocalDateTime deliveryDate = createShipmentInfo.getMovementDate();
 		final BigDecimal qtyToDeliverInStockingUOM = createShipmentInfo.getMovementQuantity();
-		final LocationBasicInfo bPartnerLocation = LocationBasicInfo.ofNullable(createShipmentInfo.getShipToLocation(), countryCodeFactory)
+		final LocationBasicInfo bPartnerLocation = LocationBasicInfo.ofNullable(createShipmentInfo.getShipToLocation())
 				.orElse(null);
 		final String bpartnerCode = createShipmentInfo.getBusinessPartnerSearchKey();
 		final List<JsonAttributeInstance> attributes = createShipmentInfo.getAttributes();
@@ -352,7 +351,7 @@ public class ShipmentService
 						.quantityTypeToUse(request.getQuantityTypeToUse())
 						.onTheFlyPickToPackingInstructions(false) // backwards compatibility: on-the-fly-pick to (anonymous) CUs
 						.qtyToDeliverOverrides(QtyToDeliverMap.EMPTY)
-						.isFailIfNoPickedHUs(true) // backwards compatibility: true - fail if no picked HUs found
+						.failOnSingleScheduleWithNoPickedHUs(true) // backwards compatibility: true - fail if no picked HUs found (REST API typically processes single schedules)
 						.build()
 		);
 
@@ -375,6 +374,7 @@ public class ShipmentService
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
 					.bpartnerValue(bPartnerValue)
+					.isCustomerFilter(true)
 					.build());
 		}
 	}
@@ -420,6 +420,7 @@ public class ShipmentService
 								.trackingNumber(jsonPackage.getTrackingCode())
 								.weight(jsonPackage.getWeight())
 								.trackingUrl(trackingURL)
+								.packageDimensions(PackageDimensions.UNSPECIFIED)//not supported in this version
 								.build()
 				)
 				.collect(ImmutableList.toImmutableList());

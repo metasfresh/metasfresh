@@ -1,7 +1,9 @@
 @from:cucumber
-@flaky
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00180
 @ghActions:run_on_executor5
 Feature: Setting customColumns via SetCustomColumns method
+## F00180: Custom Columns
 
   Background:
     Given infrastructure and metasfresh are running
@@ -54,6 +56,7 @@ Feature: Setting customColumns via SetCustomColumns method
       | S_ResourceType | ChargeableQty | true                      |
 
     And the metasfresh cache is reset
+    And we wait for 2000 ms
 
     When set custom columns for C_Order:
       | C_Order_ID.Identifier | OPT.BPartnerName | OPT.IsDropShip | OPT.DateOrdered | OPT.DatePromised         | OPT.Volume | OPT.EMail |

@@ -6,7 +6,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
-import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
+import de.metas.distribution.ddordercandidate.material_dispo.PPOrderBOMLineDistributionSupplyMover;
 import de.metas.document.DocSubType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -39,7 +39,7 @@ import de.metas.workflow.interceptors.AD_Workflow;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
+import org.adempiere.mm.attributes.asi_aware.product.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -77,6 +77,7 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.ProductBOMBuilder;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -298,10 +299,11 @@ public class MRPTestHelper
 				new DDOrderLowLevelService(new DDOrderLowLevelDAO()),
 				new ProductBOMVersionsDAO(),
 				new ProductBOMService(new ProductBOMVersionsDAO()),
-				new DDOrderCandidateRepository(),
 				new DDOrderCandidateAllocRepository(),
 				new DistributionNetworkRepository(),
-				new ReplenishInfoRepository());
+				new ReplenishInfoRepository(),
+				// mock: its real collaborators are the material dispo repositories; no test using this helper has DD_Order_Candidates
+				Mockito.mock(PPOrderBOMLineDistributionSupplyMover.class));
 	}
 
 	public Timestamp getToday()

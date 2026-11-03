@@ -90,7 +90,6 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent.builder()
 				.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
-				.directlyCreatePurchaseCandidate(productPlanning.isCreatePlan())
 				.productPlanningId(ProductPlanningId.toRepoId(productPlanning.getId()))
 				.vendorId(defaultVendorProductInfo.get().getVendorId().getRepoId())
 				.build();
@@ -144,7 +143,7 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 		{
 			return null;
 		}
-		return PurchaseCandidateId.ofRepoId(purchaseDetail.getPurchaseCandidateRepoId());
+		return PurchaseCandidateId.ofRepoIdOrNull(purchaseDetail.getPurchaseCandidateRepoId());
 	}
 
 	private Quantity doDecreaseQty(final PurchaseCandidate candidate, final Quantity remainingQtyToDistribute)

@@ -2,13 +2,14 @@ package de.metas.inoutcandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.CreateMissingCandidatesResult;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -22,6 +23,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,6 +36,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +58,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 {
 	private static final AdMessageKey MSG_RECORDS_CREATED_1P = AdMessageKey.of("de.metas.inoutCandidate.RECORDS_CREATED");
-	private static final AdMessageKey MSG_RECORD_CREATION_VETOED_1P =  AdMessageKey.of("de.metas.inoutCandidate.RECORD_CREATION_VETOED");
+	private static final AdMessageKey MSG_RECORD_CREATION_VETOED_1P = AdMessageKey.of("de.metas.inoutCandidate.RECORD_CREATION_VETOED");
 
 	private final static Logger logger = LogManager.getLogger(ShipmentScheduleHandlerBL.class);
 
@@ -64,7 +67,10 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-	private final Map<String, ShipmentScheduleHandler> tableName2Handler = new HashMap<>();
+	// LinkedHashMap (not HashMap): when a bounded budget is threaded across handlers (see createMissingCandidates),
+	// the budget is consumed in this map's iteration order, so that order must be deterministic (= handler registration
+	// order) rather than incidental hash-bucket order.
+	private final Map<String, ShipmentScheduleHandler> tableName2Handler = new LinkedHashMap<>();
 
 	private final Map<String, List<ModelWithoutShipmentScheduleVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -136,25 +142,52 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		listeners.add(l);
 	}
 
+	/**
+	 * @deprecated unbounded: processes the whole backlog in one go and can OOM on a large backlog. Use the bounded
+	 * {@link #createMissingCandidates(Properties, QueryLimit)} overload instead.
+	 */
+	@Deprecated
 	@Override
 	public Set<ShipmentScheduleId> createMissingCandidates(@NonNull final Properties ctx)
 	{
+		return createMissingCandidates(ctx, QueryLimit.NO_LIMIT).getCreatedShipmentScheduleIds();
+	}
+
+	@Override
+	public CreateMissingCandidatesResult createMissingCandidates(@NonNull final Properties ctx, @NonNull final QueryLimit maxToProcess)
+	{
 		final LinkedHashSet<ShipmentScheduleId> result = new LinkedHashSet<>();
+
+		// Budget of models to process (created-or-vetoed), threaded across all handlers in registration order.
+		// NOTE: this drains handlers sequentially in that order; an earlier handler with a full backlog can therefore
+		// use up the whole budget before a later one gets a turn. That is acceptable here because the processor
+		// re-enqueues follow-up work packages until nothing remains, so every handler is eventually served across
+		// successive runs. If strict per-run fairness across handlers is ever required, distribute the budget
+		// (e.g. round-robin) instead of draining in order.
+		final Budget budget = new Budget(maxToProcess);
 
 		for (final String tableName : tableName2Handler.keySet())
 		{
+			if (budget.isLimitReached())
+			{
+				// Budget already fully consumed by a previous handler; don't even start the next handler's iterator.
+				break;
+			}
+
 			final ShipmentScheduleHandler handler = tableName2Handler.get(tableName);
 			try (final MDCCloseable ignored = MDC.putCloseable("ShipmentScheduleHandler.className", handler.getClass().getName()))
 			{
-				result.addAll(invokeHandler(ctx, handler));
+				result.addAll(invokeHandler(ctx, handler, budget));
 			}
 		}
-		return result;
+
+		return new CreateMissingCandidatesResult(ImmutableSet.copyOf(result), budget.isLimitReached());
 	}
 
 	private LinkedHashSet<ShipmentScheduleId> invokeHandler(
 			@NonNull final Properties ctx,
-			@NonNull final ShipmentScheduleHandler handler)
+			@NonNull final ShipmentScheduleHandler handler,
+			@NonNull final Budget budget)
 	{
 		final String handlerClassName = handler.getClass().getName();
 
@@ -164,16 +197,90 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 
 		final LinkedHashSet<ShipmentScheduleId> result = new LinkedHashSet<>();
 
-		final Iterator<?> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
+		// Retrieve only up to the CURRENT remaining budget: pushing the limit into the retrieve itself (instead of
+		// merely capping how many of an unlimited result we process) avoids materializing the whole missing-candidates
+		// backlog -- which OPTION_GuaranteedIteratorRequired otherwise selects in full, tens of thousands of rows on
+		// every batch run -- see OrderLineShipmentScheduleHandler#retrieveModelsWithMissingCandidates.
+		final Iterator<?> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited, budget.toQueryLimit());
 		while (missingCandidateModels.hasNext())
 		{
+			if (!budget.hasRemaining())
+			{
+				// Defensive only: with the limited retrieve above, the iterator should never yield more than the
+				// budget that was passed to it.
+				break;
+			}
+
 			final Object model = missingCandidateModels.next();
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(model))
 			{
 				result.addAll(invokeHandlerForModel(ctx, handler, handlerRecord, model));
 			}
+			budget.consumeOne();
 		}
+		Loggables.withLogger(logger, Level.DEBUG).addLog("ShipmentScheduleHandler {} created {} shipment schedules", handler, result.size());
 		return result;
+	}
+
+	/**
+	 * Mutable budget of models (created-or-vetoed) still allowed to be processed, shared across all handlers invoked
+	 * by a single {@link #createMissingCandidates(Properties, QueryLimit)} call. Also hands out the CURRENT remaining
+	 * budget as a {@link QueryLimit} so each handler's retrieve fetches only up to what this run can still process
+	 * (see {@link #invokeHandler(Properties, ShipmentScheduleHandler, Budget)}).
+	 */
+	private static final class Budget
+	{
+		private final boolean unlimited;
+		private int remaining;
+
+		private Budget(@NonNull final QueryLimit maxToProcess)
+		{
+			this.unlimited = maxToProcess.isNoLimit();
+			this.remaining = maxToProcess.toIntOrInfinit();
+		}
+
+		private boolean hasRemaining()
+		{
+			return unlimited || remaining > 0;
+		}
+
+		private QueryLimit toQueryLimit()
+		{
+			// Guard the load-bearing invariant of the batching perf fix: QueryLimit.ofInt(<=0) silently resolves to
+			// NO_LIMIT (unbounded), which would reintroduce the whole-backlog OOM this class exists to prevent. Today
+			// invokeHandler is only reached while remaining>0 (createMissingCandidates breaks the loop on
+			// isLimitReached()), so this only fails loudly if a future change violates that.
+			Check.assume(unlimited || remaining > 0, "remaining budget must be > 0 when limited; remaining={}", remaining);
+			return unlimited ? QueryLimit.NO_LIMIT : QueryLimit.ofInt(remaining);
+		}
+
+		private void consumeOne()
+		{
+			if (!unlimited)
+			{
+				remaining--;
+			}
+		}
+
+		/**
+		 * {@code true} iff the combined budget was fully consumed across all handlers in this run (i.e. {@code remaining==0}).
+		 * <p>
+		 * With the per-handler retrieve now capped to the remaining budget (see {@link #toQueryLimit()}), an iterator can
+		 * no longer signal "more work exists" via a leftover {@code hasNext()} -- the query itself never returns more than
+		 * the budget allows. So budget-exhaustion is the only remaining signal that a follow-up run may be needed.
+		 * <p>
+		 * Never {@code true} for an unlimited budget ({@link QueryLimit#NO_LIMIT}) -- that variant always means
+		 * "process everything in one go".
+		 * <p>
+		 * Note: when the backlog is an exact multiple of {@code maxToProcess}, this causes exactly ONE extra follow-up
+		 * run that finds and processes 0 models (a fresh {@code Budget} whose {@code remaining} then stays at the full
+		 * {@code maxToProcess}) -- that run's own {@link #isLimitReached()} correctly reports {@code false}, so the
+		 * re-enqueue chain terminates.
+		 */
+		private boolean isLimitReached()
+		{
+			return !unlimited && remaining <= 0;
+		}
 	}
 
 	private LinkedHashSet<ShipmentScheduleId> invokeHandlerForModel(
@@ -272,14 +379,21 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	@Override
 	public ShipmentScheduleHandler getHandlerFor(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
-
-		final ShipmentScheduleHandler shipmentScheduleHandler = tableName2Handler.get(tableName);
+		final ShipmentScheduleHandler shipmentScheduleHandler = getHandlerForOrNull(sched);
 		if (shipmentScheduleHandler == null)
 		{
+			final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
 			throw new AdempiereException("No shipment schedule handler defined for " + tableName + " (" + sched + ")");
 		}
 
 		return shipmentScheduleHandler;
+	}
+
+	@Override
+	@Nullable
+	public ShipmentScheduleHandler getHandlerForOrNull(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
+		return tableName2Handler.get(tableName);
 	}
 }

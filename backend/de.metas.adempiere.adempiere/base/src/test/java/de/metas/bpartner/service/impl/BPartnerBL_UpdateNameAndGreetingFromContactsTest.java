@@ -255,6 +255,7 @@ public class BPartnerBL_UpdateNameAndGreetingFromContactsTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("Group");
+		group.setValue("GroupValue");
 		group.setBPNameAndGreetingStrategy(strategyId != null ? strategyId.getAsString() : null);
 
 		save(group);

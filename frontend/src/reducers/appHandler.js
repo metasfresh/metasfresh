@@ -5,6 +5,10 @@ import * as types from '../constants/ActionTypes';
 export const initialState = {
   connectionErrorType: '',
   notifications: {},
+  // Single slot: a second SHOW_ACKNOWLEDGE_DIALOG before the first is dismissed replaces it (see the
+  // reducer case below), so two near-simultaneous errors would silently drop the first for the user.
+  // Harmless while there is only one dispatch call site; revisit (e.g. a queue) once a second one exists.
+  acknowledgeDialog: null,
   me: {},
   isLogged: false,
   enableTutorial: false,
@@ -14,8 +18,6 @@ export const initialState = {
     unreadCount: 0,
     pending: false,
   },
-  keymap: {},
-  hotkeys: {},
   lastBackPage: '',
 };
 
@@ -63,10 +65,7 @@ export default function appHandler(state = initialState, action) {
       };
 
     case types.LOGOUT_SUCCESS:
-      return {
-        ...state,
-        isLogged: false,
-      };
+      return initialState;
 
     case types.ENABLE_TUTORIAL:
       return {
@@ -120,6 +119,23 @@ export default function appHandler(state = initialState, action) {
         }, {}),
       };
 
+    case types.SHOW_ACKNOWLEDGE_DIALOG:
+      // Single slot — this overwrites any acknowledgeDialog already pending. See the note on
+      // acknowledgeDialog in initialState above.
+      return {
+        ...state,
+        acknowledgeDialog: {
+          title: action.title,
+          text: action.text,
+        },
+      };
+
+    case types.HIDE_ACKNOWLEDGE_DIALOG:
+      return {
+        ...state,
+        acknowledgeDialog: null,
+      };
+
     case types.CLEAR_NOTIFICATIONS:
       if (state.inbox.notifications.length === 0) {
         return state;
@@ -159,13 +175,27 @@ export default function appHandler(state = initialState, action) {
     }
 
     case types.NEW_NOTIFICATION: {
+      const { notification: newNotification, unreadCount } = action;
+      let added = false;
+      const notifications = state.inbox.notifications.map((item) => {
+        if (item.id === newNotification.id) {
+          added = true;
+          return newNotification;
+        } else {
+          return item;
+        }
+      });
+      if (!added) {
+        notifications.unshift(newNotification);
+      }
+
       return update(state, {
         inbox: {
           notifications: {
-            $unshift: [action.notification],
+            $set: notifications,
           },
           unreadCount: {
-            $set: action.unreadCount,
+            $set: unreadCount,
           },
         },
       });
@@ -240,33 +270,6 @@ export default function appHandler(state = initialState, action) {
       return {
         ...state,
         processStatus: 'saved',
-      };
-
-    case types.INIT_KEYMAP:
-      return {
-        ...state,
-        keymap: action.payload,
-      };
-    case types.UPDATE_KEYMAP:
-      return {
-        ...state,
-        keymap: {
-          ...state.keymap,
-          ...action.payload,
-        },
-      };
-    case types.INIT_HOTKEYS:
-      return {
-        ...state,
-        hotkeys: action.payload,
-      };
-    case types.UPDATE_HOTKEYS:
-      return {
-        ...state,
-        hotkeys: {
-          ...state.hotkeys,
-          ...action.payload,
-        },
       };
 
     default:

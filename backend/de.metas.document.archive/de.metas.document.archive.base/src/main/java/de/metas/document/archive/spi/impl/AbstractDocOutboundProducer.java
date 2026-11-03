@@ -29,16 +29,17 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.async.spi.impl.ProcessPrintingQueueWorkpackageProcessor;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.archive.config.DocOutboundConfigService;
 import de.metas.document.archive.spi.IDocOutboundProducer;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_DocType;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -47,7 +48,7 @@ import java.util.Properties;
 
 /**
  * {@link IDocOutboundProducer} base implementation.
- *
+ * <p>
  * Mainly all business logic is implemented but the life-cycle management methods are left unimplemented (see {@link #init(IDocOutboundProducerService)}, {@link #destroy(IDocOutboundProducerService)}
  * ).
  *
@@ -62,10 +63,11 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final transient IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	private final transient DocOutboundConfigService docOutboundConfigService = SpringContextHolder.instance.getBean(DocOutboundConfigService.class);
 
-	private final I_C_Doc_Outbound_Config config;
-	private final String tableName;
-	private final boolean isDocument;
+	@Getter private final AdTableId tableId;
+	@Getter private final String tableName;
+	@Getter private final boolean isDocument;
 
 	@Override
 	public abstract void init(IDocOutboundProducerService producerService);
@@ -73,10 +75,10 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 	@Override
 	public abstract void destroy(IDocOutboundProducerService producerService);
 
-	public AbstractDocOutboundProducer(@NonNull final I_C_Doc_Outbound_Config config)
+	public AbstractDocOutboundProducer(@NonNull final AdTableId tableId)
 	{
-		this.config = config;
-		this.tableName = adTableDAO.retrieveTableName(config.getAD_Table_ID());
+		this.tableId = tableId;
+		this.tableName = adTableDAO.retrieveTableName(tableId);
 		this.isDocument = documentBL.isDocumentTable(tableName);
 	}
 
@@ -86,25 +88,10 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 		return "DocOutboundProducer ["
 				+ "tableName=" + tableName
 				+ ", isDocument=" + isDocument
-				+ ", config=" + config
 				+ "]";
 	}
 
-	@Override
-	public I_C_Doc_Outbound_Config getC_Doc_Outbound_Config()
-	{
-		return config;
-	}
 
-	public String getTableName()
-	{
-		return tableName;
-	}
-
-	public boolean isDocument()
-	{
-		return isDocument;
-	}
 
 	@Override
 	public boolean accept(@Nullable final Object model)
@@ -131,25 +118,7 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 
 	protected boolean acceptDocument(final Object model)
 	{
-		final String requiredDocBaseType = config.getDocBaseType();
-		if (!Check.isEmpty(requiredDocBaseType, true))
-		{
-			final I_C_DocType docType = documentBL.getDocTypeOrNull(model);
-			if (docType == null)
-			{
-				logger.info("No document type found for {}. Ignore it.", model);
-				return false;
-			}
-
-			final String actualDocBaseType = docType.getDocBaseType();
-			if (!requiredDocBaseType.equals(actualDocBaseType))
-			{
-				logger.debug("Skip {} because it has DocBaseType={} when {} was expected", new Object[] { model, actualDocBaseType, requiredDocBaseType });
-				return false;
-			}
-		}
-
-		return true;
+		return docOutboundConfigService.retrieveConfigForModel(model) != null;
 	}
 
 	@Override

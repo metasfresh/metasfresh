@@ -40,6 +40,7 @@ import de.metas.material.planning.pporder.ComputeQtyRequiredRequest;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -54,7 +55,7 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
@@ -64,6 +65,7 @@ import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMLineId;
+import org.compiere.model.I_M_Product_Category;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
@@ -107,9 +109,10 @@ public class PPOrderCandidateService
 	private static final String SYSCONFIG_ResourcePlanningPrecision = "resource.PlanningPrecision";
 
 	private final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
-	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -284,8 +287,8 @@ public class PPOrderCandidateService
 		if (bomLine.getM_AttributeSetInstance_ID() > 0)
 		{
 			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(bomLine.getM_AttributeSetInstance_ID());
-			final AttributeSetInstanceId asiCopy = attributesRepo.copyASI(asiId);
-			orderLineCandidate.setM_AttributeSetInstance_ID(asiCopy.getRepoId());
+			final AttributeSetInstanceId asiIdCopy = asiBL.copy(asiId);
+			orderLineCandidate.setM_AttributeSetInstance_ID(asiIdCopy.getRepoId());
 		}
 	}
 
@@ -382,7 +385,7 @@ public class PPOrderCandidateService
 
 		return Objects.equals(orderLineCandidate.getComponentType(), productBOMLine.getComponentType())
 				&& orderLineCandidate.getM_Product_ID() == productBOMLine.getM_Product_ID()
-				&& attributesRepo.nullSafeASIEquals(orderLineCandidateASIId, productBOMLineASIId);
+				&& asiBL.nullSafeASIEquals(orderLineCandidateASIId, productBOMLineASIId);
 	}
 
 	@NonNull
@@ -501,6 +504,36 @@ public class PPOrderCandidateService
 	public void deleteLines(@NonNull final PPOrderCandidateId ppOrderCandidateId)
 	{
 		ppOrderCandidateDAO.deleteLines(ppOrderCandidateId);
+	}
+
+	public void setPlantAndWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		// Plant (Produktionsstaette) + WorkStation (Arbeitsstation): Product Planning first, product-category as fallback
+		// Wired as a callout on PP_Product_Planning_ID, so both follow the same precedence as the PP_Order callout when the planning is editable.
+		final ProductPlanningId ppProductPlanningId = ProductPlanningId.ofRepoIdOrNull(ppOrderCandidateRecord.getPP_Product_Planning_ID());
+		final ProductPlanning productPlanning = ppProductPlanningId != null ? productPlanningDAO.getById(ppProductPlanningId) : null;
+
+		final ProductId productId = ProductId.ofRepoIdOrNull(ppOrderCandidateRecord.getM_Product_ID());
+		final I_M_Product_Category productCategory = productId != null ? productBL.getProductCategoryByProductId(productId) : null;
+
+		// Plant: override from planning, else category; keep the existing (mandatory) plant if neither provides one
+		ResourceId plantId = productPlanning != null ? productPlanning.getPlantId() : null;
+		if (plantId == null && productCategory != null)
+		{
+			plantId = ResourceId.ofRepoIdOrNull(productCategory.getS_Resource_ID());
+		}
+		if (plantId != null)
+		{
+			ppOrderCandidateRecord.setS_Resource_ID(plantId.getRepoId());
+		}
+
+		// WorkStation: planning, else category; cleared when neither provides one
+		ResourceId workStationId = productPlanning != null ? productPlanning.getWorkstationId() : null;
+		if (workStationId == null && productCategory != null)
+		{
+			workStationId = ResourceId.ofRepoIdOrNull(productCategory.getWorkStation_ID());
+		}
+		ppOrderCandidateRecord.setWorkStation_ID(ResourceId.toRepoId(workStationId));
 	}
 
 	public void setWorkstationId(@NonNull final ImmutableSet<PPOrderCandidateId> ppOrderCandidateIds, @Nullable final ResourceId workstationId)

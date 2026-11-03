@@ -17,6 +17,7 @@ public class JsonCreateProductResponse
 {
 	@NonNull ProductId id;
 	@NonNull String productCode;
+	@NonNull String productName;
 	@Nullable GTIN gtin;
 	@Nullable EAN13ProductCode ean13ProductCode;
 }

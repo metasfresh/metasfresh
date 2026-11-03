@@ -29,8 +29,12 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
+/**
+ * @deprecated pls use {@link org.adempiere.warehouse.Warehouse}
+ */
 @Value
 @Builder(toBuilder = true)
+@Deprecated
 public class Warehouse
 {
 	@NonNull WarehouseId id;

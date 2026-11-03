@@ -2,6 +2,7 @@ package de.metas.pricing.service.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -22,8 +23,8 @@ import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.Env;
@@ -82,6 +83,9 @@ class PricingContext implements IEditablePricingContext
 	@Nullable
 	private BigDecimal manualPrice;
 
+	@Nullable
+	private HUPIItemProductId explicitM_HU_PI_Item_Product_ID;
+
 	@Getter
 	private PricingConditionsBreak forcePricingConditionsBreak;
 
@@ -115,6 +119,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
 		pricingCtxNew.properties.putAll(properties);
 		pricingCtxNew.manualPrice = manualPrice;
+		pricingCtxNew.explicitM_HU_PI_Item_Product_ID = explicitM_HU_PI_Item_Product_ID;
 
 		return pricingCtxNew;
 	}
@@ -423,6 +428,7 @@ class PricingContext implements IEditablePricingContext
 		return this;
 	}
 
+	@Override
 	@Nullable
 	public BigDecimal getManualPrice()
 	{
@@ -433,6 +439,20 @@ class PricingContext implements IEditablePricingContext
 	public IEditablePricingContext setManualPrice(@Nullable final BigDecimal manualPrice)
 	{
 		this.manualPrice = manualPrice;
+		return this;
+	}
+
+	@Override
+	@Nullable
+	public HUPIItemProductId getExplicitM_HU_PI_Item_Product_ID()
+	{
+		return explicitM_HU_PI_Item_Product_ID;
+	}
+
+	@Override
+	public IEditablePricingContext setExplicitM_HU_PI_Item_Product_ID(@Nullable final HUPIItemProductId huPiItemProductId)
+	{
+		this.explicitM_HU_PI_Item_Product_ID = huPiItemProductId;
 		return this;
 	}
 

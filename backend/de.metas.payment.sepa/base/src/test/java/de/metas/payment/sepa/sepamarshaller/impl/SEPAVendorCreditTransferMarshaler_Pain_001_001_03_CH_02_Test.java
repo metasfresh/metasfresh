@@ -7,17 +7,25 @@ import de.metas.banking.api.BankRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.i18n.Msg;
 import de.metas.money.CurrencyId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
+import de.metas.payment.sepa.api.SepaMarshallerException;
+import de.metas.payment.sepa.api.impl.SEPATestHelper;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditTransferTransactionInformation10CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentIdentification1;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentInstructionInformation3CH;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.ThrowableAssert;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +35,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,9 +43,12 @@ import java.util.stream.Collectors;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {
+	private static final String PARTNER_NAME_WITH_AT_SIGNS = "Vendor info@muster.ch / buchhaltung@muster.ch";
+
 	private BankRepository bankRepository;
 	private BankAccountService bankAccountService;
 	private SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 xmlGenerator;
@@ -49,7 +61,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	public void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
-
 		this.bankRepository = new BankRepository();
 		this.bankAccountService = new BankAccountService(bankRepository, new CurrencyRepository());
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
@@ -62,6 +73,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 
 		SpringContextHolder.registerJUnitBean(bankAccountService);
+		SpringContextHolder.registerJUnitBean(bankRepository);
 	}
 
 	@Test
@@ -115,19 +127,19 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 				"INGBNL2A" // bic
 		);
 		createSEPAExportLineQRVersion(sepaExport,
-									  "001",// SEPA_MandateRefNo
-									  "NL31INGB0000000044",// IBAN
-									  "INGBNL2A", // BIC
-									  new BigDecimal("100"), // amount
-									  eur,
+				"001",// SEPA_MandateRefNo
+				"NL31INGB0000000044",// IBAN
+				"INGBNL2A", // BIC
+				new BigDecimal("100"), // amount
+				eur,
 				"210000000003139471430009017");
 
 		createSEPAExportLineQRVersion(sepaExport,
-									  "002", // SEPA_MandateRefNo
-									  "NL31INGB0000000044", // IBAN
-									  "INGBNL2A",// BIC
-									  new BigDecimal("40"), // amount
-									  chf, "210000000003139471430009017");
+				"002", // SEPA_MandateRefNo
+				"NL31INGB0000000044", // IBAN
+				"INGBNL2A",// BIC
+				new BigDecimal("40"), // amount
+				chf, "210000000003139471430009017");
 
 		// invoke the method under test
 		xmlDocument = xmlGenerator.createDocument(sepaExport);
@@ -139,7 +151,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
 	}
-
 
 	@Test
 	public void createDocument_batch_noCollectiveTransfer_noRef() throws Exception
@@ -245,6 +256,57 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
+	}
+
+	@Test
+	public void creditTransferIsGroupTransactionTrue()
+	{
+		// given
+		// three C_PaySelectionLine(s), two of them with the same aggregation key, the other one with a different aggregation key
+		final I_SEPA_Export sepaExport = new SEPATestHelper()
+				.createSepaExport();
+
+		// when
+		// invoke the method under test
+		xmlDocument = xmlGenerator.createDocument(sepaExport);
+
+		// then
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("21");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("2");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
+		// one PmtInf per grouping key
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
+		final List<PaymentInstructionInformation3CH> pmtInf = xmlDocument.getCstmrCdtTrfInitn().getPmtInf();
+		final PaymentInstructionInformation3CH pmtInf1 = pmtInf.get(0);
+		assertThat(pmtInf1).isNotNull();
+		assertThat(pmtInf1.getNbOfTxs()).isEqualTo("1");
+		assertThat(pmtInf1.getCtrlSum()).isEqualTo("10");
+
+		final List<CreditTransferTransactionInformation10CH> information3CH = pmtInf1.getCdtTrfTxInf();
+
+		// one PmtInf per grouping key
+		assertThat(information3CH.size()).isEqualTo(1);
+		final CreditTransferTransactionInformation10CH creditTransferTransactionInformation10CH = information3CH.get(0);
+		assertThat(creditTransferTransactionInformation10CH.getAmt().getInstdAmt().getValue()).isEqualTo(BigDecimal.valueOf(10));
+		assertThat(creditTransferTransactionInformation10CH.getAmt().getInstdAmt().getCcy()).isEqualTo("USD");
+		assertThat(creditTransferTransactionInformation10CH.getRmtInf().getUstrd()).isEqualTo("ungroupedInvoiceDescription");
+
+		final PaymentInstructionInformation3CH groupedPmtInf1 = pmtInf.get(1);
+		assertThat(groupedPmtInf1).isNotNull();
+		// number of grouped invoices
+		assertThat(groupedPmtInf1.getNbOfTxs()).isEqualTo("1");
+		// total of all aggregated amounts
+		assertThat(groupedPmtInf1.getCtrlSum()).isEqualTo("11");
+
+		final List<CreditTransferTransactionInformation10CH> groupedPmtInf1CdtTrfTxInf = groupedPmtInf1.getCdtTrfTxInf();
+		// one PmtInf per grouping key
+		assertThat(groupedPmtInf1CdtTrfTxInf.size()).isEqualTo(1);
+		final CreditTransferTransactionInformation10CH creditTransferTransactionInformation10CH1 = groupedPmtInf1CdtTrfTxInf.get(0);
+		// aggregated sum of invoices
+		assertThat(creditTransferTransactionInformation10CH1.getAmt().getInstdAmt().getValue()).isEqualTo(BigDecimal.valueOf(11));
+		assertThat(creditTransferTransactionInformation10CH1.getAmt().getInstdAmt().getCcy()).isEqualTo("USD");
+		// concatenated references
+		assertThat(creditTransferTransactionInformation10CH1.getRmtInf().getStrd().getCdtrRefInf().getRef()).isEqualTo("firstLine,secondLine");
 	}
 
 	private I_SEPA_Export createSEPAExport(
@@ -368,9 +430,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 			final String reference)
 	{
 		final Bank bank = bankRepository.createBank(BankCreateRequest.builder()
-															.bankName("myBank")
-															.routingNo("routingNo")
-															.build());
+				.bankName("myBank")
+				.routingNo("routingNo")
+				.build());
 
 		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
 		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
@@ -411,7 +473,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertThat(output).isEqualTo(expected);
 	}
 
-
 	@Test
 	public void testIsInvalidQRReference()
 	{
@@ -419,6 +480,76 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertIsInvalidQRReferenceWorks("33 36170 00113 54610 59304 00000", true);
 		assertIsInvalidQRReferenceWorks("333617000113546105930400000", false);
 		assertIsInvalidQRReferenceWorks("210000000003139471430009017", false);
+		assertIsInvalidQRReferenceWorks("33361700011354610593040000A", true); // 27 characters, but not only digits
+		assertIsInvalidQRReferenceWorks("333617000113546105930400001", true); // wrong check digit
+	}
+
+	@Test
+	public void createDocument_qrIban_27CharacterReferenceWithNonDigit_failsWithInvalidReference()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport("org", "12345", "INGBNL2A");
+		createSEPAExportLineQRVersion(sepaExport, "001", "NL31INGB0000000044", "INGBNL2A", new BigDecimal("100"), eur, "33361700011354610593040000A");
+
+		assertThatThrownBy(() -> xmlGenerator.createDocument(sepaExport))
+				.hasMessageContaining("SEPA_Export_InvalidReference");
+	}
+
+	@Test
+	public void createDocument_qrIban_referenceWithWrongCheckDigit_failsWithInvalidReference()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport("org", "12345", "INGBNL2A");
+		createSEPAExportLineQRVersion(sepaExport, "001", "NL31INGB0000000044", "INGBNL2A", new BigDecimal("100"), eur, "333617000113546105930400001");
+
+		assertThatThrownBy(() -> xmlGenerator.createDocument(sepaExport))
+				.hasMessageContaining("SEPA_Export_InvalidReference");
+	}
+
+	@Test
+	public void createDocument_foreignWithoutBicAndBankName_errorKeepsAtSignsOfPartnerName()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport("org", "12345", "INGBNL2A");
+		// payment type 6: no ESR account, no swiss IBAN, not EUR; no BIC and no bank, so there is no bank name
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, "001", "NL31INGB0000000044", null, new BigDecimal("100"), chf);
+		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.load(line.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class);
+		bankAccount.setIsEsrAccount(false);
+		bankAccount.setC_Bank_ID(0);
+		save(bankAccount);
+		setBPartner(line, PARTNER_NAME_WITH_AT_SIGNS);
+
+		assertErrorKeepsAtSignsOfPartnerName(() -> xmlGenerator.createDocument(sepaExport), "SEPA_Export_NoBankName");
+	}
+
+	@Test
+	public void createDocument_swissIbanInForeignCurrency_errorKeepsAtSignsOfPartnerName()
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport("org", "12345", "INGBNL2A");
+		final I_SEPA_Export_Line line = createSEPAExportLine(sepaExport, "001", "CH5021977000004331346", null, new BigDecimal("100"), PlainCurrencyDAO.createCurrencyId(CurrencyCode.USD));
+		setBPartner(line, PARTNER_NAME_WITH_AT_SIGNS);
+
+		assertErrorKeepsAtSignsOfPartnerName(() -> xmlGenerator.createDocument(sepaExport), "has a swizz IBAN, but the currency is USD");
+	}
+
+	/**
+	 * The process runs the error message through parseTranslation, which takes text between two "@" for an AD_Message/AD_Element; "@@" stands for a plain "@".
+	 */
+	private static void assertErrorKeepsAtSignsOfPartnerName(@NonNull final ThrowableAssert.ThrowingCallable call, @NonNull final String expectedText)
+	{
+		assertThatThrownBy(call)
+				.isInstanceOf(SepaMarshallerException.class)
+				.hasMessageContaining(expectedText)
+				.hasMessageContaining("Vendor info@@muster.ch / buchhaltung@@muster.ch")
+				.satisfies(e -> assertThat(Msg.parseTranslation("de_CH", e.getMessage())).contains(PARTNER_NAME_WITH_AT_SIGNS));
+	}
+
+	private static void setBPartner(@NonNull final I_SEPA_Export_Line line, @NonNull final String name)
+	{
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setName(name);
+		bpartner.setValue("TestVendor");
+		save(bpartner);
+
+		line.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		save(line);
 	}
 
 	private void assertIsInvalidQRReferenceWorks(String input, boolean expected)

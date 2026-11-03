@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_QtyDemand_QtySupply_V extends org.compiere.model.PO implements I_QtyDemand_QtySupply_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1687551232L;
+	private static final long serialVersionUID = 1428033587L;
 
     /** Standard Constructor */
     public X_QtyDemand_QtySupply_V (final Properties ctx, final int QtyDemand_QtySupply_V_ID, @Nullable final String trxName)
@@ -36,13 +36,13 @@ public class X_QtyDemand_QtySupply_V extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setAttributesKey (final @Nullable String AttributesKey)
+	public void setAttributesKey (final @Nullable java.lang.String AttributesKey)
 	{
 		set_ValueNoCheck (COLUMNNAME_AttributesKey, AttributesKey);
 	}
 
 	@Override
-	public String getAttributesKey() 
+	public java.lang.String getAttributesKey() 
 	{
 		return get_ValueAsString(COLUMNNAME_AttributesKey);
 	}
@@ -60,6 +60,21 @@ public class X_QtyDemand_QtySupply_V extends org.compiere.model.PO implements I_
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setM_Product_Category_ID (final int M_Product_Category_ID)
+	{
+		if (M_Product_Category_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Product_Category_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Product_Category_ID, M_Product_Category_ID);
+	}
+
+	@Override
+	public int getM_Product_Category_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Product_Category_ID);
 	}
 
 	@Override
@@ -93,6 +108,71 @@ public class X_QtyDemand_QtySupply_V extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setProductName (final @Nullable java.lang.String ProductName)
+	{
+		set_ValueNoCheck (COLUMNNAME_ProductName, ProductName);
+	}
+
+	@Override
+	public java.lang.String getProductName() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductName);
+	}
+
+	@Override
+	public void setProductValue (final @Nullable java.lang.String ProductValue)
+	{
+		set_ValueNoCheck (COLUMNNAME_ProductValue, ProductValue);
+	}
+
+	@Override
+	public java.lang.String getProductValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductValue);
+	}
+
+	@Override
+	public void setQtyConfirmedBySupplier (final @Nullable BigDecimal QtyConfirmedBySupplier)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyConfirmedBySupplier, QtyConfirmedBySupplier);
+	}
+
+	@Override
+	public BigDecimal getQtyConfirmedBySupplier() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyConfirmedBySupplier);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyDemand_QtySupply_V_ID (final int QtyDemand_QtySupply_V_ID)
+	{
+		if (QtyDemand_QtySupply_V_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_QtyDemand_QtySupply_V_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_QtyDemand_QtySupply_V_ID, QtyDemand_QtySupply_V_ID);
+	}
+
+	@Override
+	public int getQtyDemand_QtySupply_V_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_QtyDemand_QtySupply_V_ID);
+	}
+
+	@Override
+	public void setQtyForecasted (final @Nullable BigDecimal QtyForecasted)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyForecasted, QtyForecasted);
+	}
+
+	@Override
+	public BigDecimal getQtyForecasted() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyForecasted);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyReserved (final @Nullable BigDecimal QtyReserved)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyReserved, QtyReserved);
@@ -106,6 +186,19 @@ public class X_QtyDemand_QtySupply_V extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setQtyStock (final @Nullable BigDecimal QtyStock)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyStock, QtyStock);
+	}
+
+	@Override
+	public BigDecimal getQtyStock() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyStock);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyToMove (final @Nullable BigDecimal QtyToMove)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyToMove, QtyToMove);
@@ -115,6 +208,32 @@ public class X_QtyDemand_QtySupply_V extends org.compiere.model.PO implements I_
 	public BigDecimal getQtyToMove() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToMove);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyToProduce (final @Nullable BigDecimal QtyToProduce)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyToProduce, QtyToProduce);
+	}
+
+	@Override
+	public BigDecimal getQtyToProduce() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToProduce);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyUnconfirmedBySupplier (final @Nullable BigDecimal QtyUnconfirmedBySupplier)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyUnconfirmedBySupplier, QtyUnconfirmedBySupplier);
+	}
+
+	@Override
+	public BigDecimal getQtyUnconfirmedBySupplier() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyUnconfirmedBySupplier);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

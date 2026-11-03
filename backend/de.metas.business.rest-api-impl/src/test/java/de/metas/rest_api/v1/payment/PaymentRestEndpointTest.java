@@ -23,14 +23,9 @@
 package de.metas.rest_api.v1.payment;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPartnerSupplierApprovalRepository;
-import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
 import de.metas.currency.CurrencyCode;
-import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.money.CurrencyId;
-import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
 import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentDAO;
@@ -40,15 +35,13 @@ import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.shipping.PurchaseOrderToShipperTransportationService;
-import de.metas.user.UserGroupRepository;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
@@ -82,6 +75,11 @@ class PaymentRestEndpointTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+
+		// C_Order.newInstanceForUnitTesting() transitively builds OrderPayScheduleLCStepService ->
+		// OrderPayScheduleRegularInvoiceService, whose Services.get(IInvoiceLineBL.class) instantiates
+		// InvoiceLineBL, which pulls ProductTaxCategoryService out of the spring context on construction.
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test
@@ -131,16 +129,8 @@ class PaymentRestEndpointTest
 		// enable auto linking SO <-> Payment
 		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, ClientId.SYSTEM, OrgId.ANY);
 
-		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
-		final DocumentLocationBL documentLocationBL = DocumentLocationBL.newInstanceForUnitTesting();
-
 		// run the "before_complete" interceptor
-		new C_Order(bpartnerBL,
-				new OrderLineDetailRepository(),
-				documentLocationBL,
-				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
-				PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting())
-				.linkWithPaymentByExternalOrderId(salesOrder);
+		C_Order.newInstanceForUnitTesting().linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment
 		assertEquals(payment.getC_Payment_ID(), salesOrder.getC_Payment_ID());

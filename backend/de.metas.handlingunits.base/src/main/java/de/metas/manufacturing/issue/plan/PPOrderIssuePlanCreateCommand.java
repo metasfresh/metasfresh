@@ -22,8 +22,8 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.BOMIssueMethod;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -48,7 +48,6 @@ public class PPOrderIssuePlanCreateCommand
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
 
 	private static final AdMessageKey MSG_CannotFullAllocate = AdMessageKey.of("PPOrderIssuePlanCreateCommand.CannotFullyAllocated");
 	private static final String SYS_CONFIG_CONSIDER_HUs_FROM_THE_WHOLE_WAREHOUSE = "de.metas.manufacturing.issue.plan.PPOrderIssuePlanCreateCommand.considerHUsFromTheWholeWarehouse";
@@ -79,6 +78,8 @@ public class PPOrderIssuePlanCreateCommand
 						.huReservationService(huReservationService)
 						.build())
 				.build();
+		
+		final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
 		this.ppOrderRouting = ppOrderRoutingRepository.getByOrderId(ppOrderId);
 	}
 
@@ -86,7 +87,7 @@ public class PPOrderIssuePlanCreateCommand
 	{
 		allocableHUsMap.addSourceHUs(ppOrderSourceHUService.getSourceHUIds(ppOrderId));
 
-		final ImmutableList<PPOrderIssuePlanStep> steps = ppOrderBOMBL.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
+		final ImmutableList<PPOrderIssuePlanStep> steps = ppOrderBOMBL.getOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
 				.stream()
 				.flatMap(this::createSteps)
 				.collect(ImmutableList.toImmutableList());
@@ -113,11 +114,11 @@ public class PPOrderIssuePlanCreateCommand
 		final ArrayList<PPOrderIssuePlanStep> planSteps = new ArrayList<>();
 
 		final Quantity allocatedQty = createAndCollectSteps(orderBOMLineId,
-															productId,
-															targetQty,
-															pickFromLocatorId,
-															planSteps,
-															true);
+				productId,
+				targetQty,
+				pickFromLocatorId,
+				planSteps,
+				true);
 
 		Quantity qtyToAllocate = targetQty.subtract(allocatedQty);
 
@@ -131,11 +132,11 @@ public class PPOrderIssuePlanCreateCommand
 			for (final LocatorId locatorId : theOtherLocatorsInWarehouse)
 			{
 				final Quantity additionalAllocatedQty = createAndCollectSteps(orderBOMLineId,
-																			  productId,
-																			  qtyToAllocate,
-																			  locatorId,
-																			  planSteps,
-																			  false);
+						productId,
+						qtyToAllocate,
+						locatorId,
+						planSteps,
+						false);
 
 				qtyToAllocate = qtyToAllocate.subtract(additionalAllocatedQty);
 
@@ -149,10 +150,10 @@ public class PPOrderIssuePlanCreateCommand
 		if (qtyToAllocate.signum() > 0)
 		{
 			throw new AdempiereException(MSG_CannotFullAllocate,
-										 productBL.getProductName(productId),
-										 warehouseBL.getLocatorNameById(pickFromLocatorId),
-										 qtyToAllocate,
-										 targetQty)
+					productBL.getProductName(productId),
+					warehouseBL.getLocatorNameById(pickFromLocatorId),
+					qtyToAllocate,
+					targetQty)
 					.markAsUserValidationError();
 		}
 
@@ -182,13 +183,13 @@ public class PPOrderIssuePlanCreateCommand
 			if (remainingQtyToAllocate.signum() <= 0)
 			{
 				planSteps.add(PPOrderIssuePlanStep.builder()
-									  .orderBOMLineId(orderBOMLineId)
-									  .productId(productId)
-									  .qtyToIssue(targetQty.toZero())
-									  .pickFromLocatorId(allocableHU.getLocatorId())
-									  .pickFromTopLevelHU(allocableHU.getTopLevelHU())
-									  .isAlternative(true)
-									  .build());
+						.orderBOMLineId(orderBOMLineId)
+						.productId(productId)
+						.qtyToIssue(targetQty.toZero())
+						.pickFromLocatorId(allocableHU.getLocatorId())
+						.pickFromTopLevelHU(allocableHU.getTopLevelHU())
+						.isAlternative(true)
+						.build());
 			}
 			else // if (remainingQtyToAllocate.signum() > 0)
 			{
@@ -212,20 +213,26 @@ public class PPOrderIssuePlanCreateCommand
 					allocatedQty = targetQty; // fully allocated
 				}
 				//
-				// Case 3: current HU has not enough qty to allocate the remaining Qty
+				// Case 3: current HU has not enough qty to allocate the remaining Qty, so this step
+				// consumes it whole. The quantity is taken in the HU's own UOM: the HU engine only
+				// re-parents a fully consumed CU when the requested UOM matches the HU's storage, and
+				// otherwise falls back to a split that cannot express the HU's content exactly.
 				else
 				{
+					final Quantity huQtyAvailableInHuUom = allocableHU.getQtyAvailableToAllocateInHuUom();
+
 					planStep = PPOrderIssuePlanStep.builder()
 							.orderBOMLineId(orderBOMLineId)
 							.productId(productId)
-							.qtyToIssue(huQtyAvailable)
-							//.isPickWholeHU(true)
+							.qtyToIssue(huQtyAvailableInHuUom)
 							.pickFromLocatorId(allocableHU.getLocatorId())
 							.pickFromTopLevelHU(allocableHU.getTopLevelHU())
 							.isAlternative(false)
 							.build();
 
-					allocableHU.addQtyAllocated(huQtyAvailable);
+					// addQtyAllocated converts into the HU's UOM itself, and the running total stays in
+					// the BOM line's UOM, so both are fed the quantity in the unit they expect.
+					allocableHU.addQtyAllocated(huQtyAvailableInHuUom);
 					allocatedQty = allocatedQty.add(huQtyAvailable);
 				}
 				planSteps.add(planStep);
@@ -262,7 +269,7 @@ public class PPOrderIssuePlanCreateCommand
 		final I_PP_Order_BOMLine orderBOMLine = ppOrderBOMBL.getOrderBOMLineById(orderBOMLineId);
 
 		final RawMaterialsIssueStrategy issueStrategy = ppOrderRouting.getIssueStrategyForRawMaterialsActivity();
-		final RawMaterialsIssueStrategy actualStrategy = issueStrategy.applies(BOMIssueMethod.ofNullableCode(orderBOMLine.getIssueMethod()))
+		final RawMaterialsIssueStrategy actualStrategy = issueStrategy.applies(BOMComponentIssueMethod.ofNullableCode(orderBOMLine.getIssueMethod()))
 				? issueStrategy
 				: RawMaterialsIssueStrategy.DEFAULT;
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());

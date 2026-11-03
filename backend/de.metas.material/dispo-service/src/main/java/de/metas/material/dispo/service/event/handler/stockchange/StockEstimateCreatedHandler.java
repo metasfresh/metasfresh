@@ -22,8 +22,10 @@
 
 package de.metas.material.dispo.service.event.handler.stockchange;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -32,9 +34,14 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -47,6 +54,9 @@ import java.util.Collection;
 @RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class StockEstimateCreatedHandler implements MaterialEventHandler<AbstractStockEstimateEvent>
 {
+	private static final Logger logger = LogManager.getLogger(StockEstimateCreatedHandler.class);
+
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final CandidateChangeService candidateChangeHandler;
 	@NonNull private final StockEstimateEventService stockEstimateEventService;
 
@@ -59,6 +69,16 @@ public class StockEstimateCreatedHandler implements MaterialEventHandler<Abstrac
 	@Override
 	public void handleEvent(final AbstractStockEstimateEvent event)
 	{
+		final WarehouseId warehouseId = event.getMaterialDescriptor().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
+			return;
+		}
+
 		final Candidate existingStockEstimateCandidate = stockEstimateEventService.retrieveExistingStockEstimateCandidateOrNull(event);
 
 		if (existingStockEstimateCandidate != null)

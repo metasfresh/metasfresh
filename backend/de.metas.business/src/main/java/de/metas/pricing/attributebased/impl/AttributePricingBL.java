@@ -11,15 +11,15 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_ProductPrice;
@@ -30,6 +30,7 @@ import java.util.Optional;
 
 public class AttributePricingBL implements IAttributePricingBL
 {
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
 	@Override
@@ -71,14 +72,13 @@ public class AttributePricingBL implements IAttributePricingBL
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 		final AttributeSetId overrideAttributeSetId = Services.get(IProductBL.class).getAttributeSetId(productId);
 
-		final I_M_AttributeSetInstance resultASI = attributesRepo.prepareCopy(productPriceASI)
+		return asiBL.prepareCopy(productPriceASI)
 				.overrideAttributeSetId(overrideAttributeSetId)
 				// IMPORTANT: copy only those which are not empty (task #1272)
 				// NOTE: At the moment we use only the M_AttributeValue_ID so that's why we check only that field
 				.filter(ai -> ai.getM_AttributeValue_ID() > 0)
 				//
 				.copy();
-		return resultASI;
 	}
 
 	@Override
@@ -90,7 +90,7 @@ public class AttributePricingBL implements IAttributePricingBL
 			return ImmutableList.of();
 		}
 
-		return attributesRepo.retrieveAttributeInstances(productPriceASI)
+		return asiBL.getAttributeInstances(productPriceASI)
 				.stream()
 				.map(this::createPricingAttribute)
 				.collect(GuavaCollectors.toImmutableList());
@@ -98,13 +98,13 @@ public class AttributePricingBL implements IAttributePricingBL
 
 	private PricingAttribute createPricingAttribute(final I_M_AttributeInstance instance)
 	{
-		final I_M_Attribute attribute = attributesRepo.getAttributeById(instance.getM_Attribute_ID());
+		final AttributeId attributeId = AttributeId.ofRepoId(instance.getM_Attribute_ID());
 		final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(instance.getM_AttributeValue_ID());
 		final AttributeListValue attributeValue = attributeValueId != null
-				? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId)
+				? attributesRepo.retrieveAttributeValueOrNull(attributeId, attributeValueId)
 				: null;
 
-		return new PricingAttribute(attribute, attributeValue);
+		return new PricingAttribute(attributeValue);
 	}
 
 	// task 08839
@@ -139,13 +139,6 @@ public class AttributePricingBL implements IAttributePricingBL
 	@Value
 	private static class PricingAttribute implements IPricingAttribute
 	{
-		I_M_Attribute attribute;
-		AttributeListValue attributeValue;
-
-		private PricingAttribute(@NonNull final I_M_Attribute attribute, @Nullable final AttributeListValue attributeValue)
-		{
-			this.attribute = attribute;
-			this.attributeValue = attributeValue;
-		}
+		@Nullable AttributeListValue attributeValue;
 	}
 }

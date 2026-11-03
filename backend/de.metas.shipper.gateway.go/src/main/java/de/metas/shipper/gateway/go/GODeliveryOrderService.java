@@ -4,6 +4,7 @@ import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -34,7 +35,6 @@ import org.springframework.stereotype.Service;
 
 /**
  * Service used to save and load {@link DeliveryOrder}s.
- *
  */
 @Service
 @AllArgsConstructor
@@ -63,7 +63,7 @@ public class GODeliveryOrderService implements DeliveryOrderService
 	}
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}

@@ -25,4 +25,10 @@ package de.metas.edi.model;
 
 public interface I_C_Invoice extends de.metas.invoicecandidate.model.I_C_Invoice, I_EDI_Document_Extension
 {
+	// @formatter:off
+	String COLUMNNAME_EDI_AD_PInstance_ID = "EDI_AD_PInstance_ID";
+
+	void setEDI_AD_PInstance_ID (int EDI_AD_PInstance_ID);
+	int getEDI_AD_PInstance_ID();
+	// @formatter:on
 }

@@ -28,6 +28,7 @@ import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -54,5 +55,17 @@ public class C_BP_PrintFormat
 		final SeqNo seqNo = bPartnerPrintFormatRepository.getNextSeqNo(BPartnerId.ofRepoId(bpPrintFormat.getC_BPartner_ID()));
 
 		bpPrintFormat.setSeqNo(seqNo.toInt());
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void normalizeDocumentCopiesOverride(@NonNull final I_C_BP_PrintFormat bpPrintFormat)
+	{
+		// A user who enters 0 expecting "don't print / no copies" would otherwise silently get the doc-type default;
+		// store null instead so the "not set → use default" sentinel is a single value across the override columns.
+		final Integer documentCopiesOverride = InterfaceWrapperHelper.getValueOrNull(bpPrintFormat, I_C_BP_PrintFormat.COLUMNNAME_DocumentCopies_Override);
+		if (documentCopiesOverride != null && documentCopiesOverride == 0)
+		{
+			InterfaceWrapperHelper.setValue(bpPrintFormat, I_C_BP_PrintFormat.COLUMNNAME_DocumentCopies_Override, null);
+		}
 	}
 }

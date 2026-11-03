@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
 @ghActions:run_on_executor5
 Feature: Camel-ExternalSystem authorization
+## F00802: External System
 
   Background:
     Given infrastructure and metasfresh are running
@@ -27,6 +30,8 @@ Feature: Camel-ExternalSystem authorization
       | userGroupAssign_api                    | userGroup_api              | user_to_get_notified_S0168 | true     |
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
   @Id:S0168_100
   Scenario: Both sys configs are set and no `AD_User_AuthToken` record found for provided pair, an `AD_User_AuthToken` record will be created and then JsonExternalSystemMessage containing the generated authToken is sent to RabbitMQ
     Given no AD_User_AuthToken records for userId:externalSystemUser
@@ -47,6 +52,8 @@ Feature: Camel-ExternalSystem authorization
 
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
   @Id:S0168_200
   Scenario: Both sys configs are set and there is an `AD_User_AuthToken` record found for provided pair, then JsonExternalSystemMessage containing the authToken is sent to RabbitMQ
     Given no AD_User_AuthToken records for userId:externalSystemUser
@@ -67,6 +74,8 @@ Feature: Camel-ExternalSystem authorization
 
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
   @Id:S0168_300
   Scenario: One sys config is missing, then a custom notification is sent to the configured user group
     Given no AD_User_AuthToken records for userId:externalSystemUser
@@ -89,6 +98,8 @@ Feature: Camel-ExternalSystem authorization
 
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
   @Id:S0168_400
   Scenario: Both sys configs are set but AD_Role_ID doesn't match any role associated with provided AD_User_ID, then a custom notification is sent to the configured user group
     Given no AD_User_AuthToken records for userId:externalSystemUser
@@ -112,6 +123,8 @@ Feature: Camel-ExternalSystem authorization
 
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
   @Id:S0168_500
   Scenario: Both sys config are set but there are multiple `AD_User_AuthToken` records found for provided pair, then a custom notification is sent to the configured user group
     Given no AD_User_AuthToken records for userId:externalSystemUser

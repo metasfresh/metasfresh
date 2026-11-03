@@ -11,6 +11,7 @@ SELECT order_v.C_Order_ID           AS "Order_ID",
        order_v.BPartnerValue        AS "Partner_Value",
        order_v.BPartnerName         AS "Partner_Name",
        order_v.ExternalId           AS "ExternalId",
+       order_v.ExternalSystemCode   AS "ExternalSystemCode",
        order_v.DataSource           AS "DataSource",
        order_v.BillBParterId        AS "Bill_Partner_ID",
        order_v.BillBParterValue     AS "Bill_Partner_Value",
@@ -47,7 +48,7 @@ FROM Historical_Sales_Orders_V order_v
                                             'QtyTU', ol.qtyEnteredTU,
                                             'M_HU_PI_Item_Product_ID', ol.m_hu_pi_item_product_id,
                                             'Rendered PI Name', hupip.name
-                                    ) ORDER BY ol.line) AS json_data
+                                        ) ORDER BY ol.line) AS json_data
                     FROM c_orderline ol
                              LEFT JOIN m_product product ON product.m_product_id = ol.m_product_id
                              LEFT JOIN c_uom suom ON suom.c_uom_id = product.c_uom_id

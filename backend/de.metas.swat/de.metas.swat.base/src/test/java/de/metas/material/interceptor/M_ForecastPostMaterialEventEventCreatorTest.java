@@ -1,8 +1,6 @@
 package de.metas.material.interceptor;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -10,13 +8,11 @@ import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
+import org.adempiere.mm.attributes.asi_aware.product.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,37 +71,12 @@ public class M_ForecastPostMaterialEventEventCreatorTest
 		forecastModel.setC_BPartner_ID(BPARTNER_ID_OF_FORECAST.getRepoId());
 		save(forecastModel);
 
-		final I_M_ForecastLine forecastLineRecord1;
-		{
-			final I_M_Warehouse warehouse1 = newInstance(I_M_Warehouse.class);
-			save(warehouse1);
-			final I_M_Product product1 = newInstance(I_M_Product.class);
-			save(product1);
+		final I_M_ForecastLine forecastLineRecord1 = ForecastLineTestFixture.newForecastLine(forecastModel, new BigDecimal("21"));
+		forecastLineRecord1.setC_BPartner_ID(BPARTNER_ID_OF_FIRST_FORECAST_LINE.getRepoId());
+		save(forecastLineRecord1);
 
-			forecastLineRecord1 = newInstance(I_M_ForecastLine.class);
-			forecastLineRecord1.setM_Forecast(forecastModel);
-			forecastLineRecord1.setC_BPartner_ID(BPARTNER_ID_OF_FIRST_FORECAST_LINE.getRepoId());
-			forecastLineRecord1.setDatePromised(TimeUtil.asTimestamp(SystemTime.asInstant()));
-			forecastLineRecord1.setQty(new BigDecimal("21"));
-			forecastLineRecord1.setM_Product_ID(product1.getM_Product_ID());
-			forecastLineRecord1.setM_Warehouse_ID(warehouse1.getM_Warehouse_ID());
-			save(forecastLineRecord1);
-		}
-
-		final I_M_ForecastLine forecastLineRecord2;
-		{
-			final I_M_Warehouse warehouse2 = newInstance(I_M_Warehouse.class);
-			save(warehouse2);
-			final I_M_Product product2 = newInstance(I_M_Product.class);
-			save(product2);
-			forecastLineRecord2 = newInstance(I_M_ForecastLine.class);
-			forecastLineRecord2.setM_Forecast(forecastModel);
-			forecastLineRecord2.setDatePromised(TimeUtil.asTimestamp(SystemTime.asInstant()));
-			forecastLineRecord2.setQty(new BigDecimal("22"));
-			forecastLineRecord2.setM_Product_ID(product2.getM_Product_ID());
-			forecastLineRecord2.setM_Warehouse_ID(warehouse2.getM_Warehouse_ID());
-			save(forecastLineRecord2);
-		}
+		final I_M_ForecastLine forecastLineRecord2 = ForecastLineTestFixture.newForecastLine(forecastModel, new BigDecimal("22"));
+		save(forecastLineRecord2);
 
 		final ForecastCreatedEvent result = forecastEventCreator.createEventWithLinesAndTiming(
 				forecastModel,
