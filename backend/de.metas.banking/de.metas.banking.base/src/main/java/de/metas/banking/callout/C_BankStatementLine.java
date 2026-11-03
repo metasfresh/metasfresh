@@ -25,6 +25,7 @@ package de.metas.banking.callout;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -93,6 +94,18 @@ public class C_BankStatementLine
 		}
 
 		bankStatementBL.updateLineFromInvoice(bsl, invoiceId);
+	}
+
+	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_C_Order_ID)
+	public void onC_Order_ID_Changed(@NonNull final I_C_BankStatementLine bsl)
+	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(bsl.getC_Order_ID());
+		if (orderId == null)
+		{
+			return;
+		}
+
+		bankStatementBL.updateLineFromOrder(bsl, orderId);
 	}
 
 	private static void updateTrxAmt(final I_C_BankStatementLine bsl)
