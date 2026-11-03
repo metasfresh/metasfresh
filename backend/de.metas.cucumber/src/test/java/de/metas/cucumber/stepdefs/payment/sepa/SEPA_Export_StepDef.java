@@ -93,10 +93,9 @@ public class SEPA_Export_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-	private final @NonNull C_PaySelection_StepDefData paySelectionTable;
+	@NonNull private final C_PaySelection_StepDefData paySelectionTable;
 
 	@Nullable private ProcessExecutionResult result;
-	@Nullable private Throwable thrown;
 	/** parsed documents of the last run, by scheme = text of {@code PmtTpInf/LclInstrm/Cd} */
 	private final Map<String, Document> documentsByScheme = new LinkedHashMap<>();
 	private final List<String> filenames = new ArrayList<>();
@@ -109,7 +108,7 @@ public class SEPA_Export_StepDef
 	 * Each file is stored under its scheme (the text of {@code PmtTpInf/LclInstrm/Cd}, e.g. CORE or B2B); two files with the same scheme fail the step.
 	 * Each file is also written as-is to {@code target/sepa-export-files/<pay selection identifier>/<filename>}, relative to the working directory
 	 * (the module directory under surefire).
-	 * A failing process does not fail this step; the failure steps assert it.
+	 * A process that fails while running does not fail this step (its error is in the result); the failure steps assert it.
 	 *
 	 * @param paySelectionIdentifier identifier of a pay selection registered via {@code metasfresh contains Pay Selection}
 	 * @cucumber.example
@@ -121,30 +120,19 @@ public class SEPA_Export_StepDef
 	public void run(@NonNull final String paySelectionIdentifier) throws Exception
 	{
 		result = null;
-		thrown = null;
 		documentsByScheme.clear();
 		filenames.clear();
 
-		final int paySelectionId = paySelectionTable.getId(paySelectionIdentifier).getRepoId();
-
-		try
-		{
-			result = ProcessInfo.builder()
-					.setCtx(Env.getCtx())
-					.setAD_Process_ID(adProcessDAO.retrieveProcessIdByClass(C_PaySelection_SEPA_XmlExport.class))
-					.setRecord(I_C_PaySelection.Table_Name, paySelectionId)
-					// the process defaults; SEPA_Protocol stays unset
-					.addParameter("IsGroupTransactions", false)
-					.addParameter("ReferenceAsEndToEndId", false)
-					.buildAndPrepareExecution()
-					.executeSync()
-					.getResult();
-		}
-		catch (final Throwable t)
-		{
-			thrown = t;
-			return;
-		}
+		result = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setAD_Process_ID(adProcessDAO.retrieveProcessIdByClass(C_PaySelection_SEPA_XmlExport.class))
+				.setRecord(I_C_PaySelection.Table_Name, paySelectionTable.getId(paySelectionIdentifier))
+				// the process defaults; SEPA_Protocol stays unset
+				.addParameter("IsGroupTransactions", false)
+				.addParameter("ReferenceAsEndToEndId", false)
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
 
 		if (result.isError())
 		{
@@ -455,16 +443,13 @@ public class SEPA_Export_StepDef
 
 	private void assertFailure(@Nullable final String expectedErrorCode, @NonNull final DataTable dataTable)
 	{
-		assertThat(result != null || thrown != null).as("the SEPA export process was run").isTrue();
-		if (result != null)
-		{
-			assertThat(result.isError()).as("the SEPA export process must fail; summary=" + result.getSummary()).isTrue();
-			assertThat(result.getReportData()).as("a failed SEPA export must carry no report data").isNull();
-		}
+		assertThat(result).as("the SEPA export process was run").isNotNull();
+		assertThat(result.isError()).as("the SEPA export process must fail; summary=" + result.getSummary()).isTrue();
+		assertThat(result.getReportData()).as("a failed SEPA export must carry no report data").isNull();
 
-		final Throwable throwable = result != null && result.getThrowable() != null ? result.getThrowable() : thrown;
+		final Throwable throwable = result.getThrowable();
 		final StringBuilder messages = new StringBuilder();
-		if (result != null && result.getSummary() != null)
+		if (result.getSummary() != null)
 		{
 			messages.append(result.getSummary()).append('\n');
 		}
@@ -493,10 +478,6 @@ public class SEPA_Export_StepDef
 
 	private void assertSuccess()
 	{
-		if (thrown != null)
-		{
-			fail("the SEPA export process must not throw: " + thrown, thrown);
-		}
 		assertThat(result).as("the SEPA export process was run").isNotNull();
 		if (result.isError())
 		{
@@ -516,7 +497,7 @@ public class SEPA_Export_StepDef
 	{
 		return queryBL.createQueryBuilder(I_SEPA_Export.class)
 				.addEqualsFilter(I_SEPA_Export.COLUMNNAME_AD_Table_ID, getTableId(I_C_PaySelection.class))
-				.addEqualsFilter(I_SEPA_Export.COLUMNNAME_Record_ID, paySelectionTable.getId(paySelectionIdentifier).getRepoId())
+				.addEqualsFilter(I_SEPA_Export.COLUMNNAME_Record_ID, paySelectionTable.getId(paySelectionIdentifier))
 				.create()
 				.list();
 	}
