@@ -22,7 +22,11 @@ public enum HUQRCodeUnitType implements ReferenceListAwareEnum
 	@Getter
 	private final String code;
 
-	@JsonCreator
+	// mode = DELEGATING: round-trips as a single JSON String (@JsonValue toJson + ofCode(String)).
+	// Under the JDK 25 / Spring Boot 3 migration the backend compiles with javac -parameters, so
+	// jackson-module-parameter-names mis-detects this single-arg factory as a PROPERTIES creator
+	// (MismatchedInputException "expects JSON Object, got VALUE_STRING"). Pin DELEGATING.
+	@JsonCreator(mode = JsonCreator.Mode.DELEGATING)
 	public static HUQRCodeUnitType ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);

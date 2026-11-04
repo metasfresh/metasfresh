@@ -32,7 +32,11 @@ public enum PickingJobAggregationType implements ReferenceListAwareEnum
 	@Nullable
 	public static PickingJobAggregationType ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
-	@JsonCreator
+	// mode = DELEGATING: round-trips as a single JSON String (@JsonValue toJson + ofJson(String)).
+	// javac -parameters (JDK 25 / Spring Boot 3) otherwise makes jackson-module-parameter-names
+	// mis-detect this single-arg factory as a PROPERTIES creator (MismatchedInputException
+	// "expects JSON Object, got VALUE_STRING"). Pin DELEGATING.
+	@JsonCreator(mode = JsonCreator.Mode.DELEGATING)
 	public static PickingJobAggregationType ofJson(@NonNull final String code) {return ofCode(code);}
 
 	@JsonValue
