@@ -88,8 +88,12 @@ export class BankStatementPage {
       await field.locator('.input-dropdown, .input-block, input, .raw-list').first().click();
       const list = page.locator('.input-dropdown-list');
       await list.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
-      const options = list.locator('.input-dropdown-list-option');
+      // Real options carry data-testid="option-*"; the loading spinner row has the same `input-dropdown-list-option`
+      // class (SelectionDropdown renderHeader), so only the test id tells them apart. Wait for the first real option,
+      // then for the spinner to be gone, so the list is complete before it is read.
+      const options = list.locator('[data-testid^="option-"]');
       await options.first().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+      await expect(list.locator('.input-dropdown-list-header .icon-rotate')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
       await this.#showForCapture(list, '03-order-dropdown');
       return (await options.allInnerTexts()).map((text) => text.trim());
     });
