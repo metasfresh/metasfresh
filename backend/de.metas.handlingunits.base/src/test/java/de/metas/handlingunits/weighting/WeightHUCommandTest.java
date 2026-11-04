@@ -25,6 +25,7 @@ import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.expectations.HUItemExpectation;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
 import de.metas.handlingunits.impl.HUQtyService;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -97,7 +98,7 @@ public class WeightHUCommandTest
 		helper = HUTestHelper.newInstanceOutOfTrx();
 
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
-		this.huQtyService = HUQtyService.newInstanceForUnitTesting();
+		this.huQtyService = new HUQtyService(inventoryService, HUQRCodesService.newInstanceForUnitTesting());
 
 		POJOLookupMap.get().addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(inventoryService));
 	}
