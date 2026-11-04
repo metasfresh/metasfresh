@@ -29,7 +29,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,6 +49,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
 {
+	private static final ImmutableSet<DocStatus> DRAFT_OR_COMPLETED_STATUSES = ImmutableSet.of(
+			DocStatus.Drafted, DocStatus.InProgress, DocStatus.Invalid,
+			DocStatus.Completed, DocStatus.Closed);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -310,17 +313,16 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses());
 	}
 
-
 	@Override
 	@NonNull
-	public ImmutableSet<OrderId> getOrderIdsCarriedByActivePayments(@NonNull final Collection<OrderId> orderIds)
+	public ImmutableSet<OrderId> getOrderIdsWithDraftOrCompletedPayments(@NonNull final Collection<OrderId> orderIds)
 	{
 		if (orderIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		return queryActivePaymentsCarryingOrders(orderIds)
+		return queryDraftOrCompletedPaymentsByOrderIds(orderIds)
 				.create()
 				.listDistinct(I_C_Payment.COLUMNNAME_C_Order_ID, Integer.class)
 				.stream()
@@ -330,19 +332,19 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 	@Override
 	@NonNull
-	public Optional<PaymentId> getActivePaymentIdCarryingOrder(@NonNull final OrderId orderId)
+	public Optional<PaymentId> getFirstDraftOrCompletedPaymentIdByOrderId(@NonNull final OrderId orderId)
 	{
-		return queryActivePaymentsCarryingOrders(ImmutableSet.of(orderId))
+		return queryDraftOrCompletedPaymentsByOrderIds(ImmutableSet.of(orderId))
 				.orderBy(I_C_Payment.COLUMNNAME_C_Payment_ID)
 				.create()
 				.firstIdOnlyOptional(PaymentId::ofRepoIdOrNull);
 	}
 
-	private IQueryBuilder<I_C_Payment> queryActivePaymentsCarryingOrders(@NonNull final Collection<OrderId> orderIds)
+	private IQueryBuilder<I_C_Payment> queryDraftOrCompletedPaymentsByOrderIds(@NonNull final Collection<OrderId> orderIds)
 	{
 		return queryBL.createQueryBuilder(I_C_Payment.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Payment.COLUMNNAME_C_Order_ID, orderIds)
-				.addNotInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, ImmutableSet.of(X_C_Payment.DOCSTATUS_Voided, X_C_Payment.DOCSTATUS_Reversed));
+				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DRAFT_OR_COMPLETED_STATUSES);
 	}
 }

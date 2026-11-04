@@ -48,6 +48,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
@@ -577,7 +579,7 @@ public class BankStatementCamt53Service
 		}
 
 		final List<OrderId> candidateOrderIds = orderDAO.getWaitingPrepaySalesOrderIds(WaitingPrepaySalesOrderQuery.builder()
-				.docTypeIds(docTypeDAO.getDocTypeIdsByDocSubType(DocSubType.PrepayOrder))
+				.docTypeIds(docTypeDAO.getDocTypeIdsByDocBaseAndSubType(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.PrepayOrder)))
 				.documentNos(documentNos)
 				.currencyId(stmtAmount.getCurrencyId())
 				.amount(stmtAmount.toBigDecimal())
@@ -587,7 +589,7 @@ public class BankStatementCamt53Service
 		// only what is left counts, so that exactly one remaining order is unambiguous
 		final ImmutableSet<OrderId> carriedOrderIds = ImmutableSet.<OrderId>builder()
 				.addAll(bankStatementDAO.getOrderIdsOnUnprocessedLines(candidateOrderIds))
-				.addAll(paymentBL.getOrderIdsCarriedByActivePayments(candidateOrderIds))
+				.addAll(paymentBL.getOrderIdsWithDraftOrCompletedPayments(candidateOrderIds))
 				.build();
 		final List<OrderId> orderIds = candidateOrderIds.stream()
 				.filter(orderId -> !carriedOrderIds.contains(orderId))

@@ -147,12 +147,13 @@ public class DocTypeDAO implements IDocTypeDAO
 
 	@Override
 	@NonNull
-	public ImmutableSet<DocTypeId> getDocTypeIdsByDocSubType(@NonNull final DocSubType docSubType)
+	public ImmutableSet<DocTypeId> getDocTypeIdsByDocBaseAndSubType(@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
-		return queryBL.createQueryBuilder(I_C_DocType.class)
-				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType.getCode())
-				.create()
-				.idsAsSet(DocTypeId::ofRepoId);
+		final IQueryBuilder<I_C_DocType> queryBuilder = queryBL.createQueryBuilder(I_C_DocType.class)
+				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseAndSubType.getDocBaseType());
+		addDocSubTypeFilter(queryBuilder.getCompositeFilter(), docBaseAndSubType.getDocSubType());
+
+		return queryBuilder.create().idsAsSet(DocTypeId::ofRepoId);
 	}
 
 	private Optional<DocTypeId> retrieveDocTypeIdByQuery(@NonNull final DocTypeQuery query)
@@ -206,15 +207,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		filters.addInArrayOrAllFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, query.getAdOrgId());
 		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, query.getDocBaseType());
 
-		final DocSubType docSubType = query.getDocSubType();
-		if (docSubType.isNone())
-		{
-			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
-		}
-		else if (!docSubType.isAny())
-		{
-			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
-		}
+		addDocSubTypeFilter(filters, query.getDocSubType());
 
 		if (query.getIsSOTrx() != null)
 		{
@@ -242,6 +235,18 @@ public class DocTypeDAO implements IDocTypeDAO
 				.addColumn(I_C_DocType.COLUMNNAME_DocSubType, Direction.Ascending, Nulls.First);
 
 		return queryBuilder;
+	}
+
+	private static void addDocSubTypeFilter(@NonNull final ICompositeQueryFilter<I_C_DocType> filters, @NonNull final DocSubType docSubType)
+	{
+		if (docSubType.isNone())
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+		}
+		else if (!docSubType.isAny())
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
+		}
 	}
 
 	@Override

@@ -287,7 +287,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final PaymentId orderPaymentId = PaymentId.ofRepoIdOrNull(order.getC_Payment_ID());
 		final PaymentId carryingPaymentId = orderPaymentId != null
 				? orderPaymentId
-				: paymentBL.getActivePaymentIdCarryingOrder(orderId).orElse(null);
+				: paymentBL.getFirstDraftOrCompletedPaymentIdByOrderId(orderId).orElse(null);
 		if (carryingPaymentId != null)
 		{
 			throw new AdempiereException(MSG_ORDER_ALREADY_PAID, order.getDocumentNo(), paymentBL.getById(carryingPaymentId).getDocumentNo());

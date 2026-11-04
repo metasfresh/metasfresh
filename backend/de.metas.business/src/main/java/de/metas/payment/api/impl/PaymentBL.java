@@ -158,16 +158,16 @@ public class PaymentBL implements IPaymentBL
 
 	@Override
 	@NonNull
-	public ImmutableSet<OrderId> getOrderIdsCarriedByActivePayments(@NonNull final Collection<OrderId> orderIds)
+	public ImmutableSet<OrderId> getOrderIdsWithDraftOrCompletedPayments(@NonNull final Collection<OrderId> orderIds)
 	{
-		return paymentDAO.getOrderIdsCarriedByActivePayments(orderIds);
+		return paymentDAO.getOrderIdsWithDraftOrCompletedPayments(orderIds);
 	}
 
 	@Override
 	@NonNull
-	public Optional<PaymentId> getActivePaymentIdCarryingOrder(@NonNull final OrderId orderId)
+	public Optional<PaymentId> getFirstDraftOrCompletedPaymentIdByOrderId(@NonNull final OrderId orderId)
 	{
-		return paymentDAO.getActivePaymentIdCarryingOrder(orderId);
+		return paymentDAO.getFirstDraftOrCompletedPaymentIdByOrderId(orderId);
 	}
 
 	private CurrencyId fetchC_Currency_Invoice_ID(final I_C_Payment payment)

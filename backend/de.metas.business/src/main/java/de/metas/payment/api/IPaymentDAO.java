@@ -128,15 +128,9 @@ public interface IPaymentDAO extends ISingletonService
 	@NonNull
 	Optional<PaymentId> findCompletedOrClosedPaymentIdByProformaInvoiceId(@NonNull InvoiceId proformaInvoiceId);
 
-	/**
-	 * @return those of the given orders that are carried by an active {@code C_Payment} ({@code C_Payment.C_Order_ID}) whose {@code DocStatus} is neither 'VO' nor 'RE'
-	 */
 	@NonNull
-	ImmutableSet<OrderId> getOrderIdsCarriedByActivePayments(@NonNull Collection<OrderId> orderIds);
+	ImmutableSet<OrderId> getOrderIdsWithDraftOrCompletedPayments(@NonNull Collection<OrderId> orderIds);
 
-	/**
-	 * @return the (lowest id) active {@code C_Payment} whose {@code DocStatus} is neither 'VO' nor 'RE' and that carries the given order ({@code C_Payment.C_Order_ID}), if any
-	 */
 	@NonNull
-	Optional<PaymentId> getActivePaymentIdCarryingOrder(@NonNull OrderId orderId);
+	Optional<PaymentId> getFirstDraftOrCompletedPaymentIdByOrderId(@NonNull OrderId orderId);
 }

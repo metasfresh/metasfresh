@@ -99,8 +99,13 @@ public class C_BankStatementLine
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_C_Order_ID)
 	public void onC_Order_ID_Changed(@NonNull final I_C_BankStatementLine bsl)
 	{
+		if (bsl.getC_Invoice_ID() > 0) // an invoice on the line wins: its partner stays, the order is ignored at completion
+		{
+			return;
+		}
+
 		final OrderId orderId = OrderId.ofRepoIdOrNull(bsl.getC_Order_ID());
-		if (orderId == null || bsl.getC_Invoice_ID() > 0) // an invoice on the line wins: its partner stays, the order is ignored at completion
+		if (orderId == null)
 		{
 			return;
 		}

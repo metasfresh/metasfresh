@@ -39,7 +39,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PaymentDAO_getOrderIdsCarriedByActivePayments_Test
+public class PaymentDAO_getOrderIdsWithDraftOrCompletedPayments_Test
 {
 	private IPaymentDAO paymentDAO;
 
@@ -60,9 +60,9 @@ public class PaymentDAO_getOrderIdsCarriedByActivePayments_Test
 		return OrderId.ofRepoId(orderRepoId);
 	}
 
-	/** Only an active payment that is neither voided nor reversed carries its order; orders without such a payment are not returned. */
+	/** Only an active drafted, in progress, invalid, completed or closed payment counts; orders without such a payment are not returned. */
 	@Test
-	void onlyActivePaymentsThatAreNotVoidedOrReversedCarryTheirOrder()
+	void onlyActiveDraftOrCompletedPaymentsCount()
 	{
 		final OrderId drafted = payment(1, X_C_Payment.DOCSTATUS_Drafted, true);
 		final OrderId completed = payment(2, X_C_Payment.DOCSTATUS_Completed, true);
@@ -70,27 +70,35 @@ public class PaymentDAO_getOrderIdsCarriedByActivePayments_Test
 		final OrderId reversed = payment(4, X_C_Payment.DOCSTATUS_Reversed, true);
 		final OrderId inactive = payment(5, X_C_Payment.DOCSTATUS_Completed, false);
 		final OrderId withoutPayment = OrderId.ofRepoId(6);
+		final OrderId inProgress = payment(7, X_C_Payment.DOCSTATUS_InProgress, true);
+		final OrderId invalid = payment(8, X_C_Payment.DOCSTATUS_Invalid, true);
+		final OrderId closed = payment(9, X_C_Payment.DOCSTATUS_Closed, true);
+		final OrderId approved = payment(10, X_C_Payment.DOCSTATUS_Approved, true);
+		final OrderId notApproved = payment(11, X_C_Payment.DOCSTATUS_NotApproved, true);
+		final OrderId waitingPayment = payment(12, X_C_Payment.DOCSTATUS_WaitingPayment, true);
 
-		assertThat(paymentDAO.getOrderIdsCarriedByActivePayments(ImmutableList.of(drafted, completed, voided, reversed, inactive, withoutPayment)))
-				.containsExactlyInAnyOrder(drafted, completed);
-		assertThat(paymentDAO.getOrderIdsCarriedByActivePayments(ImmutableList.of(voided, withoutPayment))).isEmpty();
+		assertThat(paymentDAO.getOrderIdsWithDraftOrCompletedPayments(ImmutableList.of(
+				drafted, completed, voided, reversed, inactive, withoutPayment, inProgress, invalid, closed, approved, notApproved, waitingPayment)))
+				.containsExactlyInAnyOrder(drafted, completed, inProgress, invalid, closed);
+		assertThat(paymentDAO.getOrderIdsWithDraftOrCompletedPayments(ImmutableList.of(voided, withoutPayment))).isEmpty();
 	}
 
-	/** The payment to name in a refusal is an active one that is neither voided nor reversed; none if only such payments point to the order. */
+	/** Only an active drafted, in progress, invalid, completed or closed payment is returned; none if only other payments point to the order. */
 	@Test
-	void getActivePaymentIdCarryingOrder_skipsVoidedReversedAndInactivePayments()
+	void getFirstDraftOrCompletedPaymentIdByOrderId_skipsOtherAndInactivePayments()
 	{
+		payment(1, X_C_Payment.DOCSTATUS_Approved, true);
 		payment(1, X_C_Payment.DOCSTATUS_Voided, true);
 		payment(1, X_C_Payment.DOCSTATUS_Reversed, true);
 		payment(1, X_C_Payment.DOCSTATUS_Completed, false);
-		assertThat(paymentDAO.getActivePaymentIdCarryingOrder(OrderId.ofRepoId(1))).isEmpty();
+		assertThat(paymentDAO.getFirstDraftOrCompletedPaymentIdByOrderId(OrderId.ofRepoId(1))).isEmpty();
 
 		final I_C_Payment carrying = newInstance(I_C_Payment.class);
 		carrying.setC_Order_ID(1);
 		carrying.setDocStatus(X_C_Payment.DOCSTATUS_Completed);
 		saveRecord(carrying);
 
-		assertThat(paymentDAO.getActivePaymentIdCarryingOrder(OrderId.ofRepoId(1))).contains(PaymentId.ofRepoId(carrying.getC_Payment_ID()));
-		assertThat(paymentDAO.getActivePaymentIdCarryingOrder(OrderId.ofRepoId(2))).isEmpty();
+		assertThat(paymentDAO.getFirstDraftOrCompletedPaymentIdByOrderId(OrderId.ofRepoId(1))).contains(PaymentId.ofRepoId(carrying.getC_Payment_ID()));
+		assertThat(paymentDAO.getFirstDraftOrCompletedPaymentIdByOrderId(OrderId.ofRepoId(2))).isEmpty();
 	}
 }

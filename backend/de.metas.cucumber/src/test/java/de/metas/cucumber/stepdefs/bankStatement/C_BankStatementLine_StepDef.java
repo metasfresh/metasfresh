@@ -50,6 +50,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
@@ -69,6 +70,7 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 
+@RequiredArgsConstructor
 public class C_BankStatementLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -77,28 +79,12 @@ public class C_BankStatementLine_StepDef
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	private final C_BankStatement_StepDefData bankStatementTable;
-	private final C_BankStatementLine_StepDefData bankStatementLineTable;
-	private final C_BPartner_StepDefData partnerTable;
-	private final C_Invoice_StepDefData invoiceTable;
-	private final C_Payment_StepDefData paymentTable;
-	private final C_Order_StepDefData orderTable;
-
-	public C_BankStatementLine_StepDef(
-			@NonNull final C_BankStatement_StepDefData bankStatementTable,
-			@NonNull final C_BankStatementLine_StepDefData bankStatementLineTable,
-			@NonNull final C_BPartner_StepDefData partnerTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final C_Payment_StepDefData paymentTable,
-			@NonNull final C_Order_StepDefData orderTable)
-	{
-		this.bankStatementTable = bankStatementTable;
-		this.bankStatementLineTable = bankStatementLineTable;
-		this.partnerTable = partnerTable;
-		this.invoiceTable = invoiceTable;
-		this.paymentTable = paymentTable;
-		this.orderTable = orderTable;
-	}
+	@NonNull private final C_BankStatement_StepDefData bankStatementTable;
+	@NonNull private final C_BankStatementLine_StepDefData bankStatementLineTable;
+	@NonNull private final C_BPartner_StepDefData partnerTable;
+	@NonNull private final C_Invoice_StepDefData invoiceTable;
+	@NonNull private final C_Payment_StepDefData paymentTable;
+	@NonNull private final C_Order_StepDefData orderTable;
 
 	@And("load C_BankStatementLine")
 	public void load_C_BankStatementLine(@NonNull final DataTable dataTable)
