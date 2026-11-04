@@ -40,6 +40,23 @@ public class InventoryCandidateRepositoryTest
 				.containsExactly(active.getM_Inventory_Candidate_ID());
 	}
 
+	@Test
+	public void getNotProcessedByHuId_returnsOnlyActiveUnprocessedCandidatesOfThatHU()
+	{
+		final HuId huId = HuId.ofRepoId(101);
+
+		final I_M_Inventory_Candidate expected = createCandidate(huId, true);
+		createCandidate(huId, false);
+		createCandidate(HuId.ofRepoId(102), true);
+		final I_M_Inventory_Candidate processed = createCandidate(huId, true);
+		processed.setProcessed(true);
+		saveRecord(processed);
+
+		assertThat(repository.getNotProcessedByHuId(huId))
+				.extracting(I_M_Inventory_Candidate::getM_Inventory_Candidate_ID)
+				.containsExactly(expected.getM_Inventory_Candidate_ID());
+	}
+
 	private static I_M_Inventory_Candidate createCandidate(final HuId huId, final boolean active)
 	{
 		final I_M_Inventory_Candidate record = newInstance(I_M_Inventory_Candidate.class);

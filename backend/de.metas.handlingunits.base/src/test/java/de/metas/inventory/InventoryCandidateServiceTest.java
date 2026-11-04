@@ -48,6 +48,38 @@ public class InventoryCandidateServiceTest
 				.containsExactlyInAnyOrder(active.getM_Inventory_Candidate_ID(), processed.getM_Inventory_Candidate_ID());
 	}
 
+	@Test
+	public void isDisposalPending_trueOnlyForAnActiveUnprocessedCandidateWithADisposeReason()
+	{
+		final HuId pendingHuId = HuId.ofRepoId(201);
+		createDisposalCandidate(pendingHuId, true, false, "X");
+
+		final HuId processedHuId = HuId.ofRepoId(202);
+		createDisposalCandidate(processedHuId, true, true, "X");
+
+		final HuId noReasonHuId = HuId.ofRepoId(203);
+		createDisposalCandidate(noReasonHuId, true, false, null);
+
+		final HuId inactiveHuId = HuId.ofRepoId(204);
+		createDisposalCandidate(inactiveHuId, false, false, "X");
+
+		assertThat(service.isDisposalPending(pendingHuId)).isTrue();
+		assertThat(service.isDisposalPending(processedHuId)).isFalse();
+		assertThat(service.isDisposalPending(noReasonHuId)).isFalse();
+		assertThat(service.isDisposalPending(inactiveHuId)).isFalse();
+		assertThat(service.isDisposalPending(HuId.ofRepoId(299))).isFalse();
+	}
+
+	private static void createDisposalCandidate(final HuId huId, final boolean active, final boolean processed, final String disposeReason)
+	{
+		final I_M_Inventory_Candidate record = newInstance(I_M_Inventory_Candidate.class);
+		record.setM_HU_ID(huId.getRepoId());
+		record.setIsActive(active);
+		record.setProcessed(processed);
+		record.setDisposeReason(disposeReason);
+		saveRecord(record);
+	}
+
 	private static I_M_Inventory_Candidate createCandidate(final HuId huId, final boolean active)
 	{
 		final I_M_Inventory_Candidate record = newInstance(I_M_Inventory_Candidate.class);
