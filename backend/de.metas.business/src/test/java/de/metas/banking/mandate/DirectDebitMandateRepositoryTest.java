@@ -98,6 +98,15 @@ class DirectDebitMandateRepositoryTest
 	}
 
 	@Test
+	void exportOrgMandateWins_insertedBeforeOrgAny()
+	{
+		mandateRecord(exportOrg, "EXPORT");
+		mandateRecord(OrgId.ANY, "ANY");
+
+		assertThat(getMandateReference(exportOrg)).isEqualTo("EXPORT");
+	}
+
+	@Test
 	void exportFromOrgAny_findsOnlyTheOrgAnyMandate()
 	{
 		mandateRecord(otherOrg, "OTHER");

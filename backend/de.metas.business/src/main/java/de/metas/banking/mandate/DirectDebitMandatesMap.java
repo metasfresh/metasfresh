@@ -24,20 +24,18 @@ package de.metas.banking.mandate;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimaps;
 import de.metas.banking.BankAccountId;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
 
-import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 /**
- * Direct debit mandates, indexed by bank account.
- * Per bank account it holds one mandate; if there is one of a regular org and one of org 0 ("*"), the regular org's mandate is kept.
+ * Direct debit mandates, indexed by bank account: per bank account the first mandate of the list is kept.
+ * The caller decides the precedence by the order of the list (e.g. {@link DirectDebitMandateRepository} puts the mandate of the specific org before the one of org 0).
  */
 @ToString
 public class DirectDebitMandatesMap
@@ -45,7 +43,7 @@ public class DirectDebitMandatesMap
 	public static final DirectDebitMandatesMap EMPTY = new DirectDebitMandatesMap(ImmutableList.of());
 
 	/**
-	 * @param mandates per bank account at most one mandate of a regular org and one of org 0
+	 * @param mandates in order of precedence; per bank account the first one wins
 	 */
 	public static DirectDebitMandatesMap ofList(@NonNull final List<DirectDebitMandate> mandates)
 	{
@@ -56,29 +54,9 @@ public class DirectDebitMandatesMap
 
 	private DirectDebitMandatesMap(@NonNull final List<DirectDebitMandate> mandates)
 	{
-		this.byBankAccountId = Multimaps.index(mandates, DirectDebitMandate::getBankAccountId)
-				.asMap()
-				.entrySet()
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, entry -> regularOrgMandateWins(entry.getValue())));
-	}
-
-	/**
-	 * @param mandates the mandates of one bank account
-	 * @return the mandate of the regular org, else the one of org 0
-	 * @throws AdempiereException if there is more than one mandate of a regular org or more than one of org 0
-	 */
-	private static DirectDebitMandate regularOrgMandateWins(@NonNull final Collection<DirectDebitMandate> mandates)
-	{
-		final List<DirectDebitMandate> regularOrgMandates = mandates.stream().filter(mandate -> mandate.getOrgId().isRegular()).collect(ImmutableList.toImmutableList());
-		final List<DirectDebitMandate> orgAnyMandates = mandates.stream().filter(mandate -> mandate.getOrgId().isAny()).collect(ImmutableList.toImmutableList());
-		if (regularOrgMandates.size() > 1 || orgAnyMandates.size() > 1)
-		{
-			throw new AdempiereException("Expected per bank account at most one mandate of a regular org and one of org 0")
-					.appendParametersToMessage()
-					.setParameter("mandates", mandates);
-		}
-		return !regularOrgMandates.isEmpty() ? regularOrgMandates.get(0) : orgAnyMandates.get(0);
+		final Map<BankAccountId, DirectDebitMandate> firstByBankAccountId = new LinkedHashMap<>();
+		mandates.forEach(mandate -> firstByBankAccountId.putIfAbsent(mandate.getBankAccountId(), mandate));
+		this.byBankAccountId = ImmutableMap.copyOf(firstByBankAccountId);
 	}
 
 	/**

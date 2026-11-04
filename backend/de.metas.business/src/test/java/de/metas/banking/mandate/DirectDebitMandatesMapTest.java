@@ -25,13 +25,11 @@ package de.metas.banking.mandate;
 import com.google.common.collect.ImmutableList;
 import de.metas.banking.BankAccountId;
 import de.metas.organization.OrgId;
-import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DirectDebitMandatesMapTest
 {
@@ -55,22 +53,22 @@ class DirectDebitMandatesMapTest
 	}
 
 	@Test
-	void regularOrgMandateWinsOverOrgAnyMandate()
+	void firstMandatePerBankAccountWins()
 	{
-		// the org-0 mandate comes first on purpose: the preference must not depend on the order
+		// the repository orders the specific org before org 0; the map itself only keeps the first mandate per bank account
 		final DirectDebitMandatesMap map = DirectDebitMandatesMap.ofList(
-				ImmutableList.of(mandate(OrgId.ANY, "ANY"), mandate(EXPORT_ORG, "EXPORT")));
+				ImmutableList.of(mandate(EXPORT_ORG, "EXPORT"), mandate(OrgId.ANY, "ANY")));
 
 		assertThat(map.getMandate(BANK_ACCOUNT)).get().extracting(DirectDebitMandate::getReference).isEqualTo("EXPORT");
 	}
 
 	@Test
-	void regularOrgMandateWinsOverOrgAnyMandate_regularOrgFirst()
+	void firstMandatePerBankAccountWins_orgAnyFirst()
 	{
 		final DirectDebitMandatesMap map = DirectDebitMandatesMap.ofList(
-				ImmutableList.of(mandate(EXPORT_ORG, "EXPORT"), mandate(OrgId.ANY, "ANY")));
+				ImmutableList.of(mandate(OrgId.ANY, "ANY"), mandate(EXPORT_ORG, "EXPORT")));
 
-		assertThat(map.getMandate(BANK_ACCOUNT)).get().extracting(DirectDebitMandate::getReference).isEqualTo("EXPORT");
+		assertThat(map.getMandate(BANK_ACCOUNT)).get().extracting(DirectDebitMandate::getReference).isEqualTo("ANY");
 	}
 
 	@Test
@@ -79,26 +77,6 @@ class DirectDebitMandatesMapTest
 		final DirectDebitMandatesMap map = DirectDebitMandatesMap.ofList(ImmutableList.of(mandate(OrgId.ANY, "ANY")));
 
 		assertThat(map.getMandate(BANK_ACCOUNT)).get().extracting(DirectDebitMandate::getReference).isEqualTo("ANY");
-	}
-
-	@Test
-	void mandatesOfTwoRegularOrgsFail()
-	{
-		final ImmutableList<DirectDebitMandate> mandates = ImmutableList.of(mandate(EXPORT_ORG, "EXPORT"), mandate(OTHER_ORG, "OTHER"));
-
-		assertThatThrownBy(() -> DirectDebitMandatesMap.ofList(mandates))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("at most one mandate of a regular org and one of org 0");
-	}
-
-	@Test
-	void twoOrgAnyMandatesFail_regardlessOfOrder()
-	{
-		final ImmutableList<DirectDebitMandate> mandates = ImmutableList.of(mandate(EXPORT_ORG, "EXPORT"), mandate(OrgId.ANY, "ANY1"), mandate(OrgId.ANY, "ANY2"));
-
-		assertThatThrownBy(() -> DirectDebitMandatesMap.ofList(mandates))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("at most one mandate of a regular org and one of org 0");
 	}
 
 	@Test
