@@ -47,27 +47,27 @@ public class LabelTargetLocatorResolver
 				return Optional.of(pickFromLocatorId);
 			}
 
-			final Optional<LocatorId> workplaceWarehouseLocator = getDefaultLocatorId(workplace.getWarehouseId());
+			final Optional<LocatorId> workplaceWarehouseLocator = getDefaultLocatorId(workplace.getWarehouseId(), clientId);
 			if (workplaceWarehouseLocator.isPresent())
 			{
 				return workplaceWarehouseLocator;
 			}
 		}
 
-		return orgDAO.getOrgWarehouseIdIfExists(orgId).flatMap(this::getDefaultLocatorId);
+		return orgDAO.getOrgWarehouseIdIfExists(orgId).flatMap(warehouseId -> getDefaultLocatorId(warehouseId, clientId));
 	}
 
-	/** the active location marked as default, else the first active one, else none (never creates one) */
-	private Optional<LocatorId> getDefaultLocatorId(@NonNull final WarehouseId warehouseId)
+	/** the usable location (see {@link LabelLocatorRules}) marked as default, else the first usable one, else none (never creates one) */
+	private Optional<LocatorId> getDefaultLocatorId(@NonNull final WarehouseId warehouseId, @NonNull final ClientId clientId)
 	{
-		final List<I_M_Locator> activeLocators = warehouseDAO.getLocators(warehouseId).stream()
-				.filter(I_M_Locator::isActive)
+		final List<I_M_Locator> usableLocators = warehouseDAO.getLocators(warehouseId).stream()
+				.filter(locator -> LabelLocatorRules.isUsable(locator, LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID()), clientId))
 				.collect(Collectors.toList());
 
-		final I_M_Locator locator = activeLocators.stream()
+		final I_M_Locator locator = usableLocators.stream()
 				.filter(I_M_Locator::isDefault)
 				.findFirst()
-				.orElse(activeLocators.isEmpty() ? null : activeLocators.get(0));
+				.orElse(usableLocators.isEmpty() ? null : usableLocators.get(0));
 		return Optional.ofNullable(locator != null ? LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID()) : null);
 	}
 }

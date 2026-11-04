@@ -54,7 +54,7 @@ class LabelTargetLocatorResolverTest
 	private static LocatorId newLocator(@NonNull final WarehouseId warehouseId, final String value, final boolean isDefault, final boolean isActive)
 	{
 		final I_M_Locator record = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
-		InterfaceWrapperHelper.setValue(record, "AD_Client_ID", clientId.getRepoId());
+		InterfaceWrapperHelper.setValue(record, I_M_Locator.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
 		record.setM_Warehouse_ID(warehouseId.getRepoId());
 		record.setValue(value);
 		record.setIsDefault(isDefault);
@@ -138,12 +138,27 @@ class LabelTargetLocatorResolverTest
 		final WarehouseId workplaceWarehouse = newWarehouseId(1_000_102);
 		final LocatorId otherClientPickFrom = newLocator(workplaceWarehouse, "pick-from-other-client", false, true);
 		final I_M_Locator record = InterfaceWrapperHelper.load(otherClientPickFrom.getRepoId(), I_M_Locator.class);
-		InterfaceWrapperHelper.setValue(record, "AD_Client_ID", clientId.getRepoId() + 1);
+		InterfaceWrapperHelper.setValue(record, I_M_Locator.COLUMNNAME_AD_Client_ID, clientId.getRepoId() + 1);
 		InterfaceWrapperHelper.saveRecord(record);
 		final LocatorId defaultLocator = newLocator(workplaceWarehouse, "wp-default", true, true);
 		assignWorkplace(workplaceWarehouse, otherClientPickFrom);
 
 		assertThat(resolver.resolve(userId, orgId, clientId)).contains(defaultLocator);
+	}
+
+	/** failure scenario: the warehouse default location belongs to another client, so the create step would refuse it; it is not proposed (the usable one is) */
+	@Test
+	void warehouseDefaultLocatorOfOtherClient_notProposed()
+	{
+		final WarehouseId orgWarehouse = newWarehouseId(1_000_101);
+		final LocatorId otherClientDefault = newLocator(orgWarehouse, "default-other-client", true, true);
+		final I_M_Locator record = InterfaceWrapperHelper.load(otherClientDefault.getRepoId(), I_M_Locator.class);
+		InterfaceWrapperHelper.setValue(record, I_M_Locator.COLUMNNAME_AD_Client_ID, clientId.getRepoId() + 1);
+		InterfaceWrapperHelper.saveRecord(record);
+		final LocatorId usable = newLocator(orgWarehouse, "usable", false, true);
+		newOrgInfo(orgId, orgWarehouse);
+
+		assertThat(resolver.resolve(userId, orgId, clientId)).contains(usable);
 	}
 
 	/** failure scenario: the proposal is a read — a warehouse without an active locator must not get one created */
