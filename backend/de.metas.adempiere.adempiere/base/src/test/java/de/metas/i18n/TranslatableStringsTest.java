@@ -64,9 +64,9 @@ public class TranslatableStringsTest
 
 		assertThat(amountTrl.translate("en_US")).isEqualTo("12,345.67 EUR");
 		assertThat(amountTrl.translate("de_DE")).isEqualTo("12.345,67 EUR");
-		// de_CH grouping separator is U+2019 RIGHT SINGLE QUOTATION MARK in the CLDR data bundled
-		// with JDK 25 (it was U+0027 APOSTROPHE in older CLDR). The formatter correctly follows the
-		// JDK's current locale data, so the expected literal is aligned to it.
+		// de_CH grouping separator is U+2019 RIGHT SINGLE QUOTATION MARK under the default CLDR locale
+		// provider (U+0027 APOSTROPHE appears only under the legacy COMPAT / Java-8 locale provider).
+		// The formatter correctly follows the JVM's active locale data, so the expected literal matches it.
 		assertThat(amountTrl.translate("de_CH")).isEqualTo("12’345.67 EUR");
 	}
 

@@ -305,6 +305,23 @@
                 <version>${logstash-logback-encoder.version}</version>
             </dependency>
 
+            <!-- Enforce the JDK-25-capable Byte Buddy for the modules that inherit this parent WITHOUT the
+                 spring-boot BOM (notably de.metas.cucumber). Mockito 2.7.22 drags byte-buddy 1.15.11 (officially
+                 Java 24 / class 68) + byte-buddy-agent 1.6.11 transitively, and the byte-buddy.version property
+                 alone does not override a transitive version without an explicit management entry; creating any
+                 Mockito mock on JDK 25 then throws "Java 25 (69) is not supported by the current version of Byte
+                 Buddy". (Spring-boot-BOM modules already get ${byte-buddy.version} from the BOM.) -->
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${byte-buddy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy-agent</artifactId>
+                <version>${byte-buddy.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
