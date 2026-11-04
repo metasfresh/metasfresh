@@ -76,7 +76,8 @@ class SepaTextConverterTest
 		@ParameterizedTest
 		@CsvSource(delimiter = '|', value = {
 				"Bäcker & Söhne € Großhandel | Baecker   Soehne   Grosshandel", // umlauts and ß are transliterated, & and € become a space
-				"Société Générale, Łódź      | Societe Generale,  odz",         // accents are dropped; a letter without a base letter (Ł) becomes a space
+				"Société Générale, Łódź      | Societe Generale, Lodz",          // accents are dropped; Ł has no decomposition and is transliterated
+				"Søren Ærø, Œuvre, Đorđe     | Soren AEro, OEuvre, Dorde",       // letters without a decomposition are transliterated
 				"Rechnung „Nr. 1“            | Rechnung  Nr. 1",                 // trimmed after the conversion
 				"a😀b              | a b",                             // a character outside the BMP is ONE space, not two
 				"50% * 2 $                   | 50    2",
@@ -84,6 +85,13 @@ class SepaTextConverterTest
 		void converted(final String text, final String expected)
 		{
 			assertThat(SepaTextConverter.toText(text, 70)).isEqualTo(expected);
+		}
+
+		@Test
+		void decomposedInput_isConvertedLikeComposedInput()
+		{
+			// "Müller" with "u" followed by a combining diaeresis (U+0308), as some sources deliver it
+			assertThat(SepaTextConverter.toText("Mu\u0308ller", 70)).isEqualTo("Mueller");
 		}
 
 		@Test

@@ -8,7 +8,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 ## The export writes pain.008.001.08, one file per scheme (CORE / B2B), taking the mandate data
 ## (reference, signature date, sequence type) from the debtor's C_BP_BankAccount_DirectDebitMandate.
 ##
-## Expected values are derived from the requirements (the pain.008.001.08 GBIC_5 schema and its text-conversion rules: allowed character set, maximum lengths), not from the writer's output.
+## Expected values are derived from the requirements (the pain.008.001.08 GBIC_5 schema and the text conversion to the basic SEPA character set and maximum lengths), not from the writer's output.
 ##
 ## Data notes:
 ## - Every scenario runs in its own organization (created in the Background) with its own org BP, which is the creditor; no seed data is changed.
@@ -510,7 +510,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
   #     the debtor named "€ € €" (only disallowed characters) -> Dbtr.Nm is a single space; the export succeeds
   @from:cucumber
   @Id:S32708_TC15
-  Scenario: debtor-side cases in one file: debtor bank without BIC (NOTPROVIDED), invoice without description (no Ustrd), text conversion to GBIC_5 and maximum lengths (a name of only disallowed characters becomes one space), only the org-* mandate active, mandate last used after the collection date (DateLastUsed not moved back)
+  Scenario: debtor-side cases in one file: debtor bank without BIC (NOTPROVIDED), invoice without description (no Ustrd), text conversion to the basic SEPA character set and maximum lengths (a name of only disallowed characters becomes one space), only the org-* mandate active, mandate last used after the collection date (DateLastUsed not moved back)
     Given metasfresh contains C_BPartners:
       | Identifier      | Name                                                                                     | Value          | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | noBicDebtor     | Debtor NoBIC                                                                             | nobic_@Date@   | Y          | pricingSystem                 | D               |

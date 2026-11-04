@@ -35,7 +35,7 @@ import java.text.Normalizer;
  * <p>
  * The basic set is valid in every SEPA country; the German banks' set (GBIC_5) additionally allows umlauts, "ß" and {@code & * $ %},
  * but other countries' banks do not, and the Deutsche Bundesbank itself recommends writing "Ä" as "AE" and "ß" as "ss".
- * So umlauts and "ß" are transliterated, other letters lose their accents (é → e), and every character still outside the set becomes a space;
+ * So umlauts, "ß" and letters such as "ø" or "Ł" are transliterated, other letters lose their accents (é → e), and every character still outside the set becomes a space;
  * the result is trimmed before it is cut.
  */
 @UtilityClass
@@ -51,6 +51,18 @@ public class SepaTextConverter
 			.put('ö', "oe")
 			.put('ü', "ue")
 			.put('ß', "ss")
+			.put('ẞ', "SS")
+			// letters without a Unicode decomposition into a base letter and an accent
+			.put('Æ', "AE")
+			.put('æ', "ae")
+			.put('Œ', "OE")
+			.put('œ', "oe")
+			.put('Ø', "O")
+			.put('ø', "o")
+			.put('Ł', "L")
+			.put('ł', "l")
+			.put('Đ', "D")
+			.put('đ', "d")
 			.build();
 
 	private static final String SPECIAL_CHARS = "+?/-:().,' ";
@@ -102,7 +114,8 @@ public class SepaTextConverter
 	private static String convert(@NonNull final String text)
 	{
 		final StringBuilder result = new StringBuilder(text.length());
-		text.codePoints().forEach(codePoint -> {
+		// composed first, so that a letter delivered as base letter + combining mark is transliterated like the single character
+		Normalizer.normalize(text, Normalizer.Form.NFC).codePoints().forEach(codePoint -> {
 			if (Character.isBmpCodePoint(codePoint) && TRANSLITERATIONS.containsKey((char)codePoint))
 			{
 				result.append(TRANSLITERATIONS.get((char)codePoint));
