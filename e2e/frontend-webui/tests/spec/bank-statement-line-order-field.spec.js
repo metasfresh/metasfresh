@@ -17,7 +17,8 @@ import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
  * payment carries it). The bank statement line of that customer must offer only the order that still waits for payment.
  *  - the field is part of the line's grid columns and of the line's advanced-edit form;
  *  - the dropdown offers the waiting prepay order;
- *  - the dropdown does not offer the order carried by a completed payment.
+ *  - the dropdown does not offer the already paid order (completing its payment released it: it no longer waits for
+ *    payment; the val rule's extra exclusion of orders carried by a CO/CL payment is covered by the Cucumber scenarios).
  *
  * Data: master data via the frontendTesting API; bank statement, payment and payment completion through the WebUI REST
  * API (the same calls the window makes). No raw SQL.
@@ -64,8 +65,8 @@ test.describe('Bank statement line: order field and dropdown', () => {
   test('the line shows the order field; its dropdown offers the waiting prepay order but not the paid one', async ({
     page,
   }) => {
-    allure.epic('E0200: Finance');
-    allure.tag('F-bank-statement-order-matching');
+    allure.epic('E0220: Financial');
+    allure.tag('F00963: Bank Statement');
     allure.story('Sales order on the bank statement line');
     allure.severity('critical');
     allure.description(`
