@@ -20,4 +20,4 @@ COPY docker-builds/metadata/build-info.properties META-INF/
 COPY docker-builds/metadata/git.properties BOOT-INF/classes/
 RUN zip -g metasfresh_server.jar META-INF/build-info.properties BOOT-INF/classes/git.properties
 
-CMD ["java", "-cp", "/opt/metasfresh/metasfresh_server.jar", "-Dloader.path=/opt/metasfresh/external-lib", "org.springframework.boot.loader.PropertiesLauncher"]
+CMD ["java", "--add-opens=java.base/java.lang=ALL-UNNAMED", "-cp", "/opt/metasfresh/metasfresh_server.jar", "-Dloader.path=/opt/metasfresh/external-lib", "org.springframework.boot.loader.launch.PropertiesLauncher"]

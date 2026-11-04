@@ -19,4 +19,4 @@ COPY docker-builds/metadata/build-info.properties META-INF/
 COPY docker-builds/metadata/git.properties BOOT-INF/classes/
 RUN zip -g metasfresh-webui-api.jar META-INF/build-info.properties BOOT-INF/classes/git.properties
 
-CMD ["java", "-jar", "/opt/metasfresh-webui-api/metasfresh-webui-api.jar"]
+CMD ["java", "--add-opens=java.base/java.lang=ALL-UNNAMED", "-jar", "/opt/metasfresh-webui-api/metasfresh-webui-api.jar"]

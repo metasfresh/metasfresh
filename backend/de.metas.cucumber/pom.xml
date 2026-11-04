@@ -314,6 +314,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!-- JDK 17+ denies the deep reflection org.adempiere.util.proxy.impl.JavaAssistInterceptor
+                         uses to call ClassLoader.defineClass when booting ServerBoot in the forked test JVM
+                         (InaccessibleObjectException: java.base does not "opens java.lang"). -->
+                    <argLine>--add-opens=java.base/java.lang=ALL-UNNAMED</argLine>
                     <properties>
                         <configurationParameters>
                             cucumber.junit-platform.naming-strategy=surefire
