@@ -12,7 +12,7 @@ import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import Button from '../../../components/buttons/Button';
 import { trl } from '../../../utils/translations';
 import { toastError, toastNotification } from '../../../utils/toast';
-import PropTypes from 'prop-types';
+import { updateHeaderEntry } from '../../../actions/HeaderActions';
 
 const toQtyInfo = (proposal) =>
   proposal?.qty != null
@@ -28,7 +28,7 @@ const toLocator = (proposal) => ({ qrCode: proposal?.locatorQRCode, caption: pro
  * HU number from the message to open it); Cancel creates nothing.
  */
 const NewHUPreviewScreen = () => {
-  const { history } = useScreenDefinition({
+  const { history, url } = useScreenDefinition({
     screenId: 'NewHUPreviewScreen',
     captionKey: 'huManager.newHU.title',
     back: huManagerLocation,
@@ -63,10 +63,40 @@ const NewHUPreviewScreen = () => {
     }
   }, [preview]);
 
+  // what the label would create is shown in the app's caption/value header (same component as every other screen); the locator
+  // is changeable, so the header values follow it
+  const weightText = proposal?.weightKg != null ? `${proposal.weightKg} KGM` : proposal?.weightNote; // the label's weight (X12DE355 code like the qty row): shown when it becomes the CU's net weight, else the server's note that it is not used for this product
+  const locatorCaption = locator.caption ?? trl('huManager.newHU.noLocator');
+  useEffect(() => {
+    if (!proposal) return;
+    dispatch(
+      updateHeaderEntry({
+        location: url,
+        values: [
+          {
+            caption: trl('huManager.newHU.product'),
+            value: `${proposal.product.name} (${proposal.product.value})`,
+            valueTestId: 'product-value',
+          },
+          ...proposal.attributes.map((attribute) => ({
+            caption: attribute.caption,
+            value: attribute.valueDisplay,
+            valueTestId: `attribute-${attribute.code}-value`,
+          })),
+          {
+            caption: trl('huManager.newHU.weight'),
+            value: weightText,
+            valueTestId: 'weight-value',
+            hidden: !weightText,
+          },
+          { caption: trl('huManager.newHU.locator'), value: locatorCaption, valueTestId: 'locator-value' },
+        ],
+      })
+    );
+  }, [url, proposal, weightText, locatorCaption]);
+
   if (!preview) return <></>;
 
-  // the label's weight (X12DE355 code like the qty row): shown when it becomes the CU's net weight, else the server's note that it is not used for this product
-  const weightText = proposal.weightKg != null ? `${proposal.weightKg} KGM` : proposal.weightNote;
   const qty = qtyInfo.qty;
   const isOKEnabled = !isCreating && qtyInfo.isQtyValid && qty > 0 && !!locator.qrCode; // an emptied or 0 quantity disables OK
 
@@ -101,13 +131,8 @@ const NewHUPreviewScreen = () => {
 
   return (
     <div className="pt-3 section">
-      <table className="table view-header wrap-values is-size-6">
+      <table className="table view-header is-size-6">
         <tbody>
-          <Row
-            captionKey="huManager.newHU.product"
-            testId="product-value"
-            value={`${proposal.product.name} (${proposal.product.value})`}
-          />
           <tr>
             <th>{trl('huManager.newHU.qty')}</th>
             <td data-testid="qty-value">
@@ -120,18 +145,6 @@ const NewHUPreviewScreen = () => {
               />
             </td>
           </tr>
-          {proposal.attributes.map((attribute) => (
-            <tr key={attribute.code}>
-              <th>{attribute.caption}</th>
-              <td data-testid={`attribute-${attribute.code}-value`}>{attribute.valueDisplay}</td>
-            </tr>
-          ))}
-          {weightText && <Row captionKey="huManager.newHU.weight" testId="weight-value" value={weightText} />}
-          <Row
-            captionKey="huManager.newHU.locator"
-            testId="locator-value"
-            value={locator.caption ?? trl('huManager.newHU.noLocator')}
-          />
         </tbody>
       </table>
       {/* the buttons: OK / Cancel / Change locator; no scanner on this screen (a locator is scanned in the dialog) */}
@@ -157,19 +170,3 @@ const NewHUPreviewScreen = () => {
 };
 
 export default NewHUPreviewScreen;
-
-//
-//
-//
-
-const Row = ({ captionKey, testId, value }) => (
-  <tr>
-    <th>{trl(captionKey)}</th>
-    <td data-testid={testId}>{value}</td>
-  </tr>
-);
-Row.propTypes = {
-  captionKey: PropTypes.string.isRequired,
-  testId: PropTypes.string,
-  value: PropTypes.any,
-};

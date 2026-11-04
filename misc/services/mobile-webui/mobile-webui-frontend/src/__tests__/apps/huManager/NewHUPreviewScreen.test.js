@@ -4,6 +4,9 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
+import { ViewHeader } from '../../../containers/ViewHeader';
+import headers from '../../../reducers/headers';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import NewHUPreviewScreen from '../../../apps/huManager/containers/NewHUPreviewScreen';
 import { huManagerReducer } from '../../../apps/huManager/reducers';
 import { newHUPreviewLoaded } from '../../../apps/huManager/actions';
@@ -25,10 +28,12 @@ jest.mock('../../../utils/toast', () => ({
   toastErrorFromObj: jest.fn(),
   toastNotification: jest.fn(),
 }));
+const mockPreviewUrl = '/huManager/newHU';
 const mockHistory = { goBack: jest.fn(), push: jest.fn(), replace: jest.fn() };
 jest.mock('../../../hooks/useScreenDefinition', () => ({
-  useScreenDefinition: () => ({ history: { ...mockHistory } }), // a new object on every call, like useMobileNavigation
+  useScreenDefinition: () => ({ url: mockPreviewUrl, history: { ...mockHistory } }), // a new object on every call, like useMobileNavigation
 }));
+jest.mock('../../../components/UserInstructions', () => () => null); // pulls in an scss file jest cannot parse
 jest.mock('../../../apps/huManager/api');
 jest.mock('axios');
 const mockResolveLocatorResponse = (data) => axios.post.mockResolvedValue({ status: 200, data });
@@ -45,15 +50,19 @@ const scan = async (barcode) => {
   });
 };
 
-const renderPreview = ({ locator = { locatorQRCode: LOCATOR_QR, locatorCaption: 'Hauptlager' } } = {}) => {
+const renderPreview = ({
+  locator = { locatorQRCode: LOCATOR_QR, locatorCaption: 'Hauptlager' },
+  proposalExtras = {},
+} = {}) => {
   const proposal = {
     product: { productId: 1, value: 'P1', name: 'Product 1' },
     qty: 1,
     uom: 'PCE',
     attributes: [],
     ...locator,
+    ...proposalExtras,
   };
-  const store = createStore(combineReducers({ settings, 'applications/huManager': huManagerReducer }), {
+  const store = createStore(combineReducers({ settings, headers, 'applications/huManager': huManagerReducer }), {
     'applications/huManager': { newHUPreview: { scannedCode: 'LABEL-1', proposal } },
   });
   store.dispatch(
@@ -64,13 +73,40 @@ const renderPreview = ({ locator = { locatorQRCode: LOCATOR_QR, locatorCaption: 
       'barcodeScanner.defaultMode': 'hardware',
     })
   );
+  // the screen's own useScreenDefinition (mocked above) would push this header entry; the screen then fills its values
+  store.dispatch(pushHeaderEntry({ location: mockPreviewUrl }));
   render(
     <Provider store={store}>
+      <ViewHeader />
       <NewHUPreviewScreen />
     </Provider>
   );
   return store;
 };
+
+// What the label would create is shown in the app's caption/value header (the component of every other screen).
+describe('NewHUPreviewScreen header', () => {
+  it('shows product, label attributes, weight and location as caption/value rows', async () => {
+    renderPreview({
+      proposalExtras: {
+        attributes: [{ code: 'Lot-Nummer', caption: 'Lot number', valueDisplay: 'L-42' }],
+        weightKg: 12.5,
+      },
+    });
+    await act(async () => {});
+    expect(screen.getByTestId('product-value')).toHaveTextContent('Product 1 (P1)');
+    expect(screen.getByTestId('attribute-Lot-Nummer-value')).toHaveTextContent('L-42');
+    expect(screen.getByText('Lot number').tagName).toBe('TH');
+    expect(screen.getByTestId('weight-value')).toHaveTextContent('12.5 KGM');
+    expect(screen.getByTestId('locator-value')).toHaveTextContent('Hauptlager');
+  });
+
+  it('shows no weight row when the label carries no weight', async () => {
+    renderPreview();
+    await act(async () => {});
+    expect(screen.queryByTestId('weight-value')).not.toBeInTheDocument();
+  });
+});
 
 // The location is changed with the "Change locator" button: it opens the scan dialog of the HU Manager and the scanned location
 // replaces the proposed one (the preview itself has no scanner).
@@ -207,7 +243,7 @@ describe('NewHUPreviewScreen after OK', () => {
       locatorQRCode: LOCATOR_QR,
       locatorCaption: 'Hauptlager',
     };
-    const store = createStore(combineReducers({ settings, 'applications/huManager': huManagerReducer }), {
+    const store = createStore(combineReducers({ settings, headers, 'applications/huManager': huManagerReducer }), {
       'applications/huManager': { newHUPreview: { scannedCode: 'LABEL-1', proposal } },
     });
     api.createHUFromScannedCode.mockResolvedValue({ id: '1000001', displayName: '1000001 (CU)' });
@@ -235,7 +271,7 @@ describe('NewHUPreviewScreen after OK', () => {
 describe('NewHUPreviewScreen without a preview', () => {
   it('goes back once, not after every re-render', async () => {
     mockHistory.goBack.mockClear();
-    const store = createStore(combineReducers({ settings, 'applications/huManager': huManagerReducer }));
+    const store = createStore(combineReducers({ settings, headers, 'applications/huManager': huManagerReducer }));
     const ui = (
       <Provider store={store}>
         <NewHUPreviewScreen />

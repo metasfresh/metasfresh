@@ -144,7 +144,7 @@ export const NewHUPreviewScreen = {
      */
     expectOKWithoutScrolling: async () => await test.step(`${NAME} - Expect OK visible without scrolling`, async () => {
         const container = containerElement();
-        await container.locator('table').evaluate((el) => { for (let e = el; e; e = e.parentElement) e.scrollTop = 0; window.scrollTo(0, 0); });
+        await container.locator('table').first().evaluate((el) => { for (let e = el; e; e = e.parentElement) e.scrollTop = 0; window.scrollTo(0, 0); });
         const ok = await container.getByTestId('ok-button').boundingBox();
         const bottomBar = await page.locator(ID_BACK_BUTTON).boundingBox();
         expect(ok.y + ok.height, 'OK bottom edge vs top of the bottom navigation bar').toBeLessThanOrEqual(bottomBar.y);

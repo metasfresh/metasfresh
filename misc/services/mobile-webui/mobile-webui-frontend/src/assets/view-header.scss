@@ -13,34 +13,9 @@
       td {
         max-width: 60vw !important;
         overflow: hidden;
+        overflow-wrap: anywhere; // a long unbroken value (article name/number, lot) wraps inside its cell instead of being clipped; captions (th) keep word-aware wrapping
         text-align: right;
       }
-    }
-  }
-
-  // Opt-in (class `wrap-values`): a long unbroken value (article name/number, lot) wraps inside its cell instead of
-  // widening the table and clipping the other values (quantity, location) off the right edge of a handheld screen.
-  &.wrap-values {
-    table-layout: fixed;
-
-    // compact rows: the preview has up to 7 rows (product, qty, lot, best-before, production date, weight, locator) and OK must stay above the fold of a 640-700 px high handheld screen
-    tbody {
-      font-size: $compact-font-size;
-
-      tr th,
-      tr td {
-        padding: $compact-cell-padding;
-      }
-    }
-
-    tbody tr th {
-      width: 40%;
-      overflow-wrap: anywhere; // long captions (e.g. "Mindesthaltbarkeitsdatum") wrap instead of running into the value
-    }
-
-    tbody tr td {
-      white-space: normal;
-      overflow-wrap: anywhere;
     }
   }
 
