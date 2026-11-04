@@ -975,7 +975,8 @@ public class C_Invoice_StepDef
 	 *   <b>DateInvoiced</b> — (optional) the new invoice date<br>
 	 *   <b>Description</b> — (optional) the new invoice description<br>
 	 *   <b>C_PaymentTerm_ID</b> — (optional, identifier-ref) the new payment term<br>
-	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 *   Older features prefix the optional columns with <code>OPT.</code> (e.g. <code>OPT.DateInvoiced</code>); both forms are read.
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, C_PaymentTerm_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_Invoice:
