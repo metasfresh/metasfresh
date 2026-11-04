@@ -468,7 +468,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     And the pay selection "paySelection" has no SEPA_Export
 
   @from:cucumber
-  @Id:S32708_TC24
+  @Id:S32708_TC26
   Scenario: debtor name without any character of the SEPA character set: export refused naming the partner, no SEPA_Export
     Given metasfresh contains C_BPartners:
       | Identifier | Name  | Value                | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
@@ -506,7 +506,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     And the pay selection "paySelection" has no SEPA_Export
 
   @from:cucumber
-  @Id:S32708_TC25
+  @Id:S32708_TC27
   Scenario: mandate reference with a character outside the SEPA character set: export refused naming the partner, no SEPA_Export
     Given metasfresh contains C_BPartners:
       | Identifier | Name             | Value                | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
@@ -547,7 +547,7 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
   # A Swiss debtor (CH IBAN, a SEPA country outside the EEA) must be collected with its address including the town;
   # the address captured on the invoice has no town, so the export is refused naming the partner.
   @from:cucumber
-  @Id:S32708_TC26
+  @Id:S32708_TC28
   Scenario: Swiss debtor whose address has no town: export refused naming the partner, no SEPA_Export
     Given metasfresh contains C_BPartners without locations:
       | Identifier | Name                | Value              | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
