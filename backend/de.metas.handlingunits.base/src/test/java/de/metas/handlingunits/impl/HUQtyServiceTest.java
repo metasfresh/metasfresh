@@ -8,7 +8,6 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
-import static org.mockito.Mockito.doNothing;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.CreateHUFromInventoryRequest;
 import de.metas.handlingunits.HuId;
@@ -56,6 +55,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class HUQtyServiceTest
