@@ -29,6 +29,7 @@ import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -55,17 +56,30 @@ public class C_Invoice
 	public void updateEdiStatus(final I_C_Invoice invoice)
 	{
 		final EDIExportStatus ediExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
-		if(ediExportStatus != null && ediExportStatus.isInProgressOrSend())
+		// while an export is running, done or failed, the export owns the status; don't re-validate
+		final boolean isStatusOwnedByExport = ediExportStatus != null && (ediExportStatus.isInProgressOrSend() || ediExportStatus.isError());
+		if (!isStatusOwnedByExport)
 		{
-			return;
+			ediDocumentBL.updateEdiExportStatus(invoice);
 		}
 
-		if(ediExportStatus != null && ediExportStatus.isError())
-		{
-			return;
-		}
+		clearErrorMsgIfChangedToSentOrPending(invoice);
+	}
 
-		ediDocumentBL.updateEdiExportStatus(invoice);
+	/**
+	 * The error message of an earlier failed send or validation is outdated once the status changed to sent or pending.
+	 * Checked after the validation, which might have set the status to invalid together with a fresh message.
+	 */
+	private static void clearErrorMsgIfChangedToSentOrPending(@NonNull final I_C_Invoice invoice)
+	{
+		final EDIExportStatus ediExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
+		final boolean isStatusChangedToSentOrPending = ediExportStatus != null
+				&& (ediExportStatus.isSent() || ediExportStatus.isPending())
+				&& InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_EDI_ExportStatus);
+		if (isStatusChangedToSentOrPending)
+		{
+			invoice.setEDIErrorMsg(null);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }, //
@@ -82,6 +96,10 @@ public class C_Invoice
 			ifColumnsChanged = I_C_Invoice.COLUMNNAME_EDIErrorMsg)
 	public void translateEDIErrorMessage(final I_C_Invoice invoiceRecord)
 	{
+		if (Check.isBlank(invoiceRecord.getEDIErrorMsg()))
+		{
+			return; // don't turn a cleared message into an empty string
+		}
 		final ITranslatableString errorMsgTrl = TranslatableStrings.parse(invoiceRecord.getEDIErrorMsg());
 		invoiceRecord.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));
 	}

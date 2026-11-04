@@ -3,6 +3,7 @@ import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { BUSINESS_PARTNER_WINDOW_ID } from '../WindowIds';
 import { assertRecordIsValid } from '../WebAPIValidation';
+import { serverErrorMessage } from '../RestResponse';
 
 // Named timing constants for UI interactions
 const TAB_SWITCH_DELAY = 500;
@@ -24,6 +25,16 @@ const TAB_IDS = {
   LOCATION: 'tab_C_BPartner_Location',
   CONTACT: 'tab_AD_User',
   BANK_ACCOUNT: 'tab_C_BP_BankAccount',
+};
+
+/** True for the PATCH that saves `fieldName` on a Business Partner window document. */
+const isFieldSave = (response, fieldName) => {
+  const request = response.request();
+  return (
+    request.method() === 'PATCH' &&
+    new URL(request.url()).pathname.includes(`/window/${BUSINESS_PARTNER_WINDOW_ID}/`) &&
+    (request.postData() ?? '').includes(`"path":"${fieldName}"`)
+  );
 };
 
 /**
@@ -362,44 +373,41 @@ export class BusinessPartnerPage {
         );
       }
 
+      // Choosing the option saves the field at once (PATCH). Its response is what the server
+      // stored, so it is the check that the value was saved.
+      const saveResponsePromise = page.waitForResponse(
+        (response) => isFieldSave(response, COLUMN_FIELDS.PO_PAYMENT_TERM),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      // A failing click below must not leave this promise rejected and unhandled.
+      saveResponsePromise.catch(() => {});
       await paymentTermOption.first().click();
       console.log(`Clicked payment term option: ${paymentTermName}`);
+      const saveResponse = await saveResponsePromise;
 
-      // Step 7: Press Tab to confirm selection and trigger save (NOT Escape, which cancels!)
+      // Step 7: Press Tab to leave the cell editor (NOT Escape, which cancels!)
       await page.waitForTimeout(DROPDOWN_OPEN_DELAY);
       await page.keyboard.press('Tab');
-      await page.waitForTimeout(SAVE_CONFIRMATION_DELAY);
 
-      // Wait for save to complete
-      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-
-      // Give more time for the save to propagate to the UI
-      await page.waitForTimeout(1000);
-
-      // Step 8: Verify the value was saved by checking the table content
-      // The table should now show the payment term name
-      const tableText = await page.locator('table').textContent().catch(() => '');
-      console.log(`Table content (first 600 chars): ${tableText?.substring(0, 600)}`);
-
-      // Check if the payment term name appears in the table content
-      const paymentTermSaved = tableText.includes(paymentTermName);
-
-      if (!paymentTermSaved) {
-        // Try a shorter match (first 20 chars) in case of truncation
-        const shortName = paymentTermName.substring(0, 20);
-        const shortMatch = tableText.includes(shortName);
-
-        if (!shortMatch) {
-          throw new Error(
-            `PO Payment Term "${paymentTermName}" was NOT saved. ` +
-            `The value does not appear in the Vendor tab table. ` +
-            `Check if the dropdown selection and Tab key triggered a save.`
-          );
-        }
-        console.log(`PO Payment Term verified (partial match: ${shortName})`);
-      } else {
-        console.log(`PO Payment Term verified in table: ${paymentTermName}`);
+      // Step 8: Verify the save from the server's response. The grid is no proof: while the
+      // cell editor is still open, the value sits in an <input>, which textContent() does not
+      // include.
+      if (!saveResponse.ok()) {
+        throw new Error(
+          `PO Payment Term "${paymentTermName}" was NOT saved: PATCH returned ${saveResponse.status()}: ` +
+          `${await serverErrorMessage(saveResponse)}`
+        );
       }
+      const { documents = [] } = await saveResponse.json();
+      const savedDocument = documents.find((document) => document.fieldsByName?.[COLUMN_FIELDS.PO_PAYMENT_TERM]);
+      const savedValue = savedDocument?.fieldsByName[COLUMN_FIELDS.PO_PAYMENT_TERM].value;
+      if (savedValue?.caption !== paymentTermName || !savedDocument.saveStatus?.saved) {
+        throw new Error(
+          `PO Payment Term "${paymentTermName}" was NOT saved. The save response has value ` +
+          `${JSON.stringify(savedValue)} and saveStatus ${JSON.stringify(savedDocument?.saveStatus)}`
+        );
+      }
+      console.log(`PO Payment Term verified in the save response: ${paymentTermName}`);
 
       console.log(`PO Payment Term set to: ${paymentTermName}`);
     });

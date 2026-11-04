@@ -4,7 +4,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateInvalidator;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -41,7 +41,7 @@ import org.springframework.stereotype.Component;
 public class C_Flatrate_Term
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	@NonNull private final RefundContractRepository refundContractRepository;
 	@NonNull private final RefundInvoiceCandidateInvalidator refundInvoiceCandidateInvalidator;
 
@@ -66,7 +66,7 @@ public class C_Flatrate_Term
 		{
 			return; // this MI only deals with "refund" terms
 		}
-		invoiceCandDAO.deleteAllReferencingInvoiceCandidates(flatrateTerm);
+		invoiceCandBL.deleteAllReferencingInvoiceCandidates(flatrateTerm);
 
 		trxManager
 				.getCurrentTrxListenerManagerOrAutoCommit()

@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert');
-const { buildRunUrl, junitArtifactNames } = require('../lib/gh');
+const { buildRunUrl, isTrackedJunitArtifact, parseArtifactNames } = require('../lib/gh');
 
 const BASE = 'https://github.com/metasfresh/metasfresh/actions/runs/26543609110';
 
@@ -25,11 +25,48 @@ test('buildRunUrl: tolerates empty base', () => {
   assert.strictEqual(buildRunUrl('', 2), '');
 });
 
-test('junitArtifactNames: mobile shards + legacy name', () => {
-  const names = junitArtifactNames();
-  for (let s = 1; s <= 3; s++) {
-    assert.ok(names.includes(`junit-results-playwright-mobile-shard${s}`), `missing mobile shard${s}`);
+test('isTrackedJunitArtifact: any number of Playwright shards, mobile and frontend', () => {
+  for (let s = 1; s <= 12; s++) {
+    assert.ok(isTrackedJunitArtifact(`junit-results-playwright-mobile-shard${s}`), `mobile shard${s}`);
+    assert.ok(isTrackedJunitArtifact(`junit-results-playwright-frontend-shard${s}`), `frontend shard${s}`);
   }
   // runs from before mobile sharding still carry the unsharded name
-  assert.ok(names.includes('junit-results-playwright-mobile'));
+  assert.ok(isTrackedJunitArtifact('junit-results-playwright-mobile'));
+});
+
+test('isTrackedJunitArtifact: any number of cucumber profiles + catchall', () => {
+  for (let p = 1; p <= 12; p++) {
+    assert.ok(isTrackedJunitArtifact(`junit-results-cucumber-profile${p}`), `profile${p}`);
+  }
+  assert.ok(isTrackedJunitArtifact('junit-results-cucumber-catchall'));
+});
+
+test('isTrackedJunitArtifact: same families as before, nothing else', () => {
+  for (const name of [
+    'junit-results-jest',
+    'junit-results-backend',
+    'junit-results-camel',
+    'junit-results-cucumber-report',
+    'junit-results-playwright-mobile-shard',
+    'allure-results-mobile-shard1',
+    'playwright-frontend-report-shard1',
+  ]) {
+    assert.ok(!isTrackedJunitArtifact(name), name);
+  }
+});
+
+test('parseArtifactNames: one name per line across pages; keeps tracked, drops blanks and duplicates', () => {
+  const out = [
+    'junit-results-cucumber-profile1',
+    'allure-results-mobile-shard1',
+    '',
+    'junit-results-playwright-frontend-shard6 ',
+    'junit-results-cucumber-profile1', // a name repeated on a later page / attempt
+    'junit-results-jest',
+    '',
+  ].join('\n');
+  assert.deepStrictEqual(parseArtifactNames(out), [
+    'junit-results-cucumber-profile1',
+    'junit-results-playwright-frontend-shard6',
+  ]);
 });

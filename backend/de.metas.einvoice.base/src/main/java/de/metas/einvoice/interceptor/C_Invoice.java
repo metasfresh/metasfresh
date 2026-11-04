@@ -140,7 +140,7 @@ public class C_Invoice
 
 		if (!result.isValid())
 		{
-			throw new AdempiereException(invalidMsgKey, result.getFatalAndErrorRuleIds())
+			throw new AdempiereException(invalidMsgKey, result.getFatalAndErrorDetails())
 					.markAsUserValidationError();
 		}
 

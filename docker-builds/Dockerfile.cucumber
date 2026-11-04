@@ -2,7 +2,7 @@ ARG REFNAME=local
 ARG REGISTRY=ghcr.io/
 FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
 
-FROM maven:3.8.8-eclipse-temurin-8
+FROM maven:3.9.16-eclipse-temurin-8
 
 RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
@@ -31,6 +31,11 @@ RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml \
       sleep 15; \
     done
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress -T1C clean test-compile --offline
+
+# Invoice-candidate migration scripts, for invoicecandidate/invoiceCandidateDeliveryClosedReset.feature:
+# it tests the data migrations that reset the explicit "nothing delivered" closes of invoice candidates, by running the scripts themselves.
+# Copied to their repo path and kept after the dependency and compile layers, so that a migration edit does not invalidate their cache.
+COPY backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/ /backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/system/47-de.metas.invoicecandidate/
 
 COPY docker-builds/mvn/settings.xml /root/.m2/
 COPY docker-builds/cucumber/compose.yml /compose.yml

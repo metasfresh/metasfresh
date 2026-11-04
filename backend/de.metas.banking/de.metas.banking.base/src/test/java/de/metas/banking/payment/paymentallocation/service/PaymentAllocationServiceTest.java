@@ -22,6 +22,7 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.GLCategoryId;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
@@ -41,11 +42,13 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
 import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.invoice.paymentbonus.PaymentBonusDeductionLine;
@@ -76,6 +79,7 @@ import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -930,5 +934,22 @@ public class PaymentAllocationServiceTest
 			assertThat(service.isOpenAmtWithDiscountMatching(invoice(CurrencyCode.USD), Amount.of("163.17", CurrencyCode.USD))).as("foreign currency: open - Skonto").isTrue(); // open - Skonto
 			assertThat(service.isOpenAmtWithDiscountMatching(invoice(CurrencyCode.USD), Amount.of("163.72", CurrencyCode.USD))).as("foreign currency: open - bonus is not accepted").isFalse(); // open - bonus: not accepted
 		}
+	}
+
+	/**
+	 * No unpaid invoice matches the query, but the open amount (and its evaluation date) is set, as the bank statement import does.
+	 * Expected: an empty result, not an exception.
+	 */
+	@Test
+	public void retrieveUnpaidInvoices_noUnpaidInvoice_returnsEmptyList()
+	{
+		final UnpaidInvoiceMatchingAmtQuery query = UnpaidInvoiceMatchingAmtQuery.builder()
+				.onlyDocStatuses(ImmutableSet.of(DocStatus.Completed))
+				.queryLimit(QueryLimit.ofInt(10))
+				.openAmountAtDate(Amount.of("100", CurrencyCode.EUR))
+				.openAmountEvaluationDate(LocalDate.parse("2022-10-26").atStartOfDay(ZoneId.of("UTC")))
+				.build();
+
+		assertThat(paymentAllocationService.retrieveUnpaidInvoices(query)).isEmpty();
 	}
 }

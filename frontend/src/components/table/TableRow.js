@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import { F2_KEY } from '../../constants/Constants';
 import {
+  ATTRIBUTE_WIDGET_TYPES,
+  COMBOBOX_WIDGET_TYPES,
   getCellWidgetData,
   getDescription,
   getIconClassName,
@@ -20,13 +22,14 @@ import TableCell from './TableCell';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
 import PropTypes from 'prop-types';
 
-// widgets whose value is a {key, caption} object or a list of them; leaving the cell never writes a text
-// into them
+// A single letter or digit (any script), as reported by KeyboardEvent.key
+const ACTIVATION_KEY_REGEX = /^[\p{L}\p{N}]$/u;
+
+// widgets whose value is a {key, caption} object or a list of them; leaving the cell never writes a
+// text into them, and Escape never writes their pre-edit value back
 const OBJECT_VALUED_WIDGET_TYPES = [
-  'List',
-  'Lookup',
-  'ProductAttributes',
-  'Address',
+  ...COMBOBOX_WIDGET_TYPES,
+  ...ATTRIBUTE_WIDGET_TYPES,
   'MultiListValue',
   'Labels',
 ];
@@ -103,27 +106,49 @@ class TableRow extends PureComponent {
   };
 
   /**
-   * @method updateCellValue
-   * @summary Writes the value a cell is left with into the row in the store. A decimal number cell is a text input,
-   *          so it holds the number the way the user typed it (e.g. '12,50' in German); the row gets it as the
-   *          dot-decimal text the cell renders ('12.50', the precision is not trimmed), else the cell would show
-   *          12,00. Writes nothing when there is no value (the key event did not come from an input) or when the
-   *          field's value is a {key, caption} object (Lookup, List, attribute widgets).
-   * @param {string} property - field name
-   * @param {*} value - the value of the cell's input, or the stored value it had before editing
+   * @method isObjectValuedWidget
+   * @summary True when the field's value is a {key, caption} object or a list of them, i.e. its
+   * widget is a Lookup, a List, an attribute widget (Address, ProductAttributes), a MultiListValue
+   * or Labels. An attribute widget's value is saved by its popup while the cell stays in edit
+   * mode, so the value captured on entering edit mode is stale by the time the cell is left.
+   *
+   * @param {string} fieldName - the cell's field name
    */
-  updateCellValue = ({ property, value }) => {
-    const { fieldsByName, rowId, tabId, entity, modalVisible, tableId } =
-      this.props;
-    const widgetType = fieldsByName?.[property]?.widgetType;
-    if (
-      value === undefined ||
-      OBJECT_VALUED_WIDGET_TYPES.includes(widgetType)
-    ) {
+  isObjectValuedWidget = (fieldName) => {
+    const widgetType = this.props.fieldsByName?.[fieldName]?.widgetType;
+    return OBJECT_VALUED_WIDGET_TYPES.includes(widgetType);
+  };
+
+  /**
+   * @method writeScalarFieldValue
+   * @summary Writes the given scalar (text or number) value into the row's field via
+   * updatePropertyValue. Writes nothing for an object-valued field (see isObjectValuedWidget)
+   * or when the value is undefined, i.e. the key event did not come from an input element (no
+   * active editor, or an editor such as Labels whose key target is a contentEditable span).
+   * A decimal number cell is a text input, so it holds the number the way the user typed it
+   * (e.g. '12,50' in German); the row gets it as the dot-decimal text the cell renders ('12.50',
+   * the precision is not trimmed), else the cell would show 12,00.
+   *
+   * @param {string} property - the cell's field name
+   * @param {*} value - a text or number value; undefined when there is none
+   * @returns {boolean} true if the value was written
+   */
+  writeScalarFieldValue = (property, value) => {
+    if (value === undefined || this.isObjectValuedWidget(property)) {
       return false;
     }
 
-    this.props.updatePropertyValue({
+    const {
+      fieldsByName,
+      rowId,
+      tabId,
+      entity,
+      modalVisible,
+      tableId,
+      updatePropertyValue,
+    } = this.props;
+    const widgetType = fieldsByName?.[property]?.widgetType;
+    updatePropertyValue({
       property,
       value: isDecimalNumberField(widgetType)
         ? normalizeDecimalNumberString(value)
@@ -209,9 +234,21 @@ class TableRow extends PureComponent {
           const { onFastInlineEdit } = this.props;
           onFastInlineEdit();
         } else {
-          const inp = String.fromCharCode(event.keyCode);
-          if (/[a-zA-Z0-9]/.test(inp) && !event.ctrlKey && !event.altKey) {
-            this.handleKeyDown_RegularChar({ event, property, readonly });
+          // event.key, not keyCode: a numpad key reports its character ("0") only in event.key.
+          // Letters and digits only: activation replaces the cell content, so Space and
+          // punctuation must not activate.
+          if (
+            ACTIVATION_KEY_REGEX.test(event.key) &&
+            !event.ctrlKey &&
+            !event.altKey &&
+            !event.metaKey
+          ) {
+            this.handleKeyDown_RegularChar({
+              event,
+              property,
+              readonly,
+              isAttributeWidget,
+            });
           }
         }
         break;
@@ -243,7 +280,7 @@ class TableRow extends PureComponent {
       {
         valueBeforeEditing: inputContent,
       },
-      () => this.updateCellValue({ property, value: inputContent })
+      () => this.writeScalarFieldValue(property, inputContent)
     );
   };
 
@@ -255,9 +292,7 @@ class TableRow extends PureComponent {
       return;
     }
 
-    // when the user is navigating around the table without activating the field,
-    // there's no widget (input), so the value is undefined and nothing is written
-    this.updateCellValue({ property, value: event.target.value });
+    this.writeScalarFieldValue(property, event.target.value);
     if (edited === property) {
       event.stopPropagation();
       this.handleEditProperty({ event });
@@ -269,7 +304,7 @@ class TableRow extends PureComponent {
     const { edited, valueBeforeEditing, activeCell } = this.state;
 
     if (edited === property) {
-      if (this.updateCellValue({ property, value: valueBeforeEditing })) {
+      if (this.writeScalarFieldValue(property, valueBeforeEditing)) {
         // reset the field value to the previous one, so that we won't
         // overwrite it
         event.target.value = valueBeforeEditing;
@@ -286,7 +321,19 @@ class TableRow extends PureComponent {
     }
   };
 
-  handleKeyDown_RegularChar = ({ event, property, readonly }) => {
+  handleKeyDown_RegularChar = ({
+    event,
+    property,
+    readonly,
+    isAttributeWidget,
+  }) => {
+    // an attribute widget (ProductAttributes, Address) is edited in its own overlay; a
+    // select-and-type edit would clear its value
+    if (isAttributeWidget) {
+      return;
+    }
+
+    // the value to restore on Escape is captured on entering edit mode (_editProperty)
     this.handleEditProperty({
       event,
       property,
@@ -333,9 +380,11 @@ class TableRow extends PureComponent {
     if (isEditable) {
       if (this.state.edited === property && event) event.persist();
 
-      // Entering edit mode on a cell: remember its STORED value so Escape can restore it. The text
-      // the cell shows is no substitute: it is formatted with a thousands separator ('1,234'),
-      // which can not be told apart from a decimal number.
+      // Entering edit mode on a cell: remember its STORED value so Escape can
+      // restore it. Display text is no substitute: it is locale-formatted
+      // ("10,00" in de_DE, '1,234' with a thousands separator), which an
+      // <input type="number"> rejects as "" and which can not be told apart
+      // from a decimal number.
       if (property && this.state.edited !== property) {
         this.setState({
           valueBeforeEditing: this.getFieldValue(property) ?? '',
@@ -551,7 +600,6 @@ class TableRow extends PureComponent {
             const tdValue = getTdValue({
               widgetData,
               item,
-              isEdited,
               isGerman,
             });
             const description = getDescription({ widgetData, tdValue });

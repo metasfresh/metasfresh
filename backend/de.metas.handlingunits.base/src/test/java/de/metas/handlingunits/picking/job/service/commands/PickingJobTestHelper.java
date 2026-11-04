@@ -414,6 +414,7 @@ public class PickingJobTestHelper
 			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
 			@Nullable final Set<CarrierServiceId> carrierServices,
 			@Nullable final String carrierAdvisingStatus,
+			@Nullable final UomId catchWeightUomId,
 			final boolean assignToWorkplace)
 	{
 		final BPartnerLocationId shipToBPLocationIdEffective = shipToBPLocationId != null ? shipToBPLocationId : this.shipToBPLocationId;
@@ -472,12 +473,13 @@ public class PickingJobTestHelper
 					.build());
 		}
 
-		return createPackageableFromShipmentSchedule(shipmentSchedule, lockedBy);
+		return createPackageableFromShipmentSchedule(shipmentSchedule, lockedBy, catchWeightUomId);
 	}
 
 	private Packageable createPackageableFromShipmentSchedule(
 			@NonNull final I_M_ShipmentSchedule sched,
-			@Nullable final UserId lockedBy)
+			@Nullable final UserId lockedBy,
+			@Nullable final UomId catchWeightUomId)
 	{
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(sched.getC_Order_ID()));
 
@@ -517,6 +519,11 @@ public class PickingJobTestHelper
 		if (lockedBy != null)
 		{
 			item.setLockedBy_User_ID(lockedBy.getRepoId());
+		}
+		if (catchWeightUomId != null)
+		{
+			item.setIsCatchWeight(true);
+			item.setCatch_UOM_ID(catchWeightUomId.getRepoId());
 		}
 
 		save(item);

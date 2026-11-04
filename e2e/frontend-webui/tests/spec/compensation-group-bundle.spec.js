@@ -171,14 +171,11 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
         // shipment-schedule pre-flight check).
         await page.waitForTimeout(3000);
 
-        // IMPORTANT: do NOT use SalesOrderPage.addOrderLine() here.
-        // That helper considers the add "failed" if the grid still shows zero rows
-        // 2 s after Enter, and retries by reloading + re-submitting. The schema
-        // expansion's OrderLineQuickInputCallout is async and routinely takes
-        // longer than 2 s — the retry then re-fires the callout, producing 2×3
-        // (or worse) duplicated component lines. Inline a single-shot quickinput
-        // that does NOT retry on empty grid; we wait afterwards for the schema
-        // expansion to settle and verify the line count via REST instead.
+        // Inline a single-shot quickinput instead of SalesOrderPage.addOrderLine(): the
+        // schema expansion's OrderLineQuickInputCallout is async, so we wait afterwards for
+        // the expansion to settle and verify the line count via REST. (This was written when
+        // addOrderLine still retried on an empty grid 2 s after Enter, which re-fired the
+        // callout and duplicated the component lines; addOrderLine no longer retries.)
         await addBundleViaQuickInput({
             page,
             recordId: soId,
@@ -512,9 +509,9 @@ async function extractPdfText(pdfPath) {
 /**
  * Single-shot bundle-aware quickinput: open batch entry, enter product + qty,
  * press Enter, close modal. Does NOT retry on empty grid (the schema-driven
- * OrderLineQuickInputCallout is async and the grid may still be empty by the
- * time SalesOrderPage.addOrderLine's 2-second timeout expires — its retry then
- * re-fires the callout and duplicates the bundle expansion).
+ * OrderLineQuickInputCallout is async, so the grid may still be empty right
+ * after Enter; a retry would re-fire the callout and duplicate the bundle
+ * expansion).
  */
 async function addBundleViaQuickInput({ page, recordId, productCode, quantity }) {
     // Open the order-lines tab and the batch entry panel.

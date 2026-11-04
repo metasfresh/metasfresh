@@ -69,6 +69,14 @@ public class InfrastructureSupport
 	public static final String ENV_EXTERNALLY_RUNNING_RABBITMQ_USER = "CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_USER";
 	public static final String ENV_EXTERNALLY_RUNNING_RABBITMQ_PASS = "CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_PASS";
 
+	/**
+	 * Name of the metasfresh database and the user/password to connect to it, for both the dockerized and an externally running database.
+	 * These are also the values that {@code de.metas.util.ConnectionUtil} defaults to.
+	 */
+	public static final String DB_NAME = "metasfresh";
+	public static final String DB_USER = "metasfresh";
+	public static final String DB_PASSWORD = "metasfresh";
+
 	@Getter
 	private boolean cucumberIsUsingProvidedInfrastructure;
 
@@ -185,7 +193,7 @@ public class InfrastructureSupport
 				WorkspaceMigrateConfig.builder()
 						.workspaceDir(new File(RELATIVE_PATH_TO_METASFRESH_ROOT))
 						.onScriptFailure(WorkspaceMigrateConfig.OnScriptFailure.FAIL)
-						.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
+						.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/" + DB_NAME)
 						.build());
 		loggable.addLog("Applied migration scripts (took {})", stopwatch);
 
@@ -194,7 +202,7 @@ public class InfrastructureSupport
 		final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
 				.workspaceDir(workspaceDir)
 				.onScriptFailure(WorkspaceMigrateConfig.OnScriptFailure.FAIL)
-				.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
+				.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/" + DB_NAME)
 				.build();
 		de.metas.migration.cli.workspace_migrate.Main.main(migrateConfig);
 	}
@@ -221,7 +229,7 @@ public class InfrastructureSupport
 
 			final GenericContainer<?> postgREST = new GenericContainer<>(DockerImageName.parse(fullImageName))
 					.withImagePullPolicy(PullPolicy.alwaysPull()) // needed since we go with "latest"
-					.withEnv("PGRST_DB_URI", "postgres://metasfresh:metasfresh@" + dbHost + ":" + dbPort + "/metasfresh")
+					.withEnv("PGRST_DB_URI", "postgres://" + DB_USER + ":" + DB_PASSWORD + "@" + dbHost + ":" + dbPort + "/" + DB_NAME)
 					.withEnv("PGRST_DB_SCHEMA", "public")
 					.withEnv("PGRST_DB_ANON_ROLE", "metasfresh")
 					.withStartupTimeout(Duration.ofMinutes(1))

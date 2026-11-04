@@ -16,11 +16,8 @@ SELECT i.C_Invoice_ID                                                           
                 THEN REGEXP_REPLACE(i.POReference, '\s+$', '')
                 ELSE NULL::CHARACTER VARYING
         END)                                                                                                AS POReference
-     , (CASE
-            WHEN COALESCE(i.DateOrdered, o.DateOrdered, ol.dateordered) IS NOT NULL /* task 09182: if there is an orderDate, then export it */
-                THEN COALESCE(i.DateOrdered, o.DateOrdered, ol.dateordered)
-                ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
-        END)                                                                                                AS DateOrdered
+     /* the invoice's own order date, then its order header's, then the one date shared by all its order lines' orders; DateInvoiced as the last resort, so DateOrdered is never empty */
+     , COALESCE(i.DateOrdered, o.DateOrdered, ol.dateordered, i.DateInvoiced)                              AS DateOrdered
      , dt.docbasetype
      , dt.docsubtype
      , (CASE dt.DocBaseType
