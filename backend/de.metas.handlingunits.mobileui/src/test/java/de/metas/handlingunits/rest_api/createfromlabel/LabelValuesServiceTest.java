@@ -292,6 +292,29 @@ class LabelValuesServiceTest
 		assertThat(((LabelRejectionException)thrown).getMessageParams()).anyMatch(v -> String.valueOf(v).contains("P1 of the other organisation"));
 	}
 
+	@Test
+	void plainEAN13HeldByTwoProducts_isRefusedNamingTheArticles_neverPicksOne()
+	{
+		final String sharedEAN13 = "7617027667210";
+		product.setGTIN(sharedEAN13);
+		InterfaceWrapperHelper.saveRecord(product);
+		final I_M_Product second = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		second.setIsActive(true);
+		second.setValue("P1-twin");
+		second.setName("P1 twin");
+		second.setGTIN(sharedEAN13);
+		second.setC_UOM_ID(product.getC_UOM_ID());
+		InterfaceWrapperHelper.saveRecord(second);
+		final ProductLabelCodes codes = ProductLabelCodes.builder().ean13(EAN13.ofString(sharedEAN13).orElseThrow()).build();
+
+		final Throwable thrown = catchThrowable(() -> resolve(new TestCode(codes, null, null)));
+
+		assertThat(thrown)
+				.isInstanceOf(LabelRejectionException.class)
+				.hasFieldOrPropertyWithValue("messageKey", CreateFromLabelMessages.BARCODE_FITS_SEVERAL_PRODUCTS);
+		assertThat(((LabelRejectionException)thrown).getMessageParams()).anyMatch(v -> String.valueOf(v).contains("P1-twin"));
+	}
+
 	private static ProductLabelCodes gtinCodes() {return ProductLabelCodes.builder().gtin(GTIN.ofString(GTIN_VALUE)).build();}
 
 	@Test

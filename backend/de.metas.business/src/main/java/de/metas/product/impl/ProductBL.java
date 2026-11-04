@@ -899,7 +899,8 @@ public final class ProductBL implements IProductBL
 	@Override
 	public ImmutableSet<ProductId> getProductIdsByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
 	{
-		final ImmutableSet<ProductId> exactMatches = productsRepo.getProductIdsByGTIN(gtin, clientId);
+		// a variable-weight EAN-13 never matches M_Product.GTIN exactly (same rule as getProductIdByGTIN)
+		final ImmutableSet<ProductId> exactMatches = gtin.isFixed() ? productsRepo.getProductIdsByGTIN(gtin, clientId) : ImmutableSet.of();
 		if (!exactMatches.isEmpty())
 		{
 			return exactMatches;

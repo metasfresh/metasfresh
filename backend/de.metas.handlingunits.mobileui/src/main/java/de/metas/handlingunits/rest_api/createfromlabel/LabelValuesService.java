@@ -123,8 +123,7 @@ public class LabelValuesService
 		else
 		{
 			final EAN13 ean13 = Objects.requireNonNull(labelCodes.getEan13());
-			productId = productBL.getProductIdByEAN13(ean13, null, clientId)
-					.orElseThrow(() -> new LabelRejectionException(PRODUCT_NOT_FOUND_FOR_GTIN, ean13.getAsString()));
+			productId = resolveByGTIN(ean13.toGTIN(), clientId);
 		}
 		return productId;
 	}
