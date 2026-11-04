@@ -3576,3 +3576,165 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
     And validate payments
       | C_Payment_ID.Identifier | IsReceipt | C_Order_ID.Identifier |
       | p_32b                   | true      | null                  |
+
+
+  # ################################################################################
+  # ################################################################################
+  # ################################################################################
+
+  @from:cucumber
+  @Id:S32606_OM37a
+  Scenario: Order with an early-payment discount (Skonto) paid in full by a bank-file line: the payment carries no discount and the invoice is paid exactly
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om37a_007 |
+
+    And metasfresh contains C_PaymentTerm
+      | Identifier  | NetDays | Discount | DiscountDays |
+      | skonto2_37a | 30      | 2        | 10           |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo     | C_PaymentTerm_ID |
+      | o_37a      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om37a_007@ | skonto2_37a      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l_o_37a    | o_37a      | p_OM         | 1          |
+    And the order identified by o_37a is completed and waits for payment
+    When bank statement is imported with identifiers bs_37a, matching invoice amounts
+    """
+<?xml version="1.0" encoding="utf-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
+	<BkToCstmrStmt>
+		<GrpHdr>
+			<MsgId>MsgIdOM37a</MsgId>
+			<CreDtTm>2026-11-03T19:45:37.000Z</CreDtTm>
+			<MsgPgntn><PgNb>1</PgNb><LastPgInd>true</LastPgInd></MsgPgntn>
+		</GrpHdr>
+		<Stmt>
+			<Id>StmtIdOM37a</Id>
+			<ElctrncSeqNb>00001</ElctrncSeqNb>
+			<CreDtTm>2026-11-03T19:45:37.000Z</CreDtTm>
+			<FrToDt><FrDtTm>2026-11-02T00:00:00</FrDtTm><ToDtTm>2026-11-03T23:59:59</ToDtTm></FrToDt>
+			<Acct>
+				<Id><IBAN>CH3908704016075473007</IBAN></Id>
+				<Ccy>EUR</Ccy>
+				<Ownr><Nm>Test CO</Nm></Ownr>
+				<Svcr><FinInstnId><BICFI>AAAAAAAA82A</BICFI><Nm>Test Bank</Nm></FinInstnId></Svcr>
+			</Acct>
+			<Bal>
+				<Tp><CdOrPrtry><Cd>OPBD</Cd></CdOrPrtry></Tp>
+				<Amt Ccy="EUR">1000.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt><Dt>2026-11-02</Dt></Dt>
+			</Bal>
+			<Bal>
+				<Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>
+				<Amt Ccy="EUR">1123.52</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Dt><Dt>2026-11-03</Dt></Dt>
+			</Bal>
+			<Ntry>
+				<NtryRef>REF-OM37a</NtryRef>
+				<Amt Ccy="EUR">123.52</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts><Cd>BOOK</Cd></Sts>
+				<BookgDt><Dt>2026-11-03</Dt></BookgDt>
+				<ValDt><Dt>2026-11-03</Dt></ValDt>
+				<AcctSvcrRef>REF-OM37a</AcctSvcrRef>
+				<BkTxCd><Prtry><Cd>TRF</Cd><Issr>SWIFT</Issr></Prtry></BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+						<TtlAmt Ccy="EUR">123.52</TtlAmt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+					</Btch>
+					<TxDtls>
+						<Refs><AcctSvcrRef>REF-OM37a-1</AcctSvcrRef></Refs>
+						<Amt Ccy="EUR">123.52</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<AmtDtls><TxAmt><Amt Ccy="EUR">123.52</Amt></TxAmt></AmtDtls>
+						<RltdPties>
+							<Dbtr><Pty><Nm>Customer Test</Nm></Pty></Dbtr>
+							<DbtrAcct><Id><IBAN>CH4189144993834976921</IBAN></Id></DbtrAcct>
+							<Cdtr><Pty><Nm>Test CO</Nm></Pty></Cdtr>
+						</RltdPties>
+						<RmtInf>
+							<Ustrd>Vorauskasse @no_om37a_007@ Danke</Ustrd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Stmt>
+	</BkToCstmrStmt>
+</Document>
+    """
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_37a                           | bs_37a                        | 10   |
+    And validate C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_BPartner_ID.Identifier |
+      | bsl_37a                           | o_37a                     | bp_OM                        |
+    And the C_BankStatement identified by bs_37a is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | p_37a                   | bs_37a                            | bsl_37a                               |
+    # the customer paid the full order total (no Skonto taken): the payment is the line amount and carries no discount
+    And validate payments
+      | C_Payment_ID.Identifier | PayAmt | DiscountAmt | IsReceipt | C_Order_ID.Identifier | WriteOffAmt | IsOverUnderPayment | OverUnderAmt |
+      | p_37a                   | 123.52 | 0           | true      | o_37a                 | 0 | false | 0 |
+    And validate the created orders
+      | Identifier | DocStatus | GrandTotal |
+      | o_37a      | CO        | 123.52     |
+    # fixture only: with ESR enabled, completing an invoice with a Skonto term fails on the ESR reference (pre-existing, unrelated to this scenario)
+    And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
+    And update C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code | OPT.IsEsrAccount |
+      | bpb_OM                         | EUR                     | N                |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | ic_37a                            | l_o_37a                   |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_37a                            |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic_37a                            | inv_37a                 |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | DocStatus | OPT.IsPaid |
+      | inv_37a                 | bp_OM                    | CO        | true       |
+
+
+  # ################################################################################
+  # ################################################################################
+  # ################################################################################
+
+  @from:cucumber
+  @Id:S32606_OM37b
+  Scenario: Order with an early-payment discount (Skonto) paid with the total minus the discount: the payment keeps the discount
+    Given generate unique 5-digit document numbers into the REST context variables:
+      | REST.Context |
+      | no_om37b_037 |
+
+    And metasfresh contains C_PaymentTerm
+      | Identifier  | NetDays | Discount | DiscountDays |
+      | skonto2_37b | 30      | 2        | 10           |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo     | C_PaymentTerm_ID |
+      | o_37b      | true    | bp_OM         | 2026-11-03  | SOO         | PR         | @no_om37b_037@ | skonto2_37b      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | l_o_37b    | o_37b      | p_OM         | 1          |
+    And the order identified by o_37b is completed and waits for payment
+    And metasfresh contains C_BankStatement:
+      | Identifier | C_BP_BankAccount_ID | StatementDate |
+      | bs_37b     | bpb_OM              | 2026-11-03    |
+    And metasfresh contains C_BankStatementLine:
+      | Identifier | C_BankStatement_ID | Amount     | C_BPartner_ID | C_Order_ID |
+      | bsl_37b    | bs_37b             | 121.05 EUR | bp_OM         | o_37b      |
+    And the C_BankStatement identified by bs_37b is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | p_37b                   | bs_37b                            | bsl_37b                               |
+    # 121.05 = 123.52 - 2 % Skonto: the payment keeps the discount, so it settles the order total exactly
+    And validate payments
+      | C_Payment_ID.Identifier | PayAmt | DiscountAmt | IsReceipt | C_Order_ID.Identifier | WriteOffAmt | IsOverUnderPayment | OverUnderAmt |
+      | p_37b                   | 121.05 | 2.47        | true      | o_37b                 | 0 | false | 0 |
