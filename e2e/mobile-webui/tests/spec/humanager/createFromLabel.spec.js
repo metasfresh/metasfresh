@@ -338,7 +338,7 @@ test('preview -> Cancel -> nothing booked', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
-test('phone viewport: a long product name wraps instead of clipping the values; OK is above the scanner and visible without scrolling', async ({ page }) => {
+test('phone viewport: a long product name wraps instead of clipping the values; OK is visible without scrolling', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - create HU from a scanned label');
