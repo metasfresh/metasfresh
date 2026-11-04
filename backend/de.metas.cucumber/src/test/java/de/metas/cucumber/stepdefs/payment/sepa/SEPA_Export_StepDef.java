@@ -47,6 +47,7 @@ import org.compiere.util.Env;
 import org.springframework.core.io.Resource;
 import org.springframework.util.StreamUtils;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -55,20 +56,14 @@ import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Comparison;
 import org.xmlunit.diff.ComparisonResult;
 import org.xmlunit.diff.ComparisonType;
-import org.xmlunit.diff.DefaultNodeMatcher;
 import org.xmlunit.diff.Diff;
 import org.xmlunit.diff.DifferenceEvaluators;
-import org.xmlunit.diff.ElementSelectors;
 import org.xmlunit.diff.NodeFilters;
-import org.xmlunit.diff.NodeMatcher;
 
 import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,7 +71,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -223,8 +217,7 @@ public class SEPA_Export_StepDef
 	 *   <li>The comparison is for similarity: a namespace prefix, the order of sibling elements, the {@code xsi:schemaLocation} and the {@code standalone} flag may differ.</li>
 	 *   <li>{@code ${ignore}} as the whole text of an element accepts any text (the element must still exist).
 	 *   Use it for the values that differ from run to run: {@code MsgId} (the SEPA_Export DocumentNo), and {@code PmtInfId} and {@code EndToEndId}, which are derived from it.</li>
-	 *   <li>{@code PmtInf} blocks are paired by their transaction (all texts of {@code DrctDbtTxInf} except {@code PmtId}), not by position,
-	 *   because the order of the transactions in the file is not defined; a {@code PmtInf} without an equal transaction is paired by position.</li>
+	 *   <li>The transactions ({@code PmtInf} blocks) are compared in file order, which is the invoice order of the pay selection lines.</li>
 	 * </ul>
 	 * On a mismatch, the step fails with all differences, the actual file and the expected file.
 	 *
@@ -253,7 +246,6 @@ public class SEPA_Export_StepDef
 		final Diff diff = DiffBuilder.compare(Input.fromString(expectedXml))
 				.withTest(Input.fromByteArray(actualFile))
 				.withNodeFilter(node -> NodeFilters.Default.test(node) && node.getNodeType() != Node.COMMENT_NODE && !isFormattingWhitespace(node))
-				.withNodeMatcher(new PmtInfByTransactionNodeMatcher())
 				.withDifferenceEvaluator(DifferenceEvaluators.chain(DifferenceEvaluators.Default, SEPA_Export_StepDef::evaluateIgnorePlaceholder))
 				.checkForSimilar()
 				.build();
@@ -425,11 +417,22 @@ public class SEPA_Export_StepDef
 		final DocumentBuilder db = dbf.newDocumentBuilder();
 		final Document doc = db.parse(new InputSource(new ByteArrayInputStream(bytes)));
 
-		final XPath xpath = XPathFactory.newInstance().newXPath();
-		final String scheme = text(xpath, doc, "//PmtTpInf/LclInstrm/Cd");
+		final String scheme = getSchemeCode(doc);
 		assertThat(filesByScheme).as("two exported files with the same scheme " + scheme + ": " + name).doesNotContainKey(scheme);
 		filesByScheme.put(scheme, bytes);
 		filenames.add(simpleName);
+	}
+
+	/** @return the text of {@code PmtTpInf/LclInstrm/Cd}, e.g. CORE or B2B; empty string if the file has none */
+	private static String getSchemeCode(final Document doc)
+	{
+		final NodeList localInstruments = doc.getElementsByTagNameNS("*", "LclInstrm");
+		if (localInstruments.getLength() == 0)
+		{
+			return "";
+		}
+		final NodeList codes = ((Element)localInstruments.item(0)).getElementsByTagNameNS("*", "Cd");
+		return codes.getLength() == 0 ? "" : codes.item(0).getTextContent();
 	}
 
 	private static boolean isZip(final byte[] bytes, @Nullable final String contentType)
@@ -490,128 +493,5 @@ public class SEPA_Export_StepDef
 			return ComparisonResult.EQUAL;
 		}
 		return outcome;
-	}
-
-	/**
-	 * Pairs the {@code PmtInf} elements by their transaction, then everything else (and the {@code PmtInf} without an equal transaction) by name, in document order.
-	 */
-	private static final class PmtInfByTransactionNodeMatcher implements NodeMatcher
-	{
-		private final NodeMatcher byName = new DefaultNodeMatcher(ElementSelectors.byName);
-
-		@Override
-		public Iterable<Map.Entry<Node, Node>> match(final Iterable<Node> controlNodes, final Iterable<Node> testNodes)
-		{
-			final List<Node> unmatchedControl = new ArrayList<>();
-			controlNodes.forEach(unmatchedControl::add);
-			final List<Node> unmatchedTest = new ArrayList<>();
-			testNodes.forEach(unmatchedTest::add);
-
-			final List<Map.Entry<Node, Node>> matches = new ArrayList<>();
-			for (final Node control : new ArrayList<>(unmatchedControl))
-			{
-				if (!isPmtInf(control))
-				{
-					continue;
-				}
-				final String transactionKey = toTransactionKey(control);
-				final Node test = unmatchedTest.stream()
-						.filter(candidate -> isPmtInf(candidate) && transactionKey.equals(toTransactionKey(candidate)))
-						.findFirst()
-						.orElse(null);
-				if (test != null)
-				{
-					matches.add(new AbstractMap.SimpleImmutableEntry<>(control, test));
-					unmatchedControl.remove(control);
-					unmatchedTest.remove(test);
-				}
-			}
-
-			byName.match(unmatchedControl, unmatchedTest).forEach(matches::add);
-			return matches;
-		}
-
-		private static boolean isPmtInf(final Node node)
-		{
-			return node.getNodeType() == Node.ELEMENT_NODE && "PmtInf".equals(node.getLocalName());
-		}
-
-		/**
-		 * @return the texts of the {@code DrctDbtTxInf} of the given {@code PmtInf}, without its {@code PmtId}, with the element names
-		 */
-		private static String toTransactionKey(final Node pmtInf)
-		{
-			final StringBuilder key = new StringBuilder();
-			final NodeList children = pmtInf.getChildNodes();
-			for (int i = 0; i < children.getLength(); i++)
-			{
-				final Node child = children.item(i);
-				if (child.getNodeType() == Node.ELEMENT_NODE && "DrctDbtTxInf".equals(child.getLocalName()))
-				{
-					appendLeafTexts(child, key);
-				}
-			}
-			return key.toString();
-		}
-
-		private static void appendLeafTexts(final Node element, final StringBuilder key)
-		{
-			if ("PmtId".equals(element.getLocalName()))
-			{
-				return;
-			}
-			boolean hasChildElements = false;
-			final NodeList children = element.getChildNodes();
-			for (int i = 0; i < children.getLength(); i++)
-			{
-				final Node child = children.item(i);
-				if (child.getNodeType() == Node.ELEMENT_NODE)
-				{
-					hasChildElements = true;
-					appendLeafTexts(child, key);
-				}
-			}
-			if (!hasChildElements)
-			{
-				key.append(element.getLocalName()).append('=').append(element.getTextContent()).append('|');
-			}
-		}
-	}
-
-	// --- namespace-agnostic XPath helpers: "A/B//C" -> *[local-name()='A']/*[local-name()='B']//*[local-name()='C'] ---
-
-	private static String toLocalNamePath(final String path)
-	{
-		final StringBuilder sb = new StringBuilder();
-		final String[] parts = path.split("/", -1);
-		for (int i = 0; i < parts.length; i++)
-		{
-			if (i > 0)
-			{
-				sb.append('/');
-			}
-			final String part = parts[i];
-			if (part.isEmpty())
-			{
-				continue; // from "//" or leading "/"
-			}
-			final int bracket = part.indexOf('[');
-			final String name = bracket < 0 ? part : part.substring(0, bracket);
-			final String predicate = bracket < 0 ? "" : part.substring(bracket);
-			sb.append("*[local-name()='").append(name).append("']").append(predicate);
-		}
-		return sb.toString();
-	}
-
-	private static NodeList nodes(final XPath xpath, final Object context, final String path) throws Exception
-	{
-		return (NodeList)xpath.evaluate(toLocalNamePath(path), context, XPathConstants.NODESET);
-	}
-
-	/** @return the text of the first matching node; empty string if there is none */
-	private static String text(final XPath xpath, final Object context, final String path) throws Exception
-	{
-		final NodeList list = nodes(xpath, context, path);
-		return list.getLength() == 0 ? "" : list.item(0).getTextContent();
 	}
 }
