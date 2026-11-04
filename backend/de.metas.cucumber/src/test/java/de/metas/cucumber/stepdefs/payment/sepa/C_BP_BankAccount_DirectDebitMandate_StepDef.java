@@ -86,7 +86,7 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 	 *   <b>MandateReference</b> - (required) the mandate reference<br>
 	 *   <b>MandateDate</b> - (required) signature date, <code>yyyy-MM-dd</code> or <code>yyyy-MM-ddTHH:mm</code><br>
 	 *   <b>IsRecurring</b> - (required) Y/N<br>
-	 *   <b>AD_Org_ID</b> - (optional, identifier-ref) the mandate's org, e.g. org * loaded via <code>load AD_Org:</code> with Value <code>0</code>; absent = the login org<br>
+	 *   <b>AD_Org_ID</b> - (optional, identifier-ref) the mandate's org, e.g. org * loaded via <code>load AD_Org:</code> with Value <code>0</code>; absent or blank = the login org<br>
 	 *   <b>DateLastUsed</b> - (optional) same formats; empty or absent = null<br>
 	 *   <b>IsActive</b> - (optional) Y/N; absent = Y
 	 * @cucumber.example
