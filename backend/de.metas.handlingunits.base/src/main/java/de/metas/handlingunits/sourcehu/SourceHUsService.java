@@ -242,7 +242,7 @@ public class SourceHUsService
 	}
 
 	/**
-	 * Creates an M_Source_HU record for the given HU, if it carries component products and the target warehouse has
+	 * Creates an M_Source_HU record for the given HU, if its product is on a Component, Variant or Packing BOM line and the target warehouse has
 	 * the org.compiere.model.I_M_Warehouse#isReceiveAsSourceHU() flag.
 	 */
 	public void addSourceHUMarkerIfCarryingComponents(@NonNull final Set<HuId> huIds, @NonNull final ProductId productId, @NonNull final WarehouseId warehouseId)
@@ -261,8 +261,8 @@ public class SourceHUsService
 			return;
 		}
 
-		final boolean referencedInComponentOrVariant = productBOMDAO.isComponent(productId);
-		if (!referencedInComponentOrVariant)
+		final boolean isReferencedOnComponentVariantOrPackingLine = productBOMDAO.isComponent(productId);
+		if (!isReferencedOnComponentVariantOrPackingLine)
 		{
 			return;
 		}

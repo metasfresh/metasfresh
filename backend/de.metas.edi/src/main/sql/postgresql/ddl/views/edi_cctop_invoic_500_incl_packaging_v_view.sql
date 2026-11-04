@@ -74,7 +74,7 @@ SELECT il.ispackagingmaterial                                                  A
                           ELSE ''
        END                                                                       AS leergut,
        COALESCE(
-               NULLIF(asi_data.productdescription, ''),
+               CASE WHEN asi_data.productdescription LIKE '[Migrated from C_BPartner_Product %]' THEN NULL ELSE NULLIF(asi_data.productdescription, '') END,
                NULLIF(asi_data.productname, ''),
                NULLIF(p.description, ''),
                p.name)::character varying                                        AS productdescription,
@@ -91,7 +91,10 @@ SELECT il.ispackagingmaterial                                                  A
                 REGEXP_REPLACE(pip.EAN_TU, '\s+$', '')
        )                                                                         AS Buyer_GTIN_TU,
        COALESCE(NULLIF(REGEXP_REPLACE(asi_data.gtin, '\s+$', ''), ''),
-                NULLIF(REGEXP_REPLACE(asi_data.ean_cu, '\s+$', ''), ''),
+                NULLIF(CASE
+                           WHEN LEFT(BTRIM(asi_data.ean_cu), 2) IN ('02', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29') THEN NULL /* GS1 restricted circulation / variable-measure prefix: not a GTIN */
+                           ELSE REGEXP_REPLACE(asi_data.ean_cu, '\s+$', '')
+                       END, ''),
                 NULLIF(REGEXP_REPLACE(asi_data.ean13_productcode, '\s+$', ''), ''),
                 REGEXP_REPLACE(p.gtin, '\s+$', ''))                              AS Buyer_GTIN_CU,
        REGEXP_REPLACE(asi_data.EAN_CU, '\s+$', '')                               AS Buyer_EAN_CU,
@@ -163,7 +166,7 @@ GROUP BY il.c_invoice_id,
               WHEN 'Leergut' THEN 'P'
                              ELSE ''
           END),
-         (COALESCE(NULLIF(asi_data.productdescription, ''), NULLIF(asi_data.productname, ''), NULLIF(p.description, ''), p.name)),
+         (COALESCE(CASE WHEN asi_data.productdescription LIKE '[Migrated from C_BPartner_Product %]' THEN NULL ELSE NULLIF(asi_data.productdescription, '') END, NULLIF(asi_data.productname, ''), NULLIF(p.description, ''), p.name)),
          (COALESCE(NULLIF(o.poreference, ''), i.poreference)),
          (COALESCE(ol.line, il.line)),
          il.c_orderline_id,

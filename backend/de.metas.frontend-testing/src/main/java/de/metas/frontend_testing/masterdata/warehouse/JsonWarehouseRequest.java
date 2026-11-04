@@ -7,6 +7,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 
 @Value
@@ -61,6 +62,18 @@ public class JsonWarehouseRequest
 	 * none. Applied after {@code shippers} and all {@code warehouses}.
 	 */
 	@Nullable Empties empties;
+
+	/**
+	 * Sets {@code M_Warehouse.IsReceiveAsSourceHU}: HUs received into this warehouse for a product whose category is
+	 * listed in {@link #sourceHUProductCategories} are marked as source HUs.
+	 */
+	boolean receiveAsSourceHU;
+
+	/**
+	 * Product categories (identifiers of already created {@code productCategories}) for which this warehouse receives
+	 * as source HU: one {@code M_Warehouse_SourceHUConfig} row is created per category.
+	 */
+	@Nullable List<Identifier> sourceHUProductCategories;
 
 	//
 	//

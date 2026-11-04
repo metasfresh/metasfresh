@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for EXP_FormatLine
  *  @author metasfresh (generated) 
@@ -390,6 +389,29 @@ public interface I_EXP_FormatLine
 
 	ModelColumn<I_EXP_FormatLine, Object> COLUMN_IsActive = new ModelColumn<>(I_EXP_FormatLine.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Import lenient.
+	 * If the lookup of an import finds no match, it is repeated without this line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsImportLenient (boolean IsImportLenient);
+
+	/**
+	 * Get Import lenient.
+	 * If the lookup of an import finds no match, it is repeated without this line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isImportLenient();
+
+	ModelColumn<I_EXP_FormatLine, Object> COLUMN_IsImportLenient = new ModelColumn<>(I_EXP_FormatLine.class, "IsImportLenient", null);
+	String COLUMNNAME_IsImportLenient = "IsImportLenient";
 
 	/**
 	 * Set mandatory.

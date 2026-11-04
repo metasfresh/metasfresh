@@ -1,6 +1,13 @@
 package de.metas.frontend_testing.masterdata.product;
 
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.ad_reference.ADReferenceService;
+import de.metas.costing.CostElement;
+import de.metas.costing.CostingLevel;
+import de.metas.product.ProductCategoryId;
+import de.metas.uom.UomId;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.impl.CostElementRepository;
 import de.metas.costing.impl.CurrentCostsRepository;
@@ -10,12 +17,21 @@ import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_ClientInfo;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.I_M_Product_Category_Acct;
+import org.compiere.util.Env;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -419,6 +435,75 @@ public class CreateProductCommandTest
 				.execute();
 
 		assertThat(costsRepository.deletedForProductIds).isEmpty();
+	}
+
+	@Test
+	public void currentCostPrice_isSet()
+	{
+		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema()
+				.costingLevel(CostingLevel.Client)
+				.costingMethod(CostingMethod.StandardCosting)
+				.build();
+		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
+		final I_AD_ClientInfo clientInfo = InterfaceWrapperHelper.newInstance(I_AD_ClientInfo.class);
+		InterfaceWrapperHelper.setValue(clientInfo, I_AD_ClientInfo.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+		clientInfo.setC_AcctSchema1_ID(acctSchemaId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(clientInfo);
+		final I_C_UOM each = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_UOM.class);
+		each.setC_UOM_ID(UomId.EACH.getRepoId()); // UomId.EACH is a fixed constant that the costing code loads by id
+		each.setName("Each");
+		each.setX12DE355("EA");
+		each.setStdPrecision(0);
+		InterfaceWrapperHelper.saveRecord(each);
+		final I_M_Product_Category category = InterfaceWrapperHelper.newInstance(I_M_Product_Category.class);
+		category.setName("cat");
+		InterfaceWrapperHelper.saveRecord(category);
+		final I_M_Product_Category_Acct categoryAcct = InterfaceWrapperHelper.newInstance(I_M_Product_Category_Acct.class);
+		categoryAcct.setM_Product_Category_ID(category.getM_Product_Category_ID());
+		categoryAcct.setC_AcctSchema_ID(acctSchemaId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(categoryAcct);
+		context.putIdentifier(Identifier.ofString("cat"), ProductCategoryId.ofRepoId(category.getM_Product_Category_ID()));
+		final CostElementRepository costElementRepository = new CostElementRepository(ADReferenceService.newMocked());
+		final CostElement costElement = costElementRepository.getOrCreateMaterialCostElement(ClientId.METASFRESH, CostingMethod.StandardCosting);
+
+		final JsonCreateProductResponse response = CreateProductCommand.builder()
+				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
+				.context(context)
+				.request(JsonCreateProductRequest.builder()
+						.value("PROD_COST")
+						.productCategory(Identifier.ofString("cat"))
+						.currentCostPrice(new BigDecimal("16.93"))
+						.build())
+				.identifier(Identifier.ofString("costProduct"))
+				.build()
+				.execute();
+
+		final I_M_Cost costRecord = POJOLookupMap.get().getRecords(I_M_Cost.class, record -> record.getM_Product_ID() == response.getId().getRepoId()
+				&& record.getC_AcctSchema_ID() == acctSchemaId.getRepoId()
+				&& record.getM_CostElement_ID() == costElement.getId().getRepoId())
+				.stream().findFirst().orElse(null);
+		assertThat(costRecord).as("M_Cost of the schema's costing-method element").isNotNull();
+		assertThat(costRecord.getCurrentCostPrice()).isEqualByComparingTo("16.93");
+	}
+
+	@Test
+	public void coProductCostDistributionPercent_isSet()
+	{
+		final JsonCreateProductResponse response = CreateProductCommand.builder()
+				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
+				.context(context)
+				.request(JsonCreateProductRequest.builder()
+						.value("PROD_COPRODUCT")
+						.coProductCostDistributionPercent(new BigDecimal("20"))
+						.build())
+				.identifier(Identifier.ofString("coProduct"))
+				.build()
+				.execute();
+
+		final I_M_Product product = InterfaceWrapperHelper.load(response.getId(), I_M_Product.class);
+		assertThat(product.getCoProductCostDistributionPercent()).isEqualByComparingTo("20");
 	}
 
 	/**

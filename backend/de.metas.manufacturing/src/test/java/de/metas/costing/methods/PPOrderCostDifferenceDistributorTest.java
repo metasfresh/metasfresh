@@ -23,7 +23,10 @@
 package de.metas.costing.methods;
 
 import de.metas.acct.AcctSchemaTestHelper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
@@ -54,15 +57,22 @@ import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_CostElement;
 import org.compiere.util.Env;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPOrderCost;
+import org.eevolution.api.PPOrderCosts;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderCostTrxType;
 import org.eevolution.api.impl.MockedProductCostingBL;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,6 +80,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -303,6 +314,76 @@ public class PPOrderCostDifferenceDistributorTest
 		final PPOrderCostDifferenceDistributor distributor = givenDistributor(CostingMethod.StandardCosting, CostingMethod.AveragePO);
 
 		assertThat(distributor.hasOrderCosts(ppOrder())).isFalse();
+	}
+
+	@Test
+	public void distribute_standardCosting_returnsFalse_noCollector()
+	{
+		final I_M_CostElement standardMaterialCostElement = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
+		standardMaterialCostElement.setAD_Org_ID(OrgId.ANY.getRepoId());
+		standardMaterialCostElement.setName("Standard Material");
+		standardMaterialCostElement.setCostElementType(CostElementType.Material.getCode());
+		standardMaterialCostElement.setCostingMethod(CostingMethod.StandardCosting.getCode());
+		standardMaterialCostElement.setIsCalculated(false);
+		InterfaceWrapperHelper.saveRecord(standardMaterialCostElement);
+
+		final PPOrderCostDifferenceDistributor distributor = givenDistributor(CostingMethod.StandardCosting, CostingMethod.StandardCosting);
+		final I_PP_Order ppOrder = ppOrder();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		givenZeroMainProductOrderCost(ppOrderId, standardMaterialCostElement);
+
+		final boolean distributed = distributor.distribute(ppOrderId);
+
+		assertThat(distributed).isFalse();
+		assertThat(Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Cost_Collector.class)
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_CostCollectorType, CostCollectorType.CostDifferenceDistribution.getCode())
+				.create()
+				.count())
+				.isZero();
+	}
+
+	/** Standard costing accumulates nothing, so the order's rows exist (created when the order is posted) but carry a zero residual. */
+	private void givenZeroMainProductOrderCost(@NonNull final PPOrderId ppOrderId, @NonNull final I_M_CostElement materialCostElement)
+	{
+		final AcctSchemaId orderAcctSchemaId = Services.get(IAcctSchemaDAO.class).getByClientAndOrg(orderClientId, orderOrgId).getId();
+		final CostElementId costElementId = CostElementId.ofRepoId(materialCostElement.getM_CostElement_ID());
+		final ProductId componentProductId = BusinessTestHelper.createProductId("component", uomEach);
+
+		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
+		for (final Map.Entry<PPOrderCostTrxType, ProductId> trxTypeAndProductId : ImmutableMap.of(
+				PPOrderCostTrxType.MaterialIssue, componentProductId,
+				PPOrderCostTrxType.MainProduct, finishedGoodId).entrySet())
+		{
+			costs.add(PPOrderCost.builder()
+					.trxType(trxTypeAndProductId.getKey())
+					.costSegmentAndElement(CostSegmentAndElement.builder()
+							.costingLevel(CostingLevel.Client)
+							.acctSchemaId(orderAcctSchemaId)
+							.costTypeId(CostTypeId.ofRepoId(1))
+							.clientId(orderClientId)
+							.orgId(orderOrgId)
+							.productId(trxTypeAndProductId.getValue())
+							.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+							.costElementId(costElementId)
+							.build())
+					.price(CostPrice.builder()
+							.ownCostPrice(CostAmount.zero(currencyId))
+							.componentsCostPrice(CostAmount.zero(currencyId))
+							.uomId(uomEachId)
+							.build())
+					.accumulatedQty(Quantity.zero(uomEach))
+					.accumulatedAmount(CostAmount.zero(currencyId))
+					.build());
+		}
+
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.costs(costs.build())
+				.build();
+		orderCosts.updatePostCalculationAmounts(precision);
+		Services.get(IPPOrderCostBL.class).save(orderCosts);
 	}
 
 	/**

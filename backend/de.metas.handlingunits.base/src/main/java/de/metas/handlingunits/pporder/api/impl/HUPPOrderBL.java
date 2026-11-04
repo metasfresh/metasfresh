@@ -13,6 +13,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.LUTUConfigurationPackingInstructionChecker;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
@@ -95,6 +96,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	private final SpringContextHolder.Lazy<HUQRCodesService> huqrCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class);
 	private final SpringContextHolder.Lazy<MaturingConfigRepository> maturingConfigRepository = SpringContextHolder.lazyBean(MaturingConfigRepository.class);
 	private final SpringContextHolder.Lazy<PPOrderCandidateDAO> ppOrderCandidateDAO = SpringContextHolder.lazyBean(PPOrderCandidateDAO.class);
+	@NonNull private final SpringContextHolder.Lazy<LUTUConfigurationPackingInstructionChecker> packingInstructionChecker = SpringContextHolder.lazyBean(LUTUConfigurationPackingInstructionChecker.class);
 
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
@@ -142,14 +144,14 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	public IPPOrderReceiptHUProducer receivingMainProduct(@NonNull final PPOrderId ppOrderId)
 	{
 		final I_PP_Order ppOrder = getById(ppOrderId);
-		return new CostCollectorCandidateFinishedGoodsHUProducer(ppOrder);
+		return new CostCollectorCandidateFinishedGoodsHUProducer(ppOrder, packingInstructionChecker::get);
 	}
 
 	@Override
 	public IPPOrderReceiptHUProducer receivingByOrCoProduct(@NonNull final PPOrderBOMLineId orderBOMLineId)
 	{
 		final I_PP_Order_BOMLine orderBOMLine = ppOrderBOMsRepo.getOrderBOMLineById(orderBOMLineId);
-		return new CostCollectorCandidateCoProductHUProducer(orderBOMLine);
+		return new CostCollectorCandidateCoProductHUProducer(orderBOMLine, packingInstructionChecker::get);
 	}
 
 	@Override
