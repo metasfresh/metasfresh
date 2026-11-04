@@ -108,6 +108,7 @@ public class SepaUtils
 
 	/**
 	 * The IBAN country codes of the SEPA countries outside the EEA, from chapter 2 of the same list; Guernsey, Jersey and the Isle of Man use GB.
+	 * Gibraltar (GI) is not included: chapter 2 lists it in neither the EEA nor the non-EEA table.
 	 * If the creditor's or the debtor's bank is in one of them, a direct debit needs the debtor address (EPC SDD Rulebooks, AT-P005).
 	 */
 	private static final ImmutableSet<String> NON_EEA_SEPA_IBAN_COUNTRY_CODES = ImmutableSet.of("AD", "AL", "CH", "GB", "MC", "MD", "ME", "MK", "RS", "SM", "VA");

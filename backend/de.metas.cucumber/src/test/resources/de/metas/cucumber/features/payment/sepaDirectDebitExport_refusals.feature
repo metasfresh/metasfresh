@@ -585,8 +585,8 @@ Feature: SEPA direct debit export refusals (mandate check, creditor identifier)
     When the SEPA export process is run for pay selection "paySelection"
 
     Then the SEPA export process fails with a message containing:
-      | SEPA-Lastschrift-Export nicht erstellt                |
-      | dd_chnotown_                                          |
-      | hat keinen Ort                                        |
-      | den Ort in der Adresse des Geschäftspartners erfassen |
+      | SEPA-Lastschrift-Export nicht erstellt                          |
+      | dd_chnotown_                                                    |
+      | hat keinen Ort                                                  |
+      | Rechnung stornieren und mit vollständiger Adresse neu erstellen |
     And the pay selection "paySelection" has no SEPA_Export
