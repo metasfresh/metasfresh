@@ -2,6 +2,7 @@ name: cicd
 on: [push, workflow_dispatch]
 env:
   PIPELINE_VERSION: '0.3.6'
+  COMPOSE_COMPATIBILITY: "true"
 jobs:
 
   init:
