@@ -35,6 +35,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCE
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -72,10 +74,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTestSupport
 {
 	private static final String MOCK_STORE_EXTERNAL_STATUS_ROUTE_ID = "mock:Core-storeExternalStatus";
+	private static final String MOCK_ERROR_ROUTE_URI = "mock:errorRoute";
 
 	private static final String ROUTE_KEY = "ScriptedImportConversion-540123";
 	private static final String ENDPOINT_NAME = "packzettelEndpoint";
 	private static final String SCRIPT_IDENTIFIER = "packzettelScript";
+	private static final String IMPORTEUR_TOKEN = "importeur-token";
 	private static final String CHILD_CONFIG_VALUE = "packzettelChild";
 	private static final String ORG_CODE = "001";
 	private static final String ENABLE_COMMAND = "enableLocalFilePolling";
@@ -200,6 +204,32 @@ public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTest
 					.rootCause()
 					.hasMessageContaining(PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY);
 		}
+
+		/**
+		 * Without the Importeur's token every call the import dispatches would run as camel's service user, i.e. in the wrong org.
+		 * Refuse to start the poller, as the SFTP transport does.
+		 */
+		@Test
+		void withoutImporteurToken_failsNamingTheParameter_andStartsNoPoller() throws Exception
+		{
+			captureErrorRoute();
+			context.start();
+
+			final MockEndpoint errorRouteMockEndpoint = getMockEndpoint(MOCK_ERROR_ROUTE_URI);
+			errorRouteMockEndpoint.expectedMessageCount(1);
+
+			final Map<String, String> params = params();
+			params.remove(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN);
+
+			assertThatThrownBy(() -> template.sendBody(
+					"direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params)))
+					.isInstanceOf(CamelExecutionException.class)
+					.rootCause()
+					.hasMessageContaining(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN);
+
+			assertThat(context.getRoute(ROUTE_KEY)).as("no poller started without the Importeur's token").isNull();
+			errorRouteMockEndpoint.assertIsSatisfied();
+		}
 	}
 
 	@Nested
@@ -317,6 +347,7 @@ public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTest
 		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY, ROUTE_KEY);
 		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, ENDPOINT_NAME);
 		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, SCRIPT_IDENTIFIER);
+		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, IMPORTEUR_TOKEN);
 		params.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION, localInputDir.toAbsolutePath().toString());
 		params.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN, "packzettel_{timestamp}");
 		params.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS, "250");
@@ -382,7 +413,8 @@ public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTest
 			{
 				from("direct:" + MF_ERROR_ROUTE_ID)
 						.routeId("mock-" + MF_ERROR_ROUTE_ID)
-						.log("mock error route");
+						.log("mock error route")
+						.to(MOCK_ERROR_ROUTE_URI);
 			}
 		});
 	}

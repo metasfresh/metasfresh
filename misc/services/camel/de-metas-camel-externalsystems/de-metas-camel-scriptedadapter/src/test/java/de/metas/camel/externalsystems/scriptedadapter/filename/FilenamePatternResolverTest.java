@@ -94,4 +94,18 @@ class FilenamePatternResolverTest
 		final String result = FilenamePatternResolver.resolve("{timestamp}.json", Map.of());
 		assertThat(result).matches("\\d{8}_\\d{6}\\.json");
 	}
+
+	@Test
+	void index_placeholder_is_replaced()
+	{
+		final String result = FilenamePatternResolver.resolve("DESADV_{recordid}_{index}.edi", Map.of("recordid", "123", "index", "2"));
+		assertThat(result).isEqualTo("DESADV_123_2.edi");
+	}
+
+	@Test
+	void index_placeholder_is_empty_without_fan_out()
+	{
+		final String result = FilenamePatternResolver.resolve("DESADV_{recordid}_{index}.edi", Map.of("recordid", "123"));
+		assertThat(result).isEqualTo("DESADV_123_.edi");
+	}
 }

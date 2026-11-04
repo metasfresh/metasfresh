@@ -1,6 +1,7 @@
 package org.eevolution.model.validator;
 
 import de.metas.ad_reference.ADReferenceService;
+import de.metas.distribution.ddordercandidate.material_dispo.PPOrderBOMLineDistributionSupplyMover;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -72,7 +73,8 @@ public class PP_OrderTest
 				mock(PostMaterialEventService.class),
 				mock(IDocumentNoBuilderFactory.class),
 				mock(IPPOrderBOMBL.class),
-				mock(ProductBOMVersionsDAO.class));
+				mock(ProductBOMVersionsDAO.class),
+				mock(PPOrderBOMLineDistributionSupplyMover.class));
 	}
 
 	private I_M_Product createProduct(final String lifeCycleStatus)

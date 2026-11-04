@@ -18,15 +18,24 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.order.OrderLinePackingInstructions;
+import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -59,6 +68,8 @@ import lombok.NonNull;
 @Service
 public class AssignableInvoiceCandidateFactory
 {
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
 	private final CurrencyRepository currenciesRepo;
 
@@ -112,14 +123,41 @@ public class AssignableInvoiceCandidateFactory
 		return AssignableInvoiceCandidate.builder()
 				.id(invoiceCandidateId)
 				.bpartnerLocationId(billLocationId.getBpartnerLocationId())
+				.soTrx(SOTrx.ofBoolean(assignableRecord.isSOTrx()))
+				.huPIItemProductId(extractHUPIItemProductId(assignableRecord))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
 				.precision(precision.toInt())
 				.quantity(quantity)
 				.quantityOld(quantityOld)
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))
+				.contractCompensationLine(isContractCompensationLine(assignableRecord))
 				.assignmentsToRefundCandidates(assignments)
 				.build();
+	}
+
+	/**
+	 * @return {@code true} if the candidate is the discount line of a compensation group that a contract created on the order,
+	 * i.e. a compensation line whose {@code C_Order_CompensationGroup} carries a {@code C_Flatrate_Term_ID}
+	 */
+	private static boolean isContractCompensationLine(@NonNull final I_C_Invoice_Candidate assignableRecord)
+	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(assignableRecord.getC_Order_ID());
+		if (!assignableRecord.isGroupCompensationLine() || orderId == null || assignableRecord.getC_Order_CompensationGroup_ID() <= 0)
+		{
+			return false;
+		}
+		final GroupId groupId = OrderGroupRepository.createGroupId(orderId, assignableRecord.getC_Order_CompensationGroup_ID());
+		return !OrderGroupRepository.filterContractCreatedGroupIds(ImmutableSet.of(groupId)).isEmpty();
+	}
+
+	@Nullable
+	private HUPIItemProductId extractHUPIItemProductId(@NonNull final I_C_Invoice_Candidate assignableRecord)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(assignableRecord.getC_OrderLine_ID());
+		return orderLineId != null
+				? OrderLinePackingInstructions.extractHUPIItemProductId(orderDAO.getOrderLineById(orderLineId))
+				: null;
 	}
 
 	private Quantity extractQuantity(@NonNull final I_C_Invoice_Candidate assignableRecord)

@@ -1,10 +1,17 @@
 package org.adempiere.mm.attributes.api.impl;
 
 import de.metas.adempiere.model.IPOReferenceAware;
+import de.metas.document.DocumentSequenceInfo;
+import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.DocumentNoParts;
+import de.metas.document.sequenceno.CustomSequenceNoProvider;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -17,8 +24,13 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderId;
+import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -46,6 +58,24 @@ import java.util.Optional;
 
 public class LotNumberBL implements ILotNumberBL
 {
+	private static final Logger logger = LogManager.getLogger(LotNumberBL.class);
+
+	private final IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
+
+	/**
+	 * Lazy because the HU singletons (e.g. HUPPOrderBL) create LotNumberBL eagerly, before the Spring bean IDocumentNoBuilderFactory is registered.
+	 */
+	@Nullable private IDocumentNoBuilderFactory _documentNoBuilderFactory;
+
+	private IDocumentNoBuilderFactory documentNoBuilderFactory()
+	{
+		IDocumentNoBuilderFactory result = _documentNoBuilderFactory;
+		if (result == null)
+		{
+			result = _documentNoBuilderFactory = Services.get(IDocumentNoBuilderFactory.class);
+		}
+		return result;
+	}
 
 	@Override
 	public String calculateLotNumber(final Date date)
@@ -71,7 +101,58 @@ public class LotNumberBL implements ILotNumberBL
 	@Override
 	public Optional<String> getAndIncrementLotNo(@NonNull final LotNoContext context)
 	{
-		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+		final String lotNo = documentNoBuilderFactory().forSequenceId(context.getSequenceId())
+				.setFailOnError(true)
+				.setClientId(context.getClientId())
+				.setEvaluationContext(createEvaluationContext(context))
+				.build();
+
+		return lotNo != null && !Objects.equals(lotNo, IDocumentNoBuilder.NO_DOCUMENTNO)
+				? Optional.of(lotNo)
+				: Optional.empty();
+	}
+
+	@Override
+	public Optional<String> previewLotNo(@NonNull final LotNoContext context)
+	{
+		final DocumentSequenceInfo sequenceInfo = documentSequenceDAO.retriveDocumentSequenceInfo(context.getSequenceId());
+		if (!isSequenceNoIndependentOfIncrement(sequenceInfo))
+		{
+			return Optional.empty();
+		}
+
+		final DocumentNoParts lotNoParts;
+		try
+		{
+			lotNoParts = documentNoBuilderFactory().forSequenceId(context.getSequenceId())
+					.setClientId(context.getClientId())
+					.setEvaluationContext(createEvaluationContext(context))
+					.setUsePreliminaryDocumentNo(true) // read the incremental number instead of consuming it
+					.buildParts();
+		}
+		catch (final AdempiereException | IllegalArgumentException ex)
+		{
+			// A misconfigured sequence (e.g. missing or invalid DateSequenceProvider date format) shall only mean "no preview";
+			// getAndIncrementLotNo still fails when the lot number is actually generated.
+			// One line without stack trace, because this is called on every render of the receipt.
+			logger.warn("Failed previewing the lot number for {}; returning empty: {}", context, ex.getLocalizedMessage());
+			return Optional.empty();
+		}
+
+		return lotNoParts != null
+				? Optional.of(lotNoParts.getPrefix() + lotNoParts.getSequenceNumber() + lotNoParts.getSuffix())
+				: Optional.empty();
+	}
+
+	private static boolean isSequenceNoIndependentOfIncrement(@Nullable final DocumentSequenceInfo sequenceInfo)
+	{
+		final CustomSequenceNoProvider customSequenceNoProvider = sequenceInfo != null ? sequenceInfo.getCustomSequenceNoProvider() : null;
+		return customSequenceNoProvider != null && customSequenceNoProvider.isSequenceNoIndependentOfIncrement(sequenceInfo);
+	}
+
+	private Evaluatee createEvaluationContext(@NonNull final LotNoContext context)
+	{
+		final Map<String, Object> variables = new HashMap<>();
 
 		// A CustomSequenceNoProvider (opt-in, configured on the sequence) may need the PP_Order behind this lot number.
 		// Expose it under the standard Record_ID context key. Without a PP_Order the context carries no Record_ID: a
@@ -79,19 +160,24 @@ public class LotNumberBL implements ILotNumberBL
 		// DocumentNoBuilder.getSequenceNoToUse() throw unconditionally (independent of failOnError) - it does NOT
 		// silently fall back. Sequences with no provider are unaffected (empty context == today's behaviour).
 		final PPOrderId ppOrderId = context.getPpOrderId();
-		final Evaluatee evaluationContext = ppOrderId != null
-				? Evaluatees.ofSingleton(IPOReferenceAware.COLUMNNAME_Record_ID, ppOrderId.getRepoId())
-				: Evaluatees.empty();
+		if (ppOrderId != null)
+		{
+			variables.put(IPOReferenceAware.COLUMNNAME_Record_ID, ppOrderId.getRepoId());
+		}
 
-		final String lotNo = documentNoFactory.forSequenceId(context.getSequenceId())
-				.setFailOnError(true)
-				.setClientId(context.getClientId())
-				.setEvaluationContext(evaluationContext)
-				.build();
+		// The date is exposed under the sequence's AD_Sequence.DateColumn (e.g. for a DateSequenceProvider); ignored if that column is not set.
+		final LocalDate date = context.getDate();
+		if (date != null)
+		{
+			final DocumentSequenceInfo sequenceInfo = documentSequenceDAO.retriveDocumentSequenceInfo(context.getSequenceId());
+			final String dateColumn = sequenceInfo != null ? sequenceInfo.getDateColumn() : null;
+			if (!Check.isBlank(dateColumn))
+			{
+				variables.put(dateColumn, TimeUtil.asTimestamp(date));
+			}
+		}
 
-		return lotNo != null && !Objects.equals(lotNo, IDocumentNoBuilder.NO_DOCUMENTNO)
-				? Optional.of(lotNo)
-				: Optional.empty();
+		return variables.isEmpty() ? Evaluatees.empty() : Evaluatees.ofMap(variables);
 	}
 
 	@Override

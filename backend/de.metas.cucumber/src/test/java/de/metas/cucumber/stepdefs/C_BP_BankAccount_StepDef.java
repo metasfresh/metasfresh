@@ -116,18 +116,25 @@ public class C_BP_BankAccount_StepDef
 
 	/**
 	 * Like {@code metasfresh contains C_BP_BankAccount}, but the account is created for the partner linked to the login organization
-	 * (so no <b>C_BPartner_ID</b> column); the same optional columns apply.
+	 * (e.g. the creditor account, or a POS till's cashbook; so no <b>C_BPartner_ID</b> column); the same optional columns apply.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>Identifier</b> - (required) identifier under which the account is registered<br>
 	 *   <b>C_Currency_ID</b> - (required) ISO currency code, e.g. EUR<br>
-	 *   <b>AccountNo</b>, <b>C_Bank_ID</b>, <b>IBAN</b>, <b>SEPA_CreditorIdentifier</b>, <b>A_Name</b>, <b>A_City</b> - (optional) as above
+	 *   <b>AccountNo</b>, <b>C_Bank_ID</b>, <b>IBAN</b>, <b>SEPA_CreditorIdentifier</b>, <b>A_Name</b>, <b>A_City</b> - (optional) as above<br>
+	 *   <b>IsCashBank</b> - (optional) when {@code Y} and no {@code C_Bank_ID} is given, links a freshly-created
+	 *   {@code C_Bank} flagged {@code IsCashBank=Y} - the source of truth {@code MPayment#beforeSave} reads to
+	 *   force a payment's {@code TenderType} to Cash rather than DirectDeposit<br>
+	 * @cucumber.depends StepDefData: C_BP_BankAccount_StepDefData, C_Bank_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains organization bank accounts
 	 *   | Identifier | C_Currency_ID | IBAN                   | C_Bank_ID.Identifier | SEPA_CreditorIdentifier |
 	 *   | orgAcct    | EUR           | DE91100000000123456789 | creditorBank         | DE98ZZZ09999999999      |
+	 * And metasfresh contains organization bank accounts
+	 *   | Identifier | C_Currency_ID | IsCashBank |
+	 *   | cashbook   | EUR           | Y          |
 	 * </pre>
 	 */
 	@And("metasfresh contains organization bank accounts")
@@ -258,6 +265,21 @@ public class C_BP_BankAccount_StepDef
 		row.getAsOptionalString(I_C_BP_BankAccount.COLUMNNAME_SEPA_CreditorIdentifier).ifPresent(bpBankAccount::setSEPA_CreditorIdentifier);
 		row.getAsOptionalString(COLUMNNAME_A_Name).ifPresent(bpBankAccount::setA_Name);
 		row.getAsOptionalString(COLUMNNAME_A_City).ifPresent(bpBankAccount::setA_City);
+
+		// a "cash bank" (e.g. a POS till's own cashbook) is what makes MPayment#beforeSave force TenderType=Cash
+		// on any payment booked against it; without a linked C_Bank flagged IsCashBank, TenderType defaults to
+		// DirectDeposit regardless of what the caller requests. Auto-creates a minimal C_Bank when none is linked
+		// yet, rather than requiring every cash-till scenario to set one up via the (unrelated) bank-statement-import
+		// "metasfresh contains C_Bank:" step.
+		if (row.getAsOptionalBoolean(I_C_Bank.COLUMNNAME_IsCashBank).orElseFalse() && bpBankAccount.getC_Bank_ID() <= 0)
+		{
+			final I_C_Bank cashBank = newInstance(I_C_Bank.class);
+			cashBank.setName("Cash");
+			cashBank.setRoutingNo("000000"); // mandatory column; a cash "bank" has no real routing number
+			cashBank.setIsCashBank(true);
+			saveRecord(cashBank);
+			bpBankAccount.setC_Bank_ID(cashBank.getC_Bank_ID());
+		}
 
 		InterfaceWrapperHelper.save(bpBankAccount);
 
