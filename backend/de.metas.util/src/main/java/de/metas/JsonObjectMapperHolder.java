@@ -3,6 +3,7 @@ package de.metas;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
@@ -15,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -56,14 +59,41 @@ public class JsonObjectMapperHolder
 
 	private static final ExtendedMemorizingSupplier<ObjectMapper> sharedJsonObjectMapper = ExtendedMemorizingSupplier.of(JsonObjectMapperHolder::newJsonObjectMapper);
 
+	/**
+	 * Fully-qualified name of jackson-module-parameter-names' module. We deliberately do NOT register
+	 * it; see {@link #newJsonObjectMapper()}.
+	 */
+	private static final String PARAMETER_NAMES_MODULE_CLASSNAME = "com.fasterxml.jackson.module.paramnames.ParameterNamesModule";
+
 	public static ObjectMapper newJsonObjectMapper()
 	{
 		// important to register the jackson-datatype-jsr310 module which we have in our pom and
 		// which is needed to serialize/deserialize java.time.Instant
 		Check.assumeNotNull(com.fasterxml.jackson.datatype.jsr310.JavaTimeModule.class, ""); // just to get a compile error if not present
 
+		// JDK25/Spring-Boot-3 migration note (commit 4243e12a976 added `javac -parameters` to the
+		// shared parent for Spring 6.1 constructor bean-by-name injection):
+		// with -parameters, jackson-module-parameter-names (auto-discovered via the ServiceLoader /
+		// Spring-Boot auto-config) exposes constructor & factory *parameter names* to Jackson's
+		// creator binding. That silently changed deserialization behaviour across the codebase:
+		//  - single-arg @JsonValue + @JsonCreator value objects / enums (e.g. AttributesKey,
+		//    HUQRCodeUnitType) flip from DELEGATING to PROPERTIES and can no longer be read from a
+		//    bare JSON scalar (MismatchedInputException), and
+		//  - @JsonProperty("x") on a creator param whose getter serializes as "y" stops round-tripping.
+		// This affects REST + RabbitMQ payloads, not just tests. Spring reads -parameters through its
+		// own reflection discoverer (StandardReflectionParameterNameDiscoverer), independent of this
+		// Jackson module, so we restore the exact pre-migration Jackson behaviour by registering every
+		// ServiceLoader-discovered module EXCEPT ParameterNamesModule. (Confirmed empirically on
+		// jackson 2.18.2: this is the only option that matches base behaviour for delegating,
+		// multi-arg-properties AND single-arg-explicit-@JsonProperty creators; both
+		// ParameterNamesModule(Mode.DELEGATING) and ConstructorDetector.USE_DELEGATING regress the
+		// latter shapes.)
+		final List<Module> modulesWithoutParameterNames = ObjectMapper.findModules().stream()
+				.filter(module -> !PARAMETER_NAMES_MODULE_CLASSNAME.equals(module.getClass().getName()))
+				.collect(Collectors.toList());
+
 		final ObjectMapper objectMapper = new ObjectMapper()
-				.findAndRegisterModules()
+				.registerModules(modulesWithoutParameterNames)
 				.registerModule(new GuavaModule())
 				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
