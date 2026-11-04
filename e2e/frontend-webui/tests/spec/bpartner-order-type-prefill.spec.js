@@ -25,7 +25,8 @@ import { BUSINESS_PARTNER_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/Wind
  *
  * - the field is shown on the customer tab (found by column name), offers exactly the sales order types, can be set, saved and cleared
  * - order for the prepay partner: header type pre-filled with the partner's type, completes with status WP
- * - the user may switch the pre-filled type to the standard type: order completes normally, status CO
+ * - the user may switch the pre-filled type to the standard type (test 1); that order completes normally, status CO,
+ *   and keeps the chosen type (test 2)
  * - partner without order type: header type is the default, as before
  */
 
@@ -213,8 +214,11 @@ test.describe('Partner order type', () => {
     expect(await orderFieldKey(recordId, ORDER_FIELD), 'completion keeps the order type').toBe(prepayKey);
   });
 
-  // eslint-disable-next-line no-unused-vars
-  test('the pre-filled prepay type can be changed to the standard order type', async ({ page }) => {
+  /**
+   * Shared first half of the two tests below: logs in, opens a new order for the prepay partner (type pre-filled)
+   * and switches the type to the standard type. Each test stays self-contained (own fixture, own login).
+   */
+  const switchPrepayOrderToStandardType = async () => {
     const masterdata = await createFixture();
 
     await LoginPage.goto();
@@ -233,6 +237,24 @@ test.describe('Partner order type', () => {
 
     await ListWidget.setByValue(ORDER_FIELD, standardKey);
     await expectOrderType(recordId, standardKey, 'the user switched the order type');
+
+    return { masterdata, recordId, standardKey };
+  };
+
+  // eslint-disable-next-line no-unused-vars
+  test('the pre-filled prepay type can be changed to the standard order type', async ({ page }) => {
+    // Two orders are created through the UI (login, partner lookup, save each); with the 60 s default the
+    // page-object waits leave no headroom on a loaded machine.
+    test.setTimeout(120000);
+    await switchPrepayOrderToStandardType();
+  });
+
+  // eslint-disable-next-line no-unused-vars
+  test('an order switched to the standard order type completes normally and keeps that type', async ({ page }) => {
+    // The longest flow of the file: the switch above plus SalesOrderPage.addOrderLine and .complete, whose shared
+    // helpers contain fixed waits (3 s / 2 s steps); measured at 1.8 min on a loaded machine, so 240 s.
+    test.setTimeout(240000);
+    const { masterdata, recordId, standardKey } = await switchPrepayOrderToStandardType();
 
     await SalesOrderPage.addOrderLine({ product: masterdata.products.PROD.productName, quantity: 1, recordId });
     await SalesOrderPage.complete();
