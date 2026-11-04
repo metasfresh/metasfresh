@@ -181,7 +181,10 @@ public class HUQtyService
 	 * The HU is a virtual HU (a CU): the inventory line carries no packing instructions.
 	 * A given weight is set on the CU after the inventory completed (the inventory's attribute key drops weight attributes).
 	 *
-	 * @return the created HU with its HU QR code (created if missing, so the standard HU actions work on it)
+	 * Runs in the caller's transaction: it opens none, so the inventory, the weight and the HU QR code commit or roll back together with the caller.
+	 *
+	 * @return the created HU with its HU QR code; the QR code is generated if the HU has none only when HU QR code generation is enabled
+	 * ({@code HUQRCodesService#isGenerateQRCodesIfMissing()}), otherwise this fails after the inventory was booked
 	 */
 	@NonNull
 	public CreatedHU createHUFromInventory(@NonNull final CreateHUFromInventoryRequest request)

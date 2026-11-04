@@ -1,6 +1,5 @@
 package de.metas.handlingunits.weighting;
 
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.DocBaseType;
@@ -33,6 +32,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.util.TraceUtils;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

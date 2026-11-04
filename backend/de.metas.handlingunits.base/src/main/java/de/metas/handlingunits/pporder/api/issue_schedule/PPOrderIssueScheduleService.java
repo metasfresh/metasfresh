@@ -1,6 +1,5 @@
 package de.metas.handlingunits.pporder.api.issue_schedule;
 
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -20,6 +19,7 @@ import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.weighting.WeightHUCommand;
 import de.metas.i18n.AdMessageKey;

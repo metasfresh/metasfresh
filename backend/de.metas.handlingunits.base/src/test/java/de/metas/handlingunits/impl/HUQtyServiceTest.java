@@ -1,6 +1,5 @@
 package de.metas.handlingunits.impl;
 
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -13,6 +12,7 @@ import de.metas.document.DocTypeId;
 import de.metas.handlingunits.CreateHUFromInventoryRequest;
 import de.metas.handlingunits.CreatedHU;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.inventory.InventoryService;
