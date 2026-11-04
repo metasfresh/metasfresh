@@ -1,7 +1,7 @@
 -- Two error messages for completing a bank statement whose line carries a prepay sales order (the payment gets the order):
 --   ERR_BANKSTATEMENT_ORDER_AMOUNT_MISMATCH: full prepayment only, the line amount / currency differs from the order total.
 --     {0} = C_Order.DocumentNo, {1} = order total with currency, e.g. 123.52 EUR
---   ERR_BANKSTATEMENT_ORDER_ALREADY_PAID: the order is already carried by a payment (an order that simply does not wait for payment any more
+--   ERR_BANKSTATEMENT_ORDER_ALREADY_PAID (removed again by 5832950, merged into ERR_BANKSTATEMENT_ORDER_NOT_WAITING): the order is already carried by a payment (an order that simply does not wait for payment any more
 --     gets ERR_BANKSTATEMENT_ORDER_NOT_WAITING, see 5832930).
 --     {0} = C_Order.DocumentNo, {1} = C_Payment.DocumentNo of the carrying payment
 -- Base text German, en_US override English, de_DE / de_CH marked translated.

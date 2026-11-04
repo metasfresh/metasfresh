@@ -4,7 +4,8 @@
 -- 1. A new validation rule on the field (AD_Field.AD_Val_Rule_ID; the WebUI takes the field's rule before the column's,
 --    COALESCE(AD_Field.AD_Val_Rule_ID, AD_Column.AD_Val_Rule_ID) in views AD_Field_v / AD_Field_vt) offers only active prepay sales orders (C_DocType.DocSubType='PR' of C_Order.C_DocType_ID)
 --    that wait for payment (C_Order.DocStatus='WP'), that are not already on another unprocessed bank statement line and that
---    are not carried by a payment which is not voided or reversed (a draft payment counts). If the line has a business partner,
+--    are not carried by a completed or closed payment (C_Payment.DocStatus IN ('CO','CL'), like the bank statement imports;
+--    the first version of this rule excluded only voided/reversed payments, 5832940 aligned it). If the line has a business partner,
 --    only orders of that partner are offered (bill partner or ordering partner). The order already selected on the line stays selectable.
 --    The existing rule AD_Val_Rule 212 (C_Order.DocStatus='WP') is not changed: it may be used elsewhere.
 -- 2. The field is placed on the tab right after the invoice (form view and grid view).

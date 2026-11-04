@@ -49,10 +49,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
 {
-	private static final ImmutableSet<DocStatus> DRAFT_OR_COMPLETED_STATUSES = ImmutableSet.of(
-			DocStatus.Drafted, DocStatus.InProgress, DocStatus.Invalid,
-			DocStatus.Completed, DocStatus.Closed);
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -315,14 +311,14 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 	@Override
 	@NonNull
-	public ImmutableSet<OrderId> getOrderIdsWithDraftOrCompletedPayments(@NonNull final Collection<OrderId> orderIds)
+	public ImmutableSet<OrderId> getOrderIdsWithCompletedOrClosedPayments(@NonNull final Collection<OrderId> orderIds)
 	{
 		if (orderIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		return queryDraftOrCompletedPaymentsByOrderIds(orderIds)
+		return queryCompletedOrClosedPaymentsByOrderIds(orderIds)
 				.create()
 				.listDistinct(I_C_Payment.COLUMNNAME_C_Order_ID, Integer.class)
 				.stream()
@@ -332,19 +328,19 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 	@Override
 	@NonNull
-	public Optional<PaymentId> getFirstDraftOrCompletedPaymentIdByOrderId(@NonNull final OrderId orderId)
+	public Optional<PaymentId> getFirstCompletedOrClosedPaymentIdByOrderId(@NonNull final OrderId orderId)
 	{
-		return queryDraftOrCompletedPaymentsByOrderIds(ImmutableSet.of(orderId))
+		return queryCompletedOrClosedPaymentsByOrderIds(ImmutableSet.of(orderId))
 				.orderBy(I_C_Payment.COLUMNNAME_C_Payment_ID)
 				.create()
 				.firstIdOnlyOptional(PaymentId::ofRepoIdOrNull);
 	}
 
-	private IQueryBuilder<I_C_Payment> queryDraftOrCompletedPaymentsByOrderIds(@NonNull final Collection<OrderId> orderIds)
+	private IQueryBuilder<I_C_Payment> queryCompletedOrClosedPaymentsByOrderIds(@NonNull final Collection<OrderId> orderIds)
 	{
 		return queryBL.createQueryBuilder(I_C_Payment.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Payment.COLUMNNAME_C_Order_ID, orderIds)
-				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DRAFT_OR_COMPLETED_STATUSES);
+				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses());
 	}
 }

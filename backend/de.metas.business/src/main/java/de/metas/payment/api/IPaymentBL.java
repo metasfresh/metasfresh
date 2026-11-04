@@ -58,10 +58,10 @@ public interface IPaymentBL extends ISingletonService
 	Set<PaymentId> getPaymentIds(@NonNull PaymentQuery query);
 
 	@NonNull
-	ImmutableSet<OrderId> getOrderIdsWithDraftOrCompletedPayments(@NonNull Collection<OrderId> orderIds);
+	ImmutableSet<OrderId> getOrderIdsWithCompletedOrClosedPayments(@NonNull Collection<OrderId> orderIds);
 
 	@NonNull
-	Optional<PaymentId> getFirstDraftOrCompletedPaymentIdByOrderId(@NonNull OrderId orderId);
+	Optional<PaymentId> getFirstCompletedOrClosedPaymentIdByOrderId(@NonNull OrderId orderId);
 
 	DefaultPaymentBuilder newInboundReceiptBuilder();
 

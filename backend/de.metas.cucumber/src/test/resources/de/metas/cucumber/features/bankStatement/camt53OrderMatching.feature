@@ -2626,7 +2626,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 
   @from:cucumber
   @Id:S32606_OM28
-  Scenario: Prepay order already carried by a draft payment: no order is set
+  Scenario: Prepay order already carried by a completed payment: no order is set
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
@@ -2638,6 +2638,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
     And metasfresh contains C_Payment
       | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_Order_ID |
       | p_28       | bp_OM         | 123.52 EUR | true      | o_28       |
+    And the payment identified by p_28 is completed
     When bank statement is imported with identifiers bs_28, matching invoice amounts
     """
 <?xml version="1.0" encoding="utf-8"?>
@@ -2806,7 +2807,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
       | PayAmt |
       | 100.00 |
     And the payment identified by p_31a is completed
-    And the C_BankStatement identified by bs_31a is completed expecting error code BANKSTATEMENT_ORDER_ALREADY_PAID naming the payment identified by p_31a
+    And the C_BankStatement identified by bs_31a is completed expecting error code BANKSTATEMENT_ORDER_NOT_WAITING
     And exactly 1 payment carries the order identified by o_31a
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |
@@ -2819,7 +2820,7 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
 
   @from:cucumber
   @Id:S32606_OM31b
-  Scenario: Hand payment for the order saved as a draft after the line was matched: completing the statement fails, no second payment
+  Scenario: Hand payment for the order only saved as a draft after the line was matched: a draft payment does not carry the order, completing the statement creates the payment with the order
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | DocSubType | DocumentNo |
@@ -2899,11 +2900,20 @@ Feature: camt.53 bank statement import - waiting prepay orders matched by their 
     And metasfresh contains C_Payment
       | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_Order_ID |
       | p_31b      | bp_OM         | 100.00 EUR | true      | o_31b      |
-    And the C_BankStatement identified by bs_31b is completed expecting error code BANKSTATEMENT_ORDER_ALREADY_PAID naming the payment identified by p_31b
-    And exactly 1 payment carries the order identified by o_31b
+    # a drafted payment does not carry the order (only a completed or closed one does)
+    And load C_BankStatementLine
+      | C_BankStatementLine_ID.Identifier | C_BankStatement_ID.Identifier | Line |
+      | bsl_31b                           | bs_31b                        | 10   |
+    And the C_BankStatement identified by bs_31b is completed
+    And after not more than 60s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
+      | p_31b_new               | bs_31b                            | bsl_31b                               |
+    And validate payments
+      | C_Payment_ID.Identifier | PayAmt | IsReceipt | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
+      | p_31b_new               | 123.52 | true      | bp_OM                    | o_31b                 |
     And validate the created orders
       | Identifier | DocStatus | GrandTotal |
-      | o_31b      | WP        | 123.52     |
+      | o_31b      | CO        | 123.52     |
 
 
   # ################################################################################

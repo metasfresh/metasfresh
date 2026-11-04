@@ -43,21 +43,17 @@ import de.metas.banking.importfile.log.BankStatementImportFileLoggable;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
+import de.metas.banking.service.BankStatementPrepayOrderResolver;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocBaseType;
-import de.metas.document.DocSubType;
-import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
-import de.metas.lang.SOTrx;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -68,12 +64,9 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import de.metas.order.OrderQuery;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -89,7 +82,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -132,9 +124,7 @@ public class BankStatementCamt53Service
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final BankStatementPrepayOrderResolver prepayOrderResolver = new BankStatementPrepayOrderResolver();
 
 	private final BankAccountService bankAccountService;
 	private final CurrencyRepository currencyRepository;
@@ -400,7 +390,7 @@ public class BankStatementCamt53Service
 		}
 		else if (stmtAmount.signum() > 0) // order matching is only the fallback of the invoice matching
 		{
-			getReferencedPrepayOrder(entryWrapper, stmtAmount)
+			prepayOrderResolver.findOrder(entryWrapper.getDocumentReferenceCandidates(), stmtAmount, entryWrapper.getLineReference())
 					.ifPresent(order -> bankStatementLineCreateRequestBuilder
 							.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
 							.bpartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID())));
@@ -562,49 +552,6 @@ public class BankStatementCamt53Service
 		}
 
 		return lineRequests;
-	}
-
-	/**
-	 * @return the one waiting prepay sales order that is named in the entry's text and totals exactly the entry amount (full prepayment only);
-	 * empty if there is none or more than one.
-	 */
-	@NonNull
-	private Optional<I_C_Order> getReferencedPrepayOrder(
-			@NonNull final IStatementLineWrapper entryWrapper,
-			@NonNull final Money stmtAmount)
-	{
-		final ImmutableSet<String> documentNos = entryWrapper.getDocumentReferenceCandidates();
-		if (documentNos.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final List<OrderId> candidateOrderIds = orderDAO.getOrderIds(OrderQuery.builder()
-				.soTrx(SOTrx.SALES)
-				.docStatus(DocStatus.WaitingPayment)
-				.docTypeIds(docTypeDAO.getDocTypeIdsByDocBaseAndSubType(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.PrepayOrder)))
-				.documentNos(documentNos)
-				.currencyId(stmtAmount.getCurrencyId())
-				.amount(stmtAmount.toBigDecimal())
-				.build());
-
-		// an order that another unprocessed bank statement line or an active payment already carries is not up for matching;
-		// only what is left counts, so that exactly one remaining order is unambiguous
-		final ImmutableSet<OrderId> carriedOrderIds = ImmutableSet.<OrderId>builder()
-				.addAll(bankStatementDAO.getOrderIdsOnUnprocessedLines(candidateOrderIds))
-				.addAll(paymentBL.getOrderIdsWithDraftOrCompletedPayments(candidateOrderIds))
-				.build();
-		final List<OrderId> orderIds = candidateOrderIds.stream()
-				.filter(orderId -> !carriedOrderIds.contains(orderId))
-				.collect(ImmutableList.toImmutableList());
-		if (orderIds.size() > 1)
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog(
-					"Multiple waiting prepay orders found for ReportEntry2={}! MatchedOrderIds={}", entryWrapper.getLineReference(), orderIds);
-			return Optional.empty();
-		}
-
-		return orderIds.isEmpty() ? Optional.empty() : Optional.of(orderDAO.getById(orderIds.get(0)));
 	}
 
 	@NonNull

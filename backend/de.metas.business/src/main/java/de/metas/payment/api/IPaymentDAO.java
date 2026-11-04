@@ -129,8 +129,8 @@ public interface IPaymentDAO extends ISingletonService
 	Optional<PaymentId> findCompletedOrClosedPaymentIdByProformaInvoiceId(@NonNull InvoiceId proformaInvoiceId);
 
 	@NonNull
-	ImmutableSet<OrderId> getOrderIdsWithDraftOrCompletedPayments(@NonNull Collection<OrderId> orderIds);
+	ImmutableSet<OrderId> getOrderIdsWithCompletedOrClosedPayments(@NonNull Collection<OrderId> orderIds);
 
 	@NonNull
-	Optional<PaymentId> getFirstDraftOrCompletedPaymentIdByOrderId(@NonNull OrderId orderId);
+	Optional<PaymentId> getFirstCompletedOrClosedPaymentIdByOrderId(@NonNull OrderId orderId);
 }

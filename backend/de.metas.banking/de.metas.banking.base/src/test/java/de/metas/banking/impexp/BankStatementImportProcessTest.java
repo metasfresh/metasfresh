@@ -70,6 +70,9 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.I_I_BankStatement;
 import org.compiere.model.X_I_BankStatement;
 import org.compiere.util.Env;
@@ -458,6 +461,107 @@ public class BankStatementImportProcessTest
 			assertThat(lines).hasSize(1);
 			assertThat(lines.get(0).getC_Invoice_ID()).as("C_Invoice_ID").isLessThanOrEqualTo(0);
 			assertThat(lines.get(0).isUpdateAmountsFromInvoice()).as("IsUpdateAmountsFromInvoice").isTrue();
+		}
+	}
+
+	@Nested
+	class LineReferencingAWaitingPrepayOrder
+	{
+		private BankStatementId bankStatementId;
+		private BPartnerId customerId;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			bankStatementId = bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
+					.orgId(OrgId.ANY)
+					.orgBankAccountId(euroOrgBankAccountId)
+					.name("Bank Statement 1")
+					.statementDate(LocalDate.parse("2020-03-22"))
+					.build());
+			customerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("customer").getC_BPartner_ID());
+		}
+
+		private I_C_Order createPrepayOrder(@NonNull final String documentNo, @NonNull final String grandTotal)
+		{
+			final I_C_DocType docType = newInstance(I_C_DocType.class);
+			docType.setDocBaseType(X_C_DocType.DOCBASETYPE_SalesOrder);
+			docType.setDocSubType(X_C_DocType.DOCSUBTYPE_PrepayOrder);
+			saveRecord(docType);
+
+			final I_C_Order order = newInstance(I_C_Order.class);
+			order.setAD_Org_ID(OrgId.ANY.getRepoId());
+			order.setDocumentNo(documentNo);
+			order.setC_DocType_ID(docType.getC_DocType_ID());
+			order.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
+			order.setIsSOTrx(true);
+			order.setDocStatus(DocStatus.WaitingPayment.getCode());
+			order.setC_BPartner_ID(customerId.getRepoId());
+			order.setBill_BPartner_ID(customerId.getRepoId());
+			order.setC_Currency_ID(euroCurrencyId.getRepoId());
+			order.setGrandTotal(new BigDecimal(grandTotal));
+			saveRecord(order);
+			return order;
+		}
+
+		private I_C_BankStatementLine importSingleLine(@NonNull final String trxAmt, @NonNull final String text)
+		{
+			importRecords(record()
+					.bankStatementId(bankStatementId)
+					.statementLineDate("2020-03-22")
+					.currencyId(euroCurrencyId)
+					.trxAmt(trxAmt)
+					.lineDescription(text)
+					.build());
+			final List<I_C_BankStatementLine> lines = bankStatementDAO.getLinesByBankStatementId(bankStatementId);
+			assertThat(lines).hasSize(1);
+			return lines.get(0);
+		}
+
+		@Test
+		void theLineGetsTheOrderAndItsPartner_ifTheTextNamesTheOrderAndTheAmountIsTheOrdersTotal()
+		{
+			final I_C_Order order = createPrepayOrder("1000123", "250.00");
+
+			final I_C_BankStatementLine line = importSingleLine("250.00", "1000123");
+
+			assertThat(line.getC_Order_ID()).as("C_Order_ID").isEqualTo(order.getC_Order_ID());
+			assertThat(line.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(customerId.getRepoId());
+		}
+
+		@Test
+		void noOrder_ifTheAmountIsNotTheOrdersTotal()
+		{
+			createPrepayOrder("1000123", "250.00");
+
+			assertThat(importSingleLine("100.00", "1000123").getC_Order_ID()).as("C_Order_ID").isLessThanOrEqualTo(0);
+		}
+
+		@Test
+		void noOrder_ifTheLineIsADebit()
+		{
+			createPrepayOrder("1000123", "250.00");
+
+			assertThat(importSingleLine("-250.00", "1000123").getC_Order_ID()).as("C_Order_ID").isLessThanOrEqualTo(0);
+		}
+
+		@Test
+		void noOrder_ifAnInvoiceWithThatNumberIsReferenced()
+		{
+			createPrepayOrder("1000123", "250.00");
+			final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+			invoice.setAD_Org_ID(OrgId.ANY.getRepoId());
+			invoice.setDocumentNo("1000123");
+			invoice.setC_BPartner_ID(customerId.getRepoId());
+			invoice.setDocStatus(DocStatus.Completed.getCode());
+			invoice.setIsSOTrx(true);
+			invoice.setIsPaid(false);
+			invoice.setIsFinancial(true);
+			saveRecord(invoice);
+			// the partner has no payment bonus: the invoice is not linked, but it still wins over the order
+			SpringContextHolder.registerJUnitBean(new PaymentBonusOnPaymentService(Optional.of(id -> Optional.empty()), new PaymentBonusCreditMemoService()));
+
+			assertThat(importSingleLine("250.00", "1000123").getC_Order_ID()).as("C_Order_ID: the invoice wins, like in the CAMT import").isLessThanOrEqualTo(0);
 		}
 	}
 

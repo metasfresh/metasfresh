@@ -1,5 +1,5 @@
 -- Error message for completing a bank statement whose line carries an order that does not wait for payment any more (e.g. already paid or closed)
--- while no active payment carries it (if a payment carries it, ERR_BANKSTATEMENT_ORDER_ALREADY_PAID names that payment):
+-- while no active payment carries it (5832950: one message for "already paid" and "no longer waiting"):
 --   ERR_BANKSTATEMENT_ORDER_NOT_WAITING
 --     {0} = C_Order.DocumentNo
 -- Base text German, en_US override English, de_DE / de_CH marked translated.

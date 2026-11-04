@@ -86,7 +86,6 @@ import java.util.Set;
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
 	private static final AdMessageKey MSG_ORDER_AMOUNT_MISMATCH = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_AMOUNT_MISMATCH");
-	private static final AdMessageKey MSG_ORDER_ALREADY_PAID = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_ALREADY_PAID");
 	private static final AdMessageKey MSG_ORDER_NOT_WAITING = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_NOT_WAITING");
 	private static final AdMessageKey MSG_ORDER_NOT_A_PREPAYMENT = AdMessageKey.of("ERR_BANKSTATEMENT_ORDER_NOT_A_PREPAYMENT");
 
@@ -267,7 +266,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	}
 
 	/**
-	 * Full prepayment of an active sales prepay order only: the order must be a prepay order, still wait for payment, no payment may carry it yet,
+	 * Full prepayment of an active sales prepay order only: the order must be a prepay order, still wait for payment, no completed or closed payment may carry it yet,
 	 * and the line amount and currency must equal the order total.
 	 *
 	 * @throws AdempiereException if not, so completing the bank statement fails visibly and the order stays waiting
@@ -286,16 +285,11 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			throw new AdempiereException(MSG_ORDER_NOT_A_PREPAYMENT, order.getDocumentNo());
 		}
 
-		// name the payment that carries the order, if there is one: the one the order points to, else an active payment pointing to the order
-		final PaymentId orderPaymentId = PaymentId.ofRepoIdOrNull(order.getC_Payment_ID());
-		final PaymentId carryingPaymentId = orderPaymentId != null
-				? orderPaymentId
-				: paymentBL.getFirstDraftOrCompletedPaymentIdByOrderId(orderId).orElse(null);
-		if (carryingPaymentId != null)
-		{
-			throw new AdempiereException(MSG_ORDER_ALREADY_PAID, order.getDocumentNo(), paymentBL.getById(carryingPaymentId).getDocumentNo());
-		}
-		if (!DocStatus.ofCode(order.getDocStatus()).isWaitingForPayment())
+		// one refusal for "already paid" and "no longer waiting": a payment (the one the order points to, else a completed or closed one pointing to the order)
+		// carries the order, or the order does not wait for payment any more
+		final boolean carriedByPayment = PaymentId.ofRepoIdOrNull(order.getC_Payment_ID()) != null
+				|| paymentBL.getFirstCompletedOrClosedPaymentIdByOrderId(orderId).isPresent();
+		if (carriedByPayment || !DocStatus.ofCode(order.getDocStatus()).isWaitingForPayment())
 		{
 			throw new AdempiereException(MSG_ORDER_NOT_WAITING, order.getDocumentNo());
 		}
