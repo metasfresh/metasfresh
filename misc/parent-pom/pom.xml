@@ -99,7 +99,7 @@
         <archunit.version>1.4.2</archunit.version>
 
         <mockito.version>2.7.22</mockito.version>
-        <byte-buddy.version>1.12.20</byte-buddy.version>
+        <byte-buddy.version>1.17.8</byte-buddy.version>
         <objenesis.version>3.3</objenesis.version>
 
         <commons-io.version>2.11.0</commons-io.version>
@@ -268,10 +268,11 @@
                 <version>0.2.1</version>
             </dependency>
 
-            <!-- Enforce a single, consistent slf4j-2.x + logback-1.5.x stack for every module that
-                 inherits this parent directly (server-assembly chain + de.metas.cucumber). These modules do
-                 NOT import the spring-boot BOM, so without explicit management the transitive logback-classic
-                 1.2.13 / slf4j-api 1.7.x would win mediation and break LoggerFactory init on slf4j 2.x. -->
+            <!-- Enforce a single, consistent slf4j-2.x + logback-1.5.x stack for the modules that inherit
+                 this parent WITHOUT importing the spring-boot BOM (notably de.metas.cucumber and the
+                 misc/services/* modules). Without explicit management the transitive logback-classic
+                 1.2.13 / slf4j-api 1.7.x would win mediation and break LoggerFactory init on slf4j 2.x.
+                 (Modules that inherit de.metas.parent already get the 2.x versions from the spring-boot BOM.) -->
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
