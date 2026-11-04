@@ -79,6 +79,7 @@ public class MobileUIPickingUserProfile_StepDef
 	 *   <li>{@code IsAllowPickingAnyHU} — boolean</li>
 	 *   <li>{@code CreateShipmentPolicy} — policy code/name: DO_NOT_CREATE / CREATE_DRAFT / CREATE_AND_COMPLETE / CREATE_COMPLETE_CLOSE</li>
 	 *   <li>{@code PickingJobAggregationType} — aggregation-type code: SALES_ORDER (default) / PRODUCT / DELIVERY_LOCATION</li>
+	 *   <li>{@code IsShowConfirmationPromptWhenOverPick} — boolean; N means over-picking is blocked</li>
 	 *   <li>{@code IsAlwaysSplitHUsEnabled} — boolean</li>
 	 *   <li>{@code IsAllowCompletingPartialPickingJob} — boolean</li>
 	 *   <li>{@code IsCatchWeightTUPickingEnabled} — boolean</li>
@@ -108,6 +109,7 @@ public class MobileUIPickingUserProfile_StepDef
 
 		profileService.update((profile) -> {
 			final PickingJobOptionsBuilder defaultPickingJobOptionsBuilder = profile.getDefaultPickingJobOptions().toBuilder();
+			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsShowConfirmationPromptWhenOverPick).ifPresent(defaultPickingJobOptionsBuilder::isShowConfirmationPromptWhenOverPick);
 			row.getAsOptionalBoolean("IsAllowPickingAnyHU").ifPresent(defaultPickingJobOptionsBuilder::isAllowPickingAnyHU);
 			row.getAsOptionalString("CreateShipmentPolicy").map(CreateShipmentPolicy::ofCodeOrName).ifPresent(defaultPickingJobOptionsBuilder::createShipmentPolicy);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(defaultPickingJobOptionsBuilder::isAlwaysSplitHUsEnabled);
