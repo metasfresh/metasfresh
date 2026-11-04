@@ -51,6 +51,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class SepaUtils
@@ -388,5 +390,15 @@ public class SepaUtils
 	{
 		final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 		return datatypeFactory.newXMLGregorianCalendar(df.format(date));
+	}
+
+	/**
+	 * @return the partner value, followed by " - " and its name; a blank part is left out. Used for the "partner" placeholder of SEPA messages.
+	 */
+	public static String toPartnerLabel(@Nullable final String partnerValue, @Nullable final String partnerName)
+	{
+		return Stream.of(partnerValue, partnerName)
+				.filter(Check::isNotBlank)
+				.collect(Collectors.joining(" - "));
 	}
 }

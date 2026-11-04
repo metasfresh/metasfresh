@@ -49,6 +49,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 /**
  * Repository Tables: C_BP_BankAccount_DirectDebitMandate
  * <p>
+ * Repository Cluster: DirectDebitMandateRepository (sole owner)
+ * <p>
  * Deliberately has no cache: the SEPA export reads once per run, and every run writes {@code DateLastUsed} to this table
  * (which would reset a table-bound cache); the one-off check must see the current {@code DateLastUsed}.
  */

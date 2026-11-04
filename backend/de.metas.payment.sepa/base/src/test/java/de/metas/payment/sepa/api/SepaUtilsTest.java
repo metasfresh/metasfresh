@@ -209,4 +209,12 @@ class SepaUtilsTest
 	{
 		assertThat(SepaUtils.createInfo(sepaLine("a@b", null, null, null, null))).endsWith("a@@b");
 	}
+
+	@Test
+	void toPartnerLabel()
+	{
+		assertThat(SepaUtils.toPartnerLabel("1000", "Debtor GmbH")).isEqualTo("1000 - Debtor GmbH");
+		assertThat(SepaUtils.toPartnerLabel("1000", " ")).isEqualTo("1000");
+		assertThat(SepaUtils.toPartnerLabel(null, "Debtor GmbH")).isEqualTo("Debtor GmbH");
+	}
 }

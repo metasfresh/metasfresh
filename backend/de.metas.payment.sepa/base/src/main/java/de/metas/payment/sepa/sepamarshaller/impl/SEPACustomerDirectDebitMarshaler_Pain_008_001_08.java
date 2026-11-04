@@ -328,8 +328,8 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 
 		final PartyIdentification135 dbtr = new PartyIdentification135();
 		final String originalDebtorName = SepaUtils.getBPartnerNameById(line.getC_BPartner_ID());
-		final String debtorName = SepaTextConverter.toText(originalDebtorName, MAX_LENGTH_NAME);
 		Check.assumeNotNull(originalDebtorName, "Debtor of {} has a name", line);
+		final String debtorName = SepaTextConverter.toText(originalDebtorName, MAX_LENGTH_NAME);
 		dbtr.setNm(toMandatoryText(debtorName, originalDebtorName, "Name", toPartnerLabel(line)));
 		dbtr.setPstlAdr(createDebtorPstlAdrOrNull(sepaHdr, line));
 		drctDbtTxInf.setDbtr(dbtr);
@@ -408,7 +408,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_001_08 implements SEPAMar
 	private String toPartnerLabel(@NonNull final I_SEPA_Export_Line line)
 	{
 		final I_C_BPartner partner = bpartnerDAO.getById(BPartnerId.ofRepoId(line.getC_BPartner_ID()));
-		return partner.getValue() + " " + partner.getName();
+		return SepaUtils.toPartnerLabel(partner.getValue(), partner.getName());
 	}
 
 	private PartyIdentification135 createCreditor(@NonNull final I_SEPA_Export sepaDocument)

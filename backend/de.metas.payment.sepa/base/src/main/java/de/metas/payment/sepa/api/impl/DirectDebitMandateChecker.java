@@ -8,7 +8,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.util.Check;
+import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -188,9 +186,7 @@ class DirectDebitMandateChecker
 	/** @return the partner value, followed by its name if there is one */
 	private static String toPartnerLabel(final DirectDebitMandateProblem problem)
 	{
-		return Stream.of(problem.getPartnerValue(), problem.getPartnerName())
-				.filter(Check::isNotBlank)
-				.collect(Collectors.joining(" - "));
+		return SepaUtils.toPartnerLabel(problem.getPartnerValue(), problem.getPartnerName());
 	}
 
 	private static ITranslatableString toMessage(final DirectDebitMandateProblem problem)

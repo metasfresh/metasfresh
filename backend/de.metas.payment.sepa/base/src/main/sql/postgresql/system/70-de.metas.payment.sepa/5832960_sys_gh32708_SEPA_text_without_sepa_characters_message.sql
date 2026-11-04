@@ -1,4 +1,4 @@
--- SEPA direct debit export: refused if a mandatory text (name, mandate reference) has no character of the SEPA character set.
+-- SEPA direct debit export: refused if a mandatory text (name, document number) has no character of the SEPA character set.
 -- Placeholders: {0} translated name of the element (Name, DocumentNo), {1} partner (value + name) or organisation, {2} original text.
 -- The texts contain no apostrophes, because an apostrophe is a quote character in the message format.
 -- ID server allocations: script 5832960, AD_Message 545989

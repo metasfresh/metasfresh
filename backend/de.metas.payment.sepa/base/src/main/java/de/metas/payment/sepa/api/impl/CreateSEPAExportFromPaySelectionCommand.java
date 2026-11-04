@@ -180,6 +180,14 @@ class CreateSEPAExportFromPaySelectionCommand
 			return result.build();
 		}
 
+		// load every invoice once: it feeds both the export line and the debtor's address
+		final Map<InvoiceId, I_C_Invoice> invoicesById = invoiceBL.getByIds(linesByScheme.values().stream()
+						.flatMap(List::stream)
+						.map(line -> InvoiceId.ofRepoId(line.getC_Invoice_ID()))
+						.collect(ImmutableSet.toImmutableSet()))
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(invoice -> InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), invoice -> invoice));
+
 		final Set<DirectDebitMandate> usedMandates = new LinkedHashSet<>();
 		linesByScheme.forEach((scheme, lines) -> {
 			final I_SEPA_Export header = createExportHeader(source);
@@ -189,14 +197,15 @@ class CreateSEPAExportFromPaySelectionCommand
 			{
 				final DirectDebitMandate mandate = getMandate(mandatesByLineId, line);
 
-				final I_SEPA_Export_Line exportLine = createExportLine(line);
+				final I_C_Invoice invoice = invoicesById.get(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
+				final I_SEPA_Export_Line exportLine = createExportLine(line, invoice);
 				exportLine.setSEPA_Export(header);
 				exportLine.setSEPA_MandateRefNo(mandate.getReference());
 				sepaDocumentDAO.save(exportLine);
 
 				final SEPAExportLineId exportLineId = SEPAExportLineId.ofRepoId(exportLine.getSEPA_Export_Line_ID());
 				mandatesBySepaExportLineId.put(exportLineId, mandate);
-				debtorLocationIdsBySepaExportLineId.put(exportLineId, getDebtorLocationId(line));
+				debtorLocationIdsBySepaExportLineId.put(exportLineId, getDebtorLocationId(invoice));
 				usedMandates.add(mandate);
 			}
 
@@ -307,15 +316,18 @@ class CreateSEPAExportFromPaySelectionCommand
 	/**
 	 * @return the bill-to address captured on the line's (completed) invoice, so that later changes of the partner's master data do not change it
 	 */
-	private LocationId getDebtorLocationId(@NonNull final I_C_PaySelectionLine line)
+	private LocationId getDebtorLocationId(@NonNull final I_C_Invoice invoice)
 	{
-		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
 		return LocationId.ofRepoId(Check.assumeGreaterThanZero(invoice.getC_BPartner_Location_Value_ID(), I_C_Invoice.COLUMNNAME_C_BPartner_Location_Value_ID));
 	}
 
 	private I_SEPA_Export_Line createExportLine(@NonNull final I_C_PaySelectionLine line)
 	{
-		final I_C_Invoice sourceInvoice = invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
+		return createExportLine(line, invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID())));
+	}
+
+	private I_SEPA_Export_Line createExportLine(@NonNull final I_C_PaySelectionLine line, @NonNull final I_C_Invoice sourceInvoice)
+	{
 		final String description = sourceInvoice.getDescription();
 		final String structuredRemittanceInfo = line.getReference();
 
