@@ -19,14 +19,13 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type identifies the line item and quantity of that line item that comprises one fulfillment, such as a shipping package.
  */
-@ApiModel(description = "This type identifies the line item and quantity of that line item that comprises one fulfillment, such as a shipping package.")
+@Schema(description = "This type identifies the line item and quantity of that line item that comprises one fulfillment, such as a shipping package.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class LineItemReference
 {
@@ -51,7 +50,7 @@ public class LineItemReference
 	 * @return lineItemId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This is the unique identifier of the eBay order line item that is part of the shipping fulfillment. The line item ID is created as soon as there is a commitment to buy from the seller.")
+	@Schema(description = "This is the unique identifier of the eBay order line item that is part of the shipping fulfillment. The line item ID is created as soon as there is a commitment to buy from the seller.")
 
 	public String getLineItemId()
 	{
@@ -76,7 +75,7 @@ public class LineItemReference
 	 * @return quantity
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This field is reserved for internal or future use.")
+	@Schema(description = "This field is reserved for internal or future use.")
 
 	public Integer getQuantity()
 	{

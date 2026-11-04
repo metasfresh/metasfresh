@@ -20,14 +20,13 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.Amount;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type contains a breakdown of all costs associated with the fulfillment of a line item.
  */
-@ApiModel(description = "This type contains a breakdown of all costs associated with the fulfillment of a line item.")
+@Schema(description = "This type contains a breakdown of all costs associated with the fulfillment of a line item.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class DeliveryCost
 {
@@ -56,7 +55,7 @@ public class DeliveryCost
 	 * @return importCharges
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getImportCharges()
 	{
@@ -81,7 +80,7 @@ public class DeliveryCost
 	 * @return shippingCost
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getShippingCost()
 	{
@@ -106,7 +105,7 @@ public class DeliveryCost
 	 * @return shippingIntermediationFee
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getShippingIntermediationFee()
 	{

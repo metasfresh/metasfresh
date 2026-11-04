@@ -19,14 +19,13 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This container consists of address information that can be used by sellers for tax purpose.
  */
-@ApiModel(description = "This container consists of address information that can be used by sellers for tax purpose.")
+@Schema(description = "This container consists of address information that can be used by sellers for tax purpose.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class TaxAddress
 {
@@ -59,7 +58,7 @@ public class TaxAddress
 	 * @return city
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The city name that can be used by sellers for tax purpose.")
+	@Schema(description = "The city name that can be used by sellers for tax purpose.")
 
 	public String getCity()
 	{
@@ -84,7 +83,7 @@ public class TaxAddress
 	 * @return countryCode
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The country code that can be used by sellers for tax purpose, represented as a two-letter ISO 3166-1 alpha-2 country code. For example, US represents the United States, and DE represents Germany. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CountryCodeEnum'>eBay API documentation</a>")
+	@Schema(description = "The country code that can be used by sellers for tax purpose, represented as a two-letter ISO 3166-1 alpha-2 country code. For example, US represents the United States, and DE represents Germany. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CountryCodeEnum'>eBay API documentation</a>")
 
 	public String getCountryCode()
 	{
@@ -109,7 +108,7 @@ public class TaxAddress
 	 * @return postalCode
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The postal code that can be used by sellers for tax purpose. Usually referred to as Zip codes in the US.")
+	@Schema(description = "The postal code that can be used by sellers for tax purpose. Usually referred to as Zip codes in the US.")
 
 	public String getPostalCode()
 	{
@@ -134,7 +133,7 @@ public class TaxAddress
 	 * @return stateOrProvince
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The state name that can be used by sellers for tax purpose.")
+	@Schema(description = "The state name that can be used by sellers for tax purpose.")
 
 	public String getStateOrProvince()
 	{
