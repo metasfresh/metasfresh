@@ -34,7 +34,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DirectDebitMandatesMapTest
 {
 	private static final OrgId EXPORT_ORG = OrgId.ofRepoId(1000000);
-	private static final OrgId OTHER_ORG = OrgId.ofRepoId(1000001);
 	private static final BankAccountId BANK_ACCOUNT = BankAccountId.ofRepoId(10);
 
 	private static int nextId = 1;
