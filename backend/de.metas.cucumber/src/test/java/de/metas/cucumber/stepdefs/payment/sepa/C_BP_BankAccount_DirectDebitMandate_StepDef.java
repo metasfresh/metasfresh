@@ -86,7 +86,7 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 	 *   <b>MandateReference</b> - (required) the mandate reference<br>
 	 *   <b>MandateDate</b> - (required) signature date, <code>yyyy-MM-dd</code> or <code>yyyy-MM-ddTHH:mm</code><br>
 	 *   <b>IsRecurring</b> - (required) Y/N<br>
-	 *   <b>AD_Org_ID</b> - (optional) AD_Org identifier, or <code>0</code> for org *; absent or blank = the login org<br>
+	 *   <b>AD_Org_ID</b> - (optional, identifier-ref) the mandate's org, e.g. org * loaded via <code>load AD_Org:</code> with Value <code>0</code>; absent = the login org<br>
 	 *   <b>DateLastUsed</b> - (optional) same formats; empty or absent = null<br>
 	 *   <b>IsActive</b> - (optional) Y/N; absent = Y
 	 * @cucumber.example
@@ -110,9 +110,8 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 				.lookupNotNullIdIn(bankAccountTable);
 
 		final String mandateReference = row.getAsString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_MandateReference);
-		final OrgId orgId = row.getAsOptionalString(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_AD_Org_ID)
-				.filter(orgStr -> !orgStr.trim().isEmpty()) // blank cell = same as absent column: login org
-				.map(this::resolveOrgId)
+		final OrgId orgId = row.getAsOptionalIdentifier(I_C_BP_BankAccount_DirectDebitMandate.COLUMNNAME_AD_Org_ID)
+				.map(orgTable::getId)
 				.orElseGet(Env::getOrgId);
 
 		// upsert by the natural key (MandateReference, AD_Org_ID), so that a re-run on the same DB does not collide with the rows of the earlier run
@@ -199,13 +198,5 @@ public class C_BP_BankAccount_DirectDebitMandate_StepDef
 				.create()
 				.count();
 		assertThat(count).as("C_BP_BankAccount_DirectDebitMandate count for C_BPartner " + bpartnerIdentifier).isZero();
-	}
-
-	/** {@code 0} means org {@code *}, otherwise an AD_Org identifier. */
-	private OrgId resolveOrgId(@NonNull final String orgStr)
-	{
-		return "0".equals(orgStr.trim())
-				? OrgId.ANY
-				: StepDefDataIdentifier.ofString(orgStr).lookupNotNullIdIn(orgTable);
 	}
 }

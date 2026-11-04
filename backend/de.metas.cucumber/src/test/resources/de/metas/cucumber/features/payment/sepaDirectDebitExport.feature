@@ -504,6 +504,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
 
   # Debtor-side cases, one debtor each, all in one B2B file; each debtor is named after its case (with spaces: an underscore is not in the basic SEPA character set and would become a space):
   #   Debtor NoBIC:             the debtor bank has no BIC -> DbtrAgt is NOTPROVIDED
+  #                             it also has an active mandate of another org on the same bank account -> ignored, the export org's mandate is exported
   #   Debtor NoDescription:     the invoice has no description -> no RmtInf/Ustrd
   #   Debtor OrgStarMandate:    only the org-* mandate is active -> its reference is exported, the inactive mandate of the export org is ignored
   #   Debtor MandateUsedLater:  the mandate was last used after the collection date -> still exported with its own reference, DateLastUsed is not moved back;
@@ -520,8 +521,15 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
   #              expected = "Rechnung  Nr. 1  " (17 chars; 2 spaces before Nr., 2 after 1) + 123 x Y = 140 chars
   @from:cucumber
   @Id:S32708_TC15
-  Scenario: debtor-side cases in one file: debtor bank without BIC (NOTPROVIDED), invoice without description (no Ustrd), text conversion to the basic SEPA character set and maximum lengths, only the org-* mandate active, mandate last used after the collection date (DateLastUsed not moved back), debtor addresses (German, and Swiss outside the EEA)
-    Given metasfresh contains C_BPartners:
+  Scenario: debtor-side cases in one file: debtor bank without BIC (NOTPROVIDED), invoice without description (no Ustrd), text conversion to the basic SEPA character set and maximum lengths, only the org-* mandate active, the mandate of another org ignored, mandate last used after the collection date (DateLastUsed not moved back), debtor addresses (German, and Swiss outside the EEA)
+    Given load AD_Org:
+      | AD_Org_ID.Identifier | Value |
+      | orgStar              | 0     |
+    # an org other than the export org: its mandates must not be used
+    And metasfresh contains AD_Org:
+      | AD_Org_ID.Identifier | Name                             |
+      | otherOrg             | SEPA direct debit test other org |
+    And metasfresh contains C_BPartners:
       | Identifier    | Name                                                                                     | Value          | IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
       | noDescDebtor  | Debtor NoDescription                                                                     | nodesc_@Date@  | Y          | pricingSystem                 | D               |
       | longDebtor    | Bäcker & Söhne € Großhandel XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | long_@Date@    | Y          | pricingSystem                 | D               |
@@ -555,9 +563,10 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
     And metasfresh contains C_BP_BankAccount_DirectDebitMandate:
       | C_BP_BankAccount_DirectDebitMandate_ID | C_BP_BankAccount_ID | MandateType | MandateReference  | MandateDate | IsRecurring | DateLastUsed | AD_Org_ID | IsActive |
       | noBicMandate                           | noBicAcct           | B2B         | MREF-NOBIC-001    | 2013-09-23  | Y           | 2025-09-04   | sellerOrg | Y        |
+      | otherOrgMandate                        | noBicAcct           | B2B         | MREF-OTHERORG-001 | 2013-09-23  | Y           | 2025-09-04   | otherOrg  | Y        |
       | noDescMandate                          | noDescAcct          | B2B         | MREF-NODESC-001   | 2013-09-23  | Y           | 2025-09-04   | sellerOrg | Y        |
       | longMandate                            | longAcct            | B2B         | MREF-(A/B)+1.2    | 2014-03-11  | Y           | 2025-09-04   | sellerOrg | Y        |
-      | orgStarMandate                         | orgStarAcct         | B2B         | MREF-ORGSTAR-001  | 2020-05-04  | Y           | 2025-09-04   | 0         | Y        |
+      | orgStarMandate                         | orgStarAcct         | B2B         | MREF-ORGSTAR-001  | 2020-05-04  | Y           | 2025-09-04   | orgStar   | Y        |
       | inactiveMandate                        | orgStarAcct         | B2B         | MREF-INACTIVE-001 | 2019-02-03  | Y           | 2025-09-04   | sellerOrg | N        |
       | usedLaterMandate                       | usedLaterAcct       | B2B         | MREF-LATER-001    | 2013-09-23  | Y           | 2026-12-01   | sellerOrg | Y        |
     And metasfresh contains C_Invoice:
@@ -1046,6 +1055,7 @@ Feature: SEPA direct debit export (pain.008.001.08), CORE and B2B
     And validate C_BP_BankAccount_DirectDebitMandate:
       | C_BP_BankAccount_DirectDebitMandate_ID | DateLastUsed |
       | usedLaterMandate                       | 2026-12-01   |
+      | otherOrgMandate                        | 2025-09-04   |
 
   # Creditor address: the creditor is the org BP; its address comes from the org BP's default bill-to location (GLN 4000000000129),
   # never from the debtor bank account's holder data (A_Name, A_City). There is one creditor per file, so the scenario exports three times
