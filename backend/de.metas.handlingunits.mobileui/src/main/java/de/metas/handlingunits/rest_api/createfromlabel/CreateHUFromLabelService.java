@@ -10,12 +10,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.springframework.stereotype.Service;
-
-import java.time.ZonedDateTime;
 
 /** HU Manager "create HU from a scanned label": the preview (writes nothing) and OK (one single-HU inventory, one CU). */
 @Service
@@ -49,11 +45,12 @@ public class CreateHUFromLabelService
 				.labelQtyAndWeightService(labelQtyAndWeightService);
 	}
 
-	/** @return the new HU with its HU QR code (created if missing, so the standard actions, Move etc., work on it) */
+	/** @return the command with the services set; the caller sets the scanned code, qty, locator, client, language and date, then {@code build().execute()} (which returns the new HU with its HU QR code, created if missing, so the standard actions, Move etc., work on it) */
 	@NonNull
-	public CreatedHU create(@NonNull final JsonCreateHUFromScannedCodeRequest request, @NonNull final ClientId clientId, @NonNull final String adLanguage, @NonNull final ZonedDateTime date)
+	public CreateHUFromScannedCodeCommand.CreateHUFromScannedCodeCommandBuilder create()
 	{
-		final CreateHUFromScannedCodeCommand command = CreateHUFromScannedCodeCommand.builder()
+		return CreateHUFromScannedCodeCommand.builder()
+				.trxManager(trxManager)
 				.handlingUnitsBL(handlingUnitsBL)
 				.uomConversionBL(uomConversionBL)
 				.warehouseDAO(warehouseDAO)
@@ -61,14 +58,6 @@ public class CreateHUFromLabelService
 				.huQtyService(huQtyService)
 				.huQRCodesService(huQRCodesService)
 				.labelProductResolver(labelProductResolver)
-				.labelQtyAndWeightService(labelQtyAndWeightService)
-				.clientId(clientId)
-				.adLanguage(adLanguage)
-				.scannedCode(request.getScannedCode())
-				.qty(request.getQty())
-				.locatorId(LocatorQRCode.ofScannedCode(request.getLocatorQRCode()).getLocatorId())
-				.date(date)
-				.build();
-		return trxManager.callInThreadInheritedTrx(command::execute);
+				.labelQtyAndWeightService(labelQtyAndWeightService);
 	}
 }

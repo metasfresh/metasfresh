@@ -69,6 +69,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
@@ -206,7 +207,15 @@ public class HUManagerRestController
 	{
 		assertActionAccess(HUManagerAction.CreateHU);
 
-		final CreatedHU createdHU = createHUFromLabelService.create(request, Env.getClientId(), Env.getADLanguageOrBaseLanguage(), SystemTime.asZonedDateTime());
+		final CreatedHU createdHU = createHUFromLabelService.create()
+				.scannedCode(request.getScannedCode())
+				.qty(request.getQty())
+				.locatorId(LocatorQRCode.ofScannedCode(request.getLocatorQRCode()).getLocatorId())
+				.clientId(Env.getClientId())
+				.adLanguage(Env.getADLanguageOrBaseLanguage())
+				.date(SystemTime.asZonedDateTime())
+				.build()
+				.execute();
 
 		return handlingUnitsService.getByIdSupplier(
 				() -> GetByIdRequest.builder()

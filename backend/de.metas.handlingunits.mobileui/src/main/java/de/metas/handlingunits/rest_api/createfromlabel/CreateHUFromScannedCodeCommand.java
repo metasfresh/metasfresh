@@ -17,6 +17,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.X12DE355;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -35,11 +36,12 @@ import java.time.ZonedDateTime;
  * weight rule always come from the re-parse of the scanned code (never trusted from the client); a re-parse that yields several
  * products is refused, e.g. when a second product got the GTIN between the preview and OK.
  * <p>
- * Must run in a transaction (the caller's): the weight is set on the completed CU, and all of it commits or none of it.
+ * {@link #execute()} runs in the thread's transaction (a new one if none is running): the weight is set on the completed CU, and all of it commits or none of it.
  */
 public class CreateHUFromScannedCodeCommand
 {
 	// services
+	@NonNull private final ITrxManager trxManager;
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
 	@NonNull private final IUOMConversionBL uomConversionBL;
 	@NonNull private final IWarehouseDAO warehouseDAO;
@@ -59,6 +61,7 @@ public class CreateHUFromScannedCodeCommand
 
 	@Builder
 	private CreateHUFromScannedCodeCommand(
+			@NonNull final ITrxManager trxManager,
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final IUOMConversionBL uomConversionBL,
 			@NonNull final IWarehouseDAO warehouseDAO,
@@ -74,6 +77,7 @@ public class CreateHUFromScannedCodeCommand
 			@NonNull final LocatorId locatorId,
 			@NonNull final ZonedDateTime date)
 	{
+		this.trxManager = trxManager;
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.uomConversionBL = uomConversionBL;
 		this.warehouseDAO = warehouseDAO;
@@ -92,6 +96,12 @@ public class CreateHUFromScannedCodeCommand
 
 	@NonNull
 	public CreatedHU execute()
+	{
+		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
+	}
+
+	@NonNull
+	private CreatedHU executeInTrx()
 	{
 		if (qty.signum() <= 0)
 		{

@@ -42,6 +42,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -68,7 +69,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * The create path through {@code CreateHUFromLabelService.create}: the request-to-command mapping and the server-side guards the UI
+ * The create path through {@code CreateHUFromLabelService.create()}: the pre-filled command builder and the server-side guards the UI
  * cannot produce (the handheld never opens a preview for a shared barcode and sends only the editable fields). The UI flow itself is
  * proven by the HU Manager Playwright specs (e2e/mobile-webui/tests/spec/humanager/createFromLabel.spec.js).
  */
@@ -137,7 +138,7 @@ class CreateHUFromScannedCodeCommandTest
 		return JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(json, JsonCreateHUFromScannedCodeRequest.class);
 	}
 
-	/** goes through the real service, so the request-to-command mapping of production code is what the tests exercise */
+	/** goes through the real service, so the service's pre-filled command builder is what the tests exercise */
 	private HuId create(final JsonCreateHUFromScannedCodeRequest request)
 	{
 		return create(request, "en_US");
@@ -146,7 +147,16 @@ class CreateHUFromScannedCodeCommandTest
 	private HuId create(final JsonCreateHUFromScannedCodeRequest request, final String adLanguage)
 	{
 		final CreateHUFromLabelService service = new CreateHUFromLabelService(huQRCodesService, huQtyService, new LabelProductResolver(huQRCodesService, Services.get(IProductBL.class)), new LabelTargetLocatorResolver(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository()), Services.get(IWarehouseDAO.class), Services.get(IOrgDAO.class)), new LabelQtyAndWeightService(Services.get(IProductBL.class), Services.get(IUOMDAO.class)));
-		return service.create(request, ClientId.METASFRESH, adLanguage, BOOKING_DATE).getHuId();
+		return service.create()
+				.scannedCode(request.getScannedCode())
+				.qty(request.getQty())
+				.locatorId(LocatorQRCode.ofScannedCode(request.getLocatorQRCode()).getLocatorId())
+				.clientId(ClientId.METASFRESH)
+				.adLanguage(adLanguage)
+				.date(BOOKING_DATE)
+				.build()
+				.execute()
+				.getHuId();
 	}
 
 	/** The command takes every service and the label resolver as builder parameters (it builds and looks up nothing itself). */
@@ -157,6 +167,7 @@ class CreateHUFromScannedCodeCommandTest
 		InterfaceWrapperHelper.saveRecord(product2);
 
 		final CreatedHU created = CreateHUFromScannedCodeCommand.builder()
+				.trxManager(Services.get(ITrxManager.class))
 				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
 				.warehouseDAO(Services.get(IWarehouseDAO.class))
