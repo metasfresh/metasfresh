@@ -12,6 +12,7 @@ import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScre
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 import { expect } from '@playwright/test';
 import { expectErrorToast } from '../../utils/common';
+import { uniqueGtin14 } from '../../utils/gtin';
 
 let masterdata = null;
 
@@ -230,13 +231,6 @@ test('Pick using custom QR code', async ({ page }) => {
 //   e.g. '02001234567893' + 'L2311' + '271231' + '099999'  (weight 99.999 kg, same weight shape as the product-code format above)
 //
 
-// Unique per run (the strict GTIN lookup must find exactly one product; the DB keeps products of earlier runs).
-let _gtinSeq = 0;
-const uniqueGtin14 = (prefix) => {
-    const seq = `${(_gtinSeq++) % 100}`.padStart(2, '0');
-    const ts = `${Date.now()}`.slice(-11).padStart(11, '0');
-    return `${prefix}${seq}${ts}`; // 1 + 2 + 11 = 14 digits
-};
 // 14 digits: a stored GTIN is a leading 0 + a 13-digit EAN (leading zero must survive).
 const uniqueGtin14Padded = () => uniqueGtin14('0');
 const gtinLabel = (gtin) => `${gtin}L2311271231099999`;

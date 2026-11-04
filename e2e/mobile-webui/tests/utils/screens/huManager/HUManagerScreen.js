@@ -7,12 +7,23 @@ import { ClearanceDialog } from './ClearanceDialog';
 import { DISPOSAL_REASON_DAMAGED, HUDisposalScreen } from './HUDisposalScreen';
 import { HUBulkActionsScreen } from './HUBulkActionsScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { LoginScreen } from '../LoginScreen';
+import { ApplicationsListScreen } from '../ApplicationsListScreen';
+import { NewHUPreviewScreen } from './NewHUPreviewScreen';
 
 const NAME = 'HUManagerScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#HUManagerScreen');
 
 export const HUManagerScreen = {
+    /** log in, start the HU Manager application from the applications list, wait for its scan screen */
+    openAfterLogin: async ({ user }) => await test.step(`${NAME} - Log in and open the application`, async () => {
+        await LoginScreen.login(user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huManager');
+        await HUManagerScreen.waitForScreen();
+    }),
+
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
@@ -45,6 +56,31 @@ export const HUManagerScreen = {
         await HUManagerScreen.expectVisible();
         await BarcodeScannerComponent.type(label);
     }),
+
+    /** scans a product label that is no existing HU and waits for the "New HU" preview */
+    scanLabelAndWaitForPreview: async ({ label }) => await test.step(`${NAME} - Scan label and wait for the New HU preview`, async () => {
+        await HUManagerScreen.scanLabel({ label });
+        await NewHUPreviewScreen.waitForScreen();
+    }),
+
+    /** the quantity (with unit, e.g. '1 PCE') on the HU info panel of the opened HU */
+    expectHUQty: async (qty) => await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: qty }),
+
+    /** the location (code) on the HU info panel of the opened HU */
+    expectHULocator: async (locatorCode) => await HUManagerScreen.expectValue({ name: 'locator-value', expectedValue: locatorCode }),
+
+    /** no HU info panel is shown (no HU is open) */
+    expectNoHUInfo: async () => {
+        await HUManagerScreen.expectValueMissing({ name: 'huinfo-table' });
+        await HUManagerScreen.expectValueMissing({ name: 'qty-value' });
+    },
+
+    expectMoveButtonVisible: async () => await HUManagerScreen.expectButtonVisible({ testId: 'move-button' }),
+
+    expectUndoButtonMissing: async () => await HUManagerScreen.expectButtonMissing({ testId: 'undo-button' }),
+
+    /** "Scan again" button of the HU info panel: back to the scan step */
+    clickScanAgain: async () => await HUManagerScreen.clickButton({ testId: 'scan-again-button' }),
 
     expectValue: async ({ name, expectedValue, expectedInternalValue, missing }) => {
         const stepValue = expectedValue ?? expectedInternalValue ?? (missing ? '*missing*' : undefined);
