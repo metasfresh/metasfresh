@@ -80,7 +80,7 @@ public class ProposeHUFromScannedCodeCommand
 	{
 		final LabelValues labelValues = labelValuesService.resolve(scannedCode, clientId);
 
-		final LocatorQRCode locatorQRCode = labelTargetLocatorResolver.resolve(userId, orgId)
+		final LocatorQRCode locatorQRCode = labelTargetLocatorResolver.resolve(userId, orgId, clientId)
 				.map(locatorId -> LocatorQRCode.ofLocator(warehouseDAO.getLocatorById(locatorId)))
 				.orElse(null);
 

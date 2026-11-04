@@ -7,6 +7,7 @@ import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -17,7 +18,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * The target location the "New HU" preview proposes: (1) the user's workplace pick-from location, else (2) the
+ * The target location the "New HU" preview proposes: (1) the user's workplace pick-from location, if it is usable (see {@link LabelLocatorRules}), else (2) the
  * default location of the workplace's warehouse, else (3) the default location of the organisation's default warehouse; none when no
  * rule finds one (OK stays disabled until one is scanned).
  * <p>
@@ -34,14 +35,14 @@ public class LabelTargetLocatorResolver
 	@NonNull private final IOrgDAO orgDAO;
 
 	@NonNull
-	public Optional<LocatorId> resolve(@NonNull final UserId userId, @NonNull final OrgId orgId)
+	public Optional<LocatorId> resolve(@NonNull final UserId userId, @NonNull final OrgId orgId, @NonNull final ClientId clientId)
 	{
 		final Workplace workplace = workplaceService.getWorkplaceByUserId(userId).orElse(null);
 		if (workplace != null)
 		{
-			// an inactive pick-from location is not proposed: the create step refuses it
+			// a pick-from location the create step would refuse is not proposed
 			final LocatorId pickFromLocatorId = workplace.getPickFromLocatorId();
-			if (pickFromLocatorId != null && warehouseDAO.getLocatorById(pickFromLocatorId).isActive())
+			if (pickFromLocatorId != null && LabelLocatorRules.isUsable(warehouseDAO.getLocatorById(pickFromLocatorId), pickFromLocatorId, clientId))
 			{
 				return Optional.of(pickFromLocatorId);
 			}

@@ -14,7 +14,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 
@@ -111,10 +110,7 @@ public class CreateHUFromScannedCodeCommand
 	private LocatorId getVerifiedLocatorId()
 	{
 		final I_M_Locator locator = warehouseDAO.getLocatorById(locatorId);
-		if (locator == null
-				|| !locator.isActive()
-				|| !ClientId.equals(ClientId.ofRepoId(locator.getAD_Client_ID()), clientId)
-				|| !WarehouseId.equals(WarehouseId.ofRepoId(locator.getM_Warehouse_ID()), locatorId.getWarehouseId()))
+		if (!LabelLocatorRules.isUsable(locator, locatorId, clientId))
 		{
 			throw new AdempiereException(CreateFromLabelMessages.NOT_AN_ACTIVE_LOCATOR, locatorId.getRepoId());
 		}

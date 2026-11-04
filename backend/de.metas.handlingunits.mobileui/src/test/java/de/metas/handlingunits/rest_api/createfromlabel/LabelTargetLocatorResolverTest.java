@@ -11,6 +11,7 @@ import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -34,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class LabelTargetLocatorResolverTest
 {
 	private static final UserId userId = UserId.ofRepoId(1_000_001);
+	private static final ClientId clientId = ClientId.ofRepoId(1_000_020);
 	private static final OrgId orgId = OrgId.ofRepoId(1_000_010);
 
 	private WorkplaceService workplaceService;
@@ -52,6 +54,7 @@ class LabelTargetLocatorResolverTest
 	private static LocatorId newLocator(@NonNull final WarehouseId warehouseId, final String value, final boolean isDefault, final boolean isActive)
 	{
 		final I_M_Locator record = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
+		InterfaceWrapperHelper.setValue(record, "AD_Client_ID", clientId.getRepoId());
 		record.setM_Warehouse_ID(warehouseId.getRepoId());
 		record.setValue(value);
 		record.setIsDefault(isDefault);
@@ -91,7 +94,7 @@ class LabelTargetLocatorResolverTest
 		final LocatorId defaultLocator = newLocator(orgWarehouse, "second-default", true, true);
 		newOrgInfo(orgId, orgWarehouse);
 
-		assertThat(resolver.resolve(userId, orgId)).contains(defaultLocator);
+		assertThat(resolver.resolve(userId, orgId, clientId)).contains(defaultLocator);
 	}
 
 	@Test
@@ -99,7 +102,7 @@ class LabelTargetLocatorResolverTest
 	{
 		newOrgInfo(orgId, null);
 
-		assertThat(resolver.resolve(userId, orgId)).isEmpty();
+		assertThat(resolver.resolve(userId, orgId, clientId)).isEmpty();
 	}
 
 	@Test
@@ -113,7 +116,7 @@ class LabelTargetLocatorResolverTest
 		newLocator(orgWarehouse, "org-default", true, true);
 		newOrgInfo(orgId, orgWarehouse);
 
-		assertThat(resolver.resolve(userId, orgId)).contains(pickFrom);
+		assertThat(resolver.resolve(userId, orgId, clientId)).contains(pickFrom);
 	}
 
 	/** failure scenario: an inactive pick-from location is proposed, and the create step then refuses it; the warehouse default is proposed instead */
@@ -125,7 +128,22 @@ class LabelTargetLocatorResolverTest
 		final LocatorId defaultLocator = newLocator(workplaceWarehouse, "wp-default", true, true);
 		assignWorkplace(workplaceWarehouse, inactivePickFrom);
 
-		assertThat(resolver.resolve(userId, orgId)).contains(defaultLocator);
+		assertThat(resolver.resolve(userId, orgId, clientId)).contains(defaultLocator);
+	}
+
+	/** failure scenario: a pick-from location of another client is proposed, and the create step then refuses it (client check); the warehouse default is proposed instead */
+	@Test
+	void workplacePickFromLocatorOfOtherClient_fallsBackToWorkplaceWarehouseDefault()
+	{
+		final WarehouseId workplaceWarehouse = newWarehouseId(1_000_102);
+		final LocatorId otherClientPickFrom = newLocator(workplaceWarehouse, "pick-from-other-client", false, true);
+		final I_M_Locator record = InterfaceWrapperHelper.load(otherClientPickFrom.getRepoId(), I_M_Locator.class);
+		InterfaceWrapperHelper.setValue(record, "AD_Client_ID", clientId.getRepoId() + 1);
+		InterfaceWrapperHelper.saveRecord(record);
+		final LocatorId defaultLocator = newLocator(workplaceWarehouse, "wp-default", true, true);
+		assignWorkplace(workplaceWarehouse, otherClientPickFrom);
+
+		assertThat(resolver.resolve(userId, orgId, clientId)).contains(defaultLocator);
 	}
 
 	/** failure scenario: the proposal is a read — a warehouse without an active locator must not get one created */
@@ -137,7 +155,7 @@ class LabelTargetLocatorResolverTest
 		newOrgInfo(orgId, orgWarehouse);
 		final int locatorsBefore = countLocators();
 
-		assertThat(resolver.resolve(userId, orgId)).isEmpty();
+		assertThat(resolver.resolve(userId, orgId, clientId)).isEmpty();
 		assertThat(countLocators()).isEqualTo(locatorsBefore);
 	}
 
@@ -152,6 +170,6 @@ class LabelTargetLocatorResolverTest
 		newOrgInfo(orgId, orgWarehouse);
 
 		final OrgId asked = orgAny ? OrgId.ANY : OrgId.ofRepoId(1_000_011); // no AD_OrgInfo row for 1_000_011
-		assertThat(resolver.resolve(userId, asked)).isEmpty();
+		assertThat(resolver.resolve(userId, asked, clientId)).isEmpty();
 	}
 }
