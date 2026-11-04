@@ -158,6 +158,16 @@
             <artifactId>springfox-swagger-ui</artifactId>
             <version>3.0.0</version>
         </dependency>
+        <!--
+            springfox-enum-plugin (de.pentabyte) supplies ApiEnumDescriptionPlugin, imported by Application.
+            It used to reach this JDK14 / Spring-Boot-2 service transitively via de-metas-common; the
+            springfox->springdoc migration of de-metas-common added exclusions that cut that transitive path,
+            so it must be declared explicitly here. Version is managed in dependencyManagement (3.0.0).
+        -->
+        <dependency>
+            <groupId>de.pentabyte</groupId>
+            <artifactId>springfox-enum-plugin</artifactId>
+        </dependency>
     </dependencies>
     
     <build>
