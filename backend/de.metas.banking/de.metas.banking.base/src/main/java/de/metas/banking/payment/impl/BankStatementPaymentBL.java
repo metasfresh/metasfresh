@@ -60,6 +60,7 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
@@ -67,7 +68,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Order;
@@ -95,6 +95,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IBankStatementBL bankStatementBL;
@@ -270,7 +271,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			// setting the order prefills the order's total (C_Payment.updateFromOrder, as for a payment entered by hand in window Zahlung);
 			// this payment is the money of the bank statement line, which may be less or more than the order total
 			payment.setPayAmt(payAmount.toBigDecimal());
-			InterfaceWrapperHelper.saveRecord(payment);
+			paymentDAO.save(payment);
 		}
 		return payment;
 	}
