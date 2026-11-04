@@ -21,6 +21,7 @@ Feature: EDI INVOIC JSON of invoices made from shipments with packing material l
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2026-07-01T09:00:00+02:00[Europe/Berlin]
+    And temporarily set sys config boolean value true for sys config "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO"
     And set project type Sales/Purchase Order to inactive
 
     And metasfresh contains M_PricingSystems
