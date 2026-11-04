@@ -268,8 +268,10 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final I_C_Payment payment = paymentBuilder.createDraft(); // note: don't complete the payment now, else onComplete interceptors might link this payment to a different Bank Statement Line.
 		if (invoiceId == null && orderId != null && payment.getPayAmt().compareTo(payAmount.toBigDecimal()) != 0)
 		{
-			// setting the order prefills the order's total (C_Payment.updateFromOrder, as for a payment entered by hand in window Zahlung);
-			// this payment is the money of the bank statement line, which may be less or more than the order total
+			// on the first save, interceptor C_Payment.updateFromOrder overwrites PayAmt with the order's total minus the payment term discount
+			// (the builder only saves; the interceptor is not changed here because other callers, e.g. the REST order payment, rely on it);
+			// this payment is the cash received on the bank statement line, which may be less or more than the order total, so PayAmt is set back.
+			// DiscountAmt is intentionally left as the interceptor sets it, the same as for a payment entered by hand in window Zahlung.
 			payment.setPayAmt(payAmount.toBigDecimal());
 			paymentDAO.save(payment);
 		}
