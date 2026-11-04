@@ -36,8 +36,8 @@ class LabelValues
 	@NonNull UomId stockUomId;
 	/** {@link #stockUomId} as code, for the JSON */
 	@NonNull X12DE355 stockUom;
-	/** the proposed quantity, in {@link #stockUomId} */
-	@NonNull BigDecimal qty;
+	/** the quantity the scanned code carries (the label weight of a product stocked in kg), in {@link #stockUomId}; null: the code carries none, the user types it */
+	@Nullable BigDecimal qty;
 	/** set only when the label weight becomes the CU's net weight (catch-weight product) */
 	@Nullable BigDecimal weightKgForCU;
 	/** the label carries a weight that this product does not use */

@@ -182,6 +182,15 @@ describe('NewHUPreviewScreen inline quantity field', () => {
     expect(screen.getByTestId('ok-button')).toBeEnabled();
   });
 
+  it('a proposal without a quantity (the code carries none) starts with an empty field and OK disabled until a number is typed', async () => {
+    renderPreview({ proposalExtras: { qty: undefined } });
+    await act(async () => {});
+    expect(screen.getByTestId('qty-input')).toHaveValue('');
+    expect(screen.getByTestId('ok-button')).toBeDisabled();
+    fireEvent.change(screen.getByTestId('qty-input'), { target: { value: '10' } });
+    expect(screen.getByTestId('ok-button')).toBeEnabled();
+  });
+
   it('(iii) typed quantity + changed location -> OK creates with both', async () => {
     renderPreview();
     await act(async () => {});

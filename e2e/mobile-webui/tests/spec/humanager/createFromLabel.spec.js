@@ -104,6 +104,8 @@ test('custom label (GTIN + lot + best-before) -> preview -> OK -> success messag
     await HUManagerScreen.openAfterLogin({ user: masterdata.login.user });
 
     await HUManagerScreen.scanLabelAndWaitForPreview({ label: gtinLotBbdLabel(gtin) });
+    await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
+    await NewHUPreviewScreen.setQty(1);
     await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
     await NewHUPreviewScreen.expectLotNumber('L2311');
     await NewHUPreviewScreen.expectOKEnabled();
@@ -148,6 +150,8 @@ test('reference case with an invented GS1 label -> preview -> OK -> back on the 
     // scan -> preview, everything asserted on screen
     await HUManagerScreen.scanLabelAndWaitForPreview({ label: gs1Label(gtin) });
     await NewHUPreviewScreen.expectProductContains(masterdata.products.P1.productName);
+    await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
+    await NewHUPreviewScreen.setQty(1);
     await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
     await NewHUPreviewScreen.expectLotNumber('L2311');
     // the best-before date of the label (use-by 31.12.2027) is shown on the preview, exactly (en_US display MM/DD/YYYY)
@@ -235,6 +239,8 @@ test('GS1 label -> preview -> OK -> CU with lot + best-before (= use-by)', async
     await HUManagerScreen.openAfterLogin({ user: masterdata.login.user });
 
     await HUManagerScreen.scanLabelAndWaitForPreview({ label: gs1Label(gtin) });
+    await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
+    await NewHUPreviewScreen.setQty(1);
     await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
 
@@ -378,6 +384,7 @@ test('location changed with the Change locator button, not remembered; a non-loc
     // (c) Change locator + another location QR code -> shown at once; OK books there
     await NewHUPreviewScreen.changeLocator(wh2_l1.qrCode);
     await NewHUPreviewScreen.expectLocator(wh2_l1.code);
+    await NewHUPreviewScreen.setQty(1);
     const created = await NewHUPreviewScreen.clickOKAndGetCreatedHU();
     await expectBackOnScanScreenAfterOK({ created });
     await openCreatedHUByValue({ created, locatorCode: wh2_l1.code }); // booked where it was scanned
@@ -408,6 +415,8 @@ test('inline quantity on the preview: typed digits stay in the field, emptied fi
 
     await test.step('(i) typed digits stay in the quantity field (the preview has no scanner)', async () => {
         await NewHUPreviewScreen.expectNoScanner();
+        await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
+        await NewHUPreviewScreen.setQty(1);
         await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
         await NewHUPreviewScreen.setQty(7);
         await NewHUPreviewScreen.expectQty({ qty: '7', uom: 'PCE' });
@@ -450,6 +459,7 @@ test('double tap on OK books one inventory', async ({ page }) => {
 
     await HUManagerScreen.scanLabelAndWaitForPreview({ label: bracketedLabel(gtin) });
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
+    await NewHUPreviewScreen.setQty(1);
     const created = await NewHUPreviewScreen.doubleClickOKAndGetCreatedHU();
     await expectBackOnScanScreenAfterOK({ created, locatorCode });
 
@@ -500,6 +510,8 @@ test('catch-weight product, label with constant + product code + weight + lot + 
 
     const label = `XQ${masterdata.products.P1.productCode}012345L2311251101271231zz`;
     await HUManagerScreen.scanLabelAndWaitForPreview({ label });
+    await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
+    await NewHUPreviewScreen.setQty(1);
     await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
     await NewHUPreviewScreen.expectWeight('12.345 KGM');
     await NewHUPreviewScreen.expectLotNumber('L2311');
@@ -563,6 +575,8 @@ test('GS1 label with weight (310n) — kg product: quantity = weight; piece prod
 
     await test.step('piece product: quantity 1, weight shown as not used and not stored', async () => {
         await HUManagerScreen.scanLabelAndWaitForPreview({ label: `01${gtinPce}3103012345` });
+        await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
+        await NewHUPreviewScreen.setQty(1);
         await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
         await NewHUPreviewScreen.expectWeightNotUsed();
         const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
@@ -651,6 +665,7 @@ test('the created HU opened by its number has no Undo; standard Dispose flags th
 
     await HUManagerScreen.scanLabelAndWaitForPreview({ label: bracketedLabel(gtin) });
     const locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
+    await NewHUPreviewScreen.setQty(1);
     const created = await NewHUPreviewScreen.clickOKAndGetCreatedHU();
     const { huId, huQRCode } = created;
     await expectBackOnScanScreenAfterOK({ created, locatorCode });
@@ -682,6 +697,8 @@ test('the same label twice -> two previews alike, two HUs, two completed invento
     const created = [];
     for (let i = 1; i <= 2; i++) {
         await HUManagerScreen.scanLabelAndWaitForPreview({ label: bracketedLabel(gtin) });
+        await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
+        await NewHUPreviewScreen.setQty(1);
         await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
         // the user has no workplace -> the organisation's default location; the second preview must look like the first
         if (i === 1) locatorCode = await NewHUPreviewScreen.expectLocatorProposedAndGet();
@@ -805,6 +822,8 @@ test('role without allow-all, only createHU granted -> product label opens the p
     await HUManagerScreen.openAfterLogin({ user: masterdata.login.user });
 
     await HUManagerScreen.scanLabelAndWaitForPreview({ label: bracketedLabel(gtin) });
+    await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
+    await NewHUPreviewScreen.setQty(1);
     await NewHUPreviewScreen.expectQty({ qty: '1', uom: 'PCE' });
     await NewHUPreviewScreen.clickCancel();
 

@@ -384,7 +384,7 @@ class LabelValuesServiceTest
 
 		final LabelValues result = resolveWithWeight(catchWeightProduct, LABEL_WEIGHT);
 
-		assertThat(result.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+		assertThat(result.getQty()).isNull();
 		assertThat(result.getWeightKgForCU()).isEqualByComparingTo(LABEL_WEIGHT);
 		assertThat(result.isWeightIgnored()).isFalse();
 	}
@@ -394,17 +394,17 @@ class LabelValuesServiceTest
 	{
 		final LabelValues result = resolveWithWeight(product, LABEL_WEIGHT);
 
-		assertThat(result.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+		assertThat(result.getQty()).isNull();
 		assertThat(result.getWeightKgForCU()).isNull();
 		assertThat(result.isWeightIgnored()).isTrue();
 	}
 
 	@Test
-	void noWeightOnLabel_quantityOne()
+	void noQuantityOnLabel_quantityIsEmpty()
 	{
 		final LabelValues result = resolveWithWeight(newProduct("P-KG2", newKgUom()), null);
 
-		assertThat(result.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+		assertThat(result.getQty()).isNull();
 		assertThat(result.getWeightKgForCU()).isNull();
 		assertThat(result.isWeightIgnored()).isFalse();
 	}

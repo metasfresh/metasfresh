@@ -70,6 +70,12 @@ export const NewHUPreviewScreen = {
     /** The production date row is exactly the given display text (a date as the screen renders it: en_US MM/DD/YYYY). */
     expectProductionDate: async (displayText) => await expectRowText({ label: 'production date', testId: 'attribute-ProductionDate-value', expectedValue: displayText }),
 
+    /** The code carries no quantity: the field starts empty and OK is disabled until a number is typed. */
+    expectQtyEmptyAndOKDisabled: async () => await test.step(`${NAME} - Expect the quantity field empty and OK disabled`, async () => {
+        await expect(containerElement().getByTestId('qty-input')).toHaveValue('');
+        await expect(containerElement().getByTestId('ok-button')).toBeDisabled();
+    }),
+
     /** The label weight row, e.g. '12.345 KGM'. */
     expectWeight: async (weightText) => await expectRowText({ label: 'weight', testId: 'weight-value', expectedValue: weightText }),
 

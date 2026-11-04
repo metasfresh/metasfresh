@@ -79,8 +79,7 @@ public class LabelValuesService
 				.bestBeforeDate(code.getBestBeforeDate().orElseGet(() -> code.getExpirationDate().orElse(null)))
 				.productionDate(code.getProductionDate().orElse(null))
 				.stockUomId(stockUomId)
-				.stockUom(stockUom)
-				.qty(BigDecimal.ONE);
+				.stockUom(stockUom);
 
 		final BigDecimal labelWeightKg = code.getWeightInKg().orElse(null);
 		if (labelWeightKg != null)

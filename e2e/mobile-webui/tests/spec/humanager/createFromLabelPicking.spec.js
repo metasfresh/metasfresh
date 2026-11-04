@@ -52,6 +52,7 @@ const createMasterdata = async ({ gtin, externalBarcode, format = FORMAT_BRACKET
 /** scan a label in the HU Manager, press OK, return the new HU as the server answered it */
 const createHUFromLabel = async ({ label }) => {
     await HUManagerScreen.scanLabelAndWaitForPreview({ label });
+    await NewHUPreviewScreen.setQty(1);
     const created = await NewHUPreviewScreen.clickOKAndGetCreatedHU();
     // after OK the user is back on the scan screen (the new HU is not opened)
     await HUManagerScreen.waitForScreen();
@@ -114,6 +115,33 @@ test('GS1 label books a CU, picking refuses the same GS1 label as the wrong code
 
     await expectErrorToast('GS1 label is no pick-from code', async () => {
         await PickingJobScreen.pickHU({ qrCode: label, isScanDirectly: true, expectedPickDirectly: true });
+    });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '' });
+    await Backend.expect({ hus: { [huId]: { huStatus: 'A' } } });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('bracketed UDI label (fixed-position format) books a CU, picking refuses the same label with "no HU with this attribute", nothing picked', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - create HU from a scanned label');
+    allure.severity('normal');
+
+    const gtin = uniqueGtin14('8');
+    const label = bracketedLabel(gtin);
+    const masterdata = await createMasterdata({ gtin });
+    await HUManagerScreen.openAfterLogin({ user: masterdata.login.user });
+
+    const huId = await createHUFromLabel({ label });
+    await goBackToApplications();
+    await startPickingJob({ masterdata });
+
+    // the label code is not stored on the new HU, so the picking lookup by the HU_QRCode attribute finds no HU
+    // (message de.metas.handlingunits.picking.job.QR_CODE_HU_NOT_FOUND_BY_ATTRIBUTE, shown here by its key)
+    await expectErrorToast('Bracketed label is refused by picking: no HU carries the code', async () => {
+        await PickingJobScreen.pickHU({ qrCode: label, isScanDirectly: true, expectedPickDirectly: true });
+    }, ({ textContent }) => {
+        expect(textContent).toContain('PICKING_QR_HU_NOT_FOUND_BY_ATTRIBUTE');
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '' });
     await Backend.expect({ hus: { [huId]: { huStatus: 'A' } } });
