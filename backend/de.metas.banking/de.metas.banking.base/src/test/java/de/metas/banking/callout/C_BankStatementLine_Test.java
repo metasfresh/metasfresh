@@ -14,6 +14,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -268,5 +269,58 @@ public class C_BankStatementLine_Test
 							.build());
 		}
 
+	}
+
+	/** Selecting an order on a bank statement line without invoice sets the line partner to the order's bill partner; an invoice on the line wins. */
+	@Nested
+	public class onC_Order_ID_Changed
+	{
+		private static final int ORDERING_PARTNER_ID = 1;
+		private static final int BILL_PARTNER_ID = 2;
+
+		private I_C_Order createOrder()
+		{
+			final I_C_Order order = newInstance(I_C_Order.class);
+			order.setC_BPartner_ID(ORDERING_PARTNER_ID);
+			order.setBill_BPartner_ID(BILL_PARTNER_ID);
+			saveRecord(order);
+			return order;
+		}
+
+		@Test
+		public void lineWithoutPartner_gets_billPartnerOfOrder()
+		{
+			final I_C_BankStatementLine bsl = bankStatementLine().build();
+			bsl.setC_Order_ID(createOrder().getC_Order_ID());
+
+			callout.onC_Order_ID_Changed(bsl);
+
+			assertThat(bsl.getC_BPartner_ID()).isEqualTo(BILL_PARTNER_ID);
+		}
+
+		@Test
+		public void lineWithOrderingPartner_gets_billPartnerOfOrder()
+		{
+			final I_C_BankStatementLine bsl = bankStatementLine().build();
+			bsl.setC_BPartner_ID(ORDERING_PARTNER_ID);
+			bsl.setC_Order_ID(createOrder().getC_Order_ID());
+
+			callout.onC_Order_ID_Changed(bsl);
+
+			assertThat(bsl.getC_BPartner_ID()).isEqualTo(BILL_PARTNER_ID);
+		}
+
+		@Test
+		public void lineWithInvoice_keepsItsPartner()
+		{
+			final I_C_BankStatementLine bsl = bankStatementLine().build();
+			bsl.setC_Invoice_ID(3);
+			bsl.setC_BPartner_ID(ORDERING_PARTNER_ID);
+			bsl.setC_Order_ID(createOrder().getC_Order_ID());
+
+			callout.onC_Order_ID_Changed(bsl);
+
+			assertThat(bsl.getC_BPartner_ID()).isEqualTo(ORDERING_PARTNER_ID);
+		}
 	}
 }

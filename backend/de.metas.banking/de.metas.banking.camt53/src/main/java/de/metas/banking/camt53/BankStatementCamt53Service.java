@@ -43,6 +43,7 @@ import de.metas.banking.importfile.log.BankStatementImportFileLoggable;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
+import de.metas.banking.service.BankStatementPrepayOrderResolver;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Currency;
@@ -63,6 +64,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.esr.ESRConstants;
@@ -122,6 +124,7 @@ public class BankStatementCamt53Service
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final BankStatementPrepayOrderResolver prepayOrderResolver;
 
 	private final BankAccountService bankAccountService;
 	private final CurrencyRepository currencyRepository;
@@ -134,13 +137,15 @@ public class BankStatementCamt53Service
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final PaymentAllocationService paymentAllocationService,
 			@NonNull final MoneyService moneyService,
-			@NonNull final BankStatementImportFileLogRepository bankStatementImportFileLogRepository)
+			@NonNull final BankStatementImportFileLogRepository bankStatementImportFileLogRepository,
+			@NonNull final BankStatementPrepayOrderResolver prepayOrderResolver)
 	{
 		this.bankAccountService = bankAccountService;
 		this.currencyRepository = currencyRepository;
 		this.paymentAllocationService = paymentAllocationService;
 		this.moneyService = moneyService;
 		this.bankStatementImportFileLogRepository = bankStatementImportFileLogRepository;
+		this.prepayOrderResolver = prepayOrderResolver;
 	}
 
 	@NonNull
@@ -378,10 +383,21 @@ public class BankStatementCamt53Service
 			bankStatementLineCreateRequestBuilder.importedBillPartnerName(entryWrapper.getCdtrNames());
 		}
 
-		getReferencedInvoiceRecord(importBankStatementLineRequest, statementLineDate)
-				.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
-						.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-						.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
+		final I_C_Invoice referencedInvoice = getReferencedInvoiceRecord(importBankStatementLineRequest, statementLineDate).orElse(null);
+		if (referencedInvoice != null)
+		{
+			bankStatementLineCreateRequestBuilder
+					.invoiceId(InvoiceId.ofRepoId(referencedInvoice.getC_Invoice_ID()))
+					.bpartnerId(BPartnerId.ofRepoId(referencedInvoice.getC_BPartner_ID()));
+		}
+		else if (stmtAmount.signum() > 0) // order matching is only the fallback of the invoice matching
+		{
+			// no partner filter: the camt import knows the partner only from a matched invoice or order
+			prepayOrderResolver.findOrder(entryWrapper.getDocumentReferenceCandidates(), stmtAmount, null, entryWrapper.getLineReference())
+					.ifPresent(order -> bankStatementLineCreateRequestBuilder
+							.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
+							.bpartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID())));
+		}
 
 		return Optional.of(bankStatementLineCreateRequestBuilder.build());
 	}
