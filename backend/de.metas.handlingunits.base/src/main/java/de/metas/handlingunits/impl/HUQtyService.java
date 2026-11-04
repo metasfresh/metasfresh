@@ -233,7 +233,7 @@ public class HUQtyService
 			return;
 		}
 
-				new PackedHUWeightNetUpdater(uomConversionBL, handlingUnitsBL.createMutableHUContextForProcessing(), productId, weightInKg)
+		new PackedHUWeightNetUpdater(uomConversionBL, handlingUnitsBL.createMutableHUContextForProcessing(), productId, weightInKg)
 				.updatePackToHU(handlingUnitsBL.getById(cuId));
 	}
 
