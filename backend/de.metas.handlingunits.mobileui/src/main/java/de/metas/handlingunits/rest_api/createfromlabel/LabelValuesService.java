@@ -12,6 +12,7 @@ import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.X12DE355;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -40,9 +41,9 @@ import static de.metas.handlingunits.rest_api.createfromlabel.CreateFromLabelMes
  * What a label's weight means for the product (a design default):
  * <ul>
  * <li>product stocked in kg: the label weight is the quantity</li>
- * <li>catch-weight product: quantity 1, the label weight becomes the CU's net weight</li>
+ * <li>catch-weight product: no quantity (the user types it), the label weight becomes the CU's net weight</li>
  * <li>any other product: the weight is not used</li>
- * <li>no weight on the label: quantity 1</li>
+ * <li>no weight on the label: no quantity (the user types it)</li>
  * </ul>
  * Every refusal is a {@link LabelRejectionException} (one plain-language message).
  * <p>
@@ -89,11 +90,11 @@ public class LabelValuesService
 		{
 			if (X12DE355.KILOGRAM.equals(stockUom))
 			{
-				result.qty(labelWeightKg);
+				result.qty(Quantitys.of(labelWeightKg, stockUomId));
 			}
 			else if (productBL.getCatchUOMId(productId).isPresent())
 			{
-				result.weightKgForCU(labelWeightKg);
+				result.weightKgForCU(Quantitys.of(labelWeightKg, X12DE355.KILOGRAM));
 			}
 			else
 			{

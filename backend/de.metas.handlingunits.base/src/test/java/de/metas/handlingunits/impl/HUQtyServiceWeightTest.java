@@ -149,7 +149,7 @@ class HUQtyServiceWeightTest
 				.qty(Quantity.of("12.345", helper.uomKg))
 				.locatorId(locatorId)
 				.attributes(ImmutableAttributeSet.EMPTY)
-				.weightInKg(weightInKg)
+				.weightInKg(weightInKg != null ? Quantity.of(weightInKg, helper.uomKg) : null)
 				.build();
 	}
 

@@ -55,9 +55,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -73,7 +71,6 @@ import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -229,15 +226,14 @@ public class HUQtyService
 		return new CreatedHU(huId, huQRCodesService.getQRCodeByHuId(huId));
 	}
 
-	private void setWeightNet(@NonNull final HuId cuId, @NonNull final ProductId productId, @Nullable final BigDecimal weightInKg)
+	private void setWeightNet(@NonNull final HuId cuId, @NonNull final ProductId productId, @Nullable final Quantity weightInKg)
 	{
 		if (weightInKg == null)
 		{
 			return;
 		}
 
-		final Quantity weight = Quantitys.of(weightInKg, X12DE355.KILOGRAM);
-		new PackedHUWeightNetUpdater(uomConversionBL, handlingUnitsBL.createMutableHUContextForProcessing(), productId, weight)
+				new PackedHUWeightNetUpdater(uomConversionBL, handlingUnitsBL.createMutableHUContextForProcessing(), productId, weightInKg)
 				.updatePackToHU(handlingUnitsBL.getById(cuId));
 	}
 

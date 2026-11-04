@@ -2,6 +2,7 @@ package de.metas.handlingunits.rest_api.createfromlabel;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import lombok.Builder;
@@ -11,7 +12,6 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.function.Predicate;
 
@@ -37,9 +37,9 @@ class LabelValues
 	/** {@link #stockUomId} as code, for the JSON */
 	@NonNull X12DE355 stockUom;
 	/** the quantity the scanned code carries (the label weight of a product stocked in kg), in {@link #stockUomId}; null: the code carries none, the user types it */
-	@Nullable BigDecimal qty;
+	@Nullable Quantity qty;
 	/** set only when the label weight becomes the CU's net weight (catch-weight product) */
-	@Nullable BigDecimal weightKgForCU;
+	@Nullable Quantity weightKgForCU;
 	/** the label carries a weight that this product does not use */
 	boolean isWeightIgnored;
 

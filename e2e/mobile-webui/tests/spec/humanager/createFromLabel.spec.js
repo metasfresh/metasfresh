@@ -547,7 +547,7 @@ test('catch-weight product, label with constant + product code + weight + lot + 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('GS1 label with weight (310n) — kg product: quantity = weight; piece product: quantity 1, weight "not used"', async ({ page }) => {
+test('GS1 label with weight (310n) — kg product: quantity = weight; piece product: quantity typed by the user, weight "not used"', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - create HU from a scanned label');
@@ -573,7 +573,7 @@ test('GS1 label with weight (310n) — kg product: quantity = weight; piece prod
         await Backend.expect({ hus: { [huId]: { huStatus: 'A', storages: { 'P1': '12.345 KGM' } } } });
     });
 
-    await test.step('piece product: quantity 1, weight shown as not used and not stored', async () => {
+    await test.step('piece product: quantity field starts empty (the user types it), weight shown as not used and not stored', async () => {
         await HUManagerScreen.scanLabelAndWaitForPreview({ label: `01${gtinPce}3103012345` });
         await NewHUPreviewScreen.expectQtyEmptyAndOKDisabled(); // the code carries no quantity: the user types it
         await NewHUPreviewScreen.setQty(1);

@@ -472,7 +472,7 @@ class CreateHUFromScannedCodeCommandTest
 		create(requestOf("P1012345"));
 
 		assertThat(huQtyService.requests).hasSize(1);
-		assertThat(huQtyService.requests.get(0).getWeightInKg()).isEqualByComparingTo("12.345");
+		assertThat(huQtyService.requests.get(0).getWeightInKg().toBigDecimal()).isEqualByComparingTo("12.345");
 		assertThat(huQtyService.requests.get(0).getQty().toBigDecimal()).isEqualByComparingTo("1");
 	}
 
